@@ -1,0 +1,7 @@
+Beside the plan, this commit carries in-flight Publishing work that is
+not the plan's author's: publish_pane.rs and publish_service.rs (new)
+plus edits across action.rs, app/mod.rs, shell/, knot_authoring.rs,
+remote_projection.rs, script.rs, and lib.rs. Swept in by a whole-tree
+add, per the repo convention, and verified to build (cargo check --lib
+--bins green) before this note was written. The Publishing pane is,
+fittingly, the exact case the plan's registry step uses as its proof.
