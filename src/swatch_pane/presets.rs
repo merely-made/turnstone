@@ -163,7 +163,10 @@ fn overmap_gather(app: &App) -> SwatchModel {
     let (mut max_depth, mut max_row) = (0usize, 0usize);
     for (_, node) in graph.nodes() {
         let depth = depth_of(node.id);
-        let row = *row_at_depth.entry(depth).and_modify(|r| *r += 1).or_insert(0);
+        let row = *row_at_depth
+            .entry(depth)
+            .and_modify(|r| *r += 1)
+            .or_insert(0);
         max_depth = max_depth.max(depth);
         max_row = max_row.max(row);
         placed.push((node.id, depth, row));
@@ -174,7 +177,11 @@ fn overmap_gather(app: &App) -> SwatchModel {
     // last-generation label must not clip at the swatch edge.
     let band = |t: f32| 0.12 + t * 0.62;
     let axis = |value: usize, max: usize| {
-        if max == 0 { 0.5 } else { band(value as f32 / max as f32) }
+        if max == 0 {
+            0.5
+        } else {
+            band(value as f32 / max as f32)
+        }
     };
 
     let current_container = app.container_id();
@@ -189,7 +196,11 @@ fn overmap_gather(app: &App) -> SwatchModel {
         model.nodes.push(SwatchNode {
             id,
             position: (axis(depth, max_depth), axis(row, max_row)),
-            state: if is_current { NodeState::Open } else { NodeState::Idle },
+            state: if is_current {
+                NodeState::Open
+            } else {
+                NodeState::Idle
+            },
             label: graph.node_display_label(key),
             key: session.map(|s| s.0.to_string()),
             activate: session.map(SwatchActivate::Switch),

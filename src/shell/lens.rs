@@ -7,9 +7,9 @@
 
 use std::sync::Arc;
 
+use genet_winit_host::SurfaceHost;
 use netrender::external_texture::ExternalTexturePlacement;
 use netrender::{ColorLoad, NetrenderOptions, Scene};
-use genet_winit_host::SurfaceHost;
 use winit::dpi::{PhysicalPosition, PhysicalSize};
 use winit::event::{ElementState, MouseButton, MouseScrollDelta, WindowEvent};
 use winit::event_loop::ActiveEventLoop;
@@ -23,9 +23,8 @@ use crate::surface::{Rect, SurfaceKind};
 
 use inker::SessionClick;
 
-use super::{CompositeLayer, PlannedScene, Shell, capture_composed};
 use super::input::pointer_button;
-
+use super::{CompositeLayer, PlannedScene, Shell, capture_composed};
 
 /// One lens window's record: its platform window, present stack, size,
 /// cursor, and camera.
@@ -64,8 +63,12 @@ impl Shell {
                 enable_vello: true,
                 ..Default::default()
             };
-            match SurfaceHost::boot(window.clone(), size.width.max(1), size.height.max(1), options)
-            {
+            match SurfaceHost::boot(
+                window.clone(),
+                size.width.max(1),
+                size.height.max(1),
+                options,
+            ) {
                 Ok(host) => {
                     window.request_redraw();
                     self.lens_windows.insert(
@@ -140,7 +143,9 @@ impl Shell {
                     .iter()
                     .filter_map(|c| {
                         let m = c.active_member()?;
-                        self.content_sessions.contains_key(&m).then(|| (m, c.body()))
+                        self.content_sessions
+                            .contains_key(&m)
+                            .then(|| (m, c.body()))
                     })
                     .collect()
             })
@@ -149,7 +154,11 @@ impl Shell {
     }
 
     /// A pane's `PaneContent` in a LENS window's space.
-    pub(super) fn lens_pane_content(&self, ordinal: usize, id: crate::panes::PaneId) -> Option<PaneContent> {
+    pub(super) fn lens_pane_content(
+        &self,
+        ordinal: usize,
+        id: crate::panes::PaneId,
+    ) -> Option<PaneContent> {
         self.app
             .lenses
             .get(ordinal)
@@ -195,7 +204,10 @@ impl Shell {
         let mut scenes: Vec<PlannedScene> = Vec::with_capacity(surfaces.len());
         for surface in &surfaces {
             let rect = surface.rect;
-            let (rw, rh) = (rect.w.round().max(1.0) as u32, rect.h.round().max(1.0) as u32);
+            let (rw, rh) = (
+                rect.w.round().max(1.0) as u32,
+                rect.h.round().max(1.0) as u32,
+            );
             let (scene, clear) = match surface.kind {
                 crate::surface::SurfaceKind::Canvas => {
                     // Install this lens's camera, frame, stash it back, restore
@@ -217,7 +229,7 @@ impl Shell {
                 }
                 crate::surface::SurfaceKind::Pane(pid) => {
                     let content = self.lens_pane_content(ordinal, pid);
-                    let scene = self.pane_scene_by_kind(content.as_ref(), rw, rh);
+                    let scene = self.pane_scene_by_kind(pid, content.as_ref(), rw, rh);
                     (scene, wgpu::Color::TRANSPARENT)
                 }
                 // A workbench tile whose pane tore out here: the SAME session
@@ -324,8 +336,18 @@ impl Shell {
             WindowEvent::CloseRequested => {
                 let ordinal = lens.ordinal;
                 self.lens_windows.remove(&id);
+                let closed_panes: Vec<_> = self
+                    .app
+                    .lenses
+                    .get(ordinal)
+                    .and_then(Option::as_ref)
+                    .map(|space| space.iter_leaves().map(|(id, _, _)| id).collect())
+                    .unwrap_or_default();
                 if let Some(space) = self.app.lenses.get_mut(ordinal) {
                     *space = None;
+                }
+                for pane in closed_panes {
+                    self.evict_pane_renderer(pane);
                 }
                 self.app.window_count = 1 + self.lens_windows.len();
                 self.app.note(crate::observe::AppEvent::WindowClosed);
@@ -379,7 +401,8 @@ impl Shell {
                                         )
                                     })
                                     .unwrap_or((lw, lh));
-                                let actions = self.pane_click_actions(&content, hit.local, dims);
+                                let actions =
+                                    self.pane_click_actions(pid, &content, hit.local, dims);
                                 for action in actions {
                                     self.act(action);
                                 }
@@ -456,9 +479,7 @@ impl Shell {
                 // Wheel over a tile scrolls the PAGE (the rung-5 slice-B rule,
                 // per window); off-tile falls through to the camera pan below.
                 let (dx, dy) = match delta {
-                    MouseScrollDelta::LineDelta(x, y) => {
-                        (x * WHEEL_PAN_SCALE, y * WHEEL_PAN_SCALE)
-                    }
+                    MouseScrollDelta::LineDelta(x, y) => (x * WHEEL_PAN_SCALE, y * WHEEL_PAN_SCALE),
                     MouseScrollDelta::PixelDelta(p) => (p.x as f32, p.y as f32),
                 };
                 let (x, y) = lens.cursor;

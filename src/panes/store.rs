@@ -71,10 +71,7 @@ pub fn load_frisket_layout(session_dir: &Path) -> io::Result<Option<FrisketLayou
 pub const WINDOWS_FILE: &str = "windows.json";
 
 /// Serialize the lens spaces and write them atomically (tmp + rename).
-pub fn save_lens_spaces(
-    session_dir: &Path,
-    lenses: &[Option<FrisketLayout>],
-) -> io::Result<()> {
+pub fn save_lens_spaces(session_dir: &Path, lenses: &[Option<FrisketLayout>]) -> io::Result<()> {
     let target = session_dir.join(WINDOWS_FILE);
     if let Some(parent) = target.parent() {
         fs::create_dir_all(parent)?;

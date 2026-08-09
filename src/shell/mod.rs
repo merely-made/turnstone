@@ -5,10 +5,10 @@
 //! learns flows back through the spine.
 
 mod drive;
-mod gestures;
-mod keys;
 mod effects;
 mod events;
+mod gestures;
+mod keys;
 mod render;
 use render::{capture_composed, decode_sprite};
 mod lens;
@@ -16,20 +16,19 @@ use lens::LensWindow;
 mod input;
 use input::pointer_button;
 
+use std::collections::HashMap;
 use std::path::Path;
 use std::sync::Arc;
 use std::sync::mpsc::Receiver;
 
 use fetch::{FetchCommand, FetchUpdate};
-use inker::{
-    DocumentSession, SessionClick, SessionRegistry, SessionSpawnRequest,
-};
 use genet_documents::{LocalFetcher, StaticSessionEngine};
+use genet_winit_host::SurfaceHost;
 use image::ImageEncoder;
+use inker::{DocumentSession, SessionClick, SessionRegistry, SessionSpawnRequest};
 use mere::canvas::WHEEL_PAN_SCALE;
 use netrender::external_texture::ExternalTexturePlacement;
 use netrender::{ColorLoad, NetrenderOptions};
-use genet_winit_host::SurfaceHost;
 use winit::application::ApplicationHandler;
 use winit::dpi::{PhysicalPosition, PhysicalSize};
 use winit::event::{ElementState, Ime, MouseButton, MouseScrollDelta, WindowEvent};
@@ -50,12 +49,9 @@ use netrender::Scene;
 /// (the tags are single lowercase words); slice D replaces the placeholder with
 /// the pane's real content.
 fn pane_display_label(content: &PaneContent) -> String {
-    let tag = content.tag();
-    let mut chars = tag.chars();
-    match chars.next() {
-        Some(first) => first.to_uppercase().collect::<String>() + chars.as_str(),
-        None => String::new(),
-    }
+    crate::panes::pane_definition(content.kind_id().as_str())
+        .map(|definition| definition.display_name.to_string())
+        .unwrap_or_else(|| content.tag().to_string())
 }
 
 /// The scenario, parsed from `TURNSTONE_SCENARIO` (a
@@ -91,7 +87,6 @@ fn shared_out_dir_from_env() -> std::path::PathBuf {
     let _ = std::fs::create_dir_all(&dir);
     dir
 }
-
 
 /// One surface's scene, produced by render's mutable first pass and consumed by
 /// its immutable rasterization pass. Splitting the two keeps a content session's
@@ -169,7 +164,8 @@ pub struct Shell {
     /// non-Send handles — live here, keyed by the same node ids App's
     /// ContentStates tracks. Ports own handles; App holds data.
     content_engines: SessionRegistry<netrender::Scene>,
-    content_sessions: std::collections::HashMap<uuid::Uuid, Box<dyn DocumentSession<netrender::Scene>>>,
+    content_sessions:
+        std::collections::HashMap<uuid::Uuid, Box<dyn DocumentSession<netrender::Scene>>>,
     /// Configured Knot destination for typed Inspector clips. The handle owns
     /// neither file authority nor vault keys; it only queues endpoint intents.
     knot_clip: Option<crate::knot_authoring::KnotClipHandle>,
@@ -196,33 +192,37 @@ pub struct Shell {
     /// `GenetAppRunner` whose state and DOM persist between the frame that draws
     /// it and the click that hits it. `!Send`, like the content sessions, so it
     /// lives here rather than in App.
-    roster_grid: Option<crate::cambium_pane::RosterGrid>,
+    roster_grids: HashMap<crate::panes::PaneId, crate::cambium_pane::RosterGrid>,
     /// The Gloss pane (minimap): the first pane whose cambium view carries a
     /// custom-paint leaf, so it owns a leaf registry beside its runner.
-    gloss_pane: Option<crate::swatch_pane::SwatchPane>,
+    gloss_panes: HashMap<crate::panes::PaneId, crate::swatch_pane::SwatchPane>,
     /// The Trail pane: the sectioned list's first consumer (the hand-DOM Trail
     /// retired). Retained like the others.
-    trail_pane: Option<crate::trail_pane::TrailPane>,
+    trail_panes: HashMap<crate::panes::PaneId, crate::trail_pane::TrailPane>,
     /// The Inspector pane: detail sections over app truth (inert content;
     /// the detail_panel's own contract). Retained like the others.
-    inspector_pane: Option<crate::inspector_pane::InspectorPane>,
+    inspector_panes: HashMap<crate::panes::PaneId, crate::inspector_pane::InspectorPane>,
     /// The Workbench pane (rung 5 slice E): platen's tiling walked into cells
     /// wearing cambium tab strips. Retained like the others.
-    workbench_pane: Option<crate::workbench_pane::WorkbenchPane>,
+    workbench_panes: HashMap<crate::panes::PaneId, crate::workbench_pane::WorkbenchPane>,
     /// The Apparatus pane (the settings row): the focused node's viewer
     /// override on a cambium radio_group. Retained like the others.
-    apparatus_pane: Option<crate::apparatus_pane::ApparatusPane>,
+    apparatus_panes: HashMap<crate::panes::PaneId, crate::apparatus_pane::ApparatusPane>,
     /// The application-settings projection over the host provider. Retained
     /// like the other Cambium panes.
-    settings_pane: Option<crate::settings_pane::SettingsPane>,
+    settings_panes: HashMap<crate::panes::PaneId, crate::settings_pane::SettingsPane>,
     /// Owner controls for the active retained Knot publishing service.
-    publish_pane: Option<crate::publish_pane::PublishPane>,
+    publish_panes: HashMap<crate::panes::PaneId, crate::publish_pane::PublishPane>,
     /// The service owns carrier, vault read handle, tickets, and revocations;
     /// the pane only projects and commands it.
     publish_service: Option<Arc<crate::publish_service::KnotPublishingService>>,
+    /// Recipient controls for a private ticket. This service does not need a
+    /// local Knot authoring host, only the profile root it derives from.
+    shared_knot_panes: HashMap<crate::panes::PaneId, crate::share_reader_pane::SharedKnotPane>,
+    shared_knot_service: Option<Arc<crate::share_reader_service::KnotShareReaderService>>,
     /// The Overmap pane (O1): the switcher as a graph view, retained like the
     /// Gloss minimap it mirrors.
-    overmap_pane: Option<crate::swatch_pane::SwatchPane>,
+    overmap_panes: HashMap<crate::panes::PaneId, crate::swatch_pane::SwatchPane>,
     /// Which pane the pointer is hovering (pane pointer-move routing): lets a
     /// move off a pane deliver its Leave so hover emphasis clears.
     hovered_pane: Option<crate::panes::PaneId>,
@@ -310,6 +310,15 @@ impl Shell {
         });
         let mut knot_clip = None;
         let mut publish_service = None;
+        let shared_knot_service = match crate::share_reader_service::KnotShareReaderService::start(
+            app.identity.clone(),
+        ) {
+            Ok(service) => Some(Arc::new(service)),
+            Err(error) => {
+                tracing::warn!(%error, "Knot share reader is unavailable");
+                None
+            }
+        };
         match crate::knot_authoring::KnotAuthoringEngine::from_env(knot_wake) {
             Ok(Some(mut engine)) => {
                 knot_clip = engine.clip_handle();
@@ -357,16 +366,18 @@ impl Shell {
             pending_fetches: browse::PendingFetches::default(),
             pointer_capture: None,
             content_scroll_moved: None,
-            roster_grid: None,
-            gloss_pane: None,
-            trail_pane: None,
-            inspector_pane: None,
-            workbench_pane: None,
-            apparatus_pane: None,
-            settings_pane: None,
-            publish_pane: None,
+            roster_grids: HashMap::new(),
+            gloss_panes: HashMap::new(),
+            trail_panes: HashMap::new(),
+            inspector_panes: HashMap::new(),
+            workbench_panes: HashMap::new(),
+            apparatus_panes: HashMap::new(),
+            settings_panes: HashMap::new(),
+            publish_panes: HashMap::new(),
             publish_service,
-            overmap_pane: None,
+            shared_knot_panes: HashMap::new(),
+            shared_knot_service,
+            overmap_panes: HashMap::new(),
             hovered_pane: None,
             chrome: crate::chrome_view::ChromeSurfaces::new(),
             wb_tab_drag: None,
@@ -385,13 +396,37 @@ impl Shell {
     /// (a platform call, so it lives here, not in `update`).
     fn act(&mut self, action: Action) {
         let was_open = self.app.omnibar.open;
+        let closing = matches!(&action, Action::CloseActivePane)
+            .then_some(self.app.active_pane)
+            .flatten();
         let effects = self.app.update(action);
+        if let Some(pane) = closing
+            && self.app.space_of(pane).is_none()
+        {
+            self.evict_pane_renderer(pane);
+        }
         if self.app.omnibar.open != was_open
             && let Some(window) = self.window.as_ref()
         {
             window.set_ime_allowed(self.app.omnibar.open);
         }
         self.run_effects(effects);
+    }
+
+    fn evict_pane_renderer(&mut self, pane: crate::panes::PaneId) {
+        self.roster_grids.remove(&pane);
+        self.gloss_panes.remove(&pane);
+        self.trail_panes.remove(&pane);
+        self.inspector_panes.remove(&pane);
+        self.workbench_panes.remove(&pane);
+        self.apparatus_panes.remove(&pane);
+        self.settings_panes.remove(&pane);
+        self.publish_panes.remove(&pane);
+        self.shared_knot_panes.remove(&pane);
+        self.overmap_panes.remove(&pane);
+        if self.hovered_pane == Some(pane) {
+            self.hovered_pane = None;
+        }
     }
 
     /// The current surface plan, from app truth plus the window size. The one
@@ -449,7 +484,9 @@ impl Shell {
                     .iter()
                     .filter_map(|c| {
                         let m = c.active_member()?;
-                        self.content_sessions.contains_key(&m).then(|| (m, c.body()))
+                        self.content_sessions
+                            .contains_key(&m)
+                            .then(|| (m, c.body()))
                     })
                     .collect()
             })
@@ -481,7 +518,13 @@ impl Shell {
             self.app
                 .frisket
                 .iter_leaves()
-                .chain(self.app.lenses.iter().flatten().flat_map(|s| s.iter_leaves()))
+                .chain(
+                    self.app
+                        .lenses
+                        .iter()
+                        .flatten()
+                        .flat_map(|s| s.iter_leaves()),
+                )
                 .any(|(_, c, _)| matches!(c, PaneContent::Tile(m) if *m == *id))
         };
         let content = canvas_rect.and_then(|cr| {
@@ -530,6 +573,7 @@ impl Shell {
     /// intents come back as Actions for the caller to lower.
     fn pane_click_actions(
         &mut self,
+        pane_id: crate::panes::PaneId,
         content: &PaneContent,
         local: (f32, f32),
         dims: (u32, u32),
@@ -539,7 +583,7 @@ impl Shell {
         let mut out = Vec::new();
         match content {
             PaneContent::Trail => {
-                if let Some(pane) = self.trail_pane.as_mut() {
+                if let Some(pane) = self.trail_panes.get_mut(&pane_id) {
                     for action in pane.click(lx, ly, rw, rh) {
                         match action {
                             crate::trail_pane::TrailPaneAction::Navigate(url) => {
@@ -548,12 +592,12 @@ impl Shell {
                             crate::trail_pane::TrailPaneAction::Recover(id) => {
                                 match id.parse::<uuid::Uuid>() {
                                     Ok(id) => out.push(Action::RecoverDeletedNode(id)),
-                                    Err(_) => self.app.note(
-                                        crate::observe::AppEvent::InteractionMissed {
+                                    Err(_) => {
+                                        self.app.note(crate::observe::AppEvent::InteractionMissed {
                                             what: "recover",
                                             target: id.clone(),
-                                        },
-                                    ),
+                                        })
+                                    }
                                 }
                             }
                             crate::trail_pane::TrailPaneAction::RecoverSession(id) => {
@@ -568,7 +612,7 @@ impl Shell {
                 }
             }
             PaneContent::Roster => {
-                if let Some(grid) = self.roster_grid.as_mut() {
+                if let Some(grid) = self.roster_grids.get_mut(&pane_id) {
                     let actions = grid.click(lx, ly, rw, rh);
                     self.app.roster_tab = grid.selected_tab().0;
                     for action in actions {
@@ -581,7 +625,7 @@ impl Shell {
                 }
             }
             PaneContent::Gloss(_) => {
-                if let Some(pane) = self.gloss_pane.as_mut() {
+                if let Some(pane) = self.gloss_panes.get_mut(&pane_id) {
                     for intent in pane.click(lx, ly, rw, rh) {
                         match intent {
                             crate::swatch_pane::SwatchIntent::Activate(
@@ -602,7 +646,7 @@ impl Shell {
                 }
             }
             PaneContent::Apparatus => {
-                if let Some(pane) = self.apparatus_pane.as_mut() {
+                if let Some(pane) = self.apparatus_panes.get_mut(&pane_id) {
                     for intent in pane.click(lx, ly, rw, rh) {
                         match intent {
                             crate::apparatus_pane::ApparatusIntent::SetViewer(viewer) => {
@@ -614,27 +658,26 @@ impl Shell {
                     }
                 }
             }
-            PaneContent::Custom(name) if name == "settings" => {
-                if let Some(pane) = self.settings_pane.as_mut() {
+            PaneContent::Registered(kind) if kind.as_str() == crate::panes::kind::SETTINGS => {
+                if let Some(pane) = self.settings_panes.get_mut(&pane_id) {
                     pane.click(lx, ly, rw, rh);
                 }
             }
-            PaneContent::Custom(name) if name == "publishing" => {
-                if let Some(pane) = self.publish_pane.as_mut() {
+            PaneContent::Registered(kind) if kind.as_str() == crate::panes::kind::PUBLISHING => {
+                if let Some(pane) = self.publish_panes.get_mut(&pane_id) {
+                    pane.click(lx, ly, rw, rh);
+                }
+            }
+            PaneContent::Registered(kind) if kind.as_str() == crate::panes::kind::SHARED_KNOT => {
+                if let Some(pane) = self.shared_knot_panes.get_mut(&pane_id) {
                     pane.click(lx, ly, rw, rh);
                 }
             }
             PaneContent::Inspector => {
-                if let Some(pane) = self.inspector_pane.as_mut()
-                    && pane
-                        .click(lx, ly, rw, rh)
-                        .into_iter()
-                        .any(|intent| {
-                            matches!(
-                                intent,
-                                crate::inspector_pane::InspectorIntent::ClipToKnot
-                            )
-                        })
+                if let Some(pane) = self.inspector_panes.get_mut(&pane_id)
+                    && pane.click(lx, ly, rw, rh).into_iter().any(|intent| {
+                        matches!(intent, crate::inspector_pane::InspectorIntent::ClipToKnot)
+                    })
                 {
                     self.clip_focused_document_to_knot();
                 }
@@ -662,7 +705,6 @@ impl Shell {
             tracing::warn!(%error, "Knot clip could not be queued");
         }
     }
-
 
     /// Run a scenario `script` step through the Piccolo control lane and lower
     /// its Actions through the same `act` spine a keypress takes — the
@@ -734,9 +776,7 @@ impl Shell {
             return;
         }
     }
-
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -779,5 +819,3 @@ mod tests {
         let _ = std::fs::remove_dir_all(&dir);
     }
 }
-
-

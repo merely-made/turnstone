@@ -18,7 +18,7 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::place::{PlaceBindingV1, PlaceBindingError};
+use crate::place::{PlaceBindingError, PlaceBindingV1};
 
 /// The only invitation version this Turnstone build understands.
 pub const PLACE_INVITE_VERSION: u16 = 1;
@@ -337,18 +337,12 @@ impl std::fmt::Display for InviteError {
                 field,
                 length,
                 maximum,
-            } => write!(
-                formatter,
-                "{field} is {length} bytes; maximum is {maximum}"
-            ),
+            } => write!(formatter, "{field} is {length} bytes; maximum is {maximum}"),
             Self::ArtifactTooLarge {
                 field,
                 length,
                 maximum,
-            } => write!(
-                formatter,
-                "{field} is {length} bytes; maximum is {maximum}"
-            ),
+            } => write!(formatter, "{field} is {length} bytes; maximum is {maximum}"),
             Self::ArtifactDigestMismatch { field } => {
                 write!(formatter, "{field} does not match its declared digest")
             }

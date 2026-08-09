@@ -22,6 +22,8 @@
 //!   types at the boundary. The universal vocabulary must not depend on one
 //!   port implementation.
 
+use crate::panes::PaneKindId;
+
 /// Which window's frisket space a tree op targets: the primary tree or a live
 /// lens's. Pane ids are unique across every space, so a pane-anchored op
 /// resolves its own space ([`crate::app::App::space_of`]); only the
@@ -147,7 +149,7 @@ pub enum Action {
     /// Summon a pane beside the active one, splitting the frisket tree (rung 5
     /// slice C). Meerkat's fixed Right-split off the graph pane, generalized to
     /// the active pane.
-    SummonPane(PaneKind),
+    SummonPane(PaneKindId),
     /// Close the active pane, collapsing its split back into its sibling.
     CloseActivePane,
     /// Set the divider ratio of the active pane's split (drag the seam). Clamped
@@ -289,48 +291,6 @@ pub enum Action {
     },
 }
 
-/// A summonable pane kind. A small Copy vocabulary the app maps to
-/// `crate::panes::PaneContent`, so this module stays free of the pane-model crate
-/// (like the port-agnostic boundary above). Slice C summons placeholders; slice
-/// D gives each real content.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum PaneKind {
-    Roster,
-    Trail,
-    Gloss,
-    Inspector,
-    Steward,
-    Comms,
-    Apparatus,
-    /// The session set as a graph: container nodes + fork lineage (overmap O1).
-    Overmap,
-    /// The node-tiling workbench: platen's model inside one frisket leaf.
-    Workbench,
-    /// Application-owned settings projected from the host settings provider.
-    Settings,
-    /// Owner controls for a retained Knot publishing host.
-    Publishing,
-}
-
-impl PaneKind {
-    /// The pane's display label (placeholder text and accessible name).
-    pub fn label(self) -> &'static str {
-        match self {
-            PaneKind::Roster => "Roster",
-            PaneKind::Trail => "Trail",
-            PaneKind::Gloss => "Gloss",
-            PaneKind::Inspector => "Inspector",
-            PaneKind::Steward => "Steward",
-            PaneKind::Comms => "Comms",
-            PaneKind::Apparatus => "Apparatus",
-            PaneKind::Overmap => "Overmap",
-            PaneKind::Workbench => "Workbench",
-            PaneKind::Settings => "Settings",
-            PaneKind::Publishing => "Publishing",
-        }
-    }
-}
-
 /// A workbench split axis, in the app's own vocabulary (this module stays
 /// free of the tile-contract crate; `app` maps it onto pelt's `SplitAxis` at
 /// the platen call). `Row` lays the new cell left/right of the target,
@@ -355,7 +315,7 @@ pub enum CaretMove {
 /// its display label. The registry is the single catalog those lanes filter;
 /// an Action absent here is reachable only by its dedicated input path.
 pub fn palette_actions() -> Vec<(&'static str, Action)> {
-    vec![
+    let mut actions = vec![
         ("Back", Action::NavBack),
         ("Forward", Action::NavForward),
         ("Reload", Action::Reload),
@@ -378,24 +338,13 @@ pub fn palette_actions() -> Vec<(&'static str, Action)> {
         ("Orbit right", Action::OrbitBy(0.15)),
         ("Toggle live content", Action::ToggleNodeContent),
         ("Save session", Action::SaveSession),
-        ("Open Roster pane", Action::SummonPane(PaneKind::Roster)),
-        ("Open Trail pane", Action::SummonPane(PaneKind::Trail)),
-        ("Open Gloss pane", Action::SummonPane(PaneKind::Gloss)),
-        (
-            "Open Inspector pane",
-            Action::SummonPane(PaneKind::Inspector),
-        ),
-        (
-            "Open Workbench pane",
-            Action::SummonPane(PaneKind::Workbench),
-        ),
-        (
-            "Open Apparatus pane",
-            Action::SummonPane(PaneKind::Apparatus),
-        ),
-        ("Open Overmap pane", Action::SummonPane(PaneKind::Overmap)),
-        ("Open Settings pane", Action::SummonPane(PaneKind::Settings)),
-        ("Open Publishing pane", Action::SummonPane(PaneKind::Publishing)),
+    ];
+    actions.extend(
+        crate::panes::pane_palette_entries()
+            .into_iter()
+            .map(|(label, kind)| (label, Action::SummonPane(kind))),
+    );
+    actions.extend([
         ("New window", Action::NewWindow),
         ("Tear out pane", Action::TearOutActivePane),
         ("Fork from node", Action::ForkFocusedNode),
@@ -408,7 +357,8 @@ pub fn palette_actions() -> Vec<(&'static str, Action)> {
         ("New session", Action::NewSession),
         ("Rename session", Action::BeginRenameSession),
         ("Close session", Action::CloseSession),
-    ]
+    ]);
+    actions
 }
 
 /// A side effect `update` asks the shell to run through a port. `update`

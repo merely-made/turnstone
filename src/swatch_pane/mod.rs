@@ -83,7 +83,6 @@ pub struct SwatchModel {
     pub selected: Option<Uuid>,
 }
 
-
 struct SwatchState {
     swatch: GraphCanvasSwatch<Uuid, NodeState>,
     /// Each node's activation meaning, by id (data off the gather).
@@ -136,8 +135,10 @@ fn swatch_view(state: &SwatchState) -> SwatchView {
             ));
             if rows.is_empty() {
                 section_kids.push(Box::new(
-                    cambium::el::<_, SwatchState, ()>("div", "nothing here".to_string())
-                        .attr("style", "color: #484f58; padding: 2px 12px; font-size: 12px;"),
+                    cambium::el::<_, SwatchState, ()>("div", "nothing here".to_string()).attr(
+                        "style",
+                        "color: #484f58; padding: 2px 12px; font-size: 12px;",
+                    ),
                 ));
             } else {
                 for row in rows {
@@ -156,16 +157,14 @@ fn swatch_view(state: &SwatchState) -> SwatchView {
                         move |state: &mut SwatchState, _click: cambium::PointerClick| {
                             match &activate {
                                 Some(crate::sections::SectionActivate::Open(url)) => {
-                                    state
-                                        .pending
-                                        .push(SwatchIntent::Activate(SwatchActivate::Open(
-                                            url.clone(),
-                                        )));
+                                    state.pending.push(SwatchIntent::Activate(
+                                        SwatchActivate::Open(url.clone()),
+                                    ));
                                 }
                                 Some(crate::sections::SectionActivate::Recover(id)) => {
-                                    state.pending.push(SwatchIntent::Activate(
-                                        SwatchActivate::Recover(*id),
-                                    ));
+                                    state
+                                        .pending
+                                        .push(SwatchIntent::Activate(SwatchActivate::Recover(*id)));
                                 }
                                 None => {}
                             }
@@ -239,8 +238,11 @@ impl SwatchPane {
             sections: Vec::new(),
             swatch_h: 0.0,
         };
-        let runner =
-            SwatchRunner::new(dom.clone(), swatch_view as fn(&SwatchState) -> SwatchView, state);
+        let runner = SwatchRunner::new(
+            dom.clone(),
+            swatch_view as fn(&SwatchState) -> SwatchView,
+            state,
+        );
         Self {
             preset,
             sections: Vec::new(),
@@ -454,7 +456,10 @@ mod tests {
             !pane.runner.state().swatch.graph.edges.is_empty(),
             "edge endpoints must match back to nodes bit-exactly"
         );
-        assert!(!pane.runner.state().swatch.show_labels, "minimap stays bare");
+        assert!(
+            !pane.runner.state().swatch.show_labels,
+            "minimap stays bare"
+        );
         let _scene = pane.scene(480, 400);
         assert!(
             pane.rendered
@@ -546,8 +551,17 @@ mod tests {
     #[test]
     fn minimap_nodes_color_by_content_state() {
         let (mut pane, mut app) = gloss_pane_on_sample_graph();
-        let id = app.canvas.graph().nodes().next().map(|(_, n)| n.id).unwrap();
-        app.apply_update(Update::ContentSpawned { node: id, facts: None });
+        let id = app
+            .canvas
+            .graph()
+            .nodes()
+            .next()
+            .map(|(_, n)| n.id)
+            .unwrap();
+        app.apply_update(Update::ContentSpawned {
+            node: id,
+            facts: None,
+        });
         pane.sync(&app, 480.0, 400.0);
         let node = pane
             .runner

@@ -35,8 +35,10 @@
 
 use serde::{Deserialize, Serialize};
 
+mod blueprint;
 mod layout;
 mod projection;
+mod registry;
 
 /// The frame-sidecar persistence (`frame.json` beside `graph.json`), moved
 /// here from `session_runtime::frisket_store` at meerkat's deletion. Native
@@ -50,9 +52,13 @@ pub mod store;
 pub mod tearout;
 
 #[cfg(test)]
+mod blueprint_tests;
+#[cfg(test)]
 mod tests;
 
+pub use blueprint::*;
 pub use projection::{project_frisket, project_frisket_with};
+pub use registry::*;
 
 /// The workspace identity vocabulary this crate binds panes to. Re-exported for
 /// convenience: a pane leaf carries a [`GraphId`], and hosts that hold a
@@ -154,7 +160,10 @@ pub enum PaneContent {
     /// each frame; that is consistent, because a section gathers from app state
     /// rather than from this leaf's `graph_id`.
     Overmap(PaneComposition),
-    System,
+    /// A registry-owned pane without a legacy payload shape. Its stable,
+    /// namespaced kind resolves config, source rules, capabilities, palette
+    /// availability, and renderer through [`PaneDefinition`].
+    Registered(PaneKindId),
     /// **Pinned tile** — a single specific node's tile rendered without a
     /// workbench strip. Per the pane-UX brief §3 frametree side-by-side
     /// rendering. Carries the node's stable id (the graph member uuid —
@@ -163,10 +172,30 @@ pub enum PaneContent {
     /// host renders the node's live document session when one is up, else
     /// an honest placeholder.
     Tile(uuid::Uuid),
-    Custom(String),
 }
 
 impl PaneContent {
+    /// Stable registry id for this legacy leaf payload. A2 replaces this
+    /// reverse adapter with `PaneSpec.kind` stored directly on the leaf.
+    pub fn kind_id(&self) -> PaneKindId {
+        let id = match self {
+            PaneContent::Workbench => kind::WORKBENCH,
+            PaneContent::Orrery => kind::GRAPH,
+            PaneContent::Gloss(_) => kind::GLOSS,
+            PaneContent::Roster => kind::ROSTER,
+            PaneContent::Inspector => kind::INSPECTOR,
+            PaneContent::Trail => kind::TRAIL,
+            PaneContent::Steward => kind::STEWARD,
+            PaneContent::Comms => kind::COMMS,
+            PaneContent::Alembic => kind::ALEMBIC,
+            PaneContent::Apparatus => kind::APPARATUS,
+            PaneContent::Overmap(_) => kind::OVERMAP,
+            PaneContent::Registered(kind) => return kind.clone(),
+            PaneContent::Tile(_) => kind::TILE,
+        };
+        PaneKindId::new(id)
+    }
+
     /// Compact tag suitable for tracing fields and accessible names.
     pub fn tag(&self) -> &str {
         match self {
@@ -181,9 +210,8 @@ impl PaneContent {
             PaneContent::Alembic => "alembic",
             PaneContent::Apparatus => "apparatus",
             PaneContent::Overmap(_) => "overmap",
-            PaneContent::System => "system",
+            PaneContent::Registered(kind) => kind.as_str(),
             PaneContent::Tile(_) => "tile",
-            PaneContent::Custom(s) => s.as_str(),
         }
     }
 
@@ -230,8 +258,7 @@ impl PaneContent {
             | PaneContent::Alembic
             | PaneContent::Apparatus
             | PaneContent::Overmap(_)
-            | PaneContent::System
-            | PaneContent::Custom(_) => false,
+            | PaneContent::Registered(_) => false,
         }
     }
 }

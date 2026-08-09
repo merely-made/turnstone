@@ -128,7 +128,10 @@ pub enum AppEvent {
     /// A dropped image textured this node's sprite face.
     NodeSpriteSet(Uuid),
     /// A node's viewer override changed (the settings row).
-    ViewerChanged { node: Uuid, viewer: String },
+    ViewerChanged {
+        node: Uuid,
+        viewer: String,
+    },
     /// A lens window was requested (rung 7).
     WindowOpened,
     /// A lens window closed.
@@ -169,7 +172,10 @@ pub enum AppEvent {
     BinFailed(String),
     /// A pane's composed list section was added or removed (the
     /// gloss-composite's add/remove), by provider id.
-    PaneSectionToggled { section: String, added: bool },
+    PaneSectionToggled {
+        section: String,
+        added: bool,
+    },
     /// A composed section moved in a pane's stack, by provider id.
     PaneSectionMoved(String),
     /// The recycle bin was emptied on command (athanor's oven), by how many
@@ -182,7 +188,10 @@ pub enum AppEvent {
     /// A commit resolved to a suggestion (its display string).
     OmnibarCommitted(String),
     LayoutReseeded,
-    ContentState { node: Uuid, state: String },
+    ContentState {
+        node: Uuid,
+        state: String,
+    },
     /// A pane of the named kind was summoned into the tree (rung 5 slice C).
     PaneSummoned(&'static str),
     /// The active pane was closed.
@@ -200,11 +209,17 @@ pub enum AppEvent {
     /// a driving script or model must be able to see: the aim missed, and a
     /// receipt that only checks the end state would call the miss a pass. `what`
     /// is the interaction kind, `target` the name that did not resolve.
-    InteractionMissed { what: &'static str, target: String },
+    InteractionMissed {
+        what: &'static str,
+        target: String,
+    },
     /// An affordance fired that is not wired yet — today only Trail's Recover,
     /// which awaits the deletion log (rung 6). A known-not-yet state, emitted so
     /// a scenario asserts the gap explicitly rather than a silent no-op.
-    AffordanceUnavailable { what: &'static str, target: String },
+    AffordanceUnavailable {
+        what: &'static str,
+        target: String,
+    },
 }
 
 impl AppEvent {
@@ -355,8 +370,10 @@ pub fn snapshot(app: &App) -> Snapshot {
     if tile_content_here || focused_inset {
         surfaces.push("content".to_string());
     }
-    if crate::ui::chrome_has_content(&app.omnibar, crate::app::focused_caption(&app.canvas).as_deref())
-    {
+    if crate::ui::chrome_has_content(
+        &app.omnibar,
+        crate::app::focused_caption(&app.canvas).as_deref(),
+    ) {
         surfaces.push("chrome".to_string());
     }
     Snapshot {
@@ -366,7 +383,12 @@ pub fn snapshot(app: &App) -> Snapshot {
             text: app.omnibar.text.clone(),
             cursor: app.omnibar.cursor,
             selected: app.omnibar.selected,
-            suggestions: app.omnibar.suggestions.iter().map(suggestion_line).collect(),
+            suggestions: app
+                .omnibar
+                .suggestions
+                .iter()
+                .map(suggestion_line)
+                .collect(),
         },
         content,
         node_count: app.canvas.graph().nodes().count(),
@@ -497,7 +519,9 @@ pub fn workbench_cells(app: &App) -> Vec<String> {
 /// One suggestion row as its display string (the assert/a11y rendering).
 pub fn suggestion_line(s: &Suggestion) -> String {
     match s {
-        Suggestion::Node { label, host, .. } if !host.is_empty() => format!("{label} \u{00b7} {host}"),
+        Suggestion::Node { label, host, .. } if !host.is_empty() => {
+            format!("{label} \u{00b7} {host}")
+        }
         Suggestion::Node { label, .. } => label.clone(),
         Suggestion::Go { url } => format!("go {url}"),
         Suggestion::Act { label, .. } => format!("\u{203a} {label}"),
@@ -523,7 +547,10 @@ mod tests {
         assert!(snap.omnibar.open);
         assert_eq!(snap.omnibar.text, ">r");
         assert!(
-            snap.omnibar.suggestions.iter().any(|s| s.contains("Reseed layout")),
+            snap.omnibar
+                .suggestions
+                .iter()
+                .any(|s| s.contains("Reseed layout")),
             "suggestion rows render as display strings: {:?}",
             snap.omnibar.suggestions
         );
@@ -543,7 +570,9 @@ mod tests {
         assert!(described.iter().any(|e| e == "omnibar-opened"));
         assert!(described.iter().any(|e| e == "omnibar-closed"));
         assert!(
-            described.iter().any(|e| e.starts_with("content ") && e.ends_with(" requested")),
+            described
+                .iter()
+                .any(|e| e.starts_with("content ") && e.ends_with(" requested")),
             "{described:?}"
         );
         assert!(app.take_events().is_empty(), "take drains");

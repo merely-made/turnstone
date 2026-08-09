@@ -70,11 +70,7 @@ pub fn cambium_split(axis: SplitAxis, ratio: f32) -> cambium::Split {
 /// Walk a layout into placed panes within `area`. When `maximized` names a pane
 /// present in the tree, that pane takes the whole area and the rest are dropped
 /// (frisket has no maximize op; it is a host view state).
-pub fn place_panes(
-    layout: &FrisketLayout,
-    area: Rect,
-    maximized: Option<PaneId>,
-) -> PaneTiling {
+pub fn place_panes(layout: &FrisketLayout, area: Rect, maximized: Option<PaneId>) -> PaneTiling {
     let mut out = PaneTiling::default();
     walk(&layout.root, area, &mut Vec::new(), &mut out);
     if let Some(mid) = maximized
@@ -201,8 +197,16 @@ mod tests {
         assert_eq!(tiling.panes.len(), 2);
         assert_eq!(tiling.dividers.len(), 1, "one split, one seam");
         // Default ratio 0.5 over the width minus the 6px seam: 497 each.
-        let orrery = tiling.panes.iter().find(|p| p.content == PaneContent::Orrery).unwrap();
-        let roster = tiling.panes.iter().find(|p| p.content == PaneContent::Roster).unwrap();
+        let orrery = tiling
+            .panes
+            .iter()
+            .find(|p| p.content == PaneContent::Orrery)
+            .unwrap();
+        let roster = tiling
+            .panes
+            .iter()
+            .find(|p| p.content == PaneContent::Roster)
+            .unwrap();
         let seam = &tiling.dividers[0];
         assert_eq!(orrery.rect, Rect::new(0.0, 0.0, 497.0, 800.0));
         assert_eq!(seam.rect, Rect::new(497.0, 0.0, 6.0, 800.0));
@@ -211,7 +215,10 @@ mod tests {
         assert_eq!(orrery.rect.x + orrery.rect.w, seam.rect.x);
         assert_eq!(seam.rect.x + seam.rect.w, roster.rect.x);
         assert_eq!(roster.rect.x + roster.rect.w, 1000.0);
-        assert!(seam.path.is_empty(), "the root split's seam has the root path");
+        assert!(
+            seam.path.is_empty(),
+            "the root split's seam has the root path"
+        );
     }
 
     #[test]
@@ -224,7 +231,11 @@ mod tests {
         layout.summon_leaf(&[], InsertSide::Right, leaf(2, PaneContent::Roster));
         assert!(layout.set_split_ratio(&[], 0.7));
         let tiling = place_panes(&layout, area(), None);
-        let orrery = tiling.panes.iter().find(|p| p.content == PaneContent::Orrery).unwrap();
+        let orrery = tiling
+            .panes
+            .iter()
+            .find(|p| p.content == PaneContent::Orrery)
+            .unwrap();
         // 0.7 of the width minus the seam: round(994 * 0.7) = 696.
         assert_eq!(orrery.rect.w, 696.0);
         assert_eq!(tiling.dividers[0].ratio, 0.7);
@@ -240,7 +251,10 @@ mod tests {
         layout.summon_leaf(&[], InsertSide::Right, leaf(2, PaneContent::Roster));
         let tiling = place_panes(&layout, area(), Some(PaneId(2)));
         assert_eq!(tiling.panes.len(), 1);
-        assert!(tiling.dividers.is_empty(), "a maximized pane hides the seams");
+        assert!(
+            tiling.dividers.is_empty(),
+            "a maximized pane hides the seams"
+        );
         assert_eq!(tiling.panes[0].id, PaneId(2));
         assert_eq!(tiling.panes[0].rect, area());
     }
@@ -254,8 +268,16 @@ mod tests {
         };
         layout.summon_leaf(&[], InsertSide::Below, leaf(2, PaneContent::Trail));
         let tiling = place_panes(&layout, area(), None);
-        let top = tiling.panes.iter().find(|p| p.content == PaneContent::Orrery).unwrap();
-        let bottom = tiling.panes.iter().find(|p| p.content == PaneContent::Trail).unwrap();
+        let top = tiling
+            .panes
+            .iter()
+            .find(|p| p.content == PaneContent::Orrery)
+            .unwrap();
+        let bottom = tiling
+            .panes
+            .iter()
+            .find(|p| p.content == PaneContent::Trail)
+            .unwrap();
         // 0.5 of the height minus the seam: 397 each, seam at 397..403.
         assert_eq!(top.rect, Rect::new(0.0, 0.0, 1000.0, 397.0));
         assert_eq!(bottom.rect, Rect::new(0.0, 403.0, 1000.0, 397.0));

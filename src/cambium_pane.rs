@@ -23,8 +23,8 @@ use cambium::{
     TabStrip, data_grid, el, lens, on_click, tab_strip,
 };
 use genet_layout::{IncrementalLayout, ScrollOffsets};
-use layout_dom_api::LayoutDom;
 use genet_scripted_dom::{NodeId, ScriptedDom};
+use layout_dom_api::LayoutDom;
 
 use crate::app::App;
 use crate::roster_view::{RosterGridRow, roster_grid_rows};
@@ -162,7 +162,9 @@ fn roster_grid(state: &RosterState) -> RosterView {
 /// click at a known row); kept because it pins the grid's row math to the layout.
 pub fn grid_row_center_y(idx: usize) -> f32 {
     let spec = roster_spec();
-    crate::ui::TABLIST_HEIGHT + spec.header_height + idx as f32 * spec.row_height
+    crate::ui::TABLIST_HEIGHT
+        + spec.header_height
+        + idx as f32 * spec.row_height
         + spec.row_height / 2.0
 }
 
@@ -250,7 +252,8 @@ impl RosterGrid {
     pub fn click(&mut self, x: f32, y: f32, w: u32, h: u32) -> Vec<RosterAction> {
         let hit = {
             let dom = self.dom.borrow();
-            let layout = IncrementalLayout::new(&*dom, &[crate::ui::CAMBIUM_SHEET], w as f32, h as f32);
+            let layout =
+                IncrementalLayout::new(&*dom, &[crate::ui::CAMBIUM_SHEET], w as f32, h as f32);
             let scroll = ScrollOffsets::<NodeId>::default();
             layout.hit_test(&*dom, x, y, &scroll)
         };
@@ -350,7 +353,8 @@ mod tests {
         let below = layout.hit_test(&*d, 20.0, crate::ui::TABLIST_HEIGHT + 2.0, &scroll);
         assert!(inside.is_some(), "the strip must fill its declared height");
         assert_ne!(
-            inside, below,
+            inside,
+            below,
             "the strip must END at its declared height: {}px hits the same node as \
              the row below it, so the sheet and TABLIST_HEIGHT have drifted",
             crate::ui::TABLIST_HEIGHT
@@ -389,6 +393,23 @@ mod tests {
             !d.all_with_class(d.document(), "pane-empty").is_empty(),
             "a gatherer-less tab must say so rather than draw an empty grid"
         );
+    }
+
+    #[test]
+    fn two_roster_runners_keep_independent_selection() {
+        let mut first = grid_with_rows();
+        let second = grid_with_rows();
+        let (x, y) = first
+            .resolve(
+                &genet_probe::Selector::class("tab").containing("Links"),
+                [0.0, 0.0, 512.0, 600.0],
+            )
+            .expect("the first runner draws a Links tab");
+
+        first.click(x, y, 512, 600);
+
+        assert_eq!(first.selected_tab(), (1, "Links"));
+        assert_eq!(second.selected_tab(), (0, "Nodes"));
     }
 
     /// The shared resolver must agree with the strip the sheet lays out: every

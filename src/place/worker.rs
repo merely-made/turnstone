@@ -334,9 +334,7 @@ pub fn author_invitation(
         binding: binding.clone(),
         founder: snapshot.governance.founder,
         inviter: identity.master_public_key().to_bytes(),
-        inviter_prekey: inline_artifact(
-            &sealed_prekey_bytes(directory, identity, binding.moot.0)?,
-        ),
+        inviter_prekey: inline_artifact(&sealed_prekey_bytes(directory, identity, binding.moot.0)?),
         governance: inline_artifact(&evidence),
         key_welcome: inline_artifact(
             &dispatch
@@ -479,8 +477,7 @@ fn admit_inner(
     // 1. The Gemot evidence addresses this Moot. Imported into the place's own
     //    store so the fold is Gemot's, not a claim the envelope makes.
     let stores = place_store_dir(directory);
-    std::fs::create_dir_all(&stores)
-        .map_err(|error| format!("create place store: {error}"))?;
+    std::fs::create_dir_all(&stores).map_err(|error| format!("create place store: {error}"))?;
     let moot = pollster::block_on(MootFile::open(
         stores.join("gemot"),
         MootId(binding.moot.0),
@@ -577,16 +574,16 @@ fn admit_inner(
     match group.current_epoch() {
         None => return Err("group welcome produced no current epoch".to_string()),
         Some(epoch) if epoch != invite.expected_epoch => {
-            return Err("group welcome installed an epoch the invitation does not name".to_string());
+            return Err(
+                "group welcome installed an epoch the invitation does not name".to_string(),
+            );
         }
         Some(_) => {}
     }
     // `auth_heads()` returns sorted heads, and the envelope's are bounded and
     // compared as given: a reordered or padded list is a different claim.
     if receipt.snapshot.membership.auth_heads != invite.membership_heads {
-        return Err(
-            "invitation pins membership heads that Gemot did not converge to".to_string(),
-        );
+        return Err("invitation pins membership heads that Gemot did not converge to".to_string());
     }
 
     // Every domain has answered. Only now does anything durable exist, and the
@@ -732,9 +729,7 @@ fn author_into_place(
         ),
         commons::AuthorityState::Effective
     ) {
-        return Err(
-            "this profile holds no effective capability to author here".to_string()
-        );
+        return Err("this profile holds no effective capability to author here".to_string());
     }
 
     match command {
@@ -897,44 +892,38 @@ pub fn spawn_place_worker(
                         // admission just established actually reopens through
                         // the same path every later boot will use.
                         live = None;
-                        let joined = admit_invitation(
-                            &directory,
-                            &invite,
-                            identity.as_ref(),
-                            &settings,
-                        )
-                        .and_then(|admitted| {
-                            open_cached_place(
-                                &directory,
-                                &admitted.binding,
-                                identity.as_ref(),
-                                &settings,
-                            )
-                            .map(|(opened, snapshot)| (admitted.binding, opened, snapshot))
-                        })
-                        .and_then(|(binding, mut opened, snapshot)| {
-                            // Dial whatever the envelope offered. A ticketless
-                            // invitation still admits: the place is real and
-                            // offline, which Degraded-vs-Offline surfaces.
-                            let tickets: Vec<String> = invite
-                                .dialable()
-                                .map(|entry| entry.hint.clone())
-                                .collect();
-                            if !tickets.is_empty() {
-                                opened.lanes = Some(crate::place::lanes::join_live(
-                                    &opened,
-                                    &binding,
-                                    identity.as_ref(),
-                                    &tickets,
-                                    // The watcher reports arrivals under THIS
-                                    // open's generation, so a nudge from a
-                                    // departed place is dropped by the same
-                                    // guard every other answer passes.
-                                    Some((out.clone(), session, generation)),
-                                )?);
-                            }
-                            Ok((binding, opened, snapshot))
-                        });
+                        let joined =
+                            admit_invitation(&directory, &invite, identity.as_ref(), &settings)
+                                .and_then(|admitted| {
+                                    open_cached_place(
+                                        &directory,
+                                        &admitted.binding,
+                                        identity.as_ref(),
+                                        &settings,
+                                    )
+                                    .map(|(opened, snapshot)| (admitted.binding, opened, snapshot))
+                                })
+                                .and_then(|(binding, mut opened, snapshot)| {
+                                    // Dial whatever the envelope offered. A ticketless
+                                    // invitation still admits: the place is real and
+                                    // offline, which Degraded-vs-Offline surfaces.
+                                    let tickets: Vec<String> =
+                                        invite.dialable().map(|entry| entry.hint.clone()).collect();
+                                    if !tickets.is_empty() {
+                                        opened.lanes = Some(crate::place::lanes::join_live(
+                                            &opened,
+                                            &binding,
+                                            identity.as_ref(),
+                                            &tickets,
+                                            // The watcher reports arrivals under THIS
+                                            // open's generation, so a nudge from a
+                                            // departed place is dropped by the same
+                                            // guard every other answer passes.
+                                            Some((out.clone(), session, generation)),
+                                        )?);
+                                    }
+                                    Ok((binding, opened, snapshot))
+                                });
                         match joined {
                             Ok((binding, opened, snapshot)) => {
                                 live = Some(opened);
@@ -958,9 +947,7 @@ pub fn spawn_place_worker(
                         // Only meaningful with an open place; a resync of
                         // nothing answers with the error rather than silence.
                         let result = match &live {
-                            Some(open) => {
-                                place_snapshot(open, open.binding.moot.0, &settings)
-                            }
+                            Some(open) => place_snapshot(open, open.binding.moot.0, &settings),
                             None => Err("no open place to resync".to_string()),
                         };
                         out.emit(Update::PlaceOpened {
@@ -985,9 +972,7 @@ pub fn spawn_place_worker(
                                     &command,
                                     &settings,
                                 )
-                                .and_then(|()| {
-                                    place_snapshot(open, binding.moot.0, &settings)
-                                })
+                                .and_then(|()| place_snapshot(open, binding.moot.0, &settings))
                             }
                             None => Err("no open place to author into".to_string()),
                         };
@@ -1016,8 +1001,7 @@ pub(crate) mod tests {
     use commons::chat::{Channel, ChatEvent, Message};
     use gemot::moot::constitution::{CapabilityGrant, ConstitutionRules};
     use gemot::moot::{
-        MOOT_ACT_ACTION, MOOT_DELEGATION_DOMAIN, MootAccessLevel, MootMember,
-        MootMembershipAction,
+        MOOT_ACT_ACTION, MOOT_DELEGATION_DOMAIN, MootAccessLevel, MootMember, MootMembershipAction,
     };
     use stickleback::DropExportProfile;
 
@@ -1082,7 +1066,10 @@ pub(crate) mod tests {
     /// Gemot authors delegation facts under the scope-derived key that signed
     /// the certificate, not the master key: the master secret stays behind the
     /// provider.
-    pub(crate) fn founder_signing_key(founder: &InMemoryProvider, moot: [u8; 32]) -> identity::Ed25519Keypair {
+    pub(crate) fn founder_signing_key(
+        founder: &InMemoryProvider,
+        moot: [u8; 32],
+    ) -> identity::Ed25519Keypair {
         founder
             .derive_keypair(&delegation_signing_salt(&place_scope(moot)))
             .unwrap()
@@ -1189,7 +1176,11 @@ pub(crate) mod tests {
         pollster::block_on(moot.delegation_store().author_issue(
             &founder_signing_key(&founder, binding.moot.0),
             &rules,
-            place_delegation(&founder, binding.moot.0, identity.master_public_key().to_bytes()),
+            place_delegation(
+                &founder,
+                binding.moot.0,
+                identity.master_public_key().to_bytes(),
+            ),
         ))
         .unwrap();
         drop(moot);
@@ -1435,16 +1426,14 @@ pub(crate) mod tests {
             unreachable!("fixture is inline")
         };
         bytes.push(0);
-        let error =
-            admit_invitation(&tampered_dir, &tampered, &joiner, &settings()).unwrap_err();
+        let error = admit_invitation(&tampered_dir, &tampered, &joiner, &settings()).unwrap_err();
         assert!(error.contains("declared digest"), "{error}");
         assert_eq!(residue(&tampered_dir), (false, false, false));
 
         // A stranger holding the same envelope is refused by Gemot membership,
         // not by anything the envelope says about itself.
         let stranger_dir = root.join("stranger");
-        let error =
-            admit_invitation(&stranger_dir, &invite, &stranger, &settings()).unwrap_err();
+        let error = admit_invitation(&stranger_dir, &invite, &stranger, &settings()).unwrap_err();
         assert!(error.contains("membership does not contain"), "{error}");
         assert_eq!(residue(&stranger_dir), (false, false, false));
 
@@ -1547,7 +1536,10 @@ pub(crate) mod tests {
             &settings(),
         )
         .unwrap_err();
-        assert!(error.contains("does not contain the invited root"), "{error}");
+        assert!(
+            error.contains("does not contain the invited root"),
+            "{error}"
+        );
 
         let invite = author_invitation(
             &host,
@@ -1641,7 +1633,11 @@ pub(crate) mod tests {
             (0, 0, 0, 0)
         );
 
-        revoke_place_delegation(&directory, &binding, identity.master_public_key().to_bytes());
+        revoke_place_delegation(
+            &directory,
+            &binding,
+            identity.master_public_key().to_bytes(),
+        );
 
         let (_, withdrawn) =
             open_cached_place(&directory, &binding, &identity, &settings()).unwrap();

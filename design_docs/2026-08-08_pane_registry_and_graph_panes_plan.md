@@ -2,7 +2,8 @@
 
 **Date**: 2026-08-08
 
-**Status**: Direction revised; implementation not started.
+**Status**: A0 complete; A1 implemented, with crate-level verification blocked
+by the concurrent Shared Knot dependency seam; A2 not started.
 
 **Scope**: Make pane instances independent, restore real multi-graph composition,
 generalize the window layout, and make the shell configurable without collapsing
@@ -529,6 +530,12 @@ Workbench, settings, and transcript stores are not discarded with it.
 
 ### A0. Pure model and inventory
 
+**Completed 2026-08-09.** The live pane audit is recorded in
+[Pane Inventory](2026-08-09_pane_inventory.md). The rendering-free model lives in
+`src/panes/blueprint.rs`; focused tests prove context resolution and pinning,
+recursive normalization, tiled-to-floating relocation, cross-space movement,
+global pane-station uniqueness, Forme/graph validation, and serialization.
+
 - Inventory every current pane's source, published context, follower rule,
   uniqueness, instance state, capabilities, renderer, persistence, and evidence.
 - Define `PaneSpec`, `PaneRecord`, `PaneSource`, `ContextBinding`, `PaneContext`,
@@ -540,6 +547,15 @@ Done when graph/source/context/multiplicity are explicit and no rendering code i
 needed to prove the state transitions.
 
 ### A1. Registry and instance correctness
+
+**Implemented 2026-08-09; final verification pending.** The built-in registry now
+owns stable ids, labels, source validation, multiplicity, capabilities, palette
+availability, schemas, legacy construction, and renderer keys. `PaneKind`, `System`,
+magic custom-pane strings, and fake layout leaves have been removed. Retained
+Cambium runners are keyed and lazily created by `PaneId`; closing a pane or lens
+evicts only its instances. Focused model/registry tests pass. The full library
+currently stops on unresolved Knot share-reader imports outside this lane, before
+crate tests can execute.
 
 - Register existing panes and retire `PaneKind`, `pane_content`, `System`, magic
   custom strings, and the fake placeholder.

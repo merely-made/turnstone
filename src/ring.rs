@@ -202,7 +202,10 @@ pub fn emit_allowed(
     if authority.covers(subject, &cap, Mode::Write) {
         Ok(())
     } else {
-        Err(format!("{}: not covered by this denizen's grant", ring.name()))
+        Err(format!(
+            "{}: not covered by this denizen's grant",
+            ring.name()
+        ))
     }
 }
 
@@ -288,7 +291,9 @@ pub fn decode_envelope(name: &str, payload: &str) -> Result<Action, EnvelopeErro
         "close-active-pane" => Action::CloseActivePane,
         "toggle-maximize-pane" => Action::ToggleMaximizePane,
         "open-in-workbench" => Action::OpenInWorkbench,
-        "tear-out-tile" => Action::TearOutTile { member: member(payload)? },
+        "tear-out-tile" => Action::TearOutTile {
+            member: member(payload)?,
+        },
         "workbench-activate" => Action::WorkbenchActivate(member(payload)?),
         "close-workbench-tile" => Action::CloseWorkbenchTile,
         // dispatch
@@ -306,7 +311,9 @@ pub fn decode_envelope(name: &str, payload: &str) -> Result<Action, EnvelopeErro
         "omnibar-close" => Action::OmnibarClose,
         // session
         "save-session" => Action::SaveSession,
-        "fork-node" => Action::ForkNode { member: member(payload)? },
+        "fork-node" => Action::ForkNode {
+            member: member(payload)?,
+        },
         "fork-focused-node" => Action::ForkFocusedNode,
         "new-session" => Action::NewSession,
         "switch-session" => {
@@ -320,10 +327,14 @@ pub fn decode_envelope(name: &str, payload: &str) -> Result<Action, EnvelopeErro
             Action::RecoverSession(crate::panes::SessionId::from_uuid(id(payload, "id")?))
         }
         // host-only (decodable so the DENIAL is exact and attributable)
-        "install-denizen" => Action::InstallDenizen { path: string(payload, "path")? },
+        "install-denizen" => Action::InstallDenizen {
+            path: string(payload, "path")?,
+        },
         "confirm-install-denizen" => Action::ConfirmInstallDenizen,
         "cancel-install-denizen" => Action::CancelInstallDenizen,
-        "run-denizen" => Action::RunDenizen { member: member(payload)? },
+        "run-denizen" => Action::RunDenizen {
+            member: member(payload)?,
+        },
         other => return Err(EnvelopeError::Unknown(other.to_string())),
     })
 }
@@ -378,12 +389,13 @@ mod tests {
     #[test]
     fn a_covered_emission_passes_and_an_uncovered_one_names_its_ring() {
         let narrow = authority_for(&[Ring::Navigate]);
-        assert!(
-            emit_allowed(&narrow, subject(), &Action::OpenAddress("https://a".into())).is_ok()
-        );
+        assert!(emit_allowed(&narrow, subject(), &Action::OpenAddress("https://a".into())).is_ok());
         let denial = emit_allowed(&narrow, subject(), &Action::CloseSession)
             .expect_err("session is not covered");
-        assert!(denial.contains("session"), "the denial names the ring: {denial}");
+        assert!(
+            denial.contains("session"),
+            "the denial names the ring: {denial}"
+        );
     }
 
     #[test]
@@ -394,11 +406,15 @@ mod tests {
         for action in [
             Action::ConfirmInstallDenizen,
             Action::CancelInstallDenizen,
-            Action::InstallDenizen { path: "x.lua".into() },
-            Action::RunDenizen { member: uuid::Uuid::from_u128(1) },
+            Action::InstallDenizen {
+                path: "x.lua".into(),
+            },
+            Action::RunDenizen {
+                member: uuid::Uuid::from_u128(1),
+            },
         ] {
-            let denial = emit_allowed(&authority, subject(), &action)
-                .expect_err("host-only must refuse");
+            let denial =
+                emit_allowed(&authority, subject(), &action).expect_err("host-only must refuse");
             assert!(denial.contains("host-only"), "{denial}");
         }
     }
@@ -433,7 +449,11 @@ mod tests {
             ("new-window", "", Ring::Panes),
             ("fit-view", "", Ring::Dispatch),
             ("close-session", "", Ring::Session),
-            ("run-denizen", r#"{"member": "00000000-0000-0000-0000-000000000001"}"#, Ring::HostOnly),
+            (
+                "run-denizen",
+                r#"{"member": "00000000-0000-0000-0000-000000000001"}"#,
+                Ring::HostOnly,
+            ),
         ] {
             let action = decode_envelope(name, payload).expect(name);
             assert_eq!(ring_of(&action), ring, "{name}");

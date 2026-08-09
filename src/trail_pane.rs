@@ -16,8 +16,8 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 use cambium::{
-    AnyView, DomHandle, GenetAppRunner, GenetCtx, GenetElement, ListRow, ListSection,
-    PointerClick, el, sectioned_list,
+    AnyView, DomHandle, GenetAppRunner, GenetCtx, GenetElement, ListRow, ListSection, PointerClick,
+    el, sectioned_list,
 };
 use genet_layout::{IncrementalLayout, ScrollOffsets};
 use genet_scripted_dom::{NodeId, ScriptedDom};
@@ -94,9 +94,7 @@ fn trail_pane_view(state: &TrailState) -> TrailView {
             match &row.action {
                 RowAction::Navigate(url) => Some(TrailPaneAction::Navigate(url.clone())),
                 RowAction::Recover(id) => Some(TrailPaneAction::Recover(id.clone())),
-                RowAction::RecoverSession(id) => {
-                    Some(TrailPaneAction::RecoverSession(id.clone()))
-                }
+                RowAction::RecoverSession(id) => Some(TrailPaneAction::RecoverSession(id.clone())),
                 _ => None,
             }
         },
@@ -240,7 +238,10 @@ mod tests {
     fn clicking_a_row_bubbles_its_affordance() {
         let mut pane = pane_with_rows();
         let (x, y) = pane
-            .resolve(&genet_probe::Selector::class("list-row").containing("example.com"), [0.0, 0.0, 400.0, 600.0])
+            .resolve(
+                &genet_probe::Selector::class("list-row").containing("example.com"),
+                [0.0, 0.0, 400.0, 600.0],
+            )
             .expect("the Recent row must be drawn");
         let actions = pane.click(x, y, 400, 600);
         assert!(
@@ -248,7 +249,10 @@ mod tests {
             "the Recent row must bubble its url"
         );
         let (x, y) = pane
-            .resolve(&genet_probe::Selector::class("list-row").containing("Recover beta"), [0.0, 0.0, 400.0, 600.0])
+            .resolve(
+                &genet_probe::Selector::class("list-row").containing("Recover beta"),
+                [0.0, 0.0, 400.0, 600.0],
+            )
             .expect("the Recover row must be drawn");
         let actions = pane.click(x, y, 400, 600);
         assert!(
@@ -264,7 +268,10 @@ mod tests {
     fn a_muted_row_is_inert() {
         let mut pane = pane_with_rows();
         let (x, y) = pane
-            .resolve(&genet_probe::Selector::class("list-row").containing("no more"), [0.0, 0.0, 400.0, 600.0])
+            .resolve(
+                &genet_probe::Selector::class("list-row").containing("no more"),
+                [0.0, 0.0, 400.0, 600.0],
+            )
             .expect("the muted row is drawn");
         assert!(
             pane.click(x, y, 400, 600).is_empty(),

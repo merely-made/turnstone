@@ -42,13 +42,20 @@ pub struct CellPlacement {
 impl CellPlacement {
     /// The active member, when the stack is non-empty.
     pub fn active_member(&self) -> Option<Uuid> {
-        self.members.get(self.active.min(self.members.len().saturating_sub(1))).copied()
+        self.members
+            .get(self.active.min(self.members.len().saturating_sub(1)))
+            .copied()
     }
 
     /// The cell's body rect (below the tab bar), pane-local.
     pub fn body(&self) -> Rect {
         let bar = crate::ui::TABLIST_HEIGHT.min(self.rect.h);
-        Rect::new(self.rect.x, self.rect.y + bar, self.rect.w, (self.rect.h - bar).max(0.0))
+        Rect::new(
+            self.rect.x,
+            self.rect.y + bar,
+            self.rect.w,
+            (self.rect.h - bar).max(0.0),
+        )
     }
 }
 
@@ -180,9 +187,7 @@ pub fn wb_drop_action(
     use crate::action::{Action, WbAxis};
     let same_cell = cell.members.contains(&dragged);
     let body = cell.body();
-    let stack = || {
-        (!same_cell).then_some(Action::WorkbenchStackOnto { dragged, target })
-    };
+    let stack = || (!same_cell).then_some(Action::WorkbenchStackOnto { dragged, target });
     if ly < body.y {
         return stack();
     }
@@ -403,12 +408,28 @@ mod tests {
             path: vec![],
         };
         assert!(matches!(
-            wb_drop_action(d, t, &own_cell, body.x + body.w * 0.5, body.y + body.h * 0.9),
-            Some(Action::WorkbenchSplitOut { axis: WbAxis::Column, after: true, .. })
+            wb_drop_action(
+                d,
+                t,
+                &own_cell,
+                body.x + body.w * 0.5,
+                body.y + body.h * 0.9
+            ),
+            Some(Action::WorkbenchSplitOut {
+                axis: WbAxis::Column,
+                after: true,
+                ..
+            })
         ));
         assert!(
-            wb_drop_action(d, t, &own_cell, body.x + body.w / 2.0, body.y + body.h / 2.0)
-                .is_none(),
+            wb_drop_action(
+                d,
+                t,
+                &own_cell,
+                body.x + body.w / 2.0,
+                body.y + body.h / 2.0
+            )
+            .is_none(),
             "own-cell centre is a click, not a drop"
         );
         assert!(
@@ -457,10 +478,18 @@ mod tests {
             .iter()
             .find(|d| !d.path.is_empty())
             .expect("the nested split has its own band");
-        assert_eq!(inner.path, vec![1], "the Column split is the root's child 1");
+        assert_eq!(
+            inner.path,
+            vec![1],
+            "the Column split is the root's child 1"
+        );
         assert!(matches!(inner.axis, Axis::Column));
         // The two Column cells share the right half, stacked vertically.
-        let right_cells: Vec<_> = t.cells.iter().filter(|cl| cl.path.starts_with(&[1])).collect();
+        let right_cells: Vec<_> = t
+            .cells
+            .iter()
+            .filter(|cl| cl.path.starts_with(&[1]))
+            .collect();
         assert_eq!(right_cells.len(), 2);
         assert_eq!(right_cells[0].rect.x, right_cells[1].rect.x);
         assert!(right_cells[0].rect.y < right_cells[1].rect.y);

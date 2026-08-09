@@ -322,10 +322,7 @@ impl App {
     /// and no binding, because the envelope naming a place is not the same as
     /// the place having admitted this profile, and a refusal must leave the
     /// session exactly as personal as it was.
-    pub fn join_place(
-        &mut self,
-        invite: Box<crate::place::invite::PlaceInviteV1>,
-    ) -> Vec<Effect> {
+    pub fn join_place(&mut self, invite: Box<crate::place::invite::PlaceInviteV1>) -> Vec<Effect> {
         self.next_place_generation = self.next_place_generation.wrapping_add(1);
         let generation = self.next_place_generation;
         self.place = crate::place::PlaceState::Joining { generation };
@@ -389,8 +386,9 @@ impl App {
         command: crate::place::worker::PlaceCommand,
     ) -> Vec<Effect> {
         let Some(generation) = self.place.generation() else {
-            self.events
-                .push(AppEvent::PlaceRefused("this session is not in a place".into()));
+            self.events.push(AppEvent::PlaceRefused(
+                "this session is not in a place".into(),
+            ));
             return vec![Effect::Redraw];
         };
         self.next_place_request = self.next_place_request.wrapping_add(1);

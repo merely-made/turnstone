@@ -174,12 +174,12 @@ fn reparent_leaf_moves_leaf_without_losing_pane_id() {
     assert!(layout.reparent_leaf(&apparatus_path, &workbench_path, InsertSide::Left));
 
     // After: apparatus should be present somewhere in the tree.
-    let apparatus_after =
-        crate::panes::layout::path_for_pane_id(&layout.root, PaneId(3)).expect("apparatus still present");
-    let workbench_after =
-        crate::panes::layout::path_for_pane_id(&layout.root, PaneId(1)).expect("workbench still present");
-    let orrery_after =
-        crate::panes::layout::path_for_pane_id(&layout.root, PaneId(2)).expect("orrery still present");
+    let apparatus_after = crate::panes::layout::path_for_pane_id(&layout.root, PaneId(3))
+        .expect("apparatus still present");
+    let workbench_after = crate::panes::layout::path_for_pane_id(&layout.root, PaneId(1))
+        .expect("workbench still present");
+    let orrery_after = crate::panes::layout::path_for_pane_id(&layout.root, PaneId(2))
+        .expect("orrery still present");
     // All three leaves present, no duplication.
     let leaves: Vec<_> = layout.iter_leaves().collect();
     assert_eq!(leaves.len(), 3);
@@ -229,8 +229,9 @@ fn graph_bound_panes_are_classified_apart_from_window_chrome() {
         PaneContent::Steward,
         PaneContent::Comms,
         PaneContent::Apparatus,
-        PaneContent::System,
-        PaneContent::Custom("x".into()),
+        PaneContent::Registered(PaneKindId::new(kind::SETTINGS)),
+        PaneContent::Registered(PaneKindId::new(kind::PUBLISHING)),
+        PaneContent::Registered(PaneKindId::new(kind::SHARED_KNOT)),
     ] {
         assert!(
             !c.follows_active_graph(),

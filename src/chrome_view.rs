@@ -210,9 +210,10 @@ impl ChromeSurfaces {
     pub fn ensure_slot(&mut self, slot: usize) {
         while self.projections.len() <= slot {
             let next = self.projections.len();
-            let id = self
-                .runner
-                .push_forest_projection(self.dom.clone(), Box::new(chrome_logic(next)) as ChromeLogic);
+            let id = self.runner.push_forest_projection(
+                self.dom.clone(),
+                Box::new(chrome_logic(next)) as ChromeLogic,
+            );
             self.projections.push(id);
         }
     }
@@ -300,7 +301,9 @@ impl ChromeSurfaces {
             layout.hit_test(&view, x, y, &scroll)
         };
         match hit {
-            Some(node) => self.runner.dispatch_click(id, node, PointerClick::at((x, y))),
+            Some(node) => self
+                .runner
+                .dispatch_click(id, node, PointerClick::at((x, y))),
             None => Vec::new(),
         }
     }
@@ -409,14 +412,20 @@ mod tests {
                 if let Some(t) = dom.text(c) {
                     out.push(t.to_string());
                 }
-                out.extend(dom.dom_children(c).filter_map(|g| dom.text(g).map(str::to_string)));
+                out.extend(
+                    dom.dom_children(c)
+                        .filter_map(|g| dom.text(g).map(str::to_string)),
+                );
                 out
             })
             .collect();
         let joined = texts.join("|");
         assert!(joined.contains("ab"), "text before the caret: {joined}");
         assert!(joined.contains('c'), "the preedit rides inline: {joined}");
-        assert!(joined.contains('\u{258d}'), "the caret glyph is at the split: {joined}");
+        assert!(
+            joined.contains('\u{258d}'),
+            "the caret glyph is at the split: {joined}"
+        );
         assert!(joined.contains('d'), "text after the caret: {joined}");
     }
 }

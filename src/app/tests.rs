@@ -263,7 +263,11 @@ fn shared_nodes_arrive_without_disturbing_the_local_canvas() {
         ],
     };
 
-    assert_eq!(app.reconcile_shared_graph(&shared), 1, "only the missing one");
+    assert_eq!(
+        app.reconcile_shared_graph(&shared),
+        1,
+        "only the missing one"
+    );
     assert_eq!(app.canvas.graph().nodes().count(), before + 1);
     assert!(
         app.canvas
@@ -470,7 +474,9 @@ fn denizen_installs_after_visible_review() {
     let pack = app.data_root.join("trail-keeper.lua");
     std::fs::write(&pack, "mere.open('mere://kept/note')").unwrap();
 
-    app.update(Action::InstallDenizen { path: pack.display().to_string() });
+    app.update(Action::InstallDenizen {
+        path: pack.display().to_string(),
+    });
     assert!(app.pending_install.is_some());
     let rows = app.denizen_actions();
     assert!(
@@ -478,7 +484,9 @@ fn denizen_installs_after_visible_review() {
         "the ask is the first palette row: {rows:?}"
     );
     assert!(
-        app.take_events().iter().any(|e| matches!(e, AppEvent::DenizenStaged(_))),
+        app.take_events()
+            .iter()
+            .any(|e| matches!(e, AppEvent::DenizenStaged(_))),
         "staging is observable"
     );
 
@@ -490,7 +498,10 @@ fn denizen_installs_after_visible_review() {
         .expect("the binding facet is durable truth");
     assert_eq!(binding.subject, resident.subject.to_hex());
     assert_eq!(binding.kind, session_runtime::DenizenKind::Scenario);
-    assert!(binding.legacy_nested_log.is_empty(), "the facet is pure agency");
+    assert!(
+        binding.legacy_nested_log.is_empty(),
+        "the facet is pure agency"
+    );
     let borne = app
         .canvas
         .graph()
@@ -498,7 +509,11 @@ fn denizen_installs_after_visible_review() {
         .and_then(|key| app.canvas.graph().get_node(key))
         .and_then(|node| node.nested.clone())
         .expect("the node BEARS its world");
-    assert_eq!(borne.as_str(), resident.subject.to_hex(), "structure on the node");
+    assert_eq!(
+        borne.as_str(),
+        resident.subject.to_hex(),
+        "structure on the node"
+    );
     assert!(
         resident
             .nested
@@ -508,8 +523,7 @@ fn denizen_installs_after_visible_review() {
         "the grant projection is in the nested world"
     );
     assert!(
-        crate::denizen::nested_log_path(&app.session_dir(), &resident.subject.to_hex())
-            .exists(),
+        crate::denizen::nested_log_path(&app.session_dir(), &resident.subject.to_hex()).exists(),
         "the nested log persisted at its birth"
     );
 
@@ -520,7 +534,10 @@ fn denizen_installs_after_visible_review() {
         app.identity.as_ref(),
     );
     assert_eq!(rebuilt.residents.len(), 1);
-    assert!(rebuilt.legacy_heals.is_empty(), "a fresh install needs no heal");
+    assert!(
+        rebuilt.legacy_heals.is_empty(),
+        "a fresh install needs no heal"
+    );
     assert!(
         servitor::AuthorityProvider::covers(
             &rebuilt.authority,
@@ -545,7 +562,9 @@ fn resident_petitions_run_through_the_gate() {
     std::fs::create_dir_all(app.session_dir()).unwrap();
     let pack = app.data_root.join("keeper.lua");
     std::fs::write(&pack, "mere.open('mere://kept/note')").unwrap();
-    app.update(Action::InstallDenizen { path: pack.display().to_string() });
+    app.update(Action::InstallDenizen {
+        path: pack.display().to_string(),
+    });
     app.update(Action::ConfirmInstallDenizen);
     let (&member, _) = app.denizens.residents.iter().next().unwrap();
 
@@ -562,13 +581,17 @@ fn resident_petitions_run_through_the_gate() {
             subject,
             &servitor::ScopePath::parse(crate::denizen::SCENARIO_SCOPE).unwrap(),
             rev,
-            vec![chartulary::EditSpec::InsertNode(chartulary::Container::new(
-                "scenario/kept-note",
-            ))],
+            vec![chartulary::EditSpec::InsertNode(
+                chartulary::Container::new("scenario/kept-note"),
+            )],
         )
         .expect("an in-scope petition commits");
     let entry = &resident.nested.log().entries()[committed.batch.0 as usize];
-    assert_eq!(entry.author, subject.to_author(), "attributed to the denizen");
+    assert_eq!(
+        entry.author,
+        subject.to_author(),
+        "attributed to the denizen"
+    );
 
     let rev = resident.nested.revision();
     let err = gate
@@ -578,9 +601,9 @@ fn resident_petitions_run_through_the_gate() {
             subject,
             &servitor::ScopePath::parse("notes").unwrap(),
             rev,
-            vec![chartulary::EditSpec::InsertNode(chartulary::Container::new(
-                "notes/sneaky",
-            ))],
+            vec![chartulary::EditSpec::InsertNode(
+                chartulary::Container::new("notes/sneaky"),
+            )],
         )
         .unwrap_err();
     assert!(
@@ -602,14 +625,19 @@ fn denizen_runs_attributed() {
     std::fs::create_dir_all(app.session_dir()).unwrap();
     let pack = app.data_root.join("keeper.lua");
     std::fs::write(&pack, "mere.open('mere://kept/note')").unwrap();
-    app.update(Action::InstallDenizen { path: pack.display().to_string() });
+    app.update(Action::InstallDenizen {
+        path: pack.display().to_string(),
+    });
     app.update(Action::ConfirmInstallDenizen);
     let (&member, resident) = app.denizens.residents.iter().next().unwrap();
     let hex = resident.subject.to_hex();
 
     app.update(Action::RunDenizen { member });
     assert!(
-        app.canvas.graph().get_node_by_url("mere://kept/note").is_some(),
+        app.canvas
+            .graph()
+            .get_node_by_url("mere://kept/note")
+            .is_some(),
         "the body's Action landed through the spine"
     );
     let journal = app.journal.lock().unwrap();
@@ -711,10 +739,8 @@ fn fork_session_snapshots_the_component_with_its_facets() {
         web.get(fork_a).is_some_and(|s| s.content_on),
         "web.content carried onto the remapped id"
     );
-    let scene = session_runtime::read_scene_facets(
-        &fork_facets,
-        *fork_manifest.root_graph_id.as_uuid(),
-    );
+    let scene =
+        session_runtime::read_scene_facets(&fork_facets, *fork_manifest.root_graph_id.as_uuid());
     assert!(
         (scene.physics_damping - 4.75).abs() < 0.001,
         "scene.* carried donor-container -> fork-container"
@@ -735,11 +761,17 @@ fn fork_carries_denizen_worlds_as_real_copies() {
     std::fs::create_dir_all(app.session_dir()).unwrap();
     let pack = app.data_root.join("keeper.lua");
     std::fs::write(&pack, "mere.open('mere://kept/note')").unwrap();
-    app.update(Action::InstallDenizen { path: pack.display().to_string() });
+    app.update(Action::InstallDenizen {
+        path: pack.display().to_string(),
+    });
     app.update(Action::ConfirmInstallDenizen);
     let (member, world_id, donor_revision) = {
         let (&member, resident) = app.denizens.residents.iter().next().unwrap();
-        (member, resident.subject.to_hex(), resident.nested.revision())
+        (
+            member,
+            resident.subject.to_hex(),
+            resident.nested.revision(),
+        )
     };
 
     let effects = app.fork_session_from(member);
@@ -772,12 +804,8 @@ fn fork_carries_denizen_worlds_as_real_copies() {
     );
     // The fork rebuilds a full resident from its OWN dir, no legacy heal.
     let fork_facets = session::load_node_facets(&fork_dir).expect("fork facets persisted");
-    let rebuilt = crate::denizen::rebuild(
-        &fork_facets,
-        &fork_graph,
-        &fork_dir,
-        app.identity.as_ref(),
-    );
+    let rebuilt =
+        crate::denizen::rebuild(&fork_facets, &fork_graph, &fork_dir, app.identity.as_ref());
     assert_eq!(rebuilt.residents.len(), 1, "the fork's denizen resides");
     assert!(rebuilt.legacy_heals.is_empty());
     assert_eq!(
@@ -794,8 +822,7 @@ fn fork_carries_denizen_worlds_as_real_copies() {
 #[test]
 fn close_session_trashes_and_recover_restores_identity() {
     let mut app = App::test_stub();
-    app.data_root =
-        std::env::temp_dir().join(format!("turnstone-o3-test-{}", std::process::id()));
+    app.data_root = std::env::temp_dir().join(format!("turnstone-o3-test-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&app.data_root);
     // Two real sessions on disk (manifests bound to the root so trash ops
     // have a home), the second is current.
@@ -929,7 +956,9 @@ fn content_flip_lowers_and_fails_honestly() {
 #[test]
 fn tear_out_moves_the_leaf_and_keeps_its_id() {
     let mut app = App::test_stub();
-    app.update(Action::SummonPane(PaneKind::Roster));
+    app.update(Action::SummonPane(crate::panes::PaneKindId::new(
+        crate::panes::kind::ROSTER,
+    )));
     let roster_id = app
         .frisket
         .iter_leaves()
@@ -965,7 +994,9 @@ fn tear_out_moves_the_leaf_and_keeps_its_id() {
         Some(roster_id),
         "the moved pane stays active"
     );
-    app.update(Action::SummonPane(PaneKind::Trail));
+    app.update(Action::SummonPane(crate::panes::PaneKindId::new(
+        crate::panes::kind::TRAIL,
+    )));
     let lens = app.lenses[0].as_ref().unwrap();
     assert!(
         lens.iter_leaves()
@@ -980,7 +1011,9 @@ fn tear_out_moves_the_leaf_and_keeps_its_id() {
     );
     // A PRIMARY pane tearing out reuses the open lens (no window spam).
     app.active_pane = None;
-    app.update(Action::SummonPane(PaneKind::Gloss));
+    app.update(Action::SummonPane(crate::panes::PaneKindId::new(
+        crate::panes::kind::GLOSS,
+    )));
     let effects = app.update(Action::TearOutActivePane);
     assert!(
         !effects
@@ -993,6 +1026,38 @@ fn tear_out_moves_the_leaf_and_keeps_its_id() {
         lens.iter_leaves()
             .any(|(_, c, _)| matches!(c, PaneContent::Gloss(_))),
         "the gloss joined the existing lens"
+    );
+}
+
+#[test]
+fn summon_enforces_registry_multiplicity_in_one_space() {
+    let mut app = App::test_stub();
+    for _ in 0..2 {
+        app.update(Action::SummonPane(crate::panes::PaneKindId::new(
+            crate::panes::kind::ROSTER,
+        )));
+    }
+    assert_eq!(
+        app.frisket
+            .iter_leaves()
+            .filter(|(_, content, _)| matches!(content, PaneContent::Roster))
+            .count(),
+        1,
+        "Roster is per-space-and-context"
+    );
+
+    for _ in 0..2 {
+        app.update(Action::SummonPane(crate::panes::PaneKindId::new(
+            crate::panes::kind::GLOSS,
+        )));
+    }
+    assert_eq!(
+        app.frisket
+            .iter_leaves()
+            .filter(|(_, content, _)| matches!(content, PaneContent::Gloss(_)))
+            .count(),
+        2,
+        "Gloss permits many pane instances"
     );
 }
 
@@ -1080,9 +1145,9 @@ fn delete_stages_into_the_bin_and_recover_restores_identity() {
         records: vec![record],
     });
     assert!(
-        trail_rows(&app).iter().any(
-            |r| matches!(&r.action, RowAction::Recover(id) if id == &original.to_string())
-        ),
+        trail_rows(&app)
+            .iter()
+            .any(|r| matches!(&r.action, RowAction::Recover(id) if id == &original.to_string())),
         "the staged node derives into the Trail's Removed section"
     );
 
@@ -1128,7 +1193,9 @@ fn a_component_denizen_acts_only_within_its_reviewed_rings() {
     );
 
     // Stage: the review names the component and its preselected rings.
-    app.update(Action::InstallDenizen { path: pack.display().to_string() });
+    app.update(Action::InstallDenizen {
+        path: pack.display().to_string(),
+    });
     let review = &app.denizen_actions()[0].0;
     assert!(review.contains("(wasm)"), "the lane is named: {review}");
     for ring in ["navigate", "panes", "dispatch"] {
@@ -1149,7 +1216,10 @@ fn a_component_denizen_acts_only_within_its_reviewed_rings() {
     let file = app
         .canvas
         .facets()
-        .get(&member, &chartulary::FacetId::new(crate::denizen::COMPONENT_FACET))
+        .get(
+            &member,
+            &chartulary::FacetId::new(crate::denizen::COMPONENT_FACET),
+        )
         .and_then(|v| v.as_str().map(str::to_string))
         .expect("the component facet points at the stored bytes");
     assert!(
@@ -1174,7 +1244,10 @@ fn a_component_denizen_acts_only_within_its_reviewed_rings() {
     let before = app.canvas.graph().node_count();
     app.update(Action::RunDenizen { member });
     assert!(
-        app.canvas.graph().get_node_by_url("mere://kept/note").is_some(),
+        app.canvas
+            .graph()
+            .get_node_by_url("mere://kept/note")
+            .is_some(),
         "the navigate emission lowered through the spine"
     );
     assert_eq!(
@@ -1211,13 +1284,14 @@ fn a_rerooted_profile_reissues_delegations_from_the_reviewed_projections() {
     use servitor::AuthorityProvider;
 
     let mut app = App::test_stub();
-    app.data_root =
-        std::env::temp_dir().join(format!("turnstone-reroot-{}", std::process::id()));
+    app.data_root = std::env::temp_dir().join(format!("turnstone-reroot-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&app.data_root);
     std::fs::create_dir_all(app.session_dir()).unwrap();
     let pack = app.data_root.join("keeper.lua");
     std::fs::write(&pack, "mere.open('mere://kept/note')").unwrap();
-    app.update(Action::InstallDenizen { path: pack.display().to_string() });
+    app.update(Action::InstallDenizen {
+        path: pack.display().to_string(),
+    });
     app.update(Action::ConfirmInstallDenizen);
     let subject = app.denizens.residents.values().next().unwrap().subject;
     let navigate = crate::ring::Ring::Navigate.cap().unwrap();
@@ -1232,13 +1306,21 @@ fn a_rerooted_profile_reissues_delegations_from_the_reviewed_projections() {
         &app.session_dir(),
         &new_root,
     );
-    assert_eq!(rebuilt.residents.len(), 1, "the resident survives the migration");
+    assert_eq!(
+        rebuilt.residents.len(),
+        1,
+        "the resident survives the migration"
+    );
     assert!(
-        rebuilt.authority.covers(subject, &navigate, servitor::Mode::Write),
+        rebuilt
+            .authority
+            .covers(subject, &navigate, servitor::Mode::Write),
         "the reviewed ring re-rooted under the new identity"
     );
     assert!(
-        !rebuilt.authority.covers(subject, &session_ring, servitor::Mode::Write),
+        !rebuilt
+            .authority
+            .covers(subject, &session_ring, servitor::Mode::Write),
         "and the heal preserves the review exactly: nothing widens"
     );
     // Durable: the certificate file was rewritten under the new root, so
@@ -1265,17 +1347,22 @@ fn install_delegates_from_the_profile_identity_and_uninstall_revokes_it() {
     use servitor::AuthorityProvider;
 
     let mut app = App::test_stub();
-    app.data_root =
-        std::env::temp_dir().join(format!("turnstone-revoke-{}", std::process::id()));
+    app.data_root = std::env::temp_dir().join(format!("turnstone-revoke-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&app.data_root);
     std::fs::create_dir_all(app.session_dir()).unwrap();
     // The root identity is the profile's, not a constant.
     let root = identity::IdentityProvider::master_public_key(app.identity.as_ref()).to_bytes();
-    assert_eq!(app.denizens.authority.root(), root, "rooted on the profile identity");
+    assert_eq!(
+        app.denizens.authority.root(),
+        root,
+        "rooted on the profile identity"
+    );
 
     let pack = app.data_root.join("keeper.lua");
     std::fs::write(&pack, "mere.open('mere://kept/note')").unwrap();
-    app.update(Action::InstallDenizen { path: pack.display().to_string() });
+    app.update(Action::InstallDenizen {
+        path: pack.display().to_string(),
+    });
     app.update(Action::ConfirmInstallDenizen);
     let (member, subject) = {
         let (&m, r) = app.denizens.residents.iter().next().unwrap();
@@ -1284,11 +1371,15 @@ fn install_delegates_from_the_profile_identity_and_uninstall_revokes_it() {
     let navigate = crate::ring::Ring::Navigate.cap().unwrap();
     let session_ring = crate::ring::Ring::Session.cap().unwrap();
     assert!(
-        app.denizens.authority.covers(subject, &navigate, servitor::Mode::Write),
+        app.denizens
+            .authority
+            .covers(subject, &navigate, servitor::Mode::Write),
         "the reviewed ring is authorized by a verified certificate chain"
     );
     assert!(
-        !app.denizens.authority.covers(subject, &session_ring, servitor::Mode::Write),
+        !app.denizens
+            .authority
+            .covers(subject, &session_ring, servitor::Mode::Write),
         "an unreviewed ring was never delegated"
     );
     let certs = crate::denizen::certs_path(&app.session_dir(), &subject.to_hex());
@@ -1298,14 +1389,19 @@ fn install_delegates_from_the_profile_identity_and_uninstall_revokes_it() {
     app.update(Action::UninstallDenizen { member });
     assert!(app.denizens.residents.is_empty(), "no longer resident");
     assert!(
-        !app.denizens.authority.covers(subject, &navigate, servitor::Mode::Write),
+        !app.denizens
+            .authority
+            .covers(subject, &navigate, servitor::Mode::Write),
         "the delegation is revoked, so the ring is no longer authorized"
     );
     assert!(
         session_runtime::read_denizen_binding(app.canvas.facets(), member).is_none(),
         "un-resided: the agency facet is gone"
     );
-    assert!(!certs.is_file(), "and its certificates cannot resurrect it on adopt");
+    assert!(
+        !certs.is_file(),
+        "and its certificates cannot resurrect it on adopt"
+    );
     assert!(
         app.take_events()
             .iter()
@@ -1323,7 +1419,9 @@ fn install_delegates_from_the_profile_identity_and_uninstall_revokes_it() {
     );
     // And the palette no longer offers to run it.
     assert!(
-        !app.denizen_actions().iter().any(|(label, _)| label.starts_with("Run ")),
+        !app.denizen_actions()
+            .iter()
+            .any(|(label, _)| label.starts_with("Run ")),
         "the Run row is gone with the residency"
     );
     let _ = std::fs::remove_dir_all(&app.data_root);
@@ -1343,11 +1441,17 @@ fn deleting_a_denizen_archives_its_world_and_recovery_restores_residency() {
     std::fs::create_dir_all(app.session_dir()).unwrap();
     let pack = app.data_root.join("keeper.lua");
     std::fs::write(&pack, "mere.open('mere://kept/note')").unwrap();
-    app.update(Action::InstallDenizen { path: pack.display().to_string() });
+    app.update(Action::InstallDenizen {
+        path: pack.display().to_string(),
+    });
     app.update(Action::ConfirmInstallDenizen);
     let (member, world_id, world_revision) = {
         let (&member, resident) = app.denizens.residents.iter().next().unwrap();
-        (member, resident.subject.to_hex(), resident.nested.revision())
+        (
+            member,
+            resident.subject.to_hex(),
+            resident.nested.revision(),
+        )
     };
     assert!(
         crate::denizen::nested_log_path(&app.session_dir(), &world_id).is_file(),
@@ -1391,7 +1495,9 @@ fn deleting_a_denizen_archives_its_world_and_recovery_restores_residency() {
     );
 
     // Recover: full residency returns.
-    app.apply_update(Update::BinListed { records: vec![record] });
+    app.apply_update(Update::BinListed {
+        records: vec![record],
+    });
     app.update(Action::RecoverDeletedNode(member));
     assert!(
         crate::denizen::nested_log_path(&app.session_dir(), &world_id).is_file(),
@@ -1481,7 +1587,9 @@ fn empty_recycle_bin_forgets_on_command() {
 #[test]
 fn composing_a_gloss_pane_toggles_sections_on_its_own_leaf() {
     let mut app = App::test_stub();
-    app.update(Action::SummonPane(PaneKind::Gloss));
+    app.update(Action::SummonPane(crate::panes::PaneKindId::new(
+        crate::panes::kind::GLOSS,
+    )));
     let pane = app.active_pane.expect("the summoned gloss is active");
 
     // At base it is a minimap: no composed sections.
@@ -1533,7 +1641,9 @@ fn composing_a_gloss_pane_toggles_sections_on_its_own_leaf() {
 #[test]
 fn available_actions_lead_with_the_contextual_rows() {
     let mut app = App::test_stub();
-    app.update(Action::SummonPane(PaneKind::Gloss));
+    app.update(Action::SummonPane(crate::panes::PaneKindId::new(
+        crate::panes::kind::GLOSS,
+    )));
     let rows = app.available_actions();
 
     // The contextual rows (here, the active Gloss's composition rows) come
@@ -1567,15 +1677,45 @@ fn available_actions_lead_with_the_contextual_rows() {
 #[test]
 fn publishing_pane_is_a_summonable_window_control() {
     let mut app = App::test_stub();
-    app.update(Action::SummonPane(PaneKind::Publishing));
+    app.update(Action::SummonPane(crate::panes::PaneKindId::new(
+        crate::panes::kind::PUBLISHING,
+    )));
 
-    assert!(app.frisket.iter_leaves().any(|(_, content, _)| {
-        matches!(content, PaneContent::Custom(name) if name == "publishing")
-    }));
-    assert!(crate::action::palette_actions().iter().any(|(label, action)| {
-        *label == "Open Publishing pane"
-            && matches!(action, Action::SummonPane(PaneKind::Publishing))
-    }));
+    assert!(
+        app.frisket
+            .iter_leaves()
+            .any(|(_, content, _)| content.kind_id().as_str() == crate::panes::kind::PUBLISHING)
+    );
+    assert!(
+        crate::action::palette_actions()
+            .iter()
+            .any(|(label, action)| {
+                *label == "Open Publishing pane"
+                    && matches!(action, Action::SummonPane(id) if id.as_str() == crate::panes::kind::PUBLISHING)
+            })
+    );
+}
+
+#[test]
+fn shared_knot_pane_is_a_summonable_reader_control() {
+    let mut app = App::test_stub();
+    app.update(Action::SummonPane(crate::panes::PaneKindId::new(
+        crate::panes::kind::SHARED_KNOT,
+    )));
+
+    assert!(
+        app.frisket
+            .iter_leaves()
+            .any(|(_, content, _)| content.kind_id().as_str() == crate::panes::kind::SHARED_KNOT)
+    );
+    assert!(
+        crate::action::palette_actions()
+            .iter()
+            .any(|(label, action)| {
+                *label == "Open Shared Knot pane"
+                    && matches!(action, Action::SummonPane(id) if id.as_str() == crate::panes::kind::SHARED_KNOT)
+            })
+    );
 }
 
 /// Composition ORDER is the config's order, so reordering is the same leaf
@@ -1585,7 +1725,9 @@ fn publishing_pane_is_a_summonable_window_control() {
 #[test]
 fn moving_a_composed_section_reorders_that_leaf_and_clamps() {
     let mut app = App::test_stub();
-    app.update(Action::SummonPane(PaneKind::Gloss));
+    app.update(Action::SummonPane(crate::panes::PaneKindId::new(
+        crate::panes::kind::GLOSS,
+    )));
     let pane = app.active_pane.expect("the summoned gloss is active");
     let sections = |app: &App| match app.pane_content(pane) {
         Some(PaneContent::Gloss(cfg)) => cfg.sections.clone(),
@@ -1629,7 +1771,11 @@ fn moving_a_composed_section_reorders_that_leaf_and_clamps() {
     // At the top, up is a no-op: clamped, NOT wrapped to the bottom. It
     // reports no move, so the receipt cannot mistake it for one.
     let fx = mv(&mut app, "nodes", -1);
-    assert_eq!(sections(&app), vec!["nodes", "removed"], "clamped at the top");
+    assert_eq!(
+        sections(&app),
+        vec!["nodes", "removed"],
+        "clamped at the top"
+    );
     assert!(
         !fx.iter().any(|e| matches!(e, Effect::SaveSession)),
         "a no-op move saves nothing: {fx:?}"
@@ -1655,7 +1801,9 @@ fn moving_a_composed_section_reorders_that_leaf_and_clamps() {
 #[test]
 fn the_overmap_composes_sections_too() {
     let mut app = App::test_stub();
-    app.update(Action::SummonPane(PaneKind::Overmap));
+    app.update(Action::SummonPane(crate::panes::PaneKindId::new(
+        crate::panes::kind::OVERMAP,
+    )));
     let pane = app.active_pane.expect("the summoned overmap is active");
 
     // A fresh Overmap composes nothing (its swatch fills the pane).
@@ -1685,9 +1833,13 @@ fn the_overmap_composes_sections_too() {
 
 fn lens_ops_close_removes_the_summoned_pane() {
     let mut app = App::test_stub();
-    app.update(Action::SummonPane(PaneKind::Roster));
+    app.update(Action::SummonPane(crate::panes::PaneKindId::new(
+        crate::panes::kind::ROSTER,
+    )));
     app.update(Action::TearOutActivePane);
-    app.update(Action::SummonPane(PaneKind::Trail));
+    app.update(Action::SummonPane(crate::panes::PaneKindId::new(
+        crate::panes::kind::TRAIL,
+    )));
     app.update(Action::SetActivePaneDivider(0.7));
     app.update(Action::CloseActivePane);
     let lens = app.lenses[0].as_ref().unwrap();

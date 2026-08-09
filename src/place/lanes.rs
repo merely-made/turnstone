@@ -89,7 +89,6 @@ impl LiveLanes {
         ]
     }
 
-
     /// Push one freshly authored graph operation onto the live lane.
     ///
     /// Initial sync covers retained history for a late joiner; an operation
@@ -138,9 +137,8 @@ mod tests {
         settings,
     };
     use crate::place::worker::{
-        PlaceCommand, PlaceWorkerCommand, author_invitation, found_place_group,
-        load_group_session, open_cached_place, place_store_dir, prepare_group_identity,
-        spawn_place_worker,
+        PlaceCommand, PlaceWorkerCommand, author_invitation, found_place_group, load_group_session,
+        open_cached_place, place_store_dir, prepare_group_identity, spawn_place_worker,
     };
     use commons::{Replica, chat::ChatReplica};
 
@@ -226,10 +224,8 @@ mod tests {
     /// Join and Resync commands. Seven lanes per side, one endpoint each.
     #[test]
     fn a_joiner_catches_up_on_a_live_place_over_one_ticket() {
-        let root = std::env::temp_dir().join(format!(
-            "turnstone-place-live-{}",
-            std::process::id()
-        ));
+        let root =
+            std::env::temp_dir().join(format!("turnstone-place-live-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&root);
         let host = root.join("host");
         let guest = root.join("guest");
@@ -285,8 +281,14 @@ mod tests {
         let (endpoint, gossip) = host_transport.sync_parts().unwrap();
         let _host_lanes = runtime
             .block_on(async {
-                let moot = host_open.moot.join_lanes(endpoint.clone(), gossip.clone()).await?;
-                let graph = host_open.graph.join(endpoint.clone(), gossip.clone()).await?;
+                let moot = host_open
+                    .moot
+                    .join_lanes(endpoint.clone(), gossip.clone())
+                    .await?;
+                let graph = host_open
+                    .graph
+                    .join(endpoint.clone(), gossip.clone())
+                    .await?;
                 let chat = host_open.chat.join(endpoint, gossip).await?;
                 Ok::<_, stickleback::JoinError>((moot, graph, chat))
             })
@@ -294,8 +296,7 @@ mod tests {
 
         // Guest side is the product path end to end.
         let wake: armillary::Wake = Arc::new(|| {});
-        let (worker, updates) =
-            spawn_place_worker(wake, Arc::new(joiner), settings());
+        let (worker, updates) = spawn_place_worker(wake, Arc::new(joiner), settings());
         let session = SessionId::new();
         worker.command(PlaceWorkerCommand::Join {
             session,
@@ -398,8 +399,7 @@ mod tests {
                 "the authored message never reached the host"
             );
             std::thread::sleep(Duration::from_millis(400));
-            let projection =
-                pollster::block_on(host_open.chat.projection()).unwrap();
+            let projection = pollster::block_on(host_open.chat.projection()).unwrap();
             if projection
                 .messages
                 .iter()
@@ -463,7 +463,10 @@ mod tests {
             generation: 1,
         });
         loop {
-            assert!(Instant::now() < deadline, "{what}: never happened; {last:?}");
+            assert!(
+                Instant::now() < deadline,
+                "{what}: never happened; {last:?}"
+            );
             match updates.recv_timeout(Duration::from_secs(10)) {
                 Ok(Update::PlaceLanesAdvanced { .. }) => {
                     worker.command(PlaceWorkerCommand::Resync {
@@ -504,10 +507,8 @@ mod tests {
     /// traffic without losing anything, and reconnecting converges both sides.
     #[test]
     fn a_partition_heals_and_both_sides_converge() {
-        let root = std::env::temp_dir().join(format!(
-            "turnstone-place-partition-{}",
-            std::process::id()
-        ));
+        let root =
+            std::env::temp_dir().join(format!("turnstone-place-partition-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&root);
         let host = root.join("host");
         let guest = root.join("guest");
@@ -558,7 +559,10 @@ mod tests {
                     .moot
                     .join_lanes(endpoint.clone(), gossip.clone())
                     .await?;
-                let graph = host_open.graph.join(endpoint.clone(), gossip.clone()).await?;
+                let graph = host_open
+                    .graph
+                    .join(endpoint.clone(), gossip.clone())
+                    .await?;
                 let chat = host_open.chat.join(endpoint, gossip).await?;
                 Ok::<_, stickleback::JoinError>((moot, graph, chat))
             })
@@ -628,7 +632,10 @@ mod tests {
                     .moot
                     .join_lanes(endpoint.clone(), gossip.clone())
                     .await?;
-                let graph = host_open.graph.join(endpoint.clone(), gossip.clone()).await?;
+                let graph = host_open
+                    .graph
+                    .join(endpoint.clone(), gossip.clone())
+                    .await?;
                 let chat = host_open.chat.join(endpoint, gossip).await?;
                 Ok::<_, stickleback::JoinError>((moot, graph, chat))
             })
@@ -669,10 +676,8 @@ mod tests {
     /// which is the point.
     #[test]
     fn a_restarted_place_keeps_what_it_converged_on() {
-        let root = std::env::temp_dir().join(format!(
-            "turnstone-place-restart-{}",
-            std::process::id()
-        ));
+        let root =
+            std::env::temp_dir().join(format!("turnstone-place-restart-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&root);
         let host = root.join("host");
         let guest = root.join("guest");
@@ -723,7 +728,10 @@ mod tests {
                     .moot
                     .join_lanes(endpoint.clone(), gossip.clone())
                     .await?;
-                let graph = host_open.graph.join(endpoint.clone(), gossip.clone()).await?;
+                let graph = host_open
+                    .graph
+                    .join(endpoint.clone(), gossip.clone())
+                    .await?;
                 let chat = host_open.chat.join(endpoint, gossip).await?;
                 Ok::<_, stickleback::JoinError>((moot, graph, chat))
             })
@@ -731,8 +739,7 @@ mod tests {
 
         let identity = Arc::new(joiner);
         let wake: armillary::Wake = Arc::new(|| {});
-        let (worker, updates) =
-            spawn_place_worker(wake.clone(), Arc::clone(&identity), settings());
+        let (worker, updates) = spawn_place_worker(wake.clone(), Arc::clone(&identity), settings());
         let session = SessionId::new();
         worker.command(PlaceWorkerCommand::Join {
             session,
@@ -757,8 +764,7 @@ mod tests {
         drop(host_lanes);
 
         // A fresh worker reopens from the persisted binding alone.
-        let (restarted, restarted_updates) =
-            spawn_place_worker(wake, identity, settings());
+        let (restarted, restarted_updates) = spawn_place_worker(wake, identity, settings());
         // Retried because a real restart is a new PROCESS: reopening the same
         // redb in-process can briefly race the previous handle's file lock
         // under load. That is an artifact of testing restart without
@@ -798,7 +804,10 @@ mod tests {
             converged.moot.delegated_certificates
         );
         assert_eq!(reopened.shared, converged.shared);
-        assert!(reopened.group.has_current_epoch, "the sealed epoch reopened");
+        assert!(
+            reopened.group.has_current_epoch,
+            "the sealed epoch reopened"
+        );
 
         // The reopened place has no lanes, because `Open` does not dial and no
         // rendezvous was persisted. It is still fully usable: authoring stores

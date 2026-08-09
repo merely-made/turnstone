@@ -20,8 +20,8 @@
 //! donor never landed it either); producing the coherent tree is this rung's
 //! deletion-matrix bar.
 
-use accesskit::{Node, Role};
 use crate::panes::PaneContent;
+use accesskit::{Node, Role};
 use uxtree::{UxTree, node_id_for_path, stitch};
 
 use crate::app::App;

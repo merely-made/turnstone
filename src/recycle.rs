@@ -159,85 +159,89 @@ fn emit_list(store: &mut dyn Store, out: &Emitter<Update>) {
 /// on every answer (the fetch actor's exact shape). Returns the command
 /// handle plus the update receiver the shell drains.
 pub fn spawn_bin(wake: Wake, dir: PathBuf) -> (ActorHandle<BinCommand>, Receiver<Update>) {
-    spawn_named("recycle-bin", wake, move |commands, out: Emitter<Update>| {
-        let mut current_dir = dir.clone();
-        let mut store = match open(&dir) {
-            Ok(mut store) => {
-                retire_then_list(&mut store, &current_dir, &out);
-                Some(store)
-            }
-            Err(err) => {
-                out.emit(Update::BinFailed {
-                    error: format!("open {}: {err}", dir.display()),
-                });
-                None
-            }
-        };
-        while let Ok(command) = commands.recv() {
-            match command {
-                BinCommand::Record(record) => {
-                    let Some(store) = store.as_mut() else {
-                        out.emit(Update::BinFailed {
-                            error: "record: the bin store is not open".to_string(),
-                        });
-                        continue;
-                    };
-                    // graph_id: sessions are directory-scoped (one graph per
-                    // session dir), so the record needs no graph scoping here.
-                    let deleted = to_deleted(&record, None);
-                    if let Err(err) = pollster::block_on(record_deleted(store, &deleted)) {
-                        out.emit(Update::BinFailed {
-                            error: format!("record: {err}"),
-                        });
-                        continue;
-                    }
-                    emit_list(store, &out);
+    spawn_named(
+        "recycle-bin",
+        wake,
+        move |commands, out: Emitter<Update>| {
+            let mut current_dir = dir.clone();
+            let mut store = match open(&dir) {
+                Ok(mut store) => {
+                    retire_then_list(&mut store, &current_dir, &out);
+                    Some(store)
                 }
-                BinCommand::Empty => {
-                    let Some(store) = store.as_mut() else {
-                        out.emit(Update::BinFailed {
-                            error: "empty: the bin store is not open".to_string(),
-                        });
-                        continue;
-                    };
-                    // Emptying the bin completes every forget: each staged
-                    // world's archived file goes with its tombstone.
-                    if let (Ok(deleted), Some(session_dir)) = (
-                        pollster::block_on(list_deleted(store)),
-                        current_dir.parent().map(std::path::Path::to_path_buf),
-                    ) {
-                        for d in &deleted {
-                            if let Some(log_id) = &d.nested {
-                                crate::denizen::purge_archived_world(&session_dir, log_id);
+                Err(err) => {
+                    out.emit(Update::BinFailed {
+                        error: format!("open {}: {err}", dir.display()),
+                    });
+                    None
+                }
+            };
+            while let Ok(command) = commands.recv() {
+                match command {
+                    BinCommand::Record(record) => {
+                        let Some(store) = store.as_mut() else {
+                            out.emit(Update::BinFailed {
+                                error: "record: the bin store is not open".to_string(),
+                            });
+                            continue;
+                        };
+                        // graph_id: sessions are directory-scoped (one graph per
+                        // session dir), so the record needs no graph scoping here.
+                        let deleted = to_deleted(&record, None);
+                        if let Err(err) = pollster::block_on(record_deleted(store, &deleted)) {
+                            out.emit(Update::BinFailed {
+                                error: format!("record: {err}"),
+                            });
+                            continue;
+                        }
+                        emit_list(store, &out);
+                    }
+                    BinCommand::Empty => {
+                        let Some(store) = store.as_mut() else {
+                            out.emit(Update::BinFailed {
+                                error: "empty: the bin store is not open".to_string(),
+                            });
+                            continue;
+                        };
+                        // Emptying the bin completes every forget: each staged
+                        // world's archived file goes with its tombstone.
+                        if let (Ok(deleted), Some(session_dir)) = (
+                            pollster::block_on(list_deleted(store)),
+                            current_dir.parent().map(std::path::Path::to_path_buf),
+                        ) {
+                            for d in &deleted {
+                                if let Some(log_id) = &d.nested {
+                                    crate::denizen::purge_archived_world(&session_dir, log_id);
+                                }
                             }
                         }
+                        if let Err(err) = pollster::block_on(clear_deleted(store)) {
+                            out.emit(Update::BinFailed {
+                                error: format!("empty: {err}"),
+                            });
+                            continue;
+                        }
+                        emit_list(store, &out);
                     }
-                    if let Err(err) = pollster::block_on(clear_deleted(store)) {
-                        out.emit(Update::BinFailed {
-                            error: format!("empty: {err}"),
-                        });
-                        continue;
-                    }
-                    emit_list(store, &out);
-                }
-                BinCommand::Release(ack) => {
-                    store = None;
-                    let _ = ack.send(());
-                }
-                BinCommand::Reopen(dir) => match open(&dir) {
-                    Ok(mut fresh) => {
-                        retire_then_list(&mut fresh, &dir, &out);
-                        store = Some(fresh);
-                        current_dir = dir;
-                    }
-                    Err(err) => {
+                    BinCommand::Release(ack) => {
                         store = None;
-                        out.emit(Update::BinFailed {
-                            error: format!("reopen {}: {err}", dir.display()),
-                        });
+                        let _ = ack.send(());
                     }
-                },
+                    BinCommand::Reopen(dir) => match open(&dir) {
+                        Ok(mut fresh) => {
+                            retire_then_list(&mut fresh, &dir, &out);
+                            store = Some(fresh);
+                            current_dir = dir;
+                        }
+                        Err(err) => {
+                            store = None;
+                            out.emit(Update::BinFailed {
+                                error: format!("reopen {}: {err}", dir.display()),
+                            });
+                        }
+                    },
+                }
             }
-        }
-    })
+        },
+    )
 }

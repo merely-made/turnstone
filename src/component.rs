@@ -17,8 +17,8 @@ use std::path::Path;
 use std::time::Duration;
 
 use app_host::{ActionSink, AppScript, Refusal, Watchdog};
-use servitor::delegation::DelegationTable;
 use servitor::Subject;
+use servitor::delegation::DelegationTable;
 use wasmtime::StoreLimitsBuilder;
 
 use crate::action::Action;
@@ -110,7 +110,9 @@ pub fn run(
         path,
         RingSink::new(authority.clone(), subject),
         granted,
-        StoreLimitsBuilder::new().memory_size(MEMORY_CEILING).build(),
+        StoreLimitsBuilder::new()
+            .memory_size(MEMORY_CEILING)
+            .build(),
         Some(EPOCH_DEADLINE_TICKS),
     )
     .map_err(|err| format!("instantiate: {err}"))?;
@@ -156,7 +158,10 @@ mod tests {
         authority.set_now(2_000);
         let mut sink = RingSink::new(authority, subject());
 
-        assert!(sink.emit("open-address", r#"{"url": "https://a.test"}"#).is_ok());
+        assert!(
+            sink.emit("open-address", r#"{"url": "https://a.test"}"#)
+                .is_ok()
+        );
         assert!(matches!(
             sink.emit("close-session", ""),
             Err(Refusal::Denied(why)) if why.contains("session")

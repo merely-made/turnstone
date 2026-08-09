@@ -46,7 +46,10 @@ impl Shell {
             surface.rect.w.round().max(1.0) as u32,
             surface.rect.h.round().max(1.0) as u32,
         );
-        let Some(pane) = self.workbench_pane.as_mut() else {
+        let crate::surface::SurfaceKind::Pane(pane_id) = surface.kind else {
+            return;
+        };
+        let Some(pane) = self.workbench_panes.get_mut(&pane_id) else {
             return;
         };
         let target_cell = pane.tiling().cell_at(lx, ly).cloned();
@@ -89,7 +92,7 @@ impl Shell {
                 return None;
             }
             let rect = [s.rect.x, s.rect.y, s.rect.w, s.rect.h];
-            let pane = self.workbench_pane.as_ref()?;
+            let pane = self.workbench_panes.get(&id)?;
             let a = pane.resolve(&genet_probe::Selector::class("tab").containing(from), rect)?;
             let b = pane.resolve(&genet_probe::Selector::class("tab").containing(onto), rect)?;
             // An edge release aims 10% into that band of the TARGET CELL's
@@ -139,7 +142,7 @@ impl Shell {
                 return None;
             }
             let rect = [s.rect.x, s.rect.y, s.rect.w, s.rect.h];
-            let pane = self.workbench_pane.as_ref()?;
+            let pane = self.workbench_panes.get(&id)?;
             pane.resolve(&genet_probe::Selector::class("tab").containing(from), rect)
         });
         let release = plan
@@ -182,7 +185,11 @@ impl Shell {
         if let Some(member) = target
             && let Some((data_uri, hull)) = decode_sprite(path)
         {
-            self.act(Action::SetNodeSprite { member, data_uri, hull });
+            self.act(Action::SetNodeSprite {
+                member,
+                data_uri,
+                hull,
+            });
             return;
         }
         // A dropped .lua (a control script) or .wasm (an `app-core` component)

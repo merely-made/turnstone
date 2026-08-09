@@ -146,4 +146,3 @@ pub fn trail_rows(app: &App) -> Vec<TrailRow> {
     }
     rows
 }
-

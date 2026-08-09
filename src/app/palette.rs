@@ -5,7 +5,7 @@
 //! the `>` lane, the snapshot, and the automation runner alike — composing it
 //! twice is how they come to disagree about what a label means.
 
-use crate::action::{Action, Effect, PaneKind};
+use crate::action::{Action, Effect};
 use crate::observe::AppEvent;
 use crate::panes::PaneContent;
 

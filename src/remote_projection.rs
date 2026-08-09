@@ -20,11 +20,11 @@ use graphshell_protocol::{
     ProjectionOffer, ProjectionRequest, ProjectionSession, ProjectionSnapshot, ProtocolVersion,
     ResourceRequest, ResourceResponse, SemanticRole,
 };
+use identity::IdentityProvider;
+use identity::delegation::SignedDelegationCertificate;
 use mere::kernel::graph::NodeKey;
 use sceno::{Arrangement, Score, Spiral};
 use scenotime::{Revision, SceneEpoch, SceneSnapshot};
-use identity::IdentityProvider;
-use identity::delegation::SignedDelegationCertificate;
 use servitor::delegation::{DelegationTable, root_certificate};
 use servitor::{Cap, Gate, Grant, Mode, ScopePath, Subject};
 
@@ -693,7 +693,9 @@ mod tests {
             "the subject is a derived KEY, not a hash of its own name"
         );
         assert!(
-            endpoint.authority.covers(endpoint.subject, &layout, Mode::Write),
+            endpoint
+                .authority
+                .covers(endpoint.subject, &layout, Mode::Write),
             "the delegated layout capability covers"
         );
         assert!(

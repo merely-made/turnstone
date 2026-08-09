@@ -149,7 +149,10 @@ mod tests {
         let mut states = ContentStates::default();
         assert!(states.flip_spawns(node), "empty flips ON");
         states.note_requested(node);
-        assert!(!states.flip_spawns(node), "in-flight flips OFF, not double-spawns");
+        assert!(
+            !states.flip_spawns(node),
+            "in-flight flips OFF, not double-spawns"
+        );
         states.note_live(node, None);
         assert!(!states.flip_spawns(node), "live flips OFF");
         states.note_closed(node);

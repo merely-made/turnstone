@@ -13,8 +13,9 @@ use script_engine_api::{Budget, CallCx, HostData, NativeFn, PumpOutcome, ScriptE
 use script_engine_piccolo::{PiccoloCallCx, PiccoloEngine};
 use serde_json::json;
 
-use crate::action::{Action, PaneKind};
+use crate::action::Action;
 use crate::app::App;
+use crate::panes::{PaneKindId, kind};
 
 const READ_APP: u8 = 1 << 0;
 const DISPATCH_ACTION: u8 = 1 << 1;
@@ -196,19 +197,20 @@ fn action_for(command: &str) -> Option<Action> {
     }
 }
 
-fn pane_kind(pane: &str) -> Option<PaneKind> {
+fn pane_kind(pane: &str) -> Option<PaneKindId> {
     match pane.trim().to_ascii_lowercase().as_str() {
-        "roster" => Some(PaneKind::Roster),
-        "trail" => Some(PaneKind::Trail),
-        "gloss" => Some(PaneKind::Gloss),
-        "inspector" => Some(PaneKind::Inspector),
-        "steward" => Some(PaneKind::Steward),
-        "comms" => Some(PaneKind::Comms),
-        "apparatus" => Some(PaneKind::Apparatus),
-        "overmap" => Some(PaneKind::Overmap),
-        "workbench" => Some(PaneKind::Workbench),
-        "settings" => Some(PaneKind::Settings),
-        "publishing" => Some(PaneKind::Publishing),
+        "roster" => Some(PaneKindId::new(kind::ROSTER)),
+        "trail" => Some(PaneKindId::new(kind::TRAIL)),
+        "gloss" => Some(PaneKindId::new(kind::GLOSS)),
+        "inspector" => Some(PaneKindId::new(kind::INSPECTOR)),
+        "steward" => Some(PaneKindId::new(kind::STEWARD)),
+        "comms" => Some(PaneKindId::new(kind::COMMS)),
+        "apparatus" => Some(PaneKindId::new(kind::APPARATUS)),
+        "overmap" => Some(PaneKindId::new(kind::OVERMAP)),
+        "workbench" => Some(PaneKindId::new(kind::WORKBENCH)),
+        "settings" => Some(PaneKindId::new(kind::SETTINGS)),
+        "publishing" => Some(PaneKindId::new(kind::PUBLISHING)),
+        "shared-knot" => Some(PaneKindId::new(kind::SHARED_KNOT)),
         _ => None,
     }
 }
@@ -315,12 +317,11 @@ mod tests {
         let app = App::test_stub();
         let subject = Subject::new([9; 32]);
 
-        let world_only =
-            GrantTable::new().with_grant(Grant::new(
-                subject,
-                Cap::scope("scenario").unwrap(),
-                Mode::Write,
-            ));
+        let world_only = GrantTable::new().with_grant(Grant::new(
+            subject,
+            Cap::scope("scenario").unwrap(),
+            Mode::Write,
+        ));
         let caps = capabilities_from_grant(&world_only, subject);
         let err = run(&app, "mere.open('mere://x')", caps, 500).unwrap_err();
         assert!(
@@ -375,7 +376,7 @@ mod tests {
             actions,
             vec![
                 Action::OpenAddress("https://example.test".into()),
-                Action::SummonPane(PaneKind::Roster),
+                Action::SummonPane(PaneKindId::new(kind::ROSTER)),
                 Action::SaveSession,
             ]
         );
@@ -407,7 +408,7 @@ mod tests {
         let mut by_keyboard = App::test_stub();
         for action in [
             Action::OpenAddress("mere://alpha".into()),
-            Action::SummonPane(PaneKind::Roster),
+            Action::SummonPane(PaneKindId::new(kind::ROSTER)),
             Action::ToggleIsometric,
         ] {
             by_keyboard.update(action);
@@ -433,7 +434,10 @@ mod tests {
         let b = snapshot(&by_script);
         assert_eq!(a.focused.map(|f| f.url), b.focused.map(|f| f.url));
         assert_eq!(a.panes, b.panes);
-        assert_eq!(by_keyboard.canvas.is_isometric(), by_script.canvas.is_isometric());
+        assert_eq!(
+            by_keyboard.canvas.is_isometric(),
+            by_script.canvas.is_isometric()
+        );
         assert!(by_script.canvas.is_isometric(), "both reached isometric");
     }
 

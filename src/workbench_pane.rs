@@ -19,10 +19,10 @@ use cambium::{
     AnyView, DomHandle, GenetAppRunner, GenetCtx, GenetElement, PointerClick, TabStrip,
     arrangement, el, lens, placed_with, tab_strip,
 };
-use sprigging::Placement;
 use genet_layout::{IncrementalLayout, ScrollOffsets};
 use genet_scripted_dom::{NodeId, ScriptedDom};
 use layout_dom_api::LayoutDom;
+use sprigging::Placement;
 use uuid::Uuid;
 
 use crate::app::App;
@@ -53,8 +53,7 @@ struct WorkbenchState {
 }
 
 type WbView = Box<dyn AnyView<WorkbenchState, (), GenetCtx, GenetElement>>;
-type WbRunner =
-    GenetAppRunner<WorkbenchState, fn(&WorkbenchState) -> WbView, WbView, ()>;
+type WbRunner = GenetAppRunner<WorkbenchState, fn(&WorkbenchState) -> WbView, WbView, ()>;
 
 fn workbench_view(state: &WorkbenchState) -> WbView {
     let mut children: Vec<WbView> = Vec::new();
@@ -73,10 +72,7 @@ fn workbench_view(state: &WorkbenchState) -> WbView {
             .attr("style", format!("height: {body_h}px;"));
         children.push(Box::new(placed_with(
             Placement::new(cell.rect.x, cell.rect.y),
-            format!(
-                "width: {}px; height: {}px;",
-                cell.rect.w, cell.rect.h
-            ),
+            format!("width: {}px; height: {}px;", cell.rect.w, cell.rect.h),
             (strip, body),
         )));
     }
@@ -192,8 +188,7 @@ impl WorkbenchPane {
     /// press resolution.
     pub fn tab_at(&self, x: f32, y: f32, w: u32, h: u32) -> Option<Uuid> {
         let dom = self.dom.borrow();
-        let layout =
-            IncrementalLayout::new(&*dom, &[crate::ui::CAMBIUM_SHEET], w as f32, h as f32);
+        let layout = IncrementalLayout::new(&*dom, &[crate::ui::CAMBIUM_SHEET], w as f32, h as f32);
         // Tabs appear in DOM order: cells in walk order, tabs in member order.
         let flat: Vec<Uuid> = self
             .runner
@@ -317,7 +312,11 @@ mod tests {
             )
             .unwrap();
         assert_eq!(pane.tab_at(bx, by, 800, 600), Some(b));
-        assert_eq!(pane.tab_at(400.0, 300.0, 800, 600), None, "a body point is no tab");
+        assert_eq!(
+            pane.tab_at(400.0, 300.0, 800, 600),
+            None,
+            "a body point is no tab"
+        );
     }
 
     /// A click on an inactive tab of a stacked cell reports the activation
@@ -325,7 +324,10 @@ mod tests {
     #[test]
     fn clicking_an_inactive_tab_reports_activation() {
         let (mut app, a, b) = app_with_two_tiles();
-        app.update(Action::WorkbenchStackOnto { dragged: b, target: a });
+        app.update(Action::WorkbenchStackOnto {
+            dragged: b,
+            target: a,
+        });
         // b landed active; a's tab is the inactive one.
         let mut pane = pane_over(&app, 800.0, 600.0);
         assert_eq!(pane.tiling().cells.len(), 1);

@@ -15,12 +15,14 @@
 //! ## Where the key lives
 //!
 //! The **personae vault**, opened with the same ceremony the personae bins
-//! use (`bootstrap::open_storage` + `load_or_create_profile`): OS-sealed
-//! records under DPAPI on Windows, or the portable passphrase vault when
-//! `PERSONAE_PASSPHRASE` is set. By default turnstone opens the SHARED vault at
-//! [`default_vault_dir`] with the `default` profile — the same profile the
-//! personae SSH agent serves — so turnstone's root identity IS the user's
-//! personae identity, not a browser-local key.
+//! use: OS-sealed records under DPAPI on Windows, or the portable passphrase
+//! vault when `PERSONAE_PASSPHRASE` is set. Turnstone opens the SHARED vault
+//! at [`default_vault_dir`] on the **family-chosen profile**
+//! (`identity::roster`: `PERSONAE_PROFILE`, the choice remembered beside the
+//! vault, the vault's sole persona, then `default`) — the same profile the
+//! personae SSH agent and Graphshell speak as — so turnstone's root identity
+//! IS the user's personae identity, not a browser-local key and not a
+//! hardcoded `default` beside the persona they actually use.
 //!
 //! Where no sealed backend exists (non-Windows without a passphrase), the
 //! previous unsealed-seed path remains as a LOUD fallback: a browser that
@@ -32,7 +34,8 @@ use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
 use identity::bootstrap::{self, Unlock};
-use identity::vault::{IdentityStorage, IdentityVault, ProfileId};
+use identity::roster;
+use identity::vault::{IdentityStorage, IdentityVault};
 use identity::{
     DerivedKeyAttestation, Ed25519Keypair, Ed25519PublicKey, IdentityError, IdentityProvider,
     InMemoryProvider,
@@ -98,14 +101,16 @@ impl IdentityProvider for RootIdentity {
     }
 }
 
-/// Load the profile's root identity: the personae vault at `vault_dir` first
-/// (profile `default` — shared with the personae bins, so turnstone's root is
-/// the user's actual identity), the legacy unsealed seed as a loud fallback.
+/// Load the profile's root identity: the personae vault at `vault_dir` first,
+/// on the family-chosen profile (`identity::roster` — shared with the personae
+/// bins and Graphshell, so turnstone's root is the user's actual identity),
+/// the legacy unsealed seed as a loud fallback.
 ///
 /// Never fails the caller: a browser that refuses to start over a key store
 /// is worse than one whose denizens need re-rooting. A changed root is not
 /// silent breakage either — `denizen::rebuild` re-issues from the reviewed
-/// projections under the current root (the re-root heal).
+/// projections under the current root (the re-root heal). That heal is also
+/// what makes a live persona switch an invocation rather than new machinery.
 pub fn load_or_create_root(data_root: &Path, vault_dir: &Path) -> Arc<RootIdentity> {
     match open_vault(vault_dir) {
         Ok(root) => {
@@ -124,14 +129,15 @@ pub fn load_or_create_root(data_root: &Path, vault_dir: &Path) -> Arc<RootIdenti
 }
 
 fn open_vault(vault_dir: &Path) -> Result<RootIdentity, IdentityError> {
-    let opened = bootstrap::open_storage(vault_dir, Unlock::from_env())?;
-    let (profile, created) =
-        bootstrap::load_or_create_profile(&*opened.storage, &ProfileId("default".into()))?;
-    if created {
-        tracing::info!("minted the profile's personae identity (vault profile `default`)");
+    let opened = roster::open_chosen(vault_dir, Unlock::from_env())?;
+    if opened.created {
+        tracing::info!(
+            profile = %opened.profile.0,
+            "minted the profile's personae identity"
+        );
     }
     Ok(RootIdentity::Vault {
-        vault: IdentityVault::with_profile(opened.storage, profile),
+        vault: opened.vault,
         description: opened.description,
     })
 }
@@ -236,7 +242,10 @@ mod tests {
         // A different profile is a different root.
         let other = dir.join("other");
         let other_root = load_or_create_root(&other, &other.join("personae-vault"));
-        assert_ne!(root_subject(first.as_ref()), root_subject(other_root.as_ref()));
+        assert_ne!(
+            root_subject(first.as_ref()),
+            root_subject(other_root.as_ref())
+        );
         let _ = std::fs::remove_dir_all(&dir);
     }
 
@@ -247,8 +256,14 @@ mod tests {
 
         let first = load_or_create_root(&dir, &broken);
         assert!(matches!(first.as_ref(), RootIdentity::Unsealed(_)));
-        assert!(first.description().contains("UNSEALED"), "honest about the protection");
-        assert!(master_key_path(&dir).is_file(), "the fallback seed persisted");
+        assert!(
+            first.description().contains("UNSEALED"),
+            "honest about the protection"
+        );
+        assert!(
+            master_key_path(&dir).is_file(),
+            "the fallback seed persisted"
+        );
 
         let second = load_or_create_root(&dir, &broken);
         assert_eq!(

@@ -18,9 +18,7 @@
 //! containment (`CollectionMember`).
 
 use mere::kernel::graph::apply::{self as graph_apply, GraphDelta, apply_graph_delta};
-use mere::kernel::graph::{
-    ContainmentSubKind, EdgeAssertion, Graph, NodeKey, ProvenanceSubKind,
-};
+use mere::kernel::graph::{ContainmentSubKind, EdgeAssertion, Graph, NodeKey, ProvenanceSubKind};
 use session_runtime::ManifestStore;
 use std::collections::HashMap;
 
@@ -78,7 +76,9 @@ pub fn overmap_graph(sessions: &ManifestStore) -> Graph {
     }
 
     for (id, manifest) in sessions.iter() {
-        let Some(&child) = key_of.get(&id) else { continue };
+        let Some(&child) = key_of.get(&id) else {
+            continue;
+        };
         // Lineage: the child was forked from the parent — the same CopiedFrom
         // sense the fork stamps on each copied node, one level up.
         if let Some(parent) = manifest.parent_session
@@ -159,7 +159,10 @@ mod tests {
         let m = GraphSessionManifest::new(id, GraphId::from_uuid(uuid::Uuid::from_u128(0xa1)));
         let graph = overmap_graph(&store_with(vec![m]));
         let (key, _) = graph.get_node_by_id(uuid::Uuid::from_u128(0xa1)).unwrap();
-        assert_eq!(graph.node_display_label(key), id.0.to_string()[..8].to_string());
+        assert_eq!(
+            graph.node_display_label(key),
+            id.0.to_string()[..8].to_string()
+        );
     }
 
     #[test]

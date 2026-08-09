@@ -9,7 +9,7 @@ use mere::canvas::Canvas;
 
 use crate::panes::{FrisketLayout, GraphId, InsertSide, PaneContent, PaneId, PaneNode};
 
-use crate::action::{Action, Effect, PaneKind, SpaceRef, Update};
+use crate::action::{Action, Effect, SpaceRef, Update};
 use crate::content::ContentStates;
 use crate::observe::AppEvent;
 use crate::surface::FocusTarget;
@@ -32,35 +32,13 @@ pub fn focused_caption(canvas: &Canvas) -> Option<String> {
     }
 }
 
-/// The `crate::panes::PaneContent` a summonable `PaneKind` maps to. The mapping
-/// lives here (not in `action`) so the vocabulary module stays free of the
-/// pane-model crate. Slice C summons these as placeholders; slice D gives each
-/// its real content.
-fn pane_content(kind: PaneKind) -> PaneContent {
-    match kind {
-        PaneKind::Roster => PaneContent::Roster,
-        PaneKind::Trail => PaneContent::Trail,
-        PaneKind::Gloss => PaneContent::Gloss(Default::default()),
-        PaneKind::Inspector => PaneContent::Inspector,
-        PaneKind::Steward => PaneContent::Steward,
-        PaneKind::Comms => PaneContent::Comms,
-        PaneKind::Apparatus => PaneContent::Apparatus,
-        PaneKind::Overmap => PaneContent::Overmap(Default::default()),
-        PaneKind::Workbench => PaneContent::Workbench,
-        PaneKind::Settings => PaneContent::Custom("settings".into()),
-        PaneKind::Publishing => PaneContent::Custom("publishing".into()),
-    }
-}
-
 /// A composable pane's name for its palette rows ("Gloss", "Overmap"): the
 /// pane's own tag, title-cased. Derived rather than tabled, so a pane that
 /// gains a composition names itself.
 fn pane_label(content: &PaneContent) -> String {
-    let mut chars = content.tag().chars();
-    match chars.next() {
-        Some(first) => first.to_uppercase().collect::<String>() + chars.as_str(),
-        None => String::new(),
-    }
+    crate::panes::pane_definition(content.kind_id().as_str())
+        .map(|definition| definition.display_name.to_string())
+        .unwrap_or_else(|| content.tag().to_string())
 }
 
 /// The application state: the hosted canvas (which owns the graph), the
@@ -179,10 +157,6 @@ pub struct App {
 }
 
 impl App {
-
-
-
-
     /// The current session's container id — the root graph's uuid, the key the
     /// `scene.*` facets hang on (the graph is the container node in the one-node
     /// model). `None` if the manifest is somehow absent (scene facets are then
@@ -256,14 +230,6 @@ impl App {
         }
     }
 
-
-
-
-
-
-
-
-
     /// A pane's content by id, in whichever space holds it (primary or a lens).
     pub fn pane_content(&self, pane: PaneId) -> Option<&PaneContent> {
         self.frisket
@@ -273,13 +239,11 @@ impl App {
             .map(|(_, content, _)| content)
     }
 
-
     /// Drain the semantic events emitted since the last call (the shell
     /// hands them to the scenario's log, diagnostics, or drops them).
     pub fn take_events(&mut self) -> Vec<AppEvent> {
         std::mem::take(&mut self.events)
     }
-
 
     /// Seed a new lens window's pane space: a lone Orrery leaf with a freshly
     /// minted pane id (globally unique across every window's tree, so surface
@@ -414,13 +378,15 @@ impl App {
             Action::ToggleSizeByRecency => self.toggle_size_by_recency(),
             Action::SaveSession => vec![Effect::SaveSession],
             Action::JoinPlace(invite) => self.join_place(invite),
-            Action::SendPlaceMessage { channel, body } => self.run_place_command(
-                crate::place::worker::PlaceCommand::SendMessage { channel, body },
-            ),
+            Action::SendPlaceMessage { channel, body } => {
+                self.run_place_command(crate::place::worker::PlaceCommand::SendMessage {
+                    channel,
+                    body,
+                })
+            }
             Action::ShareFocusedNode => match self.focused_address() {
-                Some(address) => self.run_place_command(
-                    crate::place::worker::PlaceCommand::ShareNode { address },
-                ),
+                Some(address) => self
+                    .run_place_command(crate::place::worker::PlaceCommand::ShareNode { address }),
                 None => {
                     self.events
                         .push(AppEvent::PlaceRefused("no focused node to share".into()));
@@ -447,7 +413,8 @@ impl App {
             Action::ConfirmInstallDenizen => self.confirm_install_denizen(),
             Action::CancelInstallDenizen => {
                 if self.pending_install.take().is_some() {
-                    self.events.push(AppEvent::DenizenRefused("cancelled".into()));
+                    self.events
+                        .push(AppEvent::DenizenRefused("cancelled".into()));
                 }
                 self.omnibar = OmnibarState::default();
                 vec![Effect::Redraw]
@@ -483,7 +450,9 @@ impl App {
                 Some(member) => self.fork_session_from(member),
                 None => Vec::new(),
             },
-            Action::SetViewerOverride { member, viewer } => self.set_viewer_override(member, viewer),
+            Action::SetViewerOverride { member, viewer } => {
+                self.set_viewer_override(member, viewer)
+            }
             Action::SetNodeSprite {
                 member,
                 data_uri,
@@ -538,7 +507,9 @@ impl App {
                 }
             }
             Action::CloseWorkbenchTile => self.close_workbench_tile(),
-            Action::WorkbenchStackOnto { dragged, target } => self.workbench_stack_onto(dragged, target),
+            Action::WorkbenchStackOnto { dragged, target } => {
+                self.workbench_stack_onto(dragged, target)
+            }
             Action::WorkbenchSplitBeside {
                 dragged,
                 target,
@@ -556,20 +527,16 @@ impl App {
             }
         }
     }
-
-
-
-
 }
 
 mod denizen_arms;
 mod fixtures;
-mod palette;
-mod updates;
-mod omnibar_arms;
 mod node_arms;
+mod omnibar_arms;
+mod palette;
 mod pane_arms;
 mod session_lifecycle;
+mod updates;
 
 #[cfg(test)]
 mod tests;

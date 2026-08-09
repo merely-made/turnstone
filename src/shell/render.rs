@@ -30,6 +30,7 @@ impl Shell {
     /// content are labeled placeholders (slice C), honestly.
     pub(super) fn pane_scene_by_kind(
         &mut self,
+        pane_id: crate::panes::PaneId,
         content: Option<&PaneContent>,
         rw: u32,
         rh: u32,
@@ -37,8 +38,9 @@ impl Shell {
         match content {
             Some(PaneContent::Trail) => {
                 let pane = self
-                    .trail_pane
-                    .get_or_insert_with(crate::trail_pane::TrailPane::new);
+                    .trail_panes
+                    .entry(pane_id)
+                    .or_insert_with(crate::trail_pane::TrailPane::new);
                 pane.sync(&self.app, rw as f32, rh as f32);
                 pane.scene(rw, rh)
             }
@@ -46,8 +48,9 @@ impl Shell {
                 // The retained cambium grid: refresh it from graph truth at
                 // the pane's size, then draw its DOM.
                 let grid = self
-                    .roster_grid
-                    .get_or_insert_with(crate::cambium_pane::RosterGrid::new);
+                    .roster_grids
+                    .entry(pane_id)
+                    .or_insert_with(crate::cambium_pane::RosterGrid::new);
                 grid.sync(&self.app, rw as f32, rh as f32);
                 grid.scene(rw, rh)
             }
@@ -58,7 +61,7 @@ impl Shell {
                 // section registry (unknown ids are ignored, so a config from
                 // a newer build degrades instead of failing).
                 let providers = crate::sections::resolve(&cfg.sections);
-                let pane = self.gloss_pane.get_or_insert_with(|| {
+                let pane = self.gloss_panes.entry(pane_id).or_insert_with(|| {
                     crate::swatch_pane::SwatchPane::new(crate::swatch_pane::GLOSS_MINIMAP)
                 });
                 pane.set_sections(providers);
@@ -83,8 +86,9 @@ impl Shell {
                     .map(|handle| handle.status().label())
                     .unwrap_or_else(|| "unconfigured".into());
                 let pane = self
-                    .inspector_pane
-                    .get_or_insert_with(crate::inspector_pane::InspectorPane::new);
+                    .inspector_panes
+                    .entry(pane_id)
+                    .or_insert_with(crate::inspector_pane::InspectorPane::new);
                 pane.sync(
                     &self.app,
                     rw as f32,
@@ -101,8 +105,9 @@ impl Shell {
                 // plan; in a lens the furniture shows and tile compositing is
                 // a named follow-on.
                 let pane = self
-                    .workbench_pane
-                    .get_or_insert_with(crate::workbench_pane::WorkbenchPane::new);
+                    .workbench_panes
+                    .entry(pane_id)
+                    .or_insert_with(crate::workbench_pane::WorkbenchPane::new);
                 pane.sync(&self.app, rw as f32, rh as f32);
                 pane.scene(rw, rh)
             }
@@ -110,23 +115,40 @@ impl Shell {
                 // The graph-object facet analyzer's first rows: the viewer
                 // control (radio over the registered lanes).
                 let pane = self
-                    .apparatus_pane
-                    .get_or_insert_with(crate::apparatus_pane::ApparatusPane::new);
+                    .apparatus_panes
+                    .entry(pane_id)
+                    .or_insert_with(crate::apparatus_pane::ApparatusPane::new);
                 pane.sync(&self.app, rw as f32, rh as f32);
                 pane.scene(rw, rh)
             }
-            Some(PaneContent::Custom(name)) if name == "settings" => {
-                let pane = self.settings_pane.get_or_insert_with(|| {
+            Some(PaneContent::Registered(kind))
+                if kind.as_str() == crate::panes::kind::SETTINGS =>
+            {
+                let pane = self.settings_panes.entry(pane_id).or_insert_with(|| {
                     crate::settings_pane::SettingsPane::new(self.app.data_root.clone())
                 });
                 pane.sync(rw as f32, rh as f32);
                 pane.scene(rw, rh)
             }
-            Some(PaneContent::Custom(name)) if name == "publishing" => {
+            Some(PaneContent::Registered(kind))
+                if kind.as_str() == crate::panes::kind::PUBLISHING =>
+            {
                 let service = self.publish_service.clone();
-                let pane = self.publish_pane.get_or_insert_with(|| {
-                    crate::publish_pane::PublishPane::new(service)
-                });
+                let pane = self
+                    .publish_panes
+                    .entry(pane_id)
+                    .or_insert_with(|| crate::publish_pane::PublishPane::new(service));
+                pane.sync(rw as f32, rh as f32);
+                pane.scene(rw, rh)
+            }
+            Some(PaneContent::Registered(kind))
+                if kind.as_str() == crate::panes::kind::SHARED_KNOT =>
+            {
+                let service = self.shared_knot_service.clone();
+                let pane = self
+                    .shared_knot_panes
+                    .entry(pane_id)
+                    .or_insert_with(|| crate::share_reader_pane::SharedKnotPane::new(service));
                 pane.sync(rw as f32, rh as f32);
                 pane.scene(rw, rh)
             }
@@ -137,7 +159,7 @@ impl Shell {
                 // Gloss does, off ITS OWN leaf: one renderer, one config shape,
                 // so the second host cost a resolve and a setter.
                 let providers = crate::sections::resolve(&cfg.sections);
-                let pane = self.overmap_pane.get_or_insert_with(|| {
+                let pane = self.overmap_panes.entry(pane_id).or_insert_with(|| {
                     crate::swatch_pane::SwatchPane::new(crate::swatch_pane::OVERMAP_LINEAGE)
                 });
                 pane.set_sections(providers);
@@ -227,7 +249,7 @@ impl Shell {
                     // runners (extracted so lens windows render the same
                     // panes through the same runners — the identity story).
                     let content = self.pane_content(id);
-                    let scene = self.pane_scene_by_kind(content.as_ref(), rw, rh);
+                    let scene = self.pane_scene_by_kind(id, content.as_ref(), rw, rh);
                     (scene, wgpu::Color::TRANSPARENT)
                 }
                 crate::surface::SurfaceKind::Divider(_) => {

@@ -78,12 +78,7 @@ impl FrisketLayout {
             // "summon next to *this*" stays consistent.
             return false;
         }
-        let placeholder = PaneNode::Leaf {
-            pane_id: PaneId(0),
-            content: PaneContent::Custom("__placeholder__".to_string()),
-            graph_id: GraphId(uuid::Uuid::nil()),
-        };
-        let original = std::mem::replace(target, placeholder);
+        let original = target.clone();
         let (first, second) = if side.new_is_first() {
             (Box::new(new_leaf), Box::new(original))
         } else {
@@ -198,22 +193,8 @@ impl FrisketLayout {
         };
         let removed_first = last_step[0];
         let keeper = match removed_first {
-            SplitChoice::First => std::mem::replace(
-                second.as_mut(),
-                PaneNode::Leaf {
-                    pane_id: PaneId(0),
-                    content: PaneContent::Custom("__placeholder__".to_string()),
-                    graph_id: GraphId(uuid::Uuid::nil()),
-                },
-            ),
-            SplitChoice::Second => std::mem::replace(
-                first.as_mut(),
-                PaneNode::Leaf {
-                    pane_id: PaneId(0),
-                    content: PaneContent::Custom("__placeholder__".to_string()),
-                    graph_id: GraphId(uuid::Uuid::nil()),
-                },
-            ),
+            SplitChoice::First => second.as_ref().clone(),
+            SplitChoice::Second => first.as_ref().clone(),
         };
         // Replace the parent split entirely with the surviving sibling.
         *parent = keeper;
@@ -389,28 +370,16 @@ fn dedup_node(node: &mut PaneNode, seen: &mut std::collections::HashSet<GraphId>
                 // Both children are duplicate leaves â†’ this split collapses too.
                 (true, true) => true,
                 (true, false) => {
-                    let keeper = std::mem::replace(second.as_mut(), dedup_placeholder());
-                    *node = keeper;
+                    *node = second.as_ref().clone();
                     false
                 }
                 (false, true) => {
-                    let keeper = std::mem::replace(first.as_mut(), dedup_placeholder());
-                    *node = keeper;
+                    *node = first.as_ref().clone();
                     false
                 }
                 (false, false) => false,
             }
         }
-    }
-}
-
-/// A throwaway leaf used as the `mem::replace` stand-in while promoting a split's
-/// survivor over a dropped duplicate (never observed â€” the node is overwritten).
-fn dedup_placeholder() -> PaneNode {
-    PaneNode::Leaf {
-        pane_id: PaneId(0),
-        content: PaneContent::Custom("__dedup_placeholder__".to_string()),
-        graph_id: GraphId(uuid::Uuid::nil()),
     }
 }
 

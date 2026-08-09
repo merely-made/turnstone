@@ -12,10 +12,10 @@ use winit::window::WindowId;
 use std::sync::Arc;
 
 use genet_winit_host::SurfaceHost;
+use mere::canvas::WHEEL_PAN_SCALE;
 use netrender::NetrenderOptions;
 use winit::dpi::PhysicalSize;
 use winit::window::Window;
-use mere::canvas::WHEEL_PAN_SCALE;
 
 use crate::action::Action;
 use crate::browse;

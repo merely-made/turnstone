@@ -192,9 +192,7 @@ pub fn update_place_binding(
 
 /// Load and validate this session's public shared-place binding. Absence means
 /// a personal session; malformed or unsupported content is an explicit error.
-pub fn load_place_binding(
-    session_dir: &Path,
-) -> Result<Option<PlaceBindingV1>, PlaceSidecarError> {
+pub fn load_place_binding(session_dir: &Path) -> Result<Option<PlaceBindingV1>, PlaceSidecarError> {
     let path = place_binding_path(session_dir);
     let bytes = match std::fs::read(&path) {
         Ok(bytes) => bytes,
@@ -792,7 +790,11 @@ mod tests {
         .unwrap();
 
         let error = load_place_binding(&root).unwrap_err();
-        assert!(error.to_string().contains("unsupported place binding version 99"));
+        assert!(
+            error
+                .to_string()
+                .contains("unsupported place binding version 99")
+        );
         assert!(
             place_binding_path(&root).exists(),
             "a failed load does not erase the evidence"

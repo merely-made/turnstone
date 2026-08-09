@@ -200,8 +200,7 @@ mod tests {
         // Resolve the livery option's centre off the laid-out DOM.
         let (x, y) = {
             let dom = pane.dom.borrow();
-            let layout =
-                IncrementalLayout::new(&*dom, &[crate::ui::CAMBIUM_SHEET], 400.0, 600.0);
+            let layout = IncrementalLayout::new(&*dom, &[crate::ui::CAMBIUM_SHEET], 400.0, 600.0);
             let radio = dom
                 .all_with_class(dom.document(), "radio")
                 .into_iter()
@@ -225,8 +224,15 @@ mod tests {
             viewer: Some("genet.livery".to_string()),
         });
         pane.sync(&app, 400.0, 600.0);
-        assert_eq!(pane.runner.state().radio.selected, 2, "the sidecar mirrors back");
-        assert!(pane.click(x, y, 400, 600).is_empty(), "re-picking the same is no intent");
+        assert_eq!(
+            pane.runner.state().radio.selected,
+            2,
+            "the sidecar mirrors back"
+        );
+        assert!(
+            pane.click(x, y, 400, 600).is_empty(),
+            "re-picking the same is no intent"
+        );
     }
 
     #[test]
@@ -236,6 +242,10 @@ mod tests {
         assert_eq!(viewer_for_index(2).as_deref(), Some("genet.livery"));
         assert_eq!(index_for_viewer(None), 0);
         assert_eq!(index_for_viewer(Some("genet.livery")), 2);
-        assert_eq!(index_for_viewer(Some("unknown.lane")), 0, "unknown shows Auto");
+        assert_eq!(
+            index_for_viewer(Some("unknown.lane")),
+            0,
+            "unknown shows Auto"
+        );
     }
 }

@@ -55,7 +55,8 @@ fn issue_share(state: &mut PublishPaneState, _: cambium::PointerClick) {
     let reader = match knot::parse_hex32(state.reader.text()) {
         Ok(reader) => reader,
         Err(_) => {
-            state.local_status = "Reader must be a 64-hex Personae/device public key.".into();
+            state.local_status =
+                "Reader key must be the 64-hex key shown by their Shared Knot pane.".into();
             return;
         }
     };
@@ -215,7 +216,10 @@ fn publish_pane_view(state: &PublishPaneState) -> PublishPaneView {
                     .attr("class", "list-section-title"),
                 el::<_, PublishPaneState, ()>("div", candidate_rows),
                 field(|state| &mut state.source_document, "Source document id"),
-                field(|state| &mut state.reader, "Reader public key"),
+                field(
+                    |state| &mut state.reader,
+                    "Reader key from their Shared Knot pane",
+                ),
                 field(|state| &mut state.hours, "Share expiry hours"),
                 el::<_, PublishPaneState, ()>("div", controls).attr("class", "setting-row"),
                 el::<_, PublishPaneState, ()>("div", "Issued shares")

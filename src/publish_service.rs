@@ -9,12 +9,11 @@ use std::collections::BTreeMap;
 use std::sync::{Arc, Mutex, mpsc};
 use std::time::Duration;
 
-use base64::Engine as _;
 use identity::IdentityProvider;
 use knot::{
     KnotPublishCandidate, KnotPublishEligibility, KnotPublishHostLimits, KnotPublishSource,
-    KnotShareRecipient, NetworkId, ProfileRef, PublicationId, TrustedRoot, publish_alpn,
-    publish_policy, revoke_share,
+    KnotShareRecipient, NetworkId, ProfileRef, PublicationId, TrustedRoot, encode_share_ticket,
+    publish_alpn, publish_policy, revoke_share,
 };
 use tokio::sync::mpsc as tokio_mpsc;
 use transport::Transport;
@@ -24,8 +23,8 @@ use crate::identity::RootIdentity;
 
 const NETWORK_CONTEXT: &str = "turnstone.knot-publish.network.v1";
 const AUTHORITY_CONTEXT: &str = "turnstone.knot-publish.authority.v1";
-const PROFILE_ID: &str = "mere.knot.publish";
-const PROFILE_REVISION: u32 = 1;
+pub(super) const PROFILE_ID: &str = "mere.knot.publish";
+pub(super) const PROFILE_REVISION: u32 = 1;
 const DEFAULT_SHARE_HOURS: u64 = 24;
 
 /// The owner-visible status of one source candidate.
@@ -315,10 +314,13 @@ async fn run(
                         ).await;
                         match ticket {
                             Ok(ticket) => {
-                                let handoff = base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(
-                                    serde_json::to_vec(&ticket)
-                                        .map_err(|error| format!("encode publishing ticket: {error}"))?,
-                                );
+                                let handoff = match encode_share_ticket(&ticket) {
+                                    Ok(ticket) => ticket,
+                                    Err(error) => {
+                                        set_status(&snapshot, format!("Could not encode publishing ticket: {error}"));
+                                        continue;
+                                    }
+                                };
                                 let share = next_share;
                                 next_share = next_share.saturating_add(1);
                                 issued.insert(share, IssuedShare { ticket, reader, expires_at_ms, revoked: false });

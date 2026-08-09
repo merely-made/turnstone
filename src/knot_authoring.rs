@@ -251,6 +251,46 @@ enum HostedKnot {
     },
 }
 
+/// Which persona's vault the Knot lane opens.
+///
+/// `TURNSTONE_KNOT_PERSONA` when set — the explicit override, and until now
+/// the only way, which meant hand-copying a UUID into an environment variable
+/// before the lane worked at all. Otherwise the family answer: the personas
+/// that actually exist under the shared root. One persona is the ordinary
+/// machine and resolves silently. Zero or several are told plainly, with what
+/// exists, because guessing among real cryptographic identities is how a
+/// document gets sealed to somebody else.
+fn resolve_knot_persona() -> Result<identity::PersonaId, String> {
+    if let Some(value) = std::env::var_os("TURNSTONE_KNOT_PERSONA") {
+        return value
+            .to_string_lossy()
+            .trim()
+            .parse::<uuid::Uuid>()
+            .map(identity::PersonaId::from_uuid)
+            .map_err(|error| format!("TURNSTONE_KNOT_PERSONA must be a UUID: {error}"));
+    }
+    let root = session_runtime::shared_root::shared_root();
+    let personas = session_runtime::wallet_store::list_personas(&root)
+        .map_err(|error| format!("could not list personas under {}: {error}", root.display()))?;
+    match personas.as_slice() {
+        [only] => Ok(*only),
+        [] => Err(format!(
+            "no persona wallet exists under {} yet; pair or create one first, or set \
+             TURNSTONE_KNOT_PERSONA",
+            root.display()
+        )),
+        several => Err(format!(
+            "several personas live under {}; set TURNSTONE_KNOT_PERSONA to one of: {}",
+            root.display(),
+            several
+                .iter()
+                .map(|persona| persona.as_uuid().to_string())
+                .collect::<Vec<_>>()
+                .join(", ")
+        )),
+    }
+}
+
 impl KnotHub {
     /// Host the Knot endpoint in this process, over the in-memory carrier.
     ///
@@ -507,16 +547,9 @@ impl KnotAuthoringEngine {
                             "persona-vault effects cannot admit file: outside the vault".into()
                         );
                     }
-                    let persona = std::env::var("TURNSTONE_KNOT_PERSONA")
-                        .map_err(|_| {
-                            "TURNSTONE_KNOT_PERSONA is required for persona-vault mode".to_string()
-                        })?
-                        .parse::<uuid::Uuid>()
-                        .map(identity::PersonaId::from_uuid)
-                        .map_err(|error| {
-                            format!("TURNSTONE_KNOT_PERSONA must be a UUID: {error}")
-                        })?;
-                    Some(HostedKnot::PersonaVault { persona })
+                    Some(HostedKnot::PersonaVault {
+                        persona: resolve_knot_persona()?,
+                    })
                 }
                 _ => None,
             };
@@ -553,15 +586,13 @@ impl KnotAuthoringEngine {
                 max_source_bytes.to_string().into(),
             ],
             "persona-vault" => {
-                let persona = std::env::var_os("TURNSTONE_KNOT_PERSONA").ok_or_else(|| {
-                    "TURNSTONE_KNOT_PERSONA is required for persona-vault mode".to_string()
-                })?;
+                let persona: std::ffi::OsString =
+                    resolve_knot_persona()?.as_uuid().to_string().into();
                 // The same root the hosted path uses. `knot_endpoint` takes the
                 // root as an argument so a test can point it at a scratch
                 // profile; turnstone's answer is the family-shared one, and a
                 // guard that only one deployment honours is not a guard.
-                let vault_root =
-                    session_runtime::shared_root::shared_root().into_os_string();
+                let vault_root = session_runtime::shared_root::shared_root().into_os_string();
                 if effects_enabled {
                     if schemes
                         .split(',')

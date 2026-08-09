@@ -248,7 +248,10 @@ mod tests {
         );
         // A non-scroll key is not a content-scroll key: it must fall through to
         // become an Action (e.g. Delete forgets the node).
-        assert_eq!(content_scroll_key(&named(WinitNamedKey::Delete), false), None);
+        assert_eq!(
+            content_scroll_key(&named(WinitNamedKey::Delete), false),
+            None
+        );
         assert_eq!(
             content_scroll_key(&WinitKey::Character("i".into()), false),
             None
