@@ -11,6 +11,7 @@ use std::ops::{Deref, DerefMut};
 
 use mere::canvas::{Canvas, Viewport};
 use mere::forme::FormeRef;
+use mere::platen::Workbench;
 
 use crate::panes::{GraphId, PaneId, SessionId};
 
@@ -162,6 +163,7 @@ impl DerefMut for GraphRuntimePool {
 #[derive(Default)]
 pub struct GraphPaneViews {
     viewports: HashMap<PaneId, Viewport>,
+    selections: HashMap<PaneId, Vec<uuid::Uuid>>,
 }
 
 impl GraphPaneViews {
@@ -173,11 +175,17 @@ impl GraphPaneViews {
         } else {
             self.viewports.insert(pane, canvas.viewport());
         }
+        if let Some(selection) = self.selections.get(&pane) {
+            canvas.set_selected_members(selection);
+        } else {
+            self.selections.insert(pane, canvas.selected_members());
+        }
     }
 
     /// Save the working viewport after the pane's input/render pass.
     pub fn stash(&mut self, pane: PaneId, canvas: &Canvas) {
         self.viewports.insert(pane, canvas.viewport());
+        self.selections.insert(pane, canvas.selected_members());
     }
 
     pub fn viewport(&self, pane: PaneId) -> Option<Viewport> {
@@ -185,7 +193,20 @@ impl GraphPaneViews {
     }
 
     pub fn remove(&mut self, pane: PaneId) -> Option<Viewport> {
+        self.selections.remove(&pane);
         self.viewports.remove(&pane)
+    }
+
+    /// The one selected graph member this pane publishes, if its selection is
+    /// unambiguous. Multiple selections deliberately do not manufacture a
+    /// focused member for followers.
+    pub fn focused_member(&self, pane: PaneId) -> Option<uuid::Uuid> {
+        let selection = self.selections.get(&pane)?;
+        (selection.len() == 1).then_some(selection[0])
+    }
+
+    pub fn selected_members(&self, pane: PaneId) -> Option<&[uuid::Uuid]> {
+        self.selections.get(&pane).map(Vec::as_slice)
     }
 }
 
@@ -199,9 +220,12 @@ pub struct FormeRuntimeKey {
     pub forme: FormeRef,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Debug)]
 pub struct FormeRuntime {
     pub key: FormeRuntimeKey,
+    /// Curated member arrangement for exactly this graph/Forme source. It is
+    /// not a window-global workbench and it is not graph truth.
+    pub workbench: Workbench,
 }
 
 #[derive(Default)]
@@ -212,11 +236,26 @@ pub struct FormeRuntimePool {
 impl FormeRuntimePool {
     pub fn get_or_create(&mut self, graph: GraphId, forme: FormeRef) -> &mut FormeRuntime {
         let key = FormeRuntimeKey { graph, forme };
-        self.runtimes.entry(key).or_insert(FormeRuntime { key })
+        self.runtimes.entry(key).or_insert_with(|| FormeRuntime {
+            key,
+            workbench: Workbench::new(),
+        })
     }
 
     pub fn get(&self, graph: GraphId, forme: FormeRef) -> Option<&FormeRuntime> {
         self.runtimes.get(&FormeRuntimeKey { graph, forme })
+    }
+
+    pub fn get_mut(&mut self, graph: GraphId, forme: FormeRef) -> Option<&mut FormeRuntime> {
+        self.runtimes.get_mut(&FormeRuntimeKey { graph, forme })
+    }
+
+    pub fn iter(&self) -> impl Iterator<Item = &FormeRuntime> {
+        self.runtimes.values()
+    }
+
+    pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut FormeRuntime> {
+        self.runtimes.values_mut()
     }
 
     pub fn len(&self) -> usize {
@@ -297,6 +336,32 @@ mod tests {
     }
 
     #[test]
+    fn pane_selections_do_not_alias_on_one_graph() {
+        let a = graph(1);
+        let first = PaneId(10);
+        let second = PaneId(11);
+        let mut pool = GraphRuntimePool::new(a, None, Canvas::new());
+        let one = pool.active_canvas_mut().visit("https://one.example/");
+        let one = pool.active_canvas().graph().get_node(one).expect("one").id;
+        let two = pool.active_canvas_mut().visit("https://two.example/");
+        let two = pool.active_canvas().graph().get_node(two).expect("two").id;
+        let mut views = GraphPaneViews::default();
+        let canvas = pool.canvas_mut(a).expect("graph runtime");
+
+        views.install(first, canvas);
+        canvas.select_member(one);
+        views.stash(first, canvas);
+        views.install(second, canvas);
+        canvas.select_member(two);
+        views.stash(second, canvas);
+
+        assert_eq!(views.focused_member(first), Some(one));
+        assert_eq!(views.focused_member(second), Some(two));
+        views.install(first, canvas);
+        assert_eq!(canvas.focused_member(), Some(one));
+    }
+
+    #[test]
     fn forme_runtime_key_keeps_graph_and_forme_separate() {
         let graph_a = graph(1);
         let graph_b = graph(2);
@@ -309,5 +374,22 @@ mod tests {
         assert_eq!(pool.len(), 2);
         assert!(pool.get(graph_a, forme).is_some());
         assert!(pool.get(graph_b, forme).is_some());
+    }
+
+    #[test]
+    fn workbenches_are_owned_by_their_forme_runtime() {
+        let graph_a = graph(1);
+        let graph_b = graph(2);
+        let forme = FormeRef::Stored(mere::forme::FormeId::from_uuid(uuid::Uuid::from_u128(7)));
+        let member = uuid::Uuid::from_u128(42);
+        let mut pool = FormeRuntimePool::default();
+
+        pool.get_or_create(graph_a, forme)
+            .workbench
+            .open_tile(member);
+        pool.get_or_create(graph_b, forme);
+
+        assert!(pool.get(graph_a, forme).unwrap().workbench.has_tile(member));
+        assert!(!pool.get(graph_b, forme).unwrap().workbench.has_tile(member));
     }
 }

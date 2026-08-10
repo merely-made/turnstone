@@ -122,13 +122,19 @@ impl WorkbenchPane {
     /// Refresh from app truth at the pane's size: walk the model's geometry
     /// into pane-local rects, resolve tab labels off graph truth, mirror each
     /// cell's active tab into its strip.
-    pub fn sync(&mut self, app: &App, pane_w: f32, pane_h: f32) {
-        let geom = app.workbench.to_arrangement().1;
+    pub fn sync(&mut self, app: &App, pane_id: crate::panes::PaneId, pane_w: f32, pane_h: f32) {
+        let geom = app
+            .workbench_for_pane(pane_id)
+            .map(|workbench| workbench.to_arrangement().1)
+            .unwrap_or(None);
         self.tiling = place_workbench(geom.as_ref(), Rect::new(0.0, 0.0, pane_w, pane_h));
+        let graph = app
+            .graph_for_pane(pane_id)
+            .and_then(|graph| app.graph_runtimes.canvas(graph));
         let label_of = |member: Uuid| -> String {
-            app.graph_runtimes
-                .graph()
-                .nodes()
+            graph
+                .into_iter()
+                .flat_map(|canvas| canvas.graph().nodes())
                 .find(|(_, n)| n.id == member)
                 .map(|(_, n)| {
                     if n.title.trim().is_empty() {
@@ -257,7 +263,7 @@ mod tests {
 
     fn pane_over(app: &App, w: f32, h: f32) -> WorkbenchPane {
         let mut pane = WorkbenchPane::new();
-        pane.sync(app, w, h);
+        pane.sync(app, app.default_graph_pane(), w, h);
         pane
     }
 

@@ -147,11 +147,22 @@ impl ApplicationHandler for Shell {
                 self.cursor = (position.x as f32, position.y as f32);
                 self.deliver_move(self.cursor.0, self.cursor.1);
                 self.deliver_hover(self.cursor.0, self.cursor.1);
-                if self
-                    .app
-                    .graph_runtimes
-                    .cursor_moved(self.cursor.0, self.cursor.1)
-                {
+                let graph_redraw = self
+                    .surface_plan()
+                    .into_iter()
+                    .find(|surface| surface.rect.contains(self.cursor.0, self.cursor.1))
+                    .and_then(|surface| match surface.kind {
+                        crate::surface::SurfaceKind::Graph(pane) => {
+                            Some(self.app.graph_pane_cursor_moved(
+                                pane,
+                                self.cursor.0 - surface.rect.x,
+                                self.cursor.1 - surface.rect.y,
+                            ))
+                        }
+                        _ => None,
+                    })
+                    .unwrap_or(false);
+                if graph_redraw {
                     self.request_redraw();
                 }
             }

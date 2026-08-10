@@ -53,7 +53,7 @@ impl Shell {
                     .roster
                     .entry(pane_id)
                     .or_insert_with(crate::cambium_pane::RosterGrid::new);
-                grid.sync(&self.app, rw as f32, rh as f32);
+                grid.sync(&self.app, pane_id, rw as f32, rh as f32);
                 grid.scene(rw, rh)
             }
             Some(PaneContent::Gloss(cfg)) => {
@@ -73,8 +73,8 @@ impl Shell {
             Some(PaneContent::Inspector) => {
                 let clip_source_available = self
                     .app
-                    .graph_runtimes
-                    .focused_member()
+                    .follower_context(pane_id)
+                    .and_then(|context| context.member)
                     .and_then(|member| self.content_sessions.get(&member))
                     .and_then(|session| session.clip())
                     .is_some();
@@ -94,6 +94,7 @@ impl Shell {
                     .or_insert_with(crate::inspector_pane::InspectorPane::new);
                 pane.sync(
                     &self.app,
+                    pane_id,
                     rw as f32,
                     rh as f32,
                     clip_target.as_deref(),
@@ -112,7 +113,7 @@ impl Shell {
                     .workbench
                     .entry(pane_id)
                     .or_insert_with(crate::workbench_pane::WorkbenchPane::new);
-                pane.sync(&self.app, rw as f32, rh as f32);
+                pane.sync(&self.app, pane_id, rw as f32, rh as f32);
                 pane.scene(rw, rh)
             }
             Some(PaneContent::Apparatus) => {
@@ -222,7 +223,12 @@ impl Shell {
         // surfaces, each with its own rect. Built by the same helper input
         // routing uses, so what a frame draws and what a pointer hits agree.
         let surfaces = self.surface_plan();
-        let caption = crate::app::focused_caption(&self.app.graph_runtimes);
+        let caption = self
+            .app
+            .focused_graph_pane()
+            .and_then(|pane| self.app.graph_for_pane(pane))
+            .and_then(|graph| self.app.graph_runtimes.canvas(graph))
+            .and_then(crate::app::focused_caption);
 
         // Bug #2 (rung-4 debt): keep EVERY live session's clock advancing, not
         // just the framed one. Before this, a session lost focus and stopped
@@ -250,11 +256,15 @@ impl Shell {
                 rect.h.round().max(1.0) as u32,
             );
             let (scene, clear) = match surface.kind {
-                crate::surface::SurfaceKind::Canvas => {
-                    // Analytic layout strategies project through the host loop
-                    // (recompute-gated) before the frame reads positions.
-                    self.app.drive_layout_strategy(rw, rh);
-                    let (scene, animating) = self.app.graph_runtimes.frame(rw, rh);
+                crate::surface::SurfaceKind::Graph(pane) => {
+                    // A graph surface is addressed by its pane. The app swaps
+                    // this pane's camera/selection into its graph runtime for
+                    // exactly this frame, then stashes it back before another
+                    // pane can render the same graph.
+                    let (scene, animating) = self
+                        .app
+                        .graph_pane_frame(pane, rw, rh)
+                        .unwrap_or_else(|| (Scene::default(), false));
                     needs_redraw |= animating;
                     needs_redraw |= self.app.resolve_pending_images() > 0;
                     (scene, wgpu::Color::WHITE)

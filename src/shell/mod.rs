@@ -38,8 +38,6 @@ use winit::keyboard::{Key as WinitKey, NamedKey as WinitNamedKey};
 use winit::window::{Window, WindowId};
 
 use crate::panes::PaneContent;
-use crate::settings_pane::LiveSettingsHandle;
-use crate::settings_provider::ApplicationSettingsProvider;
 
 use crate::action::{Action, Effect, Update};
 use crate::app::App;
@@ -118,9 +116,6 @@ struct CompositeLayer {
 /// that drive it.
 pub struct Shell {
     app: App,
-    /// The shell-owned live value projection. Settings panes receive clones;
-    /// the shell alone polls and applies the typed chrome snapshot.
-    live_settings: LiveSettingsHandle,
     /// Wakes the loop when the physics or fetch actor has news.
     proxy: EventLoopProxy<()>,
     /// The fetch actor's command handle; dropping it ends the actor.
@@ -230,10 +225,10 @@ pub struct Shell {
     /// clicks live, lens windows carry the caption chip. Replaces the
     /// hand-built `ui::chrome_scene`.
     chrome: crate::chrome_view::ChromeSurfaces,
-    /// A workbench tab drag in flight: the pressed tab's member, held from
-    /// press to release. Release over another cell stacks (the model's
-    /// `move_to_slot_of`); release on the same cell is a click (activate).
-    wb_tab_drag: Option<uuid::Uuid>,
+    /// A workbench tab drag in flight, scoped to its source pane. Two
+    /// Workbenches can be visible at once, so a member id alone cannot choose
+    /// which Forme arrangement a release mutates.
+    wb_tab_drag: Option<(crate::panes::PaneId, uuid::Uuid)>,
     /// A workbench divider drag in flight: the pressed band plus the pane's
     /// window origin (the walk is pane-local; pointer deliveries are window
     /// coords).
@@ -262,16 +257,7 @@ pub struct Shell {
 
 impl Shell {
     pub fn new(proxy: EventLoopProxy<()>, address: Option<String>) -> Self {
-        let (mut app, boot_effects) = App::boot(address.as_deref());
-        let initial_settings = match ApplicationSettingsProvider::load(&app.data_root) {
-            Ok(provider) => provider.settings().clone(),
-            Err(error) => {
-                tracing::warn!(%error, "application settings could not be loaded at shell startup");
-                session_runtime::ApplicationSettings::default()
-            }
-        };
-        let live_settings = LiveSettingsHandle::new(&initial_settings);
-        app.apply_chrome_settings_snapshot(&live_settings.snapshot());
+        let (app, boot_effects) = App::boot(address.as_deref());
 
         // The fetch actor on its own armillary thread, waking this loop like
         // the physics actor does.
@@ -347,7 +333,6 @@ impl Shell {
 
         let mut shell = Self {
             app,
-            live_settings,
             proxy,
             fetch_handle,
             fetch_rx,
@@ -391,14 +376,6 @@ impl Shell {
         shell
     }
 
-    /// Poll the value projection after a settings pane persists a write. The
-    /// shell owns the redraw boundary and the `ShellChromeConfig`; the pane
-    /// remains a retained form with no renderer back-channel.
-    fn poll_live_settings(&mut self) -> bool {
-        self.app
-            .apply_chrome_settings_snapshot(&self.live_settings.snapshot())
-    }
-
     /// Lower one app intent through the spine and run what falls out. Syncs
     /// the window's IME enablement to the omnibar on open/close transitions
     /// (a platform call, so it lives here, not in `update`).
@@ -437,14 +414,14 @@ impl Shell {
     fn surface_plan(&self) -> Vec<crate::surface::Surface> {
         let area = Rect::full(self.width.max(1), self.height.max(1));
         let tiling = crate::pane::place_panes(&self.app.frisket, area, self.app.maximized);
-        let mut canvas_rect = None;
+        let mut graph_rects = Vec::new();
         let mut base: Vec<(SurfaceKind, Rect)> = tiling
             .panes
             .iter()
             .map(|p| {
                 if matches!(p.content, PaneContent::Orrery) {
-                    canvas_rect = Some(p.rect);
-                    (SurfaceKind::Canvas, p.rect)
+                    graph_rects.push((p.id, p.rect));
+                    (SurfaceKind::Graph(p.id), p.rect)
                 } else if let PaneContent::Tile(m) = p.content
                     && self.content_sessions.contains_key(&m)
                 {
@@ -470,15 +447,20 @@ impl Shell {
         // live session as its own content surface at the cell's body rect —
         // the same keyed path the focused inset uses, so tile input routing
         // (wheel, clicks, focus) arrives through the existing Content arms.
-        let wb_rect = tiling
+        let workbench_panes: Vec<_> = tiling
             .panes
             .iter()
-            .find(|p| matches!(p.content, PaneContent::Workbench))
-            .map(|p| p.rect);
-        let tiles: Vec<(uuid::Uuid, Rect)> = wb_rect
-            .map(|rect| {
-                let geom = self.app.workbench.to_arrangement().1;
-                crate::workbench_tiling::place_workbench(geom.as_ref(), rect)
+            .filter(|p| matches!(p.content, PaneContent::Workbench))
+            .map(|p| (p.id, p.rect))
+            .collect();
+        let tiles: Vec<(uuid::Uuid, Rect)> = workbench_panes
+            .iter()
+            .flat_map(|(pane, rect)| {
+                let geom = self
+                    .app
+                    .workbench_for_pane(*pane)
+                    .and_then(|workbench| workbench.to_arrangement().1);
+                crate::workbench_tiling::place_workbench(geom.as_ref(), *rect)
                     .cells
                     .iter()
                     .filter_map(|c| {
@@ -487,9 +469,9 @@ impl Shell {
                             .contains_key(&m)
                             .then(|| (m, c.body()))
                     })
-                    .collect()
+                    .collect::<Vec<_>>()
             })
-            .unwrap_or_default();
+            .collect();
         // Content overlays the canvas pane (when it is shown); a live node's
         // document insets within the graph, not over a maximized pane. A node
         // showing as a workbench tile is not ALSO inset over the canvas: one
@@ -497,7 +479,7 @@ impl Shell {
         // holds ACROSS windows too — when the workbench pane tore out to a
         // lens, its tiles render THERE (the lens's plan walks them), so the
         // same membership excludes the inset here.
-        let wb_in_lens = wb_rect.is_none()
+        let wb_in_lens = workbench_panes.is_empty()
             && self.app.lenses.iter().flatten().any(|space| {
                 space
                     .iter_leaves()
@@ -505,11 +487,26 @@ impl Shell {
             });
         let tiled_in_lens = |id: &uuid::Uuid| {
             wb_in_lens && {
-                let geom = self.app.workbench.to_arrangement().1;
-                crate::workbench_tiling::place_workbench(geom.as_ref(), area)
-                    .cells
+                self.app
+                    .lenses
                     .iter()
-                    .any(|c| c.active_member() == Some(*id))
+                    .enumerate()
+                    .filter_map(|(ordinal, space)| {
+                        space.as_ref().and_then(|space| {
+                            space
+                                .iter_leaves()
+                                .find(|(_, content, _)| matches!(content, PaneContent::Workbench))
+                                .and_then(|(pane, _, _)| self.app.workbench_for_pane(pane))
+                                .and_then(|workbench| workbench.to_arrangement().1)
+                                .map(|geometry| (ordinal, geometry))
+                        })
+                    })
+                    .any(|(_, geom)| {
+                        crate::workbench_tiling::place_workbench(Some(&geom), area)
+                            .cells
+                            .iter()
+                            .any(|c| c.active_member() == Some(*id))
+                    })
             }
         };
         // A pinned Tile pane claims its member wherever its space shows.
@@ -526,17 +523,27 @@ impl Shell {
                 )
                 .any(|(_, c, _)| matches!(c, PaneContent::Tile(m) if *m == *id))
         };
-        let content = canvas_rect.and_then(|cr| {
+        let focused_graph = self
+            .app
+            .focused_graph_pane()
+            .or_else(|| graph_rects.first().map(|(pane, _)| *pane));
+        let content = focused_graph.and_then(|pane| {
+            let cr = graph_rects
+                .iter()
+                .find(|(candidate, _)| *candidate == pane)
+                .map(|(_, rect)| *rect)?;
             self.app
-                .graph_runtimes
-                .focused_member()
+                .graph_pane_focused_member(pane)
                 .filter(|id| self.content_sessions.contains_key(id))
                 .filter(|id| !tiles.iter().any(|(t, _)| t == id))
                 .filter(|id| !tiled_in_lens(id))
                 .filter(|id| !tile_paned(id))
                 .map(|node| (node, crate::surface::content_rect(cr)))
         });
-        let caption = crate::app::focused_caption(&self.app.graph_runtimes);
+        let caption = focused_graph
+            .and_then(|pane| self.app.graph_for_pane(pane))
+            .and_then(|graph| self.app.graph_runtimes.canvas(graph))
+            .and_then(crate::app::focused_caption);
         let chrome = (self.app.shell_chrome_config().projects_shellbar() && caption.is_some()
             || self.app.omnibar.open && self.app.shell_chrome_config().projects_omnibar())
         .then_some(area);
@@ -545,11 +552,7 @@ impl Shell {
 
     /// A pane's `PaneContent`, looked up from the frisket tree by id.
     fn pane_content(&self, id: crate::panes::PaneId) -> Option<PaneContent> {
-        self.app
-            .frisket
-            .iter_leaves()
-            .find(|(pid, _, _)| *pid == id)
-            .map(|(_, content, _)| content.clone())
+        self.app.pane_content(id).cloned()
     }
 
     /// A pane's display label, looked up from the frisket tree by id.
@@ -639,7 +642,9 @@ impl Shell {
                                 crate::swatch_pane::SwatchActivate::Recover(id),
                             ) => out.push(Action::RecoverDeletedNode(id)),
                             crate::swatch_pane::SwatchIntent::Expand => {
-                                self.app.focus = crate::surface::FocusTarget::Canvas;
+                                self.app.focus = crate::surface::FocusTarget::Graph(
+                                    self.app.default_graph_pane(),
+                                );
                             }
                         }
                     }

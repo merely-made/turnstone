@@ -5,7 +5,10 @@
 
 use std::path::PathBuf;
 
-use crate::panes::{FrisketLayout, GraphId, InsertSide, PaneContent, PaneId, PaneNode};
+use crate::panes::{
+    ContextIndex, FrisketLayout, GraphId, InsertSide, PaneContent, PaneContext, PaneId, PaneNode,
+    SourceSelector, SpaceId,
+};
 use crate::shell_services::{ContextSnapshot, ShellChromeConfig, ShellServices};
 use crate::ui::{OmnibarState, Suggestion, normalize_address};
 
@@ -59,6 +62,9 @@ pub struct App {
     /// Arrangement runtime scopes, keyed independently from graph truth and
     /// pane view state.
     pub forme_runtimes: FormeRuntimePool,
+    /// Context published by graph, workbench, and member panes. Followers
+    /// resolve it in their own space instead of consulting a canvas cursor.
+    pub pane_context: ContextIndex,
     /// The summonable omnibar (rung 3): find over graph truth, go through
     /// OpenAddress, `>` for the actions lane.
     pub omnibar: OmnibarState,
@@ -106,11 +112,6 @@ pub struct App {
     /// The active pane — the anchor a summon splits from and a close removes.
     /// `None` means the canvas (the Orrery leaf).
     pub active_pane: Option<PaneId>,
-    /// The node-tiling model INSIDE the Workbench pane leaf (rung 5 slice E):
-    /// platen's `Workbench` — the split tree of tab-stacks, the active tab per
-    /// stack, every mutator. App truth (data, no handles); persisted as the
-    /// canonical `(Arrangement, geometry)` pair beside `graph.json`.
-    pub workbench: mere::platen::Workbench,
     /// The browser-state sidecar (rung 6): per-node browser handling (viewer
     /// override, compat mode, content-on), persisted at `browser_nodes.json`.
     /// The graph stays correct without it (the sidecar's charter).
@@ -249,34 +250,37 @@ impl App {
     /// no host ran until now (projection-engine proof 1). A no-op under
     /// force-directed. Called by the shell right before `canvas.frame()`.
     pub fn drive_layout_strategy(&mut self, w: u32, h: u32) {
-        let Some(id) = self.graph_runtimes.layout_strategy().map(str::to_string) else {
+        Self::drive_layout_strategy_for(&mut self.graph_runtimes, w, h);
+    }
+
+    /// Run the graph-scoped layout strategy while a particular pane has its
+    /// view installed. The strategy sees selection only through that pane's
+    /// temporary view state; it never chooses a global active pane.
+    fn drive_layout_strategy_for(canvas: &mut mere::canvas::Canvas, w: u32, h: u32) {
+        let Some(id) = canvas.layout_strategy().map(str::to_string) else {
             return;
         };
-        self.graph_runtimes.refresh_community_cache(&id);
-        let focus = self.graph_runtimes.focused_key();
-        if self
-            .graph_runtimes
-            .needs_strategy_recompute(&id, w, h, focus)
-        {
+        canvas.refresh_community_cache(&id);
+        let focus = canvas.focused_key();
+        if canvas.needs_strategy_recompute(&id, w, h, focus) {
             // The host measures (per-node face footprints), the strategy
             // places — extent-aware spacing per the P2 contract.
-            let extents = self.graph_runtimes.strategy_extents();
+            let extents = canvas.strategy_extents();
             let strategy = mere::canvas::project_canvas_strategy_with_score(
                 &id,
-                self.graph_runtimes.graph(),
+                canvas.graph(),
                 focus,
                 w,
                 h,
-                self.graph_runtimes.community(),
+                canvas.community(),
                 Some(&extents),
                 // Recency reading pairs the Spiral's newest-first ordering
                 // with the size-by-recency channel (P3).
-                self.graph_runtimes.size_by_recency(),
+                canvas.size_by_recency(),
             );
-            self.graph_runtimes
-                .apply_strategy_positions(&strategy.positions);
-            self.graph_runtimes.set_projection_score(strategy.score);
-            self.graph_runtimes.note_strategy_computed(&id, w, h, focus);
+            canvas.apply_strategy_positions(&strategy.positions);
+            canvas.set_projection_score(strategy.score);
+            canvas.note_strategy_computed(&id, w, h, focus);
         }
     }
 
@@ -346,17 +350,232 @@ impl App {
             .unwrap_or(PaneId(0))
     }
 
-    /// Register the identity arrangement projection for a graph pane. The
-    /// caller supplies no Workbench state, so this cannot accidentally turn a
-    /// graph view into a global workbench.
-    pub fn ensure_identity_forme_for_pane(&mut self, pane: PaneId) -> Option<FormeRuntimeKey> {
+    /// The Forme source currently available to a graph-bearing legacy pane.
+    /// The old layout has no durable Forme picker yet, so it names the
+    /// identity forme of its graph. The runtime boundary is nevertheless
+    /// explicit: Workbench state is never keyed by application or window.
+    pub fn forme_for_pane(&self, pane: PaneId) -> Option<FormeRuntimeKey> {
         let graph = self.graph_for_pane(pane)?;
-        let key = FormeRuntimeKey {
+        self.pane_content(pane)
+            .filter(|content| content.follows_active_graph())?;
+        Some(FormeRuntimeKey {
             graph,
             forme: mere::forme::FormeRef::Identity(*graph.as_uuid()),
-        };
+        })
+    }
+
+    /// Register the Forme runtime named by a graph-bearing pane.
+    pub fn ensure_identity_forme_for_pane(&mut self, pane: PaneId) -> Option<FormeRuntimeKey> {
+        let key = self.forme_for_pane(pane)?;
         self.forme_runtimes.get_or_create(key.graph, key.forme);
         Some(key)
+    }
+
+    /// Read the Workbench arrangement named by a pane's graph/Forme source.
+    pub fn workbench_for_pane(&self, pane: PaneId) -> Option<&mere::platen::Workbench> {
+        let key = self.forme_for_pane(pane)?;
+        self.forme_runtimes
+            .get(key.graph, key.forme)
+            .map(|runtime| &runtime.workbench)
+    }
+
+    /// Create or reuse the Workbench arrangement named by a pane's graph/Forme
+    /// source. This is the A3 mutation entrance for Workbench state.
+    pub fn workbench_for_pane_mut(&mut self, pane: PaneId) -> Option<&mut mere::platen::Workbench> {
+        let key = self.ensure_identity_forme_for_pane(pane)?;
+        Some(
+            &mut self
+                .forme_runtimes
+                .get_or_create(key.graph, key.forme)
+                .workbench,
+        )
+    }
+
+    pub fn active_workbench(&self) -> Option<&mere::platen::Workbench> {
+        self.workbench_owner_pane()
+            .and_then(|pane| self.workbench_for_pane(pane))
+    }
+
+    /// The last context publisher in `pane`'s space that supplies a graph.
+    /// Roster and Inspector follow this explicit context rather than the graph
+    /// runtime pool's legacy cursor.
+    pub fn follower_context(&self, pane: PaneId) -> Option<PaneContext> {
+        self.pane_context.resolve_context(
+            pane,
+            &crate::panes::ContextBinding::FocusedInOwnSpace,
+            SourceSelector::Graph,
+        )
+    }
+
+    /// Publish a graph pane's own view selection. Only its `PaneId`-local
+    /// selection can honestly provide the member field.
+    pub fn publish_graph_context(&mut self, pane: PaneId) -> Option<PaneContext> {
+        let key = self.forme_for_pane(pane)?;
+        let context = PaneContext {
+            graph: Some(key.graph),
+            forme: Some(key.forme),
+            member: self.graph_views.focused_member(pane),
+            session: self
+                .graph_runtimes
+                .get(key.graph)
+                .and_then(|runtime| runtime.session),
+        };
+        self.publish_pane_context(pane, context);
+        Some(context)
+    }
+
+    /// Publish a Workbench or member pane's active member over its graph/Forme
+    /// source. This is context publication, not a canvas selection side effect.
+    pub fn publish_member_context(
+        &mut self,
+        pane: PaneId,
+        member: Option<uuid::Uuid>,
+    ) -> Option<PaneContext> {
+        let key = self.forme_for_pane(pane)?;
+        let context = PaneContext {
+            graph: Some(key.graph),
+            forme: Some(key.forme),
+            member,
+            session: self
+                .graph_runtimes
+                .get(key.graph)
+                .and_then(|runtime| runtime.session),
+        };
+        self.publish_pane_context(pane, context);
+        Some(context)
+    }
+
+    fn publish_pane_context(&mut self, pane: PaneId, context: PaneContext) {
+        let space = match self.space_of(pane) {
+            Some(SpaceRef::Primary) => SpaceId::new("primary"),
+            Some(SpaceRef::Lens(ordinal)) => SpaceId::new(format!("lens-{ordinal}")),
+            None => return,
+        };
+        self.pane_context.place(pane, space);
+        self.pane_context.publish(pane, context);
+        self.pane_context.focus(pane);
+    }
+
+    /// Refresh the runtime index's pane-to-space mapping after a legacy layout
+    /// load or topology edit. Context is live state; the Frisket tree remains
+    /// the topology authority.
+    pub fn index_pane_spaces(&mut self) {
+        let panes: Vec<_> = self
+            .frisket
+            .iter_leaves()
+            .map(|(pane, _, _)| (pane, SpaceId::new("primary")))
+            .chain(self.lenses.iter().enumerate().flat_map(|(ordinal, space)| {
+                space.iter().flat_map(move |layout| {
+                    layout
+                        .iter_leaves()
+                        .map(move |(pane, _, _)| (pane, SpaceId::new(format!("lens-{ordinal}"))))
+                })
+            }))
+            .collect();
+        for (pane, space) in panes {
+            self.pane_context.place(pane, space);
+        }
+    }
+
+    /// Borrow graph truth for one pane-scoped render or input pass. Installs
+    /// and stashes camera and selection, then republishes the pane context.
+    pub fn with_graph_pane<R>(
+        &mut self,
+        pane: PaneId,
+        operation: impl FnOnce(&mut mere::canvas::Canvas) -> R,
+    ) -> Option<R> {
+        let graph = self.graph_for_pane(pane)?;
+        let result = {
+            let canvas = self.graph_runtimes.canvas_mut(graph)?;
+            self.graph_views.install(pane, canvas);
+            let result = operation(canvas);
+            self.graph_views.stash(pane, canvas);
+            result
+        };
+        self.publish_graph_context(pane);
+        Some(result)
+    }
+
+    pub fn graph_pane_frame(
+        &mut self,
+        pane: PaneId,
+        width: u32,
+        height: u32,
+    ) -> Option<(netrender::Scene, bool)> {
+        self.with_graph_pane(pane, |canvas| {
+            Self::drive_layout_strategy_for(canvas, width, height);
+            canvas.frame(width, height)
+        })
+    }
+
+    pub fn graph_pane_focused_member(&self, pane: PaneId) -> Option<uuid::Uuid> {
+        self.graph_views.focused_member(pane).or_else(|| {
+            self.graph_for_pane(pane)
+                .and_then(|graph| self.graph_runtimes.canvas(graph))
+                .and_then(mere::canvas::Canvas::focused_member)
+        })
+    }
+
+    pub fn focused_graph_pane(&self) -> Option<PaneId> {
+        match self.focus {
+            FocusTarget::Graph(pane) => Some(pane),
+            FocusTarget::Chrome | FocusTarget::Content(_) => None,
+        }
+    }
+
+    /// The Forme owner for a Workbench action. A focused Workbench pane wins;
+    /// otherwise the focused graph pane supplies its identity forme.
+    pub fn workbench_owner_pane(&self) -> Option<PaneId> {
+        self.active_pane
+            .filter(|pane| self.pane_content(*pane) == Some(&PaneContent::Workbench))
+            .or_else(|| self.focused_graph_pane())
+    }
+
+    pub fn graph_pane_node_at_screen(
+        &mut self,
+        pane: PaneId,
+        x: f32,
+        y: f32,
+    ) -> Option<uuid::Uuid> {
+        self.with_graph_pane(pane, |canvas| canvas.node_at_screen(x, y))
+            .flatten()
+    }
+
+    pub fn graph_pane_select_member(&mut self, pane: PaneId, member: uuid::Uuid) -> bool {
+        self.with_graph_pane(pane, |canvas| canvas.select_member(member))
+            .unwrap_or(false)
+    }
+
+    pub fn graph_pane_cursor_moved(&mut self, pane: PaneId, x: f32, y: f32) -> bool {
+        self.with_graph_pane(pane, |canvas| canvas.cursor_moved(x, y))
+            .unwrap_or(false)
+    }
+
+    pub fn graph_pane_wheel(&mut self, pane: PaneId, dx: f32, dy: f32) -> bool {
+        self.with_graph_pane(pane, |canvas| canvas.wheel(dx, dy))
+            .unwrap_or(false)
+    }
+
+    pub fn graph_pane_pointer_down(
+        &mut self,
+        pane: PaneId,
+        button: mere::canvas::PointerButton,
+        x: f32,
+        y: f32,
+    ) -> bool {
+        self.with_graph_pane(pane, |canvas| canvas.pointer_down(button, x, y))
+            .unwrap_or(false)
+    }
+
+    pub fn graph_pane_pointer_up(
+        &mut self,
+        pane: PaneId,
+        button: mere::canvas::PointerButton,
+        x: f32,
+        y: f32,
+    ) -> bool {
+        self.with_graph_pane(pane, |canvas| canvas.pointer_up(button, x, y))
+            .unwrap_or(false)
     }
 
     /// Drain the semantic events emitted since the last call (the shell
@@ -479,8 +698,8 @@ impl App {
                 vec![Effect::Redraw]
             }
             Action::TiltBy(delta) => {
-                self.graph_runtimes
-                    .set_tilt(self.graph_runtimes.tilt() + delta);
+                let tilt = self.graph_runtimes.tilt();
+                self.graph_runtimes.set_tilt(tilt + delta);
                 vec![Effect::Redraw]
             }
             Action::ToggleHeightByDegree => {
@@ -624,7 +843,14 @@ impl App {
             // path as a palette summon (one spine, no side door).
             Action::OpenInWorkbench => self.open_in_workbench(),
             Action::WorkbenchActivate(member) => {
-                if self.workbench.activate(member) {
+                let owner = self.workbench_owner_pane();
+                let activated = owner
+                    .and_then(|pane| self.workbench_for_pane_mut(pane))
+                    .is_some_and(|workbench| workbench.activate(member));
+                if activated {
+                    if let Some(owner) = owner {
+                        self.publish_member_context(owner, Some(member));
+                    }
                     vec![Effect::SaveSession, Effect::Redraw]
                 } else {
                     vec![Effect::Redraw]
@@ -646,7 +872,11 @@ impl App {
                 after,
             } => self.workbench_split_out(dragged, axis, after),
             Action::WorkbenchSetFractions { path, fractions } => {
-                self.workbench.set_split_fractions(&path, &fractions);
+                if let Some(owner) = self.workbench_owner_pane()
+                    && let Some(workbench) = self.workbench_for_pane_mut(owner)
+                {
+                    workbench.set_split_fractions(&path, &fractions);
+                }
                 vec![Effect::Redraw]
             }
         }

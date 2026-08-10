@@ -167,7 +167,7 @@ impl App {
         self.events.push(AppEvent::DenizenInstalled(label));
         let _ = member;
         self.omnibar = OmnibarState::default();
-        self.focus = FocusTarget::Canvas;
+        self.focus = FocusTarget::Graph(self.default_graph_pane());
         vec![Effect::SaveSession, Effect::Redraw]
     }
 }

@@ -27,7 +27,7 @@ use genet_scripted_dom::{NodeId, ScriptedDom};
 use layout_dom_api::LayoutDom;
 
 use crate::app::App;
-use crate::roster_view::{RosterGridRow, roster_grid_rows};
+use crate::roster_view::{RosterGridRow, roster_grid_rows_for_pane};
 
 /// The Roster's tabs — `mere::roster`'s four data views over one grid. Only
 /// Nodes has a gatherer today; the rest render an honest empty state until
@@ -202,8 +202,8 @@ impl RosterGrid {
     /// Refresh the grid from graph truth and the pane's size. Rebuilds the view
     /// (and its DOM) through the runner. The size is the whole pane; the grid
     /// virtualizes against what the tab strip leaves it.
-    pub fn sync(&mut self, app: &App, pane_w: f32, pane_h: f32) {
-        let rows = roster_grid_rows(app);
+    pub fn sync(&mut self, app: &App, pane_id: crate::panes::PaneId, pane_w: f32, pane_h: f32) {
+        let rows = roster_grid_rows_for_pane(app, pane_id);
         self.runner.update(|state| {
             state.rows = rows;
             state.viewport_w = pane_w;

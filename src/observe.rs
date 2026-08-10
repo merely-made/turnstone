@@ -342,14 +342,21 @@ pub fn snapshot(app: &App) -> Snapshot {
             .any(|(_, c, _)| matches!(c, crate::panes::PaneContent::Workbench))
     });
     let live = |m: uuid::Uuid| matches!(app.content.get(m), Some(NodeContent::Live));
-    let tiled: Vec<uuid::Uuid> = {
-        let geom = app.workbench.to_arrangement().1;
-        crate::workbench_tiling::place_workbench(geom.as_ref(), crate::surface::Rect::full(1, 1))
+    let tiled: Vec<uuid::Uuid> = app
+        .active_workbench()
+        .map(|workbench| workbench.to_arrangement().1)
+        .and_then(|geometry| geometry)
+        .map(|geometry| {
+            crate::workbench_tiling::place_workbench(
+                Some(&geometry),
+                crate::surface::Rect::full(1, 1),
+            )
             .cells
             .iter()
-            .filter_map(|c| c.active_member())
+            .filter_map(|cell| cell.active_member())
             .collect()
-    };
+        })
+        .unwrap_or_default();
     // Pinned Tile panes claim their member wherever their space shows (the
     // same one-session-one-surface rule the workbench tiles follow).
     let tile_panes: Vec<uuid::Uuid> = app
@@ -441,7 +448,10 @@ pub fn snapshot(app: &App) -> Snapshot {
             crate::panes::PaneNode::Leaf { .. } => None,
         },
         workbench_cells: workbench_cells(app),
-        workbench_fractions: app.workbench.weights(),
+        workbench_fractions: app
+            .active_workbench()
+            .map(mere::platen::Workbench::weights)
+            .unwrap_or_default(),
         a11y: crate::a11y::a11y_lines(app),
         can_back: app.history.can_back(),
         can_forward: app.history.can_forward(),
@@ -496,8 +506,9 @@ pub fn workbench_cells(app: &App) -> Vec<String> {
             })
             .unwrap_or_else(|| member.to_string())
     };
-    app.workbench
-        .slot_views()
+    app.active_workbench()
+        .into_iter()
+        .flat_map(|workbench| workbench.slot_views())
         .map(|slot| {
             slot.members
                 .iter()

@@ -277,7 +277,9 @@ impl Shell {
         session::save_frisket_layout(&sdir, &self.app.frisket);
         // The workbench tiling persists as platen's canonical pair
         // (rung 5 slice E), so tiles/stacks/fractions survive too.
-        session::save_workbench(&sdir, &self.app.workbench);
+        if let Some(workbench) = self.app.active_workbench() {
+            session::save_workbench(&sdir, workbench);
+        }
         // The lens-window spaces (rung 7 depth): torn-out panes
         // survive a restart as windows again.
         session::save_lens_spaces(&sdir, &self.app.lenses);

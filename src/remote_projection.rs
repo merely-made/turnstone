@@ -505,8 +505,8 @@ pub fn run_g3_canary() -> Result<G3Run, String> {
     };
     let snapshot = endpoint.snapshot(request)?;
     let layout = graphshell::view::ProjectionLayoutView::from_scene(&snapshot.scene);
-    let graph_revision_before = endpoint.app().canvas.graph().revision();
-    let graph_nodes_before = endpoint.app().canvas.graph().nodes().count();
+    let graph_revision_before = endpoint.app().graph_runtimes.graph().revision();
+    let graph_nodes_before = endpoint.app().graph_runtimes.graph().nodes().count();
     let mut client = ClientState::default();
     client
         .apply_snapshot(snapshot)
@@ -545,8 +545,8 @@ pub fn run_g3_canary() -> Result<G3Run, String> {
         intent: OPEN_INTENT.into(),
         payload: b"mere://graphshell/rejected".to_vec(),
     })?;
-    let graph_revision_after = endpoint.app().canvas.graph().revision();
-    let graph_nodes_after = endpoint.app().canvas.graph().nodes().count();
+    let graph_revision_after = endpoint.app().graph_runtimes.graph().revision();
+    let graph_nodes_after = endpoint.app().graph_runtimes.graph().nodes().count();
     let audit_revision = endpoint.audit().revision();
     let audit_author = endpoint
         .audit()

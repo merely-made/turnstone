@@ -1,7 +1,7 @@
 //! Lens windows: a second window as a pane host over the one app state.
 //!
-//! A lens owns its own camera (installed around each pass and stashed back)
-//! and its own frisket space, so panes torn out of the primary keep their
+//! A lens owns its own frisket space; each graph pane owns its camera and
+//! selection, so panes torn out of the primary keep their
 //! retained runners and their identity. Arrangement rides the SESSION, so
 //! adopting a session closes these and reopens that session's own.
 
@@ -15,10 +15,8 @@ use winit::event::{ElementState, MouseButton, MouseScrollDelta, WindowEvent};
 use winit::event_loop::ActiveEventLoop;
 use winit::window::{Window, WindowId};
 
-use mere::canvas::WHEEL_PAN_SCALE;
-
 use crate::action::Action;
-use crate::panes::PaneContent;
+use crate::panes::{PaneContent, PaneId};
 use crate::surface::{Rect, SurfaceKind};
 
 use inker::SessionClick;
@@ -27,16 +25,15 @@ use super::input::pointer_button;
 use super::{CompositeLayer, PlannedScene, Shell, capture_composed};
 
 /// One lens window's record: its platform window, present stack, size,
-/// cursor, and camera.
+/// cursor, and graph gesture capture.
 pub(super) struct LensWindow {
     pub(super) window: Arc<Window>,
     pub(super) host: SurfaceHost,
     pub(super) width: u32,
     pub(super) height: u32,
     pub(super) cursor: (f32, f32),
-    pub(super) viewport: mere::canvas::Viewport,
-    /// Whether a canvas pointer gesture (grab/pan) is in flight here.
-    pub(super) pointer_down: bool,
+    /// The graph pane holding a pointer gesture (grab/pan), if any.
+    pub(super) pointer_graph: Option<PaneId>,
     /// Which `App::lenses` pane space this window shows (stable; the space
     /// tombstones on close).
     pub(super) ordinal: usize,
@@ -44,9 +41,8 @@ pub(super) struct LensWindow {
 
 impl Shell {
     /// Create any requested lens windows (rung 7). Called from the event
-    /// handlers, where an `ActiveEventLoop` is in scope. A lens seeds its
-    /// camera from the canvas's CURRENT viewport (sensible initial framing),
-    /// then owns it.
+    /// handlers, where an `ActiveEventLoop` is in scope. Its graph panes
+    /// install their own view state on their first render/input pass.
     pub(super) fn drain_pending_windows(&mut self, event_loop: &ActiveEventLoop) {
         while let Some(ordinal) = self.pending_windows.pop() {
             let attributes = Window::default_attributes()
@@ -79,8 +75,7 @@ impl Shell {
                             width: size.width.max(1),
                             height: size.height.max(1),
                             cursor: (0.0, 0.0),
-                            viewport: self.app.graph_runtimes.viewport(),
-                            pointer_down: false,
+                            pointer_graph: None,
                             ordinal,
                         },
                     );
@@ -108,7 +103,7 @@ impl Shell {
             .iter()
             .map(|p| {
                 if matches!(p.content, PaneContent::Orrery) {
-                    (SurfaceKind::Canvas, p.rect)
+                    (SurfaceKind::Graph(p.id), p.rect)
                 } else if let PaneContent::Tile(m) = p.content
                     && self.content_sessions.contains_key(&m)
                 {
@@ -130,14 +125,17 @@ impl Shell {
         // pane): when the workbench pane tore out to this window, its cells'
         // live tiles compose as content surfaces at their body rects — the
         // same walk the primary plan does, at the lens pane's rect.
-        let wb_rect = tiling
+        let workbench_pane = tiling
             .panes
             .iter()
             .find(|p| matches!(p.content, PaneContent::Workbench))
-            .map(|p| p.rect);
-        let tiles: Vec<(uuid::Uuid, Rect)> = wb_rect
-            .map(|rect| {
-                let geom = self.app.workbench.to_arrangement().1;
+            .map(|p| (p.id, p.rect));
+        let tiles: Vec<(uuid::Uuid, Rect)> = workbench_pane
+            .map(|(pane, rect)| {
+                let geom = self
+                    .app
+                    .workbench_for_pane(pane)
+                    .and_then(|workbench| workbench.to_arrangement().1);
                 crate::workbench_tiling::place_workbench(geom.as_ref(), rect)
                     .cells
                     .iter()
@@ -184,8 +182,7 @@ impl Shell {
         let Some(lens) = self.lens_windows.get(&id) else {
             return;
         };
-        let (lw, lh, ordinal, lens_viewport) =
-            (lens.width, lens.height, lens.ordinal, lens.viewport);
+        let (lw, lh, ordinal) = (lens.width, lens.height, lens.ordinal);
         let surfaces = self.lens_plan(ordinal, lw, lh);
         if surfaces.is_empty() {
             return;
@@ -203,7 +200,6 @@ impl Shell {
                 animating = true;
             }
         }
-        let mut new_viewport = lens_viewport;
         let mut scenes: Vec<PlannedScene> = Vec::with_capacity(surfaces.len());
         for surface in &surfaces {
             let rect = surface.rect;
@@ -212,22 +208,13 @@ impl Shell {
                 rect.h.round().max(1.0) as u32,
             );
             let (scene, clear) = match surface.kind {
-                crate::surface::SurfaceKind::Canvas => {
-                    // Install this lens's camera, frame, stash it back, restore
-                    // the primary's. A `Viewport` carries the view size it was
-                    // framed for, so installing one sets the size WITH the
-                    // camera and no `resize` is involved — `resize` re-centres,
-                    // which is right for a window that actually changed size and
-                    // wrong for a camera we are only borrowing (it drifted both
-                    // windows off-screen, mere-canvas pins the invariant).
-                    let saved = self.app.graph_runtimes.viewport();
-                    self.app.graph_runtimes.set_viewport(new_viewport);
-                    self.app.drive_layout_strategy(rw, rh);
-                    let (scene, anim) = self.app.graph_runtimes.frame(rw, rh);
+                crate::surface::SurfaceKind::Graph(pane) => {
+                    let (scene, anim) = self
+                        .app
+                        .graph_pane_frame(pane, rw, rh)
+                        .unwrap_or_else(|| (Scene::default(), false));
                     animating |= anim;
                     animating |= self.app.resolve_pending_images() > 0;
-                    new_viewport = self.app.graph_runtimes.viewport();
-                    self.app.graph_runtimes.set_viewport(saved);
                     (scene, wgpu::Color::WHITE)
                 }
                 crate::surface::SurfaceKind::Pane(pid) => {
@@ -280,7 +267,6 @@ impl Shell {
         let Some(lens) = self.lens_windows.get_mut(&id) else {
             return;
         };
-        lens.viewport = new_viewport;
         let layers: Vec<CompositeLayer> = scenes
             .iter()
             .map(|s| {
@@ -383,9 +369,12 @@ impl Shell {
                 let (x, y) = lens.cursor;
                 let (lw, lh, ordinal) = (lens.width, lens.height, lens.ordinal);
                 let plan = self.lens_plan(ordinal, lw, lh);
-                if let Some(hit) =
-                    crate::surface::hit_test(&plan, crate::surface::FocusTarget::Canvas, x, y)
-                {
+                if let Some(hit) = crate::surface::hit_test(
+                    &plan,
+                    crate::surface::FocusTarget::Graph(self.app.default_graph_pane()),
+                    x,
+                    y,
+                ) {
                     match hit.kind {
                         crate::surface::SurfaceKind::Pane(pid) => {
                             // The press anchors pane ops here, exactly as in
@@ -482,15 +471,21 @@ impl Shell {
                 // Wheel over a tile scrolls the PAGE (the rung-5 slice-B rule,
                 // per window); off-tile falls through to the camera pan below.
                 let (dx, dy) = match delta {
-                    MouseScrollDelta::LineDelta(x, y) => (x * WHEEL_PAN_SCALE, y * WHEEL_PAN_SCALE),
+                    MouseScrollDelta::LineDelta(x, y) => (
+                        x * mere::canvas::WHEEL_PAN_SCALE,
+                        y * mere::canvas::WHEEL_PAN_SCALE,
+                    ),
                     MouseScrollDelta::PixelDelta(p) => (p.x as f32, p.y as f32),
                 };
                 let (x, y) = lens.cursor;
                 let (lw, lh, ordinal) = (lens.width, lens.height, lens.ordinal);
                 let plan = self.lens_plan(ordinal, lw, lh);
-                if let Some(hit) =
-                    crate::surface::hit_test(&plan, crate::surface::FocusTarget::Canvas, x, y)
-                    && let crate::surface::SurfaceKind::Content(node) = hit.kind
+                if let Some(hit) = crate::surface::hit_test(
+                    &plan,
+                    crate::surface::FocusTarget::Graph(self.app.default_graph_pane()),
+                    x,
+                    y,
+                ) && let crate::surface::SurfaceKind::Content(node) = hit.kind
                     && let Some(session) = self.content_sessions.get_mut(&node)
                 {
                     if session.scroll_at(hit.local.0, hit.local.1, dx, dy)
@@ -503,54 +498,110 @@ impl Shell {
             }
             _ => {}
         }
-        // Continuous canvas gestures, with the lens camera installed. The
-        // canvas's semantic input methods are the shared vocabulary; only the
-        // viewport differs per window (the gesture law holds unchanged).
-        let Some(lens) = self.lens_windows.get_mut(&id) else {
+        // Continuous graph gestures route to the captured graph PaneId. The
+        // graph runtime supplies truth; `GraphPaneViews` installs and stashes
+        // this pane's camera and selection around every call.
+        let Some(lens) = self.lens_windows.get(&id) else {
             return;
         };
-        // The lens camera, with the size it was framed for (see render_lens).
-        let saved = self.app.graph_runtimes.viewport();
-        self.app.graph_runtimes.set_viewport(lens.viewport);
+        let (lw, lh, ordinal, cursor, captured) = (
+            lens.width,
+            lens.height,
+            lens.ordinal,
+            lens.cursor,
+            lens.pointer_graph,
+        );
+        let plan = self.lens_plan(ordinal, lw, lh);
+        let graph_local = |pane: PaneId, x: f32, y: f32| {
+            plan.iter()
+                .find(|surface| surface.kind == SurfaceKind::Graph(pane))
+                .map(|surface| (x - surface.rect.x, y - surface.rect.y))
+        };
         let mut redraw = false;
         match event {
             WindowEvent::CursorMoved { position, .. } => {
-                lens.cursor = (position.x as f32, position.y as f32);
-                redraw = self
-                    .app
-                    .graph_runtimes
-                    .cursor_moved(lens.cursor.0, lens.cursor.1);
+                let (x, y) = (position.x as f32, position.y as f32);
+                let pane = captured.or_else(|| {
+                    crate::surface::hit_test(
+                        &plan,
+                        crate::surface::FocusTarget::Graph(self.app.default_graph_pane()),
+                        x,
+                        y,
+                    )
+                    .and_then(|hit| match hit.kind {
+                        SurfaceKind::Graph(pane) => Some(pane),
+                        _ => None,
+                    })
+                });
+                if let Some((pane, (local_x, local_y))) =
+                    pane.and_then(|pane| graph_local(pane, x, y).map(|local| (pane, local)))
+                {
+                    redraw = self.app.graph_pane_cursor_moved(pane, local_x, local_y);
+                }
             }
             WindowEvent::MouseWheel { delta, .. } => {
                 let (dx, dy) = match delta {
-                    MouseScrollDelta::LineDelta(x, y) => (x * WHEEL_PAN_SCALE, y * WHEEL_PAN_SCALE),
+                    MouseScrollDelta::LineDelta(x, y) => (
+                        x * mere::canvas::WHEEL_PAN_SCALE,
+                        y * mere::canvas::WHEEL_PAN_SCALE,
+                    ),
                     MouseScrollDelta::PixelDelta(p) => (p.x as f32, p.y as f32),
                 };
-                redraw = self.app.graph_runtimes.wheel(dx, dy);
+                if let Some(hit) = crate::surface::hit_test(
+                    &plan,
+                    crate::surface::FocusTarget::Graph(self.app.default_graph_pane()),
+                    cursor.0,
+                    cursor.1,
+                ) && let SurfaceKind::Graph(pane) = hit.kind
+                {
+                    redraw = self.app.graph_pane_wheel(pane, dx, dy);
+                }
             }
             WindowEvent::MouseInput { state, button, .. } => {
                 if let Some(button) = pointer_button(button) {
-                    let (x, y) = lens.cursor;
-                    redraw = match state {
-                        ElementState::Pressed => {
-                            lens.pointer_down = true;
-                            self.app.graph_runtimes.pointer_down(button, x, y)
-                        }
-                        ElementState::Released => {
-                            lens.pointer_down = false;
-                            self.app.graph_runtimes.pointer_up(button, x, y)
-                        }
+                    let pane = match state {
+                        ElementState::Pressed => crate::surface::hit_test(
+                            &plan,
+                            crate::surface::FocusTarget::Graph(self.app.default_graph_pane()),
+                            cursor.0,
+                            cursor.1,
+                        )
+                        .and_then(|hit| match hit.kind {
+                            SurfaceKind::Graph(pane) => Some(pane),
+                            _ => None,
+                        }),
+                        ElementState::Released => self
+                            .lens_windows
+                            .get_mut(&id)
+                            .and_then(|lens| lens.pointer_graph.take()),
                     };
+                    if let Some((pane, (local_x, local_y))) = pane.and_then(|pane| {
+                        graph_local(pane, cursor.0, cursor.1).map(|local| (pane, local))
+                    }) {
+                        redraw = match state {
+                            ElementState::Pressed => {
+                                let handled = self
+                                    .app
+                                    .graph_pane_pointer_down(pane, button, local_x, local_y);
+                                self.app.focus = crate::surface::FocusTarget::Graph(pane);
+                                if let Some(lens) = self.lens_windows.get_mut(&id) {
+                                    lens.pointer_graph = Some(pane);
+                                }
+                                handled
+                            }
+                            ElementState::Released => self
+                                .app
+                                .graph_pane_pointer_up(pane, button, local_x, local_y),
+                        };
+                    }
                 }
             }
             _ => {}
         }
-        // Stash the lens camera back and restore the primary's.
-        let lens = self.lens_windows.get_mut(&id).expect("lens still present");
-        lens.viewport = self.app.graph_runtimes.viewport();
-        self.app.graph_runtimes.set_viewport(saved);
         if redraw {
-            lens.window.request_redraw();
+            if let Some(lens) = self.lens_windows.get_mut(&id) {
+                lens.window.request_redraw();
+            }
         }
     }
 }

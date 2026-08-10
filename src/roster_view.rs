@@ -91,8 +91,40 @@ pub struct RosterGridRow {
 /// cambium `data_grid`. Same graph-truth gather and `build_node_rows` sort as
 /// `roster_rows`; only the shaping differs.
 pub fn roster_grid_rows(app: &App) -> Vec<RosterGridRow> {
-    let graph = app.graph_runtimes.graph();
-    let focused = app.graph_runtimes.focused_member();
+    roster_grid_rows_for_context(
+        app,
+        app.focused_graph_pane()
+            .and_then(|pane| app.graph_for_pane(pane))
+            .and_then(|graph| app.graph_runtimes.canvas(graph)),
+        app.focused_graph_pane()
+            .and_then(|pane| app.graph_pane_focused_member(pane)),
+    )
+}
+
+/// Gather rows from an explicit published graph/member context. A follower
+/// pane supplies its own source through `App::follower_context`; this helper
+/// never reads the graph pool's active compatibility cursor.
+pub fn roster_grid_rows_for_pane(app: &App, pane: crate::panes::PaneId) -> Vec<RosterGridRow> {
+    let context = app.follower_context(pane);
+    let graph_id = context
+        .and_then(|context| context.graph)
+        .or_else(|| app.graph_for_pane(pane));
+    let graph = graph_id.and_then(|graph| app.graph_runtimes.canvas(graph));
+    let focused = context
+        .and_then(|context| context.member)
+        .or_else(|| app.graph_pane_focused_member(pane));
+    roster_grid_rows_for_context(app, graph, focused)
+}
+
+fn roster_grid_rows_for_context(
+    app: &App,
+    canvas: Option<&mere::canvas::Canvas>,
+    focused: Option<uuid::Uuid>,
+) -> Vec<RosterGridRow> {
+    let Some(canvas) = canvas else {
+        return Vec::new();
+    };
+    let graph = canvas.graph();
     let inputs: Vec<NodeRowInput> = graph
         .nodes()
         .map(|(key, node)| NodeRowInput {

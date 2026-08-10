@@ -19,11 +19,17 @@ impl Shell {
     /// `move_to_slot_of`, lowered as an Action); released where it began, it
     /// is a click — routed into the pane's DOM so the strip's own selection
     /// answers, and the diff lowers as `WorkbenchActivate`.
-    pub(super) fn finish_wb_tab_gesture(&mut self, dragged: uuid::Uuid, x: f32, y: f32) {
+    pub(super) fn finish_wb_tab_gesture(
+        &mut self,
+        pane_id: crate::panes::PaneId,
+        dragged: uuid::Uuid,
+        x: f32,
+        y: f32,
+    ) {
         let plan = self.surface_plan();
         let Some(surface) = plan.iter().find(|s| {
             matches!(s.kind, crate::surface::SurfaceKind::Pane(id)
-                if self.pane_content(id) == Some(PaneContent::Workbench))
+                if id == pane_id && self.pane_content(id) == Some(PaneContent::Workbench))
         }) else {
             return;
         };
@@ -147,7 +153,7 @@ impl Shell {
         });
         let release = plan
             .iter()
-            .find(|s| matches!(s.kind, crate::surface::SurfaceKind::Canvas))
+            .find(|s| matches!(s.kind, crate::surface::SurfaceKind::Graph(_)))
             .map(|s| (s.rect.x + s.rect.w / 2.0, s.rect.y + s.rect.h / 2.0));
         let (Some((ax, ay)), Some((bx, by))) = (start, release) else {
             self.app.note(crate::observe::AppEvent::InteractionMissed {
@@ -175,11 +181,14 @@ impl Shell {
         let target = {
             let plan = self.surface_plan();
             plan.iter()
-                .find(|s| matches!(s.kind, crate::surface::SurfaceKind::Canvas))
+                .find(|s| matches!(s.kind, crate::surface::SurfaceKind::Graph(_)))
                 .filter(|s| s.rect.contains(x, y))
                 .and_then(|s| {
                     let (lx, ly) = s.rect.to_local(x, y);
-                    self.app.graph_runtimes.node_at_screen(lx, ly)
+                    let crate::surface::SurfaceKind::Graph(pane) = s.kind else {
+                        return None;
+                    };
+                    self.app.graph_pane_node_at_screen(pane, lx, ly)
                 })
         };
         if let Some(member) = target

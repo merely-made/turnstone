@@ -62,6 +62,7 @@ impl App {
         // The move is durable structure in TWO trees; persist it (the
         // lens-window sidecar is what makes the window survive a
         // restart).
+        self.index_pane_spaces();
         effects.push(Effect::SaveSession);
         effects.push(Effect::Redraw);
         effects
@@ -113,16 +114,24 @@ impl App {
             self.active_pane = Some(existing);
             return vec![Effect::Redraw];
         }
+        let graph_id = content
+            .follows_active_graph()
+            .then(|| {
+                anchor
+                    .and_then(|pane| self.graph_for_pane(pane))
+                    .or_else(|| {
+                        self.focused_graph_pane()
+                            .and_then(|pane| self.graph_for_pane(pane))
+                    })
+                    .unwrap_or_else(|| self.graph_runtimes.active_graph())
+            })
+            .unwrap_or_else(GraphId::nil);
         let Some(layout) = self.space_mut(space) else {
             return vec![Effect::Redraw];
         };
         let anchor_path = anchor
             .and_then(|a| crate::pane::path_of(layout, a))
             .unwrap_or_default();
-        let graph_id = content
-            .follows_active_graph()
-            .then(|| self.graph_runtimes.active_graph())
-            .unwrap_or_else(GraphId::nil);
         let new_leaf = PaneNode::Leaf {
             pane_id: id,
             content,
@@ -131,6 +140,7 @@ impl App {
         if layout.summon_leaf(&anchor_path, InsertSide::Right, new_leaf) {
             self.next_pane_id += 1;
             self.active_pane = Some(id);
+            self.index_pane_spaces();
             self.events
                 .push(AppEvent::PaneSummoned(definition.display_name));
             vec![Effect::SaveSession, Effect::Redraw]
@@ -174,7 +184,14 @@ impl App {
     }
 
     pub(super) fn tear_out_tile(&mut self, member: Uuid) -> Vec<Effect> {
-        if !self.workbench.close_tile(member) {
+        let Some(owner) = self.workbench_owner_pane() else {
+            return vec![Effect::Redraw];
+        };
+        let graph_id = self.graph_for_pane(owner).unwrap_or_else(GraphId::nil);
+        if !self
+            .workbench_for_pane_mut(owner)
+            .is_some_and(|workbench| workbench.close_tile(member))
+        {
             return vec![Effect::Redraw];
         }
         let pane_id = PaneId(self.next_pane_id);
@@ -183,17 +200,21 @@ impl App {
             PaneNode::Leaf {
                 pane_id,
                 content: PaneContent::Tile(member),
-                graph_id: self.graph_runtimes.active_graph(),
+                graph_id,
             },
             None,
         );
         self.active_pane = Some(pane_id);
         let label = self
             .graph_runtimes
-            .graph()
-            .nodes()
-            .find(|(_, n)| n.id == member)
-            .map(|(_, n)| n.url().to_string())
+            .canvas(graph_id)
+            .and_then(|canvas| {
+                canvas
+                    .graph()
+                    .nodes()
+                    .find(|(_, node)| node.id == member)
+                    .map(|(_, node)| node.url().to_string())
+            })
             .unwrap_or_default();
         self.events.push(AppEvent::TileTornOut(label));
         effects.push(Effect::SaveSession);
@@ -202,25 +223,56 @@ impl App {
     }
 
     pub(super) fn open_in_workbench(&mut self) -> Vec<Effect> {
+        let graph_pane = self
+            .focused_graph_pane()
+            .unwrap_or_else(|| self.default_graph_pane());
+        let Some(graph_id) = self.graph_for_pane(graph_pane) else {
+            return Vec::new();
+        };
         let Some(target) = self
-            .graph_runtimes
-            .focused_member()
-            .zip(self.graph_runtimes.focused_url().map(str::to_string))
+            .graph_pane_focused_member(graph_pane)
+            .and_then(|member| {
+                self.graph_runtimes.canvas(graph_id).and_then(|canvas| {
+                    canvas
+                        .graph()
+                        .get_node_by_id(member)
+                        .map(|(_, node)| (member, node.url().to_string()))
+                })
+            })
         else {
             return Vec::new();
         };
         let (member, url) = target;
-        self.workbench.ensure_tiled();
-        self.workbench.open_tile(member);
+        self.workbench_for_pane_mut(graph_pane)
+            .expect("graph pane has an identity forme")
+            .ensure_tiled();
+        self.workbench_for_pane_mut(graph_pane)
+            .expect("graph pane has an identity forme")
+            .open_tile(member);
         self.events.push(AppEvent::WorkbenchTileOpened(url.clone()));
         let mut effects = Vec::new();
-        let has_pane = self
+        let workbench_pane = self
             .frisket
             .iter_leaves()
-            .any(|(_, c, _)| matches!(c, PaneContent::Workbench));
-        if !has_pane {
-            effects.extend(self.update(Action::SummonPane(PaneKindId::new(kind::WORKBENCH))));
-        }
+            .chain(
+                self.lenses
+                    .iter()
+                    .flatten()
+                    .flat_map(|space| space.iter_leaves()),
+            )
+            .find(|(_, content, graph)| {
+                matches!(content, PaneContent::Workbench) && *graph == graph_id
+            })
+            .map(|(pane, _, _)| pane);
+        let workbench_pane = match workbench_pane {
+            Some(pane) => pane,
+            None => {
+                effects.extend(self.update(Action::SummonPane(PaneKindId::new(kind::WORKBENCH))));
+                self.active_pane.unwrap_or(graph_pane)
+            }
+        };
+        self.active_pane = Some(workbench_pane);
+        self.publish_member_context(workbench_pane, Some(member));
         // A tile wants live content; spawn it unless it already has
         // some (live or in flight). Failure surfaces as ever.
         if self.content.flip_spawns(member) {
@@ -306,10 +358,11 @@ impl App {
             crate::action::WbAxis::Row => genet_host_api::tile::SplitAxis::Row,
             crate::action::WbAxis::Column => genet_host_api::tile::SplitAxis::Column,
         };
-        if self
-            .workbench
-            .split_beside_axis(dragged, target, axis, after)
-        {
+        let moved = self
+            .workbench_owner_pane()
+            .and_then(|pane| self.workbench_for_pane_mut(pane))
+            .is_some_and(|workbench| workbench.split_beside_axis(dragged, target, axis, after));
+        if moved {
             self.events.push(AppEvent::WorkbenchSplit);
             vec![Effect::SaveSession, Effect::Redraw]
         } else {
@@ -327,7 +380,11 @@ impl App {
             crate::action::WbAxis::Row => genet_host_api::tile::SplitAxis::Row,
             crate::action::WbAxis::Column => genet_host_api::tile::SplitAxis::Column,
         };
-        if self.workbench.split_out(dragged, axis, after) {
+        let moved = self
+            .workbench_owner_pane()
+            .and_then(|pane| self.workbench_for_pane_mut(pane))
+            .is_some_and(|workbench| workbench.split_out(dragged, axis, after));
+        if moved {
             self.events.push(AppEvent::WorkbenchSplit);
             vec![Effect::SaveSession, Effect::Redraw]
         } else {
@@ -336,7 +393,11 @@ impl App {
     }
 
     pub(super) fn workbench_stack_onto(&mut self, dragged: Uuid, target: Uuid) -> Vec<Effect> {
-        if self.workbench.move_to_slot_of(dragged, target) {
+        let moved = self
+            .workbench_owner_pane()
+            .and_then(|pane| self.workbench_for_pane_mut(pane))
+            .is_some_and(|workbench| workbench.move_to_slot_of(dragged, target));
+        if moved {
             self.events.push(AppEvent::WorkbenchStacked);
             vec![Effect::SaveSession, Effect::Redraw]
         } else {
@@ -345,10 +406,20 @@ impl App {
     }
 
     pub(super) fn close_workbench_tile(&mut self) -> Vec<Effect> {
-        let Some(member) = self.graph_runtimes.focused_member() else {
+        let Some(owner) = self.workbench_owner_pane() else {
             return vec![Effect::Redraw];
         };
-        if self.workbench.close_tile(member) {
+        let member = self
+            .follower_context(owner)
+            .and_then(|context| context.member)
+            .or_else(|| self.graph_pane_focused_member(owner));
+        let Some(member) = member else {
+            return vec![Effect::Redraw];
+        };
+        if self
+            .workbench_for_pane_mut(owner)
+            .is_some_and(|workbench| workbench.close_tile(member))
+        {
             self.events.push(AppEvent::WorkbenchTileClosed);
             vec![Effect::SaveSession, Effect::Redraw]
         } else {

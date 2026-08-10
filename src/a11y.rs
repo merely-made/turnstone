@@ -45,12 +45,18 @@ pub fn project_app(app: &App) -> UxTree {
         .map(|(_, n)| project_live_document(app, n.id, n.url()))
         .collect();
     let mut docs = Some(docs);
-    let panes = crate::panes::project_frisket_with(&app.frisket, |content, _id| match content {
-        PaneContent::Workbench => Some(mere::workbench::project_workbench(&app.workbench)),
+    let panes = crate::panes::project_frisket_with(&app.frisket, |content, id| match content {
+        PaneContent::Workbench => app
+            .workbench_for_pane(id)
+            .map(mere::workbench::project_workbench),
         PaneContent::Orrery => {
             // The canvas leaf carries the graph summary plus the live
             // documents (their pixels composite over the canvas region).
-            let count = app.graph_runtimes.graph().nodes().count();
+            let count = app
+                .graph_for_pane(id)
+                .and_then(|graph| app.graph_runtimes.canvas(graph))
+                .map(|canvas| canvas.graph().nodes().count())
+                .unwrap_or(0);
             let mut root = Node::new(Role::Group);
             root.set_label(format!("graph canvas, {count} nodes"));
             let subtrees = docs.take().unwrap_or_default();

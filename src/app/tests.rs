@@ -1930,8 +1930,8 @@ fn workbench_actions_flow_through_the_spine() {
     app.update(Action::OpenAddress("mere://alpha".to_string()));
     let a = app.graph_runtimes.focused_member().unwrap();
     let effects = app.update(Action::OpenInWorkbench);
-    assert!(app.workbench.is_tiled());
-    assert_eq!(app.workbench.tile_count(), 1);
+    assert!(app.active_workbench().unwrap().is_tiled());
+    assert_eq!(app.active_workbench().unwrap().tile_count(), 1);
     assert!(
         app.frisket
             .iter_leaves()
@@ -1946,25 +1946,107 @@ fn workbench_actions_flow_through_the_spine() {
     );
     // Re-opening the same node adds nothing.
     app.update(Action::OpenInWorkbench);
-    assert_eq!(app.workbench.tile_count(), 1);
+    assert_eq!(app.active_workbench().unwrap().tile_count(), 1);
     // A second node tiles beside it; stacking collapses to one cell.
     app.update(Action::OpenAddress("mere://beta".to_string()));
     let b = app.graph_runtimes.focused_member().unwrap();
     app.update(Action::OpenInWorkbench);
-    assert_eq!(app.workbench.slot_count(), 2);
+    assert_eq!(app.active_workbench().unwrap().slot_count(), 2);
     app.update(Action::WorkbenchStackOnto {
         dragged: b,
         target: a,
     });
-    assert_eq!(app.workbench.slot_count(), 1);
-    assert_eq!(app.workbench.tile_count(), 2);
+    assert_eq!(app.active_workbench().unwrap().slot_count(), 1);
+    assert_eq!(app.active_workbench().unwrap().tile_count(), 2);
     // Activate the buried tab; close the focused (beta) tile.
     app.update(Action::WorkbenchActivate(a));
     app.update(Action::CloseWorkbenchTile);
-    assert_eq!(app.workbench.tile_count(), 1);
-    assert!(app.workbench.has_tile(a));
+    assert_eq!(app.active_workbench().unwrap().tile_count(), 1);
+    assert!(app.active_workbench().unwrap().has_tile(a));
 }
 
+/// Two graph panes may name different graph/Forme sources while followers
+/// resolve the last graph-pane context in their own space. Camera/selection
+/// and Workbench state stay behind those pane and Forme boundaries.
+#[test]
+fn graph_views_workbenches_and_followers_are_pane_scoped() {
+    let mut app = App::test_stub();
+    let graph_a = app.graph_runtimes.active_graph();
+    let member_a = {
+        let canvas = app.graph_runtimes.canvas_mut(graph_a).unwrap();
+        let key = canvas.visit("mere://graph-a");
+        canvas.graph().get_node(key).unwrap().id
+    };
+
+    let graph_b = crate::panes::GraphId::from_uuid(uuid::Uuid::from_u128(0xb));
+    let mut canvas_b = mere::canvas::Canvas::new();
+    let member_b = {
+        let key = canvas_b.visit("mere://graph-b");
+        canvas_b.graph().get_node(key).unwrap().id
+    };
+    app.graph_runtimes
+        .activate_or_insert(graph_b, None, canvas_b);
+    assert!(app.graph_runtimes.activate(graph_a));
+
+    let first = crate::panes::PaneId(0);
+    let second = crate::panes::PaneId(1);
+    let follower = crate::panes::PaneId(2);
+    app.frisket.root = crate::panes::PaneNode::Split {
+        axis: crate::panes::SplitAxis::Horizontal,
+        ratio: 0.5,
+        first: Box::new(crate::panes::PaneNode::Leaf {
+            pane_id: first,
+            content: PaneContent::Orrery,
+            graph_id: graph_a,
+        }),
+        second: Box::new(crate::panes::PaneNode::Split {
+            axis: crate::panes::SplitAxis::Vertical,
+            ratio: 0.5,
+            first: Box::new(crate::panes::PaneNode::Leaf {
+                pane_id: second,
+                content: PaneContent::Orrery,
+                graph_id: graph_b,
+            }),
+            second: Box::new(crate::panes::PaneNode::Leaf {
+                pane_id: follower,
+                content: PaneContent::Roster,
+                graph_id: graph_b,
+            }),
+        }),
+    };
+    app.next_pane_id = 3;
+    app.index_pane_spaces();
+
+    assert!(
+        app.with_graph_pane(first, |canvas| canvas.select_member(member_a))
+            .unwrap()
+    );
+    assert_eq!(app.graph_pane_focused_member(first), Some(member_a));
+    assert_eq!(
+        app.follower_context(follower).unwrap().member,
+        Some(member_a)
+    );
+
+    assert!(
+        app.with_graph_pane(second, |canvas| canvas.select_member(member_b))
+            .unwrap()
+    );
+    assert_eq!(app.graph_pane_focused_member(second), Some(member_b));
+    assert_eq!(
+        app.follower_context(follower).unwrap().member,
+        Some(member_b)
+    );
+
+    app.workbench_for_pane_mut(first)
+        .unwrap()
+        .open_tile(member_a);
+    app.workbench_for_pane_mut(second)
+        .unwrap()
+        .open_tile(member_b);
+    assert!(app.workbench_for_pane(first).unwrap().has_tile(member_a));
+    assert!(!app.workbench_for_pane(first).unwrap().has_tile(member_b));
+    assert!(app.workbench_for_pane(second).unwrap().has_tile(member_b));
+}
 /// The browser-state sidecar (rung 6): content-on mirrors live truth at
 /// refresh, prunes vanished nodes, and round-trips through the store.
 #[test]

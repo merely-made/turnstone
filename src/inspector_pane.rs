@@ -19,7 +19,7 @@ use genet_layout::{IncrementalLayout, ScrollOffsets};
 use genet_scripted_dom::{NodeId, ScriptedDom};
 
 use crate::app::App;
-use crate::inspector_view::{InspectorSection, inspector_sections};
+use crate::inspector_view::{InspectorSection, inspector_sections_for_pane};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum InspectorIntent {
@@ -122,13 +122,14 @@ impl InspectorPane {
     pub fn sync(
         &mut self,
         app: &App,
+        pane_id: crate::panes::PaneId,
         pane_w: f32,
         pane_h: f32,
         clip_target: Option<&str>,
         clip_source_available: bool,
         clip_status: &str,
     ) {
-        let sections = inspector_sections(app);
+        let sections = inspector_sections_for_pane(app, pane_id);
         self.runner.update(|state| {
             state.sections = sections;
             state.clip_target = clip_target.map(str::to_string);

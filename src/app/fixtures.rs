@@ -19,14 +19,14 @@ impl App {
             crate::identity::load_or_create_root(&data_root, &data_root.join("personae-vault"));
         let root = identity::IdentityProvider::master_public_key(identity.as_ref()).to_bytes();
         let session_id = SessionId::new();
+        let graph_id = GraphId::from_uuid(*session_id.as_uuid());
+        let mut frisket = FrisketLayout::default();
+        frisket.retag_graph_bound(graph_id);
         Self {
-            graph_runtimes: super::GraphRuntimePool::new(
-                GraphId::nil(),
-                Some(session_id),
-                Canvas::new(),
-            ),
+            graph_runtimes: super::GraphRuntimePool::new(graph_id, Some(session_id), Canvas::new()),
             graph_views: super::GraphPaneViews::default(),
             forme_runtimes: super::FormeRuntimePool::default(),
+            pane_context: crate::panes::ContextIndex::default(),
             omnibar: OmnibarState::default(),
             shell: crate::shell_services::ShellServices::default(),
             data_root,
@@ -36,11 +36,10 @@ impl App {
             place: crate::place::PlaceState::default(),
             next_place_generation: 0,
             next_place_request: 0,
-            focus: FocusTarget::Canvas,
-            frisket: FrisketLayout::default(),
+            focus: FocusTarget::Graph(crate::panes::PaneId(0)),
+            frisket,
             history: chrome::nav::History::new(""),
             active_pane: None,
-            workbench: mere::platen::Workbench::new(),
             browser: session_runtime::browser_node_state::BrowserNodeStates::new(),
             physics_damping: session_runtime::DEFAULT_PHYSICS_DAMPING,
             maximized: None,

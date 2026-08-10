@@ -32,10 +32,33 @@ pub struct InspectorSection {
 
 /// The Inspector's sections for the current app state.
 pub fn inspector_sections(app: &App) -> Vec<InspectorSection> {
-    let focused = app
-        .graph_runtimes
-        .focused_member()
-        .and_then(|member| app.graph_runtimes.graph().get_node_by_id(member));
+    let pane = app
+        .focused_graph_pane()
+        .unwrap_or_else(|| app.default_graph_pane());
+    inspector_sections_for_pane(app, pane)
+}
+
+/// Build the inspector from the pane's followed context. The Inspector is a
+/// follower: it does not read a process-wide canvas selection.
+pub fn inspector_sections_for_pane(app: &App, pane: crate::panes::PaneId) -> Vec<InspectorSection> {
+    let context = app.follower_context(pane);
+    let graph_id = context
+        .and_then(|context| context.graph)
+        .or_else(|| app.graph_for_pane(pane));
+    let canvas = graph_id.and_then(|graph| app.graph_runtimes.canvas(graph));
+    let member = context
+        .and_then(|context| context.member)
+        .or_else(|| app.graph_pane_focused_member(pane));
+    inspector_sections_for_context(app, canvas, member)
+}
+
+fn inspector_sections_for_context(
+    app: &App,
+    canvas: Option<&mere::canvas::Canvas>,
+    member: Option<uuid::Uuid>,
+) -> Vec<InspectorSection> {
+    let graph = canvas.map(mere::canvas::Canvas::graph);
+    let focused = member.and_then(|member| graph.and_then(|graph| graph.get_node_by_id(member)));
 
     let node_rows = match focused {
         Some((key, node)) => vec![
@@ -49,9 +72,8 @@ pub fn inspector_sections(app: &App) -> Vec<InspectorSection> {
             (
                 "Pinned".to_string(),
                 yes_no(
-                    app.graph_runtimes
-                        .graph()
-                        .node_is_pinned(key)
+                    graph
+                        .and_then(|graph| graph.node_is_pinned(key))
                         .unwrap_or_default(),
                 ),
             ),
@@ -61,11 +83,15 @@ pub fn inspector_sections(app: &App) -> Vec<InspectorSection> {
             ),
             (
                 "Import provenance".to_string(),
-                summarize_import_provenance(app.graph_runtimes.graph(), key),
+                graph
+                    .map(|graph| summarize_import_provenance(graph, key))
+                    .unwrap_or_else(|| "none".to_string()),
             ),
             (
                 "Classifications".to_string(),
-                summarize_classifications(app.graph_runtimes.graph(), key),
+                graph
+                    .map(|graph| summarize_classifications(graph, key))
+                    .unwrap_or_else(|| "none".to_string()),
             ),
             (
                 "Mime hint".to_string(),

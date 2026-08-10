@@ -84,7 +84,9 @@ impl App {
                 self.identity.as_ref(),
             );
         }
-        self.workbench.close_tile(member);
+        for runtime in self.forme_runtimes.iter_mut() {
+            runtime.workbench.close_tile(member);
+        }
         self.events.push(AppEvent::NodeRemoved(record.url.clone()));
         vec![
             Effect::RecordDeleted { record },
@@ -277,7 +279,7 @@ impl App {
             );
             self.omnibar = OmnibarState::default();
             if self.focus == FocusTarget::Chrome {
-                self.focus = FocusTarget::Canvas;
+                self.focus = FocusTarget::Graph(self.default_graph_pane());
             }
             let mut fx = self.update(Action::RenameSession { id, name });
             self.shell.complete(
@@ -293,7 +295,7 @@ impl App {
         // focus back to the canvas. (A committed OpenAddress may later
         // spawn content; routing focus onto it is slice B.)
         if self.focus == FocusTarget::Chrome {
-            self.focus = FocusTarget::Canvas;
+            self.focus = FocusTarget::Graph(self.default_graph_pane());
         }
         let committed = self.omnibar.selection().cloned().or_else(|| {
             normalize_address(self.omnibar.text.trim()).map(|url| Suggestion::Go { url })

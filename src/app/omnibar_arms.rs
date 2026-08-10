@@ -49,7 +49,7 @@ impl App {
         // is slice B (content takes input); slice A only distinguishes
         // canvas from chrome.
         if self.focus == FocusTarget::Chrome {
-            self.focus = FocusTarget::Canvas;
+            self.focus = FocusTarget::Graph(self.default_graph_pane());
         }
         self.events.push(AppEvent::OmnibarClosed);
         vec![Effect::Redraw]

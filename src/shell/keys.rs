@@ -86,7 +86,7 @@ impl Shell {
         // press path sets it directly too), so this rides on state, not an
         // Action.
         if matches!(key, WinitKey::Named(WinitNamedKey::Escape)) {
-            self.app.focus = crate::surface::FocusTarget::Canvas;
+            self.app.focus = crate::surface::FocusTarget::Graph(self.app.default_graph_pane());
             self.request_redraw();
             return true;
         }

@@ -70,6 +70,7 @@ impl App {
             ),
             graph_views: super::GraphPaneViews::default(),
             forme_runtimes: super::FormeRuntimePool::default(),
+            pane_context: crate::panes::ContextIndex::default(),
             omnibar: OmnibarState::default(),
             shell: crate::shell_services::ShellServices::default(),
             data_root,
@@ -79,11 +80,10 @@ impl App {
             place: crate::place::PlaceState::default(),
             next_place_generation: 0,
             next_place_request: 0,
-            focus: FocusTarget::Canvas,
+            focus: FocusTarget::Graph(crate::panes::PaneId(0)),
             frisket: FrisketLayout::default(),
             history: chrome::nav::History::new(String::new()),
             active_pane: None,
-            workbench: mere::platen::Workbench::new(),
             browser: session_runtime::browser_node_state::BrowserNodeStates::new(),
             physics_damping: session_runtime::DEFAULT_PHYSICS_DAMPING,
             maximized: None,
@@ -611,7 +611,7 @@ impl App {
             .apply_cartography_faces(faces.iter().map(|(id, code)| (*id, code.as_str())));
         // Session-scoped view state resets.
         self.omnibar = OmnibarState::default();
-        self.focus = FocusTarget::Canvas;
+        self.focus = FocusTarget::Graph(self.default_graph_pane());
         self.active_pane = None;
         self.maximized = None;
         self.roster_tab = 0;
@@ -630,6 +630,8 @@ impl App {
         for lens in self.lenses.iter_mut().flatten() {
             lens.retag_graph_bound_invalid(&valid_graphs, graph);
         }
+        self.index_pane_spaces();
+        self.focus = FocusTarget::Graph(self.default_graph_pane());
         for (ordinal, space) in self.lenses.iter().enumerate() {
             if space.is_some() {
                 effects.push(Effect::OpenWindow { ordinal });
@@ -648,15 +650,19 @@ impl App {
             .max()
             .unwrap_or(0)
             + 1;
-        // The workbench tiling, pruned to the live graph's members (a tile
-        // whose node vanished between sessions collapses away).
+        // The legacy workbench sidecar belongs to this session's identity
+        // forme. Other Forme runtimes are lazy and therefore cannot overwrite
+        // this restored arrangement by merely appearing in another pane.
         let present = self
             .graph_runtimes
             .graph()
             .nodes()
             .map(|(_, n)| n.id)
             .collect();
-        self.workbench = session::load_workbench(&sdir, &present);
+        let primary_graph_pane = self.default_graph_pane();
+        if let Some(workbench) = self.workbench_for_pane_mut(primary_graph_pane) {
+            *workbench = session::load_workbench(&sdir, &present);
+        }
         // The history seeds from wherever the session opens (the focused
         // node's url, or an empty sentinel Back can never step past).
         self.history = chrome::nav::History::new(
@@ -681,6 +687,16 @@ impl App {
             self.graph_runtimes.select_by_url(&last.url);
         }
         self.graph_runtimes.center_on_selected();
+        // Seed the primary graph pane's published context after restore. Its
+        // view is first installed lazily, so a restored graph selection is
+        // captured into that pane rather than becoming a global follower
+        // source.
+        let primary_graph_pane = self.default_graph_pane();
+        let active_graph = self.graph_runtimes.active_graph();
+        if let Some(canvas) = self.graph_runtimes.canvas_mut(active_graph) {
+            self.graph_views.install(primary_graph_pane, canvas);
+        }
+        self.publish_graph_context(primary_graph_pane);
         // Browser state + content-state restore: read from the web.* facets
         // (the converged home); a pre-convergence profile's browser_nodes.json
         // seeds nodes the facets don't know (one-time legacy absorb — the next

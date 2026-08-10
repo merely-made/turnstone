@@ -68,8 +68,9 @@ impl Rect {
 /// holding its scene.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum SurfaceKind {
-    /// The graph canvas: the `PaneContent::Orrery` leaf of the frisket tree.
-    Canvas,
+    /// A graph projection owned by one `PaneId`. The pane resolves its
+    /// `GraphId`, Forme runtime, camera, and selection independently.
+    Graph(PaneId),
     /// A node's live content session (rung 4). Carries the node id it renders.
     Content(Uuid),
     /// A non-canvas frisket pane (rung 5 slice C), by its `PaneId`. What it
@@ -101,7 +102,7 @@ impl SurfaceKind {
     /// across runs (the id is available on the variant when needed).
     pub fn label(&self) -> &'static str {
         match self {
-            SurfaceKind::Canvas => "canvas",
+            SurfaceKind::Graph(_) => "graph",
             SurfaceKind::Content(_) => "content",
             SurfaceKind::Pane(_) => "pane",
             SurfaceKind::Divider(_) => "divider",
@@ -117,8 +118,12 @@ impl SurfaceKind {
 pub struct SurfaceId(pub u64);
 
 impl SurfaceId {
-    pub const CANVAS: SurfaceId = SurfaceId(0);
+    pub const GRAPH_BASE: u64 = 0x0047_5241_0000_0000;
     pub const CHROME: SurfaceId = SurfaceId(1);
+
+    pub fn graph(pane: PaneId) -> Self {
+        SurfaceId(Self::GRAPH_BASE | pane.0)
+    }
 
     /// A content surface's id, folded from the node's uuid into the u64 key
     /// space. The two reserved ids above are avoided by construction (a folded
@@ -145,7 +150,7 @@ impl SurfaceId {
     /// The id for a surface of `kind`.
     pub fn for_kind(kind: SurfaceKind) -> Self {
         match kind {
-            SurfaceKind::Canvas => Self::CANVAS,
+            SurfaceKind::Graph(pane) => Self::graph(pane),
             SurfaceKind::Chrome => Self::CHROME,
             SurfaceKind::Content(node) => Self::content(node),
             SurfaceKind::Pane(id) => Self::pane(id),
@@ -158,15 +163,20 @@ impl SurfaceId {
 /// `omnibar.open` boolean: it is an explicit target, so a third surface class
 /// (panes, rung 5 slice C) joins by adding a variant rather than by threading
 /// another bool through `render`.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum FocusTarget {
-    /// The graph canvas has focus (the at-rest state).
-    #[default]
-    Canvas,
+    /// A graph pane has focus. There is no singleton graph focus target.
+    Graph(PaneId),
     /// The chrome layer has focus: the omnibar is open and taking keys.
     Chrome,
     /// A node's live content session has focus and takes pointer/wheel/keys.
     Content(Uuid),
+}
+
+impl Default for FocusTarget {
+    fn default() -> Self {
+        Self::Graph(PaneId(0))
+    }
 }
 
 impl FocusTarget {
@@ -174,7 +184,7 @@ impl FocusTarget {
     /// drops the node id so the label is stable across runs.
     pub fn label(&self) -> &'static str {
         match self {
-            FocusTarget::Canvas => "canvas",
+            FocusTarget::Graph(_) => "graph",
             FocusTarget::Chrome => "chrome",
             FocusTarget::Content(_) => "content",
         }
@@ -278,14 +288,14 @@ pub struct HitResult {
 pub fn focus_for_press(surfaces: &[Surface], focus: FocusTarget, px: f32, py: f32) -> FocusTarget {
     match hit_test(surfaces, focus, px, py) {
         Some(hit) => match hit.kind {
-            SurfaceKind::Canvas => FocusTarget::Canvas,
+            SurfaceKind::Graph(pane) => FocusTarget::Graph(pane),
             SurfaceKind::Chrome => FocusTarget::Chrome,
             SurfaceKind::Content(node) => FocusTarget::Content(node),
             // A pane press makes it the active pane (App state); keyboard focus
             // stays with the canvas for slice C (panes are placeholders).
             // A seam press likewise: the drag is a pointer gesture, not a
             // keyboard-focus change.
-            SurfaceKind::Pane(_) | SurfaceKind::Divider(_) => FocusTarget::Canvas,
+            SurfaceKind::Pane(_) | SurfaceKind::Divider(_) => focus,
         },
         None => focus,
     }
@@ -304,7 +314,7 @@ mod tests {
     fn plan(w: u32, h: u32, content_node: Option<Uuid>, chrome_present: bool) -> Vec<Surface> {
         let full = Rect::full(w, h);
         assemble(
-            &[(SurfaceKind::Canvas, full)],
+            &[(SurfaceKind::Graph(PaneId(0)), full)],
             &[],
             content_node.map(|n| (n, content_rect(full))),
             chrome_present.then_some(full),
@@ -319,7 +329,10 @@ mod tests {
         let tile_a = Rect::new(500.0, 30.0, 240.0, 770.0);
         let tile_b = Rect::new(750.0, 30.0, 250.0, 770.0);
         let plan = assemble(
-            &[(SurfaceKind::Canvas, Rect::new(0.0, 0.0, 500.0, 800.0))],
+            &[(
+                SurfaceKind::Graph(PaneId(4)),
+                Rect::new(0.0, 0.0, 500.0, 800.0),
+            )],
             &[(node(2), tile_a), (node(3), tile_b)],
             None,
             Some(full),
@@ -328,14 +341,14 @@ mod tests {
         assert_eq!(
             kinds,
             vec![
-                SurfaceKind::Canvas,
+                SurfaceKind::Graph(PaneId(4)),
                 SurfaceKind::Content(node(2)),
                 SurfaceKind::Content(node(3)),
                 SurfaceKind::Chrome,
             ]
         );
         // A pointer over a tile hits THAT tile's content in local space.
-        let hit = hit_test(&plan, FocusTarget::Canvas, 760.0, 100.0).expect("hit");
+        let hit = hit_test(&plan, FocusTarget::Graph(PaneId(4)), 760.0, 100.0).expect("hit");
         assert_eq!(hit.kind, SurfaceKind::Content(node(3)));
         assert_eq!(hit.local, (10.0, 70.0));
     }
@@ -344,7 +357,7 @@ mod tests {
     fn canvas_only_when_nothing_else_present() {
         let plan = plan(800, 600, None, false);
         assert_eq!(plan.len(), 1);
-        assert_eq!(plan[0].kind, SurfaceKind::Canvas);
+        assert_eq!(plan[0].kind, SurfaceKind::Graph(PaneId(0)));
         assert_eq!(plan[0].rect, Rect::full(800, 600));
     }
 
@@ -366,7 +379,7 @@ mod tests {
         assert_eq!(
             kinds,
             vec![
-                SurfaceKind::Canvas,
+                SurfaceKind::Graph(PaneId(0)),
                 SurfaceKind::Content(node(7)),
                 SurfaceKind::Chrome
             ]
@@ -384,9 +397,9 @@ mod tests {
     #[test]
     fn content_and_chrome_ids_do_not_alias_the_reserved_ones() {
         let c = SurfaceId::content(node(9));
-        assert_ne!(c, SurfaceId::CANVAS);
+        assert_ne!(c, SurfaceId::graph(PaneId(0)));
         assert_ne!(c, SurfaceId::CHROME);
-        assert_ne!(SurfaceId::CANVAS, SurfaceId::CHROME);
+        assert_ne!(SurfaceId::graph(PaneId(0)), SurfaceId::CHROME);
     }
 
     #[test]
@@ -394,12 +407,12 @@ mod tests {
         let full = Rect::full(1000, 800);
         let plan = plan(1000, 800, Some(node(1)), false);
         // The content pane starts at x=400; a point at x=500 is 100px into it.
-        let hit = hit_test(&plan, FocusTarget::Canvas, 500.0, 300.0).expect("hit");
+        let hit = hit_test(&plan, FocusTarget::Graph(PaneId(0)), 500.0, 300.0).expect("hit");
         assert_eq!(hit.kind, SurfaceKind::Content(node(1)));
         assert_eq!(hit.local, (100.0, 300.0));
         // A point at x=100 is left of the pane: it falls through to the canvas.
-        let hit = hit_test(&plan, FocusTarget::Canvas, 100.0, 300.0).expect("hit");
-        assert_eq!(hit.kind, SurfaceKind::Canvas);
+        let hit = hit_test(&plan, FocusTarget::Graph(PaneId(0)), 100.0, 300.0).expect("hit");
+        assert_eq!(hit.kind, SurfaceKind::Graph(PaneId(0)));
         let _ = full;
     }
 
@@ -407,8 +420,8 @@ mod tests {
     fn chrome_swallows_input_only_when_focused() {
         let plan = plan(800, 600, None, true);
         // Chrome present but not focused: the click reaches the canvas beneath.
-        let hit = hit_test(&plan, FocusTarget::Canvas, 400.0, 300.0).expect("hit");
-        assert_eq!(hit.kind, SurfaceKind::Canvas);
+        let hit = hit_test(&plan, FocusTarget::Graph(PaneId(0)), 400.0, 300.0).expect("hit");
+        assert_eq!(hit.kind, SurfaceKind::Graph(PaneId(0)));
         // Chrome focused (omnibar open): it takes the click.
         let hit = hit_test(&plan, FocusTarget::Chrome, 400.0, 300.0).expect("hit");
         assert_eq!(hit.kind, SurfaceKind::Chrome);
@@ -419,13 +432,13 @@ mod tests {
         let plan = plan(1000, 800, Some(node(5)), false);
         // Press inside the content pane -> content focus.
         assert_eq!(
-            focus_for_press(&plan, FocusTarget::Canvas, 700.0, 400.0),
+            focus_for_press(&plan, FocusTarget::Graph(PaneId(0)), 700.0, 400.0),
             FocusTarget::Content(node(5))
         );
         // Press on the canvas -> canvas focus.
         assert_eq!(
             focus_for_press(&plan, FocusTarget::Content(node(5)), 100.0, 400.0),
-            FocusTarget::Canvas
+            FocusTarget::Graph(PaneId(0))
         );
     }
 

@@ -99,7 +99,12 @@ impl Shell {
             }
             return;
         }
-        if self.app.graph_runtimes.wheel(dx, dy) {
+        if let Some(crate::surface::HitResult {
+            kind: crate::surface::SurfaceKind::Graph(pane),
+            ..
+        }) = crate::surface::hit_test(&plan, self.app.focus, x, y)
+            && self.app.graph_pane_wheel(pane, dx, dy)
+        {
             self.request_redraw();
         }
     }
@@ -137,13 +142,12 @@ impl Shell {
         // the canvas, which is where the node-scoped actions live.
         if button == MouseButton::Right {
             if let Some(hit) = hit
-                && matches!(hit.kind, crate::surface::SurfaceKind::Canvas)
-                && let Some(member) = self
-                    .app
-                    .graph_runtimes
-                    .node_at_screen(hit.local.0, hit.local.1)
+                && let crate::surface::SurfaceKind::Graph(pane) = hit.kind
+                && let Some(member) =
+                    self.app
+                        .graph_pane_node_at_screen(pane, hit.local.0, hit.local.1)
             {
-                self.app.graph_runtimes.select_member(member);
+                self.app.graph_pane_select_member(pane, member);
             }
             self.act(Action::OmnibarOpen { command: true });
             self.pointer_capture = None;
@@ -280,7 +284,9 @@ impl Shell {
                                             crate::swatch_pane::SwatchActivate::Recover(id),
                                         ) => self.act(Action::RecoverDeletedNode(id)),
                                         crate::swatch_pane::SwatchIntent::Expand => {
-                                            self.app.focus = crate::surface::FocusTarget::Canvas;
+                                            self.app.focus = crate::surface::FocusTarget::Graph(
+                                                self.app.default_graph_pane(),
+                                            );
                                         }
                                     }
                                 }
@@ -416,7 +422,9 @@ impl Shell {
                                             crate::swatch_pane::SwatchActivate::Recover(id),
                                         ) => self.act(Action::RecoverDeletedNode(id)),
                                         crate::swatch_pane::SwatchIntent::Expand => {
-                                            self.app.focus = crate::surface::FocusTarget::Canvas;
+                                            self.app.focus = crate::surface::FocusTarget::Graph(
+                                                self.app.default_graph_pane(),
+                                            );
                                         }
                                     }
                                 }
@@ -443,7 +451,8 @@ impl Shell {
                                     if let Some(div) = pane.tiling().divider_at(lx, ly).cloned() {
                                         self.wb_divider_drag = Some((div, (rect.x, rect.y)));
                                     } else if let Some(member) = pane.tab_at(lx, ly, rw, rh) {
-                                        self.wb_tab_drag = Some(member);
+                                        self.app.publish_member_context(id, Some(member));
+                                        self.wb_tab_drag = Some((id, member));
                                     }
                                 }
                             }
@@ -461,16 +470,19 @@ impl Shell {
                     self.request_redraw();
                     return;
                 }
-                // The canvas (chrome is unreachable — an open omnibar was handled
-                // above). Pressing it focuses it and begins the canvas gesture.
-                crate::surface::SurfaceKind::Canvas | crate::surface::SurfaceKind::Chrome => {
-                    self.app.focus = crate::surface::FocusTarget::Canvas;
+                // A graph pane owns the view gesture. The local point is
+                // essential for side-by-side graph panes.
+                crate::surface::SurfaceKind::Graph(pane) => {
+                    self.app.focus = crate::surface::FocusTarget::Graph(pane);
                     if let Some(button) = pointer_button(button)
-                        && self.app.graph_runtimes.pointer_down(button, x, y)
+                        && self
+                            .app
+                            .graph_pane_pointer_down(pane, button, hit.local.0, hit.local.1)
                     {
                         self.request_redraw();
                     }
                 }
+                crate::surface::SurfaceKind::Chrome => {}
             }
         }
     }
@@ -545,6 +557,18 @@ impl Shell {
     }
 
     pub(super) fn deliver_move(&mut self, x: f32, y: f32) {
+        if let Some(crate::surface::SurfaceKind::Graph(pane)) = self.pointer_capture {
+            let local = self.surface_plan().into_iter().find_map(|surface| {
+                (surface.kind == crate::surface::SurfaceKind::Graph(pane))
+                    .then_some((x - surface.rect.x, y - surface.rect.y))
+            });
+            if let Some((local_x, local_y)) = local
+                && self.app.graph_pane_cursor_moved(pane, local_x, local_y)
+            {
+                self.request_redraw();
+            }
+            return;
+        }
         if let Some(crate::surface::SurfaceKind::Content(node)) = self.pointer_capture {
             let local = self.surface_plan().into_iter().find_map(|surface| {
                 (surface.kind == crate::surface::SurfaceKind::Content(node))
@@ -586,7 +610,10 @@ impl Shell {
 
     pub(super) fn deliver_release(&mut self, x: f32, y: f32, button: MouseButton) {
         let captured = self.pointer_capture;
-        let to_canvas = matches!(captured, Some(crate::surface::SurfaceKind::Canvas));
+        let graph_capture = match captured {
+            Some(crate::surface::SurfaceKind::Graph(pane)) => Some(pane),
+            _ => None,
+        };
         self.pointer_capture = None;
         if button == MouseButton::Left
             && let Some(crate::surface::SurfaceKind::Content(node)) = captured
@@ -611,8 +638,8 @@ impl Shell {
             self.act(Action::SaveSession);
             return;
         }
-        if let Some(dragged) = self.wb_tab_drag.take() {
-            self.finish_wb_tab_gesture(dragged, x, y);
+        if let Some((pane, dragged)) = self.wb_tab_drag.take() {
+            self.finish_wb_tab_gesture(pane, dragged, x, y);
             return;
         }
         if self.divider_drag.take().is_some() {
@@ -621,9 +648,15 @@ impl Shell {
             self.act(Action::SaveSession);
             return;
         }
-        if to_canvas
+        if let Some(pane) = graph_capture
             && let Some(button) = pointer_button(button)
-            && self.app.graph_runtimes.pointer_up(button, x, y)
+            && let Some((local_x, local_y)) = self.surface_plan().into_iter().find_map(|surface| {
+                (surface.kind == crate::surface::SurfaceKind::Graph(pane))
+                    .then_some((x - surface.rect.x, y - surface.rect.y))
+            })
+            && self
+                .app
+                .graph_pane_pointer_up(pane, button, local_x, local_y)
         {
             self.request_redraw();
         }
