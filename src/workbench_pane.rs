@@ -126,7 +126,7 @@ impl WorkbenchPane {
         let geom = app.workbench.to_arrangement().1;
         self.tiling = place_workbench(geom.as_ref(), Rect::new(0.0, 0.0, pane_w, pane_h));
         let label_of = |member: Uuid| -> String {
-            app.canvas
+            app.graph_runtimes
                 .graph()
                 .nodes()
                 .find(|(_, n)| n.id == member)
@@ -264,10 +264,10 @@ mod tests {
     fn app_with_two_tiles() -> (App, Uuid, Uuid) {
         let mut app = App::test_stub();
         app.update(Action::OpenAddress("mere://alpha".to_string()));
-        let a = app.canvas.focused_member().unwrap();
+        let a = app.graph_runtimes.focused_member().unwrap();
         app.update(Action::OpenInWorkbench);
         app.update(Action::OpenAddress("mere://beta".to_string()));
-        let b = app.canvas.focused_member().unwrap();
+        let b = app.graph_runtimes.focused_member().unwrap();
         app.update(Action::OpenInWorkbench);
         (app, a, b)
     }

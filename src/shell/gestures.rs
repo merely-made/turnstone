@@ -179,7 +179,7 @@ impl Shell {
                 .filter(|s| s.rect.contains(x, y))
                 .and_then(|s| {
                     let (lx, ly) = s.rect.to_local(x, y);
-                    self.app.canvas.node_at_screen(lx, ly)
+                    self.app.graph_runtimes.node_at_screen(lx, ly)
                 })
         };
         if let Some(member) = target

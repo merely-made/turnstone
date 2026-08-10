@@ -57,13 +57,13 @@ pub(crate) struct AppSnapshot {
 impl AppSnapshot {
     fn from_app(app: &App) -> Self {
         Self {
-            focused_url: app.canvas.focused_url().map(str::to_string),
-            graph_nodes: app.canvas.graph().nodes().count(),
+            focused_url: app.graph_runtimes.focused_url().map(str::to_string),
+            graph_nodes: app.graph_runtimes.graph().nodes().count(),
             live_content_nodes: app.content.live_nodes().count(),
             focus: app.focus.label(),
             pane_count: app.frisket.iter_leaves().count(),
-            isometric: app.canvas.is_isometric(),
-            height_by_degree: app.canvas.height_by_degree(),
+            isometric: app.graph_runtimes.is_isometric(),
+            height_by_degree: app.graph_runtimes.height_by_degree(),
         }
     }
 

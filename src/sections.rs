@@ -86,7 +86,7 @@ pub fn resolve(ids: &[String]) -> Vec<SectionProvider> {
 }
 
 fn gather_recent(app: &App) -> Vec<SectionRow> {
-    app.canvas
+    app.graph_runtimes
         .graph()
         .recent_visited(8)
         .into_iter()
@@ -98,7 +98,7 @@ fn gather_recent(app: &App) -> Vec<SectionRow> {
 }
 
 fn gather_nodes(app: &App) -> Vec<SectionRow> {
-    let graph = app.canvas.graph();
+    let graph = app.graph_runtimes.graph();
     let mut rows: Vec<(std::time::SystemTime, SectionRow)> = graph
         .nodes()
         .map(|(key, node)| {
@@ -119,7 +119,7 @@ fn gather_nodes(app: &App) -> Vec<SectionRow> {
 }
 
 fn gather_removed(app: &App) -> Vec<SectionRow> {
-    let graph = app.canvas.graph();
+    let graph = app.graph_runtimes.graph();
     let mut seen = std::collections::HashSet::new();
     app.removed
         .iter()

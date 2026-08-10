@@ -505,7 +505,7 @@ impl Shell {
         };
         let content = canvas_rect.and_then(|cr| {
             self.app
-                .canvas
+                .graph_runtimes
                 .focused_member()
                 .filter(|id| self.content_sessions.contains_key(id))
                 .filter(|id| !tiles.iter().any(|(t, _)| t == id))
@@ -513,7 +513,7 @@ impl Shell {
                 .filter(|id| !tile_paned(id))
                 .map(|node| (node, crate::surface::content_rect(cr)))
         });
-        let caption = crate::app::focused_caption(&self.app.canvas);
+        let caption = crate::app::focused_caption(&self.app.graph_runtimes);
         let chrome =
             crate::ui::chrome_has_content(&self.app.omnibar, caption.as_deref()).then_some(area);
         crate::surface::assemble(&base, &tiles, content, chrome)
@@ -626,7 +626,7 @@ impl Shell {
                     for intent in pane.click(lx, ly, rw, rh) {
                         match intent {
                             crate::apparatus_pane::ApparatusIntent::SetViewer(viewer) => {
-                                if let Some(member) = self.app.canvas.focused_member() {
+                                if let Some(member) = self.app.graph_runtimes.focused_member() {
                                     out.push(Action::SetViewerOverride { member, viewer });
                                 }
                             }
@@ -667,7 +667,7 @@ impl Shell {
         let Some(handle) = self.knot_clip.clone() else {
             return;
         };
-        let Some(member) = self.app.canvas.focused_member() else {
+        let Some(member) = self.app.graph_runtimes.focused_member() else {
             return;
         };
         let Some(clip) = self

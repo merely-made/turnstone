@@ -7,7 +7,7 @@ use std::path::PathBuf;
 use mere::canvas::Canvas;
 
 use crate::content::ContentStates;
-use crate::panes::FrisketLayout;
+use crate::panes::{FrisketLayout, GraphId, SessionId};
 use crate::surface::FocusTarget;
 use crate::ui::OmnibarState;
 
@@ -18,12 +18,19 @@ impl App {
         let identity =
             crate::identity::load_or_create_root(&data_root, &data_root.join("personae-vault"));
         let root = identity::IdentityProvider::master_public_key(identity.as_ref()).to_bytes();
+        let session_id = SessionId::new();
         Self {
-            canvas: Canvas::new(),
+            graph_runtimes: super::GraphRuntimePool::new(
+                GraphId::nil(),
+                Some(session_id),
+                Canvas::new(),
+            ),
+            graph_views: super::GraphPaneViews::default(),
+            forme_runtimes: super::FormeRuntimePool::default(),
             omnibar: OmnibarState::default(),
             data_root,
             sessions: session_runtime::ManifestStore::new(),
-            session_id: crate::panes::SessionId::new(),
+            session_id,
             content: ContentStates::default(),
             place: crate::place::PlaceState::default(),
             next_place_generation: 0,
@@ -87,15 +94,15 @@ impl App {
         };
         let _ = assert_relation(&mut graph, notes, radios, relation());
         let _ = assert_relation(&mut graph, notes, harmony, relation());
-        app.canvas.set_graph(graph);
+        app.graph_runtimes.set_graph(graph);
         let _ = app
-            .canvas
+            .graph_runtimes
             .set_node_title_for(uuid::Uuid::from_u128(0x101), "Field notes".into());
         let _ = app
-            .canvas
+            .graph_runtimes
             .set_node_title_for(uuid::Uuid::from_u128(0x102), "Radio map".into());
         let _ = app
-            .canvas
+            .graph_runtimes
             .set_node_title_for(uuid::Uuid::from_u128(0x103), "Harmony map".into());
         app
     }

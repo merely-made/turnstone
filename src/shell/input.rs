@@ -99,7 +99,7 @@ impl Shell {
             }
             return;
         }
-        if self.app.canvas.wheel(dx, dy) {
+        if self.app.graph_runtimes.wheel(dx, dy) {
             self.request_redraw();
         }
     }
@@ -138,9 +138,12 @@ impl Shell {
         if button == MouseButton::Right {
             if let Some(hit) = hit
                 && matches!(hit.kind, crate::surface::SurfaceKind::Canvas)
-                && let Some(member) = self.app.canvas.node_at_screen(hit.local.0, hit.local.1)
+                && let Some(member) = self
+                    .app
+                    .graph_runtimes
+                    .node_at_screen(hit.local.0, hit.local.1)
             {
-                self.app.canvas.select_member(member);
+                self.app.graph_runtimes.select_member(member);
             }
             self.act(Action::OmnibarOpen { command: true });
             self.pointer_capture = None;
@@ -326,7 +329,9 @@ impl Shell {
                                         crate::apparatus_pane::ApparatusIntent::SetViewer(
                                             viewer,
                                         ) => {
-                                            if let Some(member) = self.app.canvas.focused_member() {
+                                            if let Some(member) =
+                                                self.app.graph_runtimes.focused_member()
+                                            {
                                                 self.act(Action::SetViewerOverride {
                                                     member,
                                                     viewer,
@@ -461,7 +466,7 @@ impl Shell {
                 crate::surface::SurfaceKind::Canvas | crate::surface::SurfaceKind::Chrome => {
                     self.app.focus = crate::surface::FocusTarget::Canvas;
                     if let Some(button) = pointer_button(button)
-                        && self.app.canvas.pointer_down(button, x, y)
+                        && self.app.graph_runtimes.pointer_down(button, x, y)
                     {
                         self.request_redraw();
                     }
@@ -498,11 +503,13 @@ impl Shell {
         {
             redraw |= match self.pane_content(prev) {
                 Some(PaneContent::Gloss(_)) => self
-                    .renderers.gloss
+                    .renderers
+                    .gloss
                     .get_mut(&prev)
                     .is_some_and(|p| p.hover_leave()),
                 Some(PaneContent::Overmap(_)) => self
-                    .renderers.overmap
+                    .renderers
+                    .overmap
                     .get_mut(&prev)
                     .is_some_and(|p| p.hover_leave()),
                 _ => false,
@@ -519,11 +526,13 @@ impl Shell {
             if let Some((rw, rh)) = dims {
                 redraw |= match self.pane_content(id) {
                     Some(PaneContent::Gloss(_)) => self
-                        .renderers.gloss
+                        .renderers
+                        .gloss
                         .get_mut(&id)
                         .is_some_and(|p| p.hover(hit.local.0, hit.local.1, rw, rh)),
                     Some(PaneContent::Overmap(_)) => self
-                        .renderers.overmap
+                        .renderers
+                        .overmap
                         .get_mut(&id)
                         .is_some_and(|p| p.hover(hit.local.0, hit.local.1, rw, rh)),
                     _ => false,
@@ -614,7 +623,7 @@ impl Shell {
         }
         if to_canvas
             && let Some(button) = pointer_button(button)
-            && self.app.canvas.pointer_up(button, x, y)
+            && self.app.graph_runtimes.pointer_up(button, x, y)
         {
             self.request_redraw();
         }

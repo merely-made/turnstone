@@ -418,7 +418,7 @@ mod tests {
 
     fn gloss_pane_on_sample_graph() -> (SwatchPane, App) {
         let mut app = App::test_stub();
-        app.canvas = mere::canvas::Canvas::with_sample_graph();
+        *app.graph_runtimes.active_canvas_mut() = mere::canvas::Canvas::with_sample_graph();
         let mut pane = SwatchPane::new(GLOSS_MINIMAP);
         pane.sync(&app, 480.0, 400.0);
         (pane, app)
@@ -552,7 +552,7 @@ mod tests {
     fn minimap_nodes_color_by_content_state() {
         let (mut pane, mut app) = gloss_pane_on_sample_graph();
         let id = app
-            .canvas
+            .graph_runtimes
             .graph()
             .nodes()
             .next()

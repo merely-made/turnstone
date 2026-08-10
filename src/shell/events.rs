@@ -38,11 +38,11 @@ impl ApplicationHandler for Shell {
         let size = window.inner_size();
         self.width = size.width.max(1);
         self.height = size.height.max(1);
-        self.app.canvas.resize(self.width, self.height);
+        self.app.graph_runtimes.resize(self.width, self.height);
         // Frame the content, not the origin: a restored session's persisted
         // positions can have settled anywhere in world space, and a camera
         // centered on the origin would then show empty ground.
-        self.app.canvas.fit_to_content();
+        self.app.graph_runtimes.fit_to_content();
 
         let options = NetrenderOptions {
             tile_cache_size: Some(64),
@@ -65,7 +65,7 @@ impl ApplicationHandler for Shell {
         let physics_wake: armillary::Wake = Arc::new(move || {
             let _ = proxy.send_event(());
         });
-        self.app.canvas.offload_physics(physics_wake);
+        self.app.graph_runtimes.offload_physics(physics_wake);
 
         window.request_redraw();
         self.window = Some(window);
@@ -130,7 +130,7 @@ impl ApplicationHandler for Shell {
                 if let Some(host) = self.host.as_mut() {
                     host.resize(self.width, self.height);
                 }
-                self.app.canvas.resize(self.width, self.height);
+                self.app.graph_runtimes.resize(self.width, self.height);
                 self.request_redraw();
             }
             // Continuous gestures map onto the canvas's semantic input methods
@@ -140,14 +140,18 @@ impl ApplicationHandler for Shell {
                 self.ctrl = mods.state().control_key();
                 self.alt = mods.state().alt_key();
                 self.shift = mods.state().shift_key();
-                self.app.canvas.set_ctrl(mods.state().control_key());
-                self.app.canvas.set_alt(mods.state().alt_key());
+                self.app.graph_runtimes.set_ctrl(mods.state().control_key());
+                self.app.graph_runtimes.set_alt(mods.state().alt_key());
             }
             WindowEvent::CursorMoved { position, .. } => {
                 self.cursor = (position.x as f32, position.y as f32);
                 self.deliver_move(self.cursor.0, self.cursor.1);
                 self.deliver_hover(self.cursor.0, self.cursor.1);
-                if self.app.canvas.cursor_moved(self.cursor.0, self.cursor.1) {
+                if self
+                    .app
+                    .graph_runtimes
+                    .cursor_moved(self.cursor.0, self.cursor.1)
+                {
                     self.request_redraw();
                 }
             }

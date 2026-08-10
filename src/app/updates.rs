@@ -14,13 +14,13 @@ impl App {
     pub fn apply_update(&mut self, update: Update) -> Vec<Effect> {
         match update {
             Update::PageFetched { node, url, result } => {
-                browse::apply_page(&mut self.canvas, node, url, result)
+                browse::apply_page(&mut self.graph_runtimes, node, url, result)
             }
             Update::FaviconFetched {
                 node,
                 owner_url,
                 bytes,
-            } => browse::apply_favicon(&mut self.canvas, node, &owner_url, &bytes),
+            } => browse::apply_favicon(&mut self.graph_runtimes, node, &owner_url, &bytes),
             Update::ContentSpawned { node, facts } => {
                 self.content.note_live(node, facts);
                 self.events.push(AppEvent::ContentState {

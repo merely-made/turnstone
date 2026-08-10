@@ -134,9 +134,9 @@ impl ApparatusPane {
     /// Refresh from app truth at the pane's size: the focused node's caption
     /// and its sidecar viewer override mirrored into the radio.
     pub fn sync(&mut self, app: &App, pane_w: f32, pane_h: f32) {
-        let target = crate::app::focused_caption(&app.canvas);
+        let target = crate::app::focused_caption(&app.graph_runtimes);
         let synced = app
-            .canvas
+            .graph_runtimes
             .focused_member()
             .and_then(|m| app.browser.get(m))
             .map(|b| index_for_viewer(b.viewer_override.as_deref()))
@@ -218,7 +218,7 @@ mod tests {
             "picking livery reports the pinned viewer"
         );
         // The app applies it; a re-sync mirrors the persisted truth back.
-        let member = app.canvas.focused_member().unwrap();
+        let member = app.graph_runtimes.focused_member().unwrap();
         app.update(Action::SetViewerOverride {
             member,
             viewer: Some("genet.livery".to_string()),

@@ -27,6 +27,9 @@ use crate::surface::Rect;
 pub struct PanePlacement {
     pub id: PaneId,
     pub content: PaneContent,
+    /// The graph authority this pane resolves, independent of its screen rect.
+    /// Window composition never infers graph identity from pane kind.
+    pub graph_id: crate::panes::GraphId,
     pub rect: Rect,
     /// Path from the root to this leaf. Empty = the whole tree is one leaf.
     pub path: Vec<SplitChoice>,
@@ -115,10 +118,13 @@ pub fn path_of(layout: &FrisketLayout, id: PaneId) -> Option<Vec<SplitChoice>> {
 fn walk(node: &PaneNode, area: Rect, path: &mut Vec<SplitChoice>, out: &mut PaneTiling) {
     match node {
         PaneNode::Leaf {
-            pane_id, content, ..
+            pane_id,
+            content,
+            graph_id,
         } => out.panes.push(PanePlacement {
             id: *pane_id,
             content: content.clone(),
+            graph_id: *graph_id,
             rect: area,
             path: path.clone(),
         }),
@@ -182,6 +188,24 @@ mod tests {
         assert_eq!(tiling.panes[0].rect, area());
         assert_eq!(tiling.panes[0].content, PaneContent::Orrery);
         assert!(tiling.panes[0].path.is_empty());
+    }
+
+    #[test]
+    fn placement_carries_the_leaf_graph_binding() {
+        let graph = crate::panes::GraphId::from_uuid(uuid::Uuid::from_u128(42));
+        let layout = FrisketLayout {
+            id: crate::panes::FrisketId::new("t"),
+            label: "t".into(),
+            root: PaneNode::Leaf {
+                pane_id: PaneId(8),
+                content: PaneContent::Orrery,
+                graph_id: graph,
+            },
+        };
+
+        let tiling = place_panes(&layout, area(), None);
+        assert_eq!(tiling.panes[0].id, PaneId(8));
+        assert_eq!(tiling.panes[0].graph_id, graph);
     }
 
     #[test]

@@ -43,14 +43,14 @@ pub struct TrailRow {
 /// recently-visited urls, then the focused node's own url history. Pure over the
 /// app's read-only graph.
 pub fn trail_rows(app: &App) -> Vec<TrailRow> {
-    let graph = app.canvas.graph();
+    let graph = app.graph_runtimes.graph();
     let recent: Vec<String> = graph
         .recent_visited(8)
         .into_iter()
         .map(|rv| rv.url)
         .collect();
     let history: Vec<String> = app
-        .canvas
+        .graph_runtimes
         .focused_member()
         .and_then(|m| graph.get_node_by_id(m).map(|(key, _)| key))
         .map(|key| graph.node_history_projection(key).entries)

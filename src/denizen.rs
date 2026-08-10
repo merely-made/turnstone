@@ -599,23 +599,25 @@ pub fn install(app: &mut App, pending: PendingInstall) -> Uuid {
     let hex = subject.to_hex();
 
     // The graph node — minted through the ordinary spine (visit selects it).
-    let key = app.canvas.visit(&denizen_url(subject));
+    let key = app.graph_runtimes.visit(&denizen_url(subject));
     let member = app
-        .canvas
+        .graph_runtimes
         .graph()
         .get_node(key)
         .map(|n| n.id)
         .expect("the just-visited node exists");
-    let _ = app.canvas.set_node_title_for(member, pending.label.clone());
+    let _ = app
+        .graph_runtimes
+        .set_node_title_for(member, pending.label.clone());
     // The borne world is STRUCTURE: it hangs on the node itself
     // (`Node.nested`, journaled through the delta spine), not on the facet.
     let _ = app
-        .canvas
+        .graph_runtimes
         .set_node_nested_for(member, Some(LogId::new(hex.clone())));
 
     // The binding + source + label facets: durable agency truth.
     session_runtime::write_denizen_binding(
-        app.canvas.facets_mut(),
+        app.graph_runtimes.facets_mut(),
         member,
         &session_runtime::DenizenBinding::new(hex.clone(), pending.body.kind()),
     );
@@ -623,7 +625,7 @@ pub fn install(app: &mut App, pending: PendingInstall) -> Uuid {
     // the disk beside the worlds, with the facet as the pointer.
     match &pending.body {
         PackBody::Scenario(source) => {
-            let _ = app.canvas.facets_mut().set(
+            let _ = app.graph_runtimes.facets_mut().set(
                 member,
                 chartulary::FacetId::new(SCENARIO_SOURCE_FACET),
                 serde_json::json!(source),
@@ -641,7 +643,7 @@ pub fn install(app: &mut App, pending: PendingInstall) -> Uuid {
             })();
             match written {
                 Ok(()) => {
-                    let _ = app.canvas.facets_mut().set(
+                    let _ = app.graph_runtimes.facets_mut().set(
                         member,
                         chartulary::FacetId::new(COMPONENT_FACET),
                         serde_json::json!(file),
@@ -654,7 +656,7 @@ pub fn install(app: &mut App, pending: PendingInstall) -> Uuid {
             }
         }
     }
-    let _ = app.canvas.facets_mut().set(
+    let _ = app.graph_runtimes.facets_mut().set(
         member,
         chartulary::FacetId::new("scenario.label"),
         serde_json::json!(pending.label),

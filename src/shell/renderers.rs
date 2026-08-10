@@ -148,8 +148,14 @@ mod tests {
 
         // The routing the shell performs each frame, verbatim from render.rs:
         // entry(pane_id).or_insert_with(RosterGrid::new).
-        renderers.roster.entry(first).or_insert_with(RosterGrid::new);
-        renderers.roster.entry(second).or_insert_with(RosterGrid::new);
+        renderers
+            .roster
+            .entry(first)
+            .or_insert_with(RosterGrid::new);
+        renderers
+            .roster
+            .entry(second)
+            .or_insert_with(RosterGrid::new);
         assert_eq!(renderers.retained(), 2, "one runner per pane instance");
 
         // Drive one pane's tab strip. The other must not follow.
@@ -202,12 +208,18 @@ mod tests {
 
         // The doomed pane holds renderers of two different kinds, so a partial
         // eviction that cleared only one map would show up here.
-        renderers.roster.entry(doomed).or_insert_with(RosterGrid::new);
+        renderers
+            .roster
+            .entry(doomed)
+            .or_insert_with(RosterGrid::new);
         renderers
             .trail
             .entry(doomed)
             .or_insert_with(crate::trail_pane::TrailPane::new);
-        renderers.roster.entry(keeper).or_insert_with(RosterGrid::new);
+        renderers
+            .roster
+            .entry(keeper)
+            .or_insert_with(RosterGrid::new);
         assert_eq!(renderers.retained(), 3);
 
         renderers.evict(doomed);
@@ -227,7 +239,10 @@ mod tests {
     #[test]
     fn evicting_an_undrawn_pane_is_harmless() {
         let mut renderers = PaneRenderers::default();
-        renderers.roster.entry(pane(1)).or_insert_with(RosterGrid::new);
+        renderers
+            .roster
+            .entry(pane(1))
+            .or_insert_with(RosterGrid::new);
         renderers.evict(pane(99));
         assert_eq!(renderers.retained(), 1);
     }

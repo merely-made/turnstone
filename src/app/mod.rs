@@ -5,8 +5,6 @@
 
 use std::path::PathBuf;
 
-use mere::canvas::Canvas;
-
 use crate::panes::{FrisketLayout, GraphId, InsertSide, PaneContent, PaneId, PaneNode};
 
 use crate::action::{Action, Effect, SpaceRef, Update};
@@ -16,9 +14,15 @@ use crate::surface::FocusTarget;
 use crate::ui::{OmnibarState, Suggestion, normalize_address, recompute_suggestions};
 use crate::{browse, session};
 
+mod runtime_pool;
+
+pub use runtime_pool::{
+    FormeRuntime, FormeRuntimeKey, FormeRuntimePool, GraphPaneViews, GraphRuntime, GraphRuntimePool,
+};
+
 /// The at-rest "where am I" caption: the focused node's display label (and
 /// host, when it adds information), or `None` with nothing focused.
-pub fn focused_caption(canvas: &Canvas) -> Option<String> {
+pub fn focused_caption(canvas: &mere::canvas::Canvas) -> Option<String> {
     let url = canvas.focused_url()?.to_string();
     let graph = canvas.graph();
     let (key, node) = graph.get_node_by_url(&url)?;
@@ -41,10 +45,19 @@ fn pane_label(content: &PaneContent) -> String {
         .unwrap_or_else(|| content.tag().to_string())
 }
 
-/// The application state: the hosted canvas (which owns the graph), the
-/// chrome state, and where the session persists.
+/// The application state: hosted graph runtimes, chrome state, and session
+/// persistence. A graph pane resolves one runtime; the application itself
+/// does not own one singleton graph surface.
 pub struct App {
-    pub canvas: Canvas,
+    /// Live graph authority, keyed by `GraphId`. The active cursor supports
+    /// legacy callers until their PaneId routing is migrated; it is not a
+    /// window- or space-level graph owner.
+    pub graph_runtimes: GraphRuntimePool,
+    /// Per-Graph-pane view state, never stored in a graph runtime.
+    pub graph_views: GraphPaneViews,
+    /// Arrangement runtime scopes, keyed independently from graph truth and
+    /// pane view state.
+    pub forme_runtimes: FormeRuntimePool,
     /// The summonable omnibar (rung 3): find over graph truth, go through
     /// OpenAddress, `>` for the actions lane.
     pub omnibar: OmnibarState,
@@ -174,30 +187,34 @@ impl App {
     /// no host ran until now (projection-engine proof 1). A no-op under
     /// force-directed. Called by the shell right before `canvas.frame()`.
     pub fn drive_layout_strategy(&mut self, w: u32, h: u32) {
-        let Some(id) = self.canvas.layout_strategy().map(str::to_string) else {
+        let Some(id) = self.graph_runtimes.layout_strategy().map(str::to_string) else {
             return;
         };
-        self.canvas.refresh_community_cache(&id);
-        let focus = self.canvas.focused_key();
-        if self.canvas.needs_strategy_recompute(&id, w, h, focus) {
+        self.graph_runtimes.refresh_community_cache(&id);
+        let focus = self.graph_runtimes.focused_key();
+        if self
+            .graph_runtimes
+            .needs_strategy_recompute(&id, w, h, focus)
+        {
             // The host measures (per-node face footprints), the strategy
             // places — extent-aware spacing per the P2 contract.
-            let extents = self.canvas.strategy_extents();
+            let extents = self.graph_runtimes.strategy_extents();
             let strategy = mere::canvas::project_canvas_strategy_with_score(
                 &id,
-                self.canvas.graph(),
+                self.graph_runtimes.graph(),
                 focus,
                 w,
                 h,
-                self.canvas.community(),
+                self.graph_runtimes.community(),
                 Some(&extents),
                 // Recency reading pairs the Spiral's newest-first ordering
                 // with the size-by-recency channel (P3).
-                self.canvas.size_by_recency(),
+                self.graph_runtimes.size_by_recency(),
             );
-            self.canvas.apply_strategy_positions(&strategy.positions);
-            self.canvas.set_projection_score(strategy.score);
-            self.canvas.note_strategy_computed(&id, w, h, focus);
+            self.graph_runtimes
+                .apply_strategy_positions(&strategy.positions);
+            self.graph_runtimes.set_projection_score(strategy.score);
+            self.graph_runtimes.note_strategy_computed(&id, w, h, focus);
         }
     }
 
@@ -209,9 +226,9 @@ impl App {
     /// untouched. Shared by the shell's save path and the fork's facet-carry
     /// (both need the store to reflect the moment, not the last save).
     pub fn refresh_facets(&mut self) {
-        let geometry = self.canvas.cartography_geometry();
+        let geometry = self.graph_runtimes.cartography_geometry();
         let container = self.container_id();
-        let facets = self.canvas.facets_mut();
+        let facets = self.graph_runtimes.facets_mut();
         session_runtime::write_web_states(facets, &self.browser);
         session_runtime::write_arrangement_positions(facets, geometry.iter());
         session_runtime::write_arrangement_sizes(facets, geometry.size_iter());
@@ -239,6 +256,47 @@ impl App {
             .map(|(_, content, _)| content)
     }
 
+    /// The graph a pane is bound to, irrespective of which space hosts it.
+    /// Callers that operate on graph truth must resolve this before touching a
+    /// runtime; using the pool's compatibility cursor would silently retarget
+    /// a command when focus changes.
+    pub fn graph_for_pane(&self, pane: PaneId) -> Option<GraphId> {
+        self.frisket
+            .iter_leaves()
+            .chain(
+                self.lenses
+                    .iter()
+                    .flatten()
+                    .flat_map(|space| space.iter_leaves()),
+            )
+            .find(|(id, _, _)| *id == pane)
+            .map(|(_, _, graph)| graph)
+            .filter(|graph| *graph != GraphId::nil())
+    }
+
+    /// The first graph pane in the primary space. This is only the initial
+    /// focus choice for legacy actions, not an authority lookup.
+    pub fn default_graph_pane(&self) -> PaneId {
+        self.frisket
+            .iter_leaves()
+            .find(|(_, content, _)| matches!(content, PaneContent::Orrery))
+            .map(|(id, _, _)| id)
+            .unwrap_or(PaneId(0))
+    }
+
+    /// Register the identity arrangement projection for a graph pane. The
+    /// caller supplies no Workbench state, so this cannot accidentally turn a
+    /// graph view into a global workbench.
+    pub fn ensure_identity_forme_for_pane(&mut self, pane: PaneId) -> Option<FormeRuntimeKey> {
+        let graph = self.graph_for_pane(pane)?;
+        let key = FormeRuntimeKey {
+            graph,
+            forme: mere::forme::FormeRef::Identity(*graph.as_uuid()),
+        };
+        self.forme_runtimes.get_or_create(key.graph, key.forme);
+        Some(key)
+    }
+
     /// Drain the semantic events emitted since the last call (the shell
     /// hands them to the scenario's log, diagnostics, or drops them).
     pub fn take_events(&mut self) -> Vec<AppEvent> {
@@ -258,7 +316,7 @@ impl App {
             root: PaneNode::Leaf {
                 pane_id,
                 content: PaneContent::Orrery,
-                graph_id: GraphId::nil(),
+                graph_id: self.graph_runtimes.active_graph(),
             },
         }));
         ordinal
@@ -350,29 +408,30 @@ impl App {
             Action::ReseedLayout => self.reseed_layout(),
             Action::SetLayoutStrategy(id) => self.set_layout_strategy(id),
             Action::ToggleIsometric => {
-                let on = !self.canvas.is_isometric();
-                self.canvas.set_isometric(on);
+                let on = !self.graph_runtimes.is_isometric();
+                self.graph_runtimes.set_isometric(on);
                 vec![Effect::Redraw]
             }
             Action::OrbitBy(delta) => {
-                self.canvas.orbit_by(delta);
+                self.graph_runtimes.orbit_by(delta);
                 vec![Effect::Redraw]
             }
             Action::TiltBy(delta) => {
-                self.canvas.set_tilt(self.canvas.tilt() + delta);
+                self.graph_runtimes
+                    .set_tilt(self.graph_runtimes.tilt() + delta);
                 vec![Effect::Redraw]
             }
             Action::ToggleHeightByDegree => {
-                let on = !self.canvas.height_by_degree();
-                self.canvas.set_height_by_degree(on);
+                let on = !self.graph_runtimes.height_by_degree();
+                self.graph_runtimes.set_height_by_degree(on);
                 vec![Effect::Redraw]
             }
             Action::FitView => {
-                self.canvas.fit_to_content();
+                self.graph_runtimes.fit_to_content();
                 vec![Effect::Redraw]
             }
             Action::TogglePhysics => {
-                self.canvas.toggle_physics_paused();
+                self.graph_runtimes.toggle_physics_paused();
                 vec![Effect::Redraw]
             }
             Action::ToggleSizeByRecency => self.toggle_size_by_recency(),
@@ -446,7 +505,7 @@ impl App {
             // session and switch to it (G4-R R2; the shell saves the donor on
             // the way out, as every switch does).
             Action::ForkNode { member } => self.fork_session_from(member),
-            Action::ForkFocusedNode => match self.canvas.focused_member() {
+            Action::ForkFocusedNode => match self.graph_runtimes.focused_member() {
                 Some(member) => self.fork_session_from(member),
                 None => Vec::new(),
             },

@@ -279,9 +279,9 @@ impl AppEvent {
 
 /// Read the application snapshot. Pure; the app is not disturbed.
 pub fn snapshot(app: &App) -> Snapshot {
-    let focused = app.canvas.focused_member().and_then(|member| {
-        let url = app.canvas.focused_url()?.to_string();
-        let caption = crate::app::focused_caption(&app.canvas)?;
+    let focused = app.graph_runtimes.focused_member().and_then(|member| {
+        let url = app.graph_runtimes.focused_url()?.to_string();
+        let caption = crate::app::focused_caption(&app.graph_runtimes)?;
         Some(FocusedNode {
             member,
             url,
@@ -289,7 +289,7 @@ pub fn snapshot(app: &App) -> Snapshot {
         })
     });
     let content = app
-        .canvas
+        .graph_runtimes
         .graph()
         .nodes()
         .filter_map(|(_, n)| {
@@ -362,7 +362,7 @@ pub fn snapshot(app: &App) -> Snapshot {
         })
         .collect();
     let tile_content_here = wb_in_primary && tiled.iter().any(|m| live(*m));
-    let focused_inset = app.canvas.focused_member().is_some_and(|m| {
+    let focused_inset = app.graph_runtimes.focused_member().is_some_and(|m| {
         live(m)
             && !((wb_in_primary || wb_in_lens) && tiled.contains(&m))
             && !tile_panes.contains(&m)
@@ -372,7 +372,7 @@ pub fn snapshot(app: &App) -> Snapshot {
     }
     if crate::ui::chrome_has_content(
         &app.omnibar,
-        crate::app::focused_caption(&app.canvas).as_deref(),
+        crate::app::focused_caption(&app.graph_runtimes).as_deref(),
     ) {
         surfaces.push("chrome".to_string());
     }
@@ -391,8 +391,8 @@ pub fn snapshot(app: &App) -> Snapshot {
                 .collect(),
         },
         content,
-        node_count: app.canvas.graph().nodes().count(),
-        graph_visible: app.canvas.graph_visible(),
+        node_count: app.graph_runtimes.graph().nodes().count(),
+        graph_visible: app.graph_runtimes.graph_visible(),
         surfaces,
         focus: app.focus.label().to_string(),
         panes: app
@@ -483,7 +483,7 @@ pub fn snapshot(app: &App) -> Snapshot {
 /// node's display label off graph truth) joined by `|`, `*` on the active tab.
 pub fn workbench_cells(app: &App) -> Vec<String> {
     let label_of = |member: uuid::Uuid| -> String {
-        app.canvas
+        app.graph_runtimes
             .graph()
             .nodes()
             .find(|(_, n)| n.id == member)

@@ -254,7 +254,7 @@ impl Shell {
     /// session switch (which must save the DEPARTING session first).
     pub(super) fn save_session(&mut self) {
         let sdir = self.app.session_dir();
-        session::save_session_graph(&sdir, self.app.canvas.graph());
+        session::save_session_graph(&sdir, self.app.graph_runtimes.graph());
         if let Some(binding) = self.app.place.binding() {
             match session::update_place_binding(&sdir, binding) {
                 Ok(true) => {}
@@ -268,7 +268,7 @@ impl Shell {
                 Err(error) => tracing::warn!(%error, "failed to persist place binding"),
             }
         }
-        let swept = session::gc_orphan_image_blobs(&sdir, self.app.canvas.graph());
+        let swept = session::gc_orphan_image_blobs(&sdir, self.app.graph_runtimes.graph());
         if swept > 0 {
             tracing::info!(swept, "reclaimed orphaned session image blobs");
         }
@@ -287,11 +287,11 @@ impl Shell {
         // refresh (the fork's facet-carry reads the same refreshed store).
         self.app.refresh_browser_states();
         self.app.refresh_facets();
-        if let Err(error) = crate::content_classes::reconcile(&mut self.app.canvas) {
+        if let Err(error) = crate::content_classes::reconcile(&mut self.app.graph_runtimes) {
             tracing::warn!(%error, "content-class reconciliation failed");
         }
-        session::save_node_facets(&sdir, self.app.canvas.facets());
-        if let Some(score) = self.app.canvas.projection_score() {
+        session::save_node_facets(&sdir, self.app.graph_runtimes.facets());
+        if let Some(score) = self.app.graph_runtimes.projection_score() {
             session::save_projection_score(&sdir, score);
         }
         // Stamp a derived display name the first time the session has content

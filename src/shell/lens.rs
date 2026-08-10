@@ -79,7 +79,7 @@ impl Shell {
                             width: size.width.max(1),
                             height: size.height.max(1),
                             cursor: (0.0, 0.0),
-                            viewport: self.app.canvas.viewport(),
+                            viewport: self.app.graph_runtimes.viewport(),
                             pointer_down: false,
                             ordinal,
                         },
@@ -217,14 +217,14 @@ impl Shell {
                     // which is right for a window that actually changed size and
                     // wrong for a camera we are only borrowing (it drifted both
                     // windows off-screen, mere-canvas pins the invariant).
-                    let saved = self.app.canvas.viewport();
-                    self.app.canvas.set_viewport(new_viewport);
+                    let saved = self.app.graph_runtimes.viewport();
+                    self.app.graph_runtimes.set_viewport(new_viewport);
                     self.app.drive_layout_strategy(rw, rh);
-                    let (scene, anim) = self.app.canvas.frame(rw, rh);
+                    let (scene, anim) = self.app.graph_runtimes.frame(rw, rh);
                     animating |= anim;
                     animating |= self.app.resolve_pending_images() > 0;
-                    new_viewport = self.app.canvas.viewport();
-                    self.app.canvas.set_viewport(saved);
+                    new_viewport = self.app.graph_runtimes.viewport();
+                    self.app.graph_runtimes.set_viewport(saved);
                     (scene, wgpu::Color::WHITE)
                 }
                 crate::surface::SurfaceKind::Pane(pid) => {
@@ -260,7 +260,7 @@ impl Shell {
         }
         // The lens's chrome (its window-root in the shared chrome forest):
         // the caption chip, composited on top when there is one to show.
-        if crate::app::focused_caption(&self.app.canvas).is_some() {
+        if crate::app::focused_caption(&self.app.graph_runtimes).is_some() {
             let slot = ordinal + 1;
             self.chrome.ensure_slot(slot);
             let scene = self.chrome.scene(slot, lw, lh);
@@ -507,20 +507,23 @@ impl Shell {
             return;
         };
         // The lens camera, with the size it was framed for (see render_lens).
-        let saved = self.app.canvas.viewport();
-        self.app.canvas.set_viewport(lens.viewport);
+        let saved = self.app.graph_runtimes.viewport();
+        self.app.graph_runtimes.set_viewport(lens.viewport);
         let mut redraw = false;
         match event {
             WindowEvent::CursorMoved { position, .. } => {
                 lens.cursor = (position.x as f32, position.y as f32);
-                redraw = self.app.canvas.cursor_moved(lens.cursor.0, lens.cursor.1);
+                redraw = self
+                    .app
+                    .graph_runtimes
+                    .cursor_moved(lens.cursor.0, lens.cursor.1);
             }
             WindowEvent::MouseWheel { delta, .. } => {
                 let (dx, dy) = match delta {
                     MouseScrollDelta::LineDelta(x, y) => (x * WHEEL_PAN_SCALE, y * WHEEL_PAN_SCALE),
                     MouseScrollDelta::PixelDelta(p) => (p.x as f32, p.y as f32),
                 };
-                redraw = self.app.canvas.wheel(dx, dy);
+                redraw = self.app.graph_runtimes.wheel(dx, dy);
             }
             WindowEvent::MouseInput { state, button, .. } => {
                 if let Some(button) = pointer_button(button) {
@@ -528,11 +531,11 @@ impl Shell {
                     redraw = match state {
                         ElementState::Pressed => {
                             lens.pointer_down = true;
-                            self.app.canvas.pointer_down(button, x, y)
+                            self.app.graph_runtimes.pointer_down(button, x, y)
                         }
                         ElementState::Released => {
                             lens.pointer_down = false;
-                            self.app.canvas.pointer_up(button, x, y)
+                            self.app.graph_runtimes.pointer_up(button, x, y)
                         }
                     };
                 }
@@ -541,8 +544,8 @@ impl Shell {
         }
         // Stash the lens camera back and restore the primary's.
         let lens = self.lens_windows.get_mut(&id).expect("lens still present");
-        lens.viewport = self.app.canvas.viewport();
-        self.app.canvas.set_viewport(saved);
+        lens.viewport = self.app.graph_runtimes.viewport();
+        self.app.graph_runtimes.set_viewport(saved);
         if redraw {
             lens.window.request_redraw();
         }

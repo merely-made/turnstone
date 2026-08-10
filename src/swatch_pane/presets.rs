@@ -72,7 +72,7 @@ fn content_state(app: &App, id: Uuid) -> NodeState {
 /// (aspect preserved by the larger span), each node keyed + activated by its
 /// url. (The GlossPane sync, now a pure function of app truth.)
 fn gloss_gather(app: &App) -> SwatchModel {
-    let (geo_nodes, geo_edges) = app.canvas.minimap_geometry();
+    let (geo_nodes, geo_edges) = app.graph_runtimes.minimap_geometry();
 
     let (mut min_x, mut min_y, mut max_x, mut max_y) = (f32::MAX, f32::MAX, f32::MIN, f32::MIN);
     for (_, (x, y), _, _) in &geo_nodes {
@@ -92,12 +92,12 @@ fn gloss_gather(app: &App) -> SwatchModel {
             model.selected = Some(id);
         }
         let (label, url) = app
-            .canvas
+            .graph_runtimes
             .graph()
             .get_node_by_id(id)
             .map(|(key, node)| {
                 (
-                    app.canvas.graph().node_display_label(key),
+                    app.graph_runtimes.graph().node_display_label(key),
                     node.url().to_string(),
                 )
             })

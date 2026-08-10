@@ -119,10 +119,14 @@ impl App {
         let anchor_path = anchor
             .and_then(|a| crate::pane::path_of(layout, a))
             .unwrap_or_default();
+        let graph_id = content
+            .follows_active_graph()
+            .then(|| self.graph_runtimes.active_graph())
+            .unwrap_or_else(GraphId::nil);
         let new_leaf = PaneNode::Leaf {
             pane_id: id,
             content,
-            graph_id: GraphId::nil(),
+            graph_id,
         };
         if layout.summon_leaf(&anchor_path, InsertSide::Right, new_leaf) {
             self.next_pane_id += 1;
@@ -179,13 +183,13 @@ impl App {
             PaneNode::Leaf {
                 pane_id,
                 content: PaneContent::Tile(member),
-                graph_id: GraphId::nil(),
+                graph_id: self.graph_runtimes.active_graph(),
             },
             None,
         );
         self.active_pane = Some(pane_id);
         let label = self
-            .canvas
+            .graph_runtimes
             .graph()
             .nodes()
             .find(|(_, n)| n.id == member)
@@ -199,9 +203,9 @@ impl App {
 
     pub(super) fn open_in_workbench(&mut self) -> Vec<Effect> {
         let Some(target) = self
-            .canvas
+            .graph_runtimes
             .focused_member()
-            .zip(self.canvas.focused_url().map(str::to_string))
+            .zip(self.graph_runtimes.focused_url().map(str::to_string))
         else {
             return Vec::new();
         };
@@ -341,7 +345,7 @@ impl App {
     }
 
     pub(super) fn close_workbench_tile(&mut self) -> Vec<Effect> {
-        let Some(member) = self.canvas.focused_member() else {
+        let Some(member) = self.graph_runtimes.focused_member() else {
             return vec![Effect::Redraw];
         };
         if self.workbench.close_tile(member) {

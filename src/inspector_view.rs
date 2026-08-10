@@ -33,9 +33,9 @@ pub struct InspectorSection {
 /// The Inspector's sections for the current app state.
 pub fn inspector_sections(app: &App) -> Vec<InspectorSection> {
     let focused = app
-        .canvas
+        .graph_runtimes
         .focused_member()
-        .and_then(|member| app.canvas.graph().get_node_by_id(member));
+        .and_then(|member| app.graph_runtimes.graph().get_node_by_id(member));
 
     let node_rows = match focused {
         Some((key, node)) => vec![
@@ -48,7 +48,12 @@ pub fn inspector_sections(app: &App) -> Vec<InspectorSection> {
             ("Addresses".to_string(), node.addresses.len().to_string()),
             (
                 "Pinned".to_string(),
-                yes_no(app.canvas.graph().node_is_pinned(key).unwrap_or_default()),
+                yes_no(
+                    app.graph_runtimes
+                        .graph()
+                        .node_is_pinned(key)
+                        .unwrap_or_default(),
+                ),
             ),
             (
                 "Tags".to_string(),
@@ -56,11 +61,11 @@ pub fn inspector_sections(app: &App) -> Vec<InspectorSection> {
             ),
             (
                 "Import provenance".to_string(),
-                summarize_import_provenance(app.canvas.graph(), key),
+                summarize_import_provenance(app.graph_runtimes.graph(), key),
             ),
             (
                 "Classifications".to_string(),
-                summarize_classifications(app.canvas.graph(), key),
+                summarize_classifications(app.graph_runtimes.graph(), key),
             ),
             (
                 "Mime hint".to_string(),
@@ -283,7 +288,10 @@ mod tests {
     fn focused_node_with_live_content_reports_both_sections() {
         let mut app = App::test_stub();
         app.update(Action::OpenAddress("https://example.com/page".to_string()));
-        let node = app.canvas.focused_member().expect("opened node focused");
+        let node = app
+            .graph_runtimes
+            .focused_member()
+            .expect("opened node focused");
         app.apply_update(Update::ContentSpawned {
             node,
             facts: Some(ContentFacts {
@@ -320,7 +328,7 @@ mod tests {
     fn a_lane_without_introspection_is_reported_not_synthesized() {
         let mut app = App::test_stub();
         app.update(Action::OpenAddress("https://example.com/x".to_string()));
-        let node = app.canvas.focused_member().unwrap();
+        let node = app.graph_runtimes.focused_member().unwrap();
         app.apply_update(Update::ContentSpawned {
             node,
             facts: Some(ContentFacts {
@@ -342,7 +350,7 @@ mod tests {
     fn closing_content_drops_the_facts() {
         let mut app = App::test_stub();
         app.update(Action::OpenAddress("https://example.com/x".to_string()));
-        let node = app.canvas.focused_member().unwrap();
+        let node = app.graph_runtimes.focused_member().unwrap();
         app.apply_update(Update::ContentSpawned {
             node,
             facts: Some(ContentFacts {

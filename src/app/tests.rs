@@ -28,9 +28,9 @@ fn place_binding_survives_switch_and_restart_as_a_worker_open() {
     )
     .unwrap();
     session::save_place_binding(&sdir, &binding).unwrap();
-    let key = app.canvas.visit("https://shared.example");
-    let shared_node = app.canvas.graph().get_node(key).unwrap().id;
-    session::save_session_graph(&sdir, app.canvas.graph());
+    let key = app.graph_runtimes.visit("https://shared.example");
+    let shared_node = app.graph_runtimes.graph().get_node(key).unwrap().id;
+    session::save_session_graph(&sdir, app.graph_runtimes.graph());
 
     let effects = app.adopt_session(target);
     assert!(
@@ -55,7 +55,10 @@ fn place_binding_survives_switch_and_restart_as_a_worker_open() {
         "adoption asks the shell-owned worker to materialize the retained domains"
     );
     assert!(
-        app.canvas.graph().get_node_by_id(shared_node).is_some(),
+        app.graph_runtimes
+            .graph()
+            .get_node_by_id(shared_node)
+            .is_some(),
         "the cached graph remains immediately available"
     );
 
@@ -245,9 +248,9 @@ fn a_stale_join_answer_cannot_bind_a_session() {
 fn shared_nodes_arrive_without_disturbing_the_local_canvas() {
     let mut app = App::test_stub();
     // The person's own work: a node they opened and selected.
-    let mine = app.canvas.visit("https://mine.example");
-    let mine_id = app.canvas.graph().get_node(mine).unwrap().id;
-    let before = app.canvas.graph().nodes().count();
+    let mine = app.graph_runtimes.visit("https://mine.example");
+    let mine_id = app.graph_runtimes.graph().get_node(mine).unwrap().id;
+    let before = app.graph_runtimes.graph().nodes().count();
 
     let shared = crate::place::projection::SharedGraph {
         nodes: vec![
@@ -268,16 +271,16 @@ fn shared_nodes_arrive_without_disturbing_the_local_canvas() {
         1,
         "only the missing one"
     );
-    assert_eq!(app.canvas.graph().nodes().count(), before + 1);
+    assert_eq!(app.graph_runtimes.graph().nodes().count(), before + 1);
     assert!(
-        app.canvas
+        app.graph_runtimes
             .graph()
             .get_node_by_url("https://theirs.example")
             .is_some(),
         "the shared address arrived"
     );
     assert_eq!(
-        app.canvas.selected_members(),
+        app.graph_runtimes.selected_members(),
         vec![mine_id],
         "a background reconcile must not move the person's selection"
     );
@@ -285,14 +288,14 @@ fn shared_nodes_arrive_without_disturbing_the_local_canvas() {
     // Idempotent: converging again changes nothing, which is what lets this
     // run on every resync.
     assert_eq!(app.reconcile_shared_graph(&shared), 0);
-    assert_eq!(app.canvas.graph().nodes().count(), before + 1);
+    assert_eq!(app.graph_runtimes.graph().nodes().count(), before + 1);
 
     // A node leaving the place does not remove the person's copy of it.
     assert_eq!(
         app.reconcile_shared_graph(&crate::place::projection::SharedGraph::default()),
         0
     );
-    assert_eq!(app.canvas.graph().nodes().count(), before + 1);
+    assert_eq!(app.graph_runtimes.graph().nodes().count(), before + 1);
 }
 
 #[test]
@@ -318,7 +321,7 @@ fn a_shared_knot_address_needs_no_path_of_its_own() {
 
     assert_eq!(app.reconcile_shared_graph(&shared), 2);
     let knot = app
-        .canvas
+        .graph_runtimes
         .graph()
         .get_node_by_url("file:///vault/minutes.knot");
     assert!(knot.is_some(), "the Knot address reconciled like any other");
@@ -355,9 +358,9 @@ fn malformed_place_binding_is_visible_without_hiding_cached_graph() {
     let sdir = session::session_dir(&root, target);
     std::fs::create_dir_all(&sdir).unwrap();
     std::fs::write(session::place_binding_path(&sdir), b"{ not valid JSON").unwrap();
-    let key = app.canvas.visit("https://cached.example");
-    let cached_node = app.canvas.graph().get_node(key).unwrap().id;
-    session::save_session_graph(&sdir, app.canvas.graph());
+    let key = app.graph_runtimes.visit("https://cached.example");
+    let cached_node = app.graph_runtimes.graph().get_node(key).unwrap().id;
+    session::save_session_graph(&sdir, app.graph_runtimes.graph());
 
     app.adopt_session(target);
     assert!(
@@ -370,7 +373,10 @@ fn malformed_place_binding_is_visible_without_hiding_cached_graph() {
         app.place
     );
     assert!(
-        app.canvas.graph().get_node_by_id(cached_node).is_some(),
+        app.graph_runtimes
+            .graph()
+            .get_node_by_id(cached_node)
+            .is_some(),
         "a binding fault does not discard the cached graph"
     );
     assert!(
@@ -404,9 +410,9 @@ fn adopt_session_restores_the_saved_canvas_layout_from_facets() {
 
     // A one-node session on disk: the graph, its per-node arrangement (a
     // position and a size override), and the scene's own damping setting.
-    let key = app.canvas.visit("https://layout.example");
-    let id = app.canvas.graph().get_node(key).unwrap().id;
-    session::save_session_graph(&sdir, app.canvas.graph());
+    let key = app.graph_runtimes.visit("https://layout.example");
+    let id = app.graph_runtimes.graph().get_node(key).unwrap().id;
+    session::save_session_graph(&sdir, app.graph_runtimes.graph());
     let mut facets = session_runtime::NodeFacetStore::new();
     session_runtime::write_arrangement_positions(&mut facets, [(id, (444.0, -55.0))]);
     session_runtime::write_arrangement_sizes(&mut facets, [(id, 96.0)]);
@@ -435,19 +441,19 @@ fn adopt_session_restores_the_saved_canvas_layout_from_facets() {
         "content-on read from the web.content facet respawns on adopt"
     );
     let (restored, _) = app
-        .canvas
+        .graph_runtimes
         .graph()
         .get_node_by_url("https://layout.example")
         .expect("the graph restored");
     let pos = app
-        .canvas
+        .graph_runtimes
         .node_position(restored)
         .expect("a restored position");
     assert!(
         (pos.x - 444.0).abs() < 1.0 && (pos.y + 55.0).abs() < 1.0,
         "the facet layout is applied, got {pos:?}"
     );
-    let size = app.canvas.node_size(restored);
+    let size = app.graph_runtimes.node_size(restored);
     assert!(
         (size - 96.0).abs() < 0.001,
         "the size override rode the facets too, got {size}"
@@ -494,7 +500,7 @@ fn denizen_installs_after_visible_review() {
     assert!(app.pending_install.is_none());
     assert_eq!(app.denizens.residents.len(), 1);
     let (&member, resident) = app.denizens.residents.iter().next().unwrap();
-    let binding = session_runtime::read_denizen_binding(app.canvas.facets(), member)
+    let binding = session_runtime::read_denizen_binding(app.graph_runtimes.facets(), member)
         .expect("the binding facet is durable truth");
     assert_eq!(binding.subject, resident.subject.to_hex());
     assert_eq!(binding.kind, session_runtime::DenizenKind::Scenario);
@@ -503,10 +509,10 @@ fn denizen_installs_after_visible_review() {
         "the facet is pure agency"
     );
     let borne = app
-        .canvas
+        .graph_runtimes
         .graph()
         .get_node_key_by_id(member)
-        .and_then(|key| app.canvas.graph().get_node(key))
+        .and_then(|key| app.graph_runtimes.graph().get_node(key))
         .and_then(|node| node.nested.clone())
         .expect("the node BEARS its world");
     assert_eq!(
@@ -528,8 +534,8 @@ fn denizen_installs_after_visible_review() {
     );
 
     let rebuilt = crate::denizen::rebuild(
-        app.canvas.facets(),
-        app.canvas.graph(),
+        app.graph_runtimes.facets(),
+        app.graph_runtimes.graph(),
         &app.session_dir(),
         app.identity.as_ref(),
     );
@@ -634,7 +640,7 @@ fn denizen_runs_attributed() {
 
     app.update(Action::RunDenizen { member });
     assert!(
-        app.canvas
+        app.graph_runtimes
             .graph()
             .get_node_by_url("mere://kept/note")
             .is_some(),
@@ -673,11 +679,11 @@ fn fork_session_snapshots_the_component_with_its_facets() {
     std::fs::create_dir_all(app.session_dir()).unwrap();
 
     // A two-node connected component plus a disconnected bystander.
-    let a = app.canvas.visit("https://fork.example/a");
-    let a_id = app.canvas.graph().get_node(a).unwrap().id;
+    let a = app.graph_runtimes.visit("https://fork.example/a");
+    let a_id = app.graph_runtimes.graph().get_node(a).unwrap().id;
     app.update(Action::OpenAddress("https://fork.example/b".to_string()));
     let _bystander = {
-        let mut g = app.canvas.graph().clone();
+        let mut g = app.graph_runtimes.graph().clone();
         let k = mere::kernel::graph::apply::add_node(
             &mut g,
             Some(uuid::Uuid::from_u128(0x10e)),
@@ -685,7 +691,7 @@ fn fork_session_snapshots_the_component_with_its_facets() {
             Default::default(),
         );
         let id = g.get_node(k).unwrap().id;
-        app.canvas.set_graph(g);
+        app.graph_runtimes.set_graph(g);
         id
     };
     // Donor character: live content on `a` (so web.content refreshes true
@@ -898,9 +904,12 @@ fn committing_an_action_row_runs_the_action_and_closes() {
     ] {
         app.update(action);
     }
-    assert!(!app.canvas.is_isometric());
+    assert!(!app.graph_runtimes.is_isometric());
     let effects = app.update(Action::OmnibarCommit);
-    assert!(app.canvas.is_isometric(), "the committed toggle ran");
+    assert!(
+        app.graph_runtimes.is_isometric(),
+        "the committed toggle ran"
+    );
     assert!(!app.omnibar.open, "the palette closed on commit");
     assert!(effects.contains(&Effect::Redraw));
 }
@@ -916,7 +925,7 @@ fn content_flip_lowers_and_fails_honestly() {
         app.update(Action::ToggleNodeContent).is_empty(),
         "no focus, no-op"
     );
-    app.canvas.visit("https://example.com/page");
+    app.graph_runtimes.visit("https://example.com/page");
     let effects = app.update(Action::ToggleNodeContent);
     let Some(Effect::SpawnContent { node, url }) = effects
         .iter()
@@ -1113,13 +1122,13 @@ fn delete_stages_into_the_bin_and_recover_restores_identity() {
     let url = "https://example.com/gone".to_string();
     app.update(Action::OpenAddress(url.clone()));
     let original = app
-        .canvas
+        .graph_runtimes
         .focused_member()
         .expect("the opened node is focused");
 
     let fx = app.update(Action::DeleteFocusedNode);
     assert!(
-        app.canvas.graph().get_node_by_url(&url).is_none(),
+        app.graph_runtimes.graph().get_node_by_url(&url).is_none(),
         "the node left the graph"
     );
     // The record leaves through the bin port carrying the identity.
@@ -1155,12 +1164,12 @@ fn delete_stages_into_the_bin_and_recover_restores_identity() {
     // record still in the bin (append-only until athanor's pass).
     app.update(Action::RecoverDeletedNode(original));
     assert_eq!(
-        app.canvas.focused_member(),
+        app.graph_runtimes.focused_member(),
         Some(original),
         "the node is back under its ORIGINAL id, selected"
     );
     assert!(
-        app.canvas.graph().get_node_by_url(&url).is_some(),
+        app.graph_runtimes.graph().get_node_by_url(&url).is_some(),
         "the url resolves again"
     );
     assert!(
@@ -1211,10 +1220,11 @@ fn a_component_denizen_acts_only_within_its_reviewed_rings() {
         let (&m, r) = app.denizens.residents.iter().next().unwrap();
         (m, r.subject)
     };
-    let binding = session_runtime::read_denizen_binding(app.canvas.facets(), member).unwrap();
+    let binding =
+        session_runtime::read_denizen_binding(app.graph_runtimes.facets(), member).unwrap();
     assert_eq!(binding.kind, session_runtime::DenizenKind::Pack);
     let file = app
-        .canvas
+        .graph_runtimes
         .facets()
         .get(
             &member,
@@ -1241,17 +1251,17 @@ fn a_component_denizen_acts_only_within_its_reviewed_rings() {
     assert!(!covers(Ring::Session), "an unreviewed ring is ungranted");
 
     // Run: the guest emits one action per ring. Only the covered ones land.
-    let before = app.canvas.graph().node_count();
+    let before = app.graph_runtimes.graph().node_count();
     app.update(Action::RunDenizen { member });
     assert!(
-        app.canvas
+        app.graph_runtimes
             .graph()
             .get_node_by_url("mere://kept/note")
             .is_some(),
         "the navigate emission lowered through the spine"
     );
     assert_eq!(
-        app.canvas.graph().node_count(),
+        app.graph_runtimes.graph().node_count(),
         before + 1,
         "and nothing else minted a node"
     );
@@ -1301,8 +1311,8 @@ fn a_rerooted_profile_reissues_delegations_from_the_reviewed_projections() {
     // stopgap seed). The old certificates on disk name the old root.
     let new_root = identity::InMemoryProvider::from_seed([77u8; 32]);
     let rebuilt = crate::denizen::rebuild(
-        app.canvas.facets(),
-        app.canvas.graph(),
+        app.graph_runtimes.facets(),
+        app.graph_runtimes.graph(),
         &app.session_dir(),
         &new_root,
     );
@@ -1395,7 +1405,7 @@ fn install_delegates_from_the_profile_identity_and_uninstall_revokes_it() {
         "the delegation is revoked, so the ring is no longer authorized"
     );
     assert!(
-        session_runtime::read_denizen_binding(app.canvas.facets(), member).is_none(),
+        session_runtime::read_denizen_binding(app.graph_runtimes.facets(), member).is_none(),
         "un-resided: the agency facet is gone"
     );
     assert!(
@@ -1410,7 +1420,7 @@ fn install_delegates_from_the_profile_identity_and_uninstall_revokes_it() {
     );
     // Nothing was destroyed: the node and its borne world remain.
     assert!(
-        app.canvas.graph().get_node_by_id(member).is_some(),
+        app.graph_runtimes.graph().get_node_by_id(member).is_some(),
         "revoking authority does not delete the node"
     );
     assert!(
@@ -1490,7 +1500,7 @@ fn deleting_a_denizen_archives_its_world_and_recovery_restores_residency() {
         "the runtime entry left with the node"
     );
     assert!(
-        session_runtime::read_denizen_binding(app.canvas.facets(), member).is_none(),
+        session_runtime::read_denizen_binding(app.graph_runtimes.facets(), member).is_none(),
         "the live facets went to the tombstone"
     );
 
@@ -1508,7 +1518,7 @@ fn deleting_a_denizen_archives_its_world_and_recovery_restores_residency() {
         "the archive slot emptied"
     );
     assert!(
-        session_runtime::read_denizen_binding(app.canvas.facets(), member).is_some(),
+        session_runtime::read_denizen_binding(app.graph_runtimes.facets(), member).is_some(),
         "the binding facet restored"
     );
     let resident = app
@@ -1866,10 +1876,16 @@ fn back_forward_and_reload_flow_through_the_spine() {
             .any(|e| matches!(e, Effect::FetchPage { .. })),
         "Back never refetches: {effects:?}"
     );
-    assert_eq!(app.canvas.focused_url(), Some("https://example.com/a"));
+    assert_eq!(
+        app.graph_runtimes.focused_url(),
+        Some("https://example.com/a")
+    );
     // Forward redoes.
     app.update(Action::NavForward);
-    assert_eq!(app.canvas.focused_url(), Some("https://example.com/b"));
+    assert_eq!(
+        app.graph_runtimes.focused_url(),
+        Some("https://example.com/b")
+    );
     // Back then a new open: the forward branch truncates.
     app.update(Action::NavBack);
     app.update(Action::OpenAddress("https://example.com/c".to_string()));
@@ -1877,7 +1893,7 @@ fn back_forward_and_reload_flow_through_the_spine() {
     assert!(app.history.can_back());
     // Reload: a fetch effect for the focused node; with live content, a
     // close + respawn pair.
-    let node = app.canvas.focused_member().unwrap();
+    let node = app.graph_runtimes.focused_member().unwrap();
     app.apply_update(Update::ContentSpawned { node, facts: None });
     let effects = app.update(Action::Reload);
     assert!(
@@ -1912,7 +1928,7 @@ fn back_forward_and_reload_flow_through_the_spine() {
 fn workbench_actions_flow_through_the_spine() {
     let mut app = App::test_stub();
     app.update(Action::OpenAddress("mere://alpha".to_string()));
-    let a = app.canvas.focused_member().unwrap();
+    let a = app.graph_runtimes.focused_member().unwrap();
     let effects = app.update(Action::OpenInWorkbench);
     assert!(app.workbench.is_tiled());
     assert_eq!(app.workbench.tile_count(), 1);
@@ -1933,7 +1949,7 @@ fn workbench_actions_flow_through_the_spine() {
     assert_eq!(app.workbench.tile_count(), 1);
     // A second node tiles beside it; stacking collapses to one cell.
     app.update(Action::OpenAddress("mere://beta".to_string()));
-    let b = app.canvas.focused_member().unwrap();
+    let b = app.graph_runtimes.focused_member().unwrap();
     app.update(Action::OpenInWorkbench);
     assert_eq!(app.workbench.slot_count(), 2);
     app.update(Action::WorkbenchStackOnto {
@@ -1955,7 +1971,7 @@ fn workbench_actions_flow_through_the_spine() {
 fn browser_states_refresh_and_round_trip() {
     let mut app = App::test_stub();
     app.update(Action::OpenAddress("https://example.com/a".to_string()));
-    let a = app.canvas.focused_member().unwrap();
+    let a = app.graph_runtimes.focused_member().unwrap();
     app.apply_update(Update::ContentSpawned {
         node: a,
         facts: None,
@@ -1965,7 +1981,7 @@ fn browser_states_refresh_and_round_trip() {
     assert!(app.browser.get(a).is_some_and(|b| b.content_on));
     assert!(
         app.browser
-            .get(app.canvas.focused_member().unwrap())
+            .get(app.graph_runtimes.focused_member().unwrap())
             .is_none(),
         "a node without content stays out of the sidecar"
     );
@@ -2016,7 +2032,7 @@ fn workbench_persists_and_restores_pruned() {
 #[test]
 fn committing_a_node_row_selects_without_fetch_effects() {
     let mut app = App::test_stub();
-    app.canvas.visit("https://example.com/meerkats");
+    app.graph_runtimes.visit("https://example.com/meerkats");
     app.update(Action::OmnibarOpen { command: false });
     for c in "meer".chars() {
         app.update(Action::OmnibarChar(c));

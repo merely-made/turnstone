@@ -38,8 +38,8 @@ pub struct RosterViewRow {
 /// by content type, the focused node marked selected and any live node marked
 /// open. Pure over the app's read-only graph.
 pub fn roster_rows(app: &App) -> Vec<RosterViewRow> {
-    let graph = app.canvas.graph();
-    let focused = app.canvas.focused_member();
+    let graph = app.graph_runtimes.graph();
+    let focused = app.graph_runtimes.focused_member();
 
     let inputs: Vec<NodeRowInput> = graph
         .nodes()
@@ -91,8 +91,8 @@ pub struct RosterGridRow {
 /// cambium `data_grid`. Same graph-truth gather and `build_node_rows` sort as
 /// `roster_rows`; only the shaping differs.
 pub fn roster_grid_rows(app: &App) -> Vec<RosterGridRow> {
-    let graph = app.canvas.graph();
-    let focused = app.canvas.focused_member();
+    let graph = app.graph_runtimes.graph();
+    let focused = app.graph_runtimes.focused_member();
     let inputs: Vec<NodeRowInput> = graph
         .nodes()
         .map(|(key, node)| NodeRowInput {

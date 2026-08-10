@@ -176,7 +176,7 @@ impl TurnstoneEndpoint {
 
     fn presentation(&mut self, scene: &SceneSnapshot) -> Result<PresentationManifest, String> {
         let mut manifest = PresentationManifest::default();
-        let graph = self.app.canvas.graph();
+        let graph = self.app.graph_runtimes.graph();
         for (instance, item) in scene.active_items_in_order() {
             let source = scene
                 .tables
@@ -307,7 +307,7 @@ impl ProjectionSource for TurnstoneEndpoint {
             return Err("G3 Turnstone endpoint currently accepts Spiral arrangements".into());
         };
 
-        let graph = self.app.canvas.graph();
+        let graph = self.app.graph_runtimes.graph();
         let extents: HashMap<NodeKey, (f32, f32)> = graph
             .nodes()
             .map(|(key, _)| (key, self.card_extent))
@@ -315,7 +315,7 @@ impl ProjectionSource for TurnstoneEndpoint {
         let mut mapped = cartography::project_spiral_score(
             graph,
             Some(&extents),
-            self.app.canvas.focused_key(),
+            self.app.graph_runtimes.focused_key(),
             true,
         );
         mapped.score.arrangement = Arrangement::Spiral(spiral);

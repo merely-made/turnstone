@@ -38,7 +38,7 @@ pub fn project_app(app: &App) -> UxTree {
     // and workbench tiles alike render over graph truth, and a document
     // without a structural read is announced without children (honest).
     let docs: Vec<UxTree> = app
-        .canvas
+        .graph_runtimes
         .graph()
         .nodes()
         .filter(|(_, n)| matches!(app.content.get(n.id), Some(NodeContent::Live)))
@@ -50,7 +50,7 @@ pub fn project_app(app: &App) -> UxTree {
         PaneContent::Orrery => {
             // The canvas leaf carries the graph summary plus the live
             // documents (their pixels composite over the canvas region).
-            let count = app.canvas.graph().nodes().count();
+            let count = app.graph_runtimes.graph().nodes().count();
             let mut root = Node::new(Role::Group);
             root.set_label(format!("graph canvas, {count} nodes"));
             let subtrees = docs.take().unwrap_or_default();
@@ -95,7 +95,7 @@ fn project_chrome(app: &App) -> UxTree {
         nodes.push((id, n));
         children.push(id);
     }
-    if let Some(caption) = crate::app::focused_caption(&app.canvas) {
+    if let Some(caption) = crate::app::focused_caption(&app.graph_runtimes) {
         let id = node_id_for_path("turnstone/chrome/caption");
         let mut n = Node::new(Role::Label);
         n.set_label(caption);
@@ -186,7 +186,7 @@ mod tests {
     fn app_with_live_doc() -> App {
         let mut app = App::test_stub();
         app.update(Action::OpenAddress("https://example.com/".to_string()));
-        let node = app.canvas.focused_member().unwrap();
+        let node = app.graph_runtimes.focused_member().unwrap();
         app.update(Action::OpenInWorkbench);
         app.apply_update(Update::ContentSpawned {
             node,

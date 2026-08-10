@@ -23,7 +23,7 @@ impl App {
             return vec![Effect::Redraw];
         };
         let facet = |id: &str| {
-            self.canvas
+            self.graph_runtimes
                 .facets()
                 .get(&member, &chartulary::FacetId::new(id))
                 .and_then(|v| v.as_str().map(str::to_string))
@@ -121,7 +121,7 @@ impl App {
                 };
                 self.focus = FocusTarget::Chrome;
                 let actions = self.available_actions();
-                recompute_suggestions(&mut self.omnibar, &self.canvas, &actions);
+                recompute_suggestions(&mut self.omnibar, &self.graph_runtimes, &actions);
                 vec![Effect::Redraw]
             }
             Err(err) => {
@@ -141,7 +141,7 @@ impl App {
             return vec![Effect::Redraw];
         };
         let revoked = self.denizens.authority.revoke_root_grants(resident.subject);
-        session_runtime::remove_denizen_binding(self.canvas.facets_mut(), member);
+        session_runtime::remove_denizen_binding(self.graph_runtimes.facets_mut(), member);
         let hex = resident.subject.to_hex();
         // The certificates go with the residency: a later adopt must
         // not resurrect the authority we just revoked.

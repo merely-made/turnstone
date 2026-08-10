@@ -55,11 +55,21 @@ impl App {
             Some(id) => (id, false),
             None => (Self::mint_session(&data_root, &mut sessions), true),
         };
+        let initial_graph = sessions
+            .get(session_id)
+            .map(|manifest| manifest.root_graph_id)
+            .unwrap_or_else(GraphId::nil);
         let identity =
             crate::identity::load_or_create_root(&data_root, &crate::identity::default_vault_dir());
         let root = identity::IdentityProvider::master_public_key(identity.as_ref()).to_bytes();
         let mut app = Self {
-            canvas: Canvas::new(),
+            graph_runtimes: super::GraphRuntimePool::new(
+                initial_graph,
+                Some(session_id),
+                Canvas::new(),
+            ),
+            graph_views: super::GraphPaneViews::default(),
+            forme_runtimes: super::FormeRuntimePool::default(),
             omnibar: OmnibarState::default(),
             data_root,
             sessions,
@@ -90,25 +100,25 @@ impl App {
         };
         let mut effects = app.adopt_session(session_id);
         if let Some(url) = address {
-            let key = app.canvas.visit(url);
+            let key = app.graph_runtimes.visit(url);
             if fetch::is_fetchable(url)
-                && let Some(node) = app.canvas.graph().get_node(key).map(|n| n.id)
+                && let Some(node) = app.graph_runtimes.graph().get_node(key).map(|n| n.id)
             {
                 effects.push(Effect::FetchPage {
                     node,
                     url: url.to_string(),
                 });
             }
-        } else if minted && app.canvas.graph().nodes().count() == 0 {
+        } else if minted && app.graph_runtimes.graph().nodes().count() == 0 {
             // A bare FIRST launch: the sample graph, with the omnibar open by
             // itself so the app is discoverable without documentation. A bare
             // relaunch restores the canvas quietly (Ctrl+L / Ctrl+K summon).
             tracing::info!("no session graph; starting on the sample graph");
-            app.canvas = Canvas::with_sample_graph();
+            *app.graph_runtimes.active_canvas_mut() = Canvas::with_sample_graph();
             app.omnibar.open = true;
             app.focus = FocusTarget::Chrome;
             let actions = app.available_actions();
-            recompute_suggestions(&mut app.omnibar, &app.canvas, &actions);
+            recompute_suggestions(&mut app.omnibar, &app.graph_runtimes, &actions);
         }
         (app, effects)
     }
@@ -173,7 +183,7 @@ impl App {
     /// untouched; the two are independent thereafter. Returns no effects if
     /// `seed` names no node.
     pub fn fork_session_from(&mut self, seed: uuid::Uuid) -> Vec<Effect> {
-        if self.canvas.graph().get_node_by_id(seed).is_none() {
+        if self.graph_runtimes.graph().get_node_by_id(seed).is_none() {
             return Vec::new();
         }
         // The carry must read the moment, not the last save.
@@ -183,7 +193,8 @@ impl App {
         // The kernel half: component copy with the id remap for the carry.
         let donor_graph_label = self.container_id().map(|c| c.to_string());
         let mut fork_graph = mere::kernel::graph::Graph::new();
-        let copy = fork_graph.copy_component_from(self.canvas.graph(), seed, donor_graph_label);
+        let copy =
+            fork_graph.copy_component_from(self.graph_runtimes.graph(), seed, donor_graph_label);
         if copy.new_keys.is_empty() {
             return Vec::new();
         }
@@ -197,10 +208,10 @@ impl App {
         let mut carried_worlds: Vec<String> = Vec::new();
         for (donor_id, minted_id) in &copy.id_remap {
             let Some(log) = self
-                .canvas
+                .graph_runtimes
                 .graph()
                 .get_node_key_by_id(*donor_id)
-                .and_then(|key| self.canvas.graph().get_node(key))
+                .and_then(|key| self.graph_runtimes.graph().get_node(key))
                 .and_then(|node| node.nested.clone())
             else {
                 continue;
@@ -215,10 +226,14 @@ impl App {
         // settings donor-container -> fork-container.
         let fork_graph_id = GraphId::new();
         let mut fork_facets = session_runtime::NodeFacetStore::new();
-        session_runtime::copy_node_facets(self.canvas.facets(), &mut fork_facets, &copy.id_remap);
+        session_runtime::copy_node_facets(
+            self.graph_runtimes.facets(),
+            &mut fork_facets,
+            &copy.id_remap,
+        );
         if let Some(donor_container) = self.container_id() {
             session_runtime::copy_scene_facets(
-                self.canvas.facets(),
+                self.graph_runtimes.facets(),
                 &mut fork_facets,
                 donor_container,
                 *fork_graph_id.as_uuid(),
@@ -309,7 +324,7 @@ impl App {
     /// reads "Example Domain" instead of eight hex chars without churning as
     /// you keep browsing.
     pub(crate) fn derive_session_name(&self) -> Option<String> {
-        let graph = self.canvas.graph();
+        let graph = self.graph_runtimes.graph();
         let recent = graph.recent_visited(1).into_iter().next()?;
         let (key, _) = graph.get_node_by_url(&recent.url)?;
         let label = graph.node_display_label(key);
@@ -350,18 +365,23 @@ impl App {
     ) -> usize {
         let missing: Vec<String> = shared
             .addresses()
-            .filter(|address| self.canvas.graph().get_node_by_url(address).is_none())
+            .filter(|address| {
+                self.graph_runtimes
+                    .graph()
+                    .get_node_by_url(address)
+                    .is_none()
+            })
             .map(str::to_string)
             .collect();
         // Selection is the person's, so restore it: `visit` selects what it
         // mints, and a background resync must not move the cursor.
-        let selected = self.canvas.selected_members();
+        let selected = self.graph_runtimes.selected_members();
         for address in &missing {
-            self.canvas.visit(address);
+            self.graph_runtimes.visit(address);
         }
         if !missing.is_empty() {
             for member in selected {
-                self.canvas.select_member(member);
+                self.graph_runtimes.select_member(member);
             }
         }
         missing.len()
@@ -369,8 +389,8 @@ impl App {
 
     /// The focused node's address, for sharing it into the place.
     pub fn focused_address(&self) -> Option<String> {
-        let member = self.canvas.focused_member()?;
-        let (_, node) = self.canvas.graph().get_node_by_id(member)?;
+        let member = self.graph_runtimes.focused_member()?;
+        let (_, node) = self.graph_runtimes.graph().get_node_by_id(member)?;
         let url = node.url().trim();
         (!url.is_empty()).then(|| url.to_string())
     }
@@ -419,6 +439,13 @@ impl App {
     /// (omnibar, active pane, maximize) resets.
     pub fn adopt_session(&mut self, id: crate::panes::SessionId) -> Vec<Effect> {
         self.session_id = id;
+        let graph = self
+            .sessions
+            .get(id)
+            .map(|manifest| manifest.root_graph_id)
+            .unwrap_or_else(GraphId::nil);
+        self.graph_runtimes
+            .activate_or_insert(graph, Some(id), Canvas::new());
         session::record_current_session(&self.data_root, id);
         if self.sessions.update(id, |m| m.touch()) {
             if let Err(err) = self.sessions.flush_dirty() {
@@ -466,10 +493,10 @@ impl App {
         // canvas's own session-switch seam (mere's MG2 `set_graph`: physics
         // actor and node pool stay alive, every node parks at the origin and
         // halts; the saved layout is applied from the facet store next).
-        self.canvas
+        self.graph_runtimes
             .set_graph(session::load_session_graph(&sdir).unwrap_or_default());
         if let Some(score) = session::load_projection_score(&sdir) {
-            self.canvas.restore_projection_score(score);
+            self.graph_runtimes.restore_projection_score(score);
         }
         // Preview imagery lives out of the graph now. The first paint queues
         // only visible cache misses; the shell resolves those after the frame,
@@ -484,33 +511,37 @@ impl App {
         // The removed-sessions cache (overmap O3): derived from the manifest
         // trash, refreshed here and on close/recover.
         self.trash = self.sessions.list_trash();
-        self.canvas
+        self.graph_runtimes
             .overlay_facets(session::load_node_facets(&sdir).unwrap_or_default());
         // A profile saved before the nil-GraphId heal keyed its scene.* facets
         // by the nil uuid; move them onto the healed container id once.
         if let Some(container) = self.container_id() {
             let nil = uuid::Uuid::nil();
-            if container != nil && self.canvas.facets().facets_of(&nil).is_some() {
-                let donor = self.canvas.facets().clone();
+            if container != nil && self.graph_runtimes.facets().facets_of(&nil).is_some() {
+                let donor = self.graph_runtimes.facets().clone();
                 session_runtime::copy_scene_facets(
                     &donor,
-                    self.canvas.facets_mut(),
+                    self.graph_runtimes.facets_mut(),
                     nil,
                     container,
                 );
-                self.canvas.facets_mut().remove_node(&nil);
+                self.graph_runtimes.facets_mut().remove_node(&nil);
             }
         }
-        let mut present: std::collections::BTreeSet<uuid::Uuid> =
-            self.canvas.graph().nodes().map(|(_, n)| n.id).collect();
+        let mut present: std::collections::BTreeSet<uuid::Uuid> = self
+            .graph_runtimes
+            .graph()
+            .nodes()
+            .map(|(_, n)| n.id)
+            .collect();
         // Keep the container's `scene.*` facets through the reconcile: the
         // container id is not a leaf graph node, so without this the prune
         // would sweep the scene settings away.
         if let Some(container) = self.container_id() {
             present.insert(container);
         }
-        session_runtime::retain_present_nodes(self.canvas.facets_mut(), &present);
-        match crate::content_classes::reconcile(&mut self.canvas) {
+        session_runtime::retain_present_nodes(self.graph_runtimes.facets_mut(), &present);
+        match crate::content_classes::reconcile(&mut self.graph_runtimes) {
             Ok(changed) if changed > 0 => {
                 tracing::info!(
                     changed,
@@ -521,14 +552,14 @@ impl App {
             Ok(_) => {}
             Err(error) => tracing::warn!(%error, "content-class reconciliation failed"),
         }
-        let positions = session_runtime::read_arrangement_positions(self.canvas.facets());
-        self.canvas.seed_cartography(positions);
+        let positions = session_runtime::read_arrangement_positions(self.graph_runtimes.facets());
+        self.graph_runtimes.seed_cartography(positions);
         // The denizen runtime derives from the binding facets (agency) + the
         // graph's `Node.nested` pointers (structure) + the nested logs.
         self.pending_install = None;
         self.denizens = crate::denizen::rebuild(
-            self.canvas.facets(),
-            self.canvas.graph(),
+            self.graph_runtimes.facets(),
+            self.graph_runtimes.graph(),
             &sdir,
             self.identity.as_ref(),
         );
@@ -537,36 +568,44 @@ impl App {
         // and rewrite the facet without it.
         for (member, log_id) in std::mem::take(&mut self.denizens.legacy_heals) {
             let _ = self
-                .canvas
+                .graph_runtimes
                 .set_node_nested_for(member, Some(mere::kernel::graph::LogId::new(log_id)));
             if let Some(binding) =
-                session_runtime::read_denizen_binding(self.canvas.facets(), member)
+                session_runtime::read_denizen_binding(self.graph_runtimes.facets(), member)
             {
-                session_runtime::write_denizen_binding(self.canvas.facets_mut(), member, &binding);
+                session_runtime::write_denizen_binding(
+                    self.graph_runtimes.facets_mut(),
+                    member,
+                    &binding,
+                );
             }
         }
         // The scene's own view settings ride the `scene.*` container facets:
         // the sizing mode + metric and the physics damping re-open as saved.
         let scene = self
             .container_id()
-            .map(|c| session_runtime::read_scene_facets(self.canvas.facets(), c))
+            .map(|c| session_runtime::read_scene_facets(self.graph_runtimes.facets(), c))
             .unwrap_or_default();
         self.physics_damping = scene.physics_damping;
-        self.canvas.set_physics_damping(scene.physics_damping);
-        self.canvas
+        self.graph_runtimes
+            .set_physics_damping(scene.physics_damping);
+        self.graph_runtimes
             .apply_cartography_importance_metric(&scene.importance_metric);
-        let sizes = session_runtime::read_arrangement_sizes(self.canvas.facets());
-        self.canvas
-            .apply_cartography_sizing(sizes, scene.size_by_degree, scene.size_by_importance);
-        let sprites = session_runtime::read_arrangement_sprites(self.canvas.facets());
-        self.canvas
+        let sizes = session_runtime::read_arrangement_sizes(self.graph_runtimes.facets());
+        self.graph_runtimes.apply_cartography_sizing(
+            sizes,
+            scene.size_by_degree,
+            scene.size_by_importance,
+        );
+        let sprites = session_runtime::read_arrangement_sprites(self.graph_runtimes.facets());
+        self.graph_runtimes
             .apply_cartography_sprites(sprites.iter().map(|(id, uri)| (*id, uri.as_str())));
-        let hulls = session_runtime::read_arrangement_sprite_hulls(self.canvas.facets());
-        self.canvas.apply_cartography_sprite_hulls(hulls);
-        let materials = session_runtime::read_arrangement_materials(self.canvas.facets());
-        self.canvas.apply_cartography_materials(materials);
-        let faces = session_runtime::read_arrangement_faces(self.canvas.facets());
-        self.canvas
+        let hulls = session_runtime::read_arrangement_sprite_hulls(self.graph_runtimes.facets());
+        self.graph_runtimes.apply_cartography_sprite_hulls(hulls);
+        let materials = session_runtime::read_arrangement_materials(self.graph_runtimes.facets());
+        self.graph_runtimes.apply_cartography_materials(materials);
+        let faces = session_runtime::read_arrangement_faces(self.graph_runtimes.facets());
+        self.graph_runtimes
             .apply_cartography_faces(faces.iter().map(|(id, code)| (*id, code.as_str())));
         // Session-scoped view state resets.
         self.omnibar = OmnibarState::default();
@@ -580,6 +619,15 @@ impl App {
         // truth, not painted memory. The id ceiling spans EVERY space.
         self.frisket = session::load_frisket_layout(&sdir).unwrap_or_default();
         self.lenses = session::load_lens_spaces(&sdir);
+        let valid_graphs = self
+            .sessions
+            .iter()
+            .map(|(_, manifest)| manifest.root_graph_id)
+            .collect();
+        self.frisket.retag_graph_bound_invalid(&valid_graphs, graph);
+        for lens in self.lenses.iter_mut().flatten() {
+            lens.retag_graph_bound_invalid(&valid_graphs, graph);
+        }
         for (ordinal, space) in self.lenses.iter().enumerate() {
             if space.is_some() {
                 effects.push(Effect::OpenWindow { ordinal });
@@ -600,12 +648,17 @@ impl App {
             + 1;
         // The workbench tiling, pruned to the live graph's members (a tile
         // whose node vanished between sessions collapses away).
-        let present = self.canvas.graph().nodes().map(|(_, n)| n.id).collect();
+        let present = self
+            .graph_runtimes
+            .graph()
+            .nodes()
+            .map(|(_, n)| n.id)
+            .collect();
         self.workbench = session::load_workbench(&sdir, &present);
         // The history seeds from wherever the session opens (the focused
         // node's url, or an empty sentinel Back can never step past).
         self.history = chrome::nav::History::new(
-            self.canvas
+            self.graph_runtimes
                 .focused_url()
                 .map(str::to_string)
                 .unwrap_or_default(),
@@ -615,19 +668,24 @@ impl App {
         // composes for the FOCUSED node), and CENTER the camera on it — the
         // adopted session opens looking at its focus, not at whatever the
         // default origin happens to crop.
-        if self.canvas.focused_member().is_none()
-            && let Some(last) = self.canvas.graph().recent_visited(1).into_iter().next()
+        if self.graph_runtimes.focused_member().is_none()
+            && let Some(last) = self
+                .graph_runtimes
+                .graph()
+                .recent_visited(1)
+                .into_iter()
+                .next()
         {
-            self.canvas.select_by_url(&last.url);
+            self.graph_runtimes.select_by_url(&last.url);
         }
-        self.canvas.center_on_selected();
+        self.graph_runtimes.center_on_selected();
         // Browser state + content-state restore: read from the web.* facets
         // (the converged home); a pre-convergence profile's browser_nodes.json
         // seeds nodes the facets don't know (one-time legacy absorb — the next
         // save writes facets only, and the stale file is left inert). Every
         // node whose content was ON respawns through the ordinary port, so
         // `Live` here is spawned truth, never a painted memory.
-        self.browser = session_runtime::read_web_states(self.canvas.facets());
+        self.browser = session_runtime::read_web_states(self.graph_runtimes.facets());
         for (id, legacy) in session::load_legacy_browser_nodes(&sdir).nodes {
             self.browser.nodes.entry(id).or_insert(legacy);
         }
@@ -635,7 +693,7 @@ impl App {
         // (the shell re-points the bin actor on switch; BinListed refills).
         self.removed.clear();
         self.content = ContentStates::default();
-        for (_, node) in self.canvas.graph().nodes() {
+        for (_, node) in self.graph_runtimes.graph().nodes() {
             if self.browser.get(node.id).is_some_and(|b| b.content_on) {
                 self.content.note_requested(node.id);
                 effects.push(Effect::SpawnContent {
@@ -656,8 +714,12 @@ impl App {
     /// lifecycle (live or in flight), and entries for vanished nodes drop.
     pub fn refresh_browser_states(&mut self) {
         use crate::content::NodeContent;
-        let present: std::collections::HashSet<uuid::Uuid> =
-            self.canvas.graph().nodes().map(|(_, n)| n.id).collect();
+        let present: std::collections::HashSet<uuid::Uuid> = self
+            .graph_runtimes
+            .graph()
+            .nodes()
+            .map(|(_, n)| n.id)
+            .collect();
         let stale: Vec<uuid::Uuid> = self
             .browser
             .nodes
@@ -730,7 +792,7 @@ impl App {
         };
         self.focus = FocusTarget::Chrome;
         let actions = self.available_actions();
-        recompute_suggestions(&mut self.omnibar, &self.canvas, &actions);
+        recompute_suggestions(&mut self.omnibar, &self.graph_runtimes, &actions);
         self.events.push(AppEvent::OmnibarOpened);
         vec![Effect::Redraw]
     }
@@ -765,7 +827,7 @@ impl App {
     /// canvas's byte-bounded LRU will ask again if an evicted digest later
     /// returns to view.
     pub(crate) fn resolve_pending_images(&mut self) -> usize {
-        let refs = self.canvas.take_image_requests();
+        let refs = self.graph_runtimes.take_image_requests();
         if refs.is_empty() {
             return 0;
         }
@@ -778,7 +840,7 @@ impl App {
             let Some(decoded) = genet_layout::decode_image_bytes(&bytes) else {
                 continue;
             };
-            self.canvas.register_resolved_image(
+            self.graph_runtimes.register_resolved_image(
                 image.digest,
                 decoded.rgba,
                 decoded.width,

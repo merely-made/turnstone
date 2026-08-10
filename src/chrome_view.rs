@@ -225,7 +225,7 @@ impl ChromeSurfaces {
         for &(slot, _, _) in sizes {
             self.ensure_slot(slot);
         }
-        let caption = crate::app::focused_caption(&app.canvas);
+        let caption = crate::app::focused_caption(&app.graph_runtimes);
         let omnibar: &OmnibarState = &app.omnibar;
         let before = omnibar.text[..omnibar.cursor].to_string();
         let after = omnibar.text[omnibar.cursor..].to_string();

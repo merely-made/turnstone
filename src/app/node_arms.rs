@@ -22,15 +22,15 @@ impl App {
         // port (Effect::RecordDeleted); the actor answers with the
         // refreshed list, so `removed` mirrors the store, never a
         // hand-kept copy.
-        let record = self.canvas.focused_member().and_then(|m| {
-            let graph = self.canvas.graph();
+        let record = self.graph_runtimes.focused_member().and_then(|m| {
+            let graph = self.graph_runtimes.graph();
             let (key, node) = graph.get_node_by_id(m)?;
             let title = node.title.trim();
             // The node's whole character rides the tombstone: its
             // borne world (by id) and its facet bundle, so recovery
             // restores residency/arrangement/web state, not just
             // identity.
-            let facets = self.canvas.facets().facets_of(&m).map(|f| {
+            let facets = self.graph_runtimes.facets().facets_of(&m).map(|f| {
                 serde_json::Value::Object(
                     f.iter()
                         .map(|(id, value)| (id.as_str().to_string(), value.clone()))
@@ -65,7 +65,7 @@ impl App {
             tracing::warn!(%err, log_id, "world archive failed; delete aborted");
             return vec![Effect::Redraw];
         }
-        let Some(member) = self.canvas.remove_focused() else {
+        let Some(member) = self.graph_runtimes.remove_focused() else {
             // The node did not leave after all: put the world back.
             if let Some(log_id) = &record.nested {
                 let _ = crate::denizen::unarchive_world(&self.session_dir(), log_id);
@@ -77,8 +77,8 @@ impl App {
         if self.denizens.residents.remove(&member).is_some() {
             let sdir = self.session_dir();
             self.denizens = crate::denizen::rebuild(
-                self.canvas.facets(),
-                self.canvas.graph(),
+                self.graph_runtimes.facets(),
+                self.graph_runtimes.graph(),
                 &sdir,
                 self.identity.as_ref(),
             );
@@ -104,7 +104,7 @@ impl App {
         let Some(record) = self.removed.iter().find(|r| r.node_id == id).cloned() else {
             return vec![Effect::Redraw];
         };
-        let member = self.canvas.recover_node(
+        let member = self.graph_runtimes.recover_node(
             record.node_id,
             &record.url,
             record.title.as_deref(),
@@ -116,7 +116,7 @@ impl App {
         // runtime so a recovered resident resides again.
         if let Some(serde_json::Value::Object(map)) = &record.facets {
             for (facet_id, value) in map {
-                let _ = self.canvas.facets_mut().set(
+                let _ = self.graph_runtimes.facets_mut().set(
                     member,
                     chartulary::FacetId::new(facet_id.as_str()),
                     value.clone(),
@@ -129,18 +129,18 @@ impl App {
             if let Err(err) = crate::denizen::unarchive_world(&sdir, log_id) {
                 tracing::warn!(%err, log_id, "world unarchive failed; recovering empty");
             }
-            let _ = self.canvas.set_node_nested_for(
+            let _ = self.graph_runtimes.set_node_nested_for(
                 member,
                 Some(mere::kernel::graph::LogId::new(log_id.clone())),
             );
             self.denizens = crate::denizen::rebuild(
-                self.canvas.facets(),
-                self.canvas.graph(),
+                self.graph_runtimes.facets(),
+                self.graph_runtimes.graph(),
                 &sdir,
                 self.identity.as_ref(),
             );
         }
-        self.canvas.center_on_selected();
+        self.graph_runtimes.center_on_selected();
         self.history.visit(record.url.clone());
         self.events
             .push(AppEvent::NodeRecovered(record.url.clone()));
@@ -171,7 +171,7 @@ impl App {
             self.content.get(member),
             Some(crate::content::NodeContent::Live | crate::content::NodeContent::Requested)
         ) && let Some(url) = self
-            .canvas
+            .graph_runtimes
             .graph()
             .nodes()
             .find(|(_, n)| n.id == member)
@@ -197,9 +197,9 @@ impl App {
         // nodes may share a URL (the sample graph + an open), and
         // get_node_by_url picks arbitrarily between them.
         let Some(target) = self
-            .canvas
+            .graph_runtimes
             .focused_member()
-            .zip(self.canvas.focused_url().map(str::to_string))
+            .zip(self.graph_runtimes.focused_url().map(str::to_string))
         else {
             return Vec::new();
         };
@@ -223,9 +223,9 @@ impl App {
 
     pub(super) fn reload_focused(&mut self) -> Vec<Effect> {
         let Some(target) = self
-            .canvas
+            .graph_runtimes
             .focused_member()
-            .zip(self.canvas.focused_url().map(str::to_string))
+            .zip(self.graph_runtimes.focused_url().map(str::to_string))
         else {
             return vec![Effect::Redraw];
         };
@@ -287,7 +287,7 @@ impl App {
         let mut effects = match committed {
             Some(Suggestion::Node { url, .. }) => {
                 // Find lane: select the existing node; never refetch.
-                self.canvas.select_by_url(&url);
+                self.graph_runtimes.select_by_url(&url);
                 vec![Effect::Redraw]
             }
             Some(Suggestion::Go { url }) => {
@@ -318,11 +318,11 @@ impl App {
 
     pub(super) fn open_address(&mut self, url: String) -> Vec<Effect> {
         self.events.push(AppEvent::AddressOpened(url.clone()));
-        let key = self.canvas.visit(&url);
+        let key = self.graph_runtimes.visit(&url);
         self.history.visit(url.clone());
         let mut effects = vec![Effect::Redraw];
         if fetch::is_fetchable(&url)
-            && let Some(node) = self.canvas.graph().get_node(key).map(|n| n.id)
+            && let Some(node) = self.graph_runtimes.graph().get_node(key).map(|n| n.id)
         {
             effects.push(Effect::FetchPage { node, url });
         }
@@ -337,7 +337,7 @@ impl App {
         if !url.is_empty() {
             // Navigation is a revisit even when its node already
             // exists, so P3's recency-derived score remains honest.
-            self.canvas.visit(&url);
+            self.graph_runtimes.visit(&url);
         }
         vec![Effect::Redraw]
     }
@@ -347,12 +347,12 @@ impl App {
             return vec![Effect::Redraw];
         };
         self.events.push(AppEvent::NavigatedForward(url.clone()));
-        self.canvas.visit(&url);
+        self.graph_runtimes.visit(&url);
         vec![Effect::Redraw]
     }
 
     pub(super) fn reseed_layout(&mut self) -> Vec<Effect> {
-        if self.canvas.reseed() {
+        if self.graph_runtimes.reseed() {
             self.events.push(AppEvent::LayoutReseeded);
             vec![Effect::Redraw]
         } else {
@@ -361,9 +361,10 @@ impl App {
     }
 
     pub(super) fn set_layout_strategy(&mut self, id: Option<&'static str>) -> Vec<Effect> {
-        self.canvas.set_layout_strategy(id.map(str::to_string));
+        self.graph_runtimes
+            .set_layout_strategy(id.map(str::to_string));
         if id != Some("phyllotaxis.default") {
-            self.canvas.set_projection_score(None);
+            self.graph_runtimes.set_projection_score(None);
         }
         // The projection itself is computed on the next frame by
         // `drive_layout_strategy` (it needs the surface viewport).
@@ -371,13 +372,13 @@ impl App {
     }
 
     pub(super) fn toggle_size_by_recency(&mut self) -> Vec<Effect> {
-        let on = !self.canvas.size_by_recency();
-        self.canvas.set_size_by_recency(on);
+        let on = !self.graph_runtimes.size_by_recency();
+        self.graph_runtimes.set_size_by_recency(on);
         // A size change moves extents and the recency ordering, so the
         // active analytic layout must recompute; re-selecting the same
         // strategy drops its input cache (last_strategy_inputs = None).
-        let active = self.canvas.layout_strategy().map(str::to_string);
-        self.canvas.set_layout_strategy(active);
+        let active = self.graph_runtimes.layout_strategy().map(str::to_string);
+        self.graph_runtimes.set_layout_strategy(active);
         vec![Effect::Redraw]
     }
 
@@ -387,12 +388,12 @@ impl App {
         data_uri: String,
         hull: Vec<(f32, f32)>,
     ) -> Vec<Effect> {
-        self.canvas.set_node_sprite(member, data_uri);
+        self.graph_runtimes.set_node_sprite(member, data_uri);
         // The traced collider: the node collides at its picture. Under
         // 3 points the tracer found no opaque region — keep the
         // silhouette collider rather than installing a degenerate one.
         if hull.len() >= 3 {
-            self.canvas.set_node_sprite_hull(member, hull);
+            self.graph_runtimes.set_node_sprite_hull(member, hull);
         }
         self.events.push(AppEvent::NodeSpriteSet(member));
         vec![Effect::SaveSession, Effect::Redraw]

@@ -38,7 +38,8 @@ impl Shell {
         match content {
             Some(PaneContent::Trail) => {
                 let pane = self
-                    .renderers.trail
+                    .renderers
+                    .trail
                     .entry(pane_id)
                     .or_insert_with(crate::trail_pane::TrailPane::new);
                 pane.sync(&self.app, rw as f32, rh as f32);
@@ -48,7 +49,8 @@ impl Shell {
                 // The retained cambium grid: refresh it from graph truth at
                 // the pane's size, then draw its DOM.
                 let grid = self
-                    .renderers.roster
+                    .renderers
+                    .roster
                     .entry(pane_id)
                     .or_insert_with(crate::cambium_pane::RosterGrid::new);
                 grid.sync(&self.app, rw as f32, rh as f32);
@@ -71,7 +73,7 @@ impl Shell {
             Some(PaneContent::Inspector) => {
                 let clip_source_available = self
                     .app
-                    .canvas
+                    .graph_runtimes
                     .focused_member()
                     .and_then(|member| self.content_sessions.get(&member))
                     .and_then(|session| session.clip())
@@ -86,7 +88,8 @@ impl Shell {
                     .map(|handle| handle.status().label())
                     .unwrap_or_else(|| "unconfigured".into());
                 let pane = self
-                    .renderers.inspector
+                    .renderers
+                    .inspector
                     .entry(pane_id)
                     .or_insert_with(crate::inspector_pane::InspectorPane::new);
                 pane.sync(
@@ -105,7 +108,8 @@ impl Shell {
                 // plan; in a lens the furniture shows and tile compositing is
                 // a named follow-on.
                 let pane = self
-                    .renderers.workbench
+                    .renderers
+                    .workbench
                     .entry(pane_id)
                     .or_insert_with(crate::workbench_pane::WorkbenchPane::new);
                 pane.sync(&self.app, rw as f32, rh as f32);
@@ -115,7 +119,8 @@ impl Shell {
                 // The graph-object facet analyzer's first rows: the viewer
                 // control (radio over the registered lanes).
                 let pane = self
-                    .renderers.apparatus
+                    .renderers
+                    .apparatus
                     .entry(pane_id)
                     .or_insert_with(crate::apparatus_pane::ApparatusPane::new);
                 pane.sync(&self.app, rw as f32, rh as f32);
@@ -135,7 +140,8 @@ impl Shell {
             {
                 let service = self.publish_service.clone();
                 let pane = self
-                    .renderers.publish
+                    .renderers
+                    .publish
                     .entry(pane_id)
                     .or_insert_with(|| crate::publish_pane::PublishPane::new(service));
                 pane.sync(rw as f32, rh as f32);
@@ -146,7 +152,8 @@ impl Shell {
             {
                 let service = self.shared_knot_service.clone();
                 let pane = self
-                    .renderers.shared_knot
+                    .renderers
+                    .shared_knot
                     .entry(pane_id)
                     .or_insert_with(|| crate::share_reader_pane::SharedKnotPane::new(service));
                 pane.sync(rw as f32, rh as f32);
@@ -199,7 +206,7 @@ impl Shell {
         // surfaces, each with its own rect. Built by the same helper input
         // routing uses, so what a frame draws and what a pointer hits agree.
         let surfaces = self.surface_plan();
-        let caption = crate::app::focused_caption(&self.app.canvas);
+        let caption = crate::app::focused_caption(&self.app.graph_runtimes);
 
         // Bug #2 (rung-4 debt): keep EVERY live session's clock advancing, not
         // just the framed one. Before this, a session lost focus and stopped
@@ -231,7 +238,7 @@ impl Shell {
                     // Analytic layout strategies project through the host loop
                     // (recompute-gated) before the frame reads positions.
                     self.app.drive_layout_strategy(rw, rh);
-                    let (scene, animating) = self.app.canvas.frame(rw, rh);
+                    let (scene, animating) = self.app.graph_runtimes.frame(rw, rh);
                     needs_redraw |= animating;
                     needs_redraw |= self.app.resolve_pending_images() > 0;
                     (scene, wgpu::Color::WHITE)
@@ -332,7 +339,7 @@ impl Shell {
                 chrome = layers
                     .iter()
                     .any(|l| matches!(l.kind, crate::surface::SurfaceKind::Chrome)),
-                nodes = self.app.canvas.graph().nodes().count(),
+                nodes = self.app.graph_runtimes.graph().nodes().count(),
                 "capture state"
             );
             let ok = capture_composed(host, &layers, w, h, &path);

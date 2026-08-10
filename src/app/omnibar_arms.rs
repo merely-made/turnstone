@@ -25,7 +25,7 @@ impl App {
         self.focus = FocusTarget::Chrome;
         {
             let actions = self.available_actions();
-            recompute_suggestions(&mut self.omnibar, &self.canvas, &actions);
+            recompute_suggestions(&mut self.omnibar, &self.graph_runtimes, &actions);
         }
         self.events.push(AppEvent::OmnibarOpened);
         vec![Effect::Redraw]
@@ -48,7 +48,7 @@ impl App {
         self.omnibar.selected = 0;
         {
             let actions = self.available_actions();
-            recompute_suggestions(&mut self.omnibar, &self.canvas, &actions);
+            recompute_suggestions(&mut self.omnibar, &self.graph_runtimes, &actions);
         }
         vec![Effect::Redraw]
     }
@@ -58,7 +58,7 @@ impl App {
         self.omnibar.selected = 0;
         {
             let actions = self.available_actions();
-            recompute_suggestions(&mut self.omnibar, &self.canvas, &actions);
+            recompute_suggestions(&mut self.omnibar, &self.graph_runtimes, &actions);
         }
         vec![Effect::Redraw]
     }
@@ -68,7 +68,7 @@ impl App {
             self.omnibar.selected = 0;
             {
                 let actions = self.available_actions();
-                recompute_suggestions(&mut self.omnibar, &self.canvas, &actions);
+                recompute_suggestions(&mut self.omnibar, &self.graph_runtimes, &actions);
             }
         }
         vec![Effect::Redraw]
@@ -79,7 +79,7 @@ impl App {
             self.omnibar.selected = 0;
             {
                 let actions = self.available_actions();
-                recompute_suggestions(&mut self.omnibar, &self.canvas, &actions);
+                recompute_suggestions(&mut self.omnibar, &self.graph_runtimes, &actions);
             }
         }
         vec![Effect::Redraw]
