@@ -6,12 +6,13 @@
 use std::path::PathBuf;
 
 use crate::panes::{FrisketLayout, GraphId, InsertSide, PaneContent, PaneId, PaneNode};
+use crate::shell_services::{ContextSnapshot, ShellChromeConfig, ShellServices};
+use crate::ui::{OmnibarState, Suggestion, normalize_address};
 
 use crate::action::{Action, Effect, SpaceRef, Update};
 use crate::content::ContentStates;
 use crate::observe::AppEvent;
 use crate::surface::FocusTarget;
-use crate::ui::{OmnibarState, Suggestion, normalize_address, recompute_suggestions};
 use crate::{browse, session};
 
 mod runtime_pool;
@@ -61,6 +62,11 @@ pub struct App {
     /// The summonable omnibar (rung 3): find over graph truth, go through
     /// OpenAddress, `>` for the actions lane.
     pub omnibar: OmnibarState,
+    /// Shell-owned services projected by chrome: provider registration,
+    /// interaction transcript, and configurable chrome policy. It carries no
+    /// `Canvas` or platform handle. A2 replaces the fallback context supplied
+    /// by this host with focused-pane context from the runtime pool.
+    shell: ShellServices,
     /// The per-user data root. Each session's sidecars live under its own
     /// `sessions/<id>/` (rung 6's second half); the root also carries the
     /// manifest set and the current-session marker.
@@ -170,6 +176,44 @@ pub struct App {
 }
 
 impl App {
+    /// Inspect the current chrome projection policy without giving settings
+    /// code access to the shell's transcript or provider registry.
+    pub fn shell_chrome_config(&self) -> &ShellChromeConfig {
+        self.shell.chrome()
+    }
+
+    /// Apply a value-facing chrome configuration. The Settings pane/provider
+    /// may call this through its live sink; it never reaches into a renderer.
+    pub fn set_shell_chrome_config(&mut self, chrome: ShellChromeConfig) {
+        self.shell.set_chrome(chrome);
+    }
+
+    /// The transcript is read as shell data, independently from AppEvent.
+    pub fn shell_transcript(&self) -> &crate::shell_services::ShellTranscript {
+        self.shell.transcript()
+    }
+
+    /// A2's focused-pane router consumes a target requested by a transcript
+    /// action. Until that lane lands, opening a target is observable but does
+    /// not mutate the singleton canvas.
+    pub fn take_requested_shell_context(&mut self) -> Option<ContextSnapshot> {
+        self.shell.take_requested_context()
+    }
+
+    /// A temporary host-context fallback. It intentionally publishes only the
+    /// active pane id and session id; it does not read `App::canvas`. A2
+    /// replaces this with a `ContextIndex`/runtime-pool resolution at the same
+    /// call site.
+    pub(crate) fn fallback_shell_context(&self) -> ContextSnapshot {
+        ContextSnapshot {
+            pane: self.active_pane,
+            context: crate::panes::PaneContext {
+                session: Some(self.session_id),
+                ..crate::panes::PaneContext::default()
+            },
+        }
+    }
+
     /// The current session's container id — the root graph's uuid, the key the
     /// `scene.*` facets hang on (the graph is the container node in the one-node
     /// model). `None` if the manifest is somehow absent (scene facets are then
@@ -476,6 +520,7 @@ impl App {
                         .push(AppEvent::DenizenRefused("cancelled".into()));
                 }
                 self.omnibar = OmnibarState::default();
+                self.shell.close_omnibar();
                 vec![Effect::Redraw]
             }
             Action::UninstallDenizen { member } => self.uninstall_denizen(member),
@@ -533,6 +578,8 @@ impl App {
             Action::OmnibarMove(delta) => self.omnibar_move(delta),
             Action::OmnibarCommitRow(index) => self.omnibar_commit_row(index),
             Action::OmnibarCommit => self.commit_omnibar(),
+            Action::RepeatShellEntry(id) => self.repeat_shell_entry(id),
+            Action::OpenShellEntryTarget(id) => self.open_shell_entry_target(id),
             // Pane tree ops (rung 5 slice C). Each mutates the frisket layout and
             // persists it (SaveSession writes frame.json), so the arrangement
             // survives a restart. Maximize is view state, not persisted.

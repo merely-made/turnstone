@@ -370,10 +370,10 @@ pub fn snapshot(app: &App) -> Snapshot {
     if tile_content_here || focused_inset {
         surfaces.push("content".to_string());
     }
-    if crate::ui::chrome_has_content(
-        &app.omnibar,
-        crate::app::focused_caption(&app.graph_runtimes).as_deref(),
-    ) {
+    if app.omnibar.open && app.shell_chrome_config().projects_omnibar()
+        || app.shell_chrome_config().projects_shellbar()
+            && crate::app::focused_caption(&app.graph_runtimes).is_some()
+    {
         surfaces.push("chrome".to_string());
     }
     Snapshot {

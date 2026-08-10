@@ -2046,3 +2046,54 @@ fn committing_a_node_row_selects_without_fetch_effects() {
     );
     assert!(!app.omnibar.open);
 }
+
+#[test]
+fn omnibar_transcript_freezes_its_open_context_and_repeats_it() {
+    let mut app = App::test_stub();
+    let original_session = app.session_id;
+    app.update(Action::OmnibarOpen { command: false });
+    app.update(Action::OmnibarInsert(
+        "https://example.com/field-notes".into(),
+    ));
+    app.update(Action::OmnibarCommit);
+
+    let first = app
+        .shell_transcript()
+        .entries()
+        .next()
+        .expect("a committed address enters the shell transcript")
+        .clone();
+    assert_eq!(first.target.context.session, Some(original_session));
+    assert!(matches!(
+        first.outcome,
+        crate::shell_services::ShellOutcome::Completed { .. }
+    ));
+
+    // A changed host session does not retarget an already-composed command.
+    app.session_id = crate::panes::SessionId::new();
+    app.update(Action::RepeatShellEntry(first.id));
+    let repeated = app
+        .shell_transcript()
+        .entries()
+        .last()
+        .expect("repeat makes a separately correlated attempt");
+    assert_ne!(repeated.id, first.id);
+    assert_eq!(repeated.target.context.session, Some(original_session));
+
+    app.update(Action::OpenShellEntryTarget(first.id));
+    assert_eq!(
+        app.take_requested_shell_context(),
+        Some(first.target),
+        "A2 receives the original target rather than a canvas-derived replacement"
+    );
+}
+
+#[test]
+fn configured_row_limit_applies_to_the_live_omnibar_projection() {
+    let mut app = App::test_stub();
+    let mut chrome = app.shell_chrome_config().clone();
+    chrome.omnibar.row_limit = 1;
+    app.set_shell_chrome_config(chrome);
+    app.update(Action::OmnibarOpen { command: true });
+    assert_eq!(app.omnibar.suggestions.len(), 1);
+}

@@ -41,6 +41,7 @@ pub mod settings_provider;
 mod share_reader_pane;
 mod share_reader_service;
 pub mod shell;
+pub mod shell_services;
 mod surface;
 mod swatch_pane;
 mod trail_pane;

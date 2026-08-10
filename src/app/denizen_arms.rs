@@ -8,7 +8,7 @@ use uuid::Uuid;
 use crate::action::{Action, Effect};
 use crate::observe::AppEvent;
 use crate::surface::FocusTarget;
-use crate::ui::{OmnibarState, recompute_suggestions};
+use crate::ui::OmnibarState;
 
 use super::App;
 
@@ -119,9 +119,10 @@ impl App {
                     text: ">".to_string(),
                     ..OmnibarState::default()
                 };
+                let target = self.fallback_shell_context();
+                self.shell.begin_omnibar(target);
                 self.focus = FocusTarget::Chrome;
-                let actions = self.available_actions();
-                recompute_suggestions(&mut self.omnibar, &self.graph_runtimes, &actions);
+                self.recompute_omnibar_suggestions();
                 vec![Effect::Redraw]
             }
             Err(err) => {

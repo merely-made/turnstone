@@ -28,6 +28,7 @@ impl App {
             graph_views: super::GraphPaneViews::default(),
             forme_runtimes: super::FormeRuntimePool::default(),
             omnibar: OmnibarState::default(),
+            shell: crate::shell_services::ShellServices::default(),
             data_root,
             sessions: session_runtime::ManifestStore::new(),
             session_id,

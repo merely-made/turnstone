@@ -8,8 +8,9 @@ use uuid::Uuid;
 use crate::action::{Action, Effect};
 use crate::observe::AppEvent;
 use crate::panes::PaneContent;
+use crate::shell_services::{EntryPrivacy, ShellInput, ShellIntent, ShellOutcome};
 use crate::surface::FocusTarget;
-use crate::ui::{OmnibarState, Suggestion, normalize_address, recompute_suggestions};
+use crate::ui::{OmnibarState, Suggestion, normalize_address};
 
 use super::App;
 
@@ -261,11 +262,30 @@ impl App {
         // commits it, bypassing the find/go/actions lanes.
         if let crate::ui::OmnibarMode::RenameSession(id) = self.omnibar.mode {
             let name = self.omnibar.text.clone();
+            let target = self.fallback_shell_context();
+            let entry = self.shell.record_omnibar(
+                ShellInput::Omnibar(name.clone()),
+                ShellIntent::Command {
+                    label: "Rename session".into(),
+                    action: Action::RenameSession {
+                        id,
+                        name: name.clone(),
+                    },
+                },
+                target,
+                EntryPrivacy::Ordinary,
+            );
             self.omnibar = OmnibarState::default();
             if self.focus == FocusTarget::Chrome {
                 self.focus = FocusTarget::Canvas;
             }
             let mut fx = self.update(Action::RenameSession { id, name });
+            self.shell.complete(
+                entry,
+                ShellOutcome::Completed {
+                    summary: "renamed session".into(),
+                },
+            );
             fx.push(Effect::Redraw);
             return fx;
         }
@@ -287,24 +307,66 @@ impl App {
         let mut effects = match committed {
             Some(Suggestion::Node { url, .. }) => {
                 // Find lane: select the existing node; never refetch.
+                let target = self.fallback_shell_context();
+                let entry = self.shell.record_omnibar(
+                    ShellInput::Omnibar(self.omnibar.text.clone()),
+                    ShellIntent::SelectNode { url: url.clone() },
+                    target,
+                    EntryPrivacy::Ordinary,
+                );
                 self.graph_runtimes.select_by_url(&url);
+                self.shell.complete(
+                    entry,
+                    ShellOutcome::Completed {
+                        summary: format!("selected {url}"),
+                    },
+                );
                 vec![Effect::Redraw]
             }
             Some(Suggestion::Go { url }) => {
+                let target = self.fallback_shell_context();
+                let entry = self.shell.record_omnibar(
+                    ShellInput::Omnibar(self.omnibar.text.clone()),
+                    ShellIntent::Navigate { url: url.clone() },
+                    target,
+                    EntryPrivacy::Ordinary,
+                );
                 self.omnibar = OmnibarState::default();
                 return {
                     let mut fx = self.update(Action::OpenAddress(url));
+                    self.shell.complete(
+                        entry,
+                        ShellOutcome::Completed {
+                            summary: "opened address".into(),
+                        },
+                    );
                     fx.push(Effect::Redraw);
                     fx
                 };
             }
-            Some(Suggestion::Act { action, .. }) => {
+            Some(Suggestion::Act { label, action }) => {
                 // The actions lane: the committed registry entry is
                 // an ordinary Action; lower it through the same
                 // spine everything else uses.
+                let target = self.fallback_shell_context();
+                let entry = self.shell.record_omnibar(
+                    ShellInput::Omnibar(self.omnibar.text.clone()),
+                    ShellIntent::Command {
+                        label: label.clone(),
+                        action: action.clone(),
+                    },
+                    target,
+                    EntryPrivacy::Ordinary,
+                );
                 self.omnibar = OmnibarState::default();
                 return {
                     let mut fx = self.update(action);
+                    self.shell.complete(
+                        entry,
+                        ShellOutcome::Completed {
+                            summary: format!("ran {label}"),
+                        },
+                    );
                     fx.push(Effect::Redraw);
                     fx
                 };
@@ -312,6 +374,7 @@ impl App {
             Some(Suggestion::Hint(_)) | None => vec![Effect::Redraw],
         };
         self.omnibar = OmnibarState::default();
+        self.shell.close_omnibar();
         effects.push(Effect::Redraw);
         effects
     }

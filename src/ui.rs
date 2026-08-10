@@ -144,6 +144,18 @@ pub fn recompute_suggestions(
     canvas: &Canvas,
     actions: &[(String, crate::action::Action)],
 ) {
+    recompute_suggestions_with_limit(state, canvas, actions, MAX_NODE_MATCHES + 1);
+}
+
+/// Recompute suggestions while respecting the shell's configured visible-row
+/// limit. The legacy entry point above preserves its existing six node rows
+/// plus one literal-address row behavior for callers outside the host.
+pub fn recompute_suggestions_with_limit(
+    state: &mut OmnibarState,
+    canvas: &Canvas,
+    actions: &[(String, crate::action::Action)],
+    row_limit: usize,
+) {
     state.suggestions.clear();
 
     // Rename mode captures the whole line as the new name; no lane matching.
@@ -175,6 +187,7 @@ pub fn recompute_suggestions(
                 .suggestions
                 .push(Suggestion::Hint("no matching action"));
         }
+        state.suggestions.truncate(row_limit.max(1));
         state.selected = state.selected.min(state.suggestions.len() - 1);
         return;
     }
@@ -232,6 +245,7 @@ pub fn recompute_suggestions(
             .suggestions
             .push(Suggestion::Hint("no matching nodes; enter an address"));
     }
+    state.suggestions.truncate(row_limit.max(1));
     state.selected = state.selected.min(state.suggestions.len() - 1);
 }
 
@@ -280,9 +294,16 @@ pub(crate) const CHROME_SHEET: &str = "\
 /// popup only needs the neighborhood, not the glyph-exact x.
 pub fn ime_cursor_area(state: &OmnibarState, w: u32) -> ((f32, f32), (f32, f32)) {
     let left = ((w as f32 - CARD_W) / 2.0).max(8.0);
+    ime_cursor_area_at(state, left, CARD_TOP)
+}
+
+/// The IME candidate location for an omnibar already positioned by the chrome
+/// projection.  Keeping this separate from the default wrapper means a docked
+/// omnibar does not leave its composition popup at the old overlay location.
+pub fn ime_cursor_area_at(state: &OmnibarState, left: f32, top: f32) -> ((f32, f32), (f32, f32)) {
     let chars_before = state.text[..state.cursor].chars().count();
     (
-        (left + 16.0 + chars_before as f32 * 8.0, CARD_TOP + 10.0),
+        (left + 16.0 + chars_before as f32 * 8.0, top + 10.0),
         (2.0, 28.0),
     )
 }

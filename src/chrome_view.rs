@@ -43,6 +43,7 @@ use genet_scripted_dom::{NodeId, ScriptedDom};
 use layout_dom_api::LayoutDom;
 
 use crate::app::App;
+use crate::panes::{ChromeEdge, ChromePlacement};
 use crate::ui::{CARD_TOP, CARD_W, CHROME_SHEET, OmnibarState, Suggestion};
 
 /// What a chrome interaction produces: commit the suggestion row at this
@@ -85,6 +86,9 @@ struct ChromeState {
     preedit: String,
     after: String,
     rows: Vec<RowView>,
+    omnibar_placement: ChromePlacement,
+    shellbar_placement: ChromePlacement,
+    shellbar_visible: bool,
 }
 
 type ChromeView = Box<dyn AnyView<ChromeState, ChromeIntent, GenetCtx, GenetElement>>;
@@ -98,17 +102,21 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
     };
     let mut children: Vec<ChromeView> = Vec::new();
 
-    if let Some(caption) = &win.caption {
-        let bottom = (win.h - 34.0).max(0.0);
+    if let Some(caption) = &win.caption
+        && state.shellbar_visible
+        && let Some((left, top)) = chrome_position(&state.shellbar_placement, win.w, win.h, 148.0)
+    {
         children.push(Box::new(
             el::<_, ChromeState, ChromeIntent>("div", caption.clone())
                 .attr("class", "whereami")
-                .attr("style", format!("transform: translate(12px, {bottom}px);")),
+                .attr("style", format!("transform: translate({left}px, {top}px);")),
         ));
     }
 
-    if win.primary && state.open {
-        let left = ((win.w - CARD_W) / 2.0).max(8.0);
+    if win.primary
+        && state.open
+        && let Some((left, top)) = chrome_position(&state.omnibar_placement, win.w, win.h, CARD_W)
+    {
         // The input line, split at the caret: text-before, the underlined
         // in-flight preedit, the caret glyph at its TRUE position, text-after.
         let preedit: ChromeView = Box::new(
@@ -147,7 +155,7 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
                 .attr("class", "omni")
                 .attr(
                     "style",
-                    format!("transform: translate({left}px, {CARD_TOP}px); width: {CARD_W}px;"),
+                    format!("transform: translate({left}px, {top}px); width: {CARD_W}px;"),
                 ),
         ));
     }
@@ -155,6 +163,28 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
     Box::new(el::<_, ChromeState, ChromeIntent>("div", children))
 }
 
+/// Map a configured projection placement to this pre-A4 chrome surface. A
+/// `Pane` placement has no station yet, so it deliberately renders nothing
+/// rather than fabricating a second pane tree.
+pub(crate) fn chrome_position(
+    placement: &ChromePlacement,
+    width: f32,
+    height: f32,
+    item_width: f32,
+) -> Option<(f32, f32)> {
+    let centred = || ((width - item_width) / 2.0).max(8.0);
+    match placement {
+        ChromePlacement::Overlay | ChromePlacement::Floating => Some((centred(), CARD_TOP)),
+        ChromePlacement::Docked(ChromeEdge::Top) => Some((centred(), 8.0)),
+        ChromePlacement::Docked(ChromeEdge::Bottom) => Some((centred(), (height - 52.0).max(8.0))),
+        ChromePlacement::Docked(ChromeEdge::Left) => Some((8.0, (height * 0.5 - 18.0).max(8.0))),
+        ChromePlacement::Docked(ChromeEdge::Right) => Some((
+            (width - item_width - 8.0).max(8.0),
+            (height * 0.5 - 18.0).max(8.0),
+        )),
+        ChromePlacement::Pane(_) | ChromePlacement::Hidden => None,
+    }
+}
 /// The per-projection logic: one closure definition (so every projection
 /// shares one `Logic` type), instantiated with its window slot.
 fn chrome_logic(slot: usize) -> impl FnMut(&ChromeState) -> ChromeView {
@@ -195,6 +225,9 @@ impl ChromeSurfaces {
             preedit: String::new(),
             after: String::new(),
             rows: Vec::new(),
+            omnibar_placement: ChromePlacement::Overlay,
+            shellbar_placement: ChromePlacement::Docked(ChromeEdge::Right),
+            shellbar_visible: true,
         };
         let mut runner = GenetMultiRunner::new(state);
         let primary =
@@ -230,6 +263,7 @@ impl ChromeSurfaces {
         let before = omnibar.text[..omnibar.cursor].to_string();
         let after = omnibar.text[omnibar.cursor..].to_string();
         let preedit = omnibar.preedit.clone().unwrap_or_default();
+        let chrome = app.shell_chrome_config();
         let rows: Vec<RowView> = omnibar
             .suggestions
             .iter()
@@ -264,6 +298,9 @@ impl ChromeSurfaces {
             state.preedit = preedit.clone();
             state.after = after.clone();
             state.rows = rows.clone();
+            state.omnibar_placement = chrome.omnibar.placement.clone();
+            state.shellbar_placement = chrome.shellbar.placement.clone();
+            state.shellbar_visible = chrome.projects_shellbar();
         });
     }
 
@@ -320,6 +357,25 @@ mod tests {
         app.update(Action::OmnibarOpen { command: true });
         app.update(Action::OmnibarChar('r'));
         app
+    }
+
+    #[test]
+    fn hidden_shellbar_is_removed_from_the_chrome_and_a11y_projections() {
+        let mut app = open_omnibar_app();
+        let mut config = app.shell_chrome_config().clone();
+        config.shellbar.visible = false;
+        app.set_shell_chrome_config(config);
+        let mut chrome = ChromeSurfaces::new();
+        chrome.sync(&app, &[(0, 1024.0, 600.0)]);
+        let dom = chrome.dom.borrow();
+        assert!(dom.all_with_class(dom.document(), "whereami").is_empty());
+        drop(dom);
+        assert!(
+            !crate::a11y::a11y_lines(&app)
+                .iter()
+                .any(|line| line.starts_with("label: ")),
+            "the hidden shellbar cannot leave an inaccessible caption behind"
+        );
     }
 
     /// The forest topology: primary + a lens chrome are sibling window-roots

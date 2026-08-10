@@ -16,7 +16,7 @@ use crate::observe::AppEvent;
 use crate::panes::{FrisketLayout, GraphId, PaneContent, SessionId};
 use crate::session;
 use crate::surface::FocusTarget;
-use crate::ui::{OmnibarState, recompute_suggestions};
+use crate::ui::OmnibarState;
 
 use super::App;
 
@@ -71,6 +71,7 @@ impl App {
             graph_views: super::GraphPaneViews::default(),
             forme_runtimes: super::FormeRuntimePool::default(),
             omnibar: OmnibarState::default(),
+            shell: crate::shell_services::ShellServices::default(),
             data_root,
             sessions,
             session_id,
@@ -116,9 +117,10 @@ impl App {
             tracing::info!("no session graph; starting on the sample graph");
             *app.graph_runtimes.active_canvas_mut() = Canvas::with_sample_graph();
             app.omnibar.open = true;
+            let context = app.fallback_shell_context();
+            app.shell.begin_omnibar(context);
             app.focus = FocusTarget::Chrome;
-            let actions = app.available_actions();
-            recompute_suggestions(&mut app.omnibar, &app.graph_runtimes, &actions);
+            app.recompute_omnibar_suggestions();
         }
         (app, effects)
     }
@@ -790,9 +792,10 @@ impl App {
             mode: crate::ui::OmnibarMode::RenameSession(self.session_id),
             ..OmnibarState::default()
         };
+        let target = self.fallback_shell_context();
+        self.shell.begin_omnibar(target);
         self.focus = FocusTarget::Chrome;
-        let actions = self.available_actions();
-        recompute_suggestions(&mut self.omnibar, &self.graph_runtimes, &actions);
+        self.recompute_omnibar_suggestions();
         self.events.push(AppEvent::OmnibarOpened);
         vec![Effect::Redraw]
     }

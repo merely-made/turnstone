@@ -95,7 +95,9 @@ fn project_chrome(app: &App) -> UxTree {
         nodes.push((id, n));
         children.push(id);
     }
-    if let Some(caption) = crate::app::focused_caption(&app.graph_runtimes) {
+    if app.shell_chrome_config().projects_shellbar()
+        && let Some(caption) = crate::app::focused_caption(&app.graph_runtimes)
+    {
         let id = node_id_for_path("turnstone/chrome/caption");
         let mut n = Node::new(Role::Label);
         n.set_label(caption);

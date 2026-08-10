@@ -146,6 +146,12 @@ pub enum Action {
     /// Commit the suggestion row at this index — a ROW CLICK in the retained
     /// chrome (select, then the ordinary commit path).
     OmnibarCommitRow(usize),
+    /// Repeat one intentional shell interaction from the bounded local
+    /// transcript, preserving its captured pane context.
+    RepeatShellEntry(crate::shell_services::ShellEntryId),
+    /// Ask the focused-context router to reopen the original target captured
+    /// by a transcript entry. A2 supplies the multi-graph router.
+    OpenShellEntryTarget(crate::shell_services::ShellEntryId),
     /// Summon a pane beside the active one, splitting the frisket tree (rung 5
     /// slice C). Meerkat's fixed Right-split off the graph pane, generalized to
     /// the active pane.

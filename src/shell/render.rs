@@ -194,9 +194,16 @@ impl Shell {
         // composition popups open beside the omnibar input rather than at
         // the window corner.
         if self.app.omnibar.open
+            && self.app.shell_chrome_config().projects_omnibar()
             && let Some(window) = self.window.as_ref()
+            && let Some((left, top)) = crate::chrome_view::chrome_position(
+                &self.app.shell_chrome_config().omnibar.placement,
+                w as f32,
+                h as f32,
+                crate::ui::CARD_W,
+            )
         {
-            let (pos, size) = crate::ui::ime_cursor_area(&self.app.omnibar, w);
+            let (pos, size) = crate::ui::ime_cursor_area_at(&self.app.omnibar, left, top);
             window.set_ime_cursor_area(
                 PhysicalPosition::new(pos.0, pos.1),
                 PhysicalSize::new(size.0, size.1),

@@ -514,8 +514,9 @@ impl Shell {
                 .map(|node| (node, crate::surface::content_rect(cr)))
         });
         let caption = crate::app::focused_caption(&self.app.graph_runtimes);
-        let chrome =
-            crate::ui::chrome_has_content(&self.app.omnibar, caption.as_deref()).then_some(area);
+        let chrome = (self.app.shell_chrome_config().projects_shellbar() && caption.is_some()
+            || self.app.omnibar.open && self.app.shell_chrome_config().projects_omnibar())
+        .then_some(area);
         crate::surface::assemble(&base, &tiles, content, chrome)
     }
 
