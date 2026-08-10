@@ -44,7 +44,7 @@ use layout_dom_api::LayoutDom;
 
 use crate::app::App;
 use crate::panes::{ChromeEdge, ChromePlacement};
-use crate::ui::{CARD_TOP, CARD_W, CHROME_SHEET, OmnibarState, Suggestion};
+use crate::ui::{CARD_TOP, CARD_W, OmnibarState, Suggestion};
 
 /// What a chrome interaction produces: commit the suggestion row at this
 /// original index (the shell lowers `Action::OmnibarCommitRow`).
@@ -199,6 +199,9 @@ pub struct ChromeSurfaces {
     dom: DomHandle,
     runner: GenetMultiRunner<ChromeState, ChromeLogic, ChromeView, ChromeIntent>,
     projections: Vec<ProjectionId>,
+    /// The host-owned presentation value applied to the retained DOM during
+    /// scene layout and hit testing.
+    appearance: crate::shell_services::AppearanceConfig,
 }
 
 /// A suggestion row's display text (the same rendering the hand chrome drew).
@@ -236,6 +239,7 @@ impl ChromeSurfaces {
             dom,
             runner,
             projections: vec![primary],
+            appearance: crate::shell_services::AppearanceConfig::default(),
         }
     }
 
@@ -302,6 +306,7 @@ impl ChromeSurfaces {
             state.shellbar_placement = chrome.shellbar.placement.clone();
             state.shellbar_visible = chrome.projects_shellbar();
         });
+        self.appearance = chrome.appearance.clone();
     }
 
     /// One window's chrome scene: ITS window-root laid out at its own size
@@ -317,7 +322,8 @@ impl ChromeSurfaces {
         let Some(root) = self.runner.window_root(id) else {
             return netrender::Scene::new(w, h);
         };
-        crate::ui::scene_from_subtree(&dom, root, CHROME_SHEET, w, h)
+        let sheet = crate::ui::chrome_sheet(&self.appearance);
+        crate::ui::scene_from_subtree(&dom, root, &sheet, w, h)
     }
 
     /// Route a click at window-local `(x, y)` into `slot`'s chrome: hit-test
@@ -333,7 +339,8 @@ impl ChromeSurfaces {
                 return Vec::new();
             };
             let view = SubtreeView::new(&*dom, root);
-            let layout = IncrementalLayout::new(&view, &[CHROME_SHEET], w as f32, h as f32);
+            let sheet = crate::ui::chrome_sheet(&self.appearance);
+            let layout = IncrementalLayout::new(&view, &[&sheet], w as f32, h as f32);
             let scroll = ScrollOffsets::<NodeId>::default();
             layout.hit_test(&view, x, y, &scroll)
         };
@@ -375,6 +382,28 @@ mod tests {
                 .iter()
                 .any(|line| line.starts_with("label: ")),
             "the hidden shellbar cannot leave an inaccessible caption behind"
+        );
+    }
+
+    #[test]
+    fn live_appearance_is_applied_to_the_retained_chrome_surface() {
+        let mut app = open_omnibar_app();
+        let mut config = app.shell_chrome_config().clone();
+        config.appearance.theme_id = Some("theme:night".into());
+        config.appearance.theme_mode = crate::shell_services::ThemeMode::Light;
+        config.appearance.ui_zoom = 1.5;
+        app.set_shell_chrome_config(config);
+
+        let mut chrome = ChromeSurfaces::new();
+        chrome.sync(&app, &[(0, 1024.0, 600.0)]);
+        assert_eq!(chrome.appearance, app.shell_chrome_config().appearance);
+        assert!(
+            crate::ui::chrome_sheet(&chrome.appearance).contains("24.00px"),
+            "the retained chrome is laid out at the live zoom"
+        );
+        assert!(
+            !chrome.scene(0, 1024, 600).ops.is_empty(),
+            "the live appearance stylesheet drives the rendered chrome surface"
         );
     }
 
@@ -425,7 +454,8 @@ mod tests {
                 .window_root(chrome.projections[0])
                 .expect("the primary window-root exists");
             let view = SubtreeView::new(&*dom, root);
-            let layout = IncrementalLayout::new(&view, &[CHROME_SHEET], 1024.0, 600.0);
+            let sheet = crate::ui::chrome_sheet(&chrome.appearance);
+            let layout = IncrementalLayout::new(&view, &[&sheet], 1024.0, 600.0);
             let row = dom
                 .all_with_class(dom.document(), "omni-row-sel")
                 .into_iter()

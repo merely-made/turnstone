@@ -288,6 +288,155 @@ pub(crate) const CHROME_SHEET: &str = "\
     .pane-label { position: absolute; color: rgb(190, 198, 214); \
                   font-size: 14px; padding: 10px 14px; white-space: nowrap; }";
 
+#[derive(Clone, Copy)]
+struct PresentationPalette {
+    surface: (u8, u8, u8),
+    raised: (u8, u8, u8),
+    field: (u8, u8, u8),
+    border: (u8, u8, u8),
+    text: (u8, u8, u8),
+    body_text: (u8, u8, u8),
+    muted: (u8, u8, u8),
+    accent: (u8, u8, u8),
+    accent_text: (u8, u8, u8),
+    preedit: (u8, u8, u8),
+}
+
+fn theme_accent(theme_id: Option<&str>, fallback: (u8, u8, u8)) -> (u8, u8, u8) {
+    let Some(theme_id) = theme_id.filter(|value| !value.is_empty()) else {
+        return fallback;
+    };
+    match theme_id {
+        "theme:night" | "theme:dark" => (157, 116, 231),
+        "theme:day" | "theme:light" => (47, 111, 191),
+        "theme:ember" => (206, 84, 47),
+        // A theme-pack registry is deliberately not invented here. Until one
+        // is a second provider, an unfamiliar durable id still selects a
+        // stable, visible accent rather than becoming a stored no-op.
+        other => {
+            let hash = other.bytes().fold(0x811c_9dc5u32, |hash, byte| {
+                hash.wrapping_mul(0x0100_0193) ^ u32::from(byte)
+            });
+            (
+                80 + ((hash >> 16) & 0x5f) as u8,
+                90 + ((hash >> 8) & 0x5f) as u8,
+                110 + (hash & 0x5f) as u8,
+            )
+        }
+    }
+}
+
+fn presentation_palette(
+    appearance: &crate::shell_services::AppearanceConfig,
+) -> PresentationPalette {
+    use crate::shell_services::ThemeMode;
+
+    match appearance.theme_mode {
+        ThemeMode::Light => PresentationPalette {
+            surface: (248, 249, 252),
+            raised: (255, 255, 255),
+            field: (238, 241, 247),
+            border: (142, 153, 174),
+            text: (28, 35, 48),
+            body_text: (45, 55, 72),
+            muted: (91, 104, 127),
+            accent: theme_accent(appearance.theme_id.as_deref(), (47, 111, 191)),
+            accent_text: (255, 255, 255),
+            preedit: (67, 98, 178),
+        },
+        ThemeMode::System | ThemeMode::Dark => PresentationPalette {
+            surface: (22, 27, 40),
+            raised: (28, 34, 50),
+            field: (15, 19, 30),
+            border: (70, 82, 110),
+            text: (238, 242, 250),
+            body_text: (216, 222, 234),
+            muted: (140, 148, 165),
+            accent: theme_accent(appearance.theme_id.as_deref(), (232, 150, 40)),
+            accent_text: (28, 22, 10),
+            preedit: (180, 200, 255),
+        },
+    }
+}
+
+fn rgb((red, green, blue): (u8, u8, u8)) -> String {
+    format!("rgb({red}, {green}, {blue})")
+}
+
+/// The chrome's live sheet. It is regenerated from the shell-owned value
+/// snapshot so theme and zoom change the retained host surface on the next
+/// redraw, without a provider or pane reaching into a renderer.
+pub(crate) fn chrome_sheet(appearance: &crate::shell_services::AppearanceConfig) -> String {
+    let palette = presentation_palette(appearance);
+    let zoom = appearance.zoom();
+    format!(
+        "{CHROME_SHEET} \
+        .omni {{ background-color: {}; border-color: {}; }} \
+        .omni-input {{ color: {}; background-color: {}; font-size: {:.2}px; }} \
+        .omni-preedit {{ color: {}; }} \
+        .omni-row {{ color: {}; font-size: {:.2}px; }} \
+        .omni-row-sel {{ color: {}; background-color: {}; font-size: {:.2}px; }} \
+        .omni-row-muted {{ color: {}; font-size: {:.2}px; }} \
+        .whereami {{ color: {}; background-color: {}; border-color: {}; font-size: {:.2}px; }}",
+        rgb(palette.surface),
+        rgb(palette.border),
+        rgb(palette.text),
+        rgb(palette.field),
+        16.0 * zoom,
+        rgb(palette.preedit),
+        rgb(palette.body_text),
+        14.0 * zoom,
+        rgb(palette.accent_text),
+        rgb(palette.accent),
+        14.0 * zoom,
+        rgb(palette.muted),
+        14.0 * zoom,
+        rgb(palette.muted),
+        rgb(palette.raised),
+        rgb(palette.border),
+        12.0 * zoom,
+    )
+}
+
+/// The Settings pane's live Cambium sheet. Other pane kinds retain their
+/// established host styling until they take the same typed appearance value
+/// as an explicit consumer; this pane is the first proof that changing the
+/// settings changes the currently-running UI.
+pub(crate) fn cambium_sheet(appearance: &crate::shell_services::AppearanceConfig) -> String {
+    let palette = presentation_palette(appearance);
+    let zoom = appearance.zoom();
+    format!(
+        "{CAMBIUM_SHEET} \
+        .pane, .grid {{ background-color: {}; color: {}; font-size: {:.2}px; }} \
+        .list-section-title, .setting-label {{ color: {}; font-size: {:.2}px; }} \
+        .list-row, .setting-row {{ color: {}; font-size: {:.2}px; }} \
+        .list-row.muted, .setting-unsupported {{ color: {}; }} \
+        .setting-apply {{ color: {}; background-color: {}; border: 1px solid {}; font-size: {:.2}px; }} \
+        .radio, .toggle {{ color: {}; font-size: {:.2}px; }} \
+        .radio.selected {{ color: {}; }} \
+        .slider-track {{ background-color: {}; }} \
+        .slider-thumb {{ background-color: {}; border-color: {}; }}",
+        rgb(palette.surface),
+        rgb(palette.body_text),
+        13.0 * zoom,
+        rgb(palette.muted),
+        12.0 * zoom,
+        rgb(palette.body_text),
+        13.0 * zoom,
+        rgb(palette.muted),
+        rgb(palette.text),
+        rgb(palette.raised),
+        rgb(palette.border),
+        13.0 * zoom,
+        rgb(palette.body_text),
+        13.0 * zoom,
+        rgb(palette.accent),
+        rgb(palette.border),
+        rgb(palette.accent),
+        rgb(palette.border),
+    )
+}
+
 /// Where the omnibar caret roughly sits on screen, as `(position, size)` in
 /// physical px — for the host to aim the IME candidate window
 /// (`Window::set_ime_cursor_area`). Average-advance approximation; the IME
@@ -518,6 +667,22 @@ fn qual(local: &str) -> QualName {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn live_appearance_changes_chrome_and_settings_paint_styles() {
+        let appearance = crate::shell_services::AppearanceConfig {
+            theme_id: Some("theme:night".into()),
+            theme_mode: crate::shell_services::ThemeMode::Light,
+            ui_zoom: 1.5,
+        };
+        let chrome = chrome_sheet(&appearance);
+        let cambium = cambium_sheet(&appearance);
+
+        assert!(chrome.contains("rgb(157, 116, 231)"));
+        assert!(chrome.contains("24.00px"), "16px chrome input at 1.5x");
+        assert!(cambium.contains("rgb(248, 249, 252)"));
+        assert!(cambium.contains("19.50px"), "13px settings text at 1.5x");
+    }
 
     /// Canary for the chrome layer's load-bearing genet-layout behavior:
     /// SIBLING absolutely-positioned subtrees must all emit paint. Caught

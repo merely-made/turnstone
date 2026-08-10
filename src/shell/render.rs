@@ -129,8 +129,12 @@ impl Shell {
             Some(PaneContent::Registered(kind))
                 if kind.as_str() == crate::panes::kind::SETTINGS =>
             {
+                let live_settings = self.live_settings.clone();
                 let pane = self.renderers.settings.entry(pane_id).or_insert_with(|| {
-                    crate::settings_pane::SettingsPane::new(self.app.data_root.clone())
+                    crate::settings_pane::SettingsPane::with_live_settings(
+                        self.app.data_root.clone(),
+                        Some(live_settings),
+                    )
                 });
                 pane.sync(rw as f32, rh as f32);
                 pane.scene(rw, rh)
@@ -188,6 +192,11 @@ impl Shell {
     pub(super) fn render(&mut self) {
         if self.host.is_none() {
             return;
+        }
+        if self.poll_live_settings() {
+            // A SettingsPane has already persisted the write. Refresh every
+            // affected retained surface in this and any lens window now.
+            self.request_redraw();
         }
         let (w, h) = (self.width.max(1), self.height.max(1));
         // Aim the IME candidate window at the caret's neighborhood, so

@@ -178,6 +178,9 @@ impl Shell {
     /// out to a lens keeps its DOM, widget state, and scroll because the
     /// runner never moved — only its leaf changed trees.
     pub(super) fn render_lens(&mut self, id: WindowId) {
+        if self.poll_live_settings() {
+            self.request_redraw();
+        }
         let Some(lens) = self.lens_windows.get(&id) else {
             return;
         };

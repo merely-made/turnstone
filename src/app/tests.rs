@@ -2097,3 +2097,37 @@ fn configured_row_limit_applies_to_the_live_omnibar_projection() {
     app.update(Action::OmnibarOpen { command: true });
     assert_eq!(app.omnibar.suggestions.len(), 1);
 }
+
+#[test]
+fn live_settings_snapshot_reconfigures_the_running_chrome_value_once() {
+    let settings = session_runtime::ApplicationSettings {
+        theme_id: Some("theme:night".into()),
+        theme_mode: Some("light".into()),
+        ui_zoom: 1.5,
+        shellbar_edge: session_runtime::ShellbarEdge::Top,
+        shellbar_hidden: true,
+        ..session_runtime::ApplicationSettings::default()
+    };
+    let snapshot = crate::settings_pane::ChromeSettings::from(&settings);
+    let mut app = App::test_stub();
+
+    assert!(app.apply_chrome_settings_snapshot(&snapshot));
+    assert_eq!(
+        app.shell_chrome_config().shellbar.placement,
+        crate::panes::ChromePlacement::Docked(crate::panes::ChromeEdge::Top)
+    );
+    assert!(!app.shell_chrome_config().shellbar.visible);
+    assert_eq!(
+        app.shell_chrome_config().appearance.theme_id.as_deref(),
+        Some("theme:night")
+    );
+    assert_eq!(
+        app.shell_chrome_config().appearance.theme_mode,
+        crate::shell_services::ThemeMode::Light
+    );
+    assert_eq!(app.shell_chrome_config().appearance.zoom(), 1.5);
+    assert!(
+        !app.apply_chrome_settings_snapshot(&snapshot),
+        "unchanged snapshots do not schedule an unbounded redraw loop"
+    );
+}

@@ -38,6 +38,8 @@ use winit::keyboard::{Key as WinitKey, NamedKey as WinitNamedKey};
 use winit::window::{Window, WindowId};
 
 use crate::panes::PaneContent;
+use crate::settings_pane::LiveSettingsHandle;
+use crate::settings_provider::ApplicationSettingsProvider;
 
 use crate::action::{Action, Effect, Update};
 use crate::app::App;
@@ -116,6 +118,9 @@ struct CompositeLayer {
 /// that drive it.
 pub struct Shell {
     app: App,
+    /// The shell-owned live value projection. Settings panes receive clones;
+    /// the shell alone polls and applies the typed chrome snapshot.
+    live_settings: LiveSettingsHandle,
     /// Wakes the loop when the physics or fetch actor has news.
     proxy: EventLoopProxy<()>,
     /// The fetch actor's command handle; dropping it ends the actor.
@@ -257,7 +262,16 @@ pub struct Shell {
 
 impl Shell {
     pub fn new(proxy: EventLoopProxy<()>, address: Option<String>) -> Self {
-        let (app, boot_effects) = App::boot(address.as_deref());
+        let (mut app, boot_effects) = App::boot(address.as_deref());
+        let initial_settings = match ApplicationSettingsProvider::load(&app.data_root) {
+            Ok(provider) => provider.settings().clone(),
+            Err(error) => {
+                tracing::warn!(%error, "application settings could not be loaded at shell startup");
+                session_runtime::ApplicationSettings::default()
+            }
+        };
+        let live_settings = LiveSettingsHandle::new(&initial_settings);
+        app.apply_chrome_settings_snapshot(&live_settings.snapshot());
 
         // The fetch actor on its own armillary thread, waking this loop like
         // the physics actor does.
@@ -333,6 +347,7 @@ impl Shell {
 
         let mut shell = Self {
             app,
+            live_settings,
             proxy,
             fetch_handle,
             fetch_rx,
@@ -374,6 +389,14 @@ impl Shell {
         };
         shell.run_effects(boot_effects);
         shell
+    }
+
+    /// Poll the value projection after a settings pane persists a write. The
+    /// shell owns the redraw boundary and the `ShellChromeConfig`; the pane
+    /// remains a retained form with no renderer back-channel.
+    fn poll_live_settings(&mut self) -> bool {
+        self.app
+            .apply_chrome_settings_snapshot(&self.live_settings.snapshot())
     }
 
     /// Lower one app intent through the spine and run what falls out. Syncs

@@ -10,8 +10,8 @@ use std::path::PathBuf;
 use std::rc::Rc;
 
 use cambium::{
-    clickable, el, lens, radio_group, slider, text, text_field_typed, toggle, AnyView, DomHandle,
-    GenetAppRunner, GenetCtx, GenetElement, RadioGroup, Slider, TextInput,
+    AnyView, DomHandle, GenetAppRunner, GenetCtx, GenetElement, RadioGroup, Slider, TextInput,
+    clickable, el, lens, radio_group, slider, text, text_field_typed, toggle,
 };
 use genet_host_api::settings::{
     SettingControl, SettingSpec, SettingValue, SettingsProjection, SettingsProvider,
@@ -22,7 +22,8 @@ use genet_scripted_dom::{NodeId, ScriptedDom};
 use layout_dom_api::LayoutDom;
 use session_runtime::{ApplicationSettings, ShellbarEdge};
 
-use crate::settings_provider::{ApplicationSettingsProvider, APPLICATION_REFERENCE};
+use crate::settings_provider::{APPLICATION_REFERENCE, ApplicationSettingsProvider};
+use crate::shell_services::{ShellChromeConfig, ThemeMode};
 
 /// The part of the application owner that the shell can observe while it is
 /// running. It is intentionally a value snapshot, rather than a callback into
@@ -67,6 +68,23 @@ impl ChromeSettings {
 
     pub fn shellbar_visible(&self) -> bool {
         !self.shellbar_hidden
+    }
+
+    /// Project the application-owned snapshot onto the shell's typed chrome
+    /// value. This is deliberately a one-way value conversion: the provider
+    /// never reaches into a renderer or a graph runtime.
+    pub(crate) fn apply_to(&self, chrome: &mut ShellChromeConfig) {
+        chrome.shellbar.placement =
+            crate::panes::ChromePlacement::Docked(match self.shellbar_edge {
+                ShellbarEdge::Left => crate::panes::ChromeEdge::Left,
+                ShellbarEdge::Right => crate::panes::ChromeEdge::Right,
+                ShellbarEdge::Top => crate::panes::ChromeEdge::Top,
+                ShellbarEdge::Bottom => crate::panes::ChromeEdge::Bottom,
+            });
+        chrome.shellbar.visible = self.shellbar_visible();
+        chrome.appearance.theme_id = self.theme_id.clone();
+        chrome.appearance.theme_mode = ThemeMode::from_setting(self.theme_mode());
+        chrome.appearance.ui_zoom = self.ui_zoom();
     }
 }
 
@@ -443,7 +461,11 @@ impl SettingsPane {
     }
 
     pub fn scene(&self, w: u32, h: u32) -> netrender::Scene {
-        crate::ui::scene_from_dom(&self.dom.borrow(), crate::ui::CAMBIUM_SHEET, w, h)
+        let snapshot = self.runner.state().live_settings.snapshot();
+        let mut chrome = ShellChromeConfig::default();
+        snapshot.apply_to(&mut chrome);
+        let sheet = crate::ui::cambium_sheet(&chrome.appearance);
+        crate::ui::scene_from_dom(&self.dom.borrow(), &sheet, w, h)
     }
 
     pub fn dom_ref(&self) -> std::cell::Ref<'_, ScriptedDom> {
@@ -451,10 +473,13 @@ impl SettingsPane {
     }
 
     pub fn click(&mut self, x: f32, y: f32, w: u32, h: u32) {
+        let snapshot = self.runner.state().live_settings.snapshot();
+        let mut chrome = ShellChromeConfig::default();
+        snapshot.apply_to(&mut chrome);
+        let sheet = crate::ui::cambium_sheet(&chrome.appearance);
         let hit = {
             let dom = self.dom.borrow();
-            let layout =
-                IncrementalLayout::new(&*dom, &[crate::ui::CAMBIUM_SHEET], w as f32, h as f32);
+            let layout = IncrementalLayout::new(&*dom, &[&sheet], w as f32, h as f32);
             let scroll = ScrollOffsets::<NodeId>::default();
             layout.hit_test(&*dom, x, y, &scroll)
         };
@@ -514,5 +539,34 @@ mod tests {
         });
         assert!(!live.snapshot().shellbar_visible());
         assert_eq!(live.snapshot().shellbar_edge(), ShellbarEdge::Left);
+        let mut app = crate::app::App::test_stub();
+        assert!(app.apply_chrome_settings_snapshot(&live.snapshot()));
+        assert!(
+            !app.shell_chrome_config().shellbar.visible,
+            "the shell can observe the same persisted snapshot without a pane callback"
+        );
+    }
+
+    #[test]
+    fn snapshot_projects_every_live_application_axis_to_chrome() {
+        let settings = ApplicationSettings {
+            theme_id: Some("theme:night".into()),
+            theme_mode: Some("light".into()),
+            ui_zoom: 1.75,
+            shellbar_edge: ShellbarEdge::Bottom,
+            shellbar_hidden: true,
+            ..ApplicationSettings::default()
+        };
+        let mut chrome = ShellChromeConfig::default();
+        ChromeSettings::from(&settings).apply_to(&mut chrome);
+
+        assert_eq!(
+            chrome.shellbar.placement,
+            crate::panes::ChromePlacement::Docked(crate::panes::ChromeEdge::Bottom)
+        );
+        assert!(!chrome.shellbar.visible);
+        assert_eq!(chrome.appearance.theme_id.as_deref(), Some("theme:night"));
+        assert_eq!(chrome.appearance.theme_mode, ThemeMode::Light);
+        assert_eq!(chrome.appearance.zoom(), 1.75);
     }
 }

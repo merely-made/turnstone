@@ -139,6 +139,61 @@ impl Default for ShellbarConfig {
     }
 }
 
+/// The base color family selected for host-owned chrome and Cambium panes.
+/// `System` deliberately resolves to Turnstone's established dark presentation
+/// until the platform adapter exposes a live system-color preference.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum ThemeMode {
+    #[default]
+    System,
+    Light,
+    Dark,
+}
+
+impl ThemeMode {
+    /// Decode the provider's durable vocabulary without exposing provider
+    /// types to the shell service seam.
+    pub fn from_setting(value: Option<&str>) -> Self {
+        match value {
+            Some("light") => Self::Light,
+            Some("dark") => Self::Dark,
+            _ => Self::System,
+        }
+    }
+}
+
+/// The running host presentation selected by Turnstone's application
+/// settings. This remains a value: renderers consume it, while the settings
+/// provider owns persistence and the shell owns polling/redraw.
+#[derive(Clone, Debug, PartialEq)]
+pub struct AppearanceConfig {
+    /// A persona-synced theme selector. The current host derives a stable
+    /// accent from it until a theme-pack provider is registered.
+    pub theme_id: Option<String>,
+    /// The base light/dark family for host-owned surfaces.
+    pub theme_mode: ThemeMode,
+    /// Scale for retained UI surfaces, constrained by the application store's
+    /// 0.5..=3.0 setting contract.
+    pub ui_zoom: f32,
+}
+
+impl Default for AppearanceConfig {
+    fn default() -> Self {
+        Self {
+            theme_id: None,
+            theme_mode: ThemeMode::System,
+            ui_zoom: 1.1,
+        }
+    }
+}
+
+impl AppearanceConfig {
+    /// A finite, user-setting-safe scale for layout and paint consumers.
+    pub fn zoom(&self) -> f32 {
+        self.ui_zoom.clamp(0.5, 3.0)
+    }
+}
+
 /// Bounded local retention for intentional shell history.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct TranscriptRetention {
@@ -152,10 +207,12 @@ impl Default for TranscriptRetention {
 }
 
 /// The chrome choices that can vary without becoming pane topology.
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct ShellChromeConfig {
     pub omnibar: OmnibarConfig,
     pub shellbar: ShellbarConfig,
+    /// Theme and UI scale consumed by the running host presentation.
+    pub appearance: AppearanceConfig,
     pub transcript_placement: ChromePlacement,
     pub transcript_retention: TranscriptRetention,
 }
@@ -165,6 +222,7 @@ impl Default for ShellChromeConfig {
         Self {
             omnibar: OmnibarConfig::default(),
             shellbar: ShellbarConfig::default(),
+            appearance: AppearanceConfig::default(),
             transcript_placement: ChromePlacement::Hidden,
             transcript_retention: TranscriptRetention::default(),
         }

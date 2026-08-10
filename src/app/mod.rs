@@ -188,6 +188,24 @@ impl App {
         self.shell.set_chrome(chrome);
     }
 
+    /// Apply a typed application-settings snapshot to the host-owned chrome
+    /// projection. Returns whether a running presentation consumer needs a
+    /// redraw. The snapshot is value-only; neither the provider nor its pane
+    /// gains a path to a graph runtime or renderer.
+    pub(crate) fn apply_chrome_settings_snapshot(
+        &mut self,
+        settings: &crate::settings_pane::ChromeSettings,
+    ) -> bool {
+        let mut chrome = self.shell_chrome_config().clone();
+        settings.apply_to(&mut chrome);
+        if chrome == *self.shell_chrome_config() {
+            false
+        } else {
+            self.set_shell_chrome_config(chrome);
+            true
+        }
+    }
+
     /// The transcript is read as shell data, independently from AppEvent.
     pub fn shell_transcript(&self) -> &crate::shell_services::ShellTranscript {
         self.shell.transcript()
