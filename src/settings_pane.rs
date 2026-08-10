@@ -329,18 +329,21 @@ fn setting_row(spec: &SettingSpec) -> SettingsView {
             let choice_id = setting_id.clone();
             let choice_spec = spec.clone();
             let options = options.clone();
-            let control_options = options.clone();
-            let labels = control_options
-                .iter()
-                .map(|option| option.label.clone())
-                .collect::<Vec<_>>();
+            let display_options = options.clone();
+            let state_options = options.clone();
             let control = Box::new(lens(
-                move |choice: &mut RadioGroup| radio_group(choice, &labels),
+                move |choice: &mut RadioGroup| {
+                    let labels: Vec<_> = display_options
+                        .iter()
+                        .map(|option| option.label.as_str())
+                        .collect();
+                    radio_group(choice, &labels)
+                },
                 move |state: &mut SettingsState| {
                     state
                         .choices
                         .entry(choice_id.clone())
-                        .or_insert_with(|| choice_for(&choice_spec, &control_options))
+                        .or_insert_with(|| choice_for(&choice_spec, &state_options))
                 },
             )) as SettingsView;
             let apply = apply_button(setting_id.clone(), apply_choice(setting_id, options));

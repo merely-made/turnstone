@@ -161,6 +161,10 @@ pub fn ring_of(action: &Action) -> Ring {
         // Gate management: never emittable in effect, whatever the grant.
         InstallDenizen { .. } | ConfirmInstallDenizen | CancelInstallDenizen
         | UninstallDenizen { .. } | RunDenizen { .. }
+        // Replaying a local shell transcript and opening its captured target
+        // are host gestures. A denizen must not gain a route to another
+        // pane's frozen context through an otherwise grantable dispatch ring.
+        | RepeatShellEntry(_) | OpenShellEntryTarget(_)
         // Joining a place is a trust act, not a session act, so it sits at the
         // structural floor beside gate management rather than in `Session`
         // with `NewSession` and `SwitchSession`.
