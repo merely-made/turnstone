@@ -1,16 +1,17 @@
 //! The application-settings projection.
 //!
-//! This is the first host UI consumer of `genet_host_api::settings`. The pane
-//! owns only retained control state and the Turnstone provider; persistence
-//! still belongs to `session-runtime` through that provider.
+//! Turnstone owns the application settings store and its application namespace.
+//! The pane obtains its rows from that provider. Cambium selects controls by
+//! [`SettingControl`], never by a Turnstone setting id.
 
 use std::cell::RefCell;
+use std::collections::HashMap;
 use std::path::PathBuf;
 use std::rc::Rc;
 
 use cambium::{
-    AnyView, DomHandle, GenetAppRunner, GenetCtx, GenetElement, Slider, TextInput, clickable, el,
-    lens, slider, text, text_field_typed,
+    clickable, el, lens, radio_group, slider, text, text_field_typed, toggle, AnyView, DomHandle,
+    GenetAppRunner, GenetCtx, GenetElement, RadioGroup, Slider, TextInput,
 };
 use genet_host_api::settings::{
     SettingControl, SettingSpec, SettingValue, SettingsProjection, SettingsProvider,
@@ -19,14 +20,83 @@ use genet_host_api::tile::SettingsRef;
 use genet_layout::{IncrementalLayout, ScrollOffsets};
 use genet_scripted_dom::{NodeId, ScriptedDom};
 use layout_dom_api::LayoutDom;
+use session_runtime::{ApplicationSettings, ShellbarEdge};
 
-use crate::settings_provider::{APPEARANCE_REFERENCE, ApplicationSettingsProvider};
+use crate::settings_provider::{ApplicationSettingsProvider, APPLICATION_REFERENCE};
+
+/// The part of the application owner that the shell can observe while it is
+/// running. It is intentionally a value snapshot, rather than a callback into
+/// the settings pane or a route to the graph canvas.
+#[derive(Clone, Debug, PartialEq)]
+pub struct ChromeSettings {
+    theme_id: Option<String>,
+    theme_mode: Option<String>,
+    ui_zoom: f32,
+    shellbar_edge: ShellbarEdge,
+    shellbar_hidden: bool,
+}
+
+impl From<&ApplicationSettings> for ChromeSettings {
+    fn from(settings: &ApplicationSettings) -> Self {
+        Self {
+            theme_id: settings.theme_id.clone(),
+            theme_mode: settings.theme_mode.clone(),
+            ui_zoom: settings.ui_zoom,
+            shellbar_edge: settings.shellbar_edge,
+            shellbar_hidden: settings.shellbar_hidden,
+        }
+    }
+}
+
+impl ChromeSettings {
+    pub fn theme_id(&self) -> Option<&str> {
+        self.theme_id.as_deref()
+    }
+
+    pub fn theme_mode(&self) -> Option<&str> {
+        self.theme_mode.as_deref()
+    }
+
+    pub fn ui_zoom(&self) -> f32 {
+        self.ui_zoom
+    }
+
+    pub fn shellbar_edge(&self) -> ShellbarEdge {
+        self.shellbar_edge
+    }
+
+    pub fn shellbar_visible(&self) -> bool {
+        !self.shellbar_hidden
+    }
+}
+
+/// A cloneable live projection owned by the shell. The provider publishes only
+/// after it has persisted a successful write, so consumers cannot observe a
+/// value that failed to reach the application owner.
+#[derive(Clone)]
+pub struct LiveSettingsHandle(Rc<RefCell<ChromeSettings>>);
+
+impl LiveSettingsHandle {
+    pub fn new(settings: &ApplicationSettings) -> Self {
+        Self(Rc::new(RefCell::new(ChromeSettings::from(settings))))
+    }
+
+    pub fn snapshot(&self) -> ChromeSettings {
+        self.0.borrow().clone()
+    }
+
+    fn publish(&self, settings: &ApplicationSettings) {
+        *self.0.borrow_mut() = ChromeSettings::from(settings);
+    }
+}
 
 struct SettingsState {
     provider: ApplicationSettingsProvider,
-    theme_id: TextInput,
-    theme_mode: TextInput,
-    zoom: Slider,
+    live_settings: LiveSettingsHandle,
+    text_inputs: HashMap<String, TextInput>,
+    number_inputs: HashMap<String, Slider>,
+    toggles: HashMap<String, bool>,
+    choices: HashMap<String, RadioGroup>,
     status: String,
     viewport_w: f32,
     viewport_h: f32,
@@ -36,119 +106,271 @@ type SettingsView = Box<dyn AnyView<SettingsState, (), GenetCtx, GenetElement>>;
 type SettingsRunner =
     GenetAppRunner<SettingsState, fn(&SettingsState) -> SettingsView, SettingsView, ()>;
 
-fn apply_text(setting_id: &'static str) -> impl Fn(&mut SettingsState, cambium::PointerClick) {
-    move |state, _| {
-        let value = match setting_id {
-            "theme.id" => state.theme_id.text().to_owned(),
-            "theme.mode" => state.theme_mode.text().to_owned(),
-            _ => return,
-        };
-        apply_value(state, setting_id, SettingValue::Text(value));
-    }
+fn number_range(min: Option<f64>, max: Option<f64>) -> (f64, f64) {
+    let min = min.unwrap_or(0.0);
+    let max = max
+        .filter(|max| max.is_finite() && *max > min)
+        .unwrap_or(min + 1.0);
+    (min, max)
 }
 
-fn apply_zoom(state: &mut SettingsState, _: cambium::PointerClick) {
-    let value = 0.5 + f64::from(state.zoom.value.clamp(0.0, 1.0)) * 2.5;
-    apply_value(state, "ui.zoom", SettingValue::Number(value));
+fn number_fraction(value: f64, min: Option<f64>, max: Option<f64>) -> f32 {
+    let (min, max) = number_range(min, max);
+    ((value - min) / (max - min)).clamp(0.0, 1.0) as f32
+}
+
+fn number_value(fraction: f32, min: Option<f64>, max: Option<f64>) -> f64 {
+    let (min, max) = number_range(min, max);
+    min + f64::from(fraction.clamp(0.0, 1.0)) * (max - min)
+}
+
+fn slider_for(spec: &SettingSpec, min: Option<f64>, max: Option<f64>, step: Option<f64>) -> Slider {
+    let value = match &spec.value {
+        SettingValue::Number(value) => *value,
+        _ => number_range(min, max).0,
+    };
+    let (low, high) = number_range(min, max);
+    let range = high - low;
+    let step = step.map(|step| (step / range) as f32).unwrap_or(0.01);
+    Slider::new(number_fraction(value, min, max))
+        .with_label(spec.label.clone())
+        .with_steps(step, (step * 5.0).max(0.1))
+}
+
+fn text_for(spec: &SettingSpec) -> TextInput {
+    let value = match &spec.value {
+        SettingValue::Text(value) => value.clone(),
+        _ => String::new(),
+    };
+    TextInput::new(value)
+}
+
+fn toggle_for(spec: &SettingSpec) -> bool {
+    matches!(&spec.value, SettingValue::Boolean(true))
+}
+
+fn choice_for(
+    spec: &SettingSpec,
+    options: &[genet_host_api::settings::SettingOption],
+) -> RadioGroup {
+    let selected = match &spec.value {
+        SettingValue::Text(value) => options
+            .iter()
+            .position(|option| option.value == *value)
+            .unwrap_or(0),
+        _ => 0,
+    };
+    RadioGroup::new(selected).with_label(spec.label.clone())
 }
 
 fn apply_value(state: &mut SettingsState, setting_id: &str, value: SettingValue) {
-    let reference = SettingsRef(APPEARANCE_REFERENCE.into());
+    let reference = SettingsRef(APPLICATION_REFERENCE.into());
     state.status = match state.provider.apply(&reference, setting_id, value) {
-        Ok(()) => format!("Saved {setting_id}"),
+        Ok(()) => {
+            state.live_settings.publish(state.provider.settings());
+            format!("Saved {setting_id}")
+        }
         Err(error) => format!("Could not save {setting_id}: {error:?}"),
     };
 }
 
-fn setting_row(spec: &SettingSpec) -> SettingsView {
-    let label = el::<_, SettingsState, ()>(
-        "div",
-        format!("{} · {:?} · {:?}", spec.label, spec.scope, spec.movement),
-    )
-    .attr("class", "setting-label");
-
-    match (&spec.control, spec.id.as_str()) {
-        (SettingControl::Text, "theme.id") => {
-            let field = Box::new(lens(
-                |input: &mut TextInput| text_field_typed(input),
-                |state: &mut SettingsState| &mut state.theme_id,
-            )) as SettingsView;
-            let apply = Box::new(clickable(
-                el::<_, SettingsState, ()>("button", text("Apply"))
-                    .attr("class", "setting-apply")
-                    .attr("data-setting", "theme.id"),
-                apply_text("theme.id"),
-            )) as SettingsView;
-            Box::new(
-                el::<_, SettingsState, ()>("div", (label, field, apply))
-                    .attr("class", "setting-row"),
-            )
-        }
-        (SettingControl::Text, "theme.mode") => {
-            let field = Box::new(lens(
-                |input: &mut TextInput| text_field_typed(input),
-                |state: &mut SettingsState| &mut state.theme_mode,
-            )) as SettingsView;
-            let apply = Box::new(clickable(
-                el::<_, SettingsState, ()>("button", text("Apply"))
-                    .attr("class", "setting-apply")
-                    .attr("data-setting", "theme.mode"),
-                apply_text("theme.mode"),
-            )) as SettingsView;
-            Box::new(
-                el::<_, SettingsState, ()>("div", (label, field, apply))
-                    .attr("class", "setting-row"),
-            )
-        }
-        (SettingControl::Number { .. }, "ui.zoom") => {
-            let control = Box::new(lens(
-                |control: &mut Slider| slider(control),
-                |state: &mut SettingsState| &mut state.zoom,
-            )) as SettingsView;
-            let apply = Box::new(clickable(
-                el::<_, SettingsState, ()>("button", text("Apply"))
-                    .attr("class", "setting-apply")
-                    .attr("data-setting", "ui.zoom"),
-                apply_zoom,
-            )) as SettingsView;
-            Box::new(
-                el::<_, SettingsState, ()>("div", (label, control, apply))
-                    .attr("class", "setting-row"),
-            )
-        }
-        _ => Box::new(
-            el::<_, SettingsState, ()>(
-                "div",
-                (
-                    label,
-                    el::<_, SettingsState, ()>("div", "unsupported control"),
-                ),
-            )
-            .attr("class", "setting-row setting-unsupported"),
-        ),
+fn apply_text(setting_id: String) -> impl Fn(&mut SettingsState, cambium::PointerClick) {
+    move |state, _| {
+        let value = state
+            .text_inputs
+            .get(&setting_id)
+            .map(|input| input.text().to_owned())
+            .unwrap_or_default();
+        apply_value(state, &setting_id, SettingValue::Text(value));
     }
 }
 
+fn apply_number(
+    setting_id: String,
+    min: Option<f64>,
+    max: Option<f64>,
+) -> impl Fn(&mut SettingsState, cambium::PointerClick) {
+    move |state, _| {
+        let fraction = state
+            .number_inputs
+            .get(&setting_id)
+            .map(|slider| slider.value)
+            .unwrap_or_default();
+        apply_value(
+            state,
+            &setting_id,
+            SettingValue::Number(number_value(fraction, min, max)),
+        );
+    }
+}
+
+fn apply_toggle(setting_id: String) -> impl Fn(&mut SettingsState, cambium::PointerClick) {
+    move |state, _| {
+        let value = state.toggles.get(&setting_id).copied().unwrap_or_default();
+        apply_value(state, &setting_id, SettingValue::Boolean(value));
+    }
+}
+
+fn apply_choice(
+    setting_id: String,
+    options: Vec<genet_host_api::settings::SettingOption>,
+) -> impl Fn(&mut SettingsState, cambium::PointerClick) {
+    move |state, _| {
+        let selected = state
+            .choices
+            .get(&setting_id)
+            .map(|choice| choice.selected)
+            .unwrap_or_default();
+        let value = options
+            .get(selected)
+            .or_else(|| options.first())
+            .map(|option| option.value.clone())
+            .unwrap_or_default();
+        apply_value(state, &setting_id, SettingValue::Text(value));
+    }
+}
+
+fn setting_label(spec: &SettingSpec) -> SettingsView {
+    Box::new(
+        el::<_, SettingsState, ()>(
+            "div",
+            format!(
+                "{} · {:?} · {:?} · {:?}",
+                spec.label, spec.scope, spec.movement, spec.mutability
+            ),
+        )
+        .attr("class", "setting-label"),
+    )
+}
+
+fn apply_button(
+    setting_id: String,
+    action: impl Fn(&mut SettingsState, cambium::PointerClick) + 'static,
+) -> SettingsView {
+    Box::new(clickable(
+        el::<_, SettingsState, ()>("button", text("Apply"))
+            .attr("class", "setting-apply")
+            .attr("data-setting", setting_id),
+        action,
+    ))
+}
+
+fn setting_row(spec: &SettingSpec) -> SettingsView {
+    let label = setting_label(spec);
+    let setting_id = spec.id.clone();
+    let control: SettingsView = match &spec.control {
+        SettingControl::Text if matches!(&spec.value, SettingValue::Text(_)) => {
+            let field_id = setting_id.clone();
+            let field_spec = spec.clone();
+            let field = Box::new(lens(
+                |input: &mut TextInput| text_field_typed(input),
+                move |state: &mut SettingsState| {
+                    state
+                        .text_inputs
+                        .entry(field_id.clone())
+                        .or_insert_with(|| text_for(&field_spec))
+                },
+            )) as SettingsView;
+            let apply = apply_button(setting_id.clone(), apply_text(setting_id));
+            Box::new(el::<_, SettingsState, ()>("div", (field, apply)))
+        }
+        SettingControl::Number { min, max, step }
+            if matches!(&spec.value, SettingValue::Number(_)) =>
+        {
+            let slider_id = setting_id.clone();
+            let slider_spec = spec.clone();
+            let (min, max, step) = (*min, *max, *step);
+            let control = Box::new(lens(
+                |control: &mut Slider| slider(control),
+                move |state: &mut SettingsState| {
+                    state
+                        .number_inputs
+                        .entry(slider_id.clone())
+                        .or_insert_with(|| slider_for(&slider_spec, min, max, step))
+                },
+            )) as SettingsView;
+            let apply = apply_button(setting_id.clone(), apply_number(setting_id, min, max));
+            Box::new(el::<_, SettingsState, ()>("div", (control, apply)))
+        }
+        SettingControl::Toggle if matches!(&spec.value, SettingValue::Boolean(_)) => {
+            let toggle_id = setting_id.clone();
+            let toggle_spec = spec.clone();
+            let control = Box::new(lens(
+                |checked: &mut bool| toggle(*checked),
+                move |state: &mut SettingsState| {
+                    state
+                        .toggles
+                        .entry(toggle_id.clone())
+                        .or_insert_with(|| toggle_for(&toggle_spec))
+                },
+            )) as SettingsView;
+            let apply = apply_button(setting_id.clone(), apply_toggle(setting_id));
+            Box::new(el::<_, SettingsState, ()>("div", (control, apply)))
+        }
+        SettingControl::Choice { options } if matches!(&spec.value, SettingValue::Text(_)) => {
+            let choice_id = setting_id.clone();
+            let choice_spec = spec.clone();
+            let options = options.clone();
+            let control_options = options.clone();
+            let labels = control_options
+                .iter()
+                .map(|option| option.label.clone())
+                .collect::<Vec<_>>();
+            let control = Box::new(lens(
+                move |choice: &mut RadioGroup| radio_group(choice, &labels),
+                move |state: &mut SettingsState| {
+                    state
+                        .choices
+                        .entry(choice_id.clone())
+                        .or_insert_with(|| choice_for(&choice_spec, &control_options))
+                },
+            )) as SettingsView;
+            let apply = apply_button(setting_id.clone(), apply_choice(setting_id, options));
+            Box::new(el::<_, SettingsState, ()>("div", (control, apply)))
+        }
+        _ => Box::new(
+            el::<_, SettingsState, ()>("div", "Unsupported control/value pair")
+                .attr("class", "setting-unsupported"),
+        ),
+    };
+
+    Box::new(
+        el::<_, SettingsState, ()>("div", (label, control))
+            .attr("class", "setting-row")
+            .attr("data-setting", spec.id.clone()),
+    )
+}
+
 fn settings_view(state: &SettingsState) -> SettingsView {
-    let reference = SettingsRef(APPEARANCE_REFERENCE.into());
-    let projection = SettingsProjection::resolve(&state.provider, &reference);
-    let rows: Vec<SettingsView> = projection
-        .map(|projection| projection.specs)
-        .unwrap_or_default()
-        .iter()
-        .map(setting_row)
-        .collect();
+    let reference = SettingsRef(APPLICATION_REFERENCE.into());
+    let body: SettingsView = match SettingsProjection::resolve(&state.provider, &reference) {
+        Ok(projection) if projection.specs.is_empty() => Box::new(
+            el::<_, SettingsState, ()>("div", "No settings are available for this source.")
+                .attr("class", "setting-empty")
+                .attr("role", "status"),
+        ),
+        Ok(projection) => {
+            let rows = projection.specs.iter().map(setting_row).collect::<Vec<_>>();
+            Box::new(el::<_, SettingsState, ()>("div", rows))
+        }
+        Err(error) => Box::new(
+            el::<_, SettingsState, ()>("div", format!("Settings are unavailable: {error:?}"))
+                .attr("class", "setting-error")
+                .attr("role", "alert"),
+        ),
+    };
     Box::new(
         el::<_, SettingsState, ()>(
             "div",
             (
                 el::<_, SettingsState, ()>("div", "Application settings")
                     .attr("class", "list-section-title"),
-                el::<_, SettingsState, ()>("div", "pelt/appearance")
+                el::<_, SettingsState, ()>("div", APPLICATION_REFERENCE)
                     .attr("class", "list-row muted"),
-                el::<_, SettingsState, ()>("div", rows),
+                body,
                 el::<_, SettingsState, ()>("div", state.status.clone())
-                    .attr("class", "list-row muted"),
+                    .attr("class", "list-row muted")
+                    .attr("role", "status"),
             ),
         )
         .attr("class", "pane")
@@ -170,27 +392,37 @@ pub struct SettingsPane {
 
 impl SettingsPane {
     pub fn new(data_root: PathBuf) -> Self {
+        Self::with_live_settings(data_root, None)
+    }
+
+    /// Construct a pane connected to the shell's value-facing settings seam.
+    /// This carries settings updates outward without importing the shell or its
+    /// graph runtime into the provider or pane.
+    pub fn with_live_settings(
+        data_root: PathBuf,
+        live_settings: Option<LiveSettingsHandle>,
+    ) -> Self {
         let (provider, status) = match ApplicationSettingsProvider::load(&data_root) {
             Ok(provider) => (provider, String::new()),
             Err(error) => (
                 ApplicationSettingsProvider::from_settings(
                     data_root,
-                    session_runtime::ApplicationSettings::default(),
+                    ApplicationSettings::default(),
                 ),
                 format!("Could not load application settings: {error}"),
             ),
         };
-        let theme_id = provider.settings().theme_id.clone().unwrap_or_default();
-        let theme_mode = provider.settings().theme_mode.clone().unwrap_or_default();
-        let ui_zoom = provider.settings().ui_zoom;
+        let live_settings =
+            live_settings.unwrap_or_else(|| LiveSettingsHandle::new(provider.settings()));
+        live_settings.publish(provider.settings());
         let dom: DomHandle = Rc::new(RefCell::new(ScriptedDom::new()));
         let state = SettingsState {
             provider,
-            theme_id: TextInput::new(theme_id),
-            theme_mode: TextInput::new(theme_mode),
-            zoom: Slider::new(((ui_zoom - 0.5) / 2.5).clamp(0.0, 1.0))
-                .with_label("UI zoom")
-                .with_steps(0.02, 0.1),
+            live_settings,
+            text_inputs: HashMap::new(),
+            number_inputs: HashMap::new(),
+            toggles: HashMap::new(),
+            choices: HashMap::new(),
             status,
             viewport_w: 0.0,
             viewport_h: 0.0,
@@ -233,7 +465,7 @@ impl SettingsPane {
         }
     }
 
-    pub fn settings(&self) -> &session_runtime::ApplicationSettings {
+    pub fn settings(&self) -> &ApplicationSettings {
         self.runner.state().provider.settings()
     }
 }
@@ -250,13 +482,15 @@ mod tests {
     }
 
     #[test]
-    fn pane_renders_provider_described_controls() {
+    fn pane_renders_controls_from_setting_control_not_setting_ids() {
         let pane = SettingsPane::new(root("render"));
         let dom = pane.dom_ref();
-        assert_eq!(dom.all_with_class(dom.document(), "setting-row").len(), 3);
-        assert_eq!(dom.all_with_class(dom.document(), "setting-label").len(), 3);
-        assert_eq!(dom.all_with_class(dom.document(), "setting-apply").len(), 3);
+        assert_eq!(dom.all_with_class(dom.document(), "setting-row").len(), 5);
+        assert_eq!(dom.all_with_class(dom.document(), "setting-label").len(), 5);
+        assert_eq!(dom.all_with_class(dom.document(), "setting-apply").len(), 5);
         assert_eq!(dom.all_with_class(dom.document(), "slider-track").len(), 1);
+        assert_eq!(dom.all_with_class(dom.document(), "toggle").len(), 1);
+        assert_eq!(dom.all_with_class(dom.document(), "radio").len(), 7);
     }
 
     #[test]
@@ -264,5 +498,21 @@ mod tests {
         let pane = SettingsPane::new(root("owner"));
         assert_eq!(pane.settings().ui_zoom, 1.1);
         assert_eq!(pane.settings().theme_id, None);
+    }
+
+    #[test]
+    fn successful_apply_publishes_a_value_snapshot_for_the_shell() {
+        let settings = ApplicationSettings::default();
+        let live = LiveSettingsHandle::new(&settings);
+        let mut pane = SettingsPane::with_live_settings(root("live"), Some(live.clone()));
+        pane.runner.update(|state| {
+            apply_value(
+                state,
+                "chrome.shellbar.visible",
+                SettingValue::Boolean(false),
+            );
+        });
+        assert!(!live.snapshot().shellbar_visible());
+        assert_eq!(live.snapshot().shellbar_edge(), ShellbarEdge::Left);
     }
 }

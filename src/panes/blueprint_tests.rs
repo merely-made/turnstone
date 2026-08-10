@@ -152,7 +152,7 @@ fn floating_relocates_the_same_pane_and_survives_serde() {
     let spec = pane(
         7,
         "settings",
-        PaneSource::Fixed(SourceRef::Settings("turnstone/appearance".into())),
+        PaneSource::Fixed(SourceRef::Settings("turnstone/application".into())),
         ContextBinding::Application,
     );
     let mut blueprint = space("primary", vec![spec.clone()], LayoutNode::Pane(spec.id));
