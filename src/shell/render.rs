@@ -38,7 +38,7 @@ impl Shell {
         match content {
             Some(PaneContent::Trail) => {
                 let pane = self
-                    .trail_panes
+                    .renderers.trail
                     .entry(pane_id)
                     .or_insert_with(crate::trail_pane::TrailPane::new);
                 pane.sync(&self.app, rw as f32, rh as f32);
@@ -48,7 +48,7 @@ impl Shell {
                 // The retained cambium grid: refresh it from graph truth at
                 // the pane's size, then draw its DOM.
                 let grid = self
-                    .roster_grids
+                    .renderers.roster
                     .entry(pane_id)
                     .or_insert_with(crate::cambium_pane::RosterGrid::new);
                 grid.sync(&self.app, rw as f32, rh as f32);
@@ -61,7 +61,7 @@ impl Shell {
                 // section registry (unknown ids are ignored, so a config from
                 // a newer build degrades instead of failing).
                 let providers = crate::sections::resolve(&cfg.sections);
-                let pane = self.gloss_panes.entry(pane_id).or_insert_with(|| {
+                let pane = self.renderers.gloss.entry(pane_id).or_insert_with(|| {
                     crate::swatch_pane::SwatchPane::new(crate::swatch_pane::GLOSS_MINIMAP)
                 });
                 pane.set_sections(providers);
@@ -86,7 +86,7 @@ impl Shell {
                     .map(|handle| handle.status().label())
                     .unwrap_or_else(|| "unconfigured".into());
                 let pane = self
-                    .inspector_panes
+                    .renderers.inspector
                     .entry(pane_id)
                     .or_insert_with(crate::inspector_pane::InspectorPane::new);
                 pane.sync(
@@ -105,7 +105,7 @@ impl Shell {
                 // plan; in a lens the furniture shows and tile compositing is
                 // a named follow-on.
                 let pane = self
-                    .workbench_panes
+                    .renderers.workbench
                     .entry(pane_id)
                     .or_insert_with(crate::workbench_pane::WorkbenchPane::new);
                 pane.sync(&self.app, rw as f32, rh as f32);
@@ -115,7 +115,7 @@ impl Shell {
                 // The graph-object facet analyzer's first rows: the viewer
                 // control (radio over the registered lanes).
                 let pane = self
-                    .apparatus_panes
+                    .renderers.apparatus
                     .entry(pane_id)
                     .or_insert_with(crate::apparatus_pane::ApparatusPane::new);
                 pane.sync(&self.app, rw as f32, rh as f32);
@@ -124,7 +124,7 @@ impl Shell {
             Some(PaneContent::Registered(kind))
                 if kind.as_str() == crate::panes::kind::SETTINGS =>
             {
-                let pane = self.settings_panes.entry(pane_id).or_insert_with(|| {
+                let pane = self.renderers.settings.entry(pane_id).or_insert_with(|| {
                     crate::settings_pane::SettingsPane::new(self.app.data_root.clone())
                 });
                 pane.sync(rw as f32, rh as f32);
@@ -135,7 +135,7 @@ impl Shell {
             {
                 let service = self.publish_service.clone();
                 let pane = self
-                    .publish_panes
+                    .renderers.publish
                     .entry(pane_id)
                     .or_insert_with(|| crate::publish_pane::PublishPane::new(service));
                 pane.sync(rw as f32, rh as f32);
@@ -146,7 +146,7 @@ impl Shell {
             {
                 let service = self.shared_knot_service.clone();
                 let pane = self
-                    .shared_knot_panes
+                    .renderers.shared_knot
                     .entry(pane_id)
                     .or_insert_with(|| crate::share_reader_pane::SharedKnotPane::new(service));
                 pane.sync(rw as f32, rh as f32);
@@ -159,7 +159,7 @@ impl Shell {
                 // Gloss does, off ITS OWN leaf: one renderer, one config shape,
                 // so the second host cost a resolve and a setter.
                 let providers = crate::sections::resolve(&cfg.sections);
-                let pane = self.overmap_panes.entry(pane_id).or_insert_with(|| {
+                let pane = self.renderers.overmap.entry(pane_id).or_insert_with(|| {
                     crate::swatch_pane::SwatchPane::new(crate::swatch_pane::OVERMAP_LINEAGE)
                 });
                 pane.set_sections(providers);

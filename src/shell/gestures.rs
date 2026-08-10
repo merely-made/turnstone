@@ -49,7 +49,7 @@ impl Shell {
         let crate::surface::SurfaceKind::Pane(pane_id) = surface.kind else {
             return;
         };
-        let Some(pane) = self.workbench_panes.get_mut(&pane_id) else {
+        let Some(pane) = self.renderers.workbench.get_mut(&pane_id) else {
             return;
         };
         let target_cell = pane.tiling().cell_at(lx, ly).cloned();
@@ -92,7 +92,7 @@ impl Shell {
                 return None;
             }
             let rect = [s.rect.x, s.rect.y, s.rect.w, s.rect.h];
-            let pane = self.workbench_panes.get(&id)?;
+            let pane = self.renderers.workbench.get(&id)?;
             let a = pane.resolve(&genet_probe::Selector::class("tab").containing(from), rect)?;
             let b = pane.resolve(&genet_probe::Selector::class("tab").containing(onto), rect)?;
             // An edge release aims 10% into that band of the TARGET CELL's
@@ -142,7 +142,7 @@ impl Shell {
                 return None;
             }
             let rect = [s.rect.x, s.rect.y, s.rect.w, s.rect.h];
-            let pane = self.workbench_panes.get(&id)?;
+            let pane = self.renderers.workbench.get(&id)?;
             pane.resolve(&genet_probe::Selector::class("tab").containing(from), rect)
         });
         let release = plan

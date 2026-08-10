@@ -54,53 +54,53 @@ impl genet_probe::Automatable for Shell {
                 }
                 crate::surface::SurfaceKind::Pane(id) => match self.pane_content(id) {
                     Some(PaneContent::Roster) => {
-                        if let Some(g) = self.roster_grids.get(&id) {
+                        if let Some(g) = self.renderers.roster.get(&id) {
                             guards.push(("roster", rect, g.dom_ref()));
                         }
                     }
                     Some(PaneContent::Trail) => {
-                        if let Some(pane) = self.trail_panes.get(&id) {
+                        if let Some(pane) = self.renderers.trail.get(&id) {
                             guards.push(("trail", rect, pane.dom_ref()));
                         }
                     }
                     Some(PaneContent::Inspector) => {
-                        if let Some(pane) = self.inspector_panes.get(&id) {
+                        if let Some(pane) = self.renderers.inspector.get(&id) {
                             guards.push(("inspector", rect, pane.dom_ref()));
                         }
                     }
                     Some(PaneContent::Gloss(_)) => {
-                        if let Some(pane) = self.gloss_panes.get(&id) {
+                        if let Some(pane) = self.renderers.gloss.get(&id) {
                             guards.push(("gloss", rect, pane.dom_ref()));
                         }
                     }
                     Some(PaneContent::Apparatus) => {
-                        if let Some(pane) = self.apparatus_panes.get(&id) {
+                        if let Some(pane) = self.renderers.apparatus.get(&id) {
                             guards.push(("apparatus", rect, pane.dom_ref()));
                         }
                     }
                     Some(PaneContent::Registered(kind))
                         if kind.as_str() == crate::panes::kind::SETTINGS =>
                     {
-                        if let Some(pane) = self.settings_panes.get(&id) {
+                        if let Some(pane) = self.renderers.settings.get(&id) {
                             guards.push(("settings", rect, pane.dom_ref()));
                         }
                     }
                     Some(PaneContent::Registered(kind))
                         if kind.as_str() == crate::panes::kind::PUBLISHING =>
                     {
-                        if let Some(pane) = self.publish_panes.get(&id) {
+                        if let Some(pane) = self.renderers.publish.get(&id) {
                             guards.push(("publishing", rect, pane.dom_ref()));
                         }
                     }
                     Some(PaneContent::Registered(kind))
                         if kind.as_str() == crate::panes::kind::SHARED_KNOT =>
                     {
-                        if let Some(pane) = self.shared_knot_panes.get(&id) {
+                        if let Some(pane) = self.renderers.shared_knot.get(&id) {
                             guards.push(("shared-knot", rect, pane.dom_ref()));
                         }
                     }
                     Some(PaneContent::Overmap(_)) => {
-                        if let Some(pane) = self.overmap_panes.get(&id) {
+                        if let Some(pane) = self.renderers.overmap.get(&id) {
                             guards.push(("overmap", rect, pane.dom_ref()));
                         }
                     }

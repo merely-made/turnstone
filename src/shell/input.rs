@@ -178,7 +178,7 @@ impl Shell {
                                         s.rect.h.round().max(1.0) as u32,
                                     )
                                 });
-                                let actions = match (dims, self.trail_panes.get_mut(&id)) {
+                                let actions = match (dims, self.renderers.trail.get_mut(&id)) {
                                     (Some((rw, rh)), Some(pane)) => {
                                         pane.click(hit.local.0, hit.local.1, rw, rh)
                                     }
@@ -227,7 +227,7 @@ impl Shell {
                                         s.rect.h.round().max(1.0) as u32,
                                     )
                                 });
-                                let actions = match (dims, self.roster_grids.get_mut(&id)) {
+                                let actions = match (dims, self.renderers.roster.get_mut(&id)) {
                                     (Some((rw, rh)), Some(grid)) => {
                                         let actions = grid.click(hit.local.0, hit.local.1, rw, rh);
                                         // The strip emits no action — switching a
@@ -257,7 +257,7 @@ impl Shell {
                                         s.rect.h.round().max(1.0) as u32,
                                     )
                                 });
-                                let intents = match (dims, self.gloss_panes.get_mut(&id)) {
+                                let intents = match (dims, self.renderers.gloss.get_mut(&id)) {
                                     (Some((rw, rh)), Some(pane)) => {
                                         pane.click(hit.local.0, hit.local.1, rw, rh)
                                     }
@@ -289,7 +289,7 @@ impl Shell {
                                         s.rect.h.round().max(1.0) as u32,
                                     )
                                 });
-                                let clip = match (dims, self.inspector_panes.get_mut(&id)) {
+                                let clip = match (dims, self.renderers.inspector.get_mut(&id)) {
                                     (Some((rw, rh)), Some(pane)) => pane
                                         .click(hit.local.0, hit.local.1, rw, rh)
                                         .into_iter()
@@ -315,7 +315,7 @@ impl Shell {
                                         s.rect.h.round().max(1.0) as u32,
                                     )
                                 });
-                                let intents = match (dims, self.apparatus_panes.get_mut(&id)) {
+                                let intents = match (dims, self.renderers.apparatus.get_mut(&id)) {
                                     (Some((rw, rh)), Some(pane)) => {
                                         pane.click(hit.local.0, hit.local.1, rw, rh)
                                     }
@@ -346,7 +346,7 @@ impl Shell {
                                     )
                                 });
                                 if let (Some((rw, rh)), Some(pane)) =
-                                    (dims, self.settings_panes.get_mut(&id))
+                                    (dims, self.renderers.settings.get_mut(&id))
                                 {
                                     pane.click(hit.local.0, hit.local.1, rw, rh);
                                 }
@@ -361,7 +361,7 @@ impl Shell {
                                     )
                                 });
                                 if let (Some((rw, rh)), Some(pane)) =
-                                    (dims, self.publish_panes.get_mut(&id))
+                                    (dims, self.renderers.publish.get_mut(&id))
                                 {
                                     pane.click(hit.local.0, hit.local.1, rw, rh);
                                 }
@@ -376,7 +376,7 @@ impl Shell {
                                     )
                                 });
                                 if let (Some((rw, rh)), Some(pane)) =
-                                    (dims, self.shared_knot_panes.get_mut(&id))
+                                    (dims, self.renderers.shared_knot.get_mut(&id))
                                 {
                                     pane.click(hit.local.0, hit.local.1, rw, rh);
                                 }
@@ -391,7 +391,7 @@ impl Shell {
                                         s.rect.h.round().max(1.0) as u32,
                                     )
                                 });
-                                let intents = match (dims, self.overmap_panes.get_mut(&id)) {
+                                let intents = match (dims, self.renderers.overmap.get_mut(&id)) {
                                     (Some((rw, rh)), Some(pane)) => {
                                         pane.click(hit.local.0, hit.local.1, rw, rh)
                                     }
@@ -432,7 +432,7 @@ impl Shell {
                                     )
                                 });
                                 if let (Some((rect, (rw, rh))), Some(pane)) =
-                                    (dims, self.workbench_panes.get_mut(&id))
+                                    (dims, self.renderers.workbench.get_mut(&id))
                                 {
                                     let (lx, ly) = hit.local;
                                     if let Some(div) = pane.tiling().divider_at(lx, ly).cloned() {
@@ -498,11 +498,11 @@ impl Shell {
         {
             redraw |= match self.pane_content(prev) {
                 Some(PaneContent::Gloss(_)) => self
-                    .gloss_panes
+                    .renderers.gloss
                     .get_mut(&prev)
                     .is_some_and(|p| p.hover_leave()),
                 Some(PaneContent::Overmap(_)) => self
-                    .overmap_panes
+                    .renderers.overmap
                     .get_mut(&prev)
                     .is_some_and(|p| p.hover_leave()),
                 _ => false,
@@ -519,11 +519,11 @@ impl Shell {
             if let Some((rw, rh)) = dims {
                 redraw |= match self.pane_content(id) {
                     Some(PaneContent::Gloss(_)) => self
-                        .gloss_panes
+                        .renderers.gloss
                         .get_mut(&id)
                         .is_some_and(|p| p.hover(hit.local.0, hit.local.1, rw, rh)),
                     Some(PaneContent::Overmap(_)) => self
-                        .overmap_panes
+                        .renderers.overmap
                         .get_mut(&id)
                         .is_some_and(|p| p.hover(hit.local.0, hit.local.1, rw, rh)),
                     _ => false,
