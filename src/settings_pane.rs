@@ -333,9 +333,13 @@ fn setting_row(spec: &SettingSpec) -> SettingsView {
             let state_options = options.clone();
             let control = Box::new(lens(
                 move |choice: &mut RadioGroup| {
-                    let labels: Vec<_> = display_options
+                    // Pass owned labels into Cambium. `radio_group` builds
+                    // its retained rows from these values, so the returned
+                    // view does not borrow a short-lived `&str` vector from
+                    // this `Fn` closure.
+                    let labels: Vec<String> = display_options
                         .iter()
-                        .map(|option| option.label.as_str())
+                        .map(|option| option.label.clone())
                         .collect();
                     radio_group(choice, &labels)
                 },
