@@ -181,6 +181,10 @@ pub enum AppEvent {
     /// The recycle-bin store failed (open / record / list) — the Removed
     /// section may be stale or empty for the WRONG reason; loud + attributable.
     BinFailed(String),
+    /// Lexical recall over browsing memory could not answer — the lane going
+    /// quiet because the index broke must be visible, not read as "you never
+    /// visited anything about that".
+    RecallFailed(String),
     /// A pane's composed list section was added or removed (the
     /// gloss-composite's add/remove), by provider id.
     PaneSectionToggled {
@@ -264,6 +268,7 @@ impl AppEvent {
             AppEvent::NodeRemoved(url) => format!("node-removed {url}"),
             AppEvent::NodeRecovered(url) => format!("node-recovered {url}"),
             AppEvent::BinFailed(error) => format!("bin-failed {error}"),
+            AppEvent::RecallFailed(error) => format!("recall-failed {error}"),
             AppEvent::RecycleBinEmptied(n) => format!("recycle-bin-emptied {n}"),
             AppEvent::PaneSectionToggled { section, added } => {
                 let verb = if *added { "added" } else { "removed" };
@@ -572,6 +577,7 @@ pub fn suggestion_line(s: &Suggestion) -> String {
         }
         Suggestion::Node { label, .. } => label.clone(),
         Suggestion::Go { url } => format!("go {url}"),
+        Suggestion::Recall { url, .. } => format!("recall {url}"),
         Suggestion::Act { label, .. } => format!("\u{203a} {label}"),
         Suggestion::Hint(h) => h.to_string(),
     }

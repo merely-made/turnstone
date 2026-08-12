@@ -2170,6 +2170,185 @@ fn omnibar_transcript_freezes_its_open_context_and_repeats_it() {
     );
 }
 
+/// The recall lane's ask: typing a needle lowers one RecallQuery, and the
+/// answer becomes rows below the go row (search wiring W2).
+#[test]
+fn typing_asks_for_recall_and_the_answer_becomes_rows() {
+    let mut app = App::test_stub();
+    app.update(Action::OmnibarOpen { command: false });
+    app.update(Action::OmnibarChar('r'));
+    let effects = app.update(Action::OmnibarChar('s'));
+
+    let asked: Vec<&String> = effects
+        .iter()
+        .filter_map(|e| match e {
+            Effect::RecallQuery { query } => Some(query),
+            _ => None,
+        })
+        .collect();
+    assert_eq!(asked, vec!["rs"], "one ask, carrying the current needle");
+
+    app.apply_update(Update::RecallHits {
+        query: "rs".to_string(),
+        hits: vec![crate::action::RecallHit {
+            url: "https://rust-lang.org/".to_string(),
+            title: Some("Rust".to_string()),
+            at_ms: 42,
+        }],
+    });
+    let rows = &app.omnibar.suggestions;
+    assert!(
+        rows.iter().any(|s| matches!(
+            s,
+            crate::ui::Suggestion::Recall { url, .. } if url == "https://rust-lang.org/"
+        )),
+        "the recalled page is offered: {rows:?}"
+    );
+}
+
+/// Recall never displaces what the line already commits to: with an
+/// address-shaped needle, the go row keeps the first-committed position and
+/// the recalled pages sit under it.
+#[test]
+fn recall_never_outranks_the_typed_address() {
+    let mut app = App::test_stub();
+    app.update(Action::OmnibarOpen { command: false });
+    for c in "rust-lang.org".chars() {
+        app.update(Action::OmnibarChar(c));
+    }
+    app.apply_update(Update::RecallHits {
+        query: "rust-lang.org".to_string(),
+        hits: vec![crate::action::RecallHit {
+            url: "https://docs.rs/".to_string(),
+            title: None,
+            at_ms: 42,
+        }],
+    });
+
+    let rows = &app.omnibar.suggestions;
+    let go = rows
+        .iter()
+        .position(|s| matches!(s, crate::ui::Suggestion::Go { .. }))
+        .expect("an address-shaped needle offers its go row");
+    let recalled = rows
+        .iter()
+        .position(|s| matches!(s, crate::ui::Suggestion::Recall { .. }))
+        .expect("and the recalled page is offered too");
+    assert!(go < recalled, "the typed address commits first: {rows:?}");
+}
+
+/// A late answer to text the user has typed past is dropped: the lane can
+/// never show hits for a needle that is no longer in the line.
+#[test]
+fn superseded_recall_answers_drop() {
+    let mut app = App::test_stub();
+    app.update(Action::OmnibarOpen { command: false });
+    app.update(Action::OmnibarChar('r'));
+    app.update(Action::OmnibarChar('s'));
+    app.update(Action::OmnibarChar('t'));
+
+    app.apply_update(Update::RecallHits {
+        query: "rs".to_string(),
+        hits: vec![crate::action::RecallHit {
+            url: "https://stale.example/".to_string(),
+            title: None,
+            at_ms: 1,
+        }],
+    });
+    assert!(
+        !app.omnibar
+            .suggestions
+            .iter()
+            .any(|s| matches!(s, crate::ui::Suggestion::Recall { .. })),
+        "the answer to 'rs' is not shown against 'rst'"
+    );
+}
+
+/// The lane's footing inside the configured row budget: a graph full of
+/// matches displaces its least-recent node rows rather than swallowing every
+/// recalled page, and the total still honors the setting.
+#[test]
+fn recall_keeps_a_footing_inside_the_row_budget() {
+    let mut state = crate::ui::OmnibarState {
+        open: true,
+        text: "node".to_string(),
+        ..crate::ui::OmnibarState::default()
+    };
+    let mut canvas = mere::canvas::Canvas::new();
+    for i in 0..6 {
+        canvas.visit(&format!("https://node{i}.example/"));
+    }
+    let recall: Vec<crate::action::RecallHit> = (0..5)
+        .map(|i| crate::action::RecallHit {
+            url: format!("https://recalled{i}.example/"),
+            title: None,
+            at_ms: i,
+        })
+        .collect();
+
+    crate::ui::recompute_suggestions_with_limit(&mut state, &canvas, &[], &recall, 7);
+
+    assert!(state.suggestions.len() <= 7, "the configured budget holds");
+    let recalled = state
+        .suggestions
+        .iter()
+        .filter(|s| matches!(s, crate::ui::Suggestion::Recall { .. }))
+        .count();
+    assert!(
+        recalled > 0,
+        "a full find lane does not swallow recall: {:?}",
+        state.suggestions
+    );
+    assert!(
+        state
+            .suggestions
+            .iter()
+            .any(|s| matches!(s, crate::ui::Suggestion::Node { .. })),
+        "and node matches keep the larger share"
+    );
+}
+
+/// The `>` actions lane searches intents, not pages: it asks for no recall,
+/// and a needle narrowed below the floor drops the cached hits.
+#[test]
+fn the_actions_lane_and_short_needles_never_recall() {
+    let mut app = App::test_stub();
+    app.update(Action::OmnibarOpen { command: true });
+    let effects = app.update(Action::OmnibarChar('f'));
+    assert!(
+        !effects
+            .iter()
+            .any(|e| matches!(e, Effect::RecallQuery { .. })),
+        "the > lane asks for no page recall"
+    );
+
+    app.update(Action::OmnibarClose);
+    app.update(Action::OmnibarOpen { command: false });
+    app.update(Action::OmnibarChar('a'));
+    app.update(Action::OmnibarChar('b'));
+    app.apply_update(Update::RecallHits {
+        query: "ab".to_string(),
+        hits: vec![crate::action::RecallHit {
+            url: "https://ab.example/".to_string(),
+            title: None,
+            at_ms: 1,
+        }],
+    });
+    assert!(!app.recall.is_empty(), "hits cached for the two-char needle");
+    app.update(Action::OmnibarBackspace);
+    assert!(
+        app.recall.is_empty(),
+        "narrowing below the floor drops the pages the line is no longer about"
+    );
+    assert!(
+        !app.omnibar
+            .suggestions
+            .iter()
+            .any(|s| matches!(s, crate::ui::Suggestion::Recall { .. })),
+        "and the rows go with them in the same keystroke, not the next one"
+    );
+}
+
 #[test]
 fn configured_row_limit_applies_to_the_live_omnibar_projection() {
     let mut app = App::test_stub();

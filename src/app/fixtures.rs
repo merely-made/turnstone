@@ -49,6 +49,8 @@ impl App {
             lens_blueprints: Vec::new(),
             roster_tab: 0,
             removed: Vec::new(),
+            recall: Vec::new(),
+            recall_query: String::new(),
             trash: Vec::new(),
             pending_install: None,
             denizens: crate::denizen::Denizens::new(root),

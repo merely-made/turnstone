@@ -16,6 +16,10 @@ use crate::session;
 
 use super::Shell;
 
+/// How many recalled pages the omnibar asks for. The lane sits below the
+/// node and go rows, so a handful is what there is room to read.
+const RECALL_ROW_LIMIT: usize = 5;
+
 impl Shell {
     /// Hand the app's drained semantic events to their consumers. Navigation
     /// events become trail-memory records for the root persona (owner = the
@@ -124,6 +128,15 @@ impl Shell {
                 }
                 Effect::EmptyRecycleBin => {
                     self.bin_handle.command(crate::recycle::BinCommand::Empty);
+                }
+                // The recall lane: the trail actor answers with hits carrying
+                // the query back, and the app drops superseded answers.
+                Effect::RecallQuery { query } => {
+                    self.trail_handle
+                        .command(crate::trail_memory::TrailCommand::Recall {
+                            query,
+                            limit: RECALL_ROW_LIMIT,
+                        });
                 }
                 // The session switch (rung 6's second half). Ordering is the
                 // point of this being an EFFECT: the departing session saves

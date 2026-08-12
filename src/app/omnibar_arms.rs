@@ -11,6 +11,10 @@ use crate::ui::{OmnibarMode, OmnibarState, Suggestion, recompute_suggestions_wit
 
 use super::App;
 
+/// Shortest needle the recall lane answers. One character matches most of a
+/// trail, which is noise rather than recall.
+const MIN_RECALL_CHARS: usize = 2;
+
 impl App {
     pub(super) fn recompute_omnibar_suggestions(&mut self) {
         let actions = self.available_actions();
@@ -19,8 +23,45 @@ impl App {
             &mut self.omnibar,
             &self.graph_runtimes,
             &actions,
+            &self.recall,
             row_limit,
         );
+    }
+
+    /// Recompute the rows and ask the trail port for recall when the needle
+    /// changed. Cached hits keep showing until the answer lands, so the lane
+    /// does not flicker empty between keystrokes.
+    pub(super) fn refresh_omnibar(&mut self) -> Vec<Effect> {
+        // Resolve the needle FIRST: a line narrowed below the floor drops its
+        // cached hits there, and the rows must be recomputed after that drop
+        // or the lane keeps offering pages for text that is gone.
+        let asked = self.pending_recall_query();
+        self.recompute_omnibar_suggestions();
+        match asked {
+            Some(query) => vec![Effect::Redraw, Effect::RecallQuery { query }],
+            None => vec![Effect::Redraw],
+        }
+    }
+
+    /// The needle recall should answer, when it differs from the last one
+    /// asked. The `>` lane never recalls (it searches intents, not pages),
+    /// and a needle under two characters matches too much to be an answer.
+    fn pending_recall_query(&mut self) -> Option<String> {
+        let text = self.omnibar.text.trim().to_string();
+        let eligible =
+            self.omnibar.open && !text.starts_with('>') && text.chars().count() >= MIN_RECALL_CHARS;
+        if !eligible {
+            // A line narrowed back to nothing stops offering pages it is no
+            // longer about.
+            self.recall.clear();
+            self.recall_query.clear();
+            return None;
+        }
+        if text == self.recall_query {
+            return None;
+        }
+        self.recall_query = text.clone();
+        Some(text)
     }
 
     pub(super) fn open_omnibar(&mut self, command: bool) -> Vec<Effect> {
@@ -44,6 +85,10 @@ impl App {
 
     pub(super) fn close_omnibar(&mut self) -> Vec<Effect> {
         self.omnibar = OmnibarState::default();
+        // Drop the recall cache with the line it answered; a reopened omnibar
+        // must not flash the last search's pages before its own answer lands.
+        self.recall.clear();
+        self.recall_query.clear();
         self.shell.close_omnibar();
         // Chrome relinquishes focus back to the canvas. Content focus
         // is slice B (content takes input); slice A only distinguishes
@@ -58,21 +103,19 @@ impl App {
     pub(super) fn omnibar_char(&mut self, c: char) -> Vec<Effect> {
         self.omnibar.insert_str(c.encode_utf8(&mut [0u8; 4]));
         self.omnibar.selected = 0;
-        self.recompute_omnibar_suggestions();
-        vec![Effect::Redraw]
+        self.refresh_omnibar()
     }
 
     pub(super) fn omnibar_insert(&mut self, s: String) -> Vec<Effect> {
         self.omnibar.insert_str(&s);
         self.omnibar.selected = 0;
-        self.recompute_omnibar_suggestions();
-        vec![Effect::Redraw]
+        self.refresh_omnibar()
     }
 
     pub(super) fn omnibar_backspace(&mut self) -> Vec<Effect> {
         if self.omnibar.backspace() {
             self.omnibar.selected = 0;
-            self.recompute_omnibar_suggestions();
+            return self.refresh_omnibar();
         }
         vec![Effect::Redraw]
     }
@@ -80,7 +123,7 @@ impl App {
     pub(super) fn omnibar_delete(&mut self) -> Vec<Effect> {
         if self.omnibar.delete_forward() {
             self.omnibar.selected = 0;
-            self.recompute_omnibar_suggestions();
+            return self.refresh_omnibar();
         }
         vec![Effect::Redraw]
     }

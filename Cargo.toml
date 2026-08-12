@@ -107,6 +107,10 @@ armillary = { git = "https://github.com/merely-made/mere.git", branch = "main" }
 # (serial disk IO wants no runtime).
 eidetic = { package = "mere-eidetic", git = "https://github.com/merely-made/mere.git", branch = "main" }
 eidetic-fjall = { package = "mere-eidetic-fjall", git = "https://github.com/merely-made/mere.git", branch = "main" }
+# The omnibar's recall lane (mere's search surface wiring plan, W2): BM25 over
+# the BrowsingTrace corpus the trail actor captures. Derived state — the index
+# is re-minted from the corpus, never repaired.
+eidetic-search = { package = "mere-eidetic-search", git = "https://github.com/merely-made/mere.git", branch = "main" }
 pollster = "0.4"
 # The per-user data root (`<data_dir>/turnstone`), TURNSTONE_ROOT-overridable for
 # scratch profiles (the meerkat MERE_ROOT convention).

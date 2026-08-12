@@ -454,6 +454,10 @@ pub enum Effect {
     /// Permanently forget every staged node — the bin actor clears its store
     /// and answers with the empty list ("empty the recycle bin").
     EmptyRecycleBin,
+    /// Ask the trail port for lexical recall over this session's browsing
+    /// memory (the omnibar's recall lane). Answered by `Update::RecallHits`
+    /// carrying the query back, so a late answer to superseded text drops.
+    RecallQuery { query: String },
     /// Close a session (overmap O3): the shell releases the bin store (its
     /// open files block the rename on Windows), moves the closing session's
     /// whole directory to the manifest trash via `App::apply_trash`, and
@@ -503,6 +507,17 @@ pub enum Update {
     /// The bin store failed (open / record / list) — loud and attributable,
     /// never an empty list masquerading as "nothing deleted".
     BinFailed { error: String },
+    /// Lexical recall over browsing memory answered. `query` is the text the
+    /// hits answer; the app drops an answer whose query is no longer what the
+    /// omnibar holds (the keystroke that superseded it wins).
+    RecallHits {
+        query: String,
+        hits: Vec<RecallHit>,
+    },
+    /// Recall could not answer (no index yet, a re-mint failure, a broken
+    /// store). Loud: a recall lane that silently shows nothing is
+    /// indistinguishable from a trail with nothing in it.
+    RecallFailed { error: String },
     /// One retained-place open completed. The app accepts it only while both
     /// the session and generation still match its active opening.
     PlaceOpened {
@@ -558,6 +573,17 @@ pub struct FetchedPage {
     pub content_type: Option<String>,
     /// The decoded body text.
     pub body: String,
+}
+
+/// One lexical-recall hit from browsing memory, in app-owned terms (the trail
+/// port converts eidetic-search's `Hit` at the boundary, like the bin does
+/// with `DeletedNode`).
+#[derive(Clone, Debug, PartialEq)]
+pub struct RecallHit {
+    pub url: String,
+    pub title: Option<String>,
+    /// When the traversal this hit indexes happened, unix milliseconds.
+    pub at_ms: u64,
 }
 
 /// A staged (deleted) node's record in the recycle bin, in app-owned terms

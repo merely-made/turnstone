@@ -346,6 +346,31 @@ impl App {
                     fx
                 };
             }
+            Some(Suggestion::Recall { url, .. }) => {
+                // The recall lane: a page out of browsing memory opens
+                // exactly as a typed address does. Its transcript intent is
+                // Navigate for the same reason — where the row came from is
+                // provenance, and the act is still opening an address.
+                let target = self.fallback_shell_context();
+                let entry = self.shell.record_omnibar(
+                    ShellInput::Omnibar(self.omnibar.text.clone()),
+                    ShellIntent::Navigate { url: url.clone() },
+                    target,
+                    EntryPrivacy::Ordinary,
+                );
+                self.omnibar = OmnibarState::default();
+                return {
+                    let mut fx = self.update(Action::OpenAddress(url));
+                    self.shell.complete(
+                        entry,
+                        ShellOutcome::Completed {
+                            summary: "opened a recalled address".into(),
+                        },
+                    );
+                    fx.push(Effect::Redraw);
+                    fx
+                };
+            }
             Some(Suggestion::Act { label, action }) => {
                 // The actions lane: the committed registry entry is
                 // an ordinary Action; lower it through the same

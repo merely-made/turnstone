@@ -104,6 +104,11 @@ impl ApplicationHandler for Shell {
             let effects = self.app.apply_update(update);
             self.run_effects(effects);
         }
+        while let Ok(update) = self.trail_rx.try_recv() {
+            // Recall answers (RecallHits / RecallFailed), already app-owned.
+            let effects = self.app.apply_update(update);
+            self.run_effects(effects);
+        }
         while let Ok(update) = self.place_rx.try_recv() {
             let effects = self.app.apply_update(update);
             self.run_effects(effects);

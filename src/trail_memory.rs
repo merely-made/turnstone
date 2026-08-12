@@ -12,8 +12,15 @@
 //!
 //! Failures warn and drop the event rather than wedging navigation: capture
 //! is an observer of browsing, never a gate on it — which is also why it
-//! rides the observation drain instead of lowering an Effect. The store the
-//! recall lane (W2) re-mints its `TrailIndex` from is exactly this one.
+//! rides the observation drain instead of lowering an Effect.
+//!
+//! The same actor answers **recall** (W2): the omnibar lowers
+//! `Effect::RecallQuery`, and [`TrailCommand::Recall`] mints a `TrailIndex`
+//! from the stored corpus (flushing first, so this minute's pages are
+//! findable) and answers `Update::RecallHits`. The index is derived state
+//! held here, never repaired — a corpus that moved re-mints. eidetic's
+//! concrete types stop at this boundary: the app sees `RecallHit`s, the same
+//! rule the bin port follows with `DeletedNode`.
 
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
@@ -21,12 +28,11 @@ use std::sync::mpsc::Receiver;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use armillary::{ActorHandle, Emitter, Wake, spawn_named};
-use eidetic::{
-    BrowsingMemory, PageRef, TraceEvent, TraceTransition, bootstrap_browsing_schema,
-};
+use eidetic::{BrowsingMemory, PageRef, TraceEvent, TraceTransition, bootstrap_browsing_schema};
 use eidetic_fjall::FjallStore;
+use eidetic_search::TrailIndex;
 
-use crate::action::Update;
+use crate::action::{RecallHit, Update};
 
 /// Traversals per stored trace segment. Segments are the flush granularity:
 /// small enough that a crash loses minutes, large enough that a stored trace
@@ -46,6 +52,10 @@ pub enum TrailCommand {
     },
     /// Flush every open segment to the store (a lifecycle edge).
     Flush,
+    /// Answer lexical recall over the stored corpus (the omnibar's recall
+    /// lane). The query rides back on the answer so the app can drop a reply
+    /// to text it has already typed past.
+    Recall { query: String, limit: usize },
     /// Flush, re-point the store at another session's memory dir (a session
     /// switch), and restart origin chaining.
     Reopen(PathBuf),
@@ -58,6 +68,14 @@ pub enum TrailCommand {
 /// One session's trail-memory directory (under its `sessions/<id>/` dir).
 pub fn memory_dir(session_dir: &Path) -> PathBuf {
     session_dir.join("memory")
+}
+
+/// The lexical index beside a memory store, on eidetic-recall's `<db>.index`
+/// convention. Derived state: it is re-minted from the corpus, never repaired.
+fn index_dir(memory: &Path) -> PathBuf {
+    let mut dir = memory.as_os_str().to_os_string();
+    dir.push(".index");
+    PathBuf::from(dir)
 }
 
 /// Map a drained [`AppEvent`](crate::observe::AppEvent) onto a traversal,
@@ -118,6 +136,43 @@ fn flush(store: &mut FjallStore, memory: &mut BrowsingMemory) {
     }
 }
 
+/// Answer one recall. The corpus is the authority and the index is derived,
+/// so a stale index is re-minted rather than queried: flush what is buffered
+/// (otherwise the pages visited this minute would be unrecallable), rebuild
+/// from every stored trace, then search. A failure is reported, never
+/// silently answered as "no hits" — an empty lane must mean an empty trail.
+fn recall(
+    store: &mut FjallStore,
+    memory: &mut BrowsingMemory,
+    index: &mut Option<TrailIndex>,
+    stale: &mut bool,
+    dir: &Path,
+    query: &str,
+    limit: usize,
+) -> Result<Vec<RecallHit>, String> {
+    if *stale || index.is_none() {
+        flush(store, memory);
+        let minted = TrailIndex::rebuild(index_dir(dir), memory.traces())
+            .map_err(|err| format!("re-mint: {err}"))?;
+        *index = Some(minted);
+        *stale = false;
+    }
+    let Some(index) = index.as_ref() else {
+        return Err("no index".to_string());
+    };
+    let hits = index
+        .search(query, limit)
+        .map_err(|err| format!("search: {err}"))?;
+    Ok(hits
+        .into_iter()
+        .map(|hit| RecallHit {
+            url: hit.url,
+            title: hit.title,
+            at_ms: hit.at_ms,
+        })
+        .collect())
+}
+
 /// Spawn the trail-memory actor over the session memory at `dir`, waking the
 /// event loop on store activity like the bin does. W1 emits no updates:
 /// failures warn and capture continues; the recall pane (W2) is the first
@@ -126,8 +181,14 @@ pub fn spawn_trail(wake: Wake, dir: PathBuf) -> (ActorHandle<TrailCommand>, Rece
     spawn_named(
         "trail-memory",
         wake,
-        move |commands, _out: Emitter<Update>| {
+        move |commands, out: Emitter<Update>| {
             let mut state = open_memory(&dir);
+            let mut current_dir = dir.clone();
+            // The derived lexical index and whether the corpus has moved
+            // since it was minted. Built on the first recall, not at spawn:
+            // a session that never searches never pays for one.
+            let mut index: Option<TrailIndex> = None;
+            let mut index_stale = true;
             // Per-owner origin chain: the last destination becomes the next
             // event's `from`.
             let mut last_to: HashMap<String, PageRef> = HashMap::new();
@@ -151,8 +212,29 @@ pub fn spawn_trail(wake: Wake, dir: PathBuf) -> (ActorHandle<TrailCommand>, Rece
                             dwell_ms: None,
                             candidates: Vec::new(),
                         };
+                        index_stale = true;
                         if memory.record_traversal(&owner, event) {
                             flush(store, memory);
+                        }
+                    }
+                    TrailCommand::Recall { query, limit } => {
+                        let Some((store, memory)) = state.as_mut() else {
+                            out.emit(Update::RecallFailed {
+                                error: "the trail store is not open".to_string(),
+                            });
+                            continue;
+                        };
+                        match recall(
+                            store,
+                            memory,
+                            &mut index,
+                            &mut index_stale,
+                            &current_dir,
+                            &query,
+                            limit,
+                        ) {
+                            Ok(hits) => out.emit(Update::RecallHits { query, hits }),
+                            Err(error) => out.emit(Update::RecallFailed { error }),
                         }
                     }
                     TrailCommand::Flush => {
@@ -165,13 +247,20 @@ pub fn spawn_trail(wake: Wake, dir: PathBuf) -> (ActorHandle<TrailCommand>, Rece
                             flush(store, memory);
                         }
                         last_to.clear();
+                        // The index belongs to the departing session's corpus;
+                        // the adopted one mints its own on first recall.
+                        index = None;
+                        index_stale = true;
                         state = open_memory(&dir);
+                        current_dir = dir;
                     }
                     TrailCommand::Release(ack) => {
                         if let Some((store, memory)) = state.as_mut() {
                             flush(store, memory);
                         }
                         state = None;
+                        index = None;
+                        index_stale = true;
                         last_to.clear();
                         let _ = ack.send(());
                     }

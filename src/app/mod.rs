@@ -156,6 +156,14 @@ pub struct App {
     /// the shell's actor. Feeds the Trail's Removed section (records whose
     /// node is absent from the graph); recovery restores the ORIGINAL id.
     pub removed: Vec<crate::action::RemovedRecord>,
+    /// The omnibar recall lane's current hits, MIRRORED from the trail port
+    /// (lexical recall over `sessions/<id>/memory`). Data only, like
+    /// `removed`: the index handle lives in the shell's actor.
+    pub recall: Vec<crate::action::RecallHit>,
+    /// The needle those hits were last ASKED for (not the one they answer):
+    /// a late answer whose query no longer matches is dropped, so the lane
+    /// can never show hits for text the user has already typed past.
+    pub recall_query: String,
     /// A staged denizen install awaiting its visible grant review (B1).
     pub pending_install: Option<crate::denizen::PendingInstall>,
     /// The session's denizen runtime: residents, derived authority, the gate.

@@ -46,6 +46,14 @@ pub enum Suggestion {
         label: String,
         action: crate::action::Action,
     },
+    /// A page this persona visited before, recalled from browsing memory and
+    /// no longer in the graph. Committing opens it (mint-or-select + fetch),
+    /// the same lowering as `Go` — the difference is provenance, not effect.
+    Recall {
+        url: String,
+        title: Option<String>,
+        at_ms: u64,
+    },
     /// A muted hint row (empty states).
     Hint(&'static str),
 }
@@ -144,7 +152,7 @@ pub fn recompute_suggestions(
     canvas: &Canvas,
     actions: &[(String, crate::action::Action)],
 ) {
-    recompute_suggestions_with_limit(state, canvas, actions, MAX_NODE_MATCHES + 1);
+    recompute_suggestions_with_limit(state, canvas, actions, &[], MAX_NODE_MATCHES + 1);
 }
 
 /// Recompute suggestions while respecting the shell's configured visible-row
@@ -154,6 +162,7 @@ pub fn recompute_suggestions_with_limit(
     state: &mut OmnibarState,
     canvas: &Canvas,
     actions: &[(String, crate::action::Action)],
+    recall: &[crate::action::RecallHit],
     row_limit: usize,
 ) {
     state.suggestions.clear();
@@ -238,6 +247,47 @@ pub fn recompute_suggestions_with_limit(
     // Go: address-shaped input opens (mint-or-select + fetch).
     if let Some(url) = normalize_address(text) {
         state.suggestions.push(Suggestion::Go { url });
+    }
+
+    // Recall: pages this persona visited before, from browsing memory. They
+    // land AFTER the go row deliberately — a full address typed into the line
+    // must keep committing to itself on Enter, whatever the trail remembers.
+    // A page still in the graph already showed as a Node row above, so the
+    // lane skips it rather than saying the same page twice.
+    let shown: Vec<String> = state
+        .suggestions
+        .iter()
+        .filter_map(|s| match s {
+            Suggestion::Node { url, .. } | Suggestion::Go { url } => Some(url.clone()),
+            _ => None,
+        })
+        .collect();
+    let recall_rows: Vec<Suggestion> = recall
+        .iter()
+        .filter(|hit| !shown.contains(&hit.url))
+        .map(|hit| Suggestion::Recall {
+            url: hit.url.clone(),
+            title: hit.title.clone(),
+            at_ms: hit.at_ms,
+        })
+        .collect();
+    if !recall_rows.is_empty() {
+        // The lane needs a footing inside the configured budget, which is
+        // sized for six node matches plus the go row — without one, a busy
+        // graph would silently swallow every recalled page. So recall is
+        // guaranteed a small share by displacing the LEAST-RECENT node
+        // matches, never by growing the list past the row limit the setting
+        // asked for. The go row is never displaced: it is what Enter commits.
+        let go_row = matches!(state.suggestions.last(), Some(Suggestion::Go { .. }))
+            .then(|| state.suggestions.pop())
+            .flatten();
+        let footing = recall_rows.len().min((row_limit / 3).max(1));
+        let node_budget = row_limit
+            .saturating_sub(footing + usize::from(go_row.is_some()))
+            .max(1);
+        state.suggestions.truncate(node_budget);
+        state.suggestions.extend(go_row);
+        state.suggestions.extend(recall_rows);
     }
 
     if state.suggestions.is_empty() {

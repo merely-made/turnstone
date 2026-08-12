@@ -52,6 +52,21 @@ impl App {
                 self.events.push(AppEvent::BinFailed(error));
                 vec![Effect::Redraw]
             }
+            Update::RecallHits { query, hits } => {
+                // Superseded answers drop: the omnibar has moved on, and the
+                // lane must never show hits for text that is no longer there.
+                if query != self.recall_query {
+                    return Vec::new();
+                }
+                self.recall = hits;
+                self.recompute_omnibar_suggestions();
+                vec![Effect::Redraw]
+            }
+            Update::RecallFailed { error } => {
+                tracing::warn!(%error, "browsing recall failed");
+                self.events.push(AppEvent::RecallFailed(error));
+                vec![Effect::Redraw]
+            }
             Update::PlaceLanesAdvanced {
                 session,
                 generation,
