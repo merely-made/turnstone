@@ -97,39 +97,89 @@ impl Shell {
             return Vec::new();
         };
         let area = Rect::full(w.max(1), h.max(1));
-        let tiling = crate::pane::place_panes(space, area, None);
-        let mut base: Vec<(SurfaceKind, Rect)> = tiling
-            .panes
+        let (pane_rects, divider_rects, float_rects): (
+            Vec<(crate::panes::PaneId, Rect)>,
+            Vec<(u32, Rect)>,
+            Vec<(crate::panes::PaneId, Rect)>,
+        ) = match self
+            .app
+            .blueprint_space(crate::action::SpaceRef::Lens(ordinal))
+        {
+            Some(blueprint) => {
+                let placements = crate::panes::place_space(blueprint, area, None);
+                (
+                    placements
+                        .panes
+                        .into_iter()
+                        .map(|pane| (pane.id, pane.rect))
+                        .collect(),
+                    placements
+                        .dividers
+                        .into_iter()
+                        .map(|divider| (divider.index, divider.rect))
+                        .collect(),
+                    placements
+                        .floats
+                        .into_iter()
+                        .map(|pane| (pane.id, pane.rect))
+                        .collect(),
+                )
+            }
+            None => {
+                let placements = crate::pane::place_panes(space, area, None);
+                (
+                    placements
+                        .panes
+                        .into_iter()
+                        .map(|pane| (pane.id, pane.rect))
+                        .collect(),
+                    placements
+                        .dividers
+                        .into_iter()
+                        .map(|divider| (divider.index, divider.rect))
+                        .collect(),
+                    Vec::new(),
+                )
+            }
+        };
+        let mut base: Vec<(SurfaceKind, Rect)> = pane_rects
             .iter()
-            .map(|p| {
-                if matches!(p.content, PaneContent::Orrery) {
-                    (SurfaceKind::Graph(p.id), p.rect)
-                } else if let PaneContent::Tile(m) = p.content
+            .filter_map(|(id, rect)| {
+                self.lens_pane_content(ordinal, *id)
+                    .map(|content| (id, rect, content))
+            })
+            .map(|(id, rect, content)| {
+                if matches!(content, PaneContent::Orrery) {
+                    (SurfaceKind::Graph(*id), *rect)
+                } else if let PaneContent::Tile(m) = content
                     && self.content_sessions.contains_key(&m)
                 {
                     // A torn-out tile: the pinned pane composites its live
                     // session as this window's content surface.
-                    (SurfaceKind::Content(m), p.rect)
+                    (SurfaceKind::Content(m), *rect)
                 } else {
-                    (SurfaceKind::Pane(p.id), p.rect)
+                    (SurfaceKind::Pane(*id), *rect)
                 }
             })
             .collect();
         base.extend(
-            tiling
-                .dividers
+            divider_rects
                 .iter()
-                .map(|d| (SurfaceKind::Divider(d.index), d.rect)),
+                .map(|(index, rect)| (SurfaceKind::Divider(*index), *rect)),
         );
         // Workbench tiles in a LENS (rung-7 depth: content tiles follow the
         // pane): when the workbench pane tore out to this window, its cells'
         // live tiles compose as content surfaces at their body rects — the
         // same walk the primary plan does, at the lens pane's rect.
-        let workbench_pane = tiling
-            .panes
+        let workbench_pane = pane_rects
             .iter()
-            .find(|p| matches!(p.content, PaneContent::Workbench))
-            .map(|p| (p.id, p.rect));
+            .find(|(id, _)| {
+                matches!(
+                    self.lens_pane_content(ordinal, *id),
+                    Some(PaneContent::Workbench)
+                )
+            })
+            .map(|(id, rect)| (*id, *rect));
         let tiles: Vec<(uuid::Uuid, Rect)> = workbench_pane
             .map(|(pane, rect)| {
                 let geom = self
@@ -148,7 +198,23 @@ impl Shell {
                     .collect()
             })
             .unwrap_or_default();
-        crate::surface::assemble(&base, &tiles, None, None)
+        let mut surfaces = crate::surface::assemble(&base, &tiles, None, None);
+        surfaces.extend(float_rects.into_iter().filter_map(|(id, rect)| {
+            let content = self.lens_pane_content(ordinal, id)?;
+            let kind = match content {
+                PaneContent::Orrery => SurfaceKind::Graph(id),
+                PaneContent::Tile(member) if self.content_sessions.contains_key(&member) => {
+                    SurfaceKind::Content(member)
+                }
+                _ => SurfaceKind::Pane(id),
+            };
+            Some(crate::surface::Surface {
+                id: crate::surface::SurfaceId::for_kind(kind),
+                kind,
+                rect,
+            })
+        }));
+        surfaces
     }
 
     /// A pane's `PaneContent` in a LENS window's space.
@@ -335,6 +401,9 @@ impl Shell {
                 if let Some(space) = self.app.lenses.get_mut(ordinal) {
                     *space = None;
                 }
+                if let Some(blueprint) = self.app.lens_blueprints.get_mut(ordinal) {
+                    *blueprint = None;
+                }
                 for pane in closed_panes {
                     self.evict_pane_renderer(pane);
                 }
@@ -382,6 +451,7 @@ impl Shell {
                             // unique across spaces), so close/divider/summon-
                             // beside now aim at this lens's tree.
                             self.app.active_pane = Some(pid);
+                            self.app.raise_floating_pane(pid);
                             if let Some(content) = self.lens_pane_content(ordinal, pid) {
                                 let dims = plan
                                     .iter()
@@ -580,6 +650,7 @@ impl Shell {
                     }) {
                         redraw = match state {
                             ElementState::Pressed => {
+                                self.app.raise_floating_pane(pane);
                                 let handled = self
                                     .app
                                     .graph_pane_pointer_down(pane, button, local_x, local_y);

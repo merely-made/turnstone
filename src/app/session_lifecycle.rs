@@ -89,6 +89,8 @@ impl App {
             maximized: None,
             window_count: 1,
             lenses: Vec::new(),
+            primary_blueprint: None,
+            lens_blueprints: Vec::new(),
             roster_tab: 0,
             removed: Vec::new(),
             trash: Vec::new(),
@@ -621,6 +623,11 @@ impl App {
         // truth, not painted memory. The id ceiling spans EVERY space.
         self.frisket = session::load_frisket_layout(&sdir).unwrap_or_default();
         self.lenses = session::load_lens_spaces(&sdir);
+        // A5's live bridge is intentionally not written into the legacy
+        // frame sidecars. A session adopt therefore starts from those durable
+        // Frisket payloads and re-promotes a space only on its next float.
+        self.primary_blueprint = None;
+        self.lens_blueprints = vec![None; self.lenses.len()];
         let valid_graphs = self
             .sessions
             .iter()

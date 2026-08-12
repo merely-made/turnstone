@@ -436,45 +436,93 @@ impl Shell {
     /// top.
     fn surface_plan(&self) -> Vec<crate::surface::Surface> {
         let area = Rect::full(self.width.max(1), self.height.max(1));
-        let tiling = crate::pane::place_panes(&self.app.frisket, area, self.app.maximized);
+        // A5 promotes a space to its `SpaceBlueprint` only when it enters the
+        // float layer. Its placements then drive this exact compositor path;
+        // legacy Frisket still supplies the payload and retained renderer
+        // lookup during the A8 persistence migration.
+        let (pane_rects, divider_rects, float_rects): (
+            Vec<(crate::panes::PaneId, Rect)>,
+            Vec<(u32, Rect)>,
+            Vec<(crate::panes::PaneId, Rect)>,
+        ) = match self.app.blueprint_space(crate::action::SpaceRef::Primary) {
+            Some(blueprint) => {
+                let placements = crate::panes::place_space(blueprint, area, self.app.maximized);
+                (
+                    placements
+                        .panes
+                        .into_iter()
+                        .map(|pane| (pane.id, pane.rect))
+                        .collect(),
+                    placements
+                        .dividers
+                        .into_iter()
+                        .map(|divider| (divider.index, divider.rect))
+                        .collect(),
+                    placements
+                        .floats
+                        .into_iter()
+                        .map(|pane| (pane.id, pane.rect))
+                        .collect(),
+                )
+            }
+            None => {
+                let placements =
+                    crate::pane::place_panes(&self.app.frisket, area, self.app.maximized);
+                (
+                    placements
+                        .panes
+                        .into_iter()
+                        .map(|pane| (pane.id, pane.rect))
+                        .collect(),
+                    placements
+                        .dividers
+                        .into_iter()
+                        .map(|divider| (divider.index, divider.rect))
+                        .collect(),
+                    Vec::new(),
+                )
+            }
+        };
         let mut graph_rects = Vec::new();
-        let mut base: Vec<(SurfaceKind, Rect)> = tiling
-            .panes
+        let mut base: Vec<(SurfaceKind, Rect)> = pane_rects
             .iter()
-            .map(|p| {
-                if matches!(p.content, PaneContent::Orrery) {
-                    graph_rects.push((p.id, p.rect));
-                    (SurfaceKind::Graph(p.id), p.rect)
-                } else if let PaneContent::Tile(m) = p.content
+            .filter_map(|(id, rect)| {
+                self.app
+                    .pane_content(*id)
+                    .map(|content| (id, rect, content))
+            })
+            .map(|(id, rect, content)| {
+                if matches!(content, PaneContent::Orrery) {
+                    graph_rects.push((*id, *rect));
+                    (SurfaceKind::Graph(*id), *rect)
+                } else if let PaneContent::Tile(m) = content
                     && self.content_sessions.contains_key(&m)
                 {
                     // A pinned Tile pane with a live session IS a content
                     // surface at the pane's rect — same keyed path as an
                     // inset or workbench tile, so input routes for free.
-                    (SurfaceKind::Content(m), p.rect)
+                    (SurfaceKind::Content(*m), *rect)
                 } else {
-                    (SurfaceKind::Pane(p.id), p.rect)
+                    (SurfaceKind::Pane(*id), *rect)
                 }
             })
             .collect();
         // Each seam is its own thin surface, so it paints (an empty scene over
         // the seam clear colour) and takes the divider drag.
         base.extend(
-            tiling
-                .dividers
+            divider_rects
                 .iter()
-                .map(|d| (SurfaceKind::Divider(d.index), d.rect)),
+                .map(|(index, rect)| (SurfaceKind::Divider(*index), *rect)),
         );
         // Workbench tiles (rung 5 slice E): the Workbench pane's cells, walked
         // at the pane's WINDOW rect, compose each visible (active) tile with a
         // live session as its own content surface at the cell's body rect —
         // the same keyed path the focused inset uses, so tile input routing
         // (wheel, clicks, focus) arrives through the existing Content arms.
-        let workbench_panes: Vec<_> = tiling
-            .panes
+        let workbench_panes: Vec<_> = pane_rects
             .iter()
-            .filter(|p| matches!(p.content, PaneContent::Workbench))
-            .map(|p| (p.id, p.rect))
+            .filter(|(id, _)| matches!(self.app.pane_content(*id), Some(PaneContent::Workbench)))
+            .map(|(id, rect)| (*id, *rect))
             .collect();
         let tiles: Vec<(uuid::Uuid, Rect)> = workbench_panes
             .iter()
@@ -570,7 +618,30 @@ impl Shell {
         let chrome = (self.app.shell_chrome_config().projects_shellbar() && caption.is_some()
             || self.app.omnibar.open && self.app.shell_chrome_config().projects_omnibar())
         .then_some(area);
-        crate::surface::assemble(&base, &tiles, content, chrome)
+        let mut surfaces = crate::surface::assemble(&base, &tiles, content, None);
+        surfaces.extend(float_rects.into_iter().filter_map(|(id, rect)| {
+            let content = self.app.pane_content(id)?;
+            let kind = match content {
+                PaneContent::Orrery => SurfaceKind::Graph(id),
+                PaneContent::Tile(member) if self.content_sessions.contains_key(member) => {
+                    SurfaceKind::Content(*member)
+                }
+                _ => SurfaceKind::Pane(id),
+            };
+            Some(crate::surface::Surface {
+                id: crate::surface::SurfaceId::for_kind(kind),
+                kind,
+                rect,
+            })
+        }));
+        if let Some(rect) = chrome {
+            surfaces.push(crate::surface::Surface {
+                id: crate::surface::SurfaceId::CHROME,
+                kind: SurfaceKind::Chrome,
+                rect,
+            });
+        }
+        surfaces
     }
 
     /// A pane's `PaneContent`, looked up from the frisket tree by id.

@@ -45,6 +45,9 @@ pub struct Snapshot {
     pub panes: Vec<String>,
     /// The active pane's tag, or `None` when the canvas (Orrery) is active.
     pub active_pane: Option<String>,
+    /// Visible A5 floating stations in the primary window, as pane tags in
+    /// bottom-to-top order. Empty until a space enters the float layer.
+    pub floating_panes: Vec<String>,
     /// Whether a pane is maximized.
     pub maximized: bool,
     /// When a Trail pane is in the tree, its row texts (rung 5 slice D), so a
@@ -84,6 +87,8 @@ pub struct Snapshot {
     /// Each live lens window's panes, as "ordinal:tag" strings (rung 7 depth:
     /// windows are pane hosts). Empty when no lens is open.
     pub lens_panes: Vec<String>,
+    /// Visible floating stations in lens windows, as "ordinal:tag" strings.
+    pub lens_floating_panes: Vec<String>,
     /// The ACTIVE pane's parent-split ratio, in whichever space (primary or
     /// lens) holds the pane — the honest readback of the divider op, wherever
     /// it lands. `None` with no active pane or an unsplit tree.
@@ -138,6 +143,12 @@ pub enum AppEvent {
     WindowClosed,
     /// The active pane tore out into a lens window (the leaf arm), by tag.
     PaneTornOut(String),
+    /// A pane moved from a tiled station into its space's floating layer.
+    PaneFloated(String),
+    /// A floating pane rejoined its space's tiled topology.
+    PaneDocked(String),
+    /// A floating pane returned from a lens to the primary window.
+    PaneReturned(String),
     /// A workbench tile tore out into a lens window as a pinned Tile pane
     /// (the branch arm), by the node's url.
     TileTornOut(String),
@@ -235,6 +246,9 @@ impl AppEvent {
             AppEvent::WindowOpened => "window-opened".to_string(),
             AppEvent::WindowClosed => "window-closed".to_string(),
             AppEvent::PaneTornOut(tag) => format!("pane-torn-out {tag}"),
+            AppEvent::PaneFloated(tag) => format!("pane-floated {tag}"),
+            AppEvent::PaneDocked(tag) => format!("pane-docked {tag}"),
+            AppEvent::PaneReturned(tag) => format!("pane-returned {tag}"),
             AppEvent::TileTornOut(url) => format!("tile-torn-out {url}"),
             AppEvent::PlaceRefused(reason) => format!("place-refused {reason}"),
             AppEvent::SessionSwitched(label) => format!("session-switched {label}"),
@@ -413,6 +427,13 @@ pub fn snapshot(app: &App) -> Snapshot {
                 .find(|(pid, _, _)| *pid == id)
                 .map(|(_, content, _)| content.tag().to_string())
         }),
+        floating_panes: app
+            .blueprint_space(crate::action::SpaceRef::Primary)
+            .into_iter()
+            .flat_map(|space| space.visible_floating_panes(true))
+            .filter_map(|floating| app.pane_content(floating.pane).map(|content| content.tag()))
+            .map(str::to_string)
+            .collect(),
         maximized: app.maximized.is_some(),
         trail_rows: app
             .frisket
@@ -470,6 +491,22 @@ pub fn snapshot(app: &App) -> Snapshot {
                 space
                     .iter_leaves()
                     .map(move |(_, content, _)| format!("{ordinal}:{}", content.tag()))
+                    .collect::<Vec<_>>()
+            })
+            .collect(),
+        lens_floating_panes: app
+            .lens_blueprints
+            .iter()
+            .enumerate()
+            .filter_map(|(ordinal, space)| space.as_ref().map(|space| (ordinal, space)))
+            .flat_map(|(ordinal, space)| {
+                space
+                    .visible_floating_panes(true)
+                    .into_iter()
+                    .filter_map(move |floating| {
+                        app.pane_content(floating.pane)
+                            .map(|content| format!("{ordinal}:{}", content.tag()))
+                    })
                     .collect::<Vec<_>>()
             })
             .collect(),

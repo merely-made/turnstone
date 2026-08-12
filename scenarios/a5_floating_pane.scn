@@ -1,0 +1,75 @@
+# A5 headed receipt. The live shell starts from its Frisket payload, promotes
+# the primary space at the first float, and then projects the same PaneId
+# through the primary compositor and a lens window. Float station geometry is
+# intentionally transient until A8 replaces the legacy frame sidecar.
+settle 30
+key escape
+
+open mere://a5-floating-proof
+settle 5
+act Open Roster pane
+act Open Gloss pane
+settle 5
+assert pane roster
+assert pane gloss
+
+# Gloss leaves a nested tiled tree for the float layer. The capture is the
+# pixel half; the snapshot and event are the app-truth half.
+act Float pane
+settle 5
+assert event pane-floated gloss
+assert snap floats ~ gloss
+capture 01_gloss_float
+
+# Float Roster into the other default station, then click Gloss itself. The
+# click raises Gloss through the same hit-test/z-order path the desktop uses.
+click-at 800 450
+act Float pane
+settle 5
+assert snap floats ~ roster
+click-at 800 100
+settle 5
+assert snap floats == roster,gloss
+capture 02_gloss_raised
+
+# Dock Roster, then dock Gloss beside the graph branch. The retained Gloss
+# runner keeps the same PaneId while the blueprint becomes a nested split.
+click-at 180 140
+act Dock pane
+settle 5
+assert event pane-docked roster
+click-at 800 100
+act Dock pane
+settle 5
+assert event pane-docked gloss
+capture 03_gloss_docked_nested
+
+# Tear out FROM the float: the destination lens receives the same relative
+# rectangle and retained renderer key, not a newly summoned Gloss pane.
+act Float pane
+settle 5
+assert snap floats ~ gloss
+act Tear out pane
+settle 30
+assert windows == 2
+assert event pane-torn-out gloss
+assert no-pane gloss
+assert lens-pane 0:gloss
+assert snap lens-floats ~ 0:gloss
+capture 04_primary_after_tearout
+capture-lens 05_gloss_float_in_lens
+
+# Return preserves the floating station, then dock once more to leave a
+# reachable tiled pane in the primary window.
+act Return pane to primary
+settle 10
+assert event pane-returned gloss
+assert pane gloss
+assert snap floats ~ gloss
+capture 06_gloss_returned_float
+act Dock pane
+settle 5
+assert event pane-docked gloss
+capture 07_gloss_returned_docked
+
+log A5 floating pane desktop receipt complete

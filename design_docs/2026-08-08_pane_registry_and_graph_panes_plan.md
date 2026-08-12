@@ -621,14 +621,19 @@ tear-out, with one authoritative topology and the fallback recorded.
 Done when one pane moves tile -> float -> nested split -> window and returns without
 losing state or leaving an unreachable runner.
 
-**Implemented 2026-08-11 (blueprint/presentation receipt).** `SpaceBlueprint`
-now owns constrained proportional float geometry, per-space z-order, pin and
-visibility policy, focus raise, root/beside/tab dock targets, and transactional
-float tear-out. The focused receipt covers tile -> float -> tabbed nested split
--> window -> root tile -> float -> return while retaining one `PaneId` runner
-key, and projects the same visibility policy to compositor and accessibility
-surfaces. The legacy Frisket application host has not yet consumed this
-blueprint projection, so a desktop gesture/OS-window receipt remains open.
+**Implemented 2026-08-12 (headed desktop receipt).** `SpaceBlueprint` owns
+constrained proportional float geometry, per-space z-order, pin and visibility
+policy, focus raise, dock targets, and transactional float tear-out. The legacy
+Frisket layout is bridged one-way into that authority on the first float, and
+the primary and lens compositors then project the live blueprint into their
+surface plans. `scenarios/a5_floating_pane.scn` proves tile -> float -> nested
+split -> lens -> return -> dock, retaining one `PaneId` and its renderer state;
+it captures both spaces and drives real pointer focus raising. The receipt is
+headed and passed on 2026-08-12.
+
+Frisket still provides the existing leaf payload and at-rest layout path. Float
+station topology and geometry remain transient until A8, so this is not yet a
+persistence or raw drag-gesture proof.
 
 ### A6. Shell and configurable chrome
 

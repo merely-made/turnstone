@@ -175,6 +175,10 @@ impl Shell {
                 // placeholders (slice C), so the press is otherwise swallowed.
                 crate::surface::SurfaceKind::Pane(id) => {
                     self.app.active_pane = Some(id);
+                    // A5 floats share this ordinary pane surface path. Raising
+                    // happens before the pane's retained DOM receives the
+                    // click, so the next frame's paint and hit order agree.
+                    self.app.raise_floating_pane(id);
                     if button == MouseButton::Left {
                         match self.pane_content(id) {
                             Some(PaneContent::Trail) => {
@@ -473,6 +477,7 @@ impl Shell {
                 // A graph pane owns the view gesture. The local point is
                 // essential for side-by-side graph panes.
                 crate::surface::SurfaceKind::Graph(pane) => {
+                    self.app.raise_floating_pane(pane);
                     self.app.focus = crate::surface::FocusTarget::Graph(pane);
                     if let Some(button) = pointer_button(button)
                         && self

@@ -69,6 +69,14 @@ pub enum Action {
     /// runner — its DOM, widget state, scroll — is untouched by the move, so
     /// identity survives BY CONSTRUCTION in the surface-compositor shape.
     TearOutActivePane,
+    /// Move the active tiled pane into its space's floating layer. Its
+    /// `PaneId` and retained runner remain unchanged.
+    FloatActivePane,
+    /// Dock the active floating pane beside a tiled peer in its current space.
+    DockActivePane,
+    /// Move the active floating pane from a lens back to the primary window,
+    /// retaining it as a float there.
+    ReturnActivePaneToPrimary,
     /// Set a node's viewer override (the settings matrix row): `None` returns
     /// to automatic routing; `Some(engine_id)` pins that lane. Persists in the
     /// browser-state sidecar and respawns live content through the pinned
@@ -352,7 +360,10 @@ pub fn palette_actions() -> Vec<(&'static str, Action)> {
     );
     actions.extend([
         ("New window", Action::NewWindow),
+        ("Float pane", Action::FloatActivePane),
+        ("Dock pane", Action::DockActivePane),
         ("Tear out pane", Action::TearOutActivePane),
+        ("Return pane to primary", Action::ReturnActivePaneToPrimary),
         ("Fork from node", Action::ForkFocusedNode),
         ("Open node in Workbench", Action::OpenInWorkbench),
         ("Close workbench tile", Action::CloseWorkbenchTile),

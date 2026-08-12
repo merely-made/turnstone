@@ -45,6 +45,8 @@ impl App {
             maximized: None,
             window_count: 1,
             lenses: Vec::new(),
+            primary_blueprint: None,
+            lens_blueprints: Vec::new(),
             roster_tab: 0,
             removed: Vec::new(),
             trash: Vec::new(),

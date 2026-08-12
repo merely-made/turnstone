@@ -37,6 +37,7 @@ use serde::{Deserialize, Serialize};
 
 mod blueprint;
 mod layout;
+mod legacy_bridge;
 mod projection;
 mod registry;
 
@@ -57,6 +58,7 @@ mod blueprint_tests;
 mod tests;
 
 pub use blueprint::*;
+pub use legacy_bridge::blueprint_from_frisket;
 pub use projection::{
     project_frisket, project_frisket_with, project_space_blueprint,
     project_space_blueprint_with_float_layer,

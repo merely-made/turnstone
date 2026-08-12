@@ -96,6 +96,9 @@ pub fn ring_of(action: &Action) -> Ring {
         // Window / pane / workbench arrangement.
         NewWindow
         | TearOutActivePane
+        | FloatActivePane
+        | DockActivePane
+        | ReturnActivePaneToPrimary
         | SummonPane(_)
         | CloseActivePane
         | SetActivePaneDivider(_)
@@ -292,6 +295,9 @@ pub fn decode_envelope(name: &str, payload: &str) -> Result<Action, EnvelopeErro
         // panes
         "new-window" => Action::NewWindow,
         "tear-out-active-pane" => Action::TearOutActivePane,
+        "float-active-pane" => Action::FloatActivePane,
+        "dock-active-pane" => Action::DockActivePane,
+        "return-active-pane-to-primary" => Action::ReturnActivePaneToPrimary,
         "close-active-pane" => Action::CloseActivePane,
         "toggle-maximize-pane" => Action::ToggleMaximizePane,
         "open-in-workbench" => Action::OpenInWorkbench,

@@ -163,6 +163,8 @@ impl genet_probe::Automatable for Shell {
             // minimal-shared-and-grow: the app adds the fields its scenarios name.
             .with_field("panes", snap.panes.join(","))
             .with_field("surfaces", snap.surfaces.join(","))
+            .with_field("floats", snap.floating_panes.join(","))
+            .with_field("lens-floats", snap.lens_floating_panes.join(","))
             // What the app will DO right now, by label — the automation half of
             // a coherent snapshot. `assert snap actions ~ Fit view` asks whether
             // a verb is on offer before spending a step on it.

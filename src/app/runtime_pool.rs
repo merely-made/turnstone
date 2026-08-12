@@ -202,7 +202,11 @@ impl GraphPaneViews {
     /// focused member for followers.
     pub fn focused_member(&self, pane: PaneId) -> Option<uuid::Uuid> {
         let selection = self.selections.get(&pane)?;
-        (selection.len() == 1).then_some(selection[0])
+        if selection.len() == 1 {
+            Some(selection[0])
+        } else {
+            None
+        }
     }
 
     pub fn selected_members(&self, pane: PaneId) -> Option<&[uuid::Uuid]> {
