@@ -6,16 +6,15 @@ people, conversations, shared places, documents, services, and remote
 resources in one durable graph. HTTP and the smolweb protocols are resource
 and exchange lanes within that peer web rather than the product's boundary.
 
-Turnstone is the reference host for
-[mere](https://github.com/merely-made/mere), the offline graph library and
+Turnstone is built on
+[mere](https://github.com/merely-made/mere), the graph datalake library and
 repository home of the peer-domain packages it composes. Mere supplies graph
 truth and portable projections; Murm supplies invited exchange; Gemot governs
 durable moots; the Commons profile supplies shared graph and channel
 convergence; Knot owns authored documents; and Genet presents local and remote
-content.
+content. 
 
-The name is the English calque of *meerkat*: Dutch *meer* + *kat*, lake-cat.
-Mere is the lake; turnstone is the animal you meet at it.
+Be disclaimed: I use AI to develop this entire stack, as a tool, carefully, and with review.
 
 ## Build and run
 
