@@ -5,7 +5,9 @@
 use accesskit::{Node, Role};
 use uxtree::{UxTree, node_id_for_path};
 
-use crate::panes::{FrisketLayout, PaneContent, PaneId, PaneNode};
+use crate::panes::{
+    FrisketLayout, LayoutNode, PaneContent, PaneId, PaneNode, SpaceBlueprint, pane_definition,
+};
 
 /// Project a [`FrisketLayout`] into a uxtree subtree describing the
 /// pane structure.
@@ -57,6 +59,30 @@ where
     }
 }
 
+/// Project the active tiled branch of a [`SpaceBlueprint`]. The durable
+/// blueprint remains the tree authority; this emits only the part that may
+/// receive accessibility focus now. Inactive tab children deliberately do not
+/// enter the tree, matching the compositor's active-surface projection.
+pub fn project_space_blueprint(space: &SpaceBlueprint) -> UxTree {
+    let mut nodes = Vec::new();
+    let root_path = format!("space/{}", space.id.as_str());
+    let root_id = node_id_for_path(&root_path);
+    let children = space
+        .tiled
+        .as_ref()
+        .map(|tree| project_blueprint_node(space, tree, &root_path, &mut nodes))
+        .into_iter()
+        .collect();
+    let mut root = Node::new(Role::Group);
+    root.set_label(space.label.clone());
+    root.set_children(children);
+    nodes.push((root_id, root));
+    UxTree {
+        root: root_id,
+        nodes,
+    }
+}
+
 fn project_node<F>(
     node: &PaneNode,
     path: &str,
@@ -102,6 +128,81 @@ where
             leaf_node.set_children(leaf_children);
             nodes.push((leaf_id, leaf_node));
             leaf_id
+        }
+    }
+}
+
+fn project_blueprint_node(
+    space: &SpaceBlueprint,
+    node: &LayoutNode,
+    path: &str,
+    nodes: &mut Vec<(accesskit::NodeId, Node)>,
+) -> accesskit::NodeId {
+    match node {
+        LayoutNode::Pane(pane) => {
+            let leaf_path = format!("{path}/pane/{}", pane.0);
+            let leaf_id = node_id_for_path(&leaf_path);
+            let mut leaf = Node::new(Role::Group);
+            let label = space
+                .pane(*pane)
+                .and_then(|spec| pane_definition(spec.kind.as_str()))
+                .map(|definition| definition.display_name.to_string())
+                .unwrap_or_else(|| format!("pane {}", pane.0));
+            leaf.set_label(label);
+            nodes.push((leaf_id, leaf));
+            leaf_id
+        }
+        LayoutNode::Split { axis, children } => {
+            let split_path = format!("{path}/split");
+            let split_id = node_id_for_path(&split_path);
+            let children: Vec<_> = children
+                .iter()
+                .enumerate()
+                .map(|(index, branch)| {
+                    project_blueprint_node(
+                        space,
+                        &branch.tree,
+                        &format!("{split_path}/{index}"),
+                        nodes,
+                    )
+                })
+                .collect();
+            let mut split = Node::new(Role::Group);
+            split.set_description(format!("split {:?} branches={}", axis, children.len()));
+            split.set_children(children);
+            nodes.push((split_id, split));
+            split_id
+        }
+        LayoutNode::Tabs { children, active } => {
+            let tabs_path = format!("{path}/tabs");
+            let tabs_id = node_id_for_path(&tabs_path);
+            let active = (*active).min(children.len().saturating_sub(1));
+            let active_child = children.get(active).map(|child| {
+                project_blueprint_node(space, child, &format!("{tabs_path}/{active}"), nodes)
+            });
+            let mut tabs = Node::new(Role::Group);
+            tabs.set_description(format!("tabs active={active}"));
+            tabs.set_children(active_child.into_iter().collect());
+            nodes.push((tabs_id, tabs));
+            tabs_id
+        }
+        LayoutNode::Grid {
+            children, columns, ..
+        } => {
+            let grid_path = format!("{path}/grid");
+            let grid_id = node_id_for_path(&grid_path);
+            let children: Vec<_> = children
+                .iter()
+                .enumerate()
+                .map(|(index, child)| {
+                    project_blueprint_node(space, child, &format!("{grid_path}/{index}"), nodes)
+                })
+                .collect();
+            let mut grid = Node::new(Role::Group);
+            grid.set_description(format!("grid columns={columns}"));
+            grid.set_children(children);
+            nodes.push((grid_id, grid));
+            grid_id
         }
     }
 }

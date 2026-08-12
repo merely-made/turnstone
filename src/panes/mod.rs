@@ -57,7 +57,7 @@ mod blueprint_tests;
 mod tests;
 
 pub use blueprint::*;
-pub use projection::{project_frisket, project_frisket_with};
+pub use projection::{project_frisket, project_frisket_with, project_space_blueprint};
 pub use registry::*;
 
 /// The workspace identity vocabulary this crate binds panes to. Re-exported for

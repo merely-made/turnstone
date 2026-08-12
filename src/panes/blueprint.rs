@@ -16,8 +16,14 @@ use super::{GraphId, PaneId, SessionId, SplitAxis};
 mod context;
 #[path = "blueprint/layout.rs"]
 mod layout;
+#[path = "blueprint/presentation.rs"]
+mod presentation;
 
 pub use context::ContextIndex;
+pub use presentation::{
+    BlueprintDividerPlacement, BlueprintPanePlacement, BlueprintTiling, place_space,
+    surface_plan_for_space,
+};
 
 macro_rules! string_id {
     ($name:ident) => {
@@ -265,6 +271,18 @@ pub enum LayoutNode {
     },
 }
 
+/// A stable path through a [`LayoutNode`] tree. Unlike the retired binary
+/// `SplitPath`, each step names both the container kind and child ordinal, so
+/// a divider drag can address an N-ary split without inventing fake panes.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub enum LayoutPathStep {
+    Split(usize),
+    Tab(usize),
+    Grid(usize),
+}
+
+pub type LayoutPath = Vec<LayoutPathStep>;
+
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 pub struct RelativeRect {
     pub x: f32,
@@ -355,6 +373,109 @@ impl SpaceBlueprint {
             .tiled
             .take()
             .and_then(|tree| tree.normalized(&known, self.normalization));
+    }
+
+    /// All pane ids in the tiled topology, including inactive tab children.
+    /// They still own one station and retained state even while hidden.
+    pub fn tiled_panes(&self) -> Vec<PaneId> {
+        let mut panes = Vec::new();
+        if let Some(tree) = &self.tiled {
+            tree.collect_panes(&mut panes);
+        }
+        panes
+    }
+
+    /// The tiled panes whose surfaces are currently live. Hosts use this for
+    /// rendering, hit testing, accessibility focus, and pumping; inactive
+    /// tab children are intentionally absent.
+    pub fn active_tiled_panes(&self) -> Vec<PaneId> {
+        let mut panes = Vec::new();
+        if let Some(tree) = &self.tiled {
+            tree.collect_active_panes(&mut panes);
+        }
+        panes
+    }
+
+    pub fn pane(&self, id: PaneId) -> Option<&PaneSpec> {
+        self.panes.iter().find(|pane| pane.id == id)
+    }
+
+    /// Move one tiled pane beside another. This is the topology half of a
+    /// pane drag; the host keeps renderer state keyed by the unchanged id.
+    pub fn move_pane_beside(
+        &mut self,
+        pane: PaneId,
+        target: PaneId,
+        axis: SplitAxis,
+        after: bool,
+    ) -> bool {
+        if pane == target
+            || !self.tiled_panes().contains(&pane)
+            || !self.tiled_panes().contains(&target)
+        {
+            return false;
+        }
+        let Some(mut tree) = self.tiled.take().and_then(|tree| tree.without_pane(pane)) else {
+            return false;
+        };
+        if !tree.insert_beside(target, pane, axis, after) {
+            return false;
+        }
+        self.tiled = Some(tree);
+        self.normalize();
+        true
+    }
+
+    /// Move one tiled pane into a tabbed subtree over `target` and select it.
+    pub fn stack_pane_onto(&mut self, pane: PaneId, target: PaneId) -> bool {
+        if pane == target
+            || !self.tiled_panes().contains(&pane)
+            || !self.tiled_panes().contains(&target)
+        {
+            return false;
+        }
+        let Some(mut tree) = self.tiled.take().and_then(|tree| tree.without_pane(pane)) else {
+            return false;
+        };
+        if !tree.insert_tab(target, pane) {
+            return false;
+        }
+        self.tiled = Some(tree);
+        self.normalize();
+        true
+    }
+
+    /// Select the tab containing `pane`. The pane remains in the same station;
+    /// only its visibility and active surface lifecycle change.
+    pub fn activate_tab(&mut self, pane: PaneId) -> bool {
+        self.tiled
+            .as_mut()
+            .is_some_and(|tree| tree.activate_tab_containing(pane))
+    }
+
+    /// Apply a complete N-ary split weighting at `path`. Fractions are
+    /// normalized as one topology edit, so a resize cannot leave a zero-width
+    /// sibling behind.
+    pub fn set_split_fractions(&mut self, path: &[LayoutPathStep], fractions: &[f32]) -> bool {
+        self.tiled
+            .as_mut()
+            .is_some_and(|tree| tree.set_split_fractions(path, fractions))
+    }
+
+    /// Receive a pane that was torn out of another space as this space's tiled
+    /// root. The pane id and its spec are transferred intact; A5 adds the
+    /// floating station and window geometry around this same operation.
+    pub fn insert_tiled_root(&mut self, spec: PaneSpec) -> Result<(), BlueprintViolation> {
+        if self.panes.iter().any(|pane| pane.id == spec.id) {
+            return Err(BlueprintViolation::DuplicatePaneSpec(spec.id));
+        }
+        if self.tiled.is_some() || !self.floating.is_empty() {
+            return Err(BlueprintViolation::DuplicatePaneStation(spec.id));
+        }
+        let pane = spec.id;
+        self.panes.push(spec);
+        self.tiled = Some(LayoutNode::Pane(pane));
+        Ok(())
     }
 
     pub fn float_pane(&mut self, pane: PaneId, rect: RelativeRect) -> bool {

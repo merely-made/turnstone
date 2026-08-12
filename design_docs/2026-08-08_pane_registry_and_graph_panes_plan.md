@@ -594,6 +594,14 @@ Workbench rather than a global canvas.
 
 ### A4. Containers, tabs, and shared-tree decision
 
+**Decision, 2026-08-11: outcome 3.** `SpaceBlueprint` remains Turnstone's
+serializable topology authority. `genet-host-api::TileTree` stays a useful
+presentation donor for Cambium furniture, but it cannot own mixed GPU/document/
+Cambium surface routing, persistence, stable pane identity, or the inactive-tab
+lifecycle rule. Turnstone shares split state math where it helps and projects its
+own active layout into the outer compositor and accessibility tree. No shared
+contract is promoted until a second non-Mere host needs the whole topology.
+
 - Prove nested N-ary splits and a tabbed subtree over mixed Graph, document, and
   Cambium surfaces.
 - Compare the required `SpaceBlueprint` operations with `TileTree` and record outcome
