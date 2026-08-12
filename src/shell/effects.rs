@@ -17,8 +17,44 @@ use crate::session;
 use super::Shell;
 
 impl Shell {
+    /// Hand the app's drained semantic events to their consumers. Navigation
+    /// events become trail-memory records for the root persona (owner = the
+    /// master public key's hex, the stable key-rooted tag); everything else
+    /// is dropped until its consumer arrives.
+    fn drain_app_events(&mut self) {
+        let events = self.app.take_events();
+        if events.is_empty() {
+            return;
+        }
+        let owner: String =
+            identity::IdentityProvider::master_public_key(self.app.identity.as_ref())
+                .to_bytes()
+                .iter()
+                .map(|b| format!("{b:02x}"))
+                .collect();
+        let at_ms = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map(|d| d.as_millis() as u64)
+            .unwrap_or(0);
+        for event in events {
+            if let Some((url, transition)) = crate::trail_memory::navigation(&event) {
+                self.trail_handle
+                    .command(crate::trail_memory::TrailCommand::Record {
+                        owner: owner.clone(),
+                        url,
+                        transition,
+                        at_ms,
+                    });
+            }
+        }
+    }
+
     /// The effect runner: the one place effects meet ports.
     pub(super) fn run_effects(&mut self, effects: Vec<Effect>) {
+        // Semantic events noted by the update that produced these effects
+        // drain to their consumers first (the trail-memory capture today;
+        // the scenario log and diagnostics subscribe at this same drain).
+        self.drain_app_events();
         for effect in effects {
             if let Some(command) = browse::fetch_command_for(&effect, &mut self.pending_fetches) {
                 self.fetch_handle.command(command);
@@ -114,6 +150,19 @@ impl Shell {
                             "bin release ack timed out; attempting the trash move anyway"
                         );
                     }
+                    // The trail-memory store lives in the same session dir,
+                    // so it releases (and flushes) under the same handshake.
+                    let (trail_ack_tx, trail_ack_rx) = std::sync::mpsc::sync_channel(1);
+                    self.trail_handle
+                        .command(crate::trail_memory::TrailCommand::Release(trail_ack_tx));
+                    if trail_ack_rx
+                        .recv_timeout(std::time::Duration::from_millis(1500))
+                        .is_err()
+                    {
+                        tracing::warn!(
+                            "trail memory release ack timed out; attempting the trash move anyway"
+                        );
+                    }
                     self.app.apply_trash(closing);
                     self.content_sessions.clear();
                     self.lens_windows.clear();
@@ -124,6 +173,10 @@ impl Shell {
                     self.bin_handle.command(crate::recycle::BinCommand::Reopen(
                         crate::recycle::bin_dir(&self.app.session_dir()),
                     ));
+                    self.trail_handle
+                        .command(crate::trail_memory::TrailCommand::Reopen(
+                            crate::trail_memory::memory_dir(&self.app.session_dir()),
+                        ));
                     self.run_effects(fx);
                     self.request_redraw();
                 }
@@ -138,10 +191,15 @@ impl Shell {
                     let fx = self.app.adopt_session(id);
                     // Re-point the bin actor at the adopted session's store;
                     // it answers with THAT bin's list (the app cleared its
-                    // mirror in adopt_session).
+                    // mirror in adopt_session). The trail memory re-points
+                    // with it (flushing the departing session's segments).
                     self.bin_handle.command(crate::recycle::BinCommand::Reopen(
                         crate::recycle::bin_dir(&self.app.session_dir()),
                     ));
+                    self.trail_handle
+                        .command(crate::trail_memory::TrailCommand::Reopen(
+                            crate::trail_memory::memory_dir(&self.app.session_dir()),
+                        ));
                     self.run_effects(fx);
                     self.request_redraw();
                 }

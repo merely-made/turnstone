@@ -44,6 +44,7 @@ pub mod shell;
 pub mod shell_services;
 mod surface;
 mod swatch_pane;
+mod trail_memory;
 mod trail_pane;
 mod trail_view;
 mod ui;

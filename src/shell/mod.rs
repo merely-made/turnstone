@@ -132,6 +132,10 @@ pub struct Shell {
     bin_handle: armillary::ActorHandle<crate::recycle::BinCommand>,
     /// The bin's answers (BinListed / BinFailed), drained beside the fetches.
     bin_rx: Receiver<Update>,
+    /// The trail-memory actor (browsing capture into the session's memory
+    /// store; search wiring W1). Fed from the semantic-event drain; re-pointed
+    /// and released on the same session edges as the bin.
+    trail_handle: armillary::ActorHandle<crate::trail_memory::TrailCommand>,
     /// The retained-place worker. It owns every Gemot, Commons, chat, group,
     /// and redb handle for the active session.
     place_handle: armillary::ActorHandle<crate::place::worker::PlaceWorkerCommand>,
@@ -290,6 +294,18 @@ impl Shell {
         let (bin_handle, bin_rx) =
             crate::recycle::spawn_bin(bin_wake, crate::recycle::bin_dir(&app.session_dir()));
 
+        // The trail-memory actor over THIS session's memory store (search
+        // wiring W1): browsing capture behind the same wake shape. It emits
+        // nothing in W1, so its receiver is dropped.
+        let trail_proxy = proxy.clone();
+        let trail_wake: armillary::Wake = Arc::new(move || {
+            let _ = trail_proxy.send_event(());
+        });
+        let (trail_handle, _trail_rx) = crate::trail_memory::spawn_trail(
+            trail_wake,
+            crate::trail_memory::memory_dir(&app.session_dir()),
+        );
+
         let place_proxy = proxy.clone();
         let place_wake: armillary::Wake = Arc::new(move || {
             let _ = place_proxy.send_event(());
@@ -353,6 +369,7 @@ impl Shell {
             fetch_rx,
             bin_handle,
             bin_rx,
+            trail_handle,
             place_handle,
             place_rx,
             cursor: (0.0, 0.0),
