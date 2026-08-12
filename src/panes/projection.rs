@@ -64,15 +64,31 @@ where
 /// receive accessibility focus now. Inactive tab children deliberately do not
 /// enter the tree, matching the compositor's active-surface projection.
 pub fn project_space_blueprint(space: &SpaceBlueprint) -> UxTree {
+    project_space_blueprint_with_float_layer(space, true)
+}
+
+/// As [`project_space_blueprint`], with the transient float-layer visibility
+/// supplied by the host. Pinned floats remain in the accessibility tree when
+/// ordinary floats are hidden, exactly as they remain in the compositor.
+pub fn project_space_blueprint_with_float_layer(
+    space: &SpaceBlueprint,
+    float_layer_visible: bool,
+) -> UxTree {
     let mut nodes = Vec::new();
     let root_path = format!("space/{}", space.id.as_str());
     let root_id = node_id_for_path(&root_path);
-    let children = space
+    let mut children: Vec<_> = space
         .tiled
         .as_ref()
         .map(|tree| project_blueprint_node(space, tree, &root_path, &mut nodes))
         .into_iter()
         .collect();
+    children.extend(
+        space
+            .visible_floating_panes(float_layer_visible)
+            .into_iter()
+            .map(|floating| project_blueprint_pane(space, floating.pane, &root_path, &mut nodes)),
+    );
     let mut root = Node::new(Role::Group);
     root.set_label(space.label.clone());
     root.set_children(children);
@@ -139,19 +155,7 @@ fn project_blueprint_node(
     nodes: &mut Vec<(accesskit::NodeId, Node)>,
 ) -> accesskit::NodeId {
     match node {
-        LayoutNode::Pane(pane) => {
-            let leaf_path = format!("{path}/pane/{}", pane.0);
-            let leaf_id = node_id_for_path(&leaf_path);
-            let mut leaf = Node::new(Role::Group);
-            let label = space
-                .pane(*pane)
-                .and_then(|spec| pane_definition(spec.kind.as_str()))
-                .map(|definition| definition.display_name.to_string())
-                .unwrap_or_else(|| format!("pane {}", pane.0));
-            leaf.set_label(label);
-            nodes.push((leaf_id, leaf));
-            leaf_id
-        }
+        LayoutNode::Pane(pane) => project_blueprint_pane(space, *pane, path, nodes),
         LayoutNode::Split { axis, children } => {
             let split_path = format!("{path}/split");
             let split_id = node_id_for_path(&split_path);
@@ -182,7 +186,7 @@ fn project_blueprint_node(
             });
             let mut tabs = Node::new(Role::Group);
             tabs.set_description(format!("tabs active={active}"));
-            tabs.set_children(active_child.into_iter().collect());
+            tabs.set_children(active_child.into_iter().collect::<Vec<_>>());
             nodes.push((tabs_id, tabs));
             tabs_id
         }
@@ -205,4 +209,23 @@ fn project_blueprint_node(
             grid_id
         }
     }
+}
+
+fn project_blueprint_pane(
+    space: &SpaceBlueprint,
+    pane: PaneId,
+    path: &str,
+    nodes: &mut Vec<(accesskit::NodeId, Node)>,
+) -> accesskit::NodeId {
+    let leaf_path = format!("{path}/pane/{}", pane.0);
+    let leaf_id = node_id_for_path(&leaf_path);
+    let mut leaf = Node::new(Role::Group);
+    let label = space
+        .pane(pane)
+        .and_then(|spec| pane_definition(spec.kind.as_str()))
+        .map(|definition| definition.display_name.to_string())
+        .unwrap_or_else(|| format!("pane {}", pane.0));
+    leaf.set_label(label);
+    nodes.push((leaf_id, leaf));
+    leaf_id
 }

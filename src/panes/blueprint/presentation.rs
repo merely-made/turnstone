@@ -8,7 +8,9 @@
 use crate::panes::{PaneId, SplitAxis};
 use crate::surface::{Rect, Surface, SurfaceId, SurfaceKind};
 
-use super::{LayoutNode, LayoutPath, LayoutPathStep, PaneSource, SourceRef, SpaceBlueprint};
+use super::{
+    FloatingPane, LayoutNode, LayoutPath, LayoutPathStep, PaneSource, SourceRef, SpaceBlueprint,
+};
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct BlueprintPanePlacement {
@@ -27,10 +29,21 @@ pub struct BlueprintDividerPlacement {
     pub axis: SplitAxis,
 }
 
+#[derive(Clone, Debug, PartialEq)]
+pub struct BlueprintFloatPlacement {
+    pub id: PaneId,
+    pub rect: Rect,
+    pub z: u32,
+    pub pinned: bool,
+}
+
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct BlueprintTiling {
     pub panes: Vec<BlueprintPanePlacement>,
     pub dividers: Vec<BlueprintDividerPlacement>,
+    /// Floats are in bottom-to-top order above tiled panes and dividers. Modal
+    /// chrome remains a later shell layer, outside this blueprint projection.
+    pub floats: Vec<BlueprintFloatPlacement>,
 }
 
 /// Place the active tiled portion of one space. Inactive tab children do not
@@ -40,6 +53,18 @@ pub fn place_space(
     space: &SpaceBlueprint,
     area: Rect,
     maximized: Option<PaneId>,
+) -> BlueprintTiling {
+    place_space_with_float_layer(space, area, maximized, true)
+}
+
+/// As [`place_space`], with the shell's transient float-layer toggle made
+/// explicit. Pinned floats stay present even when the ordinary float layer is
+/// hidden.
+pub fn place_space_with_float_layer(
+    space: &SpaceBlueprint,
+    area: Rect,
+    maximized: Option<PaneId>,
+    float_layer_visible: bool,
 ) -> BlueprintTiling {
     let mut out = BlueprintTiling::default();
     if let Some(tree) = &space.tiled {
@@ -53,11 +78,19 @@ pub fn place_space(
             .cloned()
     {
         placement.rect = area;
-        return BlueprintTiling {
-            panes: vec![placement],
-            dividers: Vec::new(),
-        };
+        out.panes = vec![placement];
+        out.dividers.clear();
     }
+    out.floats = space
+        .visible_floating_panes(float_layer_visible)
+        .into_iter()
+        .map(|floating| BlueprintFloatPlacement {
+            id: floating.pane,
+            rect: resolve_float_rect(floating, area),
+            z: floating.z,
+            pinned: floating.pinned,
+        })
+        .collect();
     out
 }
 
@@ -70,35 +103,82 @@ pub fn surface_plan_for_space(
     area: Rect,
     maximized: Option<PaneId>,
 ) -> Vec<Surface> {
-    let tiling = place_space(space, area, maximized);
+    surface_plan_for_space_with_float_layer(space, area, maximized, true)
+}
+
+/// Project tiled and visible floating stations into the compositor. Floats
+/// append after the tiled root, so a hit test walks the same topmost order the
+/// frame paints.
+pub fn surface_plan_for_space_with_float_layer(
+    space: &SpaceBlueprint,
+    area: Rect,
+    maximized: Option<PaneId>,
+    float_layer_visible: bool,
+) -> Vec<Surface> {
+    let tiling = place_space_with_float_layer(space, area, maximized, float_layer_visible);
     let mut surfaces: Vec<_> = tiling
         .panes
         .into_iter()
-        .filter_map(|placement| {
-            let spec = space.pane(placement.id)?;
-            let kind = match spec.kind.as_str() {
-                crate::panes::kind::GRAPH => SurfaceKind::Graph(placement.id),
-                crate::panes::kind::TILE => match &spec.source {
-                    PaneSource::Fixed(SourceRef::Member { member, .. }) => {
-                        SurfaceKind::Content(*member)
-                    }
-                    _ => SurfaceKind::Pane(placement.id),
-                },
-                _ => SurfaceKind::Pane(placement.id),
-            };
-            Some(Surface {
-                id: SurfaceId::for_kind(kind),
-                kind,
-                rect: placement.rect,
-            })
-        })
+        .filter_map(|placement| surface_for_pane(space, placement.id, placement.rect))
         .collect();
     surfaces.extend(tiling.dividers.into_iter().map(|divider| Surface {
         id: SurfaceId::divider(divider.index),
         kind: SurfaceKind::Divider(divider.index),
         rect: divider.rect,
     }));
+    surfaces.extend(
+        tiling
+            .floats
+            .into_iter()
+            .filter_map(|floating| surface_for_pane(space, floating.id, floating.rect)),
+    );
     surfaces
+}
+
+fn surface_for_pane(space: &SpaceBlueprint, pane: PaneId, rect: Rect) -> Option<Surface> {
+    let spec = space.pane(pane)?;
+    let kind = match spec.kind.as_str() {
+        crate::panes::kind::GRAPH => SurfaceKind::Graph(pane),
+        crate::panes::kind::TILE => match &spec.source {
+            PaneSource::Fixed(SourceRef::Member { member, .. }) => SurfaceKind::Content(*member),
+            _ => SurfaceKind::Pane(pane),
+        },
+        _ => SurfaceKind::Pane(pane),
+    };
+    Some(Surface {
+        id: SurfaceId::for_kind(kind),
+        kind,
+        rect,
+    })
+}
+
+fn resolve_float_rect(floating: &FloatingPane, area: Rect) -> Rect {
+    let width = constrained_extent(
+        area.w,
+        floating.rect.width,
+        floating.constraints.min_width,
+        floating.constraints.max_width,
+    );
+    let height = constrained_extent(
+        area.h,
+        floating.rect.height,
+        floating.constraints.min_height,
+        floating.constraints.max_height,
+    );
+    let x = (area.x + finite(floating.rect.x) * area.w).clamp(area.x, area.x + area.w - width);
+    let y = (area.y + finite(floating.rect.y) * area.h).clamp(area.y, area.y + area.h - height);
+    Rect::new(x, y, width, height)
+}
+
+fn constrained_extent(available: f32, proportion: f32, min: f32, max: Option<f32>) -> f32 {
+    let available = available.max(0.0);
+    let min = finite(min).max(0.0).min(available);
+    let max = max.map(finite).unwrap_or(available).max(min).min(available);
+    (available * finite(proportion).max(0.0)).clamp(min, max)
+}
+
+fn finite(value: f32) -> f32 {
+    value.is_finite().then_some(value).unwrap_or_default()
 }
 
 fn walk(node: &LayoutNode, area: Rect, path: &mut LayoutPath, out: &mut BlueprintTiling) {

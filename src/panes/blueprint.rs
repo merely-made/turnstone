@@ -21,8 +21,9 @@ mod presentation;
 
 pub use context::ContextIndex;
 pub use presentation::{
-    BlueprintDividerPlacement, BlueprintPanePlacement, BlueprintTiling, place_space,
-    surface_plan_for_space,
+    BlueprintDividerPlacement, BlueprintFloatPlacement, BlueprintPanePlacement, BlueprintTiling,
+    place_space, place_space_with_float_layer, surface_plan_for_space,
+    surface_plan_for_space_with_float_layer,
 };
 
 macro_rules! string_id {
@@ -291,13 +292,58 @@ pub struct RelativeRect {
     pub height: f32,
 }
 
+/// Physical limits applied after a floating pane's proportional rectangle is
+/// resolved against its current window. Fractions preserve intent on resize;
+/// these pixel bounds prevent a useful pane from becoming too small or too
+/// large for its controls.
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+pub struct FloatSizeConstraints {
+    pub min_width: f32,
+    pub min_height: f32,
+    pub max_width: Option<f32>,
+    pub max_height: Option<f32>,
+}
+
+impl Default for FloatSizeConstraints {
+    fn default() -> Self {
+        Self {
+            min_width: 0.0,
+            min_height: 0.0,
+            max_width: None,
+            max_height: None,
+        }
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct FloatingPane {
     pub pane: PaneId,
     pub rect: RelativeRect,
+    /// Pixel constraints alongside the proportional `rect`. `default` keeps
+    /// A0/A4 layouts readable while the format remains pre-alpha.
+    #[serde(default)]
+    pub constraints: FloatSizeConstraints,
     pub z: u32,
     pub pinned: bool,
     pub visible: bool,
+}
+
+/// A float's destination inside its own space. It is a station relocation:
+/// the moved pane keeps its spec and `PaneId`, so retained runner state never
+/// has to be copied or reconstructed.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub enum FloatDockTarget {
+    /// Use an empty tiled root. Refused when the space already has tiled
+    /// content, because replacing a tree would silently orphan panes.
+    TiledRoot,
+    Beside {
+        target: PaneId,
+        axis: SplitAxis,
+        after: bool,
+    },
+    Tab {
+        target: PaneId,
+    },
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -478,6 +524,20 @@ impl SpaceBlueprint {
         Ok(())
     }
 
+    /// Floats that are live in the current window. Hiding the float layer
+    /// suppresses ordinary floats, but a pinned float remains visible by
+    /// definition. The host owns the toggle because it is transient window
+    /// presentation state, not a second layout tree.
+    pub fn visible_floating_panes(&self, float_layer_visible: bool) -> Vec<&FloatingPane> {
+        let mut floats: Vec<_> = self
+            .floating
+            .iter()
+            .filter(|item| item.visible && (float_layer_visible || item.pinned))
+            .collect();
+        floats.sort_by_key(|item| (item.z, item.pane.0));
+        floats
+    }
+
     pub fn float_pane(&mut self, pane: PaneId, rect: RelativeRect) -> bool {
         if !self.panes.iter().any(|spec| spec.id == pane) {
             return false;
@@ -487,16 +547,158 @@ impl SpaceBlueprint {
         if let Some(tree) = self.tiled.take() {
             self.tiled = tree.without_pane(pane);
         }
-        let z = self.floating.iter().map(|item| item.z).max().unwrap_or(0) + 1;
+        let z = self
+            .floating
+            .iter()
+            .map(|item| item.z)
+            .max()
+            .unwrap_or(0)
+            .saturating_add(1);
         self.floating.push(FloatingPane {
             pane,
             rect,
+            constraints: old_float
+                .as_ref()
+                .map(|item| item.constraints)
+                .unwrap_or_default(),
             z,
             pinned: old_float.as_ref().is_some_and(|item| item.pinned),
             visible: old_float.as_ref().is_none_or(|item| item.visible),
         });
         self.normalize();
         true
+    }
+
+    /// Update the proportional placement without changing the pane's station
+    /// or z-order. A shell calls this while a float drag is in flight and
+    /// persists once the gesture settles.
+    pub fn set_float_rect(&mut self, pane: PaneId, rect: RelativeRect) -> bool {
+        let Some(float) = self.floating.iter_mut().find(|item| item.pane == pane) else {
+            return false;
+        };
+        float.rect = rect;
+        true
+    }
+
+    pub fn set_float_constraints(
+        &mut self,
+        pane: PaneId,
+        constraints: FloatSizeConstraints,
+    ) -> bool {
+        let Some(float) = self.floating.iter_mut().find(|item| item.pane == pane) else {
+            return false;
+        };
+        float.constraints = constraints;
+        true
+    }
+
+    pub fn set_float_pinned(&mut self, pane: PaneId, pinned: bool) -> bool {
+        let Some(float) = self.floating.iter_mut().find(|item| item.pane == pane) else {
+            return false;
+        };
+        float.pinned = pinned;
+        true
+    }
+
+    pub fn set_float_visible(&mut self, pane: PaneId, visible: bool) -> bool {
+        let Some(float) = self.floating.iter_mut().find(|item| item.pane == pane) else {
+            return false;
+        };
+        float.visible = visible;
+        true
+    }
+
+    /// Raise the clicked float above every other float in this space. Equal or
+    /// stale persisted z-values are normalized first so order is deterministic
+    /// and the counter cannot drift indefinitely across saves.
+    pub fn raise_float(&mut self, pane: PaneId) -> bool {
+        if !self.floating.iter().any(|item| item.pane == pane) {
+            return false;
+        }
+        self.normalize_float_z();
+        let index = self
+            .floating
+            .iter()
+            .position(|item| item.pane == pane)
+            .expect("float was checked before z normalization");
+        let z = self.floating.len() as u32 + 1;
+        self.floating[index].z = z;
+        self.normalize_float_z();
+        true
+    }
+
+    /// Dock a floating pane back into the serializable tiled topology. The
+    /// pane spec remains in this space and keeps the same identity; only its
+    /// station changes.
+    pub fn dock_floating_pane(&mut self, pane: PaneId, target: FloatDockTarget) -> bool {
+        let Some(float_index) = self.floating.iter().position(|item| item.pane == pane) else {
+            return false;
+        };
+        let docked = match target {
+            FloatDockTarget::TiledRoot => {
+                if self.tiled.is_some() {
+                    return false;
+                }
+                self.tiled = Some(LayoutNode::Pane(pane));
+                true
+            }
+            FloatDockTarget::Beside {
+                target,
+                axis,
+                after,
+            } => self
+                .tiled
+                .as_mut()
+                .is_some_and(|tree| tree.insert_beside(target, pane, axis, after)),
+            FloatDockTarget::Tab { target } => self
+                .tiled
+                .as_mut()
+                .is_some_and(|tree| tree.insert_tab(target, pane)),
+        };
+        if !docked {
+            return false;
+        }
+        self.floating.remove(float_index);
+        self.normalize();
+        true
+    }
+
+    /// Transfer one floating station to another OS-window space, preserving
+    /// its relative rectangle, constraints, pin, visibility, spec, and
+    /// therefore its `PaneId`-keyed retained runner. The destination gives it
+    /// its own topmost z-order because float order is scoped to a window.
+    pub fn tear_out_floating_pane(
+        &mut self,
+        pane: PaneId,
+        destination: &mut SpaceBlueprint,
+    ) -> Result<(), BlueprintViolation> {
+        // Check the destination before taking anything from the source. A
+        // rejected tear-out must leave the originating pane and its runner
+        // lookup reachable where they started.
+        if destination.panes.iter().any(|spec| spec.id == pane)
+            || destination.station_ids().contains(&pane)
+        {
+            return Err(BlueprintViolation::DuplicatePaneSpec(pane));
+        }
+        let Some((spec, floating)) = self.take_floating_pane(pane) else {
+            return Err(BlueprintViolation::MissingPaneSpec {
+                space: self.id.clone(),
+                pane,
+            });
+        };
+        destination.insert_transferred_floating(spec, floating)
+    }
+
+    /// Remove a floating pane's spec and station together for a window move.
+    /// Unlike [`Self::take_pane`], callers also receive the persisted float
+    /// geometry rather than discarding it.
+    pub fn take_floating_pane(&mut self, pane: PaneId) -> Option<(PaneSpec, FloatingPane)> {
+        let float_index = self.floating.iter().position(|item| item.pane == pane)?;
+        let spec_index = self.panes.iter().position(|item| item.id == pane)?;
+        let floating = self.floating.remove(float_index);
+        let spec = self.panes.remove(spec_index);
+        self.normalize();
+        Some((spec, floating))
     }
 
     pub fn take_pane(&mut self, pane: PaneId) -> Option<PaneSpec> {
@@ -523,11 +725,48 @@ impl SpaceBlueprint {
         self.floating.push(FloatingPane {
             pane,
             rect,
-            z: self.floating.iter().map(|item| item.z).max().unwrap_or(0) + 1,
+            constraints: FloatSizeConstraints::default(),
+            z: self
+                .floating
+                .iter()
+                .map(|item| item.z)
+                .max()
+                .unwrap_or(0)
+                .saturating_add(1),
             pinned: false,
             visible: true,
         });
         Ok(())
+    }
+
+    fn insert_transferred_floating(
+        &mut self,
+        spec: PaneSpec,
+        mut floating: FloatingPane,
+    ) -> Result<(), BlueprintViolation> {
+        if spec.id != floating.pane || self.panes.iter().any(|pane| pane.id == spec.id) {
+            return Err(BlueprintViolation::DuplicatePaneSpec(spec.id));
+        }
+        if self.station_ids().contains(&spec.id) {
+            return Err(BlueprintViolation::DuplicatePaneStation(spec.id));
+        }
+        floating.z = self
+            .floating
+            .iter()
+            .map(|item| item.z)
+            .max()
+            .unwrap_or(0)
+            .saturating_add(1);
+        self.panes.push(spec);
+        self.floating.push(floating);
+        Ok(())
+    }
+
+    fn normalize_float_z(&mut self) {
+        self.floating.sort_by_key(|item| (item.z, item.pane.0));
+        for (index, float) in self.floating.iter_mut().enumerate() {
+            float.z = index as u32 + 1;
+        }
     }
 
     fn station_ids(&self) -> Vec<PaneId> {

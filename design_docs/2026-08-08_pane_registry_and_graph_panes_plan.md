@@ -621,6 +621,15 @@ tear-out, with one authoritative topology and the fallback recorded.
 Done when one pane moves tile -> float -> nested split -> window and returns without
 losing state or leaving an unreachable runner.
 
+**Implemented 2026-08-11 (blueprint/presentation receipt).** `SpaceBlueprint`
+now owns constrained proportional float geometry, per-space z-order, pin and
+visibility policy, focus raise, root/beside/tab dock targets, and transactional
+float tear-out. The focused receipt covers tile -> float -> tabbed nested split
+-> window -> root tile -> float -> return while retaining one `PaneId` runner
+key, and projects the same visibility policy to compositor and accessibility
+surfaces. The legacy Frisket application host has not yet consumed this
+blueprint projection, so a desktop gesture/OS-window receipt remains open.
+
 ### A6. Shell and configurable chrome
 
 - Split shell service state from Chrome projections.
