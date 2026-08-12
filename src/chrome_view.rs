@@ -19,28 +19,21 @@
 //!   static item list; turnstone's omnibar keys lower through the Action spine
 //!   (doctrine 2) and its suggestions are GRAPH TRUTH re-queried per edit.
 //!   The rows here render `OmnibarState`, they do not own it.
-//! - `styled_text_field` renders no visible caret glyph (its caret is a
-//!   position for a host overlay); turnstone's caret-split rendering (the "▍"
-//!   at the true position, preedit underlined beside it) is the receipt-
-//!   proven IME/caret honesty, so the input row keeps it. The follow-on
-//!   `cambium::caret_text_field` (3d0edc7a) now renders that same triple —
-//!   but adoption here stays rejected: `lens` shares the Action type, so
-//!   the `()`-typed field needs an unreachable `map_action` intent to sit
-//!   in this `ChromeIntent` tree, and its `edit` key handler is an editor
-//!   the mirror must never have (omnibar keys lower through the spine).
-//!   The caret field's consumers are cambium-native apps whose state IS
-//!   the `TextInput`.
+//! - The omnibar is a controlled mirror, not an editor: keys lower through the
+//!   Action spine and the view must not mutate a second text model. Cambium now
+//!   exposes `caret_field_children`, the pure text/preedit/caret projection
+//!   beneath its editable field. Turnstone consumes that rendering while
+//!   retaining app truth and input authority here.
 
 use std::cell::RefCell;
 use std::rc::Rc;
 
 use cambium::{
-    AnyView, DomHandle, GenetCtx, GenetElement, GenetMultiRunner, PointerClick, ProjectionId, el,
-    on_click,
+    AnyView, DomHandle, GenetCtx, GenetElement, GenetMultiRunner, PointerClick, ProjectionId,
+    TextInput, caret_field_children, el, on_click,
 };
 use genet_layout::{IncrementalLayout, ScrollOffsets, SubtreeView};
 use genet_scripted_dom::{NodeId, ScriptedDom};
-use layout_dom_api::LayoutDom;
 
 use crate::app::App;
 use crate::panes::{ChromeEdge, ChromePlacement};
@@ -80,11 +73,9 @@ struct WindowChrome {
 struct ChromeState {
     windows: Vec<WindowChrome>,
     open: bool,
-    /// The input line, split at the caret (before / preedit / after) — the
-    /// receipt-proven caret rendering, mirrored from `OmnibarState`.
-    before: String,
-    preedit: String,
-    after: String,
+    /// App-owned omnibar truth projected into Cambium's pure caret renderer.
+    /// This runner never dispatches edit keys into it.
+    omnibar_input: TextInput,
     rows: Vec<RowView>,
     omnibar_placement: ChromePlacement,
     shellbar_placement: ChromePlacement,
@@ -117,20 +108,9 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
         && state.open
         && let Some((left, top)) = chrome_position(&state.omnibar_placement, win.w, win.h, CARD_W)
     {
-        // The input line, split at the caret: text-before, the underlined
-        // in-flight preedit, the caret glyph at its TRUE position, text-after.
-        let preedit: ChromeView = Box::new(
-            el::<_, ChromeState, ChromeIntent>("span", state.preedit.clone())
-                .attr("class", "omni-preedit"),
-        );
         let input = el::<_, ChromeState, ChromeIntent>(
             "div",
-            (
-                state.before.clone(),
-                preedit,
-                "\u{258d}".to_string(),
-                state.after.clone(),
-            ),
+            caret_field_children::<ChromeState, ChromeIntent>(&state.omnibar_input, &[]),
         )
         .attr("class", "omni-input");
 
@@ -224,9 +204,7 @@ impl ChromeSurfaces {
                 ..WindowChrome::default()
             }],
             open: false,
-            before: String::new(),
-            preedit: String::new(),
-            after: String::new(),
+            omnibar_input: TextInput::default(),
             rows: Vec::new(),
             omnibar_placement: ChromePlacement::Overlay,
             shellbar_placement: ChromePlacement::Docked(ChromeEdge::Right),
@@ -264,9 +242,11 @@ impl ChromeSurfaces {
         }
         let caption = crate::app::focused_caption(&app.graph_runtimes);
         let omnibar: &OmnibarState = &app.omnibar;
-        let before = omnibar.text[..omnibar.cursor].to_string();
-        let after = omnibar.text[omnibar.cursor..].to_string();
-        let preedit = omnibar.preedit.clone().unwrap_or_default();
+        let mut omnibar_input = TextInput::new(omnibar.text.clone());
+        omnibar_input.set_caret_byte(omnibar.cursor, false);
+        if let Some(preedit) = &omnibar.preedit {
+            omnibar_input.set_preedit(preedit.clone());
+        }
         let chrome = app.shell_chrome_config();
         let rows: Vec<RowView> = omnibar
             .suggestions
@@ -298,9 +278,7 @@ impl ChromeSurfaces {
                 win.primary = slot == 0;
             }
             state.open = open;
-            state.before = before.clone();
-            state.preedit = preedit.clone();
-            state.after = after.clone();
+            state.omnibar_input = omnibar_input.clone();
             state.rows = rows.clone();
             state.omnibar_placement = chrome.omnibar.placement.clone();
             state.shellbar_placement = chrome.shellbar.placement.clone();
@@ -355,6 +333,8 @@ impl ChromeSurfaces {
 
 #[cfg(test)]
 mod tests {
+    use layout_dom_api::LayoutDom;
+
     use super::*;
     use crate::action::Action;
 

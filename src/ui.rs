@@ -271,7 +271,7 @@ pub(crate) const CHROME_SHEET: &str = "\
     .omni-input { color: rgb(238, 242, 250); font-size: 16px; \
                   padding: 6px 8px; background-color: rgb(15, 19, 30); \
                   border-radius: 6px; white-space: nowrap; overflow: hidden; } \
-    .omni-preedit { color: rgb(180, 200, 255); \
+    .omni-input .field-preedit { color: rgb(180, 200, 255); \
                     text-decoration: underline; } \
     .omni-row { color: rgb(216, 222, 234); font-size: 14px; \
                 padding: 5px 8px; white-space: nowrap; overflow: hidden; } \
@@ -373,7 +373,7 @@ pub(crate) fn chrome_sheet(appearance: &crate::shell_services::AppearanceConfig)
         "{CHROME_SHEET} \
         .omni {{ background-color: {}; border-color: {}; }} \
         .omni-input {{ color: {}; background-color: {}; font-size: {:.2}px; }} \
-        .omni-preedit {{ color: {}; }} \
+        .omni-input .field-preedit {{ color: {}; }} \
         .omni-row {{ color: {}; font-size: {:.2}px; }} \
         .omni-row-sel {{ color: {}; background-color: {}; font-size: {:.2}px; }} \
         .omni-row-muted {{ color: {}; font-size: {:.2}px; }} \
