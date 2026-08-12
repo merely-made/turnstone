@@ -23,6 +23,22 @@ use crate::browse;
 use super::Shell;
 
 impl ApplicationHandler for Shell {
+    fn exiting(&mut self, _event_loop: &ActiveEventLoop) {
+        // The trail memory buffers traversals between lifecycle edges, and a
+        // normal quit is one: flush-and-release with a bounded ack so the
+        // last session's tail survives exit. (The bin needs no exit hook —
+        // it persists each record as it arrives.)
+        let (ack_tx, ack_rx) = std::sync::mpsc::sync_channel(1);
+        self.trail_handle
+            .command(crate::trail_memory::TrailCommand::Release(ack_tx));
+        if ack_rx
+            .recv_timeout(std::time::Duration::from_millis(1500))
+            .is_err()
+        {
+            tracing::warn!("trail memory release ack timed out at exit");
+        }
+    }
+
     fn resumed(&mut self, event_loop: &ActiveEventLoop) {
         if self.window.is_some() {
             return;

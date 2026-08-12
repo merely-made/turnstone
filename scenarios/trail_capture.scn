@@ -1,0 +1,15 @@
+# Trail capture receipt (search wiring W1): three navigations through the
+# real shell land as BrowsingTrace segments in the session's memory store.
+# The exit hook flushes the open segment when the scenario's Done exits the
+# loop, so this needs no segment-filling. Network-free by design: mere://
+# addresses are graph-native and open without a fetch. FRESH profile.
+settle 30
+key escape
+
+open mere://alpha
+settle 10
+open mere://beta
+settle 10
+open mere://gamma
+settle 10
+capture 01_three_navigations
