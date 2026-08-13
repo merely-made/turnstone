@@ -322,11 +322,16 @@ mod tests {
         pane.sync(400.0, 600.0);
         let dom = pane.dom_ref();
         assert_eq!(dom.all_with_class(dom.document(), "setting-apply").len(), 5);
+        // `text` answers for text and comment nodes, never for the element
+        // holding them, so a section title is read through its children (the
+        // idiom the apparatus and inspector panes already use).
         assert!(
             dom.all_with_class(dom.document(), "list-section-title")
                 .into_iter()
-                .filter_map(|node| dom.text(node))
-                .any(|text| text.contains("Knot publishing"))
+                .flat_map(|node| dom.dom_children(node))
+                .filter_map(|child| dom.text(child))
+                .any(|text| text.contains("Knot publishing")),
+            "the unavailable panel still names the service it is configured for"
         );
     }
 }

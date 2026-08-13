@@ -895,10 +895,19 @@ mod tests {
                 .any(|s| matches!(s, Suggestion::Act { label, .. } if *label == "Save session")),
             "`>re` must filter out non-matching actions"
         );
-        // Bare `>` lists the whole catalog it was given.
+        // Bare `>` lists the catalog it was given, up to the row limit the
+        // projection was asked for. The limit arrived with configurable chrome
+        // (2026-08-10) and applies to every lane, so a catalog longer than the
+        // limit is narrowed by typing rather than by scrolling a long list;
+        // this entry point's limit is the legacy `MAX_NODE_MATCHES + 1`, while
+        // the host passes `OmnibarConfig::row_limit`.
         state.text = ">".into();
         recompute_suggestions(&mut state, &canvas, &catalog);
-        assert_eq!(state.suggestions.len(), catalog.len());
+        assert_eq!(
+            state.suggestions.len(),
+            catalog.len().min(MAX_NODE_MATCHES + 1),
+            "the whole catalog, capped at the configured rows"
+        );
     }
 
     #[test]
