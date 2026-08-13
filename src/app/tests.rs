@@ -2349,6 +2349,43 @@ fn the_actions_lane_and_short_needles_never_recall() {
     );
 }
 
+/// The row count is the configured maximum clamped by the window: a tall
+/// window offers the whole setting, a short one offers what fits, and an
+/// explicit setting is never raised by geometry.
+#[test]
+fn the_row_count_follows_the_viewport_under_the_configured_ceiling() {
+    use crate::panes::ChromePlacement;
+    use crate::ui::visible_row_limit;
+
+    let tall = visible_row_limit(10, &ChromePlacement::Overlay, 1080.0, 1.0);
+    assert_eq!(tall, 10, "a tall window offers the whole configured maximum");
+
+    let short = visible_row_limit(10, &ChromePlacement::Overlay, 400.0, 1.0);
+    assert!(
+        (3..10).contains(&short),
+        "a short window offers fewer rows, not the ceiling: {short}"
+    );
+
+    let cramped = visible_row_limit(10, &ChromePlacement::Overlay, 120.0, 1.0);
+    assert_eq!(cramped, 3, "a window with no room still offers the floor");
+
+    // Zoom only bites once the rows stop fitting: a 1080px window still has
+    // room for the whole ceiling at 2.5x, so compare inside a window where
+    // the text size is what runs out of room.
+    let plain = visible_row_limit(10, &ChromePlacement::Overlay, 600.0, 1.0);
+    let zoomed = visible_row_limit(10, &ChromePlacement::Overlay, 600.0, 2.5);
+    assert!(
+        zoomed < plain,
+        "bigger text means fewer rows in the same window: {zoomed} vs {plain}"
+    );
+
+    assert_eq!(
+        visible_row_limit(1, &ChromePlacement::Overlay, 1080.0, 1.0),
+        1,
+        "geometry never raises a deliberate setting above itself"
+    );
+}
+
 #[test]
 fn configured_row_limit_applies_to_the_live_omnibar_projection() {
     let mut app = App::test_stub();

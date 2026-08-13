@@ -28,6 +28,52 @@ pub(crate) const CARD_W: f32 = 560.0;
 /// The palette card's top offset (px).
 pub(crate) const CARD_TOP: f32 = 96.0;
 
+/// One suggestion row's height at zoom 1, in px: `.omni-row`'s 14px text at
+/// the default line height plus its 5px vertical padding, twice. Mirrors the
+/// chrome sheet below rather than measuring the laid-out card — the row count
+/// has to be decided before the rows exist.
+const ROW_H: f32 = 27.0;
+/// The card's own vertical furniture at zoom 1: 8px padding twice plus the
+/// `.omni-input` row (14px text, 6px padding twice).
+const CARD_CHROME_H: f32 = 45.0;
+/// Breathing room kept between the last row and the window edge (device px).
+const CARD_BOTTOM_MARGIN: f32 = 16.0;
+/// Never offer fewer rows than this, however cramped the window: an omnibar
+/// showing one row is worse than one that slightly overhangs.
+const MIN_VISIBLE_ROWS: usize = 3;
+
+/// How many suggestion rows to offer: the configured maximum, clamped to what
+/// fits between the card and the bottom of the window.
+///
+/// The configured value stays the ceiling — a deliberate setting is never
+/// raised by geometry — while a short window lowers it so the list does not
+/// run off the bottom. Sizes are estimated from the chrome sheet's own
+/// constants and scale with `ui_zoom`, which scales the same text.
+pub fn visible_row_limit(
+    configured: usize,
+    placement: &crate::panes::ChromePlacement,
+    viewport_h: f32,
+    ui_zoom: f32,
+) -> usize {
+    use crate::panes::{ChromeEdge, ChromePlacement};
+    let zoom = if ui_zoom > 0.0 { ui_zoom } else { 1.0 };
+    // Where the card's top edge lands, matching `chrome_view::chrome_position`.
+    // A placement with no chrome station has no geometry to read, so the
+    // configured value stands alone.
+    let card_top = match placement {
+        ChromePlacement::Overlay | ChromePlacement::Floating => CARD_TOP,
+        ChromePlacement::Docked(ChromeEdge::Top) => 8.0,
+        ChromePlacement::Docked(ChromeEdge::Bottom) => (viewport_h - 52.0).max(8.0),
+        ChromePlacement::Docked(ChromeEdge::Left | ChromeEdge::Right) => {
+            (viewport_h * 0.5 - 18.0).max(8.0)
+        }
+        ChromePlacement::Pane(_) | ChromePlacement::Hidden => return configured,
+    };
+    let room = viewport_h - card_top - CARD_CHROME_H * zoom - CARD_BOTTOM_MARGIN;
+    let fits = (room / (ROW_H * zoom)).floor().max(0.0) as usize;
+    configured.min(fits.max(MIN_VISIBLE_ROWS))
+}
+
 /// One suggestion row.
 #[derive(Clone, Debug, PartialEq)]
 pub enum Suggestion {

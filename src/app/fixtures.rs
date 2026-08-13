@@ -44,6 +44,7 @@ impl App {
             physics_damping: session_runtime::DEFAULT_PHYSICS_DAMPING,
             maximized: None,
             window_count: 1,
+            viewport: crate::app::DEFAULT_VIEWPORT,
             lenses: Vec::new(),
             primary_blueprint: None,
             lens_blueprints: Vec::new(),

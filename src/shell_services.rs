@@ -102,9 +102,13 @@ impl Default for OmnibarConfig {
     fn default() -> Self {
         Self {
             placement: ChromePlacement::Overlay,
-            // Preserve the previous default: six node matches and, when the
-            // input is address-shaped, one literal-open row.
-            row_limit: 7,
+            // The MAXIMUM rows the omnibar offers, not a fixed count: the
+            // projection clamps it to what fits above the window's bottom
+            // edge (`ui::visible_row_limit`). Ten rather than the original
+            // seven — seven was sized for six node matches plus one
+            // literal-open row, which left the actions and recall lanes
+            // fighting the find lane for the same seats.
+            row_limit: 10,
             default_scope: OmnibarScope::Address,
             shortcuts: vec![
                 OmnibarShortcut {
@@ -620,7 +624,14 @@ mod tests {
         assert_eq!(chrome.omnibar.placement, blueprint.omnibar);
         assert!(!chrome.shellbar.visible);
         assert_eq!(chrome.transcript_placement, ChromePlacement::Floating);
-        assert_eq!(chrome.omnibar.row_limit, 7, "layout does not own policy");
+        // Against the default rather than a literal: the invariant is that a
+        // blueprint moves placements and touches no policy value, whatever
+        // that value currently is.
+        assert_eq!(
+            chrome.omnibar.row_limit,
+            OmnibarConfig::default().row_limit,
+            "layout does not own policy"
+        );
     }
 
     #[test]

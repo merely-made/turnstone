@@ -55,6 +55,8 @@ impl ApplicationHandler for Shell {
         self.width = size.width.max(1);
         self.height = size.height.max(1);
         self.app.graph_runtimes.resize(self.width, self.height);
+        self.app.viewport = (self.width as f32, self.height as f32);
+        self.app.reflow_omnibar();
         // Frame the content, not the origin: a restored session's persisted
         // positions can have settled anywhere in world space, and a camera
         // centered on the origin would then show empty ground.
@@ -152,6 +154,8 @@ impl ApplicationHandler for Shell {
                     host.resize(self.width, self.height);
                 }
                 self.app.graph_runtimes.resize(self.width, self.height);
+        self.app.viewport = (self.width as f32, self.height as f32);
+        self.app.reflow_omnibar();
                 self.request_redraw();
             }
             // Continuous gestures map onto the canvas's semantic input methods

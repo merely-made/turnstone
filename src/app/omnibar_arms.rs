@@ -18,7 +18,13 @@ const MIN_RECALL_CHARS: usize = 2;
 impl App {
     pub(super) fn recompute_omnibar_suggestions(&mut self) {
         let actions = self.available_actions();
-        let row_limit = self.shell_chrome_config().omnibar.row_limit;
+        let chrome = self.shell_chrome_config();
+        let row_limit = crate::ui::visible_row_limit(
+            chrome.omnibar.row_limit,
+            &chrome.omnibar.placement,
+            self.viewport.1,
+            chrome.appearance.ui_zoom,
+        );
         recompute_suggestions_with_limit(
             &mut self.omnibar,
             &self.graph_runtimes,
@@ -26,6 +32,15 @@ impl App {
             &self.recall,
             row_limit,
         );
+    }
+
+    /// Re-project an open omnibar after the window changed size: how many
+    /// rows fit is viewport-derived, so a resize is a reason to recount them.
+    /// Silent when the line is closed.
+    pub fn reflow_omnibar(&mut self) {
+        if self.omnibar.open {
+            self.recompute_omnibar_suggestions();
+        }
     }
 
     /// Recompute the rows and ask the trail port for recall when the needle

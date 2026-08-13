@@ -24,6 +24,11 @@ pub use runtime_pool::{
     FormeRuntime, FormeRuntimeKey, FormeRuntimePool, GraphPaneViews, GraphRuntime, GraphRuntimePool,
 };
 
+/// The window size a fresh App assumes until the shell resizes it: an
+/// ordinary desktop window, so a headless projection (tests, the remote lens)
+/// offers the same rows a real one would rather than collapsing to the floor.
+pub const DEFAULT_VIEWPORT: (f32, f32) = (1280.0, 800.0);
+
 /// The at-rest "where am I" caption: the focused node's display label (and
 /// host, when it adds information), or `None` with nothing focused.
 pub fn focused_caption(canvas: &mere::canvas::Canvas) -> Option<String> {
@@ -128,6 +133,11 @@ pub struct App {
     /// shell owns the platform windows and copies the count here so
     /// observation (and a scenario) can see it.
     pub window_count: usize,
+    /// The primary window's size in device px, as the shell last resized it.
+    /// App truth because the omnibar's row count depends on it; the default
+    /// is an ordinary desktop window so a headless App projects sensibly
+    /// before any resize arrives.
+    pub viewport: (f32, f32),
     /// Each lens window's pane space (rung 7 depth: windows are pane HOSTS,
     /// not canvas-only): a frisket tree over the one App, indexed by the lens
     /// ordinal the shell's window records carry. `None` = that lens closed
