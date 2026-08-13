@@ -1309,14 +1309,27 @@ enum AuthoringStatus {
     Revoked,
 }
 
+/// One thing the toolbar asks the pane to do, once.
+///
+/// Queued rather than flagged: a flag per verb coalesced repeats, fixed the
+/// order in the drain site rather than the user's, and had to be cleared
+/// through `runner.update` — a full view rebuild per flag, just to reset a
+/// bool.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum AuthoringRequest {
+    Save,
+    Resolve,
+    Run,
+    Reload,
+}
+
 struct AuthoringState {
     editor: KnotEditor,
     status: AuthoringStatus,
     detail: String,
-    save_requested: bool,
-    resolve_requested: bool,
-    run_requested: bool,
-    reload_requested: bool,
+    /// Toolbar commands in the order they were asked for, drained after
+    /// dispatch.
+    requests: Vec<AuthoringRequest>,
     resolve_available: bool,
     run_available: bool,
     derived: Option<DerivedTextV1>,
@@ -1393,7 +1406,7 @@ fn authoring_view(state: &AuthoringState) -> AuthoringView {
             button(
                 "Save",
                 |state: &mut AuthoringState, _click: PointerClick| {
-                    state.save_requested = true;
+                    state.requests.push(AuthoringRequest::Save);
                 },
             )
             .attr("class", "knot-save"),
@@ -1401,7 +1414,7 @@ fn authoring_view(state: &AuthoringState) -> AuthoringView {
                 "Resolve",
                 |state: &mut AuthoringState, _click: PointerClick| {
                     if state.resolve_available {
-                        state.resolve_requested = true;
+                        state.requests.push(AuthoringRequest::Resolve);
                     }
                 },
             )
@@ -1416,7 +1429,7 @@ fn authoring_view(state: &AuthoringState) -> AuthoringView {
             ),
             button("Run", |state: &mut AuthoringState, _click: PointerClick| {
                 if state.run_available {
-                    state.run_requested = true;
+                    state.requests.push(AuthoringRequest::Run);
                 }
             })
             .attr("class", "knot-effect")
@@ -1431,7 +1444,7 @@ fn authoring_view(state: &AuthoringState) -> AuthoringView {
             button(
                 "Reload",
                 |state: &mut AuthoringState, _click: PointerClick| {
-                    state.reload_requested = true;
+                    state.requests.push(AuthoringRequest::Reload);
                 },
             )
             .attr("class", "knot-reload"),
@@ -1529,10 +1542,7 @@ impl KnotDocumentSession {
             editor: KnotEditor::scratch(&address, opened.binding.editable.source),
             status: AuthoringStatus::Current,
             detail: String::new(),
-            save_requested: false,
-            resolve_requested: false,
-            run_requested: false,
-            reload_requested: false,
+            requests: Vec::new(),
             resolve_available,
             run_available,
             derived: opened.binding.editable.derived,
@@ -1859,21 +1869,24 @@ impl DocumentSession<Scene> for KnotDocumentSession {
             return SessionClick::Miss;
         };
         let _: Vec<()> = self.runner.dispatch_click(node, PointerClick::at((x, y)));
-        if self.runner.state().save_requested {
-            self.runner.update(|state| state.save_requested = false);
-            self.save();
-        }
-        if self.runner.state().resolve_requested {
-            self.runner.update(|state| state.resolve_requested = false);
-            self.invoke_effect(KnotEffectKind::Resolve);
-        }
-        if self.runner.state().run_requested {
-            self.runner.update(|state| state.run_requested = false);
-            self.invoke_effect(KnotEffectKind::Run);
-        }
-        if self.runner.state().reload_requested {
-            self.runner.update(|state| state.reload_requested = false);
-            self.reload();
+        // One drain, in the order the toolbar was pressed. Taking the whole
+        // queue in a single `update` also costs one rebuild rather than one
+        // per verb.
+        let requests = if self.runner.state().requests.is_empty() {
+            Vec::new()
+        } else {
+            let mut taken = Vec::new();
+            self.runner
+                .update(|state| taken = std::mem::take(&mut state.requests));
+            taken
+        };
+        for request in requests {
+            match request {
+                AuthoringRequest::Save => self.save(),
+                AuthoringRequest::Resolve => self.invoke_effect(KnotEffectKind::Resolve),
+                AuthoringRequest::Run => self.invoke_effect(KnotEffectKind::Run),
+                AuthoringRequest::Reload => self.reload(),
+            }
         }
         SessionClick::Handled
     }
