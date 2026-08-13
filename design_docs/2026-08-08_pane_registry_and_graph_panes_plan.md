@@ -2,8 +2,17 @@
 
 **Date**: 2026-08-08
 
-**Status**: A0 complete; A1 implemented, with crate-level verification blocked
-by the concurrent Shared Knot dependency seam; A2 not started.
+**Status**: A0 and A1 complete and verified (2026-08-10). Lanes open: **A2**,
+**A6**, and **A7** may proceed in parallel; **A3** is gated on A2; **A4** and
+**A5** are held until A2/A3 report what the tree must carry.
+
+The Shared Knot seam that blocked A1's verification cleared on its own; the
+concurrent lane landed the five reader exports. A second, unrelated blocker
+appeared and is worth recording because Git cannot see it: a machine-local
+`.cargo/config.toml` path override still named `mere/crates/persona/personae`
+after that crate moved to `crates/dramatis`. Thirty-eight of thirty-nine
+overrides were correct, which is how a silent patch bypass hides, and the
+file is gitignored, so no commit repairs it for the next machine.
 
 **Scope**: Make pane instances independent, restore real multi-graph composition,
 generalize the window layout, and make the shell configurable without collapsing
@@ -548,7 +557,7 @@ needed to prove the state transitions.
 
 ### A1. Registry and instance correctness
 
-**Implemented 2026-08-09; final verification pending.** The built-in registry now
+**Complete and verified 2026-08-10.** The built-in registry now
 owns stable ids, labels, source validation, multiplicity, capabilities, palette
 availability, schemas, legacy construction, and renderer keys. `PaneKind`, `System`,
 magic custom-pane strings, and fake layout leaves have been removed. Retained
@@ -566,7 +575,27 @@ crate tests can execute.
 Done when adding a Publishing-like pane requires one registration plus its renderer,
 and two supported same-kind panes retain independent scroll, selection, and controls.
 
+
+### Running the open lanes side by side
+
+A2, A6, and A7 are independent by design, but the tree is not: several agents
+already commit here, and this session watched work swept into the wrong commit
+twice and a red test appear in a file no lane had touched. Three rules, cheap
+to keep and expensive to retrofit:
+
+- **Each lane owns its files.** A2 owns the graph pool and surface identity; A6
+  owns chrome, omnibar, and transcript; A7 owns Cambium components and settings.
+  Where a lane must touch a shared file, it touches only its own items in it.
+- **Commit your own paths, not the tree.** The whole-tree default is right for
+  one agent and wrong for three. Where a sweep happens anyway, name what was
+  swept in the message, as this repo already does.
+- **A red test outside your lane is a report, not a task.** The current
+  `publish_pane::tests::unavailable_panel_is_an_honest_configured_surface`
+  failure belongs to the Shared Knot lane and is outstanding; it is not A2's to
+  silence.
 ### A2. Graph runtime pool and two-graph composition
+
+**Open.** A1, its dependency, is signed off.
 
 - Replace `App::canvas` and exclusive `session_id` routing with a graph runtime pool
   plus Forme runtimes and focused-space context.
@@ -578,6 +607,8 @@ Done when graph A and graph B render side by side in one window, both receive po
 and keyboard input, graph A mutation leaves B unchanged, and restart restores both.
 
 ### A3. Multiple views and Workbenches
+
+**Gated on A2.**
 
 - Allow two Graph panes over one graph with independent cameras and selections.
 - Create or reuse the `FormeRuntime` named by each Graph and Workbench pane's Forme
@@ -593,6 +624,11 @@ different arrangements, and Inspector follows the active member of the intended
 Workbench rather than a global canvas.
 
 ### A4. Containers, tabs, and shared-tree decision
+
+**Held** until A2/A3 report what the tree must carry. This is the tree
+decision, not the tab decision: Turnstone's tree is binary, `TileTree` is
+N-ary and recursive, and nested splits and nested panes both want that
+recursion.
 
 **Decision, 2026-08-11: outcome 3.** `SpaceBlueprint` remains Turnstone's
 serializable topology authority. `genet-host-api::TileTree` stays a useful
@@ -613,6 +649,8 @@ Done when a nested mixed-surface layout survives drag, resize, save, reload, and
 tear-out, with one authoritative topology and the fallback recorded.
 
 ### A5. Floating layer
+
+**Held** behind A4; floats layer onto whichever tree wins.
 
 - Add float geometry, z-order, pinned visibility, focus raise, dock targets, and
   tear-out from a float.
@@ -637,6 +675,8 @@ persistence or raw drag-gesture proof.
 
 ### A6. Shell and configurable chrome
 
+**Open.** Independent of the tree decision, so it runs beside A2.
+
 - Split shell service state from Chrome projections.
 - Add provider registration and configurable omnibar placement, row limit, default
   scope, shortcuts, shellbar edge/visibility, and transcript placement.
@@ -647,6 +687,8 @@ result entry, can be repeated from a docked or floating transcript, and the chro
 composition restores from a named layout.
 
 ### A7. Cambium and Settings completion
+
+**Open.** Self-contained; runs beside A2 and A6.
 
 - Promote pane shell/header, settings form, empty/error/unavailable state, and the
   relevant Frisket specimens into Cambium's component catalog.
