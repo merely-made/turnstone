@@ -18,7 +18,7 @@ use std::rc::Rc;
 
 use cambium::{
     AnyView, DomHandle, GenetAppRunner, GenetCtx, GenetElement, GraphCanvasEdge, GraphCanvasNode,
-    GraphCanvasSubgraph, GraphCanvasSwatch, graph_canvas_swatch,
+    GraphCanvasEvent, GraphCanvasSubgraph, GraphCanvasSwatch, graph_canvas,
 };
 use genet_layout::{IncrementalLayout, ScrollOffsets};
 use genet_scripted_dom::{NodeId, ScriptedDom};
@@ -102,17 +102,20 @@ type SwatchView = Box<dyn AnyView<SwatchState, (), GenetCtx, GenetElement>>;
 type SwatchRunner = GenetAppRunner<SwatchState, fn(&SwatchState) -> SwatchView, SwatchView, ()>;
 
 fn swatch_view(state: &SwatchState) -> SwatchView {
-    let swatch = graph_canvas_swatch(
+    // The canvas owns hover emphasis; this pane keeps only what the graph
+    // decides (selection, arriving through `state.swatch`) and the intents it
+    // has to act on.
+    let swatch = graph_canvas(
         &state.swatch,
-        |state: &mut SwatchState, id: Uuid| {
-            if let Some(activate) = state.activate_of.get(&id) {
-                state.pending.push(SwatchIntent::Activate(activate.clone()));
+        |state: &mut SwatchState, event: GraphCanvasEvent<Uuid>| match event {
+            GraphCanvasEvent::Activate(id) => {
+                if let Some(activate) = state.activate_of.get(&id) {
+                    state.pending.push(SwatchIntent::Activate(activate.clone()));
+                }
             }
+            GraphCanvasEvent::Expand => state.pending.push(SwatchIntent::Expand),
+            GraphCanvasEvent::Drag(_) | GraphCanvasEvent::RelationActivate(_) => {}
         },
-        // Pointer-move routing writes the hover emphasis; the next sync's
-        // paint-leaf rebuild draws it.
-        |state: &mut SwatchState, id: Option<Uuid>| state.swatch.hovered = id,
-        |state: &mut SwatchState| state.pending.push(SwatchIntent::Expand),
     );
     // The swatch fills the top (its own leaf is sized to `swatch_h` in sync).
     let mut children: Vec<SwatchView> = vec![Box::new(
@@ -526,24 +529,46 @@ mod tests {
     }
 
     /// Hover transitions set and clear the emphasis, preset-agnostically.
+    ///
+    /// The emphasis is the canvas component's own state, so this reads it
+    /// where it is now observable: the rendered node's class. The pane no
+    /// longer holds a hover field to assert against, which is the point.
     #[test]
     fn hovering_sets_and_clears_emphasis() {
         let (mut pane, _app, donor) = overmap_pane_on_fork_pair();
+        let selector = genet_probe::Selector::class("graph-canvas-swatch-node")
+            .with_attr("data-key", &donor.0.to_string());
         let (x, y) = pane
-            .resolve(
-                &genet_probe::Selector::class("graph-canvas-swatch-node")
-                    .with_attr("data-key", &donor.0.to_string()),
-                [0.0, 0.0, 480.0, 400.0],
-            )
+            .resolve(&selector, [0.0, 0.0, 480.0, 400.0])
             .expect("the donor session node resolves");
+        let key = donor.0.to_string();
+        let hovered_class = |pane: &SwatchPane| {
+            use layout_dom_api::LayoutDom;
+            let dom = pane.dom.borrow();
+            dom.all_with_class(dom.document(), "graph-canvas-swatch-node")
+                .into_iter()
+                .filter(|node| {
+                    dom.attribute(
+                        *node,
+                        &layout_dom_api::Namespace::from(""),
+                        &layout_dom_api::LocalName::from("data-key"),
+                    ) == Some(key.as_str())
+                })
+                .any(|node| {
+                    dom.attribute(
+                        node,
+                        &layout_dom_api::Namespace::from(""),
+                        &layout_dom_api::LocalName::from("class"),
+                    )
+                    .is_some_and(|class| class.contains("hovered"))
+                })
+        };
+
         assert!(pane.hover(x, y, 480, 400), "entering the node is a change");
-        assert_eq!(
-            pane.runner.state().swatch.hovered,
-            Some(uuid::Uuid::from_u128(0xd0))
-        );
+        assert!(hovered_class(&pane), "the canvas renders its own emphasis");
         assert!(!pane.hover(x, y, 480, 400), "same target, no re-dispatch");
         assert!(pane.hover_leave(), "leaving the pane is a change");
-        assert_eq!(pane.runner.state().swatch.hovered, None, "emphasis cleared");
+        assert!(!hovered_class(&pane), "emphasis cleared");
     }
 
     /// A recovered content state colors the minimap node open — the preset
