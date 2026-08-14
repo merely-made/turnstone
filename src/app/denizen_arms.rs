@@ -13,6 +13,14 @@ use crate::ui::OmnibarState;
 use super::App;
 
 impl App {
+    /// Run a resident because a watch woke it, rather than because somebody
+    /// asked. The same lane either way: a behavior is a denizen whose run was
+    /// triggered, and giving it a second path would give it a second set of
+    /// rules.
+    pub(crate) fn run_denizen_for_cascade(&mut self, member: Uuid) -> Vec<Effect> {
+        self.run_denizen(member)
+    }
+
     pub(super) fn run_denizen(&mut self, member: Uuid) -> Vec<Effect> {
         let Some((subject, label)) = self
             .denizens

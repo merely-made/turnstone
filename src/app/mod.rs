@@ -188,6 +188,16 @@ pub struct App {
     /// captured under its author — `user` for the UI, a denizen's subject hex
     /// during a run. Shared with the capture hook installed at boot.
     pub journal: std::sync::Arc<std::sync::Mutex<mere::kernel::graph::GraphJournal>>,
+    /// Standing subscriptions: which denizen wakes on what (graph behaviors
+    /// W0/W1). Empty until a behavior is installed, which is why the drain
+    /// costs nothing on a session that has none.
+    pub watches: servitor::WatchTable,
+    /// How far the behavior drain has read the journal. Separate from any
+    /// watch's own cursor: this one bounds which entries are even considered.
+    pub behavior_cursor: u64,
+    /// Rounds one cascade may run, from settings (live; floored at 1 by
+    /// `CascadeBudget`).
+    pub cascade_budget: u32,
     /// The manifest trash, cached (overmap O3): each closed session's whole
     /// directory sits under `.trash/`, so the trash IS the removed-sessions
     /// record — derived, no parallel bin. Refreshed on adopt / close /
@@ -815,7 +825,25 @@ impl App {
     }
 
     /// Consume one app intent. Never blocks; anything slow leaves as an effect.
+    /// Record a semantic event from outside the app module (the behavior
+    /// drain). `events` stays private: the drain is the only outside writer,
+    /// and naming it here keeps that true.
+    pub(crate) fn record_event(&mut self, event: crate::observe::AppEvent) {
+        self.events.push(event);
+    }
+
+    /// Apply an action, then run whatever behaviors its commits woke.
+    ///
+    /// The cascade runs *after* the action's own effects are decided, so a
+    /// woken body sees the world the action left rather than the one it found,
+    /// and its own effects join the same return.
     pub fn update(&mut self, action: Action) -> Vec<Effect> {
+        let mut effects = self.dispatch(action);
+        effects.extend(crate::behaviors::drain(self));
+        effects
+    }
+
+    fn dispatch(&mut self, action: Action) -> Vec<Effect> {
         match action {
             Action::OpenAddress(url) => self.open_address(url),
             // The nav pair: move the history cursor and RE-SELECT (never a

@@ -63,6 +63,9 @@ impl App {
             crate::identity::load_or_create_root(&data_root, &crate::identity::default_vault_dir());
         let root = identity::IdentityProvider::master_public_key(identity.as_ref()).to_bytes();
         let mut app = Self {
+            watches: servitor::WatchTable::new(),
+            behavior_cursor: 0,
+            cascade_budget: servitor::cascade::CascadeBudget::DEFAULT.rounds(),
             graph_runtimes: super::GraphRuntimePool::new(
                 initial_graph,
                 Some(session_id),

@@ -23,6 +23,9 @@ impl App {
         let mut frisket = FrisketLayout::default();
         frisket.retag_graph_bound(graph_id);
         Self {
+            watches: servitor::WatchTable::new(),
+            behavior_cursor: 0,
+            cascade_budget: servitor::cascade::CascadeBudget::DEFAULT.rounds(),
             graph_runtimes: super::GraphRuntimePool::new(graph_id, Some(session_id), Canvas::new()),
             graph_views: super::GraphPaneViews::default(),
             forme_runtimes: super::FormeRuntimePool::default(),

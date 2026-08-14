@@ -172,6 +172,11 @@ pub enum AppEvent {
     DenizenRan(String),
     /// A denizen was uninstalled: its delegations revoked, its residency gone.
     DenizenUninstalled(String),
+    /// A behavior cascade hit its round budget with work still pending, naming
+    /// the behaviors still answering each other. Loud rather than a silent
+    /// truncation: the deferred work is still queued, and the user is owed the
+    /// reason their helpers are looping.
+    CascadeExhausted(String),
     /// A denizen install or run was refused, with the reason.
     DenizenRefused(String),
     /// A session's display name was set, by its new label.
@@ -263,6 +268,7 @@ impl AppEvent {
             AppEvent::DenizenInstalled(label) => format!("denizen-installed {label}"),
             AppEvent::DenizenRan(label) => format!("denizen-ran {label}"),
             AppEvent::DenizenUninstalled(label) => format!("denizen-uninstalled {label}"),
+            AppEvent::CascadeExhausted(names) => format!("cascade-exhausted {names}"),
             AppEvent::DenizenRefused(reason) => format!("denizen-refused {reason}"),
             AppEvent::SessionRenamed(label) => format!("session-renamed {label}"),
             AppEvent::NodeRemoved(url) => format!("node-removed {url}"),
