@@ -51,6 +51,8 @@ pub(crate) struct PaneRenderers {
     pub(crate) publish: HashMap<PaneId, crate::publish_pane::PublishPane>,
     /// Recipient controls for a private ticket.
     pub(crate) shared_knot: HashMap<PaneId, crate::share_reader_pane::SharedKnotPane>,
+    /// The Shell Transcript pane: the ledger's visible projection.
+    pub(crate) transcript: HashMap<PaneId, crate::transcript_pane::TranscriptPane>,
     /// The Overmap pane (O1): the switcher as a graph view.
     pub(crate) overmap: HashMap<PaneId, crate::swatch_pane::SwatchPane>,
 }
@@ -74,6 +76,7 @@ impl PaneRenderers {
             publish,
             shared_knot,
             overmap,
+            transcript,
         } = self;
         // Destructured on purpose: adding an eleventh map makes this fail to
         // compile until it is named here, which a list of `self.x.remove(..)`
@@ -88,6 +91,7 @@ impl PaneRenderers {
         publish.remove(&pane);
         shared_knot.remove(&pane);
         overmap.remove(&pane);
+        transcript.remove(&pane);
     }
 
     /// How many renderers are retained across every kind. Test seam: it is how
@@ -104,6 +108,7 @@ impl PaneRenderers {
             + self.publish.len()
             + self.shared_knot.len()
             + self.overmap.len()
+            + self.transcript.len()
     }
 }
 

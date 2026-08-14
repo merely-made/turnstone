@@ -626,3 +626,47 @@ fn floating_pane_relocates_through_dock_and_window_without_losing_identity() {
     assert_eq!(runner_state.get(&inspector.id), Some(&"scroll=64"));
     assert!(validate_spaces(&[primary, lens]).is_empty());
 }
+
+/// A6's fourth clause: the chrome composition restores from a named layout.
+///
+/// Every other blueprint test builds `ChromeBlueprint::default()`, so the
+/// chrome field rode along in serde without any of them being able to tell a
+/// restored composition from a fresh default. This pins a composition where
+/// all four projections differ from the default and from each other.
+#[test]
+fn a_named_layout_carries_a_non_default_chrome_composition() {
+    let spec = pane(
+        3,
+        "roster",
+        PaneSource::Fixed(SourceRef::Settings("turnstone/application".into())),
+        ContextBinding::Application,
+    );
+    let mut blueprint = space("operate", vec![spec.clone()], LayoutNode::Pane(spec.id));
+    // Deliberately four different placements: a default-valued field cannot
+    // masquerade as a restored one.
+    blueprint.chrome = ChromeBlueprint {
+        omnibar: ChromePlacement::Docked(ChromeEdge::Bottom),
+        shellbar: ChromePlacement::Hidden,
+        transcript: ChromePlacement::Pane(spec.id),
+        status: ChromePlacement::Floating,
+    };
+    assert_ne!(
+        blueprint.chrome,
+        ChromeBlueprint::default(),
+        "the fixture must differ from the default it is proving is not assumed"
+    );
+
+    let json = serde_json::to_string(&blueprint).unwrap();
+    let restored: SpaceBlueprint = serde_json::from_str(&json).unwrap();
+
+    assert_eq!(
+        restored.chrome, blueprint.chrome,
+        "every placement restored"
+    );
+    assert_eq!(
+        restored.chrome.transcript,
+        ChromePlacement::Pane(spec.id),
+        "a transcript projected into a pane keeps that pane's identity"
+    );
+    assert_eq!(restored, blueprint);
+}

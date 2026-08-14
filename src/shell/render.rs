@@ -18,7 +18,7 @@ use crate::surface::SurfaceKind;
 
 use winit::dpi::{PhysicalPosition, PhysicalSize};
 
-use super::{CompositeLayer, PlannedScene, Shell, pane_display_label};
+use super::{CompositeLayer, PlannedLayer, PlannedScene, Shell, pane_display_label};
 
 impl Shell {
     /// One pane's scene by kind, at `(rw, rh)`, through the shared retained
@@ -125,6 +125,19 @@ impl Shell {
                     .entry(pane_id)
                     .or_insert_with(crate::apparatus_pane::ApparatusPane::new);
                 pane.sync(&self.app, rw as f32, rh as f32);
+                pane.scene(rw, rh)
+            }
+            Some(PaneContent::Registered(kind))
+                if kind.as_str() == crate::panes::kind::TRANSCRIPT =>
+            {
+                // Reads the shell ledger the omnibar already writes; it
+                // derives nothing of its own.
+                let pane = self
+                    .renderers
+                    .transcript
+                    .entry(pane_id)
+                    .or_insert_with(crate::transcript_pane::TranscriptPane::new);
+                pane.sync(self.app.shell_transcript(), rw as f32, rh as f32);
                 pane.scene(rw, rh)
             }
             Some(PaneContent::Registered(kind))
@@ -244,11 +257,17 @@ impl Shell {
             }
         }
 
+        #[cfg(all(feature = "weld", windows))]
+        let (surface_device, surface_queue) = {
+            let host = self.host.as_ref().expect("host checked at render entry");
+            (host.device().clone(), host.queue().clone())
+        };
+
         // Pass 1 (mutable): produce each surface's scene at ITS rect size. Kept
         // separate from rasterization so framing a content session (which
         // borrows `content_sessions` mutably) never overlaps the immutable
         // `host` borrow the second pass holds.
-        let mut scenes: Vec<PlannedScene> = Vec::with_capacity(surfaces.len());
+        let mut scenes: Vec<PlannedLayer> = Vec::with_capacity(surfaces.len());
         for surface in &surfaces {
             let rect = surface.rect;
             let (rw, rh) = (
@@ -270,12 +289,47 @@ impl Shell {
                     (scene, wgpu::Color::WHITE)
                 }
                 crate::surface::SurfaceKind::Content(node) => {
-                    let Some(session) = self.content_sessions.get_mut(&node) else {
+                    if let Some(session) = self.content_sessions.get_mut(&node) {
+                        // Already pumped above; just frame it at the pane size.
+                        let scene = session.frame(rw, rh);
+                        (scene, wgpu::Color::WHITE)
+                    } else {
+                        #[cfg(all(feature = "weld", windows))]
+                        if let Some(producer) = self.surface_producers.get_mut(&node) {
+                            if let Err(error) = producer.resize(rw, rh) {
+                                tracing::warn!(%node, %error, "surface producer resize failed");
+                            }
+                            match producer.acquire_frame() {
+                                Ok(Some(frame)) => {
+                                    let cached = self.surface_frames.entry(node).or_insert(None);
+                                    if let Err(error) = super::surface_frames::update_imported_frame(
+                                        cached,
+                                        frame,
+                                        &surface_device,
+                                        &surface_queue,
+                                    ) {
+                                        tracing::warn!(%node, %error, "surface frame import failed");
+                                    }
+                                }
+                                Ok(None) => {}
+                                Err(error) => {
+                                    tracing::warn!(%node, %error, "surface frame acquisition failed")
+                                }
+                            }
+                            if let Some(Some(frame)) = self.surface_frames.get(&node) {
+                                scenes.push(PlannedLayer::Imported(CompositeLayer {
+                                    kind: surface.kind,
+                                    view: frame.view(),
+                                    placement: ExternalTexturePlacement::new(rect.dest()),
+                                }));
+                            }
+                            // CEF paints on its own thread. Keep driving its
+                            // mailbox until the shell has a wake bridge.
+                            needs_redraw = true;
+                            continue;
+                        }
                         continue;
-                    };
-                    // Already pumped above; just frame it at the pane size.
-                    let scene = session.frame(rw, rh);
-                    (scene, wgpu::Color::WHITE)
+                    }
                 }
                 crate::surface::SurfaceKind::Pane(id) => {
                     // The pane's scene by kind, through the SHARED retained
@@ -303,14 +357,14 @@ impl Shell {
                     (scene, wgpu::Color::TRANSPARENT)
                 }
             };
-            scenes.push(PlannedScene {
+            scenes.push(PlannedLayer::Scene(PlannedScene {
                 id: surface.id.0,
                 kind: surface.kind,
                 placement: ExternalTexturePlacement::new(rect.dest()),
                 dims: (rw, rh),
                 scene,
                 clear,
-            });
+            }));
         }
 
         // Pass 2 (immutable): rasterize each scene keyed by its surface id (so
@@ -318,20 +372,23 @@ impl Shell {
         // frame) and compose the layers in order.
         let host = self.host.as_ref().unwrap();
         let layers: Vec<CompositeLayer> = scenes
-            .iter()
-            .map(|s| {
-                let (_tex, view) = host.core().rasterize_for(
-                    s.id,
-                    &s.scene,
-                    s.dims.0,
-                    s.dims.1,
-                    ColorLoad::Clear(s.clear),
-                );
-                CompositeLayer {
-                    kind: s.kind,
-                    view,
-                    placement: s.placement,
+            .into_iter()
+            .map(|source| match source {
+                PlannedLayer::Scene(scene) => {
+                    let (_tex, view) = host.core().rasterize_for(
+                        scene.id,
+                        &scene.scene,
+                        scene.dims.0,
+                        scene.dims.1,
+                        ColorLoad::Clear(scene.clear),
+                    );
+                    CompositeLayer {
+                        kind: scene.kind,
+                        view,
+                        placement: scene.placement,
+                    }
                 }
+                PlannedLayer::Imported(layer) => layer,
             })
             .collect();
 

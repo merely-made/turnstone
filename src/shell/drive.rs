@@ -79,6 +79,13 @@ impl genet_probe::Automatable for Shell {
                         }
                     }
                     Some(PaneContent::Registered(kind))
+                        if kind.as_str() == crate::panes::kind::TRANSCRIPT =>
+                    {
+                        if let Some(pane) = self.renderers.transcript.get(&id) {
+                            guards.push(("transcript", rect, pane.dom_ref()));
+                        }
+                    }
+                    Some(PaneContent::Registered(kind))
                         if kind.as_str() == crate::panes::kind::SETTINGS =>
                     {
                         if let Some(pane) = self.renderers.settings.get(&id) {

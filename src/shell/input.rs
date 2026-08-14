@@ -30,6 +30,17 @@ pub(super) fn pointer_button(button: MouseButton) -> Option<PointerButton> {
     }
 }
 
+fn surface_mouse_button(button: MouseButton) -> Option<inker::MouseButton> {
+    match button {
+        MouseButton::Left => Some(inker::MouseButton::Left),
+        MouseButton::Middle => Some(inker::MouseButton::Middle),
+        MouseButton::Right => Some(inker::MouseButton::Right),
+        MouseButton::Back => Some(inker::MouseButton::Back),
+        MouseButton::Forward => Some(inker::MouseButton::Forward),
+        _ => None,
+    }
+}
+
 impl Shell {
     pub(super) fn click_pane_row(&mut self, substr: &str) {
         // Both list panes resolve through the shared driver's `click`: a Trail
@@ -92,9 +103,25 @@ impl Shell {
         let plan = self.surface_plan();
         if let Some(hit) = crate::surface::hit_test(&plan, self.app.focus, x, y)
             && let crate::surface::SurfaceKind::Content(node) = hit.kind
-            && let Some(session) = self.content_sessions.get_mut(&node)
         {
-            if session.scroll_at(hit.local.0, hit.local.1, dx, dy) {
+            if let Some(session) = self.content_sessions.get_mut(&node) {
+                if session.scroll_at(hit.local.0, hit.local.1, dx, dy) {
+                    self.request_redraw();
+                }
+            } else if let Some(producer) = self.surface_producers.get_mut(&node) {
+                if let Err(error) = producer.send_mouse_input(inker::MouseEvent {
+                    position: inker::PhysicalPosition {
+                        x: hit.local.0,
+                        y: hit.local.1,
+                    },
+                    button: None,
+                    kind: inker::MouseEventKind::ScrollPixels {
+                        delta_x: dx,
+                        delta_y: dy,
+                    },
+                }) {
+                    tracing::warn!(%node, %error, "surface wheel delivery failed");
+                }
                 self.request_redraw();
             }
             return;
@@ -158,12 +185,30 @@ impl Shell {
             match hit.kind {
                 crate::surface::SurfaceKind::Content(node) => {
                     self.app.focus = crate::surface::FocusTarget::Content(node);
-                    if button == MouseButton::Left
-                        && let Some(session) = self.content_sessions.get_mut(&node)
-                        && let SessionClick::Navigate(url) =
-                            session.pointer_down(hit.local.0, hit.local.1)
-                    {
-                        self.act(Action::OpenAddress(url));
+                    if let Some(session) = self.content_sessions.get_mut(&node) {
+                        if button == MouseButton::Left
+                            && let SessionClick::Navigate(url) =
+                                session.pointer_down(hit.local.0, hit.local.1)
+                        {
+                            self.act(Action::OpenAddress(url));
+                        }
+                    } else if let (Some(producer), Some(surface_button)) = (
+                        self.surface_producers.get_mut(&node),
+                        surface_mouse_button(button),
+                    ) {
+                        if let Err(error) = producer.move_focus(inker::FocusReason::Mouse) {
+                            tracing::warn!(%node, %error, "surface focus delivery failed");
+                        }
+                        if let Err(error) = producer.send_mouse_input(inker::MouseEvent {
+                            position: inker::PhysicalPosition {
+                                x: hit.local.0,
+                                y: hit.local.1,
+                            },
+                            button: Some(surface_button),
+                            kind: inker::MouseEventKind::Pressed,
+                        }) {
+                            tracing::warn!(%node, %error, "surface press delivery failed");
+                        }
                     }
                     self.request_redraw();
                     return;
@@ -348,6 +393,35 @@ impl Shell {
                                                 });
                                             }
                                         }
+                                    }
+                                }
+                            }
+                            Some(PaneContent::Registered(kind))
+                                if kind.as_str() == crate::panes::kind::TRANSCRIPT =>
+                            {
+                                let dims = plan.iter().find(|s| s.id == hit.id).map(|s| {
+                                    (
+                                        s.rect.w.round().max(1.0) as u32,
+                                        s.rect.h.round().max(1.0) as u32,
+                                    )
+                                });
+                                let actions = match (dims, self.renderers.transcript.get_mut(&id))
+                                {
+                                    (Some((rw, rh)), Some(pane)) => {
+                                        pane.click(hit.local.0, hit.local.1, rw, rh)
+                                    },
+                                    _ => Vec::new(),
+                                };
+                                for action in actions {
+                                    match action {
+                                        crate::transcript_pane::TranscriptPaneAction::Repeat(
+                                            entry,
+                                        ) => {
+                                            // The lane already lowers this
+                                            // Action; the pane only names the
+                                            // entry to repeat.
+                                            self.act(Action::RepeatShellEntry(entry));
+                                        },
                                     }
                                 }
                             }
@@ -579,13 +653,26 @@ impl Shell {
                 (surface.kind == crate::surface::SurfaceKind::Content(node))
                     .then_some((x - surface.rect.x, y - surface.rect.y))
             });
-            if let Some((local_x, local_y)) = local
-                && self
+            if let Some((local_x, local_y)) = local {
+                if self
                     .content_sessions
                     .get_mut(&node)
                     .is_some_and(|session| session.pointer_move(local_x, local_y))
-            {
-                self.request_redraw();
+                {
+                    self.request_redraw();
+                } else if let Some(producer) = self.surface_producers.get_mut(&node) {
+                    if let Err(error) = producer.send_mouse_input(inker::MouseEvent {
+                        position: inker::PhysicalPosition {
+                            x: local_x,
+                            y: local_y,
+                        },
+                        button: None,
+                        kind: inker::MouseEventKind::Moved,
+                    }) {
+                        tracing::warn!(%node, %error, "surface move delivery failed");
+                    }
+                    self.request_redraw();
+                }
             }
             return;
         }
@@ -628,9 +715,25 @@ impl Shell {
                     .then_some((x - surface.rect.x, y - surface.rect.y))
             });
             let outcome = local.and_then(|(local_x, local_y)| {
-                self.content_sessions
-                    .get_mut(&node)
-                    .map(|session| session.pointer_up(local_x, local_y))
+                if let Some(session) = self.content_sessions.get_mut(&node) {
+                    return Some(session.pointer_up(local_x, local_y));
+                }
+                if let (Some(producer), Some(surface_button)) = (
+                    self.surface_producers.get_mut(&node),
+                    surface_mouse_button(button),
+                ) {
+                    if let Err(error) = producer.send_mouse_input(inker::MouseEvent {
+                        position: inker::PhysicalPosition {
+                            x: local_x,
+                            y: local_y,
+                        },
+                        button: Some(surface_button),
+                        kind: inker::MouseEventKind::Released,
+                    }) {
+                        tracing::warn!(%node, %error, "surface release delivery failed");
+                    }
+                }
+                None
             });
             if let Some(SessionClick::Navigate(url)) = outcome {
                 self.act(Action::OpenAddress(url));

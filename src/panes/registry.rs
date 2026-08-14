@@ -22,6 +22,7 @@ pub mod kind {
     pub const PUBLISHING: &str = "turnstone.publishing";
     pub const SHARED_KNOT: &str = "turnstone.shared-knot";
     pub const SETTINGS: &str = "turnstone.settings";
+    pub const TRANSCRIPT: &str = "turnstone.transcript";
 }
 
 pub mod source_schema {
@@ -134,6 +135,7 @@ pub enum PaneRenderer {
     Publishing,
     SharedKnot,
     Settings,
+    Transcript,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -452,6 +454,21 @@ pub static BUILTIN_PANES: &[PaneDefinition] = &[
             label: "Open Settings pane"
         }),
         Some(|| PaneContent::Registered(PaneKindId::new(kind::SETTINGS)))
+    ),
+    pane!(
+        kind::TRANSCRIPT,
+        "Transcript",
+        PaneSourceShape::fixed(&[FixedSourceKind::Settings]),
+        PaneMultiplicity::PerSpaceAndSource,
+        capabilities(false, false, NONE),
+        "turnstone.transcript.config",
+        "turnstone.transcript.view",
+        PaneRenderer::Transcript,
+        Some(PanePaletteEntry {
+            order: 85,
+            label: "Open Transcript pane"
+        }),
+        Some(|| PaneContent::Registered(PaneKindId::new(kind::TRANSCRIPT)))
     ),
 ];
 
