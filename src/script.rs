@@ -35,6 +35,13 @@ impl ScriptCapabilities {
         Self(READ_APP | DISPATCH_ACTION | NAVIGATE | CONTROL_PANES)
     }
 
+    /// Everything but reading the app. Exists for the tests that prove a
+    /// read-gated binding actually refuses.
+    #[cfg(test)]
+    pub(crate) const fn without_read() -> Self {
+        Self(DISPATCH_ACTION | NAVIGATE | CONTROL_PANES)
+    }
+
     const fn contains(self, capability: u8) -> bool {
         self.0 & capability != 0
     }
@@ -83,6 +90,9 @@ impl AppSnapshot {
 
 struct ControlScriptHost {
     snapshot: AppSnapshot,
+    /// What woke this run, already serialized. Built once per run rather than
+    /// per call, so a body asking twice gets the same answer.
+    trigger: String,
     capabilities: ScriptCapabilities,
     actions: RefCell<Vec<Action>>,
 }
@@ -113,6 +123,22 @@ impl NativeFn<PiccoloEngine> for Snapshot {
             host.snapshot.to_json()
         };
         cx.make_string(&snapshot)
+    }
+}
+
+/// What woke this run: the matched entries, or an empty list when a person
+/// asked for it by hand. Gated on `app.read` like the snapshot, because it
+/// describes the graph.
+struct Trigger;
+
+impl NativeFn<PiccoloEngine> for Trigger {
+    fn call(cx: &mut PiccoloCallCx<'_>) -> Result<PiccoloValue, String> {
+        let trigger = {
+            let host = host(cx)?;
+            require(&host, READ_APP, "app.read")?;
+            host.trigger.clone()
+        };
+        cx.make_string(&trigger)
     }
 }
 
@@ -253,7 +279,13 @@ pub(crate) fn capabilities_from_grant(
 /// description, two runners" pair). A script error surfaces as `Err`, so a
 /// scenario `script` step fails loudly rather than silently emitting nothing.
 pub fn run_control(app: &App, source: &str, max_steps: u64) -> Result<Vec<Action>, String> {
-    run(app, source, ScriptCapabilities::control(), max_steps)
+    run(
+        app,
+        source,
+        ScriptCapabilities::control(),
+        max_steps,
+        &crate::behaviors::TriggerContext::default(),
+    )
 }
 
 /// Run one capability-scoped Lua control script and return the Actions it
@@ -263,6 +295,7 @@ pub(crate) fn run(
     source: &str,
     capabilities: ScriptCapabilities,
     max_steps: u64,
+    trigger: &crate::behaviors::TriggerContext,
 ) -> Result<Vec<Action>, String> {
     if max_steps == 0 {
         return Err("control script requires a positive step budget".to_string());
@@ -270,6 +303,7 @@ pub(crate) fn run(
 
     let host = Rc::new(ControlScriptHost {
         snapshot: AppSnapshot::from_app(app),
+        trigger: trigger.to_json(),
         capabilities,
         actions: RefCell::new(Vec::new()),
     });
@@ -283,6 +317,9 @@ pub(crate) fn run(
         .set_function::<Dispatch>("__mere_dispatch", 1)
         .map_err(|err| format!("install mere.dispatch: {err:?}"))?;
     engine
+        .set_function::<Trigger>("__mere_trigger", 0)
+        .map_err(|err| format!("install mere.trigger: {err:?}"))?;
+    engine
         .set_function::<Open>("__mere_open", 1)
         .map_err(|err| format!("install mere.open: {err:?}"))?;
     engine
@@ -291,7 +328,7 @@ pub(crate) fn run(
     engine
         .eval(
             "mere = { snapshot = __mere_snapshot, dispatch = __mere_dispatch, \
-             open = __mere_open, summon = __mere_summon }",
+             trigger = __mere_trigger, open = __mere_open, summon = __mere_summon }",
         )
         .map_err(|err| format!("install Turnstone control API: {err:?}"))?;
     engine
@@ -306,6 +343,62 @@ pub(crate) fn run(
 
 #[cfg(test)]
 mod tests {
+    use crate::behaviors::TriggerContext;
+
+    /// A body can read what woke it, and act only when something did.
+    #[test]
+    fn a_woken_body_reads_its_trigger_and_a_hand_run_sees_an_empty_one() {
+        use crate::behaviors::TriggerEntry;
+
+        let app = App::test_stub();
+        // The same script both times: dispatch only if something woke us.
+        // Compared against the empty wire form rather than searched, because
+        // the sandbox carries no `string` library; the exact form is pinned by
+        // `an_unwoken_context_is_empty_rather_than_absent`, so the two tests
+        // fail together if it ever changes.
+        let source = "local t = mere.trigger()
+                      if t ~= '{\"woken_by\":[]}' then mere.dispatch('save_session') end";
+
+        let woken = TriggerContext {
+            woken_by: vec![TriggerEntry {
+                seq: 7,
+                author: "user".into(),
+                nodes: vec!["n1".into()],
+            }],
+        };
+        let acted =
+            run(&app, source, ScriptCapabilities::control(), 500, &woken).expect("the woken run");
+        assert_eq!(acted.len(), 1, "the body acted on what woke it");
+
+        let idle = run(
+            &app,
+            source,
+            ScriptCapabilities::control(),
+            500,
+            &TriggerContext::default(),
+        )
+        .expect("the hand-invoked run");
+        assert!(
+            idle.is_empty(),
+            "invoked by hand, the same body finds nothing to answer"
+        );
+    }
+
+    /// The digest is gated like the snapshot: it describes the graph.
+    #[test]
+    fn reading_the_trigger_needs_the_read_capability() {
+        let app = App::test_stub();
+        let err = run(
+            &app,
+            "mere.trigger()",
+            // Every capability except reading the app.
+            ScriptCapabilities::without_read(),
+            200,
+            &TriggerContext::default(),
+        )
+        .unwrap_err();
+        assert!(err.contains("app.read"), "refused by name: {err}");
+    }
     use super::*;
 
     /// B2: capabilities derive from the denizen's grant. A subject granted
@@ -323,7 +416,14 @@ mod tests {
             Mode::Write,
         ));
         let caps = capabilities_from_grant(&world_only, subject);
-        let err = run(&app, "mere.open('mere://x')", caps, 500).unwrap_err();
+        let err = run(
+            &app,
+            "mere.open('mere://x')",
+            caps,
+            500,
+            &TriggerContext::default(),
+        )
+        .unwrap_err();
         assert!(
             err.contains("navigation.open"),
             "the ungranted class denies by name: {err}"
@@ -338,7 +438,14 @@ mod tests {
             control.grant(Grant::new(subject, ring.cap().unwrap(), Mode::Write));
         }
         let caps = capabilities_from_grant(&control, subject);
-        let actions = run(&app, "mere.open('mere://x')", caps, 500).unwrap();
+        let actions = run(
+            &app,
+            "mere.open('mere://x')",
+            caps,
+            500,
+            &TriggerContext::default(),
+        )
+        .unwrap();
         assert_eq!(actions.len(), 1, "the granted surface runs");
     }
 
@@ -350,6 +457,7 @@ mod tests {
             "assert(type(mere.snapshot()) == 'string')",
             ScriptCapabilities::read_only(),
             200,
+            &TriggerContext::default(),
         )
         .unwrap();
         assert!(actions.is_empty());
@@ -370,6 +478,7 @@ mod tests {
             "mere.open('https://example.test'); mere.summon('roster'); mere.dispatch('save_session')",
             ScriptCapabilities::control(),
             500,
+            &TriggerContext::default(),
         )
         .unwrap();
         assert_eq!(
@@ -390,6 +499,7 @@ mod tests {
             "mere.dispatch('save_session')",
             ScriptCapabilities::read_only(),
             200,
+            &TriggerContext::default(),
         )
         .unwrap_err();
         assert!(err.contains("action.dispatch"), "unexpected error: {err}");
@@ -435,10 +545,13 @@ mod tests {
         assert_eq!(a.focused.map(|f| f.url), b.focused.map(|f| f.url));
         assert_eq!(a.panes, b.panes);
         assert_eq!(
-            by_keyboard.canvas.is_isometric(),
-            by_script.canvas.is_isometric()
+            by_keyboard.graph_runtimes.is_isometric(),
+            by_script.graph_runtimes.is_isometric()
         );
-        assert!(by_script.canvas.is_isometric(), "both reached isometric");
+        assert!(
+            by_script.graph_runtimes.is_isometric(),
+            "both reached isometric"
+        );
     }
 
     /// The new lanes are reachable from automation: nav, workbench, window.
@@ -471,6 +584,7 @@ mod tests {
             "while true do end",
             ScriptCapabilities::read_only(),
             20,
+            &TriggerContext::default(),
         )
         .unwrap_err();
         assert!(err.contains("budget"), "unexpected error: {err}");

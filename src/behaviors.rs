@@ -41,6 +41,45 @@ use crate::action::Effect;
 use crate::app::App;
 use crate::observe::AppEvent;
 
+/// What woke a body, handed to it as its run's context.
+///
+/// A digest of the matched entries rather than the deltas themselves: a
+/// behavior needs to know *which nodes moved under its watch*, and handing it
+/// the raw delta vocabulary would couple every body to the kernel's 44
+/// variants and to their evolution. Nodes and attribution are the durable
+/// part of the answer.
+#[derive(Clone, Debug, Default, PartialEq, Eq, serde::Serialize)]
+pub struct TriggerContext {
+    /// The entries that matched this body's watch, in journal order.
+    pub woken_by: Vec<TriggerEntry>,
+}
+
+/// One matched entry, as a body sees it.
+#[derive(Clone, Debug, PartialEq, Eq, serde::Serialize)]
+pub struct TriggerEntry {
+    /// Journal position.
+    pub seq: u64,
+    /// Who committed it. A body can tell a user's edit from another
+    /// behavior's, which is what makes "answer people, ignore machines"
+    /// expressible.
+    pub author: String,
+    /// The node ids the entry touched.
+    pub nodes: Vec<String>,
+}
+
+impl TriggerContext {
+    /// Whether anything woke this run. A manually invoked body has an empty
+    /// context rather than a missing one, so a script can always ask.
+    pub fn is_empty(&self) -> bool {
+        self.woken_by.is_empty()
+    }
+
+    /// The wire form handed to a body, mirroring how the snapshot travels.
+    pub fn to_json(&self) -> String {
+        serde_json::to_string(self).unwrap_or_else(|_| "{\"woken_by\":[]}".to_string())
+    }
+}
+
 /// How deep a containment walk may go before it stops looking.
 ///
 /// Containment is asserted per relation and nothing forbids a cycle, so the
@@ -224,26 +263,51 @@ pub fn drain(app: &mut App) -> Vec<Effect> {
     let budget = CascadeBudget::new(app.cascade_budget);
     let mut effects: Vec<Effect> = Vec::new();
     let mut watches = std::mem::take(&mut app.watches);
+    let mut round_entries: Vec<CommittedEntry> = entries.clone();
     let cascade = run_cascade(&mut watches, budget, entries, |wakes| {
         let mut produced = Vec::new();
         for wake in wakes {
             let Some(member) = member_of(app, wake.subject) else {
                 continue;
             };
+            let context = context_for(&round_entries, wake);
             let before = journal_len(app);
-            effects.extend(app.run_denizen_for_cascade(member));
+            effects.extend(app.run_denizen_for_cascade(member, &context));
             produced.extend(entries_since(app, before));
         }
-        // What the round's bodies committed becomes the next round's input.
+        // What the round's bodies committed becomes the next round's input,
+        // and the next round's digest.
         if let Some(highest) = produced.iter().map(|entry| entry.seq).max() {
             app.behavior_cursor = app.behavior_cursor.max(highest);
         }
+        round_entries = produced.clone();
         produced
     });
     app.watches = watches;
 
     report(app, &cascade);
     effects
+}
+
+/// The digest of what woke one body: the entries its wake named, in order.
+pub fn context_for(entries: &[CommittedEntry], wake: &servitor::Wake) -> TriggerContext {
+    let woken_by = wake
+        .matched
+        .iter()
+        .filter_map(|seq| entries.iter().find(|entry| entry.seq == *seq))
+        .map(|entry| TriggerEntry {
+            seq: entry.seq,
+            author: entry.author.clone(),
+            // The scope's last segment is the node itself: ancestry is written
+            // outermost-first, so the tail is what actually changed.
+            nodes: entry
+                .scopes
+                .iter()
+                .filter_map(|scope| scope.segments().last().cloned())
+                .collect(),
+        })
+        .collect();
+    TriggerContext { woken_by }
 }
 
 /// Which resident node holds `subject`.
@@ -329,6 +393,32 @@ mod tests {
         let scopes = ancestry_scopes(&graph, &id);
         assert_eq!(scopes.len(), 1);
         assert_eq!(scopes[0].segments(), &[id]);
+    }
+
+    #[test]
+    fn a_digest_names_the_nodes_that_changed_not_their_containers() {
+        // Ancestry is written outermost-first, so the tail of each scope is
+        // the node that actually moved. A body wants that, not the folder.
+        let entries = vec![
+            CommittedEntry::new(4, "user", vec![ScopePath::parse("folder/leaf").unwrap()]),
+            CommittedEntry::new(5, "user", vec![ScopePath::parse("elsewhere").unwrap()]),
+        ];
+        let wake = servitor::Wake {
+            subject: Subject::new([1; 32]),
+            matched: vec![4],
+        };
+        let context = context_for(&entries, &wake);
+        assert_eq!(context.woken_by.len(), 1, "only the matched entry");
+        assert_eq!(context.woken_by[0].seq, 4);
+        assert_eq!(context.woken_by[0].nodes, vec!["leaf".to_string()]);
+        assert_eq!(context.woken_by[0].author, "user");
+    }
+
+    #[test]
+    fn an_unwoken_context_is_empty_rather_than_absent() {
+        let context = TriggerContext::default();
+        assert!(context.is_empty());
+        assert_eq!(context.to_json(), r#"{"woken_by":[]}"#);
     }
 
     #[test]

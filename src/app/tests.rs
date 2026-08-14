@@ -619,6 +619,43 @@ fn resident_petitions_run_through_the_gate() {
     let _ = std::fs::remove_dir_all(&app.data_root);
 }
 
+/// Residency, authority, and standing subscriptions end together: a watch
+/// outliving its body would wake nothing, forever.
+#[cfg(feature = "piccolo")]
+#[test]
+fn uninstalling_a_denizen_takes_its_watch_with_it() {
+    let mut app = App::test_stub();
+    app.data_root =
+        std::env::temp_dir().join(format!("turnstone-denizen-watch-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&app.data_root);
+    std::fs::create_dir_all(app.session_dir()).unwrap();
+    let pack = app.data_root.join("watcher.lua");
+    std::fs::write(&pack, "mere.snapshot()").unwrap();
+    app.update(Action::InstallDenizen {
+        path: pack.display().to_string(),
+    });
+    app.update(Action::ConfirmInstallDenizen);
+    let (&member, resident) = app.denizens.residents.iter().next().unwrap();
+    let subject = resident.subject;
+
+    // Adopted rather than registered: the authority table is the install's,
+    // and this test is about removal, not about the containment law (which
+    // servitor proves on its own).
+    app.watches.adopt(servitor::Watch {
+        subject,
+        scope: servitor::ScopePath::parse("folder").unwrap(),
+        self_author: subject.to_hex(),
+        cursor: 0,
+    });
+    assert_eq!(app.watches.watches().len(), 1);
+
+    app.update(Action::UninstallDenizen { member });
+    assert!(
+        app.watches.is_empty(),
+        "the watch went with the residency it belonged to"
+    );
+}
+
 /// With the piccolo runtime: a run lowers the body's Actions through the
 /// spine, and the journal attributes the captured edits to the subject.
 #[cfg(feature = "piccolo")]
@@ -2334,7 +2371,10 @@ fn the_actions_lane_and_short_needles_never_recall() {
             at_ms: 1,
         }],
     });
-    assert!(!app.recall.is_empty(), "hits cached for the two-char needle");
+    assert!(
+        !app.recall.is_empty(),
+        "hits cached for the two-char needle"
+    );
     app.update(Action::OmnibarBackspace);
     assert!(
         app.recall.is_empty(),
@@ -2358,7 +2398,10 @@ fn the_row_count_follows_the_viewport_under_the_configured_ceiling() {
     use crate::ui::visible_row_limit;
 
     let tall = visible_row_limit(10, &ChromePlacement::Overlay, 1080.0, 1.0);
-    assert_eq!(tall, 10, "a tall window offers the whole configured maximum");
+    assert_eq!(
+        tall, 10,
+        "a tall window offers the whole configured maximum"
+    );
 
     let short = visible_row_limit(10, &ChromePlacement::Overlay, 400.0, 1.0);
     assert!(

@@ -17,11 +17,25 @@ impl App {
     /// asked. The same lane either way: a behavior is a denizen whose run was
     /// triggered, and giving it a second path would give it a second set of
     /// rules.
-    pub(crate) fn run_denizen_for_cascade(&mut self, member: Uuid) -> Vec<Effect> {
-        self.run_denizen(member)
+    pub(crate) fn run_denizen_for_cascade(
+        &mut self,
+        member: Uuid,
+        trigger: &crate::behaviors::TriggerContext,
+    ) -> Vec<Effect> {
+        self.run_denizen_with(member, trigger)
     }
 
     pub(super) fn run_denizen(&mut self, member: Uuid) -> Vec<Effect> {
+        // Invoked by hand: the context is empty rather than absent, so a body
+        // asking what woke it always gets an answer.
+        self.run_denizen_with(member, &crate::behaviors::TriggerContext::default())
+    }
+
+    fn run_denizen_with(
+        &mut self,
+        member: Uuid,
+        trigger: &crate::behaviors::TriggerContext,
+    ) -> Vec<Effect> {
         let Some((subject, label)) = self
             .denizens
             .residents
@@ -87,7 +101,7 @@ impl App {
         // piccolo feature; a runtime-free build refuses honestly.
         #[cfg(not(feature = "piccolo"))]
         let actions: Vec<Action> = {
-            let _ = (&source, &subject);
+            let _ = (&source, &subject, trigger);
             tracing::warn!(%label, "denizen run refused: built without the piccolo feature");
             self.events.push(AppEvent::DenizenRefused(
                 "this build carries no script runtime".to_string(),
@@ -102,6 +116,7 @@ impl App {
             // grant (the participant node), never a blanket flag.
             crate::script::capabilities_from_grant(&self.denizens.authority, subject),
             crate::denizen::RUN_BUDGET,
+            trigger,
         ) {
             Ok(actions) => actions,
             Err(err) => {
@@ -150,6 +165,9 @@ impl App {
             return vec![Effect::Redraw];
         };
         let revoked = self.denizens.authority.revoke_root_grants(resident.subject);
+        // A watch outliving its body would wake nothing, forever. Residency,
+        // authority, and standing subscriptions end together.
+        self.watches.remove_subject(resident.subject);
         session_runtime::remove_denizen_binding(self.graph_runtimes.facets_mut(), member);
         let hex = resident.subject.to_hex();
         // The certificates go with the residency: a later adopt must
