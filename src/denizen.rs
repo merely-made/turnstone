@@ -108,6 +108,27 @@ pub struct PendingInstall {
     /// PRESELECTED for the review, never silently granted: the confirm row
     /// names them, and only confirming turns the ask into a grant.
     pub rings: Vec<crate::ring::Ring>,
+    /// The address this pack asks to wake on, from a `-- @watch <url>` line
+    /// in its source, or `None` for a pack that only runs when asked.
+    ///
+    /// Declared as an address rather than a node id because a pack author
+    /// cannot know a UUID; install resolves it. And declared *in the source*
+    /// because the subject is `blake3(source)`, so changing what a pack wakes
+    /// on changes its identity and forces a fresh review. The widening rule
+    /// falls out of the identity rule rather than needing its own machinery.
+    pub watch_url: Option<String>,
+}
+
+/// The address a pack asks to wake on: the first `-- @watch <url>` line.
+///
+/// A comment so an undeclared pack is still ordinary Lua, and a header so it
+/// is visible in the first screenful of the file a reviewer reads.
+pub fn parse_watch(source: &str) -> Option<String> {
+    source.lines().find_map(|line| {
+        let rest = line.trim().strip_prefix("--")?.trim().strip_prefix("@watch")?;
+        let url = rest.trim();
+        (!url.is_empty()).then(|| url.to_string())
+    })
 }
 
 /// The default ring profile a staged pack arrives with. Control rings
@@ -190,6 +211,11 @@ pub fn stage_install(path: &Path) -> Result<PendingInstall, String> {
         }
         PackBody::Scenario(source)
     };
+    let watch_url = match &body {
+        PackBody::Scenario(source) => parse_watch(source),
+        // A component declares no watch yet: its bytes carry no comment lane.
+        PackBody::Component(_) => None,
+    };
     let label = path
         .file_stem()
         .and_then(|s| s.to_str())
@@ -201,6 +227,7 @@ pub fn stage_install(path: &Path) -> Result<PendingInstall, String> {
         body,
         subject,
         rings: default_rings(),
+        watch_url,
     })
 }
 
@@ -222,11 +249,18 @@ pub fn review_line(pending: &PendingInstall) -> String {
     // One row, no clipping: the label, the lane, and the RINGS this install
     // would grant. `own world` stands for the `scenario/` scope every
     // resident gets over its own nested graph.
+    // The watch is part of the ask: a reviewer is owed *when this runs* beside
+    // *what it may touch*, before either is granted.
+    let wakes = match &pending.watch_url {
+        Some(url) => format!(" — wakes on: {url}"),
+        None => String::new(),
+    };
     format!(
-        "Install {} ({}) — grants: {}, own world — Confirm",
+        "Install {} ({}) — grants: {}, own world{} — Confirm",
         pending.label,
         pending.body.noun(),
-        rings
+        rings,
+        wakes
     )
 }
 
@@ -579,8 +613,15 @@ pub fn issue_install_certificates(
 /// The capabilities an install confers: the denizen's own world, the read
 /// face, and one per REVIEWED ring. No blanket grant — an unnamed ring is an
 /// ungranted ring.
-pub fn install_caps(rings: &[crate::ring::Ring]) -> Vec<(Cap, Mode)> {
+pub fn install_caps(rings: &[crate::ring::Ring], watched: Option<&Cap>) -> Vec<(Cap, Mode)> {
     let mut caps = vec![(world_cap(), Mode::Write), (read_cap(), Mode::Write)];
+    // The watched region is granted as a READ scope, which is what makes the
+    // containment law (watch inside read inside grant) hold by construction
+    // rather than by hope: the install that promised the wake also granted
+    // the reading it implies, and `WatchTable::register` checks exactly that.
+    if let Some(cap) = watched {
+        caps.push((cap.clone(), Mode::Read));
+    }
     caps.extend(
         rings
             .iter()
@@ -669,8 +710,24 @@ pub fn install(app: &mut App, pending: PendingInstall) -> Uuid {
     // own world, the read face, and ONE PATH PER PRESELECTED RING. No blanket
     // `app/` grant — an unnamed ring is an ungranted ring, and the session
     // ring only appears here if the review asked for it.
+    // Resolve the declared watch to a concrete region. `visit` mints the
+    // target if it is not there yet, so watching a folder before it exists is
+    // ordinary rather than a failure: the folder appears, and the watch is
+    // real from the first frame.
+    let watched: Option<(Cap, servitor::ScopePath)> = pending.watch_url.as_ref().map(|url| {
+        let key = app.graph_runtimes.visit(url);
+        let id = app
+            .graph_runtimes
+            .graph()
+            .get_node(key)
+            .map(|node| node.id.to_string())
+            .unwrap_or_else(|| url.clone());
+        let scope = servitor::ScopePath::parse(&id).unwrap_or_else(|_| servitor::ScopePath::root());
+        (Cap::Scope(scope.clone()), scope)
+    });
+
     let mut nested = GraphLog::with_id(LogId::new(hex.clone()));
-    let caps = install_caps(&pending.rings);
+    let caps = install_caps(&pending.rings, watched.as_ref().map(|(cap, _)| cap));
     for (cap, mode) in &caps {
         let grant = Grant::new(subject, cap.clone(), *mode);
         if let Err(err) = app.denizens.gate.project_grant(&mut nested, &grant) {
@@ -697,6 +754,21 @@ pub fn install(app: &mut App, pending: PendingInstall) -> Uuid {
             nested,
         },
     );
+
+    // The watch, registered only now: the certificates above are what make the
+    // containment check pass, so registering earlier would refuse its own
+    // grant. The author label is this journal's convention (the full hex, as
+    // `remote_projection` writes it), not chartulary's shorter one.
+    if let Some((_, scope)) = watched {
+        let authority = &app.denizens.authority;
+        match app
+            .watches
+            .register(authority, subject, scope.clone(), subject.to_hex())
+        {
+            Ok(watch) => tracing::info!(scope = %watch.scope, "denizen watch registered"),
+            Err(err) => tracing::warn!(%err, %scope, "denizen watch refused"),
+        }
+    }
     member
 }
 

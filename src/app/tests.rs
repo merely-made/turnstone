@@ -619,6 +619,48 @@ fn resident_petitions_run_through_the_gate() {
     let _ = std::fs::remove_dir_all(&app.data_root);
 }
 
+/// The ruled install-review condition: a reviewer sees *when this runs* beside
+/// *what it may touch*, before either is granted. And confirming registers the
+/// watch, which only succeeds because the same install granted read over the
+/// region it named.
+#[cfg(feature = "piccolo")]
+#[test]
+fn the_review_names_the_watch_and_confirming_registers_it() {
+    let mut app = App::test_stub();
+    app.data_root = std::env::temp_dir()
+        .join(format!("turnstone-denizen-review-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&app.data_root);
+    std::fs::create_dir_all(app.session_dir()).unwrap();
+    let pack = app.data_root.join("filer.lua");
+    std::fs::write(&pack, "-- @watch mere://inbox
+mere.snapshot()").unwrap();
+
+    app.update(Action::InstallDenizen {
+        path: pack.display().to_string(),
+    });
+    let review = crate::denizen::review_line(app.pending_install.as_ref().expect("staged"));
+    assert!(
+        review.contains("wakes on: mere://inbox"),
+        "the ask names the wake: {review}"
+    );
+    assert!(
+        app.watches.is_empty(),
+        "and nothing is registered until the review is confirmed"
+    );
+
+    app.update(Action::ConfirmInstallDenizen);
+    let (_, resident) = app.denizens.residents.iter().next().unwrap();
+    let subject = resident.subject;
+    let watches = app.watches.watches();
+    assert_eq!(watches.len(), 1, "confirming registered the declared watch");
+    assert_eq!(watches[0].subject, subject);
+    assert_eq!(
+        watches[0].self_author,
+        subject.to_hex(),
+        "labelled in this journal's convention, so it cannot wake itself"
+    );
+}
+
 /// Residency, authority, and standing subscriptions end together: a watch
 /// outliving its body would wake nothing, forever.
 #[cfg(feature = "piccolo")]
