@@ -2,9 +2,9 @@
 
 **Date**: 2026-08-08
 
-**Status**: A0 and A1 complete and verified (2026-08-10). Lanes open: **A2**,
-**A6**, and **A7** may proceed in parallel; **A3** is gated on A2; **A4** and
-**A5** are held until A2/A3 report what the tree must carry.
+**Status**: A0, A1 and A6 complete and verified. Lanes open: **A2** and
+**A7**; **A3** is gated on A2; **A4** and **A5** are held until A2/A3 report
+what the tree must carry.
 
 The Shared Knot seam that blocked A1's verification cleared on its own; the
 concurrent lane landed the five reader exports. A second, unrelated blocker
@@ -675,7 +675,41 @@ persistence or raw drag-gesture proof.
 
 ### A6. Shell and configurable chrome
 
-**Open.** Independent of the tree decision, so it runs beside A2.
+**Complete 2026-08-14.** 244 library tests pass.
+
+This lane was marked Open in error. Most of it was already built when the
+marking was made -- `ShellServices`, provider registry, shortcuts, omnibar
+config, `ChromeBlueprint`, and a `ShellTranscript` with correlation, privacy,
+retention and repeat -- and the marking came from reading this document rather
+than the tree. Recorded because the same mistake was then made twice more
+inside the lane: a `repeat_shell_entry` was written before discovering the one
+that already existed, and a critique earlier in this plan asserted a reuse
+target that the dependency graph forbade. Read the code before claiming a lane
+is open.
+
+Two clauses of the done-condition were genuinely unmet, and both are now
+closed:
+
+- **Nothing rendered the transcript.** Its `ChromePlacement` defaults to
+  `Hidden` and no projection existed, so a command could not be "repeated from
+  a docked or floating transcript" -- there was nothing to repeat it from.
+  `transcript_pane` is that projection, registered through the registry as its
+  second proof after Publishing (one registration plus a renderer), and wired
+  through render, input, and the probe driver. Five receipts, two of them about
+  restraint rather than capability: a pending entry is inert, because repeating
+  a command whose first run has not landed doubles an effect by accident; and a
+  redacted entry's text cannot be found by the resolver a scenario runner aims
+  with, which is a stronger claim than not printing it.
+- **Chrome never proved it restores.** Every blueprint test built
+  `ChromeBlueprint::default()`, so the field rode through serde with no test
+  able to tell a restored composition from a fresh default. Pinned now with
+  four deliberately different placements.
+
+Left for whoever takes chrome further, and deliberately not built here: the
+transcript projects only as an ordinary pane. `Docked`, `Floating`, and
+`Overlay` placements are declared in `ChromeBlueprint` and honoured by
+`ShellChromeConfig`, but no host code positions a docked or floating transcript
+yet, and floats as a structure belong to A5.
 
 - Split shell service state from Chrome projections.
 - Add provider registration and configurable omnibar placement, row limit, default
