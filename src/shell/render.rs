@@ -677,7 +677,8 @@ impl Shell {
                 layer.placement,
             );
         }
-        frame.present();
+        // wgpu 30 moved presentation from SurfaceTexture to Queue.
+        host.queue().present(frame);
 
         // Scenario self-capture: compose the SAME layer views this frame just
         // presented into an owned COPY_SRC target and read it back — the
@@ -845,7 +846,10 @@ pub(super) fn read_texture_rgba(
         tracing::warn!("capture readback map failed");
         return Vec::new();
     }
-    let mapped = slice.get_mapped_range();
+    let Ok(mapped) = slice.get_mapped_range() else {
+        tracing::warn!("capture readback get_mapped_range failed");
+        return Vec::new();
+    };
     let mut out = Vec::with_capacity((row_bytes * height) as usize);
     for row in 0..height as usize {
         let start = row * padded as usize;

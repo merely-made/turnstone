@@ -178,7 +178,7 @@ winit = "0.30.13"
 image = { version = "0.25", default-features = false, features = ["png", "jpeg"] }
 # The dropped-sprite data-URI (file drop -> node face).
 base64 = "0.22"
-wgpu = { version = "29", default-features = false, features = ["std", "wgsl"] }
+wgpu = { version = "30", default-features = false, features = ["std", "wgsl"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 # The pane model (src/panes) persists its layout, and `incipit` supplies the
@@ -245,3 +245,11 @@ taffy = { git = "https://github.com/merely-made/genet.git", branch = "main" }
 # ipc-channel: in-process fork vendored in genet (single-process default,
 # unifies gpu-allocator's windows pin with wgpu-hal's).
 ipc-channel = { git = "https://github.com/merely-made/genet.git", branch = "main" }
+
+# Vello on wgpu 30. Upstream vello 0.10 still requires wgpu 29, so netrender
+# (and through it this app's render path) takes vello from the owned fork:
+# the v0.10.0 tag plus exactly the API changes in linebender/vello#1754.
+# `[patch]` applies only from the top-level manifest and is NOT inherited
+# from genet or netrender, so every app workspace restates it. Retires by
+# deletion when upstream ships a wgpu-30 vello.
+vello = { git = "https://github.com/mark-ik/vello.git", branch = "mark-ik/wgpu-30" }

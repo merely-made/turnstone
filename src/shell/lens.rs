@@ -371,7 +371,8 @@ impl Shell {
                 layer.placement,
             );
         }
-        frame.present();
+        // wgpu 30 moved presentation from SurfaceTexture to Queue.
+        lens.host.queue().present(frame);
         // A lens self-capture composes the SAME presented layers (the primary
         // capture discipline, per window).
         if let Some(path) = self.pending_lens_capture.take() {
