@@ -24,6 +24,12 @@
 //!   both its URL-path parent and its domain anchor, so it belongs to more than
 //!   one region at once. Each is its own path, which is why a `WatchEvent`
 //!   carries a slice of scopes.
+//! - **A container is addressed in directory form.** The kernel's rule names a
+//!   parent as `https://host/inbox/`, with the trailing slash, so a folder node
+//!   stored as `https://host/inbox` is a *different address* and nothing is
+//!   ever contained by it. A watch on the slashless form is inert and says
+//!   nothing about why, which is what it cost to find. First thing to check
+//!   when a watch looks asleep.
 //! - **A removed node has no ancestry left to walk.** Its containment edges
 //!   went with it, so it falls back to its bare id: one segment, matching an
 //!   exact-node watch or the root and nothing else. Stated rather than hidden,

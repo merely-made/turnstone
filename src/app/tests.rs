@@ -627,13 +627,17 @@ fn resident_petitions_run_through_the_gate() {
 #[test]
 fn the_review_names_the_watch_and_confirming_registers_it() {
     let mut app = App::test_stub();
-    app.data_root = std::env::temp_dir()
-        .join(format!("turnstone-denizen-review-{}", std::process::id()));
+    app.data_root =
+        std::env::temp_dir().join(format!("turnstone-denizen-review-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&app.data_root);
     std::fs::create_dir_all(app.session_dir()).unwrap();
     let pack = app.data_root.join("filer.lua");
-    std::fs::write(&pack, "-- @watch mere://inbox
-mere.snapshot()").unwrap();
+    std::fs::write(
+        &pack,
+        "-- @watch mere://inbox
+mere.snapshot()",
+    )
+    .unwrap();
 
     app.update(Action::InstallDenizen {
         path: pack.display().to_string(),
@@ -669,16 +673,13 @@ mere.snapshot()").unwrap();
 /// cascade run at the drain, the body's Action lowered through the ordinary
 /// spine, and the journal recording it under the denizen rather than the user.
 ///
-/// **Currently failing, and left in as the open question rather than deleted.**
-/// The behavior does not wake: the final assert fires. Everything it rests on
-/// is separately proven (the watch registers, ancestry reads as a scope, the
-/// cascade runs, a body's edits are attributed), so the fault is in one of the
-/// joins, most likely which mint path `OpenAddress` actually takes or where
-/// `behavior_cursor` has already advanced to. Diagnosing it needs the drain
-/// instrumented, and the shared tree has not stayed buildable long enough to
-/// do that. Ignored so it cannot read as a false green.
+/// This failed on its first writing, and the cause was neither the wake
+/// machinery nor either of the joins I suspected: the folder was addressed as
+/// `.../inbox` while `containment_parent_url` names a parent in **directory
+/// form**, `.../inbox/`. Two different addresses, so nothing was ever
+/// contained by the folder and its watch matched nothing. Recorded because it
+/// is the first thing to check whenever a watch looks inert.
 #[cfg(feature = "piccolo")]
-#[ignore = "W2 inbox rule: the behavior does not wake yet; see the doc comment"]
 #[test]
 fn a_node_appearing_under_a_watched_folder_wakes_the_behavior() {
     let mut app = App::test_stub();
@@ -689,10 +690,14 @@ fn a_node_appearing_under_a_watched_folder_wakes_the_behavior() {
 
     // A web-shaped folder, because URL-path containment is what the kernel
     // derives; `mere://` is outside `containment_parent_url`'s scheme set.
+    //
+    // The trailing slash is load-bearing: the rule names a parent in directory
+    // form (`/inbox/`), so a folder node stored as `.../inbox` is a different
+    // address and nothing is ever contained by it.
     let pack = app.data_root.join("filer.lua");
     std::fs::write(
         &pack,
-        "-- @watch https://example.com/inbox
+        "-- @watch https://example.com/inbox/
 mere.open('mere://filed')",
     )
     .unwrap();
