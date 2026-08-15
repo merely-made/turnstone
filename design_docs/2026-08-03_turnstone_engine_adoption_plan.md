@@ -16,7 +16,7 @@ and meerkat is deleted, so the receipts are gone while the model stands.
 Turnstone independently re-landed the foundation. This plan binds the
 remaining model to Turnstone's actual state; it does not re-decide it.
 
-## Current state (verified 2026-08-03)
+## Current state (verified 2026-08-14)
 
 - **Routing**: the content lane routes through `inker::EngineRoutePolicy`
   with `pinned_engine` support ([effects.rs](../src/shell/effects.rs)).
@@ -24,13 +24,12 @@ remaining model to Turnstone's actual state; it does not re-decide it.
   `genet.livery` (LiverySessionEngine), and the Knot authoring engine, in a
   `SessionRegistry<netrender::Scene>` ([mod.rs](../src/shell/mod.rs)).
 - **Picker**: the Apparatus pane's viewer radio respawns live content
-  through the pinned engine. It is a hardcoded three-item array
-  (`VIEWER_OPTIONS` in [apparatus_pane.rs](../src/apparatus_pane.rs)):
-  Auto, genet.web, genet.livery.
-- **Surface engines**: zero wiring. `inker::SurfaceEngineRegistry`,
-  `ScryingTileEngine` (`scrying.web`), graft-engine, and weld-engine all
-  exist in genet, unreferenced here. meerkat's X1 host pool (the platform
-  producer plumbing) died with meerkat;
+  through the pinned engine. `VIEWER_OPTIONS` has Auto, genet.web, and
+  genet.livery; a Windows `--features weld` build adds weld.chromium.
+- **Surface engines**: the Windows Weld first cut is now wired behind
+  `--features weld`: an inker `SurfaceEngineRegistry`, `weld.chromium`
+  producer map, D3D12 transferred-handle import cache, primary-window
+  composition and pointer/key routing. Scrying and graft remain unregistered.
   [2026-07-18_meerkat_harvest.md](2026-07-18_meerkat_harvest.md) and git
   history are the donors.
 - **Compositor**: the shell already composes per-surface textures via
@@ -50,7 +49,7 @@ Three engine kinds, two of them live here today:
 |---|---|---|---|
 | Document | `EngineRegistry` | `EngineDocument` blocks | via nematic lanes (cards/capture) |
 | Session | `SessionRegistry<Scene>` | paint scenes | live: static, livery, knot |
-| Surface | `SurfaceEngineRegistry` | GPU texture stream | absent |
+| Surface | `SurfaceEngineRegistry` | GPU texture stream | Windows Weld first cut behind `weld`; scrying and graft absent |
 
 "Genet with its rungs" means the genet engine's capability ladder is exposed
 as selectable lanes rather than one opaque entry: `genet.web` (static DOM +
@@ -113,6 +112,63 @@ Done when: with `--features scrying`, pinning `scrying.web` on a node shows
 the system WebView's texture composited in that node's tile on Windows, and
 a scenario receipt captures it; graft and weld repeat the shape (their
 producers may land later, each behind its feature, disabled rows until then).
+
+#### E2-Weld Windows first cut (implemented, headed receipt 2026-08-14)
+
+`--features weld` adds the fourth Apparatus viewer choice, `weld.chromium`.
+At process start, `TURNSTONE_CEF_PATH` (or `CEF_PATH`) causes the required
+CEF subprocess probe before tracing or winit. Selecting the viewer then
+initializes one process-wide CEF runtime and a per-node `RequestContext`
+profile at the direct CEF-root child
+`<data_root>/weld/cef-cache/<node>`. CEF rejects a nested profile child as its
+global Default profile, so the direct-child shape is a correctness constraint,
+not a cosmetic path choice. The renderer forces its Windows wgpu host to D3D12
+before device creation, imports Weld's transferred D3D12 handle on that same
+device, retains the texture by `resource_epoch`, and composes it in the
+ordinary surface-plan order. A CEF callback-copy mailbox replacement closes
+its old handle, so it does not leak one Win32 handle per paint.
+
+CEF browser creation is asynchronous. Weld records visibility requested before
+`on_after_created` and applies it when the `BrowserHost` exists; an eager call
+must not mistake the not-yet-populated handle for a missing CEF runtime.
+
+The concrete host projects mouse and keyboard input, focus, accelerated frame
+composition, committed URL and title changes, auxiliary-navigable requests,
+failures/crashes, and cursor callbacks. A committed in-page navigation updates
+the same graph member and appends its per-member lineage. Cursor answers update
+the native winit cursor, including hidden. S1 subsequently added Pointer
+Events-shaped mouse/touch input and HTML DataTransfer-shaped drag/drop. PDF and
+native printing, downloads, cookies, script results, standard automation,
+permissions, auth, popup placement, and snapshots remain unsupported here:
+Weld has many of those operations, but Turnstone has not yet provided their
+shared contract, callback/control UI, or durable policy.
+
+The tail now follows Genet's
+[web-platform host contract](../../genet/docs/2026-08-14_web_platform_host_contract_plan.md).
+That contract is standards-derived and shared by Weld, Scry, Graft, Genet's
+rungs, and Smol. Turnstone projects committed resources into graph navigation;
+cookies/permissions/auth into origin/profile registries and associated facets;
+and PDF/screenshot output into representations attached to a source node unless
+the user explicitly imports them. CDP remains a Weld implementation detail
+behind WebDriver/BiDi-shaped automation.
+
+`TURNSTONE_WELD_USER_AGENT` replaces the process-wide agent string;
+`TURNSTONE_WELD_USER_AGENT_PRODUCT` replaces only its product token. They
+are mutually exclusive. Neither is set by default.
+
+Windows receipt: [e2_weld_windows.scn](../scenarios/e2_weld_windows.scn)
+ran from a fresh `TURNSTONE_ROOT` with `RESULT ok`. Its first capture shows
+the `example.com` Chromium tile composited between Turnstone's graph and
+Apparatus pane. It moves over that tile's visible **Learn more** link and
+requires a `surface-cursor` callback, then clicks. The second capture shows
+IANA's Example Domains page in the same tile; the scenario requires both the
+new focused URL and `content-navigated`. The run also created the UUID-named
+direct-child CEF profile without a CEF profile-creation error.
+
+Done: a Windows scenario pins `weld.chromium`, captures a composited Chromium
+page, and records cursor, input, and same-member navigation round trips.
+Lens-window composition, CEF wake-driven redraws, and the still-unprojected W8
+operations above remain outside this first cut.
 
 ### E3. Activation model
 

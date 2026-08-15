@@ -136,6 +136,20 @@ impl GraphRuntimePool {
     pub fn is_empty(&self) -> bool {
         self.runtimes.is_empty()
     }
+
+    /// Resolve graph authority from member identity instead of the legacy
+    /// active-runtime cursor. A live content callback carries its member, so
+    /// focus changes must not retarget the mutation to another graph.
+    pub fn graph_containing_member(&self, member: uuid::Uuid) -> Option<GraphId> {
+        self.runtimes.iter().find_map(|(graph, runtime)| {
+            runtime
+                .canvas
+                .graph()
+                .get_node_by_id(member)
+                .is_some()
+                .then_some(*graph)
+        })
+    }
 }
 
 /// Compatibility only for callers that have not yet crossed the A2 routing

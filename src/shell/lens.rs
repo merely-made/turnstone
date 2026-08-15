@@ -57,6 +57,11 @@ impl Shell {
             let options = NetrenderOptions {
                 tile_cache_size: Some(16),
                 enable_vello: true,
+                // A Weld build has one Windows CEF runtime whose native frames
+                // are D3D12 resources. Keep every Turnstone presentation
+                // device on that API, including a lens created later.
+                #[cfg(all(feature = "weld", windows))]
+                backends: Some(wgpu::Backends::DX12),
                 ..Default::default()
             };
             match SurfaceHost::boot(

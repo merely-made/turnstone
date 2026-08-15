@@ -65,6 +65,11 @@ impl ApplicationHandler for Shell {
         let options = NetrenderOptions {
             tile_cache_size: Some(64),
             enable_vello: true,
+            // CEF's accelerated Windows callback exports a D3D12 shared
+            // texture. The host device must use the same API before any
+            // surface is spawned; a Vulkan device cannot import that handle.
+            #[cfg(all(feature = "weld", windows))]
+            backends: Some(wgpu::Backends::DX12),
             ..Default::default()
         };
         match SurfaceHost::boot(window.clone(), self.width, self.height, options) {
@@ -74,6 +79,14 @@ impl ApplicationHandler for Shell {
                 event_loop.exit();
                 return;
             }
+        }
+
+        // Restored Weld-pinned nodes are requested before winit gives us a
+        // device. Now that the host exists, replay their ordinary spawn effect
+        // through the same registry path a live viewer change uses.
+        let pending_surface_spawns = std::mem::take(&mut self.pending_surface_spawns);
+        for (node, url) in pending_surface_spawns {
+            self.run_effects(vec![crate::action::Effect::SpawnContent { node, url }]);
         }
 
         // Always-offload physics: the simulation runs on an armillary actor
@@ -147,6 +160,11 @@ impl ApplicationHandler for Shell {
                 let (x, y) = self.cursor;
                 self.drop_file(x, y, &path);
             }
+            WindowEvent::HoveredFile(path) => {
+                let (x, y) = self.cursor;
+                self.hover_file(x, y, &path);
+            }
+            WindowEvent::HoveredFileCancelled => self.cancel_host_file_drag(),
             WindowEvent::Resized(size) => {
                 self.width = size.width.max(1);
                 self.height = size.height.max(1);
@@ -154,8 +172,8 @@ impl ApplicationHandler for Shell {
                     host.resize(self.width, self.height);
                 }
                 self.app.graph_runtimes.resize(self.width, self.height);
-        self.app.viewport = (self.width as f32, self.height as f32);
-        self.app.reflow_omnibar();
+                self.app.viewport = (self.width as f32, self.height as f32);
+                self.app.reflow_omnibar();
                 self.request_redraw();
             }
             // Continuous gestures map onto the canvas's semantic input methods
@@ -172,6 +190,7 @@ impl ApplicationHandler for Shell {
                 self.cursor = (position.x as f32, position.y as f32);
                 self.deliver_move(self.cursor.0, self.cursor.1);
                 self.deliver_hover(self.cursor.0, self.cursor.1);
+                self.update_host_file_drag(self.cursor.0, self.cursor.1);
                 let graph_redraw = self
                     .surface_plan()
                     .into_iter()
@@ -191,6 +210,7 @@ impl ApplicationHandler for Shell {
                     self.request_redraw();
                 }
             }
+            WindowEvent::CursorLeft { .. } => self.reset_surface_cursor(),
             WindowEvent::MouseWheel { delta, .. } => {
                 // Lines-to-pixels: the canvas pan scale doubles as the content
                 // scroll scale (both want ~40px per wheel line).
@@ -208,8 +228,14 @@ impl ApplicationHandler for Shell {
                     ElementState::Released => self.deliver_release(x, y, button),
                 }
             }
+            WindowEvent::Touch(touch) => self.deliver_touch(touch),
             WindowEvent::KeyboardInput { event, .. } => {
-                if event.state == ElementState::Pressed {
+                if !self.deliver_surface_key(
+                    &event.logical_key,
+                    event.state == ElementState::Pressed,
+                    event.text.as_deref(),
+                ) && event.state == ElementState::Pressed
+                {
                     self.on_key(&event.logical_key);
                 }
             }

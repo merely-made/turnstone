@@ -408,7 +408,16 @@ impl App {
 
     pub(super) fn open_address(&mut self, url: String) -> Vec<Effect> {
         self.events.push(AppEvent::AddressOpened(url.clone()));
-        let key = self.graph_runtimes.visit(&url);
+        // A graph pane owns its selection. Visiting through the compatibility
+        // canvas cursor selected the node only until the next render installed
+        // that pane's saved selection, at which point an address opened from
+        // the omnibar became unfocused and could not spawn or retarget content.
+        let pane = self
+            .focused_graph_pane()
+            .unwrap_or_else(|| self.default_graph_pane());
+        let Some(key) = self.with_graph_pane(pane, |canvas| canvas.visit(&url)) else {
+            return vec![Effect::Redraw];
+        };
         self.history.visit(url.clone());
         let mut effects = vec![Effect::Redraw];
         if fetch::is_fetchable(&url)
@@ -419,6 +428,45 @@ impl App {
         effects
     }
 
+    pub(super) fn commit_content_navigation(&mut self, member: Uuid, url: String) -> Vec<Effect> {
+        let Some(graph) = self.graph_runtimes.graph_containing_member(member) else {
+            tracing::warn!(%member, %url, "content navigation named an unknown member");
+            return Vec::new();
+        };
+        let Some(canvas) = self.graph_runtimes.canvas_mut(graph) else {
+            return Vec::new();
+        };
+        let already_current = canvas
+            .graph()
+            .get_node_by_id(member)
+            .is_some_and(|(_, node)| node.url() == url);
+        if already_current || !canvas.navigate_member(member, &url) {
+            return Vec::new();
+        }
+        self.events
+            .push(AppEvent::ContentNavigated { node: member, url });
+        vec![Effect::SaveSession, Effect::Redraw]
+    }
+
+    pub(super) fn set_content_title(&mut self, member: Uuid, title: String) -> Vec<Effect> {
+        let Some(graph) = self.graph_runtimes.graph_containing_member(member) else {
+            tracing::warn!(%member, "content title named an unknown member");
+            return Vec::new();
+        };
+        let changed = self
+            .graph_runtimes
+            .canvas_mut(graph)
+            .is_some_and(|canvas| canvas.set_node_title_for(member, title.clone()));
+        if !changed {
+            return Vec::new();
+        }
+        self.events.push(AppEvent::ContentTitleChanged {
+            node: member,
+            title,
+        });
+        vec![Effect::SaveSession, Effect::Redraw]
+    }
+
     pub(super) fn nav_back(&mut self) -> Vec<Effect> {
         let Some(url) = self.history.back().map(str::to_string) else {
             return vec![Effect::Redraw];
@@ -427,7 +475,10 @@ impl App {
         if !url.is_empty() {
             // Navigation is a revisit even when its node already
             // exists, so P3's recency-derived score remains honest.
-            self.graph_runtimes.visit(&url);
+            let pane = self
+                .focused_graph_pane()
+                .unwrap_or_else(|| self.default_graph_pane());
+            let _ = self.with_graph_pane(pane, |canvas| canvas.visit(&url));
         }
         vec![Effect::Redraw]
     }
@@ -437,7 +488,10 @@ impl App {
             return vec![Effect::Redraw];
         };
         self.events.push(AppEvent::NavigatedForward(url.clone()));
-        self.graph_runtimes.visit(&url);
+        let pane = self
+            .focused_graph_pane()
+            .unwrap_or_else(|| self.default_graph_pane());
+        let _ = self.with_graph_pane(pane, |canvas| canvas.visit(&url));
         vec![Effect::Redraw]
     }
 
@@ -487,5 +541,69 @@ impl App {
         }
         self.events.push(AppEvent::NodeSpriteSet(member));
         vec![Effect::SaveSession, Effect::Redraw]
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::action::{Action, Effect};
+    use crate::app::App;
+
+    #[test]
+    fn opening_an_address_keeps_the_new_selection_through_pane_rendering() {
+        let mut app = App::test_stub();
+        let pane = app.default_graph_pane();
+
+        app.update(Action::OpenAddress("https://example.com/".into()));
+        let selected = app
+            .graph_runtimes
+            .focused_member()
+            .expect("opening an address selects its node");
+
+        // A graph frame restores pane-local state. The selection must survive
+        // that restore or the next content action has no node to target.
+        app.graph_pane_frame(pane, 800, 600)
+            .expect("the default pane owns the active graph");
+        assert_eq!(app.graph_pane_focused_member(pane), Some(selected));
+        assert_eq!(app.graph_runtimes.focused_member(), Some(selected));
+    }
+
+    #[test]
+    fn committed_content_navigation_grows_the_same_members_lineage() {
+        let mut app = App::test_stub();
+        app.update(Action::OpenAddress("https://example.com/".into()));
+        let member = app.graph_runtimes.focused_member().unwrap();
+        let before = app.graph_runtimes.graph().node_count();
+
+        let effects = app.update(Action::ContentNavigationCommitted {
+            member,
+            url: "https://www.iana.org/help/example-domains".into(),
+        });
+
+        assert_eq!(app.graph_runtimes.graph().node_count(), before);
+        assert_eq!(
+            app.graph_runtimes
+                .graph()
+                .get_node_by_id(member)
+                .map(|(_, node)| node.url()),
+            Some("https://www.iana.org/help/example-domains")
+        );
+        let key = app
+            .graph_runtimes
+            .graph()
+            .get_node_by_id(member)
+            .unwrap()
+            .0;
+        assert_eq!(
+            app.graph_runtimes
+                .graph()
+                .node_history_projection(key)
+                .entries,
+            vec![
+                "https://example.com/".to_string(),
+                "https://www.iana.org/help/example-domains".to_string(),
+            ]
+        );
+        assert!(effects.contains(&Effect::SaveSession));
     }
 }

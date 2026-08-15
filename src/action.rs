@@ -41,6 +41,12 @@ pub enum SpaceRef {
 pub enum Action {
     /// Open an address: mint/select its node in the graph and fetch it.
     OpenAddress(String),
+    /// A live navigable committed a new top-level resource in an existing
+    /// graph member. This grows that member's own navigation lineage; it does
+    /// not mint another member merely because its current URL changed.
+    ContentNavigationCommitted { member: uuid::Uuid, url: String },
+    /// The active document supplied a title for its existing graph member.
+    ContentTitleChanged { member: uuid::Uuid, title: String },
     /// Step back in the visit history: select the previous address's node
     /// without refetching (the r3-owed nav row). No-op at the oldest entry.
     NavBack,

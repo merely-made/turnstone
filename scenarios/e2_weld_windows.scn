@@ -1,0 +1,40 @@
+# Windows Weld E2 receipt. The viewer is pinned before content comes alive, so
+# the captured frame can only be the CEF producer rather than Turnstone's
+# existing genet.web session lane. Run with --features weld, TURNSTONE_CEF_PATH,
+# and a fresh TURNSTONE_ROOT.
+settle 30
+key escape
+
+open https://example.com/
+settle 40
+assert visible
+assert focused example.com
+
+act Open Apparatus pane
+settle 5
+assert pane apparatus
+click-row weld.chromium
+settle 5
+assert event viewer-changed
+
+act Toggle live content
+settle 90
+assert content-live
+assert surface content
+capture 01_weld_example
+
+# Click example.com's visible "Learn more" link inside the CEF tile. This is
+# the same content-pointer seam winit drives; the resulting page transition is
+# visible evidence that Chromium received the input. The focused assertion and
+# semantic event prove the CEF commit also changed this same graph member.
+move-at 310 303
+settle 10
+assert event surface-cursor
+click-at 310 303
+settle 40
+assert content-live
+assert surface content
+assert focused iana.org/help/example-domains
+assert event content-navigated
+capture 02_weld_after_input
+log E2 Weld Windows frame, input, and navigation receipt complete

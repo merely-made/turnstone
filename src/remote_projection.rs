@@ -12,7 +12,7 @@ use graphshell_client::{
     ClientState, PresentationResolution, ResolutionError, ResolvedPresentation,
 };
 use graphshell_endpoint::{IntentSink, PresentationSource, ProjectionCatalog, ProjectionSource};
-use graphshell_protocol::{
+use chirograph::{
     AdvertisedAction, BoundsRelationship, CachePolicy, CapabilityProfile, CardValueV1, ContentHash,
     EndpointDescriptor, IntentEffect, IntentInvocation, IntentReference, IntentResult,
     NativeGlyphV1, PortableCardV1, PresentationBinding, PresentationCapability, PresentationCodec,

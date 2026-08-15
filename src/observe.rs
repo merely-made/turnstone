@@ -124,6 +124,35 @@ pub struct OmnibarView {
 #[derive(Clone, Debug, PartialEq)]
 pub enum AppEvent {
     AddressOpened(String),
+    /// A live navigable committed a new resource in the same graph member.
+    ContentNavigated {
+        node: Uuid,
+        url: String,
+    },
+    /// A live document changed the retained title of its graph member.
+    ContentTitleChanged {
+        node: Uuid,
+        title: String,
+    },
+    /// A live document requested an auxiliary navigable. Placement policy is
+    /// deliberately a later host decision; the request is still observable.
+    AuxiliaryNavigableRequested {
+        node: Uuid,
+        url: String,
+    },
+    /// A live surface changed the host cursor. This is ephemeral presentation
+    /// state, exposed so headed input receipts can prove callback consumption.
+    SurfaceCursorChanged {
+        node: Uuid,
+        shape: &'static str,
+    },
+    /// A page offered a standards-shaped DataTransfer to the host. The node
+    /// address remains attached even though winit cannot start the native OS
+    /// drag loop needed to complete it yet.
+    PageDragRequested {
+        node: Uuid,
+        types: String,
+    },
     /// Back stepped the history cursor to this address.
     NavigatedBack(String),
     /// Forward stepped the history cursor to this address.
@@ -247,6 +276,21 @@ impl AppEvent {
     pub fn describe(&self) -> String {
         match self {
             AppEvent::AddressOpened(url) => format!("address-opened {url}"),
+            AppEvent::ContentNavigated { node, url } => {
+                format!("content-navigated {node} {url}")
+            }
+            AppEvent::ContentTitleChanged { node, title } => {
+                format!("content-title {node} {title}")
+            }
+            AppEvent::AuxiliaryNavigableRequested { node, url } => {
+                format!("auxiliary-navigable {node} {url}")
+            }
+            AppEvent::SurfaceCursorChanged { node, shape } => {
+                format!("surface-cursor {node} {shape}")
+            }
+            AppEvent::PageDragRequested { node, types } => {
+                format!("page-drag-requested {node} types={types}")
+            }
             AppEvent::NavigatedBack(url) => format!("nav-back {url}"),
             AppEvent::NavigatedForward(url) => format!("nav-forward {url}"),
             AppEvent::Reloaded(url) => format!("reloaded {url}"),

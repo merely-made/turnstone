@@ -83,7 +83,7 @@ graphshell-local = { git = "https://github.com/merely-made/mere.git", branch = "
 knot = { git = "https://github.com/merely-made/mere.git", branch = "main" }
 graphshell-client = { git = "https://github.com/merely-made/mere.git", branch = "main" }
 graphshell-endpoint = { git = "https://github.com/merely-made/mere.git", branch = "main" }
-graphshell-protocol = { git = "https://github.com/merely-made/mere.git", branch = "main" }
+chirograph = { git = "https://github.com/merely-made/mere.git", branch = "main" }
 graphshell-stdio = { git = "https://github.com/merely-made/mere.git", branch = "main" }
 # The pane model (rung 5 slice C) is no longer a dependency at all: it folded
 # into `src/panes` on 2026-07-25. One consumer wants no package, and the name
@@ -168,6 +168,9 @@ sprigging = { git = "https://github.com/merely-made/genet.git", branch = "main" 
 # host-facing SplitAxis, so the edge-drop gesture names it. Already in the lock through
 # platen; this names it (the supply plan's one-dep-line precedent).
 genet-host-api = { git = "https://github.com/merely-made/genet.git", branch = "main" }
+# Chromium surface-engine adapter. `weld-engine` is the neutral inker bridge;
+# the CEF runtime remains opt-in because it carries a bundled browser runtime.
+weld-engine = { git = "https://github.com/merely-made/genet.git", branch = "main", optional = true }
 # Pins match mere's workspace so the shared subtrees unify.
 winit = "0.30.13"
 # PNG encode for the scenario lane's GPU self-capture (composed-frame
@@ -194,6 +197,17 @@ wasm = ["dep:app-host", "dep:wasmtime"]
 # Piccolo drives Turnstone's capability-scoped control scripts. It is kept
 # opt-in so the browser host's ordinary build carries no scripting runtime.
 piccolo = ["dep:script-engine-api", "dep:script-engine-piccolo"]
+# Bundled Chromium in an accelerated OSR tile. Windows is the first Turnstone
+# host because it has the live D3D12 shared-handle receipt; the feature stays
+# compile-visible elsewhere but registers no platform producer there yet.
+weld = ["dep:weld-engine", "dep:welding", "dep:grafting", "dep:windows"]
+
+[target.'cfg(windows)'.dependencies]
+# Weld owns CEF's callback-time copy; Grafting owns the generic DX12 shared
+# handle import on Turnstone's existing wgpu device.
+welding = { git = "https://github.com/merely-made/wgpu-weld.git", branch = "main", features = ["cef-runtime"], optional = true }
+grafting = { git = "https://github.com/merely-made/wgpu-graft.git", branch = "main", default-features = false, features = ["wgpu-29"], optional = true }
+windows = { version = "0.62", features = ["Win32_Foundation"], optional = true }
 
 # Registry patches mirrored from mere's workspace manifest: a `[patch]` lives
 # in the top-level manifest of whoever builds, so a standalone consumer of

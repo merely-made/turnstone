@@ -1,0 +1,50 @@
+# Serve scenarios/fixtures at http://127.0.0.1:18766 before this headed run.
+settle 30
+key escape
+
+open http://127.0.0.1:18766/s1_pointer_drag.html
+settle 30
+assert focused 127.0.0.1
+
+act Open Apparatus pane
+settle 5
+click-row weld.chromium
+settle 5
+assert event viewer-changed
+
+act Toggle live content
+settle 90
+assert content-live
+assert surface content
+
+# Two contacts stay distinct and share neither pointer id nor capture.
+touch-at 7001 down 300 250
+touch-at 7002 down 360 250
+settle 20
+assert event touches:2;type:touch
+touch-at 7001 up 300 250
+touch-at 7002 up 360 250
+
+# A host file dropped on addressed web content goes to the page. The same file
+# over the graph still follows Turnstone's existing import/sprite semantics.
+hover-file 350 280 scenarios/fixtures/s1_drop.txt
+settle 10
+assert event host-drag:over
+drop-file 350 280 scenarios/fixtures/s1_drop.txt
+settle 30
+assert event drop:files:1;name:s1_drop.txt
+
+# A page-originated HTML link drag reaches Turnstone as a standards-shaped
+# text/uri-list DataTransfer. Winit cannot start the OS source loop, so
+# Turnstone observes it against the graph node and explicitly cancels CEF's
+# source. Keep this last because Chromium navigates a cancelled synthetic link
+# drag to about:blank#blocked; real winit source gestures yield between events.
+press-at 300 350
+move-at 440 350
+settle 20
+assert event page-drag-requested
+assert event types=text/uri-list
+release-at 440 350
+settle 5
+capture s1_pointer_drag_windows
+log S1 Pointer Events and DataTransfer receipt complete

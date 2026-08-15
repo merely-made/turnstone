@@ -177,6 +177,20 @@ impl Shell {
     /// `DroppedFile` and the scenario's `drop-file` (one description, two
     /// runners).
     pub(super) fn drop_file(&mut self, x: f32, y: f32, path: &std::path::Path) {
+        let drag_path = std::fs::canonicalize(path).unwrap_or_else(|_| path.to_path_buf());
+        if !self
+            .host_file_drag
+            .files
+            .iter()
+            .any(|file| file == &drag_path)
+        {
+            self.host_file_drag.files.push(drag_path);
+        }
+        if self.drop_files_on_surface(x, y) {
+            return;
+        }
+        self.cancel_host_file_drag();
+
         // The node under the drop, if the drop is over the canvas surface.
         let target = {
             let plan = self.surface_plan();
@@ -219,5 +233,140 @@ impl Shell {
         // so the address is stable across platforms.
         let url = format!("file:///{}", path.display().to_string().replace('\\', "/"));
         self.act(Action::OpenAddress(url));
+    }
+
+    pub(super) fn hover_file(&mut self, x: f32, y: f32, path: &std::path::Path) {
+        let drag_path = std::fs::canonicalize(path).unwrap_or_else(|_| path.to_path_buf());
+        if !self
+            .host_file_drag
+            .files
+            .iter()
+            .any(|file| file == &drag_path)
+        {
+            if let Some(node) = self.host_file_drag.target.take() {
+                self.send_host_file_drag(node, x, y, inker::DragPhase::Leave);
+            }
+            self.host_file_drag.files.push(drag_path);
+        }
+        let previous_target = self.host_file_drag.target;
+        self.update_host_file_drag(x, y);
+        if self.host_file_drag.target != previous_target {
+            // CEF requires DragOver after DragEnter before a target can accept
+            // a later Drop. Do both on first hover; the OS supplies the later
+            // UI turn while the pointer remains over the target.
+            self.update_host_file_drag(x, y);
+        }
+    }
+
+    pub(super) fn update_host_file_drag(&mut self, x: f32, y: f32) {
+        if self.host_file_drag.files.is_empty() {
+            return;
+        }
+        let target = self.surface_content_hit(x, y).map(|(node, _, _)| node);
+        if target != self.host_file_drag.target {
+            if let Some(previous) = self.host_file_drag.target.take() {
+                self.send_host_file_drag(previous, x, y, inker::DragPhase::Leave);
+            }
+            if let Some(node) = target {
+                self.send_host_file_drag(node, x, y, inker::DragPhase::Enter);
+                self.host_file_drag.target = Some(node);
+            }
+        } else if let Some(node) = target {
+            self.send_host_file_drag(node, x, y, inker::DragPhase::Over);
+        }
+    }
+
+    pub(super) fn cancel_host_file_drag(&mut self) {
+        if let Some(node) = self.host_file_drag.target.take() {
+            let (x, y) = self.cursor;
+            self.send_host_file_drag(node, x, y, inker::DragPhase::Leave);
+        }
+        self.host_file_drag.files.clear();
+    }
+
+    fn drop_files_on_surface(&mut self, x: f32, y: f32) -> bool {
+        let Some((node, _, _)) = self.surface_content_hit(x, y) else {
+            return false;
+        };
+        if self.host_file_drag.target != Some(node) {
+            self.update_host_file_drag(x, y);
+        }
+        // HTML only makes a potential target droppable after its `dragover`
+        // handler cancels the event. A synthetic/scenario drop has no preceding
+        // CursorMoved event, so supply that required lifecycle phase here.
+        self.send_host_file_drag(node, x, y, inker::DragPhase::Over);
+        self.send_host_file_drag(node, x, y, inker::DragPhase::Drop);
+        self.host_file_drag = super::HostFileDrag::default();
+        self.request_redraw();
+        true
+    }
+
+    fn surface_content_hit(&self, x: f32, y: f32) -> Option<(uuid::Uuid, f32, f32)> {
+        crate::surface::hit_test(&self.surface_plan(), self.app.focus, x, y).and_then(|hit| {
+            match hit.kind {
+                crate::surface::SurfaceKind::Content(node)
+                    if self.surface_producers.contains_key(&node) =>
+                {
+                    Some((node, hit.local.0, hit.local.1))
+                }
+                _ => None,
+            }
+        })
+    }
+
+    fn send_host_file_drag(
+        &mut self,
+        node: uuid::Uuid,
+        window_x: f32,
+        window_y: f32,
+        phase: inker::DragPhase,
+    ) {
+        let local = self.surface_plan().into_iter().find_map(|surface| {
+            (surface.kind == crate::surface::SurfaceKind::Content(node))
+                .then_some((window_x - surface.rect.x, window_y - surface.rect.y))
+        });
+        let Some((x, y)) = local else {
+            return;
+        };
+        let data_transfer = inker::DataTransfer {
+            items: self
+                .host_file_drag
+                .files
+                .iter()
+                .map(|path| inker::DataTransferItem::File {
+                    mime_type: String::new(),
+                    path: path.clone(),
+                    display_name: path
+                        .file_name()
+                        .and_then(|name| name.to_str())
+                        .map(str::to_owned),
+                })
+                .collect(),
+            allowed_operations: inker::DragOperationSet::COPY,
+        };
+        let modifiers = inker::KeyboardModifiers {
+            shift: self.shift,
+            ctrl: self.ctrl,
+            alt: self.alt,
+            meta: false,
+        };
+        if let Some(producer) = self.surface_producers.get_mut(&node)
+            && let Err(error) = producer.send_drag_input(inker::DragEvent {
+                phase,
+                position: inker::PhysicalPosition { x, y },
+                modifiers,
+                // winit's file-hover event omits the initiating pointer state.
+                // The active external drag still represents a held primary
+                // pointer for HTML DragEvent/CEF mouse-modifier purposes.
+                buttons: if matches!(phase, inker::DragPhase::Leave) {
+                    inker::PointerButtons::NONE
+                } else {
+                    inker::PointerButtons::PRIMARY
+                },
+                data_transfer,
+            })
+        {
+            tracing::warn!(%node, %error, ?phase, "surface file drag delivery failed");
+        }
     }
 }

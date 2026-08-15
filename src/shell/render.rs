@@ -13,6 +13,7 @@ use image::ImageEncoder;
 use netrender::external_texture::ExternalTexturePlacement;
 use netrender::{ColorLoad, Scene};
 
+use crate::action::Action;
 use crate::panes::PaneContent;
 use crate::surface::SurfaceKind;
 
@@ -21,6 +22,105 @@ use winit::dpi::{PhysicalPosition, PhysicalSize};
 use super::{CompositeLayer, PlannedLayer, PlannedScene, Shell, pane_display_label};
 
 impl Shell {
+    /// Drain each producer's one host-facing stream before building a frame.
+    /// The bounded batch prevents a faulty producer from monopolising the UI
+    /// thread; another redraw continues the drain.
+    fn drain_surface_web_events(&mut self) {
+        const MAX_EVENTS_PER_SURFACE: usize = 256;
+        let mut pending = Vec::new();
+        for (&node, producer) in &mut self.surface_producers {
+            let Some(web) = producer.as_web_surface() else {
+                continue;
+            };
+            for _ in 0..MAX_EVENTS_PER_SURFACE {
+                let Some(event) = web.poll_web_event() else {
+                    break;
+                };
+                pending.push((node, event));
+            }
+        }
+        for (node, event) in pending {
+            self.consume_surface_web_event(node, event);
+        }
+    }
+
+    fn consume_surface_web_event(&mut self, node: uuid::Uuid, event: inker::WebSurfaceEvent) {
+        match event {
+            inker::WebSurfaceEvent::Navigation(inker::NavigationEvent::Committed { url })
+            | inker::WebSurfaceEvent::AddressChanged { url } => {
+                self.act(Action::ContentNavigationCommitted { member: node, url });
+            }
+            inker::WebSurfaceEvent::Navigation(inker::NavigationEvent::Finished {
+                title: Some(title),
+                ..
+            })
+            | inker::WebSurfaceEvent::TitleChanged { title } => {
+                self.act(Action::ContentTitleChanged {
+                    member: node,
+                    title,
+                });
+            }
+            inker::WebSurfaceEvent::NewWindowRequested { url } => {
+                self.app
+                    .note(crate::observe::AppEvent::AuxiliaryNavigableRequested { node, url });
+                // This event observes a request rather than lowering a graph
+                // mutation. Publish it now so its order against adjacent
+                // producer events is retained.
+                self.run_effects(Vec::new());
+            }
+            inker::WebSurfaceEvent::PageDragStarted {
+                data_transfer,
+                position,
+            } => {
+                let types = data_transfer
+                    .items
+                    .iter()
+                    .map(|item| match item {
+                        inker::DataTransferItem::String { mime_type, .. } => mime_type.clone(),
+                        inker::DataTransferItem::File { mime_type, .. } if mime_type.is_empty() => {
+                            "file".into()
+                        }
+                        inker::DataTransferItem::File { mime_type, .. } => {
+                            format!("file:{mime_type}")
+                        }
+                    })
+                    .collect::<Vec<_>>()
+                    .join(",");
+                self.app.note(crate::observe::AppEvent::PageDragRequested {
+                    node,
+                    types,
+                });
+                // Winit has no native API that can start an OS drag from a
+                // windowless CEF surface. Answer CEF explicitly so its source
+                // does not remain in a stuck drag state; capability reporting
+                // keeps this path Partial until a toolkit drag carrier lands.
+                if let Some(producer) = self.surface_producers.get_mut(&node)
+                    && let Err(error) =
+                        producer.finish_drag_source(position, inker::DragOperationSet::NONE)
+                {
+                    tracing::warn!(%node, %error, "surface page drag cancellation failed");
+                }
+                self.run_effects(Vec::new());
+            }
+            inker::WebSurfaceEvent::Navigation(inker::NavigationEvent::Failed { url, reason }) => {
+                tracing::warn!(%node, %url, %reason, "surface navigation failed");
+            }
+            inker::WebSurfaceEvent::ProcessCrashed { reason } => {
+                tracing::warn!(%node, %reason, "surface content process crashed");
+            }
+            inker::WebSurfaceEvent::BackendDiagnostic { severity, message } => {
+                tracing::debug!(%node, %severity, %message, "surface backend diagnostic");
+            }
+            other => {
+                // S0 makes every producer event observable through one stream.
+                // Later gates give policy/download/representation events typed
+                // request ids and host actions; until then they remain loud in
+                // diagnostics rather than disappearing in a filtered poller.
+                tracing::debug!(%node, event = ?other, "surface event awaits host projection");
+            }
+        }
+    }
+
     /// One pane's scene by kind, at `(rw, rh)`, through the shared retained
     /// runners — used by the primary render AND every lens window (rung 7
     /// depth: windows are pane hosts). The runner being shared is what makes
@@ -207,6 +307,10 @@ impl Shell {
         if self.host.is_none() {
             return;
         }
+        self.drain_surface_web_events();
+        // Cursor callbacks may arrive after the move that provoked them. Poll
+        // the hovered surface on frame wakes as well as immediately on input.
+        self.apply_pending_surface_cursor();
         if self.poll_live_settings() {
             // A SettingsPane has already persisted the write. Refresh every
             // affected retained surface in this and any lens window now.

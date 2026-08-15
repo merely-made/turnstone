@@ -11,13 +11,17 @@ mod gestures;
 mod keys;
 mod render;
 mod renderers;
+#[cfg(all(feature = "weld", windows))]
+mod surface_frames;
+#[cfg(all(feature = "weld", windows))]
+mod weld;
 use render::{capture_composed, decode_sprite};
 mod lens;
 use lens::LensWindow;
 mod input;
 use input::pointer_button;
 
-use std::collections::HashMap;
+use std::collections::{HashMap, VecDeque};
 use std::path::Path;
 use std::sync::Arc;
 use std::sync::mpsc::Receiver;
@@ -105,6 +109,13 @@ struct PlannedScene {
     clear: wgpu::Color,
 }
 
+/// One compositor source in plan order. A retained scene is rasterized by
+/// Turnstone; an imported surface has already supplied a host-device view.
+enum PlannedLayer {
+    Scene(PlannedScene),
+    Imported(CompositeLayer),
+}
+
 /// A rasterized surface ready to compose: its view and where it lands in the
 /// frame. The self-capture path composes the same list, so the receipt is the
 /// presented frame.
@@ -112,6 +123,19 @@ struct CompositeLayer {
     kind: SurfaceKind,
     view: wgpu::TextureView,
     placement: ExternalTexturePlacement,
+}
+
+#[derive(Clone, Copy)]
+struct ActiveSurfaceTouch {
+    pointer_id: i32,
+    node: uuid::Uuid,
+    is_primary: bool,
+}
+
+#[derive(Default)]
+struct HostFileDrag {
+    files: Vec<std::path::PathBuf>,
+    target: Option<uuid::Uuid>,
 }
 
 /// The turnstone shell: app state plus the window, present stack, and ports
@@ -161,6 +185,10 @@ pub struct Shell {
     /// on `self` (the scenario is taken out during a tick) so `capture` can reach
     /// it. `shared_done` guards writing the sentinel exactly once.
     shared_scenario: Option<genet_probe::Scenario>,
+    /// A bounded copy of semantic events after their ordinary consumers have
+    /// received them. Automation drains this copy, so its assertions do not
+    /// compete with trail memory for the app's one event stream.
+    observed_events: VecDeque<String>,
     shared_out_dir: std::path::PathBuf,
     /// A capture the next `render` fulfills from the very views it presents
     /// (never a re-rasterization — the receipt must be the presented frame).
@@ -179,6 +207,18 @@ pub struct Shell {
     content_engines: SessionRegistry<netrender::Scene>,
     content_sessions:
         std::collections::HashMap<uuid::Uuid, Box<dyn DocumentSession<netrender::Scene>>>,
+    /// Long-lived frame-streaming engines, separate from the retained document
+    /// sessions above. The neutral inker registry chooses the producer; the
+    /// shell owns its non-Send live handle and its imported frame cache.
+    surface_engines: inker::SurfaceEngineRegistry,
+    surface_producers: std::collections::HashMap<uuid::Uuid, Box<dyn inker::SurfaceProducer>>,
+    #[cfg(all(feature = "weld", windows))]
+    surface_frames:
+        std::collections::HashMap<uuid::Uuid, Option<surface_frames::ImportedSurfaceFrame>>,
+    /// A restored Weld-pinned node can request content before winit has created
+    /// its device. Keep it requested until `resumed` instead of falsely
+    /// reporting an unavailable engine.
+    pending_surface_spawns: Vec<(uuid::Uuid, String)>,
     /// Configured Knot destination for typed Inspector clips. The handle owns
     /// neither file authority nor vault keys; it only queues endpoint intents.
     knot_clip: Option<crate::knot_authoring::KnotClipHandle>,
@@ -194,6 +234,21 @@ pub struct Shell {
     /// one surface: the canvas needs paired `pointer_down`/`pointer_up`, and a
     /// content click must not leak its release to the canvas beneath.
     pointer_capture: Option<crate::surface::SurfaceKind>,
+    /// DOM `buttons` state for the mouse pointer. Pointer Events carries the
+    /// full post-event mask, including on move, so CEF can distinguish hover
+    /// from a pressed drag.
+    surface_pointer_buttons: inker::PointerButtons,
+    /// Winit touch ids are u64 and may be reused after a contact ends. Live
+    /// contacts receive compact, collision-free DOM/CEF pointer ids and each
+    /// retains its own content-surface capture until Up or Cancel.
+    active_surface_touches: HashMap<u64, ActiveSurfaceTouch>,
+    next_surface_touch_id: i32,
+    /// Files offered by the OS drag manager and the current web-surface target.
+    /// Graph drops keep using the addressed-content import path.
+    host_file_drag: HostFileDrag,
+    /// The frame-streaming content surface currently under the pointer. This
+    /// scopes cursor-shape callbacks and restores the host default on leave.
+    hovered_surface: Option<uuid::Uuid>,
     /// Whether the last scroll key delivered to focused content actually moved
     /// the page (`Some(true/false)`), or `None` if no content scroll key has
     /// been delivered. A probe for the scenario runner: it lets a receipt
@@ -381,6 +436,7 @@ impl Shell {
             alt: false,
             shift: false,
             shared_scenario: shared_scenario_from_env(),
+            observed_events: VecDeque::with_capacity(128),
             shared_out_dir: shared_out_dir_from_env(),
             pending_capture: None,
             pending_lens_capture: None,
@@ -390,11 +446,21 @@ impl Shell {
             height: 600,
             content_engines,
             content_sessions: std::collections::HashMap::new(),
+            surface_engines: inker::SurfaceEngineRegistry::new(),
+            surface_producers: std::collections::HashMap::new(),
+            #[cfg(all(feature = "weld", windows))]
+            surface_frames: std::collections::HashMap::new(),
+            pending_surface_spawns: Vec::new(),
             knot_clip,
             route_policy: mere::routing::route_policy(),
             epoch: std::time::Instant::now(),
             pending_fetches: browse::PendingFetches::default(),
             pointer_capture: None,
+            surface_pointer_buttons: inker::PointerButtons::NONE,
+            active_surface_touches: HashMap::new(),
+            next_surface_touch_id: 2,
+            host_file_drag: HostFileDrag::default(),
+            hovered_surface: None,
             content_scroll_moved: None,
             publish_service,
             shared_knot_service,
@@ -410,6 +476,48 @@ impl Shell {
         };
         shell.run_effects(boot_effects);
         shell
+    }
+
+    fn has_live_content(&self, node: &uuid::Uuid) -> bool {
+        self.content_sessions.contains_key(node) || self.surface_producers.contains_key(node)
+    }
+
+    fn clear_surface_content(&mut self) {
+        self.surface_producers.clear();
+        #[cfg(all(feature = "weld", windows))]
+        self.surface_frames.clear();
+    }
+
+    #[cfg(all(feature = "weld", windows))]
+    fn ensure_weld_engine(&mut self) -> Result<(), String> {
+        if self
+            .surface_engines
+            .contains(inker::routing::ENGINE_WELD_CHROMIUM)
+        {
+            return Ok(());
+        }
+        let host = self
+            .host
+            .as_ref()
+            .ok_or_else(|| "the Turnstone wgpu host is not ready".to_string())?;
+        let cef_path = std::env::var_os("TURNSTONE_CEF_PATH")
+            .or_else(|| std::env::var_os("CEF_PATH"))
+            .map(std::path::PathBuf::from)
+            .ok_or_else(|| {
+                "set TURNSTONE_CEF_PATH (or CEF_PATH) before selecting weld.chromium".to_string()
+            })?;
+        let cache_root = self.app.data_root.join("weld").join("cef-cache");
+        let runtime = weld::initialize_runtime(cef_path, &cache_root)?;
+        let factory =
+            weld::TurnstoneWeldFactory::new(runtime, host.device().clone(), host.queue().clone());
+        self.surface_engines
+            .register(Box::new(weld_engine::WeldEngine::new(Arc::new(factory))));
+        Ok(())
+    }
+
+    #[cfg(not(all(feature = "weld", windows)))]
+    fn ensure_weld_engine(&mut self) -> Result<(), String> {
+        Err("weld.chromium is available only in a Windows build with `--features weld`".into())
     }
 
     /// Poll the value projection after a settings pane persists a write. The
@@ -517,7 +625,7 @@ impl Shell {
                     graph_rects.push((*id, *rect));
                     (SurfaceKind::Graph(*id), *rect)
                 } else if let PaneContent::Tile(m) = content
-                    && self.content_sessions.contains_key(&m)
+                    && self.has_live_content(&m)
                 {
                     // A pinned Tile pane with a live session IS a content
                     // surface at the pane's rect — same keyed path as an
@@ -626,7 +734,7 @@ impl Shell {
                 .map(|(_, rect)| *rect)?;
             self.app
                 .graph_pane_focused_member(pane)
-                .filter(|id| self.content_sessions.contains_key(id))
+                .filter(|id| self.has_live_content(id))
                 .filter(|id| !tiles.iter().any(|(t, _)| t == id))
                 .filter(|id| !tiled_in_lens(id))
                 .filter(|id| !tile_paned(id))
@@ -644,7 +752,7 @@ impl Shell {
             let content = self.app.pane_content(id)?;
             let kind = match content {
                 PaneContent::Orrery => SurfaceKind::Graph(id),
-                PaneContent::Tile(member) if self.content_sessions.contains_key(member) => {
+                PaneContent::Tile(member) if self.has_live_content(member) => {
                     SurfaceKind::Content(*member)
                 }
                 _ => SurfaceKind::Pane(id),

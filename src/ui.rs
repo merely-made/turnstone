@@ -508,7 +508,8 @@ pub(crate) fn cambium_sheet(appearance: &crate::shell_services::AppearanceConfig
         .list-row, .setting-row {{ color: {}; font-size: {:.2}px; }} \
         .list-row.muted, .setting-unsupported {{ color: {}; }} \
         .setting-apply {{ color: {}; background-color: {}; border: 1px solid {}; font-size: {:.2}px; }} \
-        .radio, .toggle {{ color: {}; font-size: {:.2}px; }} \
+        .radio {{ color: {}; font-size: {:.2}px; }} \
+        .toggle {{ color: {}; font-size: {:.2}px; }} \
         .radio.selected {{ color: {}; }} \
         .slider-track {{ background-color: {}; }} \
         .slider-thumb {{ background-color: {}; border-color: {}; }}",
@@ -523,6 +524,8 @@ pub(crate) fn cambium_sheet(appearance: &crate::shell_services::AppearanceConfig
         rgb(palette.text),
         rgb(palette.raised),
         rgb(palette.border),
+        13.0 * zoom,
+        rgb(palette.body_text),
         13.0 * zoom,
         rgb(palette.body_text),
         13.0 * zoom,
@@ -737,7 +740,13 @@ pub const CAMBIUM_SHEET: &str = "\
     .graph-canvas-swatch-node { background-color: transparent; border: 0; padding: 0; }     .graph-canvas-swatch-label { color: rgb(196, 204, 220); font-size: 10px; } \
     .graph-canvas-swatch-expand { color: rgb(150, 160, 180); font-size: 10px; \
                                   background-color: rgb(28, 34, 50); border: 0; \
-                                  border-radius: 4px; padding: 2px 5px; }";
+                                  border-radius: 4px; padding: 2px 5px; } \
+    .radio { color: rgb(220, 226, 238); font-size: 14px; } \
+    .toggle { color: rgb(220, 226, 238); font-size: 14px; } \
+    .apparatus-header { color: rgb(210, 218, 234); font-size: 14px; } \
+    .apparatus-note { color: rgb(174, 185, 205); font-size: 13px; \
+                      padding: 7px 14px; white-space: normal; } \
+    .radio.selected { color: rgb(232, 150, 40); }";
 
 /// The divider band's clear colour: the chrome border tone (rgb(52, 62, 86)),
 /// srgb-to-linear'd for the wgpu clear. An empty scene over this clear IS the
@@ -778,6 +787,10 @@ mod tests {
         assert!(chrome.contains("24.00px"), "16px chrome input at 1.5x");
         assert!(cambium.contains("rgb(248, 249, 252)"));
         assert!(cambium.contains("19.50px"), "13px settings text at 1.5x");
+        assert!(
+            CAMBIUM_SHEET.contains(".radio { color: rgb(220, 226, 238)"),
+            "the shared dark sheet gives controls an explicit readable foreground"
+        );
     }
 
     /// Canary for the chrome layer's load-bearing genet-layout behavior:

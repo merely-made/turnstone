@@ -28,6 +28,11 @@
 //!                            # through the same spine (the automation runner —
 //!                            # needs the `piccolo` feature)
 //! click-at <x> <y>          # pointer click at window px (content links, canvas)
+//! press-at <x> <y>          # mouse down, retained until release-at
+//! release-at <x> <y>        # mouse up after intervening frames/moves
+//! move-at <x> <y>           # pointer hover at window px (cursor/hover receipts)
+//! touch-at <id> down|move|up|cancel <x> <y> [pressure]
+//!                           # one direct contact through Pointer Events
 //! right-click-at <x> <y>    # right-click: opens the command palette, selecting
 //!                           # the node under the pointer (the context menu)
 //! click-row <substr>       # click the list-pane row whose text contains substr
@@ -37,6 +42,7 @@
 //! assert maximized | not-maximized
 //! drop-file <x> <y> <path>  # drop a file at window px (image on node = sprite;
 //!                           # else it becomes a file:// node)
+//! hover-file <x> <y> <path> # begin/continue the OS file-drag lifecycle
 //! drag-tab <a> onto <b>     # drag workbench tab <a> onto tab <b>'s cell (stack)
 //! drag-tab <a> onto <b> @ <edge>  # ...releasing on the cell's left|right|top|bottom
 //!                           # edge band (split beside instead of stack)
@@ -94,6 +100,14 @@ pub enum Step {
     /// Drives the same surface-routed path winit does; a click on content
     /// resolves links, a click on the canvas is a canvas gesture.
     Click(f32, f32),
+    Press(f32, f32),
+    Release(f32, f32),
+    /// A pointer move at window pixel coordinates. This is separately
+    /// driveable so cursor and hover callbacks can be received before a click.
+    Move(f32, f32),
+    /// One direct touch contact. The caller's u64 id is translated to a live,
+    /// collision-free Pointer Events id by the same seam winit drives.
+    Touch(u64, inker::PointerPhase, f32, f32, Option<f32>),
     /// A right-click at window pixel coordinates: opens the command palette,
     /// selecting the graph node under the pointer first (the context menu).
     RightClick(f32, f32),
@@ -119,6 +133,10 @@ pub enum Step {
     /// Drop the file at window `(x, y)` — the same handler winit's
     /// `DroppedFile` drives.
     DropFile(f32, f32, String),
+    /// Hover the file at window `(x, y)` — the same handler winit's
+    /// `HoveredFile` drives, allowing Chromium to answer `dragover` before a
+    /// later `DroppedFile` turn.
+    HoverFile(f32, f32, String),
     /// The workbench has this many cells.
     AssertWbCells(CmpOp, usize),
     /// A workbench cell's tab string contains this substring.
@@ -270,14 +288,19 @@ pub fn parse(body: &str) -> Result<Vec<Step>, String> {
                 rest.parse().map_err(|_| format!("line {}: bad settle count '{rest}'", i + 1))?
             }),
             "click-row" if !rest.is_empty() => Step::ClickRow(rest.to_string()),
-            "drop-file" => {
+            "drop-file" | "hover-file" => {
                 let mut it = rest.splitn(3, char::is_whitespace);
                 let x = it.next().and_then(|t| t.parse().ok());
                 let y = it.next().and_then(|t| t.parse().ok());
                 let path = it.next().map(str::trim).filter(|p| !p.is_empty());
                 match (x, y, path) {
-                    (Some(x), Some(y), Some(path)) => Step::DropFile(x, y, path.to_string()),
-                    _ => return err("drop-file wants '<x> <y> <path>'"),
+                    (Some(x), Some(y), Some(path)) if verb == "drop-file" => {
+                        Step::DropFile(x, y, path.to_string())
+                    }
+                    (Some(x), Some(y), Some(path)) => {
+                        Step::HoverFile(x, y, path.to_string())
+                    }
+                    _ => return err(&format!("{verb} wants '<x> <y> <path>'")),
                 }
             }
             "drag-tab" => {
@@ -327,6 +350,53 @@ pub fn parse(body: &str) -> Result<Vec<Step>, String> {
                     format!("line {}: click-at wants '<x> <y>': '{line}'", i + 1)
                 })?;
                 Step::Click(x, y)
+            }
+            "press-at" => {
+                let (x, y) = parse_xy(rest).ok_or_else(|| {
+                    format!("line {}: press-at wants '<x> <y>': '{line}'", i + 1)
+                })?;
+                Step::Press(x, y)
+            }
+            "release-at" => {
+                let (x, y) = parse_xy(rest).ok_or_else(|| {
+                    format!("line {}: release-at wants '<x> <y>': '{line}'", i + 1)
+                })?;
+                Step::Release(x, y)
+            }
+            "move-at" => {
+                let (x, y) = parse_xy(rest).ok_or_else(|| {
+                    format!("line {}: move-at wants '<x> <y>': '{line}'", i + 1)
+                })?;
+                Step::Move(x, y)
+            }
+            "touch-at" => {
+                let mut fields = rest.split_whitespace();
+                let id = fields.next().and_then(|value| value.parse().ok());
+                let phase = match fields.next() {
+                    Some("down") => Some(inker::PointerPhase::Down),
+                    Some("move") => Some(inker::PointerPhase::Move),
+                    Some("up") => Some(inker::PointerPhase::Up),
+                    Some("cancel") => Some(inker::PointerPhase::Cancel),
+                    _ => None,
+                };
+                let x = fields.next().and_then(|value| value.parse().ok());
+                let y = fields.next().and_then(|value| value.parse().ok());
+                let pressure = fields.next().map(str::parse).transpose().map_err(|_| {
+                    format!("line {}: touch-at pressure must be a number: '{line}'", i + 1)
+                })?;
+                if fields.next().is_some() {
+                    return err("touch-at has too many fields");
+                }
+                match (id, phase, x, y) {
+                    (Some(id), Some(phase), Some(x), Some(y)) => {
+                        Step::Touch(id, phase, x, y, pressure)
+                    }
+                    _ => {
+                        return err(
+                            "touch-at wants '<id> down|move|up|cancel <x> <y> [pressure]'",
+                        );
+                    }
+                }
             }
             "right-click-at" => {
                 let (x, y) = parse_xy(rest).ok_or_else(|| {
@@ -502,5 +572,29 @@ frobnicate
         )
         .unwrap_err();
         assert!(err.contains("line 2"), "{err}");
+    }
+
+    #[test]
+    fn pointer_move_is_a_distinct_scenario_step() {
+        let steps = parse("move-at 310 303").unwrap();
+        let [Step::Move(x, y)] = steps.as_slice() else {
+            panic!("move-at did not parse as a pointer move");
+        };
+        assert_eq!((*x, *y), (310.0, 303.0));
+    }
+
+    #[test]
+    fn file_hover_and_drop_are_distinct_ui_turns() {
+        let steps = parse(
+            "hover-file 350 280 receipt.txt
+drop-file 350 280 receipt.txt",
+        )
+        .unwrap();
+        assert!(
+            matches!(steps[0], Step::HoverFile(350.0, 280.0, ref path) if path == "receipt.txt")
+        );
+        assert!(
+            matches!(steps[1], Step::DropFile(350.0, 280.0, ref path) if path == "receipt.txt")
+        );
     }
 }

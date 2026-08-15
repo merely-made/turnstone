@@ -17,8 +17,8 @@ use std::collections::HashMap;
 use std::rc::Rc;
 
 use cambium::{
-    AnyView, DomHandle, GenetAppRunner, GenetCtx, GenetElement, GraphCanvasEdge, GraphCanvasNode,
-    GraphCanvasEvent, GraphCanvasSubgraph, GraphCanvasSwatch, graph_canvas,
+    AnyView, DomHandle, GenetAppRunner, GenetCtx, GenetElement, GraphCanvasEdge, GraphCanvasEvent,
+    GraphCanvasNode, GraphCanvasSubgraph, GraphCanvasSwatch, graph_canvas,
 };
 use genet_layout::{IncrementalLayout, ScrollOffsets};
 use genet_scripted_dom::{NodeId, ScriptedDom};

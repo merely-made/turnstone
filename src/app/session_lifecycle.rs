@@ -109,7 +109,13 @@ impl App {
         };
         let mut effects = app.adopt_session(session_id);
         if let Some(url) = address {
-            let key = app.graph_runtimes.visit(url);
+            // The launch address is a pane-facing visit just like an omnibar
+            // address. Saving it only on Canvas would be erased on the first
+            // pane render when its local selection is restored.
+            let pane = app.default_graph_pane();
+            let key = app
+                .with_graph_pane(pane, |canvas| canvas.visit(url))
+                .expect("the default graph pane must resolve during boot");
             if fetch::is_fetchable(url)
                 && let Some(node) = app.graph_runtimes.graph().get_node(key).map(|n| n.id)
             {

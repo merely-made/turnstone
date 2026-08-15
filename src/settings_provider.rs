@@ -12,7 +12,7 @@ use genet_host_api::settings::{
 };
 use genet_host_api::tile::SettingsRef;
 use session_runtime::{
-    load_application_settings, save_application_settings, ApplicationSettings, ShellbarEdge,
+    ApplicationSettings, ShellbarEdge, load_application_settings, save_application_settings,
 };
 
 /// Turnstone's application-owned settings page.

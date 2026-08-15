@@ -183,11 +183,7 @@ impl genet_probe::Automatable for Shell {
     }
 
     fn drain_events(&mut self) -> Vec<String> {
-        self.app
-            .take_events()
-            .iter()
-            .map(crate::observe::AppEvent::describe)
-            .collect()
+        self.observed_events.drain(..).collect()
     }
 
     fn act(&mut self, label: &str) -> bool {
@@ -340,6 +336,12 @@ impl Shell {
                 self.deliver_press(*x, *y, MouseButton::Left);
                 self.deliver_release(*x, *y, MouseButton::Left);
             }
+            Step::Press(x, y) => self.deliver_press(*x, *y, MouseButton::Left),
+            Step::Release(x, y) => self.deliver_release(*x, *y, MouseButton::Left),
+            Step::Move(x, y) => self.deliver_move(*x, *y),
+            Step::Touch(id, phase, x, y, pressure) => {
+                self.deliver_touch_contact(*id, *phase, *x, *y, *pressure, None)
+            }
             Step::RightClick(x, y) => {
                 self.deliver_press(*x, *y, MouseButton::Right);
                 self.deliver_release(*x, *y, MouseButton::Right);
@@ -358,6 +360,7 @@ impl Shell {
                 self.drag_workbench_tab(from, onto, edge.as_deref());
             }
             Step::DragTabOut(from) => self.drag_workbench_tab_out(from),
+            Step::HoverFile(x, y, path) => self.hover_file(*x, *y, std::path::Path::new(path)),
             Step::DropFile(x, y, path) => self.drop_file(*x, *y, std::path::Path::new(path)),
             Step::Scroll(x, y, dx, dy) => self.deliver_wheel(*x, *y, *dx, *dy),
             Step::Divider(ratio) => self.act(Action::SetActivePaneDivider(*ratio)),

@@ -8,12 +8,8 @@ use std::cell::RefCell;
 use std::path::PathBuf;
 use std::rc::Rc;
 
-use cambium::{
-    AnyView, DomHandle, GenetAppRunner, GenetCtx, GenetElement, el, setting_row,
-};
-use genet_host_api::settings::{
-    SettingSpec, SettingValue, SettingsProjection, SettingsProvider,
-};
+use cambium::{AnyView, DomHandle, GenetAppRunner, GenetCtx, GenetElement, el, setting_row};
+use genet_host_api::settings::{SettingSpec, SettingValue, SettingsProjection, SettingsProvider};
 use genet_host_api::tile::SettingsRef;
 use genet_layout::{IncrementalLayout, ScrollOffsets};
 use genet_scripted_dom::{NodeId, ScriptedDom};

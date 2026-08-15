@@ -7,7 +7,7 @@
 use std::sync::mpsc::Receiver;
 
 use fetch::{FetchCommand, FetchUpdate};
-use inker::{SessionClick, SessionSpawnRequest};
+use inker::{EngineProfileBinding, SessionClick, SessionSpawnRequest, SurfaceSpawnRequest};
 
 use crate::action::{Action, Effect, Update};
 use crate::browse;
@@ -23,8 +23,8 @@ const RECALL_ROW_LIMIT: usize = 5;
 impl Shell {
     /// Hand the app's drained semantic events to their consumers. Navigation
     /// events become trail-memory records for the root persona (owner = the
-    /// master public key's hex, the stable key-rooted tag); everything else
-    /// is dropped until its consumer arrives.
+    /// master public key's hex, the stable key-rooted tag). A bounded described
+    /// copy feeds automation without competing for this app-owned stream.
     fn drain_app_events(&mut self) {
         let events = self.app.take_events();
         if events.is_empty() {
@@ -41,6 +41,10 @@ impl Shell {
             .map(|d| d.as_millis() as u64)
             .unwrap_or(0);
         for event in events {
+            if self.observed_events.len() == 128 {
+                self.observed_events.pop_front();
+            }
+            self.observed_events.push_back(event.describe());
             if let Some((url, transition)) = crate::trail_memory::navigation(&event) {
                 self.trail_handle
                     .command(crate::trail_memory::TrailCommand::Record {
@@ -178,6 +182,8 @@ impl Shell {
                     }
                     self.app.apply_trash(closing);
                     self.content_sessions.clear();
+                    self.clear_surface_content();
+                    self.pending_surface_spawns.clear();
                     self.lens_windows.clear();
                     self.pending_lens_capture = None;
                     self.lens_divider_drag = None;
@@ -197,6 +203,8 @@ impl Shell {
                     self.save_session();
                     self.release_place_worker();
                     self.content_sessions.clear();
+                    self.clear_surface_content();
+                    self.pending_surface_spawns.clear();
                     self.lens_windows.clear();
                     self.pending_lens_capture = None;
                     self.lens_divider_drag = None;
@@ -245,6 +253,71 @@ impl Shell {
                         pinned_engine: pinned,
                     };
                     let decision = self.route_policy.route(&request);
+                    if decision.engine_id == inker::routing::ENGINE_WELD_CHROMIUM {
+                        if self.host.is_none() {
+                            self.pending_surface_spawns.push((node, url));
+                            continue;
+                        }
+                        let update = match self.ensure_weld_engine() {
+                            Ok(()) => {
+                                let profile = self
+                                    .app
+                                    .data_root
+                                    .join("weld")
+                                    .join("cef-cache")
+                                    .join(node.to_string());
+                                match std::fs::create_dir_all(&profile) {
+                                    Ok(()) => {
+                                        let spawn = SurfaceSpawnRequest {
+                                            url: url.clone(),
+                                            width: self.width.max(1),
+                                            height: self.height.max(1),
+                                            profile: EngineProfileBinding {
+                                                user_data_dir: profile
+                                                    .to_string_lossy()
+                                                    .into_owned(),
+                                            },
+                                            fence_handle: None,
+                                        };
+                                        match self.surface_engines.spawn(&decision, &spawn) {
+                                            Ok(producer) => {
+                                                tracing::info!(%node, %url, engine = %decision.engine_id, "surface content live");
+                                                self.surface_producers.insert(node, producer);
+                                                Update::ContentSpawned {
+                                                    node,
+                                                    facts: Some(crate::content::ContentFacts {
+                                                        engine: decision.engine_id.clone(),
+                                                        structure: None,
+                                                    }),
+                                                }
+                                            }
+                                            Err(error) => Update::ContentFailed {
+                                                node,
+                                                error: format!(
+                                                    "{} ({})",
+                                                    error, decision.engine_id
+                                                ),
+                                            },
+                                        }
+                                    }
+                                    Err(error) => Update::ContentFailed {
+                                        node,
+                                        error: format!(
+                                            "could not create Weld profile {}: {error}",
+                                            profile.display()
+                                        ),
+                                    },
+                                }
+                            }
+                            Err(error) => Update::ContentFailed {
+                                node,
+                                error: format!("{} ({})", error, decision.engine_id),
+                            },
+                        };
+                        let effects = self.app.apply_update(update);
+                        self.run_effects(effects);
+                        continue;
+                    }
                     let spawn = SessionSpawnRequest::new(&url)
                         .with_viewport(self.width.max(1), self.height.max(1));
                     let update = match self.content_engines.spawn(&decision.engine_id, &spawn) {
@@ -294,6 +367,11 @@ impl Shell {
                 Effect::CloseContent { node } => {
                     if self.content_sessions.remove(&node).is_some() {
                         tracing::info!(%node, "content session closed");
+                    }
+                    if self.surface_producers.remove(&node).is_some() {
+                        #[cfg(all(feature = "weld", windows))]
+                        self.surface_frames.remove(&node);
+                        tracing::info!(%node, "surface content closed");
                     }
                 }
                 Effect::Redraw => self.request_redraw(),

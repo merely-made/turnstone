@@ -8,7 +8,7 @@
 //! app-level settings are a DIFFERENT, later pane.
 //!
 //! The viewer control is cambium's `radio_group` over the registered engine
-//! lanes (Auto / genet.web / genet.livery). A pick lowers
+//! lanes (Auto / genet.web / genet.livery, plus Weld in a Weld build). A pick lowers
 //! `Action::SetViewerOverride` through the spine: the override lands in the
 //! browser-state sidecar (persisted at `browser_nodes.json`), and a node with
 //! live content RESPAWNS through the routing policy's `pinned_engine`, so the
@@ -35,6 +35,9 @@ use crate::app::App;
 
 /// The selectable viewer lanes, in radio order. `Auto` clears the override
 /// (the routing policy decides); the named lanes pin an engine id.
+#[cfg(feature = "weld")]
+pub const VIEWER_OPTIONS: [&str; 4] = ["Auto", "genet.web", "genet.livery", "weld.chromium"];
+#[cfg(not(feature = "weld"))]
 pub const VIEWER_OPTIONS: [&str; 3] = ["Auto", "genet.web", "genet.livery"];
 
 /// The viewer override a radio index maps to.
@@ -81,7 +84,7 @@ fn apparatus_view(state: &ApparatusState) -> ApparatusView {
             None => "Viewer — no node focused".to_string(),
         },
     )
-    .attr("class", "list-section-title");
+    .attr("class", "list-section-title apparatus-header");
     let radio = lens(
         |radio: &mut RadioGroup| radio_group(radio, &VIEWER_OPTIONS),
         |state: &mut ApparatusState| &mut state.radio,
@@ -92,7 +95,7 @@ fn apparatus_view(state: &ApparatusState) -> ApparatusView {
         "div",
         "applies on live content by respawning through the pinned engine",
     )
-    .attr("class", "list-row muted");
+    .attr("class", "list-row apparatus-note");
     Box::new(
         el::<_, ApparatusState, ()>("div", (header, radio, note))
             .attr("class", "pane")

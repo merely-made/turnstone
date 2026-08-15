@@ -846,6 +846,10 @@ impl App {
     fn dispatch(&mut self, action: Action) -> Vec<Effect> {
         match action {
             Action::OpenAddress(url) => self.open_address(url),
+            Action::ContentNavigationCommitted { member, url } => {
+                self.commit_content_navigation(member, url)
+            }
+            Action::ContentTitleChanged { member, title } => self.set_content_title(member, title),
             // The nav pair: move the history cursor and RE-SELECT (never a
             // refetch — the find lane's discipline). A remembered address
             // whose node was deleted re-mints it via visit, without touching

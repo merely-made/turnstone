@@ -6,8 +6,9 @@
 //! input (scroll, hover, blur) rides state directly per the gesture law;
 //! durable intent becomes an `Action`.
 
-use winit::event::MouseButton;
+use winit::event::{Force, MouseButton, Touch, TouchPhase};
 use winit::keyboard::{Key as WinitKey, NamedKey as WinitNamedKey};
+use winit::window::CursorIcon;
 
 use crate::panes::PaneContent;
 use genet_probe::AutomatableExt as _;
@@ -38,6 +39,82 @@ fn surface_mouse_button(button: MouseButton) -> Option<inker::MouseButton> {
         MouseButton::Back => Some(inker::MouseButton::Back),
         MouseButton::Forward => Some(inker::MouseButton::Forward),
         _ => None,
+    }
+}
+
+fn surface_button_mask(button: MouseButton) -> inker::PointerButtons {
+    match button {
+        MouseButton::Left => inker::PointerButtons::PRIMARY,
+        MouseButton::Right => inker::PointerButtons::SECONDARY,
+        MouseButton::Middle => inker::PointerButtons::AUXILIARY,
+        MouseButton::Back => inker::PointerButtons::BACK,
+        MouseButton::Forward => inker::PointerButtons::FORWARD,
+        _ => inker::PointerButtons::NONE,
+    }
+}
+
+fn mouse_pointer_event(
+    x: f32,
+    y: f32,
+    phase: inker::PointerPhase,
+    button: Option<inker::MouseButton>,
+    buttons: inker::PointerButtons,
+    modifiers: inker::KeyboardModifiers,
+) -> inker::PointerEvent {
+    inker::PointerEvent {
+        pointer_id: 1,
+        pointer_type: inker::PointerType::Mouse,
+        is_primary: true,
+        phase,
+        position: inker::PhysicalPosition { x, y },
+        button,
+        buttons,
+        width: 1.0,
+        height: 1.0,
+        pressure: None,
+        tangential_pressure: None,
+        tilt_x: None,
+        tilt_y: None,
+        twist: None,
+        altitude_angle: None,
+        azimuth_angle: None,
+        modifiers,
+    }
+}
+
+fn surface_cursor_icon(shape: inker::CursorShape) -> Option<CursorIcon> {
+    match shape {
+        inker::CursorShape::Default => Some(CursorIcon::Default),
+        inker::CursorShape::Text => Some(CursorIcon::Text),
+        inker::CursorShape::Pointer => Some(CursorIcon::Pointer),
+        inker::CursorShape::Crosshair => Some(CursorIcon::Crosshair),
+        inker::CursorShape::Move => Some(CursorIcon::Move),
+        inker::CursorShape::ResizeNs => Some(CursorIcon::NsResize),
+        inker::CursorShape::ResizeEw => Some(CursorIcon::EwResize),
+        inker::CursorShape::ResizeNesw => Some(CursorIcon::NeswResize),
+        inker::CursorShape::ResizeNwse => Some(CursorIcon::NwseResize),
+        inker::CursorShape::Grab => Some(CursorIcon::Grab),
+        inker::CursorShape::Grabbing => Some(CursorIcon::Grabbing),
+        inker::CursorShape::NotAllowed => Some(CursorIcon::NotAllowed),
+        inker::CursorShape::Hidden => None,
+    }
+}
+
+fn surface_cursor_label(shape: inker::CursorShape) -> &'static str {
+    match shape {
+        inker::CursorShape::Default => "default",
+        inker::CursorShape::Text => "text",
+        inker::CursorShape::Pointer => "pointer",
+        inker::CursorShape::Grab => "grab",
+        inker::CursorShape::Grabbing => "grabbing",
+        inker::CursorShape::Crosshair => "crosshair",
+        inker::CursorShape::Move => "move",
+        inker::CursorShape::ResizeNs => "resize-ns",
+        inker::CursorShape::ResizeEw => "resize-ew",
+        inker::CursorShape::ResizeNesw => "resize-nesw",
+        inker::CursorShape::ResizeNwse => "resize-nwse",
+        inker::CursorShape::NotAllowed => "not-allowed",
+        inker::CursorShape::Hidden => "hidden",
     }
 }
 
@@ -142,6 +219,7 @@ impl Shell {
     /// `Action::OpenAddress`, growing the graph; a press on the canvas begins a
     /// canvas gesture. Shared by winit and the scenario runner.
     pub(super) fn deliver_press(&mut self, x: f32, y: f32, button: MouseButton) {
+        self.surface_pointer_buttons.0 |= surface_button_mask(button).0;
         // A press while the omnibar is open dismisses it and is swallowed, so
         // the surface beneath never also reacts to the same press.
         if self.app.omnibar.open {
@@ -199,14 +277,19 @@ impl Shell {
                         if let Err(error) = producer.move_focus(inker::FocusReason::Mouse) {
                             tracing::warn!(%node, %error, "surface focus delivery failed");
                         }
-                        if let Err(error) = producer.send_mouse_input(inker::MouseEvent {
-                            position: inker::PhysicalPosition {
-                                x: hit.local.0,
-                                y: hit.local.1,
+                        if let Err(error) = producer.send_pointer_input(mouse_pointer_event(
+                            hit.local.0,
+                            hit.local.1,
+                            inker::PointerPhase::Down,
+                            Some(surface_button),
+                            self.surface_pointer_buttons,
+                            inker::KeyboardModifiers {
+                                shift: self.shift,
+                                ctrl: self.ctrl,
+                                alt: self.alt,
+                                meta: false,
                             },
-                            button: Some(surface_button),
-                            kind: inker::MouseEventKind::Pressed,
-                        }) {
+                        )) {
                             tracing::warn!(%node, %error, "surface press delivery failed");
                         }
                     }
@@ -405,11 +488,10 @@ impl Shell {
                                         s.rect.h.round().max(1.0) as u32,
                                     )
                                 });
-                                let actions = match (dims, self.renderers.transcript.get_mut(&id))
-                                {
+                                let actions = match (dims, self.renderers.transcript.get_mut(&id)) {
                                     (Some((rw, rh)), Some(pane)) => {
                                         pane.click(hit.local.0, hit.local.1, rw, rh)
-                                    },
+                                    }
                                     _ => Vec::new(),
                                 };
                                 for action in actions {
@@ -421,7 +503,7 @@ impl Shell {
                                             // Action; the pane only names the
                                             // entry to repeat.
                                             self.act(Action::RepeatShellEntry(entry));
-                                        },
+                                        }
                                     }
                                 }
                             }
@@ -661,18 +743,25 @@ impl Shell {
                 {
                     self.request_redraw();
                 } else if let Some(producer) = self.surface_producers.get_mut(&node) {
-                    if let Err(error) = producer.send_mouse_input(inker::MouseEvent {
-                        position: inker::PhysicalPosition {
-                            x: local_x,
-                            y: local_y,
+                    if let Err(error) = producer.send_pointer_input(mouse_pointer_event(
+                        local_x,
+                        local_y,
+                        inker::PointerPhase::Move,
+                        None,
+                        self.surface_pointer_buttons,
+                        inker::KeyboardModifiers {
+                            shift: self.shift,
+                            ctrl: self.ctrl,
+                            alt: self.alt,
+                            meta: false,
                         },
-                        button: None,
-                        kind: inker::MouseEventKind::Moved,
-                    }) {
+                    )) {
                         tracing::warn!(%node, %error, "surface move delivery failed");
                     }
                     self.request_redraw();
                 }
+                self.hovered_surface = Some(node);
+                self.apply_pending_surface_cursor();
             }
             return;
         }
@@ -688,48 +777,119 @@ impl Shell {
             });
             return;
         }
-        let Some(drag) = self.divider_drag.clone() else {
+        if let Some(drag) = self.divider_drag.clone() {
+            let split = crate::pane::cambium_split(drag.axis, drag.ratio);
+            let ratio = split.ratio_at(drag.area.w, drag.area.h, x - drag.area.x, y - drag.area.y);
+            self.act(Action::SetSplitRatio {
+                space: crate::action::SpaceRef::Primary,
+                path: drag.path,
+                ratio,
+            });
+            return;
+        }
+
+        let content_hit = crate::surface::hit_test(&self.surface_plan(), self.app.focus, x, y)
+            .and_then(|hit| match hit.kind {
+                crate::surface::SurfaceKind::Content(node) => {
+                    Some((node, hit.local.0, hit.local.1))
+                }
+                _ => None,
+            });
+        let Some((node, local_x, local_y)) = content_hit else {
+            self.reset_surface_cursor();
             return;
         };
-        let split = crate::pane::cambium_split(drag.axis, drag.ratio);
-        let ratio = split.ratio_at(drag.area.w, drag.area.h, x - drag.area.x, y - drag.area.y);
-        self.act(Action::SetSplitRatio {
-            space: crate::action::SpaceRef::Primary,
-            path: drag.path,
-            ratio,
-        });
+        let Some(producer) = self.surface_producers.get_mut(&node) else {
+            self.reset_surface_cursor();
+            return;
+        };
+        if let Err(error) = producer.send_pointer_input(mouse_pointer_event(
+            local_x,
+            local_y,
+            inker::PointerPhase::Move,
+            None,
+            self.surface_pointer_buttons,
+            inker::KeyboardModifiers {
+                shift: self.shift,
+                ctrl: self.ctrl,
+                alt: self.alt,
+                meta: false,
+            },
+        )) {
+            tracing::warn!(%node, %error, "surface hover delivery failed");
+        }
+        self.hovered_surface = Some(node);
+        self.apply_pending_surface_cursor();
+    }
+
+    pub(super) fn apply_pending_surface_cursor(&mut self) {
+        let shape = self
+            .hovered_surface
+            .and_then(|node| self.surface_producers.get_mut(&node))
+            .and_then(|producer| producer.poll_cursor_shape());
+        if let (Some(shape), Some(window)) = (shape, self.window.as_ref()) {
+            let icon = surface_cursor_icon(shape);
+            window.set_cursor_visible(icon.is_some());
+            if let Some(icon) = icon {
+                window.set_cursor(icon);
+            }
+            if let Some(node) = self.hovered_surface {
+                self.app
+                    .note(crate::observe::AppEvent::SurfaceCursorChanged {
+                        node,
+                        shape: surface_cursor_label(shape),
+                    });
+                self.run_effects(Vec::new());
+            }
+        }
+    }
+
+    pub(super) fn reset_surface_cursor(&mut self) {
+        if self.hovered_surface.take().is_none() {
+            return;
+        }
+        if let Some(window) = self.window.as_ref() {
+            window.set_cursor_visible(true);
+            window.set_cursor(CursorIcon::Default);
+        }
     }
 
     pub(super) fn deliver_release(&mut self, x: f32, y: f32, button: MouseButton) {
+        self.surface_pointer_buttons.0 &= !surface_button_mask(button).0;
         let captured = self.pointer_capture;
         let graph_capture = match captured {
             Some(crate::surface::SurfaceKind::Graph(pane)) => Some(pane),
             _ => None,
         };
         self.pointer_capture = None;
-        if button == MouseButton::Left
-            && let Some(crate::surface::SurfaceKind::Content(node)) = captured
-        {
+        if let Some(crate::surface::SurfaceKind::Content(node)) = captured {
             let local = self.surface_plan().into_iter().find_map(|surface| {
                 (surface.kind == crate::surface::SurfaceKind::Content(node))
                     .then_some((x - surface.rect.x, y - surface.rect.y))
             });
             let outcome = local.and_then(|(local_x, local_y)| {
-                if let Some(session) = self.content_sessions.get_mut(&node) {
+                if button == MouseButton::Left
+                    && let Some(session) = self.content_sessions.get_mut(&node)
+                {
                     return Some(session.pointer_up(local_x, local_y));
                 }
                 if let (Some(producer), Some(surface_button)) = (
                     self.surface_producers.get_mut(&node),
                     surface_mouse_button(button),
                 ) {
-                    if let Err(error) = producer.send_mouse_input(inker::MouseEvent {
-                        position: inker::PhysicalPosition {
-                            x: local_x,
-                            y: local_y,
+                    if let Err(error) = producer.send_pointer_input(mouse_pointer_event(
+                        local_x,
+                        local_y,
+                        inker::PointerPhase::Up,
+                        Some(surface_button),
+                        self.surface_pointer_buttons,
+                        inker::KeyboardModifiers {
+                            shift: self.shift,
+                            ctrl: self.ctrl,
+                            alt: self.alt,
+                            meta: false,
                         },
-                        button: Some(surface_button),
-                        kind: inker::MouseEventKind::Released,
-                    }) {
+                    )) {
                         tracing::warn!(%node, %error, "surface release delivery failed");
                     }
                 }
@@ -768,5 +928,171 @@ impl Shell {
         {
             self.request_redraw();
         }
+    }
+
+    /// Lower one winit touch contact to Pointer Events. Each live contact keeps
+    /// the content node hit at Started, matching implicit pointer capture for
+    /// direct-manipulation devices even if later coordinates leave the tile.
+    pub(super) fn deliver_touch(&mut self, touch: Touch) {
+        let phase = match touch.phase {
+            TouchPhase::Started => inker::PointerPhase::Down,
+            TouchPhase::Moved => inker::PointerPhase::Move,
+            TouchPhase::Ended => inker::PointerPhase::Up,
+            TouchPhase::Cancelled => inker::PointerPhase::Cancel,
+        };
+        let altitude_angle = match touch.force {
+            Some(Force::Calibrated { altitude_angle, .. }) => {
+                altitude_angle.map(|angle| angle as f32)
+            }
+            _ => None,
+        };
+        let pressure = touch.force.and_then(|force| {
+            let value = force.normalized() as f32;
+            value.is_finite().then(|| value.clamp(0.0, 1.0))
+        });
+        self.deliver_touch_contact(
+            touch.id,
+            phase,
+            touch.location.x as f32,
+            touch.location.y as f32,
+            pressure,
+            altitude_angle,
+        );
+    }
+
+    /// The shared touch lowering seam. Winit and the headed scenario both use
+    /// this, so the receipt exercises the same id allocation and per-contact
+    /// capture that real hardware does after winit has decoded the OS event.
+    pub(super) fn deliver_touch_contact(
+        &mut self,
+        host_id: u64,
+        phase: inker::PointerPhase,
+        x: f32,
+        y: f32,
+        pressure: Option<f32>,
+        altitude_angle: Option<f32>,
+    ) {
+        let position = (x, y);
+        let active = if phase == inker::PointerPhase::Down {
+            let target = crate::surface::hit_test(
+                &self.surface_plan(),
+                self.app.focus,
+                position.0,
+                position.1,
+            )
+            .and_then(|hit| match hit.kind {
+                crate::surface::SurfaceKind::Content(node)
+                    if self.surface_producers.contains_key(&node) =>
+                {
+                    Some(node)
+                }
+                _ => None,
+            });
+            let Some(node) = target else {
+                return;
+            };
+            let pointer_id = self.allocate_surface_touch_id();
+            let active = super::ActiveSurfaceTouch {
+                pointer_id,
+                node,
+                is_primary: self.active_surface_touches.is_empty(),
+            };
+            self.active_surface_touches.insert(host_id, active);
+            active
+        } else {
+            let Some(active) = self.active_surface_touches.get(&host_id).copied() else {
+                return;
+            };
+            active
+        };
+
+        let local = self.surface_plan().into_iter().find_map(|surface| {
+            (surface.kind == crate::surface::SurfaceKind::Content(active.node))
+                .then_some((position.0 - surface.rect.x, position.1 - surface.rect.y))
+        });
+        let delivered = local.is_some_and(|(x, y)| {
+            self.surface_producers
+                .get_mut(&active.node)
+                .is_some_and(|producer| {
+                    match producer.send_pointer_input(inker::PointerEvent {
+                        pointer_id: active.pointer_id,
+                        pointer_type: inker::PointerType::Touch,
+                        is_primary: active.is_primary,
+                        phase,
+                        position: inker::PhysicalPosition { x, y },
+                        button: match phase {
+                            inker::PointerPhase::Down | inker::PointerPhase::Up => {
+                                Some(inker::MouseButton::Left)
+                            }
+                            inker::PointerPhase::Move | inker::PointerPhase::Cancel => None,
+                        },
+                        buttons: if matches!(phase, inker::PointerPhase::Down | inker::PointerPhase::Move) {
+                            inker::PointerButtons::PRIMARY
+                        } else {
+                            inker::PointerButtons::NONE
+                        },
+                        width: 1.0,
+                        height: 1.0,
+                        pressure,
+                        tangential_pressure: None,
+                        tilt_x: None,
+                        tilt_y: None,
+                        twist: None,
+                        altitude_angle,
+                        azimuth_angle: None,
+                        modifiers: inker::KeyboardModifiers {
+                            shift: self.shift,
+                            ctrl: self.ctrl,
+                            alt: self.alt,
+                            meta: false,
+                        },
+                    }) {
+                        Ok(()) => true,
+                        Err(error) => {
+                            tracing::warn!(node = %active.node, %error, "surface touch delivery failed");
+                            false
+                        }
+                    }
+                })
+        });
+        if matches!(phase, inker::PointerPhase::Up | inker::PointerPhase::Cancel) {
+            self.active_surface_touches.remove(&host_id);
+        }
+        if delivered {
+            self.request_redraw();
+        }
+    }
+
+    fn allocate_surface_touch_id(&mut self) -> i32 {
+        loop {
+            let candidate = self.next_surface_touch_id.max(2);
+            self.next_surface_touch_id = candidate.checked_add(1).unwrap_or(2);
+            if self
+                .active_surface_touches
+                .values()
+                .all(|touch| touch.pointer_id != candidate)
+            {
+                return candidate;
+            }
+        }
+    }
+}
+
+#[cfg(test)]
+mod cursor_tests {
+    use super::*;
+
+    #[test]
+    fn web_cursor_shapes_map_to_host_cursor_icons() {
+        assert_eq!(
+            surface_cursor_icon(inker::CursorShape::Pointer),
+            Some(CursorIcon::Pointer)
+        );
+        assert_eq!(
+            surface_cursor_icon(inker::CursorShape::ResizeNesw),
+            Some(CursorIcon::NeswResize)
+        );
+        assert_eq!(surface_cursor_icon(inker::CursorShape::Hidden), None);
+        assert_eq!(surface_cursor_label(inker::CursorShape::Pointer), "pointer");
     }
 }

@@ -86,6 +86,9 @@ pub fn navigation(event: &crate::observe::AppEvent) -> Option<(String, TraceTran
     use crate::observe::AppEvent;
     match event {
         AppEvent::AddressOpened(url) => Some((url.clone(), TraceTransition::UrlTyped)),
+        // The engine callback does not distinguish a link activation from a
+        // redirect. Preserve the traversal without manufacturing a cause.
+        AppEvent::ContentNavigated { url, .. } => Some((url.clone(), TraceTransition::Unknown)),
         AppEvent::NavigatedBack(url) => Some((url.clone(), TraceTransition::Back)),
         AppEvent::NavigatedForward(url) => Some((url.clone(), TraceTransition::Forward)),
         AppEvent::Reloaded(url) => Some((url.clone(), TraceTransition::Reload)),
