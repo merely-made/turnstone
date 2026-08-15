@@ -50,5 +50,6 @@ mod trail_pane;
 mod trail_view;
 mod transcript_pane;
 mod ui;
+pub mod web_policy;
 mod workbench_pane;
 mod workbench_tiling;

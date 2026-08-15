@@ -42,6 +42,7 @@ impl Shell {
         for (node, event) in pending {
             self.consume_surface_web_event(node, event);
         }
+        self.expire_user_agent_requests();
     }
 
     fn consume_surface_web_event(&mut self, node: uuid::Uuid, event: inker::WebSurfaceEvent) {
@@ -100,6 +101,60 @@ impl Shell {
                 }
                 self.run_effects(Vec::new());
             }
+            inker::WebSurfaceEvent::PermissionRequested(request) => {
+                let disposition = self.web_policy.receive_permission(
+                    node,
+                    request.clone(),
+                    std::time::Instant::now(),
+                );
+                self.project_policy_summary(node);
+                match disposition {
+                    crate::web_policy::PermissionDisposition::Answer(answer) => {
+                        if let Err(error) = self.answer_surface_permission(node, request.id, answer)
+                        {
+                            tracing::warn!(%node, request_id = request.id.get(), %error, "stored permission decision could not be applied");
+                        }
+                    }
+                    crate::web_policy::PermissionDisposition::Pending => {
+                        self.app
+                            .note(crate::observe::AppEvent::PermissionRequested {
+                                node,
+                                id: request.id,
+                                origin: request.origin,
+                                descriptors: request.descriptors,
+                            });
+                        self.run_effects(Vec::new());
+                    }
+                }
+            }
+            inker::WebSurfaceEvent::AuthenticationRequested(challenge) => {
+                let disposition = self.web_policy.receive_authentication(
+                    node,
+                    challenge.clone(),
+                    std::time::Instant::now(),
+                );
+                self.project_policy_summary(node);
+                match disposition {
+                    crate::web_policy::AuthenticationDisposition::Answer(answer) => {
+                        if let Err(error) =
+                            self.answer_surface_authentication(node, challenge.id, &answer)
+                        {
+                            tracing::warn!(%node, request_id = challenge.id.get(), %error, "credential-provider answer could not be applied");
+                        }
+                    }
+                    crate::web_policy::AuthenticationDisposition::Pending => {
+                        self.app
+                            .note(crate::observe::AppEvent::AuthenticationRequested {
+                                node,
+                                id: challenge.id,
+                                host: challenge.protection_space.host,
+                                realm: challenge.protection_space.realm,
+                                scheme: challenge.protection_space.scheme,
+                            });
+                        self.run_effects(Vec::new());
+                    }
+                }
+            }
             inker::WebSurfaceEvent::Navigation(inker::NavigationEvent::Failed { url, reason }) => {
                 tracing::warn!(%node, %url, %reason, "surface navigation failed");
             }
@@ -116,6 +171,120 @@ impl Shell {
                 // diagnostics rather than disappearing in a filtered poller.
                 tracing::debug!(%node, event = ?other, "surface event awaits host projection");
             }
+        }
+    }
+
+    /// Answer a prompt after host UI or automation has made the decision.
+    /// The backend is answered first; only successful answers enter retained
+    /// profile policy.
+    pub fn answer_permission_request(
+        &mut self,
+        node: uuid::Uuid,
+        id: inker::UserAgentRequestId,
+        answer: inker::PermissionAnswer,
+        retention: crate::web_policy::PermissionRetention,
+    ) -> Result<(), String> {
+        if self.web_policy.permission_request(node, id).is_none() {
+            return Err("permission request is no longer pending".into());
+        }
+        self.answer_surface_permission(node, id, answer)?;
+        let result = self
+            .web_policy
+            .complete_permission(node, id, answer, retention)
+            .map_err(|error| error.to_string());
+        self.project_policy_summary(node);
+        result
+    }
+
+    /// Answer a challenge from host UI or a credential provider. Remembered
+    /// credentials remain process-memory values and never enter the profile
+    /// JSON or graph facets.
+    pub fn answer_authentication_request(
+        &mut self,
+        node: uuid::Uuid,
+        id: inker::UserAgentRequestId,
+        answer: inker::HttpAuthenticationAnswer,
+        remember_for_process: bool,
+    ) -> Result<(), String> {
+        if self.web_policy.authentication_challenge(node, id).is_none() {
+            return Err("authentication request is no longer pending".into());
+        }
+        self.answer_surface_authentication(node, id, &answer)?;
+        self.web_policy
+            .complete_authentication(node, id, &answer, remember_for_process)
+            .map_err(|error| error.to_string())?;
+        self.project_policy_summary(node);
+        Ok(())
+    }
+
+    fn expire_user_agent_requests(&mut self) {
+        for expired in self.web_policy.expire(std::time::Instant::now()) {
+            match expired {
+                crate::web_policy::ExpiredRequest::Permission { node, id } => {
+                    if let Err(error) =
+                        self.answer_surface_permission(node, id, inker::PermissionAnswer::Dismiss)
+                    {
+                        tracing::warn!(%node, request_id = id.get(), %error, "timed-out permission request could not be dismissed");
+                    }
+                    self.project_policy_summary(node);
+                }
+                crate::web_policy::ExpiredRequest::Authentication { node, id } => {
+                    if let Err(error) = self.answer_surface_authentication(
+                        node,
+                        id,
+                        &inker::HttpAuthenticationAnswer::Cancel,
+                    ) {
+                        tracing::warn!(%node, request_id = id.get(), %error, "timed-out authentication request could not be cancelled");
+                    }
+                    self.project_policy_summary(node);
+                }
+            }
+        }
+    }
+
+    fn answer_surface_permission(
+        &mut self,
+        node: uuid::Uuid,
+        id: inker::UserAgentRequestId,
+        answer: inker::PermissionAnswer,
+    ) -> Result<(), String> {
+        let producer = self
+            .surface_producers
+            .get_mut(&node)
+            .ok_or_else(|| "requesting surface no longer exists".to_string())?;
+        let web = producer
+            .as_web_surface()
+            .ok_or_else(|| "requesting surface has no web control plane".to_string())?;
+        web.answer_permission(id, answer)
+            .map_err(|error| error.to_string())
+    }
+
+    fn answer_surface_authentication(
+        &mut self,
+        node: uuid::Uuid,
+        id: inker::UserAgentRequestId,
+        answer: &inker::HttpAuthenticationAnswer,
+    ) -> Result<(), String> {
+        let producer = self
+            .surface_producers
+            .get_mut(&node)
+            .ok_or_else(|| "requesting surface no longer exists".to_string())?;
+        let web = producer
+            .as_web_surface()
+            .ok_or_else(|| "requesting surface has no web control plane".to_string())?;
+        web.answer_http_authentication(id, answer)
+            .map_err(|error| error.to_string())
+    }
+
+    fn project_policy_summary(&mut self, node: uuid::Uuid) {
+        let value = self.web_policy.facet_value(node);
+        if let Err(error) = self.app.graph_runtimes.facets_mut().set(
+            node,
+            chartulary::FacetId::new(crate::web_policy::USER_AGENT_POLICY_FACET),
+            value,
+            &chartulary::AcceptAll,
+        ) {
+            tracing::warn!(%node, %error, "could not project user-agent policy summary facet");
         }
     }
 

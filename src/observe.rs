@@ -153,6 +153,22 @@ pub enum AppEvent {
         node: Uuid,
         types: String,
     },
+    /// A page is waiting for an origin-scoped permission decision.
+    PermissionRequested {
+        node: Uuid,
+        id: inker::UserAgentRequestId,
+        origin: String,
+        descriptors: Vec<inker::PermissionDescriptor>,
+    },
+    /// An RFC 9110 protection space is waiting for a credential-provider
+    /// answer. This event deliberately carries no credentials.
+    AuthenticationRequested {
+        node: Uuid,
+        id: inker::UserAgentRequestId,
+        host: String,
+        realm: Option<String>,
+        scheme: String,
+    },
     /// Back stepped the history cursor to this address.
     NavigatedBack(String),
     /// Forward stepped the history cursor to this address.
@@ -291,6 +307,31 @@ impl AppEvent {
             AppEvent::PageDragRequested { node, types } => {
                 format!("page-drag-requested {node} types={types}")
             }
+            AppEvent::PermissionRequested {
+                node,
+                id,
+                origin,
+                descriptors,
+            } => format!(
+                "permission-requested {node} request={} {origin} {}",
+                id.get(),
+                descriptors
+                    .iter()
+                    .map(|descriptor| format!("{descriptor:?}"))
+                    .collect::<Vec<_>>()
+                    .join(",")
+            ),
+            AppEvent::AuthenticationRequested {
+                node,
+                id,
+                host,
+                realm,
+                scheme,
+            } => format!(
+                "authentication-requested {node} request={} {host} {scheme} {}",
+                id.get(),
+                realm.as_deref().unwrap_or("")
+            ),
             AppEvent::NavigatedBack(url) => format!("nav-back {url}"),
             AppEvent::NavigatedForward(url) => format!("nav-forward {url}"),
             AppEvent::Reloaded(url) => format!("reloaded {url}"),

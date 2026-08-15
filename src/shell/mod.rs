@@ -224,6 +224,9 @@ pub struct Shell {
     knot_clip: Option<crate::knot_authoring::KnotClipHandle>,
     /// Mere's routing vocabulary over inker's engine rules: address -> engine id.
     route_policy: inker::EngineRoutePolicy,
+    /// Profile/origin user-agent policy, pending prompts, and the process-only
+    /// credential provider. Graph data receives summaries, never secrets.
+    web_policy: crate::web_policy::WebPolicyService,
     /// Monotonic epoch for the sessions' pump clock.
     epoch: std::time::Instant,
     /// In-flight fetch correlation: which node asked for each URL, noted
@@ -334,6 +337,21 @@ impl Shell {
         };
         let live_settings = LiveSettingsHandle::new(&initial_settings);
         app.apply_chrome_settings_snapshot(&live_settings.snapshot());
+        let policy_path = crate::web_policy::default_policy_path(&app.data_root);
+        let policy_registry = crate::web_policy::PermissionRegistry::load(
+            "default",
+            crate::web_policy::ProfileStorage::Persistent(policy_path),
+        )
+        .unwrap_or_else(|error| {
+            tracing::warn!(%error, "persistent web policy is unavailable; using an isolated in-memory profile");
+            crate::web_policy::PermissionRegistry::private("default-fallback")
+        });
+        let request_timeout = std::env::var("TURNSTONE_WEB_REQUEST_TIMEOUT_MS")
+            .ok()
+            .and_then(|value| value.parse::<u64>().ok())
+            .map(std::time::Duration::from_millis)
+            .unwrap_or_else(|| std::time::Duration::from_secs(30));
+        let web_policy = crate::web_policy::WebPolicyService::new(policy_registry, request_timeout);
 
         // The fetch actor on its own armillary thread, waking this loop like
         // the physics actor does.
@@ -453,6 +471,7 @@ impl Shell {
             pending_surface_spawns: Vec::new(),
             knot_clip,
             route_policy: mere::routing::route_policy(),
+            web_policy,
             epoch: std::time::Instant::now(),
             pending_fetches: browse::PendingFetches::default(),
             pointer_capture: None,

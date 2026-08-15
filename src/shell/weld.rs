@@ -9,11 +9,12 @@ use std::sync::Arc;
 
 use inker::{
     CursorShape, DataTransfer, DataTransferItem, DragEvent, DragOperationSet, DragPhase,
-    FocusReason, FrameHandleOwnership, KeyboardEvent, KeyboardModifiers, MouseButton, MouseEvent,
-    MouseEventKind, NativeTextureHandle, NavigationEvent, PhysicalPosition, PointerButtons,
-    PointerEvent, PointerPhase, PointerType, SurfaceError, SurfaceSettings, SurfaceSyncHandle,
-    SurfaceTextureFormat, WebFeatureStatus, WebFrameTransportMode, WebMessage,
-    WebSurfaceCapabilities, WebSurfaceEvent,
+    FocusReason, FrameHandleOwnership, HttpAuthenticationAnswer, HttpAuthenticationChallenge,
+    HttpProtectionSpace, KeyboardEvent, KeyboardModifiers, MouseButton, MouseEvent, MouseEventKind,
+    NativeTextureHandle, NavigationEvent, PermissionAnswer, PermissionDescriptor,
+    PermissionRequest, PhysicalPosition, PointerButtons, PointerEvent, PointerPhase, PointerType,
+    SurfaceError, SurfaceSettings, SurfaceSyncHandle, SurfaceTextureFormat, UserAgentRequestId,
+    WebFeatureStatus, WebFrameTransportMode, WebMessage, WebSurfaceCapabilities, WebSurfaceEvent,
 };
 use weld_engine::{WeldFrame, WeldProducerFactory, WeldSurface};
 use welding::{
@@ -45,6 +46,8 @@ impl WeldProducerFactory for TurnstoneWeldFactory {
         let mut surface = CefSurfaceConfig::default();
         surface.initial_url = request.url.clone();
         surface.initial_size = PhysicalSize::new(request.width.max(1), request.height.max(1));
+        surface.handle_permission_requests = true;
+        surface.handle_auth_challenges = true;
         let profile_dir = PathBuf::from(&request.profile.user_data_dir);
         // CEF creates a profile's files but not a missing parent chain. Make
         // the resolved per-node directory real before request-context creation
@@ -337,6 +340,39 @@ impl WeldSurface for TurnstoneWeldSurface {
         self.poll_web_message().map(WebSurfaceEvent::WebMessage)
     }
 
+    fn answer_permission(
+        &mut self,
+        id: UserAgentRequestId,
+        answer: PermissionAnswer,
+    ) -> Result<(), SurfaceError> {
+        let id = u32::try_from(id.get()).map_err(|_| {
+            SurfaceError::InputFailed("Weld permission request id exceeds u32".into())
+        })?;
+        match answer {
+            PermissionAnswer::Grant => self.producer.grant_permission(id),
+            PermissionAnswer::Deny | PermissionAnswer::Dismiss => self.producer.deny_permission(id),
+        }
+        .map_err(weld_input_error)
+    }
+
+    fn answer_http_authentication(
+        &mut self,
+        id: UserAgentRequestId,
+        answer: &HttpAuthenticationAnswer,
+    ) -> Result<(), SurfaceError> {
+        let id = u32::try_from(id.get()).map_err(|_| {
+            SurfaceError::InputFailed("Weld authentication request id exceeds u32".into())
+        })?;
+        match answer {
+            HttpAuthenticationAnswer::Credentials(credentials) => {
+                self.producer
+                    .answer_auth(id, &credentials.username, &credentials.password)
+            }
+            HttpAuthenticationAnswer::Cancel => self.producer.cancel_auth(id),
+        }
+        .map_err(weld_input_error)
+    }
+
     fn web_capabilities(&self) -> WebSurfaceCapabilities {
         let mut capabilities = WebSurfaceCapabilities {
             backend_name: "weld.cef.windows".into(),
@@ -378,9 +414,15 @@ impl WeldSurface for TurnstoneWeldSurface {
             detail: "text/plain, text/html, and text/uri-list are projected; arbitrary MIME strings are rejected"
                 .into(),
         };
+        capabilities.permissions = WebFeatureStatus::Partial {
+            detail: "held backend callbacks and the public answer path are wired; rendered prompt UI and headed grant/deny proof are pending".into(),
+        };
+        capabilities.auth = WebFeatureStatus::Partial {
+            detail: "held backend callbacks and credential-provider answers are wired; rendered prompt UI and headed challenge proof are pending".into(),
+        };
         capabilities.degradation_reasons = vec![
             "Turnstone projects pointer input and host-to-page drag/drop; page-to-host drag is observable but has no native winit drag loop".into(),
-            "PDF, native printing, downloads, cookies, script results, CDP, permissions, auth, popup composition, and snapshots have no Turnstone control surface yet".into(),
+            "PDF, native printing, downloads, cookies, script results, CDP, popup composition, and snapshots have no Turnstone control surface yet".into(),
         ];
         capabilities
     }
@@ -618,23 +660,37 @@ fn map_weld_web_event(event: welding::NavigationEvent) -> WebSurfaceEvent {
             image_url: (!source_url.is_empty()).then_some(source_url),
         },
         welding::NavigationEvent::PermissionRequested {
+            id,
             origin,
             permissions,
             ..
-        } => WebSurfaceEvent::PermissionRequested {
-            kind: permissions
-                .into_iter()
-                .map(|kind| format!("{kind:?}"))
-                .collect::<Vec<_>>()
-                .join(","),
+        } => WebSurfaceEvent::PermissionRequested(PermissionRequest {
+            id: UserAgentRequestId::new(id.into()),
             origin,
-        },
+            descriptors: permissions
+                .into_iter()
+                .map(map_permission_descriptor)
+                .collect(),
+        }),
         welding::NavigationEvent::AuthChallenged {
-            origin_url, realm, ..
-        } => WebSurfaceEvent::AuthRequested {
-            origin: origin_url,
-            realm: (!realm.is_empty()).then_some(realm),
-        },
+            id,
+            origin_url,
+            host,
+            port,
+            realm,
+            scheme,
+            is_proxy,
+        } => WebSurfaceEvent::AuthenticationRequested(HttpAuthenticationChallenge {
+            id: UserAgentRequestId::new(id.into()),
+            protection_space: HttpProtectionSpace {
+                origin_url,
+                host,
+                port,
+                realm: (!realm.is_empty()).then_some(realm),
+                scheme: scheme.to_ascii_lowercase(),
+                is_proxy,
+            },
+        }),
         welding::NavigationEvent::DownloadStarted {
             url,
             suggested_filename,
@@ -689,6 +745,37 @@ fn map_cursor_shape(shape: welding::CursorShape) -> CursorShape {
         welding::CursorShape::Grabbing => CursorShape::Grabbing,
         welding::CursorShape::Custom(value) if value == "none" => CursorShape::Hidden,
         _ => CursorShape::Default,
+    }
+}
+
+fn map_permission_descriptor(kind: welding::PermissionKind) -> PermissionDescriptor {
+    match kind {
+        welding::PermissionKind::CameraStream => PermissionDescriptor::Camera,
+        welding::PermissionKind::MicStream => PermissionDescriptor::Microphone,
+        welding::PermissionKind::Geolocation => PermissionDescriptor::Geolocation,
+        welding::PermissionKind::Notifications => PermissionDescriptor::Notifications,
+        welding::PermissionKind::Clipboard => PermissionDescriptor::ClipboardRead,
+        welding::PermissionKind::MidiSysex => PermissionDescriptor::Midi { sysex: true },
+        welding::PermissionKind::PointerLock => PermissionDescriptor::PointerLock,
+        welding::PermissionKind::KeyboardLock => PermissionDescriptor::KeyboardLock,
+        welding::PermissionKind::IdleDetection => PermissionDescriptor::IdleDetection,
+        welding::PermissionKind::LocalFonts => PermissionDescriptor::LocalFonts,
+        welding::PermissionKind::StorageAccess => PermissionDescriptor::StorageAccess,
+        welding::PermissionKind::ProtectedMediaIdentifier => {
+            PermissionDescriptor::ProtectedMediaIdentifier
+        }
+        welding::PermissionKind::DesktopAudioCapture => PermissionDescriptor::DisplayCapture {
+            audio: true,
+            video: false,
+        },
+        welding::PermissionKind::DesktopVideoCapture => PermissionDescriptor::DisplayCapture {
+            audio: false,
+            video: true,
+        },
+        welding::PermissionKind::Other(bit) => {
+            PermissionDescriptor::Other(format!("cef-permission-bit:{bit:#010x}"))
+        }
+        other => PermissionDescriptor::Other(format!("weld:{other:?}")),
     }
 }
 
