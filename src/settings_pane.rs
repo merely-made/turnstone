@@ -14,7 +14,7 @@ use genet_host_api::tile::SettingsRef;
 use genet_layout::{IncrementalLayout, ScrollOffsets};
 use genet_scripted_dom::{NodeId, ScriptedDom};
 use layout_dom_api::LayoutDom;
-use session_runtime::{ApplicationSettings, ShellbarEdge};
+use pandect::{ApplicationSettings, ShellbarEdge};
 
 use crate::settings_provider::{APPLICATION_REFERENCE, ApplicationSettingsProvider};
 use crate::shell_services::{ShellChromeConfig, ThemeMode};

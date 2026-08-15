@@ -329,7 +329,7 @@ impl Shell {
             Ok(provider) => provider.settings().clone(),
             Err(error) => {
                 tracing::warn!(%error, "application settings could not be loaded at shell startup");
-                session_runtime::ApplicationSettings::default()
+                pandect::ApplicationSettings::default()
             }
         };
         let live_settings = LiveSettingsHandle::new(&initial_settings);

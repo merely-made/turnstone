@@ -32,7 +32,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use armillary::{ActorHandle, Emitter, Wake, spawn_named};
 use eidetic::{DeletedNode, Store, clear_deleted, list_deleted, record_deleted};
 use eidetic_fjall::FjallStore;
-use session_runtime::athanor;
+use pandect::athanor;
 
 use crate::action::{RemovedRecord, Update};
 
@@ -107,7 +107,7 @@ fn open(dir: &Path) -> Result<FjallStore, String> {
 
 /// The steady-heat trigger: on each session open, retire (permanently forget)
 /// the tombstones past the retention window, then list the survivors. Athanor's
-/// retirement pass (session-runtime) decides which; a failed retire logs and
+/// retirement pass (pandect) decides which; a failed retire logs and
 /// still lists (forgetting is best-effort, never blocks the bin from showing).
 /// This runs at session open, not on a background timer — the continuous actor
 /// is the remaining half.

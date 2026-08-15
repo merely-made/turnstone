@@ -8,10 +8,6 @@
 use std::collections::{BTreeMap, HashMap};
 
 use chartulary::{Container, EditSpec, GraphLog, Relation};
-use graphshell_client::{
-    ClientState, PresentationResolution, ResolutionError, ResolvedPresentation,
-};
-use graphshell_endpoint::{IntentSink, PresentationSource, ProjectionCatalog, ProjectionSource};
 use chirograph::{
     AdvertisedAction, BoundsRelationship, CachePolicy, CapabilityProfile, CardValueV1, ContentHash,
     EndpointDescriptor, IntentEffect, IntentInvocation, IntentReference, IntentResult,
@@ -20,6 +16,10 @@ use chirograph::{
     ProjectionOffer, ProjectionRequest, ProjectionSession, ProjectionSnapshot, ProtocolVersion,
     ResourceRequest, ResourceResponse, SemanticRole,
 };
+use graphshell_client::{
+    ClientState, PresentationResolution, ResolutionError, ResolvedPresentation,
+};
+use graphshell_endpoint::{IntentSink, PresentationSource, ProjectionCatalog, ProjectionSource};
 use identity::IdentityProvider;
 use identity::delegation::SignedDelegationCertificate;
 use mere::kernel::graph::NodeKey;

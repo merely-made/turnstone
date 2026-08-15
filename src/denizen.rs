@@ -74,10 +74,10 @@ pub enum PackBody {
 
 impl PackBody {
     /// The denizen kind this body resides as.
-    pub fn kind(&self) -> session_runtime::DenizenKind {
+    pub fn kind(&self) -> pandect::DenizenKind {
         match self {
-            PackBody::Scenario(_) => session_runtime::DenizenKind::Scenario,
-            PackBody::Component(_) => session_runtime::DenizenKind::Pack,
+            PackBody::Scenario(_) => pandect::DenizenKind::Scenario,
+            PackBody::Component(_) => pandect::DenizenKind::Pack,
         }
     }
 
@@ -125,7 +125,11 @@ pub struct PendingInstall {
 /// is visible in the first screenful of the file a reviewer reads.
 pub fn parse_watch(source: &str) -> Option<String> {
     source.lines().find_map(|line| {
-        let rest = line.trim().strip_prefix("--")?.trim().strip_prefix("@watch")?;
+        let rest = line
+            .trim()
+            .strip_prefix("--")?
+            .trim()
+            .strip_prefix("@watch")?;
         let url = rest.trim();
         (!url.is_empty()).then(|| url.to_string())
     })
@@ -371,7 +375,7 @@ pub fn load_nested(session_dir: &Path, log_id: &str) -> Option<GraphLog<Containe
 /// on [`Denizens::legacy_heals`] so the adopt path can move the pointer onto
 /// the node and rewrite the facet without it.
 pub fn rebuild(
-    app_facets: &session_runtime::NodeFacetStore,
+    app_facets: &pandect::NodeFacetStore,
     graph: &mere::kernel::graph::Graph,
     session_dir: &Path,
     provider: &impl IdentityProvider,
@@ -379,7 +383,7 @@ pub fn rebuild(
     let root = provider.master_public_key().to_bytes();
     let mut denizens = Denizens::new(root);
     denizens.authority.set_now(now_ms());
-    for (member, binding) in session_runtime::read_denizen_bindings(app_facets) {
+    for (member, binding) in pandect::read_denizen_bindings(app_facets) {
         let Ok(raw) = hex_to_bytes(&binding.subject) else {
             tracing::warn!(member = %member, "denizen binding with unparseable subject; skipped");
             continue;
@@ -657,10 +661,10 @@ pub fn install(app: &mut App, pending: PendingInstall) -> Uuid {
         .set_node_nested_for(member, Some(LogId::new(hex.clone())));
 
     // The binding + source + label facets: durable agency truth.
-    session_runtime::write_denizen_binding(
+    pandect::write_denizen_binding(
         app.graph_runtimes.facets_mut(),
         member,
-        &session_runtime::DenizenBinding::new(hex.clone(), pending.body.kind()),
+        &pandect::DenizenBinding::new(hex.clone(), pending.body.kind()),
     );
     // The runnable: a script's source rides a facet; a component's bytes ride
     // the disk beside the worlds, with the facet as the pointer.
@@ -819,11 +823,11 @@ mod tests {
         let dir = std::env::temp_dir().join(format!("turnstone-legacy-{}", std::process::id()));
         std::fs::create_dir_all(&dir).unwrap();
         let member = Uuid::from_u128(0xa);
-        let mut store = session_runtime::NodeFacetStore::new();
+        let mut store = pandect::NodeFacetStore::new();
         store
             .set(
                 member,
-                chartulary::FacetId::new(session_runtime::DENIZEN_BINDING),
+                chartulary::FacetId::new(pandect::DENIZEN_BINDING),
                 serde_json::json!({
                     "subject": "aa".repeat(32),
                     "nested_log": "aa".repeat(32),

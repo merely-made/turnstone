@@ -6,7 +6,7 @@ use chartulary::{
 };
 use eidetic::{MereNativeFieldSpec, MereNativeSchemaBuilder, SchemaDefinition, SchemaFormat};
 use serde_json::json;
-use session_runtime::SchemaFacetValidator;
+use pandect::SchemaFacetValidator;
 
 pub(crate) const WEB_PAGE_CLASS: &str = "turnstone.web-page";
 pub(crate) const NOTE_CLASS: &str = "turnstone.note";

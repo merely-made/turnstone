@@ -42,7 +42,7 @@ mod projection;
 mod registry;
 
 /// The frame-sidecar persistence (`frame.json` beside `graph.json`), moved
-/// here from `session_runtime::frisket_store` at meerkat's deletion. Native
+/// here from `pandect::frisket_store` at meerkat's deletion. Native
 /// only (the `fs` path), so the crate stays wasm-clean.
 #[cfg(not(target_arch = "wasm32"))]
 pub mod store;

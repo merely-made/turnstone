@@ -588,12 +588,7 @@ mod tests {
                 .map(|(_, node)| node.url()),
             Some("https://www.iana.org/help/example-domains")
         );
-        let key = app
-            .graph_runtimes
-            .graph()
-            .get_node_by_id(member)
-            .unwrap()
-            .0;
+        let key = app.graph_runtimes.graph().get_node_by_id(member).unwrap().0;
         assert_eq!(
             app.graph_runtimes
                 .graph()

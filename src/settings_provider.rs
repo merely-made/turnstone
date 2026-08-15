@@ -11,7 +11,7 @@ use genet_host_api::settings::{
     SettingSecurity, SettingSpec, SettingValue, SettingsError, SettingsProvider,
 };
 use genet_host_api::tile::SettingsRef;
-use session_runtime::{
+use pandect::{
     ApplicationSettings, ShellbarEdge, load_application_settings, save_application_settings,
 };
 
@@ -376,7 +376,7 @@ mod tests {
             ),
             Err(SettingsError::InvalidValue { .. })
         ));
-        assert!(!session_runtime::application_settings_exist(&root));
+        assert!(!pandect::application_settings_exist(&root));
         let _ = std::fs::remove_dir_all(root);
     }
 }

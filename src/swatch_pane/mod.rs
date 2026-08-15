@@ -430,14 +430,14 @@ mod tests {
     fn overmap_pane_on_fork_pair() -> (SwatchPane, App, crate::panes::SessionId) {
         let mut app = App::test_stub();
         let donor = app.session_id;
-        let mut donor_m = session_runtime::GraphSessionManifest::new(
+        let mut donor_m = pandect::GraphSessionManifest::new(
             donor,
             crate::panes::GraphId::from_uuid(uuid::Uuid::from_u128(0xd0)),
         );
         donor_m.display_name = Some("home".to_string());
         app.sessions.insert(donor_m);
         let fork = crate::panes::SessionId::new();
-        let mut fork_m = session_runtime::GraphSessionManifest::new(
+        let mut fork_m = pandect::GraphSessionManifest::new(
             fork,
             crate::panes::GraphId::from_uuid(uuid::Uuid::from_u128(0xf0)),
         );

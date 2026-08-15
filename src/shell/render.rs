@@ -86,10 +86,8 @@ impl Shell {
                     })
                     .collect::<Vec<_>>()
                     .join(",");
-                self.app.note(crate::observe::AppEvent::PageDragRequested {
-                    node,
-                    types,
-                });
+                self.app
+                    .note(crate::observe::AppEvent::PageDragRequested { node, types });
                 // Winit has no native API that can start an OS drag from a
                 // windowless CEF surface. Answer CEF explicitly so its source
                 // does not remain in a stuck drag state; capability reporting

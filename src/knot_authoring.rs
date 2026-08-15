@@ -269,8 +269,8 @@ fn resolve_knot_persona() -> Result<identity::PersonaId, String> {
             .map(identity::PersonaId::from_uuid)
             .map_err(|error| format!("TURNSTONE_KNOT_PERSONA must be a UUID: {error}"));
     }
-    let root = session_runtime::shared_root::shared_root();
-    let personas = session_runtime::wallet_store::list_personas(&root)
+    let root = pandect::shared_root::shared_root();
+    let personas = pandect::wallet_store::list_personas(&root)
         .map_err(|error| format!("could not list personas under {}: {error}", root.display()))?;
     match personas.as_slice() {
         [only] => Ok(*only),
@@ -338,7 +338,7 @@ impl KnotHub {
                         // persona vault come from the shared root, not from
                         // turnstone's own, so a document sealed here opens in
                         // woodshed and knot under the same persona.
-                        let identity_root = session_runtime::shared_root::shared_root();
+                        let identity_root = pandect::shared_root::shared_root();
                         knot::local_device_root(&identity_root, "knot")
                             .and_then(|device| {
                                 knot::StartupUnlockedPersonalVault::open(
@@ -592,7 +592,7 @@ impl KnotAuthoringEngine {
                 // root as an argument so a test can point it at a scratch
                 // profile; turnstone's answer is the family-shared one, and a
                 // guard that only one deployment honours is not a guard.
-                let vault_root = session_runtime::shared_root::shared_root().into_os_string();
+                let vault_root = pandect::shared_root::shared_root().into_os_string();
                 if effects_enabled {
                     if schemes
                         .split(',')

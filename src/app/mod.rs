@@ -84,7 +84,7 @@ pub struct App {
     pub data_root: PathBuf,
     /// The manifest set: one durable record per session, ManifestStore's
     /// on-disk layout under `sessions/`.
-    pub sessions: session_runtime::ManifestStore,
+    pub sessions: pandect::ManifestStore,
     /// The live session — the one whose directory every save/load targets.
     pub session_id: crate::panes::SessionId,
     /// Per-node content lifecycle (rung 4). Data only: the live session
@@ -120,7 +120,7 @@ pub struct App {
     /// The browser-state sidecar (rung 6): per-node browser handling (viewer
     /// override, compat mode, content-on), persisted at `browser_nodes.json`.
     /// The graph stays correct without it (the sidecar's charter).
-    pub browser: session_runtime::browser_node_state::BrowserNodeStates,
+    pub browser: pandect::browser_node_state::BrowserNodeStates,
     /// Linear damping for the layout physics (the "inertia" setting). Held here
     /// — the canvas is the sink, the host the durable owner — and persisted as
     /// the `scene.physics_damping` container facet (it left the app-wide
@@ -202,7 +202,7 @@ pub struct App {
     /// directory sits under `.trash/`, so the trash IS the removed-sessions
     /// record — derived, no parallel bin. Refreshed on adopt / close /
     /// recover (list_trash reads the disk; the Trail renders per frame).
-    pub trash: Vec<session_runtime::GraphSessionManifest>,
+    pub trash: Vec<pandect::GraphSessionManifest>,
     /// Next pane id to mint. Kept above every id in the layout so a summon after
     /// a restore never collides with a persisted pane.
     next_pane_id: u64,
@@ -330,21 +330,21 @@ impl App {
         let geometry = self.graph_runtimes.cartography_geometry();
         let container = self.container_id();
         let facets = self.graph_runtimes.facets_mut();
-        session_runtime::write_web_states(facets, &self.browser);
-        session_runtime::write_arrangement_positions(facets, geometry.iter());
-        session_runtime::write_arrangement_sizes(facets, geometry.size_iter());
-        session_runtime::write_arrangement_sprites(facets, geometry.sprite_iter());
-        session_runtime::write_arrangement_sprite_hulls(facets, geometry.sprite_hull_iter());
-        session_runtime::write_arrangement_materials(facets, geometry.material_iter());
-        session_runtime::write_arrangement_faces(facets, geometry.face_iter());
+        pandect::write_web_states(facets, &self.browser);
+        pandect::write_arrangement_positions(facets, geometry.iter());
+        pandect::write_arrangement_sizes(facets, geometry.size_iter());
+        pandect::write_arrangement_sprites(facets, geometry.sprite_iter());
+        pandect::write_arrangement_sprite_hulls(facets, geometry.sprite_hull_iter());
+        pandect::write_arrangement_materials(facets, geometry.material_iter());
+        pandect::write_arrangement_faces(facets, geometry.face_iter());
         if let Some(container) = container {
-            let scene = session_runtime::SceneFacets {
+            let scene = pandect::SceneFacets {
                 size_by_degree: geometry.size_by_degree(),
                 size_by_importance: geometry.size_by_importance(),
                 importance_metric: geometry.importance_metric().to_string(),
                 physics_damping: self.physics_damping,
             };
-            session_runtime::write_scene_facets(facets, container, &scene);
+            pandect::write_scene_facets(facets, container, &scene);
         }
     }
 

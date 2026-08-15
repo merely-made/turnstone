@@ -9,8 +9,8 @@
 //! └── frame.json            ← this module (the on-disk tag is still `frame`)
 //! ```
 //!
-//! Moved here from `session_runtime::frisket_store` at meerkat's deletion
-//! (2026-07-18) — the pane-coupled half of session-runtime, relocated with
+//! Moved here from `pandect::frisket_store` at meerkat's deletion
+//! (2026-07-18) — the pane-coupled half of pandect, relocated with
 //! the pane model exactly as the boundary-pass plan parked it. v0 stores the
 //! single content layout as one file; per-window files arrive with
 //! multi-window (the `FrisketId` would key a subdirectory the way `views/`

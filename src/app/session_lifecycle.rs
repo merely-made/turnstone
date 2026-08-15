@@ -34,8 +34,8 @@ impl App {
         // before the split, so it is the one that has to hand them over, and it
         // does so on first boot rather than as a migration step someone has to
         // remember to run.
-        let shared = session_runtime::shared_root::shared_root();
-        match session_runtime::shared_root::adopt_legacy_identity(&shared, &data_root) {
+        let shared = pandect::shared_root::shared_root();
+        match pandect::shared_root::adopt_legacy_identity(&shared, &data_root) {
             Ok(true) => eprintln!("[turnstone] adopted this device's identity into {shared:?}"),
             Ok(false) => {}
             Err(error) => eprintln!("[turnstone] could not adopt the legacy identity: {error}"),
@@ -87,8 +87,8 @@ impl App {
             frisket: FrisketLayout::default(),
             history: chrome::nav::History::new(String::new()),
             active_pane: None,
-            browser: session_runtime::browser_node_state::BrowserNodeStates::new(),
-            physics_damping: session_runtime::DEFAULT_PHYSICS_DAMPING,
+            browser: pandect::browser_node_state::BrowserNodeStates::new(),
+            physics_damping: pandect::DEFAULT_PHYSICS_DAMPING,
             maximized: None,
             window_count: 1,
             viewport: super::DEFAULT_VIEWPORT,
@@ -143,14 +143,14 @@ impl App {
     /// through the store. Returns the id.
     pub(super) fn mint_session(
         data_root: &std::path::Path,
-        sessions: &mut session_runtime::ManifestStore,
+        sessions: &mut pandect::ManifestStore,
     ) -> crate::panes::SessionId {
         let id = crate::panes::SessionId::new();
         // A REAL GraphId from birth: the root graph is the session's container
         // node (the one-node model), so its id keys the scene.* facets and is
         // the session's identity in the overmap. (Pre-overmap sessions minted
         // nil; `session::heal_nil_graph_ids` repairs those at boot.)
-        let mut manifest = session_runtime::GraphSessionManifest::new(id, GraphId::new());
+        let mut manifest = pandect::GraphSessionManifest::new(id, GraphId::new());
         manifest.storage_path = Some(session::session_dir(data_root, id));
         sessions.insert(manifest);
         if let Err(err) = sessions.flush_dirty() {
@@ -241,14 +241,14 @@ impl App {
         // The facet-carry: whole per-node records through the remap, scene
         // settings donor-container -> fork-container.
         let fork_graph_id = GraphId::new();
-        let mut fork_facets = session_runtime::NodeFacetStore::new();
-        session_runtime::copy_node_facets(
+        let mut fork_facets = pandect::NodeFacetStore::new();
+        pandect::copy_node_facets(
             self.graph_runtimes.facets(),
             &mut fork_facets,
             &copy.id_remap,
         );
         if let Some(donor_container) = self.container_id() {
-            session_runtime::copy_scene_facets(
+            pandect::copy_scene_facets(
                 self.graph_runtimes.facets(),
                 &mut fork_facets,
                 donor_container,
@@ -289,7 +289,7 @@ impl App {
         // Mint the fork's session: manifest with the parent back-reference,
         // then its on-disk state, so the switch below adopts a real session.
         let fork_id = crate::panes::SessionId::new();
-        let mut manifest = session_runtime::GraphSessionManifest::new(fork_id, fork_graph_id);
+        let mut manifest = pandect::GraphSessionManifest::new(fork_id, fork_graph_id);
         manifest.storage_path = Some(session::session_dir(&self.data_root, fork_id));
         manifest.parent_session = Some(self.session_id);
         self.sessions.insert(manifest);
@@ -535,7 +535,7 @@ impl App {
             let nil = uuid::Uuid::nil();
             if container != nil && self.graph_runtimes.facets().facets_of(&nil).is_some() {
                 let donor = self.graph_runtimes.facets().clone();
-                session_runtime::copy_scene_facets(
+                pandect::copy_scene_facets(
                     &donor,
                     self.graph_runtimes.facets_mut(),
                     nil,
@@ -556,7 +556,7 @@ impl App {
         if let Some(container) = self.container_id() {
             present.insert(container);
         }
-        session_runtime::retain_present_nodes(self.graph_runtimes.facets_mut(), &present);
+        pandect::retain_present_nodes(self.graph_runtimes.facets_mut(), &present);
         match crate::content_classes::reconcile(&mut self.graph_runtimes) {
             Ok(changed) if changed > 0 => {
                 tracing::info!(
@@ -568,7 +568,7 @@ impl App {
             Ok(_) => {}
             Err(error) => tracing::warn!(%error, "content-class reconciliation failed"),
         }
-        let positions = session_runtime::read_arrangement_positions(self.graph_runtimes.facets());
+        let positions = pandect::read_arrangement_positions(self.graph_runtimes.facets());
         self.graph_runtimes.seed_cartography(positions);
         // The denizen runtime derives from the binding facets (agency) + the
         // graph's `Node.nested` pointers (structure) + the nested logs.
@@ -587,9 +587,9 @@ impl App {
                 .graph_runtimes
                 .set_node_nested_for(member, Some(mere::kernel::graph::LogId::new(log_id)));
             if let Some(binding) =
-                session_runtime::read_denizen_binding(self.graph_runtimes.facets(), member)
+                pandect::read_denizen_binding(self.graph_runtimes.facets(), member)
             {
-                session_runtime::write_denizen_binding(
+                pandect::write_denizen_binding(
                     self.graph_runtimes.facets_mut(),
                     member,
                     &binding,
@@ -600,27 +600,27 @@ impl App {
         // the sizing mode + metric and the physics damping re-open as saved.
         let scene = self
             .container_id()
-            .map(|c| session_runtime::read_scene_facets(self.graph_runtimes.facets(), c))
+            .map(|c| pandect::read_scene_facets(self.graph_runtimes.facets(), c))
             .unwrap_or_default();
         self.physics_damping = scene.physics_damping;
         self.graph_runtimes
             .set_physics_damping(scene.physics_damping);
         self.graph_runtimes
             .apply_cartography_importance_metric(&scene.importance_metric);
-        let sizes = session_runtime::read_arrangement_sizes(self.graph_runtimes.facets());
+        let sizes = pandect::read_arrangement_sizes(self.graph_runtimes.facets());
         self.graph_runtimes.apply_cartography_sizing(
             sizes,
             scene.size_by_degree,
             scene.size_by_importance,
         );
-        let sprites = session_runtime::read_arrangement_sprites(self.graph_runtimes.facets());
+        let sprites = pandect::read_arrangement_sprites(self.graph_runtimes.facets());
         self.graph_runtimes
             .apply_cartography_sprites(sprites.iter().map(|(id, uri)| (*id, uri.as_str())));
-        let hulls = session_runtime::read_arrangement_sprite_hulls(self.graph_runtimes.facets());
+        let hulls = pandect::read_arrangement_sprite_hulls(self.graph_runtimes.facets());
         self.graph_runtimes.apply_cartography_sprite_hulls(hulls);
-        let materials = session_runtime::read_arrangement_materials(self.graph_runtimes.facets());
+        let materials = pandect::read_arrangement_materials(self.graph_runtimes.facets());
         self.graph_runtimes.apply_cartography_materials(materials);
-        let faces = session_runtime::read_arrangement_faces(self.graph_runtimes.facets());
+        let faces = pandect::read_arrangement_faces(self.graph_runtimes.facets());
         self.graph_runtimes
             .apply_cartography_faces(faces.iter().map(|(id, code)| (*id, code.as_str())));
         // Session-scoped view state resets.
@@ -722,7 +722,7 @@ impl App {
         // save writes facets only, and the stale file is left inert). Every
         // node whose content was ON respawns through the ordinary port, so
         // `Live` here is spawned truth, never a painted memory.
-        self.browser = session_runtime::read_web_states(self.graph_runtimes.facets());
+        self.browser = pandect::read_web_states(self.graph_runtimes.facets());
         for (id, legacy) in session::load_legacy_browser_nodes(&sdir).nodes {
             self.browser.nodes.entry(id).or_insert(legacy);
         }

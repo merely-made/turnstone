@@ -2,7 +2,7 @@
 //! save/load. Multi-session since rung 6's second half: each session owns
 //! `sessions/<id>/` (graph.json, frame.json, workbench.json,
 //! browser_nodes.json, windows.json, manifest.json); the manifest set is
-//! session-runtime's `ManifestStore`, and the flat single-session layout
+//! pandect's `ManifestStore`, and the flat single-session layout
 //! this port started on migrates in on first boot.
 
 use std::path::{Path, PathBuf};
@@ -11,11 +11,11 @@ use crate::panes::{FrisketLayout, SessionId};
 use crate::place::{PlaceBindingError, PlaceBindingV1};
 use image::ImageEncoder;
 // The frame-sidecar store is frisket's own since meerkat's deletion (it moved
-// out of session-runtime with the pane model).
+// out of pandect with the pane model).
 use crate::panes::store as frisket_store;
 use mere::kernel::graph::Graph;
 use sceno::Score;
-use session_runtime::{GraphSessionManifest, ManifestStore, session_graph_store};
+use pandect::{GraphSessionManifest, ManifestStore, session_graph_store};
 
 /// The per-user data root (`<data_dir>/turnstone`). A `TURNSTONE_ROOT` override
 /// points the whole root at a scratch profile, so a headed-verification run
@@ -97,7 +97,7 @@ const SESSION_FILES: [&str; 7] = [
     session_graph_store::GRAPH_FILE,
     frisket_store::FRAME_FILE,
     WORKBENCH_FILE,
-    session_runtime::browser_node_state::BROWSER_NODES_FILE,
+    pandect::browser_node_state::BROWSER_NODES_FILE,
     frisket_store::WINDOWS_FILE,
     PROJECTION_SCORE_FILE,
     PLACE_FILE,
@@ -339,7 +339,7 @@ pub fn load_session_graph(data_root: &Path) -> Option<Graph> {
 /// directory, leaving references on the nodes. Returns how many blobs were
 /// written.
 ///
-/// The file-sidecar counterpart of `session_runtime::image_store::
+/// The file-sidecar counterpart of `pandect::image_store::
 /// migrate_legacy_images`, which needs an eidetic `Store` this host does not
 /// have. Same digest and same `<hex>` key, so the two agree.
 ///
@@ -426,7 +426,7 @@ pub fn save_session_graph(data_root: &Path, graph: &Graph) {
 /// and the pixels live out of line. Turnstone's session persistence is
 /// file-sidecar shaped (`graph.json`, `facets.json`), so its blob store is a
 /// directory of the same shape rather than the eidetic-backed
-/// `session_runtime::image_store` — same content-addressed `<hex>` key, so the
+/// `pandect::image_store` — same content-addressed `<hex>` key, so the
 /// two converge cleanly if this session ever gains a real store.
 fn images_dir(data_root: &Path) -> std::path::PathBuf {
     data_root.join("images")
@@ -492,8 +492,8 @@ pub fn gc_orphan_image_blobs(data_root: &Path, graph: &Graph) -> usize {
 /// Carries the `arrangement.position` facets (the durable canvas layout — the
 /// graph itself is position-free) plus any other namespace. Missing or corrupt
 /// starts empty: the canvas keeps its origin park and settles fresh.
-pub fn load_node_facets(data_root: &Path) -> Option<session_runtime::NodeFacetStore> {
-    match session_runtime::load_node_facets(data_root) {
+pub fn load_node_facets(data_root: &Path) -> Option<pandect::NodeFacetStore> {
+    match pandect::load_node_facets(data_root) {
         Ok(facets) => facets,
         Err(err) => {
             tracing::warn!(%err, "failed to load the facet store; starting empty");
@@ -503,8 +503,8 @@ pub fn load_node_facets(data_root: &Path) -> Option<session_runtime::NodeFacetSt
 }
 
 /// Persist the per-node facet store at `facets.json`. Best-effort, like the graph.
-pub fn save_node_facets(data_root: &Path, facets: &session_runtime::NodeFacetStore) {
-    if let Err(err) = session_runtime::save_node_facets(data_root, facets) {
+pub fn save_node_facets(data_root: &Path, facets: &pandect::NodeFacetStore) {
+    if let Err(err) = pandect::save_node_facets(data_root, facets) {
         tracing::warn!(%err, "failed to persist the facet store");
     }
 }
@@ -611,13 +611,13 @@ pub fn heal_nil_graph_ids(sessions: &mut ManifestStore) -> usize {
 /// Missing or corrupt reads empty.
 pub fn load_legacy_browser_nodes(
     data_root: &Path,
-) -> session_runtime::browser_node_state::BrowserNodeStates {
-    match session_runtime::browser_node_state::load_browser_node_states(data_root) {
+) -> pandect::browser_node_state::BrowserNodeStates {
+    match pandect::browser_node_state::load_browser_node_states(data_root) {
         Ok(Some(states)) => states,
-        Ok(None) => session_runtime::browser_node_state::BrowserNodeStates::new(),
+        Ok(None) => pandect::browser_node_state::BrowserNodeStates::new(),
         Err(err) => {
             tracing::warn!(%err, "failed to read the legacy browser-state sidecar; ignoring it");
-            session_runtime::browser_node_state::BrowserNodeStates::new()
+            pandect::browser_node_state::BrowserNodeStates::new()
         }
     }
 }
@@ -820,7 +820,7 @@ mod tests {
         )
         .unwrap();
 
-        let mut facets = session_runtime::NodeFacetStore::new();
+        let mut facets = pandect::NodeFacetStore::new();
         facets
             .set(
                 node_id,

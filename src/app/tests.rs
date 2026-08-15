@@ -401,7 +401,7 @@ fn adopt_session_restores_the_saved_canvas_layout_from_facets() {
     // A manifest so the session has a container id for its `scene.*` facets.
     let container = uuid::Uuid::from_u128(0xc0ffee);
     app.sessions
-        .insert(session_runtime::GraphSessionManifest::new(
+        .insert(pandect::GraphSessionManifest::new(
             app.session_id,
             crate::panes::GraphId::from_uuid(container),
         ));
@@ -413,22 +413,22 @@ fn adopt_session_restores_the_saved_canvas_layout_from_facets() {
     let key = app.graph_runtimes.visit("https://layout.example");
     let id = app.graph_runtimes.graph().get_node(key).unwrap().id;
     session::save_session_graph(&sdir, app.graph_runtimes.graph());
-    let mut facets = session_runtime::NodeFacetStore::new();
-    session_runtime::write_arrangement_positions(&mut facets, [(id, (444.0, -55.0))]);
-    session_runtime::write_arrangement_sizes(&mut facets, [(id, 96.0)]);
-    session_runtime::write_scene_facets(
+    let mut facets = pandect::NodeFacetStore::new();
+    pandect::write_arrangement_positions(&mut facets, [(id, (444.0, -55.0))]);
+    pandect::write_arrangement_sizes(&mut facets, [(id, 96.0)]);
+    pandect::write_scene_facets(
         &mut facets,
         container,
-        &session_runtime::SceneFacets {
+        &pandect::SceneFacets {
             physics_damping: 5.5,
-            ..session_runtime::SceneFacets::default()
+            ..pandect::SceneFacets::default()
         },
     );
     // Browser state rides the same store now (web.* facets): live content
     // was ON for this node, so the adopt must respawn it.
-    let mut browser = session_runtime::browser_node_state::BrowserNodeStates::new();
+    let mut browser = pandect::browser_node_state::BrowserNodeStates::new();
     browser.entry(id).content_on = true;
-    session_runtime::write_web_states(&mut facets, &browser);
+    pandect::write_web_states(&mut facets, &browser);
     session::save_node_facets(&sdir, &facets);
 
     // Adopt (the boot/switch seam): the node comes back AND lands where
@@ -500,10 +500,10 @@ fn denizen_installs_after_visible_review() {
     assert!(app.pending_install.is_none());
     assert_eq!(app.denizens.residents.len(), 1);
     let (&member, resident) = app.denizens.residents.iter().next().unwrap();
-    let binding = session_runtime::read_denizen_binding(app.graph_runtimes.facets(), member)
+    let binding = pandect::read_denizen_binding(app.graph_runtimes.facets(), member)
         .expect("the binding facet is durable truth");
     assert_eq!(binding.subject, resident.subject.to_hex());
-    assert_eq!(binding.kind, session_runtime::DenizenKind::Scenario);
+    assert_eq!(binding.kind, pandect::DenizenKind::Scenario);
     assert!(
         binding.legacy_nested_log.is_empty(),
         "the facet is pure agency"
@@ -829,7 +829,7 @@ fn fork_session_snapshots_the_component_with_its_facets() {
     let _ = std::fs::remove_dir_all(&app.data_root);
     let donor_container = uuid::Uuid::from_u128(0xd0);
     app.sessions
-        .insert(session_runtime::GraphSessionManifest::new(
+        .insert(pandect::GraphSessionManifest::new(
             app.session_id,
             crate::panes::GraphId::from_uuid(donor_container),
         ));
@@ -894,16 +894,16 @@ fn fork_session_snapshots_the_component_with_its_facets() {
         .expect("the seed's copy");
     assert_ne!(fork_a, a_id, "a fork copy is a new entity");
     assert!(
-        !session_runtime::read_arrangement_positions(&fork_facets).is_empty(),
+        !pandect::read_arrangement_positions(&fork_facets).is_empty(),
         "the donor layout rode the carry"
     );
-    let web = session_runtime::read_web_states(&fork_facets);
+    let web = pandect::read_web_states(&fork_facets);
     assert!(
         web.get(fork_a).is_some_and(|s| s.content_on),
         "web.content carried onto the remapped id"
     );
     let scene =
-        session_runtime::read_scene_facets(&fork_facets, *fork_manifest.root_graph_id.as_uuid());
+        pandect::read_scene_facets(&fork_facets, *fork_manifest.root_graph_id.as_uuid());
     assert!(
         (scene.physics_damping - 4.75).abs() < 0.001,
         "scene.* carried donor-container -> fork-container"
@@ -990,16 +990,16 @@ fn close_session_trashes_and_recover_restores_identity() {
     // Two real sessions on disk (manifests bound to the root so trash ops
     // have a home), the second is current.
     app.sessions =
-        session_runtime::ManifestStore::with_root(session::sessions_root(&app.data_root));
+        pandect::ManifestStore::with_root(session::sessions_root(&app.data_root));
     let keeper = crate::panes::SessionId::new();
-    let mut keeper_m = session_runtime::GraphSessionManifest::new(
+    let mut keeper_m = pandect::GraphSessionManifest::new(
         keeper,
         crate::panes::GraphId::from_uuid(uuid::Uuid::from_u128(0xa)),
     );
     keeper_m.display_name = Some("keeper".to_string());
     app.sessions.insert(keeper_m);
     let closing_id = crate::panes::SessionId::new();
-    let mut closing_m = session_runtime::GraphSessionManifest::new(
+    let mut closing_m = pandect::GraphSessionManifest::new(
         closing_id,
         crate::panes::GraphId::from_uuid(uuid::Uuid::from_u128(0xb)),
     );
@@ -1238,7 +1238,7 @@ fn rename_session_through_the_omnibar_mode() {
     let mut app = App::test_stub();
     let id = app.session_id;
     app.sessions
-        .insert(session_runtime::GraphSessionManifest::new(
+        .insert(pandect::GraphSessionManifest::new(
             id,
             GraphId::nil(),
         ));
@@ -1378,8 +1378,8 @@ fn a_component_denizen_acts_only_within_its_reviewed_rings() {
         (m, r.subject)
     };
     let binding =
-        session_runtime::read_denizen_binding(app.graph_runtimes.facets(), member).unwrap();
-    assert_eq!(binding.kind, session_runtime::DenizenKind::Pack);
+        pandect::read_denizen_binding(app.graph_runtimes.facets(), member).unwrap();
+    assert_eq!(binding.kind, pandect::DenizenKind::Pack);
     let file = app
         .graph_runtimes
         .facets()
@@ -1562,7 +1562,7 @@ fn install_delegates_from_the_profile_identity_and_uninstall_revokes_it() {
         "the delegation is revoked, so the ring is no longer authorized"
     );
     assert!(
-        session_runtime::read_denizen_binding(app.graph_runtimes.facets(), member).is_none(),
+        pandect::read_denizen_binding(app.graph_runtimes.facets(), member).is_none(),
         "un-resided: the agency facet is gone"
     );
     assert!(
@@ -1640,7 +1640,7 @@ fn deleting_a_denizen_archives_its_world_and_recovery_restores_residency() {
         record
             .facets
             .as_ref()
-            .and_then(|f| f.get(session_runtime::DENIZEN_BINDING))
+            .and_then(|f| f.get(pandect::DENIZEN_BINDING))
             .is_some(),
         "the tombstone carries the facet bundle incl. the binding"
     );
@@ -1657,7 +1657,7 @@ fn deleting_a_denizen_archives_its_world_and_recovery_restores_residency() {
         "the runtime entry left with the node"
     );
     assert!(
-        session_runtime::read_denizen_binding(app.graph_runtimes.facets(), member).is_none(),
+        pandect::read_denizen_binding(app.graph_runtimes.facets(), member).is_none(),
         "the live facets went to the tombstone"
     );
 
@@ -1675,7 +1675,7 @@ fn deleting_a_denizen_archives_its_world_and_recovery_restores_residency() {
         "the archive slot emptied"
     );
     assert!(
-        session_runtime::read_denizen_binding(app.graph_runtimes.facets(), member).is_some(),
+        pandect::read_denizen_binding(app.graph_runtimes.facets(), member).is_some(),
         "the binding facet restored"
     );
     let resident = app
@@ -2227,11 +2227,11 @@ fn browser_states_refresh_and_round_trip() {
     // Round trip through the converged store: web.* facets in facets.json.
     let dir = std::env::temp_dir().join(format!("turnstone-bn-test-{}", uuid::Uuid::new_v4()));
     std::fs::create_dir_all(&dir).unwrap();
-    let mut facets = session_runtime::NodeFacetStore::new();
-    session_runtime::write_web_states(&mut facets, &app.browser);
+    let mut facets = pandect::NodeFacetStore::new();
+    pandect::write_web_states(&mut facets, &app.browser);
     crate::session::save_node_facets(&dir, &facets);
     let reloaded = crate::session::load_node_facets(&dir).unwrap_or_default();
-    let restored = session_runtime::read_web_states(&reloaded);
+    let restored = pandect::read_web_states(&reloaded);
     assert!(restored.get(a).is_some_and(|b| b.content_on));
     // Content off -> the refresh clears the flag.
     app.content.note_closed(a);
@@ -2561,13 +2561,13 @@ fn configured_row_limit_applies_to_the_live_omnibar_projection() {
 
 #[test]
 fn live_settings_snapshot_reconfigures_the_running_chrome_value_once() {
-    let settings = session_runtime::ApplicationSettings {
+    let settings = pandect::ApplicationSettings {
         theme_id: Some("theme:night".into()),
         theme_mode: Some("light".into()),
         ui_zoom: 1.5,
-        shellbar_edge: session_runtime::ShellbarEdge::Top,
+        shellbar_edge: pandect::ShellbarEdge::Top,
         shellbar_hidden: true,
-        ..session_runtime::ApplicationSettings::default()
+        ..pandect::ApplicationSettings::default()
     };
     let snapshot = crate::settings_pane::ChromeSettings::from(&settings);
     let mut app = App::test_stub();

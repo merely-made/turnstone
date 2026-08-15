@@ -19,7 +19,7 @@
 
 use mere::kernel::graph::apply::{self as graph_apply, GraphDelta, apply_graph_delta};
 use mere::kernel::graph::{ContainmentSubKind, EdgeAssertion, Graph, NodeKey, ProvenanceSubKind};
-use session_runtime::ManifestStore;
+use pandect::ManifestStore;
 use std::collections::HashMap;
 
 use crate::panes::SessionId;
@@ -115,7 +115,7 @@ pub fn overmap_graph(sessions: &ManifestStore) -> Graph {
 mod tests {
     use super::*;
     use crate::panes::GraphId;
-    use session_runtime::GraphSessionManifest;
+    use pandect::GraphSessionManifest;
 
     fn store_with(sessions: Vec<GraphSessionManifest>) -> ManifestStore {
         let mut store = ManifestStore::new();

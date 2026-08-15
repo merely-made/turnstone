@@ -516,10 +516,7 @@ pub enum Update {
     /// Lexical recall over browsing memory answered. `query` is the text the
     /// hits answer; the app drops an answer whose query is no longer what the
     /// omnibar holds (the keystroke that superseded it wins).
-    RecallHits {
-        query: String,
-        hits: Vec<RecallHit>,
-    },
+    RecallHits { query: String, hits: Vec<RecallHit> },
     /// Recall could not answer (no index yet, a re-mint failure, a broken
     /// store). Loud: a recall lane that silently shows nothing is
     /// indistinguishable from a trail with nothing in it.
