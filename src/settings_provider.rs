@@ -205,6 +205,23 @@ impl SettingsProvider for ApplicationSettingsProvider {
                 control: SettingControl::Toggle,
                 value: SettingValue::Boolean(!self.settings.shellbar_hidden),
             },
+            SettingSpec {
+                id: "behaviors.cascade_budget".into(),
+                label: "Behavior cascade rounds".into(),
+                scope: SettingScope::Application,
+                movement: SettingMovement::LocalOnly,
+                mutability: SettingMutability::Live,
+                security: SettingSecurity::Ordinary,
+                // A number with a floor of 1 and no unlimited value: an
+                // unbounded cascade is the condition the budget exists to
+                // report.
+                control: SettingControl::Number {
+                    min: Some(1.0),
+                    max: Some(16.0),
+                    step: Some(1.0),
+                },
+                value: SettingValue::Number(f64::from(self.settings.cascade_budget)),
+            },
         ])
     }
 
@@ -242,6 +259,17 @@ impl SettingsProvider for ApplicationSettingsProvider {
             }
             ("chrome.shellbar.visible", SettingValue::Boolean(value)) => {
                 self.settings.shellbar_hidden = !value;
+            }
+            ("behaviors.cascade_budget", SettingValue::Number(value))
+                if value.is_finite() && (1.0..=16.0).contains(&value) =>
+            {
+                self.settings.cascade_budget = value as u32;
+            }
+            ("behaviors.cascade_budget", other) => {
+                return Err(SettingsError::InvalidValue {
+                    setting_id: "behaviors.cascade_budget".into(),
+                    message: format!("expected Number in 1..=16, got {other:?}"),
+                });
             }
             ("theme.id" | "theme.mode", other) => {
                 return Err(SettingsError::InvalidValue {
@@ -299,7 +327,15 @@ mod tests {
             .describe(&SettingsRef(APPLICATION_REFERENCE.into()))
             .unwrap();
 
-        assert_eq!(specs.len(), 5);
+        assert_eq!(specs.len(), 6);
+        // Named rather than merely counted: a row that silently stops being
+        // described is the failure this test should catch.
+        assert!(
+            specs
+                .iter()
+                .any(|spec| spec.id == "behaviors.cascade_budget"),
+            "the cascade budget is offered as a setting"
+        );
         assert_eq!(specs[0].movement, SettingMovement::PersonaSynced);
         assert_eq!(specs[0].control, SettingControl::Text);
         assert!(matches!(specs[1].control, SettingControl::Choice { .. }));

@@ -29,6 +29,10 @@ pub struct ChromeSettings {
     ui_zoom: f32,
     shellbar_edge: ShellbarEdge,
     shellbar_hidden: bool,
+    /// Rounds one behavior cascade may run. Not chrome, but it rides the same
+    /// live snapshot because it is the same kind of thing: an application
+    /// setting the app must see change without a restart.
+    cascade_budget: u32,
 }
 
 impl From<&ApplicationSettings> for ChromeSettings {
@@ -39,11 +43,16 @@ impl From<&ApplicationSettings> for ChromeSettings {
             ui_zoom: settings.ui_zoom,
             shellbar_edge: settings.shellbar_edge,
             shellbar_hidden: settings.shellbar_hidden,
+            cascade_budget: settings.cascade_budget,
         }
     }
 }
 
 impl ChromeSettings {
+    pub fn cascade_budget(&self) -> u32 {
+        self.cascade_budget
+    }
+
     pub fn theme_id(&self) -> Option<&str> {
         self.theme_id.as_deref()
     }
@@ -297,10 +306,11 @@ mod tests {
     fn pane_renders_controls_from_setting_control_not_setting_ids() {
         let pane = SettingsPane::new(root("render"));
         let dom = pane.dom_ref();
-        assert_eq!(dom.all_with_class(dom.document(), "setting-row").len(), 5);
-        assert_eq!(dom.all_with_class(dom.document(), "setting-label").len(), 5);
-        assert_eq!(dom.all_with_class(dom.document(), "setting-apply").len(), 5);
-        assert_eq!(dom.all_with_class(dom.document(), "slider-track").len(), 1);
+        assert_eq!(dom.all_with_class(dom.document(), "setting-row").len(), 6);
+        assert_eq!(dom.all_with_class(dom.document(), "setting-label").len(), 6);
+        assert_eq!(dom.all_with_class(dom.document(), "setting-apply").len(), 6);
+        // Two number controls now: UI zoom and the cascade budget.
+        assert_eq!(dom.all_with_class(dom.document(), "slider-track").len(), 2);
         assert_eq!(dom.all_with_class(dom.document(), "toggle").len(), 1);
         assert_eq!(dom.all_with_class(dom.document(), "radio").len(), 7);
     }

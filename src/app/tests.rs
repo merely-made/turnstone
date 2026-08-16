@@ -400,11 +400,10 @@ fn adopt_session_restores_the_saved_canvas_layout_from_facets() {
     let _ = std::fs::remove_dir_all(&app.data_root);
     // A manifest so the session has a container id for its `scene.*` facets.
     let container = uuid::Uuid::from_u128(0xc0ffee);
-    app.sessions
-        .insert(pandect::GraphSessionManifest::new(
-            app.session_id,
-            crate::panes::GraphId::from_uuid(container),
-        ));
+    app.sessions.insert(pandect::GraphSessionManifest::new(
+        app.session_id,
+        crate::panes::GraphId::from_uuid(container),
+    ));
     let sdir = app.session_dir();
     std::fs::create_dir_all(&sdir).unwrap();
 
@@ -665,6 +664,39 @@ mere.snapshot()",
     );
 }
 
+/// The cascade budget is a setting, and a live one: changing it reaches the
+/// app without a restart, and it never disables behaviors outright.
+#[test]
+fn the_cascade_budget_arrives_from_settings_and_changes_live() {
+    let mut app = App::test_stub();
+    assert_eq!(
+        app.cascade_budget,
+        servitor::cascade::CascadeBudget::DEFAULT.rounds(),
+        "a session with no stored setting runs the default"
+    );
+
+    let mut settings = pandect::ApplicationSettings {
+        cascade_budget: 2,
+        ..pandect::ApplicationSettings::default()
+    };
+    app.apply_chrome_settings_snapshot(&crate::settings_pane::ChromeSettings::from(&settings));
+    assert_eq!(app.cascade_budget, 2);
+
+    // The live half: a second snapshot moves it again, no restart involved.
+    settings.cascade_budget = 7;
+    app.apply_chrome_settings_snapshot(&crate::settings_pane::ChromeSettings::from(&settings));
+    assert_eq!(app.cascade_budget, 7);
+
+    // And a drifted zero leaves behaviors working rather than switching them
+    // off, because the consumer floors it.
+    settings.cascade_budget = 0;
+    app.apply_chrome_settings_snapshot(&crate::settings_pane::ChromeSettings::from(&settings));
+    assert_eq!(
+        servitor::cascade::CascadeBudget::new(app.cascade_budget).rounds(),
+        1
+    );
+}
+
 /// The inbox rule, end to end: a node appearing under a watched folder wakes
 /// the behavior without anyone asking, and its edit is attributed to it.
 ///
@@ -828,11 +860,10 @@ fn fork_session_snapshots_the_component_with_its_facets() {
         std::env::temp_dir().join(format!("turnstone-fork-test-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&app.data_root);
     let donor_container = uuid::Uuid::from_u128(0xd0);
-    app.sessions
-        .insert(pandect::GraphSessionManifest::new(
-            app.session_id,
-            crate::panes::GraphId::from_uuid(donor_container),
-        ));
+    app.sessions.insert(pandect::GraphSessionManifest::new(
+        app.session_id,
+        crate::panes::GraphId::from_uuid(donor_container),
+    ));
     std::fs::create_dir_all(app.session_dir()).unwrap();
 
     // A two-node connected component plus a disconnected bystander.
@@ -902,8 +933,7 @@ fn fork_session_snapshots_the_component_with_its_facets() {
         web.get(fork_a).is_some_and(|s| s.content_on),
         "web.content carried onto the remapped id"
     );
-    let scene =
-        pandect::read_scene_facets(&fork_facets, *fork_manifest.root_graph_id.as_uuid());
+    let scene = pandect::read_scene_facets(&fork_facets, *fork_manifest.root_graph_id.as_uuid());
     assert!(
         (scene.physics_damping - 4.75).abs() < 0.001,
         "scene.* carried donor-container -> fork-container"
@@ -989,8 +1019,7 @@ fn close_session_trashes_and_recover_restores_identity() {
     let _ = std::fs::remove_dir_all(&app.data_root);
     // Two real sessions on disk (manifests bound to the root so trash ops
     // have a home), the second is current.
-    app.sessions =
-        pandect::ManifestStore::with_root(session::sessions_root(&app.data_root));
+    app.sessions = pandect::ManifestStore::with_root(session::sessions_root(&app.data_root));
     let keeper = crate::panes::SessionId::new();
     let mut keeper_m = pandect::GraphSessionManifest::new(
         keeper,
@@ -1238,10 +1267,7 @@ fn rename_session_through_the_omnibar_mode() {
     let mut app = App::test_stub();
     let id = app.session_id;
     app.sessions
-        .insert(pandect::GraphSessionManifest::new(
-            id,
-            GraphId::nil(),
-        ));
+        .insert(pandect::GraphSessionManifest::new(id, GraphId::nil()));
     // The default label is the uuid prefix.
     assert_eq!(app.session_label(id), id.as_uuid().to_string()[..8]);
 
@@ -1377,8 +1403,7 @@ fn a_component_denizen_acts_only_within_its_reviewed_rings() {
         let (&m, r) = app.denizens.residents.iter().next().unwrap();
         (m, r.subject)
     };
-    let binding =
-        pandect::read_denizen_binding(app.graph_runtimes.facets(), member).unwrap();
+    let binding = pandect::read_denizen_binding(app.graph_runtimes.facets(), member).unwrap();
     assert_eq!(binding.kind, pandect::DenizenKind::Pack);
     let file = app
         .graph_runtimes

@@ -232,6 +232,12 @@ impl App {
         &mut self,
         settings: &crate::settings_pane::ChromeSettings,
     ) -> bool {
+        // Read per cascade, so changing the setting changes the very next one
+        // without a restart. Assigned outside the chrome comparison below,
+        // which answers "does the shell need relaying out": a budget change
+        // needs no relayout, and folding it in would force a spurious one.
+        self.cascade_budget = settings.cascade_budget();
+
         let mut chrome = self.shell_chrome_config().clone();
         settings.apply_to(&mut chrome);
         if chrome == *self.shell_chrome_config() {
