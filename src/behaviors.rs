@@ -224,6 +224,47 @@ pub fn ancestry_scopes(graph: &Graph, id: &str) -> Vec<ScopePath> {
         .collect()
 }
 
+/// The scope prefix every app-tier watch sits under.
+///
+/// `app/<event-name>`, so `app` alone covers every app event and a name covers
+/// one. It cannot collide with a graph scope: those are UUID segments, and no
+/// UUID is the literal string `app`.
+pub const APP_SCOPE_ROOT: &str = "app";
+
+/// The scope an app event answers to: `app/<its kebab name>`.
+///
+/// The name is `describe`'s first token, which is that method's shape for all
+/// 52 variants. Read from it rather than duplicated into a second 52-arm match
+/// that could disagree with the one the transcript already shows the user.
+pub fn app_event_scope(event: &AppEvent) -> Option<ScopePath> {
+    let described = event.describe();
+    let name = described.split_whitespace().next()?;
+    ScopePath::parse(&format!("{APP_SCOPE_ROOT}/{name}")).ok()
+}
+
+/// The app events the drain has not considered, as cascade inputs.
+///
+/// Their sequence is the queue ordinal, a different counter from the journal's,
+/// which is why the app tier has its own [`WatchTable`](servitor::WatchTable).
+/// `author_from` marks where a woken body's own events begin, so a behavior
+/// cannot be woken by the events it just caused.
+fn app_entries(app: &App, author_from: Option<(usize, &str)>) -> Vec<CommittedEntry> {
+    let base = app.events_len() - app.unseen_events().len();
+    app.unseen_events()
+        .iter()
+        .enumerate()
+        .filter_map(|(offset, event)| {
+            let index = base + offset;
+            let author = match author_from {
+                Some((from, subject)) if index >= from => subject,
+                _ => mere::kernel::graph::USER_AUTHOR,
+            };
+            let scope = app_event_scope(event)?;
+            Some(CommittedEntry::new(index as u64 + 1, author, vec![scope]))
+        })
+        .collect()
+}
+
 /// The journal entries after `cursor`, as cascade inputs.
 pub fn entries_since(app: &App, cursor: u64) -> Vec<CommittedEntry> {
     let journal = match app.journal.lock() {
@@ -253,9 +294,58 @@ pub fn entries_since(app: &App, cursor: u64) -> Vec<CommittedEntry> {
 /// effects are decided, so a woken body sees the world the action left rather
 /// than the one it found.
 pub fn drain(app: &mut App) -> Vec<Effect> {
-    if app.denizens.is_empty() || app.watches.is_empty() {
+    if app.denizens.is_empty() {
         return Vec::new();
     }
+    let mut effects = drain_app_tier(app);
+    if app.watches.is_empty() {
+        return effects;
+    }
+    effects.extend(drain_graph_tier(app));
+    effects
+}
+
+/// The app tier: wake on what the application did, rather than on what the
+/// graph recorded. Runs first, so anything a woken body writes to the graph is
+/// picked up by the graph drain in the same beat.
+fn drain_app_tier(app: &mut App) -> Vec<Effect> {
+    if app.app_watches.is_empty() {
+        app.mark_events_seen();
+        return Vec::new();
+    }
+    let entries = app_entries(app, None);
+    app.mark_events_seen();
+    if entries.is_empty() {
+        return Vec::new();
+    }
+    let budget = CascadeBudget::new(app.cascade_budget);
+    let mut effects: Vec<Effect> = Vec::new();
+    let mut watches = std::mem::take(&mut app.app_watches);
+    let mut round_entries = entries.clone();
+    let cascade = run_cascade(&mut watches, budget, entries, |wakes| {
+        let mut produced = Vec::new();
+        for wake in wakes {
+            let Some(member) = member_of(app, wake.subject) else {
+                continue;
+            };
+            let context = context_for(&round_entries, wake);
+            let hex = wake.subject.to_hex();
+            let before = app.events_len();
+            effects.extend(app.run_denizen_for_cascade(member, &context));
+            // Whatever the body just caused is attributed to it, so it cannot
+            // be woken by its own noise.
+            produced.extend(app_entries(app, Some((before, &hex))));
+            app.mark_events_seen();
+        }
+        round_entries = produced.clone();
+        produced
+    });
+    app.app_watches = watches;
+    report(app, &cascade);
+    effects
+}
+
+fn drain_graph_tier(app: &mut App) -> Vec<Effect> {
     let entries = entries_since(app, app.behavior_cursor);
     if entries.is_empty() {
         return Vec::new();

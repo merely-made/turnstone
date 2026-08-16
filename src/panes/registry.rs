@@ -21,6 +21,7 @@ pub mod kind {
     pub const OVERMAP: &str = "turnstone.overmap";
     pub const PUBLISHING: &str = "turnstone.publishing";
     pub const SHARED_KNOT: &str = "turnstone.shared-knot";
+    pub const DEVICE_RECEIPTS: &str = "turnstone.device-receipts";
     pub const SETTINGS: &str = "turnstone.settings";
     pub const TRANSCRIPT: &str = "turnstone.transcript";
 }
@@ -134,6 +135,7 @@ pub enum PaneRenderer {
     Overmap,
     Publishing,
     SharedKnot,
+    DeviceReceipts,
     Settings,
     Transcript,
 }
@@ -439,6 +441,21 @@ pub static BUILTIN_PANES: &[PaneDefinition] = &[
             label: "Open Shared Knot pane"
         }),
         Some(|| PaneContent::Registered(PaneKindId::new(kind::SHARED_KNOT)))
+    ),
+    pane!(
+        kind::DEVICE_RECEIPTS,
+        "Device Receipts",
+        PaneSourceShape::fixed(&[FixedSourceKind::Application]),
+        PaneMultiplicity::Many,
+        capabilities(false, false, NONE),
+        "turnstone.device-receipts.config",
+        "turnstone.device-receipts.view",
+        PaneRenderer::DeviceReceipts,
+        Some(PanePaletteEntry {
+            order: 105,
+            label: "Open Device Receipts pane"
+        }),
+        Some(|| PaneContent::Registered(PaneKindId::new(kind::DEVICE_RECEIPTS)))
     ),
     pane!(
         kind::SETTINGS,

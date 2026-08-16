@@ -192,6 +192,13 @@ pub struct App {
     /// W0/W1). Empty until a behavior is installed, which is why the drain
     /// costs nothing on a session that has none.
     pub watches: servitor::WatchTable,
+    /// The app tier's own table (W3). A separate table because a watch cursor
+    /// is a position in ONE journal, and these two count different things: a
+    /// `GraphJournal` sequence and an app-event ordinal. Sharing a table would
+    /// have the two seq spaces advance each other's cursors past unread work.
+    pub app_watches: servitor::WatchTable,
+    /// How far the behavior drain has read the undrained event queue.
+    events_seen: usize,
     /// How far the behavior drain has read the journal. Separate from any
     /// watch's own cursor: this one bounds which entries are even considered.
     pub behavior_cursor: u64,
@@ -622,7 +629,27 @@ impl App {
     /// Drain the semantic events emitted since the last call (the shell
     /// hands them to the scenario's log, diagnostics, or drops them).
     pub fn take_events(&mut self) -> Vec<AppEvent> {
+        // The behavior drain reads this queue without consuming it (the shell
+        // owns the drain), so its cursor is an index into the vec and has to
+        // go back to zero when the vec does.
+        self.events_seen = 0;
         std::mem::take(&mut self.events)
+    }
+
+    /// The events the behavior drain has not considered yet.
+    pub(crate) fn unseen_events(&self) -> &[AppEvent] {
+        let seen = self.events_seen.min(self.events.len());
+        &self.events[seen..]
+    }
+
+    /// Mark everything currently queued as considered.
+    pub(crate) fn mark_events_seen(&mut self) {
+        self.events_seen = self.events.len();
+    }
+
+    /// How many events are queued, for attributing the ones a body produces.
+    pub(crate) fn events_len(&self) -> usize {
+        self.events.len()
     }
 
     /// Seed a new lens window's pane space: a lone Orrery leaf with a freshly

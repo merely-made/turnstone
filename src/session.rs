@@ -14,8 +14,8 @@ use image::ImageEncoder;
 // out of pandect with the pane model).
 use crate::panes::store as frisket_store;
 use mere::kernel::graph::Graph;
-use sceno::Score;
 use pandect::{GraphSessionManifest, ManifestStore, session_graph_store};
+use sceno::Score;
 
 /// The per-user data root (`<data_dir>/turnstone`). A `TURNSTONE_ROOT` override
 /// points the whole root at a scratch profile, so a headed-verification run

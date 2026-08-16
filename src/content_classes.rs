@@ -5,8 +5,8 @@ use chartulary::{
     CLASS_FACET, ClassError, ClassMembership, ClassRegistry, ContentClass, FacetError, FacetId,
 };
 use eidetic::{MereNativeFieldSpec, MereNativeSchemaBuilder, SchemaDefinition, SchemaFormat};
-use serde_json::json;
 use pandect::SchemaFacetValidator;
+use serde_json::json;
 
 pub(crate) const WEB_PAGE_CLASS: &str = "turnstone.web-page";
 pub(crate) const NOTE_CLASS: &str = "turnstone.note";

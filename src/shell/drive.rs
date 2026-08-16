@@ -106,6 +106,13 @@ impl genet_probe::Automatable for Shell {
                             guards.push(("shared-knot", rect, pane.dom_ref()));
                         }
                     }
+                    Some(PaneContent::Registered(kind))
+                        if kind.as_str() == crate::panes::kind::DEVICE_RECEIPTS =>
+                    {
+                        if let Some(pane) = self.renderers.device_receipts.get(&id) {
+                            guards.push(("device-receipts", rect, pane.dom_ref()));
+                        }
+                    }
                     Some(PaneContent::Overmap(_)) => {
                         if let Some(pane) = self.renderers.overmap.get(&id) {
                             guards.push(("overmap", rect, pane.dom_ref()));

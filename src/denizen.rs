@@ -718,20 +718,41 @@ pub fn install(app: &mut App, pending: PendingInstall) -> Uuid {
     // target if it is not there yet, so watching a folder before it exists is
     // ordinary rather than a failure: the folder appears, and the watch is
     // real from the first frame.
-    let watched: Option<(Cap, servitor::ScopePath)> = pending.watch_url.as_ref().map(|url| {
-        let key = app.graph_runtimes.visit(url);
-        let id = app
-            .graph_runtimes
-            .graph()
-            .get_node(key)
-            .map(|node| node.id.to_string())
-            .unwrap_or_else(|| url.clone());
-        let scope = servitor::ScopePath::parse(&id).unwrap_or_else(|_| servitor::ScopePath::root());
-        (Cap::Scope(scope.clone()), scope)
-    });
+    // An `app/...` declaration is an event scope, not an address: nothing to
+    // resolve and nothing to mint. The prefix is the whole distinction, which
+    // is why graph scopes are UUID paths and this one is a reserved word.
+    let app_watch: Option<servitor::ScopePath> = pending
+        .watch_url
+        .as_ref()
+        .filter(|value| {
+            *value == crate::behaviors::APP_SCOPE_ROOT
+                || value.starts_with(&format!("{}/", crate::behaviors::APP_SCOPE_ROOT))
+        })
+        .and_then(|value| servitor::ScopePath::parse(value).ok());
+
+    let watched: Option<(Cap, servitor::ScopePath)> = pending
+        .watch_url
+        .as_ref()
+        .filter(|_| app_watch.is_none())
+        .map(|url| {
+            let key = app.graph_runtimes.visit(url);
+            let id = app
+                .graph_runtimes
+                .graph()
+                .get_node(key)
+                .map(|node| node.id.to_string())
+                .unwrap_or_else(|| url.clone());
+            let scope =
+                servitor::ScopePath::parse(&id).unwrap_or_else(|_| servitor::ScopePath::root());
+            (Cap::Scope(scope.clone()), scope)
+        });
 
     let mut nested = GraphLog::with_id(LogId::new(hex.clone()));
-    let caps = install_caps(&pending.rings, watched.as_ref().map(|(cap, _)| cap));
+    let app_cap = app_watch.clone().map(Cap::Scope);
+    let caps = install_caps(
+        &pending.rings,
+        watched.as_ref().map(|(cap, _)| cap).or(app_cap.as_ref()),
+    );
     for (cap, mode) in &caps {
         let grant = Grant::new(subject, cap.clone(), *mode);
         if let Err(err) = app.denizens.gate.project_grant(&mut nested, &grant) {
@@ -771,6 +792,16 @@ pub fn install(app: &mut App, pending: PendingInstall) -> Uuid {
         {
             Ok(watch) => tracing::info!(scope = %watch.scope, "denizen watch registered"),
             Err(err) => tracing::warn!(%err, %scope, "denizen watch refused"),
+        }
+    }
+    if let Some(scope) = app_watch {
+        let authority = &app.denizens.authority;
+        match app
+            .app_watches
+            .register(authority, subject, scope.clone(), subject.to_hex())
+        {
+            Ok(watch) => tracing::info!(scope = %watch.scope, "denizen app watch registered"),
+            Err(err) => tracing::warn!(%err, %scope, "denizen app watch refused"),
         }
     }
     member

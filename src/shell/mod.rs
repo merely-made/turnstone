@@ -282,6 +282,7 @@ pub struct Shell {
     /// Recipient controls for a private ticket. This service does not need a
     /// local Knot authoring host, only the profile root it derives from.
     shared_knot_service: Option<Arc<crate::share_reader_service::KnotShareReaderService>>,
+    device_receipts_service: Option<Arc<crate::device_receipts_service::DeviceReceiptsService>>,
     /// The Overmap pane (O1): the switcher as a graph view, retained like the
     /// Gloss minimap it mirrors.
     /// Every retained per-pane Cambium renderer, keyed by `PaneId`.
@@ -419,6 +420,14 @@ impl Shell {
                 None
             }
         };
+        let device_receipts_service =
+            match crate::device_receipts_service::DeviceReceiptsService::start() {
+                Ok(service) => Some(Arc::new(service)),
+                Err(error) => {
+                    tracing::warn!(%error, "device receipts reader is unavailable");
+                    None
+                }
+            };
         match crate::knot_authoring::KnotAuthoringEngine::from_env(knot_wake) {
             Ok(Some(mut engine)) => {
                 knot_clip = engine.clip_handle();
@@ -483,6 +492,7 @@ impl Shell {
             content_scroll_moved: None,
             publish_service,
             shared_knot_service,
+            device_receipts_service,
             renderers: Default::default(),
             hovered_pane: None,
             chrome: crate::chrome_view::ChromeSurfaces::new(),
@@ -917,6 +927,13 @@ impl Shell {
             }
             PaneContent::Registered(kind) if kind.as_str() == crate::panes::kind::SHARED_KNOT => {
                 if let Some(pane) = self.renderers.shared_knot.get_mut(&pane_id) {
+                    pane.click(lx, ly, rw, rh);
+                }
+            }
+            PaneContent::Registered(kind)
+                if kind.as_str() == crate::panes::kind::DEVICE_RECEIPTS =>
+            {
+                if let Some(pane) = self.renderers.device_receipts.get_mut(&pane_id) {
                     pane.click(lx, ly, rw, rh);
                 }
             }

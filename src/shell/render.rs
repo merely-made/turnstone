@@ -444,6 +444,20 @@ impl Shell {
                 pane.sync(rw as f32, rh as f32);
                 pane.scene(rw, rh)
             }
+            Some(PaneContent::Registered(kind))
+                if kind.as_str() == crate::panes::kind::DEVICE_RECEIPTS =>
+            {
+                let service = self.device_receipts_service.clone();
+                let pane = self
+                    .renderers
+                    .device_receipts
+                    .entry(pane_id)
+                    .or_insert_with(|| {
+                        crate::device_receipts_pane::DeviceReceiptsPane::new(service)
+                    });
+                pane.sync(rw as f32, rh as f32);
+                pane.scene(rw, rh)
+            }
             Some(PaneContent::Overmap(cfg)) => {
                 // The switcher as a graph view (overmap O1): sessions as
                 // container nodes, fork lineage as edges, on the shared

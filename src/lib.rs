@@ -16,6 +16,8 @@ mod component;
 mod content;
 mod content_classes;
 mod denizen;
+mod device_receipts_pane;
+mod device_receipts_service;
 mod identity;
 mod inspector_pane;
 mod inspector_view;

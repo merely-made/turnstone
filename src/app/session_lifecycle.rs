@@ -64,6 +64,8 @@ impl App {
         let root = identity::IdentityProvider::master_public_key(identity.as_ref()).to_bytes();
         let mut app = Self {
             watches: servitor::WatchTable::new(),
+            app_watches: servitor::WatchTable::new(),
+            events_seen: 0,
             behavior_cursor: 0,
             cascade_budget: servitor::cascade::CascadeBudget::DEFAULT.rounds(),
             graph_runtimes: super::GraphRuntimePool::new(
@@ -589,11 +591,7 @@ impl App {
             if let Some(binding) =
                 pandect::read_denizen_binding(self.graph_runtimes.facets(), member)
             {
-                pandect::write_denizen_binding(
-                    self.graph_runtimes.facets_mut(),
-                    member,
-                    &binding,
-                );
+                pandect::write_denizen_binding(self.graph_runtimes.facets_mut(), member, &binding);
             }
         }
         // The scene's own view settings ride the `scene.*` container facets:

@@ -51,6 +51,8 @@ pub(crate) struct PaneRenderers {
     pub(crate) publish: HashMap<PaneId, crate::publish_pane::PublishPane>,
     /// Recipient controls for a private ticket.
     pub(crate) shared_knot: HashMap<PaneId, crate::share_reader_pane::SharedKnotPane>,
+    /// This device's resident receipt cards, read through the first-party door.
+    pub(crate) device_receipts: HashMap<PaneId, crate::device_receipts_pane::DeviceReceiptsPane>,
     /// The Shell Transcript pane: the ledger's visible projection.
     pub(crate) transcript: HashMap<PaneId, crate::transcript_pane::TranscriptPane>,
     /// The Overmap pane (O1): the switcher as a graph view.
@@ -75,6 +77,7 @@ impl PaneRenderers {
             settings,
             publish,
             shared_knot,
+            device_receipts,
             overmap,
             transcript,
         } = self;
@@ -90,6 +93,7 @@ impl PaneRenderers {
         settings.remove(&pane);
         publish.remove(&pane);
         shared_knot.remove(&pane);
+        device_receipts.remove(&pane);
         overmap.remove(&pane);
         transcript.remove(&pane);
     }
@@ -107,6 +111,7 @@ impl PaneRenderers {
             + self.settings.len()
             + self.publish.len()
             + self.shared_knot.len()
+            + self.device_receipts.len()
             + self.overmap.len()
             + self.transcript.len()
     }

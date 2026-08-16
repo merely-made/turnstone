@@ -664,6 +664,85 @@ mere.snapshot()",
     );
 }
 
+/// W3: a behavior wakes on what the *application* did, not on a graph write,
+/// and without anyone polling.
+#[cfg(feature = "piccolo")]
+#[test]
+fn a_behavior_wakes_on_an_app_event_without_polling() {
+    let mut app = App::test_stub();
+    app.data_root =
+        std::env::temp_dir().join(format!("turnstone-app-watch-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&app.data_root);
+    std::fs::create_dir_all(app.session_dir()).unwrap();
+
+    // `app/...` is an event scope, not an address: nothing is resolved or
+    // minted for it.
+    let pack = app.data_root.join("greeter.lua");
+    std::fs::write(
+        &pack,
+        "-- @watch app/address-opened
+mere.open('mere://greeted')",
+    )
+    .unwrap();
+    app.update(Action::InstallDenizen {
+        path: pack.display().to_string(),
+    });
+    app.update(Action::ConfirmInstallDenizen);
+    assert_eq!(app.app_watches.watches().len(), 1, "the app watch stands");
+    assert!(
+        app.watches.is_empty(),
+        "and it did not also register a graph watch"
+    );
+
+    let _ = app.take_events();
+    app.update(Action::OpenAddress("https://example.com/x".to_string()));
+
+    assert!(
+        app.graph_runtimes
+            .graph()
+            .get_node_by_url("mere://greeted")
+            .is_some(),
+        "the app event woke the behavior and its Action landed"
+    );
+}
+
+/// The app tier's own no-self-wake rule: a body cannot be woken by the events
+/// its own run produced, which is what keeps an `app/` watch from spinning.
+#[cfg(feature = "piccolo")]
+#[test]
+fn an_app_watch_is_not_woken_by_its_own_events() {
+    let mut app = App::test_stub();
+    app.data_root =
+        std::env::temp_dir().join(format!("turnstone-app-selfwake-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&app.data_root);
+    std::fs::create_dir_all(app.session_dir()).unwrap();
+
+    // Watches the very event its own body causes. Without attribution this is
+    // a spin that only the cascade budget would stop.
+    let pack = app.data_root.join("ouroboros.lua");
+    std::fs::write(
+        &pack,
+        "-- @watch app/address-opened
+mere.open('mere://again')",
+    )
+    .unwrap();
+    app.update(Action::InstallDenizen {
+        path: pack.display().to_string(),
+    });
+    app.update(Action::ConfirmInstallDenizen);
+    let _ = app.take_events();
+
+    app.update(Action::OpenAddress("https://example.com/y".to_string()));
+    let exhausted = app
+        .take_events()
+        .iter()
+        .any(|event| matches!(event, crate::observe::AppEvent::CascadeExhausted(_)));
+    assert!(
+        !exhausted,
+        "it settled on its own rather than being stopped by the budget"
+    );
+}
+
 /// The cascade budget is a setting, and a live one: changing it reaches the
 /// app without a restart, and it never disables behaviors outright.
 #[test]
