@@ -271,6 +271,10 @@ pub enum Action {
     /// step budget, and its emitted Actions lower through this same spine
     /// with mere's GraphJournal scoped to the denizen's author (attribution).
     RunDenizen { member: uuid::Uuid },
+    /// Write `body` as the content of the node at `url`, minting the node if
+    /// it is not there. The authoring lane a summarizing behavior needs; the
+    /// `Author` ring gates it, and that ring is never preselected.
+    WriteNote { url: String, body: String },
     /// Restore a trashed SESSION from the manifest trash and switch to it
     /// (overmap O3; a Trail Removed-sessions-row click). The whole session
     /// directory moved to `.trash/` intact at close, so restore is

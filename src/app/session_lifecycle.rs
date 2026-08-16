@@ -67,6 +67,7 @@ impl App {
             app_watches: servitor::WatchTable::new(),
             events_seen: 0,
             events_base: 0,
+            draining: false,
             time_watches: servitor::TimeWatchTable::new(),
             now_ms: None,
             behavior_cursor: 0,

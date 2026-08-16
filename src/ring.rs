@@ -49,6 +49,19 @@ pub enum Ring {
     /// whether a ring earns its own variant. Deciding WHICH places a profile
     /// belongs to stays host-only; see `JoinPlace`.
     Place,
+    /// Writing content INTO the graph: a note's body, authored by a helper
+    /// rather than by a person.
+    ///
+    /// Its own variant by the same test `Place` states. Folding it into
+    /// `Dispatch` would be worse than untidy: `Dispatch` is preselected by
+    /// `default_rings`, so every pack already installed would silently gain
+    /// the power to rewrite notes it was never reviewed for. A ring that
+    /// widens existing grants retroactively is not a ring, it is a mistake.
+    ///
+    /// Deliberately NOT preselected. A summarizer is useful and also the one
+    /// kind of helper that can overwrite what you wrote, so it should be
+    /// granted on purpose.
+    Author,
     HostOnly,
 }
 
@@ -80,6 +93,7 @@ impl Ring {
             Ring::Dispatch => "dispatch",
             Ring::Session => "session",
             Ring::Place => "place",
+            Ring::Author => "author",
             Ring::HostOnly => "host-only",
         }
     }
@@ -161,6 +175,10 @@ pub fn ring_of(action: &Action) -> Ring {
         // their words, so it is grantable but never implied by `session`.
         SendPlaceMessage { .. } | ShareFocusedNode | ResyncPlace => Ring::Place,
 
+        // Authoring content into the graph. Its own ring, so granting it is a
+        // separate decision from granting dispatch.
+        WriteNote { .. } => Ring::Author,
+
         // Gate management: never emittable in effect, whatever the grant.
         InstallDenizen { .. } | ConfirmInstallDenizen | CancelInstallDenizen
         | UninstallDenizen { .. } | RunDenizen { .. }
@@ -221,12 +239,13 @@ pub fn emit_allowed(
 
 /// Every ring, in privilege order (least first). Host-only is deliberately
 /// absent: it is not a choice a review can offer.
-pub const GRANTABLE_RINGS: [Ring; 5] = [
+pub const GRANTABLE_RINGS: [Ring; 6] = [
     Ring::Navigate,
     Ring::Panes,
     Ring::Dispatch,
     Ring::Session,
     Ring::Place,
+    Ring::Author,
 ];
 
 /// The interface-shaped names of the rings this subject's authority actually

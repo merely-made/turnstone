@@ -295,15 +295,19 @@ pub fn entries_since(app: &App, cursor: u64) -> Vec<CommittedEntry> {
 /// effects are decided, so a woken body sees the world the action left rather
 /// than the one it found.
 pub fn drain(app: &mut App) -> Vec<Effect> {
-    if app.denizens.is_empty() {
+    if app.denizens.is_empty() || app.draining {
+        // Re-entered from a body's own Actions, which lower through `update`.
+        // A nested drain would fire the clock and app tiers in the middle of a
+        // cascade, outside its rounds and its budget.
         return Vec::new();
     }
+    app.draining = true;
     let mut effects = drain_time_tier(app);
     effects.extend(drain_app_tier(app));
-    if app.watches.is_empty() {
-        return effects;
+    if !app.watches.is_empty() {
+        effects.extend(drain_graph_tier(app));
     }
-    effects.extend(drain_graph_tier(app));
+    app.draining = false;
     effects
 }
 

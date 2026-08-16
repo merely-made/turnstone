@@ -664,6 +664,186 @@ mere.snapshot()",
     );
 }
 
+/// A body's Actions lower through `update`, which ends in the drain, so
+/// running a behavior re-enters it. The guard makes that a no-op rather than
+/// letting the clock and app tiers fire in the middle of a graph cascade,
+/// outside its rounds and outside its budget.
+#[cfg(feature = "piccolo")]
+#[test]
+fn a_running_behavior_does_not_re_enter_the_drain() {
+    let mut app = App::test_stub();
+    app.data_root = std::env::temp_dir().join(format!("turnstone-reentry-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&app.data_root);
+    std::fs::create_dir_all(app.session_dir()).unwrap();
+    app.now_ms = Some(0);
+
+    // A schedule that is already due, and a graph behavior whose run would
+    // re-enter the drain. Without the guard the schedule fires nested.
+    let sched = app.data_root.join("ticker.lua");
+    std::fs::write(
+        &sched,
+        "-- @watch every/minute
+mere.open('mere://ticked')",
+    )
+    .unwrap();
+    app.update(Action::InstallDenizen {
+        path: sched.display().to_string(),
+    });
+    app.update(Action::ConfirmInstallDenizen);
+
+    let watcher = app.data_root.join("watcher.lua");
+    std::fs::write(
+        &watcher,
+        "-- @watch https://example.com/w/
+mere.open('mere://watched')",
+    )
+    .unwrap();
+    app.update(Action::InstallDenizen {
+        path: watcher.display().to_string(),
+    });
+    app.update(Action::ConfirmInstallDenizen);
+
+    // Time has not advanced, so the schedule is not due; the graph behavior
+    // is. Its run must not drag the clock tier in with it.
+    app.update(Action::OpenAddress("https://example.com/w/one".to_string()));
+    assert!(
+        app.graph_runtimes
+            .graph()
+            .get_node_by_url("mere://watched")
+            .is_some(),
+        "the graph behavior ran"
+    );
+    assert!(
+        app.graph_runtimes
+            .graph()
+            .get_node_by_url("mere://ticked")
+            .is_none(),
+        "and the schedule did not fire inside its cascade"
+    );
+    assert!(!app.draining, "the flag is cleared when the drain returns");
+}
+
+/// W5, the flagship: a summarizer watching a container writes a note when its
+/// members change, attributed to itself, and stops when its grant is revoked
+/// while the note it already wrote stays standing.
+///
+/// The digest is plain text. The intel seam (esp) would replace the body of
+/// the summary without changing the shape of any of this: what the slice is
+/// proving is the loop, the attribution, and the revocation, not the prose.
+#[cfg(feature = "piccolo")]
+#[test]
+fn a_summarizer_writes_a_note_when_its_neighborhood_changes() {
+    let mut app = App::test_stub();
+    app.data_root = std::env::temp_dir().join(format!("turnstone-summary-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&app.data_root);
+    std::fs::create_dir_all(app.session_dir()).unwrap();
+
+    // Directory form, per the containment rule.
+    let pack = app.data_root.join("summarizer.lua");
+    // The digest is what woke it, not a constant. A constant would be written
+    // once and then be a no-op forever, because an unchanged body is not a
+    // change and correctly journals nothing: the first version of this test
+    // asserted against exactly that.
+    std::fs::write(
+        &pack,
+        "-- @watch https://example.com/notes/
+         mere.write('mere://summary', 'neighborhood: ' .. mere.trigger())",
+    )
+    .unwrap();
+    app.update(Action::InstallDenizen {
+        path: pack.display().to_string(),
+    });
+
+    // Authoring is never preselected, so the review must be widened on
+    // purpose before the summarizer can write anything.
+    if let Some(pending) = app.pending_install.as_mut() {
+        pending.rings.push(crate::ring::Ring::Author);
+    }
+    app.update(Action::ConfirmInstallDenizen);
+    let (_, resident) = app.denizens.residents.iter().next().unwrap();
+    let subject = resident.subject;
+    let subject_hex = subject.to_hex();
+
+    app.update(Action::ReseedLayout);
+    let before = app.journal.lock().unwrap().entries().len();
+
+    // A member appears in the watched neighborhood.
+    app.update(Action::OpenAddress(
+        "https://example.com/notes/one".to_string(),
+    ));
+
+    let summary = app
+        .graph_runtimes
+        .graph()
+        .get_node_by_url("mere://summary")
+        .map(|(_, node)| node.clone());
+    assert!(summary.is_some(), "the summary note was written");
+
+    let wrote: Vec<_> = {
+        let journal = app.journal.lock().unwrap();
+        journal
+            .entries()
+            .iter()
+            .skip(before)
+            .filter(|entry| entry.author == subject_hex)
+            .map(|entry| entry.delta.clone())
+            .collect()
+    };
+    assert!(
+        wrote.iter().any(|delta| matches!(
+            delta,
+            mere::kernel::graph::capture::CapturedDelta::ReplaySetNodeBodyById { .. }
+        )),
+        "and the body write is in the journal under the summarizer"
+    );
+
+    // Revoking the grant stops the updates. The note it already wrote is
+    // untouched: revoking authority destroys nothing.
+    app.denizens.authority.revoke_root_grants(subject);
+    app.watches.remove_subject(subject);
+    let after_revoke = app.journal.lock().unwrap().entries().len();
+    app.update(Action::OpenAddress(
+        "https://example.com/notes/two".to_string(),
+    ));
+    let still_writing = {
+        let journal = app.journal.lock().unwrap();
+        journal
+            .entries()
+            .iter()
+            .skip(after_revoke)
+            .any(|entry| entry.author == subject_hex)
+    };
+    assert!(
+        !still_writing,
+        "a revoked summarizer writes nothing further"
+    );
+    assert!(
+        app.graph_runtimes
+            .graph()
+            .get_node_by_url("mere://summary")
+            .is_some(),
+        "and the note it already wrote is still standing"
+    );
+}
+
+/// Authoring is a grant of its own: a body holding the ordinary control rings
+/// cannot write content, which is what keeps `Dispatch` from quietly meaning
+/// "may rewrite your notes".
+#[cfg(feature = "piccolo")]
+#[test]
+fn writing_content_needs_the_author_ring() {
+    let app = App::test_stub();
+    let err = crate::script::run(
+        &app,
+        "mere.write('mere://x', 'hello')",
+        crate::script::ScriptCapabilities::control(),
+        200,
+        &crate::behaviors::TriggerContext::default(),
+    )
+    .unwrap_err();
+    assert!(err.contains("content.author"), "refused by name: {err}");
+}
+
 /// W4: a behavior fires on the clock, and fires identically on replay because
 /// the clock is fed in rather than sampled.
 #[cfg(feature = "piccolo")]

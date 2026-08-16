@@ -21,6 +21,7 @@ const READ_APP: u8 = 1 << 0;
 const DISPATCH_ACTION: u8 = 1 << 1;
 const NAVIGATE: u8 = 1 << 2;
 const CONTROL_PANES: u8 = 1 << 3;
+const AUTHOR_CONTENT: u8 = 1 << 4;
 
 /// The capabilities a control script may exercise.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -33,6 +34,14 @@ impl ScriptCapabilities {
 
     pub(crate) const fn control() -> Self {
         Self(READ_APP | DISPATCH_ACTION | NAVIGATE | CONTROL_PANES)
+    }
+
+    /// Control plus authoring. Separate from [`control`](Self::control)
+    /// because writing content is a separate grant, and the privileged
+    /// omnibar lane should not acquire it by sharing a constructor.
+    #[cfg(test)]
+    pub(crate) const fn authoring() -> Self {
+        Self(READ_APP | DISPATCH_ACTION | NAVIGATE | CONTROL_PANES | AUTHOR_CONTENT)
     }
 
     /// Everything but reading the app. Exists for the tests that prove a
@@ -139,6 +148,32 @@ impl NativeFn<PiccoloEngine> for Trigger {
             host.trigger.clone()
         };
         cx.make_string(&trigger)
+    }
+}
+
+/// Write a note's body: the authoring lane a summarizing behavior needs.
+///
+/// Gated on the `Author` ring, which install never preselects, so a helper
+/// that can overwrite what you wrote has been granted that on purpose.
+struct Write;
+
+impl NativeFn<PiccoloEngine> for Write {
+    fn call(cx: &mut PiccoloCallCx<'_>) -> Result<PiccoloValue, String> {
+        let url_value = cx.arg(0);
+        let url = cx.value_to_string(&url_value)?;
+        let body_value = cx.arg(1);
+        let body = cx.value_to_string(&body_value)?;
+        if url.trim().is_empty() {
+            return Err("mere.write requires a non-empty address".to_string());
+        }
+        {
+            let host = host(cx)?;
+            require(&host, AUTHOR_CONTENT, "content.author")?;
+            host.actions
+                .borrow_mut()
+                .push(Action::WriteNote { url, body });
+        }
+        Ok(cx.undefined())
     }
 }
 
@@ -265,6 +300,7 @@ pub(crate) fn capabilities_from_grant(
         (Ring::Dispatch, DISPATCH_ACTION),
         (Ring::Navigate, NAVIGATE),
         (Ring::Panes, CONTROL_PANES),
+        (Ring::Author, AUTHOR_CONTENT),
     ] {
         if ring.cap().is_some_and(|cap| covers(&cap, Mode::Write)) {
             bits |= bit;
@@ -317,6 +353,9 @@ pub(crate) fn run(
         .set_function::<Dispatch>("__mere_dispatch", 1)
         .map_err(|err| format!("install mere.dispatch: {err:?}"))?;
     engine
+        .set_function::<Write>("__mere_write", 2)
+        .map_err(|err| format!("install mere.write: {err:?}"))?;
+    engine
         .set_function::<Trigger>("__mere_trigger", 0)
         .map_err(|err| format!("install mere.trigger: {err:?}"))?;
     engine
@@ -328,7 +367,7 @@ pub(crate) fn run(
     engine
         .eval(
             "mere = { snapshot = __mere_snapshot, dispatch = __mere_dispatch, \
-             trigger = __mere_trigger, open = __mere_open, summon = __mere_summon }",
+             trigger = __mere_trigger, open = __mere_open,              write = __mere_write, summon = __mere_summon }",
         )
         .map_err(|err| format!("install Turnstone control API: {err:?}"))?;
     engine

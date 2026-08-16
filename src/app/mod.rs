@@ -202,6 +202,15 @@ pub struct App {
     /// Events the shell has already taken. The queue's index plus this is a
     /// monotonic ordinal, which is what an app-tier watch cursor counts.
     events_base: u64,
+    /// Whether a behavior drain is already running.
+    ///
+    /// `lower_denizen_actions` lowers a body's Actions through `update`, and
+    /// `update` ends in the drain, so running a behavior re-enters it. Today
+    /// the graph tier survives that by accident (its table is taken for the
+    /// duration, so the nested pass sees nothing), but the clock and app tiers
+    /// are not taken and would fire mid-cascade. A flag makes the answer
+    /// structural instead of incidental.
+    pub(crate) draining: bool,
     /// Schedules: behaviors that wake on the clock (W4).
     pub time_watches: servitor::TimeWatchTable,
     /// The host's clock, in unix milliseconds, fed in rather than sampled.
@@ -881,6 +890,26 @@ impl App {
     }
 
     /// Consume one app intent. Never blocks; anything slow leaves as an effect.
+    /// Write a note's body, minting the node if the address is new.
+    ///
+    /// Goes through `visit` and the kernel's body delta, so the write is
+    /// journaled and attributed exactly like any other: a summary a behavior
+    /// wrote reads back in the node's history under that behavior, not under
+    /// the user.
+    fn write_note(&mut self, url: String, body: String) -> Vec<Effect> {
+        let key = self.graph_runtimes.visit(&url);
+        let Some(member) = self
+            .graph_runtimes
+            .graph()
+            .get_node(key)
+            .map(|node| node.id)
+        else {
+            return vec![Effect::Redraw];
+        };
+        let _ = self.graph_runtimes.set_node_body_for(member, Some(body));
+        vec![Effect::SaveSession, Effect::Redraw]
+    }
+
     /// Record a semantic event from outside the app module (the behavior
     /// drain). `events` stays private: the drain is the only outside writer,
     /// and naming it here keeps that true.
@@ -989,6 +1018,7 @@ impl App {
             }
             Action::UninstallDenizen { member } => self.uninstall_denizen(member),
             Action::RunDenizen { member } => self.run_denizen(member),
+            Action::WriteNote { url, body } => self.write_note(url, body),
             Action::RecoverSession(id) => self.recover_session(id),
             Action::CloseSession => self.close_session(),
             Action::BeginRenameSession => self.begin_rename_session(),
