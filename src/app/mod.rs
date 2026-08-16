@@ -199,6 +199,9 @@ pub struct App {
     pub app_watches: servitor::WatchTable,
     /// How far the behavior drain has read the undrained event queue.
     events_seen: usize,
+    /// Events the shell has already taken. The queue's index plus this is a
+    /// monotonic ordinal, which is what an app-tier watch cursor counts.
+    events_base: u64,
     /// How far the behavior drain has read the journal. Separate from any
     /// watch's own cursor: this one bounds which entries are even considered.
     pub behavior_cursor: u64,
@@ -630,8 +633,13 @@ impl App {
     /// hands them to the scenario's log, diagnostics, or drops them).
     pub fn take_events(&mut self) -> Vec<AppEvent> {
         // The behavior drain reads this queue without consuming it (the shell
-        // owns the drain), so its cursor is an index into the vec and has to
-        // go back to zero when the vec does.
+        // owns the drain), so its read cursor is an index into the vec and has
+        // to go back to zero when the vec does. The ORDINAL must not: a watch
+        // cursor is monotonic, so if event numbering restarted at every shell
+        // drain, every later event would look older than what the watch had
+        // already seen and nothing would ever wake again. `events_base` is the
+        // running total that keeps the two in step.
+        self.events_base += self.events.len() as u64;
         self.events_seen = 0;
         std::mem::take(&mut self.events)
     }
@@ -650,6 +658,12 @@ impl App {
     /// How many events are queued, for attributing the ones a body produces.
     pub(crate) fn events_len(&self) -> usize {
         self.events.len()
+    }
+
+    /// The ordinal of the queue's first entry: events already taken by the
+    /// shell. Added to an index to get a number that only ever grows.
+    pub(crate) fn events_base(&self) -> u64 {
+        self.events_base
     }
 
     /// Seed a new lens window's pane space: a lone Orrery leaf with a freshly

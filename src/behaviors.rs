@@ -260,7 +260,8 @@ fn app_entries(app: &App, author_from: Option<(usize, &str)>) -> Vec<CommittedEn
                 _ => mere::kernel::graph::USER_AUTHOR,
             };
             let scope = app_event_scope(event)?;
-            Some(CommittedEntry::new(index as u64 + 1, author, vec![scope]))
+            let ordinal = app.events_base() + index as u64 + 1;
+            Some(CommittedEntry::new(ordinal, author, vec![scope]))
         })
         .collect()
 }

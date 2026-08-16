@@ -66,6 +66,7 @@ impl App {
             watches: servitor::WatchTable::new(),
             app_watches: servitor::WatchTable::new(),
             events_seen: 0,
+            events_base: 0,
             behavior_cursor: 0,
             cascade_budget: servitor::cascade::CascadeBudget::DEFAULT.rounds(),
             graph_runtimes: super::GraphRuntimePool::new(
