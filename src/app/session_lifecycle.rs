@@ -585,6 +585,10 @@ impl App {
             &sdir,
             self.identity.as_ref(),
         );
+        // Residency came back; its standing subscriptions have to come with
+        // it, or a behavior silently stops waking after a reload.
+        (self.watches, self.app_watches, self.time_watches) =
+            crate::denizen::load_watches(&self.session_dir());
         // One-time heal for bindings written before the containment ruling:
         // move the world pointer onto the node (journaled through the spine)
         // and rewrite the facet without it.

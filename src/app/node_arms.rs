@@ -113,6 +113,10 @@ impl App {
             record.title.as_deref(),
             &record.tags,
         );
+        // Residency came back; its standing subscriptions have to come with
+        // it, or a behavior silently stops waking after a reload.
+        (self.watches, self.app_watches, self.time_watches) =
+            crate::denizen::load_watches(&self.session_dir());
         // Restore the node's character from the tombstone: the facet
         // bundle whole, then the borne world (file back to the live
         // slot, pointer re-borne through the spine), then the denizen
@@ -142,6 +146,10 @@ impl App {
                 &sdir,
                 self.identity.as_ref(),
             );
+            // Residency came back; its standing subscriptions come with it, or
+            // a recovered behavior silently stops waking.
+            (self.watches, self.app_watches, self.time_watches) =
+                crate::denizen::load_watches(&sdir);
         }
         self.graph_runtimes.center_on_selected();
         self.history.visit(record.url.clone());

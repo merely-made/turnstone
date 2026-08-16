@@ -723,6 +723,99 @@ mere.open('mere://watched')",
     assert!(!app.draining, "the flag is cleared when the drain returns");
 }
 
+/// A behavior installed today still wakes tomorrow. Watches are registered at
+/// install and live in memory, so without persistence a reload silently
+/// leaves every table empty and every behavior inert.
+///
+/// Persisted rather than re-derived from the pack source: re-deriving would
+/// restart a graph watch's cursor at zero (re-waking on history it had already
+/// considered) and restart a schedule's period (so a daily behavior never
+/// fires for anyone who reopens their session each morning).
+#[cfg(feature = "piccolo")]
+#[test]
+fn watches_survive_a_session_reload() {
+    let mut app = App::test_stub();
+    app.data_root =
+        std::env::temp_dir().join(format!("turnstone-watch-reload-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&app.data_root);
+    std::fs::create_dir_all(app.session_dir()).unwrap();
+    app.now_ms = Some(1_000);
+
+    let pack = app.data_root.join("filer.lua");
+    std::fs::write(
+        &pack,
+        "-- @watch file:///notes/
+mere.open('mere://filed')",
+    )
+    .unwrap();
+    app.update(Action::InstallDenizen {
+        path: pack.display().to_string(),
+    });
+    app.update(Action::ConfirmInstallDenizen);
+    assert_eq!(app.watches.watches().len(), 1);
+    let cursor_before = app.watches.watches()[0].cursor;
+    let scope_before = app.watches.watches()[0].scope.clone();
+
+    // The reload: the tables come back from disk, not from the pack.
+    let (graph, app_tier, time) = crate::denizen::load_watches(&app.session_dir());
+    assert_eq!(graph.watches().len(), 1, "the graph watch came back");
+    assert!(app_tier.is_empty());
+    assert!(time.is_empty());
+    assert_eq!(graph.watches()[0].scope, scope_before);
+    assert_eq!(
+        graph.watches()[0].cursor,
+        cursor_before,
+        "with its cursor, so it does not re-wake on history it already considered"
+    );
+    assert_eq!(
+        graph.watches()[0].self_author,
+        app.watches.watches()[0].self_author,
+        "and its author label, so the no-self-wake refusal still holds"
+    );
+
+    // And uninstalling clears the persisted copy, not just the live one.
+    let member = *app.denizens.residents.keys().next().unwrap();
+    app.update(Action::UninstallDenizen { member });
+    let (graph, _, _) = crate::denizen::load_watches(&app.session_dir());
+    assert!(
+        graph.is_empty(),
+        "a removed denizen leaves no watch on disk"
+    );
+}
+
+/// A schedule's phase survives too, which is the half re-deriving would lose.
+#[cfg(feature = "piccolo")]
+#[test]
+fn a_schedules_phase_survives_a_reload() {
+    let mut app = App::test_stub();
+    app.data_root =
+        std::env::temp_dir().join(format!("turnstone-phase-reload-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&app.data_root);
+    std::fs::create_dir_all(app.session_dir()).unwrap();
+    app.now_ms = Some(500_000);
+
+    let pack = app.data_root.join("gardener.lua");
+    std::fs::write(
+        &pack,
+        "-- @watch every/day
+mere.snapshot()",
+    )
+    .unwrap();
+    app.update(Action::InstallDenizen {
+        path: pack.display().to_string(),
+    });
+    app.update(Action::ConfirmInstallDenizen);
+
+    let (_, _, time) = crate::denizen::load_watches(&app.session_dir());
+    assert_eq!(time.watches().len(), 1);
+    assert_eq!(
+        time.watches()[0].last_fired_ms,
+        500_000,
+        "the period is measured from when it was installed, not from the reload"
+    );
+    assert_eq!(time.watches()[0].period, servitor::Period::Day);
+}
+
 /// W5, the flagship: a summarizer watching a container writes a note when its
 /// members change, attributed to itself, and stops when its grant is revoked
 /// while the note it already wrote stays standing.

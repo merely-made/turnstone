@@ -526,6 +526,113 @@ fn caps_from_projections<'a>(
 /// blob, so it lives beside the world rather than inside the browsable graph;
 /// the grant projection stays the human-readable audit record of the same
 /// grant.
+/// Where a session's standing subscriptions live, beside the bindings and
+/// certificates.
+///
+/// One file rather than one per subject, unlike certificates: a watch table is
+/// read and written whole (its cursors advance together at each drain), so
+/// splitting it would mean a directory scan to answer one question.
+pub fn watches_path(session_dir: &Path) -> PathBuf {
+    session_dir.join("denizens").join("watches.txt")
+}
+
+/// Persist the three watch tables.
+///
+/// **Persisted rather than re-derived from the pack sources**, which would
+/// also have worked and would have kept one source of truth. The reason is
+/// what re-deriving loses: a rebuilt graph watch restarts its cursor at zero
+/// and would re-wake on the whole journal it had already considered, and a
+/// rebuilt schedule restarts its period, so a daily behavior reinstalled by a
+/// restart never fires for anyone who reopens their session each morning.
+/// Cursors and phase are state, not declaration.
+///
+/// Tagged lines, because three tables share one file and a `Watch` and a
+/// `TimeWatch` are not distinguishable by shape alone.
+pub fn save_watches(
+    session_dir: &Path,
+    graph: &servitor::WatchTable,
+    app: &servitor::WatchTable,
+    time: &servitor::TimeWatchTable,
+) {
+    let mut lines: Vec<String> = Vec::new();
+    lines.extend(
+        graph
+            .to_wire_lines()
+            .into_iter()
+            .map(|l| format!("graph {l}")),
+    );
+    lines.extend(app.to_wire_lines().into_iter().map(|l| format!("app {l}")));
+    lines.extend(
+        time.to_wire_lines()
+            .into_iter()
+            .map(|l| format!("time {l}")),
+    );
+    let target = watches_path(session_dir);
+    let result = (|| -> std::io::Result<()> {
+        if let Some(parent) = target.parent() {
+            std::fs::create_dir_all(parent)?;
+        }
+        std::fs::write(
+            &target,
+            lines.join(
+                "
+",
+            ),
+        )
+    })();
+    if let Err(err) = result {
+        tracing::warn!(%err, path = ?target, "failed to persist denizen watches");
+    }
+}
+
+/// Read back [`save_watches`]. Absent or malformed yields empty tables and
+/// says so: behaviors that stop waking are worth a line in the log, and an
+/// unreadable file should not stop a session opening.
+pub fn load_watches(
+    session_dir: &Path,
+) -> (
+    servitor::WatchTable,
+    servitor::WatchTable,
+    servitor::TimeWatchTable,
+) {
+    let empty = || {
+        (
+            servitor::WatchTable::new(),
+            servitor::WatchTable::new(),
+            servitor::TimeWatchTable::new(),
+        )
+    };
+    let target = watches_path(session_dir);
+    let Ok(text) = std::fs::read_to_string(&target) else {
+        return empty();
+    };
+    let mut graph_lines = Vec::new();
+    let mut app_lines = Vec::new();
+    let mut time_lines = Vec::new();
+    for line in text.lines() {
+        match line.split_once(' ') {
+            Some(("graph", rest)) => graph_lines.push(rest.to_string()),
+            Some(("app", rest)) => app_lines.push(rest.to_string()),
+            Some(("time", rest)) => time_lines.push(rest.to_string()),
+            _ if line.trim().is_empty() => {}
+            _ => {
+                tracing::warn!(path = ?target, "unreadable watch record; watches not restored");
+                return empty();
+            }
+        }
+    }
+    let graph = servitor::WatchTable::from_wire_lines(graph_lines.iter().map(String::as_str));
+    let app = servitor::WatchTable::from_wire_lines(app_lines.iter().map(String::as_str));
+    let time = servitor::TimeWatchTable::from_wire_lines(time_lines.iter().map(String::as_str));
+    match (graph, app, time) {
+        (Ok(graph), Ok(app), Some(time)) => (graph, app, time),
+        _ => {
+            tracing::warn!(path = ?target, "malformed watch table; watches not restored");
+            empty()
+        }
+    }
+}
+
 pub fn certs_path(session_dir: &Path, subject_hex: &str) -> PathBuf {
     session_dir
         .join("denizens")
@@ -828,6 +935,12 @@ pub fn install(app: &mut App, pending: PendingInstall) -> Uuid {
             Err(err) => tracing::warn!(%err, %scope, "denizen app watch refused"),
         }
     }
+    save_watches(
+        &app.session_dir(),
+        &app.watches,
+        &app.app_watches,
+        &app.time_watches,
+    );
     member
 }
 

@@ -308,6 +308,18 @@ pub fn drain(app: &mut App) -> Vec<Effect> {
         effects.extend(drain_graph_tier(app));
     }
     app.draining = false;
+    if !effects.is_empty() {
+        // Cursors and schedule phase moved, and they are state rather than
+        // declaration: losing them means re-waking on history already
+        // considered, or a daily behavior that never fires because every
+        // restart restarts its period.
+        crate::denizen::save_watches(
+            &app.session_dir(),
+            &app.watches,
+            &app.app_watches,
+            &app.time_watches,
+        );
+    }
     effects
 }
 
