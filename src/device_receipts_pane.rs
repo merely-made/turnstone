@@ -47,14 +47,9 @@ fn card_view(card: &ReceiptCardView) -> DeviceReceiptsPaneView {
         el::<_, DeviceReceiptsPaneState, ()>("div", format!("{}{badges}", card.title))
             .attr("class", "list-section-title"),
     )];
-    for (label, value) in &card.values {
-        rows.push(Box::new(
-            el::<_, DeviceReceiptsPaneState, ()>("div", format!("{label}: {value}"))
-                .attr("class", "list-row"),
-        ));
-    }
     // A size here means the bytes were actually read out of the resident
-    // store on the last refresh, not merely promised by the card.
+    // store on the last refresh, not merely promised by the card. First,
+    // because reachability is the fact this pane exists to show.
     for (index, size) in card.capture_bytes.iter().enumerate() {
         rows.push(Box::new(
             el::<_, DeviceReceiptsPaneState, ()>(
@@ -62,6 +57,12 @@ fn card_view(card: &ReceiptCardView) -> DeviceReceiptsPaneView {
                 format!("capture {}: {} bytes, readable", index + 1, size),
             )
             .attr("class", "list-row muted"),
+        ));
+    }
+    for (label, value) in &card.values {
+        rows.push(Box::new(
+            el::<_, DeviceReceiptsPaneState, ()>("div", format!("{label}: {value}"))
+                .attr("class", "list-row"),
         ));
     }
     Box::new(el::<_, DeviceReceiptsPaneState, ()>("div", rows).attr("class", "list-row"))

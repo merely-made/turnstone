@@ -1,0 +1,19 @@
+# Device Receipts receipt: turnstone reads its own resident host through the
+# first-party door and shows the cards. Requires the resident device host
+# (graphshell-device-host) to be running with the app endpoint served; the
+# service connects at startup and again on Refresh.
+settle 30
+key escape
+
+# Summon the pane. The service already read once at shell start; the first
+# capture may still show the connecting status, so settle generously and
+# capture twice.
+act Open Device Receipts pane
+settle 60
+capture 01_device_receipts_opened
+
+# One explicit refresh through the pane's own button path is exercised by
+# clicking the Refresh row; the service opens a fresh session, which is also
+# how new receipts become visible.
+settle 120
+capture 02_device_receipts_settled
