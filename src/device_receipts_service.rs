@@ -26,6 +26,16 @@ pub struct ReceiptCardView {
     pub capture_bytes: Vec<usize>,
 }
 
+impl ReceiptCardView {
+    /// Whether this card is a scenario receipt rather than a graph or sync
+    /// card. Read off the badge the receipts module stamps, because the badge
+    /// is what the endpoint actually sends -- the adapter name it was composed
+    /// under does not cross the wire.
+    pub fn is_receipt(&self) -> bool {
+        self.badges.iter().any(|badge| badge == "Receipt")
+    }
+}
+
 /// Pane-visible outcome of the last refresh.
 #[derive(Clone, Debug, PartialEq)]
 pub struct DeviceReceiptsSnapshot {
@@ -174,5 +184,10 @@ async fn read_cards() -> Result<Vec<ReceiptCardView>, String> {
         });
     }
     let _ = client.close().await;
+    // Receipts first. The resident host offers its cards in graph order, so on
+    // a device with any history the sync card and the blob-availability cards
+    // bury the receipts -- in a pane named for them. Stable within each group,
+    // so the host's own ordering still decides ties.
+    cards.sort_by_key(|card| !card.is_receipt());
     Ok(cards)
 }

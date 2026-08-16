@@ -1,0 +1,13 @@
+# Same pane, scrolled to the cross-machine receipt. Separate from
+# device_receipts.scn so the plain receipt stays a clean first-open capture.
+settle 30
+key escape
+act Open Device Receipts pane
+settle 90
+capture 01_top
+scroll 770 400 -1500
+settle 15
+capture 02_scrolled
+scroll 770 400 -1500
+settle 15
+capture 03_scrolled_more
