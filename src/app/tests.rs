@@ -664,6 +664,110 @@ mere.snapshot()",
     );
 }
 
+/// W4: a behavior fires on the clock, and fires identically on replay because
+/// the clock is fed in rather than sampled.
+#[cfg(feature = "piccolo")]
+#[test]
+fn a_scheduled_behavior_fires_on_a_fed_clock_and_replays() {
+    fn run() -> Vec<bool> {
+        let mut app = App::test_stub();
+        app.data_root =
+            std::env::temp_dir().join(format!("turnstone-schedule-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&app.data_root);
+        std::fs::create_dir_all(app.session_dir()).unwrap();
+        app.now_ms = Some(1_000);
+
+        let pack = app.data_root.join("gardener.lua");
+        std::fs::write(
+            &pack,
+            "-- @watch every/hour
+mere.open('mere://swept')",
+        )
+        .unwrap();
+        app.update(Action::InstallDenizen {
+            path: pack.display().to_string(),
+        });
+        app.update(Action::ConfirmInstallDenizen);
+        assert_eq!(app.time_watches.watches().len(), 1, "the schedule stands");
+
+        const HOUR: u64 = 3_600_000;
+        [1_000, 1_000 + HOUR / 2, 1_000 + HOUR]
+            .into_iter()
+            .map(|now| {
+                app.now_ms = Some(now);
+                app.update(Action::ReseedLayout);
+                app.graph_runtimes
+                    .graph()
+                    .get_node_by_url("mere://swept")
+                    .is_some()
+            })
+            .collect()
+    }
+    let first = run();
+    assert_eq!(
+        first,
+        vec![false, false, true],
+        "install is not a tick; half a period is not a period; the hour is"
+    );
+    assert_eq!(first, run(), "the same instants fire the same way");
+}
+
+/// A host that supplies no clock fires no schedule, rather than reading "no
+/// time" as time zero and running everything at once.
+#[cfg(feature = "piccolo")]
+#[test]
+fn a_session_without_a_clock_never_fires_a_schedule() {
+    let mut app = App::test_stub();
+    app.data_root = std::env::temp_dir().join(format!("turnstone-noclock-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&app.data_root);
+    std::fs::create_dir_all(app.session_dir()).unwrap();
+    app.now_ms = None;
+
+    let pack = app.data_root.join("gardener.lua");
+    std::fs::write(
+        &pack,
+        "-- @watch every/minute
+mere.open('mere://swept')",
+    )
+    .unwrap();
+    app.update(Action::InstallDenizen {
+        path: pack.display().to_string(),
+    });
+    app.update(Action::ConfirmInstallDenizen);
+    app.update(Action::ReseedLayout);
+
+    assert!(
+        app.graph_runtimes
+            .graph()
+            .get_node_by_url("mere://swept")
+            .is_none()
+    );
+}
+
+/// The review names the period, because granting a schedule is granting
+/// resource and the reviewer is owed the sentence.
+#[cfg(feature = "piccolo")]
+#[test]
+fn the_review_names_the_period_a_schedule_asks_for() {
+    let mut app = App::test_stub();
+    app.data_root =
+        std::env::temp_dir().join(format!("turnstone-sched-review-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&app.data_root);
+    std::fs::create_dir_all(app.session_dir()).unwrap();
+    let pack = app.data_root.join("gardener.lua");
+    std::fs::write(
+        &pack,
+        "-- @watch every/day
+mere.snapshot()",
+    )
+    .unwrap();
+    app.update(Action::InstallDenizen {
+        path: pack.display().to_string(),
+    });
+    let review = crate::denizen::review_line(app.pending_install.as_ref().expect("staged"));
+    assert!(review.contains("wakes on: every day"), "{review}");
+}
+
 /// W3: a behavior wakes on what the *application* did, not on a graph write,
 /// and without anyone polling.
 #[cfg(feature = "piccolo")]

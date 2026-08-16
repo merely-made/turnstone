@@ -27,6 +27,8 @@ impl App {
             app_watches: servitor::WatchTable::new(),
             events_seen: 0,
             events_base: 0,
+            time_watches: servitor::TimeWatchTable::new(),
+            now_ms: None,
             behavior_cursor: 0,
             cascade_budget: servitor::cascade::CascadeBudget::DEFAULT.rounds(),
             graph_runtimes: super::GraphRuntimePool::new(graph_id, Some(session_id), Canvas::new()),

@@ -384,6 +384,29 @@ mod tests {
         );
     }
 
+    /// A body cannot read wall time. Scheduling is the host's to decide and
+    /// feed in, so a replayed session wakes the same behaviors at the same
+    /// points; a body sampling its own clock would make that untrue and
+    /// nothing would catch it.
+    #[test]
+    fn a_body_has_no_way_to_read_the_clock() {
+        let app = App::test_stub();
+        for probe in ["os.time()", "os.clock()", "mere.now()"] {
+            let err = run(
+                &app,
+                probe,
+                ScriptCapabilities::control(),
+                200,
+                &TriggerContext::default(),
+            )
+            .unwrap_err();
+            assert!(
+                err.contains("nil") || err.contains("failed"),
+                "{probe} should not resolve: {err}"
+            );
+        }
+    }
+
     /// The digest is gated like the snapshot: it describes the graph.
     #[test]
     fn reading_the_trigger_needs_the_read_capability() {

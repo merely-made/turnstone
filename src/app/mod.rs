@@ -202,6 +202,15 @@ pub struct App {
     /// Events the shell has already taken. The queue's index plus this is a
     /// monotonic ordinal, which is what an app-tier watch cursor counts.
     events_base: u64,
+    /// Schedules: behaviors that wake on the clock (W4).
+    pub time_watches: servitor::TimeWatchTable,
+    /// The host's clock, in unix milliseconds, fed in rather than sampled.
+    ///
+    /// `None` on a host that supplies none, and then no schedule ever fires:
+    /// the same posture woodshed takes with practice timing, where measuring
+    /// nothing beats measuring from the epoch. Injected so a replay wakes the
+    /// same behaviors at the same points.
+    pub now_ms: Option<u64>,
     /// How far the behavior drain has read the journal. Separate from any
     /// watch's own cursor: this one bounds which entries are even considered.
     pub behavior_cursor: u64,

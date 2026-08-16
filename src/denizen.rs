@@ -256,7 +256,12 @@ pub fn review_line(pending: &PendingInstall) -> String {
     // The watch is part of the ask: a reviewer is owed *when this runs* beside
     // *what it may touch*, before either is granted.
     let wakes = match &pending.watch_url {
-        Some(url) => format!(" — wakes on: {url}"),
+        Some(url) => match url.strip_prefix("every/") {
+            // A schedule reads as a period, not as a path: "wakes on: every
+            // hour" is the sentence a reviewer is being asked to grant.
+            Some(period) => format!(" — wakes on: every {period}"),
+            None => format!(" — wakes on: {url}"),
+        },
         None => String::new(),
     };
     format!(
@@ -721,9 +726,21 @@ pub fn install(app: &mut App, pending: PendingInstall) -> Uuid {
     // An `app/...` declaration is an event scope, not an address: nothing to
     // resolve and nothing to mint. The prefix is the whole distinction, which
     // is why graph scopes are UUID paths and this one is a reserved word.
+    // `every/<period>` is a schedule: no scope, no address, nothing to
+    // resolve. It needs no capability either, and that asymmetry is
+    // deliberate: being woken by a region reveals that the region changed,
+    // while being woken by the clock reveals nothing. What a schedule costs is
+    // resource, and the gate for that is the review naming the period.
+    let schedule: Option<servitor::Period> = pending
+        .watch_url
+        .as_ref()
+        .and_then(|value| value.strip_prefix("every/"))
+        .and_then(servitor::Period::parse);
+
     let app_watch: Option<servitor::ScopePath> = pending
         .watch_url
         .as_ref()
+        .filter(|_| schedule.is_none())
         .filter(|value| {
             *value == crate::behaviors::APP_SCOPE_ROOT
                 || value.starts_with(&format!("{}/", crate::behaviors::APP_SCOPE_ROOT))
@@ -733,7 +750,7 @@ pub fn install(app: &mut App, pending: PendingInstall) -> Uuid {
     let watched: Option<(Cap, servitor::ScopePath)> = pending
         .watch_url
         .as_ref()
-        .filter(|_| app_watch.is_none())
+        .filter(|_| app_watch.is_none() && schedule.is_none())
         .map(|url| {
             let key = app.graph_runtimes.visit(url);
             let id = app
@@ -793,6 +810,13 @@ pub fn install(app: &mut App, pending: PendingInstall) -> Uuid {
             Ok(watch) => tracing::info!(scope = %watch.scope, "denizen watch registered"),
             Err(err) => tracing::warn!(%err, %scope, "denizen watch refused"),
         }
+    }
+    if let Some(period) = schedule {
+        // Phase starts now, so a freshly admitted behavior waits out a full
+        // period rather than treating its own install as the first tick.
+        let started = app.now_ms.unwrap_or_default();
+        app.time_watches.register(subject, period, started);
+        tracing::info!(%period, "denizen schedule registered");
     }
     if let Some(scope) = app_watch {
         let authority = &app.denizens.authority;

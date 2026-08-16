@@ -169,6 +169,7 @@ impl App {
         // authority, and standing subscriptions end together.
         self.watches.remove_subject(resident.subject);
         self.app_watches.remove_subject(resident.subject);
+        self.time_watches.remove_subject(resident.subject);
         pandect::remove_denizen_binding(self.graph_runtimes.facets_mut(), member);
         let hex = resident.subject.to_hex();
         // The certificates go with the residency: a later adopt must
