@@ -1,0 +1,48 @@
+# Graph behaviors receipt (plan 2026-08-13, slices W1b / W2 / W5): a pack
+# declares WHEN it runs, the review names that before anything is granted, and
+# a node appearing under the watched folder runs it with nobody asking.
+# FRESH profile; requires the piccolo feature (the runnable lane).
+settle 30
+key escape
+
+# The folder first, so the declared watch resolves to a real container and the
+# member minted later has something to belong to.
+#
+# `file:///` rather than a web address: `containment_parent_url` covers
+# http/https/file, and a real fetch can rewrite a node's URL out from under the
+# watch that resolved to it. A receipt should not depend on the network.
+#
+# The trailing slash is load-bearing: the kernel names a containment parent in
+# DIRECTORY form, so a watch on the slashless address contains nothing and is
+# silently inert. That cost an afternoon to find; it is in the scenario so the
+# next reader sees it stated.
+open file:///notes/
+settle 15
+
+drop-file 200 200 scenarios/fixtures/inbox_filer.lua
+settle 10
+assert event denizen-staged
+# The ruled install condition: when this runs, beside what it may touch,
+# before either is granted. The row is a palette suggestion, which no assert
+# verb reads, so this is a visual receipt; the text itself is asserted by
+# `the_review_names_the_watch_and_confirming_registers_it`.
+capture 01_review_names_the_watch
+
+act Install inbox_filer
+settle 15
+assert event denizen-installed
+# Folder, its content node, and the denizen's own node.
+assert nodes >= 3
+capture 02_installed
+
+# Nothing invokes the behavior. A node simply appears under the folder.
+open file:///notes/one
+settle 20
+assert event denizen-ran
+# The discriminating count: the member the user opened is one node, and the
+# one the behavior wrote is another. Had it not woken, this would be short by
+# exactly one.
+assert nodes >= 6
+capture 03_woke_unasked
+
+log behaviors_wake receipt complete
