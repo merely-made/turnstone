@@ -117,6 +117,7 @@ fn trail_pane_view(state: &TrailState) -> TrailView {
 pub struct TrailPane {
     dom: DomHandle,
     runner: TrailRunner,
+    scroll: crate::ui::PaneScroll,
 }
 
 impl TrailPane {
@@ -132,7 +133,11 @@ impl TrailPane {
             trail_pane_view as fn(&TrailState) -> TrailView,
             state,
         );
-        Self { dom, runner }
+        Self {
+            dom,
+            runner,
+            scroll: crate::ui::PaneScroll::new(),
+        }
     }
 
     /// Refresh from graph truth at the pane's size.
@@ -146,8 +151,18 @@ impl TrailPane {
     }
 
     /// The pane's scene at its size, under the host's cambium sheet.
-    pub fn scene(&self, w: u32, h: u32) -> netrender::Scene {
-        crate::ui::scene_from_dom(&self.dom.borrow(), crate::ui::CAMBIUM_SHEET, w, h)
+    pub fn scene(&mut self, w: u32, h: u32) -> netrender::Scene {
+        crate::ui::scene_from_dom_scrolled(&self.dom.borrow(), crate::ui::CAMBIUM_SHEET, w, h, &mut self.scroll)
+    }
+
+    /// Wheel delta from the shell.
+    pub fn scroll_by(&mut self, dx: f32, dy: f32) {
+        self.scroll.nudge(dx, dy);
+    }
+
+    /// Whether the overlay bars still need repainting as they fade.
+    pub fn bars_visible(&mut self) -> bool {
+        self.scroll.bars_visible()
     }
 
     /// Route a click at pane-local `(x, y)`: hit-test the laid-out DOM and

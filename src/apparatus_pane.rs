@@ -114,6 +114,7 @@ fn apparatus_view(state: &ApparatusState) -> ApparatusView {
 pub struct ApparatusPane {
     dom: DomHandle,
     runner: ApparatusRunner,
+    scroll: crate::ui::PaneScroll,
 }
 
 impl ApparatusPane {
@@ -131,7 +132,11 @@ impl ApparatusPane {
             apparatus_view as fn(&ApparatusState) -> ApparatusView,
             state,
         );
-        Self { dom, runner }
+        Self {
+            dom,
+            runner,
+            scroll: crate::ui::PaneScroll::new(),
+        }
     }
 
     /// Refresh from app truth at the pane's size: the focused node's caption
@@ -154,8 +159,18 @@ impl ApparatusPane {
     }
 
     /// The pane's scene at its size, under the host's cambium sheet.
-    pub fn scene(&self, w: u32, h: u32) -> netrender::Scene {
-        crate::ui::scene_from_dom(&self.dom.borrow(), crate::ui::CAMBIUM_SHEET, w, h)
+    pub fn scene(&mut self, w: u32, h: u32) -> netrender::Scene {
+        crate::ui::scene_from_dom_scrolled(&self.dom.borrow(), crate::ui::CAMBIUM_SHEET, w, h, &mut self.scroll)
+    }
+
+    /// Wheel delta from the shell.
+    pub fn scroll_by(&mut self, dx: f32, dy: f32) {
+        self.scroll.nudge(dx, dy);
+    }
+
+    /// Whether the overlay bars still need repainting as they fade.
+    pub fn bars_visible(&mut self) -> bool {
+        self.scroll.bars_visible()
     }
 
     /// The retained DOM, for the shared probe harness.

@@ -446,7 +446,12 @@ pub static BUILTIN_PANES: &[PaneDefinition] = &[
         kind::DEVICE_RECEIPTS,
         "Device Receipts",
         PaneSourceShape::fixed(&[FixedSourceKind::Application]),
-        PaneMultiplicity::Many,
+        // One device, one receipts view: `Many` let every summon split the
+        // active pane and add another copy of identical content, because the
+        // dedupe in `summon_pane` deliberately skips `Many` kinds. Seven of
+        // them were reachable in one window. `PerSpace` matches Steward, the
+        // only other `Application`-sourced pane, for the same reason.
+        PaneMultiplicity::PerSpace,
         capabilities(false, false, NONE),
         "turnstone.device-receipts.config",
         "turnstone.device-receipts.view",

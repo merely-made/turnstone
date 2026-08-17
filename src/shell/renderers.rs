@@ -98,6 +98,64 @@ impl PaneRenderers {
         transcript.remove(&pane);
     }
 
+    /// Deliver a wheel delta to whichever renderer holds `pane`.
+    ///
+    /// Returns whether anything took it, so the caller only redraws when it
+    /// did. Every list renderer is named here; a pane kind added without an
+    /// arm simply will not scroll, which is why the fan-out is explicit rather
+    /// than a default. The swatch-backed panes (Gloss, Overmap) are absent on
+    /// purpose: they are custom-paint canvases whose wheel gesture is a pan,
+    /// owned by the canvas rather than by a scroll container.
+    pub(crate) fn scroll_pane(&mut self, pane: PaneId, dx: f32, dy: f32) -> bool {
+        macro_rules! deliver {
+            ($($map:ident),+ $(,)?) => {
+                $(if let Some(view) = self.$map.get_mut(&pane) {
+                    view.scroll_by(dx, dy);
+                    return true;
+                })+
+            };
+        }
+        deliver!(
+            device_receipts,
+            roster,
+            trail,
+            inspector,
+            workbench,
+            apparatus,
+            settings,
+            publish,
+            shared_knot,
+            transcript,
+        );
+        false
+    }
+
+    /// Whether any pane still has a visible overlay bar, so the shell knows to
+    /// keep drawing the fade out rather than stopping on the last scrolled
+    /// frame.
+    pub(crate) fn any_bars_visible(&mut self) -> bool {
+        macro_rules! visible {
+            ($($map:ident),+ $(,)?) => {
+                $(if self.$map.values_mut().any(|view| view.bars_visible()) {
+                    return true;
+                })+
+            };
+        }
+        visible!(
+            device_receipts,
+            roster,
+            trail,
+            inspector,
+            workbench,
+            apparatus,
+            settings,
+            publish,
+            shared_knot,
+            transcript,
+        );
+        false
+    }
+
     /// How many renderers are retained across every kind. Test seam: it is how
     /// a receipt observes retention and eviction without reaching into fields.
     #[cfg(test)]

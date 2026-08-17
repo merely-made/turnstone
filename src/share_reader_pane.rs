@@ -127,6 +127,7 @@ fn shared_knot_pane_view(state: &SharedKnotPaneState) -> SharedKnotPaneView {
 pub struct SharedKnotPane {
     dom: DomHandle,
     runner: SharedKnotPaneRunner,
+    scroll: crate::ui::PaneScroll,
 }
 
 impl SharedKnotPane {
@@ -145,7 +146,11 @@ impl SharedKnotPane {
             shared_knot_pane_view as fn(&SharedKnotPaneState) -> SharedKnotPaneView,
             state,
         );
-        Self { dom, runner }
+        Self {
+            dom,
+            runner,
+            scroll: crate::ui::PaneScroll::new(),
+        }
     }
 
     pub fn sync(&mut self, pane_w: f32, pane_h: f32) {
@@ -159,8 +164,18 @@ impl SharedKnotPane {
         });
     }
 
-    pub fn scene(&self, w: u32, h: u32) -> netrender::Scene {
-        crate::ui::scene_from_dom(&self.dom.borrow(), crate::ui::CAMBIUM_SHEET, w, h)
+    pub fn scene(&mut self, w: u32, h: u32) -> netrender::Scene {
+        crate::ui::scene_from_dom_scrolled(&self.dom.borrow(), crate::ui::CAMBIUM_SHEET, w, h, &mut self.scroll)
+    }
+
+    /// Wheel delta from the shell.
+    pub fn scroll_by(&mut self, dx: f32, dy: f32) {
+        self.scroll.nudge(dx, dy);
+    }
+
+    /// Whether the overlay bars still need repainting as they fade.
+    pub fn bars_visible(&mut self) -> bool {
+        self.scroll.bars_visible()
     }
 
     pub fn click(&mut self, x: f32, y: f32, w: u32, h: u32) {

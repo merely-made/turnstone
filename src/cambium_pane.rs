@@ -180,6 +180,7 @@ pub fn tab_label(idx: usize) -> &'static str {
 pub struct RosterGrid {
     dom: DomHandle,
     runner: RosterRunner,
+    scroll: crate::ui::PaneScroll,
 }
 
 impl RosterGrid {
@@ -196,7 +197,11 @@ impl RosterGrid {
             roster_pane as fn(&RosterState) -> RosterView,
             state,
         );
-        Self { dom, runner }
+        Self {
+            dom,
+            runner,
+            scroll: crate::ui::PaneScroll::new(),
+        }
     }
 
     /// Refresh the grid from graph truth and the pane's size. Rebuilds the view
@@ -242,8 +247,18 @@ impl RosterGrid {
     }
 
     /// The grid's scene at the pane's size, under the host's cambium sheet.
-    pub fn scene(&self, w: u32, h: u32) -> netrender::Scene {
-        crate::ui::scene_from_dom(&self.dom.borrow(), crate::ui::CAMBIUM_SHEET, w, h)
+    pub fn scene(&mut self, w: u32, h: u32) -> netrender::Scene {
+        crate::ui::scene_from_dom_scrolled(&self.dom.borrow(), crate::ui::CAMBIUM_SHEET, w, h, &mut self.scroll)
+    }
+
+    /// Wheel delta from the shell.
+    pub fn scroll_by(&mut self, dx: f32, dy: f32) {
+        self.scroll.nudge(dx, dy);
+    }
+
+    /// Whether the overlay bars still need repainting as they fade.
+    pub fn bars_visible(&mut self) -> bool {
+        self.scroll.bars_visible()
     }
 
     /// Route a click at pane-local `(x, y)` into the view: lay the DOM out at the

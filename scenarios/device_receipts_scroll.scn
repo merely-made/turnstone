@@ -1,13 +1,17 @@
-# Same pane, scrolled to the cross-machine receipt. Separate from
-# device_receipts.scn so the plain receipt stays a clean first-open capture.
+# Scrolling receipt for the Device Receipts pane. The host offers far more
+# cards than fit, so this proves the ones past the fold are now reachable —
+# and that the auto-hiding overlay bar appears while scrolling.
 settle 30
 key escape
 act Open Device Receipts pane
 settle 90
 capture 01_top
-scroll 770 400 -1500
-settle 15
-capture 02_scrolled
-scroll 770 400 -1500
-settle 15
+# Wheel down inside the pane. The bar should be visible in this capture,
+# taken immediately after, and gone by the last one.
+scroll 770 400 600
+capture 02_scrolled_bar_visible
+scroll 770 400 600
 capture 03_scrolled_more
+# Past the hold+fade window: the bar auto-hides rather than sitting there.
+settle 240
+capture 04_bar_faded

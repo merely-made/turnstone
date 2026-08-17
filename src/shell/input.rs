@@ -210,6 +210,18 @@ impl Shell {
             && self.app.graph_pane_wheel(pane, dx, dy)
         {
             self.request_redraw();
+            return;
+        }
+        // A list pane under the pointer scrolls itself. Without this branch a
+        // pane taller than its tile simply hides its overflow: the content is
+        // laid out and clipped, and nothing can reach it.
+        if let Some(crate::surface::HitResult {
+            kind: crate::surface::SurfaceKind::Pane(pane),
+            ..
+        }) = crate::surface::hit_test(&plan, self.app.focus, x, y)
+            && self.renderers.scroll_pane(pane, dx, dy)
+        {
+            self.request_redraw();
         }
     }
 

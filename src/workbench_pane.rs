@@ -94,6 +94,7 @@ pub struct WbActivate(pub Uuid);
 pub struct WorkbenchPane {
     dom: DomHandle,
     runner: WbRunner,
+    scroll: crate::ui::PaneScroll,
     /// The last synced walk, pane-local — the shell's input routing asks it
     /// for cells and divider bands (the same walk the frame drew).
     tiling: WorkbenchTiling,
@@ -115,6 +116,7 @@ impl WorkbenchPane {
         Self {
             dom,
             runner,
+            scroll: crate::ui::PaneScroll::new(),
             tiling: WorkbenchTiling::default(),
         }
     }
@@ -184,8 +186,18 @@ impl WorkbenchPane {
     }
 
     /// The pane's scene at its size, under the host's cambium sheet.
-    pub fn scene(&self, w: u32, h: u32) -> netrender::Scene {
-        crate::ui::scene_from_dom(&self.dom.borrow(), crate::ui::CAMBIUM_SHEET, w, h)
+    pub fn scene(&mut self, w: u32, h: u32) -> netrender::Scene {
+        crate::ui::scene_from_dom_scrolled(&self.dom.borrow(), crate::ui::CAMBIUM_SHEET, w, h, &mut self.scroll)
+    }
+
+    /// Wheel delta from the shell.
+    pub fn scroll_by(&mut self, dx: f32, dy: f32) {
+        self.scroll.nudge(dx, dy);
+    }
+
+    /// Whether the overlay bars still need repainting as they fade.
+    pub fn bars_visible(&mut self) -> bool {
+        self.scroll.bars_visible()
     }
 
     /// The member whose TAB sits under pane-local `(x, y)`, from the laid-out

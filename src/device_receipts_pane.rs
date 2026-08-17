@@ -5,8 +5,7 @@ use std::rc::Rc;
 use std::sync::Arc;
 
 use cambium::{AnyView, DomHandle, GenetAppRunner, GenetCtx, GenetElement, clickable, el, text};
-use genet_layout::{IncrementalLayout, ScrollOffsets};
-use genet_scripted_dom::{NodeId, ScriptedDom};
+use genet_scripted_dom::ScriptedDom;
 
 use crate::device_receipts_service::{
     DeviceReceiptsService, DeviceReceiptsSnapshot, ReceiptCardView,
@@ -112,6 +111,7 @@ fn device_receipts_pane_view(state: &DeviceReceiptsPaneState) -> DeviceReceiptsP
 pub struct DeviceReceiptsPane {
     dom: DomHandle,
     runner: DeviceReceiptsPaneRunner,
+    scroll: crate::ui::PaneScroll,
 }
 
 impl DeviceReceiptsPane {
@@ -129,7 +129,23 @@ impl DeviceReceiptsPane {
             device_receipts_pane_view as fn(&DeviceReceiptsPaneState) -> DeviceReceiptsPaneView,
             state,
         );
-        Self { dom, runner }
+        Self {
+            dom,
+            runner,
+            scroll: crate::ui::PaneScroll::new(),
+        }
+    }
+
+    /// Wheel delta from the shell. The pane holds far more cards than fit, so
+    /// without this the ones past the fold are unreachable rather than merely
+    /// out of view.
+    pub fn scroll_by(&mut self, dx: f32, dy: f32) {
+        self.scroll.nudge(dx, dy);
+    }
+
+    /// Whether the overlay bars still need repainting as they fade.
+    pub fn bars_visible(&mut self) -> bool {
+        self.scroll.bars_visible()
     }
 
     pub fn sync(&mut self, pane_w: f32, pane_h: f32) {
@@ -143,17 +159,26 @@ impl DeviceReceiptsPane {
         });
     }
 
-    pub fn scene(&self, w: u32, h: u32) -> netrender::Scene {
-        crate::ui::scene_from_dom(&self.dom.borrow(), crate::ui::CAMBIUM_SHEET, w, h)
+    pub fn scene(&mut self, w: u32, h: u32) -> netrender::Scene {
+        crate::ui::scene_from_dom_scrolled(
+            &self.dom.borrow(),
+            crate::ui::CAMBIUM_SHEET,
+            w,
+            h,
+            &mut self.scroll,
+        )
     }
 
     pub fn click(&mut self, x: f32, y: f32, w: u32, h: u32) {
-        let hit = {
-            let dom = self.dom.borrow();
-            let layout =
-                IncrementalLayout::new(&*dom, &[crate::ui::CAMBIUM_SHEET], w as f32, h as f32);
-            layout.hit_test(&*dom, x, y, &ScrollOffsets::<NodeId>::default())
-        };
+        let hit = crate::ui::hit_test_scrolled(
+            &self.dom.borrow(),
+            crate::ui::CAMBIUM_SHEET,
+            w,
+            h,
+            x,
+            y,
+            &self.scroll,
+        );
         if let Some(node) = hit {
             let _: Vec<()> = self
                 .runner

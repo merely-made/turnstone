@@ -161,6 +161,7 @@ fn transcript_pane_view(state: &TranscriptState) -> TranscriptView {
 pub struct TranscriptPane {
     dom: DomHandle,
     runner: TranscriptRunner,
+    scroll: crate::ui::PaneScroll,
 }
 
 impl Default for TranscriptPane {
@@ -182,7 +183,11 @@ impl TranscriptPane {
             transcript_pane_view as fn(&TranscriptState) -> TranscriptView,
             state,
         );
-        Self { dom, runner }
+        Self {
+            dom,
+            runner,
+            scroll: crate::ui::PaneScroll::new(),
+        }
     }
 
     /// Refresh from the shell ledger at the pane's size.
@@ -195,8 +200,18 @@ impl TranscriptPane {
         });
     }
 
-    pub fn scene(&self, w: u32, h: u32) -> netrender::Scene {
-        crate::ui::scene_from_dom(&self.dom.borrow(), crate::ui::CAMBIUM_SHEET, w, h)
+    pub fn scene(&mut self, w: u32, h: u32) -> netrender::Scene {
+        crate::ui::scene_from_dom_scrolled(&self.dom.borrow(), crate::ui::CAMBIUM_SHEET, w, h, &mut self.scroll)
+    }
+
+    /// Wheel delta from the shell.
+    pub fn scroll_by(&mut self, dx: f32, dy: f32) {
+        self.scroll.nudge(dx, dy);
+    }
+
+    /// Whether the overlay bars still need repainting as they fade.
+    pub fn bars_visible(&mut self) -> bool {
+        self.scroll.bars_visible()
     }
 
     /// Route a click at pane-local `(x, y)`, the same round trip the Trail and

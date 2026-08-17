@@ -28,6 +28,54 @@ pub(crate) const CARD_W: f32 = 560.0;
 /// The palette card's top offset (px).
 pub(crate) const CARD_TOP: f32 = 96.0;
 
+/// How much horizontal room one suggestion row's TEXT actually has, in px at
+/// zoom 1: the card's fixed width less `.omni`'s 8px padding and the row's
+/// own 8px padding, both twice. Mirrors the chrome sheet the way [`ROW_H`]
+/// does, because a guard on the ask has to be checkable before a card exists.
+pub(crate) const ROW_TEXT_BUDGET: f32 = CARD_W - 16.0 - 16.0;
+
+/// What `text` measures when the chrome sheet lays it out as a suggestion
+/// row, in px at zoom 1.
+///
+/// Rows are `white-space: nowrap; overflow: hidden`, so a row that does not
+/// fit is not wrapped or ellipsized: it is silently cut off mid-word. A
+/// character count cannot see that, because glyph advances differ (`i` and
+/// `W` are one character each and nothing like one width), which is how a
+/// review row naming a watch passed a `< 96`-char guard and still rendered as
+/// "wakes on: fi". This lays the text out UNCONSTRAINED and reports the
+/// extent it wants, so a caller can compare against [`ROW_TEXT_BUDGET`].
+pub(crate) fn chrome_row_width(text: &str) -> f32 {
+    let mut dom = ScriptedDom::new();
+    let root = dom.document();
+    let row = dom.create_element(qual("div"));
+    dom.set_attribute(row, qual("class"), "omni-row");
+    // Wide enough that nothing clips: the question is what the run WANTS,
+    // and `overflow: hidden` would otherwise cull the answer.
+    dom.set_attribute(row, qual("style"), "position: absolute; width: 8000px;");
+    let t = dom.create_text(text);
+    dom.append_child(row, t);
+    dom.append_child(root, row);
+
+    let layout = IncrementalLayout::new(&dom, &[CHROME_SHEET], 8192.0, 600.0);
+    let plist = layout.emit_paint_list(
+        &dom,
+        &ScrollOffsets::<DomNodeId>::default(),
+        DeviceIntSize::new(8192, 600),
+    );
+    let mut right = 0f32;
+    for cmd in plist.commands() {
+        if let paint_list_api::PaintCmd::DrawText(run) = cmd {
+            for glyph in &run.glyphs {
+                right = right.max(run.placement.bounds.min.x + glyph.point.x);
+            }
+        }
+    }
+    // The last glyph's ORIGIN is not its right edge; one em is a generous
+    // stand-in for the advance the glyph list does not carry.
+    let start = 8.0; // the row's own left padding, which the bounds include
+    (right - start + 14.0).max(0.0)
+}
+
 /// One suggestion row's height at zoom 1, in px: `.omni-row`'s 14px text at
 /// the default line height plus its 5px vertical padding, twice. Mirrors the
 /// chrome sheet below rather than measuring the laid-out card — the row count
@@ -614,6 +662,117 @@ fn finish_scene(dom: &ScriptedDom, w: u32, h: u32) -> netrender::Scene {
 /// a cambium-built DOM (rung 5 slice D toolkit adoption) renders the same way,
 /// under its own class stylesheet. Text-only DOM; a view with custom-paint
 /// leaves goes through [`scene_from_dom_with_leaves`].
+/// One pane's retained scroll: how far it is scrolled, and the clock that
+/// auto-hides its bars.
+///
+/// A pane is its own small document — its root box IS its viewport — so this
+/// is *document* scroll rather than nested element scroll, and the engine's
+/// own clamping decides the range. The offset is retained here because panes
+/// rebuild their `IncrementalLayout` every frame; anything the layout retained
+/// would be discarded on the next paint.
+///
+/// The fade clock is `cambium_winit`'s, the same one the winit host uses for
+/// its own overlay bars, so a pane's bars hold and fade on exactly the timing
+/// the rest of the shell does rather than on a second set of constants.
+pub struct PaneScroll {
+    offset: (f32, f32),
+    fade: cambium_winit::ScrollbarFade<()>,
+}
+
+impl Default for PaneScroll {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl PaneScroll {
+    pub fn new() -> Self {
+        Self {
+            offset: (0.0, 0.0),
+            fade: cambium_winit::ScrollbarFade::new(),
+        }
+    }
+
+    /// Move by a wheel delta and wake the bars.
+    ///
+    /// Deliberately unclamped here: the range depends on the laid-out content,
+    /// which only exists at paint. Painting clamps and writes the corrected
+    /// value back, so an overscroll never accumulates into a pane that must be
+    /// scrolled back through empty space.
+    pub fn nudge(&mut self, dx: f32, dy: f32) {
+        self.offset = (self.offset.0 + dx, self.offset.1 + dy);
+        self.fade.note((), std::time::Instant::now());
+    }
+
+    pub fn offset(&self) -> (f32, f32) {
+        self.offset
+    }
+
+    /// Whether the bars are still visible, so a caller can keep animating the
+    /// fade out rather than leaving a bar frozen on screen.
+    pub fn bars_visible(&mut self) -> bool {
+        self.fade.any_visible(std::time::Instant::now())
+    }
+
+    fn alpha(&self) -> f32 {
+        self.fade.alpha((), std::time::Instant::now())
+    }
+}
+
+/// [`scene_from_dom`] at a pane's scroll offset, with auto-hiding overlay bars.
+///
+/// The bars come from the engine's own `append_scrollbars`, which draws both
+/// axes from fragment geometry at the container's edges, so they cannot land
+/// outside the pane: this scene is composited at exactly the pane's viewport,
+/// and anything past it is clipped by the composite rather than spilling into
+/// a neighbouring pane.
+pub fn scene_from_dom_scrolled(
+    dom: &ScriptedDom,
+    sheet: &str,
+    w: u32,
+    h: u32,
+    scroll: &mut PaneScroll,
+) -> netrender::Scene {
+    let mut layout = IncrementalLayout::new(dom, &[sheet], w as f32, h as f32);
+    // The engine clamps to the real scrollable range; read the result back so
+    // the retained offset can never drift past the content.
+    layout.set_viewport_scroll(dom, scroll.offset);
+    scroll.offset = layout.viewport_scroll();
+    let elements = ScrollOffsets::<DomNodeId>::default();
+    let viewport = DeviceIntSize::new(w as i32, h as i32);
+    let mut plist = layout.emit_paint_list(dom, &elements, viewport);
+    let alpha = scroll.alpha();
+    if alpha > 0.0 {
+        layout.append_scrollbars(dom, &mut plist, &|_| alpha);
+    }
+    let layers = [CompositeLayer {
+        commands: plist.commands(),
+        fonts: plist.fonts(),
+        images: plist.images(),
+    }];
+    composite_paint_layers(viewport, &layers).scene
+}
+
+/// Hit-test a pane at its scroll offset.
+///
+/// Separate from the unscrolled path because a click must resolve against what
+/// the person is *looking at*: hit-testing an unscrolled layout under a
+/// scrolled pane activates whatever row happens to share those coordinates at
+/// offset zero.
+pub fn hit_test_scrolled(
+    dom: &ScriptedDom,
+    sheet: &str,
+    w: u32,
+    h: u32,
+    x: f32,
+    y: f32,
+    scroll: &PaneScroll,
+) -> Option<DomNodeId> {
+    let mut layout = IncrementalLayout::new(dom, &[sheet], w as f32, h as f32);
+    layout.set_viewport_scroll(dom, scroll.offset);
+    layout.hit_test(dom, x, y, &ScrollOffsets::<DomNodeId>::default())
+}
+
 pub fn scene_from_dom(dom: &ScriptedDom, sheet: &str, w: u32, h: u32) -> netrender::Scene {
     let layout = IncrementalLayout::new(dom, &[sheet], w as f32, h as f32);
     let scroll = ScrollOffsets::<DomNodeId>::default();
@@ -984,5 +1143,113 @@ mod tests {
             "an existing node outranks everything: {:?}",
             state.suggestions
         );
+    }
+}
+
+#[cfg(test)]
+mod scroll_tests {
+    use super::*;
+
+    /// A DOM shaped like a real pane: a `.pane` root sized to the viewport
+    /// with more rows inside than fit.
+    ///
+    /// The root element matters. CSS propagates the *root's* overflow to the
+    /// viewport, so a fixture that hangs rows straight off the document has a
+    /// row as its root and does not scroll at all — which is a property of the
+    /// fixture, not of the pane it was standing in for.
+    fn tall_dom() -> ScriptedDom {
+        let mut dom = ScriptedDom::new();
+        let root = dom.document();
+        let panel = dom.create_element(qual("div"));
+        dom.set_attribute(panel, qual("class"), "pane");
+        dom.set_attribute(panel, qual("style"), "width: 400px; height: 300px;");
+        dom.append_child(root, panel);
+        for index in 0..80 {
+            let row = dom.create_element(qual("div"));
+            dom.set_attribute(row, qual("class"), "list-row");
+            let text = dom.create_text(&format!("row {index}"));
+            dom.append_child(row, text);
+            dom.append_child(panel, row);
+        }
+        dom
+    }
+
+    #[test]
+    fn scrolling_past_the_end_clamps_to_the_content() {
+        let dom = tall_dom();
+        let mut scroll = PaneScroll::new();
+        scroll.nudge(0.0, 100_000.0);
+        let _ = scene_from_dom_scrolled(&dom, CAMBIUM_SHEET, 400, 300, &mut scroll);
+        let (_, y) = scroll.offset();
+        assert!(y > 0.0, "the pane scrolled at all, got {y}");
+        assert!(y < 100_000.0, "the offset was clamped to the content, got {y}");
+    }
+
+    /// Scrolling up from the top is a no-op rather than a negative offset.
+    #[test]
+    fn scrolling_above_the_top_stays_at_the_top() {
+        let dom = tall_dom();
+        let mut scroll = PaneScroll::new();
+        scroll.nudge(0.0, -500.0);
+        let _ = scene_from_dom_scrolled(&dom, CAMBIUM_SHEET, 400, 300, &mut scroll);
+        assert_eq!(scroll.offset().1, 0.0);
+    }
+
+    /// A pane that has never been scrolled shows no bar at all; one just
+    /// scrolled shows it fully. This is the auto-hide, at its two ends.
+    #[test]
+    fn bars_are_hidden_until_scrolled() {
+        let mut scroll = PaneScroll::new();
+        assert_eq!(scroll.alpha(), 0.0, "an untouched pane shows no bar");
+        scroll.nudge(0.0, 40.0);
+        assert_eq!(scroll.alpha(), 1.0, "a just-scrolled pane shows its bar");
+        assert!(scroll.bars_visible(), "and it is still worth repainting");
+    }
+
+    /// The bar is actually emitted into the paint list when the pane is
+    /// scrolled, and not when it is idle. Asserted on the command count rather
+    /// than on pixels, so a timing-sensitive screenshot is not the only proof.
+    #[test]
+    fn a_scrolled_pane_emits_its_bar() {
+        let dom = tall_dom();
+        let mut layout = IncrementalLayout::new(&dom, &[CAMBIUM_SHEET], 400.0, 300.0);
+        layout.set_viewport_scroll(&dom, (0.0, 200.0));
+        let viewport = DeviceIntSize::new(400, 300);
+        let elements = ScrollOffsets::<DomNodeId>::default();
+
+        let plain = layout.emit_paint_list(&dom, &elements, viewport);
+        let before = plain.commands().len();
+
+        let mut with_bar = layout.emit_paint_list(&dom, &elements, viewport);
+        layout.append_scrollbars(&dom, &mut with_bar, &|_| 1.0);
+        assert!(
+            with_bar.commands().len() > before,
+            "the bar adds paint commands: {} -> {}",
+            before,
+            with_bar.commands().len(),
+        );
+
+        let mut hidden = layout.emit_paint_list(&dom, &elements, viewport);
+        layout.append_scrollbars(&dom, &mut hidden, &|_| 0.0);
+        assert_eq!(
+            hidden.commands().len(),
+            before,
+            "a fully faded bar emits nothing at all",
+        );
+    }
+
+    /// A hit lands on the row under the pointer, not the row that would be
+    /// there unscrolled. The regression this guards is a click activating the
+    /// wrong thing on any scrolled pane.
+    #[test]
+    fn hit_testing_follows_the_scroll() {
+        let dom = tall_dom();
+        let mut scroll = PaneScroll::new();
+        let at_top = hit_test_scrolled(&dom, CAMBIUM_SHEET, 400, 300, 20.0, 40.0, &scroll);
+        scroll.nudge(0.0, 200.0);
+        let _ = scene_from_dom_scrolled(&dom, CAMBIUM_SHEET, 400, 300, &mut scroll);
+        let scrolled = hit_test_scrolled(&dom, CAMBIUM_SHEET, 400, 300, 20.0, 40.0, &scroll);
+        assert!(at_top.is_some() && scrolled.is_some(), "both hit a row");
+        assert_ne!(at_top, scrolled, "the same point hits a different row once scrolled");
     }
 }

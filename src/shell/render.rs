@@ -488,6 +488,7 @@ impl Shell {
         if self.host.is_none() {
             return;
         }
+        let __probe_t0 = std::time::Instant::now();
         self.drain_surface_web_events();
         // Cursor callbacks may arrive after the move that provoked them. Poll
         // the hovered surface on frame wakes as well as immediately on input.
@@ -714,7 +715,36 @@ impl Shell {
             let ok = capture_composed(host, &layers, w, h, &path);
         }
 
-        if needs_redraw {
+        {
+            let plan = self.surface_plan();
+            let right = plan
+                .iter()
+                .map(|s| s.rect.x + s.rect.w)
+                .fold(0f32, f32::max);
+            let bottom = plan
+                .iter()
+                .map(|s| s.rect.y + s.rect.h)
+                .fold(0f32, f32::max);
+            let scale = self.window.as_ref().map(|w| w.scale_factor()).unwrap_or(0.0);
+            let inner = self.window.as_ref().map(|w| w.inner_size());
+            tracing::info!(
+                frame_ms = __probe_t0.elapsed().as_secs_f32() * 1000.0,
+                surfaces = plan.len(),
+                shell_w = self.width,
+                shell_h = self.height,
+                inner = ?inner,
+                scale,
+                plan_right = right,
+                plan_bottom = bottom,
+                "FRAMEPROBE"
+            );
+        }
+
+        // An overlay bar mid-hold or mid-fade needs the next frame to draw it
+        // one step dimmer. Without this the renderer, being change-driven,
+        // would stop after the scroll and leave the bar frozen on screen --
+        // an auto-hiding bar that never hides.
+        if needs_redraw || self.renderers.any_bars_visible() {
             self.request_redraw();
         }
     }

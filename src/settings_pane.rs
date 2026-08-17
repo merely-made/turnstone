@@ -206,6 +206,7 @@ fn settings_view(state: &SettingsState) -> SettingsView {
 pub struct SettingsPane {
     dom: DomHandle,
     runner: SettingsRunner,
+    scroll: crate::ui::PaneScroll,
 }
 
 impl SettingsPane {
@@ -246,7 +247,11 @@ impl SettingsPane {
             settings_view as fn(&SettingsState) -> SettingsView,
             state,
         );
-        Self { dom, runner }
+        Self {
+            dom,
+            runner,
+            scroll: crate::ui::PaneScroll::new(),
+        }
     }
 
     pub fn sync(&mut self, pane_w: f32, pane_h: f32) {
@@ -256,12 +261,22 @@ impl SettingsPane {
         });
     }
 
-    pub fn scene(&self, w: u32, h: u32) -> netrender::Scene {
+    pub fn scene(&mut self, w: u32, h: u32) -> netrender::Scene {
         let snapshot = self.runner.state().live_settings.snapshot();
         let mut chrome = ShellChromeConfig::default();
         snapshot.apply_to(&mut chrome);
         let sheet = crate::ui::cambium_sheet(&chrome.appearance);
-        crate::ui::scene_from_dom(&self.dom.borrow(), &sheet, w, h)
+        crate::ui::scene_from_dom_scrolled(&self.dom.borrow(), &sheet, w, h, &mut self.scroll)
+    }
+
+    /// Wheel delta from the shell.
+    pub fn scroll_by(&mut self, dx: f32, dy: f32) {
+        self.scroll.nudge(dx, dy);
+    }
+
+    /// Whether the overlay bars still need repainting as they fade.
+    pub fn bars_visible(&mut self) -> bool {
+        self.scroll.bars_visible()
     }
 
     pub fn dom_ref(&self) -> std::cell::Ref<'_, ScriptedDom> {
