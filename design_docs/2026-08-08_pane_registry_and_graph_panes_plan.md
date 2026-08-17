@@ -765,3 +765,36 @@ layout can be shared or reset without changing graph/session truth.
 - Product display-name changes such as Canvas versus Orrery and Navigator versus
   Gloss.
 - Default layout details. Defaults remain editable and user-configurable.
+
+## Progress
+
+- 2026-08-16 (multiplicity, found by looking at a screenshot): Device Receipts
+  was registered `PaneMultiplicity::Many` while sourced from
+  `FixedSourceKind::Application`. There is exactly one application, so a second
+  pane could only ever render identical content, and because `summon_pane`
+  deliberately skips the dedupe for `Many` kinds, every "Open Device Receipts
+  pane" split the active pane and added another copy. Seven were reachable in
+  one window. Now `PerSpace`, matching Steward, which is the only other
+  `Application`-sourced pane and was already correct.
+
+  **The rule the table now states consistently:** multiplicity has to agree
+  with the source shape. A pane whose source is fixed to a singleton
+  (`Application`, `SessionSet`) is `PerSpace` at most; `Many` is for panes
+  whose source distinguishes instances (`Member`, `External(..)`, a `Forme` a
+  reader may legitimately want two views of). The remaining `Many` rows all
+  pass that test: Orrery and Workbench over `Forme`, Tile over `Member`,
+  Publishing over a target, Shared Knot over a ticket.
+
+  Worth keeping about how this surfaced: the duplicate panes were visible in a
+  headed capture taken for an unrelated receipt, and went unremarked because
+  the capture was being read for the one row it was taken to prove. The cost of
+  the duplicates was separately real (see the layout retention entry in
+  [`2026-07-15_turnstone_surfaces_in_cambium.md`](2026-07-15_turnstone_surfaces_in_cambium.md):
+  each copy cost 24 ms a frame).
+
+  Still open, and named here rather than left implicit: **a pane has no close
+  affordance.** `Action::CloseActivePane` exists, reachable as the palette row
+  "Close pane" and scriptable as `close_pane`, and it acts on the active pane.
+  There is no control on the pane itself, no keybinding, and nothing marks
+  which pane is active, so with several panes open there is no way to tell
+  which one is about to close.

@@ -169,3 +169,85 @@ The order follows pull and dependency, not pane-by-pane:
 Each cambium addition is a small PR to the cambium catalog, justified in its
 description by the turnstone surfaces that pull it — the serval/genet pattern, now
 running with turnstone as the consumer.
+
+## What the seam cost until 2026-08-16: a layout per pane per frame
+
+Every pane built its scene through `ui::scene_from_dom*`, and each of those
+constructed an `IncrementalLayout` from scratch. Thirteen call sites did it, so
+a pane re-cascaded, re-boxed and re-shaped its whole document on every paint to
+draw a screen that had not changed. `PaneScroll`'s own doc comment recorded the
+consequence as a fact of life ("panes rebuild their `IncrementalLayout` every
+frame; anything the layout retained would be discarded"), which is how a
+workaround outlives the bug that motivated it.
+
+Measured in release on the Device Receipts pane (37 cards, scratch profile,
+frame timing in the shell's render loop):
+
+| condition | mean frame |
+| --- | --- |
+| empty shell, 2 surfaces, 1024x600 | 6.1 ms |
+| one Device Receipts pane, 1024x600 | 30.4 ms |
+| the same pane at 3174x1729 | 47.5 ms |
+
+**One pane cost four times the entire rest of the shell.** The window that
+provoked the investigation had seven of them, which is what "moving the window
+lags insanely" was.
+
+Three things the measurement settled that inspection had guessed wrong:
+
+- **It reflows.** The plan's right edge tracked 1024 to 3174 exactly on resize.
+  What looked like a frozen resize was a 47 ms frame arriving late.
+- **It does not spin.** The frame log went silent for 48 seconds while idle, so
+  the renderer is properly change-driven. Each individual frame was simply
+  expensive.
+- **Debug and release differ enormously for the baseline** (34 to 48 ms against
+  6 ms empty) **and not at all for the conclusion**: the content cost survives
+  optimization.
+
+The fix is `ui::RetainedLayout`, one per pane, holding the layout across frames
+and bringing it forward from the DOM's own mutation batch. That is what
+`IncrementalLayout` is for: it owns a persistent Stylist whose rule tree the
+retained styles point into, a box tree, and a shaped-text context, and `apply`
+carries all three. **The shape is borrowed, not invented:** cambium's
+`frame::relayout` already solved this for the winit host's own document, so
+this is that logic per pane rather than a second design of the same thing.
+
+Rebuild remains the fallback for exactly three cases, and the reasons are worth
+keeping distinct: a structural mutation (adding or removing nodes is the
+relayout-scope path's job, not the attribute invalidator's), a size change, and
+a different stylesheet (a layout's sheets are fixed at construction, because
+rebuilding the Stylist under live rule nodes would dangle them). A rebuild
+carries both scroll planes across, or a list pane would snap to the top every
+time its content refreshed.
+
+After: **6.9 ms with the pane open against 7.4 ms without**, and 588 of 589
+frames took the `Unchanged` path with exactly one rebuild, the initial
+construction. The pane is free.
+
+Two things fell out on the way. The list panes hit-tested at offset zero while
+painting scrolled, so a click after scrolling landed on whatever row shared
+those coordinates at the top; routing hit tests through the retained layout
+fixes that by construction, because paint and pointer now resolve against one
+layout rather than two built moments apart. And `swatch_pane::hover` built a
+layout per pointer move.
+
+**The chrome is the one remaining one-shot site**, and knowingly: it lays out
+through a `SubtreeView` rather than the DOM directly, so retaining its layout
+means keeping that view stable across frames. The chrome card is a handful of
+rows against a pane's hundreds, so it is the cheap site left rather than an
+oversight. The one-shot builders stay for tests and single measurements, each
+now carrying a doc line saying not to paint through them repeatedly.
+
+Retention is guarded by count rather than by feel, in `ui::retained_layout_tests`:
+ten identical frames build one layout, a resize reflows once and then settles,
+an attribute batch restyles in place while a new node reflows, and a rebuild
+keeps a scrolled pane where it was. `RetainedLayout::rebuilds()` is the seam
+those read, and it is the number a regression shows up in: retention is not
+"it looks fast", it is "the second frame did not rebuild."
+
+Frame timing is now a `debug!` in the render loop
+(`RUST_LOG=turnstone::shell::render=debug`) and the relayout path a `debug!`
+per pane, so the next person to ask why a window feels heavy does not have to
+instrument the frame loop by hand first.
+
+turnstone `675f7f0`, 289 pass.
