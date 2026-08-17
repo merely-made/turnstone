@@ -719,6 +719,239 @@ impl PaneScroll {
     }
 }
 
+/// One pane's layout, held across frames instead of rebuilt on every paint.
+///
+/// `IncrementalLayout` is built to be kept: it owns a persistent Stylist whose
+/// retained styles point into its rule tree, a box tree, and a shaped-text
+/// context, and [`apply`](IncrementalLayout::apply) brings all of that forward
+/// from a batch of DOM mutations rather than from nothing. Every pane here
+/// constructed a fresh one per frame and threw it away, so a pane re-cascaded,
+/// re-boxed and re-shaped its whole document to paint an unchanged screen.
+/// Measured on the Device Receipts pane (37 cards, release build), that cost
+/// **24 ms per frame**: 6.1 ms for the whole shell with no pane open, 30.4 ms
+/// with one. An unchanged pane now drains an empty mutation batch and pays
+/// paint only.
+///
+/// The shape is cambium's `frame::relayout`, which solved this first for the
+/// winit host's own document; this is that logic per pane. Rebuild remains the
+/// fallback for the three cases the incremental path cannot cover: a
+/// structural mutation, a size change, and a different stylesheet (a layout's
+/// sheets are fixed at construction, because rebuilding the Stylist under live
+/// rule nodes would dangle them).
+pub struct RetainedLayout {
+    layout: Option<IncrementalLayout<DomNodeId>>,
+    /// The viewport the retained layout was built at. A pane that changes size
+    /// reflows from scratch.
+    size: (f32, f32),
+    /// The sheet it was built under, which cannot change in place.
+    sheet: String,
+    /// How many times this pane has built a layout from scratch. The number a
+    /// regression is visible in: retention is not "it looks fast", it is "the
+    /// second frame did not rebuild", and only a count can say that.
+    rebuilds: u32,
+}
+
+impl Default for RetainedLayout {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl RetainedLayout {
+    pub fn new() -> Self {
+        Self {
+            layout: None,
+            size: (0.0, 0.0),
+            sheet: String::new(),
+            rebuilds: 0,
+        }
+    }
+
+    /// How many full rebuilds this pane has paid for.
+    ///
+    /// Expected to reach 1 and stay there for a pane that is merely being
+    /// repainted, rising only when its content changes structurally, it is
+    /// resized, or its sheet is replaced.
+    pub fn rebuilds(&self) -> u32 {
+        self.rebuilds
+    }
+
+    /// Bring the retained layout up to date for this frame.
+    ///
+    /// Draining is unconditional: mutations accumulate on the DOM whether or
+    /// not anyone reads them, so a frame that skipped the drain would leave
+    /// the next one holding a batch it cannot attribute, and the retained
+    /// layout would silently describe a tree that no longer exists.
+    fn ensure(&mut self, dom: &mut ScriptedDom, sheet: &str, w: f32, h: f32) {
+        let mut mutations = Vec::new();
+        dom.drain_mutations(&mut mutations);
+        // Only an attribute batch can be applied in place. Anything that adds,
+        // removes or replaces nodes takes the rebuild path, which is what
+        // cambium's host does for the same reason: structural invalidation is
+        // the relayout-scope path's job, not the attribute invalidator's.
+        let structural = mutations
+            .iter()
+            .any(|m| !matches!(m, layout_dom_api::DomMutation::AttributeChanged { .. }));
+        let reusable = !structural && self.size == (w, h) && self.sheet == sheet;
+        if let Some(layout) = self.layout.as_mut()
+            && reusable
+        {
+            let applied = if mutations.is_empty() {
+                genet_layout::Applied::Unchanged
+            } else {
+                layout.apply(&*dom, &[sheet], &mutations)
+            };
+            tracing::debug!(?applied, mutations = mutations.len(), "pane relayout");
+            return;
+        }
+        tracing::debug!(
+            structural,
+            mutations = mutations.len(),
+            resized = self.size != (w, h),
+            resheeted = self.sheet != sheet,
+            "pane layout rebuilt"
+        );
+        self.rebuilds += 1;
+        let mut layout = IncrementalLayout::new(&*dom, &[sheet], w, h);
+        // Carry BOTH scroll planes across a rebuild. Dropping the document
+        // offset snaps a scrolled pane back to the top whenever its content
+        // changes, which for a list pane is every refresh.
+        if let Some(previous) = self.layout.as_ref() {
+            layout.set_element_scroll(previous.element_scroll().clone());
+            let offset = previous.viewport_scroll();
+            layout.set_viewport_scroll(&*dom, offset);
+        }
+        self.layout = Some(layout);
+        self.size = (w, h);
+        self.sheet = sheet.to_string();
+    }
+
+    /// [`scene_from_dom`] against the retained layout.
+    pub fn scene(&mut self, dom: &mut ScriptedDom, sheet: &str, w: u32, h: u32) -> netrender::Scene {
+        self.ensure(dom, sheet, w as f32, h as f32);
+        let layout = self.layout.as_ref().expect("ensure leaves a layout");
+        let viewport = DeviceIntSize::new(w as i32, h as i32);
+        let plist = layout.emit_paint_list(&*dom, &ScrollOffsets::<DomNodeId>::default(), viewport);
+        composite(viewport, &plist)
+    }
+
+    /// [`scene_from_dom_scrolled`] against the retained layout.
+    pub fn scene_scrolled(
+        &mut self,
+        dom: &mut ScriptedDom,
+        sheet: &str,
+        w: u32,
+        h: u32,
+        scroll: &mut PaneScroll,
+    ) -> netrender::Scene {
+        self.ensure(dom, sheet, w as f32, h as f32);
+        let layout = self.layout.as_mut().expect("ensure leaves a layout");
+        // Push the wanted offset only when it actually moved: the engine
+        // clamps to the real scrollable range, and asking for the offset it
+        // already holds is work with no result.
+        if layout.viewport_scroll() != scroll.offset {
+            layout.set_viewport_scroll(&*dom, scroll.offset);
+        }
+        scroll.offset = layout.viewport_scroll();
+        let viewport = DeviceIntSize::new(w as i32, h as i32);
+        let mut plist =
+            layout.emit_paint_list(&*dom, &ScrollOffsets::<DomNodeId>::default(), viewport);
+        let alpha = scroll.alpha();
+        if alpha > 0.0 {
+            layout.append_scrollbars(&*dom, &mut plist, &|_| alpha);
+        }
+        composite(viewport, &plist)
+    }
+
+    /// [`scene_from_dom_with_leaves`] against the retained layout.
+    pub fn scene_with_leaves(
+        &mut self,
+        dom: &mut ScriptedDom,
+        sheet: &str,
+        w: u32,
+        h: u32,
+        registry: &mut sprigging::LeafRegistry<u64>,
+        cache: &mut sprigging::RenderedLeaves,
+    ) -> netrender::Scene {
+        self.ensure(dom, sheet, w as f32, h as f32);
+        let layout = self.layout.as_ref().expect("ensure leaves a layout");
+        let sizes: std::collections::HashMap<u64, (f32, f32)> =
+            layout.custom_leaf_boxes().into_iter().collect();
+        registry.render_into(
+            |key| {
+                sizes.get(&key).map(|&(w, h)| sprigging::Size {
+                    width: w,
+                    height: h,
+                })
+            },
+            cache,
+        );
+        let viewport = DeviceIntSize::new(w as i32, h as i32);
+        let source = LeafSource(cache);
+        let plist = layout.emit_paint_list_with_leaves(
+            &*dom,
+            &ScrollOffsets::<DomNodeId>::default(),
+            viewport,
+            &source,
+        );
+        composite(viewport, &plist)
+    }
+
+    /// Hit-test against the layout the last frame painted.
+    ///
+    /// Sharing the retained layout with paint is the point, not only a saving:
+    /// a click must resolve against the fragments on screen, and a
+    /// freshly-built layout matches them only by coincidence.
+    pub fn hit_test(
+        &mut self,
+        dom: &mut ScriptedDom,
+        sheet: &str,
+        w: u32,
+        h: u32,
+        x: f32,
+        y: f32,
+    ) -> Option<DomNodeId> {
+        self.ensure(dom, sheet, w as f32, h as f32);
+        let layout = self.layout.as_ref().expect("ensure leaves a layout");
+        layout.hit_test(&*dom, x, y, &ScrollOffsets::<DomNodeId>::default())
+    }
+
+    /// [`hit_test`](Self::hit_test) at a pane's scroll offset.
+    ///
+/// **One-shot.** This builds a layout, uses it once and drops it, which is
+/// right for a test or a single measurement and wrong for anything that
+/// paints repeatedly: a renderer calling this per frame re-cascades and
+/// re-shapes its whole document to draw an unchanged screen. Panes go
+/// through [`RetainedLayout`] instead.
+pub fn hit_test_scrolled(
+        &mut self,
+        dom: &mut ScriptedDom,
+        sheet: &str,
+        w: u32,
+        h: u32,
+        x: f32,
+        y: f32,
+        scroll: &PaneScroll,
+    ) -> Option<DomNodeId> {
+        self.ensure(dom, sheet, w as f32, h as f32);
+        let layout = self.layout.as_mut().expect("ensure leaves a layout");
+        if layout.viewport_scroll() != scroll.offset {
+            layout.set_viewport_scroll(&*dom, scroll.offset);
+        }
+        layout.hit_test(&*dom, x, y, &ScrollOffsets::<DomNodeId>::default())
+    }
+}
+
+/// The one composite step every scene builder ends with.
+fn composite<P: PaintList>(viewport: DeviceIntSize, plist: &P) -> netrender::Scene {
+    let layers = [CompositeLayer {
+        commands: plist.commands(),
+        fonts: plist.fonts(),
+        images: plist.images(),
+    }];
+    composite_paint_layers(viewport, &layers).scene
+}
+
 /// [`scene_from_dom`] at a pane's scroll offset, with auto-hiding overlay bars.
 ///
 /// The bars come from the engine's own `append_scrollbars`, which draws both
@@ -726,6 +959,12 @@ impl PaneScroll {
 /// outside the pane: this scene is composited at exactly the pane's viewport,
 /// and anything past it is clipped by the composite rather than spilling into
 /// a neighbouring pane.
+///
+/// **One-shot.** This builds a layout, uses it once and drops it, which is
+/// right for a test or a single measurement and wrong for anything that
+/// paints repeatedly: a renderer calling this per frame re-cascades and
+/// re-shapes its whole document to draw an unchanged screen. Panes go
+/// through [`RetainedLayout`] instead.
 pub fn scene_from_dom_scrolled(
     dom: &ScriptedDom,
     sheet: &str,
@@ -773,6 +1012,11 @@ pub fn hit_test_scrolled(
     layout.hit_test(dom, x, y, &ScrollOffsets::<DomNodeId>::default())
 }
 
+/// **One-shot.** This builds a layout, uses it once and drops it, which is
+/// right for a test or a single measurement and wrong for anything that
+/// paints repeatedly: a renderer calling this per frame re-cascades and
+/// re-shapes its whole document to draw an unchanged screen. Panes go
+/// through [`RetainedLayout`] instead.
 pub fn scene_from_dom(dom: &ScriptedDom, sheet: &str, w: u32, h: u32) -> netrender::Scene {
     let layout = IncrementalLayout::new(dom, &[sheet], w as f32, h as f32);
     let scroll = ScrollOffsets::<DomNodeId>::default();
@@ -789,6 +1033,13 @@ pub fn scene_from_dom(dom: &ScriptedDom, sheet: &str, w: u32, h: u32) -> netrend
 /// [`scene_from_dom`] re-rooted at `root`: only that subtree lays out (at its
 /// own viewport) and paints — the forest-dom per-window path. The chrome's N
 /// window-roots each render through this with the others untouched.
+///
+/// **Still one-shot, and knowingly so.** Every pane moved to
+/// [`RetainedLayout`]; the chrome did not, because it lays out through a
+/// `SubtreeView` rather than the DOM directly, and a retained layout would
+/// have to hold that view stable across frames. The chrome card is a handful
+/// of rows against a pane's hundreds, so it is the cheap remaining site
+/// rather than an oversight. Do not copy this shape into a new pane.
 pub fn scene_from_subtree(
     dom: &ScriptedDom,
     root: DomNodeId,
@@ -826,6 +1077,12 @@ impl genet_layout::LeafPaintSource for LeafSource<'_> {
 /// the registry into `cache`, and splice their commands at their boxes. The
 /// leaf-render pipeline the surfaces-in-cambium plan lists as what the host
 /// still owed.
+///
+/// **One-shot.** This builds a layout, uses it once and drops it, which is
+/// right for a test or a single measurement and wrong for anything that
+/// paints repeatedly: a renderer calling this per frame re-cascades and
+/// re-shapes its whole document to draw an unchanged screen. Panes go
+/// through [`RetainedLayout`] instead.
 pub fn scene_from_dom_with_leaves(
     dom: &ScriptedDom,
     sheet: &str,
@@ -1251,5 +1508,114 @@ mod scroll_tests {
         let scrolled = hit_test_scrolled(&dom, CAMBIUM_SHEET, 400, 300, 20.0, 40.0, &scroll);
         assert!(at_top.is_some() && scrolled.is_some(), "both hit a row");
         assert_ne!(at_top, scrolled, "the same point hits a different row once scrolled");
+    }
+}
+
+#[cfg(test)]
+mod retained_layout_tests {
+    use super::*;
+
+    /// A pane-shaped document: a root sized to the viewport with rows inside.
+    fn pane_dom(rows: usize) -> ScriptedDom {
+        let mut dom = ScriptedDom::new();
+        let root = dom.create_element(qual("div"));
+        dom.set_attribute(root, qual("class"), "pane");
+        dom.set_attribute(root, qual("style"), "width: 400px; height: 300px;");
+        for i in 0..rows {
+            let row = dom.create_element(qual("div"));
+            dom.set_attribute(row, qual("class"), "grid-cell");
+            let text = dom.create_text(&format!("row {i}"));
+            dom.append_child(row, text);
+            dom.append_child(root, row);
+        }
+        let document = dom.document();
+        dom.append_child(document, root);
+        dom
+    }
+
+    #[test]
+    fn repainting_an_unchanged_pane_does_not_rebuild_its_layout() {
+        // The whole point, stated as a count. Every pane used to construct a
+        // fresh IncrementalLayout per paint, which measured 24 ms a frame on
+        // the Device Receipts pane; a regression here is that cost returning.
+        let mut dom = pane_dom(40);
+        let mut retained = RetainedLayout::new();
+        for _ in 0..10 {
+            let _ = retained.scene(&mut dom, CAMBIUM_SHEET, 400, 300);
+        }
+        assert_eq!(
+            retained.rebuilds(),
+            1,
+            "ten identical frames must build one layout, not ten"
+        );
+    }
+
+    #[test]
+    fn a_resized_pane_rebuilds_once_and_then_settles() {
+        // Size is the one input the incremental path cannot absorb, so a
+        // resize must reflow. It must also not keep reflowing afterwards.
+        let mut dom = pane_dom(8);
+        let mut retained = RetainedLayout::new();
+        let _ = retained.scene(&mut dom, CAMBIUM_SHEET, 400, 300);
+        let _ = retained.scene(&mut dom, CAMBIUM_SHEET, 800, 600);
+        assert_eq!(retained.rebuilds(), 2, "a new size reflows");
+        for _ in 0..5 {
+            let _ = retained.scene(&mut dom, CAMBIUM_SHEET, 800, 600);
+        }
+        assert_eq!(retained.rebuilds(), 2, "and then settles at the new size");
+    }
+
+    #[test]
+    fn a_structural_change_rebuilds_but_an_attribute_change_does_not() {
+        // The split the incremental path rests on: adding a node reflows,
+        // restyling one does not.
+        let mut dom = pane_dom(4);
+        let mut retained = RetainedLayout::new();
+        let _ = retained.scene(&mut dom, CAMBIUM_SHEET, 400, 300);
+        assert_eq!(retained.rebuilds(), 1);
+
+        let first_row = dom.all_with_class(dom.document(), "grid-cell")[0];
+        dom.set_attribute(first_row, qual("class"), "grid-row-selected");
+        let _ = retained.scene(&mut dom, CAMBIUM_SHEET, 400, 300);
+        assert_eq!(
+            retained.rebuilds(),
+            1,
+            "an attribute batch restyles in place"
+        );
+
+        let root = dom.all_with_class(dom.document(), "pane")[0];
+        let extra = dom.create_element(qual("div"));
+        dom.set_attribute(extra, qual("class"), "grid-cell");
+        dom.append_child(root, extra);
+        let _ = retained.scene(&mut dom, CAMBIUM_SHEET, 400, 300);
+        assert_eq!(retained.rebuilds(), 2, "a new node reflows");
+    }
+
+    #[test]
+    fn a_rebuild_keeps_the_pane_where_it_was_scrolled() {
+        // A list pane's content changes on every refresh, which is a
+        // structural batch and so a rebuild. Losing the offset there would
+        // snap the reader back to the top each time the list updated.
+        let mut dom = pane_dom(200);
+        let mut retained = RetainedLayout::new();
+        let mut scroll = PaneScroll::new();
+        // Downwards. Nudging up from the top clamps to zero, which would make
+        // this pass for the wrong reason: an offset of zero survives anything.
+        scroll.nudge(0.0, 400.0);
+        let _ = retained.scene_scrolled(&mut dom, CAMBIUM_SHEET, 400, 300, &mut scroll);
+        let settled = scroll.offset();
+        assert!(settled.1 > 0.0, "the fixture actually scrolled: {settled:?}");
+
+        let root = dom.all_with_class(dom.document(), "pane")[0];
+        let extra = dom.create_element(qual("div"));
+        dom.set_attribute(extra, qual("class"), "grid-cell");
+        dom.append_child(root, extra);
+        let _ = retained.scene_scrolled(&mut dom, CAMBIUM_SHEET, 400, 300, &mut scroll);
+        assert_eq!(retained.rebuilds(), 2, "the new row forced a rebuild");
+        assert_eq!(
+            scroll.offset(),
+            settled,
+            "and the rebuild carried the offset across"
+        );
     }
 }

@@ -98,6 +98,10 @@ pub struct InspectorPane {
     dom: DomHandle,
     runner: InspectorRunner,
     scroll: crate::ui::PaneScroll,
+    /// Kept across frames. Rebuilding a layout per paint re-cascaded and
+    /// re-shaped the whole pane to draw an unchanged screen; see
+    /// [`crate::ui::RetainedLayout`] for the measurement.
+    layout: crate::ui::RetainedLayout,
 }
 
 impl InspectorPane {
@@ -120,6 +124,7 @@ impl InspectorPane {
             dom,
             runner,
             scroll: crate::ui::PaneScroll::new(),
+            layout: crate::ui::RetainedLayout::new(),
         }
     }
 
@@ -147,7 +152,13 @@ impl InspectorPane {
 
     /// The pane's scene at its size, under the host's cambium sheet.
     pub fn scene(&mut self, w: u32, h: u32) -> netrender::Scene {
-        crate::ui::scene_from_dom_scrolled(&self.dom.borrow(), crate::ui::CAMBIUM_SHEET, w, h, &mut self.scroll)
+        self.layout.scene_scrolled(
+            &mut self.dom.borrow_mut(),
+            crate::ui::CAMBIUM_SHEET,
+            w,
+            h,
+            &mut self.scroll,
+        )
     }
 
     /// Wheel delta from the shell.
@@ -166,12 +177,15 @@ impl InspectorPane {
     }
 
     pub fn click(&mut self, x: f32, y: f32, w: u32, h: u32) -> Vec<InspectorIntent> {
-        let hit = {
-            let dom = self.dom.borrow();
-            let layout =
-                IncrementalLayout::new(&*dom, &[crate::ui::CAMBIUM_SHEET], w as f32, h as f32);
-            layout.hit_test(&*dom, x, y, &ScrollOffsets::<NodeId>::default())
-        };
+        let hit = self.layout.hit_test_scrolled(
+            &mut self.dom.borrow_mut(),
+            crate::ui::CAMBIUM_SHEET,
+            w,
+            h,
+            x,
+            y,
+            &self.scroll,
+        );
         hit.map(|node| self.runner.dispatch_click(node, PointerClick::at((x, y))))
             .unwrap_or_default()
     }

@@ -112,6 +112,9 @@ pub struct DeviceReceiptsPane {
     dom: DomHandle,
     runner: DeviceReceiptsPaneRunner,
     scroll: crate::ui::PaneScroll,
+    /// Kept across frames. Rebuilding it per paint re-shaped every card's text
+    /// to draw an unchanged list, which measured 24 ms a frame on its own.
+    layout: crate::ui::RetainedLayout,
 }
 
 impl DeviceReceiptsPane {
@@ -133,6 +136,7 @@ impl DeviceReceiptsPane {
             dom,
             runner,
             scroll: crate::ui::PaneScroll::new(),
+            layout: crate::ui::RetainedLayout::new(),
         }
     }
 
@@ -160,8 +164,8 @@ impl DeviceReceiptsPane {
     }
 
     pub fn scene(&mut self, w: u32, h: u32) -> netrender::Scene {
-        crate::ui::scene_from_dom_scrolled(
-            &self.dom.borrow(),
+        self.layout.scene_scrolled(
+            &mut self.dom.borrow_mut(),
             crate::ui::CAMBIUM_SHEET,
             w,
             h,
@@ -170,8 +174,8 @@ impl DeviceReceiptsPane {
     }
 
     pub fn click(&mut self, x: f32, y: f32, w: u32, h: u32) {
-        let hit = crate::ui::hit_test_scrolled(
-            &self.dom.borrow(),
+        let hit = self.layout.hit_test_scrolled(
+            &mut self.dom.borrow_mut(),
             crate::ui::CAMBIUM_SHEET,
             w,
             h,

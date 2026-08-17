@@ -207,6 +207,10 @@ pub struct SettingsPane {
     dom: DomHandle,
     runner: SettingsRunner,
     scroll: crate::ui::PaneScroll,
+    /// Kept across frames. The sheet here is derived from the live
+    /// appearance, so an appearance change rebuilds and everything else
+    /// reuses; see [`crate::ui::RetainedLayout`].
+    layout: crate::ui::RetainedLayout,
 }
 
 impl SettingsPane {
@@ -251,6 +255,7 @@ impl SettingsPane {
             dom,
             runner,
             scroll: crate::ui::PaneScroll::new(),
+            layout: crate::ui::RetainedLayout::new(),
         }
     }
 
@@ -266,7 +271,8 @@ impl SettingsPane {
         let mut chrome = ShellChromeConfig::default();
         snapshot.apply_to(&mut chrome);
         let sheet = crate::ui::cambium_sheet(&chrome.appearance);
-        crate::ui::scene_from_dom_scrolled(&self.dom.borrow(), &sheet, w, h, &mut self.scroll)
+        self.layout
+            .scene_scrolled(&mut self.dom.borrow_mut(), &sheet, w, h, &mut self.scroll)
     }
 
     /// Wheel delta from the shell.
@@ -288,12 +294,15 @@ impl SettingsPane {
         let mut chrome = ShellChromeConfig::default();
         snapshot.apply_to(&mut chrome);
         let sheet = crate::ui::cambium_sheet(&chrome.appearance);
-        let hit = {
-            let dom = self.dom.borrow();
-            let layout = IncrementalLayout::new(&*dom, &[&sheet], w as f32, h as f32);
-            let scroll = ScrollOffsets::<NodeId>::default();
-            layout.hit_test(&*dom, x, y, &scroll)
-        };
+        let hit = self.layout.hit_test_scrolled(
+            &mut self.dom.borrow_mut(),
+            &sheet,
+            w,
+            h,
+            x,
+            y,
+            &self.scroll,
+        );
         if let Some(node) = hit {
             let _: Vec<()> = self
                 .runner

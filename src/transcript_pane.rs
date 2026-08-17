@@ -162,6 +162,10 @@ pub struct TranscriptPane {
     dom: DomHandle,
     runner: TranscriptRunner,
     scroll: crate::ui::PaneScroll,
+    /// Kept across frames. Rebuilding a layout per paint re-cascaded and
+    /// re-shaped the whole pane to draw an unchanged screen; see
+    /// [`crate::ui::RetainedLayout`] for the measurement.
+    layout: crate::ui::RetainedLayout,
 }
 
 impl Default for TranscriptPane {
@@ -187,6 +191,7 @@ impl TranscriptPane {
             dom,
             runner,
             scroll: crate::ui::PaneScroll::new(),
+            layout: crate::ui::RetainedLayout::new(),
         }
     }
 
@@ -201,7 +206,13 @@ impl TranscriptPane {
     }
 
     pub fn scene(&mut self, w: u32, h: u32) -> netrender::Scene {
-        crate::ui::scene_from_dom_scrolled(&self.dom.borrow(), crate::ui::CAMBIUM_SHEET, w, h, &mut self.scroll)
+        self.layout.scene_scrolled(
+            &mut self.dom.borrow_mut(),
+            crate::ui::CAMBIUM_SHEET,
+            w,
+            h,
+            &mut self.scroll,
+        )
     }
 
     /// Wheel delta from the shell.
@@ -217,13 +228,15 @@ impl TranscriptPane {
     /// Route a click at pane-local `(x, y)`, the same round trip the Trail and
     /// Roster panes take.
     pub fn click(&mut self, x: f32, y: f32, w: u32, h: u32) -> Vec<TranscriptPaneAction> {
-        let hit = {
-            let dom = self.dom.borrow();
-            let layout =
-                IncrementalLayout::new(&*dom, &[crate::ui::CAMBIUM_SHEET], w as f32, h as f32);
-            let scroll = ScrollOffsets::<NodeId>::default();
-            layout.hit_test(&*dom, x, y, &scroll)
-        };
+        let hit = self.layout.hit_test_scrolled(
+            &mut self.dom.borrow_mut(),
+            crate::ui::CAMBIUM_SHEET,
+            w,
+            h,
+            x,
+            y,
+            &self.scroll,
+        );
         match hit {
             Some(node) => self.runner.dispatch_click(node, PointerClick::at((x, y))),
             None => Vec::new(),

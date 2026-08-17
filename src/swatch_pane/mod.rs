@@ -218,6 +218,10 @@ pub struct SwatchPane {
     /// The dom node the pointer last hovered, for Enter/Leave transitions
     /// (the hover contract is edge-triggered, like the browser's).
     last_hover: Option<NodeId>,
+    /// Kept across frames. Rebuilding a layout per paint re-cascaded and
+    /// re-shaped the whole document to draw an unchanged screen; see
+    /// [`crate::ui::RetainedLayout`] for the measurement.
+    layout: crate::ui::RetainedLayout,
 }
 
 impl SwatchPane {
@@ -254,6 +258,7 @@ impl SwatchPane {
             registry: LeafRegistry::new(),
             rendered: RenderedLeaves::new(),
             last_hover: None,
+            layout: crate::ui::RetainedLayout::new(),
         }
     }
 
@@ -324,8 +329,8 @@ impl SwatchPane {
 
     /// The pane's scene at its size (the shared cambium leaf pipeline).
     pub fn scene(&mut self, w: u32, h: u32) -> netrender::Scene {
-        crate::ui::scene_from_dom_with_leaves(
-            &self.dom.borrow(),
+        self.layout.scene_with_leaves(
+            &mut self.dom.borrow_mut(),
             crate::ui::CAMBIUM_SHEET,
             w,
             h,
@@ -337,13 +342,14 @@ impl SwatchPane {
     /// Route a pointer MOVE at pane-local `(x, y)`: Enter/Leave transitions;
     /// returns whether the hover target changed (the host redraws on true).
     pub fn hover(&mut self, x: f32, y: f32, w: u32, h: u32) -> bool {
-        let hit = {
-            let dom = self.dom.borrow();
-            let layout =
-                IncrementalLayout::new(&*dom, &[crate::ui::CAMBIUM_SHEET], w as f32, h as f32);
-            let scroll = ScrollOffsets::<NodeId>::default();
-            layout.hit_test(&*dom, x, y, &scroll)
-        };
+        let hit = self.layout.hit_test(
+            &mut self.dom.borrow_mut(),
+            crate::ui::CAMBIUM_SHEET,
+            w,
+            h,
+            x,
+            y,
+        );
         if hit == self.last_hover {
             return false;
         }
@@ -377,13 +383,14 @@ impl SwatchPane {
 
     /// Route a click at pane-local `(x, y)`; drain the recorded intents.
     pub fn click(&mut self, x: f32, y: f32, w: u32, h: u32) -> Vec<SwatchIntent> {
-        let hit = {
-            let dom = self.dom.borrow();
-            let layout =
-                IncrementalLayout::new(&*dom, &[crate::ui::CAMBIUM_SHEET], w as f32, h as f32);
-            let scroll = ScrollOffsets::<NodeId>::default();
-            layout.hit_test(&*dom, x, y, &scroll)
-        };
+        let hit = self.layout.hit_test(
+            &mut self.dom.borrow_mut(),
+            crate::ui::CAMBIUM_SHEET,
+            w,
+            h,
+            x,
+            y,
+        );
         if let Some(node) = hit {
             let _ = self
                 .runner

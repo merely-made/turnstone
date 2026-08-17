@@ -488,7 +488,13 @@ impl Shell {
         if self.host.is_none() {
             return;
         }
-        let __probe_t0 = std::time::Instant::now();
+        // Frame cost, off by default (the shell's own filter is `info`). Turn
+        // it on with `RUST_LOG=turnstone::shell::render=debug` when a window
+        // feels heavy: a frame is the unit that lags, and the surface count
+        // beside it is what usually explains the number. This exists because
+        // diagnosing a 24 ms-per-pane relayout once meant instrumenting the
+        // frame loop by hand.
+        let started = std::time::Instant::now();
         self.drain_surface_web_events();
         // Cursor callbacks may arrive after the move that provoked them. Poll
         // the hovered surface on frame wakes as well as immediately on input.
@@ -715,30 +721,13 @@ impl Shell {
             let ok = capture_composed(host, &layers, w, h, &path);
         }
 
-        {
-            let plan = self.surface_plan();
-            let right = plan
-                .iter()
-                .map(|s| s.rect.x + s.rect.w)
-                .fold(0f32, f32::max);
-            let bottom = plan
-                .iter()
-                .map(|s| s.rect.y + s.rect.h)
-                .fold(0f32, f32::max);
-            let scale = self.window.as_ref().map(|w| w.scale_factor()).unwrap_or(0.0);
-            let inner = self.window.as_ref().map(|w| w.inner_size());
-            tracing::info!(
-                frame_ms = __probe_t0.elapsed().as_secs_f32() * 1000.0,
-                surfaces = plan.len(),
-                shell_w = self.width,
-                shell_h = self.height,
-                inner = ?inner,
-                scale,
-                plan_right = right,
-                plan_bottom = bottom,
-                "FRAMEPROBE"
-            );
-        }
+        tracing::debug!(
+            frame_ms = started.elapsed().as_secs_f32() * 1000.0,
+            surfaces = surfaces.len(),
+            w,
+            h,
+            "frame"
+        );
 
         // An overlay bar mid-hold or mid-fade needs the next frame to draw it
         // one step dimmer. Without this the renderer, being change-driven,

@@ -1523,6 +1523,10 @@ pub struct KnotDocumentSession {
     revision_refreshes: u64,
     dom: DomHandle,
     runner: AuthoringRunner,
+    /// Kept across frames. Rebuilding a layout per paint re-cascaded and
+    /// re-shaped the whole document to draw an unchanged screen; see
+    /// [`crate::ui::RetainedLayout`] for the measurement.
+    layout: crate::ui::RetainedLayout,
 }
 
 impl KnotDocumentSession {
@@ -1563,6 +1567,7 @@ impl KnotDocumentSession {
             revision_refreshes: 0,
             dom,
             runner,
+            layout: crate::ui::RetainedLayout::new(),
         };
         if auto_resolve && resolve_available {
             let _ = session.hub.commands.send(HubCommand::Effect {
@@ -1845,7 +1850,8 @@ impl DocumentSession<Scene> for KnotDocumentSession {
             });
         }
         let sheet = format!("{} {}", crate::ui::CAMBIUM_SHEET, KNOT_SHEET);
-        crate::ui::scene_from_dom(&self.dom.borrow(), &sheet, width, height)
+        self.layout
+            .scene(&mut self.dom.borrow_mut(), &sheet, width, height)
     }
 
     fn scroll_by(&mut self, _dx: f32, _dy: f32) -> bool {
