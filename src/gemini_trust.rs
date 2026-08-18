@@ -121,7 +121,13 @@ impl fetch::SmolwebTofuStore for GeminiTrustStore {
             .and_then(|fingerprint| decode_fingerprint(fingerprint).ok())
     }
 
-    fn pin(&self, target: &str, fingerprint: [u8; 32]) -> Result<(), String> {
+    fn pin(&self, target: &str, fingerprint: [u8; 32]) {
+        if let Err(error) = self.try_pin(target, fingerprint) {
+            tracing::error!(%error, target, "failed to persist Gemini trust pin");
+        }
+    }
+
+    fn try_pin(&self, target: &str, fingerprint: [u8; 32]) -> Result<(), String> {
         let mut state = self.state.lock().unwrap();
         self.persist_pin(&mut state, target, fingerprint)
             .map_err(|error| error.to_string())
@@ -211,7 +217,7 @@ mod tests {
     fn first_contact_survives_reopen() {
         let dir = tempfile::tempdir().unwrap();
         let trust = GeminiTrustStore::load(dir.path()).unwrap();
-        trust.pin("capsule.example", [0x11; 32]).unwrap();
+        trust.try_pin("capsule.example", [0x11; 32]).unwrap();
         drop(trust);
 
         let reopened = GeminiTrustStore::load(dir.path()).unwrap();
@@ -223,7 +229,7 @@ mod tests {
     fn a_change_requires_the_current_pin_and_persists_the_decision() {
         let dir = tempfile::tempdir().unwrap();
         let trust = GeminiTrustStore::load(dir.path()).unwrap();
-        trust.pin("capsule.example", [0x11; 32]).unwrap();
+        trust.try_pin("capsule.example", [0x11; 32]).unwrap();
         assert!(
             trust
                 .accept_change(
@@ -250,7 +256,7 @@ mod tests {
     fn an_interrupted_replace_recovers_the_previous_pin() {
         let dir = tempfile::tempdir().unwrap();
         let trust = GeminiTrustStore::load(dir.path()).unwrap();
-        trust.pin("capsule.example", [0x11; 32]).unwrap();
+        trust.try_pin("capsule.example", [0x11; 32]).unwrap();
         drop(trust);
 
         let path = dir.path().join(FILE_NAME);
