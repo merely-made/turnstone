@@ -406,6 +406,16 @@ pub enum Effect {
         /// fetch actor still rechecks its origin on redirects.
         identity: Option<fetch::GeminiClientIdentity>,
     },
+    /// Replace one durable Gemini server pin after an explicit human decision.
+    /// The shell executes this synchronously before the following fetch effect.
+    ReplaceGeminiTrust {
+        node: uuid::Uuid,
+        fetch_url: String,
+        owner_url: String,
+        target: String,
+        pinned: String,
+        seen: String,
+    },
     /// Fetch a favicon (already-absolute `url`) for `node`, whose page lives
     /// at `owner_url` (the staleness check compares against it on return).
     FetchFavicon {
@@ -521,6 +531,16 @@ pub enum Update {
         url: String,
         identity_url: String,
         prompt: String,
+    },
+    /// A Gemini TLS certificate differs from durable trust. The request was
+    /// refused before application bytes and waits for an explicit decision.
+    GeminiCertificateChanged {
+        node: uuid::Uuid,
+        url: String,
+        fetch_url: String,
+        target: String,
+        pinned: String,
+        seen: String,
     },
     /// A favicon's raw bytes arrived for `node`, requested while its page
     /// was `owner_url`.

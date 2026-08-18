@@ -31,6 +31,9 @@ pub enum NodeContent {
     /// A Gemini capsule asked for a client certificate and the host is waiting
     /// for explicit approval to derive and present one.
     AwaitingIdentity,
+    /// A Gemini server certificate changed and the host is waiting for an
+    /// explicit trust decision before replacing the durable pin.
+    AwaitingTrust,
     /// The last spawn failed; the reason is surfaced, never swallowed.
     Failed(String),
 }
@@ -110,6 +113,7 @@ impl ContentStates {
                     | NodeContent::Requested
                     | NodeContent::AwaitingInput
                     | NodeContent::AwaitingIdentity
+                    | NodeContent::AwaitingTrust
             )
         )
     }
@@ -138,6 +142,11 @@ impl ContentStates {
 
     pub fn note_awaiting_identity(&mut self, node: Uuid) {
         self.states.insert(node, NodeContent::AwaitingIdentity);
+        self.facts.remove(&node);
+    }
+
+    pub fn note_awaiting_trust(&mut self, node: Uuid) {
+        self.states.insert(node, NodeContent::AwaitingTrust);
         self.facts.remove(&node);
     }
 

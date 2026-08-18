@@ -285,6 +285,9 @@ impl App {
     }
 
     pub(super) fn commit_omnibar(&mut self) -> Vec<Effect> {
+        if let crate::ui::OmnibarMode::GeminiTrust(input) = self.omnibar.mode.clone() {
+            return self.commit_gemini_trust(input);
+        }
         if let crate::ui::OmnibarMode::GeminiIdentity(input) = self.omnibar.mode.clone() {
             return self.commit_gemini_identity(input);
         }
@@ -584,6 +587,52 @@ impl App {
         self.shell.close_omnibar();
         self.focus = FocusTarget::Graph(self.default_graph_pane());
         vec![fetch, Effect::SaveSession, Effect::Redraw]
+    }
+
+    fn commit_gemini_trust(&mut self, input: crate::ui::GeminiTrustPrompt) -> Vec<Effect> {
+        if !self.omnibar.text.trim().eq_ignore_ascii_case("trust") {
+            return vec![Effect::Redraw];
+        }
+        let current = self
+            .graph_runtimes
+            .graph_containing_member(input.node)
+            .and_then(|graph| self.graph_runtimes.canvas(graph))
+            .is_some_and(|canvas| {
+                crate::browse::still_current(canvas, input.node, &input.requested_url)
+            });
+        if !current {
+            self.omnibar = OmnibarState::default();
+            self.shell.close_omnibar();
+            self.focus = FocusTarget::Graph(self.default_graph_pane());
+            return vec![Effect::Redraw];
+        }
+
+        if matches!(
+            self.content.get(input.node),
+            Some(crate::content::NodeContent::AwaitingTrust)
+        ) {
+            self.content.note_requested(input.node);
+            self.events.push(AppEvent::ContentState {
+                node: input.node,
+                state: "requested".to_string(),
+            });
+        }
+        self.omnibar = OmnibarState::default();
+        self.recall.clear();
+        self.recall_query.clear();
+        self.shell.close_omnibar();
+        self.focus = FocusTarget::Graph(self.default_graph_pane());
+        vec![
+            Effect::ReplaceGeminiTrust {
+                node: input.node,
+                fetch_url: input.fetch_url,
+                owner_url: input.requested_url,
+                target: input.target,
+                pinned: input.pinned,
+                seen: input.seen,
+            },
+            Effect::Redraw,
+        ]
     }
 
     pub(super) fn open_address(&mut self, url: String) -> Vec<Effect> {

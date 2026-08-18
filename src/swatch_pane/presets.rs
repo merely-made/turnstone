@@ -65,7 +65,8 @@ fn content_state(app: &App, id: Uuid) -> NodeState {
         Some(NodeContent::Live)
         | Some(NodeContent::Requested)
         | Some(NodeContent::AwaitingInput)
-        | Some(NodeContent::AwaitingIdentity) => NodeState::Open,
+        | Some(NodeContent::AwaitingIdentity)
+        | Some(NodeContent::AwaitingTrust) => NodeState::Open,
         Some(NodeContent::Failed(_)) => NodeState::Closed,
         _ => NodeState::Idle,
     }

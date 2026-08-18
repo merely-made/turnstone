@@ -194,6 +194,13 @@ pub enum AppEvent {
         node: Uuid,
         origin: String,
     },
+    /// A durable server pin refused a changed Gemini certificate.
+    GeminiCertificateChanged {
+        node: Uuid,
+        target: String,
+        pinned: String,
+        seen: String,
+    },
     /// Back stepped the history cursor to this address.
     NavigatedBack(String),
     /// Forward stepped the history cursor to this address.
@@ -373,6 +380,16 @@ impl AppEvent {
             AppEvent::GeminiIdentityBound { node, origin } => {
                 format!("gemini-identity-bound {node} {origin}")
             }
+            AppEvent::GeminiCertificateChanged {
+                node,
+                target,
+                pinned,
+                seen,
+            } => format!(
+                "gemini-certificate-changed {node} {target} {} {}",
+                pinned.get(..12).unwrap_or(pinned),
+                seen.get(..12).unwrap_or(seen)
+            ),
             AppEvent::NavigatedBack(url) => format!("nav-back {url}"),
             AppEvent::NavigatedForward(url) => format!("nav-forward {url}"),
             AppEvent::Reloaded(url) => format!("reloaded {url}"),
@@ -449,6 +466,7 @@ pub fn snapshot(app: &App) -> Snapshot {
                 NodeContent::Live => "live".to_string(),
                 NodeContent::AwaitingInput => "awaiting-input".to_string(),
                 NodeContent::AwaitingIdentity => "awaiting-identity".to_string(),
+                NodeContent::AwaitingTrust => "awaiting-trust".to_string(),
                 NodeContent::Failed(err) => format!("failed: {err}"),
             };
             Some((n.id, state))

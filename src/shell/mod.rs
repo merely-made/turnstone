@@ -198,6 +198,9 @@ pub struct Shell {
     proxy: EventLoopProxy<()>,
     /// The fetch actor's command handle; dropping it ends the actor.
     fetch_handle: armillary::ActorHandle<FetchCommand>,
+    /// Durable Gemini server pins. The protocol verifier shares this exact
+    /// instance; the shell retains it for explicit change acceptance.
+    gemini_trust: Arc<crate::gemini_trust::GeminiTrustStore>,
     /// Completed fetches, drained in `user_event` on each wake.
     fetch_rx: Receiver<FetchUpdate>,
     /// The recycle-bin actor (the eidetic deleted-node bin at the session's
@@ -404,9 +407,13 @@ impl Shell {
         let web_policy = crate::web_policy::WebPolicyService::new(policy_registry, request_timeout);
 
         // Gemini must never fall through errand's permissive trust default.
-        // This process-lifetime store is the explicit gate-1 floor; durable
-        // pins and certificate-change UI remain the separately named gate 4.
-        fetch::install_in_memory_smolweb_tofu();
+        // Corrupt trust state fails startup rather than silently forgetting
+        // pins and treating a changed certificate as first contact.
+        let gemini_trust = Arc::new(
+            crate::gemini_trust::GeminiTrustStore::load(&app.data_root)
+                .expect("Turnstone could not open its durable Gemini trust store"),
+        );
+        fetch::install_smolweb_tofu(gemini_trust.clone());
 
         // The fetch actor on its own armillary thread, waking this loop like
         // the physics actor does.
@@ -497,6 +504,7 @@ impl Shell {
             live_settings,
             proxy,
             fetch_handle,
+            gemini_trust,
             fetch_rx,
             bin_handle,
             bin_rx,

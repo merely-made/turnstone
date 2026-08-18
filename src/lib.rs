@@ -19,6 +19,7 @@ mod denizen;
 mod device_receipts_pane;
 mod device_receipts_service;
 mod gemini_identity;
+mod gemini_trust;
 mod identity;
 mod inspector_pane;
 mod inspector_view;

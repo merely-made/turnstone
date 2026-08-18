@@ -167,6 +167,9 @@ impl WorkbenchPane {
                     Some(Some(NodeContent::AwaitingIdentity)) => {
                         "content needs a client identity".to_string()
                     }
+                    Some(Some(NodeContent::AwaitingTrust)) => {
+                        "content needs a certificate decision".to_string()
+                    }
                     Some(Some(NodeContent::Failed(err))) => format!("failed: {err}"),
                     Some(None) => "content off — Toggle live content".to_string(),
                     None => String::new(),

@@ -163,6 +163,64 @@ impl App {
                 effects.push(Effect::Redraw);
                 effects
             }
+            Update::GeminiCertificateChanged {
+                node,
+                url,
+                fetch_url,
+                target,
+                pinned,
+                seen,
+            } => {
+                let current = self
+                    .graph_runtimes
+                    .graph_containing_member(node)
+                    .and_then(|graph| self.graph_runtimes.canvas(graph))
+                    .is_some_and(|canvas| browse::still_current(canvas, node, &url));
+                if !current {
+                    return Vec::new();
+                }
+                let resume_content = matches!(
+                    self.content.get(node),
+                    Some(
+                        crate::content::NodeContent::Requested | crate::content::NodeContent::Live
+                    )
+                );
+                if resume_content {
+                    self.content.note_awaiting_trust(node);
+                    self.events.push(AppEvent::ContentState {
+                        node,
+                        state: "awaiting-trust".to_string(),
+                    });
+                }
+                let target_context = self.fallback_shell_context();
+                self.shell.begin_omnibar(target_context);
+                self.omnibar = crate::ui::OmnibarState {
+                    open: true,
+                    mode: crate::ui::OmnibarMode::GeminiTrust(crate::ui::GeminiTrustPrompt {
+                        node,
+                        requested_url: url,
+                        fetch_url,
+                        target: target.clone(),
+                        pinned: pinned.clone(),
+                        seen: seen.clone(),
+                    }),
+                    ..Default::default()
+                };
+                self.focus = crate::surface::FocusTarget::Chrome;
+                self.recompute_omnibar_suggestions();
+                self.events.push(AppEvent::GeminiCertificateChanged {
+                    node,
+                    target,
+                    pinned,
+                    seen,
+                });
+                let mut effects = Vec::new();
+                if resume_content {
+                    effects.push(Effect::CloseContent { node });
+                }
+                effects.push(Effect::Redraw);
+                effects
+            }
             Update::FaviconFetched {
                 node,
                 owner_url,

@@ -177,6 +177,19 @@ pub struct GeminiIdentityPrompt {
     pub prompt: String,
 }
 
+/// The explicit decision for a changed Gemini server certificate.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct GeminiTrustPrompt {
+    pub node: Uuid,
+    /// The graph member address that owns the eventual response.
+    pub requested_url: String,
+    /// The final redirect target whose TLS request was refused.
+    pub fetch_url: String,
+    pub target: String,
+    pub pinned: String,
+    pub seen: String,
+}
+
 /// What the omnibar is capturing: an address/action (the default three lanes)
 /// or a free-text rename for a session. Rename mode captures the whole line as
 /// the new name and commits it as [`crate::action::Action::RenameSession`],
@@ -188,6 +201,7 @@ pub enum OmnibarMode {
     RenameSession(crate::panes::SessionId),
     SmolwebInput(SmolwebInputPrompt),
     GeminiIdentity(GeminiIdentityPrompt),
+    GeminiTrust(GeminiTrustPrompt),
 }
 
 /// The omnibar's state, owned by [`crate::app::App`].
@@ -349,6 +363,17 @@ pub fn recompute_suggestions_with_limit(
             "Create a client identity for {origin} \u{00b7} {} \u{00b7} Enter to create",
             input.prompt
         )));
+        state.selected = 0;
+        return;
+    }
+
+    if let OmnibarMode::GeminiTrust(input) = &state.mode {
+        state.suggestions.extend([
+            Suggestion::Prompt(format!("Certificate changed for {}", input.target)),
+            Suggestion::Prompt(format!("Pinned: {}", input.pinned)),
+            Suggestion::Prompt(format!("Presented: {}", input.seen)),
+            Suggestion::Prompt("Type trust and press Enter to replace the pin".to_string()),
+        ]);
         state.selected = 0;
         return;
     }
@@ -1434,6 +1459,34 @@ mod tests {
         state.text = ">set".into();
         recompute_suggestions(&mut state, &canvas, &[]);
         assert!(matches!(state.suggestions[0], Suggestion::Hint(_)));
+    }
+
+    #[test]
+    fn changed_certificate_prompt_exposes_both_complete_fingerprints() {
+        let canvas = Canvas::new();
+        let pinned = "11".repeat(32);
+        let seen = "22".repeat(32);
+        let mut state = OmnibarState {
+            open: true,
+            mode: OmnibarMode::GeminiTrust(GeminiTrustPrompt {
+                node: Uuid::new_v4(),
+                requested_url: "gemini://capsule.test/start".into(),
+                fetch_url: "gemini://capsule.test/private".into(),
+                target: "capsule.test".into(),
+                pinned: pinned.clone(),
+                seen: seen.clone(),
+            }),
+            ..Default::default()
+        };
+
+        recompute_suggestions(&mut state, &canvas, &[]);
+        assert_eq!(state.suggestions.len(), 4);
+        assert!(state.suggestions.iter().any(
+            |row| matches!(row, Suggestion::Prompt(text) if text == &format!("Pinned: {pinned}"))
+        ));
+        assert!(state.suggestions.iter().any(
+            |row| matches!(row, Suggestion::Prompt(text) if text == &format!("Presented: {seen}"))
+        ));
     }
 
     /// The lane FILTERS the catalog it is handed, in the order it is handed

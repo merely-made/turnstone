@@ -133,6 +133,11 @@ impl App {
                 crate::content::NodeContent::AwaitingIdentity,
                 "identity creation cancelled",
             ),
+            OmnibarMode::GeminiTrust(input) => (
+                input.node,
+                crate::content::NodeContent::AwaitingTrust,
+                "certificate change rejected",
+            ),
             _ => return Vec::new(),
         };
         if self.content.get(node) == Some(&awaiting) {

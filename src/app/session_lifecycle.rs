@@ -780,6 +780,7 @@ impl App {
                         | NodeContent::Requested
                         | NodeContent::AwaitingInput
                         | NodeContent::AwaitingIdentity
+                        | NodeContent::AwaitingTrust
                 )
             );
             if on || self.browser.get(id).is_some() {

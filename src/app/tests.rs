@@ -3278,3 +3278,81 @@ fn gemini_identity_is_confirmed_once_and_reused_only_for_its_capsule() {
             .any(|event| event.contains("gemini-identity-bound"))
     );
 }
+
+#[test]
+fn changed_gemini_certificate_requires_an_explicit_trust_commit_before_refetch() {
+    let mut app = App::test_stub();
+    let owner = "gemini://capsule.test/start";
+    let fetch_url = "gemini://capsule.test:1966/private";
+    let pinned = "11".repeat(32);
+    let seen = "22".repeat(32);
+    app.update(Action::OpenAddress(owner.into()));
+    let node = app.graph_runtimes.focused_member().unwrap();
+    app.content.note_requested(node);
+
+    let effects = app.apply_update(Update::GeminiCertificateChanged {
+        node,
+        url: owner.into(),
+        fetch_url: fetch_url.into(),
+        target: "capsule.test:1966".into(),
+        pinned: pinned.clone(),
+        seen: seen.clone(),
+    });
+    assert!(matches!(
+        app.content.get(node),
+        Some(crate::content::NodeContent::AwaitingTrust)
+    ));
+    assert!(
+        effects.iter().any(
+            |effect| matches!(effect, Effect::CloseContent { node: actual } if *actual == node)
+        )
+    );
+    assert!(matches!(
+        &app.omnibar.mode,
+        crate::ui::OmnibarMode::GeminiTrust(prompt)
+            if prompt.target == "capsule.test:1966"
+                && prompt.pinned == pinned
+                && prompt.seen == seen
+    ));
+
+    let effects = app.update(Action::OmnibarCommit);
+    assert_eq!(effects, vec![Effect::Redraw]);
+    assert!(matches!(
+        app.content.get(node),
+        Some(crate::content::NodeContent::AwaitingTrust)
+    ));
+
+    app.update(Action::OmnibarInsert("trust".into()));
+    let effects = app.update(Action::OmnibarCommit);
+    assert!(effects.iter().any(|effect| matches!(
+        effect,
+        Effect::ReplaceGeminiTrust {
+            node: actual,
+            fetch_url: actual_fetch,
+            owner_url,
+            target,
+            pinned: actual_pinned,
+            seen: actual_seen,
+        } if *actual == node
+            && actual_fetch == fetch_url
+            && owner_url == owner
+            && target == "capsule.test:1966"
+            && actual_pinned == &pinned
+            && actual_seen == &seen
+    )));
+    assert!(matches!(
+        app.content.get(node),
+        Some(crate::content::NodeContent::Requested)
+    ));
+
+    let described: Vec<_> = app
+        .take_events()
+        .into_iter()
+        .map(|event| event.describe())
+        .collect();
+    assert!(
+        described
+            .iter()
+            .any(|event| event.contains("gemini-certificate-changed"))
+    );
+}

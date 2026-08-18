@@ -151,6 +151,19 @@ pub fn update_from_fetch(update: FetchUpdate, pending: &mut PendingFetches) -> O
                         })
                     }
                 }
+                Err(fetch::FetchFailure::CertificateChanged {
+                    url: fetch_url,
+                    target,
+                    pinned,
+                    seen,
+                }) => Some(Update::GeminiCertificateChanged {
+                    node: request.node,
+                    url: request.owner_url,
+                    fetch_url,
+                    target,
+                    pinned,
+                    seen,
+                }),
                 Err(fetch::FetchFailure::Failed(error)) => Some(Update::PageFetched {
                     node: request.node,
                     url: request.owner_url,
@@ -495,6 +508,46 @@ mod tests {
             update,
             Update::PageFetched { result: Err(error), .. }
                 if error == "client certificate rejected (60): Identity required"
+        ));
+    }
+
+    #[test]
+    fn changed_certificate_preserves_the_fetch_target_and_both_fingerprints() {
+        let node = Uuid::new_v4();
+        let owner = "gemini://capsule.test/start";
+        let request = "gemini://capsule.test:1966/private";
+        let mut pending = PendingFetches::default();
+        pending.note_page(request, node, owner, false);
+
+        let update = update_from_fetch(
+            FetchUpdate::Page(fetch::FetchOutcome {
+                url: request.into(),
+                result: Err(fetch::FetchFailure::CertificateChanged {
+                    url: request.into(),
+                    target: "capsule.test:1966".into(),
+                    pinned: "11".repeat(32),
+                    seen: "22".repeat(32),
+                }),
+            }),
+            &mut pending,
+        )
+        .unwrap();
+
+        assert!(matches!(
+            update,
+            Update::GeminiCertificateChanged {
+                node: actual,
+                url,
+                fetch_url,
+                target,
+                pinned,
+                seen,
+            } if actual == node
+                && url == owner
+                && fetch_url == request
+                && target == "capsule.test:1966"
+                && pinned == "11".repeat(32)
+                && seen == "22".repeat(32)
         ));
     }
 

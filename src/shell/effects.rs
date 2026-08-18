@@ -69,6 +69,33 @@ impl Shell {
                 continue;
             }
             match effect {
+                Effect::ReplaceGeminiTrust {
+                    node,
+                    fetch_url,
+                    owner_url,
+                    target,
+                    pinned,
+                    seen,
+                } => match self.gemini_trust.accept_change(&target, &pinned, &seen) {
+                    Ok(()) => {
+                        let fetch = self.app.fetch_page_effect(node, fetch_url, owner_url);
+                        if let Some(command) =
+                            browse::fetch_command_for(&fetch, &mut self.pending_fetches)
+                        {
+                            self.fetch_handle.command(command);
+                        }
+                    }
+                    Err(error) => {
+                        let effects = self.app.apply_update(Update::PageFetched {
+                            node,
+                            url: owner_url,
+                            result: Err(format!(
+                                "could not replace Gemini trust for {target}: {error}"
+                            )),
+                        });
+                        self.run_effects(effects);
+                    }
+                },
                 Effect::SaveSession => self.save_session(),
                 Effect::OpenPlace {
                     session,
