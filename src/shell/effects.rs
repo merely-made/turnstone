@@ -504,6 +504,14 @@ impl Shell {
         if let Some(score) = self.app.graph_runtimes.projection_score() {
             session::save_projection_score(&sdir, score);
         }
+        // The score records what the solver produced; this records what the
+        // viewer chose, which the score cannot be read backward to recover.
+        session::save_view_intent(
+            &sdir,
+            &session::ViewIntentV1 {
+                layout_strategy: self.app.graph_runtimes.layout_strategy().map(str::to_string),
+            },
+        );
         // Stamp a derived display name the first time the session has content
         // to name it after (unset -> "Example Domain"), then bump recency so
         // the switcher orders by last-used. Derive before the mutable borrow.

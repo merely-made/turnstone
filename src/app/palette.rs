@@ -106,11 +106,7 @@ impl App {
     /// static label would have acted as the wrong one).
     pub fn available_actions(&self) -> Vec<(String, Action)> {
         let mut rows = self.session_actions();
-        rows.extend(
-            crate::action::palette_actions()
-                .into_iter()
-                .map(|(label, action)| (label.to_string(), action)),
-        );
+        rows.extend(crate::action::palette_actions());
         rows
     }
 

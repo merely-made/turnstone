@@ -347,7 +347,14 @@ pub enum CaretMove {
 /// omnibar lane today; automation and a context menu later) may offer, with
 /// its display label. The registry is the single catalog those lanes filter;
 /// an Action absent here is reachable only by its dedicated input path.
-pub fn palette_actions() -> Vec<(&'static str, Action)> {
+/// Every action the palette offers, label and all.
+///
+/// The `Layout:` rows are derived from the canvas's
+/// `CANVAS_LAYOUT_STRATEGIES` registry
+/// rather than written out here, so the plain arrangement names (Spiral,
+/// Board, Fractal) have exactly one home and a registry rename reaches the
+/// palette without a second edit. Ids stay the technical persistence keys.
+pub fn palette_actions() -> Vec<(String, Action)> {
     let mut actions = vec![
         ("Back", Action::NavBack),
         ("Forward", Action::NavForward),
@@ -375,14 +382,10 @@ pub fn palette_actions() -> Vec<(&'static str, Action)> {
         ("Mark feed entry read", Action::MarkFocusedFeedEntryRead),
         ("Reseed layout", Action::ReseedLayout),
         ("Fit view", Action::FitView),
-        // Plain product vocabulary for the arrangement register (matches the
-        // arrangements registry display names, the Merely brand's projection
-        // names); the strategy id stays technical. Force-directed is the
-        // orrery surface's native arrangement (revert = None).
-        (
-            "Layout: Spiral",
-            Action::SetLayoutStrategy(Some("phyllotaxis.default")),
-        ),
+        // The per-arrangement `Layout:` rows are derived from the canvas
+        // registry below, so the plain display names live in one place.
+        // Force-directed is the orrery surface's native arrangement
+        // (revert = None) and has no registry row of its own.
         ("Layout: Force-directed", Action::SetLayoutStrategy(None)),
         ("Toggle isometric view", Action::ToggleIsometric),
         ("Toggle height-by-degree", Action::ToggleHeightByDegree),
@@ -415,7 +418,26 @@ pub fn palette_actions() -> Vec<(&'static str, Action)> {
         ("Rename session", Action::BeginRenameSession),
         ("Close session", Action::CloseSession),
     ]);
-    actions
+
+    let mut rows: Vec<(String, Action)> =
+        actions.into_iter().map(|(label, action)| (label.to_string(), action)).collect();
+
+    // Insert the registry's arrangements ahead of Force-directed, so every
+    // `Layout:` row sits together and the native arrangement closes the group.
+    let anchor = rows
+        .iter()
+        .position(|(_, action)| matches!(action, Action::SetLayoutStrategy(None)))
+        .unwrap_or(rows.len());
+    for (offset, (id, display_name)) in
+        mere::canvas::CANVAS_LAYOUT_STRATEGIES.iter().enumerate()
+    {
+        rows.insert(
+            anchor + offset,
+            (format!("Layout: {display_name}"), Action::SetLayoutStrategy(Some(id))),
+        );
+    }
+
+    rows
 }
 
 /// A side effect `update` asks the shell to run through a port. `update`

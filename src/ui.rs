@@ -37,13 +37,14 @@ pub(crate) const ROW_TEXT_BUDGET: f32 = CARD_W - 16.0 - 16.0;
 /// What `text` measures when the chrome sheet lays it out as a suggestion
 /// row, in px at zoom 1.
 ///
-/// Rows are `white-space: nowrap; overflow: hidden`, so a row that does not
-/// fit is not wrapped or ellipsized: it is silently cut off mid-word. A
+/// Ordinary rows are `white-space: nowrap; overflow: hidden`, so a row that
+/// does not fit is not wrapped or ellipsized: it is silently cut off mid-word. A
 /// character count cannot see that, because glyph advances differ (`i` and
 /// `W` are one character each and nothing like one width), which is how a
 /// review row naming a watch passed a `< 96`-char guard and still rendered as
-/// "wakes on: fi". This lays the text out UNCONSTRAINED and reports the
-/// extent it wants, so a caller can compare against [`ROW_TEXT_BUDGET`].
+/// "wakes on: fi". The review row now wraps as an explicit exception; this
+/// still lays text out unconstrained and reports the extent it would need on
+/// one line, so guards and receipts can compare it with [`ROW_TEXT_BUDGET`].
 pub(crate) fn chrome_row_width(text: &str) -> f32 {
     let mut dom = ScriptedDom::new();
     let root = dom.document();
@@ -76,6 +77,38 @@ pub(crate) fn chrome_row_width(text: &str) -> f32 {
     (right - start + 14.0).max(0.0)
 }
 
+/// How much taller the install-review row becomes when its full text wraps at
+/// the real row-text budget. This uses the live chrome sheet, including zoom,
+/// so the suggestion budget and retained card agree about the space consumed.
+pub(crate) fn chrome_review_row_extra_height(
+    text: &str,
+    appearance: &crate::shell_services::AppearanceConfig,
+) -> f32 {
+    fn row_height(text: &str, appearance: &crate::shell_services::AppearanceConfig) -> f32 {
+        let mut dom = ScriptedDom::new();
+        let root = dom.document();
+        let row = dom.create_element(qual("div"));
+        dom.set_attribute(row, qual("class"), "omni-row omni-row-review");
+        dom.set_attribute(
+            row,
+            qual("style"),
+            &format!("position: absolute; width: {ROW_TEXT_BUDGET}px;"),
+        );
+        let t = dom.create_text(text);
+        dom.append_child(row, t);
+        dom.append_child(root, row);
+
+        let sheet = chrome_sheet(appearance);
+        let layout = IncrementalLayout::new(&dom, &[&sheet], CARD_W, 16_384.0);
+        layout
+            .absolute_rect(&dom, row)
+            .map(|(_, _, _, height)| height)
+            .unwrap_or(ROW_H * appearance.zoom())
+    }
+
+    (row_height(text, appearance) - row_height("x", appearance)).max(0.0)
+}
+
 /// One suggestion row's height at zoom 1, in px: `.omni-row`'s 14px text at
 /// the default line height plus its 5px vertical padding, twice. Mirrors the
 /// chrome sheet below rather than measuring the laid-out card — the row count
@@ -103,6 +136,18 @@ pub fn visible_row_limit(
     viewport_h: f32,
     ui_zoom: f32,
 ) -> usize {
+    visible_row_limit_with_extra_height(configured, placement, viewport_h, ui_zoom, 0.0)
+}
+
+/// The viewport row budget when one visible row has grown beyond the ordinary
+/// single-line height. `extra_height` is already in live chrome pixels.
+pub(crate) fn visible_row_limit_with_extra_height(
+    configured: usize,
+    placement: &crate::panes::ChromePlacement,
+    viewport_h: f32,
+    ui_zoom: f32,
+    extra_height: f32,
+) -> usize {
     use crate::panes::{ChromeEdge, ChromePlacement};
     let zoom = if ui_zoom > 0.0 { ui_zoom } else { 1.0 };
     // Where the card's top edge lands, matching `chrome_view::chrome_position`.
@@ -117,7 +162,8 @@ pub fn visible_row_limit(
         }
         ChromePlacement::Pane(_) | ChromePlacement::Hidden => return configured,
     };
-    let room = viewport_h - card_top - CARD_CHROME_H * zoom - CARD_BOTTOM_MARGIN;
+    let room =
+        viewport_h - card_top - CARD_CHROME_H * zoom - CARD_BOTTOM_MARGIN - extra_height.max(0.0);
     let fits = (room / (ROW_H * zoom)).floor().max(0.0) as usize;
     configured.min(fits.max(MIN_VISIBLE_ROWS))
 }
@@ -539,6 +585,7 @@ pub(crate) const CHROME_SHEET: &str = "\
     .omni-row-sel { color: rgb(28, 22, 10); font-size: 14px; \
                     padding: 5px 8px; white-space: nowrap; overflow: hidden; \
                     background-color: rgb(232, 150, 40); border-radius: 6px; } \
+    .omni-row-review { white-space: normal; overflow-wrap: anywhere; } \
     .omni-row-muted { color: rgb(140, 148, 165); font-size: 14px; \
                       padding: 5px 8px; white-space: nowrap; } \
     .whereami { position: absolute; color: rgb(170, 178, 195); \
@@ -1496,10 +1543,7 @@ mod tests {
     #[test]
     fn actions_lane_filters_the_catalog_it_is_given() {
         let canvas = Canvas::new();
-        let catalog: Vec<(String, crate::action::Action)> = crate::action::palette_actions()
-            .into_iter()
-            .map(|(label, action)| (label.to_string(), action))
-            .collect();
+        let catalog: Vec<(String, crate::action::Action)> = crate::action::palette_actions();
         let mut state = OmnibarState {
             open: true,
             text: ">re".into(),

@@ -523,6 +523,14 @@ impl App {
         if let Some(score) = session::load_projection_score(&sdir) {
             self.graph_runtimes.restore_projection_score(score);
         }
+        // Restore the chosen arrangement beside the score it produced, so a
+        // reopened session comes back to the view the user left rather than to
+        // the surface default. Set through the runtimes directly: the app-level
+        // arm clears the score for a non-Spiral strategy, which is right for a
+        // fresh choice and wrong for a restore of the pair.
+        if let Some(intent) = session::load_view_intent(&sdir) {
+            self.graph_runtimes.set_layout_strategy(intent.layout_strategy);
+        }
         // Preview imagery lives out of the graph now. The first paint queues
         // only visible cache misses; the shell resolves those after the frame,
         // so adoption does not decode the entire session into memory.

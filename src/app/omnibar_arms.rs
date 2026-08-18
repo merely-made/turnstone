@@ -18,7 +18,7 @@ const MIN_RECALL_CHARS: usize = 2;
 impl App {
     pub(super) fn recompute_omnibar_suggestions(&mut self) {
         let actions = self.available_actions();
-        let chrome = self.shell_chrome_config();
+        let chrome = self.shell_chrome_config().clone();
         let row_limit = crate::ui::visible_row_limit(
             chrome.omnibar.row_limit,
             &chrome.omnibar.placement,
@@ -32,6 +32,34 @@ impl App {
             &self.recall,
             row_limit,
         );
+        let review_extra = self
+            .omnibar
+            .suggestions
+            .iter()
+            .find(|suggestion| crate::chrome_view::is_install_review(suggestion))
+            .map(|suggestion| {
+                crate::ui::chrome_review_row_extra_height(
+                    &crate::chrome_view::row_text(suggestion),
+                    &chrome.appearance,
+                )
+            })
+            .unwrap_or(0.0);
+        let fitted_limit = crate::ui::visible_row_limit_with_extra_height(
+            chrome.omnibar.row_limit,
+            &chrome.omnibar.placement,
+            self.viewport.1,
+            chrome.appearance.ui_zoom,
+            review_extra,
+        );
+        if fitted_limit < row_limit {
+            recompute_suggestions_with_limit(
+                &mut self.omnibar,
+                &self.graph_runtimes,
+                &actions,
+                &self.recall,
+                fitted_limit,
+            );
+        }
     }
 
     /// Re-project an open omnibar after the window changed size: how many

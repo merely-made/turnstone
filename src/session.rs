@@ -91,15 +91,17 @@ pub fn load_manifests(data_root: &Path) -> ManifestStore {
 /// The sidecar files a session owns (the flat layout's file set, and each
 /// session directory's).
 const PROJECTION_SCORE_FILE: &str = "projection-score.json";
+const VIEW_INTENT_FILE: &str = "view-intent.json";
 pub const PLACE_FILE: &str = "place.json";
 
-const SESSION_FILES: [&str; 7] = [
+const SESSION_FILES: [&str; 8] = [
     session_graph_store::GRAPH_FILE,
     frisket_store::FRAME_FILE,
     WORKBENCH_FILE,
     pandect::browser_node_state::BROWSER_NODES_FILE,
     frisket_store::WINDOWS_FILE,
     PROJECTION_SCORE_FILE,
+    VIEW_INTENT_FILE,
     PLACE_FILE,
 ];
 
@@ -244,6 +246,67 @@ pub fn load_projection_score(session_dir: &Path) -> Option<Score> {
         Err(err) if err.kind() == std::io::ErrorKind::NotFound => None,
         Err(err) => {
             tracing::warn!(%err, path = ?path, "failed to read projection score");
+            None
+        }
+    }
+}
+
+/// What the viewer *asked for*, as against the score, which is what the
+/// solver produced.
+///
+/// The distinction is the reason this is its own sidecar: a score can be
+/// recomputed from graph truth at any time, but "I chose Board" cannot be
+/// recovered from the positions it produced, so reopening a session without it
+/// silently reverts the arrangement to the surface default. The strategy id is
+/// the persistence key, never the display name, so an arrangement rename
+/// leaves stored sessions untouched.
+#[derive(Debug, Default, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct ViewIntentV1 {
+    /// The active analytic arrangement, or `None` for the surface's native
+    /// force-directed one.
+    #[serde(default)]
+    pub layout_strategy: Option<String>,
+}
+
+pub fn view_intent_path(session_dir: &Path) -> PathBuf {
+    session_dir.join(VIEW_INTENT_FILE)
+}
+
+/// Persist view intent atomically. Like the score, it is view state: a missing
+/// or malformed sidecar must never prevent the session from opening.
+pub fn save_view_intent(session_dir: &Path, intent: &ViewIntentV1) {
+    let target = view_intent_path(session_dir);
+    let tmp = target.with_extension("json.tmp");
+    let result = (|| -> std::io::Result<()> {
+        std::fs::create_dir_all(session_dir)?;
+        let bytes = serde_json::to_vec_pretty(intent).map_err(std::io::Error::other)?;
+        std::fs::write(&tmp, bytes)?;
+        if target.exists() {
+            std::fs::remove_file(&target)?;
+        }
+        std::fs::rename(&tmp, &target)
+    })();
+    if let Err(err) = result {
+        tracing::warn!(%err, path = ?target, "failed to persist view intent");
+        let _ = std::fs::remove_file(tmp);
+    }
+}
+
+/// Restore the last valid view intent. A corrupt sidecar is diagnosed and
+/// ignored, leaving the session on its default arrangement.
+pub fn load_view_intent(session_dir: &Path) -> Option<ViewIntentV1> {
+    let path = view_intent_path(session_dir);
+    match std::fs::read(&path) {
+        Ok(bytes) => match serde_json::from_slice(&bytes) {
+            Ok(intent) => Some(intent),
+            Err(err) => {
+                tracing::warn!(%err, path = ?path, "failed to parse view intent");
+                None
+            }
+        },
+        Err(err) if err.kind() == std::io::ErrorKind::NotFound => None,
+        Err(err) => {
+            tracing::warn!(%err, path = ?path, "failed to read view intent");
             None
         }
     }
@@ -724,6 +787,46 @@ mod tests {
             !root.join(session_graph_store::GRAPH_FILE).exists(),
             "the score remains a view sidecar"
         );
+    }
+
+    #[test]
+    fn view_intent_round_trips_and_survives_a_corrupt_sidecar() {
+        let root = temp_root("view-intent");
+        assert_eq!(load_view_intent(&root), None, "absent sidecar is not an error");
+
+        let intent = ViewIntentV1 { layout_strategy: Some("kanban.community".to_string()) };
+        save_view_intent(&root, &intent);
+        assert_eq!(load_view_intent(&root), Some(intent));
+
+        // Force-directed is a real choice, not the absence of one.
+        let native = ViewIntentV1 { layout_strategy: None };
+        save_view_intent(&root, &native);
+        assert_eq!(load_view_intent(&root), Some(native));
+
+        // A corrupt sidecar is diagnosed and ignored rather than failing the
+        // session open, matching the score's posture.
+        std::fs::write(view_intent_path(&root), b"{ not json").unwrap();
+        assert_eq!(load_view_intent(&root), None);
+    }
+
+    #[test]
+    fn the_persisted_strategy_is_an_id_never_a_display_name() {
+        // An arrangement rename (Kanban -> Board) must not touch stored
+        // sessions, which is only true while the sidecar holds the id.
+        let root = temp_root("view-intent-key");
+        let stored = mere::canvas::CANVAS_LAYOUT_STRATEGIES
+            .iter()
+            .map(|(id, _)| *id)
+            .collect::<Vec<_>>();
+        for id in stored {
+            save_view_intent(&root, &ViewIntentV1 { layout_strategy: Some(id.to_string()) });
+            let loaded = load_view_intent(&root).unwrap().layout_strategy.unwrap();
+            assert_eq!(loaded, id);
+            assert!(
+                !loaded.chars().next().unwrap().is_uppercase(),
+                "{loaded} reads like a display name, not a persistence key"
+            );
+        }
     }
 
     #[test]

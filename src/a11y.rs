@@ -100,6 +100,18 @@ fn project_chrome(app: &App) -> UxTree {
         n.set_value(app.omnibar.presented_text());
         nodes.push((id, n));
         children.push(id);
+        if let Some(review) = app
+            .omnibar
+            .suggestions
+            .iter()
+            .find(|suggestion| crate::chrome_view::is_install_review(suggestion))
+        {
+            let id = node_id_for_path("turnstone/chrome/install-review");
+            let mut n = Node::new(Role::Button);
+            n.set_label(crate::chrome_view::row_text(review));
+            nodes.push((id, n));
+            children.push(id);
+        }
     }
     if app.shell_chrome_config().projects_shellbar()
         && let Some(caption) = crate::app::focused_caption(&app.graph_runtimes)

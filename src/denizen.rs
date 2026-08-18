@@ -968,9 +968,12 @@ mod tests {
                 ring.name()
             );
         }
+        let width = crate::ui::chrome_row_width(&review);
         assert!(
-            review.chars().count() < 96,
-            "the ask must fit one palette row without clipping: {review}"
+            width <= crate::ui::ROW_TEXT_BUDGET,
+            "the ask must fit one palette row without clipping: \
+             {width}px > {}px: {review}",
+            crate::ui::ROW_TEXT_BUDGET,
         );
 
         std::fs::write(&path, "mere.open('mere://other')").unwrap();

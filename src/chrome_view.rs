@@ -185,7 +185,7 @@ pub struct ChromeSurfaces {
 }
 
 /// A suggestion row's display text (the same rendering the hand chrome drew).
-fn row_text(s: &Suggestion) -> String {
+pub(crate) fn row_text(s: &Suggestion) -> String {
     match s {
         Suggestion::Node { label, host, .. } if host.is_empty() => label.clone(),
         Suggestion::Node { label, host, .. } => format!("{label}  \u{00b7}  {host}"),
@@ -202,6 +202,17 @@ fn row_text(s: &Suggestion) -> String {
         Suggestion::Hint(hint) => (*hint).to_string(),
         Suggestion::Prompt(prompt) => prompt.clone(),
     }
+}
+
+/// The one action row allowed to grow vertically rather than clip.
+pub(crate) fn is_install_review(s: &Suggestion) -> bool {
+    matches!(
+        s,
+        Suggestion::Act {
+            action: crate::action::Action::ConfirmInstallDenizen,
+            ..
+        }
+    )
 }
 
 impl ChromeSurfaces {
@@ -265,6 +276,10 @@ impl ChromeSurfaces {
                 text: row_text(s),
                 class: match s {
                     Suggestion::Hint(_) | Suggestion::Prompt(_) => "omni-row-muted",
+                    _ if is_install_review(s) && i == omnibar.selected => {
+                        "omni-row-sel omni-row-review"
+                    }
+                    _ if is_install_review(s) => "omni-row omni-row-review",
                     _ if i == omnibar.selected => "omni-row-sel",
                     _ => "omni-row",
                 },
@@ -353,6 +368,25 @@ mod tests {
         app.update(Action::OmnibarOpen { command: true });
         app.update(Action::OmnibarChar('r'));
         app
+    }
+
+    fn long_install_review_app() -> (App, String) {
+        let watch_url = format!(
+            "https://watch.example/{}",
+            "averyverylongunbrokenwatchtarget".repeat(6)
+        );
+        let mut app = App::test_stub();
+        app.viewport = (1024.0, 320.0);
+        app.pending_install = Some(crate::denizen::PendingInstall {
+            path: std::path::PathBuf::from("watcher.lua"),
+            label: "watcher".into(),
+            body: crate::denizen::PackBody::Scenario("mere.snapshot()".into()),
+            subject: servitor::Subject::new([7; 32]),
+            rings: crate::denizen::default_rings(),
+            watch_url: Some(watch_url.clone()),
+        });
+        app.update(Action::OmnibarOpen { command: true });
+        (app, watch_url)
     }
 
     #[test]
@@ -459,6 +493,78 @@ mod tests {
         };
         let intents = chrome.click(0, x, y, 1024, 600);
         assert_eq!(intents, vec![ChromeIntent::CommitRow(0)]);
+    }
+
+    #[test]
+    fn install_review_wraps_intact_and_keeps_card_and_click_geometry() {
+        let (app, watch_url) = long_install_review_app();
+        let review = app
+            .omnibar
+            .suggestions
+            .iter()
+            .find(|suggestion| is_install_review(suggestion))
+            .expect("the pending install review is visible");
+        let expected = row_text(review);
+        assert!(
+            crate::ui::chrome_row_width(&expected) > crate::ui::ROW_TEXT_BUDGET,
+            "the fixture must actually overflow an ordinary one-line row"
+        );
+        assert!(
+            expected.contains(&watch_url),
+            "the displayed review is intact"
+        );
+        assert!(
+            crate::a11y::a11y_lines(&app)
+                .iter()
+                .any(|line| line == &format!("button: {expected}")),
+            "accessibility carries the same complete review"
+        );
+
+        let mut chrome = ChromeSurfaces::new();
+        chrome.sync(&app, &[(0, 1024.0, 320.0)]);
+        let (x, y) = {
+            let dom = chrome.dom.borrow();
+            let root = chrome
+                .runner
+                .window_root(chrome.projections[0])
+                .expect("the primary window-root exists");
+            let view = SubtreeView::new(&*dom, root);
+            let sheet = crate::ui::chrome_sheet(&chrome.appearance);
+            let layout = IncrementalLayout::new(&view, &[&sheet], 1024.0, 320.0);
+            let row = dom
+                .all_with_class(dom.document(), "omni-row-review")
+                .into_iter()
+                .next()
+                .expect("the review has its wrapping class");
+            let (rx, ry, rw, rh) = layout.absolute_rect(&view, row).expect("review has a rect");
+            let (tx, ty) = layout.accumulated_translate(&view, row);
+            assert!(
+                rw <= CARD_W,
+                "the wrapped review stays within the card: {rw}px"
+            );
+            assert!(
+                rh > 44.0,
+                "emergency breaking takes the URL beyond the two natural URL lines: {rh}px"
+            );
+
+            let card = dom
+                .all_with_class(dom.document(), "omni")
+                .into_iter()
+                .next()
+                .expect("the omnibar card exists");
+            let (_, cy, _, ch) = layout.absolute_rect(&view, card).expect("card has a rect");
+            let (_, cty) = layout.accumulated_translate(&view, card);
+            assert!(
+                cy + cty + ch <= 320.0 - 16.0,
+                "the row budget leaves the expanded card inside the viewport"
+            );
+            (rx + tx + rw / 2.0, ry + ty + rh / 2.0)
+        };
+        assert_eq!(
+            chrome.click(0, x, y, 1024, 320),
+            vec![ChromeIntent::CommitRow(0)],
+            "the expanded row remains one clickable review"
+        );
     }
 
     /// The caret split mirrors the omnibar state: before/caret/after and the
