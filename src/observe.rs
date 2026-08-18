@@ -28,6 +28,9 @@ pub struct Snapshot {
     /// Per-node content lifecycle, as (member, state label) pairs.
     pub content: Vec<(Uuid, String)>,
     pub node_count: usize,
+    /// Durable feed sources in this session and their unread entry count.
+    pub feed_subscriptions: usize,
+    pub feed_unread: usize,
     /// Whether at least one node lies inside the viewport.
     pub graph_visible: bool,
     /// The composited surfaces present this frame, as kind labels in z-order
@@ -207,6 +210,26 @@ pub enum AppEvent {
     NavigatedForward(String),
     /// The focused node reloaded (refetch + content respawn when live).
     Reloaded(String),
+    /// A graph node became a scheduled feed source.
+    FeedSubscribed {
+        node: Uuid,
+        period: &'static str,
+    },
+    /// A graph node stopped scheduling feed refreshes.
+    FeedUnsubscribed(Uuid),
+    /// A feed refresh projected changed entries into the graph.
+    FeedRefreshed {
+        node: Uuid,
+        changed: usize,
+        unread: usize,
+    },
+    /// A scheduled or manual feed refresh failed loudly.
+    FeedRefreshFailed {
+        node: Uuid,
+        error: String,
+    },
+    /// The focused entry's unread marker was cleared.
+    FeedEntryRead(Uuid),
     /// A dropped image textured this node's sprite face.
     NodeSpriteSet(Uuid),
     /// A node's viewer override changed (the settings row).
@@ -393,6 +416,19 @@ impl AppEvent {
             AppEvent::NavigatedBack(url) => format!("nav-back {url}"),
             AppEvent::NavigatedForward(url) => format!("nav-forward {url}"),
             AppEvent::Reloaded(url) => format!("reloaded {url}"),
+            AppEvent::FeedSubscribed { node, period } => {
+                format!("feed-subscribed {node} {period}")
+            }
+            AppEvent::FeedUnsubscribed(node) => format!("feed-unsubscribed {node}"),
+            AppEvent::FeedRefreshed {
+                node,
+                changed,
+                unread,
+            } => format!("feed-refreshed {node} changed={changed} unread={unread}"),
+            AppEvent::FeedRefreshFailed { node, error } => {
+                format!("feed-refresh-failed {node} {error}")
+            }
+            AppEvent::FeedEntryRead(node) => format!("feed-entry-read {node}"),
             AppEvent::NodeSpriteSet(node) => format!("sprite-set {node}"),
             AppEvent::ViewerChanged { node, viewer } => format!("viewer-changed {node} {viewer}"),
             AppEvent::WindowOpened => "window-opened".to_string(),
@@ -570,6 +606,8 @@ pub fn snapshot(app: &App) -> Snapshot {
         },
         content,
         node_count: app.graph_runtimes.graph().nodes().count(),
+        feed_subscriptions: app.feeds.len(),
+        feed_unread: app.feeds.unread_count(),
         graph_visible: app.graph_runtimes.graph_visible(),
         surfaces,
         focus: app.focus.label().to_string(),

@@ -87,6 +87,7 @@ impl App {
             sessions,
             session_id,
             content: ContentStates::default(),
+            feeds: crate::feed::FeedSubscriptions::default(),
             place: crate::place::PlaceState::default(),
             next_place_generation: 0,
             next_place_request: 0,
@@ -516,6 +517,9 @@ impl App {
         // halts; the saved layout is applied from the facet store next).
         self.graph_runtimes
             .set_graph(session::load_session_graph(&sdir).unwrap_or_default());
+        self.feeds = crate::feed::FeedSubscriptions::load(&sdir);
+        self.feeds.reconcile(self.graph_runtimes.graph());
+        self.reconcile_feed_tags();
         if let Some(score) = session::load_projection_score(&sdir) {
             self.graph_runtimes.restore_projection_score(score);
         }

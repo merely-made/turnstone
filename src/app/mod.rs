@@ -90,6 +90,9 @@ pub struct App {
     /// Per-node content lifecycle (rung 4). Data only: the live session
     /// handles live in the shell's content port, keyed by the same ids.
     pub content: ContentStates,
+    /// Durable feed schedules and duplicate-suppression state for this
+    /// session. Entry nodes and unread markers themselves remain graph truth.
+    pub feeds: crate::feed::FeedSubscriptions,
     /// This session's public shared-place binding and product-visible status.
     /// Domain stores, joined lanes, transport handles, and key state belong to
     /// the shell-owned place worker; this field remains data only.
@@ -945,6 +948,10 @@ impl App {
             Action::NavBack => self.nav_back(),
             Action::NavForward => self.nav_forward(),
             Action::Reload => self.reload_focused(),
+            Action::SubscribeFocusedFeed { period } => self.subscribe_focused_feed(period),
+            Action::UnsubscribeFocusedFeed => self.unsubscribe_focused_feed(),
+            Action::RefreshFeeds => self.refresh_feeds(),
+            Action::MarkFocusedFeedEntryRead => self.mark_focused_feed_entry_read(),
             Action::ReseedLayout => self.reseed_layout(),
             Action::SetLayoutStrategy(id) => self.set_layout_strategy(id),
             Action::ToggleIsometric => {
@@ -1147,6 +1154,7 @@ impl App {
 }
 
 mod denizen_arms;
+mod feed_arms;
 mod fixtures;
 mod node_arms;
 mod omnibar_arms;

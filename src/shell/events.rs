@@ -6,7 +6,7 @@
 
 use winit::application::ApplicationHandler;
 use winit::event::{ElementState, Ime, MouseScrollDelta, WindowEvent};
-use winit::event_loop::ActiveEventLoop;
+use winit::event_loop::{ActiveEventLoop, ControlFlow};
 use winit::window::WindowId;
 
 use std::sync::Arc;
@@ -23,6 +23,16 @@ use crate::browse;
 use super::Shell;
 
 impl ApplicationHandler for Shell {
+    fn about_to_wait(&mut self, event_loop: &ActiveEventLoop) {
+        let effects = self.app.tick(crate::denizen::now_ms());
+        self.run_effects(effects);
+        // Minute is the smallest supported schedule. A bounded wake also
+        // supplies the production clock to W4 behaviors when the UI is idle.
+        event_loop.set_control_flow(ControlFlow::WaitUntil(
+            std::time::Instant::now() + std::time::Duration::from_secs(60),
+        ));
+    }
+
     fn exiting(&mut self, _event_loop: &ActiveEventLoop) {
         // The trail memory buffers traversals between lifecycle edges, and a
         // normal quit is one: flush-and-release with a bounded ack so the

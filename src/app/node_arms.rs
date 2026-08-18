@@ -78,6 +78,7 @@ impl App {
         let Some(record) = record else {
             return vec![Effect::Redraw];
         };
+        let feed_entries = self.feeds.entry_members(record.node_id);
         // Archive-never-orphan: the world's file moves to the archive
         // slot BEFORE the bearing node leaves; a failed archive
         // aborts the delete (the node stays, nothing is lost).
@@ -94,6 +95,14 @@ impl App {
             }
             return vec![Effect::Redraw];
         };
+        self.feeds.forget_member(member);
+        for entry in feed_entries {
+            if let Some(graph) = self.graph_runtimes.graph_containing_member(entry)
+                && let Some(canvas) = self.graph_runtimes.canvas_mut(graph)
+            {
+                canvas.untag_node(entry, crate::feed::UNREAD_TAG);
+            }
+        }
         // The record is the archive now: the live facets go, and a
         // denizen's runtime entry goes with its node.
         if self.denizens.residents.remove(&member).is_some() {

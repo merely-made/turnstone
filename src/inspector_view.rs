@@ -116,7 +116,7 @@ fn inspector_sections_for_context(
 
     let content_rows = content_rows(app, focused.map(|(_, node)| node.id));
 
-    vec![
+    let mut sections = vec![
         InspectorSection {
             title: "Node".to_string(),
             rows: node_rows,
@@ -125,11 +125,59 @@ fn inspector_sections_for_context(
             title: "Content".to_string(),
             rows: content_rows,
         },
-        InspectorSection {
-            title: "Journal".to_string(),
-            rows: journal_rows(app),
-        },
-    ]
+    ];
+    if let Some(member) = focused.map(|(_, node)| node.id)
+        && let Some(rows) = feed_rows(app, member)
+    {
+        sections.push(InspectorSection {
+            title: "Feed".to_string(),
+            rows,
+        });
+    }
+    sections.push(InspectorSection {
+        title: "Journal".to_string(),
+        rows: journal_rows(app),
+    });
+    sections
+}
+
+fn feed_rows(app: &App, member: uuid::Uuid) -> Option<Vec<(String, String)>> {
+    match app.feeds.member_info(member)? {
+        crate::feed::FeedMemberInfo::Source {
+            period,
+            last_checked_ms,
+            last_error,
+            unread,
+        } => Some(vec![
+            ("Refresh".to_string(), format!("every {period}")),
+            (
+                "Last checked".to_string(),
+                last_checked_ms
+                    .map(|value| value.to_string())
+                    .unwrap_or_else(|| "never".to_string()),
+            ),
+            (
+                "Status".to_string(),
+                last_error.unwrap_or_else(|| "current".to_string()),
+            ),
+            ("Unread".to_string(), unread.to_string()),
+        ]),
+        crate::feed::FeedMemberInfo::Entry {
+            source_url,
+            date,
+            unread,
+        } => Some(vec![
+            ("Source".to_string(), source_url),
+            (
+                "Published".to_string(),
+                date.unwrap_or_else(|| "unknown".to_string()),
+            ),
+            (
+                "Status".to_string(),
+                if unread { "unread" } else { "read" }.to_string(),
+            ),
+        ]),
+    }
 }
 
 /// The attributed edit spine's tail, newest first (participant gate B1: WHO

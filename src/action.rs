@@ -55,6 +55,15 @@ pub enum Action {
     /// Reload the focused node: refetch its enrichment, and respawn its live
     /// content session when it has one.
     Reload,
+    /// Keep the focused node as a feed source and refresh it on this cadence.
+    /// The first refresh is immediate; later refreshes use the host clock.
+    SubscribeFocusedFeed { period: servitor::Period },
+    /// Stop scheduled refreshes for the focused source. The node remains kept.
+    UnsubscribeFocusedFeed,
+    /// Refresh every subscribed source now, subject to the in-flight gate.
+    RefreshFeeds,
+    /// Clear the unread marker from the focused feed entry.
+    MarkFocusedFeedEntryRead,
     /// Set a node's sprite face (a dropped image file, decoded by the shell
     /// into a PNG data-URI — the decode is platform/file work, so it happens
     /// port-side and only the typed result lowers). `hull` is the traced
@@ -343,6 +352,27 @@ pub fn palette_actions() -> Vec<(&'static str, Action)> {
         ("Back", Action::NavBack),
         ("Forward", Action::NavForward),
         ("Reload", Action::Reload),
+        (
+            "Subscribe to feed: every minute",
+            Action::SubscribeFocusedFeed {
+                period: servitor::Period::Minute,
+            },
+        ),
+        (
+            "Subscribe to feed: hourly",
+            Action::SubscribeFocusedFeed {
+                period: servitor::Period::Hour,
+            },
+        ),
+        (
+            "Subscribe to feed: daily",
+            Action::SubscribeFocusedFeed {
+                period: servitor::Period::Day,
+            },
+        ),
+        ("Unsubscribe from feed", Action::UnsubscribeFocusedFeed),
+        ("Refresh feeds", Action::RefreshFeeds),
+        ("Mark feed entry read", Action::MarkFocusedFeedEntryRead),
         ("Reseed layout", Action::ReseedLayout),
         ("Fit view", Action::FitView),
         // Plain product vocabulary for the arrangement register (matches the
@@ -404,6 +434,13 @@ pub enum Effect {
         owner_url: String,
         /// A capsule-scoped client certificate selected by the host. The
         /// fetch actor still rechecks its origin on redirects.
+        identity: Option<fetch::GeminiClientIdentity>,
+    },
+    /// Fetch a subscribed source without treating its response as page
+    /// enrichment. It uses the same actor and capsule-scoped identity path.
+    FetchFeed {
+        node: uuid::Uuid,
+        url: String,
         identity: Option<fetch::GeminiClientIdentity>,
     },
     /// Replace one durable Gemini server pin after an explicit human decision.
@@ -509,6 +546,12 @@ pub enum Update {
     /// requested `url` (enrichment applies only while the node still lives
     /// there — a late result against a superseded node drops explicitly).
     PageFetched {
+        node: uuid::Uuid,
+        url: String,
+        result: Result<FetchedPage, String>,
+    },
+    /// A subscribed feed refresh completed through the ordinary fetch port.
+    FeedFetched {
         node: uuid::Uuid,
         url: String,
         result: Result<FetchedPage, String>,

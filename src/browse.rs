@@ -42,6 +42,13 @@ struct PendingPage {
     node: Uuid,
     owner_url: String,
     identity_used: bool,
+    kind: PendingPageKind,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum PendingPageKind {
+    Page,
+    Feed,
 }
 
 impl PendingFetches {
@@ -53,6 +60,19 @@ impl PendingFetches {
                 node,
                 owner_url: owner_url.to_string(),
                 identity_used,
+                kind: PendingPageKind::Page,
+            });
+    }
+
+    pub fn note_feed(&mut self, url: &str, node: Uuid, identity_used: bool) {
+        self.pages
+            .entry(url.to_string())
+            .or_default()
+            .push(PendingPage {
+                node,
+                owner_url: url.to_string(),
+                identity_used,
+                kind: PendingPageKind::Feed,
             });
     }
 
@@ -111,31 +131,64 @@ pub fn update_from_fetch(update: FetchUpdate, pending: &mut PendingFetches) -> O
                 return None;
             };
             match outcome.result {
-                Ok(fetched) => Some(Update::PageFetched {
-                    node: request.node,
-                    url: request.owner_url,
-                    result: Ok(FetchedPage {
+                Ok(fetched) => {
+                    let fetched = FetchedPage {
                         content_type: fetched.content_type,
                         body: fetched.body,
-                    }),
-                }),
+                    };
+                    Some(match request.kind {
+                        PendingPageKind::Page => Update::PageFetched {
+                            node: request.node,
+                            url: request.owner_url,
+                            result: Ok(fetched),
+                        },
+                        PendingPageKind::Feed => Update::FeedFetched {
+                            node: request.node,
+                            url: request.owner_url,
+                            result: Ok(fetched),
+                        },
+                    })
+                }
                 Err(fetch::FetchFailure::InputRequired {
                     url: input_url,
                     prompt,
                     sensitive,
-                }) => Some(Update::SmolwebInputRequested {
-                    node: request.node,
-                    url: request.owner_url,
-                    input_url,
-                    prompt,
-                    sensitive,
+                }) => Some(match request.kind {
+                    PendingPageKind::Page => Update::SmolwebInputRequested {
+                        node: request.node,
+                        url: request.owner_url,
+                        input_url,
+                        prompt,
+                        sensitive,
+                    },
+                    PendingPageKind::Feed => Update::FeedFetched {
+                        node: request.node,
+                        url: request.owner_url,
+                        result: Err(format!(
+                            "feed refresh requires {} input: {prompt}",
+                            if sensitive {
+                                "sensitive"
+                            } else {
+                                "interactive"
+                            }
+                        )),
+                    },
                 }),
                 Err(fetch::FetchFailure::ClientCertificateRequired {
                     url: identity_url,
                     prompt,
                     code,
                 }) => {
-                    if request.identity_used {
+                    if request.kind == PendingPageKind::Feed {
+                        let status = code.map(|code| format!(" ({code})")).unwrap_or_default();
+                        Some(Update::FeedFetched {
+                            node: request.node,
+                            url: request.owner_url,
+                            result: Err(format!(
+                                "feed refresh requires a client certificate{status}: {prompt}"
+                            )),
+                        })
+                    } else if request.identity_used {
                         let status = code.map(|code| format!(" ({code})")).unwrap_or_default();
                         Some(Update::PageFetched {
                             node: request.node,
@@ -156,18 +209,34 @@ pub fn update_from_fetch(update: FetchUpdate, pending: &mut PendingFetches) -> O
                     target,
                     pinned,
                     seen,
-                }) => Some(Update::GeminiCertificateChanged {
-                    node: request.node,
-                    url: request.owner_url,
-                    fetch_url,
-                    target,
-                    pinned,
-                    seen,
+                }) => Some(match request.kind {
+                    PendingPageKind::Page => Update::GeminiCertificateChanged {
+                        node: request.node,
+                        url: request.owner_url,
+                        fetch_url,
+                        target,
+                        pinned,
+                        seen,
+                    },
+                    PendingPageKind::Feed => Update::FeedFetched {
+                        node: request.node,
+                        url: request.owner_url,
+                        result: Err(format!(
+                            "Gemini certificate changed for {target}; open the source to review it"
+                        )),
+                    },
                 }),
-                Err(fetch::FetchFailure::Failed(error)) => Some(Update::PageFetched {
-                    node: request.node,
-                    url: request.owner_url,
-                    result: Err(error),
+                Err(fetch::FetchFailure::Failed(error)) => Some(match request.kind {
+                    PendingPageKind::Page => Update::PageFetched {
+                        node: request.node,
+                        url: request.owner_url,
+                        result: Err(error),
+                    },
+                    PendingPageKind::Feed => Update::FeedFetched {
+                        node: request.node,
+                        url: request.owner_url,
+                        result: Err(error),
+                    },
                 }),
             }
         }
@@ -198,6 +267,17 @@ pub fn fetch_command_for(effect: &Effect, pending: &mut PendingFetches) -> Optio
             identity,
         } => {
             pending.note_page(url, *node, owner_url, identity.is_some());
+            Some(FetchCommand::Page {
+                url: url.clone(),
+                identity: identity.clone(),
+            })
+        }
+        Effect::FetchFeed {
+            node,
+            url,
+            identity,
+        } => {
+            pending.note_feed(url, *node, identity.is_some());
             Some(FetchCommand::Page {
                 url: url.clone(),
                 identity: identity.clone(),

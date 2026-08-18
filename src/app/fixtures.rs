@@ -42,6 +42,7 @@ impl App {
             sessions: pandect::ManifestStore::new(),
             session_id,
             content: ContentStates::default(),
+            feeds: crate::feed::FeedSubscriptions::default(),
             place: crate::place::PlaceState::default(),
             next_place_generation: 0,
             next_place_request: 0,

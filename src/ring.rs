@@ -189,6 +189,12 @@ pub fn ring_of(action: &Action) -> Ring {
         // These are reports from a live engine callback, not intents a
         // denizen may synthesize to rewrite another member's address/title.
         | ContentNavigationCommitted { .. } | ContentTitleChanged { .. }
+        // Standing network schedules consume host resources and therefore
+        // require a local gesture, like the visible review for W4 behaviors.
+        | SubscribeFocusedFeed { .. }
+        | UnsubscribeFocusedFeed
+        | RefreshFeeds
+        | MarkFocusedFeedEntryRead
         // Joining a place is a trust act, not a session act, so it sits at the
         // structural floor beside gate management rather than in `Session`
         // with `NewSession` and `SwitchSession`.
@@ -220,6 +226,10 @@ pub fn emit_allowed(
         // would behave the same. Split the ring only if the policies diverge.
         let what = match action {
             Action::JoinPlace(_) => "joining a place",
+            Action::SubscribeFocusedFeed { .. }
+            | Action::UnsubscribeFocusedFeed
+            | Action::RefreshFeeds
+            | Action::MarkFocusedFeedEntryRead => "feed subscription management",
             _ => "gate management",
         };
         return Err(format!(

@@ -13,6 +13,7 @@ impl App {
     /// Fold one typed service answer into state.
     pub fn apply_update(&mut self, update: Update) -> Vec<Effect> {
         match update {
+            Update::FeedFetched { node, url, result } => self.apply_feed_fetched(node, url, result),
             Update::PageFetched { node, url, result } => {
                 let current = self
                     .graph_runtimes

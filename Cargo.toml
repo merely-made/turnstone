@@ -125,6 +125,10 @@ dirs = "6"
 # lane's netfetch feature gives LocalFetcher its https branch).
 inker = { git = "https://github.com/merely-made/genet.git", branch = "main" }
 genet-documents = { git = "https://github.com/merely-made/genet.git", branch = "main", features = ["netfetch", "livery", "smolweb"] }
+# Protocol-faithful RSS/Atom parsing for the graph-native feed subscription
+# loop. Gemini feed discovery remains gemtext-native in Turnstone; errand owns
+# the shared XML grammar already used by Nematic.
+errand = { git = "https://github.com/merely-made/genet.git", branch = "main" }
 # Optional app-control scripting. Piccolo is a Turnstone mod/workflow backend,
 # not a browser-page engine; Vano/Boa remain the JavaScript lanes.
 script-engine-api = { git = "https://github.com/merely-made/genet.git", branch = "main", optional = true }

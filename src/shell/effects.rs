@@ -430,7 +430,9 @@ impl Shell {
                 // and let the event handler in scope drain it.
                 Effect::OpenWindow { ordinal } => self.pending_windows.push(ordinal),
                 // Fetch-shaped effects were consumed above.
-                Effect::FetchPage { .. } | Effect::FetchFavicon { .. } => {}
+                Effect::FetchPage { .. }
+                | Effect::FetchFeed { .. }
+                | Effect::FetchFavicon { .. } => {}
             }
         }
     }
@@ -455,6 +457,9 @@ impl Shell {
     pub(super) fn save_session(&mut self) {
         let sdir = self.app.session_dir();
         session::save_session_graph(&sdir, self.app.graph_runtimes.graph());
+        if let Err(error) = self.app.feeds.save(&sdir) {
+            tracing::warn!(%error, "failed to persist feed subscriptions");
+        }
         if let Some(binding) = self.app.place.binding() {
             match session::update_place_binding(&sdir, binding) {
                 Ok(true) => {}
