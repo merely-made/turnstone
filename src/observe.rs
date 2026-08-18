@@ -169,6 +169,31 @@ pub enum AppEvent {
         realm: Option<String>,
         scheme: String,
     },
+    /// A smolweb server asked the person for input. The answer is never part
+    /// of the event stream; sensitive answers must not enter diagnostics.
+    SmolwebInputRequested {
+        node: Uuid,
+        prompt: String,
+        sensitive: bool,
+    },
+    /// The answer was submitted and a query request issued. The resulting URL
+    /// is deliberately absent because a sensitive Gemini answer lives in it.
+    SmolwebInputSubmitted {
+        node: Uuid,
+        sensitive: bool,
+    },
+    /// A capsule asked for a client identity. The origin is public routing
+    /// context; certificate and key bytes never enter observation.
+    GeminiIdentityRequested {
+        node: Uuid,
+        origin: String,
+        prompt: String,
+    },
+    /// The active persona was approved for one capsule origin.
+    GeminiIdentityBound {
+        node: Uuid,
+        origin: String,
+    },
     /// Back stepped the history cursor to this address.
     NavigatedBack(String),
     /// Forward stepped the history cursor to this address.
@@ -332,6 +357,22 @@ impl AppEvent {
                 id.get(),
                 realm.as_deref().unwrap_or("")
             ),
+            AppEvent::SmolwebInputRequested {
+                node,
+                prompt,
+                sensitive,
+            } => format!("smolweb-input-requested {node} sensitive={sensitive} {prompt}"),
+            AppEvent::SmolwebInputSubmitted { node, sensitive } => {
+                format!("smolweb-input-submitted {node} sensitive={sensitive}")
+            }
+            AppEvent::GeminiIdentityRequested {
+                node,
+                origin,
+                prompt,
+            } => format!("gemini-identity-requested {node} {origin} {prompt}"),
+            AppEvent::GeminiIdentityBound { node, origin } => {
+                format!("gemini-identity-bound {node} {origin}")
+            }
             AppEvent::NavigatedBack(url) => format!("nav-back {url}"),
             AppEvent::NavigatedForward(url) => format!("nav-forward {url}"),
             AppEvent::Reloaded(url) => format!("reloaded {url}"),
@@ -406,6 +447,8 @@ pub fn snapshot(app: &App) -> Snapshot {
             let state = match app.content.get(n.id)? {
                 NodeContent::Requested => "requested".to_string(),
                 NodeContent::Live => "live".to_string(),
+                NodeContent::AwaitingInput => "awaiting-input".to_string(),
+                NodeContent::AwaitingIdentity => "awaiting-identity".to_string(),
                 NodeContent::Failed(err) => format!("failed: {err}"),
             };
             Some((n.id, state))
@@ -497,8 +540,8 @@ pub fn snapshot(app: &App) -> Snapshot {
         focused,
         omnibar: OmnibarView {
             open: app.omnibar.open,
-            text: app.omnibar.text.clone(),
-            cursor: app.omnibar.cursor,
+            text: app.omnibar.presented_text(),
+            cursor: app.omnibar.presented_cursor(),
             selected: app.omnibar.selected,
             suggestions: app
                 .omnibar
@@ -671,6 +714,7 @@ pub fn suggestion_line(s: &Suggestion) -> String {
         Suggestion::Recall { url, .. } => format!("recall {url}"),
         Suggestion::Act { label, .. } => format!("\u{203a} {label}"),
         Suggestion::Hint(h) => h.to_string(),
+        Suggestion::Prompt(prompt) => prompt.clone(),
     }
 }
 

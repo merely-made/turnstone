@@ -18,6 +18,7 @@ mod content_classes;
 mod denizen;
 mod device_receipts_pane;
 mod device_receipts_service;
+mod gemini_identity;
 mod identity;
 mod inspector_pane;
 mod inspector_view;

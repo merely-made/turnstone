@@ -14,7 +14,154 @@ impl App {
     pub fn apply_update(&mut self, update: Update) -> Vec<Effect> {
         match update {
             Update::PageFetched { node, url, result } => {
-                browse::apply_page(&mut self.graph_runtimes, node, url, result)
+                let current = self
+                    .graph_runtimes
+                    .graph_containing_member(node)
+                    .and_then(|graph| self.graph_runtimes.canvas(graph))
+                    .is_some_and(|canvas| browse::still_current(canvas, node, &url));
+                if !current {
+                    return browse::apply_page(&mut self.graph_runtimes, node, url, result);
+                }
+                let requested_content = matches!(
+                    self.content.get(node),
+                    Some(crate::content::NodeContent::Requested)
+                );
+                if let Ok(fetched) = &result {
+                    self.content.note_fetched(
+                        node,
+                        url.clone(),
+                        crate::content::FetchedDocument {
+                            content_type: fetched.content_type.clone(),
+                            body: fetched.body.clone(),
+                        },
+                    );
+                }
+                let failed = result.as_ref().err().cloned();
+                let mut effects =
+                    browse::apply_page(&mut self.graph_runtimes, node, url.clone(), result);
+                if requested_content {
+                    match failed {
+                        Some(error) => {
+                            self.content.note_failed(node, error.clone());
+                            self.events.push(AppEvent::ContentState {
+                                node,
+                                state: format!("failed: {error}"),
+                            });
+                        }
+                        None => effects.push(Effect::SpawnContent { node, url }),
+                    }
+                }
+                effects
+            }
+            Update::SmolwebInputRequested {
+                node,
+                url,
+                input_url,
+                prompt,
+                sensitive,
+            } => {
+                let current = self
+                    .graph_runtimes
+                    .graph_containing_member(node)
+                    .and_then(|graph| self.graph_runtimes.canvas(graph))
+                    .is_some_and(|canvas| browse::still_current(canvas, node, &url));
+                if !current {
+                    return Vec::new();
+                }
+                let resume_content = matches!(
+                    self.content.get(node),
+                    Some(
+                        crate::content::NodeContent::Requested | crate::content::NodeContent::Live
+                    )
+                );
+                if resume_content {
+                    self.content.note_awaiting_input(node);
+                    self.events.push(AppEvent::ContentState {
+                        node,
+                        state: "awaiting-input".to_string(),
+                    });
+                }
+                let target = self.fallback_shell_context();
+                self.shell.begin_omnibar(target);
+                self.omnibar = crate::ui::OmnibarState {
+                    open: true,
+                    mode: crate::ui::OmnibarMode::SmolwebInput(crate::ui::SmolwebInputPrompt {
+                        node,
+                        requested_url: url,
+                        input_url,
+                        prompt: prompt.clone(),
+                        sensitive,
+                    }),
+                    ..Default::default()
+                };
+                self.focus = crate::surface::FocusTarget::Chrome;
+                self.recompute_omnibar_suggestions();
+                self.events.push(AppEvent::SmolwebInputRequested {
+                    node,
+                    prompt,
+                    sensitive,
+                });
+                let mut effects = Vec::new();
+                if resume_content {
+                    effects.push(Effect::CloseContent { node });
+                }
+                effects.push(Effect::Redraw);
+                effects
+            }
+            Update::GeminiIdentityRequested {
+                node,
+                url,
+                identity_url,
+                prompt,
+            } => {
+                let current = self
+                    .graph_runtimes
+                    .graph_containing_member(node)
+                    .and_then(|graph| self.graph_runtimes.canvas(graph))
+                    .is_some_and(|canvas| browse::still_current(canvas, node, &url));
+                if !current {
+                    return Vec::new();
+                }
+                let resume_content = matches!(
+                    self.content.get(node),
+                    Some(
+                        crate::content::NodeContent::Requested | crate::content::NodeContent::Live
+                    )
+                );
+                if resume_content {
+                    self.content.note_awaiting_identity(node);
+                    self.events.push(AppEvent::ContentState {
+                        node,
+                        state: "awaiting-identity".to_string(),
+                    });
+                }
+                let origin = crate::gemini_identity::capsule_origin(&identity_url)
+                    .unwrap_or_else(|_| identity_url.clone());
+                let target = self.fallback_shell_context();
+                self.shell.begin_omnibar(target);
+                self.omnibar = crate::ui::OmnibarState {
+                    open: true,
+                    mode: crate::ui::OmnibarMode::GeminiIdentity(crate::ui::GeminiIdentityPrompt {
+                        node,
+                        requested_url: url,
+                        identity_url,
+                        prompt: prompt.clone(),
+                    }),
+                    ..Default::default()
+                };
+                self.focus = crate::surface::FocusTarget::Chrome;
+                self.recompute_omnibar_suggestions();
+                self.events.push(AppEvent::GeminiIdentityRequested {
+                    node,
+                    origin,
+                    prompt,
+                });
+                let mut effects = Vec::new();
+                if resume_content {
+                    effects.push(Effect::CloseContent { node });
+                }
+                effects.push(Effect::Redraw);
+                effects
             }
             Update::FaviconFetched {
                 node,

@@ -484,6 +484,7 @@ impl Shell {
                                 && let SessionClick::Navigate(url) =
                                     session.click_at(hit.local.0, hit.local.1)
                             {
+                                let url = super::content_link_target(&self.app, node, &url);
                                 self.act(Action::OpenAddress(url));
                             }
                             if let Some(lens) = self.lens_windows.get_mut(&id) {

@@ -32,14 +32,28 @@ use crate::action::{Effect, FetchedPage, Update};
 /// emitted); keyed by URL because that is all the actor echoes back.
 #[derive(Debug, Default)]
 pub struct PendingFetches {
-    pages: HashMap<String, Vec<Uuid>>,
+    pages: HashMap<String, Vec<PendingPage>>,
     /// Keyed by owner page URL (the actor echoes `owner_url`, not the icon URL).
     favicons: HashMap<String, Vec<Uuid>>,
 }
 
+#[derive(Clone, Debug, PartialEq, Eq)]
+struct PendingPage {
+    node: Uuid,
+    owner_url: String,
+    identity_used: bool,
+}
+
 impl PendingFetches {
-    pub fn note_page(&mut self, url: &str, node: Uuid) {
-        self.pages.entry(url.to_string()).or_default().push(node);
+    pub fn note_page(&mut self, url: &str, node: Uuid, owner_url: &str, identity_used: bool) {
+        self.pages
+            .entry(url.to_string())
+            .or_default()
+            .push(PendingPage {
+                node,
+                owner_url: owner_url.to_string(),
+                identity_used,
+            });
     }
 
     pub fn note_favicon(&mut self, owner_url: &str, node: Uuid) {
@@ -49,6 +63,14 @@ impl PendingFetches {
             .push(node);
     }
 
+    pub fn page_in_flight(&self, url: &str, node: Uuid, owner_url: &str) -> bool {
+        self.pages.get(url).is_some_and(|requesters| {
+            requesters
+                .iter()
+                .any(|request| request.node == node && request.owner_url == owner_url)
+        })
+    }
+
     /// Whether any page or favicon fetch is still outstanding. The automation
     /// lane's quiescence read (`wait`): a scenario must not assert against a
     /// graph whose fetches have not landed.
@@ -56,7 +78,7 @@ impl PendingFetches {
         !self.pages.is_empty() || !self.favicons.is_empty()
     }
 
-    fn take_page(&mut self, url: &str) -> Option<Uuid> {
+    fn take_page(&mut self, url: &str) -> Option<PendingPage> {
         take_one(&mut self.pages, url)
     }
 
@@ -65,7 +87,7 @@ impl PendingFetches {
     }
 }
 
-fn take_one(map: &mut HashMap<String, Vec<Uuid>>, key: &str) -> Option<Uuid> {
+fn take_one<T>(map: &mut HashMap<String, Vec<T>>, key: &str) -> Option<T> {
     let list = map.get_mut(key)?;
     let node = list.pop();
     if list.is_empty() {
@@ -81,18 +103,60 @@ fn take_one(map: &mut HashMap<String, Vec<Uuid>>, key: &str) -> Option<Uuid> {
 pub fn update_from_fetch(update: FetchUpdate, pending: &mut PendingFetches) -> Option<Update> {
     match update {
         FetchUpdate::Page(outcome) => {
-            let Some(node) = pending.take_page(&outcome.url) else {
-                tracing::warn!(url = %outcome.url, "page completion without a pending requester; dropped");
+            let Some(request) = pending.take_page(&outcome.url) else {
+                // The actor URL may carry a status-11 answer in its query.
+                // A correlation miss is diagnosable without copying that
+                // transient request address into retained logs.
+                tracing::warn!("page completion without a pending requester; dropped");
                 return None;
             };
-            Some(Update::PageFetched {
-                node,
-                url: outcome.url,
-                result: outcome.result.map(|fetched| FetchedPage {
-                    content_type: fetched.content_type,
-                    body: fetched.body,
+            match outcome.result {
+                Ok(fetched) => Some(Update::PageFetched {
+                    node: request.node,
+                    url: request.owner_url,
+                    result: Ok(FetchedPage {
+                        content_type: fetched.content_type,
+                        body: fetched.body,
+                    }),
                 }),
-            })
+                Err(fetch::FetchFailure::InputRequired {
+                    url: input_url,
+                    prompt,
+                    sensitive,
+                }) => Some(Update::SmolwebInputRequested {
+                    node: request.node,
+                    url: request.owner_url,
+                    input_url,
+                    prompt,
+                    sensitive,
+                }),
+                Err(fetch::FetchFailure::ClientCertificateRequired {
+                    url: identity_url,
+                    prompt,
+                    code,
+                }) => {
+                    if request.identity_used {
+                        let status = code.map(|code| format!(" ({code})")).unwrap_or_default();
+                        Some(Update::PageFetched {
+                            node: request.node,
+                            url: request.owner_url,
+                            result: Err(format!("client certificate rejected{status}: {prompt}")),
+                        })
+                    } else {
+                        Some(Update::GeminiIdentityRequested {
+                            node: request.node,
+                            url: request.owner_url,
+                            identity_url,
+                            prompt,
+                        })
+                    }
+                }
+                Err(fetch::FetchFailure::Failed(error)) => Some(Update::PageFetched {
+                    node: request.node,
+                    url: request.owner_url,
+                    result: Err(error),
+                }),
+            }
         }
         FetchUpdate::Favicon { owner_url, bytes } => {
             let Some(node) = pending.take_favicon(&owner_url) else {
@@ -114,9 +178,17 @@ pub fn update_from_fetch(update: FetchUpdate, pending: &mut PendingFetches) -> O
 /// actor; the mapping stays beside the enrichment it feeds.
 pub fn fetch_command_for(effect: &Effect, pending: &mut PendingFetches) -> Option<FetchCommand> {
     match effect {
-        Effect::FetchPage { node, url } => {
-            pending.note_page(url, *node);
-            Some(FetchCommand::Page(url.clone()))
+        Effect::FetchPage {
+            node,
+            url,
+            owner_url,
+            identity,
+        } => {
+            pending.note_page(url, *node, owner_url, identity.is_some());
+            Some(FetchCommand::Page {
+                url: url.clone(),
+                identity: identity.clone(),
+            })
         }
         Effect::FetchFavicon {
             node,
@@ -136,7 +208,7 @@ pub fn fetch_command_for(effect: &Effect, pending: &mut PendingFetches) -> Optio
 /// Whether `node` still lives at `url` — the staleness gate. Enrichment
 /// belongs to the page that was fetched; a node that has navigated away (or
 /// died) since the request drops the late result explicitly.
-fn still_current(canvas: &Canvas, node: Uuid, url: &str) -> bool {
+pub(crate) fn still_current(canvas: &Canvas, node: Uuid, url: &str) -> bool {
     canvas
         .graph()
         .get_node_by_id(node)
@@ -321,8 +393,8 @@ mod tests {
     fn pending_table_correlates_and_refuses_to_guess() {
         let (a, b) = (Uuid::new_v4(), Uuid::new_v4());
         let mut pending = PendingFetches::default();
-        pending.note_page("https://x.example", a);
-        pending.note_page("https://x.example", b);
+        pending.note_page("https://x.example", a, "https://owner-a.example", false);
+        pending.note_page("https://x.example", b, "https://owner-b.example", false);
         assert!(pending.take_page("https://x.example").is_some());
         assert!(pending.take_page("https://x.example").is_some());
         assert!(pending.take_page("https://x.example").is_none());
@@ -338,6 +410,92 @@ mod tests {
             unmatched.is_none(),
             "an unmatched completion is dropped, not guessed"
         );
+    }
+
+    #[test]
+    fn input_response_keeps_actor_target_separate_from_graph_owner() {
+        let node = Uuid::new_v4();
+        let owner = "gemini://capsule.test/login";
+        let request = "gemini://capsule.test/login?secret";
+        let mut pending = PendingFetches::default();
+        pending.note_page(request, node, owner, false);
+
+        let update = update_from_fetch(
+            FetchUpdate::Page(fetch::FetchOutcome {
+                url: request.into(),
+                result: Err(fetch::FetchFailure::InputRequired {
+                    url: request.into(),
+                    prompt: "Again".into(),
+                    sensitive: true,
+                }),
+            }),
+            &mut pending,
+        )
+        .unwrap();
+        assert!(matches!(
+            update,
+            Update::SmolwebInputRequested {
+                node: actual,
+                url,
+                input_url,
+                prompt,
+                sensitive: true,
+            } if actual == node
+                && url == owner
+                && input_url == request
+                && prompt == "Again"
+        ));
+    }
+
+    #[test]
+    fn certificate_request_prompts_once_then_reports_rejection() {
+        let node = Uuid::new_v4();
+        let owner = "gemini://capsule.test/account";
+        let target = "gemini://capsule.test/private";
+        let failure = || fetch::FetchFailure::ClientCertificateRequired {
+            url: target.into(),
+            prompt: "Identity required".into(),
+            code: Some(60),
+        };
+
+        let mut anonymous = PendingFetches::default();
+        anonymous.note_page(target, node, owner, false);
+        let update = update_from_fetch(
+            FetchUpdate::Page(fetch::FetchOutcome {
+                url: target.into(),
+                result: Err(failure()),
+            }),
+            &mut anonymous,
+        )
+        .unwrap();
+        assert!(matches!(
+            update,
+            Update::GeminiIdentityRequested {
+                node: actual,
+                url,
+                identity_url,
+                prompt,
+            } if actual == node
+                && url == owner
+                && identity_url == target
+                && prompt == "Identity required"
+        ));
+
+        let mut identified = PendingFetches::default();
+        identified.note_page(target, node, owner, true);
+        let update = update_from_fetch(
+            FetchUpdate::Page(fetch::FetchOutcome {
+                url: target.into(),
+                result: Err(failure()),
+            }),
+            &mut identified,
+        )
+        .unwrap();
+        assert!(matches!(
+            update,
+            Update::PageFetched { result: Err(error), .. }
+                if error == "client certificate rejected (60): Identity required"
+        ));
     }
 
     #[test]

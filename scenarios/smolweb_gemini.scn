@@ -1,0 +1,27 @@
+# Smolweb gate-1 headed receipt: a real Gemini capsule enters through an
+# address, spawns the registered Nematic gemtext session, and composites as a
+# content surface. Network-dependent by design; run on a fresh scratch root.
+settle 30
+key escape
+open gemini://geminiprotocol.net/
+settle 60
+assert visible
+act Toggle live content
+settle 60
+assert content-live
+assert surface content
+capture 01_gemini_capsule
+
+# Follow the first retained gemtext link. This exercises the same content-hit
+# path as a person clicking it and proves that a Gemini-relative href becomes
+# a new graph address rather than an unusable `/...` node.
+click-at 600 363
+settle 60
+assert focused faq
+assert snap node-count >= 14
+act Toggle live content
+settle 60
+assert content-live
+assert surface content
+capture 02_followed_gemini_link
+log smolweb Gemini browse receipt complete

@@ -62,6 +62,7 @@ impl App {
         let identity =
             crate::identity::load_or_create_root(&data_root, &crate::identity::default_vault_dir());
         let root = identity::IdentityProvider::master_public_key(identity.as_ref()).to_bytes();
+        let gemini_identities = crate::gemini_identity::GeminiIdentityBindings::load(&data_root);
         let mut app = Self {
             watches: servitor::WatchTable::new(),
             app_watches: servitor::WatchTable::new(),
@@ -108,6 +109,7 @@ impl App {
             recall_query: String::new(),
             pending_install: None,
             denizens: crate::denizen::Denizens::new(root),
+            gemini_identities,
             identity,
             journal,
             next_pane_id: 1,
@@ -125,10 +127,7 @@ impl App {
             if fetch::is_fetchable(url)
                 && let Some(node) = app.graph_runtimes.graph().get_node(key).map(|n| n.id)
             {
-                effects.push(Effect::FetchPage {
-                    node,
-                    url: url.to_string(),
-                });
+                effects.push(app.fetch_page_effect(node, url.to_string(), url.to_string()));
             }
         } else if minted && app.graph_runtimes.graph().nodes().count() == 0 {
             // A bare FIRST launch: the sample graph, with the omnibar open by
@@ -776,7 +775,12 @@ impl App {
         for id in present {
             let on = matches!(
                 self.content.get(id),
-                Some(NodeContent::Live | NodeContent::Requested)
+                Some(
+                    NodeContent::Live
+                        | NodeContent::Requested
+                        | NodeContent::AwaitingInput
+                        | NodeContent::AwaitingIdentity
+                )
             );
             if on || self.browser.get(id).is_some() {
                 self.browser.entry(id).content_on = on;

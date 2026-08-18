@@ -25,6 +25,12 @@ pub enum NodeContent {
     Requested,
     /// A live session exists shell-side; frames compose into the node.
     Live,
+    /// The actor reached a protocol input response and the host is waiting for
+    /// a human answer. There is no live document handle yet.
+    AwaitingInput,
+    /// A Gemini capsule asked for a client certificate and the host is waiting
+    /// for explicit approval to derive and present one.
+    AwaitingIdentity,
     /// The last spawn failed; the reason is surfaced, never swallowed.
     Failed(String),
 }
@@ -40,6 +46,15 @@ pub struct ContentFacts {
     /// The structural read, when the lane has one. `None` is reported
     /// honestly (a lane without introspection, not an empty document).
     pub structure: Option<StructureFacts>,
+}
+
+/// One page body fetched by the shell actor and ready to hand to a document
+/// engine. This transient representation prevents a live session from issuing
+/// a second network request for bytes the host already owns.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct FetchedDocument {
+    pub content_type: Option<String>,
+    pub body: String,
 }
 
 /// The structural read, mirrored in app-owned terms (the report type itself
@@ -71,6 +86,7 @@ pub struct OutlineFact {
 pub struct ContentStates {
     states: HashMap<Uuid, NodeContent>,
     facts: HashMap<Uuid, ContentFacts>,
+    documents: HashMap<Uuid, (String, FetchedDocument)>,
 }
 
 impl ContentStates {
@@ -89,7 +105,12 @@ impl ContentStates {
     pub fn flip_spawns(&self, node: Uuid) -> bool {
         !matches!(
             self.states.get(&node),
-            Some(NodeContent::Live | NodeContent::Requested)
+            Some(
+                NodeContent::Live
+                    | NodeContent::Requested
+                    | NodeContent::AwaitingInput
+                    | NodeContent::AwaitingIdentity
+            )
         )
     }
 
@@ -108,6 +129,38 @@ impl ContentStates {
                 self.facts.remove(&node);
             }
         }
+    }
+
+    pub fn note_awaiting_input(&mut self, node: Uuid) {
+        self.states.insert(node, NodeContent::AwaitingInput);
+        self.facts.remove(&node);
+    }
+
+    pub fn note_awaiting_identity(&mut self, node: Uuid) {
+        self.states.insert(node, NodeContent::AwaitingIdentity);
+        self.facts.remove(&node);
+    }
+
+    /// Retain the actor-owned response under both member and address. The URL
+    /// guard makes a late or superseded body unusable for a later navigation.
+    pub fn note_fetched(&mut self, node: Uuid, url: String, document: FetchedDocument) {
+        self.documents.insert(node, (url, document));
+    }
+
+    pub fn fetched(&self, node: Uuid, url: &str) -> Option<&FetchedDocument> {
+        self.documents
+            .get(&node)
+            .and_then(|(owner, document)| (owner == url).then_some(document))
+    }
+
+    pub fn forget_fetched(&mut self, node: Uuid) {
+        self.documents.remove(&node);
+    }
+
+    /// Remove every transient fact owned by a node that has left the graph.
+    pub fn forget_node(&mut self, node: Uuid) {
+        self.note_closed(node);
+        self.documents.remove(&node);
     }
 
     pub fn note_failed(&mut self, node: Uuid, error: String) {
@@ -157,6 +210,12 @@ mod tests {
         assert!(!states.flip_spawns(node), "live flips OFF");
         states.note_closed(node);
         assert!(states.flip_spawns(node), "closed flips ON again");
+        states.note_awaiting_input(node);
+        assert!(
+            !states.flip_spawns(node),
+            "an input conversation toggles OFF"
+        );
+        states.note_closed(node);
         states.note_requested(node);
         states.note_failed(node, "no port".into());
         assert!(states.flip_spawns(node), "failed retries on the next flip");
@@ -171,5 +230,21 @@ mod tests {
         states.note_failed(c, "x".into());
         let live: Vec<_> = states.live_nodes().collect();
         assert_eq!(live, vec![a]);
+    }
+
+    #[test]
+    fn fetched_documents_are_member_and_address_scoped() {
+        let node = Uuid::new_v4();
+        let document = FetchedDocument {
+            content_type: Some("text/gemini".into()),
+            body: "# Capsule".into(),
+        };
+        let mut states = ContentStates::default();
+        states.note_fetched(node, "gemini://example/one".into(), document.clone());
+        assert_eq!(
+            states.fetched(node, "gemini://example/one"),
+            Some(&document)
+        );
+        assert!(states.fetched(node, "gemini://example/two").is_none());
     }
 }

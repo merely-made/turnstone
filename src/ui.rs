@@ -150,6 +150,31 @@ pub enum Suggestion {
     },
     /// A muted hint row (empty states).
     Hint(&'static str),
+    /// A protocol prompt. Dynamic text, but never a committable suggestion.
+    Prompt(String),
+}
+
+/// The protocol conversation captured by the omnibar's smolweb input mode.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct SmolwebInputPrompt {
+    pub node: Uuid,
+    /// The member address that initiated the actor request.
+    pub requested_url: String,
+    /// The final redirect target whose query the answer belongs to.
+    pub input_url: String,
+    pub prompt: String,
+    pub sensitive: bool,
+}
+
+/// The explicit approval conversation for a Gemini client certificate.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct GeminiIdentityPrompt {
+    pub node: Uuid,
+    /// The member address that initiated the actor request.
+    pub requested_url: String,
+    /// The final redirect target whose capsule origin receives the identity.
+    pub identity_url: String,
+    pub prompt: String,
 }
 
 /// What the omnibar is capturing: an address/action (the default three lanes)
@@ -161,6 +186,8 @@ pub enum OmnibarMode {
     #[default]
     Address,
     RenameSession(crate::panes::SessionId),
+    SmolwebInput(SmolwebInputPrompt),
+    GeminiIdentity(GeminiIdentityPrompt),
 }
 
 /// The omnibar's state, owned by [`crate::app::App`].
@@ -187,7 +214,46 @@ impl OmnibarState {
     pub fn selection(&self) -> Option<&Suggestion> {
         self.suggestions
             .get(self.selected)
-            .filter(|s| !matches!(s, Suggestion::Hint(_)))
+            .filter(|s| !matches!(s, Suggestion::Hint(_) | Suggestion::Prompt(_)))
+    }
+
+    pub fn sensitive(&self) -> bool {
+        matches!(
+            &self.mode,
+            OmnibarMode::SmolwebInput(SmolwebInputPrompt {
+                sensitive: true,
+                ..
+            })
+        )
+    }
+
+    /// The line as chrome, accessibility, and observation may expose it.
+    pub fn presented_text(&self) -> String {
+        if self.sensitive() {
+            "\u{2022}".repeat(self.text.chars().count())
+        } else {
+            self.text.clone()
+        }
+    }
+
+    /// The caret offset in the presented string. A bullet is three UTF-8
+    /// bytes, so the private buffer's byte index cannot be reused directly.
+    pub fn presented_cursor(&self) -> usize {
+        if self.sensitive() {
+            self.text[..self.cursor].chars().count() * '\u{2022}'.len_utf8()
+        } else {
+            self.cursor
+        }
+    }
+
+    pub fn presented_preedit(&self) -> Option<String> {
+        self.preedit.as_ref().map(|preedit| {
+            if self.sensitive() {
+                "\u{2022}".repeat(preedit.chars().count())
+            } else {
+                preedit.clone()
+            }
+        })
     }
 
     /// Insert `s` at the caret and advance it.
@@ -260,6 +326,32 @@ pub fn recompute_suggestions_with_limit(
     row_limit: usize,
 ) {
     state.suggestions.clear();
+
+    if let OmnibarMode::SmolwebInput(input) = &state.mode {
+        state
+            .suggestions
+            .push(Suggestion::Prompt(if input.sensitive {
+                format!(
+                    "Sensitive input \u{00b7} {} \u{00b7} Enter to submit",
+                    input.prompt
+                )
+            } else {
+                format!("{} \u{00b7} Enter to submit", input.prompt)
+            }));
+        state.selected = 0;
+        return;
+    }
+
+    if let OmnibarMode::GeminiIdentity(input) = &state.mode {
+        let origin = crate::gemini_identity::capsule_origin(&input.identity_url)
+            .unwrap_or_else(|_| "this Gemini capsule".to_string());
+        state.suggestions.push(Suggestion::Prompt(format!(
+            "Create a client identity for {origin} \u{00b7} {} \u{00b7} Enter to create",
+            input.prompt
+        )));
+        state.selected = 0;
+        return;
+    }
 
     // Rename mode captures the whole line as the new name; no lane matching.
     if matches!(state.mode, OmnibarMode::RenameSession(_)) {
@@ -827,7 +919,13 @@ impl RetainedLayout {
     }
 
     /// [`scene_from_dom`] against the retained layout.
-    pub fn scene(&mut self, dom: &mut ScriptedDom, sheet: &str, w: u32, h: u32) -> netrender::Scene {
+    pub fn scene(
+        &mut self,
+        dom: &mut ScriptedDom,
+        sheet: &str,
+        w: u32,
+        h: u32,
+    ) -> netrender::Scene {
         self.ensure(dom, sheet, w as f32, h as f32);
         let layout = self.layout.as_ref().expect("ensure leaves a layout");
         let viewport = DeviceIntSize::new(w as i32, h as i32);
@@ -918,12 +1016,12 @@ impl RetainedLayout {
 
     /// [`hit_test`](Self::hit_test) at a pane's scroll offset.
     ///
-/// **One-shot.** This builds a layout, uses it once and drops it, which is
-/// right for a test or a single measurement and wrong for anything that
-/// paints repeatedly: a renderer calling this per frame re-cascades and
-/// re-shapes its whole document to draw an unchanged screen. Panes go
-/// through [`RetainedLayout`] instead.
-pub fn hit_test_scrolled(
+    /// **One-shot.** This builds a layout, uses it once and drops it, which is
+    /// right for a test or a single measurement and wrong for anything that
+    /// paints repeatedly: a renderer calling this per frame re-cascades and
+    /// re-shapes its whole document to draw an unchanged screen. Panes go
+    /// through [`RetainedLayout`] instead.
+    pub fn hit_test_scrolled(
         &mut self,
         dom: &mut ScriptedDom,
         sheet: &str,
@@ -1439,7 +1537,10 @@ mod scroll_tests {
         let _ = scene_from_dom_scrolled(&dom, CAMBIUM_SHEET, 400, 300, &mut scroll);
         let (_, y) = scroll.offset();
         assert!(y > 0.0, "the pane scrolled at all, got {y}");
-        assert!(y < 100_000.0, "the offset was clamped to the content, got {y}");
+        assert!(
+            y < 100_000.0,
+            "the offset was clamped to the content, got {y}"
+        );
     }
 
     /// Scrolling up from the top is a no-op rather than a negative offset.
@@ -1507,7 +1608,10 @@ mod scroll_tests {
         let _ = scene_from_dom_scrolled(&dom, CAMBIUM_SHEET, 400, 300, &mut scroll);
         let scrolled = hit_test_scrolled(&dom, CAMBIUM_SHEET, 400, 300, 20.0, 40.0, &scroll);
         assert!(at_top.is_some() && scrolled.is_some(), "both hit a row");
-        assert_ne!(at_top, scrolled, "the same point hits a different row once scrolled");
+        assert_ne!(
+            at_top, scrolled,
+            "the same point hits a different row once scrolled"
+        );
     }
 }
 
@@ -1604,7 +1708,10 @@ mod retained_layout_tests {
         scroll.nudge(0.0, 400.0);
         let _ = retained.scene_scrolled(&mut dom, CAMBIUM_SHEET, 400, 300, &mut scroll);
         let settled = scroll.offset();
-        assert!(settled.1 > 0.0, "the fixture actually scrolled: {settled:?}");
+        assert!(
+            settled.1 > 0.0,
+            "the fixture actually scrolled: {settled:?}"
+        );
 
         let root = dom.all_with_class(dom.document(), "pane")[0];
         let extra = dom.create_element(qual("div"));

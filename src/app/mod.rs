@@ -184,6 +184,9 @@ pub struct App {
     /// identity); the loud unsealed fallback otherwise. Install signs a
     /// delegation with it; uninstall revokes that delegation.
     pub identity: std::sync::Arc<crate::identity::RootIdentity>,
+    /// Capsule approvals for the active Personae root. The sidecar contains
+    /// origin mappings only; client certificate keys are derived on demand.
+    pub gemini_identities: crate::gemini_identity::GeminiIdentityBindings,
     /// The attributed edit journal (mere's spine): every graph mutation
     /// captured under its author — `user` for the UI, a denizen's subject hex
     /// during a run. Shared with the capture hook installed at boot.

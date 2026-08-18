@@ -63,8 +63,10 @@ impl App {
     /// and a needle under two characters matches too much to be an answer.
     fn pending_recall_query(&mut self) -> Option<String> {
         let text = self.omnibar.text.trim().to_string();
-        let eligible =
-            self.omnibar.open && !text.starts_with('>') && text.chars().count() >= MIN_RECALL_CHARS;
+        let eligible = self.omnibar.open
+            && matches!(&self.omnibar.mode, OmnibarMode::Address)
+            && !text.starts_with('>')
+            && text.chars().count() >= MIN_RECALL_CHARS;
         if !eligible {
             // A line narrowed back to nothing stops offering pages it is no
             // longer about.
@@ -80,6 +82,7 @@ impl App {
     }
 
     pub(super) fn open_omnibar(&mut self, command: bool) -> Vec<Effect> {
+        let mut effects = self.cancel_smolweb_conversation();
         let target = self.fallback_shell_context();
         self.shell.begin_omnibar(target);
         self.omnibar = OmnibarState {
@@ -95,10 +98,12 @@ impl App {
         self.focus = FocusTarget::Chrome;
         self.recompute_omnibar_suggestions();
         self.events.push(AppEvent::OmnibarOpened);
-        vec![Effect::Redraw]
+        effects.push(Effect::Redraw);
+        effects
     }
 
     pub(super) fn close_omnibar(&mut self) -> Vec<Effect> {
+        let mut effects = self.cancel_smolweb_conversation();
         self.omnibar = OmnibarState::default();
         // Drop the recall cache with the line it answered; a reopened omnibar
         // must not flash the last search's pages before its own answer lands.
@@ -112,7 +117,34 @@ impl App {
             self.focus = FocusTarget::Graph(self.default_graph_pane());
         }
         self.events.push(AppEvent::OmnibarClosed);
-        vec![Effect::Redraw]
+        effects.push(Effect::Redraw);
+        effects
+    }
+
+    fn cancel_smolweb_conversation(&mut self) -> Vec<Effect> {
+        let (node, awaiting, reason) = match self.omnibar.mode.clone() {
+            OmnibarMode::SmolwebInput(input) => (
+                input.node,
+                crate::content::NodeContent::AwaitingInput,
+                "input cancelled",
+            ),
+            OmnibarMode::GeminiIdentity(input) => (
+                input.node,
+                crate::content::NodeContent::AwaitingIdentity,
+                "identity creation cancelled",
+            ),
+            _ => return Vec::new(),
+        };
+        if self.content.get(node) == Some(&awaiting) {
+            self.content.note_failed(node, reason.to_string());
+            self.events.push(AppEvent::ContentState {
+                node,
+                state: format!("failed: {reason}"),
+            });
+            vec![Effect::CloseContent { node }]
+        } else {
+            Vec::new()
+        }
     }
 
     pub(super) fn omnibar_char(&mut self, c: char) -> Vec<Effect> {

@@ -14,6 +14,27 @@ use crate::ui::{OmnibarState, Suggestion, normalize_address};
 
 use super::App;
 
+/// Replace a smolweb input target's query with one UTF-8, percent-encoded
+/// answer. Form-style `+` encoding is wrong here: Gemini input is a URL query,
+/// where a space is `%20`.
+pub(crate) fn smolweb_query_url(input_url: &str, answer: &str) -> Option<String> {
+    use std::fmt::Write as _;
+
+    let mut parsed = url::Url::parse(input_url).ok()?;
+    parsed.set_query(None);
+    parsed.set_fragment(None);
+    let mut target = parsed.to_string();
+    target.push('?');
+    for byte in answer.as_bytes() {
+        if byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'.' | b'_' | b'~') {
+            target.push(*byte as char);
+        } else {
+            let _ = write!(target, "%{byte:02X}");
+        }
+    }
+    Some(target)
+}
+
 impl App {
     pub(super) fn delete_focused_node(&mut self) -> Vec<Effect> {
         // Build the bin record off the LIVING node (identity, url,
@@ -87,6 +108,7 @@ impl App {
         for runtime in self.forme_runtimes.iter_mut() {
             runtime.workbench.close_tile(member);
         }
+        self.content.forget_node(member);
         self.events.push(AppEvent::NodeRemoved(record.url.clone()));
         vec![
             Effect::RecordDeleted { record },
@@ -157,10 +179,7 @@ impl App {
             .push(AppEvent::NodeRecovered(record.url.clone()));
         let mut effects = vec![Effect::SaveSession, Effect::Redraw];
         if fetch::is_fetchable(&record.url) {
-            effects.push(Effect::FetchPage {
-                node: member,
-                url: record.url.clone(),
-            });
+            effects.push(self.fetch_page_effect(member, record.url.clone(), record.url.clone()));
         }
         effects
     }
@@ -242,12 +261,10 @@ impl App {
         };
         let (node, url) = target;
         self.events.push(AppEvent::Reloaded(url.clone()));
+        self.content.forget_fetched(node);
         let mut effects = Vec::new();
         if fetch::is_fetchable(&url) {
-            effects.push(Effect::FetchPage {
-                node,
-                url: url.clone(),
-            });
+            effects.push(self.fetch_page_effect(node, url.clone(), url.clone()));
         }
         // A live (or in-flight) session respawns fresh; a node
         // without content stays without (reload is not a spawn).
@@ -268,6 +285,12 @@ impl App {
     }
 
     pub(super) fn commit_omnibar(&mut self) -> Vec<Effect> {
+        if let crate::ui::OmnibarMode::GeminiIdentity(input) = self.omnibar.mode.clone() {
+            return self.commit_gemini_identity(input);
+        }
+        if let crate::ui::OmnibarMode::SmolwebInput(input) = self.omnibar.mode.clone() {
+            return self.commit_smolweb_input(input);
+        }
         // Rename mode captures the whole line as the new name and
         // commits it, bypassing the find/go/actions lanes.
         if let crate::ui::OmnibarMode::RenameSession(id) = self.omnibar.mode {
@@ -406,12 +429,161 @@ impl App {
                     fx
                 };
             }
-            Some(Suggestion::Hint(_)) | None => vec![Effect::Redraw],
+            Some(Suggestion::Hint(_) | Suggestion::Prompt(_)) | None => vec![Effect::Redraw],
         };
         self.omnibar = OmnibarState::default();
         self.shell.close_omnibar();
         effects.push(Effect::Redraw);
         effects
+    }
+
+    fn commit_smolweb_input(&mut self, input: crate::ui::SmolwebInputPrompt) -> Vec<Effect> {
+        let current = self
+            .graph_runtimes
+            .graph_containing_member(input.node)
+            .and_then(|graph| self.graph_runtimes.canvas(graph))
+            .is_some_and(|canvas| {
+                crate::browse::still_current(canvas, input.node, &input.requested_url)
+            });
+        if !current {
+            self.omnibar = OmnibarState::default();
+            self.shell.close_omnibar();
+            self.focus = FocusTarget::Graph(self.default_graph_pane());
+            return vec![Effect::Redraw];
+        }
+        let Some(request_url) = smolweb_query_url(&input.input_url, &self.omnibar.text) else {
+            return vec![Effect::Redraw];
+        };
+        let resume_content = matches!(
+            self.content.get(input.node),
+            Some(crate::content::NodeContent::AwaitingInput)
+        );
+
+        // Ordinary search input is addressable browsing state. Status 11 is
+        // password-like: the query goes over the wire but never enters graph
+        // truth, history, observation, or the interaction transcript.
+        let owner_url = if input.sensitive {
+            input.requested_url.clone()
+        } else {
+            let Some(graph) = self.graph_runtimes.graph_containing_member(input.node) else {
+                return vec![Effect::Redraw];
+            };
+            let Some(canvas) = self.graph_runtimes.canvas_mut(graph) else {
+                return vec![Effect::Redraw];
+            };
+            if !canvas.navigate_member(input.node, &request_url) {
+                return vec![Effect::Redraw];
+            }
+            self.history.visit(request_url.clone());
+            self.events.push(AppEvent::ContentNavigated {
+                node: input.node,
+                url: request_url.clone(),
+            });
+            request_url.clone()
+        };
+        self.content.forget_fetched(input.node);
+        if resume_content {
+            self.content.note_requested(input.node);
+            self.events.push(AppEvent::ContentState {
+                node: input.node,
+                state: "requested".to_string(),
+            });
+        }
+        self.events.push(AppEvent::SmolwebInputSubmitted {
+            node: input.node,
+            sensitive: input.sensitive,
+        });
+        self.omnibar = OmnibarState::default();
+        self.recall.clear();
+        self.recall_query.clear();
+        self.shell.close_omnibar();
+        self.focus = FocusTarget::Graph(self.default_graph_pane());
+
+        vec![
+            self.fetch_page_effect(input.node, request_url, owner_url),
+            Effect::SaveSession,
+            Effect::Redraw,
+        ]
+    }
+
+    fn commit_gemini_identity(&mut self, input: crate::ui::GeminiIdentityPrompt) -> Vec<Effect> {
+        let current = self
+            .graph_runtimes
+            .graph_containing_member(input.node)
+            .and_then(|graph| self.graph_runtimes.canvas(graph))
+            .is_some_and(|canvas| {
+                crate::browse::still_current(canvas, input.node, &input.requested_url)
+            });
+        if !current {
+            self.omnibar = OmnibarState::default();
+            self.shell.close_omnibar();
+            self.focus = FocusTarget::Graph(self.default_graph_pane());
+            return vec![Effect::Redraw];
+        }
+
+        let origin = match self
+            .gemini_identities
+            .bind(self.identity.as_ref(), &input.identity_url)
+        {
+            Ok(origin) => origin,
+            Err(error) => {
+                self.omnibar = OmnibarState::default();
+                self.shell.close_omnibar();
+                self.focus = FocusTarget::Graph(self.default_graph_pane());
+                if matches!(
+                    self.content.get(input.node),
+                    Some(crate::content::NodeContent::AwaitingIdentity)
+                ) {
+                    self.content.note_failed(input.node, error.clone());
+                    self.events.push(AppEvent::ContentState {
+                        node: input.node,
+                        state: format!("failed: {error}"),
+                    });
+                }
+                return vec![Effect::CloseContent { node: input.node }, Effect::Redraw];
+            }
+        };
+        let fetch =
+            self.fetch_page_effect(input.node, input.identity_url.clone(), input.requested_url);
+        if !matches!(
+            &fetch,
+            Effect::FetchPage {
+                identity: Some(_),
+                ..
+            }
+        ) {
+            let error = "could not mint Gemini client identity".to_string();
+            self.content.note_failed(input.node, error.clone());
+            self.events.push(AppEvent::ContentState {
+                node: input.node,
+                state: format!("failed: {error}"),
+            });
+            self.omnibar = OmnibarState::default();
+            self.shell.close_omnibar();
+            self.focus = FocusTarget::Graph(self.default_graph_pane());
+            return vec![Effect::CloseContent { node: input.node }, Effect::Redraw];
+        }
+
+        if matches!(
+            self.content.get(input.node),
+            Some(crate::content::NodeContent::AwaitingIdentity)
+        ) {
+            self.content.note_requested(input.node);
+            self.events.push(AppEvent::ContentState {
+                node: input.node,
+                state: "requested".to_string(),
+            });
+        }
+        self.events.push(AppEvent::GeminiIdentityBound {
+            node: input.node,
+            origin,
+        });
+        self.omnibar = OmnibarState::default();
+        self.recall.clear();
+        self.recall_query.clear();
+        self.shell.close_omnibar();
+        self.focus = FocusTarget::Graph(self.default_graph_pane());
+        vec![fetch, Effect::SaveSession, Effect::Redraw]
     }
 
     pub(super) fn open_address(&mut self, url: String) -> Vec<Effect> {
@@ -431,7 +603,7 @@ impl App {
         if fetch::is_fetchable(&url)
             && let Some(node) = self.graph_runtimes.graph().get_node(key).map(|n| n.id)
         {
-            effects.push(Effect::FetchPage { node, url });
+            effects.push(self.fetch_page_effect(node, url.clone(), url));
         }
         effects
     }

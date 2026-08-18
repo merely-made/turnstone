@@ -27,7 +27,7 @@ use std::sync::Arc;
 use std::sync::mpsc::Receiver;
 
 use fetch::{FetchCommand, FetchUpdate};
-use genet_documents::{LocalFetcher, StaticSessionEngine};
+use genet_documents::{LocalFetcher, SmolwebSessionEngine, SmolwebTheme, StaticSessionEngine};
 use genet_winit_host::SurfaceHost;
 use image::ImageEncoder;
 use inker::{DocumentSession, SessionClick, SessionRegistry, SessionSpawnRequest};
@@ -51,6 +51,55 @@ use crate::surface::{Rect, SurfaceKind};
 use crate::{browse, session};
 
 use netrender::Scene;
+
+/// Engine-native smolweb lanes Turnstone can route to through Inker's default
+/// policy. Spartan shares Gemini's gemtext lane; feed is selected by response
+/// media type, while the other ids correspond directly to protocol schemes.
+const SMOLWEB_SESSION_ENGINE_IDS: &[&str] = &[
+    inker::routing::ENGINE_NEMATIC_GEMTEXT,
+    inker::routing::ENGINE_NEMATIC_GOPHER,
+    inker::routing::ENGINE_NEMATIC_FINGER,
+    inker::routing::ENGINE_NEMATIC_SCROLL,
+    inker::routing::ENGINE_NEMATIC_NEX,
+    inker::routing::ENGINE_NEMATIC_GUPPY,
+    inker::routing::ENGINE_NEMATIC_TITAN,
+    inker::routing::ENGINE_NEMATIC_FEED,
+];
+
+/// The content lanes that are always available in an ordinary Turnstone
+/// build. Keeping their construction together makes route availability an
+/// inspectable fact instead of an assumption split across shell setup.
+fn standard_content_engines() -> SessionRegistry<Scene> {
+    let mut engines = SessionRegistry::new();
+    engines.register(Box::new(StaticSessionEngine::new(LocalFetcher)));
+    engines.register(Box::new(genet_documents::LiverySessionEngine::new(
+        LocalFetcher,
+    )));
+    for engine_id in SMOLWEB_SESSION_ENGINE_IDS {
+        engines.register(Box::new(SmolwebSessionEngine::new(
+            *engine_id,
+            LocalFetcher,
+            SmolwebTheme::default(),
+        )));
+    }
+    engines
+}
+
+/// Resolve a session-authored link against the node that owns that content
+/// surface before lowering it to `OpenAddress`. Session engines preserve the
+/// authored spelling for inspection; the host owns the navigation context.
+fn content_link_target(app: &App, node: uuid::Uuid, href: &str) -> String {
+    app.graph_runtimes
+        .graph()
+        .get_node_by_id(node)
+        .map(|(_, owner)| {
+            url::Url::parse(owner.url())
+                .and_then(|base| base.join(href))
+                .map(|target| target.to_string())
+                .unwrap_or_else(|_| genet_documents::resolve_href(owner.url(), href))
+        })
+        .unwrap_or_else(|| href.to_string())
+}
 
 /// A pane's placeholder display label from its `PaneContent`. Title-cased tag
 /// (the tags are single lowercase words); slice D replaces the placeholder with
@@ -354,6 +403,11 @@ impl Shell {
             .unwrap_or_else(|| std::time::Duration::from_secs(30));
         let web_policy = crate::web_policy::WebPolicyService::new(policy_registry, request_timeout);
 
+        // Gemini must never fall through errand's permissive trust default.
+        // This process-lifetime store is the explicit gate-1 floor; durable
+        // pins and certificate-change UI remain the separately named gate 4.
+        fetch::install_in_memory_smolweb_tofu();
+
         // The fetch actor on its own armillary thread, waking this loop like
         // the physics actor does.
         let fetch_proxy = proxy.clone();
@@ -393,18 +447,10 @@ impl Shell {
             crate::place::worker::PlaceWorkerSettings::default(),
         );
 
-        // The content port's engines: the static lane (genet.web) with the
-        // shell-owned fetcher (netfetch: https + data:). Scripted/smolweb
-        // rungs join by registration, not new dispatch code.
-        let mut content_engines = SessionRegistry::new();
-        content_engines.register(Box::new(StaticSessionEngine::new(LocalFetcher)));
-        // The second lane (the settings row's whole point): the clean-room
-        // Livery CSS/layout path, selectable per node via the viewer override.
-        // Two registered engines make "change the viewer and SEE it apply"
-        // a real capability rather than a stored preference.
-        content_engines.register(Box::new(genet_documents::LiverySessionEngine::new(
-            LocalFetcher,
-        )));
+        // The content port's ordinary lanes: both Genet static renderers plus
+        // the engine-native smolweb family. Route policy selects one by
+        // address/media type without app dispatch.
+        let mut content_engines = standard_content_engines();
         let knot_proxy = proxy.clone();
         let knot_wake: Arc<dyn Fn() + Send + Sync> = Arc::new(move || {
             let _ = knot_proxy.send_event(());
@@ -1045,6 +1091,65 @@ impl Shell {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// Gate 1 of the smolweb browser gap analysis: Turnstone's default route
+    /// for a Gemini address must name a registered retained-session engine,
+    /// and that engine must lower real gemtext into paint plus a clickable
+    /// navigation target. The body is supplied at the spawn seam so the
+    /// receipt is deterministic and does not depend on a public capsule.
+    #[test]
+    fn gemini_route_lands_in_a_live_nematic_session() {
+        let engines = standard_content_engines();
+        let decision = mere::routing::route_policy().route(&inker::EngineRouteRequest {
+            workspace_id: inker::WorkspaceRouteId::new("turnstone-test"),
+            view: None,
+            node: None,
+            address: "gemini://capsule.test/".to_string(),
+            content_type: None,
+            pinned_engine: None,
+        });
+
+        assert_eq!(decision.engine_id, inker::routing::ENGINE_NEMATIC_GEMTEXT);
+        assert!(engines.contains(&decision.engine_id));
+
+        let request = SessionSpawnRequest::new("gemini://capsule.test/")
+            .with_body("# Turnstone Capsule\n\n=> /next Follow the next link\n")
+            .with_viewport(640, 480);
+        let mut session = engines
+            .spawn(&decision.engine_id, &request)
+            .expect("the registered Gemini lane spawns");
+        let scene = session.frame(640, 480);
+        assert!(
+            scene
+                .ops
+                .iter()
+                .any(|op| matches!(op, netrender::SceneOp::GlyphRun(_))),
+            "gemtext text reaches the retained scene"
+        );
+        let report = session.inspect().expect("Nematic exposes structure");
+        assert_eq!(report.title.as_deref(), Some("Turnstone Capsule"));
+        assert_eq!(report.links, vec!["/next"]);
+
+        let link = session.links().into_iter().next().expect("laid-out link");
+        let [x0, y0, x1, y1] = link.rect;
+        let SessionClick::Navigate(href) = session.click_at((x0 + x1) / 2.0, (y0 + y1) / 2.0)
+        else {
+            panic!("the laid-out gemtext link must navigate");
+        };
+
+        let mut app = App::test_stub();
+        let _ = app.update(Action::OpenAddress(
+            "gemini://capsule.test/start".to_string(),
+        ));
+        let node = app
+            .graph_runtimes
+            .focused_member()
+            .expect("opened capsule node");
+        assert_eq!(
+            content_link_target(&app, node, &href),
+            "gemini://capsule.test/next"
+        );
+    }
 
     /// The one-state-N-windows invariant (rung 7): two windows on one graph
     /// hold DISTINCT cameras over shared positions. Install/stash through the

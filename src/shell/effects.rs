@@ -230,6 +230,7 @@ impl Shell {
                 // failure — unroutable id, spawn error — surfaces as
                 // ContentFailed; a Requested node never silently spins.
                 Effect::SpawnContent { node, url } => {
+                    let fetched = self.app.content.fetched(node, &url).cloned();
                     let pinned = self
                         .app
                         .browser
@@ -247,7 +248,9 @@ impl Shell {
                         view: None,
                         node: None,
                         address: url.clone(),
-                        content_type: None,
+                        content_type: fetched
+                            .as_ref()
+                            .and_then(|document| document.content_type.clone()),
                         // The settings row: a sidecar viewer override pins the
                         // route, so a respawn lands on the chosen lane.
                         pinned_engine: pinned,
@@ -318,8 +321,29 @@ impl Shell {
                         self.run_effects(effects);
                         continue;
                     }
-                    let spawn = SessionSpawnRequest::new(&url)
+                    // Network document sessions consume the actor's body. If
+                    // the toggle arrived before that body, leave the app in
+                    // Requested and let PageFetched re-issue this spawn. The
+                    // engine must not perform a second top-level request.
+                    if fetch::is_fetchable(&url) && fetched.is_none() {
+                        if !self.pending_fetches.page_in_flight(&url, node, &url) {
+                            let fetch = self.app.fetch_page_effect(node, url.clone(), url.clone());
+                            if let Some(command) =
+                                browse::fetch_command_for(&fetch, &mut self.pending_fetches)
+                            {
+                                self.fetch_handle.command(command);
+                            }
+                        }
+                        continue;
+                    }
+                    let mut spawn = SessionSpawnRequest::new(&url)
                         .with_viewport(self.width.max(1), self.height.max(1));
+                    if let Some(document) = fetched {
+                        spawn = spawn.with_body(document.body);
+                        if let Some(content_type) = document.content_type {
+                            spawn = spawn.with_content_type(content_type);
+                        }
+                    }
                     let update = match self.content_engines.spawn(&decision.engine_id, &spawn) {
                         Ok(session) => {
                             tracing::info!(%node, %url, engine = %decision.engine_id, "content session live");
@@ -442,6 +466,9 @@ impl Shell {
             tracing::warn!(%error, "content-class reconciliation failed");
         }
         session::save_node_facets(&sdir, self.app.graph_runtimes.facets());
+        if let Err(error) = self.app.gemini_identities.save(&self.app.data_root) {
+            tracing::warn!(%error, "failed to persist Gemini identity bindings");
+        }
         if let Some(score) = self.app.graph_runtimes.projection_score() {
             session::save_projection_score(&sdir, score);
         }

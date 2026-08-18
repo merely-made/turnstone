@@ -200,6 +200,7 @@ fn row_text(s: &Suggestion) -> String {
         },
         Suggestion::Act { label, .. } => format!("\u{203a} {label}"),
         Suggestion::Hint(hint) => (*hint).to_string(),
+        Suggestion::Prompt(prompt) => prompt.clone(),
     }
 }
 
@@ -250,10 +251,10 @@ impl ChromeSurfaces {
         }
         let caption = crate::app::focused_caption(&app.graph_runtimes);
         let omnibar: &OmnibarState = &app.omnibar;
-        let mut omnibar_input = TextInput::new(omnibar.text.clone());
-        omnibar_input.set_caret_byte(omnibar.cursor, false);
-        if let Some(preedit) = &omnibar.preedit {
-            omnibar_input.set_preedit(preedit.clone());
+        let mut omnibar_input = TextInput::new(omnibar.presented_text());
+        omnibar_input.set_caret_byte(omnibar.presented_cursor(), false);
+        if let Some(preedit) = omnibar.presented_preedit() {
+            omnibar_input.set_preedit(preedit);
         }
         let chrome = app.shell_chrome_config();
         let rows: Vec<RowView> = omnibar
@@ -263,12 +264,12 @@ impl ChromeSurfaces {
             .map(|(i, s)| RowView {
                 text: row_text(s),
                 class: match s {
-                    Suggestion::Hint(_) => "omni-row-muted",
+                    Suggestion::Hint(_) | Suggestion::Prompt(_) => "omni-row-muted",
                     _ if i == omnibar.selected => "omni-row-sel",
                     _ => "omni-row",
                 },
                 commit: match s {
-                    Suggestion::Hint(_) => None,
+                    Suggestion::Hint(_) | Suggestion::Prompt(_) => None,
                     _ => Some(i),
                 },
             })

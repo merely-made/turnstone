@@ -184,6 +184,8 @@ fn content_rows(app: &App, node: Option<uuid::Uuid>) -> Vec<(String, String)> {
         match state {
             Some(NodeContent::Requested) => "requested".to_string(),
             Some(NodeContent::Live) => "live".to_string(),
+            Some(NodeContent::AwaitingInput) => "awaiting input".to_string(),
+            Some(NodeContent::AwaitingIdentity) => "awaiting client identity".to_string(),
             Some(NodeContent::Failed(err)) => format!("failed: {}", truncate(err, 120)),
             None => "none".to_string(),
         },

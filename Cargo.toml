@@ -47,6 +47,9 @@ servitor = { git = "https://github.com/merely-made/mere.git", branch = "main" }
 # personae master key (capability-model OQ2). The sealed vault implements the
 # same IdentityProvider trait, so it swaps in without touching consumers.
 identity = { package = "personae", git = "https://github.com/merely-made/mere.git", branch = "main" }
+# Self-signed Gemini client certificates projected from capsule-scoped
+# Personae-derived Ed25519 keys. The private key stays transient.
+rcgen = "0.14"
 # Shared-place domains. Turnstone owns their worker composition while Gemot,
 # Commons, Stickleback, and Muniment retain their own wire, authority, crypto,
 # and durable-store contracts.
@@ -121,7 +124,7 @@ dirs = "6"
 # plan phase 4: turnstone's content port spawns through the registry; the static
 # lane's netfetch feature gives LocalFetcher its https branch).
 inker = { git = "https://github.com/merely-made/genet.git", branch = "main" }
-genet-documents = { git = "https://github.com/merely-made/genet.git", branch = "main", features = ["netfetch", "livery"] }
+genet-documents = { git = "https://github.com/merely-made/genet.git", branch = "main", features = ["netfetch", "livery", "smolweb"] }
 # Optional app-control scripting. Piccolo is a Turnstone mod/workflow backend,
 # not a browser-page engine; Vano/Boa remain the JavaScript lanes.
 script-engine-api = { git = "https://github.com/merely-made/genet.git", branch = "main", optional = true }
@@ -187,6 +190,9 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 serde = { version = "1", features = ["derive"] }
 incipit = { git = "https://github.com/merely-made/mere.git", branch = "main" }
 serde_json = "1"
+
+[dev-dependencies]
+tempfile = "3"
 
 [features]
 default = []

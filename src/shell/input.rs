@@ -280,6 +280,7 @@ impl Shell {
                             && let SessionClick::Navigate(url) =
                                 session.pointer_down(hit.local.0, hit.local.1)
                         {
+                            let url = super::content_link_target(&self.app, node, &url);
                             self.act(Action::OpenAddress(url));
                         }
                     } else if let (Some(producer), Some(surface_button)) = (
@@ -923,6 +924,7 @@ impl Shell {
                 None
             });
             if let Some(SessionClick::Navigate(url)) = outcome {
+                let url = super::content_link_target(&self.app, node, &url);
                 self.act(Action::OpenAddress(url));
             }
             self.request_redraw();

@@ -1,0 +1,26 @@
+# Smolweb gate-2 headed receipt: a real Gemini status-10 response becomes an
+# in-app prompt. Submitting it refetches through the actor, then the retained
+# actor body spawns and composites without a second document request.
+# Network-dependent by design; run on a fresh scratch root.
+settle 30
+key escape
+open gemini://kennedy.gemi.dev/search
+settle 60
+assert visible
+assert omnibar open
+assert suggestions >= 1
+assert event smolweb-input-requested
+capture 01_gemini_input_prompt
+
+type gemini protocol
+key enter
+settle 60
+assert omnibar closed
+assert focused gemini%20protocol
+assert event smolweb-input-submitted
+act Toggle live content
+settle 60
+assert content-live
+assert surface content
+capture 02_gemini_search_results
+log smolweb Gemini input receipt complete

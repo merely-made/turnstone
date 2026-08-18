@@ -3073,3 +3073,208 @@ fn live_settings_snapshot_reconfigures_the_running_chrome_value_once() {
         "unchanged snapshots do not schedule an unbounded redraw loop"
     );
 }
+
+#[test]
+fn actor_fetched_body_is_retained_for_the_requested_content_spawn() {
+    let mut app = App::test_stub();
+    app.update(Action::OpenAddress("gemini://capsule.test/".into()));
+    let node = app.graph_runtimes.focused_member().unwrap();
+    app.content.note_requested(node);
+
+    let effects = app.apply_update(Update::PageFetched {
+        node,
+        url: "gemini://capsule.test/".into(),
+        result: Ok(crate::action::FetchedPage {
+            content_type: Some("text/gemini".into()),
+            body: "# One request".into(),
+        }),
+    });
+
+    assert_eq!(
+        app.content
+            .fetched(node, "gemini://capsule.test/")
+            .map(|document| document.body.as_str()),
+        Some("# One request")
+    );
+    assert!(effects.iter().any(|effect| matches!(
+        effect,
+        Effect::SpawnContent { node: actual, url }
+            if *actual == node && url == "gemini://capsule.test/"
+    )));
+}
+
+#[test]
+fn ordinary_smolweb_input_navigates_and_refetches_with_a_percent_encoded_query() {
+    let mut app = App::test_stub();
+    app.update(Action::OpenAddress("gemini://capsule.test/search".into()));
+    let node = app.graph_runtimes.focused_member().unwrap();
+    app.content.note_requested(node);
+
+    let effects = app.apply_update(Update::SmolwebInputRequested {
+        node,
+        url: "gemini://capsule.test/search".into(),
+        input_url: "gemini://capsule.test/search".into(),
+        prompt: "Search terms".into(),
+        sensitive: false,
+    });
+    assert!(matches!(
+        app.content.get(node),
+        Some(crate::content::NodeContent::AwaitingInput)
+    ));
+    assert!(
+        effects.iter().any(
+            |effect| matches!(effect, Effect::CloseContent { node: actual } if *actual == node)
+        )
+    );
+    assert!(matches!(
+        &app.omnibar.mode,
+        crate::ui::OmnibarMode::SmolwebInput(input)
+            if input.prompt == "Search terms" && !input.sensitive
+    ));
+
+    app.update(Action::OmnibarInsert("two words/?".into()));
+    let effects = app.update(Action::OmnibarCommit);
+    let target = "gemini://capsule.test/search?two%20words%2F%3F";
+    assert_eq!(app.graph_runtimes.focused_url(), Some(target));
+    assert!(effects.iter().any(|effect| matches!(
+        effect,
+        Effect::FetchPage { node: actual, url, owner_url, .. }
+            if *actual == node && url == target && owner_url == target
+    )));
+    assert!(matches!(
+        app.content.get(node),
+        Some(crate::content::NodeContent::Requested)
+    ));
+}
+
+#[test]
+fn sensitive_smolweb_input_is_masked_and_never_enters_graph_or_events() {
+    let mut app = App::test_stub();
+    let owner = "gemini://capsule.test/login";
+    app.update(Action::OpenAddress(owner.into()));
+    let node = app.graph_runtimes.focused_member().unwrap();
+    let _ = app.take_events();
+    app.apply_update(Update::SmolwebInputRequested {
+        node,
+        url: owner.into(),
+        input_url: owner.into(),
+        prompt: "Password".into(),
+        sensitive: true,
+    });
+
+    app.update(Action::OmnibarInsert("hunter 2".into()));
+    let snapshot = crate::observe::snapshot(&app);
+    assert_eq!(snapshot.omnibar.text, "\u{2022}".repeat(8));
+    assert!(!format!("{snapshot:?}").contains("hunter"));
+    assert!(
+        crate::a11y::a11y_lines(&app)
+            .iter()
+            .all(|line| !line.contains("hunter"))
+    );
+    assert!(
+        app.recall_query.is_empty(),
+        "private input never asks recall"
+    );
+
+    let effects = app.update(Action::OmnibarCommit);
+    assert_eq!(app.graph_runtimes.focused_url(), Some(owner));
+    assert!(effects.iter().any(|effect| matches!(
+        effect,
+        Effect::FetchPage { node: actual, url, owner_url, .. }
+            if *actual == node
+                && url == "gemini://capsule.test/login?hunter%202"
+                && owner_url == owner
+    )));
+    let described: Vec<_> = app
+        .take_events()
+        .into_iter()
+        .map(|event| event.describe())
+        .collect();
+    assert!(described.iter().all(|event| !event.contains("hunter")));
+}
+
+#[test]
+fn gemini_identity_is_confirmed_once_and_reused_only_for_its_capsule() {
+    let mut app = App::test_stub();
+    let owner = "gemini://capsule.test/account";
+    let target = "gemini://capsule.test/private";
+    app.update(Action::OpenAddress(owner.into()));
+    let node = app.graph_runtimes.focused_member().unwrap();
+    app.content.note_requested(node);
+
+    let effects = app.apply_update(Update::GeminiIdentityRequested {
+        node,
+        url: owner.into(),
+        identity_url: target.into(),
+        prompt: "Identity required".into(),
+    });
+    assert!(matches!(
+        app.content.get(node),
+        Some(crate::content::NodeContent::AwaitingIdentity)
+    ));
+    assert!(
+        effects.iter().any(
+            |effect| matches!(effect, Effect::CloseContent { node: actual } if *actual == node)
+        )
+    );
+    assert!(matches!(
+        &app.omnibar.mode,
+        crate::ui::OmnibarMode::GeminiIdentity(input)
+            if input.identity_url == target && input.prompt == "Identity required"
+    ));
+    assert_eq!(app.graph_runtimes.focused_url(), Some(owner));
+
+    let effects = app.update(Action::OmnibarCommit);
+    assert!(effects.iter().any(|effect| matches!(
+        effect,
+        Effect::FetchPage {
+            node: actual,
+            url,
+            owner_url,
+            identity: Some(identity),
+        } if *actual == node
+            && url == target
+            && owner_url == owner
+            && identity.origin() == "gemini://capsule.test"
+    )));
+    assert!(matches!(
+        app.content.get(node),
+        Some(crate::content::NodeContent::Requested)
+    ));
+    assert_eq!(app.graph_runtimes.focused_url(), Some(owner));
+
+    let same_capsule =
+        app.fetch_page_effect(node, "gemini://capsule.test/again".into(), owner.into());
+    assert!(matches!(
+        same_capsule,
+        Effect::FetchPage {
+            identity: Some(_),
+            ..
+        }
+    ));
+    let other_capsule = app.fetch_page_effect(
+        node,
+        "gemini://other.test/".into(),
+        "gemini://other.test/".into(),
+    );
+    assert!(matches!(
+        other_capsule,
+        Effect::FetchPage { identity: None, .. }
+    ));
+
+    let described: Vec<_> = app
+        .take_events()
+        .into_iter()
+        .map(|event| event.describe())
+        .collect();
+    assert!(
+        described
+            .iter()
+            .any(|event| event.contains("gemini-identity-requested"))
+    );
+    assert!(
+        described
+            .iter()
+            .any(|event| event.contains("gemini-identity-bound"))
+    );
+}

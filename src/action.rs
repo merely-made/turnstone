@@ -395,7 +395,17 @@ pub enum Effect {
     /// Fetch a page document through the fetch actor, for enrichment of the
     /// node that requested it (correlation-over-URLs: several nodes may
     /// share an address, and a node may navigate away mid-flight).
-    FetchPage { node: uuid::Uuid, url: String },
+    FetchPage {
+        node: uuid::Uuid,
+        /// The address sent to the network.
+        url: String,
+        /// The graph address that owns the answer. Usually identical to
+        /// `url`; sensitive Gemini input keeps its query out of graph truth.
+        owner_url: String,
+        /// A capsule-scoped client certificate selected by the host. The
+        /// fetch actor still rechecks its origin on redirects.
+        identity: Option<fetch::GeminiClientIdentity>,
+    },
     /// Fetch a favicon (already-absolute `url`) for `node`, whose page lives
     /// at `owner_url` (the staleness check compares against it on return).
     FetchFavicon {
@@ -493,6 +503,25 @@ pub enum Update {
         url: String,
         result: Result<FetchedPage, String>,
     },
+    /// A smolweb page fetch reached a protocol input response. `url` is the
+    /// member's requested address; `input_url` is the final redirect target
+    /// whose query the answer must replace.
+    SmolwebInputRequested {
+        node: uuid::Uuid,
+        url: String,
+        input_url: String,
+        prompt: String,
+        sensitive: bool,
+    },
+    /// A Gemini capsule requires a client certificate. `identity_url` is the
+    /// final redirect target and therefore the capsule origin the identity
+    /// must be scoped to.
+    GeminiIdentityRequested {
+        node: uuid::Uuid,
+        url: String,
+        identity_url: String,
+        prompt: String,
+    },
     /// A favicon's raw bytes arrived for `node`, requested while its page
     /// was `owner_url`.
     FaviconFetched {
@@ -575,6 +604,7 @@ pub enum Update {
 }
 
 /// A successfully fetched page document, in app-owned terms.
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct FetchedPage {
     /// The response's Content-Type header, verbatim.
     pub content_type: Option<String>,

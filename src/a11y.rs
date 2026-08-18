@@ -97,7 +97,7 @@ fn project_chrome(app: &App) -> UxTree {
         let id = node_id_for_path("turnstone/chrome/omnibar");
         let mut n = Node::new(Role::TextInput);
         n.set_label("omnibar");
-        n.set_value(app.omnibar.text.clone());
+        n.set_value(app.omnibar.presented_text());
         nodes.push((id, n));
         children.push(id);
     }

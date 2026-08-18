@@ -62,7 +62,10 @@ pub const OVERMAP_LINEAGE: ProjectionPreset = ProjectionPreset {
 /// the canvas colors by).
 fn content_state(app: &App, id: Uuid) -> NodeState {
     match app.content.get(id) {
-        Some(NodeContent::Live) | Some(NodeContent::Requested) => NodeState::Open,
+        Some(NodeContent::Live)
+        | Some(NodeContent::Requested)
+        | Some(NodeContent::AwaitingInput)
+        | Some(NodeContent::AwaitingIdentity) => NodeState::Open,
         Some(NodeContent::Failed(_)) => NodeState::Closed,
         _ => NodeState::Idle,
     }

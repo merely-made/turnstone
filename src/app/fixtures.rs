@@ -64,6 +64,7 @@ impl App {
             trash: Vec::new(),
             pending_install: None,
             denizens: crate::denizen::Denizens::new(root),
+            gemini_identities: crate::gemini_identity::GeminiIdentityBindings::default(),
             identity,
             journal: {
                 let (journal, hook) = mere::kernel::graph::journal_capture_hook();
