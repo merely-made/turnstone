@@ -1,0 +1,34 @@
+# Frozen projection receipt: the disclosed scene as navigable semantics,
+# driven end to end. The pane freezes exactly what the graphshell endpoint
+# serves a remote peer, and `assert a11y` reads the same AccessKit tree
+# graphshell_client::frozen builds for any host — so this is the projection
+# grammar plan's B1 verification loop closing on a real app: probe-driven,
+# no synthetic OS input, semantic tree asserted by role and name.
+# Offline by design: mere:// nodes only. FRESH profile.
+settle 30
+key escape
+
+# Two named nodes for the projection to read.
+open mere://harbor-notes
+wait
+open mere://beacon-notes
+wait
+assert nodes >= 2
+
+# Summon the pane; the palette row comes from the pane registry.
+act Open Frozen Projection pane
+settle 40
+capture 01_frozen_projection_open
+
+# The document announces itself, and every instance is reachable by name in
+# the stitched application tree. Labels come from node_display_label, the
+# same label the endpoint's presentation plane sends.
+assert a11y document: Disclosed projection
+assert a11y harbor-notes
+assert a11y beacon-notes
+
+# The instances group states its own count-bearing label, so a reader knows
+# the size of what they are about to walk.
+assert a11y list:
+
+capture 02_frozen_projection_asserted

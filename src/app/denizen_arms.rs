@@ -90,7 +90,7 @@ impl App {
                 for refusal in &run.refusals {
                     tracing::info!(%label, "component emission refused: {refusal}");
                 }
-                return self.lower_denizen_actions(subject, label, run.actions);
+                return self.lower_behavior_actions(subject, label, run.actions, None);
             }
         }
         let Some(source) = source else {
@@ -100,32 +100,95 @@ impl App {
         // only ever leaves as typed Actions). The runnable lane is the
         // piccolo feature; a runtime-free build refuses honestly.
         #[cfg(not(feature = "piccolo"))]
-        let actions: Vec<Action> = {
+        {
             let _ = (&source, &subject, trigger);
             tracing::warn!(%label, "denizen run refused: built without the piccolo feature");
             self.events.push(AppEvent::DenizenRefused(
                 "this build carries no script runtime".to_string(),
             ));
             return vec![Effect::Redraw];
-        };
+        }
         #[cfg(feature = "piccolo")]
-        let actions = match crate::script::run(
-            self,
-            &source,
-            // B2: what this run may do derives from the denizen's
-            // grant (the participant node), never a blanket flag.
-            crate::script::capabilities_from_grant(&self.denizens.authority, subject),
-            crate::denizen::RUN_BUDGET,
-            trigger,
-        ) {
-            Ok(actions) => actions,
-            Err(err) => {
-                tracing::warn!(%err, %label, "denizen run failed");
-                self.events.push(AppEvent::DenizenRefused(err));
+        {
+            let run = match crate::script::run_behavior(
+                self,
+                &source,
+                // B2: what this run may do derives from the denizen's
+                // grant (the participant node), never a blanket flag.
+                crate::script::capabilities_from_grant(&self.denizens.authority, subject),
+                crate::denizen::RUN_BUDGET,
+                trigger,
+            ) {
+                Ok(run) => run,
+                Err(err) => {
+                    tracing::warn!(%err, %label, "denizen run failed");
+                    self.events.push(AppEvent::DenizenRefused(err));
+                    return vec![Effect::Redraw];
+                }
+            };
+            self.lower_behavior_actions(subject, label, run.actions, run.output)
+        }
+    }
+
+    /// Apply the behavior's declared deadband at actuation. Evaluation has
+    /// already happened, but none of its Actions have reached application
+    /// truth yet. The baseline moves only when this subject actually adds a
+    /// graph-journal entry.
+    fn lower_behavior_actions(
+        &mut self,
+        subject: servitor::Subject,
+        label: String,
+        actions: Vec<Action>,
+        output: Option<i64>,
+    ) -> Vec<Effect> {
+        let admission = if self.deadbands.get(subject).is_some() {
+            let Some(at_ms) = self.now_ms else {
+                let reason = format!("{label}: deadband requires a host-supplied clock");
+                tracing::warn!(%reason, "denizen actuation refused");
+                self.events.push(AppEvent::DenizenRefused(reason));
                 return vec![Effect::Redraw];
+            };
+            let Some(output) = output else {
+                let reason = format!("{label}: declared deadband but did not call mere.output");
+                tracing::warn!(%reason, "denizen actuation refused");
+                self.events.push(AppEvent::DenizenRefused(reason));
+                return vec![Effect::Redraw];
+            };
+            match self
+                .deadbands
+                .check(subject, servitor::Actuation::new(output, at_ms))
+            {
+                Ok(admission) => Some(admission),
+                Err(refusal) => {
+                    let reason = format!("{label}: {refusal}");
+                    tracing::warn!(%reason, "denizen actuation refused");
+                    self.events.push(AppEvent::DenizenRefused(reason));
+                    return vec![Effect::Redraw];
+                }
             }
+        } else {
+            None
         };
-        self.lower_denizen_actions(subject, label, actions)
+
+        let before = match self.journal.lock() {
+            Ok(journal) => journal.entries().len() as u64,
+            Err(poisoned) => poisoned.into_inner().entries().len() as u64,
+        };
+        let effects = self.lower_denizen_actions(subject, label, actions);
+        let wrote = crate::behaviors::entries_since(self, before)
+            .iter()
+            .any(|entry| entry.author == subject.to_hex());
+        if wrote && let Some(admission) = admission {
+            self.deadbands.record(admission);
+            crate::denizen::save_watches(
+                &self.session_dir(),
+                &self.watches,
+                &self.app_watches,
+                &self.time_watches,
+                &self.deadbands,
+            );
+        }
+        effects
     }
 
     pub(super) fn install_denizen(&mut self, path: String) -> Vec<Effect> {
@@ -170,11 +233,13 @@ impl App {
         self.watches.remove_subject(resident.subject);
         self.app_watches.remove_subject(resident.subject);
         self.time_watches.remove_subject(resident.subject);
+        self.deadbands.remove_subject(resident.subject);
         crate::denizen::save_watches(
             &self.session_dir(),
             &self.watches,
             &self.app_watches,
             &self.time_watches,
+            &self.deadbands,
         );
         pandect::remove_denizen_binding(self.graph_runtimes.facets_mut(), member);
         let hex = resident.subject.to_hex();

@@ -104,6 +104,16 @@ struct ControlScriptHost {
     trigger: String,
     capabilities: ScriptCapabilities,
     actions: RefCell<Vec<Action>>,
+    /// A behavior's proposed scalar output for deadband comparison. It is
+    /// metadata about the action batch, not permission to perform it.
+    output: RefCell<Option<i64>>,
+}
+
+/// One behavior evaluation before anything is lowered into application truth.
+#[derive(Debug)]
+pub(crate) struct BehaviorRun {
+    pub(crate) actions: Vec<Action>,
+    pub(crate) output: Option<i64>,
 }
 
 type PiccoloValue = <PiccoloEngine as ScriptEngine>::Value;
@@ -148,6 +158,27 @@ impl NativeFn<PiccoloEngine> for Trigger {
             host.trigger.clone()
         };
         cx.make_string(&trigger)
+    }
+}
+
+/// Declare this run's scalar output for actuation deadband comparison.
+/// Exactly one value is permitted so the host never has to guess which sample
+/// describes the batch it is about to lower.
+struct Output;
+
+impl NativeFn<PiccoloEngine> for Output {
+    fn call(cx: &mut PiccoloCallCx<'_>) -> Result<PiccoloValue, String> {
+        let value = cx.arg(0);
+        let output: i64 = cx
+            .value_to_string(&value)?
+            .parse()
+            .map_err(|_| "mere.output requires a signed integer".to_string())?;
+        let host = host(cx)?;
+        let mut slot = host.output.borrow_mut();
+        if slot.replace(output).is_some() {
+            return Err("mere.output may be called only once per run".to_string());
+        }
+        Ok(cx.undefined())
     }
 }
 
@@ -315,13 +346,14 @@ pub(crate) fn capabilities_from_grant(
 /// description, two runners" pair). A script error surfaces as `Err`, so a
 /// scenario `script` step fails loudly rather than silently emitting nothing.
 pub fn run_control(app: &App, source: &str, max_steps: u64) -> Result<Vec<Action>, String> {
-    run(
+    run_inner(
         app,
         source,
         ScriptCapabilities::control(),
         max_steps,
         &crate::behaviors::TriggerContext::default(),
     )
+    .map(|run| run.actions)
 }
 
 /// Run one capability-scoped Lua control script and return the Actions it
@@ -333,6 +365,28 @@ pub(crate) fn run(
     max_steps: u64,
     trigger: &crate::behaviors::TriggerContext,
 ) -> Result<Vec<Action>, String> {
+    run_inner(app, source, capabilities, max_steps, trigger).map(|run| run.actions)
+}
+
+/// Run a resident behavior and keep the scalar output beside its actions so
+/// the actuation boundary can apply a declared deadband.
+pub(crate) fn run_behavior(
+    app: &App,
+    source: &str,
+    capabilities: ScriptCapabilities,
+    max_steps: u64,
+    trigger: &crate::behaviors::TriggerContext,
+) -> Result<BehaviorRun, String> {
+    run_inner(app, source, capabilities, max_steps, trigger)
+}
+
+fn run_inner(
+    app: &App,
+    source: &str,
+    capabilities: ScriptCapabilities,
+    max_steps: u64,
+    trigger: &crate::behaviors::TriggerContext,
+) -> Result<BehaviorRun, String> {
     if max_steps == 0 {
         return Err("control script requires a positive step budget".to_string());
     }
@@ -342,6 +396,7 @@ pub(crate) fn run(
         trigger: trigger.to_json(),
         capabilities,
         actions: RefCell::new(Vec::new()),
+        output: RefCell::new(None),
     });
     let host_data: HostData = host.clone();
     let mut engine = PiccoloEngine::new().map_err(|err| format!("Piccolo init: {err:?}"))?;
@@ -359,6 +414,9 @@ pub(crate) fn run(
         .set_function::<Trigger>("__mere_trigger", 0)
         .map_err(|err| format!("install mere.trigger: {err:?}"))?;
     engine
+        .set_function::<Output>("__mere_output", 1)
+        .map_err(|err| format!("install mere.output: {err:?}"))?;
+    engine
         .set_function::<Open>("__mere_open", 1)
         .map_err(|err| format!("install mere.open: {err:?}"))?;
     engine
@@ -367,7 +425,8 @@ pub(crate) fn run(
     engine
         .eval(
             "mere = { snapshot = __mere_snapshot, dispatch = __mere_dispatch, \
-             trigger = __mere_trigger, open = __mere_open,              write = __mere_write, summon = __mere_summon }",
+             trigger = __mere_trigger, output = __mere_output, open = __mere_open, \
+             write = __mere_write, summon = __mere_summon }",
         )
         .map_err(|err| format!("install Turnstone control API: {err:?}"))?;
     engine
@@ -377,12 +436,40 @@ pub(crate) fn run(
         return Err("control script microtask budget exhausted".to_string());
     }
 
-    Ok(host.actions.take())
+    Ok(BehaviorRun {
+        actions: host.actions.take(),
+        output: host.output.take(),
+    })
 }
 
 #[cfg(test)]
 mod tests {
     use crate::behaviors::TriggerContext;
+
+    #[test]
+    fn a_behavior_reports_exactly_one_signed_output() {
+        let app = App::test_stub();
+        let run = run_behavior(
+            &app,
+            "mere.output(-42)",
+            ScriptCapabilities::control(),
+            200,
+            &TriggerContext::default(),
+        )
+        .unwrap();
+        assert_eq!(run.output, Some(-42));
+        assert!(run.actions.is_empty());
+
+        let error = run_behavior(
+            &app,
+            "mere.output(1); mere.output(2)",
+            ScriptCapabilities::control(),
+            200,
+            &TriggerContext::default(),
+        )
+        .unwrap_err();
+        assert!(error.contains("only once"), "refused by name: {error}");
+    }
 
     /// A body can read what woke it, and act only when something did.
     #[test]

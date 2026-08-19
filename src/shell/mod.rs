@@ -991,6 +991,13 @@ impl Shell {
                     pane.click(lx, ly, rw, rh);
                 }
             }
+            PaneContent::Registered(kind)
+                if kind.as_str() == crate::panes::kind::FROZEN_PROJECTION =>
+            {
+                if let Some(pane) = self.renderers.frozen_projection.get_mut(&pane_id) {
+                    pane.click(lx, ly, rw, rh);
+                }
+            }
             PaneContent::Inspector => {
                 if let Some(pane) = self.renderers.inspector.get_mut(&pane_id)
                     && pane.click(lx, ly, rw, rh).into_iter().any(|intent| {

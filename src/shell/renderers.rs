@@ -53,6 +53,9 @@ pub(crate) struct PaneRenderers {
     pub(crate) shared_knot: HashMap<PaneId, crate::share_reader_pane::SharedKnotPane>,
     /// This device's resident receipt cards, read through the first-party door.
     pub(crate) device_receipts: HashMap<PaneId, crate::device_receipts_pane::DeviceReceiptsPane>,
+    /// The disclosed scene as navigable semantics, with satisfaction chrome.
+    pub(crate) frozen_projection:
+        HashMap<PaneId, crate::frozen_projection_pane::FrozenProjectionPane>,
     /// The Shell Transcript pane: the ledger's visible projection.
     pub(crate) transcript: HashMap<PaneId, crate::transcript_pane::TranscriptPane>,
     /// The Overmap pane (O1): the switcher as a graph view.
@@ -78,6 +81,7 @@ impl PaneRenderers {
             publish,
             shared_knot,
             device_receipts,
+            frozen_projection,
             overmap,
             transcript,
         } = self;
@@ -94,6 +98,7 @@ impl PaneRenderers {
         publish.remove(&pane);
         shared_knot.remove(&pane);
         device_receipts.remove(&pane);
+        frozen_projection.remove(&pane);
         overmap.remove(&pane);
         transcript.remove(&pane);
     }
@@ -117,6 +122,7 @@ impl PaneRenderers {
         }
         deliver!(
             device_receipts,
+            frozen_projection,
             roster,
             trail,
             inspector,
@@ -143,6 +149,7 @@ impl PaneRenderers {
         }
         visible!(
             device_receipts,
+            frozen_projection,
             roster,
             trail,
             inspector,
@@ -170,6 +177,7 @@ impl PaneRenderers {
             + self.publish.len()
             + self.shared_knot.len()
             + self.device_receipts.len()
+            + self.frozen_projection.len()
             + self.overmap.len()
             + self.transcript.len()
     }

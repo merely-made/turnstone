@@ -318,6 +318,7 @@ pub fn drain(app: &mut App) -> Vec<Effect> {
             &app.watches,
             &app.app_watches,
             &app.time_watches,
+            &app.deadbands,
         );
     }
     effects

@@ -757,7 +757,7 @@ mere.open('mere://filed')",
     let scope_before = app.watches.watches()[0].scope.clone();
 
     // The reload: the tables come back from disk, not from the pack.
-    let (graph, app_tier, time) = crate::denizen::load_watches(&app.session_dir());
+    let (graph, app_tier, time, _) = crate::denizen::load_watches(&app.session_dir());
     assert_eq!(graph.watches().len(), 1, "the graph watch came back");
     assert!(app_tier.is_empty());
     assert!(time.is_empty());
@@ -776,7 +776,7 @@ mere.open('mere://filed')",
     // And uninstalling clears the persisted copy, not just the live one.
     let member = *app.denizens.residents.keys().next().unwrap();
     app.update(Action::UninstallDenizen { member });
-    let (graph, _, _) = crate::denizen::load_watches(&app.session_dir());
+    let (graph, _, _, _) = crate::denizen::load_watches(&app.session_dir());
     assert!(
         graph.is_empty(),
         "a removed denizen leaves no watch on disk"
@@ -806,7 +806,7 @@ mere.snapshot()",
     });
     app.update(Action::ConfirmInstallDenizen);
 
-    let (_, _, time) = crate::denizen::load_watches(&app.session_dir());
+    let (_, _, time, _) = crate::denizen::load_watches(&app.session_dir());
     assert_eq!(time.watches().len(), 1);
     assert_eq!(
         time.watches()[0].last_fired_ms,
@@ -814,6 +814,88 @@ mere.snapshot()",
         "the period is measured from when it was installed, not from the reload"
     );
     assert_eq!(time.watches()[0].period, servitor::Period::Day);
+}
+
+/// The host receipt for target 3: a declared output deadband sits after body
+/// evaluation and before Action lowering. A second run proposes a different
+/// note body after the interval has elapsed, but its output did not move, so
+/// the behavior is named and the journal stays exactly where it was.
+#[cfg(feature = "piccolo")]
+#[test]
+fn a_declared_deadband_refuses_actuation_and_survives_reload() {
+    let mut app = App::test_stub();
+    app.data_root = std::env::temp_dir().join(format!("turnstone-deadband-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&app.data_root);
+    std::fs::create_dir_all(app.session_dir()).unwrap();
+    app.now_ms = Some(1_000);
+
+    let pack = app.data_root.join("controller.lua");
+    std::fs::write(
+        &pack,
+        "-- @deadband 2 1000\n\
+         mere.output(0)\n\
+         mere.write('mere://deadband-note', mere.trigger())",
+    )
+    .unwrap();
+    app.update(Action::InstallDenizen {
+        path: pack.display().to_string(),
+    });
+    if let Some(pending) = app.pending_install.as_mut() {
+        pending.rings.push(crate::ring::Ring::Author);
+    }
+    app.update(Action::ConfirmInstallDenizen);
+    let (&member, resident) = app.denizens.residents.iter().next().unwrap();
+    let subject = resident.subject;
+    let _ = app.take_events();
+
+    let first = crate::behaviors::TriggerContext {
+        woken_by: vec![crate::behaviors::TriggerEntry {
+            seq: 1,
+            author: "user".into(),
+            nodes: vec!["first".into()],
+        }],
+    };
+    app.run_denizen_for_cascade(member, &first);
+    let after_first = app.journal.lock().unwrap().entries().len();
+    assert!(after_first > 0, "the baseline actuation landed");
+    let (_, _, _, restored) = crate::denizen::load_watches(&app.session_dir());
+    assert_eq!(restored.get(subject).unwrap().minimum_change(), 2);
+    assert!(
+        restored
+            .check(subject, servitor::Actuation::new(0, 3_000))
+            .is_err(),
+        "the accepted output survived the wire round trip"
+    );
+
+    app.now_ms = Some(3_000);
+    let second = crate::behaviors::TriggerContext {
+        woken_by: vec![crate::behaviors::TriggerEntry {
+            seq: 2,
+            author: "user".into(),
+            nodes: vec!["second".into()],
+        }],
+    };
+    app.run_denizen_for_cascade(member, &second);
+    assert_eq!(
+        app.journal.lock().unwrap().entries().len(),
+        after_first,
+        "the refused output added no journal history"
+    );
+    let described: Vec<_> = app.take_events().iter().map(AppEvent::describe).collect();
+    assert!(
+        described
+            .iter()
+            .any(|event| event.contains("controller") && event.contains("deadband")),
+        "the refusal names the behavior and the policy: {described:?}"
+    );
+
+    app.update(Action::UninstallDenizen { member });
+    let (_, _, _, restored) = crate::denizen::load_watches(&app.session_dir());
+    assert!(
+        restored.get(subject).is_none(),
+        "uninstall removes the bound"
+    );
+    let _ = std::fs::remove_dir_all(&app.data_root);
 }
 
 /// W5, the flagship: a summarizer watching a container writes a note when its

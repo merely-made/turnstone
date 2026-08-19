@@ -384,6 +384,7 @@ mod tests {
             subject: servitor::Subject::new([7; 32]),
             rings: crate::denizen::default_rings(),
             watch_url: Some(watch_url.clone()),
+            deadband: None,
         });
         app.update(Action::OmnibarOpen { command: true });
         (app, watch_url)

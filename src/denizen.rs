@@ -117,6 +117,9 @@ pub struct PendingInstall {
     /// on changes its identity and forces a fresh review. The widening rule
     /// falls out of the identity rule rather than needing its own machinery.
     pub watch_url: Option<String>,
+    /// Actuation stability declared by `-- @deadband <change> <interval-ms>`.
+    /// The script must pair it with `mere.output(value)` on every run.
+    pub deadband: Option<servitor::Deadband>,
 }
 
 /// The address a pack asks to wake on: the first `-- @watch <url>` line.
@@ -133,6 +136,40 @@ pub fn parse_watch(source: &str) -> Option<String> {
         let url = rest.trim();
         (!url.is_empty()).then(|| url.to_string())
     })
+}
+
+/// Parse a behavior's actuation deadband.
+///
+/// Both numbers are positive integers. A malformed declaration refuses the
+/// install instead of silently admitting the behavior without the bound it
+/// claimed to carry.
+pub fn parse_deadband(source: &str) -> Result<Option<servitor::Deadband>, String> {
+    let Some(raw) = source.lines().find_map(|line| {
+        line.trim()
+            .strip_prefix("--")?
+            .trim()
+            .strip_prefix("@deadband")
+            .map(str::trim)
+    }) else {
+        return Ok(None);
+    };
+    let mut parts = raw.split_whitespace();
+    let minimum_change: u64 = parts
+        .next()
+        .ok_or_else(|| "@deadband requires <minimum-change> <minimum-interval-ms>".to_string())?
+        .parse()
+        .map_err(|_| "@deadband minimum change must be a positive integer".to_string())?;
+    let minimum_interval_ms: u64 = parts
+        .next()
+        .ok_or_else(|| "@deadband requires <minimum-change> <minimum-interval-ms>".to_string())?
+        .parse()
+        .map_err(|_| "@deadband minimum interval must be a positive integer".to_string())?;
+    if parts.next().is_some() {
+        return Err("@deadband takes exactly two integers".to_string());
+    }
+    servitor::Deadband::new(minimum_change, minimum_interval_ms)
+        .map(Some)
+        .map_err(|err| format!("invalid @deadband: {err}"))
 }
 
 /// The default ring profile a staged pack arrives with. Control rings
@@ -215,10 +252,10 @@ pub fn stage_install(path: &Path) -> Result<PendingInstall, String> {
         }
         PackBody::Scenario(source)
     };
-    let watch_url = match &body {
-        PackBody::Scenario(source) => parse_watch(source),
+    let (watch_url, deadband) = match &body {
+        PackBody::Scenario(source) => (parse_watch(source), parse_deadband(source)?),
         // A component declares no watch yet: its bytes carry no comment lane.
-        PackBody::Component(_) => None,
+        PackBody::Component(_) => (None, None),
     };
     let label = path
         .file_stem()
@@ -232,6 +269,7 @@ pub fn stage_install(path: &Path) -> Result<PendingInstall, String> {
         subject,
         rings: default_rings(),
         watch_url,
+        deadband,
     })
 }
 
@@ -264,12 +302,20 @@ pub fn review_line(pending: &PendingInstall) -> String {
         },
         None => String::new(),
     };
+    let deadband = pending.deadband.map_or_else(String::new, |band| {
+        format!(
+            " — deadband: change >= {}, interval >= {} ms",
+            band.minimum_change(),
+            band.minimum_interval_ms()
+        )
+    });
     format!(
-        "Install {} ({}) — grants: {}, own world{} — Confirm",
+        "Install {} ({}) — grants: {}, own world{}{} — Confirm",
         pending.label,
         pending.body.noun(),
         rings,
-        wakes
+        wakes,
+        deadband
     )
 }
 
@@ -536,7 +582,7 @@ pub fn watches_path(session_dir: &Path) -> PathBuf {
     session_dir.join("denizens").join("watches.txt")
 }
 
-/// Persist the three watch tables.
+/// Persist the three watch tables and the actuation deadband table.
 ///
 /// **Persisted rather than re-derived from the pack sources**, which would
 /// also have worked and would have kept one source of truth. The reason is
@@ -546,13 +592,14 @@ pub fn watches_path(session_dir: &Path) -> PathBuf {
 /// restart never fires for anyone who reopens their session each morning.
 /// Cursors and phase are state, not declaration.
 ///
-/// Tagged lines, because three tables share one file and a `Watch` and a
-/// `TimeWatch` are not distinguishable by shape alone.
+/// Tagged lines, because the four tables share one file and their records are
+/// not distinguishable by shape alone.
 pub fn save_watches(
     session_dir: &Path,
     graph: &servitor::WatchTable,
     app: &servitor::WatchTable,
     time: &servitor::TimeWatchTable,
+    deadbands: &servitor::DeadbandTable,
 ) {
     let mut lines: Vec<String> = Vec::new();
     lines.extend(
@@ -566,6 +613,12 @@ pub fn save_watches(
         time.to_wire_lines()
             .into_iter()
             .map(|l| format!("time {l}")),
+    );
+    lines.extend(
+        deadbands
+            .to_wire_lines()
+            .into_iter()
+            .map(|l| format!("deadband {l}")),
     );
     let target = watches_path(session_dir);
     let result = (|| -> std::io::Result<()> {
@@ -594,12 +647,14 @@ pub fn load_watches(
     servitor::WatchTable,
     servitor::WatchTable,
     servitor::TimeWatchTable,
+    servitor::DeadbandTable,
 ) {
     let empty = || {
         (
             servitor::WatchTable::new(),
             servitor::WatchTable::new(),
             servitor::TimeWatchTable::new(),
+            servitor::DeadbandTable::new(),
         )
     };
     let target = watches_path(session_dir);
@@ -609,11 +664,13 @@ pub fn load_watches(
     let mut graph_lines = Vec::new();
     let mut app_lines = Vec::new();
     let mut time_lines = Vec::new();
+    let mut deadband_lines = Vec::new();
     for line in text.lines() {
         match line.split_once(' ') {
             Some(("graph", rest)) => graph_lines.push(rest.to_string()),
             Some(("app", rest)) => app_lines.push(rest.to_string()),
             Some(("time", rest)) => time_lines.push(rest.to_string()),
+            Some(("deadband", rest)) => deadband_lines.push(rest.to_string()),
             _ if line.trim().is_empty() => {}
             _ => {
                 tracing::warn!(path = ?target, "unreadable watch record; watches not restored");
@@ -624,8 +681,10 @@ pub fn load_watches(
     let graph = servitor::WatchTable::from_wire_lines(graph_lines.iter().map(String::as_str));
     let app = servitor::WatchTable::from_wire_lines(app_lines.iter().map(String::as_str));
     let time = servitor::TimeWatchTable::from_wire_lines(time_lines.iter().map(String::as_str));
-    match (graph, app, time) {
-        (Ok(graph), Ok(app), Some(time)) => (graph, app, time),
+    let deadbands =
+        servitor::DeadbandTable::from_wire_lines(deadband_lines.iter().map(String::as_str));
+    match (graph, app, time, deadbands) {
+        (Ok(graph), Ok(app), Some(time), Some(deadbands)) => (graph, app, time, deadbands),
         _ => {
             tracing::warn!(path = ?target, "malformed watch table; watches not restored");
             empty()
@@ -753,6 +812,7 @@ pub fn install_caps(rings: &[crate::ring::Ring], watched: Option<&Cap>) -> Vec<(
 /// the ordinary save; the nested log saves here, once, at its birth.)
 pub fn install(app: &mut App, pending: PendingInstall) -> Uuid {
     let subject = pending.subject;
+    let deadband = pending.deadband;
     let hex = subject.to_hex();
 
     // The graph node — minted through the ordinary spine (visit selects it).
@@ -935,11 +995,20 @@ pub fn install(app: &mut App, pending: PendingInstall) -> Uuid {
             Err(err) => tracing::warn!(%err, %scope, "denizen app watch refused"),
         }
     }
+    if let Some(deadband) = deadband {
+        app.deadbands.register(subject, deadband);
+        tracing::info!(
+            minimum_change = deadband.minimum_change(),
+            minimum_interval_ms = deadband.minimum_interval_ms(),
+            "denizen deadband registered"
+        );
+    }
     save_watches(
         &app.session_dir(),
         &app.watches,
         &app.app_watches,
         &app.time_watches,
+        &app.deadbands,
     );
     member
 }
@@ -983,6 +1052,39 @@ mod tests {
             "a modified script is a different subject"
         );
         let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn a_deadband_is_strictly_parsed_and_named_in_review() {
+        let source = "-- @deadband 5 1000\nmere.output(10)";
+        let band = parse_deadband(source).unwrap().unwrap();
+        assert_eq!(band.minimum_change(), 5);
+        assert_eq!(band.minimum_interval_ms(), 1_000);
+        for malformed in [
+            "-- @deadband 0 1000",
+            "-- @deadband 5 0",
+            "-- @deadband five 1000",
+            "-- @deadband 5",
+            "-- @deadband 5 1000 extra",
+        ] {
+            assert!(
+                parse_deadband(malformed).is_err(),
+                "malformed declarations fail closed: {malformed}"
+            );
+        }
+
+        let pending = PendingInstall {
+            path: PathBuf::from("controller.lua"),
+            label: "controller".into(),
+            body: PackBody::Scenario(source.into()),
+            subject: Subject::new([3; 32]),
+            rings: default_rings(),
+            watch_url: None,
+            deadband: Some(band),
+        };
+        let review = review_line(&pending);
+        assert!(review.contains("change >= 5"), "{review}");
+        assert!(review.contains("interval >= 1000 ms"), "{review}");
     }
 
     #[test]

@@ -219,6 +219,10 @@ pub struct App {
     pub(crate) draining: bool,
     /// Schedules: behaviors that wake on the clock (W4).
     pub time_watches: servitor::TimeWatchTable,
+    /// Per-behavior actuation bounds and their last accepted output. This is
+    /// state, like a watch cursor: losing it on restart reopens a loop that had
+    /// already been refused.
+    pub deadbands: servitor::DeadbandTable,
     /// The host's clock, in unix milliseconds, fed in rather than sampled.
     ///
     /// `None` on a host that supplies none, and then no schedule ever fires:

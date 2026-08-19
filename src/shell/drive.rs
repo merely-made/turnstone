@@ -113,6 +113,13 @@ impl genet_probe::Automatable for Shell {
                             guards.push(("device-receipts", rect, pane.dom_ref()));
                         }
                     }
+                    Some(PaneContent::Registered(kind))
+                        if kind.as_str() == crate::panes::kind::FROZEN_PROJECTION =>
+                    {
+                        if let Some(pane) = self.renderers.frozen_projection.get(&id) {
+                            guards.push(("frozen-projection", rect, pane.dom_ref()));
+                        }
+                    }
                     Some(PaneContent::Overmap(_)) => {
                         if let Some(pane) = self.renderers.overmap.get(&id) {
                             guards.push(("overmap", rect, pane.dom_ref()));

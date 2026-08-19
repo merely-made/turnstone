@@ -290,6 +290,57 @@ impl TurnstoneEndpoint {
     }
 }
 
+/// Build the scene Turnstone discloses: the live graph projected through the
+/// spiral score, solved, and carried into routed relations.
+///
+/// Extracted from the endpoint's `snapshot` so the frozen-projection pane can
+/// freeze exactly what a remote peer would be served, rather than a second
+/// recipe that drifts from the first.
+pub(crate) fn disclose_scene(
+    graph: &mere::kernel::graph::Graph,
+    focused: Option<NodeKey>,
+    card_extent: (f32, f32),
+    spiral: sceno::Spiral,
+) -> sceno::Scene {
+    let extents: HashMap<NodeKey, (f32, f32)> = graph
+        .nodes()
+        .map(|(key, _)| (key, card_extent))
+        .collect();
+    let mut mapped = cartography::project_spiral_score(graph, Some(&extents), focused, true);
+    mapped.score.arrangement = Arrangement::Spiral(spiral);
+    let solved = scenomise::solve(&mapped.score);
+    let mut scene = cartography::scene_from_projection(
+        &mapped.projection,
+        |key| {
+            graph
+                .get_node(key)
+                .expect("projection key came from the live graph")
+                .id
+                .to_string()
+        },
+        |key| extents.get(&key).copied(),
+    );
+    for ((item, score_item), solved_item) in scene
+        .items
+        .iter_mut()
+        .zip(mapped.score.items.iter())
+        .zip(solved.items.iter())
+    {
+        item.transform = solved_item.transform;
+        item.representation = score_item.representation.clone();
+        item.layer = score_item.layer;
+        item.visible = score_item.visible;
+    }
+    for relation in &mut scene.relations {
+        let from = scene.items[relation.from.0 as usize].transform.translate;
+        let to = scene.items[relation.to.0 as usize].transform.translate;
+        relation.points = vec![from, to];
+    }
+    scene.bounds = solved.bounds;
+    scene.generation = mapped.score.generation;
+    scene
+}
+
 impl ProjectionSource for TurnstoneEndpoint {
     type Error = String;
 
@@ -308,47 +359,12 @@ impl ProjectionSource for TurnstoneEndpoint {
         };
 
         let graph = self.app.graph_runtimes.graph();
-        let extents: HashMap<NodeKey, (f32, f32)> = graph
-            .nodes()
-            .map(|(key, _)| (key, self.card_extent))
-            .collect();
-        let mut mapped = cartography::project_spiral_score(
+        let scene = disclose_scene(
             graph,
-            Some(&extents),
             self.app.graph_runtimes.focused_key(),
-            true,
+            self.card_extent,
+            spiral,
         );
-        mapped.score.arrangement = Arrangement::Spiral(spiral);
-        let solved = scenomise::solve(&mapped.score);
-        let mut scene = cartography::scene_from_projection(
-            &mapped.projection,
-            |key| {
-                graph
-                    .get_node(key)
-                    .expect("projection key came from the live graph")
-                    .id
-                    .to_string()
-            },
-            |key| extents.get(&key).copied(),
-        );
-        for ((item, score_item), solved_item) in scene
-            .items
-            .iter_mut()
-            .zip(mapped.score.items.iter())
-            .zip(solved.items.iter())
-        {
-            item.transform = solved_item.transform;
-            item.representation = score_item.representation.clone();
-            item.layer = score_item.layer;
-            item.visible = score_item.visible;
-        }
-        for relation in &mut scene.relations {
-            let from = scene.items[relation.from.0 as usize].transform.translate;
-            let to = scene.items[relation.to.0 as usize].transform.translate;
-            relation.points = vec![from, to];
-        }
-        scene.bounds = solved.bounds;
-        scene.generation = mapped.score.generation;
 
         let revision = Revision(graph.revision().max(1));
         let scene = SceneSnapshot::from_dense(SceneEpoch(1), revision, scene)

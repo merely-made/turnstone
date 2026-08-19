@@ -458,6 +458,17 @@ impl Shell {
                 pane.sync(rw as f32, rh as f32);
                 pane.scene(rw, rh)
             }
+            Some(PaneContent::Registered(kind))
+                if kind.as_str() == crate::panes::kind::FROZEN_PROJECTION =>
+            {
+                let pane = self
+                    .renderers
+                    .frozen_projection
+                    .entry(pane_id)
+                    .or_insert_with(crate::frozen_projection_pane::FrozenProjectionPane::new);
+                pane.sync(&self.app, rw as f32, rh as f32);
+                pane.scene(rw, rh)
+            }
             Some(PaneContent::Overmap(cfg)) => {
                 // The switcher as a graph view (overmap O1): sessions as
                 // container nodes, fork lineage as edges, on the shared

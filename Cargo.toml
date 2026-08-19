@@ -84,7 +84,7 @@ graphshell = { git = "https://github.com/merely-made/mere.git", branch = "main" 
 # tab or an iOS app, so the spawn path cannot be the only one.
 graphshell-local = { git = "https://github.com/merely-made/mere.git", branch = "main" }
 knot = { git = "https://github.com/merely-made/mere.git", branch = "main" }
-graphshell-client = { git = "https://github.com/merely-made/mere.git", branch = "main" }
+graphshell-client = { git = "https://github.com/merely-made/mere.git", branch = "main", features = ["accesskit"] }
 graphshell-endpoint = { git = "https://github.com/merely-made/mere.git", branch = "main" }
 chirograph = { git = "https://github.com/merely-made/mere.git", branch = "main" }
 graphshell-stdio = { git = "https://github.com/merely-made/mere.git", branch = "main" }

@@ -22,6 +22,7 @@ pub mod kind {
     pub const PUBLISHING: &str = "turnstone.publishing";
     pub const SHARED_KNOT: &str = "turnstone.shared-knot";
     pub const DEVICE_RECEIPTS: &str = "turnstone.device-receipts";
+    pub const FROZEN_PROJECTION: &str = "turnstone.frozen-projection";
     pub const SETTINGS: &str = "turnstone.settings";
     pub const TRANSCRIPT: &str = "turnstone.transcript";
 }
@@ -136,6 +137,7 @@ pub enum PaneRenderer {
     Publishing,
     SharedKnot,
     DeviceReceipts,
+    FrozenProjection,
     Settings,
     Transcript,
 }
@@ -461,6 +463,23 @@ pub static BUILTIN_PANES: &[PaneDefinition] = &[
             label: "Open Device Receipts pane"
         }),
         Some(|| PaneContent::Registered(PaneKindId::new(kind::DEVICE_RECEIPTS)))
+    ),
+    pane!(
+        kind::FROZEN_PROJECTION,
+        "Frozen Projection",
+        PaneSourceShape::fixed(&[FixedSourceKind::Application]),
+        // One reading of one disclosed scene per space, same reasoning as
+        // Device Receipts: `Many` would let every summon add an identical copy.
+        PaneMultiplicity::PerSpace,
+        capabilities(false, false, NONE),
+        "turnstone.frozen-projection.config",
+        "turnstone.frozen-projection.view",
+        PaneRenderer::FrozenProjection,
+        Some(PanePaletteEntry {
+            order: 106,
+            label: "Open Frozen Projection pane"
+        }),
+        Some(|| PaneContent::Registered(PaneKindId::new(kind::FROZEN_PROJECTION)))
     ),
     pane!(
         kind::SETTINGS,

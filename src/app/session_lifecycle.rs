@@ -70,6 +70,7 @@ impl App {
             events_base: 0,
             draining: false,
             time_watches: servitor::TimeWatchTable::new(),
+            deadbands: servitor::DeadbandTable::new(),
             now_ms: None,
             behavior_cursor: 0,
             cascade_budget: servitor::cascade::CascadeBudget::DEFAULT.rounds(),
@@ -529,7 +530,8 @@ impl App {
         // arm clears the score for a non-Spiral strategy, which is right for a
         // fresh choice and wrong for a restore of the pair.
         if let Some(intent) = session::load_view_intent(&sdir) {
-            self.graph_runtimes.set_layout_strategy(intent.layout_strategy);
+            self.graph_runtimes
+                .set_layout_strategy(intent.layout_strategy);
         }
         // Preview imagery lives out of the graph now. The first paint queues
         // only visible cache misses; the shell resolves those after the frame,
@@ -598,8 +600,12 @@ impl App {
         );
         // Residency came back; its standing subscriptions have to come with
         // it, or a behavior silently stops waking after a reload.
-        (self.watches, self.app_watches, self.time_watches) =
-            crate::denizen::load_watches(&self.session_dir());
+        (
+            self.watches,
+            self.app_watches,
+            self.time_watches,
+            self.deadbands,
+        ) = crate::denizen::load_watches(&self.session_dir());
         // One-time heal for bindings written before the containment ruling:
         // move the world pointer onto the node (journaled through the spine)
         // and rewrite the facet without it.

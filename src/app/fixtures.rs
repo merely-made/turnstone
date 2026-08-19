@@ -29,6 +29,7 @@ impl App {
             events_base: 0,
             draining: false,
             time_watches: servitor::TimeWatchTable::new(),
+            deadbands: servitor::DeadbandTable::new(),
             now_ms: None,
             behavior_cursor: 0,
             cascade_budget: servitor::cascade::CascadeBudget::DEFAULT.rounds(),
