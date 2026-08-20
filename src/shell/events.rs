@@ -55,12 +55,22 @@ impl ApplicationHandler for Shell {
         }
         let attributes = Window::default_attributes()
             .with_title("Turnstone")
-            .with_inner_size(PhysicalSize::new(self.width, self.height));
+            .with_inner_size(PhysicalSize::new(self.width, self.height))
+            // Hidden at creation on purpose: the AccessKit adapter must be
+            // installed before the window is first shown, and a window that
+            // flashes unbridged is a window a screen reader met too early.
+            .with_visible(false);
         let window = Arc::new(
             event_loop
                 .create_window(attributes)
                 .expect("failed to create the turnstone window"),
         );
+        self.a11y_adapter = Some(crate::shell::a11y_bridge::install(
+            event_loop,
+            &window,
+            self.a11y_shared.clone(),
+        ));
+        window.set_visible(true);
         let size = window.inner_size();
         self.width = size.width.max(1);
         self.height = size.height.max(1);
@@ -148,6 +158,11 @@ impl ApplicationHandler for Shell {
         window_id: WindowId,
         event: WindowEvent,
     ) {
+        if let (Some(adapter), Some(window)) = (self.a11y_adapter.as_mut(), self.window.as_ref())
+            && window.id() == window_id
+        {
+            adapter.process_event(window, &event);
+        }
         if self.window.as_ref().map(|w| w.id()) != Some(window_id) {
             // A lens window's event (rung 7): canvas gestures through the
             // lens's own camera; everything else is the primary's.
@@ -274,6 +289,7 @@ impl ApplicationHandler for Shell {
             }
             WindowEvent::RedrawRequested => {
                 self.render();
+                self.push_a11y_tree();
                 self.scenario_pump(event_loop);
             }
             _ => {}

@@ -220,7 +220,6 @@ pub struct KnotClipHandle {
 
 impl KnotClipHandle {
     pub fn insert(&self, clip: inker::DocumentClip) -> Result<(), String> {
-        let selectors = clip_selectors(clip.selector.as_deref(), &clip.text);
         let artifacts = clip
             .artifacts
             .into_iter()
@@ -238,14 +237,47 @@ impl KnotClipHandle {
                 bytes: artifact.bytes,
             })
             .collect::<Vec<_>>();
-        let fidelity = (!artifacts.is_empty())
-            .then(|| KnotClipFidelityV1 {
+        let selectors = clip_selectors(clip.selector.as_deref(), &clip.text, &artifacts);
+        let had_dom_range = clip.selector.as_deref().is_some_and(|selector| {
+            serde_json::from_str::<serde_json::Value>(selector)
+                .ok()
+                .and_then(|value| {
+                    value
+                        .get("type")
+                        .and_then(serde_json::Value::as_str)
+                        .map(str::to_string)
+                })
+                .as_deref()
+                == Some("dom-range")
+        });
+        let retained_dom_range = selectors
+            .iter()
+            .any(|selector| matches!(selector, KnotClipSelectorV1::DomRange { .. }));
+        let mut fidelity = (!artifacts.is_empty())
+            .then_some(KnotClipFidelityV1 {
                 class: "arrangement-unchecked".into(),
                 detail: "The semantic lowering did not compare computed layout.".into(),
                 selector: None,
             })
             .into_iter()
-            .collect();
+            .collect::<Vec<_>>();
+        if had_dom_range && !retained_dom_range {
+            fidelity.push(KnotClipFidelityV1 {
+                class: if selectors.is_empty() {
+                    "selector-unanchored".into()
+                } else {
+                    "selector-demoted".into()
+                },
+                detail: if selectors.is_empty() {
+                    "The DOM-range selector had no retained observed representation or exact source quote."
+                        .into()
+                } else {
+                    "The DOM-range selector had no retained observed representation; a text quote into the source response is retained instead."
+                        .into()
+                },
+                selector: selectors.first().cloned(),
+            });
+        }
         let discovered_edges = clip
             .links
             .iter()
@@ -295,15 +327,24 @@ impl KnotClipHandle {
     }
 }
 
-fn clip_selectors(selector: Option<&str>, text: &str) -> Vec<KnotClipSelectorV1> {
-    let dom_range = selector
+fn clip_selectors(
+    selector: Option<&str>,
+    text: &str,
+    artifacts: &[KnotClipArtifactV1],
+) -> Vec<KnotClipSelectorV1> {
+    let has_observed_representation = artifacts
+        .iter()
+        .any(|artifact| artifact.role == KnotClipArtifactRoleV1::ObservedRepresentation);
+    let dom_range = has_observed_representation
+        .then_some(selector)
+        .flatten()
         .and_then(|selector| serde_json::from_str::<serde_json::Value>(selector).ok())
         .and_then(|selector| {
             if selector.get("type")?.as_str()? != "dom-range" {
                 return None;
             }
             Some(KnotClipSelectorV1::DomRange {
-                artifact_role: KnotClipArtifactRoleV1::SourceResponse,
+                artifact_role: KnotClipArtifactRoleV1::ObservedRepresentation,
                 anchor_path: json_path(selector.get("anchor")?.get("path")?)?,
                 anchor_offset: selector.get("anchor")?.get("offset")?.as_u64()?,
                 focus_path: json_path(selector.get("focus")?.get("path")?)?,
@@ -317,8 +358,14 @@ fn clip_selectors(selector: Option<&str>, text: &str) -> Vec<KnotClipSelectorV1>
         });
     dom_range
         .or_else(|| {
-            (!text.is_empty()).then(|| KnotClipSelectorV1::TextQuote {
-                artifact_role: KnotClipArtifactRoleV1::SourceResponse,
+            let artifact_role = artifacts.iter().find_map(|artifact| {
+                std::str::from_utf8(&artifact.bytes)
+                    .ok()
+                    .filter(|source| !text.is_empty() && source.contains(text))
+                    .map(|_| artifact.role)
+            })?;
+            Some(KnotClipSelectorV1::TextQuote {
+                artifact_role,
                 exact: text.to_string(),
                 prefix: None,
                 suffix: None,
@@ -2459,6 +2506,45 @@ mod tests {
     }
 
     #[test]
+    fn dom_ranges_only_name_an_observed_representation() {
+        let dom_range = serde_json::json!({
+            "type": "dom-range",
+            "version": 1,
+            "anchor": { "path": [0, 1], "offset": 0 },
+            "focus": { "path": [0, 1], "offset": 17 },
+            "quote": "A useful finding."
+        })
+        .to_string();
+        let source = KnotClipArtifactV1 {
+            role: KnotClipArtifactRoleV1::SourceResponse,
+            media_type: "text/html".into(),
+            canonical_uri: "https://example.test/report".into(),
+            bytes: b"<p>A useful finding.</p>".to_vec(),
+        };
+        assert!(matches!(
+            clip_selectors(Some(&dom_range), "A useful finding.", &[source]).as_slice(),
+            [KnotClipSelectorV1::TextQuote {
+                artifact_role: KnotClipArtifactRoleV1::SourceResponse,
+                ..
+            }]
+        ));
+
+        let observed = KnotClipArtifactV1 {
+            role: KnotClipArtifactRoleV1::ObservedRepresentation,
+            media_type: "application/vnd.mere.dom+json".into(),
+            canonical_uri: "https://example.test/report".into(),
+            bytes: br#"{"node":"p","text":"A useful finding."}"#.to_vec(),
+        };
+        assert!(matches!(
+            clip_selectors(Some(&dom_range), "A useful finding.", &[observed]).as_slice(),
+            [KnotClipSelectorV1::DomRange {
+                artifact_role: KnotClipArtifactRoleV1::ObservedRepresentation,
+                ..
+            }]
+        ));
+    }
+
+    #[test]
     #[ignore = "receipt: set KNOT_ENDPOINT_TEST_BIN to a built Mere knot_endpoint"]
     fn real_knot_consumer_saves_rejects_stale_and_reopens() {
         let program = std::env::var_os("KNOT_ENDPOINT_TEST_BIN")
@@ -2653,6 +2739,9 @@ mod tests {
         assert!(saved.contains(&format!("urn:blake3:{digest}")));
         assert!(!saved.contains("<article>"));
 
+        drop(handle);
+        drop(engine);
+        std::thread::sleep(POLL_INTERVAL * 2);
         fs::remove_dir_all(root).unwrap();
         fs::remove_dir_all(evidence).unwrap();
     }

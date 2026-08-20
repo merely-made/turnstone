@@ -225,6 +225,36 @@ fn outline_role(entry: &OutlineFact) -> Role {
 }
 
 #[cfg(test)]
+mod bridge_integrity {
+    use super::*;
+    use std::collections::HashSet;
+
+    /// UIA stops traversal at a node whose children reference an id absent
+    /// from the pushed tree, which reads to a person as "nothing after that
+    /// when I hit down arrow". The in-process assert-a11y walk never caught
+    /// this because it iterates the flat node list rather than following
+    /// children.
+    #[test]
+    fn the_pushed_tree_has_no_dangling_children_and_no_duplicate_ids() {
+        let app = App::test_stub();
+        let tree = project_app(&app);
+        let mut seen = HashSet::new();
+        for (id, _) in &tree.nodes {
+            assert!(seen.insert(*id), "duplicate node id {id:?} in one update");
+        }
+        for (id, node) in &tree.nodes {
+            for child in node.children() {
+                assert!(
+                    seen.contains(child),
+                    "node {id:?} references child {child:?} that is not in the update"
+                );
+            }
+        }
+        assert!(seen.contains(&tree.root), "the root itself is missing");
+    }
+}
+
+#[cfg(test)]
 mod tests {
     use std::collections::HashSet;
 

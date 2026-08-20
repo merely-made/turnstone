@@ -101,6 +101,7 @@ uxtree = { git = "https://github.com/merely-made/mere.git", branch = "main" }
 chrome = { package = "mere-chrome", git = "https://github.com/merely-made/mere.git", branch = "main" }
 # AccessKit node vocabulary for the projection (matches mere's 0.24 pin).
 accesskit = "0.24"
+accesskit_winit = "0.33"
 # The actor-kernel runtime: the physics + fetch actors wake this shell's
 # event loop through an `armillary::Wake`.
 armillary = { git = "https://github.com/merely-made/mere.git", branch = "main" }

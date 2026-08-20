@@ -41,6 +41,8 @@ use winit::event_loop::{ActiveEventLoop, EventLoopProxy};
 use winit::keyboard::{Key as WinitKey, NamedKey as WinitNamedKey};
 use winit::window::{Window, WindowId};
 
+pub(crate) mod a11y_bridge;
+
 use crate::panes::PaneContent;
 use crate::settings_pane::LiveSettingsHandle;
 use crate::settings_provider::ApplicationSettingsProvider;
@@ -249,6 +251,14 @@ pub struct Shell {
     /// verb; targets the first live lens window).
     pending_lens_capture: Option<std::path::PathBuf>,
     window: Option<Arc<Window>>,
+    /// The OS AccessKit bridge for the primary window, when installed.
+    a11y_adapter: Option<accesskit_winit::Adapter>,
+    /// The latest projected tree, shared with the platform activation thread.
+    a11y_shared: crate::shell::a11y_bridge::SharedTree,
+    /// Frames since the OS tree was last refreshed; a cadence, not a vsync
+    /// obligation, because the projection walks the graph and freezes the
+    /// disclosed scene, which is not a per-frame cost worth paying.
+    a11y_frames_since_push: u32,
     host: Option<SurfaceHost>,
     width: u32,
     height: u32,
@@ -522,6 +532,9 @@ impl Shell {
             pending_capture: None,
             pending_lens_capture: None,
             window: None,
+            a11y_adapter: None,
+            a11y_shared: std::sync::Arc::new(std::sync::Mutex::new(None)),
+            a11y_frames_since_push: u32::MAX / 2,
             host: None,
             width: 1024,
             height: 600,
@@ -1010,6 +1023,47 @@ impl Shell {
             _ => {}
         }
         out
+    }
+
+    /// Refresh the OS accessibility tree on a frame cadence.
+    ///
+    /// Thirty frames is about half a second at sixty; the projection walks
+    /// the graph and re-freezes the disclosed scene, so per-frame would be
+    /// paying a solve for readers that poll far slower than that.
+    fn push_a11y_tree(&mut self) {
+        const CADENCE_FRAMES: u32 = 30;
+        let Some(adapter) = self.a11y_adapter.as_mut() else {
+            return;
+        };
+        self.a11y_frames_since_push = self.a11y_frames_since_push.saturating_add(1);
+        if self.a11y_frames_since_push < CADENCE_FRAMES {
+            return;
+        }
+        self.a11y_frames_since_push = 0;
+        let mut update = crate::a11y::project_app(&self.app).to_tree_update(None);
+        // Narrator refuses to walk past a node without a bounding rectangle:
+        // UIA treats boundless elements as off-screen, so the tree served
+        // without these read as "three buttons, the omnibar, then nothing".
+        // The projection does not know per-pane rects yet, so every node
+        // claims the window's extent: coarse geometry, correct names and
+        // structure, which is what a screen-reader walk actually verifies.
+        // Per-node rects from the surface plan are the recorded follow-up.
+        let bounds = accesskit::Rect {
+            x0: 0.0,
+            y0: 0.0,
+            x1: self.width.max(1) as f64,
+            y1: self.height.max(1) as f64,
+        };
+        for (_, node) in &mut update.nodes {
+            if node.bounds().is_none() {
+                node.set_bounds(bounds);
+            }
+        }
+        *self
+            .a11y_shared
+            .lock()
+            .expect("a11y tree slot poisoned") = Some(update.clone());
+        adapter.update_if_active(|| update);
     }
 
     fn clip_focused_document_to_knot(&mut self) {
