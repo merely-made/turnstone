@@ -186,6 +186,39 @@ impl Shell {
         {
             self.host_file_drag.files.push(drag_path);
         }
+        if matches!(
+            self.app.omnibar.mode,
+            crate::ui::OmnibarMode::SmolwebSubmission(crate::ui::SmolwebSubmissionPrompt {
+                stage: crate::ui::SmolwebSubmissionStage::Body,
+                ..
+            })
+        ) {
+            const CAP: u64 = 64 * 1024 * 1024;
+            let bytes = std::fs::metadata(path)
+                .ok()
+                .filter(|metadata| metadata.len() <= CAP)
+                .and_then(|_| std::fs::read(path).ok())
+                .filter(|bytes| bytes.len() as u64 <= CAP);
+            self.cancel_host_file_drag();
+            if let Some(bytes) = bytes {
+                let name = path
+                    .file_name()
+                    .and_then(|name| name.to_str())
+                    .unwrap_or("dropped file")
+                    .to_string();
+                self.act(Action::SmolwebSubmissionFile {
+                    name,
+                    bytes,
+                    suggested_mime: smolweb_file_mime(path).to_string(),
+                });
+            } else {
+                self.app.note(crate::observe::AppEvent::InteractionMissed {
+                    what: "smolweb-file",
+                    target: "file unreadable or exceeds 64 MiB".to_string(),
+                });
+            }
+            return;
+        }
         if self.drop_files_on_surface(x, y) {
             return;
         }
@@ -368,5 +401,28 @@ impl Shell {
         {
             tracing::warn!(%node, %error, ?phase, "surface file drag delivery failed");
         }
+    }
+}
+
+fn smolweb_file_mime(path: &std::path::Path) -> &'static str {
+    match path
+        .extension()
+        .and_then(|extension| extension.to_str())
+        .unwrap_or("")
+        .to_ascii_lowercase()
+        .as_str()
+    {
+        "gmi" | "gemini" => "text/gemini",
+        "md" | "markdown" => "text/markdown",
+        "txt" => "text/plain",
+        "html" | "htm" => "text/html",
+        "json" => "application/json",
+        "png" => "image/png",
+        "jpg" | "jpeg" => "image/jpeg",
+        "gif" => "image/gif",
+        "webp" => "image/webp",
+        "svg" => "image/svg+xml",
+        "pdf" => "application/pdf",
+        _ => "application/octet-stream",
     }
 }

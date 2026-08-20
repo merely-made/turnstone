@@ -189,6 +189,11 @@ pub fn ring_of(action: &Action) -> Ring {
         // These are reports from a live engine callback, not intents a
         // denizen may synthesize to rewrite another member's address/title.
         | ContentNavigationCommitted { .. } | ContentTitleChanged { .. }
+        // A smolweb mutation always requires a local, literal confirmation.
+        // Neither the composer nor its file/body handoff is grantable.
+        | ComposeFocusedSmolwebSubmission
+        | BeginSmolwebSubmission { .. }
+        | SmolwebSubmissionFile { .. }
         // Standing network schedules consume host resources and therefore
         // require a local gesture, like the visible review for W4 behaviors.
         | SubscribeFocusedFeed { .. }

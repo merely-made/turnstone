@@ -432,7 +432,8 @@ impl Shell {
                 // Fetch-shaped effects were consumed above.
                 Effect::FetchPage { .. }
                 | Effect::FetchFeed { .. }
-                | Effect::FetchFavicon { .. } => {}
+                | Effect::FetchFavicon { .. }
+                | Effect::SubmitSmolweb { .. } => {}
             }
         }
     }

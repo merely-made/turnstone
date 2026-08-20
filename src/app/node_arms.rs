@@ -302,6 +302,15 @@ impl App {
     }
 
     pub(super) fn commit_omnibar(&mut self) -> Vec<Effect> {
+        if let crate::ui::OmnibarMode::SmolwebSubmission(submission) = self.omnibar.mode.clone() {
+            return self.commit_smolweb_submission(submission);
+        }
+        if matches!(
+            self.omnibar.mode,
+            crate::ui::OmnibarMode::SmolwebSubmissionResult(_)
+        ) {
+            return self.close_omnibar();
+        }
         if let crate::ui::OmnibarMode::GeminiTrust(input) = self.omnibar.mode.clone() {
             return self.commit_gemini_trust(input);
         }
@@ -526,6 +535,197 @@ impl App {
         ]
     }
 
+    fn commit_smolweb_submission(
+        &mut self,
+        mut submission: crate::ui::SmolwebSubmissionPrompt,
+    ) -> Vec<Effect> {
+        use crate::ui::{SmolwebSubmissionProtocol as Protocol, SmolwebSubmissionStage as Stage};
+
+        match submission.stage {
+            Stage::Body => {
+                if submission.file_name.is_none() || !self.omnibar.text.is_empty() {
+                    submission.body = self.omnibar.text.as_bytes().to_vec();
+                    submission.file_name = None;
+                }
+                submission.stage = match submission.protocol {
+                    Protocol::Titan => Stage::Mime,
+                    Protocol::Spartan => Stage::Confirm,
+                };
+                self.omnibar.text = if submission.stage == Stage::Mime {
+                    submission.mime.clone()
+                } else {
+                    String::new()
+                };
+                self.omnibar.cursor = self.omnibar.text.len();
+                self.omnibar.mode = crate::ui::OmnibarMode::SmolwebSubmission(submission);
+                self.recompute_omnibar_suggestions();
+                return vec![Effect::Redraw];
+            }
+            Stage::Mime => {
+                let mime = self.omnibar.text.trim();
+                submission.mime = if mime.is_empty() {
+                    "application/octet-stream".to_string()
+                } else {
+                    mime.to_string()
+                };
+                submission.stage = Stage::Token;
+                self.omnibar.text.clear();
+                self.omnibar.cursor = 0;
+                self.omnibar.mode = crate::ui::OmnibarMode::SmolwebSubmission(submission);
+                self.recompute_omnibar_suggestions();
+                return vec![Effect::Redraw];
+            }
+            Stage::Token => {
+                submission.token = (!self.omnibar.text.is_empty())
+                    .then(|| crate::action::SensitiveString::new(self.omnibar.text.clone()));
+                submission.stage = Stage::Confirm;
+                self.omnibar.text.clear();
+                self.omnibar.cursor = 0;
+                self.omnibar.mode = crate::ui::OmnibarMode::SmolwebSubmission(submission);
+                self.recompute_omnibar_suggestions();
+                return vec![Effect::Redraw];
+            }
+            Stage::Confirm if !self.omnibar.text.trim().eq_ignore_ascii_case("send") => {
+                return vec![Effect::Redraw];
+            }
+            Stage::Confirm => {}
+        }
+
+        self.next_smolweb_submission = self.next_smolweb_submission.wrapping_add(1);
+        let request = self.next_smolweb_submission;
+        self.active_smolweb_submission = Some(request);
+        let identity = if submission.protocol == Protocol::Titan {
+            self.gemini_identities
+                .identity_for(self.identity.as_ref(), &submission.target)
+                .unwrap_or_else(|error| {
+                    tracing::warn!(%error, "failed to project Titan client identity");
+                    None
+                })
+        } else {
+            None
+        };
+        self.events.push(AppEvent::SmolwebSubmissionStarted {
+            target: submission.target.clone(),
+            bytes: submission.body.len(),
+        });
+        self.omnibar = crate::ui::OmnibarState {
+            open: true,
+            mode: crate::ui::OmnibarMode::SmolwebSubmissionResult(
+                crate::ui::SmolwebSubmissionResult {
+                    target: submission.target.clone(),
+                    message: "sending".to_string(),
+                },
+            ),
+            ..Default::default()
+        };
+        self.recompute_omnibar_suggestions();
+        vec![
+            Effect::SubmitSmolweb {
+                request,
+                source: submission.source,
+                target: submission.target,
+                protocol: submission.protocol,
+                body: submission.body,
+                mime: submission.mime,
+                token: submission.token,
+                identity,
+            },
+            Effect::Redraw,
+        ]
+    }
+
+    pub(super) fn compose_focused_smolweb_submission(&mut self) -> Vec<Effect> {
+        let Some(source) = self.graph_runtimes.focused_member() else {
+            return vec![Effect::Redraw];
+        };
+        let Some(target) = self.focused_address() else {
+            return vec![Effect::Redraw];
+        };
+        self.begin_smolweb_submission(Some(source), target)
+    }
+
+    pub(super) fn begin_smolweb_submission(
+        &mut self,
+        source: Option<Uuid>,
+        target: String,
+    ) -> Vec<Effect> {
+        let base = source.and_then(|member| {
+            self.graph_runtimes
+                .graph()
+                .get_node_by_id(member)
+                .map(|(_, node)| node.url().to_string())
+        });
+        let resolved = url::Url::parse(&target).or_else(|_| {
+            base.as_deref()
+                .ok_or(url::ParseError::RelativeUrlWithoutBase)
+                .and_then(|base| url::Url::parse(base)?.join(&target))
+        });
+        let Ok(resolved) = resolved else {
+            self.events.push(AppEvent::SmolwebSubmissionFailed {
+                target,
+                error: "invalid submission target".to_string(),
+            });
+            return vec![Effect::Redraw];
+        };
+        let protocol = match resolved.scheme() {
+            "titan" => crate::ui::SmolwebSubmissionProtocol::Titan,
+            "spartan" => crate::ui::SmolwebSubmissionProtocol::Spartan,
+            _ => {
+                self.events.push(AppEvent::SmolwebSubmissionFailed {
+                    target: resolved.to_string(),
+                    error: "submission target must use titan:// or spartan://".to_string(),
+                });
+                return vec![Effect::Redraw];
+            }
+        };
+        let target_context = self.fallback_shell_context();
+        self.shell.begin_omnibar(target_context);
+        self.omnibar = crate::ui::OmnibarState {
+            open: true,
+            mode: crate::ui::OmnibarMode::SmolwebSubmission(crate::ui::SmolwebSubmissionPrompt {
+                source,
+                target: resolved.to_string(),
+                protocol,
+                stage: crate::ui::SmolwebSubmissionStage::Body,
+                body: Vec::new(),
+                file_name: None,
+                mime: "text/gemini".to_string(),
+                token: None,
+            }),
+            ..Default::default()
+        };
+        self.focus = FocusTarget::Chrome;
+        self.recompute_omnibar_suggestions();
+        self.events.push(AppEvent::SmolwebSubmissionComposed {
+            target: resolved.to_string(),
+        });
+        vec![Effect::Redraw]
+    }
+
+    pub(super) fn set_smolweb_submission_file(
+        &mut self,
+        name: String,
+        bytes: Vec<u8>,
+        suggested_mime: String,
+    ) -> Vec<Effect> {
+        const CAP: usize = 64 * 1024 * 1024;
+        let crate::ui::OmnibarMode::SmolwebSubmission(mut submission) = self.omnibar.mode.clone()
+        else {
+            return vec![Effect::Redraw];
+        };
+        if submission.stage != crate::ui::SmolwebSubmissionStage::Body || bytes.len() > CAP {
+            return vec![Effect::Redraw];
+        }
+        submission.body = bytes;
+        submission.file_name = Some(name);
+        submission.mime = suggested_mime;
+        self.omnibar.text.clear();
+        self.omnibar.cursor = 0;
+        self.omnibar.mode = crate::ui::OmnibarMode::SmolwebSubmission(submission);
+        self.recompute_omnibar_suggestions();
+        vec![Effect::Redraw]
+    }
+
     fn commit_gemini_identity(&mut self, input: crate::ui::GeminiIdentityPrompt) -> Vec<Effect> {
         let current = self
             .graph_runtimes
@@ -666,7 +866,11 @@ impl App {
         };
         self.history.visit(url.clone());
         let mut effects = vec![Effect::Redraw];
-        if fetch::is_fetchable(&url)
+        if url::Url::parse(&url).is_ok_and(|parsed| parsed.scheme() == "titan")
+            && let Some(node) = self.graph_runtimes.graph().get_node(key).map(|n| n.id)
+        {
+            effects.extend(self.begin_smolweb_submission(Some(node), url));
+        } else if fetch::is_fetchable(&url)
             && let Some(node) = self.graph_runtimes.graph().get_node(key).map(|n| n.id)
         {
             effects.push(self.fetch_page_effect(node, url.clone(), url));

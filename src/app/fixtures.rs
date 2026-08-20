@@ -47,6 +47,8 @@ impl App {
             place: crate::place::PlaceState::default(),
             next_place_generation: 0,
             next_place_request: 0,
+            next_smolweb_submission: 0,
+            active_smolweb_submission: None,
             focus: FocusTarget::Graph(crate::panes::PaneId(0)),
             frisket,
             history: chrome::nav::History::new(""),

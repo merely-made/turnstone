@@ -185,6 +185,21 @@ pub enum AppEvent {
         node: Uuid,
         sensitive: bool,
     },
+    SmolwebSubmissionComposed {
+        target: String,
+    },
+    SmolwebSubmissionStarted {
+        target: String,
+        bytes: usize,
+    },
+    SmolwebSubmissionSucceeded {
+        target: String,
+        outcome: String,
+    },
+    SmolwebSubmissionFailed {
+        target: String,
+        error: String,
+    },
     /// A capsule asked for a client identity. The origin is public routing
     /// context; certificate and key bytes never enter observation.
     GeminiIdentityRequested {
@@ -394,6 +409,18 @@ impl AppEvent {
             } => format!("smolweb-input-requested {node} sensitive={sensitive} {prompt}"),
             AppEvent::SmolwebInputSubmitted { node, sensitive } => {
                 format!("smolweb-input-submitted {node} sensitive={sensitive}")
+            }
+            AppEvent::SmolwebSubmissionComposed { target } => {
+                format!("smolweb-submission-composed {target}")
+            }
+            AppEvent::SmolwebSubmissionStarted { target, bytes } => {
+                format!("smolweb-submission-started {target} bytes={bytes}")
+            }
+            AppEvent::SmolwebSubmissionSucceeded { target, outcome } => {
+                format!("smolweb-submission-succeeded {target} {outcome}")
+            }
+            AppEvent::SmolwebSubmissionFailed { target, error } => {
+                format!("smolweb-submission-failed {target} {error}")
             }
             AppEvent::GeminiIdentityRequested {
                 node,

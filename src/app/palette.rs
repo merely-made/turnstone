@@ -106,6 +106,14 @@ impl App {
     /// static label would have acted as the wrong one).
     pub fn available_actions(&self) -> Vec<(String, Action)> {
         let mut rows = self.session_actions();
+        if self.focused_address().is_some_and(|address| {
+            url::Url::parse(&address).is_ok_and(|url| matches!(url.scheme(), "titan" | "spartan"))
+        }) {
+            rows.push((
+                "Compose smolweb submission".to_string(),
+                Action::ComposeFocusedSmolwebSubmission,
+            ));
+        }
         rows.extend(crate::action::palette_actions());
         rows
     }

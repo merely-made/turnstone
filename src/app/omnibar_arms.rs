@@ -150,6 +150,10 @@ impl App {
     }
 
     fn cancel_smolweb_conversation(&mut self) -> Vec<Effect> {
+        if matches!(self.omnibar.mode, OmnibarMode::SmolwebSubmissionResult(_)) {
+            self.active_smolweb_submission = None;
+            return Vec::new();
+        }
         let (node, awaiting, reason) = match self.omnibar.mode.clone() {
             OmnibarMode::SmolwebInput(input) => (
                 input.node,

@@ -24,6 +24,26 @@
 
 use crate::panes::PaneKindId;
 
+/// A short-lived secret whose debug representation never contains the value.
+#[derive(Clone, PartialEq, Eq)]
+pub struct SensitiveString(String);
+
+impl SensitiveString {
+    pub fn new(value: String) -> Self {
+        Self(value)
+    }
+
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
+impl std::fmt::Debug for SensitiveString {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        formatter.write_str("[redacted]")
+    }
+}
+
 /// Which window's frisket space a tree op targets: the primary tree or a live
 /// lens's. Pane ids are unique across every space, so a pane-anchored op
 /// resolves its own space ([`crate::app::App::space_of`]); only the
@@ -41,6 +61,19 @@ pub enum SpaceRef {
 pub enum Action {
     /// Open an address: mint/select its node in the graph and fetch it.
     OpenAddress(String),
+    /// Open the submission composer for the focused Titan or Spartan address.
+    ComposeFocusedSmolwebSubmission,
+    /// Begin a submission from a typed document interaction or explicit target.
+    BeginSmolwebSubmission {
+        source: Option<uuid::Uuid>,
+        target: String,
+    },
+    /// Replace the composer's body with bytes read from a dropped file.
+    SmolwebSubmissionFile {
+        name: String,
+        bytes: Vec<u8>,
+        suggested_mime: String,
+    },
     /// A live navigable committed a new top-level resource in an existing
     /// graph member. This grows that member's own navigation lineage; it does
     /// not mint another member merely because its current URL changed.
@@ -468,6 +501,17 @@ pub enum Effect {
         url: String,
         identity: Option<fetch::GeminiClientIdentity>,
     },
+    /// Perform one confirmed smolweb mutation exactly once.
+    SubmitSmolweb {
+        request: u64,
+        source: Option<uuid::Uuid>,
+        target: String,
+        protocol: crate::ui::SmolwebSubmissionProtocol,
+        body: Vec<u8>,
+        mime: String,
+        token: Option<SensitiveString>,
+        identity: Option<fetch::GeminiClientIdentity>,
+    },
     /// Replace one durable Gemini server pin after an explicit human decision.
     /// The shell executes this synchronously before the following fetch effect.
     ReplaceGeminiTrust {
@@ -580,6 +624,12 @@ pub enum Update {
         node: uuid::Uuid,
         url: String,
         result: Result<FetchedPage, String>,
+    },
+    SmolwebSubmitted {
+        request: u64,
+        source: Option<uuid::Uuid>,
+        target: String,
+        result: Result<SmolwebSubmissionReceipt, String>,
     },
     /// A smolweb page fetch reached a protocol input response. `url` is the
     /// member's requested address; `input_url` is the final redirect target
@@ -698,6 +748,12 @@ pub struct FetchedPage {
     pub content_type: Option<String>,
     /// The decoded body text.
     pub body: String,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum SmolwebSubmissionReceipt {
+    Success(FetchedPage),
+    Redirect(String),
 }
 
 /// One lexical-recall hit from browsing memory, in app-owned terms (the trail

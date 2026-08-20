@@ -35,6 +35,7 @@ pub struct PendingFetches {
     pages: HashMap<String, Vec<PendingPage>>,
     /// Keyed by owner page URL (the actor echoes `owner_url`, not the icon URL).
     favicons: HashMap<String, Vec<Uuid>>,
+    submissions: HashMap<u64, Option<Uuid>>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -95,7 +96,7 @@ impl PendingFetches {
     /// lane's quiescence read (`wait`): a scenario must not assert against a
     /// graph whose fetches have not landed.
     pub fn any_in_flight(&self) -> bool {
-        !self.pages.is_empty() || !self.favicons.is_empty()
+        !self.pages.is_empty() || !self.favicons.is_empty() || !self.submissions.is_empty()
     }
 
     fn take_page(&mut self, url: &str) -> Option<PendingPage> {
@@ -252,6 +253,35 @@ pub fn update_from_fetch(update: FetchUpdate, pending: &mut PendingFetches) -> O
             })
         }
         FetchUpdate::Subresource(_) => None,
+        FetchUpdate::Submission(outcome) => {
+            let Some(source) = pending.submissions.remove(&outcome.request) else {
+                tracing::warn!(
+                    request = outcome.request,
+                    "submission completion without a pending requester; dropped"
+                );
+                return None;
+            };
+            let result = outcome
+                .result
+                .map(|answer| match answer {
+                    fetch::SubmissionAnswer::Success(fetched) => {
+                        crate::action::SmolwebSubmissionReceipt::Success(FetchedPage {
+                            content_type: fetched.content_type,
+                            body: fetched.body,
+                        })
+                    }
+                    fetch::SubmissionAnswer::Redirect(target) => {
+                        crate::action::SmolwebSubmissionReceipt::Redirect(target)
+                    }
+                })
+                .map_err(|error| error.to_string());
+            Some(Update::SmolwebSubmitted {
+                request: outcome.request,
+                source,
+                target: outcome.url,
+                result,
+            })
+        }
     }
 }
 
@@ -292,6 +322,37 @@ pub fn fetch_command_for(effect: &Effect, pending: &mut PendingFetches) -> Optio
             Some(FetchCommand::Favicon {
                 owner_url: owner_url.clone(),
                 url: url.clone(),
+            })
+        }
+        Effect::SubmitSmolweb {
+            request,
+            source,
+            target,
+            protocol,
+            body,
+            mime,
+            token,
+            identity,
+        } => {
+            pending.submissions.insert(*request, *source);
+            let submission = match protocol {
+                crate::ui::SmolwebSubmissionProtocol::Titan => fetch::SmolwebSubmission::Titan {
+                    url: target.clone(),
+                    body: body.clone(),
+                    mime: mime.clone(),
+                    token: token.as_ref().map(|token| token.as_str().to_string()),
+                    identity: identity.clone(),
+                },
+                crate::ui::SmolwebSubmissionProtocol::Spartan => {
+                    fetch::SmolwebSubmission::Spartan {
+                        url: target.clone(),
+                        body: body.clone(),
+                    }
+                }
+            };
+            Some(FetchCommand::Submit {
+                request: *request,
+                submission,
             })
         }
         _ => None,

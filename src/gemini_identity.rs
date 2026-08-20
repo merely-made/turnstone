@@ -122,8 +122,10 @@ impl GeminiIdentityBindings {
 
 pub fn capsule_origin(raw: &str) -> Result<String, String> {
     let url = url::Url::parse(raw).map_err(|error| error.to_string())?;
-    if url.scheme() != "gemini" {
-        return Err("client identities are only valid for gemini:// capsules".to_string());
+    if !matches!(url.scheme(), "gemini" | "titan") {
+        return Err(
+            "client identities are only valid for gemini:// or titan:// capsules".to_string(),
+        );
     }
     let host = url
         .host_str()
@@ -230,6 +232,10 @@ mod tests {
         assert_eq!(
             capsule_origin("gemini://[::1]:1966/private").unwrap(),
             "gemini://[::1]:1966"
+        );
+        assert_eq!(
+            capsule_origin("titan://a.example/upload").unwrap(),
+            "gemini://a.example"
         );
     }
 

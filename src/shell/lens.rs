@@ -480,12 +480,20 @@ impl Shell {
                         }
                         crate::surface::SurfaceKind::Content(node) => {
                             self.app.focus = crate::surface::FocusTarget::Content(node);
-                            if let Some(session) = self.content_sessions.get_mut(&node)
-                                && let SessionClick::Navigate(url) =
-                                    session.click_at(hit.local.0, hit.local.1)
-                            {
-                                let url = super::content_link_target(&self.app, node, &url);
-                                self.act(Action::OpenAddress(url));
+                            if let Some(session) = self.content_sessions.get_mut(&node) {
+                                match session.click_at(hit.local.0, hit.local.1) {
+                                    SessionClick::Navigate(url) => {
+                                        let url = super::content_link_target(&self.app, node, &url);
+                                        self.act(Action::OpenAddress(url));
+                                    }
+                                    SessionClick::Submit(target) => {
+                                        self.act(Action::BeginSmolwebSubmission {
+                                            source: Some(node),
+                                            target,
+                                        });
+                                    }
+                                    SessionClick::Handled | SessionClick::Miss => {}
+                                }
                             }
                             if let Some(lens) = self.lens_windows.get_mut(&id) {
                                 lens.window.request_redraw();

@@ -54,6 +54,82 @@ impl App {
                 }
                 effects
             }
+            Update::SmolwebSubmitted {
+                request,
+                source: _,
+                target,
+                result,
+            } => {
+                let current = self.active_smolweb_submission == Some(request);
+                if current {
+                    self.active_smolweb_submission = None;
+                }
+                match result {
+                    Ok(crate::action::SmolwebSubmissionReceipt::Redirect(destination)) => {
+                        self.events.push(AppEvent::SmolwebSubmissionSucceeded {
+                            target,
+                            outcome: format!("redirect {destination}"),
+                        });
+                        if !current {
+                            return Vec::new();
+                        }
+                        self.omnibar = crate::ui::OmnibarState::default();
+                        self.shell.close_omnibar();
+                        self.focus = crate::surface::FocusTarget::Graph(self.default_graph_pane());
+                        self.update(crate::action::Action::OpenAddress(destination))
+                    }
+                    Ok(crate::action::SmolwebSubmissionReceipt::Success(page)) => {
+                        self.events.push(AppEvent::SmolwebSubmissionSucceeded {
+                            target: target.clone(),
+                            outcome: "success".to_string(),
+                        });
+                        if !current {
+                            return Vec::new();
+                        }
+                        let preview = page.body.split_whitespace().collect::<Vec<_>>().join(" ");
+                        let preview = if preview.is_empty() {
+                            page.content_type.unwrap_or_else(|| "success".to_string())
+                        } else {
+                            preview.chars().take(240).collect()
+                        };
+                        self.omnibar = crate::ui::OmnibarState {
+                            open: true,
+                            mode: crate::ui::OmnibarMode::SmolwebSubmissionResult(
+                                crate::ui::SmolwebSubmissionResult {
+                                    target,
+                                    message: preview,
+                                },
+                            ),
+                            ..Default::default()
+                        };
+                        self.focus = crate::surface::FocusTarget::Chrome;
+                        self.recompute_omnibar_suggestions();
+                        vec![Effect::Redraw]
+                    }
+                    Err(error) => {
+                        self.events.push(AppEvent::SmolwebSubmissionFailed {
+                            target: target.clone(),
+                            error: error.clone(),
+                        });
+                        if !current {
+                            return Vec::new();
+                        }
+                        self.omnibar = crate::ui::OmnibarState {
+                            open: true,
+                            mode: crate::ui::OmnibarMode::SmolwebSubmissionResult(
+                                crate::ui::SmolwebSubmissionResult {
+                                    target,
+                                    message: format!("failed: {error}"),
+                                },
+                            ),
+                            ..Default::default()
+                        };
+                        self.focus = crate::surface::FocusTarget::Chrome;
+                        self.recompute_omnibar_suggestions();
+                        vec![Effect::Redraw]
+                    }
+                }
+            }
             Update::SmolwebInputRequested {
                 node,
                 url,

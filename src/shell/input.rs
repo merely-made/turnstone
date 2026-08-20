@@ -276,12 +276,20 @@ impl Shell {
                 crate::surface::SurfaceKind::Content(node) => {
                     self.app.focus = crate::surface::FocusTarget::Content(node);
                     if let Some(session) = self.content_sessions.get_mut(&node) {
-                        if button == MouseButton::Left
-                            && let SessionClick::Navigate(url) =
-                                session.pointer_down(hit.local.0, hit.local.1)
-                        {
-                            let url = super::content_link_target(&self.app, node, &url);
-                            self.act(Action::OpenAddress(url));
+                        if button == MouseButton::Left {
+                            match session.pointer_down(hit.local.0, hit.local.1) {
+                                SessionClick::Navigate(url) => {
+                                    let url = super::content_link_target(&self.app, node, &url);
+                                    self.act(Action::OpenAddress(url));
+                                }
+                                SessionClick::Submit(target) => {
+                                    self.act(Action::BeginSmolwebSubmission {
+                                        source: Some(node),
+                                        target,
+                                    });
+                                }
+                                SessionClick::Handled | SessionClick::Miss => {}
+                            }
                         }
                     } else if let (Some(producer), Some(surface_button)) = (
                         self.surface_producers.get_mut(&node),
@@ -923,9 +931,18 @@ impl Shell {
                 }
                 None
             });
-            if let Some(SessionClick::Navigate(url)) = outcome {
-                let url = super::content_link_target(&self.app, node, &url);
-                self.act(Action::OpenAddress(url));
+            match outcome {
+                Some(SessionClick::Navigate(url)) => {
+                    let url = super::content_link_target(&self.app, node, &url);
+                    self.act(Action::OpenAddress(url));
+                }
+                Some(SessionClick::Submit(target)) => {
+                    self.act(Action::BeginSmolwebSubmission {
+                        source: Some(node),
+                        target,
+                    });
+                }
+                Some(SessionClick::Handled | SessionClick::Miss) | None => {}
             }
             self.request_redraw();
             return;

@@ -212,6 +212,40 @@ pub struct SmolwebInputPrompt {
     pub sensitive: bool,
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum SmolwebSubmissionProtocol {
+    Titan,
+    Spartan,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum SmolwebSubmissionStage {
+    Body,
+    Mime,
+    Token,
+    Confirm,
+}
+
+/// App-owned state for one explicit write conversation. Request bytes are
+/// retained separately from the visible line as the composer advances.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct SmolwebSubmissionPrompt {
+    pub source: Option<Uuid>,
+    pub target: String,
+    pub protocol: SmolwebSubmissionProtocol,
+    pub stage: SmolwebSubmissionStage,
+    pub body: Vec<u8>,
+    pub file_name: Option<String>,
+    pub mime: String,
+    pub token: Option<crate::action::SensitiveString>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct SmolwebSubmissionResult {
+    pub target: String,
+    pub message: String,
+}
+
 /// The explicit approval conversation for a Gemini client certificate.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct GeminiIdentityPrompt {
@@ -246,6 +280,8 @@ pub enum OmnibarMode {
     Address,
     RenameSession(crate::panes::SessionId),
     SmolwebInput(SmolwebInputPrompt),
+    SmolwebSubmission(SmolwebSubmissionPrompt),
+    SmolwebSubmissionResult(SmolwebSubmissionResult),
     GeminiIdentity(GeminiIdentityPrompt),
     GeminiTrust(GeminiTrustPrompt),
 }
@@ -282,6 +318,9 @@ impl OmnibarState {
             &self.mode,
             OmnibarMode::SmolwebInput(SmolwebInputPrompt {
                 sensitive: true,
+                ..
+            }) | OmnibarMode::SmolwebSubmission(SmolwebSubmissionPrompt {
+                stage: SmolwebSubmissionStage::Token,
                 ..
             })
         )
@@ -398,6 +437,38 @@ pub fn recompute_suggestions_with_limit(
             } else {
                 format!("{} \u{00b7} Enter to submit", input.prompt)
             }));
+        state.selected = 0;
+        return;
+    }
+
+    if let OmnibarMode::SmolwebSubmission(submission) = &state.mode {
+        let prompt = match submission.stage {
+            SmolwebSubmissionStage::Body => match &submission.file_name {
+                Some(name) => format!("Body from {name} · Enter to continue or drop another file"),
+                None => "Type the submission body, or drop a file · Enter to continue".to_string(),
+            },
+            SmolwebSubmissionStage::Mime => {
+                "MIME type · edit the suggested value · Enter to continue".to_string()
+            }
+            SmolwebSubmissionStage::Token => {
+                "Optional Titan token · input is hidden · Enter to continue".to_string()
+            }
+            SmolwebSubmissionStage::Confirm => format!(
+                "Send {} bytes to {} · type send and press Enter",
+                submission.body.len(),
+                submission.target
+            ),
+        };
+        state.suggestions.push(Suggestion::Prompt(prompt));
+        state.selected = 0;
+        return;
+    }
+
+    if let OmnibarMode::SmolwebSubmissionResult(result) = &state.mode {
+        state.suggestions.push(Suggestion::Prompt(format!(
+            "{} · {} · Enter to close",
+            result.target, result.message
+        )));
         state.selected = 0;
         return;
     }

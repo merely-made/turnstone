@@ -103,6 +103,10 @@ pub struct App {
     /// Monotonic id for authored place commands, so a late answer is
     /// attributable to the command that asked for it.
     pub(crate) next_place_request: u64,
+    /// Correlation id for explicit smolweb writes. Never reused within the
+    /// process, so a late receipt cannot attach to a later composer.
+    pub(crate) next_smolweb_submission: u64,
+    pub(crate) active_smolweb_submission: Option<u64>,
     /// Which surface receives semantic input (rung 5 slice A). The explicit
     /// replacement for the old `omnibar.open` routing boolean: a third surface
     /// class (panes) joins by adding a `FocusTarget` variant rather than
@@ -941,6 +945,15 @@ impl App {
     fn dispatch(&mut self, action: Action) -> Vec<Effect> {
         match action {
             Action::OpenAddress(url) => self.open_address(url),
+            Action::ComposeFocusedSmolwebSubmission => self.compose_focused_smolweb_submission(),
+            Action::BeginSmolwebSubmission { source, target } => {
+                self.begin_smolweb_submission(source, target)
+            }
+            Action::SmolwebSubmissionFile {
+                name,
+                bytes,
+                suggested_mime,
+            } => self.set_smolweb_submission_file(name, bytes, suggested_mime),
             Action::ContentNavigationCommitted { member, url } => {
                 self.commit_content_navigation(member, url)
             }

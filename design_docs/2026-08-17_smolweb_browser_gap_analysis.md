@@ -13,6 +13,15 @@ projects' READMEs, and the turnstone column against this tree, not against our
 plans. Lagrange is the bar; Geopard is the floor a pleasant minimal client
 sets.
 
+> **Status, 2026-08-20:** this is now a historical gap map, not a current
+> implementation report. Native smolweb routing, Gemini input, persona-scoped
+> client identities, durable TOFU review, and feed subscriptions have landed.
+> Titan now has an explicit body/MIME/token/confirmation composer, and Spartan
+> `=:` lines lower to a typed body-submission interaction using that same
+> composer. Writes are separate actor commands: they are neither replayed as
+> fetches nor followed through redirects inside the mutation. The remaining
+> item 6 work is inline media, downloads, and streaming render.
+
 ## Part 1: the anatomy of a browser, in this design language
 
 The taxonomy of a typical browser, each element named in mere/genet terms,
@@ -214,7 +223,11 @@ machinery (app-tier watches, 2026-08) looks purpose-built to carry it.
 
 Individually small, collectively what "pleasant" means:
 
-- Titan uploads: errand speaks titan; there is no compose/upload surface.
+- Titan uploads: closed 2026-08-20. The omnibar composer accepts typed or
+  dropped-file bodies, editable MIME, a masked optional token, and literal
+  confirmation. Titan shares Gemini TOFU and capsule-scoped client identity.
+- Spartan prompts: closed 2026-08-20. `=:` remains a typed submission through
+  parser, document IR, hit testing, session click, app composer, and transport.
 - Inline media on gemtext pages: Lagrange plays MP3/Ogg/WAV and shows images
   inline; our lane renders documents but the inline-fetch-and-embed loop for
   media links is unbuilt.
@@ -258,3 +271,7 @@ the native host's answers to all of them.
 - TOFU pins persist across restarts and a changed certificate presents a
   human decision.
 - A tagged capsule node refetches on a schedule and surfaces new entries.
+- A `titan://` address opens a composer without issuing a zero-byte upload;
+  confirmation sends one actor command and returns its receipt.
+- A Spartan `=:` prompt opens the same composer and submits its body without
+  being mistaken for a navigation link.

@@ -3438,3 +3438,95 @@ fn changed_gemini_certificate_requires_an_explicit_trust_commit_before_refetch()
             .any(|event| event.contains("gemini-certificate-changed"))
     );
 }
+
+#[test]
+fn titan_address_opens_an_explicit_composer_without_uploading() {
+    let mut app = App::test_stub();
+    let target = "titan://capsule.test/posts/new";
+    let effects = app.update(Action::OpenAddress(target.into()));
+    assert!(!effects.iter().any(|effect| matches!(
+        effect,
+        Effect::FetchPage { .. } | Effect::SubmitSmolweb { .. }
+    )));
+    assert!(matches!(
+        app.omnibar.mode,
+        crate::ui::OmnibarMode::SmolwebSubmission(crate::ui::SmolwebSubmissionPrompt {
+            protocol: crate::ui::SmolwebSubmissionProtocol::Titan,
+            stage: crate::ui::SmolwebSubmissionStage::Body,
+            ..
+        })
+    ));
+}
+
+#[test]
+fn titan_composer_stages_body_mime_hidden_token_and_literal_confirmation() {
+    let mut app = App::test_stub();
+    app.update(Action::OpenAddress("titan://capsule.test/upload".into()));
+    app.update(Action::OmnibarInsert("# Draft".into()));
+    app.update(Action::OmnibarCommit);
+    assert!(matches!(
+        app.omnibar.mode,
+        crate::ui::OmnibarMode::SmolwebSubmission(crate::ui::SmolwebSubmissionPrompt {
+            stage: crate::ui::SmolwebSubmissionStage::Mime,
+            ..
+        })
+    ));
+    app.update(Action::OmnibarCommit);
+    app.update(Action::OmnibarInsert("private-token".into()));
+    assert!(app.omnibar.sensitive());
+    assert!(!app.omnibar.presented_text().contains("private-token"));
+    app.update(Action::OmnibarCommit);
+    app.update(Action::OmnibarInsert("not yet".into()));
+    assert!(
+        !app.update(Action::OmnibarCommit)
+            .iter()
+            .any(|effect| matches!(effect, Effect::SubmitSmolweb { .. }))
+    );
+    app.omnibar.text.clear();
+    app.omnibar.cursor = 0;
+    app.update(Action::OmnibarInsert("send".into()));
+    let effects = app.update(Action::OmnibarCommit);
+    let effect = effects
+        .iter()
+        .find(|effect| matches!(effect, Effect::SubmitSmolweb { .. }))
+        .expect("confirmed write effect");
+    let Effect::SubmitSmolweb {
+        body,
+        mime,
+        token,
+        protocol,
+        ..
+    } = effect
+    else {
+        unreachable!()
+    };
+    assert_eq!(body, b"# Draft");
+    assert_eq!(mime, "text/gemini");
+    assert_eq!(
+        token.as_ref().map(|secret| secret.as_str()),
+        Some("private-token")
+    );
+    assert_eq!(*protocol, crate::ui::SmolwebSubmissionProtocol::Titan);
+    assert!(!format!("{effect:?}").contains("private-token"));
+}
+
+#[test]
+fn spartan_prompt_target_resolves_against_its_source_member() {
+    let mut app = App::test_stub();
+    app.update(Action::OpenAddress(
+        "spartan://capsule.test/guestbook".into(),
+    ));
+    let source = app.graph_runtimes.focused_member().expect("source member");
+    app.update(Action::BeginSmolwebSubmission {
+        source: Some(source),
+        target: "/guestbook/sign".into(),
+    });
+    let crate::ui::OmnibarMode::SmolwebSubmission(prompt) = &app.omnibar.mode else {
+        panic!("expected composer");
+    };
+    assert_eq!(prompt.target, "spartan://capsule.test/guestbook/sign");
+    assert_eq!(
+        prompt.protocol,
+        crate::ui::SmolwebSubmissionProtocol::Spartan
+    );
+}
