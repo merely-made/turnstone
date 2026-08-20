@@ -19,6 +19,7 @@ mod denizen;
 mod device_receipts_pane;
 mod device_receipts_service;
 mod feed;
+mod frozen_projection_pane;
 mod gemini_identity;
 mod gemini_trust;
 mod identity;
@@ -37,7 +38,6 @@ mod recycle;
 pub mod remote_projection;
 mod ring;
 mod roster_view;
-mod frozen_projection_pane;
 mod scenario;
 #[cfg(feature = "piccolo")]
 mod script;

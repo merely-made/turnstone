@@ -24,9 +24,10 @@ use genet_scripted_dom::{NodeId, ScriptedDom};
 use graphshell::client::{ResolvedContent, ResolvedPresentation, RetainedEndpointSession};
 use graphshell::protocol::{
     AdvertisedAction, CapabilityProfile, DerivedTextV1, EDITABLE_TEXT_SAVE_INTENT, EditableTextV1,
-    InsertKnotClipV1, IntentResult, KNOT_BLOCK_RUN_INTENT, KNOT_CLIP_INSERT_INTENT,
-    KNOT_TRANSCLUSION_RESOLVE_INTENT, KnotEffectV1, PresentationCapability, ProjectionSession,
-    SaveTextV1,
+    InsertKnotClipV1, InsertKnotClipV2, IntentResult, KNOT_BLOCK_RUN_INTENT,
+    KNOT_CLIP_INSERT_INTENT, KNOT_CLIP_INSERT_SCHEMA_V2, KNOT_TRANSCLUSION_RESOLVE_INTENT,
+    KnotClipArtifactRoleV1, KnotClipArtifactV1, KnotClipFidelityV1, KnotClipObservedEdgeV1,
+    KnotClipSelectorV1, KnotEffectV1, PresentationCapability, ProjectionSession, SaveTextV1,
 };
 use inker::{
     ContentReport, DocumentSession, OutlineEntry, SessionClick, SessionEngine, SessionError,
@@ -154,6 +155,10 @@ struct PendingClip {
     title: Option<String>,
     selector: Option<String>,
     knot_body: String,
+    selectors: Vec<KnotClipSelectorV1>,
+    artifacts: Vec<KnotClipArtifactV1>,
+    fidelity: Vec<KnotClipFidelityV1>,
+    discovered_edges: Vec<KnotClipObservedEdgeV1>,
 }
 
 /// Last known result of the configured Inspector clip destination.
@@ -188,6 +193,41 @@ pub struct KnotClipHandle {
 
 impl KnotClipHandle {
     pub fn insert(&self, clip: inker::DocumentClip) -> Result<(), String> {
+        let selectors = clip_selectors(clip.selector.as_deref(), &clip.text);
+        let artifacts = clip
+            .artifacts
+            .into_iter()
+            .map(|artifact| KnotClipArtifactV1 {
+                role: match artifact.role {
+                    inker::DocumentClipArtifactRole::SourceResponse => {
+                        KnotClipArtifactRoleV1::SourceResponse
+                    }
+                    inker::DocumentClipArtifactRole::ObservedRepresentation => {
+                        KnotClipArtifactRoleV1::ObservedRepresentation
+                    }
+                },
+                media_type: artifact.media_type,
+                canonical_uri: artifact.canonical_uri,
+                bytes: artifact.bytes,
+            })
+            .collect::<Vec<_>>();
+        let fidelity = (!artifacts.is_empty())
+            .then(|| KnotClipFidelityV1 {
+                class: "arrangement-unchecked".into(),
+                detail: "The semantic lowering did not compare computed layout.".into(),
+                selector: None,
+            })
+            .into_iter()
+            .collect();
+        let discovered_edges = clip
+            .links
+            .iter()
+            .cloned()
+            .map(|target| KnotClipObservedEdgeV1 {
+                target,
+                relation: "link".into(),
+            })
+            .collect();
         let fragment = mere_import::web_clip::fragment_from_text(
             clip.source_url.clone(),
             clip.title.clone(),
@@ -200,6 +240,10 @@ impl KnotClipHandle {
             title: clip.title,
             selector: clip.selector,
             knot_body: mere_import::web_clip::fragment_to_knot_body(&fragment),
+            selectors,
+            artifacts,
+            fidelity,
+            discovered_edges,
         };
         *self.status.lock().map_err(|_| "clip status poisoned")? = KnotClipStatus::Sending;
         self.hub
@@ -224,6 +268,51 @@ impl KnotClipHandle {
     }
 }
 
+fn clip_selectors(selector: Option<&str>, text: &str) -> Vec<KnotClipSelectorV1> {
+    let dom_range = selector
+        .and_then(|selector| serde_json::from_str::<serde_json::Value>(selector).ok())
+        .and_then(|selector| {
+            if selector.get("type")?.as_str()? != "dom-range" {
+                return None;
+            }
+            Some(KnotClipSelectorV1::DomRange {
+                artifact_role: KnotClipArtifactRoleV1::SourceResponse,
+                anchor_path: json_path(selector.get("anchor")?.get("path")?)?,
+                anchor_offset: selector.get("anchor")?.get("offset")?.as_u64()?,
+                focus_path: json_path(selector.get("focus")?.get("path")?)?,
+                focus_offset: selector.get("focus")?.get("offset")?.as_u64()?,
+                quote: selector
+                    .get("quote")
+                    .and_then(serde_json::Value::as_str)
+                    .unwrap_or(text)
+                    .to_string(),
+            })
+        });
+    dom_range
+        .or_else(|| {
+            (!text.is_empty()).then(|| KnotClipSelectorV1::TextQuote {
+                artifact_role: KnotClipArtifactRoleV1::SourceResponse,
+                exact: text.to_string(),
+                prefix: None,
+                suffix: None,
+            })
+        })
+        .into_iter()
+        .collect()
+}
+
+fn json_path(value: &serde_json::Value) -> Option<Vec<u32>> {
+    value
+        .as_array()?
+        .iter()
+        .map(|component| {
+            component
+                .as_u64()
+                .and_then(|component| u32::try_from(component).ok())
+        })
+        .collect()
+}
+
 /// The effect grant a hosted endpoint carries, already parsed.
 ///
 /// The spawned path passes these as CLI strings the endpoint binary reparses.
@@ -231,7 +320,11 @@ impl KnotClipHandle {
 /// that no longer crosses a process.
 struct HostedEffects {
     policy: knot::KnotEffectPolicy,
-    max_source_bytes: u64,
+}
+
+struct HostedEvidence {
+    root: PathBuf,
+    max_artifact_bytes: u64,
 }
 
 /// Which source truth a hosted endpoint serves.
@@ -304,6 +397,8 @@ impl KnotHub {
     fn host(
         source: HostedKnot,
         effects: Option<HostedEffects>,
+        evidence: Option<HostedEvidence>,
+        max_source_bytes: u64,
         wake: Wake,
     ) -> Result<(Arc<Self>, Option<knot::KnotPublishSource>), String> {
         let (commands, receiver) = mpsc::channel();
@@ -316,23 +411,13 @@ impl KnotHub {
                     PresentationCapability::EditableText,
                     PresentationCapability::PortableCard,
                 ]);
-                let grant = knot::KnotWriteGrant::new(
-                    effects
-                        .as_ref()
-                        .map_or(DEFAULT_MAX_SOURCE_BYTES, |hosted| hosted.max_source_bytes),
-                );
+                let grant = knot::KnotWriteGrant::new(max_source_bytes);
                 let opened = match source {
-                    // Writable when effects exist, because granting effects to
-                    // a read-only endpoint would advertise capabilities it
-                    // cannot honour.
-                    HostedKnot::Directory { root } if effects.is_some() => {
+                    HostedKnot::Directory { root } => {
                         knot::KnotEndpoint::open_writable(&root, grant)
                             .map_err(|error| format!("could not open the Knot directory: {error}"))
                             .map(|endpoint| (endpoint, None))
                     }
-                    HostedKnot::Directory { root } => knot::KnotEndpoint::open(&root)
-                        .map_err(|error| format!("could not open the Knot directory: {error}"))
-                        .map(|endpoint| (endpoint, None)),
                     HostedKnot::PersonaVault { persona } => {
                         // Identity is family-shared: the device key and the
                         // persona vault come from the shared root, not from
@@ -359,6 +444,12 @@ impl KnotHub {
                     .map(|(mut endpoint, publish_source)| {
                         if let Some(hosted) = effects {
                             endpoint.grant_effects(knot::KnotEffectAuthority::new(hosted.policy));
+                        }
+                        if let Some(hosted) = evidence {
+                            endpoint.grant_clip_evidence(knot::FileClipEvidenceStore::new(
+                                hosted.root,
+                                hosted.max_artifact_bytes,
+                            ));
                         }
                         (endpoint, publish_source)
                     })
@@ -488,6 +579,11 @@ impl KnotAuthoringEngine {
             })
             .transpose()?
             .unwrap_or(DEFAULT_MAX_SOURCE_BYTES);
+        let evidence_root = std::env::var_os("TURNSTONE_KNOT_EVIDENCE_ROOT").map(PathBuf::from);
+        let max_evidence_bytes = env_integer(
+            "TURNSTONE_KNOT_EVIDENCE_MAX_BYTES",
+            DEFAULT_MAX_SOURCE_BYTES,
+        )?;
         let mode =
             std::env::var("TURNSTONE_KNOT_MODE").unwrap_or_else(|_| "directory-write".into());
         let resolve_mode = effect_mode("TURNSTONE_KNOT_RESOLVE_MODE")?;
@@ -529,7 +625,10 @@ impl KnotAuthoringEngine {
                     max_depth: max_depth as u8,
                     max_ops,
                 },
-                max_source_bytes,
+            });
+            let evidence = evidence_root.clone().map(|root| HostedEvidence {
+                root,
+                max_artifact_bytes: max_evidence_bytes,
             });
             let hosted = match mode.as_str() {
                 "directory-write" => Some(HostedKnot::Directory { root: root.clone() }),
@@ -554,7 +653,11 @@ impl KnotAuthoringEngine {
                 _ => None,
             };
             if let Some(hosted) = hosted {
-                let (hub, publish_source) = KnotHub::host(hosted, effects, wake)?;
+                if matches!(&hosted, HostedKnot::Directory { .. }) {
+                    reject_nested_evidence_root(&root, evidence_root.as_deref())?;
+                }
+                let (hub, publish_source) =
+                    KnotHub::host(hosted, effects, evidence, max_source_bytes, wake)?;
                 let clip_target = std::env::var("TURNSTONE_KNOT_CLIP_TARGET")
                     .ok()
                     .filter(|target| !target.trim().is_empty());
@@ -569,22 +672,37 @@ impl KnotAuthoringEngine {
         }
 
         let args = match mode.as_str() {
-            "directory-write" if effects_enabled => vec![
-                "directory-write-effects".into(),
-                root.into_os_string(),
-                max_source_bytes.to_string().into(),
-                resolve_mode.clone().into(),
-                run_mode.clone().into(),
-                schemes.clone().into(),
-                languages.clone().into(),
-                max_depth.to_string().into(),
-                max_ops.to_string().into(),
-            ],
-            "directory-write" => vec![
-                "directory-write".into(),
-                root.into_os_string(),
-                max_source_bytes.to_string().into(),
-            ],
+            "directory-write" => {
+                reject_nested_evidence_root(&root, evidence_root.as_deref())?;
+                let mode = match (effects_enabled, evidence_root.is_some()) {
+                    (false, false) => "directory-write",
+                    (false, true) => "directory-write-evidence",
+                    (true, false) => "directory-write-effects",
+                    (true, true) => "directory-write-effects-evidence",
+                };
+                let mut args = vec![
+                    mode.into(),
+                    root.into_os_string(),
+                    max_source_bytes.to_string().into(),
+                ];
+                if effects_enabled {
+                    args.extend([
+                        resolve_mode.clone().into(),
+                        run_mode.clone().into(),
+                        schemes.clone().into(),
+                        languages.clone().into(),
+                        max_depth.to_string().into(),
+                        max_ops.to_string().into(),
+                    ]);
+                }
+                if let Some(evidence_root) = &evidence_root {
+                    args.extend([
+                        evidence_root.clone().into_os_string(),
+                        max_evidence_bytes.to_string().into(),
+                    ]);
+                }
+                args
+            }
             "persona-vault" => {
                 let persona: std::ffi::OsString =
                     resolve_knot_persona()?.as_uuid().to_string().into();
@@ -602,26 +720,36 @@ impl KnotAuthoringEngine {
                             "persona-vault effects cannot admit file: outside the vault".into()
                         );
                     }
-                    vec![
-                        "persona-vault-effects".into(),
-                        vault_root,
-                        persona,
-                        max_source_bytes.to_string().into(),
+                }
+                let mode = match (effects_enabled, evidence_root.is_some()) {
+                    (false, false) => "persona-vault",
+                    (false, true) => "persona-vault-evidence",
+                    (true, false) => "persona-vault-effects",
+                    (true, true) => "persona-vault-effects-evidence",
+                };
+                let mut args = vec![
+                    mode.into(),
+                    vault_root,
+                    persona,
+                    max_source_bytes.to_string().into(),
+                ];
+                if effects_enabled {
+                    args.extend([
                         resolve_mode.clone().into(),
                         run_mode.clone().into(),
                         schemes.clone().into(),
                         languages.clone().into(),
                         max_depth.to_string().into(),
                         max_ops.to_string().into(),
-                    ]
-                } else {
-                    vec![
-                        "persona-vault".into(),
-                        vault_root,
-                        persona,
-                        max_source_bytes.to_string().into(),
-                    ]
+                    ]);
                 }
+                if let Some(evidence_root) = &evidence_root {
+                    args.extend([
+                        evidence_root.clone().into_os_string(),
+                        max_evidence_bytes.to_string().into(),
+                    ]);
+                }
+                args
             }
             other => {
                 return Err(format!(
@@ -670,6 +798,33 @@ impl KnotAuthoringEngine {
                     "directory-write".into(),
                     root.into().into_os_string(),
                     max_source_bytes.to_string().into(),
+                ],
+                Arc::new(|| {}),
+            )?,
+            publish_source: None,
+            clip_target: None,
+            auto_resolve: false,
+            auto_run: false,
+        })
+    }
+
+    #[cfg(test)]
+    fn connect_directory_evidence(
+        program: impl Into<PathBuf>,
+        root: impl Into<PathBuf>,
+        max_source_bytes: u64,
+        evidence_root: impl Into<PathBuf>,
+        max_evidence_bytes: u64,
+    ) -> Result<Self, String> {
+        Ok(Self {
+            hub: KnotHub::connect(
+                program.into(),
+                vec![
+                    "directory-write-evidence".into(),
+                    root.into().into_os_string(),
+                    max_source_bytes.to_string().into(),
+                    evidence_root.into().into_os_string(),
+                    max_evidence_bytes.to_string().into(),
                 ],
                 Arc::new(|| {}),
             )?,
@@ -779,6 +934,40 @@ fn effect_mode(name: &str) -> Result<String, String> {
     }
 }
 
+fn reject_nested_evidence_root(
+    source: &PathBuf,
+    evidence: Option<&std::path::Path>,
+) -> Result<(), String> {
+    let Some(evidence) = evidence else {
+        return Ok(());
+    };
+    let source = normalized_absolute(source)?;
+    let evidence = normalized_absolute(evidence)?;
+    if evidence.starts_with(&source) {
+        return Err(format!(
+            "TURNSTONE_KNOT_EVIDENCE_ROOT must be outside the served Knot directory {}",
+            source.display()
+        ));
+    }
+    Ok(())
+}
+
+fn normalized_absolute(path: &std::path::Path) -> Result<PathBuf, String> {
+    let absolute = std::path::absolute(path)
+        .map_err(|error| format!("could not resolve {}: {error}", path.display()))?;
+    let mut normalized = PathBuf::new();
+    for component in absolute.components() {
+        match component {
+            std::path::Component::CurDir => {}
+            std::path::Component::ParentDir => {
+                normalized.pop();
+            }
+            component => normalized.push(component.as_os_str()),
+        }
+    }
+    Ok(normalized)
+}
+
 fn env_integer<T>(name: &str, default: T) -> Result<T, String>
 where
     T: std::str::FromStr,
@@ -838,11 +1027,10 @@ fn split_list(value: &str) -> Vec<String> {
 }
 
 pub fn is_knot_address(address: &str) -> bool {
-    address
-        .split(['?', '#'])
-        .next()
-        .is_some_and(|base| base.to_ascii_lowercase().ends_with(".knot"))
-        || address.to_ascii_lowercase().starts_with("knot:")
+    address.split(['?', '#']).next().is_some_and(|base| {
+        let base = base.to_ascii_lowercase();
+        base.ends_with(".djot") || base.ends_with(".knot")
+    }) || address.to_ascii_lowercase().starts_with("knot:")
 }
 
 fn run_hub(mut retained: RetainedEndpointSession, commands: Receiver<HubCommand>, wake: Wake) {
@@ -1107,20 +1295,44 @@ fn insert_clip(
     wake: &Wake,
 ) {
     let result = ensure_binding(retained, mounted, bindings, address).and_then(|binding| {
-        retained.invoke(
-            mounted
-                .as_ref()
-                .expect("ensure_binding mounted the session"),
-            binding.target,
-            &binding.clip_action,
-            &InsertKnotClipV1 {
-                base_token: binding.editable.base_token.clone(),
-                source_url: clip.source_url,
-                title: clip.title,
-                selector: clip.selector,
-                knot_body: clip.knot_body,
-            },
-        )
+        let session = mounted
+            .as_ref()
+            .expect("ensure_binding mounted the session");
+        if binding.clip_action.payload_schema == KNOT_CLIP_INSERT_SCHEMA_V2 {
+            if clip.artifacts.is_empty() {
+                return Err(
+                    "this clip lane supplied no source artifact for Knot evidence retention".into(),
+                );
+            }
+            retained.invoke(
+                session,
+                binding.target,
+                &binding.clip_action,
+                &InsertKnotClipV2 {
+                    base_token: binding.editable.base_token.clone(),
+                    source_url: clip.source_url,
+                    title: clip.title,
+                    selectors: clip.selectors,
+                    knot_body: clip.knot_body,
+                    artifacts: clip.artifacts,
+                    fidelity: clip.fidelity,
+                    discovered_edges: clip.discovered_edges,
+                },
+            )
+        } else {
+            retained.invoke(
+                session,
+                binding.target,
+                &binding.clip_action,
+                &InsertKnotClipV1 {
+                    base_token: binding.editable.base_token.clone(),
+                    source_url: clip.source_url,
+                    title: clip.title,
+                    selector: clip.selector,
+                    knot_body: clip.knot_body,
+                },
+            )
+        }
     });
     let next = match result {
         Ok(IntentResult::Accepted) => retained
@@ -2110,8 +2322,10 @@ mod tests {
 
     #[test]
     fn knot_addresses_are_selected_without_claiming_other_files() {
+        assert!(is_knot_address("file:///C:/notes/one.djot"));
         assert!(is_knot_address("file:///C:/notes/one.knot"));
         assert!(is_knot_address("KNOT:vault/document"));
+        assert!(is_knot_address("file:///tmp/one.DJOT?mode=edit"));
         assert!(is_knot_address("file:///tmp/one.KNOT#heading"));
         assert!(!is_knot_address("file:///tmp/one.md"));
         assert!(!is_knot_address("https://example.test/"));
@@ -2249,6 +2463,7 @@ mod tests {
                 text: "A useful finding.".into(),
                 selector: None,
                 links: vec!["https://example.test/source".into()],
+                artifacts: Vec::new(),
             })
             .unwrap();
         wait_for_clip_status(&handle, KnotClipStatus::Saved);
@@ -2261,6 +2476,58 @@ mod tests {
         assert!(saved.contains("https://example.test/source"));
 
         fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    #[ignore = "receipt: set KNOT_ENDPOINT_TEST_BIN to a built Mere knot_endpoint"]
+    fn inspector_clip_retains_static_source_evidence_end_to_end() {
+        let program = std::env::var_os("KNOT_ENDPOINT_TEST_BIN")
+            .expect("KNOT_ENDPOINT_TEST_BIN must name the real Knot endpoint");
+        let root =
+            std::env::temp_dir().join(format!("turnstone-knot-clip-v2-{}", uuid::Uuid::new_v4()));
+        let evidence =
+            std::env::temp_dir().join(format!("turnstone-knot-evidence-{}", uuid::Uuid::new_v4()));
+        fs::create_dir(&root).unwrap();
+        fs::create_dir(&evidence).unwrap();
+        let path = root.join("field.djot");
+        fs::write(&path, "# Field\n").unwrap();
+        let address = file_address(&path);
+        let html = "<article><h1>The report</h1><p>A useful finding.</p>\
+                    <a href=\"https://example.test/source\">Source</a></article>";
+        let source_engine =
+            genet_documents::StaticSessionEngine::new(genet_documents::LocalFetcher);
+        let source_request =
+            SessionSpawnRequest::new("https://example.test/report").with_body(html);
+        let source_clip = source_engine
+            .spawn(&source_request)
+            .unwrap()
+            .clip()
+            .expect("the Genet static session should lower its document");
+        let bytes = html.as_bytes().to_vec();
+        let digest = blake3::hash(&bytes).to_hex().to_string();
+
+        let engine =
+            KnotAuthoringEngine::connect_directory_evidence(program, &root, 4096, &evidence, 4096)
+                .unwrap();
+        let handle = KnotClipHandle {
+            hub: engine.hub.clone(),
+            target: address,
+            status: Arc::new(Mutex::new(KnotClipStatus::Ready)),
+        };
+        handle.insert(source_clip).unwrap();
+        wait_for_clip_status(&handle, KnotClipStatus::Saved);
+
+        assert_eq!(
+            fs::read(evidence.join("blake3").join(&digest)).unwrap(),
+            bytes
+        );
+        let saved = fs::read_to_string(&path).unwrap();
+        assert!(saved.contains(r#""schema":"knot.clip.insert/v2""#));
+        assert!(saved.contains(&format!("urn:blake3:{digest}")));
+        assert!(!saved.contains("<article>"));
+
+        fs::remove_dir_all(root).unwrap();
+        fs::remove_dir_all(evidence).unwrap();
     }
 
     #[test]

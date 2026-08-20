@@ -62,9 +62,7 @@ pub fn project_app(app: &App) -> UxTree {
             let subtrees = docs.take().unwrap_or_default();
             Some(stitch("turnstone/canvas", root, subtrees))
         }
-        PaneContent::Registered(kind)
-            if kind.as_str() == crate::panes::kind::FROZEN_PROJECTION =>
-        {
+        PaneContent::Registered(kind) if kind.as_str() == crate::panes::kind::FROZEN_PROJECTION => {
             Some(project_frozen_projection(app))
         }
         _ => None,
@@ -92,7 +90,6 @@ pub fn a11y_lines(app: &App) -> Vec<String> {
         })
         .collect()
 }
-
 
 /// The Frozen Projection pane's subtree: the same AccessKit tree
 /// `graphshell_client::frozen` builds for any host, over the same scene the

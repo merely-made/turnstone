@@ -792,14 +792,22 @@ mod tests {
     #[test]
     fn view_intent_round_trips_and_survives_a_corrupt_sidecar() {
         let root = temp_root("view-intent");
-        assert_eq!(load_view_intent(&root), None, "absent sidecar is not an error");
+        assert_eq!(
+            load_view_intent(&root),
+            None,
+            "absent sidecar is not an error"
+        );
 
-        let intent = ViewIntentV1 { layout_strategy: Some("kanban.community".to_string()) };
+        let intent = ViewIntentV1 {
+            layout_strategy: Some("kanban.community".to_string()),
+        };
         save_view_intent(&root, &intent);
         assert_eq!(load_view_intent(&root), Some(intent));
 
         // Force-directed is a real choice, not the absence of one.
-        let native = ViewIntentV1 { layout_strategy: None };
+        let native = ViewIntentV1 {
+            layout_strategy: None,
+        };
         save_view_intent(&root, &native);
         assert_eq!(load_view_intent(&root), Some(native));
 
@@ -819,7 +827,12 @@ mod tests {
             .map(|(id, _)| *id)
             .collect::<Vec<_>>();
         for id in stored {
-            save_view_intent(&root, &ViewIntentV1 { layout_strategy: Some(id.to_string()) });
+            save_view_intent(
+                &root,
+                &ViewIntentV1 {
+                    layout_strategy: Some(id.to_string()),
+                },
+            );
             let loaded = load_view_intent(&root).unwrap().layout_strategy.unwrap();
             assert_eq!(loaded, id);
             assert!(

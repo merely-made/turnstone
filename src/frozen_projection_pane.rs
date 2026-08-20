@@ -54,7 +54,7 @@ fn frozen_projection_pane_view(state: &FrozenProjectionPaneState) -> FrozenProje
     let Some(frozen) = &state.frozen else {
         rows.push(Box::new(
             el::<_, FrozenProjectionPaneState, ()>("div", text("No projection to freeze yet."))
-                .attr("class", "list-empty"),
+                .attr("class", "pane-empty"),
         ));
         return wrap(state, rows);
     };
@@ -65,7 +65,7 @@ fn frozen_projection_pane_view(state: &FrozenProjectionPaneState) -> FrozenProje
     ));
     rows.push(Box::new(
         el::<_, FrozenProjectionPaneState, ()>("div", text(frozen.summary.clone()))
-            .attr("class", "list-row-secondary")
+            .attr("class", "list-row muted")
             .attr("data-frozen-summary", ""),
     ));
     if let Some(line) = &state.satisfaction {
@@ -73,7 +73,7 @@ fn frozen_projection_pane_view(state: &FrozenProjectionPaneState) -> FrozenProje
         // with nothing pinned has nothing to satisfy.
         rows.push(Box::new(
             el::<_, FrozenProjectionPaneState, ()>("div", text(line.clone()))
-                .attr("class", "list-row-secondary")
+                .attr("class", "list-row muted")
                 .attr("data-frozen-satisfaction", ""),
         ));
     }
@@ -92,13 +92,16 @@ fn frozen_projection_pane_view(state: &FrozenProjectionPaneState) -> FrozenProje
         ));
     }
     for relation in &frozen.relations {
-        let kind = relation.kind.clone().unwrap_or_else(|| "related to".to_owned());
+        let kind = relation
+            .kind
+            .clone()
+            .unwrap_or_else(|| "related to".to_owned());
         rows.push(Box::new(
             el::<_, FrozenProjectionPaneState, ()>(
                 "div",
                 text(format!("{} {} {}", relation.from, kind, relation.to)),
             )
-            .attr("class", "list-row-secondary")
+            .attr("class", "list-row muted")
             .attr("data-frozen-relation", ""),
         ));
     }
@@ -111,7 +114,7 @@ fn frozen_projection_pane_view(state: &FrozenProjectionPaneState) -> FrozenProje
                     held.source.id, held.at.x, held.at.y
                 )),
             )
-            .attr("class", "list-row-secondary")
+            .attr("class", "list-row action")
             .attr("data-frozen-unmet", ""),
         ));
     }
@@ -124,7 +127,7 @@ fn wrap(
 ) -> FrozenProjectionPaneView {
     Box::new(
         el::<_, FrozenProjectionPaneState, ()>("div", rows)
-            .attr("class", "pane-scroll-root")
+            .attr("class", "pane")
             .attr(
                 "style",
                 format!(

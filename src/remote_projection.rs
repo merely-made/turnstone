@@ -302,10 +302,8 @@ pub(crate) fn disclose_scene(
     card_extent: (f32, f32),
     spiral: sceno::Spiral,
 ) -> sceno::Scene {
-    let extents: HashMap<NodeKey, (f32, f32)> = graph
-        .nodes()
-        .map(|(key, _)| (key, card_extent))
-        .collect();
+    let extents: HashMap<NodeKey, (f32, f32)> =
+        graph.nodes().map(|(key, _)| (key, card_extent)).collect();
     let mut mapped = cartography::project_spiral_score(graph, Some(&extents), focused, true);
     mapped.score.arrangement = Arrangement::Spiral(spiral);
     let solved = scenomise::solve(&mapped.score);

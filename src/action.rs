@@ -419,8 +419,10 @@ pub fn palette_actions() -> Vec<(String, Action)> {
         ("Close session", Action::CloseSession),
     ]);
 
-    let mut rows: Vec<(String, Action)> =
-        actions.into_iter().map(|(label, action)| (label.to_string(), action)).collect();
+    let mut rows: Vec<(String, Action)> = actions
+        .into_iter()
+        .map(|(label, action)| (label.to_string(), action))
+        .collect();
 
     // Insert the registry's arrangements ahead of Force-directed, so every
     // `Layout:` row sits together and the native arrangement closes the group.
@@ -428,12 +430,13 @@ pub fn palette_actions() -> Vec<(String, Action)> {
         .iter()
         .position(|(_, action)| matches!(action, Action::SetLayoutStrategy(None)))
         .unwrap_or(rows.len());
-    for (offset, (id, display_name)) in
-        mere::canvas::CANVAS_LAYOUT_STRATEGIES.iter().enumerate()
-    {
+    for (offset, (id, display_name)) in mere::canvas::CANVAS_LAYOUT_STRATEGIES.iter().enumerate() {
         rows.insert(
             anchor + offset,
-            (format!("Layout: {display_name}"), Action::SetLayoutStrategy(Some(id))),
+            (
+                format!("Layout: {display_name}"),
+                Action::SetLayoutStrategy(Some(id)),
+            ),
         );
     }
 

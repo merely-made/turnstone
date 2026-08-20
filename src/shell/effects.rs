@@ -509,7 +509,11 @@ impl Shell {
         session::save_view_intent(
             &sdir,
             &session::ViewIntentV1 {
-                layout_strategy: self.app.graph_runtimes.layout_strategy().map(str::to_string),
+                layout_strategy: self
+                    .app
+                    .graph_runtimes
+                    .layout_strategy()
+                    .map(str::to_string),
             },
         );
         // Stamp a derived display name the first time the session has content
