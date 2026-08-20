@@ -129,6 +129,7 @@ enum KnotEffectKind {
 #[derive(Clone)]
 enum HubEvent {
     Remote(DocumentBinding),
+    Intent(ProjectionIntentReceipt),
     Saved {
         source: String,
         binding: DocumentBinding,
@@ -137,6 +138,32 @@ enum HubEvent {
     Stale,
     Rejected(String),
     Revoked(String),
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+struct ProjectionIntentReceipt {
+    target: InstanceId,
+    intent: String,
+    result: IntentResult,
+}
+
+impl ProjectionIntentReceipt {
+    fn result_word(&self) -> &'static str {
+        match &self.result {
+            IntentResult::Accepted => "accepted",
+            IntentResult::Rejected { .. } => "rejected",
+            IntentResult::Stale { .. } => "stale",
+        }
+    }
+
+    fn line(&self) -> String {
+        format!(
+            "Projection intent {}: {} {}",
+            self.target.0,
+            self.intent,
+            self.result_word()
+        )
+    }
 }
 
 struct Subscriber {
@@ -1422,13 +1449,26 @@ fn invoke_effect(
         },
     );
     match result {
-        Ok(IntentResult::Accepted) => match retained.wait_for_change() {
-            Ok(_) => refresh_subscribers(retained, session, bindings, subscribers, wake),
-            Err(error) => send_event(subscriber, HubEvent::Rejected(error), wake),
-        },
-        Ok(IntentResult::Stale { .. }) => send_event(subscriber, HubEvent::Stale, wake),
-        Ok(IntentResult::Rejected { reason }) => {
-            send_event(subscriber, HubEvent::Rejected(reason), wake)
+        Ok(result) => {
+            send_event(
+                subscriber,
+                HubEvent::Intent(ProjectionIntentReceipt {
+                    target: binding.target,
+                    intent: action.intent.0.clone(),
+                    result: result.clone(),
+                }),
+                wake,
+            );
+            match result {
+                IntentResult::Accepted => match retained.wait_for_change() {
+                    Ok(_) => refresh_subscribers(retained, session, bindings, subscribers, wake),
+                    Err(error) => send_event(subscriber, HubEvent::Rejected(error), wake),
+                },
+                IntentResult::Stale { .. } => send_event(subscriber, HubEvent::Stale, wake),
+                IntentResult::Rejected { reason } => {
+                    send_event(subscriber, HubEvent::Rejected(reason), wake)
+                }
+            }
         }
         Err(error) => send_event(subscriber, HubEvent::Rejected(error), wake),
     }
@@ -1537,6 +1577,8 @@ enum AuthoringRequest {
 
 struct AuthoringState {
     editor: KnotEditor,
+    projection_target: InstanceId,
+    last_intent: Option<ProjectionIntentReceipt>,
     status: AuthoringStatus,
     detail: String,
     /// Toolbar commands in the order they were asked for, drained after
@@ -1621,7 +1663,12 @@ fn authoring_view(state: &AuthoringState) -> AuthoringView {
                     state.requests.push(AuthoringRequest::Save);
                 },
             )
-            .attr("class", "knot-save"),
+            .attr("class", "knot-save")
+            .attr(
+                "data-projection-instance",
+                state.projection_target.0.to_string(),
+            )
+            .attr("data-projection-intent", EDITABLE_TEXT_SAVE_INTENT),
             button(
                 "Resolve",
                 |state: &mut AuthoringState, _click: PointerClick| {
@@ -1630,7 +1677,12 @@ fn authoring_view(state: &AuthoringState) -> AuthoringView {
                     }
                 },
             )
-            .attr("class", "knot-effect")
+            .attr("class", "knot-effect knot-resolve")
+            .attr(
+                "data-projection-instance",
+                state.projection_target.0.to_string(),
+            )
+            .attr("data-projection-intent", KNOT_TRANSCLUSION_RESOLVE_INTENT)
             .attr(
                 "style",
                 if state.resolve_available {
@@ -1644,7 +1696,12 @@ fn authoring_view(state: &AuthoringState) -> AuthoringView {
                     state.requests.push(AuthoringRequest::Run);
                 }
             })
-            .attr("class", "knot-effect")
+            .attr("class", "knot-effect knot-run")
+            .attr(
+                "data-projection-instance",
+                state.projection_target.0.to_string(),
+            )
+            .attr("data-projection-intent", KNOT_BLOCK_RUN_INTENT)
             .attr(
                 "style",
                 if state.run_available {
@@ -1663,6 +1720,13 @@ fn authoring_view(state: &AuthoringState) -> AuthoringView {
         ),
     )
     .attr("class", "knot-toolbar");
+    let intent_receipt = state.last_intent.as_ref().map(|receipt| {
+        el::<_, AuthoringState, ()>("div", receipt.line())
+            .attr("class", "knot-intent-receipt")
+            .attr("data-projection-instance", receipt.target.0.to_string())
+            .attr("data-projection-intent", receipt.intent.clone())
+            .attr("data-intent-result", receipt.result_word())
+    });
     let editor = el::<_, AuthoringState, ()>("div", field).attr("class", "knot-editor-wrap");
     let readout = el::<_, AuthoringState, ()>(
         "div",
@@ -1674,6 +1738,7 @@ fn authoring_view(state: &AuthoringState) -> AuthoringView {
             "div",
             (
                 toolbar,
+                intent_receipt,
                 el("div", (editor, readout)).attr("class", "knot-body"),
             ),
         )
@@ -1756,6 +1821,8 @@ impl KnotDocumentSession {
         let dom: DomHandle = Rc::new(std::cell::RefCell::new(ScriptedDom::new()));
         let state = AuthoringState {
             editor: KnotEditor::scratch(&address, opened.binding.editable.source),
+            projection_target: opened.binding.target,
+            last_intent: None,
             status: AuthoringStatus::Current,
             detail: String::new(),
             requests: Vec::new(),
@@ -1928,6 +1995,7 @@ impl KnotDocumentSession {
             .is_ok()
         {
             self.runner.update(|state| {
+                state.last_intent = None;
                 state.status = match kind {
                     KnotEffectKind::Resolve => AuthoringStatus::Resolving,
                     KnotEffectKind::Run => AuthoringStatus::Running,
@@ -1947,12 +2015,14 @@ impl KnotDocumentSession {
             match event {
                 HubEvent::Remote(binding) => {
                     self.revision_refreshes += 1;
+                    let target = binding.target;
                     if binding.editable.base_token == self.base_token {
                         let resolve_available = binding.resolve_action.is_some();
                         let run_available = binding.run_action.is_some();
                         let derived = binding.editable.derived;
                         if !self.runner.state().editor.is_dirty() {
                             self.runner.update(|state| {
+                                state.projection_target = target;
                                 state.resolve_available = resolve_available;
                                 state.run_available = run_available;
                                 state.derived = derived;
@@ -1961,6 +2031,7 @@ impl KnotDocumentSession {
                             });
                         } else {
                             self.runner.update(|state| {
+                                state.projection_target = target;
                                 state.resolve_available = resolve_available;
                                 state.run_available = run_available;
                             });
@@ -1969,6 +2040,7 @@ impl KnotDocumentSession {
                     }
                     if self.runner.state().editor.is_dirty() {
                         self.runner.update(|state| {
+                            state.projection_target = target;
                             state.status = AuthoringStatus::Stale;
                             state.detail = "the endpoint has a newer document".into();
                         });
@@ -1980,6 +2052,7 @@ impl KnotDocumentSession {
                         let run_available = binding.run_action.is_some();
                         let address = self.address.clone();
                         self.runner.update(|state| {
+                            state.projection_target = target;
                             state.editor = KnotEditor::scratch(address, source);
                             state.derived = derived;
                             state.resolve_available = resolve_available;
@@ -1989,7 +2062,11 @@ impl KnotDocumentSession {
                         });
                     }
                 }
+                HubEvent::Intent(receipt) => self.runner.update(|state| {
+                    state.last_intent = Some(receipt);
+                }),
                 HubEvent::Reloaded(binding) => {
+                    let target = binding.target;
                     self.base_token = binding.editable.base_token;
                     let source = binding.editable.source;
                     let derived = binding.editable.derived;
@@ -1997,6 +2074,7 @@ impl KnotDocumentSession {
                     let run_available = binding.run_action.is_some();
                     let address = self.address.clone();
                     self.runner.update(|state| {
+                        state.projection_target = target;
                         state.editor = KnotEditor::scratch(address, source);
                         state.derived = derived;
                         state.resolve_available = resolve_available;
@@ -2006,11 +2084,13 @@ impl KnotDocumentSession {
                     });
                 }
                 HubEvent::Saved { source, binding } => {
+                    let target = binding.target;
                     self.base_token = binding.editable.base_token;
                     let derived = binding.editable.derived;
                     let resolve_available = binding.resolve_action.is_some();
                     let run_available = binding.run_action.is_some();
                     self.runner.update(|state| {
+                        state.projection_target = target;
                         state.editor.accept_saved_source(&source);
                         state.derived = derived;
                         state.resolve_available = resolve_available;
@@ -2193,6 +2273,53 @@ mod tests {
             derived_status_at(&derived, 61_000),
             "resolved 1; denied 0; failed 0\nFetched: 1m ago; 1 source"
         );
+    }
+
+    #[test]
+    fn projected_action_is_probe_drivable_by_instance_identity() {
+        let dom: DomHandle = Rc::new(std::cell::RefCell::new(ScriptedDom::new()));
+        let _runner = AuthoringRunner::new(
+            dom.clone(),
+            authoring_view as fn(&AuthoringState) -> AuthoringView,
+            AuthoringState {
+                editor: KnotEditor::scratch("knot:test", "# Test"),
+                projection_target: InstanceId(17),
+                last_intent: Some(ProjectionIntentReceipt {
+                    target: InstanceId(17),
+                    intent: KNOT_TRANSCLUSION_RESOLVE_INTENT.into(),
+                    result: IntentResult::Accepted,
+                }),
+                status: AuthoringStatus::Current,
+                detail: String::new(),
+                requests: Vec::new(),
+                resolve_available: true,
+                run_available: true,
+                derived: None,
+                width: 900,
+                height: 600,
+            },
+        );
+        let dom = dom.borrow();
+        let surfaces = [genet_probe::ProbeSurface {
+            name: "knot-authoring",
+            dom: &dom,
+            rect: [0.0, 0.0, 900.0, 600.0],
+            sheet: KNOT_SHEET,
+        }];
+
+        let hit = genet_probe::resolve(
+            &surfaces,
+            &genet_probe::Selector::class("knot-resolve")
+                .with_attr("data-projection-instance", "17"),
+        );
+        assert!(
+            hit.is_some(),
+            "the probe must resolve the action by InstanceId"
+        );
+        assert!(genet_probe::text_present(
+            &surfaces,
+            "Projection intent 17: knot.transclusion.resolve accepted"
+        ));
     }
 
     fn file_address(path: &Path) -> String {

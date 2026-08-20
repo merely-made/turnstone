@@ -12,8 +12,11 @@ assert snap focused ~ field.knot
 assert snap surfaces ~ content
 assert text Authoring receipt
 assert text Resolve
-click .knot-effect Resolve
+# Address the projected document by its DOM-carried InstanceId. Its visible
+# name and screen position are irrelevant to the probe resolver.
+click .knot-resolve @data-projection-instance=1
 wait
+assert text Projection intent 1: knot.transclusion.resolve accepted
 assert text resolved 1; denied 0; failed 0
 assert text Included through Knot
 click .knot-effect Run
