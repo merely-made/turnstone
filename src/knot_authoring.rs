@@ -515,17 +515,17 @@ impl KnotHub {
                     }
                 };
                 let retained = opened
-                    .map(|(mut endpoint, publish_source)| {
+                    .and_then(|(mut endpoint, publish_source)| {
                         if let Some(hosted) = effects {
                             endpoint.grant_effects(knot::KnotEffectAuthority::new(hosted.policy));
                         }
                         if let Some(hosted) = evidence {
-                            endpoint.grant_clip_evidence(knot::FileClipEvidenceStore::new(
+                            endpoint.grant_clip_evidence(knot::BlobClipEvidenceStore::open(
                                 hosted.root,
                                 hosted.max_artifact_bytes,
-                            ));
+                            )?);
                         }
-                        (endpoint, publish_source)
+                        Ok((endpoint, publish_source))
                     })
                     .and_then(|(endpoint, publish_source)| {
                         // Resume is the endpoint's own answer; the carrier has
@@ -2730,18 +2730,29 @@ mod tests {
         handle.insert(source_clip).unwrap();
         wait_for_clip_status(&handle, KnotClipStatus::Saved);
 
-        assert_eq!(
-            fs::read(evidence.join("blake3").join(&digest)).unwrap(),
-            bytes
-        );
         let saved = fs::read_to_string(&path).unwrap();
         assert!(saved.contains(r#""schema":"knot.clip.insert/v2""#));
-        assert!(saved.contains(&format!("urn:blake3:{digest}")));
+        assert!(saved.contains(&chirograph::Sha256NamedInformation::of(&bytes).to_string()));
+        assert!(saved.contains(&format!("blake3:{digest}")));
+        assert!(!saved.contains("urn:blake3:"));
         assert!(!saved.contains("<article>"));
 
         drop(handle);
         drop(engine);
         std::thread::sleep(POLL_INTERVAL * 2);
+        let runtime = tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .unwrap();
+        runtime.block_on(async {
+            let blobs = transport::BlobStore::open(&evidence).await.unwrap();
+            let hash = transport::BlobHash::from_bytes(*blake3::hash(&bytes).as_bytes());
+            assert_eq!(
+                blobs.get_bytes(hash).await.unwrap().as_ref(),
+                bytes.as_slice()
+            );
+            blobs.shutdown().await.unwrap();
+        });
         fs::remove_dir_all(root).unwrap();
         fs::remove_dir_all(evidence).unwrap();
     }
