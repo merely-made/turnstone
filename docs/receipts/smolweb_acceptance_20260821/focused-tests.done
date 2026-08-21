@@ -1,0 +1,8 @@
+RESULT ok
+app::tests::ordinary_smolweb_input_navigates_and_refetches_with_a_percent_encoded_query
+app::tests::sensitive_smolweb_input_is_masked_and_never_enters_graph_or_events
+app::tests::spartan_prompt_target_resolves_against_its_source_member
+app::tests::titan_address_opens_an_explicit_composer_without_uploading
+app::tests::titan_composer_stages_body_mime_hidden_token_and_literal_confirmation
+shell::tests::gemini_route_lands_in_a_live_nematic_session
+test result: ok. 6 passed; 0 failed

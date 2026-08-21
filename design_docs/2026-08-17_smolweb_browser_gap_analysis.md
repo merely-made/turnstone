@@ -21,6 +21,11 @@ sets.
 > composer. Writes are separate actor commands: they are neither replayed as
 > fetches nor followed through redirects inside the mutation. The remaining
 > item 6 work is inline media, downloads, and streaming render.
+>
+> **Acceptance, 2026-08-21:** live Gemini browsing and status-10 input, local
+> Titan and Spartan mutations, and Livery-to-Knot source evidence all have
+> checked-in `RESULT ok` receipts and headed captures in
+> [`docs/receipts/smolweb_acceptance_20260821`](../docs/receipts/smolweb_acceptance_20260821/README.md).
 
 ## Part 1: the anatomy of a browser, in this design language
 

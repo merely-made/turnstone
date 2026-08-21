@@ -1,0 +1,6 @@
+RESULT ok
+protocol=spartan
+fetch=127.0.0.1 /form 0
+submit=127.0.0.1 /submit 18
+body-bytes=18
+response=2

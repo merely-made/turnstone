@@ -1,0 +1,39 @@
+# Titan headed mutation receipt. Run with the local acceptance fixture on
+# 127.0.0.1:19651; the fixture independently validates the wire request.
+settle 30
+key escape
+open titan://127.0.0.1:19651/upload
+assert omnibar open
+assert event smolweb-submission-composed titan://127.0.0.1:19651/upload
+capture 01_titan_body_composer
+
+drop-file 600 170 scenarios/fixtures/titan_acceptance.gmi
+capture 02_titan_dropped_body
+key enter
+assert omnibar-text text/gemini
+key backspace
+key backspace
+key backspace
+key backspace
+key backspace
+key backspace
+key backspace
+key backspace
+key backspace
+key backspace
+key backspace
+insert text/plain
+assert omnibar-text text/plain
+key enter
+insert acceptance-token
+assert omnibar-text ••••••••••••••••
+capture 03_titan_hidden_token
+key enter
+insert send
+capture 04_titan_literal_confirmation
+key enter
+assert event smolweb-submission-started titan://127.0.0.1:19651/upload bytes=19
+settle 60
+assert event smolweb-submission-succeeded titan://127.0.0.1:19651/upload success
+capture 05_titan_success
+log Titan mutation receipt complete

@@ -44,3 +44,4 @@
 *.kojo merge=weave
 *.mill merge=weave
 *.dart merge=weave
+scenarios/fixtures/titan_acceptance.gmi text eol=lf

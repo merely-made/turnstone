@@ -1,0 +1,27 @@
+# Spartan headed mutation receipt. Run with the local acceptance fixture on
+# 127.0.0.1:30001; the fixture serves a typed =: prompt and validates submit.
+settle 30
+key escape
+open spartan://127.0.0.1:30001/form
+settle 60
+assert visible
+act Toggle live content
+settle 30
+assert content-live
+assert surface content
+capture 01_spartan_prompt
+
+# The prompt is the first content row in the retained Spartan document.
+click-at 520 36
+assert omnibar open
+assert event smolweb-submission-composed spartan://127.0.0.1:30001/submit
+insert Spartan acceptance
+key enter
+insert send
+capture 02_spartan_literal_confirmation
+key enter
+assert event smolweb-submission-started spartan://127.0.0.1:30001/submit bytes=18
+settle 60
+assert event smolweb-submission-succeeded spartan://127.0.0.1:30001/submit success
+capture 03_spartan_success
+log Spartan prompt mutation receipt complete

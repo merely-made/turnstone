@@ -1,0 +1,7 @@
+RESULT ok
+protocol=titan
+target=titan://127.0.0.1:19651/upload
+body-bytes=19
+mime=text/plain
+token-present=true
+response=20
