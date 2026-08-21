@@ -751,6 +751,9 @@ impl App {
         for (id, legacy) in session::load_legacy_browser_nodes(&sdir).nodes {
             self.browser.nodes.entry(id).or_insert(legacy);
         }
+        if super::migrate_retired_viewer_overrides(&mut self.browser) {
+            effects.push(Effect::SaveSession);
+        }
         // The bin mirror empties until the reopened session store answers
         // (the shell re-points the bin actor on switch; BinListed refills).
         self.removed.clear();

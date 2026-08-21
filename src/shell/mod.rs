@@ -27,7 +27,7 @@ use std::sync::Arc;
 use std::sync::mpsc::Receiver;
 
 use fetch::{FetchCommand, FetchUpdate};
-use genet_documents::{LocalFetcher, SmolwebSessionEngine, SmolwebTheme, StaticSessionEngine};
+use genet_documents::{LocalFetcher, SmolwebSessionEngine, SmolwebTheme};
 use genet_winit_host::SurfaceHost;
 use image::ImageEncoder;
 use inker::{DocumentSession, SessionClick, SessionRegistry, SessionSpawnRequest};
@@ -73,7 +73,6 @@ const SMOLWEB_SESSION_ENGINE_IDS: &[&str] = &[
 /// inspectable fact instead of an assumption split across shell setup.
 fn standard_content_engines() -> SessionRegistry<Scene> {
     let mut engines = SessionRegistry::new();
-    engines.register(Box::new(StaticSessionEngine::new(LocalFetcher)));
     engines.register(Box::new(genet_documents::LiverySessionEngine::new(
         LocalFetcher,
     )));
@@ -85,6 +84,19 @@ fn standard_content_engines() -> SessionRegistry<Scene> {
         )));
     }
     engines
+}
+
+/// Turnstone's ordinary HTML route uses the clean-room Livery lane. Mere's
+/// shared policy keeps the legacy incumbent default for other hosts, so the
+/// browser makes its product choice at its own composition boundary.
+fn standard_route_policy() -> inker::EngineRoutePolicy {
+    let mut policy = mere::routing::route_policy();
+    for rule in &mut policy.rules {
+        if rule.engine_id == inker::routing::ENGINE_GENET_WEB {
+            rule.engine_id = inker::routing::ENGINE_GENET_LIVERY.to_string();
+        }
+    }
+    policy
 }
 
 /// Resolve a session-authored link against the node that owns that content
@@ -546,7 +558,7 @@ impl Shell {
             surface_frames: std::collections::HashMap::new(),
             pending_surface_spawns: Vec::new(),
             knot_clip,
-            route_policy: mere::routing::route_policy(),
+            route_policy: standard_route_policy(),
             web_policy,
             epoch: std::time::Instant::now(),
             pending_fetches: browse::PendingFetches::default(),
@@ -1169,7 +1181,7 @@ mod tests {
     #[test]
     fn gemini_route_lands_in_a_live_nematic_session() {
         let engines = standard_content_engines();
-        let decision = mere::routing::route_policy().route(&inker::EngineRouteRequest {
+        let decision = standard_route_policy().route(&inker::EngineRouteRequest {
             workspace_id: inker::WorkspaceRouteId::new("turnstone-test"),
             view: None,
             node: None,
@@ -1218,6 +1230,23 @@ mod tests {
             content_link_target(&app, node, &href),
             "gemini://capsule.test/next"
         );
+    }
+
+    #[test]
+    fn automatic_html_routes_to_the_registered_livery_session() {
+        let engines = standard_content_engines();
+        let decision = standard_route_policy().route(&inker::EngineRouteRequest {
+            workspace_id: inker::WorkspaceRouteId::new("turnstone-test"),
+            view: None,
+            node: None,
+            address: "https://example.test/".to_string(),
+            content_type: Some("text/html".to_string()),
+            pinned_engine: None,
+        });
+
+        assert_eq!(decision.engine_id, inker::routing::ENGINE_GENET_LIVERY);
+        assert!(engines.contains(&decision.engine_id));
+        assert!(!engines.contains(inker::routing::ENGINE_GENET_WEB));
     }
 
     /// The one-state-N-windows invariant (rung 7): two windows on one graph

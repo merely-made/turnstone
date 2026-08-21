@@ -4,6 +4,22 @@
 use super::*;
 
 #[test]
+fn retired_static_viewer_pins_migrate_to_livery() {
+    let node = uuid::Uuid::new_v4();
+    let mut states = pandect::browser_node_state::BrowserNodeStates::new();
+    states.entry(node).viewer_override = Some(inker::routing::ENGINE_GENET_WEB.to_string());
+
+    assert!(migrate_retired_viewer_overrides(&mut states));
+    assert_eq!(
+        states
+            .get(node)
+            .and_then(|state| state.viewer_override.as_deref()),
+        Some(inker::routing::ENGINE_GENET_LIVERY)
+    );
+    assert!(!migrate_retired_viewer_overrides(&mut states));
+}
+
+#[test]
 fn place_binding_survives_switch_and_restart_as_a_worker_open() {
     let root = std::env::temp_dir().join(format!("turnstone-place-adopt-{}", uuid::Uuid::new_v4()));
     let mut app = App::test_stub();

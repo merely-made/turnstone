@@ -8,7 +8,7 @@
 //! app-level settings are a DIFFERENT, later pane.
 //!
 //! The viewer control is cambium's `radio_group` over the registered engine
-//! lanes (Auto / genet.web / genet.livery, plus Weld in a Weld build). A pick lowers
+//! lanes (Auto / genet.livery, plus Weld in a Weld build). A pick lowers
 //! `Action::SetViewerOverride` through the spine: the override lands in the
 //! browser-state sidecar (persisted at `browser_nodes.json`), and a node with
 //! live content RESPAWNS through the routing policy's `pinned_engine`, so the
@@ -36,9 +36,9 @@ use crate::app::App;
 /// The selectable viewer lanes, in radio order. `Auto` clears the override
 /// (the routing policy decides); the named lanes pin an engine id.
 #[cfg(feature = "weld")]
-pub const VIEWER_OPTIONS: [&str; 4] = ["Auto", "genet.web", "genet.livery", "weld.chromium"];
+pub const VIEWER_OPTIONS: [&str; 3] = ["Auto", "genet.livery", "weld.chromium"];
 #[cfg(not(feature = "weld"))]
-pub const VIEWER_OPTIONS: [&str; 3] = ["Auto", "genet.web", "genet.livery"];
+pub const VIEWER_OPTIONS: [&str; 2] = ["Auto", "genet.livery"];
 
 /// The viewer override a radio index maps to.
 pub fn viewer_for_index(index: usize) -> Option<String> {
@@ -257,7 +257,7 @@ mod tests {
         pane.sync(&app, 400.0, 600.0);
         assert_eq!(
             pane.runner.state().radio.selected,
-            2,
+            1,
             "the sidecar mirrors back"
         );
         assert!(
@@ -269,10 +269,14 @@ mod tests {
     #[test]
     fn index_mapping_round_trips() {
         assert_eq!(viewer_for_index(0), None);
-        assert_eq!(viewer_for_index(1).as_deref(), Some("genet.web"));
-        assert_eq!(viewer_for_index(2).as_deref(), Some("genet.livery"));
+        assert_eq!(viewer_for_index(1).as_deref(), Some("genet.livery"));
         assert_eq!(index_for_viewer(None), 0);
-        assert_eq!(index_for_viewer(Some("genet.livery")), 2);
+        assert_eq!(index_for_viewer(Some("genet.livery")), 1);
+        assert_eq!(
+            index_for_viewer(Some("genet.web")),
+            0,
+            "the retired lane is not selectable"
+        );
         assert_eq!(
             index_for_viewer(Some("unknown.lane")),
             0,

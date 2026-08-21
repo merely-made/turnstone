@@ -206,6 +206,7 @@ impl App {
         member: Uuid,
         viewer: Option<String>,
     ) -> Vec<Effect> {
+        let viewer = super::canonical_viewer_override(viewer);
         self.browser.entry(member).viewer_override = viewer.clone();
         self.events.push(AppEvent::ViewerChanged {
             node: member,

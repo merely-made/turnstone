@@ -2693,7 +2693,7 @@ mod tests {
 
     #[test]
     #[ignore = "receipt: set KNOT_ENDPOINT_TEST_BIN to a built Mere knot_endpoint"]
-    fn inspector_clip_retains_static_source_evidence_end_to_end() {
+    fn inspector_clip_retains_livery_source_evidence_end_to_end() {
         let program = std::env::var_os("KNOT_ENDPOINT_TEST_BIN")
             .expect("KNOT_ENDPOINT_TEST_BIN must name the real Knot endpoint");
         let root =
@@ -2708,14 +2708,14 @@ mod tests {
         let html = "<article><h1>The report</h1><p>A useful finding.</p>\
                     <a href=\"https://example.test/source\">Source</a></article>";
         let source_engine =
-            genet_documents::StaticSessionEngine::new(genet_documents::LocalFetcher);
+            genet_documents::LiverySessionEngine::new(genet_documents::LocalFetcher);
         let source_request =
             SessionSpawnRequest::new("https://example.test/report").with_body(html);
         let source_clip = source_engine
             .spawn(&source_request)
             .unwrap()
             .clip()
-            .expect("the Genet static session should lower its document");
+            .expect("the Livery session should lower its document");
         let bytes = html.as_bytes().to_vec();
         let digest = blake3::hash(&bytes).to_hex().to_string();
 

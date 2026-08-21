@@ -29,6 +29,34 @@ pub use runtime_pool::{
 /// offers the same rows a real one would rather than collapsing to the floor.
 pub const DEFAULT_VIEWPORT: (f32, f32) = (1280.0, 800.0);
 
+/// Canonicalize a persisted or requested viewer id after retiring Turnstone's
+/// incumbent static HTML lane. The old id described the same product rung, so
+/// preserving the pin means moving it to Livery rather than clearing it.
+fn canonical_viewer_override(viewer: Option<String>) -> Option<String> {
+    viewer.map(|engine_id| {
+        if engine_id == inker::routing::ENGINE_GENET_WEB {
+            inker::routing::ENGINE_GENET_LIVERY.to_string()
+        } else {
+            engine_id
+        }
+    })
+}
+
+/// Upgrade all legacy `genet.web` pins in one loaded session. Returns whether
+/// the caller should persist the changed facet state.
+fn migrate_retired_viewer_overrides(
+    states: &mut pandect::browser_node_state::BrowserNodeStates,
+) -> bool {
+    let mut migrated = false;
+    for state in states.nodes.values_mut() {
+        if state.viewer_override.as_deref() == Some(inker::routing::ENGINE_GENET_WEB) {
+            state.viewer_override = Some(inker::routing::ENGINE_GENET_LIVERY.to_string());
+            migrated = true;
+        }
+    }
+    migrated
+}
+
 /// The at-rest "where am I" caption: the focused node's display label (and
 /// host, when it adds information), or `None` with nothing focused.
 pub fn focused_caption(canvas: &mere::canvas::Canvas) -> Option<String> {

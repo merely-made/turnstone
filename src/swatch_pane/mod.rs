@@ -114,7 +114,10 @@ fn swatch_view(state: &SwatchState) -> SwatchView {
                 }
             }
             GraphCanvasEvent::Expand => state.pending.push(SwatchIntent::Expand),
-            GraphCanvasEvent::Drag(_) | GraphCanvasEvent::RelationActivate(_) => {}
+            GraphCanvasEvent::Drag(_)
+            | GraphCanvasEvent::RelationActivate(_)
+            | GraphCanvasEvent::Pan { .. }
+            | GraphCanvasEvent::Zoom { .. } => {}
         },
     );
     // The swatch fills the top (its own leaf is sized to `swatch_h` in sync).

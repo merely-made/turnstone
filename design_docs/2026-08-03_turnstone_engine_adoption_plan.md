@@ -16,16 +16,17 @@ and meerkat is deleted, so the receipts are gone while the model stands.
 Turnstone independently re-landed the foundation. This plan binds the
 remaining model to Turnstone's actual state; it does not re-decide it.
 
-## Current state (verified 2026-08-14)
+## Current state (verified 2026-08-20)
 
 - **Routing**: the content lane routes through `inker::EngineRoutePolicy`
   with `pinned_engine` support ([effects.rs](../src/shell/effects.rs)).
-- **Session engines registered**: `genet.web` (StaticSessionEngine),
-  `genet.livery` (LiverySessionEngine), and the Knot authoring engine, in a
+- **Session engines registered**: `genet.livery` (LiverySessionEngine), the
+  native smolweb lanes, and the Knot authoring engine, in a
   `SessionRegistry<netrender::Scene>` ([mod.rs](../src/shell/mod.rs)).
 - **Picker**: the Apparatus pane's viewer radio respawns live content
-  through the pinned engine. `VIEWER_OPTIONS` has Auto, genet.web, and
-  genet.livery; a Windows `--features weld` build adds weld.chromium.
+  through the pinned engine. `VIEWER_OPTIONS` has Auto and genet.livery; a
+  Windows `--features weld` build adds weld.chromium. Persisted `genet.web`
+  pins migrate to `genet.livery` when their session is adopted.
 - **Surface engines**: the Windows Weld first cut is now wired behind
   `--features weld`: an inker `SurfaceEngineRegistry`, `weld.chromium`
   producer map, D3D12 transferred-handle import cache, primary-window
@@ -48,12 +49,12 @@ Three engine kinds, two of them live here today:
 | Kind | Registry | Output | Turnstone state |
 |---|---|---|---|
 | Document | `EngineRegistry` | `EngineDocument` blocks | via nematic lanes (cards/capture) |
-| Session | `SessionRegistry<Scene>` | paint scenes | live: static, livery, knot |
+| Session | `SessionRegistry<Scene>` | paint scenes | live: livery, smolweb, knot |
 | Surface | `SurfaceEngineRegistry` | GPU texture stream | Windows Weld first cut behind `weld`; scrying and graft absent |
 
 "Genet with its rungs" means the genet engine's capability ladder is exposed
-as selectable lanes rather than one opaque entry: `genet.web` (static DOM +
-stylo lane), `genet.livery` (clean-room CSS/layout lane), `genet.scripted.*`
+as selectable lanes rather than one opaque entry: `genet.livery` (clean-room
+CSS/layout lane), `genet.scripted.*`
 (Boa/Nova/piccolo scripted DOM), and later rungs as they exist. A rung that
 cannot spawn yet still appears in the picker as a disabled row naming why
 (feature off, not registered, platform gap). That is the design-to-shape
