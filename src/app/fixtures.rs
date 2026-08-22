@@ -50,6 +50,7 @@ impl App {
             next_smolweb_submission: 0,
             active_smolweb_submission: None,
             focus: FocusTarget::Graph(crate::panes::PaneId(0)),
+            link_preview: None,
             frisket,
             history: chrome::nav::History::new(""),
             active_pane: None,

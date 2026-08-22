@@ -43,6 +43,10 @@ use crate::ui::{CARD_TOP, CARD_W, OmnibarState, Suggestion};
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ChromeIntent {
     CommitRow(usize),
+    NavBack,
+    NavForward,
+    Reload,
+    Stop,
 }
 
 impl cambium::Action for ChromeIntent {}
@@ -79,6 +83,13 @@ struct ChromeState {
     omnibar_placement: ChromePlacement,
     shellbar_placement: ChromePlacement,
     shellbar_visible: bool,
+    can_back: bool,
+    can_forward: bool,
+    has_focused_node: bool,
+    fetching: bool,
+    fetch_status: Option<String>,
+    focused_url: Option<String>,
+    link_preview: Option<String>,
 }
 
 type ChromeView = Box<dyn AnyView<ChromeState, ChromeIntent, GenetCtx, GenetElement>>;
@@ -91,6 +102,60 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
         return Box::new(el::<_, ChromeState, ChromeIntent>("div", ()));
     };
     let mut children: Vec<ChromeView> = Vec::new();
+
+    if win.primary && state.shellbar_visible {
+        let back = browser_button("Back", state.can_back, ChromeIntent::NavBack);
+        let forward = browser_button("Forward", state.can_forward, ChromeIntent::NavForward);
+        let reload = browser_button(
+            if state.fetching { "Stop" } else { "Reload" },
+            state.has_focused_node,
+            if state.fetching {
+                ChromeIntent::Stop
+            } else {
+                ChromeIntent::Reload
+            },
+        );
+        let status = state
+            .fetch_status
+            .clone()
+            .or_else(|| state.focused_url.clone())
+            .unwrap_or_else(|| "No focused node".to_string());
+        let mut strip_children = vec![back, forward, reload];
+        strip_children.push(Box::new(
+            el::<_, ChromeState, ChromeIntent>("div", status).attr("class", "browser-status"),
+        ));
+        let left = ((win.w - 620.0) / 2.0).max(8.0);
+        children.push(Box::new(
+            el::<_, ChromeState, ChromeIntent>("div", strip_children)
+                .attr(
+                    "class",
+                    if state.fetching {
+                        "browser-strip browser-loading"
+                    } else {
+                        "browser-strip"
+                    },
+                )
+                .attr(
+                    "style",
+                    format!("transform: translate({left}px, 12px); width: 620px;"),
+                ),
+        ));
+
+        if let Some(target) = &state.link_preview {
+            children.push(Box::new(
+                el::<_, ChromeState, ChromeIntent>("div", format!("Prospective node  {target}"))
+                    .attr("class", "link-preview")
+                    .attr(
+                        "style",
+                        format!(
+                            "transform: translate(12px, {}px); max-width: {}px;",
+                            (win.h - 42.0).max(8.0),
+                            (win.w - 24.0).max(120.0)
+                        ),
+                    ),
+            ));
+        }
+    }
 
     if let Some(caption) = &win.caption
         && state.shellbar_visible
@@ -140,6 +205,25 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
     }
 
     Box::new(el::<_, ChromeState, ChromeIntent>("div", children))
+}
+
+fn browser_button(label: &'static str, enabled: bool, intent: ChromeIntent) -> ChromeView {
+    let base = el::<_, ChromeState, ChromeIntent>("div", label).attr(
+        "class",
+        if enabled {
+            "browser-button"
+        } else {
+            "browser-button-disabled"
+        },
+    );
+    if enabled {
+        Box::new(on_click(
+            base,
+            move |_state: &mut ChromeState, _click: PointerClick| intent,
+        ))
+    } else {
+        Box::new(base)
+    }
 }
 
 /// Map a configured projection placement to this pre-A4 chrome surface. A
@@ -228,6 +312,13 @@ impl ChromeSurfaces {
             omnibar_placement: ChromePlacement::Overlay,
             shellbar_placement: ChromePlacement::Docked(ChromeEdge::Right),
             shellbar_visible: true,
+            can_back: false,
+            can_forward: false,
+            has_focused_node: false,
+            fetching: false,
+            fetch_status: None,
+            focused_url: None,
+            link_preview: None,
         };
         let mut runner = GenetMultiRunner::new(state);
         let primary =
@@ -289,6 +380,28 @@ impl ChromeSurfaces {
             })
             .collect();
         let open = omnibar.open;
+        let focused = app.graph_runtimes.focused_member();
+        let can_back = app.focused_can_back();
+        let can_forward = app.focused_can_forward();
+        let fetching = focused.is_some_and(|node| app.content.fetch_in_progress(node));
+        let fetch_status = focused.and_then(|node| match app.content.fetch_phase(node) {
+            Some(crate::content::PageFetchPhase::Requested) => Some("Requested".to_string()),
+            Some(crate::content::PageFetchPhase::Streaming { received_bytes, .. }) => {
+                Some(format!("Streaming  {received_bytes} bytes"))
+            }
+            Some(crate::content::PageFetchPhase::Loading { progress_millis }) => {
+                Some(match progress_millis {
+                    Some(value) => format!("Loading  {}%", value / 10),
+                    None => "Loading".to_string(),
+                })
+            }
+            Some(crate::content::PageFetchPhase::Stopped { received_bytes }) => {
+                Some(format!("Stopped  {received_bytes} bytes"))
+            }
+            Some(crate::content::PageFetchPhase::Settled { .. }) | None => None,
+        });
+        let focused_url = app.graph_runtimes.focused_url().map(str::to_string);
+        let link_preview = app.link_preview.clone();
         self.runner.update(|state| {
             for &(slot, w, h) in sizes {
                 while state.windows.len() <= slot {
@@ -306,6 +419,13 @@ impl ChromeSurfaces {
             state.omnibar_placement = chrome.omnibar.placement.clone();
             state.shellbar_placement = chrome.shellbar.placement.clone();
             state.shellbar_visible = chrome.projects_shellbar();
+            state.can_back = can_back;
+            state.can_forward = can_forward;
+            state.has_focused_node = focused.is_some();
+            state.fetching = fetching;
+            state.fetch_status = fetch_status.clone();
+            state.focused_url = focused_url.clone();
+            state.link_preview = link_preview.clone();
         });
         self.appearance = chrome.appearance.clone();
     }
@@ -384,6 +504,90 @@ mod tests {
         });
         app.update(Action::OmnibarOpen { command: true });
         (app, watch_url)
+    }
+
+    fn browser_history_app(settled: bool) -> App {
+        let mut app = App::test_stub();
+        app.update(Action::OpenAddress("gemini://capsule.test/a".into()));
+        let node = app.graph_runtimes.focused_member().expect("focused node");
+        let request = app.content.active_fetch(node).expect("initial fetch");
+        assert!(app.content.settle_fetch(node, request));
+        app.update(Action::ContentNavigationCommitted {
+            member: node,
+            url: "gemini://capsule.test/b".into(),
+        });
+        app.update(Action::ContentNavigationCommitted {
+            member: node,
+            url: "gemini://capsule.test/c".into(),
+        });
+        app.update(Action::NavBack);
+        if settled {
+            let request = app.content.active_fetch(node).expect("Back fetch");
+            assert!(app.content.settle_fetch(node, request));
+        }
+        app
+    }
+
+    fn browser_button_intents(chrome: &mut ChromeSurfaces) -> Vec<ChromeIntent> {
+        let rects = {
+            let dom = chrome.dom.borrow();
+            let root = chrome
+                .runner
+                .window_root(chrome.projections[0])
+                .expect("the primary window-root exists");
+            let sheet = crate::ui::chrome_sheet(&chrome.appearance);
+            dom.all_with_class(dom.document(), "browser-button")
+                .into_iter()
+                .map(|button| {
+                    crate::ui::subtree_node_rect(&dom, root, button, &sheet, 1024, 600)
+                        .expect("browser button has a rect")
+                })
+                .collect::<Vec<_>>()
+        };
+        rects
+            .into_iter()
+            .flat_map(|(x, y, w, h)| chrome.click(0, x + w / 2.0, y + h / 2.0, 1024, 600))
+            .collect()
+    }
+
+    #[test]
+    fn browser_strip_routes_per_node_back_forward_and_reload() {
+        let app = browser_history_app(true);
+        assert!(app.focused_can_back() && app.focused_can_forward());
+        let mut chrome = ChromeSurfaces::new();
+        chrome.sync(&app, &[(0, 1024.0, 600.0)]);
+        assert_eq!(
+            browser_button_intents(&mut chrome),
+            vec![
+                ChromeIntent::NavBack,
+                ChromeIntent::NavForward,
+                ChromeIntent::Reload,
+            ]
+        );
+    }
+
+    #[test]
+    fn active_fetch_switches_reload_to_stop_and_projects_link_preview() {
+        let mut app = browser_history_app(false);
+        app.set_link_preview(Some("gemini://capsule.test/prospective".into()));
+        let mut chrome = ChromeSurfaces::new();
+        chrome.sync(&app, &[(0, 1024.0, 600.0)]);
+        {
+            let dom = chrome.dom.borrow();
+            assert_eq!(
+                dom.all_with_class(dom.document(), "browser-loading").len(),
+                1
+            );
+            assert_eq!(dom.all_with_class(dom.document(), "link-preview").len(), 1);
+        }
+        assert_eq!(
+            browser_button_intents(&mut chrome),
+            vec![
+                ChromeIntent::NavBack,
+                ChromeIntent::NavForward,
+                ChromeIntent::Stop,
+            ]
+        );
     }
 
     #[test]

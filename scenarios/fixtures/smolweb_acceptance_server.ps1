@@ -1,6 +1,6 @@
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet("GeminiImage", "GeminiDownload", "GeminiStreaming", "GeminiTypography", "Titan", "Spartan")]
+    [ValidateSet("GeminiImage", "GeminiDownload", "GeminiStreaming", "GeminiTypography", "GeminiBrowserControls", "Titan", "Spartan")]
     [string] $Mode,
 
     [Parameter(Mandatory = $true)]
@@ -148,7 +148,7 @@ try {
     $listener.Start()
     [System.IO.File]::WriteAllText($ReadyPath, "READY $Mode 127.0.0.1:$Port`n")
 
-    if ($Mode -in @("GeminiImage", "GeminiDownload", "GeminiStreaming", "GeminiTypography", "Titan")) {
+    if ($Mode -in @("GeminiImage", "GeminiDownload", "GeminiStreaming", "GeminiTypography", "GeminiBrowserControls", "Titan")) {
         $rsa = [System.Security.Cryptography.RSA]::Create(2048)
         $certificateRequest = [System.Security.Cryptography.X509Certificates.CertificateRequest]::new(
             "CN=127.0.0.1",
@@ -289,6 +289,32 @@ let greeting = "hello";
                     $receipt.Add("response=20 text/gemini")
                     $receipt.Add("body-utf8-bytes=$([System.Text.Encoding]::UTF8.GetByteCount($body))")
                 }
+                elseif ($Mode -eq "GeminiBrowserControls") {
+                    $expectedTarget = "gemini://127.0.0.1:$Port/controls.gmi"
+                    if ($packet.Line -ne $expectedTarget) {
+                        throw "Gemini controls target was '$($packet.Line)', expected '$expectedTarget'"
+                    }
+                    $body = @'
+# Browser controls
+The first response remains open until Stop cancels its exact request.
+## Link preview
+=> /inside Prospective node
+'@
+                    Write-Response -Stream $tls -Text ("20 text/gemini`r`n" + $body)
+                    $client.ReceiveTimeout = 30000
+                    $cancelObserved = $false
+                    try {
+                        $cancelObserved = $tls.ReadByte() -lt 0
+                    }
+                    catch [System.IO.IOException] {
+                        $cancelObserved = $true
+                    }
+                    if (-not $cancelObserved) {
+                        throw "Stop did not close the first Gemini request"
+                    }
+                    $receipt.Add("first-target=$expectedTarget")
+                    $receipt.Add("stop-closed-first-request=true")
+                }
                 elseif ($Mode -eq "GeminiDownload") {
                     $expectedTarget = "gemini://127.0.0.1:$Port/archive.bin"
                     if ($packet.Line -ne $expectedTarget) {
@@ -321,7 +347,9 @@ let greeting = "hello";
                         "## Image loaded`n"
                     )
                 }
-                $tls.ShutdownAsync().GetAwaiter().GetResult()
+                if ($Mode -ne "GeminiBrowserControls") {
+                    $tls.ShutdownAsync().GetAwaiter().GetResult()
+                }
             }
             finally {
                 if ($null -ne $tls) { $tls.Dispose() }
@@ -331,7 +359,40 @@ let greeting = "hello";
             if ($null -ne $client) { $client.Dispose() }
         }
 
-        if ($Mode -eq "GeminiImage") {
+        if ($Mode -eq "GeminiBrowserControls") {
+            $reloadClient = Accept-BeforeDeadline -Listener $listener -Deadline $deadline
+            try {
+                $reloadTls = Open-TlsServerStream -Client $reloadClient -Certificate $certificate
+                try {
+                    $reloadPacket = Read-CrlfPacket -Stream $reloadTls
+                    $expectedTarget = "gemini://127.0.0.1:$Port/controls.gmi"
+                    if ($reloadPacket.Line -ne $expectedTarget) {
+                        throw "Gemini reload target was '$($reloadPacket.Line)', expected '$expectedTarget'"
+                    }
+                    $body = @'
+# Browser controls
+The first response remains open until Stop cancels its exact request.
+## Link preview
+=> /inside Prospective node
+'@
+                    Write-Response -Stream $reloadTls -Text ("20 text/gemini`r`n" + $body)
+                    $reloadTls.ShutdownAsync().GetAwaiter().GetResult()
+
+                    $receipt.Insert(0, "RESULT ok")
+                    $receipt.Add("protocol=gemini")
+                    $receipt.Add("reload-target=$expectedTarget")
+                    $receipt.Add("requests=2")
+                    $receipt.Add("reload-response=20 text/gemini")
+                }
+                finally {
+                    if ($null -ne $reloadTls) { $reloadTls.Dispose() }
+                }
+            }
+            finally {
+                if ($null -ne $reloadClient) { $reloadClient.Dispose() }
+            }
+        }
+        elseif ($Mode -eq "GeminiImage") {
             $imageClient = Accept-BeforeDeadline -Listener $listener -Deadline $deadline
             try {
                 $imageTls = Open-TlsServerStream -Client $imageClient -Certificate $certificate

@@ -232,21 +232,29 @@ impl Shell {
     /// canvas gesture. Shared by winit and the scenario runner.
     pub(super) fn deliver_press(&mut self, x: f32, y: f32, button: MouseButton) {
         self.surface_pointer_buttons.0 |= surface_button_mask(button).0;
+        let chrome_intent = self
+            .chrome
+            .click(0, x, y, self.width.max(1), self.height.max(1))
+            .into_iter()
+            .next();
+        if let Some(intent) = chrome_intent {
+            let action = match intent {
+                crate::chrome_view::ChromeIntent::CommitRow(index) => {
+                    Action::OmnibarCommitRow(index)
+                }
+                crate::chrome_view::ChromeIntent::NavBack => Action::NavBack,
+                crate::chrome_view::ChromeIntent::NavForward => Action::NavForward,
+                crate::chrome_view::ChromeIntent::Reload => Action::Reload,
+                crate::chrome_view::ChromeIntent::Stop => Action::Stop,
+            };
+            self.act(action);
+            self.pointer_capture = None;
+            return;
+        }
         // A press while the omnibar is open dismisses it and is swallowed, so
         // the surface beneath never also reacts to the same press.
         if self.app.omnibar.open {
-            // A press on a suggestion row COMMITS it (the retained chrome's
-            // row handlers); anywhere else is the click-away dismiss.
-            let intents = self
-                .chrome
-                .click(0, x, y, self.width.max(1), self.height.max(1));
-            if let Some(crate::chrome_view::ChromeIntent::CommitRow(index)) =
-                intents.into_iter().next()
-            {
-                self.act(Action::OmnibarCommitRow(index));
-            } else {
-                self.act(Action::OmnibarClose);
-            }
+            self.act(Action::OmnibarClose);
             self.pointer_capture = None;
             return;
         }
@@ -835,6 +843,33 @@ impl Shell {
             self.reset_surface_cursor();
             return;
         };
+        if let Some(session) = self.content_sessions.get(&node) {
+            let target = session.links().into_iter().find_map(|link| {
+                let [left, top, width, height] = link.rect;
+                (local_x >= left
+                    && local_x <= left + width.max(0.0)
+                    && local_y >= top
+                    && local_y <= top + height.max(0.0))
+                .then_some(link.url)
+            });
+            let preview = target.map(|url| super::content_link_target(&self.app, node, &url));
+            let hovering_link = preview.is_some();
+            let changed = self.app.set_link_preview(preview);
+            self.hovered_surface = None;
+            if let Some(window) = self.window.as_ref() {
+                window.set_cursor_visible(true);
+                window.set_cursor(if hovering_link {
+                    CursorIcon::Pointer
+                } else {
+                    CursorIcon::Default
+                });
+            }
+            if changed {
+                self.request_redraw();
+            }
+            return;
+        }
+        let preview_changed = self.app.set_link_preview(None);
         let Some(producer) = self.surface_producers.get_mut(&node) else {
             self.reset_surface_cursor();
             return;
@@ -856,6 +891,9 @@ impl Shell {
         }
         self.hovered_surface = Some(node);
         self.apply_pending_surface_cursor();
+        if preview_changed {
+            self.request_redraw();
+        }
     }
 
     pub(super) fn apply_pending_surface_cursor(&mut self) {
@@ -881,12 +919,19 @@ impl Shell {
     }
 
     pub(super) fn reset_surface_cursor(&mut self) {
+        let preview_changed = self.app.set_link_preview(None);
         if self.hovered_surface.take().is_none() {
+            if preview_changed {
+                self.request_redraw();
+            }
             return;
         }
         if let Some(window) = self.window.as_ref() {
             window.set_cursor_visible(true);
             window.set_cursor(CursorIcon::Default);
+        }
+        if preview_changed {
+            self.request_redraw();
         }
     }
 

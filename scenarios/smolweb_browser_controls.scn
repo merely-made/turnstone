@@ -1,0 +1,33 @@
+# Deterministic browser-control receipt. The first Gemini response stays open,
+# so the chrome must expose Stop and cancel that exact actor request. The same
+# button then becomes Reload, which issues a second request. The settled page's
+# retained link projects its resolved prospective-node address on hover.
+settle 30
+key escape
+open gemini://127.0.0.1:19656/controls.gmi
+act Toggle live content
+settle 60
+assert content-live
+assert surface content
+assert fetch streaming
+capture 01_loading_controls
+
+# The 1024px acceptance window centres the browser strip at x=202. Its third
+# button is Stop while the request is active and Reload after cancellation.
+click-at 340 27
+settle 10
+assert fetch stopped
+assert event stopped
+capture 02_stopped
+
+click-at 340 27
+assert event reloaded
+settle 60
+assert content-live
+assert fetch settled
+
+move-at 500 194
+settle 5
+assert link-preview /inside
+capture 03_reloaded_link_preview
+log smolweb browser controls receipt complete

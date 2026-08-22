@@ -40,6 +40,15 @@ the captures.
   preformatted block. See the [capture](gemini-typography/01_typography.png),
   [wire receipt](gemini-typography/server.done), and
   [scenario receipt](gemini-typography/scenario.done).
+- **Browser controls:** a local TLS capsule held a Gemini response open while
+  the rendered Stop button cancelled that exact request. The server observed
+  the connection close; the same control returned to Reload and issued the
+  second request; and hovering the settled page's retained link projected the
+  resolved prospective-node address. See [loading](gemini-browser-controls/01_loading_controls.png),
+  [stopped](gemini-browser-controls/02_stopped.png),
+  [reloaded link preview](gemini-browser-controls/03_reloaded_link_preview.png),
+  [wire receipt](gemini-browser-controls/server.done), and
+  [scenario receipt](gemini-browser-controls/scenario.done).
 - **Titan mutation:** the composer accepted a dropped 19-byte LF body,
   changed MIME to `text/plain`, masked the optional token, required literal
   `send`, issued one actor command, and received status 20. The server receipt
@@ -120,6 +129,14 @@ built with `--locked` from Turnstone `0588d51e987`, resolving Genet
 The headed run completed without the prior ICU4X complex-script diagnostic.
 Genet's `document-canvas` suite passed all 50 tests with Parley's
 `complex-scripts` feature selecting dictionary-backed line and word breaking.
+
+The browser-control case is local and deterministic. Its pre-commit acceptance
+binary was built from the owned working-tree slice over Turnstone `8637abe58ff`,
+Genet `9d3f2bd3031`, and Mere `0285eb8a7fd`; its SHA-256 is recorded in
+[binary.done](gemini-browser-controls/binary.done). The server receipt proves
+that Stop closed the first connection and Reload issued a second request. The
+three app-authored captures prove the loading, stopped, reloaded, and resolved
+link-preview surfaces.
 
 ## Dependency defect closed
 

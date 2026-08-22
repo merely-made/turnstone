@@ -141,13 +141,15 @@ pub struct App {
     /// threading another bool through the shell. `omnibar.open` stays the
     /// omnibar's own display state; opening/closing it keeps this in sync.
     pub focus: FocusTarget,
+    /// Prospective graph member under the pointer. Ephemeral presentation
+    /// state: a click still goes through the ordinary navigation action.
+    pub link_preview: Option<String>,
     /// The pane tree (rung 5 slice C): frisket's split tree of `PaneContent`
     /// leaves. The Orrery leaf is the graph canvas; summoning a pane splits it.
     /// Persisted to `frame.json` through the session port.
     pub frisket: FrisketLayout,
-    /// The visit-history cursor (the r3-owed nav row): every opened address
-    /// records here; Back/Forward move the cursor and re-select without
-    /// refetching. chrome's `History` — the mere vocabulary, direct-dep'd.
+    /// Cross-node visit memory for recall/trail suggestions. Browser Back and
+    /// Forward use each focused node's own durable lineage instead.
     pub history: chrome::nav::History,
     /// The active pane — the anchor a summon splits from and a close removes.
     /// `None` means the canvas (the Orrery leaf).
@@ -986,13 +988,10 @@ impl App {
                 self.commit_content_navigation(member, url)
             }
             Action::ContentTitleChanged { member, title } => self.set_content_title(member, title),
-            // The nav pair: move the history cursor and RE-SELECT (never a
-            // refetch — the find lane's discipline). A remembered address
-            // whose node was deleted re-mints it via visit, without touching
-            // the cursor again.
             Action::NavBack => self.nav_back(),
             Action::NavForward => self.nav_forward(),
             Action::Reload => self.reload_focused(),
+            Action::Stop => self.stop_focused(),
             Action::SubscribeFocusedFeed { period } => self.subscribe_focused_feed(period),
             Action::UnsubscribeFocusedFeed => self.unsubscribe_focused_feed(),
             Action::RefreshFeeds => self.refresh_feeds(),

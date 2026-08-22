@@ -83,7 +83,7 @@ graphshell = { git = "https://github.com/merely-made/mere.git", branch = "main" 
 # endpoint rather than spawning it: a subprocess is unshippable in a browser
 # tab or an iOS app, so the spawn path cannot be the only one.
 graphshell-local = { git = "https://github.com/merely-made/mere.git", branch = "main" }
-knot = { git = "https://github.com/merely-made/mere.git", branch = "main" }
+knot = { package = "knot-editor", git = "https://github.com/merely-made/mere.git", branch = "main" }
 graphshell-client = { git = "https://github.com/merely-made/mere.git", branch = "main", features = ["accesskit"] }
 graphshell-endpoint = { git = "https://github.com/merely-made/mere.git", branch = "main" }
 chirograph = { git = "https://github.com/merely-made/mere.git", branch = "main" }

@@ -80,14 +80,16 @@ pub enum Action {
     ContentNavigationCommitted { member: uuid::Uuid, url: String },
     /// The active document supplied a title for its existing graph member.
     ContentTitleChanged { member: uuid::Uuid, title: String },
-    /// Step back in the visit history: select the previous address's node
-    /// without refetching (the r3-owed nav row). No-op at the oldest entry.
+    /// Step the focused node back through its own content lineage. No-op at
+    /// that node's oldest entry.
     NavBack,
-    /// Step forward in the visit history (the redo of `NavBack`).
+    /// Step the focused node forward through its own content lineage.
     NavForward,
     /// Reload the focused node: refetch its enrichment, and respawn its live
     /// content session when it has one.
     Reload,
+    /// Stop the focused node's active page request or hosted navigation.
+    Stop,
     /// Keep the focused node as a feed source and refresh it on this cadence.
     /// The first refresh is immediate; later refreshes use the host clock.
     SubscribeFocusedFeed { period: servitor::Period },
@@ -392,6 +394,7 @@ pub fn palette_actions() -> Vec<(String, Action)> {
         ("Back", Action::NavBack),
         ("Forward", Action::NavForward),
         ("Reload", Action::Reload),
+        ("Stop loading", Action::Stop),
         (
             "Subscribe to feed: every minute",
             Action::SubscribeFocusedFeed {
@@ -476,6 +479,17 @@ pub fn palette_actions() -> Vec<(String, Action)> {
     rows
 }
 
+/// Browser controls that a hosted web surface executes directly. Retained
+/// document sessions use the same app actions but complete them through the
+/// fetch/content ports instead.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum ContentControl {
+    Back,
+    Forward,
+    Reload,
+    Stop,
+}
+
 /// A side effect `update` asks the shell to run through a port. `update`
 /// itself never blocks and never touches a platform API.
 #[derive(Clone, Debug, PartialEq)]
@@ -484,6 +498,10 @@ pub enum Effect {
     /// node that requested it (correlation-over-URLs: several nodes may
     /// share an address, and a node may navigate away mid-flight).
     FetchPage {
+        /// Process-local request identity, echoed by the fetch actor.
+        request: fetch::FetchRequestId,
+        /// An older request for this node that this one replaces.
+        supersedes: Option<fetch::FetchRequestId>,
         node: uuid::Uuid,
         /// The address sent to the network.
         url: String,
@@ -493,6 +511,11 @@ pub enum Effect {
         /// A capsule-scoped client certificate selected by the host. The
         /// fetch actor still rechecks its origin on redirects.
         identity: Option<fetch::GeminiClientIdentity>,
+    },
+    /// Abort one exact actor-backed page request.
+    CancelPage {
+        request: fetch::FetchRequestId,
+        node: uuid::Uuid,
     },
     /// Fetch a subscribed source without treating its response as page
     /// enrichment. It uses the same actor and capsule-scoped identity path.
@@ -589,6 +612,11 @@ pub enum Effect {
     UpdateContent { node: uuid::Uuid, url: String },
     /// Close `node`'s live session; the port drops the handle.
     CloseContent { node: uuid::Uuid },
+    /// Drive the optional web control plane of a live surface producer.
+    ControlContent {
+        node: uuid::Uuid,
+        control: ContentControl,
+    },
     /// Open a lens window (platform work: window + surface creation) showing
     /// the pane space the app seeded at `App::lenses[ordinal]`.
     OpenWindow { ordinal: usize },
@@ -626,6 +654,7 @@ pub enum Effect {
 pub enum Update {
     /// Exact Gemini response bytes arrived before the terminal fetch answer.
     PageStreamed {
+        request: fetch::FetchRequestId,
         node: uuid::Uuid,
         url: String,
         response_url: String,
@@ -636,6 +665,7 @@ pub enum Update {
     /// requested `url` (enrichment applies only while the node still lives
     /// there — a late result against a superseded node drops explicitly).
     PageFetched {
+        request: fetch::FetchRequestId,
         node: uuid::Uuid,
         url: String,
         result: Result<FetchedPage, String>,
@@ -656,6 +686,7 @@ pub enum Update {
     /// member's requested address; `input_url` is the final redirect target
     /// whose query the answer must replace.
     SmolwebInputRequested {
+        request: fetch::FetchRequestId,
         node: uuid::Uuid,
         url: String,
         input_url: String,
@@ -666,6 +697,7 @@ pub enum Update {
     /// final redirect target and therefore the capsule origin the identity
     /// must be scoped to.
     GeminiIdentityRequested {
+        request: fetch::FetchRequestId,
         node: uuid::Uuid,
         url: String,
         identity_url: String,
@@ -674,12 +706,19 @@ pub enum Update {
     /// A Gemini TLS certificate differs from durable trust. The request was
     /// refused before application bytes and waits for an explicit decision.
     GeminiCertificateChanged {
+        request: fetch::FetchRequestId,
         node: uuid::Uuid,
         url: String,
         fetch_url: String,
         target: String,
         pinned: String,
         seen: String,
+    },
+    /// The fetch actor confirmed that an exact page request was cancelled.
+    PageStopped {
+        request: fetch::FetchRequestId,
+        node: uuid::Uuid,
+        url: String,
     },
     /// A favicon's raw bytes arrived for `node`, requested while its page
     /// was `owner_url`.

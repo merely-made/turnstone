@@ -26,10 +26,13 @@ fn binary_page_response_becomes_durable_download_custody() {
     let key = app.graph_runtimes.visit(url);
     let node = app.graph_runtimes.graph().get_node(key).unwrap().id;
     app.content.note_requested(node);
+    let request = fetch::next_fetch_request_id();
+    app.content.begin_fetch(node, request);
     let _ = app.take_events();
 
     let bytes = b"\0exact\xffbytes".to_vec();
     let effects = app.apply_update(Update::PageFetched {
+        request,
         node,
         url: url.to_string(),
         result: Ok(crate::action::FetchedPage {
@@ -2407,11 +2410,6 @@ fn empty_recycle_bin_forgets_on_command() {
     );
 }
 
-/// The rung7_lens_ops receipt's exact op sequence, app-level: tear out
-/// the roster, summon the trail beside it (in the lens), reweight, close
-/// the ACTIVE pane. The close must remove the TRAIL (the summon made it
-/// active), never the roster.
-#[test]
 /// The gloss-composite's add/remove: a Gloss pane starts as a bare
 /// minimap, the palette offers pane-scoped section rows, toggling one
 /// edits THAT LEAF (so it persists with the layout), and toggling again
@@ -2663,6 +2661,11 @@ fn the_overmap_composes_sections_too() {
     }
 }
 
+/// The rung7_lens_ops receipt's exact op sequence, app-level: tear out
+/// the roster, summon the trail beside it (in the lens), reweight, close
+/// the ACTIVE pane. The close must remove the TRAIL (the summon made it
+/// active), never the roster.
+#[test]
 fn lens_ops_close_removes_the_summoned_pane() {
     let mut app = App::test_stub();
     app.update(Action::SummonPane(crate::panes::PaneKindId::new(
@@ -2682,40 +2685,51 @@ fn lens_ops_close_removes_the_summoned_pane() {
     );
 }
 
-/// The nav row (r3 owed): Back re-selects without refetching, Forward
-/// redoes, a new open truncates the forward branch, and Reload refetches
-/// the focused node and respawns its live content.
+/// Browser controls act on the focused node's own lineage. Back and Forward
+/// keep its identity and refetch the revealed address; a new in-node
+/// navigation truncates Forward; Reload refreshes the same member.
 #[test]
 fn back_forward_and_reload_flow_through_the_spine() {
     let mut app = App::test_stub();
     app.update(Action::OpenAddress("https://example.com/a".to_string()));
-    app.update(Action::OpenAddress("https://example.com/b".to_string()));
-    // Back: the previous node re-selects, with NO fetch effect.
+    let node = app.graph_runtimes.focused_member().unwrap();
+    app.update(Action::ContentNavigationCommitted {
+        member: node,
+        url: "https://example.com/b".into(),
+    });
+    app.update(Action::ContentNavigationCommitted {
+        member: node,
+        url: "https://example.com/c".into(),
+    });
+    assert!(app.focused_can_back());
+
     let effects = app.update(Action::NavBack);
     assert!(
-        !effects
+        effects
             .iter()
-            .any(|e| matches!(e, Effect::FetchPage { .. })),
-        "Back never refetches: {effects:?}"
+            .any(|e| matches!(e, Effect::FetchPage { node: actual, .. } if *actual == node)),
+        "Back refetches the focused member: {effects:?}"
     );
-    assert_eq!(
-        app.graph_runtimes.focused_url(),
-        Some("https://example.com/a")
-    );
-    // Forward redoes.
-    app.update(Action::NavForward);
+    assert_eq!(app.graph_runtimes.focused_member(), Some(node));
     assert_eq!(
         app.graph_runtimes.focused_url(),
         Some("https://example.com/b")
     );
-    // Back then a new open: the forward branch truncates.
+    assert!(app.focused_can_forward());
+
+    app.update(Action::NavForward);
+    assert_eq!(
+        app.graph_runtimes.focused_url(),
+        Some("https://example.com/c")
+    );
+
     app.update(Action::NavBack);
-    app.update(Action::OpenAddress("https://example.com/c".to_string()));
-    assert!(!app.history.can_forward(), "a new open truncates forward");
-    assert!(app.history.can_back());
-    // Reload: a fetch effect for the focused node; with live content, a
-    // close + respawn pair.
-    let node = app.graph_runtimes.focused_member().unwrap();
+    app.update(Action::ContentNavigationCommitted {
+        member: node,
+        url: "https://example.com/d".into(),
+    });
+    assert!(!app.focused_can_forward(), "new lineage truncates Forward");
+
     app.apply_update(Update::ContentSpawned { node, facts: None });
     let effects = app.update(Action::Reload);
     assert!(
@@ -2741,6 +2755,34 @@ fn back_forward_and_reload_flow_through_the_spine() {
     assert!(described.iter().any(|e| e.starts_with("nav-back ")));
     assert!(described.iter().any(|e| e.starts_with("nav-forward ")));
     assert!(described.iter().any(|e| e.starts_with("reloaded ")));
+}
+
+#[test]
+fn stop_cancels_only_the_focused_request_and_rejects_its_late_answer() {
+    let mut app = App::test_stub();
+    let url = "gemini://capsule.test/slow";
+    app.update(Action::OpenAddress(url.into()));
+    let node = app.graph_runtimes.focused_member().unwrap();
+    let request = app.content.active_fetch(node).expect("active fetch");
+
+    let effects = app.update(Action::Stop);
+    assert!(effects.contains(&Effect::CancelPage { request, node }));
+    assert!(matches!(
+        app.content.fetch_phase(node),
+        Some(crate::content::PageFetchPhase::Stopped { received_bytes: 0 })
+    ));
+
+    let stale = app.apply_update(Update::PageFetched {
+        request,
+        node,
+        url: url.into(),
+        result: Ok(crate::action::FetchedPage::text(
+            Some("text/gemini".into()),
+            "# Too late",
+        )),
+    });
+    assert!(stale.is_empty());
+    assert!(app.content.fetched(node, url).is_none());
 }
 
 /// The workbench lane end to end at the App tier: opening the focused
@@ -3264,8 +3306,10 @@ fn actor_fetched_body_is_retained_for_the_requested_content_spawn() {
     app.update(Action::OpenAddress("gemini://capsule.test/".into()));
     let node = app.graph_runtimes.focused_member().unwrap();
     app.content.note_requested(node);
+    let request = app.content.active_fetch(node).unwrap();
 
     let effects = app.apply_update(Update::PageFetched {
+        request,
         node,
         url: "gemini://capsule.test/".into(),
         result: Ok(crate::action::FetchedPage::text(
@@ -3294,8 +3338,10 @@ fn streamed_page_spawns_from_a_prefix_then_replaces_and_settles() {
     app.update(Action::OpenAddress(url.into()));
     let node = app.graph_runtimes.focused_member().unwrap();
     app.content.note_requested(node);
+    let request = app.content.active_fetch(node).unwrap();
 
     let first = app.apply_update(Update::PageStreamed {
+        request,
         node,
         url: url.into(),
         response_url: url.into(),
@@ -3309,6 +3355,7 @@ fn streamed_page_spawns_from_a_prefix_then_replaces_and_settles() {
     app.apply_update(Update::ContentSpawned { node, facts: None });
 
     let second = app.apply_update(Update::PageStreamed {
+        request,
         node,
         url: url.into(),
         response_url: url.into(),
@@ -3327,6 +3374,7 @@ fn streamed_page_spawns_from_a_prefix_then_replaces_and_settles() {
     );
 
     let settled = app.apply_update(Update::PageFetched {
+        request,
         node,
         url: url.into(),
         result: Ok(crate::action::FetchedPage::text(
@@ -3350,8 +3398,10 @@ fn ordinary_smolweb_input_navigates_and_refetches_with_a_percent_encoded_query()
     app.update(Action::OpenAddress("gemini://capsule.test/search".into()));
     let node = app.graph_runtimes.focused_member().unwrap();
     app.content.note_requested(node);
+    let request = app.content.active_fetch(node).unwrap();
 
     let effects = app.apply_update(Update::SmolwebInputRequested {
+        request,
         node,
         url: "gemini://capsule.test/search".into(),
         input_url: "gemini://capsule.test/search".into(),
@@ -3394,8 +3444,10 @@ fn sensitive_smolweb_input_is_masked_and_never_enters_graph_or_events() {
     let owner = "gemini://capsule.test/login";
     app.update(Action::OpenAddress(owner.into()));
     let node = app.graph_runtimes.focused_member().unwrap();
+    let request = app.content.active_fetch(node).unwrap();
     let _ = app.take_events();
     app.apply_update(Update::SmolwebInputRequested {
+        request,
         node,
         url: owner.into(),
         input_url: owner.into(),
@@ -3442,8 +3494,10 @@ fn gemini_identity_is_confirmed_once_and_reused_only_for_its_capsule() {
     app.update(Action::OpenAddress(owner.into()));
     let node = app.graph_runtimes.focused_member().unwrap();
     app.content.note_requested(node);
+    let request = app.content.active_fetch(node).unwrap();
 
     let effects = app.apply_update(Update::GeminiIdentityRequested {
+        request,
         node,
         url: owner.into(),
         identity_url: target.into(),
@@ -3473,6 +3527,7 @@ fn gemini_identity_is_confirmed_once_and_reused_only_for_its_capsule() {
             url,
             owner_url,
             identity: Some(identity),
+            ..
         } if *actual == node
             && url == target
             && owner_url == owner
@@ -3530,8 +3585,10 @@ fn changed_gemini_certificate_requires_an_explicit_trust_commit_before_refetch()
     app.update(Action::OpenAddress(owner.into()));
     let node = app.graph_runtimes.focused_member().unwrap();
     app.content.note_requested(node);
+    let request = app.content.active_fetch(node).unwrap();
 
     let effects = app.apply_update(Update::GeminiCertificateChanged {
+        request,
         node,
         url: owner.into(),
         fetch_url: fetch_url.into(),

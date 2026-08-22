@@ -47,19 +47,36 @@ impl Shell {
 
     fn consume_surface_web_event(&mut self, node: uuid::Uuid, event: inker::WebSurfaceEvent) {
         match event {
+            inker::WebSurfaceEvent::Navigation(inker::NavigationEvent::Started { .. }) => {
+                self.app.content.note_surface_started(node);
+                self.request_redraw();
+            }
             inker::WebSurfaceEvent::Navigation(inker::NavigationEvent::Committed { url })
             | inker::WebSurfaceEvent::AddressChanged { url } => {
                 self.act(Action::ContentNavigationCommitted { member: node, url });
             }
             inker::WebSurfaceEvent::Navigation(inker::NavigationEvent::Finished {
-                title: Some(title),
-                ..
-            })
-            | inker::WebSurfaceEvent::TitleChanged { title } => {
+                title, ..
+            }) => {
+                self.app.content.note_surface_settled(node);
+                if let Some(title) = title {
+                    self.act(Action::ContentTitleChanged {
+                        member: node,
+                        title,
+                    });
+                } else {
+                    self.request_redraw();
+                }
+            }
+            inker::WebSurfaceEvent::TitleChanged { title } => {
                 self.act(Action::ContentTitleChanged {
                     member: node,
                     title,
                 });
+            }
+            inker::WebSurfaceEvent::LoadProgress { value } => {
+                self.app.content.note_surface_progress(node, value);
+                self.request_redraw();
             }
             inker::WebSurfaceEvent::NewWindowRequested { url } => {
                 self.app
@@ -156,7 +173,9 @@ impl Shell {
                 }
             }
             inker::WebSurfaceEvent::Navigation(inker::NavigationEvent::Failed { url, reason }) => {
+                self.app.content.note_surface_stopped(node);
                 tracing::warn!(%node, %url, %reason, "surface navigation failed");
+                self.request_redraw();
             }
             inker::WebSurfaceEvent::ProcessCrashed { reason } => {
                 tracing::warn!(%node, %reason, "surface content process crashed");

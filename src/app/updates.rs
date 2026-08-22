@@ -15,12 +15,16 @@ impl App {
         match update {
             Update::FeedFetched { node, url, result } => self.apply_feed_fetched(node, url, result),
             Update::PageStreamed {
+                request,
                 node,
                 url,
                 response_url,
                 content_type,
                 bytes,
             } => {
+                if !self.content.is_active_fetch(node, request) {
+                    return Vec::new();
+                }
                 let current = self
                     .graph_runtimes
                     .graph_containing_member(node)
@@ -57,7 +61,15 @@ impl App {
                     _ => Vec::new(),
                 }
             }
-            Update::PageFetched { node, url, result } => {
+            Update::PageFetched {
+                request,
+                node,
+                url,
+                result,
+            } => {
+                if !self.content.finish_fetch(node, request) {
+                    return Vec::new();
+                }
                 let current = self
                     .graph_runtimes
                     .graph_containing_member(node)
@@ -195,12 +207,16 @@ impl App {
                 }
             }
             Update::SmolwebInputRequested {
+                request,
                 node,
                 url,
                 input_url,
                 prompt,
                 sensitive,
             } => {
+                if !self.content.settle_fetch(node, request) {
+                    return Vec::new();
+                }
                 let current = self
                     .graph_runtimes
                     .graph_containing_member(node)
@@ -250,11 +266,15 @@ impl App {
                 effects
             }
             Update::GeminiIdentityRequested {
+                request,
                 node,
                 url,
                 identity_url,
                 prompt,
             } => {
+                if !self.content.settle_fetch(node, request) {
+                    return Vec::new();
+                }
                 let current = self
                     .graph_runtimes
                     .graph_containing_member(node)
@@ -305,6 +325,7 @@ impl App {
                 effects
             }
             Update::GeminiCertificateChanged {
+                request,
                 node,
                 url,
                 fetch_url,
@@ -312,6 +333,9 @@ impl App {
                 pinned,
                 seen,
             } => {
+                if !self.content.settle_fetch(node, request) {
+                    return Vec::new();
+                }
                 let current = self
                     .graph_runtimes
                     .graph_containing_member(node)
@@ -361,6 +385,16 @@ impl App {
                 }
                 effects.push(Effect::Redraw);
                 effects
+            }
+            Update::PageStopped { request, node, url } => {
+                if !self.content.stop_fetch(node, request) {
+                    return Vec::new();
+                }
+                self.events.push(AppEvent::ContentState {
+                    node,
+                    state: format!("stopped: {url}"),
+                });
+                vec![Effect::Redraw]
             }
             Update::FaviconFetched {
                 node,

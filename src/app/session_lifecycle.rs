@@ -95,6 +95,7 @@ impl App {
             next_smolweb_submission: 0,
             active_smolweb_submission: None,
             focus: FocusTarget::Graph(crate::panes::PaneId(0)),
+            link_preview: None,
             frisket: FrisketLayout::default(),
             history: chrome::nav::History::new(String::new()),
             active_pane: None,
@@ -758,6 +759,7 @@ impl App {
         // (the shell re-points the bin actor on switch; BinListed refills).
         self.removed.clear();
         self.content = ContentStates::default();
+        self.link_preview = None;
         for (_, node) in self.graph_runtimes.graph().nodes() {
             if self.browser.get(node.id).is_some_and(|b| b.content_on) {
                 self.content.note_requested(node.id);

@@ -1,0 +1,6 @@
+RESULT ok
+sha256=CB865D3B413A5F668BE14359B73144696C39BC5822240621305A496EA74126A5
+base-turnstone=8637abe58ff199f98ab24b9490a00e8a5ab584139
+base-genet=9d3f2bd30319c6d2926faf804a1d6a3d020fc3d00
+base-mere=0285eb8a7fdf892ee36e065a112b9e9036deb982
+source=owned pre-commit working-tree browser-control slice

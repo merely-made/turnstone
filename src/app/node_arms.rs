@@ -36,6 +36,35 @@ pub(crate) fn smolweb_query_url(input_url: &str, answer: &str) -> Option<String>
 }
 
 impl App {
+    pub(crate) fn focused_can_back(&self) -> bool {
+        let Some(node) = self.graph_runtimes.focused_member() else {
+            return false;
+        };
+        self.graph_runtimes
+            .graph_containing_member(node)
+            .and_then(|graph| self.graph_runtimes.canvas(graph))
+            .is_some_and(|canvas| canvas.member_can_back(node))
+    }
+
+    pub(crate) fn focused_can_forward(&self) -> bool {
+        let Some(node) = self.graph_runtimes.focused_member() else {
+            return false;
+        };
+        self.graph_runtimes
+            .graph_containing_member(node)
+            .and_then(|graph| self.graph_runtimes.canvas(graph))
+            .is_some_and(|canvas| canvas.member_can_forward(node))
+    }
+
+    pub(crate) fn set_link_preview(&mut self, preview: Option<String>) -> bool {
+        if self.link_preview == preview {
+            false
+        } else {
+            self.link_preview = preview;
+            true
+        }
+    }
+
     pub(super) fn delete_focused_node(&mut self) -> Vec<Effect> {
         // Build the bin record off the LIVING node (identity, url,
         // title, tags — everything recovery restores), then drop the
@@ -279,6 +308,19 @@ impl App {
         };
         let (node, url) = target;
         self.events.push(AppEvent::Reloaded(url.clone()));
+        self.link_preview = None;
+
+        if self.node_uses_web_surface(node) {
+            self.content.note_surface_started(node);
+            return vec![
+                Effect::ControlContent {
+                    node,
+                    control: crate::action::ContentControl::Reload,
+                },
+                Effect::Redraw,
+            ];
+        }
+
         self.content.forget_fetched(node);
         let mut effects = Vec::new();
         if fetch::is_fetchable(&url) {
@@ -300,6 +342,37 @@ impl App {
         }
         effects.push(Effect::Redraw);
         effects
+    }
+
+    pub(super) fn stop_focused(&mut self) -> Vec<Effect> {
+        let Some(node) = self.graph_runtimes.focused_member() else {
+            return vec![Effect::Redraw];
+        };
+        self.link_preview = None;
+        if let Some(request) = self.content.active_fetch(node) {
+            if self.content.stop_fetch(node, request) {
+                self.events.push(AppEvent::ContentState {
+                    node,
+                    state: "stopped".to_string(),
+                });
+                return vec![Effect::CancelPage { request, node }, Effect::Redraw];
+            }
+        }
+        if self.node_uses_web_surface(node) && self.content.fetch_in_progress(node) {
+            self.content.note_surface_stopped(node);
+            self.events.push(AppEvent::ContentState {
+                node,
+                state: "stopped".to_string(),
+            });
+            return vec![
+                Effect::ControlContent {
+                    node,
+                    control: crate::action::ContentControl::Stop,
+                },
+                Effect::Redraw,
+            ];
+        }
+        vec![Effect::Redraw]
     }
 
     pub(super) fn commit_omnibar(&mut self) -> Vec<Effect> {
@@ -919,31 +992,86 @@ impl App {
     }
 
     pub(super) fn nav_back(&mut self) -> Vec<Effect> {
-        let Some(url) = self.history.back().map(str::to_string) else {
-            return vec![Effect::Redraw];
-        };
-        self.events.push(AppEvent::NavigatedBack(url.clone()));
-        if !url.is_empty() {
-            // Navigation is a revisit even when its node already
-            // exists, so P3's recency-derived score remains honest.
-            let pane = self
-                .focused_graph_pane()
-                .unwrap_or_else(|| self.default_graph_pane());
-            let _ = self.with_graph_pane(pane, |canvas| canvas.visit(&url));
-        }
-        vec![Effect::Redraw]
+        self.navigate_focused_lineage(true)
     }
 
     pub(super) fn nav_forward(&mut self) -> Vec<Effect> {
-        let Some(url) = self.history.forward().map(str::to_string) else {
+        self.navigate_focused_lineage(false)
+    }
+
+    fn navigate_focused_lineage(&mut self, back: bool) -> Vec<Effect> {
+        let Some(node) = self.graph_runtimes.focused_member() else {
             return vec![Effect::Redraw];
         };
-        self.events.push(AppEvent::NavigatedForward(url.clone()));
-        let pane = self
-            .focused_graph_pane()
-            .unwrap_or_else(|| self.default_graph_pane());
-        let _ = self.with_graph_pane(pane, |canvas| canvas.visit(&url));
-        vec![Effect::Redraw]
+        if self.node_uses_web_surface(node) {
+            let allowed = self
+                .graph_runtimes
+                .graph_containing_member(node)
+                .and_then(|graph| self.graph_runtimes.canvas(graph))
+                .is_some_and(|canvas| {
+                    if back {
+                        canvas.member_can_back(node)
+                    } else {
+                        canvas.member_can_forward(node)
+                    }
+                });
+            if !allowed {
+                return vec![Effect::Redraw];
+            }
+            self.content.note_surface_started(node);
+            return vec![
+                Effect::ControlContent {
+                    node,
+                    control: if back {
+                        crate::action::ContentControl::Back
+                    } else {
+                        crate::action::ContentControl::Forward
+                    },
+                },
+                Effect::Redraw,
+            ];
+        }
+
+        let Some(graph) = self.graph_runtimes.graph_containing_member(node) else {
+            return vec![Effect::Redraw];
+        };
+        let Some(url) = self.graph_runtimes.canvas_mut(graph).and_then(|canvas| {
+            if back {
+                canvas.member_history_back(node)
+            } else {
+                canvas.member_history_forward(node)
+            }
+        }) else {
+            return vec![Effect::Redraw];
+        };
+        if back {
+            self.events.push(AppEvent::NavigatedBack(url.clone()));
+        } else {
+            self.events.push(AppEvent::NavigatedForward(url.clone()));
+        }
+        self.link_preview = None;
+        self.content.forget_fetched(node);
+        let content_on = matches!(
+            self.content.get(node),
+            Some(crate::content::NodeContent::Live | crate::content::NodeContent::Requested)
+        );
+        let mut effects = vec![Effect::SaveSession];
+        if fetch::is_fetchable(&url) {
+            effects.push(self.fetch_page_effect(node, url.clone(), url.clone()));
+        }
+        if content_on {
+            self.content.note_requested(node);
+            effects.push(Effect::CloseContent { node });
+            effects.push(Effect::SpawnContent { node, url });
+        }
+        effects.push(Effect::Redraw);
+        effects
+    }
+
+    fn node_uses_web_surface(&self, node: Uuid) -> bool {
+        self.content
+            .facts(node)
+            .is_some_and(|facts| facts.engine == inker::routing::ENGINE_WELD_CHROMIUM)
     }
 
     pub(super) fn reseed_layout(&mut self) -> Vec<Effect> {

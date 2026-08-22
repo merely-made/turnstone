@@ -35,6 +35,10 @@ sets.
 > typography, and Livery-to-Knot source evidence all have checked-in `RESULT ok`
 > receipts and headed captures in
 > [`docs/receipts/smolweb_acceptance_20260821`](../docs/receipts/smolweb_acceptance_20260821/README.md).
+> The same suite now includes a deterministic browser-control receipt: a local
+> Gemini response stays open while the rendered Stop control cancels its exact
+> request, the control returns to Reload and issues a second request, and a
+> retained link hover projects its resolved prospective-node address.
 >
 > **Dependency cutover, 2026-08-21:** the obsolete `genet-layout` and
 > `stylo_taffy` consumer edges are gone. Turnstone owns its retained host
@@ -67,9 +71,9 @@ not concepts.
 | Browser element | Here | State |
 | --- | --- | --- |
 | Address bar | The omnibar, one line with three intents: **find** (graph nodes first: the graph is the history made spatial; committing a match selects, never refetches), **go** (address-shaped input engages the fetch lane), **do** (`>` prefix, the actions lane) | Live: retained chrome, suggestion rows with real `on_click`, `OmnibarCommitRow` through the spine |
-| Back / forward | Per-node, not per-window: a committed navigation appends to that member's lineage (the web-platform contract's ruling), and the Trail pane is the chronological projection | Lineage vocabulary ruled; the two-button affordance on a focused node is unbuilt |
-| Reload / stop | A re-command of the fetch actor against the node's address | Fetch exists; no reload control, no stop, no progress affordance |
-| Status-bar link preview | Undesigned. Candidate: the hover face of the would-be node, since a link here is a prospective node rather than a location string | Absent |
+| Back / forward | Per-node, not per-window: a committed navigation appends to that member's lineage (the web-platform contract's ruling), and the Trail pane is the chronological cross-node projection | Live: focused-member lineage drives the two buttons; retained lanes refetch the revealed address while hosted web surfaces receive their native control |
+| Reload / stop | A re-command of the fetch actor against the node's address, or the equivalent command on a hosted web surface | Live: Reload becomes Stop while active; actor requests have exact identities and cancellation; requested, byte-streaming, hosted progress, settled, and stopped phases project in the strip |
+| Status-bar link preview | The hover face of the would-be node, since a link here is a prospective node rather than merely a location string | Live for retained document lanes: viewport hit testing projects the resolved address at bottom left. Hosted web surfaces still lack a hover-URL event in Inker |
 | Favicon and page title | The node's face: favicon discovery already enriches the requesting node by member-keyed stamp | Live in `browse.rs` |
 
 ### Content and reading
@@ -146,6 +150,12 @@ Three contracts fall out of the pass, and they come before the chrome:
   (Part 2, item 6) needs the same contract.
 - `keep` appears in three places (strip, regard, shallows exit) and must be
   one command object with one receipt: a kept node with provenance.
+
+The first chrome-strip slice landed on 2026-08-22: focused-node Back and
+Forward, Reload/Stop with exact request cancellation, byte or hosted-surface
+progress, and retained-link prospective-node preview. `keep` remains the next
+strip control. Hosted-page link preview remains gated on an Inker hover-URL
+event rather than inferred DOM access.
 
 ### What the table says as a whole
 
@@ -296,8 +306,10 @@ real but it is a browsing-surface gap, not an architecture gap.
 
 Items 1 through 5, item 6's mutation, image, download, and streaming paths, and
 item 7's typography pass are closed. Inline audio is deliberately deferred at
-its missing shared host seam. The smolweb gap map is otherwise complete; Part
-1's browser controls remain a separate surface backlog.
+its missing shared host seam. Part 1's first chrome-strip slice is also closed:
+focused-node Back/Forward, Reload/Stop/progress, and retained-link preview. The
+remaining browser-surface work is the explicitly listed keep, find, shallows,
+regard, save/print, zoom, permission, extension, and network-inspection work.
 
 ## Done conditions
 
@@ -326,3 +338,7 @@ its missing shared host seam. The smolweb gap map is otherwise complete; Part
 - A gemtext page renders a stable site palette, readable heading and body roles,
   distinct link classes, preformatted text, and Latin, Greek, and Japanese text
   without a complex-script segmentation diagnostic.
+- The focused node's Back and Forward controls follow only its own lineage;
+  Reload becomes Stop while an exact request is active; stopping prevents a
+  late answer from landing; progress and stopped state are visible; and a
+  retained link hover shows the resolved prospective-node address.

@@ -440,6 +440,26 @@ impl Shell {
                     return Err(format!("assert focused '{substr}': focused is '{hay}'"));
                 }
             }
+            Step::AssertBrowserFetch(substr) => {
+                let actual = crate::observe::snapshot(&self.app)
+                    .browser_fetch
+                    .unwrap_or_else(|| "none".to_string());
+                if !actual.contains(substr) {
+                    return Err(format!(
+                        "assert fetch '{substr}': focused browser fetch is '{actual}'"
+                    ));
+                }
+            }
+            Step::AssertLinkPreview(substr) => {
+                let actual = crate::observe::snapshot(&self.app)
+                    .link_preview
+                    .unwrap_or_else(|| "none".to_string());
+                if !actual.contains(substr) {
+                    return Err(format!(
+                        "assert link-preview '{substr}': preview is '{actual}'"
+                    ));
+                }
+            }
             Step::AssertSurface(kind) => {
                 let snap = crate::observe::snapshot(&self.app);
                 if !snap.surfaces.iter().any(|s| s == kind) {

@@ -64,8 +64,11 @@ impl Shell {
         // the scenario log and diagnostics subscribe at this same drain).
         self.drain_app_events();
         for effect in effects {
-            if let Some(command) = browse::fetch_command_for(&effect, &mut self.pending_fetches) {
-                self.fetch_handle.command(command);
+            let fetch_commands = browse::fetch_commands_for(&effect, &mut self.pending_fetches);
+            if !fetch_commands.is_empty() {
+                for command in fetch_commands {
+                    self.fetch_handle.command(command);
+                }
                 continue;
             }
             match effect {
@@ -79,19 +82,15 @@ impl Shell {
                 } => match self.gemini_trust.accept_change(&target, &pinned, &seen) {
                     Ok(()) => {
                         let fetch = self.app.fetch_page_effect(node, fetch_url, owner_url);
-                        if let Some(command) =
-                            browse::fetch_command_for(&fetch, &mut self.pending_fetches)
+                        for command in browse::fetch_commands_for(&fetch, &mut self.pending_fetches)
                         {
                             self.fetch_handle.command(command);
                         }
                     }
                     Err(error) => {
-                        let effects = self.app.apply_update(Update::PageFetched {
+                        let effects = self.app.apply_update(Update::ContentFailed {
                             node,
-                            url: owner_url,
-                            result: Err(format!(
-                                "could not replace Gemini trust for {target}: {error}"
-                            )),
+                            error: format!("could not replace Gemini trust for {target}: {error}"),
                         });
                         self.run_effects(effects);
                     }
@@ -377,8 +376,8 @@ impl Shell {
                     if fetch::is_fetchable(&url) && fetched.is_none() {
                         if !self.pending_fetches.page_in_flight(&url, node, &url) {
                             let fetch = self.app.fetch_page_effect(node, url.clone(), url.clone());
-                            if let Some(command) =
-                                browse::fetch_command_for(&fetch, &mut self.pending_fetches)
+                            for command in
+                                browse::fetch_commands_for(&fetch, &mut self.pending_fetches)
                             {
                                 self.fetch_handle.command(command);
                             }
@@ -501,6 +500,27 @@ impl Shell {
                     });
                     self.run_effects(effects);
                 }
+                Effect::ControlContent { node, control } => {
+                    let result = self
+                        .surface_producers
+                        .get_mut(&node)
+                        .and_then(|producer| producer.as_web_surface())
+                        .ok_or_else(|| "content has no web control plane".to_string())
+                        .and_then(|web| {
+                            match control {
+                                crate::action::ContentControl::Back => web.go_back(),
+                                crate::action::ContentControl::Forward => web.go_forward(),
+                                crate::action::ContentControl::Reload => web.reload(),
+                                crate::action::ContentControl::Stop => web.stop(),
+                            }
+                            .map_err(|error| error.to_string())
+                        });
+                    if let Err(error) = result {
+                        tracing::warn!(%node, ?control, %error, "web content control failed");
+                        self.app.content.note_surface_stopped(node);
+                    }
+                    self.request_redraw();
+                }
                 Effect::CloseContent { node } => {
                     if self.content_sessions.remove(&node).is_some() {
                         tracing::info!(%node, "content session closed");
@@ -517,6 +537,7 @@ impl Shell {
                 Effect::OpenWindow { ordinal } => self.pending_windows.push(ordinal),
                 // Fetch-shaped effects were consumed above.
                 Effect::FetchPage { .. }
+                | Effect::CancelPage { .. }
                 | Effect::FetchFeed { .. }
                 | Effect::FetchFavicon { .. }
                 | Effect::SubmitSmolweb { .. } => {}

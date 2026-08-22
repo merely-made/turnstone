@@ -105,7 +105,7 @@ pub fn ring_of(action: &Action) -> Ring {
     use Action::*;
     match action {
         // Moving through content.
-        OpenAddress(_) | NavBack | NavForward | Reload => Ring::Navigate,
+        OpenAddress(_) | NavBack | NavForward | Reload | Stop => Ring::Navigate,
 
         // Window / pane / workbench arrangement.
         NewWindow
@@ -329,6 +329,7 @@ pub fn decode_envelope(name: &str, payload: &str) -> Result<Action, EnvelopeErro
         "nav-back" => Action::NavBack,
         "nav-forward" => Action::NavForward,
         "reload" => Action::Reload,
+        "stop" => Action::Stop,
         // panes
         "new-window" => Action::NewWindow,
         "tear-out-active-pane" => Action::TearOutActivePane,

@@ -73,6 +73,14 @@ pub enum PageFetchPhase {
     Settled {
         received_bytes: usize,
     },
+    /// A hosted surface reports normalized load progress rather than bytes.
+    Loading {
+        progress_millis: Option<u16>,
+    },
+    /// The human stopped the active transfer before it settled.
+    Stopped {
+        received_bytes: usize,
+    },
 }
 
 /// The structural read, mirrored in app-owned terms (the report type itself
@@ -107,6 +115,7 @@ pub struct ContentStates {
     documents: HashMap<Uuid, (String, FetchedDocument)>,
     stream_bytes: HashMap<Uuid, (String, Vec<u8>)>,
     fetch_phases: HashMap<Uuid, PageFetchPhase>,
+    active_fetches: HashMap<Uuid, fetch::FetchRequestId>,
 }
 
 impl ContentStates {
@@ -138,9 +147,94 @@ impl ContentStates {
     pub fn note_requested(&mut self, node: Uuid) {
         self.states.insert(node, NodeContent::Requested);
         self.facts.remove(&node);
-        if !self.stream_bytes.contains_key(&node) {
-            self.fetch_phases.insert(node, PageFetchPhase::Requested);
+    }
+
+    /// Begin one actor-backed request and return the exact older request it
+    /// supersedes, if any. Network phase is independent of session lifecycle.
+    pub fn begin_fetch(
+        &mut self,
+        node: Uuid,
+        request: fetch::FetchRequestId,
+    ) -> Option<fetch::FetchRequestId> {
+        self.stream_bytes.remove(&node);
+        self.fetch_phases.insert(node, PageFetchPhase::Requested);
+        self.active_fetches.insert(node, request)
+    }
+
+    pub fn active_fetch(&self, node: Uuid) -> Option<fetch::FetchRequestId> {
+        self.active_fetches.get(&node).copied()
+    }
+
+    pub fn is_active_fetch(&self, node: Uuid, request: fetch::FetchRequestId) -> bool {
+        self.active_fetch(node) == Some(request)
+    }
+
+    pub fn finish_fetch(&mut self, node: Uuid, request: fetch::FetchRequestId) -> bool {
+        if !self.is_active_fetch(node, request) {
+            return false;
         }
+        self.active_fetches.remove(&node);
+        true
+    }
+
+    pub fn settle_fetch(&mut self, node: Uuid, request: fetch::FetchRequestId) -> bool {
+        if !self.finish_fetch(node, request) {
+            return false;
+        }
+        let received_bytes = match self.fetch_phases.get(&node) {
+            Some(PageFetchPhase::Streaming { received_bytes, .. }) => *received_bytes,
+            Some(PageFetchPhase::Settled { received_bytes })
+            | Some(PageFetchPhase::Stopped { received_bytes }) => *received_bytes,
+            _ => 0,
+        };
+        self.fetch_phases
+            .insert(node, PageFetchPhase::Settled { received_bytes });
+        true
+    }
+
+    pub fn stop_fetch(&mut self, node: Uuid, request: fetch::FetchRequestId) -> bool {
+        if !self.finish_fetch(node, request) {
+            return false;
+        }
+        let received_bytes = match self.fetch_phases.get(&node) {
+            Some(PageFetchPhase::Streaming { received_bytes, .. }) => *received_bytes,
+            Some(PageFetchPhase::Settled { received_bytes })
+            | Some(PageFetchPhase::Stopped { received_bytes }) => *received_bytes,
+            _ => 0,
+        };
+        self.stream_bytes.remove(&node);
+        self.fetch_phases
+            .insert(node, PageFetchPhase::Stopped { received_bytes });
+        true
+    }
+
+    pub fn note_surface_started(&mut self, node: Uuid) {
+        self.fetch_phases.insert(
+            node,
+            PageFetchPhase::Loading {
+                progress_millis: None,
+            },
+        );
+    }
+
+    pub fn note_surface_progress(&mut self, node: Uuid, value: f32) {
+        let progress_millis = (value.clamp(0.0, 1.0) * 1000.0).round() as u16;
+        self.fetch_phases.insert(
+            node,
+            PageFetchPhase::Loading {
+                progress_millis: Some(progress_millis),
+            },
+        );
+    }
+
+    pub fn note_surface_settled(&mut self, node: Uuid) {
+        self.fetch_phases
+            .insert(node, PageFetchPhase::Settled { received_bytes: 0 });
+    }
+
+    pub fn note_surface_stopped(&mut self, node: Uuid) {
+        self.fetch_phases
+            .insert(node, PageFetchPhase::Stopped { received_bytes: 0 });
     }
 
     pub fn note_live(&mut self, node: Uuid, facts: Option<ContentFacts>) {
@@ -230,6 +324,14 @@ impl ContentStates {
         self.fetch_phases.get(&node)
     }
 
+    pub fn fetch_in_progress(&self, node: Uuid) -> bool {
+        self.active_fetches.contains_key(&node)
+            || matches!(
+                self.fetch_phases.get(&node),
+                Some(PageFetchPhase::Loading { .. })
+            )
+    }
+
     pub fn fetched(&self, node: Uuid, url: &str) -> Option<&FetchedDocument> {
         self.documents
             .get(&node)
@@ -248,6 +350,7 @@ impl ContentStates {
         self.documents.remove(&node);
         self.stream_bytes.remove(&node);
         self.fetch_phases.remove(&node);
+        self.active_fetches.remove(&node);
     }
 
     pub fn note_failed(&mut self, node: Uuid, error: String) {
@@ -255,6 +358,7 @@ impl ContentStates {
         self.facts.remove(&node);
         self.stream_bytes.remove(&node);
         self.fetch_phases.remove(&node);
+        self.active_fetches.remove(&node);
     }
 
     /// The node's content is gone (closed, or the port dropped it).

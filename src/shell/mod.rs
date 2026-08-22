@@ -1246,8 +1246,8 @@ mod tests {
         assert_eq!(report.links, vec!["/next"]);
 
         let link = session.links().into_iter().next().expect("laid-out link");
-        let [x0, y0, x1, y1] = link.rect;
-        let SessionClick::Navigate(href) = session.click_at((x0 + x1) / 2.0, (y0 + y1) / 2.0)
+        let [x, y, width, height] = link.rect;
+        let SessionClick::Navigate(href) = session.click_at(x + width / 2.0, y + height / 2.0)
         else {
             panic!("the laid-out gemtext link must navigate");
         };

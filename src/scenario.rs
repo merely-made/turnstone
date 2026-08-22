@@ -183,6 +183,10 @@ pub enum Step {
     AssertScrolled(bool),
     AssertText(String),
     AssertFocused(String),
+    /// The focused node's browser fetch phase contains this receipt substring.
+    AssertBrowserFetch(String),
+    /// The prospective-node link preview contains this receipt substring.
+    AssertLinkPreview(String),
     /// A named surface kind ("canvas" / "content" / "chrome" / "pane") is in the plan.
     AssertSurface(String),
     /// The focus target is a named surface kind.
@@ -436,6 +440,8 @@ pub fn parse(body: &str) -> Result<Vec<Step>, String> {
                     "omnibar-text" => Step::AssertText(arg.to_string()),
                     "event" if !arg.is_empty() => Step::AssertEvent(arg.to_string()),
                     "focused" if !arg.is_empty() => Step::AssertFocused(arg.to_string()),
+                    "fetch" if !arg.is_empty() => Step::AssertBrowserFetch(arg.to_string()),
+                    "link-preview" if !arg.is_empty() => Step::AssertLinkPreview(arg.to_string()),
                     "surface" if !arg.is_empty() => Step::AssertSurface(arg.to_string()),
                     "focus" if !arg.is_empty() => Step::AssertFocus(arg.to_string()),
                     "pane" if !arg.is_empty() => Step::AssertPane(arg.to_string()),
@@ -583,6 +589,16 @@ frobnicate
             panic!("move-at did not parse as a pointer move");
         };
         assert_eq!((*x, *y), (310.0, 303.0));
+    }
+
+    #[test]
+    fn browser_receipt_assertions_are_typed_steps() {
+        let steps = parse("assert fetch stopped\nassert link-preview /inside").unwrap();
+        assert!(matches!(
+            steps.as_slice(),
+            [Step::AssertBrowserFetch(fetch), Step::AssertLinkPreview(link)]
+                if fetch == "stopped" && link == "/inside"
+        ));
     }
 
     #[test]

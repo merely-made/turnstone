@@ -7,17 +7,9 @@
 //! obviation rung 4: notes, gemini documents, local media, and HTML are all
 //! content, while only some of it arrives by web fetching.
 //!
-//! Correlation-over-URLs (the architecture plan's recorded decision, landed
-//! at this enrichment touch): effects carry the REQUESTING node's id, the
-//! shell notes it in [`PendingFetches`] before commanding the actor, and the
-//! adapter reattaches it on the way back — the fetch crate's wire types stay
-//! untouched (meerkat shares them). Two nodes fetching the same URL are
-//! interchangeable attributions (same URL, same payload), so the pending
-//! table keys by URL and pops one requester per completion. What the id
-//! buys is the STAMP side: enrichment lands on the exact requester via the
-//! canvas's member-keyed setters, and a late result against a node that
-//! navigated away drops explicitly instead of repainting the wrong page's
-//! face (`get_node_by_url` first-match was the old, wrong answer).
+//! Page fetches carry an exact request id across the actor boundary. The shell
+//! reattaches node ownership through [`PendingFetches`], so same-address loads
+//! stay distinct and stopping or replacing one cannot affect another.
 
 use std::collections::HashMap;
 
@@ -49,10 +41,10 @@ pub(crate) fn decode_image_bytes(bytes: &[u8]) -> Option<DecodedImage> {
 
 /// The shell-owned correlation table: which node asked for each in-flight
 /// fetch. Port bookkeeping, not app truth (the app's record is the effect it
-/// emitted); keyed by URL because that is all the actor echoes back.
+/// emitted); keyed by the request id the actor echoes on every page answer.
 #[derive(Debug, Default)]
 pub struct PendingFetches {
-    pages: HashMap<String, Vec<PendingPage>>,
+    pages: HashMap<fetch::FetchRequestId, PendingPage>,
     /// Keyed by owner page URL (the actor echoes `owner_url`, not the icon URL).
     favicons: HashMap<String, Vec<Uuid>>,
     subresources: HashMap<String, Vec<Uuid>>,
@@ -62,6 +54,7 @@ pub struct PendingFetches {
 #[derive(Clone, Debug, PartialEq, Eq)]
 struct PendingPage {
     node: Uuid,
+    fetch_url: String,
     owner_url: String,
     identity_used: bool,
     kind: PendingPageKind,
@@ -74,28 +67,43 @@ enum PendingPageKind {
 }
 
 impl PendingFetches {
-    pub fn note_page(&mut self, url: &str, node: Uuid, owner_url: &str, identity_used: bool) {
-        self.pages
-            .entry(url.to_string())
-            .or_default()
-            .push(PendingPage {
+    pub fn note_page(
+        &mut self,
+        request: fetch::FetchRequestId,
+        url: &str,
+        node: Uuid,
+        owner_url: &str,
+        identity_used: bool,
+    ) {
+        self.pages.insert(
+            request,
+            PendingPage {
                 node,
+                fetch_url: url.to_string(),
                 owner_url: owner_url.to_string(),
                 identity_used,
                 kind: PendingPageKind::Page,
-            });
+            },
+        );
     }
 
-    pub fn note_feed(&mut self, url: &str, node: Uuid, identity_used: bool) {
-        self.pages
-            .entry(url.to_string())
-            .or_default()
-            .push(PendingPage {
+    pub fn note_feed(
+        &mut self,
+        request: fetch::FetchRequestId,
+        url: &str,
+        node: Uuid,
+        identity_used: bool,
+    ) {
+        self.pages.insert(
+            request,
+            PendingPage {
                 node,
+                fetch_url: url.to_string(),
                 owner_url: url.to_string(),
                 identity_used,
                 kind: PendingPageKind::Feed,
-            });
+            },
+        );
     }
 
     pub fn note_favicon(&mut self, owner_url: &str, node: Uuid) {
@@ -106,10 +114,8 @@ impl PendingFetches {
     }
 
     pub fn page_in_flight(&self, url: &str, node: Uuid, owner_url: &str) -> bool {
-        self.pages.get(url).is_some_and(|requesters| {
-            requesters
-                .iter()
-                .any(|request| request.node == node && request.owner_url == owner_url)
+        self.pages.values().any(|request| {
+            request.fetch_url == url && request.node == node && request.owner_url == owner_url
         })
     }
 
@@ -138,12 +144,16 @@ impl PendingFetches {
             || !self.submissions.is_empty()
     }
 
-    fn take_page(&mut self, url: &str) -> Option<PendingPage> {
-        take_one(&mut self.pages, url)
+    fn take_page(&mut self, request: fetch::FetchRequestId) -> Option<PendingPage> {
+        self.pages.remove(&request)
     }
 
-    fn page(&self, url: &str) -> Option<&PendingPage> {
-        self.pages.get(url).and_then(|requests| requests.last())
+    fn page(&self, request: fetch::FetchRequestId) -> Option<&PendingPage> {
+        self.pages.get(&request)
+    }
+
+    fn cancel_page(&mut self, request: fetch::FetchRequestId) {
+        self.pages.remove(&request);
     }
 
     fn take_favicon(&mut self, owner_url: &str) -> Option<Uuid> {
@@ -167,20 +177,24 @@ fn take_one<T>(map: &mut HashMap<String, Vec<T>>, key: &str) -> Option<T> {
 pub fn update_from_fetch(update: FetchUpdate, pending: &mut PendingFetches) -> Option<Update> {
     match update {
         FetchUpdate::PageProgress(progress) => {
-            let Some(request) = pending.page(&progress.url) else {
-                tracing::warn!(url = %progress.url, "page progress without a pending requester; dropped");
+            let Some(pending_page) = pending.page(progress.request) else {
+                tracing::warn!(
+                    request = progress.request,
+                    "page progress without a pending requester; dropped"
+                );
                 return None;
             };
-            (request.kind == PendingPageKind::Page).then(|| Update::PageStreamed {
-                node: request.node,
-                url: request.owner_url.clone(),
+            (pending_page.kind == PendingPageKind::Page).then(|| Update::PageStreamed {
+                request: progress.request,
+                node: pending_page.node,
+                url: pending_page.owner_url.clone(),
                 response_url: progress.response_url,
                 content_type: progress.content_type,
                 bytes: progress.bytes,
             })
         }
         FetchUpdate::Page(outcome) => {
-            let Some(request) = pending.take_page(&outcome.url) else {
+            let Some(pending_page) = pending.take_page(outcome.request) else {
                 // The actor URL may carry a status-11 answer in its query.
                 // A correlation miss is diagnosable without copying that
                 // transient request address into retained logs.
@@ -195,15 +209,16 @@ pub fn update_from_fetch(update: FetchUpdate, pending: &mut PendingFetches) -> O
                         bytes: fetched.bytes,
                         body: fetched.body,
                     };
-                    Some(match request.kind {
+                    Some(match pending_page.kind {
                         PendingPageKind::Page => Update::PageFetched {
-                            node: request.node,
-                            url: request.owner_url,
+                            request: outcome.request,
+                            node: pending_page.node,
+                            url: pending_page.owner_url,
                             result: Ok(fetched),
                         },
                         PendingPageKind::Feed => Update::FeedFetched {
-                            node: request.node,
-                            url: request.owner_url,
+                            node: pending_page.node,
+                            url: pending_page.owner_url,
                             result: Ok(fetched),
                         },
                     })
@@ -212,17 +227,18 @@ pub fn update_from_fetch(update: FetchUpdate, pending: &mut PendingFetches) -> O
                     url: input_url,
                     prompt,
                     sensitive,
-                }) => Some(match request.kind {
+                }) => Some(match pending_page.kind {
                     PendingPageKind::Page => Update::SmolwebInputRequested {
-                        node: request.node,
-                        url: request.owner_url,
+                        request: outcome.request,
+                        node: pending_page.node,
+                        url: pending_page.owner_url,
                         input_url,
                         prompt,
                         sensitive,
                     },
                     PendingPageKind::Feed => Update::FeedFetched {
-                        node: request.node,
-                        url: request.owner_url,
+                        node: pending_page.node,
+                        url: pending_page.owner_url,
                         result: Err(format!(
                             "feed refresh requires {} input: {prompt}",
                             if sensitive {
@@ -238,26 +254,28 @@ pub fn update_from_fetch(update: FetchUpdate, pending: &mut PendingFetches) -> O
                     prompt,
                     code,
                 }) => {
-                    if request.kind == PendingPageKind::Feed {
+                    if pending_page.kind == PendingPageKind::Feed {
                         let status = code.map(|code| format!(" ({code})")).unwrap_or_default();
                         Some(Update::FeedFetched {
-                            node: request.node,
-                            url: request.owner_url,
+                            node: pending_page.node,
+                            url: pending_page.owner_url,
                             result: Err(format!(
                                 "feed refresh requires a client certificate{status}: {prompt}"
                             )),
                         })
-                    } else if request.identity_used {
+                    } else if pending_page.identity_used {
                         let status = code.map(|code| format!(" ({code})")).unwrap_or_default();
                         Some(Update::PageFetched {
-                            node: request.node,
-                            url: request.owner_url,
+                            request: outcome.request,
+                            node: pending_page.node,
+                            url: pending_page.owner_url,
                             result: Err(format!("client certificate rejected{status}: {prompt}")),
                         })
                     } else {
                         Some(Update::GeminiIdentityRequested {
-                            node: request.node,
-                            url: request.owner_url,
+                            request: outcome.request,
+                            node: pending_page.node,
+                            url: pending_page.owner_url,
                             identity_url,
                             prompt,
                         })
@@ -268,33 +286,47 @@ pub fn update_from_fetch(update: FetchUpdate, pending: &mut PendingFetches) -> O
                     target,
                     pinned,
                     seen,
-                }) => Some(match request.kind {
+                }) => Some(match pending_page.kind {
                     PendingPageKind::Page => Update::GeminiCertificateChanged {
-                        node: request.node,
-                        url: request.owner_url,
+                        request: outcome.request,
+                        node: pending_page.node,
+                        url: pending_page.owner_url,
                         fetch_url,
                         target,
                         pinned,
                         seen,
                     },
                     PendingPageKind::Feed => Update::FeedFetched {
-                        node: request.node,
-                        url: request.owner_url,
+                        node: pending_page.node,
+                        url: pending_page.owner_url,
                         result: Err(format!(
                             "Gemini certificate changed for {target}; open the source to review it"
                         )),
                     },
                 }),
-                Err(fetch::FetchFailure::Failed(error)) => Some(match request.kind {
+                Err(fetch::FetchFailure::Failed(error)) => Some(match pending_page.kind {
                     PendingPageKind::Page => Update::PageFetched {
-                        node: request.node,
-                        url: request.owner_url,
+                        request: outcome.request,
+                        node: pending_page.node,
+                        url: pending_page.owner_url,
                         result: Err(error),
                     },
                     PendingPageKind::Feed => Update::FeedFetched {
-                        node: request.node,
-                        url: request.owner_url,
+                        node: pending_page.node,
+                        url: pending_page.owner_url,
                         result: Err(error),
+                    },
+                }),
+                Err(fetch::FetchFailure::Cancelled) => Some(match pending_page.kind {
+                    PendingPageKind::Page => Update::PageStopped {
+                        request: outcome.request,
+                        node: pending_page.node,
+                        url: pending_page.owner_url,
+                    },
+                    PendingPageKind::Feed => Update::FeedFetched {
+                        node: pending_page.node,
+                        url: pending_page.owner_url,
+                        result: Err("cancelled".to_string()),
                     },
                 }),
             }
@@ -348,30 +380,45 @@ pub fn update_from_fetch(update: FetchUpdate, pending: &mut PendingFetches) -> O
 /// Translate an effect into the fetch actor's command, if it is fetch-shaped.
 /// The shell notes the requester in [`PendingFetches`] and commands the
 /// actor; the mapping stays beside the enrichment it feeds.
-pub fn fetch_command_for(effect: &Effect, pending: &mut PendingFetches) -> Option<FetchCommand> {
+pub fn fetch_commands_for(effect: &Effect, pending: &mut PendingFetches) -> Vec<FetchCommand> {
     match effect {
         Effect::FetchPage {
+            request,
+            supersedes,
             node,
             url,
             owner_url,
             identity,
         } => {
-            pending.note_page(url, *node, owner_url, identity.is_some());
-            Some(FetchCommand::Page {
+            let mut commands = Vec::with_capacity(2);
+            if let Some(old) = supersedes {
+                pending.cancel_page(*old);
+                commands.push(FetchCommand::CancelPage { request: *old });
+            }
+            pending.note_page(*request, url, *node, owner_url, identity.is_some());
+            commands.push(FetchCommand::Page {
+                request: *request,
                 url: url.clone(),
                 identity: identity.clone(),
-            })
+            });
+            commands
+        }
+        Effect::CancelPage { request, .. } => {
+            pending.cancel_page(*request);
+            vec![FetchCommand::CancelPage { request: *request }]
         }
         Effect::FetchFeed {
             node,
             url,
             identity,
         } => {
-            pending.note_feed(url, *node, identity.is_some());
-            Some(FetchCommand::Page {
+            let request = fetch::next_fetch_request_id();
+            pending.note_feed(request, url, *node, identity.is_some());
+            vec![FetchCommand::Page {
+                request,
                 url: url.clone(),
                 identity: identity.clone(),
-            })
+            }]
         }
         Effect::FetchFavicon {
             node,
@@ -379,10 +426,10 @@ pub fn fetch_command_for(effect: &Effect, pending: &mut PendingFetches) -> Optio
             url,
         } => {
             pending.note_favicon(owner_url, *node);
-            Some(FetchCommand::Favicon {
+            vec![FetchCommand::Favicon {
                 owner_url: owner_url.clone(),
                 url: url.clone(),
-            })
+            }]
         }
         Effect::SubmitSmolweb {
             request,
@@ -410,12 +457,12 @@ pub fn fetch_command_for(effect: &Effect, pending: &mut PendingFetches) -> Optio
                     }
                 }
             };
-            Some(FetchCommand::Submit {
+            vec![FetchCommand::Submit {
                 request: *request,
                 submission,
-            })
+            }]
         }
-        _ => None,
+        _ => Vec::new(),
     }
 }
 
@@ -627,17 +674,17 @@ mod tests {
         assert_ne!(n.title, "Stale", "the stale title never landed");
     }
 
-    /// The pending table pops one requester per completion and never guesses
-    /// at an unmatched answer.
+    /// The pending table keeps same-address requests distinct and never
+    /// guesses at an unmatched answer.
     #[test]
     fn pending_table_correlates_and_refuses_to_guess() {
         let (a, b) = (Uuid::new_v4(), Uuid::new_v4());
         let mut pending = PendingFetches::default();
-        pending.note_page("https://x.example", a, "https://owner-a.example", false);
-        pending.note_page("https://x.example", b, "https://owner-b.example", false);
-        assert!(pending.take_page("https://x.example").is_some());
-        assert!(pending.take_page("https://x.example").is_some());
-        assert!(pending.take_page("https://x.example").is_none());
+        pending.note_page(1, "https://x.example", a, "https://owner-a.example", false);
+        pending.note_page(2, "https://x.example", b, "https://owner-b.example", false);
+        assert_eq!(pending.take_page(2).map(|page| page.node), Some(b));
+        assert_eq!(pending.take_page(1).map(|page| page.node), Some(a));
+        assert!(pending.take_page(2).is_none());
 
         let unmatched = update_from_fetch(
             FetchUpdate::Favicon {
@@ -672,14 +719,16 @@ mod tests {
     #[test]
     fn page_progress_keeps_the_request_pending_until_terminal_answer() {
         let node = Uuid::new_v4();
-        let request = "gemini://capsule.test/live";
+        let request = 7;
+        let request_url = "gemini://capsule.test/live";
         let mut pending = PendingFetches::default();
-        pending.note_page(request, node, request, false);
+        pending.note_page(request, request_url, node, request_url, false);
 
         let update = update_from_fetch(
             FetchUpdate::PageProgress(fetch::PageProgress {
-                url: request.into(),
-                response_url: request.into(),
+                request,
+                url: request_url.into(),
+                response_url: request_url.into(),
                 content_type: Some("text/gemini".into()),
                 bytes: b"# Prefix\n".to_vec(),
             }),
@@ -694,11 +743,12 @@ mod tests {
                 ..
             } if actual == node && bytes == b"# Prefix\n"
         ));
-        assert!(pending.page_in_flight(request, node, request));
+        assert!(pending.page_in_flight(request_url, node, request_url));
 
         let terminal = update_from_fetch(
             FetchUpdate::Page(fetch::FetchOutcome {
-                url: request.into(),
+                request,
+                url: request_url.into(),
                 result: Ok(fetch::Fetched::text(
                     Some("text/gemini".into()),
                     "# Prefix\nTail\n",
@@ -711,18 +761,66 @@ mod tests {
     }
 
     #[test]
+    fn superseding_and_stopping_cancel_only_the_named_request() {
+        let node = Uuid::new_v4();
+        let url = "gemini://capsule.test/slow";
+        let mut pending = PendingFetches::default();
+        pending.note_page(12, url, node, url, false);
+
+        let commands = fetch_commands_for(
+            &Effect::FetchPage {
+                request: 13,
+                supersedes: Some(12),
+                node,
+                url: url.into(),
+                owner_url: url.into(),
+                identity: None,
+            },
+            &mut pending,
+        );
+        assert!(matches!(
+            commands.as_slice(),
+            [
+                FetchCommand::CancelPage { request: 12 },
+                FetchCommand::Page { request: 13, .. }
+            ]
+        ));
+        assert!(pending.page(12).is_none());
+        assert_eq!(pending.page(13).map(|page| page.node), Some(node));
+
+        let commands = fetch_commands_for(&Effect::CancelPage { request: 13, node }, &mut pending);
+        assert!(matches!(
+            commands.as_slice(),
+            [FetchCommand::CancelPage { request: 13 }]
+        ));
+        assert!(!pending.any_in_flight());
+
+        let late = update_from_fetch(
+            FetchUpdate::Page(fetch::FetchOutcome {
+                request: 13,
+                url: url.into(),
+                result: Err(fetch::FetchFailure::Cancelled),
+            }),
+            &mut pending,
+        );
+        assert!(late.is_none(), "a cancelled request cannot be reattached");
+    }
+
+    #[test]
     fn input_response_keeps_actor_target_separate_from_graph_owner() {
         let node = Uuid::new_v4();
         let owner = "gemini://capsule.test/login";
-        let request = "gemini://capsule.test/login?secret";
+        let request = 8;
+        let request_url = "gemini://capsule.test/login?secret";
         let mut pending = PendingFetches::default();
-        pending.note_page(request, node, owner, false);
+        pending.note_page(request, request_url, node, owner, false);
 
         let update = update_from_fetch(
             FetchUpdate::Page(fetch::FetchOutcome {
-                url: request.into(),
+                request,
+                url: request_url.into(),
                 result: Err(fetch::FetchFailure::InputRequired {
-                    url: request.into(),
+                    url: request_url.into(),
                     prompt: "Again".into(),
                     sensitive: true,
                 }),
@@ -738,9 +836,10 @@ mod tests {
                 input_url,
                 prompt,
                 sensitive: true,
+                ..
             } if actual == node
                 && url == owner
-                && input_url == request
+                && input_url == request_url
                 && prompt == "Again"
         ));
     }
@@ -757,9 +856,10 @@ mod tests {
         };
 
         let mut anonymous = PendingFetches::default();
-        anonymous.note_page(target, node, owner, false);
+        anonymous.note_page(9, target, node, owner, false);
         let update = update_from_fetch(
             FetchUpdate::Page(fetch::FetchOutcome {
+                request: 9,
                 url: target.into(),
                 result: Err(failure()),
             }),
@@ -773,6 +873,7 @@ mod tests {
                 url,
                 identity_url,
                 prompt,
+                ..
             } if actual == node
                 && url == owner
                 && identity_url == target
@@ -780,9 +881,10 @@ mod tests {
         ));
 
         let mut identified = PendingFetches::default();
-        identified.note_page(target, node, owner, true);
+        identified.note_page(10, target, node, owner, true);
         let update = update_from_fetch(
             FetchUpdate::Page(fetch::FetchOutcome {
+                request: 10,
                 url: target.into(),
                 result: Err(failure()),
             }),
@@ -800,15 +902,17 @@ mod tests {
     fn changed_certificate_preserves_the_fetch_target_and_both_fingerprints() {
         let node = Uuid::new_v4();
         let owner = "gemini://capsule.test/start";
-        let request = "gemini://capsule.test:1966/private";
+        let request = 11;
+        let request_url = "gemini://capsule.test:1966/private";
         let mut pending = PendingFetches::default();
-        pending.note_page(request, node, owner, false);
+        pending.note_page(request, request_url, node, owner, false);
 
         let update = update_from_fetch(
             FetchUpdate::Page(fetch::FetchOutcome {
-                url: request.into(),
+                request,
+                url: request_url.into(),
                 result: Err(fetch::FetchFailure::CertificateChanged {
-                    url: request.into(),
+                    url: request_url.into(),
                     target: "capsule.test:1966".into(),
                     pinned: "11".repeat(32),
                     seen: "22".repeat(32),
@@ -827,9 +931,10 @@ mod tests {
                 target,
                 pinned,
                 seen,
+                ..
             } if actual == node
                 && url == owner
-                && fetch_url == request
+                && fetch_url == request_url
                 && target == "capsule.test:1966"
                 && pinned == "11".repeat(32)
                 && seen == "22".repeat(32)

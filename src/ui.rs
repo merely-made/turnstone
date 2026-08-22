@@ -663,6 +663,23 @@ pub(crate) const CHROME_SHEET: &str = "\
                 background-color: rgb(20, 25, 38); font-size: 12px; \
                 padding: 3px 10px; border-radius: 10px; \
                 border: 1px solid rgb(52, 62, 86); white-space: nowrap; } \
+    .browser-strip { position: absolute; display: flex; align-items: center; \
+                      gap: 5px; box-sizing: border-box; color: rgb(216, 222, 234); \
+                      background-color: rgb(20, 25, 38); border: 1px solid rgb(52, 62, 86); \
+                      border-radius: 9px; padding: 5px 7px; } \
+    .browser-loading { border-bottom: 2px solid rgb(206, 84, 47); } \
+    .browser-button, .browser-button-disabled { font-size: 12px; padding: 4px 8px; \
+                      border-radius: 6px; white-space: nowrap; } \
+    .browser-button { color: rgb(238, 242, 250); background-color: rgb(36, 44, 62); \
+                      border: 1px solid rgb(70, 82, 110); } \
+    .browser-button-disabled { color: rgb(104, 112, 130); background-color: rgb(25, 30, 43); \
+                      border: 1px solid rgb(45, 53, 71); } \
+    .browser-status { color: rgb(170, 178, 195); font-size: 12px; padding: 4px 7px; \
+                      white-space: nowrap; overflow: hidden; } \
+    .link-preview { position: absolute; color: rgb(238, 242, 250); \
+                    background-color: rgb(20, 25, 38); border: 1px solid rgb(206, 84, 47); \
+                    border-radius: 7px; padding: 5px 9px; font-size: 12px; \
+                    white-space: nowrap; overflow: hidden; } \
     .pane { position: absolute; background-color: rgb(22, 27, 40); } \
     .pane-label { position: absolute; color: rgb(190, 198, 214); \
                   font-size: 14px; padding: 10px 14px; white-space: nowrap; }";
@@ -756,7 +773,11 @@ pub(crate) fn chrome_sheet(appearance: &crate::shell_services::AppearanceConfig)
         .omni-row {{ color: {}; font-size: {:.2}px; }} \
         .omni-row-sel {{ color: {}; background-color: {}; font-size: {:.2}px; }} \
         .omni-row-muted {{ color: {}; font-size: {:.2}px; }} \
-        .whereami {{ color: {}; background-color: {}; border-color: {}; font-size: {:.2}px; }}",
+        .whereami {{ color: {}; background-color: {}; border-color: {}; font-size: {:.2}px; }} \
+        .browser-strip, .link-preview {{ color: {}; background-color: {}; border-color: {}; }} \
+        .browser-loading {{ border-bottom-color: {}; }} \
+        .browser-button {{ color: {}; background-color: {}; border-color: {}; font-size: {:.2}px; }} \
+        .browser-button-disabled, .browser-status, .link-preview {{ font-size: {:.2}px; }}",
         rgb(palette.surface),
         rgb(palette.border),
         rgb(palette.text),
@@ -773,6 +794,15 @@ pub(crate) fn chrome_sheet(appearance: &crate::shell_services::AppearanceConfig)
         rgb(palette.muted),
         rgb(palette.raised),
         rgb(palette.border),
+        12.0 * zoom,
+        rgb(palette.body_text),
+        rgb(palette.raised),
+        rgb(palette.border),
+        rgb(palette.accent),
+        rgb(palette.text),
+        rgb(palette.field),
+        rgb(palette.border),
+        12.0 * zoom,
         12.0 * zoom,
     )
 }

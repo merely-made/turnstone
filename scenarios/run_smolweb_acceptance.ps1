@@ -2,7 +2,7 @@ param(
     [Parameter(Mandatory = $true)]
     [string] $TurnstoneBin,
 
-    [ValidateSet("gemini-browse", "gemini-input", "gemini-inline-image", "gemini-download", "gemini-streaming", "gemini-typography", "titan-mutation", "spartan-mutation")]
+    [ValidateSet("gemini-browse", "gemini-input", "gemini-inline-image", "gemini-download", "gemini-streaming", "gemini-typography", "gemini-browser-controls", "titan-mutation", "spartan-mutation")]
     [string[]] $Only = @(),
 
     [string] $OutputRoot = (Join-Path (
@@ -59,6 +59,12 @@ $cases = @(
         Scenario = "smolweb_typography.scn"
         Server = "GeminiTypography"
         Port = 19655
+    },
+    [pscustomobject]@{
+        Name = "gemini-browser-controls"
+        Scenario = "smolweb_browser_controls.scn"
+        Server = "GeminiBrowserControls"
+        Port = 19656
     },
     [pscustomobject]@{
         Name = "titan-mutation"

@@ -77,9 +77,13 @@ pub struct Snapshot {
     /// the stitched application tree, flattened, so a scenario can assert a
     /// node the same way a screen reader would announce it.
     pub a11y: Vec<String>,
-    /// Whether the visit history can step back / forward (the nav row).
+    /// Whether the focused node's content lineage can step back / forward.
     pub can_back: bool,
     pub can_forward: bool,
+    /// Focused-node browser fetch phase, formatted for scenario receipts.
+    pub browser_fetch: Option<String>,
+    /// The retained content link currently presented as a prospective node.
+    pub link_preview: Option<String>,
     /// Every action offered right now, by label, in the palette's own order
     /// (contextual rows first). The snapshot's last promised member: an
     /// automation lane asks what it may do, and gets the same list a person
@@ -724,8 +728,26 @@ pub fn snapshot(app: &App) -> Snapshot {
             .map(mere::platen::Workbench::weights)
             .unwrap_or_default(),
         a11y: crate::a11y::a11y_lines(app),
-        can_back: app.history.can_back(),
-        can_forward: app.history.can_forward(),
+        can_back: app.focused_can_back(),
+        can_forward: app.focused_can_forward(),
+        browser_fetch: app.graph_runtimes.focused_member().and_then(|node| {
+            app.content.fetch_phase(node).map(|phase| match phase {
+                crate::content::PageFetchPhase::Requested => "requested".to_string(),
+                crate::content::PageFetchPhase::Streaming { received_bytes, .. } => {
+                    format!("streaming bytes={received_bytes}")
+                }
+                crate::content::PageFetchPhase::Settled { received_bytes } => {
+                    format!("settled bytes={received_bytes}")
+                }
+                crate::content::PageFetchPhase::Loading { progress_millis } => progress_millis
+                    .map(|value| format!("loading percent={}", value / 10))
+                    .unwrap_or_else(|| "loading".to_string()),
+                crate::content::PageFetchPhase::Stopped { received_bytes } => {
+                    format!("stopped bytes={received_bytes}")
+                }
+            })
+        }),
+        link_preview: app.link_preview.clone(),
         available_actions: app
             .available_actions()
             .into_iter()

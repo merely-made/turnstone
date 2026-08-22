@@ -1,0 +1,7 @@
+RESULT ok
+first-target=gemini://127.0.0.1:19656/controls.gmi
+stop-closed-first-request=true
+protocol=gemini
+reload-target=gemini://127.0.0.1:19656/controls.gmi
+requests=2
+reload-response=20 text/gemini

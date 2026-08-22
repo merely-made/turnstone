@@ -191,11 +191,13 @@ impl crate::app::App {
     /// projected into transient certificate bytes here, before the command
     /// crosses the fetch port.
     pub(crate) fn fetch_page_effect(
-        &self,
+        &mut self,
         node: uuid::Uuid,
         url: String,
         owner_url: String,
     ) -> crate::action::Effect {
+        let request = fetch::next_fetch_request_id();
+        let supersedes = self.content.begin_fetch(node, request);
         let identity = match self
             .gemini_identities
             .identity_for(self.identity.as_ref(), &url)
@@ -207,6 +209,8 @@ impl crate::app::App {
             }
         };
         crate::action::Effect::FetchPage {
+            request,
+            supersedes,
             node,
             url,
             owner_url,
