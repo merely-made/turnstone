@@ -10,8 +10,10 @@ use serde_json::json;
 
 pub(crate) const WEB_PAGE_CLASS: &str = "turnstone.web-page";
 pub(crate) const NOTE_CLASS: &str = "turnstone.note";
+pub(crate) const DOWNLOAD_CLASS: &str = "turnstone.download";
 pub(crate) const WEB_PAGE_FACET: &str = "web.page";
 pub(crate) const NOTE_DOCUMENT_FACET: &str = "note.document";
+pub(crate) const DOWNLOAD_FACET: &str = "download.response";
 
 /// The class/schema set Turnstone ships. Nothing here is privileged in
 /// chartulary: a pack can construct and register the same data types.
@@ -38,6 +40,22 @@ impl BuiltinContentClasses {
                 .description("Authored note profile")
                 .field("version", MereNativeFieldSpec::U64, true)
                 .field("format", MereNativeFieldSpec::String, true)
+                .build(),
+        );
+        validator.register(
+            FacetId::new(DOWNLOAD_FACET),
+            MereNativeSchemaBuilder::new("turnstone.download/v1")
+                .description("Downloaded response custody and destination metadata")
+                .field("version", MereNativeFieldSpec::U64, true)
+                .field("source_url", MereNativeFieldSpec::String, true)
+                .field("received_at_ms", MereNativeFieldSpec::U64, true)
+                .field("byte_size", MereNativeFieldSpec::U64, true)
+                .field("status", MereNativeFieldSpec::String, true)
+                .field("media_type", MereNativeFieldSpec::String, false)
+                .field("content_disposition", MereNativeFieldSpec::String, false)
+                .field("destination_path", MereNativeFieldSpec::String, false)
+                .field("content_hash", MereNativeFieldSpec::String, false)
+                .field("error", MereNativeFieldSpec::String, false)
                 .build(),
         );
         validator.register(
@@ -70,6 +88,16 @@ impl BuiltinContentClasses {
             )
             .with_label("Note"),
         );
+        registry.register(
+            ContentClass::new(
+                DOWNLOAD_CLASS,
+                [(
+                    FacetId::new(DOWNLOAD_FACET),
+                    "turnstone.download/v1".to_string(),
+                )],
+            )
+            .with_label("Download"),
+        );
         Self {
             registry,
             validator,
@@ -80,11 +108,14 @@ impl BuiltinContentClasses {
 enum BuiltinClass {
     WebPage,
     Note,
+    Download,
 }
 
-fn classify(node: &mere::kernel::graph::Node) -> Option<BuiltinClass> {
+fn classify(node: &mere::kernel::graph::Node, is_download: bool) -> Option<BuiltinClass> {
     let url = node.url();
-    if node.body.is_some() || url.starts_with("mere://") {
+    if is_download {
+        Some(BuiltinClass::Download)
+    } else if node.body.is_some() || url.starts_with("mere://") {
         Some(BuiltinClass::Note)
     } else if url.starts_with("http://") || url.starts_with("https://") {
         Some(BuiltinClass::WebPage)
@@ -100,13 +131,15 @@ pub(crate) fn reconcile(canvas: &mut mere::canvas::Canvas) -> Result<usize, Face
     let class_facet = FacetId::new(CLASS_FACET);
     let web_facet = FacetId::new(WEB_PAGE_FACET);
     let note_facet = FacetId::new(NOTE_DOCUMENT_FACET);
+    let download_facet = FacetId::new(DOWNLOAD_FACET);
     let mut changed = 0;
 
     let assignments = canvas
         .graph()
         .nodes()
         .filter_map(|(_, node)| {
-            classify(node).map(|class| {
+            let is_download = canvas.facets().get(&node.id, &download_facet).is_some();
+            classify(node, is_download).map(|class| {
                 (
                     node.id,
                     class,
@@ -122,6 +155,7 @@ pub(crate) fn reconcile(canvas: &mut mere::canvas::Canvas) -> Result<usize, Face
         match class {
             BuiltinClass::WebPage => {
                 facets.remove(&node_id, &note_facet);
+                facets.remove(&node_id, &download_facet);
                 let host = url::Url::parse(&address)
                     .ok()
                     .and_then(|parsed| parsed.host_str().map(str::to_owned))
@@ -141,6 +175,7 @@ pub(crate) fn reconcile(canvas: &mut mere::canvas::Canvas) -> Result<usize, Face
             }
             BuiltinClass::Note => {
                 facets.remove(&node_id, &web_facet);
+                facets.remove(&node_id, &download_facet);
                 facets.set(
                     node_id,
                     note_facet.clone(),
@@ -154,6 +189,16 @@ pub(crate) fn reconcile(canvas: &mut mere::canvas::Canvas) -> Result<usize, Face
                     node_id,
                     class_facet.clone(),
                     json!(NOTE_CLASS),
+                    &builtins.validator,
+                )?;
+            }
+            BuiltinClass::Download => {
+                facets.remove(&node_id, &web_facet);
+                facets.remove(&node_id, &note_facet);
+                facets.set(
+                    node_id,
+                    class_facet.clone(),
+                    json!(DOWNLOAD_CLASS),
                     &builtins.validator,
                 )?;
             }
@@ -181,6 +226,60 @@ pub(crate) fn reconcile(canvas: &mut mere::canvas::Canvas) -> Result<usize, Face
         }
     }
     Ok(changed)
+}
+
+pub(crate) struct DownloadFacetRecord<'a> {
+    pub source_url: &'a str,
+    pub received_at_ms: u64,
+    pub byte_size: u64,
+    pub status: &'a str,
+    pub media_type: Option<&'a str>,
+    pub content_disposition: Option<&'a str>,
+    pub destination_path: Option<&'a str>,
+    pub content_hash: Option<&'a str>,
+    pub error: Option<&'a str>,
+}
+
+/// Write the durable response record and declare the node's download class.
+pub(crate) fn set_download_record(
+    canvas: &mut mere::canvas::Canvas,
+    node: uuid::Uuid,
+    record: DownloadFacetRecord<'_>,
+) -> Result<(), FacetError> {
+    let builtins = BuiltinContentClasses::new();
+    let mut value = serde_json::Map::from_iter([
+        ("version".to_string(), json!(1)),
+        ("source_url".to_string(), json!(record.source_url)),
+        ("received_at_ms".to_string(), json!(record.received_at_ms)),
+        ("byte_size".to_string(), json!(record.byte_size)),
+        ("status".to_string(), json!(record.status)),
+    ]);
+    for (key, field) in [
+        ("media_type", record.media_type),
+        ("content_disposition", record.content_disposition),
+        ("destination_path", record.destination_path),
+        ("content_hash", record.content_hash),
+        ("error", record.error),
+    ] {
+        if let Some(field) = field {
+            value.insert(key.to_string(), json!(field));
+        }
+    }
+    let facets = canvas.facets_mut();
+    facets.set(
+        node,
+        FacetId::new(DOWNLOAD_FACET),
+        serde_json::Value::Object(value),
+        &builtins.validator,
+    )?;
+    facets.remove(&node, &FacetId::new(WEB_PAGE_FACET));
+    facets.remove(&node, &FacetId::new(NOTE_DOCUMENT_FACET));
+    facets.set(
+        node,
+        FacetId::new(CLASS_FACET),
+        json!(DOWNLOAD_CLASS),
+        &builtins.validator,
+    )
 }
 
 #[cfg(test)]
@@ -223,5 +322,40 @@ mod tests {
         canvas.visit("https://example.com/");
         assert_eq!(reconcile(&mut canvas).unwrap(), 1);
         assert_eq!(reconcile(&mut canvas).unwrap(), 0);
+    }
+
+    #[test]
+    fn download_record_displaces_the_generic_web_page_class() {
+        let mut canvas = mere::canvas::Canvas::new();
+        let key = canvas.visit("https://example.com/archive.bin");
+        let node = canvas.graph().get_node(key).unwrap().id;
+        reconcile(&mut canvas).unwrap();
+        set_download_record(
+            &mut canvas,
+            node,
+            DownloadFacetRecord {
+                source_url: "https://example.com/archive.bin",
+                received_at_ms: 42,
+                byte_size: 4,
+                status: "completed",
+                media_type: Some("application/octet-stream"),
+                content_disposition: None,
+                destination_path: Some("C:\\Downloads\\archive.bin"),
+                content_hash: Some(&"11".repeat(32)),
+                error: None,
+            },
+        )
+        .unwrap();
+        assert_eq!(reconcile(&mut canvas).unwrap(), 0);
+        assert_eq!(
+            canvas.facets().get(&node, &FacetId::new(CLASS_FACET)),
+            Some(&json!(DOWNLOAD_CLASS))
+        );
+        assert!(
+            canvas
+                .facets()
+                .get(&node, &FacetId::new(WEB_PAGE_FACET))
+                .is_none()
+        );
     }
 }

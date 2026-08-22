@@ -111,6 +111,7 @@ pub fn touched_ids(delta: &CapturedDelta) -> Vec<&str> {
         | D::ReplaySetNodeThumbnailById { node_id, .. }
         | D::ReplaySetNodeFaviconById { node_id, .. }
         | D::ReplaySetNodeMimeHintById { node_id, .. }
+        | D::ReplaySetNodeContentById { node_id, .. }
         | D::ReplaySetNodeNestedById { node_id, .. }
         | D::ReplaySetNodePinnedById { node_id, .. }
         | D::ReplaySetNodeFacetById { node_id, .. }

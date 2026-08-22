@@ -619,10 +619,10 @@ mod tests {
     fn gemtext_feed_preserves_relative_urls_dates_and_dedupes() {
         let parsed = parse_document(
             "gemini://capsule.test/log/index.gmi",
-            &FetchedPage {
-                content_type: Some("text/gemini; charset=utf-8".into()),
-                body: "# Log\n=> entry-one.gmi 2026-08-17 First\n=> entry-one.gmi 2026-08-17 Duplicate\n```\n=> hidden.gmi 2026-08-18 Hidden\n```\n=> /two.gmi 2026-08-18 Second\n".into(),
-            },
+            &FetchedPage::text(
+                Some("text/gemini; charset=utf-8".into()),
+                "# Log\n=> entry-one.gmi 2026-08-17 First\n=> entry-one.gmi 2026-08-17 Duplicate\n```\n=> hidden.gmi 2026-08-18 Hidden\n```\n=> /two.gmi 2026-08-18 Second\n",
+            ),
         )
         .unwrap();
         assert_eq!(parsed.title.as_deref(), Some("Log"));
@@ -639,21 +639,20 @@ mod tests {
     fn rss_and_json_feed_share_the_entry_shape() {
         let rss = parse_document(
             "https://example.test/feed.xml",
-            &FetchedPage {
-                content_type: Some("application/rss+xml".into()),
-                body: "<rss><channel><title>Notes</title><item><title>One</title><link>/one</link><pubDate>today</pubDate><description>Hello</description></item></channel></rss>".into(),
-            },
+            &FetchedPage::text(
+                Some("application/rss+xml".into()),
+                "<rss><channel><title>Notes</title><item><title>One</title><link>/one</link><pubDate>today</pubDate><description>Hello</description></item></channel></rss>",
+            ),
         )
         .unwrap();
         assert_eq!(rss.entries[0].url, "https://example.test/one");
 
         let json = parse_document(
             "https://example.test/feed.json",
-            &FetchedPage {
-                content_type: Some("application/feed+json".into()),
-                body: r#"{"title":"Notes","items":[{"id":"one","url":"/one","title":"One"}]}"#
-                    .into(),
-            },
+            &FetchedPage::text(
+                Some("application/feed+json".into()),
+                r#"{"title":"Notes","items":[{"id":"one","url":"/one","title":"One"}]}"#,
+            ),
         )
         .unwrap();
         assert_eq!(json.entries[0].url, rss.entries[0].url);

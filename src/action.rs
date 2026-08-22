@@ -534,6 +534,17 @@ pub enum Effect {
     /// decoded pixels, so this is durability only: dropping it costs a
     /// re-fetch, never correctness.
     StoreImage { hex: String, bytes: Vec<u8> },
+    /// Deposit a completed response in the session's representation store and
+    /// write a user-visible file. The graph node remains identified by `url`;
+    /// the destination returned by the shell is metadata only.
+    StoreDownload {
+        node: uuid::Uuid,
+        url: String,
+        content_type: Option<String>,
+        content_disposition: Option<String>,
+        received_at_ms: u64,
+        bytes: Vec<u8>,
+    },
     /// Persist the session through the persistence port.
     SaveSession,
     /// Open this session's retained place domains through the shell-owned
@@ -667,6 +678,16 @@ pub enum Update {
         owner_url: String,
         bytes: Vec<u8>,
     },
+    /// The shell deposited a download and attempted its user-visible copy.
+    DownloadStored {
+        node: uuid::Uuid,
+        url: String,
+        content_type: Option<String>,
+        content_disposition: Option<String>,
+        received_at_ms: u64,
+        byte_size: u64,
+        result: Result<StoredDownload, String>,
+    },
     /// The content port spawned a live session for `node`. `facts` carries
     /// the spawn-time mirror (engine id, the structural read's summary) in
     /// app-owned terms — the adapter converts the service's report type at
@@ -746,8 +767,33 @@ pub enum Update {
 pub struct FetchedPage {
     /// The response's Content-Type header, verbatim.
     pub content_type: Option<String>,
+    /// The response's Content-Disposition header, when the protocol has one.
+    pub content_disposition: Option<String>,
+    /// Exact response bytes, before replacement-character text decoding.
+    pub bytes: Vec<u8>,
     /// The decoded body text.
     pub body: String,
+}
+
+impl FetchedPage {
+    pub fn text(content_type: Option<String>, body: impl Into<String>) -> Self {
+        let body = body.into();
+        let bytes = body.as_bytes().to_vec();
+        Self {
+            content_type,
+            content_disposition: None,
+            bytes,
+            body,
+        }
+    }
+}
+
+/// Host-written facts for one completed download.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct StoredDownload {
+    pub content: mere::kernel::graph::ContentHash,
+    pub destination: String,
+    pub byte_size: u64,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]

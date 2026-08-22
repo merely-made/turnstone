@@ -239,6 +239,10 @@ pub struct Shell {
     gemini_trust: Arc<crate::gemini_trust::GeminiTrustStore>,
     /// Completed fetches, drained in `user_event` on each wake.
     fetch_rx: Receiver<FetchUpdate>,
+    /// Serialized download custody writes, kept off the event-loop thread.
+    download_handle: armillary::ActorHandle<crate::download::DownloadCommand>,
+    /// Completed custody writes, drained beside fetch answers.
+    download_rx: Receiver<Update>,
     /// The recycle-bin actor (the eidetic deleted-node bin at the session's
     /// bin dir); commands stage records / re-point on a session switch.
     bin_handle: armillary::ActorHandle<crate::recycle::BinCommand>,
@@ -467,6 +471,12 @@ impl Shell {
         });
         let (fetch_handle, fetch_rx) = fetch::spawn_fetcher(fetch_wake);
 
+        let download_proxy = proxy.clone();
+        let download_wake: armillary::Wake = Arc::new(move || {
+            let _ = download_proxy.send_event(());
+        });
+        let (download_handle, download_rx) = crate::download::spawn_downloads(download_wake);
+
         // The recycle-bin actor over THIS session's bin store, waking the
         // loop the same way; it answers its spawn with the initial list.
         let bin_proxy = proxy.clone();
@@ -550,6 +560,8 @@ impl Shell {
             fetch_handle,
             gemini_trust,
             fetch_rx,
+            download_handle,
+            download_rx,
             bin_handle,
             bin_rx,
             trail_handle,

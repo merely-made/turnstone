@@ -174,6 +174,8 @@ pub fn update_from_fetch(update: FetchUpdate, pending: &mut PendingFetches) -> O
                 Ok(fetched) => {
                     let fetched = FetchedPage {
                         content_type: fetched.content_type,
+                        content_disposition: fetched.content_disposition,
+                        bytes: fetched.bytes,
                         body: fetched.body,
                     };
                     Some(match request.kind {
@@ -306,6 +308,8 @@ pub fn update_from_fetch(update: FetchUpdate, pending: &mut PendingFetches) -> O
                     fetch::SubmissionAnswer::Success(fetched) => {
                         crate::action::SmolwebSubmissionReceipt::Success(FetchedPage {
                             content_type: fetched.content_type,
+                            content_disposition: fetched.content_disposition,
+                            bytes: fetched.bytes,
                             body: fetched.body,
                         })
                     }
@@ -564,10 +568,10 @@ mod tests {
             &mut canvas,
             target,
             "https://twin.example".to_string(),
-            Ok(FetchedPage {
-                content_type: Some("text/html".to_string()),
-                body: "<html><head><title>Twin B</title></head></html>".to_string(),
-            }),
+            Ok(FetchedPage::text(
+                Some("text/html".to_string()),
+                "<html><head><title>Twin B</title></head></html>",
+            )),
         );
         assert!(!effects.is_empty());
         let titles: Vec<_> = canvas
@@ -596,10 +600,10 @@ mod tests {
             &mut canvas,
             node,
             "https://before.example".to_string(),
-            Ok(FetchedPage {
-                content_type: Some("text/html".to_string()),
-                body: "<html><head><title>Stale</title></head></html>".to_string(),
-            }),
+            Ok(FetchedPage::text(
+                Some("text/html".to_string()),
+                "<html><head><title>Stale</title></head></html>",
+            )),
         );
         assert!(effects.is_empty(), "no stamps, no save, no redraw");
         let (_, n) = canvas.graph().get_node_by_id(node).unwrap();

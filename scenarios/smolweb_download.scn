@@ -1,0 +1,17 @@
+# A local Gemini response with an unrenderable MIME type becomes an arrival:
+# exact bytes enter the session representation store, a collision-safe visible
+# copy lands in the configured download directory, and Steward projects the
+# durable custody record.
+settle 30
+key escape
+open gemini://127.0.0.1:19653/archive.bin
+settle 60
+assert event download-started gemini://127.0.0.1:19653/archive.bin bytes=13
+assert event download-completed
+act Open Steward pane
+settle 10
+assert pane steward
+assert surface pane
+assert text archive.bin - completed - 13 bytes
+capture 01_download_steward
+log smolweb download custody receipt complete

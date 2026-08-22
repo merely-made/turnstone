@@ -20,6 +20,92 @@ fn retired_static_viewer_pins_migrate_to_livery() {
 }
 
 #[test]
+fn binary_page_response_becomes_durable_download_custody() {
+    let mut app = App::test_stub();
+    let url = "gemini://capsule.test/archive.bin";
+    let key = app.graph_runtimes.visit(url);
+    let node = app.graph_runtimes.graph().get_node(key).unwrap().id;
+    app.content.note_requested(node);
+    let _ = app.take_events();
+
+    let bytes = b"\0exact\xffbytes".to_vec();
+    let effects = app.apply_update(Update::PageFetched {
+        node,
+        url: url.to_string(),
+        result: Ok(crate::action::FetchedPage {
+            content_type: Some("application/octet-stream".into()),
+            content_disposition: Some("attachment; filename=archive.bin".into()),
+            bytes: bytes.clone(),
+            body: String::from_utf8_lossy(&bytes).into_owned(),
+        }),
+    });
+    assert!(effects.iter().any(|effect| matches!(
+        effect,
+        Effect::StoreDownload {
+            node: actual,
+            url: actual_url,
+            bytes: actual_bytes,
+            ..
+        } if *actual == node && actual_url == url && actual_bytes == &bytes
+    )));
+    assert!(
+        !effects
+            .iter()
+            .any(|effect| matches!(effect, Effect::SpawnContent { .. })),
+        "a binary response must not be sent to a document engine"
+    );
+    let facet = chartulary::FacetId::new(crate::content_classes::DOWNLOAD_FACET);
+    let pending = app.graph_runtimes.facets().get(&node, &facet).unwrap();
+    assert_eq!(pending["status"], "storing");
+    assert_eq!(pending["byte_size"], bytes.len() as u64);
+
+    let content = mere::kernel::graph::ContentHash::of(&bytes);
+    let destination = "C:\\Downloads\\archive.bin".to_string();
+    let complete = app.apply_update(Update::DownloadStored {
+        node,
+        url: url.to_string(),
+        content_type: Some("application/octet-stream".into()),
+        content_disposition: Some("attachment; filename=archive.bin".into()),
+        received_at_ms: 42,
+        byte_size: bytes.len() as u64,
+        result: Ok(crate::action::StoredDownload {
+            content,
+            destination: destination.clone(),
+            byte_size: bytes.len() as u64,
+        }),
+    });
+    assert_eq!(complete, vec![Effect::SaveSession, Effect::Redraw]);
+    assert_eq!(
+        app.graph_runtimes
+            .graph()
+            .get_node_by_id(node)
+            .unwrap()
+            .1
+            .content,
+        Some(content)
+    );
+    let completed = app.graph_runtimes.facets().get(&node, &facet).unwrap();
+    assert_eq!(completed["status"], "completed");
+    assert_eq!(completed["destination_path"], destination);
+    assert_eq!(completed["content_hash"], content.to_hex());
+    let events = app
+        .take_events()
+        .iter()
+        .map(AppEvent::describe)
+        .collect::<Vec<_>>();
+    assert!(
+        events
+            .iter()
+            .any(|event| event.starts_with("download-started"))
+    );
+    assert!(
+        events
+            .iter()
+            .any(|event| event.starts_with("download-completed"))
+    );
+}
+
+#[test]
 fn place_binding_survives_switch_and_restart_as_a_worker_open() {
     let root = std::env::temp_dir().join(format!("turnstone-place-adopt-{}", uuid::Uuid::new_v4()));
     let mut app = App::test_stub();
@@ -3182,10 +3268,10 @@ fn actor_fetched_body_is_retained_for_the_requested_content_spawn() {
     let effects = app.apply_update(Update::PageFetched {
         node,
         url: "gemini://capsule.test/".into(),
-        result: Ok(crate::action::FetchedPage {
-            content_type: Some("text/gemini".into()),
-            body: "# One request".into(),
-        }),
+        result: Ok(crate::action::FetchedPage::text(
+            Some("text/gemini".into()),
+            "# One request",
+        )),
     });
 
     assert_eq!(

@@ -2,7 +2,7 @@ param(
     [Parameter(Mandatory = $true)]
     [string] $TurnstoneBin,
 
-    [ValidateSet("gemini-browse", "gemini-input", "gemini-inline-image", "titan-mutation", "spartan-mutation")]
+    [ValidateSet("gemini-browse", "gemini-input", "gemini-inline-image", "gemini-download", "titan-mutation", "spartan-mutation")]
     [string[]] $Only = @(),
 
     [string] $OutputRoot = (Join-Path (
@@ -42,6 +42,12 @@ $cases = @(
         Port = 19652
     },
     [pscustomobject]@{
+        Name = "gemini-download"
+        Scenario = "smolweb_download.scn"
+        Server = "GeminiDownload"
+        Port = 19653
+    },
+    [pscustomobject]@{
         Name = "titan-mutation"
         Scenario = "smolweb_titan.scn"
         Server = "Titan"
@@ -61,6 +67,7 @@ if ($Only.Count -gt 0) {
 $previousRoot = [Environment]::GetEnvironmentVariable("TURNSTONE_ROOT", "Process")
 $previousScenario = [Environment]::GetEnvironmentVariable("TURNSTONE_SCENARIO", "Process")
 $previousCapture = [Environment]::GetEnvironmentVariable("TURNSTONE_CAPTURE_DIR", "Process")
+$previousDownload = [Environment]::GetEnvironmentVariable("TURNSTONE_DOWNLOAD_DIR", "Process")
 $results = [System.Collections.Generic.List[string]]::new()
 
 try {
@@ -68,8 +75,10 @@ try {
         $caseRoot = Join-Path $OutputRoot $case.Name
         $profileRoot = Join-Path $caseRoot "profile"
         $captureRoot = Join-Path $caseRoot "capture"
+        $downloadRoot = Join-Path $caseRoot "downloads"
         [System.IO.Directory]::CreateDirectory($profileRoot) | Out-Null
         [System.IO.Directory]::CreateDirectory($captureRoot) | Out-Null
+        [System.IO.Directory]::CreateDirectory($downloadRoot) | Out-Null
 
         $scenarioDone = Join-Path $captureRoot "scenario.done"
         if (Test-Path -LiteralPath $scenarioDone) {
@@ -113,6 +122,7 @@ try {
                 "Process"
             )
             [Environment]::SetEnvironmentVariable("TURNSTONE_CAPTURE_DIR", $captureRoot, "Process")
+            [Environment]::SetEnvironmentVariable("TURNSTONE_DOWNLOAD_DIR", $downloadRoot, "Process")
 
             Write-Host "RUN $($case.Name)"
             Push-Location $repositoryRoot
@@ -154,6 +164,47 @@ try {
                 }
             }
 
+            if ($case.Name -eq "gemini-download") {
+                $downloads = @(Get-ChildItem -LiteralPath $downloadRoot -File)
+                if ($downloads.Count -ne 1 -or $downloads[0].Name -ne "archive.bin") {
+                    throw "download custody wrote unexpected destinations: $($downloads.Name -join ', ')"
+                }
+                [byte[]] $expected = @(0, 1, 2, 255, 84, 117, 114, 110, 115, 116, 111, 110, 101)
+                [byte[]] $actual = [System.IO.File]::ReadAllBytes($downloads[0].FullName)
+                if (($expected -join ',') -ne ($actual -join ',')) {
+                    throw "downloaded bytes did not match the Gemini response"
+                }
+                $representationStores = @(
+                    Get-ChildItem -LiteralPath $profileRoot -Filter "representations.redb" -File -Recurse
+                )
+                $graphs = @(Get-ChildItem -LiteralPath $profileRoot -Filter "graph.json" -File -Recurse)
+                $facets = @(Get-ChildItem -LiteralPath $profileRoot -Filter "facets.json" -File -Recurse)
+                if ($representationStores.Count -ne 1) {
+                    throw "download custody did not leave one session representation store"
+                }
+                if ($graphs.Count -ne 1 -or -not (Select-String -LiteralPath $graphs[0].FullName -SimpleMatch '"content_hash"')) {
+                    throw "download graph node did not persist a content hash"
+                }
+                if ($facets.Count -ne 1 -or
+                    -not (Select-String -LiteralPath $facets[0].FullName -SimpleMatch 'download.response') -or
+                    -not (Select-String -LiteralPath $facets[0].FullName -SimpleMatch 'completed')) {
+                    throw "download custody facet did not persist its completed state"
+                }
+                $hash = (Get-FileHash -LiteralPath $downloads[0].FullName -Algorithm SHA256).Hash
+                [System.IO.File]::WriteAllLines(
+                    (Join-Path $caseRoot "custody.done"),
+                    @(
+                        "RESULT ok",
+                        "destination=$($downloads[0].FullName)",
+                        "bytes=$($actual.Length)",
+                        "sha256=$hash",
+                        "representation-store=$($representationStores[0].FullName)",
+                        "graph-content-hash=true",
+                        "facet-status=completed"
+                    )
+                )
+            }
+
             $results.Add("RESULT ok $($case.Name)")
         }
         finally {
@@ -167,6 +218,7 @@ finally {
     [Environment]::SetEnvironmentVariable("TURNSTONE_ROOT", $previousRoot, "Process")
     [Environment]::SetEnvironmentVariable("TURNSTONE_SCENARIO", $previousScenario, "Process")
     [Environment]::SetEnvironmentVariable("TURNSTONE_CAPTURE_DIR", $previousCapture, "Process")
+    [Environment]::SetEnvironmentVariable("TURNSTONE_DOWNLOAD_DIR", $previousDownload, "Process")
 }
 
 $summary = Join-Path $OutputRoot "acceptance.done"

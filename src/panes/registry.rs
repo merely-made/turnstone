@@ -381,7 +381,10 @@ pub static BUILTIN_PANES: &[PaneDefinition] = &[
         "turnstone.steward.config",
         "turnstone.steward.view",
         PaneRenderer::Steward,
-        None,
+        Some(PanePaletteEntry {
+            order: 35,
+            label: "Open Steward pane"
+        }),
         Some(|| PaneContent::Steward)
     ),
     pane!(

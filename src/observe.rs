@@ -200,6 +200,20 @@ pub enum AppEvent {
         target: String,
         error: String,
     },
+    DownloadStarted {
+        node: Uuid,
+        url: String,
+        bytes: u64,
+    },
+    DownloadCompleted {
+        node: Uuid,
+        destination: String,
+        content_hash: String,
+    },
+    DownloadFailed {
+        node: Uuid,
+        error: String,
+    },
     /// A capsule asked for a client identity. The origin is public routing
     /// context; certificate and key bytes never enter observation.
     GeminiIdentityRequested {
@@ -421,6 +435,20 @@ impl AppEvent {
             }
             AppEvent::SmolwebSubmissionFailed { target, error } => {
                 format!("smolweb-submission-failed {target} {error}")
+            }
+            AppEvent::DownloadStarted { node, url, bytes } => {
+                format!("download-started {url} bytes={bytes} node={node}")
+            }
+            AppEvent::DownloadCompleted {
+                node,
+                destination,
+                content_hash,
+            } => format!(
+                "download-completed {node} hash={} {destination}",
+                content_hash.get(..12).unwrap_or(content_hash)
+            ),
+            AppEvent::DownloadFailed { node, error } => {
+                format!("download-failed {node} {error}")
             }
             AppEvent::GeminiIdentityRequested {
                 node,

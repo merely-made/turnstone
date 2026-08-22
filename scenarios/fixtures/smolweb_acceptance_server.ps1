@@ -1,6 +1,6 @@
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet("GeminiImage", "Titan", "Spartan")]
+    [ValidateSet("GeminiImage", "GeminiDownload", "Titan", "Spartan")]
     [string] $Mode,
 
     [Parameter(Mandatory = $true)]
@@ -146,7 +146,7 @@ try {
     $listener.Start()
     [System.IO.File]::WriteAllText($ReadyPath, "READY $Mode 127.0.0.1:$Port`n")
 
-    if ($Mode -in @("GeminiImage", "Titan")) {
+    if ($Mode -in @("GeminiImage", "GeminiDownload", "Titan")) {
         $rsa = [System.Security.Cryptography.RSA]::Create(2048)
         $certificateRequest = [System.Security.Cryptography.X509Certificates.CertificateRequest]::new(
             "CN=127.0.0.1",
@@ -219,6 +219,25 @@ try {
                     $receipt.Add("mime=text/plain")
                     $receipt.Add("token-present=true")
                     $receipt.Add("response=20")
+                }
+                elseif ($Mode -eq "GeminiDownload") {
+                    $expectedTarget = "gemini://127.0.0.1:$Port/archive.bin"
+                    if ($packet.Line -ne $expectedTarget) {
+                        throw "Gemini download target was '$($packet.Line)', expected '$expectedTarget'"
+                    }
+                    [byte[]] $header = [System.Text.Encoding]::ASCII.GetBytes(
+                        "20 application/octet-stream`r`n"
+                    )
+                    [byte[]] $payload = @(0, 1, 2, 255, 84, 117, 114, 110, 115, 116, 111, 110, 101)
+                    $tls.Write($header, 0, $header.Length)
+                    $tls.Write($payload, 0, $payload.Length)
+                    $tls.Flush()
+
+                    $receipt.Add("RESULT ok")
+                    $receipt.Add("protocol=gemini")
+                    $receipt.Add("target=$expectedTarget")
+                    $receipt.Add("response=20 application/octet-stream")
+                    $receipt.Add("body-bytes=$($payload.Length)")
                 }
                 else {
                     $expectedTarget = "gemini://127.0.0.1:$Port/inline-image.gmi"

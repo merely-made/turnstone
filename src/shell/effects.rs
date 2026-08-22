@@ -151,6 +151,28 @@ impl Shell {
                 Effect::StoreImage { hex, bytes } => {
                     session::save_image_blob(&self.app.session_dir(), &hex, &bytes);
                 }
+                Effect::StoreDownload {
+                    node,
+                    url,
+                    content_type,
+                    content_disposition,
+                    received_at_ms,
+                    bytes,
+                } => {
+                    self.download_handle
+                        .command(crate::download::DownloadCommand {
+                            node,
+                            url,
+                            content_type,
+                            content_disposition,
+                            received_at_ms,
+                            session_dir: self.app.session_dir(),
+                            download_dir: crate::download::configured_download_dir(
+                                &self.app.data_root,
+                            ),
+                            bytes,
+                        });
+                }
                 // The bin port: stage the record; the actor answers with the
                 // refreshed list (folded on the next wake).
                 Effect::RecordDeleted { record } => {

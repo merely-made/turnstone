@@ -394,6 +394,15 @@ impl Shell {
                 pane.sync(&self.app, rw as f32, rh as f32);
                 pane.scene(rw, rh)
             }
+            Some(PaneContent::Steward) => {
+                let pane = self
+                    .renderers
+                    .steward
+                    .entry(pane_id)
+                    .or_insert_with(crate::steward_pane::StewardPane::new);
+                pane.sync(&self.app, rw as f32, rh as f32);
+                pane.scene(rw, rh)
+            }
             Some(PaneContent::Registered(kind))
                 if kind.as_str() == crate::panes::kind::TRANSCRIPT =>
             {

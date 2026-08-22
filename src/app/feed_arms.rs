@@ -302,10 +302,10 @@ mod tests {
         let source_tags = app.graph_runtimes.graph().node_tags(source_key).unwrap();
         assert!(source_tags.contains(KEEP_TAG) && source_tags.contains(FEED_TAG));
 
-        let fetched = FetchedPage {
-            content_type: Some("text/gemini".into()),
-            body: "# Log\n=> /one.gmi 2026-08-17 One\n=> /two.gmi 2026-08-18 Two\n".into(),
-        };
+        let fetched = FetchedPage::text(
+            Some("text/gemini".into()),
+            "# Log\n=> /one.gmi 2026-08-17 One\n=> /two.gmi 2026-08-18 Two\n",
+        );
         app.apply_update(Update::FeedFetched {
             node: source,
             url: "gemini://capsule.test/feed.gmi".into(),
@@ -347,10 +347,10 @@ mod tests {
         app.apply_update(Update::FeedFetched {
             node: source,
             url: "gemini://capsule.test/feed.gmi".into(),
-            result: Ok(FetchedPage {
-                content_type: Some("text/gemini".into()),
-                body: "=> /one 2026-08-18 One".into(),
-            }),
+            result: Ok(FetchedPage::text(
+                Some("text/gemini".into()),
+                "=> /one 2026-08-18 One",
+            )),
         });
 
         assert!(
