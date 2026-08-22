@@ -1,0 +1,25 @@
+# Headed first-party editing through Graphshell's resident Knot route.
+# The receipt harness seeds knot://vault/field-note, launches the resident,
+# and sets TURNSTONE_KNOT_MODE=persona-vault plus its isolated app endpoint.
+settle 20
+key escape
+open knot://vault/field-note
+settle 5
+act Toggle live content
+wait
+assert content-live
+assert snap focused ~ field-note
+assert text Resident V1
+click role:textbox
+key end
+insert  headed edit
+assert text Resident V1 headed edit
+key ctrl+s
+wait
+assert text saved
+capture 01_resident_edit
+act Toggle live content
+settle 5
+assert no-surface content
+capture 02_resident_after_close
+log Resident Knot edit and pane-close crossed the first-party route

@@ -326,29 +326,41 @@ impl Shell {
                     self.act(Action::OmnibarChar(c));
                 }
             }
-            Step::Insert(text) => self.act(Action::OmnibarInsert(text.clone())),
+            Step::Insert(text) => {
+                if self.app.omnibar.open {
+                    self.act(Action::OmnibarInsert(text.clone()));
+                } else if self.deliver_knot_ime(&winit::event::Ime::Commit(text.clone())) {
+                    self.request_redraw();
+                } else {
+                    return Err("insert: no focused text editor".into());
+                }
+            }
             Step::Key(key) => {
                 // Route through the SAME key seam winit uses, so `key` drives
                 // whatever holds focus (the omnibar, a focused page, the
                 // canvas) exactly as a real press would — one description, two
                 // runners, for keys as well as pointers. The former direct
                 // EditKey->omnibar-Action map only ever reached the omnibar.
-                let winit_key = match key {
-                    EditKey::Enter => WinitKey::Named(WinitNamedKey::Enter),
-                    EditKey::Escape => WinitKey::Named(WinitNamedKey::Escape),
-                    EditKey::Backspace => WinitKey::Named(WinitNamedKey::Backspace),
-                    EditKey::Delete => WinitKey::Named(WinitNamedKey::Delete),
-                    EditKey::Up => WinitKey::Named(WinitNamedKey::ArrowUp),
-                    EditKey::Down => WinitKey::Named(WinitNamedKey::ArrowDown),
-                    EditKey::Left => WinitKey::Named(WinitNamedKey::ArrowLeft),
-                    EditKey::Right => WinitKey::Named(WinitNamedKey::ArrowRight),
-                    EditKey::Home => WinitKey::Named(WinitNamedKey::Home),
-                    EditKey::End => WinitKey::Named(WinitNamedKey::End),
-                    EditKey::PageDown => WinitKey::Named(WinitNamedKey::PageDown),
-                    EditKey::PageUp => WinitKey::Named(WinitNamedKey::PageUp),
-                    EditKey::Space => WinitKey::Named(WinitNamedKey::Space),
+                let (winit_key, ctrl) = match key {
+                    EditKey::Enter => (WinitKey::Named(WinitNamedKey::Enter), false),
+                    EditKey::Escape => (WinitKey::Named(WinitNamedKey::Escape), false),
+                    EditKey::Backspace => (WinitKey::Named(WinitNamedKey::Backspace), false),
+                    EditKey::Delete => (WinitKey::Named(WinitNamedKey::Delete), false),
+                    EditKey::Up => (WinitKey::Named(WinitNamedKey::ArrowUp), false),
+                    EditKey::Down => (WinitKey::Named(WinitNamedKey::ArrowDown), false),
+                    EditKey::Left => (WinitKey::Named(WinitNamedKey::ArrowLeft), false),
+                    EditKey::Right => (WinitKey::Named(WinitNamedKey::ArrowRight), false),
+                    EditKey::Home => (WinitKey::Named(WinitNamedKey::Home), false),
+                    EditKey::End => (WinitKey::Named(WinitNamedKey::End), false),
+                    EditKey::PageDown => (WinitKey::Named(WinitNamedKey::PageDown), false),
+                    EditKey::PageUp => (WinitKey::Named(WinitNamedKey::PageUp), false),
+                    EditKey::Space => (WinitKey::Named(WinitNamedKey::Space), false),
+                    EditKey::Save => (WinitKey::Character("s".into()), true),
                 };
+                let previous_ctrl = self.ctrl;
+                self.ctrl |= ctrl;
                 self.on_key(&winit_key);
+                self.ctrl = previous_ctrl;
             }
             Step::Script(source) => self.run_scenario_script(source),
             Step::Click(x, y) => {

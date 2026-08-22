@@ -1,0 +1,15 @@
+# Restart half of the resident Knot headed receipt. The first run saved the
+# edit through the resident route; this fresh Turnstone process must read it
+# back from the resident that stayed alive between applications.
+settle 20
+key escape
+open knot://vault/field-note
+settle 5
+act Toggle live content
+wait
+assert content-live
+assert snap focused ~ field-note
+assert text Resident V1 headed edit
+assert text saved
+capture 03_resident_reopened
+log Resident Knot save reopened through a fresh Turnstone process

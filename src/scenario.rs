@@ -21,8 +21,8 @@
 //! open <url>                # Action::OpenAddress (use mere:// for offline)
 //! omnibar find|actions      # Action::OmnibarOpen
 //! type <text>               # Action::OmnibarChar per char
-//! insert <text>             # Action::OmnibarInsert (the IME-commit path)
-//! key enter|escape|backspace|delete|up|down|left|right|home|end
+//! insert <text>             # IME commit into the focused omnibar or Knot editor
+//! key enter|escape|backspace|delete|up|down|left|right|home|end|ctrl+s
 //! act <palette label>       # commit a palette_actions() entry by label
 //! script <inline lua>        # run a Piccolo control script; its Actions lower
 //!                            # through the same spine (the automation runner —
@@ -224,6 +224,7 @@ pub enum EditKey {
     PageDown,
     PageUp,
     Space,
+    Save,
 }
 
 #[derive(Debug)]
@@ -274,9 +275,10 @@ pub fn parse(body: &str) -> Result<Vec<Step>, String> {
                 "pagedown" => Step::Key(EditKey::PageDown),
                 "pageup" => Step::Key(EditKey::PageUp),
                 "space" => Step::Key(EditKey::Space),
+                "ctrl+s" => Step::Key(EditKey::Save),
                 _ => {
                     return err(
-                        "key wants enter|escape|backspace|delete|up|down|left|right|home|end|pagedown|pageup|space",
+                        "key wants enter|escape|backspace|delete|up|down|left|right|home|end|pagedown|pageup|space|ctrl+s",
                     );
                 }
             },
@@ -596,5 +598,11 @@ drop-file 350 280 receipt.txt",
         assert!(
             matches!(steps[1], Step::DropFile(350.0, 280.0, ref path) if path == "receipt.txt")
         );
+    }
+
+    #[test]
+    fn save_chord_is_one_focus_routed_key_step() {
+        let steps = parse("key ctrl+s").unwrap();
+        assert!(matches!(steps.as_slice(), [Step::Key(EditKey::Save)]));
     }
 }
