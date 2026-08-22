@@ -15,8 +15,7 @@ use cambium::{
     AnyView, DetailRow, DetailSection, DomHandle, GenetCtx, GenetElement, PointerClick, button,
     detail_panel, el,
 };
-use genet_layout::{IncrementalLayout, ScrollOffsets};
-use genet_scripted_dom::{NodeId, ScriptedDom};
+use genet_scripted_dom::ScriptedDom;
 
 use crate::app::App;
 use crate::inspector_view::{InspectorSection, inspector_sections_for_pane};
@@ -236,7 +235,6 @@ mod tests {
         });
         let (x, y) = {
             let dom = pane.dom.borrow();
-            let layout = IncrementalLayout::new(&*dom, &[crate::ui::CAMBIUM_SHEET], 400.0, 600.0);
             let button = dom
                 .dom_children(pane.runner.root())
                 .find(|&node| {
@@ -244,7 +242,8 @@ mod tests {
                         .is_some_and(|name| name.local.as_ref() == "button")
                 })
                 .expect("the inspector action is a real button");
-            let (x, y, w, h) = layout.absolute_rect(&*dom, button).unwrap();
+            let (x, y, w, h) =
+                crate::ui::node_rect(&dom, button, crate::ui::CAMBIUM_SHEET, 400, 600).unwrap();
             (x + w / 2.0, y + h / 2.0)
         };
         assert_eq!(

@@ -22,10 +22,30 @@
 use std::collections::HashMap;
 
 use fetch::{FetchCommand, FetchUpdate};
+use layout_dom_api::LayoutDom;
 use mere::canvas::Canvas;
 use uuid::Uuid;
 
 use crate::action::{Effect, FetchedPage, Update};
+
+pub(crate) struct DecodedImage {
+    pub(crate) width: u32,
+    pub(crate) height: u32,
+    pub(crate) rgba: Vec<u8>,
+}
+
+/// Decode host-fetched image bytes at the product edge. Livery consumes the
+/// same encoded resources for document paint; graph favicons need canonical
+/// RGBA pixels for Turnstone's content-addressed cache.
+pub(crate) fn decode_image_bytes(bytes: &[u8]) -> Option<DecodedImage> {
+    let image = image::load_from_memory(bytes).ok()?.to_rgba8();
+    let (width, height) = image.dimensions();
+    Some(DecodedImage {
+        width,
+        height,
+        rgba: image.into_raw(),
+    })
+}
 
 /// The shell-owned correlation table: which node asked for each in-flight
 /// fetch. Port bookkeeping, not app truth (the app's record is the effect it
@@ -434,7 +454,7 @@ pub fn apply_favicon(
         tracing::info!(%node, url = %owner_url, "favicon for a superseded node; dropped");
         return Vec::new();
     }
-    let Some(decoded) = genet_layout::decode_image_bytes(bytes) else {
+    let Some(decoded) = decode_image_bytes(bytes) else {
         return Vec::new();
     };
     let Some(png) = crate::session::encode_rgba_png(&decoded.rgba, decoded.width, decoded.height)
@@ -466,7 +486,7 @@ pub fn apply_favicon(
 /// `/favicon.ico` for web pages. `None` when neither applies.
 fn favicon_url_for(page_url: &str, doc: &genet_static_dom::StaticDocument) -> Option<String> {
     let base = url::Url::parse(page_url).ok()?;
-    if let Some(href) = genet_layout::linked_icon_href(doc) {
+    if let Some(href) = linked_icon_href(doc) {
         if let Ok(resolved) = base.join(&href) {
             return Some(resolved.to_string());
         }
@@ -474,6 +494,32 @@ fn favicon_url_for(page_url: &str, doc: &genet_static_dom::StaticDocument) -> Op
     if matches!(base.scheme(), "http" | "https") {
         if let Ok(fallback) = base.join("/favicon.ico") {
             return Some(fallback.to_string());
+        }
+    }
+    None
+}
+
+fn linked_icon_href(doc: &genet_static_dom::StaticDocument) -> Option<String> {
+    let namespace = layout_dom_api::Namespace::default();
+    let rel = layout_dom_api::LocalName::from("rel");
+    let href = layout_dom_api::LocalName::from("href");
+    let mut pending = vec![doc.document()];
+    while let Some(node) = pending.pop() {
+        pending.extend(doc.dom_children(node));
+        if !doc
+            .element_name(node)
+            .is_some_and(|name| name.local.as_ref().eq_ignore_ascii_case("link"))
+        {
+            continue;
+        }
+        let Some(relation) = doc.attribute(node, &namespace, &rel) else {
+            continue;
+        };
+        if relation
+            .split_ascii_whitespace()
+            .any(|token| token.eq_ignore_ascii_case("icon"))
+        {
+            return doc.attribute(node, &namespace, &href).map(str::to_owned);
         }
     }
     None

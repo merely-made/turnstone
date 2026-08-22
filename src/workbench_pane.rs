@@ -19,8 +19,7 @@ use cambium::{
     AnyView, DomHandle, GenetAppRunner, GenetCtx, GenetElement, PointerClick, TabStrip,
     arrangement, el, lens, placed_with, tab_strip,
 };
-use genet_layout::{IncrementalLayout, ScrollOffsets};
-use genet_scripted_dom::{NodeId, ScriptedDom};
+use genet_scripted_dom::ScriptedDom;
 use layout_dom_api::LayoutDom;
 use sprigging::Placement;
 use uuid::Uuid;
@@ -224,7 +223,6 @@ impl WorkbenchPane {
     /// press resolution.
     pub fn tab_at(&self, x: f32, y: f32, w: u32, h: u32) -> Option<Uuid> {
         let dom = self.dom.borrow();
-        let layout = IncrementalLayout::new(&*dom, &[crate::ui::CAMBIUM_SHEET], w as f32, h as f32);
         // Tabs appear in DOM order: cells in walk order, tabs in member order.
         let flat: Vec<Uuid> = self
             .runner
@@ -235,7 +233,8 @@ impl WorkbenchPane {
             .collect();
         let tabs = dom.all_with_class(dom.document(), "tab");
         for (i, &tab) in tabs.iter().enumerate() {
-            if let Some((tx, ty, tw, th)) = layout.absolute_rect(&*dom, tab)
+            if let Some((tx, ty, tw, th)) =
+                crate::ui::node_rect(&dom, tab, crate::ui::CAMBIUM_SHEET, w, h)
                 && x >= tx
                 && x < tx + tw
                 && y >= ty

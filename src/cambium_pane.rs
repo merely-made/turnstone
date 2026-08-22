@@ -22,9 +22,7 @@ use cambium::{
     AnyView, DomHandle, GenetAppRunner, GenetCtx, GenetElement, GridColumn, GridSpec, PointerClick,
     TabStrip, data_grid, el, lens, on_click, tab_strip,
 };
-use genet_layout::{IncrementalLayout, ScrollOffsets};
-use genet_scripted_dom::{NodeId, ScriptedDom};
-use layout_dom_api::LayoutDom;
+use genet_scripted_dom::ScriptedDom;
 
 use crate::app::App;
 use crate::roster_view::{RosterGridRow, roster_grid_rows_for_pane};
@@ -336,12 +334,16 @@ mod tests {
     fn grid_dom_is_hit_testable() {
         let g = grid_with_rows();
         let d = g.dom.borrow();
-        let layout = IncrementalLayout::new(&*d, &[crate::ui::CAMBIUM_SHEET], 512.0, 600.0);
-        let scroll = ScrollOffsets::<NodeId>::default();
         assert!(
-            layout
-                .hit_test(&*d, 20.0, grid_row_center_y(0), &scroll)
-                .is_some(),
+            crate::ui::hit_test(
+                &d,
+                crate::ui::CAMBIUM_SHEET,
+                512,
+                600,
+                20.0,
+                grid_row_center_y(0),
+            )
+            .is_some(),
             "a point inside the grid's first row must hit a DOM node"
         );
     }
@@ -373,12 +375,24 @@ mod tests {
     fn tablist_height_matches_the_sheet() {
         let g = grid_with_rows();
         let d = g.dom.borrow();
-        let layout = IncrementalLayout::new(&*d, &[crate::ui::CAMBIUM_SHEET], 512.0, 600.0);
-        let scroll = ScrollOffsets::<NodeId>::default();
         // The strip occupies its declared height: a point just inside its bottom
         // edge is still a tab, and one just below it is not.
-        let inside = layout.hit_test(&*d, 20.0, crate::ui::TABLIST_HEIGHT - 2.0, &scroll);
-        let below = layout.hit_test(&*d, 20.0, crate::ui::TABLIST_HEIGHT + 2.0, &scroll);
+        let inside = crate::ui::hit_test(
+            &d,
+            crate::ui::CAMBIUM_SHEET,
+            512,
+            600,
+            20.0,
+            crate::ui::TABLIST_HEIGHT - 2.0,
+        );
+        let below = crate::ui::hit_test(
+            &d,
+            crate::ui::CAMBIUM_SHEET,
+            512,
+            600,
+            20.0,
+            crate::ui::TABLIST_HEIGHT + 2.0,
+        );
         assert!(inside.is_some(), "the strip must fill its declared height");
         assert_ne!(
             inside,

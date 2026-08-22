@@ -13,9 +13,16 @@
 //! alpha-blends over). The palette is tiny, so the document rebuilds
 //! wholesale per state change rather than diffing.
 
-use genet_layout::{IncrementalLayout, ScrollOffsets};
+use std::{collections::HashMap, hash::Hash};
+
+use genet_livery::{
+    Device, InteractionStates, LiveryLayout, LiveryPaintList, StylePlane, StyleSet, TextSystem,
+    emit_paint_list_with_text_system_scrolled_with_images, layout_with_text_system, resolve_styles,
+};
 use genet_scripted_dom::{NodeId as DomNodeId, ScriptedDom};
-use layout_dom_api::{LayoutDom, LayoutDomMut, LocalName, Namespace, QualName};
+use layout_dom_api::{
+    AttributeView, LayoutDom, LayoutDomMut, LocalName, Namespace, NodeKind, QualName,
+};
 use mere::canvas::Canvas;
 use paint_list_api::{DeviceIntSize, PaintList};
 use paint_list_render::{CompositeLayer, composite_paint_layers};
@@ -57,12 +64,7 @@ pub(crate) fn chrome_row_width(text: &str) -> f32 {
     dom.append_child(row, t);
     dom.append_child(root, row);
 
-    let layout = IncrementalLayout::new(&dom, &[CHROME_SHEET], 8192.0, 600.0);
-    let plist = layout.emit_paint_list(
-        &dom,
-        &ScrollOffsets::<DomNodeId>::default(),
-        DeviceIntSize::new(8192, 600),
-    );
+    let plist = livery_paint_list(&dom, CHROME_SHEET, 8192, 600);
     let mut right = 0f32;
     for cmd in plist.commands() {
         if let paint_list_api::PaintCmd::DrawText(run) = cmd {
@@ -99,9 +101,7 @@ pub(crate) fn chrome_review_row_extra_height(
         dom.append_child(root, row);
 
         let sheet = chrome_sheet(appearance);
-        let layout = IncrementalLayout::new(&dom, &[&sheet], CARD_W, 16_384.0);
-        layout
-            .absolute_rect(&dom, row)
+        node_rect(&dom, row, &sheet, CARD_W as u32, 16_384)
             .map(|(_, _, _, height)| height)
             .unwrap_or(ROW_H * appearance.zoom())
     }
@@ -903,7 +903,7 @@ fn finish_scene(dom: &ScriptedDom, w: u32, h: u32) -> netrender::Scene {
 /// A pane is its own small document — its root box IS its viewport — so this
 /// is *document* scroll rather than nested element scroll, and the engine's
 /// own clamping decides the range. The offset is retained here because panes
-/// rebuild their `IncrementalLayout` every frame; anything the layout retained
+/// rebuild their layout state every frame; anything the engine retained
 /// would be discarded on the next paint.
 ///
 /// The fade clock is `cambium_winit`'s, the same one the winit host uses for
@@ -954,36 +954,295 @@ impl PaneScroll {
     }
 }
 
-/// One pane's layout, held across frames instead of rebuilt on every paint.
+struct LiverySnapshot<Id> {
+    styles: StylePlane<Id>,
+    fragments: LiveryLayout<Id>,
+    text: TextSystem,
+    content_extent: (f32, f32),
+}
+
+fn walk_dom<D>(dom: &D, node: D::NodeId, visit: &mut impl FnMut(D::NodeId))
+where
+    D: LayoutDom,
+    D::NodeId: Copy,
+{
+    visit(node);
+    for child in dom.dom_children(node) {
+        walk_dom(dom, child, visit);
+    }
+}
+
+fn content_extent<D>(dom: &D, fragments: &LiveryLayout<D::NodeId>) -> (f32, f32)
+where
+    D: LayoutDom,
+    D::NodeId: Copy + Eq + Hash,
+{
+    let mut extent = (0.0_f32, 0.0_f32);
+    walk_dom(dom, dom.document(), &mut |node| {
+        if let Some(fragment) = fragments.get(node) {
+            extent.0 = extent.0.max(fragment.x + fragment.width);
+            extent.1 = extent.1.max(fragment.y + fragment.height);
+        }
+    });
+    extent
+}
+
+fn build_livery_snapshot<D>(
+    dom: &D,
+    sheet: &str,
+    w: u32,
+    h: u32,
+    mut text: TextSystem,
+) -> LiverySnapshot<D::NodeId>
+where
+    D: LayoutDom,
+    D::NodeId: Copy + Eq + Hash,
+{
+    let device = Device::screen(w as f32, h as f32);
+    let styles = resolve_styles(
+        dom,
+        &StyleSet::cambium(&[sheet]),
+        &device,
+        &InteractionStates::default(),
+    );
+    let images = HashMap::new();
+    let (styles, fragments) = layout_with_text_system(
+        dom,
+        &styles,
+        w as f32,
+        h as f32,
+        device.viewport_sizes,
+        &mut text,
+        &images,
+    )
+    .expect("Turnstone Livery/Buckram layout");
+    let content_extent = content_extent(dom, &fragments);
+    LiverySnapshot {
+        styles,
+        fragments,
+        text,
+        content_extent,
+    }
+}
+
+fn paint_snapshot<D>(
+    dom: &D,
+    snapshot: &mut LiverySnapshot<D::NodeId>,
+    w: u32,
+    h: u32,
+    element_scroll: &HashMap<D::NodeId, (f32, f32)>,
+    viewport_scroll: (f32, f32),
+) -> LiveryPaintList
+where
+    D: LayoutDom,
+    D::NodeId: Copy + Eq + Hash,
+{
+    emit_paint_list_with_text_system_scrolled_with_images(
+        dom,
+        &snapshot.styles,
+        &snapshot.fragments,
+        DeviceIntSize::new(w as i32, h as i32),
+        0,
+        &mut snapshot.text,
+        element_scroll,
+        &HashMap::new(),
+    )
+    .translated(-viewport_scroll.0, -viewport_scroll.1)
+}
+
+fn node_transform_translation<Id>(snapshot: &LiverySnapshot<Id>, node: Id) -> (f32, f32)
+where
+    Id: Copy + Eq + Hash,
+{
+    let (Some(style), Some(fragment)) = (snapshot.styles.get(node), snapshot.fragments.get(node))
+    else {
+        return (0.0, 0.0);
+    };
+    // Turnstone's host placements are translate-only. Livery owns the full
+    // transform paint matrix; this query only mirrors its translation terms so
+    // host hit-testing and overlays land on those painted boxes.
+    style
+        .transform
+        .to_matrix(16.0, (fragment.width, fragment.height))
+        .map_or((0.0, 0.0), |matrix| (matrix.e, matrix.f))
+}
+
+fn accumulated_translation<D>(
+    dom: &D,
+    snapshot: &LiverySnapshot<D::NodeId>,
+    target: D::NodeId,
+) -> (f32, f32)
+where
+    D: LayoutDom,
+    D::NodeId: Copy + Eq + Hash,
+{
+    fn find<D>(
+        dom: &D,
+        snapshot: &LiverySnapshot<D::NodeId>,
+        node: D::NodeId,
+        target: D::NodeId,
+        inherited: (f32, f32),
+    ) -> Option<(f32, f32)>
+    where
+        D: LayoutDom,
+        D::NodeId: Copy + Eq + Hash,
+    {
+        let own = node_transform_translation(snapshot, node);
+        let translated = (inherited.0 + own.0, inherited.1 + own.1);
+        if node == target {
+            return Some(translated);
+        }
+        for child in dom.dom_children(node) {
+            if let Some(found) = find(dom, snapshot, child, target, translated) {
+                return Some(found);
+            }
+        }
+        None
+    }
+    find(dom, snapshot, dom.document(), target, (0.0, 0.0)).unwrap_or_default()
+}
+
+fn ancestor_scroll<D>(
+    dom: &D,
+    node: D::NodeId,
+    scroll: &HashMap<D::NodeId, (f32, f32)>,
+) -> (f32, f32)
+where
+    D: LayoutDom,
+    D::NodeId: Copy + Eq + Hash,
+{
+    let mut total = (0.0, 0.0);
+    let mut current = dom.parent(node);
+    while let Some(parent) = current {
+        if let Some(offset) = scroll.get(&parent) {
+            total.0 += offset.0;
+            total.1 += offset.1;
+        }
+        current = dom.parent(parent);
+    }
+    total
+}
+
+fn snapshot_node_rect<D>(
+    dom: &D,
+    snapshot: &LiverySnapshot<D::NodeId>,
+    node: D::NodeId,
+    element_scroll: &HashMap<D::NodeId, (f32, f32)>,
+    viewport_scroll: (f32, f32),
+) -> Option<(f32, f32, f32, f32)>
+where
+    D: LayoutDom,
+    D::NodeId: Copy + Eq + Hash,
+{
+    let fragment = snapshot.fragments.get(node)?;
+    let translated = accumulated_translation(dom, snapshot, node);
+    let nested = ancestor_scroll(dom, node, element_scroll);
+    Some((
+        fragment.x + translated.0 - nested.0 - viewport_scroll.0,
+        fragment.y + translated.1 - nested.1 - viewport_scroll.1,
+        fragment.width,
+        fragment.height,
+    ))
+}
+
+fn snapshot_hit_test<D>(
+    dom: &D,
+    snapshot: &LiverySnapshot<D::NodeId>,
+    x: f32,
+    y: f32,
+    element_scroll: &HashMap<D::NodeId, (f32, f32)>,
+    viewport_scroll: (f32, f32),
+) -> Option<D::NodeId>
+where
+    D: LayoutDom,
+    D::NodeId: Copy + Eq + Hash,
+{
+    let mut hit = None;
+    walk_dom(dom, dom.document(), &mut |node| {
+        if dom.kind(node) != NodeKind::Element {
+            return;
+        }
+        let Some((left, top, width, height)) =
+            snapshot_node_rect(dom, snapshot, node, element_scroll, viewport_scroll)
+        else {
+            return;
+        };
+        if x >= left && x <= left + width && y >= top && y <= top + height {
+            // DOM paint order is sufficient for Turnstone's translate-only
+            // pane/chrome surfaces; a deeper/later element replaces its host.
+            hit = Some(node);
+        }
+    });
+    hit
+}
+
+fn clamp_scroll(wanted: (f32, f32), content: (f32, f32), viewport: (u32, u32)) -> (f32, f32) {
+    (
+        wanted
+            .0
+            .clamp(0.0, (content.0 - viewport.0 as f32).max(0.0)),
+        wanted
+            .1
+            .clamp(0.0, (content.1 - viewport.1 as f32).max(0.0)),
+    )
+}
+
+fn append_scrollbars(
+    list: &mut LiveryPaintList,
+    content: (f32, f32),
+    viewport: (u32, u32),
+    scroll: (f32, f32),
+    alpha: f32,
+) {
+    if alpha <= 0.0 {
+        return;
+    }
+    let color = paint_list_api::ColorF {
+        r: 0.55,
+        g: 0.60,
+        b: 0.70,
+        a: 0.75 * alpha.clamp(0.0, 1.0),
+    };
+    let (vw, vh) = (viewport.0 as f32, viewport.1 as f32);
+    let max_y = (content.1 - vh).max(0.0);
+    if max_y > 0.0 {
+        let thumb_h = (vh * vh / content.1).clamp(24.0, vh);
+        let y = scroll.1 / max_y * (vh - thumb_h);
+        list.push_overlay_rect(
+            paint_list_api::LayoutRect::from_origin_and_size(
+                paint_list_api::LayoutPoint::new((vw - 6.0).max(0.0), y),
+                paint_list_api::LayoutSize::new(4.0, thumb_h),
+            ),
+            color,
+        );
+    }
+    let max_x = (content.0 - vw).max(0.0);
+    if max_x > 0.0 {
+        let thumb_w = (vw * vw / content.0).clamp(24.0, vw);
+        let x = scroll.0 / max_x * (vw - thumb_w);
+        list.push_overlay_rect(
+            paint_list_api::LayoutRect::from_origin_and_size(
+                paint_list_api::LayoutPoint::new(x, (vh - 6.0).max(0.0)),
+                paint_list_api::LayoutSize::new(thumb_w, 4.0),
+            ),
+            color,
+        );
+    }
+}
+
+/// One pane's Livery/Buckram layout state, retained across frames.
 ///
-/// `IncrementalLayout` is built to be kept: it owns a persistent Stylist whose
-/// retained styles point into its rule tree, a box tree, and a shaped-text
-/// context, and [`apply`](IncrementalLayout::apply) brings all of that forward
-/// from a batch of DOM mutations rather than from nothing. Every pane here
-/// constructed a fresh one per frame and threw it away, so a pane re-cascaded,
-/// re-boxed and re-shaped its whole document to paint an unchanged screen.
-/// Measured on the Device Receipts pane (37 cards, release build), that cost
-/// **24 ms per frame**: 6.1 ms for the whole shell with no pane open, 30.4 ms
-/// with one. An unchanged pane now drains an empty mutation batch and pays
-/// paint only.
-///
-/// The shape is cambium's `frame::relayout`, which solved this first for the
-/// winit host's own document; this is that logic per pane. Rebuild remains the
-/// fallback for the three cases the incremental path cannot cover: a
-/// structural mutation, a size change, and a different stylesheet (a layout's
-/// sheets are fixed at construction, because rebuilding the Stylist under live
-/// rule nodes would dangle them).
+/// The DOM remains host-owned, so a mutation refreshes the public Livery
+/// style/fragment planes in place here. An unchanged frame retains shaping and
+/// geometry and pays paint only. Structural changes, viewport changes, and
+/// stylesheet changes count as full rebuilds.
 pub struct RetainedLayout {
-    layout: Option<IncrementalLayout<DomNodeId>>,
-    /// The viewport the retained layout was built at. A pane that changes size
-    /// reflows from scratch.
-    size: (f32, f32),
-    /// The sheet it was built under, which cannot change in place.
+    snapshot: Option<LiverySnapshot<DomNodeId>>,
+    size: (u32, u32),
     sheet: String,
-    /// How many times this pane has built a layout from scratch. The number a
-    /// regression is visible in: retention is not "it looks fast", it is "the
-    /// second frame did not rebuild", and only a count can say that.
     rebuilds: u32,
+    viewport_scroll: (f32, f32),
+    element_scroll: HashMap<DomNodeId, (f32, f32)>,
 }
 
 impl Default for RetainedLayout {
@@ -995,10 +1254,12 @@ impl Default for RetainedLayout {
 impl RetainedLayout {
     pub fn new() -> Self {
         Self {
-            layout: None,
-            size: (0.0, 0.0),
+            snapshot: None,
+            size: (0, 0),
             sheet: String::new(),
             rebuilds: 0,
+            viewport_scroll: (0.0, 0.0),
+            element_scroll: HashMap::new(),
         }
     }
 
@@ -1017,48 +1278,42 @@ impl RetainedLayout {
     /// not anyone reads them, so a frame that skipped the drain would leave
     /// the next one holding a batch it cannot attribute, and the retained
     /// layout would silently describe a tree that no longer exists.
-    fn ensure(&mut self, dom: &mut ScriptedDom, sheet: &str, w: f32, h: f32) {
+    fn ensure(&mut self, dom: &mut ScriptedDom, sheet: &str, w: u32, h: u32) {
         let mut mutations = Vec::new();
         dom.drain_mutations(&mut mutations);
-        // Only an attribute batch can be applied in place. Anything that adds,
-        // removes or replaces nodes takes the rebuild path, which is what
-        // cambium's host does for the same reason: structural invalidation is
-        // the relayout-scope path's job, not the attribute invalidator's.
         let structural = mutations
             .iter()
             .any(|m| !matches!(m, layout_dom_api::DomMutation::AttributeChanged { .. }));
-        let reusable = !structural && self.size == (w, h) && self.sheet == sheet;
-        if let Some(layout) = self.layout.as_mut()
-            && reusable
-        {
-            let applied = if mutations.is_empty() {
-                genet_layout::Applied::Unchanged
-            } else {
-                layout.apply(&*dom, &[sheet], &mutations)
-            };
-            tracing::debug!(?applied, mutations = mutations.len(), "pane relayout");
+        let resized = self.size != (w, h);
+        let resheeted = self.sheet != sheet;
+        if self.snapshot.is_some() && mutations.is_empty() && !resized && !resheeted {
             return;
         }
+        let full_rebuild = self.snapshot.is_none() || structural || resized || resheeted;
         tracing::debug!(
             structural,
             mutations = mutations.len(),
-            resized = self.size != (w, h),
-            resheeted = self.sheet != sheet,
-            "pane layout rebuilt"
+            resized,
+            resheeted,
+            full_rebuild,
+            "pane Livery layout refreshed"
         );
-        self.rebuilds += 1;
-        let mut layout = IncrementalLayout::new(&*dom, &[sheet], w, h);
-        // Carry BOTH scroll planes across a rebuild. Dropping the document
-        // offset snaps a scrolled pane back to the top whenever its content
-        // changes, which for a list pane is every refresh.
-        if let Some(previous) = self.layout.as_ref() {
-            layout.set_element_scroll(previous.element_scroll().clone());
-            let offset = previous.viewport_scroll();
-            layout.set_viewport_scroll(&*dom, offset);
+        if full_rebuild {
+            self.rebuilds = self.rebuilds.saturating_add(1);
         }
-        self.layout = Some(layout);
+        let text = self
+            .snapshot
+            .take()
+            .map_or_else(TextSystem::new, |snapshot| snapshot.text);
+        self.snapshot = Some(build_livery_snapshot(&*dom, sheet, w, h, text));
         self.size = (w, h);
         self.sheet = sheet.to_string();
+        let extent = self
+            .snapshot
+            .as_ref()
+            .expect("a refreshed snapshot is live")
+            .content_extent;
+        self.viewport_scroll = clamp_scroll(self.viewport_scroll, extent, self.size);
     }
 
     /// [`scene_from_dom`] against the retained layout.
@@ -1069,11 +1324,16 @@ impl RetainedLayout {
         w: u32,
         h: u32,
     ) -> netrender::Scene {
-        self.ensure(dom, sheet, w as f32, h as f32);
-        let layout = self.layout.as_ref().expect("ensure leaves a layout");
-        let viewport = DeviceIntSize::new(w as i32, h as i32);
-        let plist = layout.emit_paint_list(&*dom, &ScrollOffsets::<DomNodeId>::default(), viewport);
-        composite(viewport, &plist)
+        self.ensure(dom, sheet, w, h);
+        let plist = paint_snapshot(
+            &*dom,
+            self.snapshot.as_mut().expect("ensure leaves a snapshot"),
+            w,
+            h,
+            &self.element_scroll,
+            self.viewport_scroll,
+        );
+        composite(DeviceIntSize::new(w as i32, h as i32), &plist)
     }
 
     /// [`scene_from_dom_scrolled`] against the retained layout.
@@ -1085,22 +1345,26 @@ impl RetainedLayout {
         h: u32,
         scroll: &mut PaneScroll,
     ) -> netrender::Scene {
-        self.ensure(dom, sheet, w as f32, h as f32);
-        let layout = self.layout.as_mut().expect("ensure leaves a layout");
-        // Push the wanted offset only when it actually moved: the engine
-        // clamps to the real scrollable range, and asking for the offset it
-        // already holds is work with no result.
-        if layout.viewport_scroll() != scroll.offset {
-            layout.set_viewport_scroll(&*dom, scroll.offset);
-        }
-        scroll.offset = layout.viewport_scroll();
+        self.ensure(dom, sheet, w, h);
+        let snapshot = self.snapshot.as_mut().expect("ensure leaves a snapshot");
+        self.viewport_scroll = clamp_scroll(scroll.offset, snapshot.content_extent, (w, h));
+        scroll.offset = self.viewport_scroll;
         let viewport = DeviceIntSize::new(w as i32, h as i32);
-        let mut plist =
-            layout.emit_paint_list(&*dom, &ScrollOffsets::<DomNodeId>::default(), viewport);
-        let alpha = scroll.alpha();
-        if alpha > 0.0 {
-            layout.append_scrollbars(&*dom, &mut plist, &|_| alpha);
-        }
+        let mut plist = paint_snapshot(
+            &*dom,
+            snapshot,
+            w,
+            h,
+            &self.element_scroll,
+            self.viewport_scroll,
+        );
+        append_scrollbars(
+            &mut plist,
+            snapshot.content_extent,
+            (w, h),
+            self.viewport_scroll,
+            scroll.alpha(),
+        );
         composite(viewport, &plist)
     }
 
@@ -1114,10 +1378,16 @@ impl RetainedLayout {
         registry: &mut sprigging::LeafRegistry<u64>,
         cache: &mut sprigging::RenderedLeaves,
     ) -> netrender::Scene {
-        self.ensure(dom, sheet, w as f32, h as f32);
-        let layout = self.layout.as_ref().expect("ensure leaves a layout");
-        let sizes: std::collections::HashMap<u64, (f32, f32)> =
-            layout.custom_leaf_boxes().into_iter().collect();
+        self.ensure(dom, sheet, w, h);
+        let snapshot = self.snapshot.as_mut().expect("ensure leaves a snapshot");
+        let mut sizes = HashMap::new();
+        walk_dom(&*dom, dom.document(), &mut |node| {
+            if let (Some(key), Some(fragment)) =
+                (custom_leaf_key(&*dom, node), snapshot.fragments.get(node))
+            {
+                sizes.insert(key, (fragment.width, fragment.height));
+            }
+        });
         registry.render_into(
             |key| {
                 sizes.get(&key).map(|&(w, h)| sprigging::Size {
@@ -1128,13 +1398,31 @@ impl RetainedLayout {
             cache,
         );
         let viewport = DeviceIntSize::new(w as i32, h as i32);
-        let source = LeafSource(cache);
-        let plist = layout.emit_paint_list_with_leaves(
+        let mut plist = paint_snapshot(
             &*dom,
-            &ScrollOffsets::<DomNodeId>::default(),
-            viewport,
-            &source,
+            snapshot,
+            w,
+            h,
+            &self.element_scroll,
+            self.viewport_scroll,
         );
+        walk_dom(&*dom, dom.document(), &mut |node| {
+            let Some(key) = custom_leaf_key(&*dom, node) else {
+                return;
+            };
+            let Some((x, y, _, _)) = snapshot_node_rect(
+                &*dom,
+                snapshot,
+                node,
+                &self.element_scroll,
+                self.viewport_scroll,
+            ) else {
+                return;
+            };
+            if let Some(commands) = cache.get(key) {
+                plist.push_host_commands_at(paint_list_api::LayoutPoint::new(x, y), commands);
+            }
+        });
         composite(viewport, &plist)
     }
 
@@ -1152,9 +1440,15 @@ impl RetainedLayout {
         x: f32,
         y: f32,
     ) -> Option<DomNodeId> {
-        self.ensure(dom, sheet, w as f32, h as f32);
-        let layout = self.layout.as_ref().expect("ensure leaves a layout");
-        layout.hit_test(&*dom, x, y, &ScrollOffsets::<DomNodeId>::default())
+        self.ensure(dom, sheet, w, h);
+        snapshot_hit_test(
+            &*dom,
+            self.snapshot.as_ref().expect("ensure leaves a snapshot"),
+            x,
+            y,
+            &self.element_scroll,
+            self.viewport_scroll,
+        )
     }
 
     /// [`hit_test`](Self::hit_test) at a pane's scroll offset.
@@ -1174,12 +1468,17 @@ impl RetainedLayout {
         y: f32,
         scroll: &PaneScroll,
     ) -> Option<DomNodeId> {
-        self.ensure(dom, sheet, w as f32, h as f32);
-        let layout = self.layout.as_mut().expect("ensure leaves a layout");
-        if layout.viewport_scroll() != scroll.offset {
-            layout.set_viewport_scroll(&*dom, scroll.offset);
-        }
-        layout.hit_test(&*dom, x, y, &ScrollOffsets::<DomNodeId>::default())
+        self.ensure(dom, sheet, w, h);
+        let snapshot = self.snapshot.as_ref().expect("ensure leaves a snapshot");
+        self.viewport_scroll = clamp_scroll(scroll.offset, snapshot.content_extent, (w, h));
+        snapshot_hit_test(
+            &*dom,
+            snapshot,
+            x,
+            y,
+            &self.element_scroll,
+            self.viewport_scroll,
+        )
     }
 }
 
@@ -1213,24 +1512,18 @@ pub fn scene_from_dom_scrolled(
     h: u32,
     scroll: &mut PaneScroll,
 ) -> netrender::Scene {
-    let mut layout = IncrementalLayout::new(dom, &[sheet], w as f32, h as f32);
-    // The engine clamps to the real scrollable range; read the result back so
-    // the retained offset can never drift past the content.
-    layout.set_viewport_scroll(dom, scroll.offset);
-    scroll.offset = layout.viewport_scroll();
-    let elements = ScrollOffsets::<DomNodeId>::default();
+    let mut snapshot = build_livery_snapshot(dom, sheet, w, h, TextSystem::new());
+    scroll.offset = clamp_scroll(scroll.offset, snapshot.content_extent, (w, h));
     let viewport = DeviceIntSize::new(w as i32, h as i32);
-    let mut plist = layout.emit_paint_list(dom, &elements, viewport);
-    let alpha = scroll.alpha();
-    if alpha > 0.0 {
-        layout.append_scrollbars(dom, &mut plist, &|_| alpha);
-    }
-    let layers = [CompositeLayer {
-        commands: plist.commands(),
-        fonts: plist.fonts(),
-        images: plist.images(),
-    }];
-    composite_paint_layers(viewport, &layers).scene
+    let mut plist = paint_snapshot(dom, &mut snapshot, w, h, &HashMap::new(), scroll.offset);
+    append_scrollbars(
+        &mut plist,
+        snapshot.content_extent,
+        (w, h),
+        scroll.offset,
+        scroll.alpha(),
+    );
+    composite(viewport, &plist)
 }
 
 /// Hit-test a pane at its scroll offset.
@@ -1248,9 +1541,9 @@ pub fn hit_test_scrolled(
     y: f32,
     scroll: &PaneScroll,
 ) -> Option<DomNodeId> {
-    let mut layout = IncrementalLayout::new(dom, &[sheet], w as f32, h as f32);
-    layout.set_viewport_scroll(dom, scroll.offset);
-    layout.hit_test(dom, x, y, &ScrollOffsets::<DomNodeId>::default())
+    let snapshot = build_livery_snapshot(dom, sheet, w, h, TextSystem::new());
+    let offset = clamp_scroll(scroll.offset, snapshot.content_extent, (w, h));
+    snapshot_hit_test(dom, &snapshot, x, y, &HashMap::new(), offset)
 }
 
 /// **One-shot.** This builds a layout, uses it once and drops it, which is
@@ -1259,16 +1552,104 @@ pub fn hit_test_scrolled(
 /// re-shapes its whole document to draw an unchanged screen. Panes go
 /// through [`RetainedLayout`] instead.
 pub fn scene_from_dom(dom: &ScriptedDom, sheet: &str, w: u32, h: u32) -> netrender::Scene {
-    let layout = IncrementalLayout::new(dom, &[sheet], w as f32, h as f32);
-    let scroll = ScrollOffsets::<DomNodeId>::default();
+    let mut snapshot = build_livery_snapshot(dom, sheet, w, h, TextSystem::new());
     let viewport = DeviceIntSize::new(w as i32, h as i32);
-    let plist = layout.emit_paint_list(dom, &scroll, viewport);
-    let layers = [CompositeLayer {
-        commands: plist.commands(),
-        fonts: plist.fonts(),
-        images: plist.images(),
-    }];
-    composite_paint_layers(viewport, &layers).scene
+    let plist = paint_snapshot(dom, &mut snapshot, w, h, &HashMap::new(), (0.0, 0.0));
+    composite(viewport, &plist)
+}
+
+fn livery_paint_list(dom: &ScriptedDom, sheet: &str, w: u32, h: u32) -> LiveryPaintList {
+    let mut snapshot = build_livery_snapshot(dom, sheet, w, h, TextSystem::new());
+    paint_snapshot(dom, &mut snapshot, w, h, &HashMap::new(), (0.0, 0.0))
+}
+
+pub(crate) fn node_rect(
+    dom: &ScriptedDom,
+    node: DomNodeId,
+    sheet: &str,
+    w: u32,
+    h: u32,
+) -> Option<(f32, f32, f32, f32)> {
+    let snapshot = build_livery_snapshot(dom, sheet, w, h, TextSystem::new());
+    snapshot_node_rect(dom, &snapshot, node, &HashMap::new(), (0.0, 0.0))
+}
+
+pub(crate) fn hit_test(
+    dom: &ScriptedDom,
+    sheet: &str,
+    w: u32,
+    h: u32,
+    x: f32,
+    y: f32,
+) -> Option<DomNodeId> {
+    let snapshot = build_livery_snapshot(dom, sheet, w, h, TextSystem::new());
+    snapshot_hit_test(dom, &snapshot, x, y, &HashMap::new(), (0.0, 0.0))
+}
+
+/// A borrowed DOM view re-rooted at one window root. This remains a host
+/// concern: Livery sees the neutral `LayoutDom`, while Turnstone decides which
+/// member of its forest is the document for this window.
+struct SubtreeView<'a, D: LayoutDom> {
+    dom: &'a D,
+    root: D::NodeId,
+}
+
+impl<'a, D: LayoutDom> SubtreeView<'a, D> {
+    fn new(dom: &'a D, root: D::NodeId) -> Self {
+        Self { dom, root }
+    }
+}
+
+impl<D: LayoutDom> LayoutDom for SubtreeView<'_, D> {
+    type NodeId = D::NodeId;
+
+    fn document(&self) -> Self::NodeId {
+        self.root
+    }
+
+    fn parent(&self, id: Self::NodeId) -> Option<Self::NodeId> {
+        (id != self.root).then(|| self.dom.parent(id)).flatten()
+    }
+
+    fn prev_sibling(&self, id: Self::NodeId) -> Option<Self::NodeId> {
+        (id != self.root)
+            .then(|| self.dom.prev_sibling(id))
+            .flatten()
+    }
+
+    fn next_sibling(&self, id: Self::NodeId) -> Option<Self::NodeId> {
+        (id != self.root)
+            .then(|| self.dom.next_sibling(id))
+            .flatten()
+    }
+
+    fn dom_children(&self, id: Self::NodeId) -> impl Iterator<Item = Self::NodeId> + '_ {
+        self.dom.dom_children(id)
+    }
+
+    fn kind(&self, id: Self::NodeId) -> NodeKind {
+        self.dom.kind(id)
+    }
+
+    fn opaque_id(&self, id: Self::NodeId) -> u64 {
+        self.dom.opaque_id(id)
+    }
+
+    fn element_name(&self, id: Self::NodeId) -> Option<&QualName> {
+        self.dom.element_name(id)
+    }
+
+    fn attribute(&self, id: Self::NodeId, ns: &Namespace, local: &LocalName) -> Option<&str> {
+        self.dom.attribute(id, ns, local)
+    }
+
+    fn attributes(&self, id: Self::NodeId) -> impl Iterator<Item = AttributeView<'_>> + '_ {
+        self.dom.attributes(id)
+    }
+
+    fn text(&self, id: Self::NodeId) -> Option<&str> {
+        self.dom.text(id)
+    }
 }
 
 /// [`scene_from_dom`] re-rooted at `root`: only that subtree lays out (at its
@@ -1288,29 +1669,56 @@ pub fn scene_from_subtree(
     w: u32,
     h: u32,
 ) -> netrender::Scene {
-    let view = genet_layout::SubtreeView::new(dom, root);
-    let layout = IncrementalLayout::new(&view, &[sheet], w as f32, h as f32);
-    let scroll = ScrollOffsets::<DomNodeId>::default();
+    let view = SubtreeView::new(dom, root);
+    let mut snapshot = build_livery_snapshot(&view, sheet, w, h, TextSystem::new());
     let viewport = DeviceIntSize::new(w as i32, h as i32);
-    let plist = layout.emit_paint_list(&view, &scroll, viewport);
-    let layers = [CompositeLayer {
-        commands: plist.commands(),
-        fonts: plist.fonts(),
-        images: plist.images(),
-    }];
-    composite_paint_layers(viewport, &layers).scene
+    let plist = paint_snapshot(&view, &mut snapshot, w, h, &HashMap::new(), (0.0, 0.0));
+    composite(viewport, &plist)
 }
 
-/// Adapts sprigging's rendered leaf buffers to genet-layout's paint-list source
-/// (the orphan-rule-legal home: this crate owns the newtype). The same shape
-/// meerkat's `genet_render` proved; turnstone re-owns it rather than importing
-/// meerkat, which turnstone exists to obviate.
-struct LeafSource<'a>(&'a sprigging::RenderedLeaves);
+pub(crate) fn hit_test_subtree(
+    dom: &ScriptedDom,
+    root: DomNodeId,
+    sheet: &str,
+    w: u32,
+    h: u32,
+    x: f32,
+    y: f32,
+) -> Option<DomNodeId> {
+    let view = SubtreeView::new(dom, root);
+    let snapshot = build_livery_snapshot(&view, sheet, w, h, TextSystem::new());
+    snapshot_hit_test(&view, &snapshot, x, y, &HashMap::new(), (0.0, 0.0))
+}
 
-impl genet_layout::LeafPaintSource for LeafSource<'_> {
-    fn leaf_commands(&self, key: u64) -> Option<&[paint_list_api::PaintCmd]> {
-        self.0.get(key)
+pub(crate) fn subtree_node_rect(
+    dom: &ScriptedDom,
+    root: DomNodeId,
+    node: DomNodeId,
+    sheet: &str,
+    w: u32,
+    h: u32,
+) -> Option<(f32, f32, f32, f32)> {
+    let view = SubtreeView::new(dom, root);
+    let snapshot = build_livery_snapshot(&view, sheet, w, h, TextSystem::new());
+    snapshot_node_rect(&view, &snapshot, node, &HashMap::new(), (0.0, 0.0))
+}
+
+fn custom_leaf_key<D>(dom: &D, node: D::NodeId) -> Option<u64>
+where
+    D: LayoutDom,
+    D::NodeId: Copy,
+{
+    if dom.kind(node) != NodeKind::Element
+        || !matches!(
+            dom.element_name(node)?.local.as_ref(),
+            "custom-leaf" | "chisel-leaf"
+        )
+    {
+        return None;
     }
+    dom.attribute(node, &Namespace::default(), &LocalName::from("key"))?
+        .parse()
+        .ok()
 }
 
 /// [`scene_from_dom`] plus custom-paint leaves (the Gloss minimap swatch): size
@@ -1332,9 +1740,15 @@ pub fn scene_from_dom_with_leaves(
     registry: &mut sprigging::LeafRegistry<u64>,
     cache: &mut sprigging::RenderedLeaves,
 ) -> netrender::Scene {
-    let layout = IncrementalLayout::new(dom, &[sheet], w as f32, h as f32);
-    let sizes: std::collections::HashMap<u64, (f32, f32)> =
-        layout.custom_leaf_boxes().into_iter().collect();
+    let mut snapshot = build_livery_snapshot(dom, sheet, w, h, TextSystem::new());
+    let mut sizes = HashMap::new();
+    walk_dom(dom, dom.document(), &mut |node| {
+        if let (Some(key), Some(fragment)) =
+            (custom_leaf_key(dom, node), snapshot.fragments.get(node))
+        {
+            sizes.insert(key, (fragment.width, fragment.height));
+        }
+    });
     registry.render_into(
         |key| {
             sizes.get(&key).map(|&(w, h)| sprigging::Size {
@@ -1344,16 +1758,22 @@ pub fn scene_from_dom_with_leaves(
         },
         cache,
     );
-    let scroll = ScrollOffsets::<DomNodeId>::default();
     let viewport = DeviceIntSize::new(w as i32, h as i32);
-    let source = LeafSource(cache);
-    let plist = layout.emit_paint_list_with_leaves(dom, &scroll, viewport, &source);
-    let layers = [CompositeLayer {
-        commands: plist.commands(),
-        fonts: plist.fonts(),
-        images: plist.images(),
-    }];
-    composite_paint_layers(viewport, &layers).scene
+    let mut plist = paint_snapshot(dom, &mut snapshot, w, h, &HashMap::new(), (0.0, 0.0));
+    walk_dom(dom, dom.document(), &mut |node| {
+        let Some(key) = custom_leaf_key(dom, node) else {
+            return;
+        };
+        let Some((x, y, _, _)) =
+            snapshot_node_rect(dom, &snapshot, node, &HashMap::new(), (0.0, 0.0))
+        else {
+            return;
+        };
+        if let Some(commands) = cache.get(key) {
+            plist.push_host_commands_at(paint_list_api::LayoutPoint::new(x, y), commands);
+        }
+    });
+    composite(viewport, &plist)
 }
 
 /// The host stylesheet for cambium's classes (rung 5 slice D). cambium ships no
@@ -1476,11 +1896,7 @@ mod tests {
                 dom.append_child(el, t);
             }
             dom.append_child(root, el);
-            let layout = IncrementalLayout::new(&dom, &[CHROME_SHEET], 1024.0, 600.0);
-            let scroll = ScrollOffsets::<DomNodeId>::default();
-            let viewport = DeviceIntSize::new(1024, 600);
-            layout
-                .emit_paint_list(&dom, &scroll, viewport)
+            livery_paint_list(&dom, CHROME_SHEET, 1024, 600)
                 .commands()
                 .len()
         };
@@ -1506,11 +1922,7 @@ mod tests {
             dom.append_child(inner, t2);
             dom.append_child(card, inner);
             dom.append_child(root, card);
-            let layout = IncrementalLayout::new(&dom, &[CHROME_SHEET], 1024.0, 600.0);
-            let scroll = ScrollOffsets::<DomNodeId>::default();
-            let viewport = DeviceIntSize::new(1024, 600);
-            layout
-                .emit_paint_list(&dom, &scroll, viewport)
+            livery_paint_list(&dom, CHROME_SHEET, 1024, 600)
                 .commands()
                 .len()
         };
@@ -1738,16 +2150,19 @@ mod scroll_tests {
     #[test]
     fn a_scrolled_pane_emits_its_bar() {
         let dom = tall_dom();
-        let mut layout = IncrementalLayout::new(&dom, &[CAMBIUM_SHEET], 400.0, 300.0);
-        layout.set_viewport_scroll(&dom, (0.0, 200.0));
-        let viewport = DeviceIntSize::new(400, 300);
-        let elements = ScrollOffsets::<DomNodeId>::default();
-
-        let plain = layout.emit_paint_list(&dom, &elements, viewport);
+        let mut snapshot = build_livery_snapshot(&dom, CAMBIUM_SHEET, 400, 300, TextSystem::new());
+        let plain = paint_snapshot(&dom, &mut snapshot, 400, 300, &HashMap::new(), (0.0, 200.0));
         let before = plain.commands().len();
 
-        let mut with_bar = layout.emit_paint_list(&dom, &elements, viewport);
-        layout.append_scrollbars(&dom, &mut with_bar, &|_| 1.0);
+        let mut with_bar =
+            paint_snapshot(&dom, &mut snapshot, 400, 300, &HashMap::new(), (0.0, 200.0));
+        append_scrollbars(
+            &mut with_bar,
+            snapshot.content_extent,
+            (400, 300),
+            (0.0, 200.0),
+            1.0,
+        );
         assert!(
             with_bar.commands().len() > before,
             "the bar adds paint commands: {} -> {}",
@@ -1755,8 +2170,15 @@ mod scroll_tests {
             with_bar.commands().len(),
         );
 
-        let mut hidden = layout.emit_paint_list(&dom, &elements, viewport);
-        layout.append_scrollbars(&dom, &mut hidden, &|_| 0.0);
+        let mut hidden =
+            paint_snapshot(&dom, &mut snapshot, 400, 300, &HashMap::new(), (0.0, 200.0));
+        append_scrollbars(
+            &mut hidden,
+            snapshot.content_extent,
+            (400, 300),
+            (0.0, 200.0),
+            0.0,
+        );
         assert_eq!(
             hidden.commands().len(),
             before,
@@ -1808,7 +2230,7 @@ mod retained_layout_tests {
     #[test]
     fn repainting_an_unchanged_pane_does_not_rebuild_its_layout() {
         // The whole point, stated as a count. Every pane used to construct a
-        // fresh IncrementalLayout per paint, which measured 24 ms a frame on
+        // fresh layout state per paint, which measured 24 ms a frame on
         // the Device Receipts pane; a regression here is that cost returning.
         let mut dom = pane_dom(40);
         let mut retained = RetainedLayout::new();

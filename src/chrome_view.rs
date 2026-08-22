@@ -32,8 +32,7 @@ use cambium::{
     AnyView, DomHandle, GenetCtx, GenetElement, GenetMultiRunner, PointerClick, ProjectionId,
     TextInput, caret_field_children, el, on_click,
 };
-use genet_layout::{IncrementalLayout, ScrollOffsets, SubtreeView};
-use genet_scripted_dom::{NodeId, ScriptedDom};
+use genet_scripted_dom::ScriptedDom;
 
 use crate::app::App;
 use crate::panes::{ChromeEdge, ChromePlacement};
@@ -312,7 +311,7 @@ impl ChromeSurfaces {
     }
 
     /// One window's chrome scene: ITS window-root laid out at its own size
-    /// through a per-root [`SubtreeView`] cascade — the true forest-dom F2
+    /// through a per-root Livery/Buckram subtree cascade — the true forest-dom F2
     /// path. (This replaced the `display: none` visibility flip the chrome
     /// bridged with while genet-stylo's sharing cache panicked on subtree
     /// roots; the fix published as 0.19.1 and the flip is gone.)
@@ -340,11 +339,8 @@ impl ChromeSurfaces {
             let Some(root) = self.runner.window_root(id) else {
                 return Vec::new();
             };
-            let view = SubtreeView::new(&*dom, root);
             let sheet = crate::ui::chrome_sheet(&self.appearance);
-            let layout = IncrementalLayout::new(&view, &[&sheet], w as f32, h as f32);
-            let scroll = ScrollOffsets::<NodeId>::default();
-            layout.hit_test(&view, x, y, &scroll)
+            crate::ui::hit_test_subtree(&dom, root, &sheet, w, h, x, y)
         };
         match hit {
             Some(node) => self
@@ -477,20 +473,15 @@ mod tests {
                 .runner
                 .window_root(chrome.projections[0])
                 .expect("the primary window-root exists");
-            let view = SubtreeView::new(&*dom, root);
             let sheet = crate::ui::chrome_sheet(&chrome.appearance);
-            let layout = IncrementalLayout::new(&view, &[&sheet], 1024.0, 600.0);
             let row = dom
                 .all_with_class(dom.document(), "omni-row-sel")
                 .into_iter()
                 .next()
                 .expect("a selected row is drawn");
-            let (rx, ry, rw, rh) = layout.absolute_rect(&view, row).expect("row has a rect");
-            // The card is transform-positioned; fragments omit transforms
-            // (paint-tier), so add the accumulated translate the way
-            // hit_test sees the pixels.
-            let (tx, ty) = layout.accumulated_translate(&view, row);
-            (rx + tx + rw / 2.0, ry + ty + rh / 2.0)
+            let (rx, ry, rw, rh) = crate::ui::subtree_node_rect(&dom, root, row, &sheet, 1024, 600)
+                .expect("row has a rect");
+            (rx + rw / 2.0, ry + rh / 2.0)
         };
         let intents = chrome.click(0, x, y, 1024, 600);
         assert_eq!(intents, vec![ChromeIntent::CommitRow(0)]);
@@ -529,16 +520,14 @@ mod tests {
                 .runner
                 .window_root(chrome.projections[0])
                 .expect("the primary window-root exists");
-            let view = SubtreeView::new(&*dom, root);
             let sheet = crate::ui::chrome_sheet(&chrome.appearance);
-            let layout = IncrementalLayout::new(&view, &[&sheet], 1024.0, 320.0);
             let row = dom
                 .all_with_class(dom.document(), "omni-row-review")
                 .into_iter()
                 .next()
                 .expect("the review has its wrapping class");
-            let (rx, ry, rw, rh) = layout.absolute_rect(&view, row).expect("review has a rect");
-            let (tx, ty) = layout.accumulated_translate(&view, row);
+            let (rx, ry, rw, rh) = crate::ui::subtree_node_rect(&dom, root, row, &sheet, 1024, 320)
+                .expect("review has a rect");
             assert!(
                 rw <= CARD_W,
                 "the wrapped review stays within the card: {rw}px"
@@ -553,13 +542,13 @@ mod tests {
                 .into_iter()
                 .next()
                 .expect("the omnibar card exists");
-            let (_, cy, _, ch) = layout.absolute_rect(&view, card).expect("card has a rect");
-            let (_, cty) = layout.accumulated_translate(&view, card);
+            let (_, cy, _, ch) = crate::ui::subtree_node_rect(&dom, root, card, &sheet, 1024, 320)
+                .expect("card has a rect");
             assert!(
-                cy + cty + ch <= 320.0 - 16.0,
+                cy + ch <= 320.0 - 16.0,
                 "the row budget leaves the expanded card inside the viewport"
             );
-            (rx + tx + rw / 2.0, ry + ty + rh / 2.0)
+            (rx + rw / 2.0, ry + rh / 2.0)
         };
         assert_eq!(
             chrome.click(0, x, y, 1024, 320),

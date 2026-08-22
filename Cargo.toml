@@ -141,10 +141,9 @@ app-host = { git = "https://github.com/merely-made/mere.git", branch = "main", o
 wasmtime = { version = "45", optional = true }
 genet-extract = { git = "https://github.com/merely-made/genet.git", branch = "main" }
 genet-static-dom = { git = "https://github.com/merely-made/genet.git", branch = "main" }
-# `linked_icon_href` (the page's declared `<link rel=icon>`) + image decode
-# for the fetched favicon bytes the canvas face paints; also the chrome
-# layer's layout engine (the omnibar document).
-genet-layout = { git = "https://github.com/merely-made/genet.git", branch = "main" }
+# Turnstone owns pane retention and composition; Genet supplies the clean-room
+# Livery cascade/Buckram layout state.
+genet-livery = { git = "https://github.com/merely-made/genet.git", branch = "main" }
 # The chrome layer's document substrate + name types + paint vocabulary
 # (rung 3: the omnibar is turnstone's first DOM surface, composited above the
 # canvas by the layered present).
@@ -183,7 +182,7 @@ weld-engine = { git = "https://github.com/merely-made/genet.git", branch = "main
 winit = "0.30.13"
 # PNG encode for the scenario lane's GPU self-capture (composed-frame
 # readback -> receipt).
-image = { version = "0.25", default-features = false, features = ["png", "jpeg"] }
+image = { version = "0.25", default-features = false, features = ["avif", "bmp", "gif", "ico", "jpeg", "png", "webp"] }
 # The dropped-sprite data-URI (file drop -> node face).
 base64 = "0.22"
 wgpu = { version = "30", default-features = false, features = ["std", "wgsl"] }
@@ -246,12 +245,8 @@ p2panda-net = { git = "https://github.com/mark-ik/p2panda.git", branch = "main" 
 p2panda-store = { git = "https://github.com/mark-ik/p2panda.git", branch = "main" }
 p2panda-stream = { git = "https://github.com/mark-ik/p2panda.git", branch = "main" }
 p2panda-sync = { git = "https://github.com/mark-ik/p2panda.git", branch = "main" }
-# stylo_taffy must be patched for the same reason: the registry copy names
-# crates.io stylo, dragging a second Stylo in. Genet vendors one that git-deps
-# genet-stylo. See genet's 2026-07-12 ring-3 fork-rename plan.
-stylo_taffy = { git = "https://github.com/merely-made/genet.git", branch = "main" }
-# genet-layout requires genet's vendored taffy fork (float-layout patches on
-# stable 0.12.1), not on crates.io.
+# Livery/Buckram require Genet's current taffy fork. The retired Stylo adapter
+# left the graph with genet-layout and is deliberately not patched here.
 taffy = { git = "https://github.com/merely-made/genet.git", branch = "main" }
 # ipc-channel: in-process fork vendored in genet (single-process default,
 # unifies gpu-allocator's windows pin with wgpu-hal's).

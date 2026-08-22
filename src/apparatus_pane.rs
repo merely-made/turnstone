@@ -27,9 +27,7 @@ use cambium::{
     AnyView, DomHandle, GenetAppRunner, GenetCtx, GenetElement, PointerClick, RadioGroup, el, lens,
     radio_group,
 };
-use genet_layout::{IncrementalLayout, ScrollOffsets};
-use genet_scripted_dom::{NodeId, ScriptedDom};
-use layout_dom_api::LayoutDom;
+use genet_scripted_dom::ScriptedDom;
 
 use crate::app::App;
 
@@ -231,7 +229,6 @@ mod tests {
         // Resolve the livery option's centre off the laid-out DOM.
         let (x, y) = {
             let dom = pane.dom.borrow();
-            let layout = IncrementalLayout::new(&*dom, &[crate::ui::CAMBIUM_SHEET], 400.0, 600.0);
             let radio = dom
                 .all_with_class(dom.document(), "radio")
                 .into_iter()
@@ -240,7 +237,8 @@ mod tests {
                         .any(|c| dom.text(c).is_some_and(|t| t.contains("livery")))
                 })
                 .expect("the livery option is drawn");
-            let (rx, ry, rw, rh) = layout.absolute_rect(&*dom, radio).unwrap();
+            let (rx, ry, rw, rh) =
+                crate::ui::node_rect(&dom, radio, crate::ui::CAMBIUM_SHEET, 400, 600).unwrap();
             (rx + rw / 2.0, ry + rh / 2.0)
         };
         let intents = pane.click(x, y, 400, 600);

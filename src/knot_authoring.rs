@@ -19,8 +19,7 @@ use cambium::{
     AnyView, DomHandle, GenetAppRunner, GenetCtx, GenetElement, Key, KeyEvent, PointerClick,
     StyleRange, button, el, lens, styled_textarea,
 };
-use genet_layout::{IncrementalLayout, ScrollOffsets};
-use genet_scripted_dom::{NodeId, ScriptedDom};
+use genet_scripted_dom::ScriptedDom;
 use graphshell::client::{ResolvedContent, ResolvedPresentation, RetainedEndpointSession};
 use graphshell::protocol::{
     AdvertisedAction, CapabilityProfile, DerivedTextV1, EDITABLE_TEXT_SAVE_INTENT, EditableTextV1,
@@ -2207,8 +2206,7 @@ impl DocumentSession<Scene> for KnotDocumentSession {
         let hit = {
             let dom = self.dom.borrow();
             let sheet = format!("{} {}", crate::ui::CAMBIUM_SHEET, KNOT_SHEET);
-            let layout = IncrementalLayout::new(&*dom, &[&sheet], size.0 as f32, size.1 as f32);
-            layout.hit_test(&*dom, x, y, &ScrollOffsets::<NodeId>::default())
+            crate::ui::hit_test(&dom, &sheet, size.0, size.1, x, y)
         };
         let Some(node) = hit else {
             return SessionClick::Miss;

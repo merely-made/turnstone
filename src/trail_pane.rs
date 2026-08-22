@@ -19,8 +19,7 @@ use cambium::{
     AnyView, DomHandle, GenetAppRunner, GenetCtx, GenetElement, ListRow, ListSection, PointerClick,
     el, sectioned_list,
 };
-use genet_layout::{IncrementalLayout, ScrollOffsets};
-use genet_scripted_dom::{NodeId, ScriptedDom};
+use genet_scripted_dom::ScriptedDom;
 
 use crate::app::App;
 use crate::trail_view::{RowAction, TrailRow, trail_rows};

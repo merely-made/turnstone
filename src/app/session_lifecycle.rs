@@ -909,7 +909,7 @@ impl App {
             let Some(bytes) = session::load_image_blob(&sdir, &image.hex()) else {
                 continue;
             };
-            let Some(decoded) = genet_layout::decode_image_bytes(&bytes) else {
+            let Some(decoded) = crate::browse::decode_image_bytes(&bytes) else {
                 continue;
             };
             self.graph_runtimes.register_resolved_image(

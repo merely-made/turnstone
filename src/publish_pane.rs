@@ -8,9 +8,7 @@ use cambium::{
     AnyView, DomHandle, GenetAppRunner, GenetCtx, GenetElement, TextInput, clickable, el, lens,
     text, text_field_typed,
 };
-use genet_layout::{IncrementalLayout, ScrollOffsets};
-use genet_scripted_dom::{NodeId, ScriptedDom};
-use layout_dom_api::LayoutDom;
+use genet_scripted_dom::ScriptedDom;
 
 use crate::publish_service::{KnotPublishingService, PublishSnapshot};
 
