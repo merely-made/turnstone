@@ -21,6 +21,13 @@ the captures.
   retained content surface. See the [capture](gemini-inline-image/01_inline_image.png),
   [wire receipt](gemini-inline-image/server.done), and
   [clean-archive receipt](gemini-inline-image/clean-archive.done).
+- **Gemini download custody:** a local TLS capsule served a 13-byte binary
+  response. Turnstone retained the exact bytes, deposited them in the session
+  representation store, persisted the node's content hash and completed
+  custody facet, wrote one collision-safe `archive.bin`, and projected the
+  record through Steward. See the [capture](gemini-download/01_download_steward.png),
+  [wire receipt](gemini-download/server.done), [custody receipt](gemini-download/custody.done),
+  and [focused-test receipt](download-tests.done).
 - **Titan mutation:** the composer accepted a dropped 19-byte LF body,
   changed MIME to `text/plain`, masked the optional token, required literal
   `send`, issued one actor command, and received status 20. The server receipt
@@ -75,6 +82,14 @@ lockless archive of Turnstone `c3994f7`, resolving Genet `e911b348` and Mere
 `52581CB03354896CB3635517C0B73A35499CB1EB177204ABFFCBB67FDA560775`.
 The server receipt proves separate page and PNG requests; the app-authored
 capture proves the fetched pixels reached the content surface.
+
+The download case is also local and deterministic. Its clean detached binary
+was built from Turnstone `372f156`, resolving Genet `e911b348` and Mere
+`c6cb48b4`; its SHA-256 is
+`51173E8B23B57746100C5514B591891DD25845557D386F6D91CA9A06099E0A07`.
+The server receipt proves the binary response, the custody receipt independently
+checks its bytes and persisted graph/facet/store evidence, and the app-authored
+capture proves Steward rendered that durable record.
 
 ## Dependency defect closed
 

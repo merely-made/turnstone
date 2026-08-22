@@ -1,0 +1,5 @@
+RESULT ok
+protocol=gemini
+target=gemini://127.0.0.1:19653/archive.bin
+response=20 application/octet-stream
+body-bytes=13

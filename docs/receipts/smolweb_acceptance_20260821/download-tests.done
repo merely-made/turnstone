@@ -1,0 +1,16 @@
+RESULT ok focused-download-units
+command=cargo test --manifest-path C:\Users\mark_\Code\repos\turnstone\Cargo.toml --lib download --config profile.test.debug=0 -- --nocapture
+passed=6
+failed=0
+filtered=306
+
+RESULT partial full-library
+command=cargo test --manifest-path C:\Users\mark_\Code\repos\turnstone\Cargo.toml --lib --config profile.test.debug=0
+passed=304
+failed=3
+ignored=5
+download-failures=0
+unrelated-failures=a11y::route_table::a_routed_selection_changes_the_app_and_a_miss_says_so,a11y::route_table::every_graph_member_is_reachable_by_route_when_an_orrery_exists,place::lanes::tests::a_partition_heals_and_both_sides_converge
+partition-heal-isolated-rerun=failed after 60 seconds
+
+note=The ordinary debug-info link hit MSVC LNK1140; profile.test.debug=0 is the linker-prescribed no-PDB verification lane.

@@ -20,13 +20,14 @@ sets.
 > `=:` lines lower to a typed body-submission interaction using that same
 > composer. Writes are separate actor commands: they are neither replayed as
 > fetches nor followed through redirects inside the mutation. Linked raster
-> images now render inline through the browser fetch actor. The remaining item
-> 6 work is inline audio, downloads, and streaming render.
+> images now render inline through the browser fetch actor. Binary and explicit
+> attachment responses now enter durable download custody and project through
+> Steward. The remaining item 6 work is inline audio and streaming render.
 >
 > **Acceptance, 2026-08-21:** live Gemini browsing and status-10 input, a local
-> Gemini inline image, local Titan and Spartan mutations, and Livery-to-Knot
-> source evidence all have checked-in `RESULT ok` receipts and headed captures
-> in
+> Gemini inline image, local Gemini download custody, local Titan and Spartan
+> mutations, and Livery-to-Knot source evidence all have checked-in `RESULT ok`
+> receipts and headed captures in
 > [`docs/receipts/smolweb_acceptance_20260821`](../docs/receipts/smolweb_acceptance_20260821/README.md).
 >
 > **Dependency cutover, 2026-08-21:** the obsolete `genet-layout` and
@@ -75,7 +76,7 @@ not concepts.
 | Find in page | No surface. The structural read the Inspector already does is the index a find would walk | Absent |
 | Zoom | Per-window scale is the host's; a per-node text-scale facet fits the Apparatus | Absent as a control |
 | Save page / print | The frozen realization: `graphshell_client::frozen` renders a scene as navigable semantics (DOM tree, AccessKit tree, HTML table), and a captured representation attaches to the node rather than becoming a file in a folder | Machinery landed in mere (B1); no turnstone surface |
-| Downloads UI | The contract is ruled: a completed download keeps its source URL and response metadata, the bytes attach as a representation, and the destination path is not the identity | Ruled, unbuilt |
+| Downloads UI | A completed download keeps its source URL and response metadata, deposits exact bytes in the session representation store, attaches their hash to the node, and records the collision-safe visible destination as metadata. Steward projects the durable custody record | Live; destination follows `TURNSTONE_DOWNLOAD_DIR`, the OS downloads directory, then the profile fallback |
 
 ### Collections
 
@@ -100,7 +101,7 @@ not concepts.
 | --- | --- | --- |
 | Profiles | Personae: sealed, device-carried; the roster is a view, not an address book | Live and wired |
 | Permission prompts | `web_policy.rs` plus the participant gate (one gate for scripts/wasm/peers/agents) and servitor petitions | Gate designed and partially live; per-origin prompt UI unbuilt |
-| Settings | The Apparatus / Inspector / Steward split, plus the Settings pane over the provider; configurability-over-defaults is standing doctrine, and changes are live swaps, never restart-required | Live; Steward is a placeholder |
+| Settings | The Apparatus / Inspector / Steward split, plus the Settings pane over the provider; configurability-over-defaults is standing doctrine, and changes are live swaps, never restart-required | Live; Steward now has its first durable projection, download custody |
 | Extensions | Three lanes by trust: rhai command packs (host automation), Wasm component `DocumentScript` (untrusted portable), register-mod-loader (the registry seam) | Lanes ruled in mere; no turnstone extension surface |
 | Devtools | The Inspector plus probe snapshots plus the trace diagnostics (`CAMBIUM_HOST_KEY_TRACE`) | Partial by design; a network pane over the fetch actor is unnamed |
 
@@ -248,8 +249,12 @@ Individually small, collectively what "pleasant" means:
   count/byte/dimension limits, and paints through the shared image sidecar.
   The image remains a clickable link. Inline MP3/Ogg/WAV playback is still
   open.
-- Downloads: Geopard's one boast. The fetch actor can stream; there is no
-  save-to-disk surface or progress affordance.
+- Downloads: closed 2026-08-21. Binary and explicit attachment responses keep
+  their exact bytes through the fetch actor, deposit them in the session's
+  Muniment store, attach the content hash to the graph node, and write a
+  collision-safe visible copy. Source, MIME, disposition, byte count, status,
+  destination, and hash persist as one custody facet projected by Steward.
+  Fetch-time progress remains part of the streaming-render work.
 - Streaming render: Geopard streams pages as bytes arrive, which is what
   makes Kb/s connections livable. Our fetch actor completes then renders.
 
@@ -295,3 +300,7 @@ the native host's answers to all of them.
 - A gemtext image link issues a second actor request, paints the decoded image
   inline, remains followable, and leaves a bounded placeholder if fetch or
   decode fails.
+- A binary Gemini response deposits exact bytes in the session representation
+  store, attaches their hash to its source node, writes one collision-safe file
+  in the configured destination, survives session persistence, and appears in
+  Steward with completed or failed custody status.

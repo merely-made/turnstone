@@ -1,0 +1,7 @@
+RESULT ok
+destination=C:\t\turnstone-smolweb-download-acceptance-372f156\gemini-download\downloads\archive.bin
+bytes=13
+sha256=0E70E420B7E20A2B3EB4BE618741035EA4A8168D1DD8DA77788A0FB3A784137A
+representation-store=C:\t\turnstone-smolweb-download-acceptance-372f156\gemini-download\profile\sessions\20be4361-f8d4-4532-bb62-e8ac54ef580c\representations.redb
+graph-content-hash=true
+facet-status=completed
