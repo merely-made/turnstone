@@ -10,7 +10,9 @@ wait
 assert content-live
 assert snap focused ~ field-note
 assert text Resident V1
-click role:textbox
+# This receipt's headed viewport is 1024x600. Probe's generic selector currently
+# re-lays out this DOM and lands beyond the textarea that Turnstone painted.
+click-at 480 65
 key end
 key space
 insert headed edit
