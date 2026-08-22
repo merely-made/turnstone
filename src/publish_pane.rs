@@ -342,6 +342,7 @@ fn now_ms() -> u64 {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use layout_dom_api::LayoutDom;
 
     #[test]
     fn unavailable_panel_is_an_honest_configured_surface() {

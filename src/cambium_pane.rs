@@ -306,6 +306,7 @@ impl RosterGrid {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use layout_dom_api::LayoutDom;
 
     fn row(title: &str) -> RosterGridRow {
         RosterGridRow {

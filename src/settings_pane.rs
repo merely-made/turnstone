@@ -316,6 +316,7 @@ impl SettingsPane {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use layout_dom_api::LayoutDom;
 
     fn root(label: &str) -> PathBuf {
         std::env::temp_dir().join(format!(

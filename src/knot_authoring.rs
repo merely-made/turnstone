@@ -2286,6 +2286,7 @@ mod tests {
     use std::time::{Duration, Instant};
 
     use cambium::{CompositionEvent, Modifiers};
+    use genet_scripted_dom::NodeId;
     use layout_dom_api::{LayoutDom, NodeKind};
 
     use super::*;

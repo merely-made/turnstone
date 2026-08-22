@@ -217,6 +217,7 @@ impl ApparatusPane {
 mod tests {
     use super::*;
     use crate::action::Action;
+    use layout_dom_api::LayoutDom;
 
     /// A click on a radio option reports the viewer intent — and the sidecar
     /// mirror round-trips (sync shows what the app persisted).
