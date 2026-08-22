@@ -491,6 +491,10 @@ impl Shell {
                                 .command(fetch::FetchCommand::Subresource(subresource));
                         }
                     }
+                    if let Some(host) = self.host.as_ref() {
+                        host.core()
+                            .invalidate_surface(crate::surface::SurfaceId::content(node).0);
+                    }
                     let effects = self.app.apply_update(Update::ContentSpawned {
                         node,
                         facts: Some(facts),

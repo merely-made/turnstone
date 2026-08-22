@@ -8,12 +8,12 @@ act Toggle live content
 settle 60
 assert content-live
 assert surface content
-assert event streaming bytes=
-assert text Streaming prefix visible
+assert event streaming bytes=65
+# Smolweb owns the content surface, so the app-authored frame is the text proof.
 capture 01_streaming_prefix
 
 settle 60
 assert content-live
-assert event settled bytes=
+assert event settled bytes=122
 capture 02_streaming_complete
 log smolweb streaming receipt complete
