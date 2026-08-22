@@ -12,12 +12,14 @@ assert snap focused ~ field-note
 assert text Resident V1
 click role:textbox
 key end
-insert  headed edit
+key space
+insert headed edit
 assert text Resident V1 headed edit
 key ctrl+s
 wait
 assert text saved
 capture 01_resident_edit
+settle 300
 act Toggle live content
 settle 5
 assert no-surface content
