@@ -26,6 +26,13 @@ sets.
 > Titan and Spartan mutations, and Livery-to-Knot source evidence all have
 > checked-in `RESULT ok` receipts and headed captures in
 > [`docs/receipts/smolweb_acceptance_20260821`](../docs/receipts/smolweb_acceptance_20260821/README.md).
+>
+> **Dependency cutover, 2026-08-21:** the obsolete `genet-layout` and
+> `stylo_taffy` consumer edges are gone. Turnstone owns its retained host
+> adapter over `genet-livery`; Mere Canvas retains a `LiveryDocument`; and the
+> Graphshell wasm surface uses `genet-render`. The clean-checkout and focused
+> test receipt is in
+> [`2026-08-21_livery_buckram_dependency_cutover.md`](2026-08-21_livery_buckram_dependency_cutover.md).
 
 ## Part 1: the anatomy of a browser, in this design language
 

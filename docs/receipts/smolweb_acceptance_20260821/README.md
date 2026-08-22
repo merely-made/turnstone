@@ -61,11 +61,10 @@ The live Gemini hosts are intentionally network-dependent, so their two
 successful receipts were retained from the first clean run rather than made a
 precondition for rerunning a local mutation case.
 
-## Separate dependency defect
+## Dependency defect closed
 
-This acceptance does not claim that a lockless clean checkout resolves against
-today's Genet branch head. Turnstone still branch-tracks Genet packages that
-the current committed Genet tree removed: `stylo_taffy` fails first, and
-`genet-layout` fails after that patch is omitted. The headed receipt therefore
-uses the coherent published artifact instead of disguising dependency-head
-drift as an acceptance failure.
+The 2026-08-21 Livery/Buckram cutover removed the retired `stylo_taffy` and
+`genet-layout` package edges. A lockless clean archive now resolves against the
+published Mere and Genet `main` branches and passes `cargo check --tests`.
+The migration receipt records the exact revisions and focused gates in
+[`design_docs/2026-08-21_livery_buckram_dependency_cutover.md`](../../../design_docs/2026-08-21_livery_buckram_dependency_cutover.md).
