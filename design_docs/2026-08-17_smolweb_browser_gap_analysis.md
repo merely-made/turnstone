@@ -13,18 +13,20 @@ projects' READMEs, and the turnstone column against this tree, not against our
 plans. Lagrange is the bar; Geopard is the floor a pleasant minimal client
 sets.
 
-> **Status, 2026-08-20:** this is now a historical gap map, not a current
+> **Status, 2026-08-21:** this is now a historical gap map, not a current
 > implementation report. Native smolweb routing, Gemini input, persona-scoped
 > client identities, durable TOFU review, and feed subscriptions have landed.
 > Titan now has an explicit body/MIME/token/confirmation composer, and Spartan
 > `=:` lines lower to a typed body-submission interaction using that same
 > composer. Writes are separate actor commands: they are neither replayed as
-> fetches nor followed through redirects inside the mutation. The remaining
-> item 6 work is inline media, downloads, and streaming render.
+> fetches nor followed through redirects inside the mutation. Linked raster
+> images now render inline through the browser fetch actor. The remaining item
+> 6 work is inline audio, downloads, and streaming render.
 >
-> **Acceptance, 2026-08-21:** live Gemini browsing and status-10 input, local
-> Titan and Spartan mutations, and Livery-to-Knot source evidence all have
-> checked-in `RESULT ok` receipts and headed captures in
+> **Acceptance, 2026-08-21:** live Gemini browsing and status-10 input, a local
+> Gemini inline image, local Titan and Spartan mutations, and Livery-to-Knot
+> source evidence all have checked-in `RESULT ok` receipts and headed captures
+> in
 > [`docs/receipts/smolweb_acceptance_20260821`](../docs/receipts/smolweb_acceptance_20260821/README.md).
 >
 > **Dependency cutover, 2026-08-21:** the obsolete `genet-layout` and
@@ -240,9 +242,12 @@ Individually small, collectively what "pleasant" means:
   confirmation. Titan shares Gemini TOFU and capsule-scoped client identity.
 - Spartan prompts: closed 2026-08-20. `=:` remains a typed submission through
   parser, document IR, hit testing, session click, app composer, and transport.
-- Inline media on gemtext pages: Lagrange plays MP3/Ogg/WAV and shows images
-  inline; our lane renders documents but the inline-fetch-and-embed loop for
-  media links is unbuilt.
+- Linked raster images: closed 2026-08-21. Turnstone opts its gemtext sessions
+  into image-link promotion, requests the absolute URL asynchronously through
+  the existing fetch actor and durable TOFU store, decodes within configurable
+  count/byte/dimension limits, and paints through the shared image sidecar.
+  The image remains a clickable link. Inline MP3/Ogg/WAV playback is still
+  open.
 - Downloads: Geopard's one boast. The fetch actor can stream; there is no
   save-to-disk surface or progress affordance.
 - Streaming render: Geopard streams pages as bytes arrive, which is what
@@ -287,3 +292,6 @@ the native host's answers to all of them.
   confirmation sends one actor command and returns its receipt.
 - A Spartan `=:` prompt opens the same composer and submits its body without
   being mistaken for a navigation link.
+- A gemtext image link issues a second actor request, paints the decoded image
+  inline, remains followable, and leaves a bounded placeholder if fetch or
+  decode fails.

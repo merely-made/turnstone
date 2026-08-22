@@ -1,0 +1,6 @@
+RESULT ok
+genet document-canvas lib: 50 passed
+genet genet-documents smolweb lib: 14 passed
+mere mere-fetch lib: 9 passed
+turnstone subresource correlation: 1 passed, 305 filtered
+turnstone cargo check --tests from lockless archive: ok

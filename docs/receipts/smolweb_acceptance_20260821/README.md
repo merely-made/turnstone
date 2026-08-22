@@ -15,6 +15,12 @@ the captures.
   `gemini protocol`, refetched, and rendered the result. See
   [prompt](gemini-input/01_gemini_input_prompt.png) and
   [results](gemini-input/02_gemini_search_results.png).
+- **Gemini inline image:** a local TLS capsule served gemtext and a PNG as two
+  requests. Turnstone fetched the image through its actor and durable TOFU
+  path, decoded it within the document policy, and painted it inside the
+  retained content surface. See the [capture](gemini-inline-image/01_inline_image.png),
+  [wire receipt](gemini-inline-image/server.done), and
+  [clean-archive receipt](gemini-inline-image/clean-archive.done).
 - **Titan mutation:** the composer accepted a dropped 19-byte LF body,
   changed MIME to `text/plain`, masked the optional token, required literal
   `send`, issued one actor command, and received status 20. The server receipt
@@ -34,8 +40,10 @@ the captures.
   against a real `knot_endpoint` and passed. See
   [knot-source-evidence.done](knot-source-evidence.done).
 - **Focused units:** Gemini status-10 routing and masking, Spartan target
-  resolution, Titan composer behavior, and the live Nematic route passed. See
-  [focused-tests.done](focused-tests.done).
+  resolution, Titan composer behavior, the live Nematic route, image
+  promotion/decoding/paint/click, fetch correlation, and actor completion
+  passed. See [focused-tests.done](focused-tests.done) and
+  [inline-image-tests.done](inline-image-tests.done).
 
 ## Execution boundary
 
@@ -60,6 +68,13 @@ RESULT ok spartan-mutation
 The live Gemini hosts are intentionally network-dependent, so their two
 successful receipts were retained from the first clean run rather than made a
 precondition for rerunning a local mutation case.
+
+The inline-image case is local and deterministic. Its binary was built from a
+lockless archive of Turnstone `c3994f7`, resolving Genet `e911b348` and Mere
+`425d4252`, after `cargo check --tests` passed. The binary SHA-256 is
+`52581CB03354896CB3635517C0B73A35499CB1EB177204ABFFCBB67FDA560775`.
+The server receipt proves separate page and PNG requests; the app-authored
+capture proves the fetched pixels reached the content surface.
 
 ## Dependency defect closed
 

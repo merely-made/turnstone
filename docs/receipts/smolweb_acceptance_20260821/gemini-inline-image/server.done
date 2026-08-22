@@ -1,0 +1,7 @@
+RESULT ok
+protocol=gemini
+page=gemini://127.0.0.1:19652/inline-image.gmi
+image=gemini://127.0.0.1:19652/acceptance-image.png
+image-bytes=454
+requests=2
+response=20 image/png
