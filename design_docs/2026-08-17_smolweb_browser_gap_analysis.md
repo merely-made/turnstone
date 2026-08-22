@@ -13,7 +13,7 @@ projects' READMEs, and the turnstone column against this tree, not against our
 plans. Lagrange is the bar; Geopard is the floor a pleasant minimal client
 sets.
 
-> **Status, 2026-08-21:** this is now a historical gap map, not a current
+> **Status, 2026-08-22:** this is now a historical gap map, not a current
 > implementation report. Native smolweb routing, Gemini input, persona-scoped
 > client identities, durable TOFU review, and feed subscriptions have landed.
 > Titan now has an explicit body/MIME/token/confirmation composer, and Spartan
@@ -22,12 +22,15 @@ sets.
 > fetches nor followed through redirects inside the mutation. Linked raster
 > images now render inline through the browser fetch actor. Binary and explicit
 > attachment responses now enter durable download custody and project through
-> Steward. The remaining item 6 work is inline audio and streaming render.
+> Steward. Gemini text bodies now render incrementally before response
+> completion and replace in place without losing the prefix. Inline audio is
+> deferred until a host-owned playback seam and another document consumer can
+> force a reusable contract.
 >
-> **Acceptance, 2026-08-21:** live Gemini browsing and status-10 input, a local
+> **Acceptance, 2026-08-22:** live Gemini browsing and status-10 input, a local
 > Gemini inline image, local Gemini download custody, local Titan and Spartan
-> mutations, and Livery-to-Knot source evidence all have checked-in `RESULT ok`
-> receipts and headed captures in
+> mutations, local prefix-before-EOF Gemini streaming, and Livery-to-Knot
+> source evidence all have checked-in `RESULT ok` receipts and headed captures in
 > [`docs/receipts/smolweb_acceptance_20260821`](../docs/receipts/smolweb_acceptance_20260821/README.md).
 >
 > **Dependency cutover, 2026-08-21:** the obsolete `genet-layout` and
@@ -247,16 +250,23 @@ Individually small, collectively what "pleasant" means:
   into image-link promotion, requests the absolute URL asynchronously through
   the existing fetch actor and durable TOFU store, decodes within configurable
   count/byte/dimension limits, and paints through the shared image sidecar.
-  The image remains a clickable link. Inline MP3/Ogg/WAV playback is still
-  open.
+  The image remains a clickable link. Inline MP3/Ogg/WAV playback is deferred
+  as of 2026-08-22: there is no host-owned playback seam, and restoring retired
+  incumbent media dependencies for one consumer would freeze the wrong
+  contract. Reopen it when a second document consumer can exercise the same
+  transport, lifecycle, and control surface.
 - Downloads: closed 2026-08-21. Binary and explicit attachment responses keep
   their exact bytes through the fetch actor, deposit them in the session's
   Muniment store, attach the content hash to the graph node, and write a
   collision-safe visible copy. Source, MIME, disposition, byte count, status,
   destination, and hash persist as one custody facet projected by Steward.
-  Fetch-time progress remains part of the streaming-render work.
-- Streaming render: Geopard streams pages as bytes arrive, which is what
-  makes Kb/s connections livable. Our fetch actor completes then renders.
+  Download-byte progress remains a chrome progress-surface concern.
+- Streaming render: closed 2026-08-22. Gemini response bodies stream from
+  Errand through the fetch actor and Smolweb session into the retained content
+  surface. A local TLS acceptance capsule withholds its tail until the app
+  captures the visible 65-byte prefix; the final frame preserves that prefix
+  and adds the 57-byte tail. Replacement invalidates the keyed surface, and
+  Netrender composes retained tiles in deterministic painter order.
 
 ### 7. Typography polish
 
@@ -278,10 +288,10 @@ real but it is a browsing-surface gap, not an architecture gap.
 
 ## Sequence
 
-1 unlocks everything; 2 through 4 are what "usable as a daily gemini client"
-means; 5 and 6 are what "as good as" means; 7 is what "prefer it" means. The
-extension satellite should wait for at least 1 through 4, because it inherits
-the native host's answers to all of them.
+Items 1 through 5 and item 6's mutation, image, download, and streaming paths
+are closed. Inline audio is deliberately deferred at its missing shared host
+seam. Item 7, the gemtext typography pass, is the remaining smolweb work in
+this analysis; Part 1's browser controls remain a separate surface backlog.
 
 ## Done conditions
 
@@ -304,3 +314,6 @@ the native host's answers to all of them.
   store, attaches their hash to its source node, writes one collision-safe file
   in the configured destination, survives session persistence, and appears in
   Steward with completed or failed custody status.
+- A chunked `text/gemini` response paints its prefix before connection close,
+  then replaces that live body with a final frame that preserves the prefix and
+  adds the tail.

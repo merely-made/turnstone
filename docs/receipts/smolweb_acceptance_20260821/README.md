@@ -28,6 +28,12 @@ the captures.
   record through Steward. See the [capture](gemini-download/01_download_steward.png),
   [wire receipt](gemini-download/server.done), [custody receipt](gemini-download/custody.done),
   and [focused-test receipt](download-tests.done).
+- **Gemini streaming render:** a local TLS capsule sent a 65-byte gemtext
+  prefix, withheld its 57-byte tail until Turnstone captured the live content
+  surface, then completed the response. The final app-authored frame preserves
+  the prefix and adds the tail. See the [prefix](gemini-streaming/01_streaming_prefix.png),
+  [complete document](gemini-streaming/02_streaming_complete.png), and
+  [wire ordering receipt](gemini-streaming/server.done).
 - **Titan mutation:** the composer accepted a dropped 19-byte LF body,
   changed MIME to `text/plain`, masked the optional token, required literal
   `send`, issued one actor command, and received status 20. The server receipt
@@ -90,6 +96,16 @@ was built from Turnstone `372f156`, resolving Genet `e911b348` and Mere
 The server receipt proves the binary response, the custody receipt independently
 checks its bytes and persisted graph/facet/store evidence, and the app-authored
 capture proves Steward rendered that durable record.
+
+The streaming case is local and deterministic. Its clean detached binary was
+built with `--locked` from Turnstone `f0be94f`, resolving Genet `ee3166c29e1`,
+Mere `0953dd9522e`, and Netrender `4269ca583cc`; its SHA-256 is
+`8FB4DDBCF0D556AD85E92EF0B05AF2A7DBAE8FE79D91D0B55F5F9E01E02AA69E`.
+The server receipt proves that the prefix capture released the response tail.
+The two app-authored captures prove visible rendering before EOF and a complete
+final document. Netrender's retained tiles now compose in stable painter order,
+and focused CPU and GPU replacement regressions cover the prefix-preservation
+contract.
 
 ## Dependency defect closed
 

@@ -1,0 +1,10 @@
+RESULT ok
+protocol=gemini
+target=gemini://127.0.0.1:19654/streaming.gmi
+response=20 text/gemini
+prefix-bytes=65
+tail-bytes=57
+prefix-sent-utc=2026-08-22T05:31:59.1844517Z
+release-observed-utc=2026-08-22T05:32:02.5978885Z
+tail-sent-utc=2026-08-22T05:32:02.5981089Z
+release-observed-before-tail=True
