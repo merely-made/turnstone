@@ -1,6 +1,6 @@
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet("GeminiImage", "GeminiDownload", "GeminiStreaming", "Titan", "Spartan")]
+    [ValidateSet("GeminiImage", "GeminiDownload", "GeminiStreaming", "GeminiTypography", "Titan", "Spartan")]
     [string] $Mode,
 
     [Parameter(Mandatory = $true)]
@@ -148,7 +148,7 @@ try {
     $listener.Start()
     [System.IO.File]::WriteAllText($ReadyPath, "READY $Mode 127.0.0.1:$Port`n")
 
-    if ($Mode -in @("GeminiImage", "GeminiDownload", "GeminiStreaming", "Titan")) {
+    if ($Mode -in @("GeminiImage", "GeminiDownload", "GeminiStreaming", "GeminiTypography", "Titan")) {
         $rsa = [System.Security.Cryptography.RSA]::Create(2048)
         $certificateRequest = [System.Security.Cryptography.X509Certificates.CertificateRequest]::new(
             "CN=127.0.0.1",
@@ -262,6 +262,32 @@ try {
                     $receipt.Add("release-observed-utc=$($releaseObserved.ToString('O'))")
                     $receipt.Add("tail-sent-utc=$($tailSent.ToString('O'))")
                     $receipt.Add("release-observed-before-tail=$($releaseObserved -le $tailSent)")
+                }
+                elseif ($Mode -eq "GeminiTypography") {
+                    $expectedTarget = "gemini://127.0.0.1:$Port/typography.gmi"
+                    if ($packet.Line -ne $expectedTarget) {
+                        throw "Gemini typography target was '$($packet.Line)', expected '$expectedTarget'"
+                    }
+                    $body = @'
+# A typographic capsule
+A readable measure gives a quiet sentence enough room to breathe.
+## Script coverage
+Café · Καλημέρα · こんにちは
+> Quotations keep their own voice without leaving the reading column.
+* Lists keep a steady rhythm.
+* A second item proves the spacing.
+=> /inside Same-capsule link
+=> https://example.com Web link
+```rust
+let greeting = "hello";
+```
+'@
+                    Write-Response -Stream $tls -Text ("20 text/gemini`r`n" + $body)
+                    $receipt.Add("RESULT ok")
+                    $receipt.Add("protocol=gemini")
+                    $receipt.Add("target=$expectedTarget")
+                    $receipt.Add("response=20 text/gemini")
+                    $receipt.Add("body-utf8-bytes=$([System.Text.Encoding]::UTF8.GetByteCount($body))")
                 }
                 elseif ($Mode -eq "GeminiDownload") {
                     $expectedTarget = "gemini://127.0.0.1:$Port/archive.bin"

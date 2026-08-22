@@ -1,0 +1,13 @@
+# Local deterministic typography acceptance. The fixture exercises the
+# site-derived palette, readable measure, three heading/body roles, quote and
+# list rhythm, scheme-aware link glyphs, monospace preformatting, and font
+# fallback across Latin, Greek, and Japanese text.
+settle 30
+key escape
+open gemini://127.0.0.1:19655/typography.gmi
+act Toggle live content
+settle 90
+assert content-live
+assert surface content
+capture 01_typography
+log smolweb typography receipt complete
