@@ -405,56 +405,7 @@ struct HostedEvidence {
 /// The same two the spawned path names as mode strings, minus the stringly
 /// typed hop: the process boundary was the only reason they were ever text.
 enum HostedKnot {
-    Directory {
-        root: PathBuf,
-    },
-    /// No root: a persona vault lives under the family-shared root, never under
-    /// turnstone's own. `TURNSTONE_KNOT_ROOT` still picks the directory in
-    /// [`HostedKnot::Directory`] mode, where the point is a directory the user
-    /// named.
-    PersonaVault {
-        persona: identity::PersonaId,
-    },
-}
-
-/// Which persona's vault the Knot lane opens.
-///
-/// `TURNSTONE_KNOT_PERSONA` when set — the explicit override, and until now
-/// the only way, which meant hand-copying a UUID into an environment variable
-/// before the lane worked at all. Otherwise the family answer: the personas
-/// that actually exist under the shared root. One persona is the ordinary
-/// machine and resolves silently. Zero or several are told plainly, with what
-/// exists, because guessing among real cryptographic identities is how a
-/// document gets sealed to somebody else.
-fn resolve_knot_persona() -> Result<identity::PersonaId, String> {
-    if let Some(value) = std::env::var_os("TURNSTONE_KNOT_PERSONA") {
-        return value
-            .to_string_lossy()
-            .trim()
-            .parse::<uuid::Uuid>()
-            .map(identity::PersonaId::from_uuid)
-            .map_err(|error| format!("TURNSTONE_KNOT_PERSONA must be a UUID: {error}"));
-    }
-    let root = pandect::shared_root::shared_root();
-    let personas = pandect::wallet_store::list_personas(&root)
-        .map_err(|error| format!("could not list personas under {}: {error}", root.display()))?;
-    match personas.as_slice() {
-        [only] => Ok(*only),
-        [] => Err(format!(
-            "no persona wallet exists under {} yet; pair or create one first, or set \
-             TURNSTONE_KNOT_PERSONA",
-            root.display()
-        )),
-        several => Err(format!(
-            "several personas live under {}; set TURNSTONE_KNOT_PERSONA to one of: {}",
-            root.display(),
-            several
-                .iter()
-                .map(|persona| persona.as_uuid().to_string())
-                .collect::<Vec<_>>()
-                .join(", ")
-        )),
-    }
+    Directory { root: PathBuf },
 }
 
 impl KnotHub {
@@ -489,28 +440,7 @@ impl KnotHub {
                     HostedKnot::Directory { root } => {
                         knot::KnotEndpoint::open_writable(&root, grant)
                             .map_err(|error| format!("could not open the Knot directory: {error}"))
-                            .map(|endpoint| (endpoint, None))
-                    }
-                    HostedKnot::PersonaVault { persona } => {
-                        // Identity is family-shared: the device key and the
-                        // persona vault come from the shared root, not from
-                        // turnstone's own, so a document sealed here opens in
-                        // woodshed and knot under the same persona.
-                        let identity_root = pandect::shared_root::shared_root();
-                        knot::local_device_root(&identity_root, "knot")
-                            .and_then(|device| {
-                                knot::StartupUnlockedPersonalVault::open(
-                                    &identity_root,
-                                    persona,
-                                    device,
-                                    [],
-                                )
-                            })
-                            .and_then(|authority| authority.into_endpoint_and_publish_source(grant))
-                            .map(|(endpoint, source)| (endpoint, Some(source)))
-                            .map_err(|error| {
-                                format!("could not startup-unlock the Knot persona vault: {error}")
-                            })
+                            .map(|endpoint| (endpoint, None::<knot::KnotPublishSource>))
                     }
                 };
                 let retained = opened
@@ -599,6 +529,49 @@ impl KnotHub {
         }))
     }
 
+    /// Connect Turnstone to the resident Knot route. The resident process is
+    /// the only owner of persona files, evidence custody, and p2p sync.
+    fn resident(wake: Wake) -> Result<Arc<Self>, String> {
+        let (commands, receiver) = mpsc::channel();
+        let (ready_send, ready_receive) = mpsc::sync_channel(1);
+        std::thread::Builder::new()
+            .name("turnstone-knot-authoring".into())
+            .spawn(move || {
+                let profile = CapabilityProfile::new([
+                    PresentationCapability::EditableText,
+                    PresentationCapability::PortableCard,
+                ]);
+                let retained = (|| {
+                    let route = graphshell::native::app_admission::AppRouteId::new("knot")
+                        .map_err(|error| format!("invalid resident Knot route: {error}"))?;
+                    let carrier = graphshell::native::app_client::AppRouteCarrier::open(
+                        graphshell::native::app_admission::AppId::new("turnstone"),
+                        route,
+                    )
+                    .map_err(|error| format!("could not open resident Knot route: {error}"))?;
+                    RetainedEndpointSession::over(Box::new(carrier), profile)
+                        .map_err(|error| error.to_string())
+                })();
+                match retained {
+                    Ok(retained) => {
+                        let _ = ready_send.send(Ok(()));
+                        run_hub(retained, receiver, wake);
+                    }
+                    Err(error) => {
+                        let _ = ready_send.send(Err(error));
+                    }
+                }
+            })
+            .map_err(|error| format!("could not start Knot authoring worker: {error}"))?;
+        ready_receive
+            .recv()
+            .map_err(|_| "Knot authoring worker stopped during startup".to_string())??;
+        Ok(Arc::new(Self {
+            commands,
+            next_registration: AtomicU64::new(1),
+        }))
+    }
+
     fn open(&self, address: &str) -> Result<OpenedDocument, String> {
         let registration = self.next_registration.fetch_add(1, Ordering::Relaxed);
         let (events_send, events) = mpsc::channel();
@@ -626,8 +599,8 @@ impl KnotHub {
 /// One configured endpoint shared by every open Knot document.
 pub struct KnotAuthoringEngine {
     hub: Arc<KnotHub>,
-    /// The separate read handle made at persona-vault startup. The shell gives
-    /// it to the publishing worker before this authoring engine is registered.
+    /// A separate read handle for an in-process source, when that source can
+    /// safely grant one. Resident and spawned routes retain their boundary.
     publish_source: Option<knot::KnotPublishSource>,
     clip_target: Option<String>,
     auto_resolve: bool,
@@ -636,13 +609,13 @@ pub struct KnotAuthoringEngine {
 
 impl KnotAuthoringEngine {
     pub fn from_env(wake: Wake) -> Result<Option<Self>, String> {
-        let Some(root) = std::env::var_os("TURNSTONE_KNOT_ROOT").map(PathBuf::from) else {
-            return Ok(None);
-        };
-        let program = match std::env::var_os("TURNSTONE_KNOT_ENDPOINT") {
-            Some(program) => PathBuf::from(program),
-            None => default_endpoint_path()?,
-        };
+        let mode =
+            std::env::var("TURNSTONE_KNOT_MODE").unwrap_or_else(|_| "directory-write".into());
+        if !matches!(mode.as_str(), "directory-write" | "persona-vault") {
+            return Err(format!(
+                "unsupported TURNSTONE_KNOT_MODE {mode}; expected directory-write or persona-vault"
+            ));
+        }
         let max_source_bytes = std::env::var("TURNSTONE_KNOT_MAX_BYTES")
             .ok()
             .map(|value| {
@@ -657,8 +630,6 @@ impl KnotAuthoringEngine {
             "TURNSTONE_KNOT_EVIDENCE_MAX_BYTES",
             DEFAULT_MAX_SOURCE_BYTES,
         )?;
-        let mode =
-            std::env::var("TURNSTONE_KNOT_MODE").unwrap_or_else(|_| "directory-write".into());
         let resolve_mode = effect_mode("TURNSTONE_KNOT_RESOLVE_MODE")?;
         let run_mode = effect_mode("TURNSTONE_KNOT_RUN_MODE")?;
         let schemes = std::env::var("TURNSTONE_KNOT_RESOLVE_SCHEMES").unwrap_or_else(|_| {
@@ -678,6 +649,47 @@ impl KnotAuthoringEngine {
         let max_depth = env_integer("TURNSTONE_KNOT_RESOLVE_MAX_DEPTH", DEFAULT_EFFECT_MAX_DEPTH)?;
         let max_ops = env_integer("TURNSTONE_KNOT_RUN_MAX_OPS", DEFAULT_EFFECT_MAX_OPS)?;
         let effects_enabled = resolve_mode != "never" || run_mode != "never";
+        let clip_target = std::env::var("TURNSTONE_KNOT_CLIP_TARGET")
+            .ok()
+            .filter(|target| !target.trim().is_empty());
+
+        if mode == "persona-vault" {
+            if std::env::var_os("TURNSTONE_KNOT_ENDPOINT").is_some() {
+                return Err(
+                    "persona-vault mode uses Graphshell's resident Knot route; TURNSTONE_KNOT_ENDPOINT is only valid for isolated directory fixtures"
+                        .into(),
+                );
+            }
+            if std::env::var_os("TURNSTONE_KNOT_PERSONA").is_some() {
+                return Err(
+                    "Graphshell owner settings select the resident Knot persona; remove TURNSTONE_KNOT_PERSONA from Turnstone"
+                        .into(),
+                );
+            }
+            if evidence_root.is_some() {
+                return Err(
+                    "the resident owns Knot evidence custody; TURNSTONE_KNOT_EVIDENCE_ROOT is only valid for directory mode"
+                        .into(),
+                );
+            }
+            if effects_enabled {
+                return Err(
+                    "persona-vault effects require a resident grant; Turnstone cannot grant effects across the app route"
+                        .into(),
+                );
+            }
+            return Ok(Some(Self {
+                hub: KnotHub::resident(wake)?,
+                publish_source: None,
+                clip_target,
+                auto_resolve: false,
+                auto_run: false,
+            }));
+        }
+
+        let Some(root) = std::env::var_os("TURNSTONE_KNOT_ROOT").map(PathBuf::from) else {
+            return Ok(None);
+        };
 
         // Host in-process where the endpoint's constructor is a plain
         // directory open. A spawned endpoint cannot exist in a browser tab or
@@ -703,137 +715,57 @@ impl KnotAuthoringEngine {
                 root,
                 max_artifact_bytes: max_evidence_bytes,
             });
-            let hosted = match mode.as_str() {
-                "directory-write" => Some(HostedKnot::Directory { root: root.clone() }),
-                "persona-vault" => {
-                    // The vault is the boundary this mode exists for, so a
-                    // `file:` scheme would let an effect read straight past it.
-                    // Refused here exactly as on the spawned path, because a
-                    // guard that only one deployment enforces is not a guard.
-                    if effects_enabled
-                        && split_list(&schemes)
-                            .iter()
-                            .any(|scheme| scheme.eq_ignore_ascii_case("file"))
-                    {
-                        return Err(
-                            "persona-vault effects cannot admit file: outside the vault".into()
-                        );
-                    }
-                    Some(HostedKnot::PersonaVault {
-                        persona: resolve_knot_persona()?,
-                    })
-                }
-                _ => None,
-            };
-            if let Some(hosted) = hosted {
-                if matches!(&hosted, HostedKnot::Directory { .. }) {
-                    reject_nested_evidence_root(&root, evidence_root.as_deref())?;
-                }
-                let (hub, publish_source) =
-                    KnotHub::host(hosted, effects, evidence, max_source_bytes, wake)?;
-                let clip_target = std::env::var("TURNSTONE_KNOT_CLIP_TARGET")
-                    .ok()
-                    .filter(|target| !target.trim().is_empty());
-                return Ok(Some(Self {
-                    hub,
-                    publish_source,
-                    clip_target,
-                    auto_resolve: resolve_mode == "auto",
-                    auto_run: run_mode == "auto",
-                }));
-            }
+            reject_nested_evidence_root(&root, evidence_root.as_deref())?;
+            let (hub, publish_source) = KnotHub::host(
+                HostedKnot::Directory { root: root.clone() },
+                effects,
+                evidence,
+                max_source_bytes,
+                wake,
+            )?;
+            return Ok(Some(Self {
+                hub,
+                publish_source,
+                clip_target,
+                auto_resolve: resolve_mode == "auto",
+                auto_run: run_mode == "auto",
+            }));
         }
 
-        let args = match mode.as_str() {
-            "directory-write" => {
-                reject_nested_evidence_root(&root, evidence_root.as_deref())?;
-                let mode = match (effects_enabled, evidence_root.is_some()) {
-                    (false, false) => "directory-write",
-                    (false, true) => "directory-write-evidence",
-                    (true, false) => "directory-write-effects",
-                    (true, true) => "directory-write-effects-evidence",
-                };
-                let mut args = vec![
-                    mode.into(),
-                    root.into_os_string(),
-                    max_source_bytes.to_string().into(),
-                ];
-                if effects_enabled {
-                    args.extend([
-                        resolve_mode.clone().into(),
-                        run_mode.clone().into(),
-                        schemes.clone().into(),
-                        languages.clone().into(),
-                        max_depth.to_string().into(),
-                        max_ops.to_string().into(),
-                    ]);
-                }
-                if let Some(evidence_root) = &evidence_root {
-                    args.extend([
-                        evidence_root.clone().into_os_string(),
-                        max_evidence_bytes.to_string().into(),
-                    ]);
-                }
-                args
-            }
-            "persona-vault" => {
-                let persona: std::ffi::OsString =
-                    resolve_knot_persona()?.as_uuid().to_string().into();
-                // The same root the hosted path uses. `knot_endpoint` takes the
-                // root as an argument so a test can point it at a scratch
-                // profile; turnstone's answer is the family-shared one, and a
-                // guard that only one deployment honours is not a guard.
-                let vault_root = pandect::shared_root::shared_root().into_os_string();
-                if effects_enabled {
-                    if schemes
-                        .split(',')
-                        .any(|scheme| scheme.trim().eq_ignore_ascii_case("file"))
-                    {
-                        return Err(
-                            "persona-vault effects cannot admit file: outside the vault".into()
-                        );
-                    }
-                }
-                let mode = match (effects_enabled, evidence_root.is_some()) {
-                    (false, false) => "persona-vault",
-                    (false, true) => "persona-vault-evidence",
-                    (true, false) => "persona-vault-effects",
-                    (true, true) => "persona-vault-effects-evidence",
-                };
-                let mut args = vec![
-                    mode.into(),
-                    vault_root,
-                    persona,
-                    max_source_bytes.to_string().into(),
-                ];
-                if effects_enabled {
-                    args.extend([
-                        resolve_mode.clone().into(),
-                        run_mode.clone().into(),
-                        schemes.clone().into(),
-                        languages.clone().into(),
-                        max_depth.to_string().into(),
-                        max_ops.to_string().into(),
-                    ]);
-                }
-                if let Some(evidence_root) = &evidence_root {
-                    args.extend([
-                        evidence_root.clone().into_os_string(),
-                        max_evidence_bytes.to_string().into(),
-                    ]);
-                }
-                args
-            }
-            other => {
-                return Err(format!(
-                    "unsupported TURNSTONE_KNOT_MODE {other}; expected directory-write or persona-vault"
-                ));
-            }
+        reject_nested_evidence_root(&root, evidence_root.as_deref())?;
+        let endpoint = std::env::var_os("TURNSTONE_KNOT_ENDPOINT")
+            .map(PathBuf::from)
+            .ok_or_else(|| {
+                "TURNSTONE_KNOT_ENDPOINT disappeared while opening directory mode".to_string()
+            })?;
+        let endpoint_mode = match (effects_enabled, evidence_root.is_some()) {
+            (false, false) => "directory-write",
+            (false, true) => "directory-write-evidence",
+            (true, false) => "directory-write-effects",
+            (true, true) => "directory-write-effects-evidence",
         };
-        let hub = KnotHub::connect(program, args, wake)?;
-        let clip_target = std::env::var("TURNSTONE_KNOT_CLIP_TARGET")
-            .ok()
-            .filter(|target| !target.trim().is_empty());
+        let mut args = vec![
+            endpoint_mode.into(),
+            root.into_os_string(),
+            max_source_bytes.to_string().into(),
+        ];
+        if effects_enabled {
+            args.extend([
+                resolve_mode.clone().into(),
+                run_mode.clone().into(),
+                schemes.clone().into(),
+                languages.clone().into(),
+                max_depth.to_string().into(),
+                max_ops.to_string().into(),
+            ]);
+        }
+        if let Some(evidence_root) = &evidence_root {
+            args.extend([
+                evidence_root.clone().into_os_string(),
+                max_evidence_bytes.to_string().into(),
+            ]);
+        }
+        let hub = KnotHub::connect(endpoint, args, wake)?;
         Ok(Some(Self {
             hub,
             publish_source: None,
@@ -1055,24 +987,6 @@ where
         })
         .transpose()
         .map(|value| value.unwrap_or(default))
-}
-
-fn default_endpoint_path() -> Result<PathBuf, String> {
-    let executable = std::env::current_exe()
-        .map_err(|error| format!("could not locate Turnstone executable: {error}"))?;
-    let candidate = executable.with_file_name(if cfg!(windows) {
-        "knot_endpoint.exe"
-    } else {
-        "knot_endpoint"
-    });
-    if candidate.is_file() {
-        Ok(candidate)
-    } else {
-        Err(format!(
-            "TURNSTONE_KNOT_ROOT is set but no knot_endpoint was found beside {}; set TURNSTONE_KNOT_ENDPOINT",
-            executable.display()
-        ))
-    }
 }
 
 /// The already-validated mode string as Knot's own enum.
