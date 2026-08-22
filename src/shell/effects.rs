@@ -398,7 +398,14 @@ impl Shell {
                                     }
                                 }),
                             };
+                            let subresources = session.subresources();
                             self.content_sessions.insert(node, session);
+                            for url in subresources {
+                                if self.pending_fetches.note_subresource(&url, node) {
+                                    self.fetch_handle
+                                        .command(fetch::FetchCommand::Subresource(url));
+                                }
+                            }
                             Update::ContentSpawned {
                                 node,
                                 facts: Some(facts),

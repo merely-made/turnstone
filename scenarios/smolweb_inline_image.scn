@@ -1,0 +1,14 @@
+# Smolweb inline-image headed receipt. A local TLS Gemini capsule serves a
+# gemtext document, then a PNG from a second request. `settle` includes the
+# host-owned subresource correlation map, so the capture cannot race the image.
+settle 30
+key escape
+open gemini://127.0.0.1:19652/inline-image.gmi
+settle 60
+assert visible
+act Toggle live content
+settle 60
+assert content-live
+assert surface content
+capture 01_inline_image
+log smolweb inline-image receipt complete

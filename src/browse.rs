@@ -55,6 +55,7 @@ pub struct PendingFetches {
     pages: HashMap<String, Vec<PendingPage>>,
     /// Keyed by owner page URL (the actor echoes `owner_url`, not the icon URL).
     favicons: HashMap<String, Vec<Uuid>>,
+    subresources: HashMap<String, Vec<Uuid>>,
     submissions: HashMap<u64, Option<Uuid>>,
 }
 
@@ -112,11 +113,29 @@ impl PendingFetches {
         })
     }
 
+    /// Correlate one session's subresource request. Returns `true` only for
+    /// the first waiter so several panes sharing a URL reuse one actor fetch.
+    pub fn note_subresource(&mut self, url: &str, node: Uuid) -> bool {
+        let requesters = self.subresources.entry(url.to_string()).or_default();
+        let first = requesters.is_empty();
+        if !requesters.contains(&node) {
+            requesters.push(node);
+        }
+        first
+    }
+
+    pub fn take_subresources(&mut self, url: &str) -> Vec<Uuid> {
+        self.subresources.remove(url).unwrap_or_default()
+    }
+
     /// Whether any page or favicon fetch is still outstanding. The automation
     /// lane's quiescence read (`wait`): a scenario must not assert against a
     /// graph whose fetches have not landed.
     pub fn any_in_flight(&self) -> bool {
-        !self.pages.is_empty() || !self.favicons.is_empty() || !self.submissions.is_empty()
+        !self.pages.is_empty()
+            || !self.favicons.is_empty()
+            || !self.subresources.is_empty()
+            || !self.submissions.is_empty()
     }
 
     fn take_page(&mut self, url: &str) -> Option<PendingPage> {
@@ -138,9 +157,9 @@ fn take_one<T>(map: &mut HashMap<String, Vec<T>>, key: &str) -> Option<T> {
 }
 
 /// Convert one fetch-actor answer into the app vocabulary, reattaching the
-/// requesting node from the pending table. `None` for updates the app has no
-/// lane for (subresources), or answers nothing asked for (an unmatched
-/// completion is logged, not guessed at).
+/// requesting node from the pending table. Content subresources are consumed
+/// directly by the shell's retained-session port; other unmatched answers are
+/// logged and dropped rather than guessed at.
 pub fn update_from_fetch(update: FetchUpdate, pending: &mut PendingFetches) -> Option<Update> {
     match update {
         FetchUpdate::Page(outcome) => {
@@ -610,6 +629,23 @@ mod tests {
             unmatched.is_none(),
             "an unmatched completion is dropped, not guessed"
         );
+    }
+
+    #[test]
+    fn subresource_waiters_share_one_fetch_and_clear_together() {
+        let (a, b) = (Uuid::new_v4(), Uuid::new_v4());
+        let mut pending = PendingFetches::default();
+        assert!(pending.note_subresource("gemini://x.test/picture.png", a));
+        assert!(!pending.note_subresource("gemini://x.test/picture.png", b));
+        assert!(!pending.note_subresource("gemini://x.test/picture.png", a));
+        assert!(pending.any_in_flight());
+
+        let mut requesters = pending.take_subresources("gemini://x.test/picture.png");
+        requesters.sort();
+        let mut expected = vec![a, b];
+        expected.sort();
+        assert_eq!(requesters, expected);
+        assert!(!pending.any_in_flight());
     }
 
     #[test]

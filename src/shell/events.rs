@@ -11,6 +11,7 @@ use winit::window::WindowId;
 
 use std::sync::Arc;
 
+use fetch::FetchUpdate;
 use genet_winit_host::SurfaceHost;
 use mere::canvas::WHEEL_PAN_SCALE;
 use netrender::NetrenderOptions;
@@ -127,6 +128,29 @@ impl ApplicationHandler for Shell {
     /// redraw so `frame()` folds everything in (and chains while settling).
     fn user_event(&mut self, event_loop: &ActiveEventLoop, _event: ()) {
         while let Ok(raw) = self.fetch_rx.try_recv() {
+            let raw = match raw {
+                FetchUpdate::Subresource(outcome) => {
+                    let requesters = self.pending_fetches.take_subresources(&outcome.url);
+                    if requesters.is_empty() {
+                        tracing::warn!(url = %outcome.url, "subresource completion without a pending session; dropped");
+                        continue;
+                    }
+                    match outcome.result {
+                        Ok(bytes) => {
+                            for node in requesters {
+                                if let Some(session) = self.content_sessions.get_mut(&node) {
+                                    session.provide_subresource(&outcome.url, &bytes);
+                                }
+                            }
+                        }
+                        Err(error) => {
+                            tracing::warn!(url = %outcome.url, %error, "content subresource failed");
+                        }
+                    }
+                    continue;
+                }
+                other => other,
+            };
             // The port adapter converts the service's types at the boundary;
             // the app only ever sees the app-owned vocabulary.
             if let Some(update) = browse::update_from_fetch(raw, &mut self.pending_fetches) {
