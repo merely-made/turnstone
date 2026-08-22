@@ -60,6 +60,21 @@ pub struct FetchedDocument {
     pub body: String,
 }
 
+/// Network progress remains app truth even after the first prefix has become
+/// a live document session.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum PageFetchPhase {
+    Requested,
+    Streaming {
+        response_url: String,
+        content_type: Option<String>,
+        received_bytes: usize,
+    },
+    Settled {
+        received_bytes: usize,
+    },
+}
+
 /// The structural read, mirrored in app-owned terms (the report type itself
 /// stays port-side; the app holds what its surfaces present — the Inspector's
 /// counts and the a11y projection's outline).
@@ -90,6 +105,8 @@ pub struct ContentStates {
     states: HashMap<Uuid, NodeContent>,
     facts: HashMap<Uuid, ContentFacts>,
     documents: HashMap<Uuid, (String, FetchedDocument)>,
+    stream_bytes: HashMap<Uuid, (String, Vec<u8>)>,
+    fetch_phases: HashMap<Uuid, PageFetchPhase>,
 }
 
 impl ContentStates {
@@ -121,6 +138,9 @@ impl ContentStates {
     pub fn note_requested(&mut self, node: Uuid) {
         self.states.insert(node, NodeContent::Requested);
         self.facts.remove(&node);
+        if !self.stream_bytes.contains_key(&node) {
+            self.fetch_phases.insert(node, PageFetchPhase::Requested);
+        }
     }
 
     pub fn note_live(&mut self, node: Uuid, facts: Option<ContentFacts>) {
@@ -152,8 +172,62 @@ impl ContentStates {
 
     /// Retain the actor-owned response under both member and address. The URL
     /// guard makes a late or superseded body unusable for a later navigation.
-    pub fn note_fetched(&mut self, node: Uuid, url: String, document: FetchedDocument) {
+    pub fn note_fetched(
+        &mut self,
+        node: Uuid,
+        url: String,
+        document: FetchedDocument,
+        received_bytes: usize,
+    ) {
         self.documents.insert(node, (url, document));
+        self.stream_bytes.remove(&node);
+        self.fetch_phases
+            .insert(node, PageFetchPhase::Settled { received_bytes });
+    }
+
+    /// Append one exact transport fragment and refresh the decoded document
+    /// from the whole prefix, so split UTF-8 code points cannot corrupt later
+    /// replacement frames.
+    pub fn note_streamed(
+        &mut self,
+        node: Uuid,
+        url: String,
+        response_url: String,
+        content_type: Option<String>,
+        chunk: &[u8],
+    ) -> usize {
+        let entry = self
+            .stream_bytes
+            .entry(node)
+            .or_insert_with(|| (url.clone(), Vec::new()));
+        if entry.0 != url {
+            *entry = (url.clone(), Vec::new());
+        }
+        entry.1.extend_from_slice(chunk);
+        let received_bytes = entry.1.len();
+        self.documents.insert(
+            node,
+            (
+                url,
+                FetchedDocument {
+                    content_type: content_type.clone(),
+                    body: String::from_utf8_lossy(&entry.1).into_owned(),
+                },
+            ),
+        );
+        self.fetch_phases.insert(
+            node,
+            PageFetchPhase::Streaming {
+                response_url,
+                content_type,
+                received_bytes,
+            },
+        );
+        received_bytes
+    }
+
+    pub fn fetch_phase(&self, node: Uuid) -> Option<&PageFetchPhase> {
+        self.fetch_phases.get(&node)
     }
 
     pub fn fetched(&self, node: Uuid, url: &str) -> Option<&FetchedDocument> {
@@ -164,17 +238,23 @@ impl ContentStates {
 
     pub fn forget_fetched(&mut self, node: Uuid) {
         self.documents.remove(&node);
+        self.stream_bytes.remove(&node);
+        self.fetch_phases.remove(&node);
     }
 
     /// Remove every transient fact owned by a node that has left the graph.
     pub fn forget_node(&mut self, node: Uuid) {
         self.note_closed(node);
         self.documents.remove(&node);
+        self.stream_bytes.remove(&node);
+        self.fetch_phases.remove(&node);
     }
 
     pub fn note_failed(&mut self, node: Uuid, error: String) {
         self.states.insert(node, NodeContent::Failed(error));
         self.facts.remove(&node);
+        self.stream_bytes.remove(&node);
+        self.fetch_phases.remove(&node);
     }
 
     /// The node's content is gone (closed, or the port dropped it).
@@ -249,11 +329,46 @@ mod tests {
             body: "# Capsule".into(),
         };
         let mut states = ContentStates::default();
-        states.note_fetched(node, "gemini://example/one".into(), document.clone());
+        states.note_fetched(node, "gemini://example/one".into(), document.clone(), 9);
         assert_eq!(
             states.fetched(node, "gemini://example/one"),
             Some(&document)
         );
         assert!(states.fetched(node, "gemini://example/two").is_none());
+    }
+
+    #[test]
+    fn streamed_documents_accumulate_exact_bytes_before_decoding() {
+        let node = Uuid::new_v4();
+        let mut states = ContentStates::default();
+        states.note_requested(node);
+        states.note_streamed(
+            node,
+            "gemini://example/live".into(),
+            "gemini://example/live".into(),
+            Some("text/gemini".into()),
+            &[b'#', b' ', 0xc3],
+        );
+        let received = states.note_streamed(
+            node,
+            "gemini://example/live".into(),
+            "gemini://example/live".into(),
+            Some("text/gemini".into()),
+            &[0xa9, b'\n'],
+        );
+        assert_eq!(received, 5);
+        assert_eq!(
+            states
+                .fetched(node, "gemini://example/live")
+                .map(|document| document.body.as_str()),
+            Some("# é\n")
+        );
+        assert!(matches!(
+            states.fetch_phase(node),
+            Some(PageFetchPhase::Streaming {
+                received_bytes: 5,
+                ..
+            })
+        ));
     }
 }

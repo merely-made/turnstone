@@ -3288,6 +3288,63 @@ fn actor_fetched_body_is_retained_for_the_requested_content_spawn() {
 }
 
 #[test]
+fn streamed_page_spawns_from_a_prefix_then_replaces_and_settles() {
+    let mut app = App::test_stub();
+    let url = "gemini://capsule.test/live";
+    app.update(Action::OpenAddress(url.into()));
+    let node = app.graph_runtimes.focused_member().unwrap();
+    app.content.note_requested(node);
+
+    let first = app.apply_update(Update::PageStreamed {
+        node,
+        url: url.into(),
+        response_url: url.into(),
+        content_type: Some("text/gemini".into()),
+        bytes: b"# Prefix\n".to_vec(),
+    });
+    assert!(first.contains(&Effect::SpawnContent {
+        node,
+        url: url.into(),
+    }));
+    app.apply_update(Update::ContentSpawned { node, facts: None });
+
+    let second = app.apply_update(Update::PageStreamed {
+        node,
+        url: url.into(),
+        response_url: url.into(),
+        content_type: Some("text/gemini".into()),
+        bytes: b"Tail\n".to_vec(),
+    });
+    assert!(second.contains(&Effect::UpdateContent {
+        node,
+        url: url.into(),
+    }));
+    assert_eq!(
+        app.content
+            .fetched(node, url)
+            .map(|document| document.body.as_str()),
+        Some("# Prefix\nTail\n")
+    );
+
+    let settled = app.apply_update(Update::PageFetched {
+        node,
+        url: url.into(),
+        result: Ok(crate::action::FetchedPage::text(
+            Some("text/gemini".into()),
+            "# Prefix\nTail\n",
+        )),
+    });
+    assert!(settled.contains(&Effect::UpdateContent {
+        node,
+        url: url.into(),
+    }));
+    assert!(matches!(
+        app.content.fetch_phase(node),
+        Some(crate::content::PageFetchPhase::Settled { received_bytes: 14 })
+    ));
+}
+
+#[test]
 fn ordinary_smolweb_input_navigates_and_refetches_with_a_percent_encoded_query() {
     let mut app = App::test_stub();
     app.update(Action::OpenAddress("gemini://capsule.test/search".into()));

@@ -585,6 +585,8 @@ pub enum Effect {
     /// content port (registry-dispatched once genet-documents lands;
     /// until then the port answers with an honest ContentFailed).
     SpawnContent { node: uuid::Uuid, url: String },
+    /// Replace the body of an already-live incremental smolweb session.
+    UpdateContent { node: uuid::Uuid, url: String },
     /// Close `node`'s live session; the port drops the handle.
     CloseContent { node: uuid::Uuid },
     /// Open a lens window (platform work: window + surface creation) showing
@@ -622,6 +624,14 @@ pub enum Effect {
 /// state through [`crate::app::apply_update`]. App-owned types only; port
 /// adapters convert.
 pub enum Update {
+    /// Exact Gemini response bytes arrived before the terminal fetch answer.
+    PageStreamed {
+        node: uuid::Uuid,
+        url: String,
+        response_url: String,
+        content_type: Option<String>,
+        bytes: Vec<u8>,
+    },
     /// A page fetch completed (successfully or not) for `node`, which
     /// requested `url` (enrichment applies only while the node still lives
     /// there — a late result against a superseded node drops explicitly).

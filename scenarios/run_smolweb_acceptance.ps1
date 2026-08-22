@@ -2,7 +2,7 @@ param(
     [Parameter(Mandatory = $true)]
     [string] $TurnstoneBin,
 
-    [ValidateSet("gemini-browse", "gemini-input", "gemini-inline-image", "gemini-download", "titan-mutation", "spartan-mutation")]
+    [ValidateSet("gemini-browse", "gemini-input", "gemini-inline-image", "gemini-download", "gemini-streaming", "titan-mutation", "spartan-mutation")]
     [string[]] $Only = @(),
 
     [string] $OutputRoot = (Join-Path (
@@ -46,6 +46,13 @@ $cases = @(
         Scenario = "smolweb_download.scn"
         Server = "GeminiDownload"
         Port = 19653
+    },
+    [pscustomobject]@{
+        Name = "gemini-streaming"
+        Scenario = "smolweb_streaming.scn"
+        Server = "GeminiStreaming"
+        Port = 19654
+        ReleaseCapture = "01_streaming_prefix.png"
     },
     [pscustomobject]@{
         Name = "titan-mutation"
@@ -102,6 +109,11 @@ try {
                     )
                     WindowStyle = "Hidden"
                     PassThru = $true
+                }
+                if ($null -ne $case.ReleaseCapture) {
+                    $serverStart.ArgumentList += @(
+                        "-ReleasePath", (Join-Path $captureRoot $case.ReleaseCapture)
+                    )
                 }
                 $serverProcess = Start-Process @serverStart
                 for ($attempt = 0; $attempt -lt 200 -and -not (Test-Path -LiteralPath $ready); $attempt++) {
@@ -203,6 +215,17 @@ try {
                         "facet-status=completed"
                     )
                 )
+            }
+
+            if ($case.Name -eq "gemini-streaming") {
+                foreach ($capture in @("01_streaming_prefix.png", "02_streaming_complete.png")) {
+                    if (-not (Test-Path -LiteralPath (Join-Path $captureRoot $capture) -PathType Leaf)) {
+                        throw "streaming acceptance omitted capture $capture"
+                    }
+                }
+                if (-not (Select-String -LiteralPath $serverDone -SimpleMatch 'release-observed-before-tail=True')) {
+                    throw "streaming server did not prove the prefix capture preceded its tail"
+                }
             }
 
             $results.Add("RESULT ok $($case.Name)")

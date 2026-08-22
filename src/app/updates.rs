@@ -14,6 +14,49 @@ impl App {
     pub fn apply_update(&mut self, update: Update) -> Vec<Effect> {
         match update {
             Update::FeedFetched { node, url, result } => self.apply_feed_fetched(node, url, result),
+            Update::PageStreamed {
+                node,
+                url,
+                response_url,
+                content_type,
+                bytes,
+            } => {
+                let current = self
+                    .graph_runtimes
+                    .graph_containing_member(node)
+                    .and_then(|graph| self.graph_runtimes.canvas(graph))
+                    .is_some_and(|canvas| browse::still_current(canvas, node, &url));
+                let state = self.content.get(node).cloned();
+                let renderable = content_type
+                    .as_deref()
+                    .unwrap_or("text/gemini")
+                    .split(';')
+                    .next()
+                    .is_some_and(|mime| mime.trim().starts_with("text/"));
+                if !current || !renderable {
+                    return Vec::new();
+                }
+                let received = self.content.note_streamed(
+                    node,
+                    url.clone(),
+                    response_url,
+                    content_type,
+                    &bytes,
+                );
+                self.events.push(AppEvent::ContentState {
+                    node,
+                    state: format!("streaming bytes={received}"),
+                });
+                match state {
+                    Some(crate::content::NodeContent::Live) => {
+                        vec![Effect::UpdateContent { node, url }]
+                    }
+                    Some(crate::content::NodeContent::Requested) => {
+                        vec![Effect::SpawnContent { node, url }]
+                    }
+                    _ => Vec::new(),
+                }
+            }
             Update::PageFetched { node, url, result } => {
                 let current = self
                     .graph_runtimes
@@ -33,6 +76,10 @@ impl App {
                     self.content.get(node),
                     Some(crate::content::NodeContent::Requested)
                 );
+                let live_content = matches!(
+                    self.content.get(node),
+                    Some(crate::content::NodeContent::Live)
+                );
                 if let Ok(fetched) = &result {
                     self.content.note_fetched(
                         node,
@@ -41,12 +88,19 @@ impl App {
                             content_type: fetched.content_type.clone(),
                             body: fetched.body.clone(),
                         },
+                        fetched.bytes.len(),
                     );
+                    if requested_content || live_content {
+                        self.events.push(AppEvent::ContentState {
+                            node,
+                            state: format!("settled bytes={}", fetched.bytes.len()),
+                        });
+                    }
                 }
                 let failed = result.as_ref().err().cloned();
                 let mut effects =
                     browse::apply_page(&mut self.graph_runtimes, node, url.clone(), result);
-                if requested_content {
+                if requested_content || live_content {
                     match failed {
                         Some(error) => {
                             self.content.note_failed(node, error.clone());
@@ -54,7 +108,11 @@ impl App {
                                 node,
                                 state: format!("failed: {error}"),
                             });
+                            if live_content {
+                                effects.push(Effect::CloseContent { node });
+                            }
                         }
+                        None if live_content => effects.push(Effect::UpdateContent { node, url }),
                         None => effects.push(Effect::SpawnContent { node, url }),
                     }
                 }

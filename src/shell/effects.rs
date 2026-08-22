@@ -444,6 +444,59 @@ impl Shell {
                     let effects = self.app.apply_update(update);
                     self.run_effects(effects);
                 }
+                Effect::UpdateContent { node, url } => {
+                    let Some(document) = self.app.content.fetched(node, &url).cloned() else {
+                        continue;
+                    };
+                    let engine = self
+                        .app
+                        .content
+                        .facts(node)
+                        .map(|facts| facts.engine.clone())
+                        .unwrap_or_else(|| inker::routing::ENGINE_NEMATIC_GEMTEXT.to_string());
+                    let Some(session) = self.content_sessions.get_mut(&node) else {
+                        self.run_effects(vec![Effect::SpawnContent { node, url }]);
+                        continue;
+                    };
+                    let Some(smolweb) = session
+                        .as_any()
+                        .downcast_mut::<genet_documents::SmolwebDocumentSession>()
+                    else {
+                        tracing::debug!(%node, %url, "live engine does not support incremental body replacement");
+                        continue;
+                    };
+                    smolweb.replace_body(&url, &document.body);
+                    let facts = crate::content::ContentFacts {
+                        engine,
+                        structure: session
+                            .inspect()
+                            .map(|report| crate::content::StructureFacts {
+                                title: report.title,
+                                headings: report.headings.len(),
+                                links: report.links.len(),
+                                outline: report
+                                    .outline
+                                    .into_iter()
+                                    .map(|entry| crate::content::OutlineFact {
+                                        depth: entry.depth,
+                                        role: entry.role,
+                                        name: entry.name,
+                                    })
+                                    .collect(),
+                            }),
+                    };
+                    for subresource in session.subresources() {
+                        if self.pending_fetches.note_subresource(&subresource, node) {
+                            self.fetch_handle
+                                .command(fetch::FetchCommand::Subresource(subresource));
+                        }
+                    }
+                    let effects = self.app.apply_update(Update::ContentSpawned {
+                        node,
+                        facts: Some(facts),
+                    });
+                    self.run_effects(effects);
+                }
                 Effect::CloseContent { node } => {
                     if self.content_sessions.remove(&node).is_some() {
                         tracing::info!(%node, "content session closed");

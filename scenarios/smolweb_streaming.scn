@@ -1,0 +1,19 @@
+# The local capsule withholds its response tail until this scenario captures
+# the first live frame. That makes prefix-before-EOF an ordering proof rather
+# than a final-frame inference.
+settle 30
+key escape
+open gemini://127.0.0.1:19654/streaming.gmi
+act Toggle live content
+settle 60
+assert content-live
+assert surface content
+assert event streaming bytes=
+assert text Streaming prefix visible
+capture 01_streaming_prefix
+
+settle 60
+assert content-live
+assert event settled bytes=
+capture 02_streaming_complete
+log smolweb streaming receipt complete

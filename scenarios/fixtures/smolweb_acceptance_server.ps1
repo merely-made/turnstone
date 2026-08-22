@@ -1,6 +1,6 @@
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet("GeminiImage", "GeminiDownload", "Titan", "Spartan")]
+    [ValidateSet("GeminiImage", "GeminiDownload", "GeminiStreaming", "Titan", "Spartan")]
     [string] $Mode,
 
     [Parameter(Mandatory = $true)]
@@ -11,6 +11,8 @@ param(
 
     [Parameter(Mandatory = $true)]
     [string] $ReceiptPath,
+
+    [string] $ReleasePath,
 
     [int] $TimeoutSeconds = 120
 )
@@ -146,7 +148,7 @@ try {
     $listener.Start()
     [System.IO.File]::WriteAllText($ReadyPath, "READY $Mode 127.0.0.1:$Port`n")
 
-    if ($Mode -in @("GeminiImage", "GeminiDownload", "Titan")) {
+    if ($Mode -in @("GeminiImage", "GeminiDownload", "GeminiStreaming", "Titan")) {
         $rsa = [System.Security.Cryptography.RSA]::Create(2048)
         $certificateRequest = [System.Security.Cryptography.X509Certificates.CertificateRequest]::new(
             "CN=127.0.0.1",
@@ -219,6 +221,47 @@ try {
                     $receipt.Add("mime=text/plain")
                     $receipt.Add("token-present=true")
                     $receipt.Add("response=20")
+                }
+                elseif ($Mode -eq "GeminiStreaming") {
+                    $expectedTarget = "gemini://127.0.0.1:$Port/streaming.gmi"
+                    if ($packet.Line -ne $expectedTarget) {
+                        throw "Gemini streaming target was '$($packet.Line)', expected '$expectedTarget'"
+                    }
+                    if ([string]::IsNullOrWhiteSpace($ReleasePath)) {
+                        throw "GeminiStreaming requires a release path"
+                    }
+                    [byte[]] $header = [System.Text.Encoding]::ASCII.GetBytes("20 text/gemini`r`n")
+                    [byte[]] $prefix = [System.Text.Encoding]::UTF8.GetBytes(
+                        "# Streaming prefix visible`nThis arrived before connection close.`n"
+                    )
+                    [byte[]] $tail = [System.Text.Encoding]::UTF8.GetBytes(
+                        "## Streaming tail arrived`nThe terminal body is complete.`n"
+                    )
+                    $tls.Write($header, 0, $header.Length)
+                    $tls.Write($prefix, 0, $prefix.Length)
+                    $tls.Flush()
+                    $prefixSent = [datetime]::UtcNow
+                    while (-not (Test-Path -LiteralPath $ReleasePath)) {
+                        if ([datetime]::UtcNow -ge $deadline) {
+                            throw "timed out waiting for the prefix capture release"
+                        }
+                        Start-Sleep -Milliseconds 20
+                    }
+                    $releaseObserved = [datetime]::UtcNow
+                    $tls.Write($tail, 0, $tail.Length)
+                    $tls.Flush()
+                    $tailSent = [datetime]::UtcNow
+
+                    $receipt.Add("RESULT ok")
+                    $receipt.Add("protocol=gemini")
+                    $receipt.Add("target=$expectedTarget")
+                    $receipt.Add("response=20 text/gemini")
+                    $receipt.Add("prefix-bytes=$($prefix.Length)")
+                    $receipt.Add("tail-bytes=$($tail.Length)")
+                    $receipt.Add("prefix-sent-utc=$($prefixSent.ToString('O'))")
+                    $receipt.Add("release-observed-utc=$($releaseObserved.ToString('O'))")
+                    $receipt.Add("tail-sent-utc=$($tailSent.ToString('O'))")
+                    $receipt.Add("release-observed-before-tail=$($releaseObserved -le $tailSent)")
                 }
                 elseif ($Mode -eq "GeminiDownload") {
                     $expectedTarget = "gemini://127.0.0.1:$Port/archive.bin"

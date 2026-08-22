@@ -142,6 +142,10 @@ impl PendingFetches {
         take_one(&mut self.pages, url)
     }
 
+    fn page(&self, url: &str) -> Option<&PendingPage> {
+        self.pages.get(url).and_then(|requests| requests.last())
+    }
+
     fn take_favicon(&mut self, owner_url: &str) -> Option<Uuid> {
         take_one(&mut self.favicons, owner_url)
     }
@@ -162,6 +166,19 @@ fn take_one<T>(map: &mut HashMap<String, Vec<T>>, key: &str) -> Option<T> {
 /// logged and dropped rather than guessed at.
 pub fn update_from_fetch(update: FetchUpdate, pending: &mut PendingFetches) -> Option<Update> {
     match update {
+        FetchUpdate::PageProgress(progress) => {
+            let Some(request) = pending.page(&progress.url) else {
+                tracing::warn!(url = %progress.url, "page progress without a pending requester; dropped");
+                return None;
+            };
+            (request.kind == PendingPageKind::Page).then(|| Update::PageStreamed {
+                node: request.node,
+                url: request.owner_url.clone(),
+                response_url: progress.response_url,
+                content_type: progress.content_type,
+                bytes: progress.bytes,
+            })
+        }
         FetchUpdate::Page(outcome) => {
             let Some(request) = pending.take_page(&outcome.url) else {
                 // The actor URL may carry a status-11 answer in its query.
@@ -649,6 +666,47 @@ mod tests {
         let mut expected = vec![a, b];
         expected.sort();
         assert_eq!(requesters, expected);
+        assert!(!pending.any_in_flight());
+    }
+
+    #[test]
+    fn page_progress_keeps_the_request_pending_until_terminal_answer() {
+        let node = Uuid::new_v4();
+        let request = "gemini://capsule.test/live";
+        let mut pending = PendingFetches::default();
+        pending.note_page(request, node, request, false);
+
+        let update = update_from_fetch(
+            FetchUpdate::PageProgress(fetch::PageProgress {
+                url: request.into(),
+                response_url: request.into(),
+                content_type: Some("text/gemini".into()),
+                bytes: b"# Prefix\n".to_vec(),
+            }),
+            &mut pending,
+        )
+        .unwrap();
+        assert!(matches!(
+            update,
+            Update::PageStreamed {
+                node: actual,
+                bytes,
+                ..
+            } if actual == node && bytes == b"# Prefix\n"
+        ));
+        assert!(pending.page_in_flight(request, node, request));
+
+        let terminal = update_from_fetch(
+            FetchUpdate::Page(fetch::FetchOutcome {
+                url: request.into(),
+                result: Ok(fetch::Fetched::text(
+                    Some("text/gemini".into()),
+                    "# Prefix\nTail\n",
+                )),
+            }),
+            &mut pending,
+        );
+        assert!(matches!(terminal, Some(Update::PageFetched { .. })));
         assert!(!pending.any_in_flight());
     }
 
