@@ -1,7 +1,8 @@
 # Command Palette Open-Lag Note
 
 **Date:** 2026-08-22
-**Status:** Observed, not yet measured or attributed.
+**Status:** Reproduced in a development diagnostic; release measurement and
+attribution remain open.
 **Scope:** Turnstone chrome and frame production.
 
 ## Observation
@@ -12,6 +13,20 @@ open state, not merely the opening transition.
 Do not assign this to Knot, Graphshell, or the device resident from proximity.
 Those systems may be excluded or implicated by profiling, but the first owner
 is Turnstone's chrome path.
+
+## 2026-08-22 diagnostic
+
+A disposable unoptimized development build, compiled with debug information
+disabled, reproduced the open-state cost at 1024 x 600. Two controlled redraws
+with one surface took 25.9 ms and 26.7 ms. Four controlled redraws with the
+palette open and two surfaces took 239.3 ms, 241.1 ms, 241.4 ms, and 250.7 ms.
+The application remained responsive and the palette rows updated correctly.
+
+This is approximately a 9x whole-frame delta in that build. It is evidence for
+the reported symptom, not a performance baseline: the build was unoptimized,
+the sample is small, and whole-frame logging does not attribute the time. The
+profile used the ordinary sample graph rather than the resident Knot route, so
+the diagnostic does not implicate resident work.
 
 ## Current hot-path candidates
 
