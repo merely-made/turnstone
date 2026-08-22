@@ -34,6 +34,12 @@ the captures.
   the prefix and adds the tail. See the [prefix](gemini-streaming/01_streaming_prefix.png),
   [complete document](gemini-streaming/02_streaming_complete.png), and
   [wire ordering receipt](gemini-streaming/server.done).
+- **Gemini typography:** a local TLS capsule rendered a site-derived palette,
+  serif body and heading hierarchy, a centered readable measure, Latin, Greek,
+  and Japanese text, distinct same-capsule and web-link arrows, and a monospace
+  preformatted block. See the [capture](gemini-typography/01_typography.png),
+  [wire receipt](gemini-typography/server.done), and
+  [scenario receipt](gemini-typography/scenario.done).
 - **Titan mutation:** the composer accepted a dropped 19-byte LF body,
   changed MIME to `text/plain`, masked the optional token, required literal
   `send`, issued one actor command, and received status 20. The server receipt
@@ -106,6 +112,14 @@ The two app-authored captures prove visible rendering before EOF and a complete
 final document. Netrender's retained tiles now compose in stable painter order,
 and focused CPU and GPU replacement regressions cover the prefix-preservation
 contract.
+
+The typography case is local and deterministic. Its clean detached binary was
+built with `--locked` from Turnstone `0588d51e987`, resolving Genet
+`2647cf29bcf`, Mere `0953dd9522e`, and Netrender `4269ca583cc`; its SHA-256 is
+`250199A333ADFF21EB8C1D41A471D959DBB7FDD4FA058BB6969A2498CAE5413D`.
+The headed run completed without the prior ICU4X complex-script diagnostic.
+Genet's `document-canvas` suite passed all 50 tests with Parley's
+`complex-scripts` feature selecting dictionary-backed line and word breaking.
 
 ## Dependency defect closed
 

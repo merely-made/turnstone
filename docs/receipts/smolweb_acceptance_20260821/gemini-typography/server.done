@@ -1,0 +1,5 @@
+RESULT ok
+protocol=gemini
+target=gemini://127.0.0.1:19655/typography.gmi
+response=20 text/gemini
+body-utf8-bytes=397

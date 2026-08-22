@@ -23,14 +23,17 @@ sets.
 > images now render inline through the browser fetch actor. Binary and explicit
 > attachment responses now enter durable download custody and project through
 > Steward. Gemini text bodies now render incrementally before response
-> completion and replace in place without losing the prefix. Inline audio is
-> deferred until a host-owned playback seam and another document consumer can
-> force a reusable contract.
+> completion and replace in place without losing the prefix. The gemtext
+> typography pass now supplies site-derived color, readable measure, role-aware
+> type, complex-script segmentation, and pixel-granular scrolling. Inline audio
+> is deferred until a host-owned playback seam and another document consumer
+> can force a reusable contract.
 >
 > **Acceptance, 2026-08-22:** live Gemini browsing and status-10 input, a local
 > Gemini inline image, local Gemini download custody, local Titan and Spartan
-> mutations, local prefix-before-EOF Gemini streaming, and Livery-to-Knot
-> source evidence all have checked-in `RESULT ok` receipts and headed captures in
+> mutations, local prefix-before-EOF Gemini streaming, local multilingual
+> typography, and Livery-to-Knot source evidence all have checked-in `RESULT ok`
+> receipts and headed captures in
 > [`docs/receipts/smolweb_acceptance_20260821`](../docs/receipts/smolweb_acceptance_20260821/README.md).
 >
 > **Dependency cutover, 2026-08-21:** the obsolete `genet-layout` and
@@ -270,11 +273,14 @@ Individually small, collectively what "pleasant" means:
 
 ### 7. Typography polish
 
-Lagrange's calling card: per-domain generated themes and glyphs, smooth
-scrolling, careful Unicode. We have tinct/illume/tabard for theming and a
-real text stack, so the ceiling is high, but nobody has done the gemtext
-typography pass. This is last on purpose: it matters only after the above
-exist.
+Closed 2026-08-22. Gemtext defaults to a stable site-derived palette, a serif
+reading face with monospace preformatting, a centered 720-pixel maximum measure,
+1.5 line height, and a visible heading hierarchy. Same-capsule and external
+links use distinct arrows, while quote and list roles retain their own spacing.
+The document-canvas Parley edge enables dictionary-backed complex-script line
+and word breaking, with font fallback covering the acceptance fixture's Latin,
+Greek, and Japanese text. Wheel scrolling is pixel-granular. Animated smoothing,
+if wanted, belongs to generic host polish rather than the smolweb protocol lane.
 
 ## What turnstone has that neither benchmark can answer
 
@@ -288,10 +294,10 @@ real but it is a browsing-surface gap, not an architecture gap.
 
 ## Sequence
 
-Items 1 through 5 and item 6's mutation, image, download, and streaming paths
-are closed. Inline audio is deliberately deferred at its missing shared host
-seam. Item 7, the gemtext typography pass, is the remaining smolweb work in
-this analysis; Part 1's browser controls remain a separate surface backlog.
+Items 1 through 5, item 6's mutation, image, download, and streaming paths, and
+item 7's typography pass are closed. Inline audio is deliberately deferred at
+its missing shared host seam. The smolweb gap map is otherwise complete; Part
+1's browser controls remain a separate surface backlog.
 
 ## Done conditions
 
@@ -317,3 +323,6 @@ this analysis; Part 1's browser controls remain a separate surface backlog.
 - A chunked `text/gemini` response paints its prefix before connection close,
   then replaces that live body with a final frame that preserves the prefix and
   adds the tail.
+- A gemtext page renders a stable site palette, readable heading and body roles,
+  distinct link classes, preformatted text, and Latin, Greek, and Japanese text
+  without a complex-script segmentation diagnostic.
