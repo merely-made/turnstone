@@ -1,0 +1,65 @@
+# Command palette open-lag receipt, condition 3 of 4: PALETTE OPEN, row
+# selection.
+#
+# The doc's receipt asks for row-selection keys as well as idle redraws. Rows
+# are populated first (an empty actions lane would make the arrows a no-op and
+# the sample a lie), and the measured block moves the selection only - no text
+# changes, so `suggestion_runs` should stay at zero across it. Compare against
+# palette_lag_open.scn: the difference between the two IS the cost of moving a
+# selection.
+#
+# MEASURED BLOCK: the 10 down/up pairs below, 80 frames (each key is one frame
+# and each `settle 2` is three, the countdown plus the step that sets it). The
+# harness skips the one frame `log` costs and reads the 50 before it.
+settle 30
+key escape
+open mere://alpha
+open mere://beta
+settle 20
+assert visible
+omnibar actions
+type o
+settle 20
+assert omnibar open
+assert suggestions >= 1
+key down
+settle 2
+key up
+settle 2
+key down
+settle 2
+key up
+settle 2
+key down
+settle 2
+key up
+settle 2
+key down
+settle 2
+key up
+settle 2
+key down
+settle 2
+key up
+settle 2
+key down
+settle 2
+key up
+settle 2
+key down
+settle 2
+key up
+settle 2
+key down
+settle 2
+key up
+settle 2
+key down
+settle 2
+key up
+settle 2
+key down
+settle 2
+key up
+settle 2
+log palette lag: open row-selection sample complete

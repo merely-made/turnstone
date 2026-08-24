@@ -14,6 +14,7 @@ use netrender::external_texture::ExternalTexturePlacement;
 use netrender::{ColorLoad, Scene};
 
 use crate::action::Action;
+use crate::frame_timing::ms;
 use crate::panes::PaneContent;
 use crate::surface::SurfaceKind;
 
@@ -605,6 +606,11 @@ impl Shell {
                 rect.w.round().max(1.0) as u32,
                 rect.h.round().max(1.0) as u32,
             );
+            // Stage 4: scene construction for this surface. The chrome arm
+            // accounts for itself in two parts below; every other surface
+            // lands in `pane_scenes`, so a chrome regression cannot hide
+            // behind pane cost or the reverse.
+            let scene_started = std::time::Instant::now();
             let (scene, clear) = match surface.kind {
                 crate::surface::SurfaceKind::Graph(pane) => {
                     // A graph surface is addressed by its pane. The app swaps
@@ -683,11 +689,26 @@ impl Shell {
                             .values()
                             .map(|lens| (lens.ordinal + 1, lens.width as f32, lens.height as f32)),
                     );
+                    // Stages 2 and 3, timed apart: `sync` rebuilds row views
+                    // and every window projection from app state, `scene`
+                    // cascades, lays out, and paints the subtree. The open-lag
+                    // note suspects both; one number could not separate them.
+                    let sync_started = std::time::Instant::now();
                     self.chrome.sync(&self.app, &sizes);
+                    let sync_elapsed = sync_started.elapsed();
+                    let chrome_scene_started = std::time::Instant::now();
                     let scene = self.chrome.scene(0, rw, rh);
+                    let scene_elapsed = chrome_scene_started.elapsed();
+                    let timings = &mut self.app.frame_timings;
+                    timings.chrome_sync += sync_elapsed;
+                    timings.chrome_scene += scene_elapsed;
+                    timings.chrome_syncs += 1;
                     (scene, wgpu::Color::TRANSPARENT)
                 }
             };
+            if !matches!(surface.kind, crate::surface::SurfaceKind::Chrome) {
+                self.app.frame_timings.pane_scenes += scene_started.elapsed();
+            }
             scenes.push(PlannedLayer::Scene(PlannedScene {
                 id: surface.id.0,
                 kind: surface.kind,
@@ -702,6 +723,16 @@ impl Shell {
         // an unchanged surface reuses its tile instead of rebuilding every
         // frame) and compose the layers in order.
         let host = self.host.as_ref().unwrap();
+        // Stage 5: rasterization. Counted as well as timed, and the dirty-tile
+        // sum comes from netrender's own per-surface count, because the done
+        // condition is that a merely-open palette provokes no repaint — a
+        // settled frame that still rebuilds every tile is the failure this
+        // instrument exists to catch. Accumulated into locals rather than
+        // straight into `self.app`, so the closure keeps its single immutable
+        // borrow of the host.
+        let mut rasterized = 0u32;
+        let mut dirty_tiles = 0usize;
+        let raster_started = std::time::Instant::now();
         let layers: Vec<CompositeLayer> = scenes
             .into_iter()
             .map(|source| match source {
@@ -713,6 +744,8 @@ impl Shell {
                         scene.dims.1,
                         ColorLoad::Clear(scene.clear),
                     );
+                    rasterized += 1;
+                    dirty_tiles += host.renderer().vello_last_dirty_count().unwrap_or(0);
                     CompositeLayer {
                         kind: scene.kind,
                         view,
@@ -722,7 +755,15 @@ impl Shell {
                 PlannedLayer::Imported(layer) => layer,
             })
             .collect();
+        let raster_elapsed = raster_started.elapsed();
 
+        // Stage 6: composition and present. If the surface cannot be acquired
+        // nothing is presented, so there is no frame to report: the stages
+        // already written into `App` carry into the frame that does present,
+        // while this attempt's raster and compose time — still locals — is
+        // dropped with it. A dropped frame is worth knowing about, but it is
+        // the swapchain's story, not the chrome path's.
+        let compose_started = std::time::Instant::now();
         let Some(frame) = host.acquire() else { return };
         let target = frame
             .texture
@@ -739,6 +780,7 @@ impl Shell {
         }
         // wgpu 30 moved presentation from SurfaceTexture to Queue.
         host.queue().present(frame);
+        let compose_elapsed = compose_started.elapsed();
 
         // Scenario self-capture: compose the SAME layer views this frame just
         // presented into an owned COPY_SRC target and read it back — the
@@ -760,13 +802,36 @@ impl Shell {
             let ok = capture_composed(host, &layers, w, h, &path);
         }
 
+        self.app.frame_timings.raster += raster_elapsed;
+        self.app.frame_timings.rasterized += rasterized;
+        self.app.frame_timings.dirty_tiles += dirty_tiles;
+        self.app.frame_timings.compose += compose_elapsed;
+        // One line per presented frame, carrying the whole and its parts. The
+        // stage fields are what turn "the palette is open and the frame is
+        // slow" into "this stage is slow": `palette` labels each frame, so a
+        // closed-versus-open pair attributes its own delta without a second
+        // tool.
+        let timings = &self.app.frame_timings;
         tracing::debug!(
             frame_ms = started.elapsed().as_secs_f32() * 1000.0,
             surfaces = surfaces.len(),
+            palette = self.app.omnibar.open,
+            suggestions_ms = ms(timings.suggestions),
+            suggestion_runs = timings.suggestion_runs,
+            suggestion_refits = timings.suggestion_refits,
+            chrome_sync_ms = ms(timings.chrome_sync),
+            chrome_scene_ms = ms(timings.chrome_scene),
+            chrome_syncs = timings.chrome_syncs,
+            pane_scenes_ms = ms(timings.pane_scenes),
+            raster_ms = ms(timings.raster),
+            rasterized = timings.rasterized,
+            dirty_tiles = timings.dirty_tiles,
+            compose_ms = ms(timings.compose),
             w,
             h,
             "frame"
         );
+        self.app.frame_timings.reset();
 
         // An overlay bar mid-hold or mid-fade needs the next frame to draw it
         // one step dimmer. Without this the renderer, being change-driven,

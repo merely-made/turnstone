@@ -101,6 +101,12 @@ pub struct App {
     /// The summonable omnibar (rung 3): find over graph truth, go through
     /// OpenAddress, `>` for the actions lane.
     pub omnibar: OmnibarState,
+    /// Per-frame stage costs for the chrome path. Data only, like the rest of
+    /// App: the shell writes its own stages into it during `render` and clears
+    /// it once the frame is reported. It lives here rather than on Shell
+    /// because suggestion recomputation — the first stage the palette open-lag
+    /// note names — happens on App's input edge, outside any frame.
+    pub frame_timings: crate::frame_timing::FrameTimings,
     /// Shell-owned services projected by chrome: provider registration,
     /// interaction transcript, and configurable chrome policy. It carries no
     /// `Canvas` or platform handle. A2 replaces the fallback context supplied

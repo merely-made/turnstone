@@ -1,0 +1,21 @@
+# Command palette open-lag receipt, condition 2 of 4: PALETTE OPEN, idle.
+#
+# The reported symptom: cost tied to the OPEN STATE, not to opening and not to
+# typing. Nothing is edited and nothing is selected after the palette opens —
+# every measured frame here is the palette merely sitting there. The done
+# condition says this block should provoke no repeated state, layout, or raster
+# work, so `suggestion_runs`, `chrome_syncs`, and `dirty_tiles` across it are as
+# much the receipt as the milliseconds are.
+#
+# MEASURED BLOCK: the trailing `settle 140`, which is 141 frames. The harness
+# skips the one frame `log` costs and reads the 120 before it.
+settle 30
+key escape
+open mere://alpha
+open mere://beta
+settle 20
+assert visible
+omnibar actions
+assert omnibar open
+settle 140
+log palette lag: open idle sample complete

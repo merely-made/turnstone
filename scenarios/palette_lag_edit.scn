@@ -1,0 +1,49 @@
+# Command palette open-lag receipt, condition 4 of 4: PALETTE OPEN, text
+# edits.
+#
+# Each character is its own step, so each lands on its own frame: `type abc`
+# is one step delivering three chars, which would hide per-keystroke cost in a
+# single frame.  This block is where `suggestion_runs` and `suggestion_refits`
+# earn their place - every edit recomputes the list, and the refit counter says
+# how often it was ranked twice for one keystroke.
+#
+# The typed word is "inspector" because the actions lane matches on lowercased
+# SUBSTRING, so every prefix of it still matches "Open Inspector pane". A word
+# whose prefixes stop matching would empty the list part-way through and make
+# the later keystrokes measure the cheap path while claiming to measure the
+# expensive one. The first character is typed and asserted BEFORE the measured
+# block for the same reason: a receipt that ranked an empty list would report a
+# reassuring number for work nobody does.
+#
+# MEASURED BLOCK: the 8 typed characters below, 56 frames (each `type` is one
+# frame and each `settle 5` is six, the countdown plus the step that sets it),
+# followed by one frame for `log`. The harness skips that trailing frame and
+# reads the 45 before it.
+settle 30
+key escape
+open mere://alpha
+open mere://beta
+settle 20
+assert visible
+omnibar actions
+assert omnibar open
+type i
+settle 20
+assert suggestions >= 1
+type n
+settle 5
+type s
+settle 5
+type p
+settle 5
+type e
+settle 5
+type c
+settle 5
+type t
+settle 5
+type o
+settle 5
+type r
+settle 5
+log palette lag: open text-edit sample complete

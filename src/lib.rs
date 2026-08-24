@@ -20,6 +20,7 @@ mod device_receipts_pane;
 mod device_receipts_service;
 mod download;
 mod feed;
+pub mod frame_timing;
 mod frozen_projection_pane;
 mod gemini_identity;
 mod gemini_trust;

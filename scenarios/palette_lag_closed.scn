@@ -1,0 +1,22 @@
+# Command palette open-lag receipt, condition 1 of 4: PALETTE CLOSED, idle.
+#
+# The control. Same scene, same window (1024x600, turnstone's default), same
+# offline graph as the other three, so the only difference between this file
+# and palette_lag_open.scn is whether the palette is open. Offline by design
+# (mere:// fetches nothing), so the numbers describe the chrome path and not a
+# network.
+#
+# MEASURED BLOCK: the trailing `settle 140`, which is 141 frames (the step
+# that sets the countdown is itself a frame). The harness skips the one frame
+# `log` costs and reads the 120 before it, which is why the block sits at the
+# end of the file and why its length must not change without changing the
+# harness table beside it.
+settle 30
+key escape
+open mere://alpha
+open mere://beta
+settle 20
+assert visible
+assert omnibar closed
+settle 140
+log palette lag: closed idle sample complete

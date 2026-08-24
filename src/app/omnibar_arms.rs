@@ -17,6 +17,11 @@ const MIN_RECALL_CHARS: usize = 2;
 
 impl App {
     pub(super) fn recompute_omnibar_suggestions(&mut self) {
+        // Stage 1 of the palette open-lag instrument. This runs on the input
+        // edge, so the frame that presents the result cannot time it; the
+        // accumulator carries the cost forward to that frame.
+        let started = std::time::Instant::now();
+        let mut refit = false;
         let actions = self.available_actions();
         let chrome = self.shell_chrome_config().clone();
         let row_limit = crate::ui::visible_row_limit(
@@ -52,6 +57,10 @@ impl App {
             review_extra,
         );
         if fitted_limit < row_limit {
+            // The same catalog, ranked a second time for one keystroke.
+            // Counted separately because it is avoidable by construction
+            // rather than load.
+            refit = true;
             recompute_suggestions_with_limit(
                 &mut self.omnibar,
                 &self.graph_runtimes,
@@ -60,6 +69,8 @@ impl App {
                 fitted_limit,
             );
         }
+        self.frame_timings
+            .note_suggestions(started.elapsed(), refit);
     }
 
     /// Re-project an open omnibar after the window changed size: how many
