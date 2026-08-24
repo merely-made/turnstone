@@ -50,10 +50,24 @@ The finding is the reason B1 kept a manual leg.
 
 ## Recorded follow-ups, none speculative
 
-- **Route `ActionRequest`s.** Screen-reader activations are deliberately
-  dropped (`DropActions`); a Narrator click does nothing. Routing into the
-  action spine is the next leg when a consumer asks for operable, not just
-  readable.
+- **Route `ActionRequest`s.** ~~Deliberately dropped~~ **Done, same day
+  (`e117f27`), because Mark asked — which is the forcing consumer this
+  follow-up was written to wait for.** Node ids are one-way path hashes, so
+  routing is a table built beside every pushed tree: a frozen-projection
+  instance selects that member in the graph, the omnibar opens, both through
+  the same update spine a keypress uses. The platform's `do_action` queues
+  and wakes the loop; the shell drains on the main thread. An unrouted
+  request lands as `interaction-missed a11y-action`, a pointer miss's exact
+  vocabulary. Eight tests, including every graph member reachable by route.
+  Getting them to link surfaced two real defects the receipt should own:
+  the livery cutover had introduced a **second AccessKit platform stack**
+  (genet-winit-host pinning accesskit_windows 0.32 beside this bridge's
+  0.33 — two UIA providers in one process), deduped by converging on 0.32;
+  and the grown graph crossed the VS 18 Insiders linker's PDB limit
+  (LNK1140), resolved with `debug = 0` plus `/pdbpagesize:32768`, line
+  tables to return when the toolchain stops being a preview. The manual
+  verification of the routed path — press Enter on a read node, watch the
+  canvas select it — is recorded below when it runs.
 - **Per-node rects.** The surface plan knows real pane rects; the projection
   should carry them so scan order and touch exploration match the screen.
 - **Label the frisket root.** One `Group ''` sits between content and the
