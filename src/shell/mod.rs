@@ -27,7 +27,9 @@ use std::sync::Arc;
 use std::sync::mpsc::Receiver;
 
 use fetch::{FetchCommand, FetchUpdate};
-use genet_documents::{LocalFetcher, SmolwebInlineMediaPolicy, SmolwebSessionEngine, SmolwebTheme};
+use genet_documents::{
+    LocalFetcher, ReaderSessionEngine, SmolwebInlineMediaPolicy, SmolwebSessionEngine, SmolwebTheme,
+};
 use genet_winit_host::SurfaceHost;
 use image::ImageEncoder;
 use inker::{DocumentSession, SessionClick, SessionRegistry, SessionSpawnRequest};
@@ -76,6 +78,7 @@ fn standard_content_engines() -> SessionRegistry<Scene> {
     engines.register(Box::new(genet_documents::LiverySessionEngine::new(
         LocalFetcher,
     )));
+    engines.register(Box::new(ReaderSessionEngine::new(SmolwebTheme::System)));
     for engine_id in SMOLWEB_SESSION_ENGINE_IDS {
         engines.register(Box::new(
             SmolwebSessionEngine::new(*engine_id, LocalFetcher, SmolwebTheme::default())
@@ -297,6 +300,12 @@ pub struct Shell {
     /// obligation, because the projection walks the graph and freezes the
     /// disclosed scene, which is not a per-frame cost worth paying.
     a11y_frames_since_push: u32,
+    /// Where an assistive action on each projected node lands, rebuilt with
+    /// every pushed tree so the table and the tree can never disagree for
+    /// longer than one cadence.
+    a11y_routes: crate::a11y::A11yRoutes,
+    /// Assistive actions queued by the platform thread, drained here.
+    a11y_actions: crate::shell::a11y_bridge::ActionQueue,
     host: Option<SurfaceHost>,
     width: u32,
     height: u32,
@@ -581,6 +590,8 @@ impl Shell {
             a11y_adapter: None,
             a11y_shared: std::sync::Arc::new(std::sync::Mutex::new(None)),
             a11y_frames_since_push: u32::MAX / 2,
+            a11y_routes: crate::a11y::A11yRoutes::new(),
+            a11y_actions: std::sync::Arc::new(std::sync::Mutex::new(Vec::new())),
             host: None,
             width: 1024,
             height: 600,
@@ -1086,7 +1097,9 @@ impl Shell {
             return;
         }
         self.a11y_frames_since_push = 0;
-        let mut update = crate::a11y::project_app(&self.app).to_tree_update(None);
+        let (tree, routes) = crate::a11y::project_app_with_routes(&self.app);
+        self.a11y_routes = routes;
+        let mut update = tree.to_tree_update(None);
         // Narrator refuses to walk past a node without a bounding rectangle:
         // UIA treats boundless elements as off-screen, so the tree served
         // without these read as "three buttons, the omnibar, then nothing".
@@ -1110,6 +1123,31 @@ impl Shell {
             .lock()
             .expect("a11y tree slot poisoned") = Some(update.clone());
         adapter.update_if_active(|| update);
+    }
+
+    /// Drain assistive actions queued by the platform thread and lower each
+    /// through the route table. Runs on the main thread, woken by the same
+    /// proxy the actors use.
+    fn drain_a11y_actions(&mut self) {
+        let requests: Vec<accesskit::ActionRequest> = std::mem::take(
+            &mut *self
+                .a11y_actions
+                .lock()
+                .expect("a11y action queue poisoned"),
+        );
+        for request in requests {
+            // Click is the platform's default action, the one Narrator's
+            // Enter sends. Everything else (focus, scroll hints) stays with
+            // the reader itself for now.
+            if request.action != accesskit::Action::Click {
+                continue;
+            }
+            let route = self.a11y_routes.get(&request.target_node).cloned();
+            let effects =
+                crate::a11y::apply_route(&mut self.app, route.as_ref(), request.target_node);
+            self.run_effects(effects);
+            self.request_redraw();
+        }
     }
 
     fn clip_focused_document_to_knot(&mut self) {
@@ -1281,6 +1319,58 @@ mod tests {
         assert_eq!(decision.engine_id, inker::routing::ENGINE_GENET_LIVERY);
         assert!(engines.contains(&decision.engine_id));
         assert!(!engines.contains(inker::routing::ENGINE_GENET_WEB));
+    }
+
+    #[test]
+    fn reader_pin_uses_held_html_and_switching_back_restores_original_rendering() {
+        let engines = standard_content_engines();
+        assert!(engines.contains(inker::routing::ENGINE_GENET_READER));
+        let source = "<html><head><title>Original Page</title></head><body><nav>Site chrome</nav>\
+            <main><h1>Reader Heading</h1><p>This substantial article paragraph proves the shared \
+            reader lane while retaining the original source bytes.</p></main></body></html>";
+        let retained = source.to_string();
+        let reader_decision = standard_route_policy().route(&inker::EngineRouteRequest {
+            workspace_id: inker::WorkspaceRouteId::new("turnstone-test"),
+            view: None,
+            node: None,
+            address: "https://example.test/story".to_string(),
+            content_type: Some("text/html".to_string()),
+            pinned_engine: Some(inker::routing::ENGINE_GENET_READER.to_string()),
+        });
+        assert_eq!(
+            reader_decision.engine_id,
+            inker::routing::ENGINE_GENET_READER
+        );
+        let request = SessionSpawnRequest::new("https://example.test/story")
+            .with_body(source)
+            .with_content_type("text/html")
+            .with_viewport(640, 480);
+        let reader = engines
+            .spawn(&reader_decision.engine_id, &request)
+            .expect("reader spawns from held bytes");
+        let reader_report = reader.inspect().expect("reader inspection");
+        assert_eq!(reader_report.title.as_deref(), Some("Reader Heading"));
+        assert!(reader_report.lineage.is_some());
+
+        let original_decision = standard_route_policy().route(&inker::EngineRouteRequest {
+            workspace_id: inker::WorkspaceRouteId::new("turnstone-test"),
+            view: None,
+            node: None,
+            address: "https://example.test/story".to_string(),
+            content_type: Some("text/html".to_string()),
+            pinned_engine: Some(inker::routing::ENGINE_GENET_LIVERY.to_string()),
+        });
+        let original = engines
+            .spawn(&original_decision.engine_id, &request)
+            .expect("original renderer respawns from the same held bytes");
+        assert_eq!(
+            original.inspect().and_then(|report| report.title),
+            Some("Original Page".to_string())
+        );
+        assert_eq!(
+            retained, source,
+            "reader extraction does not mutate held source"
+        );
     }
 
     /// The one-state-N-windows invariant (rung 7): two windows on one graph

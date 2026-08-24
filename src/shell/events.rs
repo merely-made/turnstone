@@ -70,6 +70,8 @@ impl ApplicationHandler for Shell {
             event_loop,
             &window,
             self.a11y_shared.clone(),
+            self.a11y_actions.clone(),
+            self.proxy.clone(),
         ));
         window.set_visible(true);
         let size = window.inner_size();
@@ -176,6 +178,7 @@ impl ApplicationHandler for Shell {
             let effects = self.app.apply_update(update);
             self.run_effects(effects);
         }
+        self.drain_a11y_actions();
         self.drain_pending_windows(event_loop);
         self.request_redraw();
     }

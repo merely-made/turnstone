@@ -17,6 +17,9 @@ use std::collections::HashMap;
 
 use uuid::Uuid;
 
+/// Typed extraction lineage projected on a node rendered through `genet.reader`.
+pub const READER_LINEAGE_FACET: &str = "web.reader-lineage";
+
 /// One node's content lifecycle. Absent from the map = no content activity
 /// (the at-rest state for every node).
 #[derive(Clone, Debug, PartialEq)]
@@ -49,6 +52,17 @@ pub struct ContentFacts {
     /// The structural read, when the lane has one. `None` is reported
     /// honestly (a lane without introspection, not an empty document).
     pub structure: Option<StructureFacts>,
+    /// Fleece derivation when the live representation is a reader rendering.
+    pub lineage: Option<ExtractionLineageFacts>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct ExtractionLineageFacts {
+    pub tool: String,
+    pub version: String,
+    pub selector: String,
+    pub score: Option<i32>,
+    pub block_count: usize,
 }
 
 /// One page body fetched by the shell actor and ready to hand to a document

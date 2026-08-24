@@ -503,7 +503,7 @@ pub fn apply_page(
             canvas.set_node_mime_hint_for(node, media.clone());
             if media.as_deref() == Some("text/html") {
                 let doc = genet_static_dom::StaticDocument::parse(&fetched.body);
-                if let Some(title) = genet_extract::extract(&doc).title {
+                if let Some(title) = fleece::extract(&doc).title {
                     if canvas.set_node_title_for(node, title.clone()) {
                         tracing::info!(%url, %title, "node title enriched from the page");
                     }

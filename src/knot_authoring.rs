@@ -2181,6 +2181,7 @@ impl DocumentSession<Scene> for KnotDocumentSession {
             headings: outline.iter().map(|entry| entry.name.clone()).collect(),
             outline,
             links: Vec::new(),
+            lineage: None,
         })
     }
 

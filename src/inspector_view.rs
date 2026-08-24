@@ -243,6 +243,22 @@ fn content_rows(app: &App, node: Option<uuid::Uuid>) -> Vec<(String, String)> {
         return rows;
     };
     rows.push(("Engine".to_string(), facts.engine.clone()));
+    if let Some(lineage) = &facts.lineage {
+        rows.push((
+            "Extraction lineage".to_string(),
+            format!(
+                "{} {} · {}{} · {} blocks",
+                lineage.tool,
+                lineage.version,
+                lineage.selector,
+                lineage
+                    .score
+                    .map(|score| format!(" score {score}"))
+                    .unwrap_or_default(),
+                lineage.block_count
+            ),
+        ));
+    }
     match &facts.structure {
         Some(s) => {
             rows.push((
@@ -373,6 +389,7 @@ mod tests {
             node,
             facts: Some(ContentFacts {
                 engine: "genet.web".to_string(),
+                lineage: None,
                 structure: Some(StructureFacts {
                     title: Some("The Page".to_string()),
                     headings: 2,
@@ -411,6 +428,7 @@ mod tests {
             facts: Some(ContentFacts {
                 engine: "some.lane".to_string(),
                 structure: None,
+                lineage: None,
             }),
         });
         let lines = inspector_lines(&app);
@@ -433,6 +451,7 @@ mod tests {
             facts: Some(ContentFacts {
                 engine: "genet.web".to_string(),
                 structure: None,
+                lineage: None,
             }),
         });
         assert!(app.content.facts(node).is_some());

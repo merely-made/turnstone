@@ -101,7 +101,10 @@ uxtree = { git = "https://github.com/merely-made/mere.git", branch = "main" }
 chrome = { package = "mere-chrome", git = "https://github.com/merely-made/mere.git", branch = "main" }
 # AccessKit node vocabulary for the projection (matches mere's 0.24 pin).
 accesskit = "0.24"
-accesskit_winit = "0.33"
+# 0.32 on purpose: genet-winit-host pins accesskit_windows 0.32, and two
+# platform adapter stacks in one process is two UIA providers and one
+# oversized PDB. Both ride the same core accesskit 0.24 either way.
+accesskit_winit = "0.32"
 # The actor-kernel runtime: the physics + fetch actors wake this shell's
 # event loop through an `armillary::Wake`.
 armillary = { git = "https://github.com/merely-made/mere.git", branch = "main" }
@@ -125,7 +128,7 @@ dirs = "6"
 # plan phase 4: turnstone's content port spawns through the registry; the static
 # lane's netfetch feature gives LocalFetcher its https branch).
 inker = { git = "https://github.com/merely-made/genet.git", branch = "main" }
-genet-documents = { git = "https://github.com/merely-made/genet.git", branch = "main", features = ["netfetch", "livery", "smolweb"] }
+genet-documents = { git = "https://github.com/merely-made/genet.git", branch = "main", features = ["netfetch", "livery", "reader", "smolweb"] }
 # Protocol-faithful RSS/Atom parsing for the graph-native feed subscription
 # loop. Gemini feed discovery remains gemtext-native in Turnstone; errand owns
 # the shared XML grammar already used by Nematic.
@@ -139,7 +142,7 @@ script-engine-piccolo = { git = "https://github.com/merely-made/genet.git", bran
 app-host = { git = "https://github.com/merely-made/mere.git", branch = "main", optional = true }
 # Store limits for a component instance (the same wasmtime the host uses).
 wasmtime = { version = "45", optional = true }
-genet-extract = { git = "https://github.com/merely-made/genet.git", branch = "main" }
+fleece = { git = "https://github.com/merely-made/genet.git", branch = "main" }
 genet-static-dom = { git = "https://github.com/merely-made/genet.git", branch = "main" }
 # Turnstone owns pane retention and composition; Genet supplies the clean-room
 # Livery cascade/Buckram layout state.
@@ -259,3 +262,13 @@ ipc-channel = { git = "https://github.com/merely-made/genet.git", branch = "main
 # from genet or netrender, so every app workspace restates it. Retires by
 # deletion when upstream ships a wgpu-30 vello.
 vello = { git = "https://github.com/mark-ik/vello.git", branch = "mark-ik/wgpu-30" }
+
+[profile.dev]
+# line-tables-only, because full debug info no longer fits: the dependency
+# graph crossed MSVC's program-database limit (LNK1140) the day the livery
+# cutover landed, and a test binary that cannot link is worth more than local
+# variables in a debugger. Backtraces keep file and line.
+# debug = 0 outright, not even line tables: 16K PDB pages still overflowed
+# under the VS 18 Insiders linker, and a red/green verdict does not need line
+# numbers. Restore line-tables-only when the toolchain stops being a preview.
+debug = 0

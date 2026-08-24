@@ -20,6 +20,65 @@ use super::Shell;
 /// node and go rows, so a handful is what there is room to read.
 const RECALL_ROW_LIMIT: usize = 5;
 
+fn project_reader_lineage_facet(
+    app: &mut crate::app::App,
+    node: uuid::Uuid,
+    lineage: Option<&crate::content::ExtractionLineageFacts>,
+) {
+    let Some(lineage) = lineage else {
+        return;
+    };
+    let value = serde_json::json!({
+        "tool": lineage.tool,
+        "version": lineage.version,
+        "selector": lineage.selector,
+        "score": lineage.score,
+        "block_count": lineage.block_count,
+    });
+    if let Err(error) = app.graph_runtimes.facets_mut().set(
+        node,
+        chartulary::FacetId::new(crate::content::READER_LINEAGE_FACET),
+        value,
+        &chartulary::AcceptAll,
+    ) {
+        tracing::warn!(%node, %error, "could not project reader extraction lineage facet");
+    }
+}
+
+#[cfg(test)]
+mod reader_lineage_tests {
+    use super::*;
+    use crate::action::Action;
+
+    #[test]
+    fn reader_lineage_projects_and_reextract_updates_the_node_facet() {
+        let mut app = crate::app::App::test_stub();
+        app.update(Action::OpenAddress(
+            "https://example.test/story".to_string(),
+        ));
+        let node = app.graph_runtimes.focused_member().unwrap();
+        let mut lineage = crate::content::ExtractionLineageFacts {
+            tool: "fleece".to_string(),
+            version: "0.1.0".to_string(),
+            selector: "main".to_string(),
+            score: None,
+            block_count: 3,
+        };
+        project_reader_lineage_facet(&mut app, node, Some(&lineage));
+        let facet = chartulary::FacetId::new(crate::content::READER_LINEAGE_FACET);
+        assert_eq!(
+            app.graph_runtimes.facets().get(&node, &facet).unwrap()["version"],
+            "0.1.0"
+        );
+        lineage.version = "0.2.0".to_string();
+        lineage.block_count = 4;
+        project_reader_lineage_facet(&mut app, node, Some(&lineage));
+        let updated = app.graph_runtimes.facets().get(&node, &facet).unwrap();
+        assert_eq!(updated["version"], "0.2.0");
+        assert_eq!(updated["block_count"], 4);
+    }
+}
+
 impl Shell {
     /// Hand the app's drained semantic events to their consumers. Navigation
     /// events become trail-memory records for the root persona (owner = the
@@ -339,6 +398,7 @@ impl Shell {
                                                     facts: Some(crate::content::ContentFacts {
                                                         engine: decision.engine_id.clone(),
                                                         structure: None,
+                                                        lineage: None,
                                                     }),
                                                 }
                                             }
@@ -400,25 +460,41 @@ impl Shell {
                             // structural read through the trait accessor —
                             // None stays None (a lane without introspection
                             // is reported, not synthesized).
+                            let report = session.inspect();
+                            let lineage = report.as_ref().and_then(|report| {
+                                report.lineage.as_ref().map(|lineage| {
+                                    crate::content::ExtractionLineageFacts {
+                                        tool: lineage.tool.clone(),
+                                        version: lineage.version.clone(),
+                                        selector: lineage.selector.clone(),
+                                        score: lineage.score,
+                                        block_count: lineage.block_count,
+                                    }
+                                })
+                            });
                             let facts = crate::content::ContentFacts {
                                 engine: decision.engine_id.clone(),
-                                structure: session.inspect().map(|r| {
-                                    crate::content::StructureFacts {
-                                        title: r.title,
-                                        headings: r.headings.len(),
-                                        links: r.links.len(),
-                                        outline: r
-                                            .outline
-                                            .into_iter()
-                                            .map(|e| crate::content::OutlineFact {
-                                                depth: e.depth,
-                                                role: e.role,
-                                                name: e.name,
-                                            })
-                                            .collect(),
-                                    }
+                                structure: report.map(|r| crate::content::StructureFacts {
+                                    title: r.title,
+                                    headings: r.headings.len(),
+                                    links: r.links.len(),
+                                    outline: r
+                                        .outline
+                                        .into_iter()
+                                        .map(|e| crate::content::OutlineFact {
+                                            depth: e.depth,
+                                            role: e.role,
+                                            name: e.name,
+                                        })
+                                        .collect(),
                                 }),
+                                lineage,
                             };
+                            project_reader_lineage_facet(
+                                &mut self.app,
+                                node,
+                                facts.lineage.as_ref(),
+                            );
                             let subresources = session.subresources();
                             self.content_sessions.insert(node, session);
                             for url in subresources {
@@ -483,6 +559,17 @@ impl Shell {
                                     })
                                     .collect(),
                             }),
+                        lineage: session.inspect().and_then(|report| {
+                            report
+                                .lineage
+                                .map(|lineage| crate::content::ExtractionLineageFacts {
+                                    tool: lineage.tool,
+                                    version: lineage.version,
+                                    selector: lineage.selector,
+                                    score: lineage.score,
+                                    block_count: lineage.block_count,
+                                })
+                        }),
                     };
                     for subresource in session.subresources() {
                         if self.pending_fetches.note_subresource(&subresource, node) {

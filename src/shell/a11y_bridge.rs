@@ -17,10 +17,14 @@
 //! the cadence, and a screen reader that never activates costs one mutex
 //! store per refresh and nothing else.
 //!
-//! Actions are deliberately not routed yet: a screen-reader `Click` arriving
-//! as an `ActionRequest` is dropped here. Routing it into the app's action
-//! spine is the pass's follow-up work, and pretending otherwise would make
-//! the first pass assert a path that does not exist.
+//! Actions are routed, not dropped, as of the day after the first pass: the
+//! platform hands an `ActionRequest` to whatever thread it likes, so the
+//! handler queues it and wakes the event loop, and the shell drains the
+//! queue on the main thread, resolves each target through the route table
+//! built beside the projection, and lowers it through the same update spine
+//! a keypress uses. A request whose node has no route lands in the event
+//! stream as `interaction-missed a11y-action`, because a miss a receipt
+//! cannot see is the failure this whole lane exists to prevent.
 
 use std::sync::{Arc, Mutex};
 
@@ -41,10 +45,22 @@ impl accesskit::ActivationHandler for ServeLatest {
     }
 }
 
-struct DropActions;
+/// Queued assistive actions, drained by the shell on the main thread.
+pub(crate) type ActionQueue = Arc<Mutex<Vec<ActionRequest>>>;
 
-impl accesskit::ActionHandler for DropActions {
-    fn do_action(&mut self, _request: ActionRequest) {}
+struct QueueAndWake {
+    queue: ActionQueue,
+    wake: winit::event_loop::EventLoopProxy<()>,
+}
+
+impl accesskit::ActionHandler for QueueAndWake {
+    fn do_action(&mut self, request: ActionRequest) {
+        self.queue
+            .lock()
+            .expect("a11y action queue poisoned")
+            .push(request);
+        let _ = self.wake.send_event(());
+    }
 }
 
 struct NoDeactivation;
@@ -59,12 +75,14 @@ pub(crate) fn install(
     event_loop: &ActiveEventLoop,
     window: &Window,
     shared: SharedTree,
+    queue: ActionQueue,
+    wake: winit::event_loop::EventLoopProxy<()>,
 ) -> Adapter {
     let adapter = Adapter::with_direct_handlers(
         event_loop,
         window,
         ServeLatest(shared),
-        DropActions,
+        QueueAndWake { queue, wake },
         NoDeactivation,
     );
     tracing::info!("a11y_bridge: installed");

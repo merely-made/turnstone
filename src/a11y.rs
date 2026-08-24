@@ -32,6 +32,10 @@ use crate::content::{NodeContent, OutlineFact};
 /// workbench tiling under its pane leaf and a document subtree under the
 /// canvas leaf for every node with live content.
 pub fn project_app(app: &App) -> UxTree {
+    project_app_capturing(app, &mut None)
+}
+
+fn project_app_capturing(app: &App, orrery_pane: &mut Option<crate::panes::PaneId>) -> UxTree {
     let chrome = project_chrome(app);
     // Live documents, in graph order (deterministic), each from its mirrored
     // structural outline. They stitch under the CANVAS leaf: content insets
@@ -50,6 +54,9 @@ pub fn project_app(app: &App) -> UxTree {
             .workbench_for_pane(id)
             .map(mere::workbench::project_workbench),
         PaneContent::Orrery => {
+            if orrery_pane.is_none() {
+                *orrery_pane = Some(id);
+            }
             // The canvas leaf carries the graph summary plus the live
             // documents (their pixels composite over the canvas region).
             let count = app
@@ -224,6 +231,169 @@ fn outline_role(entry: &OutlineFact) -> Role {
     }
 }
 
+/// Where a screen-reader action on a projected node lands in the app.
+///
+/// The projection hashes paths into `NodeId`s, which is one-way, so routing
+/// is a table built beside the tree rather than parsed back out of it. The
+/// meerkat-era checklist called this the route table; this is that idea,
+/// rebuilt where the projection actually lives now.
+#[derive(Clone, Debug, PartialEq)]
+pub enum A11yRoute {
+    /// The chrome: open the omnibar in its find lane.
+    OpenOmnibar,
+    /// A frozen-projection instance: select that member in the graph pane, so
+    /// a reader who found a node by name can make it the app's selection.
+    SelectMember {
+        pane: crate::panes::PaneId,
+        member: uuid::Uuid,
+    },
+}
+
+/// Routes for every node an assistive action may target.
+pub type A11yRoutes = std::collections::HashMap<accesskit::NodeId, A11yRoute>;
+
+/// The projection and its route table, built in one pass.
+///
+/// Routes may name nodes the current tree does not contain (the frozen pane
+/// closed, say); that is harmless, because the platform can only request
+/// actions on nodes it was served. The reverse would not be harmless, which
+/// is what the coverage test below pins.
+pub fn project_app_with_routes(app: &App) -> (UxTree, A11yRoutes) {
+    let mut orrery_pane = None;
+    let tree = project_app_capturing(app, &mut orrery_pane);
+
+    let mut routes = A11yRoutes::new();
+    routes.insert(
+        node_id_for_path("turnstone/chrome/omnibar"),
+        A11yRoute::OpenOmnibar,
+    );
+    if let Some(pane) = orrery_pane {
+        for (_, node) in app.graph_runtimes.graph().nodes() {
+            routes.insert(
+                node_id_for_path(&format!("turnstone/frozen-projection/instance/{}", node.id)),
+                A11yRoute::SelectMember {
+                    pane,
+                    member: node.id,
+                },
+            );
+        }
+    }
+    (tree, routes)
+}
+
+/// Lower one assistive action into the app, through the same update spine a
+/// keypress uses. Returns the effects for the shell to run.
+///
+/// A request whose node has no route is a miss a scenario must be able to
+/// see, so it lands in the event stream as `interaction-missed a11y-action`
+/// rather than vanishing: the loud-and-attributable rule, unchanged from
+/// pointer clicks.
+pub(crate) fn apply_route(
+    app: &mut App,
+    route: Option<&A11yRoute>,
+    target: accesskit::NodeId,
+) -> Vec<crate::action::Effect> {
+    match route {
+        Some(A11yRoute::OpenOmnibar) => {
+            app.update(crate::action::Action::OmnibarOpen { command: false })
+        }
+        Some(A11yRoute::SelectMember { pane, member }) => {
+            if app.graph_pane_select_member(*pane, *member) {
+                vec![crate::action::Effect::Redraw]
+            } else {
+                app.note(crate::observe::AppEvent::InteractionMissed {
+                    what: "a11y-action",
+                    target: member.to_string(),
+                });
+                Vec::new()
+            }
+        }
+        None => {
+            app.note(crate::observe::AppEvent::InteractionMissed {
+                what: "a11y-action",
+                target: format!("{target:?}"),
+            });
+            Vec::new()
+        }
+    }
+}
+
+#[cfg(test)]
+mod route_table {
+    use super::*;
+
+    #[test]
+    fn every_graph_member_is_reachable_by_route_when_an_orrery_exists() {
+        let app = App::projection_fixture();
+        let (_, routes) = project_app_with_routes(&app);
+        let members: Vec<_> = app
+            .graph_runtimes
+            .graph()
+            .nodes()
+            .map(|(_, node)| node.id)
+            .collect();
+        assert!(!members.is_empty(), "the stub graph has members");
+        for member in members {
+            let id = node_id_for_path(&format!("turnstone/frozen-projection/instance/{member}"));
+            match routes.get(&id) {
+                Some(A11yRoute::SelectMember { member: routed, .. }) => {
+                    assert_eq!(*routed, member)
+                }
+                other => panic!("member {member} routed to {other:?}"),
+            }
+        }
+        assert!(matches!(
+            routes.get(&node_id_for_path("turnstone/chrome/omnibar")),
+            Some(A11yRoute::OpenOmnibar)
+        ));
+    }
+
+    #[test]
+    fn a_routed_selection_changes_the_app_and_a_miss_says_so() {
+        let mut app = App::projection_fixture();
+        let (_, routes) = project_app_with_routes(&app);
+        let member = app
+            .graph_runtimes
+            .graph()
+            .nodes()
+            .map(|(_, node)| node.id)
+            .next()
+            .expect("a member");
+        let id = node_id_for_path(&format!("turnstone/frozen-projection/instance/{member}"));
+
+        let effects = apply_route(&mut app, routes.get(&id), id);
+        assert!(!effects.is_empty(), "a landed selection redraws");
+
+        // The miss is loud and attributable, exactly like a pointer miss.
+        let ghost = node_id_for_path("turnstone/frozen-projection/instance/ghost");
+        let effects = apply_route(&mut app, None, ghost);
+        assert!(effects.is_empty());
+        let described: Vec<String> = app
+            .take_events()
+            .iter()
+            .map(crate::observe::AppEvent::describe)
+            .collect();
+        assert!(
+            described
+                .iter()
+                .any(|line| line.starts_with("interaction-missed a11y-action")),
+            "the miss vanished: {described:?}"
+        );
+    }
+
+    #[test]
+    fn an_omnibar_route_opens_the_omnibar_through_the_spine() {
+        let mut app = App::test_stub();
+        assert!(!app.omnibar.open);
+        apply_route(
+            &mut app,
+            Some(&A11yRoute::OpenOmnibar),
+            node_id_for_path("turnstone/chrome/omnibar"),
+        );
+        assert!(app.omnibar.open, "the same spine a keypress uses");
+    }
+}
+
 #[cfg(test)]
 mod bridge_integrity {
     use super::*;
@@ -271,6 +441,7 @@ mod tests {
             node,
             facts: Some(ContentFacts {
                 engine: "genet.web".to_string(),
+                lineage: None,
                 structure: Some(StructureFacts {
                     title: Some("Example Domain".to_string()),
                     headings: 1,
