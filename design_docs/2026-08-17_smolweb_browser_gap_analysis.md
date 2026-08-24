@@ -46,6 +46,12 @@ sets.
 > Graphshell wasm surface uses `genet-render`. The clean-checkout and focused
 > test receipt is in
 > [`2026-08-21_livery_buckram_dependency_cutover.md`](2026-08-21_livery_buckram_dependency_cutover.md).
+>
+> **Reader-route correction, 2026-08-24:** Hekate is not a remaining
+> negotiator. Fleece derives the reader representation, Inker selects the
+> registered `genet.reader` engine, and the held-source representation flip is
+> the Verso-tile concern. The original HTML remains available when the node is
+> switched back to `genet.livery`.
 
 ## Part 1: the anatomy of a browser, in this design language
 
@@ -81,7 +87,7 @@ not concepts.
 | Browser element | Here | State |
 | --- | --- | --- |
 | The page | A member's document session behind an engine registration; HTML routes to the Livery lane, switchable per node via the viewer override when another registered lane exists | Live; the settings row's whole point |
-| Reader mode | Not a strip-the-page hack: nematic lanes for grammars the engine owns natively, and genet's three-head Hekate negotiator (smolweb extract / middlenet / fullweb) for HTML | Nematic lanes live for cards/capture; Hekate planned |
+| Reader mode | Fleece derives a reader representation from held HTML; Inker routes the node to `genet.reader`; Verso-tile owns the representation flip back to the original `genet.livery` session | Live, with extraction lineage and held-source flip tests |
 | View source / inspect element | The Inspector pane reads document structure through nematic engines; genet-probe resolves elements by role and label | Live |
 | Find in page | No surface. The structural read the Inspector already does is the index a find would walk | Absent |
 | Zoom | Per-window scale is the host's; a per-node text-scale facet fits the Apparatus | Absent as a control |
