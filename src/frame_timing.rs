@@ -67,15 +67,100 @@ pub struct FrameTimings {
     pub pane_scenes: Duration,
     /// Pass 2: rasterizing each planned scene to its own texture.
     pub raster: Duration,
-    /// How many scenes were rasterized. Imported external-texture layers are
-    /// not counted; they were painted by their own producer.
-    pub rasterized: u32,
-    /// Tiles the rasterizer actually rebuilt across those scenes, summed from
-    /// netrender's per-surface dirty count. Zero across a settled frame is the
-    /// shape the done condition asks for.
-    pub dirty_tiles: usize,
+    /// Raster work split by surface class. Totals are derived from it rather
+    /// than tracked beside it, so the parts cannot drift from the whole.
+    pub surface_raster: SurfaceRasterSplit,
     /// Composing the layers onto the acquired frame and presenting it.
     pub compose: Duration,
+}
+
+/// Raster accounting for one surface class.
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+pub struct SurfaceRaster {
+    /// Scenes of this class rasterized in the frame. Imported
+    /// external-texture layers are not counted; their own producer painted
+    /// them.
+    pub rasterized: u32,
+    /// Tiles the rasterizer actually rebuilt across them, from netrender's
+    /// per-surface dirty count.
+    pub dirty_tiles: usize,
+}
+
+impl SurfaceRaster {
+    fn note(&mut self, dirty: usize) {
+        self.rasterized += 1;
+        self.dirty_tiles += dirty;
+    }
+
+    fn add(&mut self, other: Self) {
+        self.rasterized += other.rasterized;
+        self.dirty_tiles += other.dirty_tiles;
+    }
+}
+
+/// Raster work split by surface class.
+///
+/// One summed `dirty_tiles` answers "did anything repaint" and then refuses to
+/// say WHAT, which is exactly where this instrument's first pass stopped: a
+/// settled frame repainting three tiles could be chrome leaking or the graph
+/// pane animating, and the total cannot tell them apart. That ambiguity was
+/// recorded as an open clause of the palette open-lag note's done condition
+/// rather than guessed at; this is the split that closes it.
+///
+/// `rasterized` rides beside `dirty_tiles` in each class because a class
+/// reading zero dirty tiles is otherwise indistinguishable from a class that
+/// was not in the frame at all — "chrome is clean" and "there is no chrome"
+/// are different findings.
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+pub struct SurfaceRasterSplit {
+    pub graph: SurfaceRaster,
+    pub content: SurfaceRaster,
+    pub pane: SurfaceRaster,
+    pub divider: SurfaceRaster,
+    pub chrome: SurfaceRaster,
+}
+
+impl SurfaceRasterSplit {
+    /// Record one rasterized surface. Keyed off [`SurfaceKind`] rather than
+    /// its label so a new surface class fails to compile here instead of
+    /// quietly landing in no bucket.
+    pub fn note(&mut self, kind: crate::surface::SurfaceKind, dirty: usize) {
+        self.bucket(kind).note(dirty);
+    }
+
+    fn bucket(&mut self, kind: crate::surface::SurfaceKind) -> &mut SurfaceRaster {
+        use crate::surface::SurfaceKind;
+        match kind {
+            SurfaceKind::Graph(_) => &mut self.graph,
+            SurfaceKind::Content(_) => &mut self.content,
+            SurfaceKind::Pane(_) => &mut self.pane,
+            SurfaceKind::Divider(_) => &mut self.divider,
+            SurfaceKind::Chrome => &mut self.chrome,
+        }
+    }
+
+    /// The whole, derived from the parts.
+    pub fn totals(&self) -> SurfaceRaster {
+        let mut total = SurfaceRaster::default();
+        for class in [
+            self.graph,
+            self.content,
+            self.pane,
+            self.divider,
+            self.chrome,
+        ] {
+            total.add(class);
+        }
+        total
+    }
+
+    fn add(&mut self, other: Self) {
+        self.graph.add(other.graph);
+        self.content.add(other.content);
+        self.pane.add(other.pane);
+        self.divider.add(other.divider);
+        self.chrome.add(other.chrome);
+    }
 }
 
 impl FrameTimings {
@@ -87,6 +172,11 @@ impl FrameTimings {
         if refit {
             self.suggestion_refits += 1;
         }
+    }
+
+    /// Fold one rasterization pass's per-class counts into the frame.
+    pub fn note_surface_raster(&mut self, split: SurfaceRasterSplit) {
+        self.surface_raster.add(split);
     }
 
     /// Clear the frame-scoped stages after they have been reported.
@@ -125,13 +215,42 @@ mod tests {
         let mut timings = FrameTimings::default();
         timings.note_suggestions(Duration::from_millis(4), true);
         timings.raster = Duration::from_millis(9);
-        timings.dirty_tiles = 234;
+        timings
+            .surface_raster
+            .note(crate::surface::SurfaceKind::Chrome, 234);
 
         timings.reset();
 
         // A keystroke's cost belongs to the frame that presented it, not to
         // every frame after.
         assert_eq!(timings, FrameTimings::default());
+    }
+
+    #[test]
+    fn raster_totals_are_derived_from_the_split() {
+        use crate::panes::PaneId;
+        use crate::surface::SurfaceKind;
+
+
+        let mut split = SurfaceRasterSplit::default();
+        split.note(SurfaceKind::Chrome, 3);
+        split.note(SurfaceKind::Graph(PaneId(1)), 40);
+        split.note(SurfaceKind::Graph(PaneId(1)), 2);
+
+        // The question the summed counter could not answer: chrome rendered
+        // and was nearly clean, the graph did the repainting.
+        assert_eq!(split.chrome.rasterized, 1);
+        assert_eq!(split.chrome.dirty_tiles, 3);
+        assert_eq!(split.graph.rasterized, 2);
+        assert_eq!(split.graph.dirty_tiles, 42);
+
+        // A class that was not in the frame reads zero rasterized, which is
+        // what distinguishes it from a class that was clean.
+        assert_eq!(split.pane, SurfaceRaster::default());
+
+        let totals = split.totals();
+        assert_eq!(totals.rasterized, 3);
+        assert_eq!(totals.dirty_tiles, 45);
     }
 
     #[test]

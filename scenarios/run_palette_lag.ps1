@@ -105,6 +105,13 @@ $countFields = @(
     "dirty_tiles",
     "surfaces"
 )
+# Raster work by surface class. <class>_rast is how many surfaces of that class
+# the frame rasterized, so a class reading zero dirty tiles can be told apart
+# from a class that was not in the frame: "chrome is clean" and "there is no
+# chrome" are different findings, and the summed dirty_tiles above cannot
+# distinguish them.
+$surfaceClasses = @("graph", "content", "pane", "divider", "chrome")
+$surfaceFields = $surfaceClasses | ForEach-Object { "${_}_rast"; "${_}_tiles" }
 
 function Get-Percentile {
     param([double[]] $Values, [double] $Percentile)
@@ -225,7 +232,7 @@ try {
             foreach ($frame in $measured) {
                 $samples[$case.Name].Add($frame) | Out-Null
                 $row = [ordered]@{ case = $case.Name; run = $run }
-                foreach ($field in ($durationFields + $countFields)) {
+                foreach ($field in ($durationFields + $countFields + $surfaceFields)) {
                     $row[$field] = if ($frame.ContainsKey($field)) { $frame[$field] } else { $null }
                 }
                 $frameRows.Add([pscustomobject] $row) | Out-Null
@@ -270,6 +277,23 @@ foreach ($case in $cases) {
         "{0,18}" -f [long] $sum
     }
     $report.Add(("  {0,-16} {1}" -f $case.Name, ($totals -join ""))) | Out-Null
+}
+$report.Add("") | Out-Null
+
+$report.Add('Raster work by surface class, summed across every measured frame.') | Out-Null
+$report.Add('A clean class reads zero tiles against a non-zero rasterized count;') | Out-Null
+$report.Add('a class absent from the frame reads zero for both.') | Out-Null
+foreach ($case in $cases) {
+    $report.Add(("  {0}" -f $case.Name)) | Out-Null
+    $frames = $samples[$case.Name].Count
+    foreach ($class in $surfaceClasses) {
+        $rastField = "${class}_rast"
+        $tilesField = "${class}_tiles"
+        $rast = ($samples[$case.Name] | ForEach-Object { if ($_.ContainsKey($rastField)) { [double] $_[$rastField] } else { 0.0 } } | Measure-Object -Sum).Sum
+        $tiles = ($samples[$case.Name] | ForEach-Object { if ($_.ContainsKey($tilesField)) { [double] $_[$tilesField] } else { 0.0 } } | Measure-Object -Sum).Sum
+        $perFrame = if ($frames -gt 0) { $tiles / $frames } else { 0.0 }
+        $report.Add(("    {0,-9} rasterized {1,7}   dirty tiles {2,8}   per frame {3,7:F2}" -f $class, [long] $rast, [long] $tiles, $perFrame)) | Out-Null
+    }
 }
 $report.Add("") | Out-Null
 

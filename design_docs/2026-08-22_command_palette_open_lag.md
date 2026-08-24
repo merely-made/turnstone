@@ -1,10 +1,12 @@
 # Command Palette Open-Lag Note
 
-**Date:** 2026-08-22 (attributed and fixed 2026-08-23)
-**Status:** Fixed. The cost was `ChromeView::scene` re-cascading the whole
-chrome subtree every frame. Chrome now retains its layout per window-root, and
-the open-versus-closed ratio fell from 4.37x to 1.19x on the same receipt. One
-clause of the done condition remains open, named at the end.
+**Date:** 2026-08-22 (attributed and fixed 2026-08-23, closed 2026-08-24)
+**Status:** Closed. The cost was `ChromeView::scene` re-cascading the whole
+chrome subtree every frame. Chrome now retains its layout per window-root; the
+open-versus-closed ratio fell from 4.37x to 1.19x, and a per-surface raster
+split then showed chrome repainting **zero** tiles per settled frame in both
+states. The done condition is met. One unrelated question the split exposed is
+named at the end.
 **Scope:** Turnstone chrome and frame production.
 
 ## Observation
@@ -125,8 +127,14 @@ the whole and its parts:
 ```
 frame frame_ms=... surfaces=... palette=... suggestions_ms=... suggestion_runs=...
       suggestion_refits=... chrome_sync_ms=... chrome_scene_ms=... chrome_syncs=...
-      pane_scenes_ms=... raster_ms=... rasterized=... dirty_tiles=... compose_ms=...
+      pane_scenes_ms=... raster_ms=... rasterized=... dirty_tiles=...
+      graph_rast=... graph_tiles=... content_rast=... content_tiles=...
+      pane_rast=... pane_tiles=... divider_rast=... divider_tiles=...
+      chrome_rast=... chrome_tiles=... compose_ms=...
 ```
+
+`rasterized` and `dirty_tiles` are derived from the per-class fields rather
+than counted beside them, so the parts cannot drift from the whole.
 
 Enable it with `RUST_LOG=turnstone::shell::render=debug`. The accounting lives
 in [`frame_timing.rs`](../src/frame_timing.rs); it stays compiled in, because
@@ -145,6 +153,13 @@ Two things about it are worth knowing before reading its output:
   expensive sync from four cheap ones; `chrome_syncs`, `suggestion_runs`, and
   `dirty_tiles` can, and `dirty_tiles` comes from netrender's own per-surface
   count rather than an estimate.
+- **A summed counter names a symptom and hides its owner.** The first pass
+  summed `dirty_tiles` across the frame, which was enough to say "something
+  still repaints" and not enough to say what — and that gap is what kept a
+  clause of the done condition open for a day. `<class>_rast` beside
+  `<class>_tiles` is the fix: a class that rasterized and repainted nothing
+  reads `1` and `0`, which is a different fact from a class that was not in the
+  frame and reads `0` and `0`.
 
 ## The receipt
 
@@ -227,18 +242,64 @@ changed state requires. The responsible stage has an executable
 closed-versus-open regression receipt, and the instrumentation remains
 available for later chrome features.
 
-**State, clause by clause.** Repeated *state* work: met, and was already met -
-`suggestion_runs` is 0 across every measured open-idle frame. Repeated *layout*
-work: met - `chrome_scene_ms` is 0.204 ms open idle, and the unit guard holds
-`layout_rebuilds` at 1 across idle frames. Row selection and editing updating
-only what changed: met, and visible in the p95 above. The receipt and the
-instrumentation: met.
+**Met, clause by clause.** Repeated *state* work: `suggestion_runs` is 0 across
+every measured open-idle frame, and was before this work began. Repeated
+*layout* work: `chrome_scene_ms` is about 0.2 ms open idle, and the unit guard
+holds `layout_rebuilds` at 1 across idle frames. Repeated *raster* work: chrome
+repaints **zero** tiles per settled frame, closed or open — see the split
+below. Row selection and editing updating only what changed: visible in both
+the p95 and the split. The receipt and the instrumentation: in the tree.
 
-Repeated *raster* work: **not met**. Idle frames still repaint about 3 tiles
-each with the palette open, down from about 8. The remaining tiles are not
-attributed to a surface, because `dirty_tiles` sums across every surface in the
-frame; splitting the counter per surface is what a follow-up would need first,
-and the graph pane rather than chrome is the likelier owner.
+## 2026-08-24 per-surface raster split
+
+The fix left one clause unresolved and honestly so: idle frames still repainted
+about 3 tiles each, and `dirty_tiles` summed across every surface, so the note
+could not say whether that was chrome leaking or the graph pane working.
+Guessing was the wrong move at that point; splitting the counter was the cheap
+one. `dirty_tiles` is now recorded per surface class, with a count of surfaces
+rasterized beside it so that a class reading zero tiles is distinguishable from
+a class absent from the frame.
+
+Summed across 360 measured idle frames per condition:
+
+| Condition | class | rasterized | dirty tiles | per frame |
+| --- | --- | --- | --- | --- |
+| palette closed, idle | graph | 360 | 1334 | 3.71 |
+| palette closed, idle | chrome | 360 | **0** | **0.00** |
+| palette open, idle | graph | 360 | 1334 | 3.71 |
+| palette open, idle | chrome | 360 | **0** | **0.00** |
+| palette open, row selection | chrome | 150 | 5760 | 38.40 |
+| palette open, text edits | chrome | 135 | 96 | 0.71 |
+
+Chrome rasterizes every frame — the non-zero `rasterized` says it is present,
+not skipped — and repaints nothing. The residual belongs entirely to the graph
+surface, and the graph's count is **identical to the tile** with the palette
+open and closed, which is the strongest available statement that the palette
+adds no raster work at all. The earlier note guessed the graph pane was the
+likelier owner; the split confirms it rather than leaving it a guess.
+
+Row selection's 38.40 tiles a frame is the selection highlight moving, which is
+a real visual change. It is the shape retention is supposed to leave behind:
+nothing repaints on the frames where nothing changed, and the band that moved
+repaints on the frames where it did.
+
+**A methodological note, because the headline number stopped working.** This
+run reports a closed-versus-open whole-frame ratio of 0.74x — an open palette
+apparently rendering *faster* than a closed one. It is not faster. The chrome
+delta is now approximately 0.06 ms, while `pane_scenes_ms` varies by around
+1.5 ms between runs of the identical scenario, so the ratio is measuring the
+graph surface's own run-to-run variance and nothing else. The ratio was the
+right headline at 4.37x and is meaningless at 1.19x or below. Read the stage
+fields and the per-class split; the ratio has done its job and should not be
+quoted further.
+
+## Open, and not this note's
+
+Why does the graph surface repaint about 3.7 tiles on a settled frame with no
+input, no animation asked for, and an offline graph? The count is deterministic
+across runs and identical across conditions, so it is reproducible and cheap to
+chase. It has nothing to do with the palette, the chrome, or this note; it is
+recorded here only because this instrument is what made it visible.
 
 ## Stop line
 

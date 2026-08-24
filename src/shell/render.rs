@@ -723,15 +723,15 @@ impl Shell {
         // an unchanged surface reuses its tile instead of rebuilding every
         // frame) and compose the layers in order.
         let host = self.host.as_ref().unwrap();
-        // Stage 5: rasterization. Counted as well as timed, and the dirty-tile
-        // sum comes from netrender's own per-surface count, because the done
-        // condition is that a merely-open palette provokes no repaint — a
-        // settled frame that still rebuilds every tile is the failure this
-        // instrument exists to catch. Accumulated into locals rather than
-        // straight into `self.app`, so the closure keeps its single immutable
-        // borrow of the host.
-        let mut rasterized = 0u32;
-        let mut dirty_tiles = 0usize;
+        // Stage 5: rasterization. Counted as well as timed, and split by
+        // surface class, because the done condition is that a merely-open
+        // palette provokes no repaint — and a settled frame that still
+        // rebuilds tiles has to say WHICH surface rebuilt them before anyone
+        // can act on it. The dirty counts are netrender's own, read back per
+        // surface. Accumulated into a local rather than straight into
+        // `self.app`, so the closure keeps its single immutable borrow of the
+        // host.
+        let mut surface_raster = crate::frame_timing::SurfaceRasterSplit::default();
         let raster_started = std::time::Instant::now();
         let layers: Vec<CompositeLayer> = scenes
             .into_iter()
@@ -744,8 +744,10 @@ impl Shell {
                         scene.dims.1,
                         ColorLoad::Clear(scene.clear),
                     );
-                    rasterized += 1;
-                    dirty_tiles += host.renderer().vello_last_dirty_count().unwrap_or(0);
+                    surface_raster.note(
+                        scene.kind,
+                        host.renderer().vello_last_dirty_count().unwrap_or(0),
+                    );
                     CompositeLayer {
                         kind: scene.kind,
                         view,
@@ -803,8 +805,7 @@ impl Shell {
         }
 
         self.app.frame_timings.raster += raster_elapsed;
-        self.app.frame_timings.rasterized += rasterized;
-        self.app.frame_timings.dirty_tiles += dirty_tiles;
+        self.app.frame_timings.note_surface_raster(surface_raster);
         self.app.frame_timings.compose += compose_elapsed;
         // One line per presented frame, carrying the whole and its parts. The
         // stage fields are what turn "the palette is open and the frame is
@@ -812,6 +813,8 @@ impl Shell {
         // closed-versus-open pair attributes its own delta without a second
         // tool.
         let timings = &self.app.frame_timings;
+        let split = timings.surface_raster;
+        let raster_totals = split.totals();
         tracing::debug!(
             frame_ms = started.elapsed().as_secs_f32() * 1000.0,
             surfaces = surfaces.len(),
@@ -824,8 +827,18 @@ impl Shell {
             chrome_syncs = timings.chrome_syncs,
             pane_scenes_ms = ms(timings.pane_scenes),
             raster_ms = ms(timings.raster),
-            rasterized = timings.rasterized,
-            dirty_tiles = timings.dirty_tiles,
+            rasterized = raster_totals.rasterized,
+            dirty_tiles = raster_totals.dirty_tiles,
+            graph_rast = split.graph.rasterized,
+            graph_tiles = split.graph.dirty_tiles,
+            content_rast = split.content.rasterized,
+            content_tiles = split.content.dirty_tiles,
+            pane_rast = split.pane.rasterized,
+            pane_tiles = split.pane.dirty_tiles,
+            divider_rast = split.divider.rasterized,
+            divider_tiles = split.divider.dirty_tiles,
+            chrome_rast = split.chrome.rasterized,
+            chrome_tiles = split.chrome.dirty_tiles,
             compose_ms = ms(timings.compose),
             w,
             h,
