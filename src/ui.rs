@@ -1682,42 +1682,147 @@ impl<D: LayoutDom> LayoutDom for SubtreeView<'_, D> {
     }
 }
 
+/// One window-root's Livery/Buckram layout, retained across frames.
+///
 /// [`scene_from_dom`] re-rooted at `root`: only that subtree lays out (at its
 /// own viewport) and paints — the forest-dom per-window path. The chrome's N
 /// window-roots each render through this with the others untouched.
 ///
-/// **Still one-shot, and knowingly so.** Every pane moved to
-/// [`RetainedLayout`]; the chrome did not, because it lays out through a
-/// `SubtreeView` rather than the DOM directly, and a retained layout would
-/// have to hold that view stable across frames. The chrome card is a handful
-/// of rows against a pane's hundreds, so it is the cheap remaining site
-/// rather than an oversight. Do not copy this shape into a new pane.
-pub fn scene_from_subtree(
-    dom: &ScriptedDom,
-    root: DomNodeId,
-    sheet: &str,
-    w: u32,
-    h: u32,
-) -> netrender::Scene {
-    let view = SubtreeView::new(dom, root);
-    let mut snapshot = build_livery_snapshot(&view, sheet, w, h, TextSystem::new());
-    let viewport = DeviceIntSize::new(w as i32, h as i32);
-    let plist = paint_snapshot(&view, &mut snapshot, w, h, &HashMap::new(), (0.0, 0.0));
-    composite(viewport, &plist)
+/// **Retained since 2026-08-23.** This path was one-shot before that, on the
+/// reasoning that "the chrome card is a handful of rows against a pane's
+/// hundreds, so it is the cheap remaining site rather than an oversight." The
+/// command palette open-lag receipt
+/// (`design_docs/2026-08-22_command_palette_open_lag.md`) measured that
+/// belief: with the palette open the card is not a handful of rows, and the
+/// one-shot cascade cost 36 ms of a 44 ms frame. The estimate was reasonable
+/// and wrong, which is the argument for measuring a site rather than sizing it
+/// by eye.
+///
+/// The subtree twin of [`RetainedLayout`], with one deliberate difference: it
+/// does **not** drain the DOM's mutation queue. A chrome forest is many roots
+/// over ONE `ScriptedDom`, so a per-root drain would let whichever root ran
+/// first swallow the batch and leave every other root believing nothing had
+/// changed — a stale window, not merely a slow one. The owner drains once and
+/// calls [`RetainedSubtreeLayout::invalidate`] on every root instead.
+///
+/// Resize and stylesheet changes are detected here, because those are
+/// per-root facts the owner would otherwise have to track for each window
+/// separately.
+pub struct RetainedSubtreeLayout {
+    snapshot: Option<LiverySnapshot<DomNodeId>>,
+    size: (u32, u32),
+    sheet: String,
+    dirty: bool,
+    rebuilds: u32,
 }
 
-pub(crate) fn hit_test_subtree(
-    dom: &ScriptedDom,
-    root: DomNodeId,
-    sheet: &str,
-    w: u32,
-    h: u32,
-    x: f32,
-    y: f32,
-) -> Option<DomNodeId> {
-    let view = SubtreeView::new(dom, root);
-    let snapshot = build_livery_snapshot(&view, sheet, w, h, TextSystem::new());
-    snapshot_hit_test(&view, &snapshot, x, y, &HashMap::new(), (0.0, 0.0))
+impl Default for RetainedSubtreeLayout {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl RetainedSubtreeLayout {
+    pub fn new() -> Self {
+        Self {
+            snapshot: None,
+            size: (0, 0),
+            sheet: String::new(),
+            dirty: true,
+            rebuilds: 0,
+        }
+    }
+
+    /// How many full cascades this root has paid for.
+    ///
+    /// Expected to reach 1 and stay there while the chrome is merely being
+    /// repainted, rising when its DOM changes, its window resizes, or the
+    /// appearance sheet is replaced.
+    pub fn rebuilds(&self) -> u32 {
+        self.rebuilds
+    }
+
+    /// Mark this root's layout stale. Called by the owner after it has
+    /// drained the shared DOM and found the batch non-empty.
+    pub fn invalidate(&mut self) {
+        self.dirty = true;
+    }
+
+    fn ensure(&mut self, dom: &ScriptedDom, root: DomNodeId, sheet: &str, w: u32, h: u32) {
+        let resized = self.size != (w, h);
+        let resheeted = self.sheet != sheet;
+        if self.snapshot.is_some() && !self.dirty && !resized && !resheeted {
+            return;
+        }
+        self.rebuilds = self.rebuilds.saturating_add(1);
+        tracing::debug!(
+            dirty = self.dirty,
+            resized,
+            resheeted,
+            rebuilds = self.rebuilds,
+            "chrome subtree layout rebuilt"
+        );
+        // The text system survives the rebuild; throwing it away would
+        // discard the shaping caches that make a rebuild affordable.
+        let text = self
+            .snapshot
+            .take()
+            .map_or_else(TextSystem::new, |snapshot| snapshot.text);
+        let view = SubtreeView::new(dom, root);
+        self.snapshot = Some(build_livery_snapshot(&view, sheet, w, h, text));
+        self.size = (w, h);
+        self.sheet = sheet.to_string();
+        self.dirty = false;
+    }
+
+    /// This root's scene, cascading only when something actually changed.
+    pub fn scene(
+        &mut self,
+        dom: &ScriptedDom,
+        root: DomNodeId,
+        sheet: &str,
+        w: u32,
+        h: u32,
+    ) -> netrender::Scene {
+        self.ensure(dom, root, sheet, w, h);
+        let view = SubtreeView::new(dom, root);
+        let plist = paint_snapshot(
+            &view,
+            self.snapshot.as_mut().expect("ensure leaves a snapshot"),
+            w,
+            h,
+            &HashMap::new(),
+            (0.0, 0.0),
+        );
+        composite(DeviceIntSize::new(w as i32, h as i32), &plist)
+    }
+
+    /// Hit-test this root against the same retained layout the frame painted.
+    ///
+    /// Sharing the layout with [`scene`](Self::scene) is the point: a hit test
+    /// that built its own cascade could disagree with what is on screen, and
+    /// it paid the full cost on every pointer press besides.
+    pub fn hit_test(
+        &mut self,
+        dom: &ScriptedDom,
+        root: DomNodeId,
+        sheet: &str,
+        w: u32,
+        h: u32,
+        x: f32,
+        y: f32,
+    ) -> Option<DomNodeId> {
+        self.ensure(dom, root, sheet, w, h);
+        let view = SubtreeView::new(dom, root);
+        snapshot_hit_test(
+            &view,
+            self.snapshot.as_ref().expect("ensure leaves a snapshot"),
+            x,
+            y,
+            &HashMap::new(),
+            (0.0, 0.0),
+        )
+    }
 }
 
 pub(crate) fn subtree_node_rect(

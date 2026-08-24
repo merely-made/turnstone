@@ -33,6 +33,9 @@ use cambium::{
     TextInput, caret_field_children, el, on_click,
 };
 use genet_scripted_dom::ScriptedDom;
+// `drain_mutations` is the mutation queue's only reader; the chrome owns that
+// drain for the whole forest (see `absorb_dom_mutations`).
+use layout_dom_api::LayoutDomMut;
 
 use crate::app::App;
 use crate::panes::{ChromeEdge, ChromePlacement};
@@ -262,6 +265,11 @@ pub struct ChromeSurfaces {
     dom: DomHandle,
     runner: GenetMultiRunner<ChromeState, ChromeLogic, ChromeView, ChromeIntent>,
     projections: Vec<ProjectionId>,
+    /// One retained layout per window-root, slot-indexed beside `projections`.
+    /// Before these existed, every frame and every pointer press re-cascaded
+    /// the whole chrome subtree from scratch; with the palette open that was
+    /// 36 ms of a 44 ms frame.
+    layouts: Vec<crate::ui::RetainedSubtreeLayout>,
     /// The host-owned presentation value applied to the retained DOM during
     /// scene layout and hit testing.
     appearance: crate::shell_services::AppearanceConfig,
@@ -327,6 +335,7 @@ impl ChromeSurfaces {
             dom,
             runner,
             projections: vec![primary],
+            layouts: vec![crate::ui::RetainedSubtreeLayout::new()],
             appearance: crate::shell_services::AppearanceConfig::default(),
         }
     }
@@ -340,6 +349,40 @@ impl ChromeSurfaces {
                 Box::new(chrome_logic(next)) as ChromeLogic,
             );
             self.projections.push(id);
+            self.layouts.push(crate::ui::RetainedSubtreeLayout::new());
+        }
+    }
+
+    /// How many full cascades one window-root has paid for.
+    ///
+    /// The retention contract in one number: it reaches 1 and stays there
+    /// while the chrome is merely repainted. Exposed so a receipt can assert
+    /// retention rather than infer it from a duration, which would make the
+    /// guard a benchmark and therefore flaky.
+    pub fn layout_rebuilds(&self, slot: usize) -> u32 {
+        self.layouts.get(slot).map_or(0, |layout| layout.rebuilds())
+    }
+
+    /// Drain the shared DOM once and stale every root that reads it.
+    ///
+    /// This is the whole reason [`crate::ui::RetainedSubtreeLayout`] does not
+    /// drain for itself. The chrome is N window-roots over ONE `ScriptedDom`,
+    /// so a per-root drain would let whichever root ran first consume the
+    /// batch and leave the rest painting a tree that no longer exists. Draining
+    /// here, and invalidating every root when the batch is non-empty, cannot
+    /// produce that split.
+    ///
+    /// Every entry point that reads the layout calls this, not just `sync`: a
+    /// click dispatch mutates the DOM between frames, and a lens window can
+    /// render in a frame where the primary did not sync.
+    fn absorb_dom_mutations(&mut self) {
+        let mut mutations = Vec::new();
+        self.dom.borrow_mut().drain_mutations(&mut mutations);
+        if mutations.is_empty() {
+            return;
+        }
+        for layout in &mut self.layouts {
+            layout.invalidate();
         }
     }
 
@@ -428,6 +471,7 @@ impl ChromeSurfaces {
             state.link_preview = link_preview.clone();
         });
         self.appearance = chrome.appearance.clone();
+        self.absorb_dom_mutations();
     }
 
     /// One window's chrome scene: ITS window-root laid out at its own size
@@ -435,16 +479,20 @@ impl ChromeSurfaces {
     /// path. (This replaced the `display: none` visibility flip the chrome
     /// bridged with while genet-stylo's sharing cache panicked on subtree
     /// roots; the fix published as 0.19.1 and the flip is gone.)
-    pub fn scene(&self, slot: usize, w: u32, h: u32) -> netrender::Scene {
+    pub fn scene(&mut self, slot: usize, w: u32, h: u32) -> netrender::Scene {
+        self.absorb_dom_mutations();
         let Some(&id) = self.projections.get(slot) else {
             return netrender::Scene::new(w, h);
         };
-        let dom = self.dom.borrow();
         let Some(root) = self.runner.window_root(id) else {
             return netrender::Scene::new(w, h);
         };
         let sheet = crate::ui::chrome_sheet(&self.appearance);
-        crate::ui::scene_from_subtree(&dom, root, &sheet, w, h)
+        let dom = self.dom.borrow();
+        let Some(layout) = self.layouts.get_mut(slot) else {
+            return netrender::Scene::new(w, h);
+        };
+        layout.scene(&dom, root, &sheet, w, h)
     }
 
     /// Route a click at window-local `(x, y)` into `slot`'s chrome: hit-test
@@ -454,13 +502,17 @@ impl ChromeSurfaces {
         let Some(&id) = self.projections.get(slot) else {
             return Vec::new();
         };
+        self.absorb_dom_mutations();
         let hit = {
-            let dom = self.dom.borrow();
             let Some(root) = self.runner.window_root(id) else {
                 return Vec::new();
             };
             let sheet = crate::ui::chrome_sheet(&self.appearance);
-            crate::ui::hit_test_subtree(&dom, root, &sheet, w, h, x, y)
+            let dom = self.dom.borrow();
+            let Some(layout) = self.layouts.get_mut(slot) else {
+                return Vec::new();
+            };
+            layout.hit_test(&dom, root, &sheet, w, h, x, y)
         };
         match hit {
             Some(node) => self
@@ -803,4 +855,109 @@ mod tests {
         );
         assert!(joined.contains('d'), "text after the caret: {joined}");
     }
+
+    /// The retention contract: a chrome that nothing has changed re-paints
+    /// without re-cascading. This is the unit-level guard for the command
+    /// palette open-lag receipt, which measured the unretained path at 36 ms
+    /// of a 44 ms frame.
+    #[test]
+    fn an_unchanged_chrome_paints_without_cascading_again() {
+        let app = open_omnibar_app();
+        let mut chrome = ChromeSurfaces::new();
+        chrome.sync(&app, &[(0, 1024.0, 600.0)]);
+
+        assert!(!chrome.scene(0, 1024, 600).ops.is_empty());
+        assert_eq!(chrome.layout_rebuilds(0), 1, "the first frame cascades");
+
+        // Idle frames: sync still runs (the shell calls it every frame), but
+        // it writes no mutations, so nothing is invalidated.
+        for _ in 0..5 {
+            chrome.sync(&app, &[(0, 1024.0, 600.0)]);
+            assert!(!chrome.scene(0, 1024, 600).ops.is_empty());
+        }
+        assert_eq!(
+            chrome.layout_rebuilds(0),
+            1,
+            "five idle frames must not re-cascade"
+        );
+
+        // A resize is a per-root fact the layout detects for itself.
+        assert!(!chrome.scene(0, 800, 600).ops.is_empty());
+        assert_eq!(chrome.layout_rebuilds(0), 2, "a resize re-cascades");
+    }
+
+    /// A state change reaches the layout. The retention must not be so eager
+    /// that a changed chrome keeps painting the old cascade.
+    #[test]
+    fn a_changed_chrome_cascades_again() {
+        let mut app = open_omnibar_app();
+        let mut chrome = ChromeSurfaces::new();
+        chrome.sync(&app, &[(0, 1024.0, 600.0)]);
+        chrome.scene(0, 1024, 600);
+        assert_eq!(chrome.layout_rebuilds(0), 1);
+
+        app.update(Action::OmnibarChar('e'));
+        chrome.sync(&app, &[(0, 1024.0, 600.0)]);
+        chrome.scene(0, 1024, 600);
+        assert_eq!(
+            chrome.layout_rebuilds(0),
+            2,
+            "an edited omnibar re-cascades"
+        );
+    }
+
+    /// The forest hazard, stated as a test: N window-roots share ONE DOM and
+    /// therefore ONE mutation queue. A per-root drain would let whichever root
+    /// rendered first swallow the batch, leaving every other window painting a
+    /// tree that no longer exists — stale, not merely slow. The drain lives in
+    /// `absorb_dom_mutations` for exactly this reason, and this asserts that a
+    /// single change reaches BOTH roots.
+    #[test]
+    fn one_mutation_invalidates_every_window_root() {
+        let mut app = open_omnibar_app();
+        let mut chrome = ChromeSurfaces::new();
+        let sizes = [(0, 1024.0, 600.0), (1, 800.0, 500.0)];
+
+        chrome.sync(&app, &sizes);
+        chrome.scene(0, 1024, 600);
+        chrome.scene(1, 800, 500);
+        assert_eq!(chrome.layout_rebuilds(0), 1);
+        assert_eq!(chrome.layout_rebuilds(1), 1);
+
+        // The primary renders FIRST, which is precisely the ordering that
+        // would hide a per-root drain bug.
+        app.update(Action::OmnibarChar('e'));
+        chrome.sync(&app, &sizes);
+        chrome.scene(0, 1024, 600);
+        chrome.scene(1, 800, 500);
+        assert_eq!(chrome.layout_rebuilds(0), 2, "the primary re-cascaded");
+        assert_eq!(
+            chrome.layout_rebuilds(1),
+            2,
+            "the lens re-cascaded too, rather than losing the batch to the primary"
+        );
+    }
+
+    /// A pointer press hit-tests the layout the frame painted, and pays no
+    /// cascade to do it. Before retention this path rebuilt the whole subtree
+    /// on every press, including presses that miss chrome entirely.
+    #[test]
+    fn a_press_hit_tests_without_cascading_again() {
+        let app = open_omnibar_app();
+        let mut chrome = ChromeSurfaces::new();
+        chrome.sync(&app, &[(0, 1024.0, 600.0)]);
+        chrome.scene(0, 1024, 600);
+        assert_eq!(chrome.layout_rebuilds(0), 1);
+
+        // A press well away from any chrome control: it still hit-tests, and
+        // it must not provoke a cascade to answer "nothing here".
+        let intents = chrome.click(0, 5.0, 590.0, 1024, 600);
+        assert!(intents.is_empty(), "a press on empty chrome commits nothing");
+        assert_eq!(
+            chrome.layout_rebuilds(0),
+            1,
+            "hit testing shares the frame's layout instead of building its own"
+        );
+    }
+
 }

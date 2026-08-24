@@ -1,10 +1,10 @@
 # Command Palette Open-Lag Note
 
-**Date:** 2026-08-22 (attributed 2026-08-23)
-**Status:** Attributed on a release build. The cost is `ChromeView::scene`,
-which re-cascades, re-lays-out and repaints the chrome subtree from scratch on
-every frame. The instrument and the closed-versus-open receipt are in the tree;
-the fix is not.
+**Date:** 2026-08-22 (attributed and fixed 2026-08-23)
+**Status:** Fixed. The cost was `ChromeView::scene` re-cascading the whole
+chrome subtree every frame. Chrome now retains its layout per window-root, and
+the open-versus-closed ratio fell from 4.37x to 1.19x on the same receipt. One
+clause of the done condition remains open, named at the end.
 **Scope:** Turnstone chrome and frame production.
 
 ## Observation
@@ -86,7 +86,8 @@ The four candidates this note recorded on 2026-08-22, now answered:
    window with no retention of any kind. Fourteen panes hold a
    `crate::ui::RetainedLayout`, whose own contract says `rebuilds()` is
    "expected to reach 1 and stay there for a pane that is merely being
-   repainted". The chrome pays a full rebuild every frame instead.
+   repainted". The chrome paid a full rebuild every frame instead. Fixed
+   below.
 
 4. **Whole-frame logging did not separate the stages - closed.** It does now;
    see the instrument below.
@@ -110,9 +111,11 @@ Two smaller things the counters surfaced, neither of them the lag:
   so the doubling is not the fitted-row-limit refit path but something calling
   the recompute more than once per edit. It costs approximately nothing today,
   which is exactly why it would never be noticed without a counter.
-- [`ui::hit_test_subtree`](../src/ui.rs) builds the same full snapshot the same
-  way. Every hit test against chrome pays a cascade and a layout. Unmeasured
-  here, and it shares whatever fix the stage above gets.
+- `ui::hit_test_subtree` built the same full snapshot the same way, so every
+  hit test against chrome paid a cascade and a layout — on every pointer press
+  anywhere in the window, including presses that miss chrome entirely, since
+  `deliver_press` asks chrome first. Unmeasured here; fixed below, because it
+  turned out to share not merely a fix but the very same retained layout.
 
 ## The instrument
 
@@ -169,17 +172,73 @@ itself.
 Still not covered: **input-to-present latency**. The frame log times the frame,
 not the wait from keystroke to photons. That needs its own instrument.
 
+## 2026-08-23 fix
+
+Chrome now holds one `RetainedSubtreeLayout` per window-root. An unchanged
+chrome paints from the retained cascade; it re-cascades when its DOM changes,
+its window resizes, or the appearance sheet is replaced. The hit-test path
+shares the same retained layout, so a pointer press no longer builds its own
+cascade to answer where it landed.
+
+One thing about the shape is worth keeping, because getting it wrong would have
+been silent. `RetainedLayout`, the pane twin, drains the DOM's mutation queue
+inside its own `ensure`. Copying that per root would have been a stale-window
+bug rather than a slow one: the chrome is N window-roots over ONE `ScriptedDom`
+and therefore one mutation queue, so whichever root rendered first would have
+swallowed the batch and left every other window painting a tree that no longer
+existed. `RetainedSubtreeLayout` deliberately does not drain;
+`ChromeSurfaces::absorb_dom_mutations` drains once and invalidates every root.
+`one_mutation_invalidates_every_window_root` asserts it, with the primary
+rendering first because that is the ordering that would hide the bug.
+
+Same receipt, same machine, same window, three runs per condition:
+
+| Condition | frame_ms before | frame_ms after | chrome_scene_ms before | chrome_scene_ms after |
+| --- | --- | --- | --- | --- |
+| palette closed, idle | 10.162 | 6.057 | 4.608 | 0.093 |
+| palette open, idle | 44.427 | 7.235 | 36.509 | 0.204 |
+| palette open, row selection | 43.483 | 8.051 | 35.474 | 0.234 |
+| palette open, text edits | 42.392 | 5.802 | 35.665 | 0.120 |
+
+The whole-frame ratio falls from **4.37x to 1.19x**, and the `chrome_scene_ms`
+delta from **31.901 ms to 0.110 ms**. The closed case improved as much in
+proportion, which is what the reframe predicted: the fix was never about the
+palette.
+
+Raster fell without being touched: idle dirty tiles dropped from 2151 to 1073
+closed and from 2835 to 1255 open. A retained cascade produces stable
+fragments, so fewer tiles differ frame to frame.
+
+`chrome_scene_ms` p95 under row selection is 3.596 ms against a 0.234 ms
+median. That is correct rather than a leak: moving the selection changes a
+row's class, which is a real DOM mutation and a real re-cascade. Retention is
+meant to skip the frames where nothing changed, not the frames where something
+did.
+
+The frame is now dominated by `pane_scenes_ms` at about 3.8 ms in every
+condition, unchanged by this work and untouched by it. That is the next site if
+frame cost is worth pursuing further; it is not part of this note.
+
 ## Done condition
 
-Unchanged, and **not yet met**: leaving the palette open causes no repeated
-state, layout, or raster work by itself. Row selection and text editing update
-only the chrome work their changed state requires. The responsible stage has an
-executable closed-versus-open regression receipt, and the instrumentation
-remains available for later chrome features.
+Leaving the palette open causes no repeated state, layout, or raster work by
+itself. Row selection and text editing update only the chrome work their
+changed state requires. The responsible stage has an executable
+closed-versus-open regression receipt, and the instrumentation remains
+available for later chrome features.
 
-Of those, the receipt and the instrumentation now exist. The first two
-sentences describe work that has not been done: chrome still rebuilds wholesale
-every frame in both states.
+**State, clause by clause.** Repeated *state* work: met, and was already met -
+`suggestion_runs` is 0 across every measured open-idle frame. Repeated *layout*
+work: met - `chrome_scene_ms` is 0.204 ms open idle, and the unit guard holds
+`layout_rebuilds` at 1 across idle frames. Row selection and editing updating
+only what changed: met, and visible in the p95 above. The receipt and the
+instrumentation: met.
+
+Repeated *raster* work: **not met**. Idle frames still repaint about 3 tiles
+each with the palette open, down from about 8. The remaining tiles are not
+attributed to a surface, because `dirty_tiles` sums across every surface in the
+frame; splitting the counter per surface is what a follow-up would need first,
+and the graph pane rather than chrome is the likelier owner.
 
 ## Stop line
 
