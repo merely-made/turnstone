@@ -160,9 +160,8 @@ impl SurfaceId {
 }
 
 /// Which surface currently receives semantic input. This replaces the bare
-/// `omnibar.open` boolean: it is an explicit target, so a third surface class
-/// (panes, rung 5 slice C) joins by adding a variant rather than by threading
-/// another bool through `render`.
+/// `omnibar.open` boolean: it is an explicit target, so pane products join
+/// without threading another focus boolean through `render`.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum FocusTarget {
     /// A graph pane has focus. There is no singleton graph focus target.
@@ -171,6 +170,8 @@ pub enum FocusTarget {
     Chrome,
     /// A node's live content session has focus and takes pointer/wheel/keys.
     Content(Uuid),
+    /// A retained pane surface has focus and takes product-neutral input.
+    Pane(PaneId),
 }
 
 impl Default for FocusTarget {
@@ -187,6 +188,7 @@ impl FocusTarget {
             FocusTarget::Graph(_) => "graph",
             FocusTarget::Chrome => "chrome",
             FocusTarget::Content(_) => "content",
+            FocusTarget::Pane(_) => "pane",
         }
     }
 }
@@ -291,10 +293,10 @@ pub fn focus_for_press(surfaces: &[Surface], focus: FocusTarget, px: f32, py: f3
             SurfaceKind::Graph(pane) => FocusTarget::Graph(pane),
             SurfaceKind::Chrome => FocusTarget::Chrome,
             SurfaceKind::Content(node) => FocusTarget::Content(node),
-            // A pane press makes it the active pane (App state); keyboard focus
-            // stays with the canvas for slice C (panes are placeholders).
-            // A seam press likewise: the drag is a pointer gesture, not a
-            // keyboard-focus change.
+            // This pure plan has no product registry, so ordinary pane presses
+            // preserve keyboard focus. The shell promotes a registered
+            // contributed pane to `FocusTarget::Pane` after admission. A seam
+            // press likewise stays a pointer gesture.
             SurfaceKind::Pane(_) | SurfaceKind::Divider(_) => focus,
         },
         None => focus,

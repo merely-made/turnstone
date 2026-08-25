@@ -638,7 +638,7 @@ impl App {
     pub fn focused_graph_pane(&self) -> Option<PaneId> {
         match self.focus {
             FocusTarget::Graph(pane) => Some(pane),
-            FocusTarget::Chrome | FocusTarget::Content(_) => None,
+            FocusTarget::Chrome | FocusTarget::Content(_) | FocusTarget::Pane(_) => None,
         }
     }
 

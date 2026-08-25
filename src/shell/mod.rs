@@ -397,6 +397,9 @@ pub struct Shell {
     /// Every retained per-pane Cambium renderer, keyed by `PaneId`.
     /// See [`renderers::PaneRenderers`] for why they live in one place.
     renderers: renderers::PaneRenderers,
+    /// Runtime product surface factories. Concrete product state never enters
+    /// the shell; admission yields the erased sessions retained above.
+    surface_providers: crate::contributed_surface::SurfaceProviderRegistry,
     /// Which pane the pointer is hovering (pane pointer-move routing): lets a
     /// move off a pane deliver its Leave so hover emphasis clears.
     hovered_pane: Option<crate::panes::PaneId>,
@@ -562,6 +565,10 @@ impl Shell {
             Err(error) => tracing::warn!(%error, "Knot authoring is unavailable"),
         }
 
+        let mut surface_providers = crate::contributed_surface::SurfaceProviderRegistry::new();
+        surface_providers
+            .register_provider(crate::knot_document_surface::KnotDocumentProvider::default())
+            .expect("the built-in Knot document provider is unique");
         let mut shell = Self {
             app,
             live_settings,
@@ -618,6 +625,7 @@ impl Shell {
             shared_knot_service,
             device_receipts_service,
             renderers: Default::default(),
+            surface_providers,
             hovered_pane: None,
             chrome: crate::chrome_view::ChromeSurfaces::new(),
             wb_tab_drag: None,

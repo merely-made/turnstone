@@ -32,6 +32,9 @@ use crate::panes::PaneId;
 /// Every retained pane renderer, keyed by the pane instance that owns it.
 #[derive(Default)]
 pub(crate) struct PaneRenderers {
+    /// Product-contributed retained sessions. This is the only dynamic map;
+    /// concrete product state stays erased behind the shared surface contract.
+    pub(crate) contributed: crate::contributed_surface::ContributedSurfaceSessions,
     /// The Roster pane's cambium grid (rung 5 slice D).
     pub(crate) roster: HashMap<PaneId, crate::cambium_pane::RosterGrid>,
     /// The Gloss pane (minimap): carries a custom-paint leaf, so it owns a
@@ -73,6 +76,7 @@ impl PaneRenderers {
     /// one-per-kind shape could not have had.
     pub(crate) fn evict(&mut self, pane: PaneId) {
         let Self {
+            contributed,
             roster,
             gloss,
             trail,
@@ -91,6 +95,7 @@ impl PaneRenderers {
         // Destructured on purpose: adding an eleventh map makes this fail to
         // compile until it is named here, which a list of `self.x.remove(..)`
         // lines would not.
+        contributed.remove(pane);
         roster.remove(&pane);
         gloss.remove(&pane);
         trail.remove(&pane);
@@ -145,6 +150,9 @@ impl PaneRenderers {
     /// keep drawing the fade out rather than stopping on the last scrolled
     /// frame.
     pub(crate) fn any_bars_visible(&mut self) -> bool {
+        if self.contributed.any_bars_visible() {
+            return true;
+        }
         macro_rules! visible {
             ($($map:ident),+ $(,)?) => {
                 $(if self.$map.values_mut().any(|view| view.bars_visible()) {
@@ -173,7 +181,8 @@ impl PaneRenderers {
     /// a receipt observes retention and eviction without reaching into fields.
     #[cfg(test)]
     pub(crate) fn retained(&self) -> usize {
-        self.roster.len()
+        self.contributed.len()
+            + self.roster.len()
             + self.gloss.len()
             + self.trail.len()
             + self.inspector.len()

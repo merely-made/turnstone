@@ -84,6 +84,9 @@ graphshell = { git = "https://github.com/merely-made/mere.git", branch = "main" 
 # tab or an iOS app, so the spawn path cannot be the only one.
 graphshell-local = { git = "https://github.com/merely-made/mere.git", branch = "main" }
 knot = { package = "knot-editor", git = "https://github.com/merely-made/mere.git", branch = "main" }
+# The reusable one-document product surface. This stays separate from the
+# broad Knot port graph used by publishing and endpoint composition above.
+knot-document = { git = "https://github.com/merely-made/mere.git", branch = "main" }
 graphshell-client = { git = "https://github.com/merely-made/mere.git", branch = "main", features = ["accesskit"] }
 graphshell-endpoint = { git = "https://github.com/merely-made/mere.git", branch = "main" }
 chirograph = { git = "https://github.com/merely-made/mere.git", branch = "main" }

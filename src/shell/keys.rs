@@ -110,6 +110,50 @@ impl Shell {
             .is_some_and(|editor| editor.dispatch_key(cambium_winit::ime_event_from_winit(ime)))
     }
 
+    fn deliver_contributed_key(&mut self, key: &WinitKey) -> bool {
+        let crate::surface::FocusTarget::Pane(pane_id) = self.app.focus else {
+            return false;
+        };
+        if matches!(key, WinitKey::Named(WinitNamedKey::Escape)) {
+            if let Some(pane) = self.renderers.contributed.get_mut(pane_id) {
+                pane.focus(None);
+            }
+            self.app.focus = crate::surface::FocusTarget::Graph(self.app.default_graph_pane());
+            self.request_redraw();
+            return true;
+        }
+        let Some(pane) = self.renderers.contributed.get_mut(pane_id) else {
+            return false;
+        };
+        if matches!(key, WinitKey::Named(WinitNamedKey::Tab)) {
+            pane.focus_traverse(!self.shift);
+            return true;
+        }
+        let modifiers = cambium::Modifiers {
+            shift: self.shift,
+            ctrl: self.ctrl,
+            alt: self.alt,
+            meta: false,
+        };
+        cambium_winit::key_event_from_winit(key, modifiers).is_some_and(|event| {
+            pane.key(event);
+            true
+        })
+    }
+
+    pub(super) fn deliver_contributed_ime(&mut self, ime: &winit::event::Ime) -> bool {
+        let crate::surface::FocusTarget::Pane(pane_id) = self.app.focus else {
+            return false;
+        };
+        self.renderers
+            .contributed
+            .get_mut(pane_id)
+            .is_some_and(|pane| {
+                pane.key(cambium_winit::ime_event_from_winit(ime));
+                true
+            })
+    }
+
     /// Deliver an ephemeral key to the FOCUSED content session (the gesture
     /// law, exactly as the wheel does): scroll keys scroll the page, Escape
     /// blurs back to the canvas. Returns whether the key was consumed here, so
@@ -155,6 +199,10 @@ impl Shell {
     /// otherwise. Ephemeral content keys (scroll, blur) are delivered inline
     /// and consumed; everything else lowers to an Action through the spine.
     pub(super) fn on_key(&mut self, key: &WinitKey) {
+        if !self.app.omnibar.open && self.deliver_contributed_key(key) {
+            self.request_redraw();
+            return;
+        }
         if !self.app.omnibar.open && self.deliver_knot_key(key) {
             self.request_redraw();
             return;
@@ -187,6 +235,8 @@ impl Shell {
                 WinitKey::Character(s) if !self.ctrl => s.chars().next().map(Action::OmnibarChar),
                 _ => None,
             }
+        } else if matches!(self.app.focus, crate::surface::FocusTarget::Pane(_)) {
+            None
         } else if matches!(self.app.focus, crate::surface::FocusTarget::Content(_)) {
             // A page holds focus. Its scroll keys and Escape were already
             // consumed above; only the durable node/nav chords still apply

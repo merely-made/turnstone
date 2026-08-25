@@ -322,6 +322,18 @@ impl Shell {
         rw: u32,
         rh: u32,
     ) -> Scene {
+        if let Some(spec) = self.contributed_pane_spec(pane_id, content) {
+            return match self
+                .renderers
+                .contributed
+                .resolve(&spec, &self.surface_providers)
+            {
+                Ok(pane) => pane.scene(rw, rh, 1.0),
+                Err(error) => {
+                    crate::ui::pane_scene(&format!("Surface admission failed: {error}"), rw, rh)
+                }
+            };
+        }
         match content {
             Some(PaneContent::Trail) => {
                 let pane = self
@@ -517,6 +529,30 @@ impl Shell {
                 crate::ui::pane_scene(&label, rw, rh)
             }
         }
+    }
+
+    fn contributed_pane_spec(
+        &self,
+        pane_id: crate::panes::PaneId,
+        content: Option<&PaneContent>,
+    ) -> Option<crate::panes::PaneSpec> {
+        let PaneContent::Registered(kind) = content? else {
+            return None;
+        };
+        let spec = self
+            .app
+            .primary_blueprint
+            .as_ref()
+            .and_then(|space| space.pane(pane_id))
+            .or_else(|| {
+                self.app
+                    .lens_blueprints
+                    .iter()
+                    .filter_map(Option::as_ref)
+                    .find_map(|space| space.pane(pane_id))
+            })?;
+        (&spec.kind == kind && self.surface_providers.contains_pane_kind(&spec.kind))
+            .then(|| spec.clone())
     }
 
     /// The layered present (born minimal at rung 3, grows into the surface

@@ -217,11 +217,19 @@ impl Shell {
         // laid out and clipped, and nothing can reach it.
         if let Some(crate::surface::HitResult {
             kind: crate::surface::SurfaceKind::Pane(pane),
+            local,
             ..
         }) = crate::surface::hit_test(&plan, self.app.focus, x, y)
-            && self.renderers.scroll_pane(pane, dx, dy)
         {
-            self.request_redraw();
+            if let Some(surface) = self.renderers.contributed.get_mut(pane) {
+                if surface.wheel(dx, dy, local.0, local.1)
+                    == crate::contributed_surface::SurfaceRequest::Redraw
+                {
+                    self.request_redraw();
+                }
+            } else if self.renderers.scroll_pane(pane, dx, dy) {
+                self.request_redraw();
+            }
         }
     }
 
@@ -337,6 +345,14 @@ impl Shell {
                     // click, so the next frame's paint and hit order agree.
                     self.app.raise_floating_pane(id);
                     if button == MouseButton::Left {
+                        if let Some(pane) = self.renderers.contributed.get_mut(id) {
+                            self.app.focus = crate::surface::FocusTarget::Pane(id);
+                            pane.focus_at(hit.local.0, hit.local.1);
+                            pane.pointer_down(hit.local.0, hit.local.1);
+                            pane.click(hit.local.0, hit.local.1);
+                            self.request_redraw();
+                            return;
+                        }
                         match self.pane_content(id) {
                             Some(PaneContent::Trail) => {
                                 // The same cambium round trip as the Roster.
@@ -713,24 +729,30 @@ impl Shell {
             Some(crate::surface::SurfaceKind::Pane(id)) => Some(id),
             _ => None,
         };
+        let previous_pane = self.hovered_pane;
         let mut redraw = false;
         // Leaving the previously hovered pane clears its emphasis.
         if let Some(prev) = self.hovered_pane
             && pane_hit != Some(prev)
         {
-            redraw |= match self.pane_content(prev) {
-                Some(PaneContent::Gloss(_)) => self
-                    .renderers
-                    .gloss
-                    .get_mut(&prev)
-                    .is_some_and(|p| p.hover_leave()),
-                Some(PaneContent::Overmap(_)) => self
-                    .renderers
-                    .overmap
-                    .get_mut(&prev)
-                    .is_some_and(|p| p.hover_leave()),
-                _ => false,
-            };
+            if let Some(pane) = self.renderers.contributed.get_mut(prev) {
+                redraw |= pane.hover(cambium::HoverPhase::Leave, 0.0, 0.0)
+                    == crate::contributed_surface::SurfaceRequest::Redraw;
+            } else {
+                redraw |= match self.pane_content(prev) {
+                    Some(PaneContent::Gloss(_)) => self
+                        .renderers
+                        .gloss
+                        .get_mut(&prev)
+                        .is_some_and(|p| p.hover_leave()),
+                    Some(PaneContent::Overmap(_)) => self
+                        .renderers
+                        .overmap
+                        .get_mut(&prev)
+                        .is_some_and(|p| p.hover_leave()),
+                    _ => false,
+                };
+            }
         }
         self.hovered_pane = pane_hit;
         if let (Some(hit), Some(id)) = (hit, pane_hit) {
@@ -741,19 +763,31 @@ impl Shell {
                 )
             });
             if let Some((rw, rh)) = dims {
-                redraw |= match self.pane_content(id) {
-                    Some(PaneContent::Gloss(_)) => self
-                        .renderers
-                        .gloss
-                        .get_mut(&id)
-                        .is_some_and(|p| p.hover(hit.local.0, hit.local.1, rw, rh)),
-                    Some(PaneContent::Overmap(_)) => self
-                        .renderers
-                        .overmap
-                        .get_mut(&id)
-                        .is_some_and(|p| p.hover(hit.local.0, hit.local.1, rw, rh)),
-                    _ => false,
-                };
+                if let Some(pane) = self.renderers.contributed.get_mut(id) {
+                    redraw |= pane.hover(
+                        if previous_pane == Some(id) {
+                            cambium::HoverPhase::Move
+                        } else {
+                            cambium::HoverPhase::Enter
+                        },
+                        hit.local.0,
+                        hit.local.1,
+                    ) == crate::contributed_surface::SurfaceRequest::Redraw;
+                } else {
+                    redraw |= match self.pane_content(id) {
+                        Some(PaneContent::Gloss(_)) => self
+                            .renderers
+                            .gloss
+                            .get_mut(&id)
+                            .is_some_and(|p| p.hover(hit.local.0, hit.local.1, rw, rh)),
+                        Some(PaneContent::Overmap(_)) => self
+                            .renderers
+                            .overmap
+                            .get_mut(&id)
+                            .is_some_and(|p| p.hover(hit.local.0, hit.local.1, rw, rh)),
+                        _ => false,
+                    };
+                }
             }
         }
         if redraw {
@@ -806,6 +840,20 @@ impl Shell {
                 }
                 self.hovered_surface = Some(node);
                 self.apply_pending_surface_cursor();
+            }
+            return;
+        }
+        if let Some(crate::surface::SurfaceKind::Pane(pane)) = self.pointer_capture
+            && let Some((local_x, local_y)) = self.surface_plan().into_iter().find_map(|surface| {
+                (surface.kind == crate::surface::SurfaceKind::Pane(pane))
+                    .then_some((x - surface.rect.x, y - surface.rect.y))
+            })
+            && let Some(surface) = self.renderers.contributed.get_mut(pane)
+        {
+            if surface.pointer_move(local_x, local_y)
+                == crate::contributed_surface::SurfaceRequest::Redraw
+            {
+                self.request_redraw();
             }
             return;
         }
@@ -990,6 +1038,22 @@ impl Shell {
                 Some(SessionClick::Handled | SessionClick::Miss) | None => {}
             }
             self.request_redraw();
+            return;
+        }
+        if let Some(crate::surface::SurfaceKind::Pane(pane)) = captured
+            && let Some((local_x, local_y)) = self.surface_plan().into_iter().find_map(|surface| {
+                (surface.kind == crate::surface::SurfaceKind::Pane(pane))
+                    .then_some((x - surface.rect.x, y - surface.rect.y))
+            })
+            && let Some(surface) = self.renderers.contributed.get_mut(pane)
+        {
+            if button == MouseButton::Left {
+                if surface.pointer_up(local_x, local_y)
+                    == crate::contributed_surface::SurfaceRequest::Redraw
+                {
+                    self.request_redraw();
+                }
+            }
             return;
         }
         if self.wb_divider_drag.take().is_some() {
