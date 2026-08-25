@@ -583,8 +583,11 @@ already commit here, and this session watched work swept into the wrong commit
 twice and a red test appear in a file no lane had touched. Three rules, cheap
 to keep and expensive to retrofit:
 
-- **Each lane owns its files.** A2 owns the graph pool and surface identity; A6
-  owns chrome, omnibar, and transcript; A7 owns Cambium components and settings.
+- **Each lane owns its files.** A1 owns the landed external source identity;
+  A2 owns the graph pool and graph surface runtime identity (`PaneId` and
+  `graph_id`); A6 owns chrome, omnibar, and transcript; A7 owns Cambium
+  components and settings. Port surface admission is tracked separately in
+  `mere/design_docs/mere_docs/implementation_strategy/2026-08-24_knot_shared_surface_and_port_contribution_plan.md`.
   Where a lane must touch a shared file, it touches only its own items in it.
 - **Commit your own paths, not the tree.** The whole-tree default is right for
   one agent and wrong for three. Where a sweep happens anyway, name what was
@@ -596,6 +599,10 @@ to keep and expensive to retrofit:
 ### A2. Graph runtime pool and two-graph composition
 
 **Open.** A1, its dependency, is signed off.
+
+This lane does not own port-provider factories, retained-session erasure,
+command or settings contribution, or live capability facts. A contributed
+surface depends on A2 only when it needs multi-graph context.
 
 - Replace `App::canvas` and exclusive `session_id` routing with a graph runtime pool
   plus Forme runtimes and focused-space context.
@@ -767,6 +774,11 @@ layout can be shared or reset without changing graph/session truth.
 - Default layout details. Defaults remain editable and user-configurable.
 
 ## Progress
+
+- 2026-08-24: corrected the port-contribution accounting. A1 already owns the
+  namespaced `External` source identity; A2 remains the graph runtime pool and
+  `PaneId` / `graph_id` propagation lane. The shared Knot plan owns provider
+  description, admission, and retained-session erasure.
 
 - 2026-08-16 (multiplicity, found by looking at a screenshot): Device Receipts
   was registered `PaneMultiplicity::Many` while sourced from
