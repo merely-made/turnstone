@@ -155,6 +155,24 @@ impl Shell {
                     }
                 },
                 Effect::SaveSession => self.save_session(),
+                Effect::ChooseKnotDocumentFile { read_only } => {
+                    if let Some(path) = rfd::FileDialog::new()
+                        .add_filter("Djot or Knot", &["djot", "knot"])
+                        .pick_file()
+                    {
+                        let source = if read_only {
+                            crate::knot_document_surface::read_only_file_source(path)
+                        } else {
+                            crate::knot_document_surface::file_source(path)
+                        };
+                        self.act(Action::SummonContributedPane {
+                            kind: crate::panes::PaneKindId::new(
+                                crate::knot_document_surface::PANE_KIND,
+                            ),
+                            source,
+                        });
+                    }
+                }
                 Effect::OpenPlace {
                     session,
                     generation,

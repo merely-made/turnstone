@@ -125,6 +125,9 @@ pollster = "0.4"
 # The per-user data root (`<data_dir>/turnstone`), TURNSTONE_ROOT-overridable for
 # scratch profiles (the meerkat MERE_ROOT convention).
 dirs = "6"
+# Native file authority stays in the shell. The app only sees a typed effect
+# and the contributed surface only sees the path the user selected.
+rfd = "0.17.2"
 # Render-free static-parse page extraction: the fetched body's `<title>`
 # (and later description/OpenGraph) enriches the page's graph node.
 # The engine contracts + the content lanes as session engines (session-engines

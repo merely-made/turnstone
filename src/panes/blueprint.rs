@@ -524,6 +524,48 @@ impl SpaceBlueprint {
         Ok(())
     }
 
+    /// Insert a new tiled pane beside an existing station, preserving the
+    /// caller's pane id, source, and config as one blueprint operation. The
+    /// topology is changed only after all identity checks pass.
+    pub fn insert_tiled_beside(
+        &mut self,
+        spec: PaneSpec,
+        target: PaneId,
+        axis: SplitAxis,
+        after: bool,
+    ) -> Result<(), BlueprintViolation> {
+        if self.panes.iter().any(|pane| pane.id == spec.id) {
+            return Err(BlueprintViolation::DuplicatePaneSpec(spec.id));
+        }
+        if self.station_ids().contains(&spec.id) {
+            return Err(BlueprintViolation::DuplicatePaneStation(spec.id));
+        }
+        if !self.tiled_panes().contains(&target) {
+            return Err(BlueprintViolation::MissingPaneSpec {
+                space: self.id.clone(),
+                pane: target,
+            });
+        }
+        let pane = spec.id;
+        let Some(mut tree) = self.tiled.take() else {
+            return Err(BlueprintViolation::MissingPaneSpec {
+                space: self.id.clone(),
+                pane: target,
+            });
+        };
+        if !tree.insert_beside(target, pane, axis, after) {
+            self.tiled = Some(tree);
+            return Err(BlueprintViolation::MissingPaneSpec {
+                space: self.id.clone(),
+                pane: target,
+            });
+        }
+        self.tiled = Some(tree);
+        self.panes.push(spec);
+        self.normalize();
+        Ok(())
+    }
+
     /// Floats that are live in the current window. Hiding the float layer
     /// suppresses ordinary floats, but a pinned float remains visible by
     /// definition. The host owns the toggle because it is transient window

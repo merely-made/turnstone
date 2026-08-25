@@ -200,6 +200,11 @@ pub fn ring_of(action: &Action) -> Ring {
         | UnsubscribeFocusedFeed
         | RefreshFeeds
         | MarkFocusedFeedEntryRead
+        // Choosing or admitting an external source may delegate local file
+        // authority. It must remain a literal host gesture until providers
+        // carry a narrower, independently verifiable source grant.
+        | ChooseKnotDocumentFile { .. }
+        | SummonContributedPane { .. }
         // Joining a place is a trust act, not a session act, so it sits at the
         // structural floor beside gate management rather than in `Session`
         // with `NewSession` and `SwitchSession`.
@@ -235,6 +240,9 @@ pub fn emit_allowed(
             | Action::UnsubscribeFocusedFeed
             | Action::RefreshFeeds
             | Action::MarkFocusedFeedEntryRead => "feed subscription management",
+            Action::ChooseKnotDocumentFile { .. } | Action::SummonContributedPane { .. } => {
+                "local source admission"
+            }
             _ => "gate management",
         };
         return Err(format!(
@@ -464,6 +472,23 @@ mod tests {
             let denial =
                 emit_allowed(&authority, subject(), &action).expect_err("host-only must refuse");
             assert!(denial.contains("host-only"), "{denial}");
+        }
+    }
+
+    #[test]
+    fn contributed_source_authority_resists_a_total_app_grant() {
+        let authority = full_app_authority();
+        for action in [
+            Action::ChooseKnotDocumentFile { read_only: false },
+            Action::SummonContributedPane {
+                kind: crate::panes::PaneKindId::new("test.contributed"),
+                source: crate::panes::PaneSource::Fixed(crate::panes::SourceRef::Application),
+            },
+        ] {
+            assert_eq!(ring_of(&action), Ring::HostOnly);
+            let denial = emit_allowed(&authority, subject(), &action)
+                .expect_err("source-bearing actions stay host-only");
+            assert!(denial.contains("local source admission"), "{denial}");
         }
     }
 

@@ -19,13 +19,35 @@ pub const SOURCE_SCHEMA: &str = "knot.document.v1";
 pub const SOURCE_VERSION: u32 = 1;
 
 /// The durable source payload for a local Knot document pane.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum KnotDocumentAccessV1 {
+    #[default]
+    ReadWrite,
+    ReadOnly,
+}
+
+/// The durable source payload for a local Knot document pane.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct KnotDocumentFileSourceV1 {
     pub path: PathBuf,
+    #[serde(default)]
+    pub access: KnotDocumentAccessV1,
 }
 
 pub fn file_source(path: impl Into<PathBuf>) -> PaneSource {
-    let payload = KnotDocumentFileSourceV1 { path: path.into() };
+    file_source_with_access(path, KnotDocumentAccessV1::ReadWrite)
+}
+
+pub fn read_only_file_source(path: impl Into<PathBuf>) -> PaneSource {
+    file_source_with_access(path, KnotDocumentAccessV1::ReadOnly)
+}
+
+fn file_source_with_access(path: impl Into<PathBuf>, access: KnotDocumentAccessV1) -> PaneSource {
+    let payload = KnotDocumentFileSourceV1 {
+        path: path.into(),
+        access,
+    };
     PaneSource::Fixed(SourceRef::External {
         schema: SourceSchemaId::new(SOURCE_SCHEMA),
         payload: SerializedSource {
@@ -96,16 +118,24 @@ impl SurfaceProvider for KnotDocumentProvider {
         let source: KnotDocumentFileSourceV1 = serde_json::from_value(payload.payload.clone())
             .map_err(|error| invalid_payload(error.to_string()))?;
         admit_file(&source.path)?;
-        let session = KnotDocumentSession::open(&source.path).map_err(|message| {
-            SurfaceAdmissionError::Unavailable {
-                reason: SurfaceUnavailableReason::Other(message),
-            }
-        })?;
+        let session = open_session(&source)?;
         Ok(knot_document_surface(
             dom,
             KnotDocumentSurfaceState::new(session),
         ))
     }
+}
+
+fn open_session(
+    source: &KnotDocumentFileSourceV1,
+) -> Result<KnotDocumentSession, SurfaceAdmissionError> {
+    let result = match source.access {
+        KnotDocumentAccessV1::ReadWrite => KnotDocumentSession::open(&source.path),
+        KnotDocumentAccessV1::ReadOnly => KnotDocumentSession::open_read_only(&source.path),
+    };
+    result.map_err(|message| SurfaceAdmissionError::Unavailable {
+        reason: SurfaceUnavailableReason::Other(message),
+    })
 }
 
 fn invalid_payload(message: String) -> SurfaceAdmissionError {
@@ -179,6 +209,23 @@ mod tests {
         assert_eq!(
             pane.availability(),
             genet_host_api::SurfaceAvailability::Unavailable(SurfaceUnavailableReason::Absent)
+        );
+    }
+
+    #[test]
+    fn read_only_source_opens_a_read_only_document_session() {
+        let temp = tempdir().unwrap();
+        let path = temp.path().join("field.djot");
+        std::fs::write(&path, "# Field\n").unwrap();
+        let source = KnotDocumentFileSourceV1 {
+            path,
+            access: KnotDocumentAccessV1::ReadOnly,
+        };
+
+        let session = open_session(&source).expect("read-only session");
+        assert_eq!(
+            session.snapshot().write_posture,
+            knot_document::KnotDocumentWritePostureV1::ReadOnly
         );
     }
 

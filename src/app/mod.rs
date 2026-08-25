@@ -18,6 +18,7 @@ use crate::observe::AppEvent;
 use crate::surface::FocusTarget;
 use crate::{browse, session};
 
+mod contributed_pane_arms;
 mod runtime_pool;
 
 pub use runtime_pool::{
@@ -1141,6 +1142,12 @@ impl App {
             // persists it (SaveSession writes frame.json), so the arrangement
             // survives a restart. Maximize is view state, not persisted.
             Action::SummonPane(kind) => self.summon_pane(kind),
+            Action::ChooseKnotDocumentFile { read_only } => {
+                vec![Effect::ChooseKnotDocumentFile { read_only }]
+            }
+            Action::SummonContributedPane { kind, source } => {
+                self.summon_contributed_pane(kind, source)
+            }
             Action::CloseActivePane => self.close_active_pane(),
             Action::SetSplitRatio { space, path, ratio } => {
                 if let Some(layout) = self.space_mut(space) {

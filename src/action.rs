@@ -22,7 +22,7 @@
 //!   types at the boundary. The universal vocabulary must not depend on one
 //!   port implementation.
 
-use crate::panes::PaneKindId;
+use crate::panes::{PaneKindId, PaneSource};
 
 /// A short-lived secret whose debug representation never contains the value.
 #[derive(Clone, PartialEq, Eq)]
@@ -214,6 +214,16 @@ pub enum Action {
     /// slice C). Meerkat's fixed Right-split off the graph pane, generalized to
     /// the active pane.
     SummonPane(PaneKindId),
+    /// Ask the platform shell to choose a local Knot document. The resulting
+    /// path becomes a contributed source only after the user chooses it.
+    ChooseKnotDocumentFile { read_only: bool },
+    /// Summon a provider-owned pane beside the active pane. The source was
+    /// minted by the caller; provider admission still occurs at the render
+    /// boundary, while the app preserves this exact durable value.
+    SummonContributedPane {
+        kind: PaneKindId,
+        source: PaneSource,
+    },
     /// Close the active pane, collapsing its split back into its sibling.
     CloseActivePane,
     /// Set the divider ratio of the active pane's split (drag the seam). Clamped
@@ -431,6 +441,14 @@ pub fn palette_actions() -> Vec<(String, Action)> {
         ("Orbit right", Action::OrbitBy(0.15)),
         ("Toggle live content", Action::ToggleNodeContent),
         ("Save session", Action::SaveSession),
+        (
+            "Open Knot document",
+            Action::ChooseKnotDocumentFile { read_only: false },
+        ),
+        (
+            "Open Knot document read-only",
+            Action::ChooseKnotDocumentFile { read_only: true },
+        ),
     ];
     actions.extend(
         crate::panes::pane_palette_entries()
@@ -570,6 +588,9 @@ pub enum Effect {
     },
     /// Persist the session through the persistence port.
     SaveSession,
+    /// Ask the native shell for one Djot or Knot file. A cancelled picker has
+    /// no effect; an accepted path is minted into a provider-owned source.
+    ChooseKnotDocumentFile { read_only: bool },
     /// Open this session's retained place domains through the shell-owned
     /// worker. `generation` makes every later answer session-specific.
     OpenPlace {
