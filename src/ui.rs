@@ -7,7 +7,7 @@
 //! the actions lane (a hint row this slice; the filterable action list next).
 //!
 //! Rendering rides the family's proven DOM path: a small `ScriptedDom` +
-//! stylesheet laid out by genet-layout, emitted as a paint list, composited
+//! stylesheet laid out by Livery/Buckram, emitted as a paint list, composited
 //! by the shell as the second surface of the layered-present seam (canvas
 //! below, chrome above; the chrome texture clears transparent and
 //! alpha-blends over). The palette is tiny, so the document rebuilds
@@ -884,7 +884,7 @@ pub fn chrome_has_content(state: &OmnibarState, caption: Option<&str>) -> bool {
 /// A pane placeholder (rung 5 slice C): a panel filling the pane's rect with its
 /// kind label. The pane tree, geometry, and persistence are what slice C proves;
 /// each pane's real content (Roster rows, Trail history, ...) is slice D. Built
-/// on the same `ScriptedDom` + genet-layout path the chrome runs, sized to the
+/// on the same `ScriptedDom` + Livery/Buckram path the chrome runs, sized to the
 /// pane rect (the shell rasterizes each surface at its own size).
 pub fn pane_scene(label: &str, w: u32, h: u32) -> netrender::Scene {
     let mut dom = ScriptedDom::new();
@@ -912,7 +912,7 @@ pub fn pane_scene(label: &str, w: u32, h: u32) -> netrender::Scene {
 /// positioned rows at the fixed geometry the click router shares, so a pointer
 /// hits exactly the row it sees. Navigable rows read in a link color; muted
 /// hints and section titles are dimmed. Built on the same `ScriptedDom` +
-/// genet-layout path the chrome runs.
+/// Livery/Buckram path the chrome runs.
 // Both list panes (Roster's grid, Trail's sectioned list) render as cambium
 // views now (rung 5 slice D toolkit adoption; see `crate::cambium_pane`,
 // `crate::trail_pane`), so the hand-DOM list scenes and their fixed-height row
@@ -923,7 +923,7 @@ fn finish_scene(dom: &ScriptedDom, w: u32, h: u32) -> netrender::Scene {
 }
 
 /// Lay out a `ScriptedDom` under `sheet` and composite its paint list into a
-/// scene — the genet-layout path the chrome runs, generalized over the sheet so
+/// scene — the retained Livery/Buckram path the chrome runs, generalized over the sheet so
 /// a cambium-built DOM (rung 5 slice D toolkit adoption) renders the same way,
 /// under its own class stylesheet. Text-only DOM; a view with custom-paint
 /// leaves goes through [`scene_from_dom_with_leaves`].
@@ -1919,7 +1919,7 @@ pub fn scene_from_dom_with_leaves(
 /// root is a block, the body is the `position: relative` containing block, and
 /// the rows/cells are absolutely placed inside it by `Placement`. A host rule
 /// that sets `position` overrides that structure — it still paints, but the
-/// fragment tree genet-layout hit-tests goes with it, and every pane click
+/// fragment tree Livery hit-tests goes with it, and every pane click
 /// misses. Colour, type, padding, and fills only.
 pub const CAMBIUM_SHEET: &str = "\
     .grid { background-color: rgb(22, 27, 40); color: rgb(210, 216, 230); \
@@ -2005,9 +2005,9 @@ mod tests {
         );
     }
 
-    /// Canary for the chrome layer's load-bearing genet-layout behavior:
+    /// Canary for the chrome layer's load-bearing retained-layout behavior:
     /// SIBLING absolutely-positioned subtrees must all emit paint. Caught
-    /// 2026-07-11: genet-layout only cascaded/boxed the FIRST element child
+    /// 2026-07-11: the retired genet-layout route only cascaded/boxed the FIRST element child
     /// of a multi-root document (a host-built DOM with no `<html>` wrapper),
     /// so the omnibar card blanked whenever the caption chip preceded it.
     /// Fixed genet-side (multi-root box tree + cascade + root-background

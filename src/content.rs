@@ -2,16 +2,14 @@
 //! document lifecycle only. Charter per the architecture plan's module map:
 //! engine registrations, per-node document lifecycle, the verso-tile flip,
 //! content frames, and input routing — where the registry itself is
-//! genet/inker's, never a hand-wired lane ladder (the session-engines plan,
-//! genet docs 2026-07-10, phase 4 names turnstone as its consumer).
+//! Inker's, never a hand-wired lane ladder.
 //!
 //! What lives HERE is the lifecycle state machine and nothing else. Live
 //! document sessions are retained, non-`Send` handles, so the shell's
 //! content port owns them (ports are the only owners of handles; `App`
-//! holds data) keyed by the same node ids. Until the genet-documents
-//! component lands (engines plan phase 2), the shell port answers every
-//! spawn with an honest failure naming the gap — a `Requested` node never
-//! silently spins (the no-placebo rule).
+//! holds data) keyed by the same node ids. The shell registers Livery, reader,
+//! and native smolweb session engines at composition time; a `Requested` node
+//! never silently spins when routing or spawning fails.
 
 use std::collections::HashMap;
 
@@ -47,7 +45,7 @@ pub enum NodeContent {
 /// and the observation snapshot read these without reaching into the shell.
 #[derive(Clone, Debug, PartialEq)]
 pub struct ContentFacts {
-    /// The engine id the route decision picked (e.g. `genet.web`).
+    /// The engine id the route decision picked (e.g. `genet.livery`).
     pub engine: String,
     /// The structural read, when the lane has one. `None` is reported
     /// honestly (a lane without introspection, not an empty document).

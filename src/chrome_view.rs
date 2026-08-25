@@ -2,7 +2,7 @@
 //! question's endpoint, executed 2026-07-18 ("chrome migrates to a cambium
 //! view"), and turnstone's literal consumption of the two forest primitives:
 //! cambium's `push_forest_projection` (every window's chrome is a window-root
-//! subtree of ONE shared document) and genet-layout's `layout_subtree` (each
+//! subtree of ONE shared document) and retained Livery/Buckram subtree layout (each
 //! window lays out and paints ITS root at its own size).
 //!
 //! What changed from the rung-3 hand chrome (`ui::chrome_scene`, retired with
@@ -99,7 +99,7 @@ type ChromeView = Box<dyn AnyView<ChromeState, ChromeIntent, GenetCtx, GenetElem
 
 /// One window's chrome view: the caption chip, plus the omnibar card on the
 /// primary while open. Positioned by transform-translate (the property the
-/// canvas gnode pool proves genet-layout honors on absolutes).
+/// canvas gnode pool proves the retained engine honors on absolutes).
 fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
     let Some(win) = state.windows.get(slot).cloned() else {
         return Box::new(el::<_, ChromeState, ChromeIntent>("div", ()));
@@ -477,8 +477,8 @@ impl ChromeSurfaces {
     /// One window's chrome scene: ITS window-root laid out at its own size
     /// through a per-root Livery/Buckram subtree cascade — the true forest-dom F2
     /// path. (This replaced the `display: none` visibility flip the chrome
-    /// bridged with while genet-stylo's sharing cache panicked on subtree
-    /// roots; the fix published as 0.19.1 and the flip is gone.)
+    /// bridged with while the retired genet-stylo sharing cache panicked on
+    /// subtree roots; the fix published as 0.19.1 and the flip is gone.)
     pub fn scene(&mut self, slot: usize, w: u32, h: u32) -> netrender::Scene {
         self.absorb_dom_mutations();
         let Some(&id) = self.projections.get(slot) else {
@@ -952,12 +952,14 @@ mod tests {
         // A press well away from any chrome control: it still hit-tests, and
         // it must not provoke a cascade to answer "nothing here".
         let intents = chrome.click(0, 5.0, 590.0, 1024, 600);
-        assert!(intents.is_empty(), "a press on empty chrome commits nothing");
+        assert!(
+            intents.is_empty(),
+            "a press on empty chrome commits nothing"
+        );
         assert_eq!(
             chrome.layout_rebuilds(0),
             1,
             "hit testing shares the frame's layout instead of building its own"
         );
     }
-
 }

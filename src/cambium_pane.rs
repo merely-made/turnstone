@@ -3,10 +3,10 @@
 //! adoption.
 //!
 //! cambium builds a `ScriptedDom` — the exact type turnstone's chrome already lays
-//! out through genet-layout into a paint list — so a cambium view drops into the
+//! out through Livery/Buckram into a paint list — so a cambium view drops into the
 //! compose-at-surface-rect seam slice A built. A `GenetAppRunner` holds the view's
 //! state and renders it into a `DomHandle`; turnstone composites that DOM, and
-//! routes a pane-local click back through genet-layout's hit test into
+//! routes a pane-local click back through retained Livery hit testing into
 //! `dispatch_click`, which returns the Actions the view emitted. Those lower
 //! through turnstone's ordinary spine — the same path a keypress takes.
 //!
@@ -330,7 +330,7 @@ mod tests {
     /// The pane-event round trip, headless: lay the grid's DOM out at a pane size
     /// and hit-test the points a click would land on. Pins the integration this
     /// seam depends on — a cambium view's DOM must be hit-testable through
-    /// genet-layout, or no cambium pane can take a click.
+    /// the Livery/Buckram host, or no cambium pane can take a click.
     #[test]
     fn grid_dom_is_hit_testable() {
         let g = grid_with_rows();

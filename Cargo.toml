@@ -227,12 +227,18 @@ windows = { version = "0.62", features = ["Win32_Foundation"], optional = true }
 # mere must restate them. Branch-tracked owned forks, never revs; no local
 # paths in this committed manifest, so it compiles anywhere.
 [patch.crates-io]
-# NO stylo/stylo_atoms patch (2026-07-12, mirroring genet's ring-3 rename):
-# the fork is now the RENAMED `genet-stylo` family, and a `[patch]` cannot
-# rename its target. Genet's crates git-dep genet-stylo by package rename, so
-# no crates.io `stylo` is left to patch — and keeping the old entries pulled the
-# pre-rename fork in beside genet-stylo, which `links = "servo_style_crate"`
-# (one Stylo per graph) makes a hard resolution error.
+# No Stylo-family patch: Genet's live route is Livery/Buckram. The surviving
+# `stylo_malloc_size_of` utility is independent and does not link a CSS engine.
+#
+# Published Cambium and Netrender crates still name these shared Genet seams by
+# registry version. Keep a clean Turnstone consumer on the same Git type family
+# as its direct Genet dependencies instead of resolving the retired registry
+# paint/observable chain.
+engine-observables-api = { git = "https://github.com/merely-made/genet.git", branch = "main" }
+genet-paint-types = { git = "https://github.com/merely-made/genet.git", branch = "main" }
+genet-scripted-dom = { git = "https://github.com/merely-made/genet.git", branch = "main" }
+genet-static-dom = { git = "https://github.com/merely-made/genet.git", branch = "main" }
+layout-dom-api = { git = "https://github.com/merely-made/genet.git", branch = "main" }
 #
 # The p2panda family, repointed at the owned fork exactly as mere's workspace
 # does. A [patch] applies only from the top-level manifest, so mere's own
@@ -248,8 +254,7 @@ p2panda-net = { git = "https://github.com/mark-ik/p2panda.git", branch = "main" 
 p2panda-store = { git = "https://github.com/mark-ik/p2panda.git", branch = "main" }
 p2panda-stream = { git = "https://github.com/mark-ik/p2panda.git", branch = "main" }
 p2panda-sync = { git = "https://github.com/mark-ik/p2panda.git", branch = "main" }
-# Livery/Buckram require Genet's current taffy fork. The retired Stylo adapter
-# left the graph with genet-layout and is deliberately not patched here.
+# Livery/Buckram require Genet's current taffy fork.
 taffy = { git = "https://github.com/merely-made/genet.git", branch = "main" }
 # ipc-channel: in-process fork vendored in genet (single-process default,
 # unifies gpu-allocator's windows pin with wgpu-hal's).
