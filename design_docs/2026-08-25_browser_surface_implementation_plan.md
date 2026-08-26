@@ -217,7 +217,8 @@ Done-conditions:
   already-published support commits are now merged on main at `a7d410c1ca8`,
   aligning the Livery family versions; Turnstone can therefore patch the
   published `genet-livery` edge to that same Git source without falsifying a
-  version contract. Fleece remains a separate owner migration.
+  version contract. Fleece was still a separate owner migration at that gate;
+  the 0.4 follow-through below closes it.
 - **2026-08-25, consumer build:** Netrender's published 0.1.2 release commits
   remained on a cleanable release worktree while git `main` declared 0.1.1.
   That split gave Turnstone source-distinct `Scene` types. The release history
@@ -262,11 +263,10 @@ Done-conditions:
 - A hosted surface must answer capabilities through its registered session.
   Turnstone DOM inspection would break engine modularity and the shared-device
   boundary.
-- Root patches may collapse source identity only after the package versions and
-  APIs align. The Livery family now meets that condition. Fleece 0.2 versus 0.4
-  does not, and published `genet-taffy 0.13.0` lacks Buckram's current
-  eight-parameter static-position trait, so neither may be forced together by
-  a convenient top-level patch.
+- Root patches may collapse source identity only after package versions and APIs
+  align. That precondition is now met for Livery, Fleece 0.4, and
+  `genet-taffy 0.13.1`. Future bumps still require the same owner-first proof;
+  a top-level patch is not evidence by itself.
 
 ## Synergies and sidequests
 
@@ -285,11 +285,11 @@ Done-conditions:
   consumer forces them.
 - Inline audio remains deferred until a host-owned playback seam and another
   document consumer force a reusable contract.
-- Dependency convergence remains an owner-first sidequest. The Turnstone root
-  now unifies Mere Canvas's published `genet-livery` edge with current Genet.
-  Mere's Knot/search consumers still need a deliberate Fleece 0.2 to 0.4
-  migration, and Genet's current Taffy fork needs a new versioned publication.
-  Take each with a real consumer test that can catch a type split.
+- The Fleece and Taffy dependency sidequests are closed. Fleece 0.4 now owns the
+  extraction boundary directly in Mere's Gazette, Import, Crawl, and Knot
+  consumers; `genet-extract` is retired. Genet's fork is published as
+  `genet-taffy 0.13.1`, and consumers pin the matching immutable Genet source.
+  Keep this owner-first pattern for later dependency moves.
 
 ## Progress
 
@@ -340,3 +340,11 @@ Done-conditions:
   chrome, and scenario-parser tests pass. The real Windows Weld permission
   scenario and local server both finish `RESULT ok`; live server-auth delivery
   remains truthfully partial and is assigned to E0.
+- **2026-08-26:** closed the dependency follow-through. Genet `138b6aca6e27`
+  retires `genet-extract`, carries the corrected Livery text-fragment path, and
+  consumes the published `genet-taffy 0.13.1` release (checksum
+  `d53b4825b55d3d5103cec7f3fee5eadfadd21792e826a896ab3d0e3190124c22`).
+  Mere `d7cd4a87f782` centralizes immutable Genet and Netrender sources, migrates
+  its Fleece consumers to 0.4, and pins Vello tag `vello-0.10.0` plus the
+  `mere-p2panda-net-0.7.2` source tag. Its clean locked focused gate passed 81
+  tests, including the four Fleece consumers and Distillery.
