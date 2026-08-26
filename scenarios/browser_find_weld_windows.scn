@@ -1,5 +1,6 @@
-# F0 hosted-find receipt. Pin example.com to Weld, then drive Chromium's own
-# find implementation through the same Turnstone field and observation model.
+# F0 hosted-find plus E0.1 capability receipt. Pin example.com to Weld, then
+# drive Chromium's own find implementation through the same Turnstone field
+# and observation model.
 # Run with --features weld, TURNSTONE_CEF_PATH, and a fresh profile.
 settle 30
 key escape
@@ -12,6 +13,10 @@ settle 5
 act Toggle live content
 settle 90
 assert content-live
+assert snap document-find-capability == supported
+assert snap page-zoom-capability ~ unavailable
+assert snap page-capture-capability ~ unavailable
+assert snap navigation-capability == supported
 
 key ctrl+f
 type documentation

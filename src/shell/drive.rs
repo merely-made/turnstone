@@ -232,6 +232,13 @@ impl genet_probe::Automatable for Shell {
                 )
                 .with_field("document-find-status", find.status);
         }
+        if let Some(capabilities) = snap.document_capabilities {
+            out = out
+                .with_field("document-find-capability", capabilities.find_in_page)
+                .with_field("page-zoom-capability", capabilities.page_zoom)
+                .with_field("page-capture-capability", capabilities.page_capture)
+                .with_field("navigation-capability", capabilities.navigation);
+        }
         if let Some(decision) = snap.user_agent_decision {
             out = out
                 .with_field("decision-kind", decision.kind)

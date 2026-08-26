@@ -115,7 +115,10 @@ impl App {
             matches!(
                 self.content.get(member),
                 Some(crate::content::NodeContent::Live)
-            )
+            ) && self
+                .content
+                .facts(member)
+                .is_some_and(|facts| facts.capabilities.find_in_page.is_available())
         }) {
             rows.push(("Find in document".to_string(), Action::OpenDocumentFind));
         }

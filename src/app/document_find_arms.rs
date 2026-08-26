@@ -13,6 +13,26 @@ impl App {
         ) {
             return vec![Effect::Redraw];
         }
+        let Some(find_capability) = self
+            .content
+            .facts(target)
+            .map(|facts| facts.capabilities.find_in_page.clone())
+        else {
+            self.events
+                .push(crate::observe::AppEvent::AffordanceUnavailable {
+                    what: "find-in-document",
+                    target: "live engine did not report document capabilities".to_string(),
+                });
+            return vec![Effect::Redraw];
+        };
+        if !find_capability.is_available() {
+            self.events
+                .push(crate::observe::AppEvent::AffordanceUnavailable {
+                    what: "find-in-document",
+                    target: find_capability.describe(),
+                });
+            return vec![Effect::Redraw];
+        }
         let mut effects = if self.omnibar.open {
             self.close_omnibar()
         } else {
@@ -151,13 +171,65 @@ impl App {
 mod tests {
     use super::*;
     use crate::action::{Action, DocumentFindMatch, Update};
+    use crate::content::{CapabilityStatus, ContentFacts, DocumentCapabilityFacts};
+
+    fn note_findable(app: &mut App, node: uuid::Uuid) {
+        app.content.note_live(
+            node,
+            Some(ContentFacts {
+                engine: "test.document".into(),
+                structure: None,
+                lineage: None,
+                capabilities: DocumentCapabilityFacts {
+                    find_in_page: CapabilityStatus::Supported,
+                    ..Default::default()
+                },
+            }),
+        );
+    }
+
+    #[test]
+    fn unsupported_engine_neither_offers_nor_opens_find() {
+        let mut app = App::test_stub();
+        app.update(Action::OpenAddress("https://example.test/opaque".into()));
+        let node = app.graph_runtimes.focused_member().expect("focused member");
+        app.content.note_live(
+            node,
+            Some(ContentFacts {
+                engine: "test.opaque".into(),
+                structure: None,
+                lineage: None,
+                capabilities: DocumentCapabilityFacts {
+                    find_in_page: CapabilityStatus::Unsupported {
+                        reason: "opaque surface has no text search".into(),
+                    },
+                    ..Default::default()
+                },
+            }),
+        );
+
+        assert!(
+            !app.available_actions()
+                .iter()
+                .any(|(label, _)| label == "Find in document")
+        );
+        let effects = app.update(Action::OpenDocumentFind);
+        assert!(!app.document_find.open);
+        assert_eq!(effects, vec![Effect::Redraw]);
+        assert!(app.take_events().iter().any(|event| matches!(
+            event,
+            crate::observe::AppEvent::AffordanceUnavailable { what, target }
+                if *what == "find-in-document"
+                    && target.contains("opaque surface has no text search")
+        )));
+    }
 
     #[test]
     fn captured_target_and_request_drop_late_find_results() {
         let mut app = App::test_stub();
         app.update(Action::OpenAddress("gemini://example.test/find".into()));
         let node = app.graph_runtimes.focused_member().expect("focused member");
-        app.content.note_live(node, None);
+        note_findable(&mut app, node);
 
         app.update(Action::OpenDocumentFind);
         let effects = app.update(Action::InsertDocumentFind("needle".into()));
@@ -197,7 +269,7 @@ mod tests {
         let mut app = App::test_stub();
         app.update(Action::OpenAddress("gemini://example.test/find".into()));
         let node = app.graph_runtimes.focused_member().expect("focused member");
-        app.content.note_live(node, None);
+        note_findable(&mut app, node);
         app.update(Action::OpenDocumentFind);
         let effects = app.update(Action::InsertDocumentFind("needle".into()));
         let request = effects
@@ -255,7 +327,7 @@ mod tests {
         let mut app = App::test_stub();
         app.update(Action::OpenAddress("https://example.test/find".into()));
         let node = app.graph_runtimes.focused_member().expect("focused member");
-        app.content.note_live(node, None);
+        note_findable(&mut app, node);
         app.update(Action::OpenDocumentFind);
         let effects = app.update(Action::InsertDocumentFind("needle".into()));
         let request = effects

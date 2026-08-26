@@ -52,6 +52,57 @@ pub struct ContentFacts {
     pub structure: Option<StructureFacts>,
     /// Fleece derivation when the live representation is a reader rendering.
     pub lineage: Option<ExtractionLineageFacts>,
+    /// Document controls reported by the owning retained or hosted engine.
+    /// Reasons and partial-support details remain intact across the port
+    /// boundary so product surfaces never infer support from a method's
+    /// existence.
+    pub capabilities: DocumentCapabilityFacts,
+}
+
+/// App-owned, port-agnostic mirror of one document control's availability.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum CapabilityStatus {
+    Supported,
+    Unsupported { reason: String },
+    Partial { detail: String },
+}
+
+impl CapabilityStatus {
+    pub fn is_available(&self) -> bool {
+        matches!(self, Self::Supported | Self::Partial { .. })
+    }
+
+    /// Stable person- and probe-facing description.
+    pub fn describe(&self) -> String {
+        match self {
+            Self::Supported => "supported".to_string(),
+            Self::Unsupported { reason } => format!("unavailable: {reason}"),
+            Self::Partial { detail } => format!("partial: {detail}"),
+        }
+    }
+}
+
+/// The document controls Turnstone can present uniformly across engine kinds.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct DocumentCapabilityFacts {
+    pub find_in_page: CapabilityStatus,
+    pub page_zoom: CapabilityStatus,
+    pub page_capture: CapabilityStatus,
+    pub navigation: CapabilityStatus,
+}
+
+impl Default for DocumentCapabilityFacts {
+    fn default() -> Self {
+        let unavailable = |feature: &str| CapabilityStatus::Unsupported {
+            reason: format!("{feature} capability was not reported"),
+        };
+        Self {
+            find_in_page: unavailable("find in page"),
+            page_zoom: unavailable("page zoom"),
+            page_capture: unavailable("page capture"),
+            navigation: unavailable("navigation"),
+        }
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]

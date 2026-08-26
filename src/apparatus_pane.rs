@@ -66,6 +66,7 @@ struct ApparatusState {
     radio: RadioGroup,
     /// The synced sidecar index, for the click diff.
     synced: usize,
+    capabilities: Vec<String>,
     viewport_w: f32,
     viewport_h: f32,
 }
@@ -94,16 +95,27 @@ fn apparatus_view(state: &ApparatusState) -> ApparatusView {
         "applies on live content by respawning through the pinned engine",
     )
     .attr("class", "list-row apparatus-note");
+    let capability_rows = state
+        .capabilities
+        .iter()
+        .cloned()
+        .map(|line| el::<_, ApparatusState, ()>("div", line).attr("class", "list-row"))
+        .collect::<Vec<_>>();
+    let capability_header =
+        el::<_, ApparatusState, ()>("div", "Document controls").attr("class", "list-section-title");
     Box::new(
-        el::<_, ApparatusState, ()>("div", (header, radio, note))
-            .attr("class", "pane")
-            .attr(
-                "style",
-                format!(
-                    "width: {}px; height: {}px;",
-                    state.viewport_w, state.viewport_h
-                ),
+        el::<_, ApparatusState, ()>(
+            "div",
+            (header, radio, note, capability_header, capability_rows),
+        )
+        .attr("class", "pane")
+        .attr(
+            "style",
+            format!(
+                "width: {}px; height: {}px;",
+                state.viewport_w, state.viewport_h
             ),
+        ),
     )
 }
 
@@ -126,6 +138,7 @@ impl ApparatusPane {
             target: None,
             radio: RadioGroup::new(0).with_label("Viewer"),
             synced: 0,
+            capabilities: Vec::new(),
             viewport_w: 0.0,
             viewport_h: 0.0,
         };
@@ -152,10 +165,33 @@ impl ApparatusPane {
             .and_then(|m| app.browser.get(m))
             .map(|b| index_for_viewer(b.viewer_override.as_deref()))
             .unwrap_or(0);
+        let capabilities = app
+            .graph_runtimes
+            .focused_member()
+            .and_then(|member| app.content.facts(member))
+            .map(|facts| {
+                vec![
+                    format!(
+                        "Find in page: {}",
+                        facts.capabilities.find_in_page.describe()
+                    ),
+                    format!("Page zoom: {}", facts.capabilities.page_zoom.describe()),
+                    format!(
+                        "Page capture: {}",
+                        facts.capabilities.page_capture.describe()
+                    ),
+                    format!(
+                        "Navigation controls: {}",
+                        facts.capabilities.navigation.describe()
+                    ),
+                ]
+            })
+            .unwrap_or_else(|| vec!["No live document capabilities".to_string()]);
         self.runner.update(|state| {
             state.target = target;
             state.radio.selected = synced;
             state.synced = synced;
+            state.capabilities = capabilities;
             state.viewport_w = pane_w;
             state.viewport_h = pane_h;
         });
@@ -280,6 +316,44 @@ mod tests {
             index_for_viewer(Some("unknown.lane")),
             0,
             "unknown shows Auto"
+        );
+    }
+
+    #[test]
+    fn focused_document_capabilities_sit_beside_the_viewer_picker() {
+        let mut app = App::test_stub();
+        app.update(Action::OpenAddress("https://example.com/x".to_string()));
+        let node = app.graph_runtimes.focused_member().unwrap();
+        app.content.note_live(
+            node,
+            Some(crate::content::ContentFacts {
+                engine: "genet.livery".into(),
+                structure: None,
+                lineage: None,
+                capabilities: crate::content::DocumentCapabilityFacts {
+                    find_in_page: crate::content::CapabilityStatus::Supported,
+                    navigation: crate::content::CapabilityStatus::Partial {
+                        detail: "host-owned lineage".into(),
+                    },
+                    ..Default::default()
+                },
+            }),
+        );
+        let mut pane = ApparatusPane::new();
+        pane.sync(&app, 400.0, 600.0);
+        assert!(
+            pane.runner
+                .state()
+                .capabilities
+                .iter()
+                .any(|line| line == "Find in page: supported")
+        );
+        assert!(
+            pane.runner
+                .state()
+                .capabilities
+                .iter()
+                .any(|line| { line == "Navigation controls: partial: host-owned lineage" })
         );
     }
 }

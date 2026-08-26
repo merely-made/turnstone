@@ -99,10 +99,10 @@ not concepts.
 | --- | --- | --- |
 | The page | A member's document session behind an engine registration; HTML routes to the Livery lane, switchable per node via the viewer override when another registered lane exists | Live; the settings row's whole point |
 | Reader mode | Fleece derives a reader representation from held HTML; Inker routes the node to `genet.reader`; Verso-tile owns the representation flip back to the original `genet.livery` session | Live, with extraction lineage and held-source flip tests |
-| View source / inspect element | The Inspector pane reads document structure through nematic engines; genet-probe resolves elements by role and label | Live |
-| Find in page | No surface. The structural read the Inspector already does is the index a find would walk | Absent |
-| Zoom | Per-window scale is the host's; a per-node text-scale facet fits the Apparatus | Absent as a control |
-| Save page / print | The frozen realization: `graphshell_client::frozen` renders a scene as navigable semantics (DOM tree, AccessKit tree, HTML table), and a captured representation attaches to the node rather than becoming a file in a folder | Machinery landed in mere (B1); no turnstone surface |
+| View source / inspect element | The Inspector exposes a structural report and genet-probe resolves retained elements by role and label; neither is a full source viewer or interactive element inspector | Structural inspection live; source view and interactive inspection remain open |
+| Find in page | A host-owned retained field drives the owning engine's find model. Livery discloses structural match records; hosted engines may disclose only authoritative count/current state | Live: F0 accepted for Livery and Weld, with target/request correlation, stale-answer rejection, wrap, controlled chrome, a11y status, and headed scenarios |
+| Zoom | Page zoom is a document scale, separate from UI scale and canvas camera zoom. Per-engine capability truth is projected beside the viewer choice before controls are offered | E0 capability disclosure live; per-node zoom state and controls remain open |
+| Save page / print | A captured page representation attaches to its source node with observed-state provenance. It is distinct from Graphshell's graph-projection `FrozenScene` | E0 capability disclosure live; capture, provenance, save, and print consumption remain open |
 | Downloads UI | A completed download keeps its source URL and response metadata, deposits exact bytes in the session representation store, attaches their hash to the node, and records the collision-safe visible destination as metadata. Steward projects the durable custody record | Live; destination follows `TURNSTONE_DOWNLOAD_DIR`, the OS downloads directory, then the profile fallback |
 
 ### Collections
@@ -118,7 +118,7 @@ not concepts.
 | Browser element | Here | State |
 | --- | --- | --- |
 | Keyboard shortcuts | The host's `KeyPress` vocabulary end to end (now windowing-neutral); app policy hooks (`key_intercept`) own meaning | Live |
-| Command palette | The omnibar's `do` lane; the filterable action list is the component catalog's flagship composition | Hint row live; the full list is the catalog's next move |
+| Command palette | The omnibar's `do` lane over `App::available_actions`, shared with observation and automation | Live, including contextual actions and prefix resolution |
 | Menus / context menus | **The regard** (working name): what you summon when you turn to face a node. Not a menu: a Peek with act-tier rows, floating transient or pinned flat into an Inspector seed; rows are the same command objects the omnibar's do lane files; one list from canvas node, roster row, trail row, or content link. Needs only a summoning verb, `regard(node)` | Designed in turn 2; unbuilt |
 | Automation | genet-probe: resolver + Automatable/Driveable; apps self-drive via DOM-carried identity, never synthetic OS input | Live, with scenario receipts |
 
@@ -127,7 +127,7 @@ not concepts.
 | Browser element | Here | State |
 | --- | --- | --- |
 | Profiles | Personae: sealed, device-carried; the roster is a view, not an address book | Live and wired |
-| Permission prompts | `web_policy.rs` plus the participant gate (one gate for scripts/wasm/peers/agents) and servitor petitions | Gate designed and partially live; per-origin prompt UI unbuilt |
+| Permission prompts | Retained, origin-scoped host decisions keyed by exact node/request identity; standing permission and process-only credential policies stay distinct | Live for Weld permission callbacks; server-auth callback delivery remains partial in CEF |
 | Settings | The Apparatus / Inspector / Steward split, plus the Settings pane over the provider; configurability-over-defaults is standing doctrine, and changes are live swaps, never restart-required | Live; Steward now has its first durable projection, download custody |
 | Extensions | Three lanes by trust: rhai command packs (host automation), Wasm component `DocumentScript` (untrusted portable), register-mod-loader (the registry seam) | Lanes ruled in mere; no turnstone extension surface |
 | Devtools | The Inspector plus probe snapshots plus the trace diagnostics (`CAMBIUM_HOST_KEY_TRACE`) | Partial by design; a network pane over the fetch actor is unnamed |
@@ -151,9 +151,10 @@ already cites, with an ember budget of one mark per strip.
    already unified them: everything that arrives is a representation
    attaching to a node with its source URL kept. A frozen realization is an
    arrival from your own graph.
-4. **Find over the index**: matches are structural rows (role and label) from
-   the nematic read the Inspector already has, never a pixel scan; a link
-   match previews as the node it would become.
+4. **Find through the owning engine**: Livery retains structural match rows
+   (role and label), while a hosted engine may retain selection internally and
+   report only authoritative count/current state. Turnstone owns the field,
+   target identity, request correlation, and observation projection.
 5. **The regard** and 6. **the shallows**: the two formerly undesigned
    regions, now in the tables above.
 

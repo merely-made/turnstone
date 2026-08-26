@@ -425,7 +425,12 @@ impl WeldSurface for TurnstoneWeldSurface {
             ..Default::default()
         };
         capabilities.devtools = WebFeatureStatus::Supported;
-        capabilities.find_in_page = WebFeatureStatus::Supported;
+        capabilities.document.find_in_page = WebFeatureStatus::Supported;
+        capabilities.document.page_zoom =
+            WebFeatureStatus::unsupported("Turnstone's Weld tile has no absolute zoom mapping yet");
+        capabilities.document.page_capture =
+            WebFeatureStatus::unsupported("Turnstone has not projected Weld snapshots yet");
+        capabilities.document.navigation = WebFeatureStatus::Supported;
         capabilities.pointer.mouse = WebFeatureStatus::Supported;
         capabilities.pointer.pen = WebFeatureStatus::Partial {
             detail: "CEF accepts pen contacts, but winit 0.30 does not identify pen versus touch"

@@ -1,5 +1,6 @@
-# F0 retained-find receipt. The ordinary Livery document owns matching and
-# reveal; Turnstone observes the same retained model through its action spine.
+# F0 retained-find plus E0.1 capability receipt. The ordinary Livery document
+# owns matching and reveal; Turnstone observes the same retained model through
+# its action spine.
 # Network-dependent by design, matching rung4_content.scn. Run on a fresh profile.
 settle 30
 key escape
@@ -9,6 +10,10 @@ act Toggle live content
 settle 40
 assert content-live
 assert snap actions ~ Find in document
+assert snap document-find-capability == supported
+assert snap page-zoom-capability ~ unavailable
+assert snap page-capture-capability ~ unavailable
+assert snap navigation-capability ~ partial
 
 key ctrl+f
 type documentation

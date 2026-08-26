@@ -38,6 +38,31 @@ pub(super) fn app_find_model(state: inker::DocumentFindState) -> crate::action::
     }
 }
 
+pub(super) fn app_document_capabilities(
+    capabilities: inker::DocumentCapabilities,
+) -> crate::content::DocumentCapabilityFacts {
+    use crate::content::{CapabilityStatus, DocumentCapabilityFacts};
+
+    fn status(value: inker::DocumentCapabilityStatus) -> CapabilityStatus {
+        match value {
+            inker::DocumentCapabilityStatus::Supported => CapabilityStatus::Supported,
+            inker::DocumentCapabilityStatus::Unsupported { reason } => {
+                CapabilityStatus::Unsupported { reason }
+            }
+            inker::DocumentCapabilityStatus::Partial { detail } => {
+                CapabilityStatus::Partial { detail }
+            }
+        }
+    }
+
+    DocumentCapabilityFacts {
+        find_in_page: status(capabilities.find_in_page),
+        page_zoom: status(capabilities.page_zoom),
+        page_capture: status(capabilities.page_capture),
+        navigation: status(capabilities.navigation),
+    }
+}
+
 fn project_reader_lineage_facet(
     app: &mut crate::app::App,
     node: uuid::Uuid,
@@ -428,8 +453,16 @@ impl Shell {
                                             fence_handle: None,
                                         };
                                         match self.surface_engines.spawn(&decision, &spawn) {
-                                            Ok(producer) => {
+                                            Ok(mut producer) => {
                                                 tracing::info!(%node, %url, engine = %decision.engine_id, "surface content live");
+                                                let capabilities = producer
+                                                    .as_web_surface()
+                                                    .map(|web| {
+                                                        app_document_capabilities(
+                                                            web.document_capabilities(),
+                                                        )
+                                                    })
+                                                    .unwrap_or_default();
                                                 self.surface_producers.insert(node, producer);
                                                 Update::ContentSpawned {
                                                     node,
@@ -437,6 +470,7 @@ impl Shell {
                                                         engine: decision.engine_id.clone(),
                                                         structure: None,
                                                         lineage: None,
+                                                        capabilities,
                                                     }),
                                                 }
                                             }
@@ -512,6 +546,9 @@ impl Shell {
                             });
                             let facts = crate::content::ContentFacts {
                                 engine: decision.engine_id.clone(),
+                                capabilities: app_document_capabilities(
+                                    session.document_capabilities(),
+                                ),
                                 structure: report.map(|r| crate::content::StructureFacts {
                                     title: r.title,
                                     headings: r.headings.len(),
@@ -581,6 +618,7 @@ impl Shell {
                     smolweb.replace_body(&url, &document.body);
                     let facts = crate::content::ContentFacts {
                         engine,
+                        capabilities: app_document_capabilities(session.document_capabilities()),
                         structure: session
                             .inspect()
                             .map(|report| crate::content::StructureFacts {

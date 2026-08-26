@@ -27,6 +27,8 @@ pub struct Snapshot {
     pub omnibar: OmnibarView,
     /// Find in the captured document, when its field is open.
     pub document_find: Option<DocumentFindView>,
+    /// Focused document-control availability, mirrored from its owning engine.
+    pub document_capabilities: Option<DocumentCapabilitiesView>,
     /// The active held web permission or authentication decision. Credential
     /// text is intentionally absent; only public request identity and UI state
     /// are observable.
@@ -143,6 +145,14 @@ pub struct DocumentFindView {
     pub status: String,
     pub current_role: Option<String>,
     pub current_label: Option<String>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct DocumentCapabilitiesView {
+    pub find_in_page: String,
+    pub page_zoom: String,
+    pub page_capture: String,
+    pub navigation: String,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -773,6 +783,16 @@ pub fn snapshot(app: &App) -> Snapshot {
                 current_label: current_match.map(|item| item.label.clone()),
             }
         }),
+        document_capabilities: app
+            .graph_runtimes
+            .focused_member()
+            .and_then(|node| app.content.facts(node))
+            .map(|facts| DocumentCapabilitiesView {
+                find_in_page: facts.capabilities.find_in_page.describe(),
+                page_zoom: facts.capabilities.page_zoom.describe(),
+                page_capture: facts.capabilities.page_capture.describe(),
+                navigation: facts.capabilities.navigation.describe(),
+            }),
         user_agent_decision: app.user_agent_decision.active().map(|decision| {
             let request = decision.request();
             let authentication_field = matches!(
@@ -987,6 +1007,7 @@ pub fn suggestion_line(s: &Suggestion) -> String {
 mod tests {
     use super::*;
     use crate::action::Action;
+    use crate::content::{CapabilityStatus, ContentFacts, DocumentCapabilityFacts};
 
     #[test]
     fn snapshot_reads_focus_omnibar_and_content_coherently() {
@@ -1010,6 +1031,42 @@ mod tests {
         );
         assert_eq!(snap.node_count, 1);
         assert!(snap.content.is_empty(), "no content lifecycle yet");
+    }
+
+    #[test]
+    fn snapshot_projects_focused_document_capabilities() {
+        let mut app = App::test_stub();
+        app.update(Action::OpenAddress("https://example.test/".to_string()));
+        let node = app.graph_runtimes.focused_member().unwrap();
+        app.content.note_live(
+            node,
+            Some(ContentFacts {
+                engine: "weld.chromium".into(),
+                structure: None,
+                lineage: None,
+                capabilities: DocumentCapabilityFacts {
+                    find_in_page: CapabilityStatus::Supported,
+                    page_zoom: CapabilityStatus::Unsupported {
+                        reason: "absolute zoom mapping is missing".into(),
+                    },
+                    page_capture: CapabilityStatus::Partial {
+                        detail: "visible viewport only".into(),
+                    },
+                    navigation: CapabilityStatus::Supported,
+                },
+            }),
+        );
+
+        let capabilities = snapshot(&app)
+            .document_capabilities
+            .expect("focused live capabilities");
+        assert_eq!(capabilities.find_in_page, "supported");
+        assert_eq!(
+            capabilities.page_zoom,
+            "unavailable: absolute zoom mapping is missing"
+        );
+        assert_eq!(capabilities.page_capture, "partial: visible viewport only");
+        assert_eq!(capabilities.navigation, "supported");
     }
 
     #[test]

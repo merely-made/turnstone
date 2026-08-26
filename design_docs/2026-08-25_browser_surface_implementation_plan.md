@@ -1,9 +1,10 @@
 # Browser surfaces implementation plan
 
 **Status, 2026-08-26:** in progress. T0 contributed document surfaces, K0
-one-gesture Keep, F0 retained find, and the D0 host decision surface are landed.
-E0 engine parity is next; live CEF server-auth callback delivery remains an
-explicit E0 gap. This plan succeeds the
+one-gesture Keep, F0 retained find, the D0 host decision surface, and E0.1
+engine capability disclosure are landed. Per-node page zoom and captured-page
+provenance are next; live CEF server-auth callback delivery remains an explicit
+E0 gap. This plan succeeds the
 remaining-work portion of the historical
 [browser gap analysis](2026-08-17_smolweb_browser_gap_analysis.md); the analysis
 remains useful as research and acceptance evidence.
@@ -85,6 +86,16 @@ Accepted 2026-08-26. Focused model and adapter tests pass, and both
 `scenarios/browser_find_weld_windows.scn` finish `RESULT ok` with visible
 selection plus the same search-input and status accessibility projection.
 
+Nonblocking F0 acceptance debt stays explicit rather than reopening the lane:
+
+- add headed multi-match wrap and zero-match cases; current headed receipts use
+  one match, while lower-level Livery and Weld tests cover the richer states;
+- check the headed captures into a durable receipt directory;
+- project Previous, Next, and Close into the AccessKit find subtree; keyboard
+  activation and the retained visible buttons already work;
+- extend the host-edited find field with clipboard paste, Delete, and caret
+  movement when text-editing parity becomes the active slice.
+
 ### D0. Permission and authentication decisions
 
 Turn the existing request events into visible, origin-scoped decisions. Web
@@ -130,6 +141,18 @@ Done-conditions:
 - A captured page representation retains source identity and observed-state
   provenance.
 - Save/print consumes the captured representation rather than a graph scene.
+
+E0.1 accepted 2026-08-26. Retained `DocumentSession` and hosted `WebSurface`
+implementations report the same typed find, page-zoom, page-capture, and
+navigation statuses. Turnstone mirrors the exact unsupported reasons and
+partial-support details into the Apparatus, Inspector, observation snapshot,
+and probe fields. Find is offered only when the owning engine reports supported
+or partial service. This disclosure does not pretend that a method-shaped seam
+is a working page control.
+
+E0.2 begins with per-node page zoom. Capture follows once the hosted async
+request/result path and retained observed-state provenance are explicit. The
+CEF authentication callback remains an independent engine-delivery receipt.
 
 ### A0. Arrivals, custody, and network inspection
 
@@ -240,6 +263,13 @@ Done-conditions:
   top-level Basic challenge, matching Welding's partial capability declaration.
   Turnstone therefore reports permissions as supported and authentication as
   partial instead of promoting contract wiring into a false live capability.
+- **2026-08-26, E0.1 source alignment:** advancing Turnstone to Genet's shared
+  capability contract while Mere still pinned the prior Genet revision created
+  two source-distinct Inker contracts. Mere `caaa6dd2cdaf` aligns its Genet
+  family to `633c7afc8a5a`; a clean Turnstone lock now resolves one Genet source
+  and one Mere source. The ignored local Cargo override also names the Taffy
+  fork explicitly as `genet-taffy`, so local development matches the published
+  package identity instead of masking stale lock state.
 
 ## Pitfalls and contradictions
 
@@ -348,3 +378,12 @@ Done-conditions:
   its Fleece consumers to 0.4, and pins Vello tag `vello-0.10.0` plus the
   `mere-p2panda-net-0.7.2` source tag. Its clean locked focused gate passed 81
   tests, including the four Fleece consumers and Distillery.
+- **2026-08-26:** accepted E0.1. Genet `633c7afc8a5a` adds typed find, page-zoom,
+  page-capture, and navigation status to every retained and hosted document
+  adapter; its Inker, Livery, Smolweb, Graft, Scrying, and Weld gates pass. Mere
+  `caaa6dd2cdaf` realigns its immutable Genet pins. With local redirects removed,
+  Turnstone's clean locked capability tests pass 3/3, its find-command tests
+  pass 4/4, and `cargo check --locked --lib --features weld -j 1` passes through
+  native CEF and the Turnstone Weld adapter. The Apparatus, Inspector,
+  observation snapshot, probe fields, and command catalog now tell the same
+  engine-specific truth.

@@ -14,13 +14,13 @@ surfaces already exist here in a different, better shape.
 |---|---|---|---|
 | Session history (back/forward, restore) | HTML session history | Trail pane + codicil-backed truth | Present. Trail IS history; per-tile back/forward reads the trail, not a parallel stack |
 | Bookmarks | (convention, not spec) | Absent as a list; every kept node is bookmark-shaped | A content class / collection over persistent nodes, not a separate store. Taxonomy work, see below |
-| Downloads | HTML `download`, Content-Disposition | Absent | A download is a fetched artifact node with provenance (source URL, disposition, bytes on disk); Steward shows progress |
-| Find in page | (UA convention; interacts with engine text) | Absent | UA-side find bar over the session's structure facts / text; the engine seam already reports outlines |
-| Page zoom | CSS `zoom`/UA zoom | Canvas zoom only | Per-tile content zoom, distinct from canvas zoom; a session-spawn parameter |
+| Downloads | HTML `download`, Content-Disposition | Live with durable custody and collision-safe destination metadata | A download is a fetched representation with source URL, response metadata, exact bytes, and a Steward projection |
+| Find in page | (UA convention; interacts with engine text) | Live through the owning retained or hosted engine | Turnstone owns the captured target and field; engines own matching, selection, and reveal |
+| Page zoom | CSS `zoom`/UA zoom | Capability status is disclosed per live engine; canvas and UI zoom remain separate | Persist document scale per node or engine policy, then offer only controls the selected engine supports |
 | View source | UA convention | Absent | Cheap and honest: the fetched bytes are already held; a source view is a content class |
-| Reader view | (convention) | `genet_extract` wired for title only | The extraction lane exists in genet; a reader rendering is a viewer lane in the engine picker, UA-triggered |
+| Reader view | (convention) | Live as `genet.reader`, derived by Fleece from held HTML | Reader is a viewer lane in the engine picker; extraction lineage remains attached to the representation |
 | Trust / security posture | TLS UI conventions; per-protocol postures | Smolweb fidelity WS2 scoped, unbuilt; place lanes have real authority chrome | One posture vocabulary across https/gemini/reticulum/place lanes, shown in tile chrome (fidelity plan owns the descriptor) |
-| Permissions (notifications, media, geolocation…) | Permissions spec | Ring/participant gate for scripts, wasm, peers, agents | The participant gate IS the permissions model; web-content permissions become gate petitions when scripted lanes need them |
+| Permissions (notifications, media, geolocation…) | Permissions spec | Live host-owned permission decisions; authentication callback delivery remains partial in Weld/CEF | Web-content requests retain exact node/request identity; standing permission and process-only credential policy remain separate |
 | Per-site settings | (UA convention) | Per-node viewer override only | Per-host overrides exist in `EngineRoutePolicy`; widen to a per-host settings sidecar as needs appear |
 | Cookies / storage inspection | (UA convention) | N/A (static lanes carry no cookie jar; scrying tier does) | Surface-engine profile dirs are the boundary; inspection UI deferred until the scrying lane lands |
 | External protocol handling | HTML external handlers | `host.external-protocol` fallback exists, invisible | Engine plan E4 makes it legible |
@@ -31,9 +31,10 @@ surfaces already exist here in a different, better shape.
 
 Reading of the table: Turnstone is not behind on the interesting rows. Trail,
 personas, the participant gate, and the recycle bin are already stronger than
-their conventional counterparts. The real gaps are **downloads, find in page,
-per-tile zoom, view source, reader view as a lane, and bookmark taxonomy**,
-plus making existing invisible things legible (external protocols, trust).
+their conventional counterparts. The remaining gaps from this table are
+**per-node page zoom, view source, and bookmark taxonomy**, plus making
+existing invisible things legible (external protocols, trust). Downloads,
+retained find, and the reader lane landed in the later browser-surface work.
 
 ## The taxonomy half
 
@@ -70,12 +71,19 @@ seam grows a text-run query, which is engine-side plumbing serving a UA-side
 feature. Done when find highlights and steps through matches on a static
 page.
 
+Accepted 2026-08-26 through the shared Inker retained-find contract. Livery
+retains structural matches and reveal; Weld retains selection internally and
+reports authoritative count/current state. Turnstone keeps the exact target,
+query request, stale-answer guard, chrome, accessibility status, and
+observation projection.
+
 ### U2. Per-tile zoom + view source
 
-Zoom as a spawn/session parameter surfaced on the tile; view source as a
-content class over the already-held bytes. Both small. Done when Ctrl+wheel
-on content zooms the page (canvas zoom keyed distinctly, per the navigation
-defaults), and view source opens for any fetched node.
+Zoom is a document setting surfaced on the tile and persisted per node or
+engine policy; view source is a content class over already-held bytes. The
+shared capability report must precede the control so unsupported engines stay
+honest. Done when Ctrl+wheel on content zooms the page without changing chrome
+or the canvas camera, and view source opens for any fetched node.
 
 ### U3. Reader view as a lane
 

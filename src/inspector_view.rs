@@ -243,6 +243,24 @@ fn content_rows(app: &App, node: Option<uuid::Uuid>) -> Vec<(String, String)> {
         return rows;
     };
     rows.push(("Engine".to_string(), facts.engine.clone()));
+    rows.extend([
+        (
+            "Find in page".to_string(),
+            facts.capabilities.find_in_page.describe(),
+        ),
+        (
+            "Page zoom".to_string(),
+            facts.capabilities.page_zoom.describe(),
+        ),
+        (
+            "Page capture".to_string(),
+            facts.capabilities.page_capture.describe(),
+        ),
+        (
+            "Navigation controls".to_string(),
+            facts.capabilities.navigation.describe(),
+        ),
+    ]);
     if let Some(lineage) = &facts.lineage {
         rows.push((
             "Extraction lineage".to_string(),
@@ -359,7 +377,7 @@ fn truncate(value: &str, max_chars: usize) -> String {
 mod tests {
     use super::*;
     use crate::action::{Action, Update};
-    use crate::content::{ContentFacts, StructureFacts};
+    use crate::content::{CapabilityStatus, ContentFacts, DocumentCapabilityFacts, StructureFacts};
 
     #[test]
     fn no_focus_reports_none_honestly() {
@@ -390,6 +408,7 @@ mod tests {
             facts: Some(ContentFacts {
                 engine: "genet.web".to_string(),
                 lineage: None,
+                capabilities: Default::default(),
                 structure: Some(StructureFacts {
                     title: Some("The Page".to_string()),
                     headings: 2,
@@ -429,6 +448,7 @@ mod tests {
                 engine: "some.lane".to_string(),
                 structure: None,
                 lineage: None,
+                capabilities: Default::default(),
             }),
         });
         let lines = inspector_lines(&app);
@@ -438,6 +458,72 @@ mod tests {
                 .any(|l| l == "Structural read: none for this lane")
         );
         assert!(!lines.iter().any(|l| l.starts_with("Document structure")));
+    }
+
+    #[test]
+    fn livery_and_weld_capability_limits_are_presented_honestly() {
+        let mut app = App::test_stub();
+        app.update(Action::OpenAddress(
+            "https://example.com/capabilities".to_string(),
+        ));
+        let node = app.graph_runtimes.focused_member().unwrap();
+        let livery = DocumentCapabilityFacts {
+            find_in_page: CapabilityStatus::Supported,
+            page_zoom: CapabilityStatus::Unsupported {
+                reason: "retained sessions do not expose page zoom".into(),
+            },
+            page_capture: CapabilityStatus::Unsupported {
+                reason: "retained sessions do not capture rendered pages".into(),
+            },
+            navigation: CapabilityStatus::Partial {
+                detail: "the host owns document lineage, policy, and refetch".into(),
+            },
+        };
+        app.content.note_live(
+            node,
+            Some(ContentFacts {
+                engine: "genet.livery".into(),
+                structure: None,
+                lineage: None,
+                capabilities: livery,
+            }),
+        );
+        let lines = inspector_lines(&app);
+        assert!(lines.iter().any(|line| line == "Find in page: supported"));
+        assert!(lines.iter().any(|line| {
+            line == "Page zoom: unavailable: retained sessions do not expose page zoom"
+        }));
+        assert!(lines.iter().any(|line| {
+            line == "Navigation controls: partial: the host owns document lineage, policy, and refetch"
+        }));
+
+        app.content.note_live(
+            node,
+            Some(ContentFacts {
+                engine: "weld.chromium".into(),
+                structure: None,
+                lineage: None,
+                capabilities: DocumentCapabilityFacts {
+                    find_in_page: CapabilityStatus::Supported,
+                    page_zoom: CapabilityStatus::Unsupported {
+                        reason: "Turnstone's Weld tile has no absolute zoom mapping yet".into(),
+                    },
+                    page_capture: CapabilityStatus::Unsupported {
+                        reason: "Turnstone has not projected Weld snapshots yet".into(),
+                    },
+                    navigation: CapabilityStatus::Supported,
+                },
+            }),
+        );
+        let lines = inspector_lines(&app);
+        assert!(
+            lines
+                .iter()
+                .any(|line| line == "Navigation controls: supported")
+        );
+        assert!(lines.iter().any(|line| {
+            line == "Page capture: unavailable: Turnstone has not projected Weld snapshots yet"
+        }));
     }
 
     /// Closing the content drops the facts with it (no stale mirror).
@@ -452,6 +538,7 @@ mod tests {
                 engine: "genet.web".to_string(),
                 structure: None,
                 lineage: None,
+                capabilities: Default::default(),
             }),
         });
         assert!(app.content.facts(node).is_some());

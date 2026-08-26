@@ -607,6 +607,7 @@ mod tests {
             facts: Some(ContentFacts {
                 engine: "genet.web".to_string(),
                 lineage: None,
+                capabilities: Default::default(),
                 structure: Some(StructureFacts {
                     title: Some("Example Domain".to_string()),
                     headings: 1,
