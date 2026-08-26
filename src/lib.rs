@@ -54,6 +54,8 @@ mod share_reader_pane;
 mod share_reader_service;
 pub mod shell;
 pub mod shell_services;
+pub mod sky_receipt;
+pub mod sky_timeline;
 mod steward_pane;
 mod surface;
 mod swatch_pane;

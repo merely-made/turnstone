@@ -38,6 +38,9 @@ set.
 
 ## Current implementation plans and product direction
 
+- [Sky home daily timeline](2026-08-26_sky_home_timeline_plan.md): in-progress
+  T5a astronomy consumer. Its named-zone pure model and derivation receipt are
+  verified; contributed-pane and headed acceptance gates remain open.
 - [Browser surfaces implementation plan](2026-08-25_browser_surface_implementation_plan.md): sequenced Keep, find, decision UI, engine parity, arrivals, shallows, and extension work.
 - [Pane registry, graph views, and shell composition](2026-08-08_pane_registry_and_graph_panes_plan.md): registry and multi-graph pane roadmap, with its remaining A-lane gates.
 - [Turnstone engine adoption](2026-08-03_turnstone_engine_adoption_plan.md): selectable engine routing and unavailable-engine behavior.

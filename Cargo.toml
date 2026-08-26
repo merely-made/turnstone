@@ -202,7 +202,12 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 # which had carried them itself.
 serde = { version = "1", features = ["derive"] }
 incipit = { git = "https://github.com/merely-made/mere.git", branch = "main" }
-serde_json = "1"
+serde_json = { version = "1", features = ["float_roundtrip"] }
+# T5a's civil-day boundary is application policy. Jiff supplies civil types
+# and IANA-zone rules needed to distinguish 23-, 24-, and 25-hour local dates.
+jiff = "0.2"
+# T5a is an acceptance consumer of this exact Turquet 0.13.0 source revision.
+turquet = { version = "=0.13.0", git = "https://github.com/merely-made/turquet.git", rev = "bc3c454f755d0bfd70ab48bd9556a1cda2213d41" }
 
 [dev-dependencies]
 tempfile = "3"
