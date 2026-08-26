@@ -432,6 +432,48 @@ impl App {
                 query,
                 result,
             } => self.apply_document_find_changed(node, request, query, result),
+            Update::PermissionRequested {
+                node,
+                id,
+                origin,
+                descriptors,
+            } => self.apply_permission_requested(node, id, origin, descriptors),
+            Update::AuthenticationRequested {
+                node,
+                id,
+                host,
+                port,
+                realm,
+                scheme,
+                is_proxy,
+            } => self.apply_authentication_requested(node, id, host, port, realm, scheme, is_proxy),
+            Update::PermissionRequestFinished {
+                request,
+                answer,
+                retention,
+                terminal,
+                result,
+            } => {
+                self.apply_permission_request_finished(request, answer, retention, terminal, result)
+            }
+            Update::AuthenticationRequestFinished {
+                request,
+                supplied_credentials,
+                remember_for_process,
+                terminal,
+                result,
+            } => self.apply_authentication_request_finished(
+                request,
+                supplied_credentials,
+                remember_for_process,
+                terminal,
+                result,
+            ),
+            Update::UserAgentRequestWithdrawn {
+                request,
+                kind,
+                reason,
+            } => self.apply_user_agent_request_withdrawn(request, kind, reason),
             Update::ContentFailed { node, error } => {
                 tracing::warn!(%node, %error, "content spawn failed");
                 self.events.push(AppEvent::ContentState {

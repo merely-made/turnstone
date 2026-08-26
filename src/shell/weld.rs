@@ -459,11 +459,9 @@ impl WeldSurface for TurnstoneWeldSurface {
             detail: "text/plain, text/html, and text/uri-list are projected; arbitrary MIME strings are rejected"
                 .into(),
         };
-        capabilities.permissions = WebFeatureStatus::Partial {
-            detail: "held backend callbacks and the public answer path are wired; rendered prompt UI and headed grant/deny proof are pending".into(),
-        };
+        capabilities.permissions = WebFeatureStatus::Supported;
         capabilities.auth = WebFeatureStatus::Partial {
-            detail: "held backend callbacks and credential-provider answers are wired; rendered prompt UI and headed challenge proof are pending".into(),
+            detail: "Turnstone's retained credential decision and answer path are wired, but CEF 151 did not emit GetAuthCredentials for a top-level server challenge; proxy authentication is untested".into(),
         };
         capabilities.degradation_reasons = vec![
             "Turnstone projects pointer input and host-to-page drag/drop; page-to-host drag is observable but has no native winit drag loop".into(),

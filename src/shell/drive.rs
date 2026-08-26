@@ -208,6 +208,23 @@ impl genet_probe::Automatable for Shell {
                 )
                 .with_field("document-find-status", find.status);
         }
+        if let Some(decision) = snap.user_agent_decision {
+            out = out
+                .with_field("decision-kind", decision.kind)
+                .with_field("decision-node", decision.node.to_string())
+                .with_field("decision-request", decision.request.to_string())
+                .with_field("decision-prompt", decision.prompt)
+                .with_field("decision-queued", decision.queued.to_string())
+                .with_field("decision-submitting", decision.submitting.to_string())
+                .with_field(
+                    "decision-auth-field",
+                    decision.authentication_field.unwrap_or_default(),
+                )
+                .with_field(
+                    "decision-process-memory",
+                    decision.remember_for_process.to_string(),
+                );
+        }
         // Fold the url in with the caption, so `assert snap focused ~ example.com`
         // can name the navigated address, not only the display caption.
         out.focused = snap.focused.map(|n| format!("{}  {}", n.caption, n.url));
@@ -335,7 +352,13 @@ impl Shell {
             Step::Open(url) => self.act(Action::OpenAddress(url.clone())),
             Step::Omnibar { command } => self.act(Action::OmnibarOpen { command: *command }),
             Step::Type(text) => {
-                if self.app.document_find.open {
+                if self.app.user_agent_decision.is_open() {
+                    if self.app.user_agent_decision.accepts_text() {
+                        self.act(Action::InsertAuthentication(text.clone()));
+                    } else {
+                        return Err("type: the active decision has no text field".into());
+                    }
+                } else if self.app.document_find.open {
                     self.act(Action::InsertDocumentFind(text.clone()));
                 } else {
                     for c in text.chars() {
@@ -344,7 +367,13 @@ impl Shell {
                 }
             }
             Step::Insert(text) => {
-                if self.app.document_find.open {
+                if self.app.user_agent_decision.is_open() {
+                    if self.app.user_agent_decision.accepts_text() {
+                        self.act(Action::InsertAuthentication(text.clone()));
+                    } else {
+                        return Err("insert: the active decision has no text field".into());
+                    }
+                } else if self.app.document_find.open {
                     self.act(Action::InsertDocumentFind(text.clone()));
                 } else if self.app.omnibar.open {
                     self.act(Action::OmnibarInsert(text.clone()));
@@ -365,6 +394,7 @@ impl Shell {
                 let (winit_key, ctrl) = match key {
                     EditKey::Enter => (WinitKey::Named(WinitNamedKey::Enter), false),
                     EditKey::Escape => (WinitKey::Named(WinitNamedKey::Escape), false),
+                    EditKey::Tab => (WinitKey::Named(WinitNamedKey::Tab), false),
                     EditKey::Backspace => (WinitKey::Named(WinitNamedKey::Backspace), false),
                     EditKey::Delete => (WinitKey::Named(WinitNamedKey::Delete), false),
                     EditKey::Up => (WinitKey::Named(WinitNamedKey::ArrowUp), false),

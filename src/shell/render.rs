@@ -49,6 +49,7 @@ impl Shell {
     fn consume_surface_web_event(&mut self, node: uuid::Uuid, event: inker::WebSurfaceEvent) {
         match event {
             inker::WebSurfaceEvent::Navigation(inker::NavigationEvent::Started { .. }) => {
+                self.withdraw_user_agent_requests(node, "navigation-started");
                 self.app.content.note_surface_started(node);
                 self.surface_find_requests.remove(&node);
                 let effects = self.app.invalidate_document_find_for(node);
@@ -157,14 +158,16 @@ impl Shell {
                         }
                     }
                     crate::web_policy::PermissionDisposition::Pending => {
-                        self.app
-                            .note(crate::observe::AppEvent::PermissionRequested {
-                                node,
-                                id: request.id,
-                                origin: request.origin,
-                                descriptors: request.descriptors,
-                            });
-                        self.run_effects(Vec::new());
+                        let effects =
+                            self.app
+                                .apply_update(crate::action::Update::PermissionRequested {
+                                    node,
+                                    id: request.id,
+                                    origin: request.origin,
+                                    descriptors: request.descriptors,
+                                });
+                        self.run_effects(effects);
+                        self.sync_ime_allowed();
                     }
                 }
             }
@@ -184,15 +187,19 @@ impl Shell {
                         }
                     }
                     crate::web_policy::AuthenticationDisposition::Pending => {
-                        self.app
-                            .note(crate::observe::AppEvent::AuthenticationRequested {
-                                node,
-                                id: challenge.id,
-                                host: challenge.protection_space.host,
-                                realm: challenge.protection_space.realm,
-                                scheme: challenge.protection_space.scheme,
-                            });
-                        self.run_effects(Vec::new());
+                        let effects =
+                            self.app
+                                .apply_update(crate::action::Update::AuthenticationRequested {
+                                    node,
+                                    id: challenge.id,
+                                    host: challenge.protection_space.host,
+                                    port: challenge.protection_space.port,
+                                    realm: challenge.protection_space.realm,
+                                    scheme: challenge.protection_space.scheme,
+                                    is_proxy: challenge.protection_space.is_proxy,
+                                });
+                        self.run_effects(effects);
+                        self.sync_ime_allowed();
                     }
                 }
             }
@@ -202,6 +209,7 @@ impl Shell {
                 self.request_redraw();
             }
             inker::WebSurfaceEvent::ProcessCrashed { reason } => {
+                self.withdraw_user_agent_requests(node, "surface-crashed");
                 tracing::warn!(%node, %reason, "surface content process crashed");
             }
             inker::WebSurfaceEvent::BackendDiagnostic { severity, message } => {
@@ -263,15 +271,25 @@ impl Shell {
     fn expire_user_agent_requests(&mut self) {
         for expired in self.web_policy.expire(std::time::Instant::now()) {
             match expired {
-                crate::web_policy::ExpiredRequest::Permission { node, id } => {
+                crate::web_policy::PendingRequest::Permission { node, id } => {
                     if let Err(error) =
                         self.answer_surface_permission(node, id, inker::PermissionAnswer::Dismiss)
                     {
                         tracing::warn!(%node, request_id = id.get(), %error, "timed-out permission request could not be dismissed");
                     }
                     self.project_policy_summary(node);
+                    let effects =
+                        self.app
+                            .apply_update(crate::action::Update::UserAgentRequestWithdrawn {
+                                request: crate::user_agent_decision::UserAgentRequestKey::new(
+                                    node, id,
+                                ),
+                                kind: "permission",
+                                reason: "timed-out",
+                            });
+                    self.run_effects(effects);
                 }
-                crate::web_policy::ExpiredRequest::Authentication { node, id } => {
+                crate::web_policy::PendingRequest::Authentication { node, id } => {
                     if let Err(error) = self.answer_surface_authentication(
                         node,
                         id,
@@ -280,8 +298,66 @@ impl Shell {
                         tracing::warn!(%node, request_id = id.get(), %error, "timed-out authentication request could not be cancelled");
                     }
                     self.project_policy_summary(node);
+                    let effects =
+                        self.app
+                            .apply_update(crate::action::Update::UserAgentRequestWithdrawn {
+                                request: crate::user_agent_decision::UserAgentRequestKey::new(
+                                    node, id,
+                                ),
+                                kind: "authentication",
+                                reason: "timed-out",
+                            });
+                    self.run_effects(effects);
                 }
             }
+        }
+        self.sync_ime_allowed();
+    }
+
+    pub(super) fn withdraw_user_agent_requests(&mut self, node: uuid::Uuid, reason: &'static str) {
+        let withdrawn = self.web_policy.withdraw_node(node, reason);
+        for request in withdrawn {
+            let (id, kind) = match request {
+                crate::web_policy::PendingRequest::Permission { id, .. } => {
+                    if let Err(error) =
+                        self.answer_surface_permission(node, id, inker::PermissionAnswer::Dismiss)
+                    {
+                        tracing::debug!(%node, request_id = id.get(), %error, "withdrawn permission callback was already unavailable");
+                    }
+                    (id, "permission")
+                }
+                crate::web_policy::PendingRequest::Authentication { id, .. } => {
+                    if let Err(error) = self.answer_surface_authentication(
+                        node,
+                        id,
+                        &inker::HttpAuthenticationAnswer::Cancel,
+                    ) {
+                        tracing::debug!(%node, request_id = id.get(), %error, "withdrawn authentication callback was already unavailable");
+                    }
+                    (id, "authentication")
+                }
+            };
+            let effects = self
+                .app
+                .apply_update(crate::action::Update::UserAgentRequestWithdrawn {
+                    request: crate::user_agent_decision::UserAgentRequestKey::new(node, id),
+                    kind,
+                    reason,
+                });
+            self.run_effects(effects);
+        }
+        if !self.web_policy.summary(node).permissions.is_empty()
+            || !self.web_policy.summary(node).authentication.is_empty()
+        {
+            self.project_policy_summary(node);
+        }
+        self.sync_ime_allowed();
+    }
+
+    pub(super) fn withdraw_all_user_agent_requests(&mut self, reason: &'static str) {
+        let nodes = self.web_policy.pending_nodes();
+        for node in nodes {
+            self.withdraw_user_agent_requests(node, reason);
         }
     }
 

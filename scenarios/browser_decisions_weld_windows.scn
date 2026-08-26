@@ -1,0 +1,35 @@
+# D0 headed receipt. A local page asks CEF for geolocation. The scenario drives
+# the retained Turnstone decision card through ordinary pointer seams and then
+# observes the page continuing after the exact callback is answered.
+# Start scenarios/fixtures/browser_decisions_server.ps1 on port 43107 first;
+# run with --features weld, TURNSTONE_CEF_PATH, and a fresh profile.
+settle 30
+key escape
+open http://127.0.0.1:43107/permission
+settle 40
+act Open Apparatus pane
+settle 5
+click-row weld.chromium
+settle 5
+act Toggle live content
+settle 90
+assert content-live
+
+# The fixture button fills the hosted page. Its user gesture opens a real CEF
+# permission callback, while Turnstone keeps the exact surface/request key.
+click-at 310 303
+settle 120
+assert snap decision-kind == permission
+assert snap decision-prompt ~ 127.0.0.1:43107
+assert snap decision-prompt ~ location
+assert a11y button: Allow once
+capture 01_permission_decision
+
+# At 1024x600 this point is the retained Allow once button. The page advances
+# after the geolocation callback, retaining this same Weld surface.
+click-at 250 154
+settle 120
+assert event permission-answered
+assert focused 127.0.0.1:43107/permission-result
+capture 02_permission_answered
+log D0 Weld permission receipt complete

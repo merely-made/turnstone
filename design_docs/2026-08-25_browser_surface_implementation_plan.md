@@ -1,8 +1,9 @@
 # Browser surfaces implementation plan
 
 **Status, 2026-08-26:** in progress. T0 contributed document surfaces, K0
-one-gesture Keep, and F0 retained find are landed. D0 decision UI is next. This
-plan succeeds the
+one-gesture Keep, F0 retained find, and the D0 host decision surface are landed.
+E0 engine parity is next; live CEF server-auth callback delivery remains an
+explicit E0 gap. This plan succeeds the
 remaining-work portion of the historical
 [browser gap analysis](2026-08-17_smolweb_browser_gap_analysis.md); the analysis
 remains useful as research and acceptance evidence.
@@ -98,6 +99,20 @@ Done-conditions:
   truth.
 - Restart tests prove which decisions persist and which deliberately do not.
 
+Accepted 2026-08-26 at the host boundary. Retained permission and
+authentication requests, exact `{ node, request }` lowering, navigation and
+surface withdrawal, keyboard/pointer interaction, accessible controls,
+credential redaction, standing permission persistence, and process-only
+  credential memory pass focused tests. The real Windows Weld permission
+scenario finishes `RESULT ok`, visibly presents the origin-scoped card, answers
+the exact callback, and observes the page continue. CEF 151 still does not emit
+`GetAuthCredentials` for the fixture's top-level Basic challenge, so this plan
+does not claim a live authentication receipt; that engine-delivery gap moves to
+E0. The broader library run passes 371 tests and ignores 5; its sole failure is
+the pre-existing
+`place::lanes::tests::a_partition_heals_and_both_sides_converge` delivery-after-heal
+gate, outside D0.
+
 ### E0. Engine parity, page zoom, and capture
 
 Complete the user-agent contract across registered engines. Page zoom is a
@@ -109,6 +124,8 @@ Done-conditions:
 
 - Each registered engine reports support or a typed unavailable result for
   find, page zoom, capture, and navigation controls.
+- Each claimed permission or authentication callback passes a live consumer
+  receipt; partial and unavailable statuses name the missing backend seam.
 - Page zoom persists per node or engine policy without changing chrome scale.
 - A captured page representation retains source identity and observed-state
   provenance.
@@ -173,9 +190,10 @@ Done-conditions:
 - **2026-08-25, live tree:** UI zoom is live in the retained chrome appearance,
   while canvas zoom is a camera gesture. Neither is page zoom
   (`src/chrome_view.rs`, `src/main.rs`).
-- **2026-08-25, live tree:** permission and authentication requests already
-  carry exact identities in `AppEvent`; the missing work is retained decision
-  state and lowering, not another request detector (`src/observe.rs`).
+- **2026-08-25, live tree:** the permission and authentication contract carries
+  exact identities in `AppEvent`; D0 needed retained decision state and exact
+  lowering rather than another request vocabulary (`src/observe.rs`). Backend
+  callback delivery remains a per-engine capability.
 - **2026-08-25, live tree:** the probe path supplies a point text target, not a
   retained, navigable match set (`src/shell/drive.rs`). The gap analysis's
   reference to the Inspector as an existing find index overstates the seam.
@@ -216,6 +234,11 @@ Done-conditions:
   count with no active selection. The Weld adapter now always requests an
   active, revealed match while query changes still begin a new engine session
   (`src/shell/weld.rs`).
+- **2026-08-26, headed D0:** Weld/CEF 151 delivers and accepts a held
+  geolocation callback. Its `GetAuthCredentials` handler remains uncalled for a
+  top-level Basic challenge, matching Welding's partial capability declaration.
+  Turnstone therefore reports permissions as supported and authentication as
+  partial instead of promoting contract wiring into a false live capability.
 
 ## Pitfalls and contradictions
 
@@ -233,6 +256,9 @@ Done-conditions:
   consequences.
 - Web permissions and denizen or participant grants may share visual grammar,
   but their authorities and revocation rules must remain separate.
+- A typed request event and answer method do not prove that an engine emits the
+  callback. Capability status requires a live server or proxy receipt; CEF
+  server authentication remains partial until one exists.
 - A hosted surface must answer capabilities through its registered session.
   Turnstone DOM inspection would break engine modularity and the shared-device
   boundary.
@@ -307,3 +333,10 @@ Done-conditions:
   The broader library run passed 345 tests and ignored 5, but remains red on
   the pre-existing `place::lanes::tests::a_partition_heals_and_both_sides_converge`
   delivery-after-heal failure; that p2p gate is independent of F0.
+- **2026-08-26:** completed D0's host-owned decision surface with retained
+  exact request identity, durable permission versus process-only credential
+  policy, controlled Cambium chrome, keyboard/pointer routing, accessibility,
+  sanitized observation, and stale-request withdrawal. Focused model, policy,
+  chrome, and scenario-parser tests pass. The real Windows Weld permission
+  scenario and local server both finish `RESULT ok`; live server-auth delivery
+  remains truthfully partial and is assigned to E0.

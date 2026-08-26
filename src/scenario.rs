@@ -22,7 +22,7 @@
 //! omnibar find|actions      # Action::OmnibarOpen
 //! type <text>               # Action::OmnibarChar per char
 //! insert <text>             # IME commit into the focused omnibar or Knot editor
-//! key enter|escape|backspace|delete|up|down|left|right|home|end|ctrl+s
+//! key enter|escape|tab|backspace|delete|up|down|left|right|home|end|ctrl+s
 //! act <palette label>       # commit a palette_actions() entry by label
 //! script <inline lua>        # run a Piccolo control script; its Actions lower
 //!                            # through the same spine (the automation runner —
@@ -217,6 +217,7 @@ pub enum Step {
 pub enum EditKey {
     Enter,
     Escape,
+    Tab,
     Backspace,
     Delete,
     Up,
@@ -269,6 +270,7 @@ pub fn parse(body: &str) -> Result<Vec<Step>, String> {
             "key" => match rest {
                 "enter" => Step::Key(EditKey::Enter),
                 "escape" => Step::Key(EditKey::Escape),
+                "tab" => Step::Key(EditKey::Tab),
                 "backspace" => Step::Key(EditKey::Backspace),
                 "delete" => Step::Key(EditKey::Delete),
                 "up" => Step::Key(EditKey::Up),
@@ -284,7 +286,7 @@ pub fn parse(body: &str) -> Result<Vec<Step>, String> {
                 "ctrl+f" => Step::Key(EditKey::Find),
                 _ => {
                     return err(
-                        "key wants enter|escape|backspace|delete|up|down|left|right|home|end|pagedown|pageup|space|ctrl+s|ctrl+f",
+                        "key wants enter|escape|tab|backspace|delete|up|down|left|right|home|end|pagedown|pageup|space|ctrl+s|ctrl+f",
                     );
                 }
             },
@@ -628,5 +630,11 @@ drop-file 350 280 receipt.txt",
     fn find_chord_is_one_focus_routed_key_step() {
         let steps = parse("key ctrl+f").unwrap();
         assert!(matches!(steps.as_slice(), [Step::Key(EditKey::Find)]));
+    }
+
+    #[test]
+    fn tab_is_a_focus_routed_key_step() {
+        let steps = parse("key tab").unwrap();
+        assert!(matches!(steps.as_slice(), [Step::Key(EditKey::Tab)]));
     }
 }

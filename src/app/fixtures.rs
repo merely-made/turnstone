@@ -39,6 +39,7 @@ impl App {
             pane_context: crate::panes::ContextIndex::default(),
             omnibar: OmnibarState::default(),
             document_find: crate::document_find::DocumentFindState::default(),
+            user_agent_decision: crate::user_agent_decision::UserAgentDecisionState::default(),
             frame_timings: crate::frame_timing::FrameTimings::default(),
             shell: crate::shell_services::ShellServices::default(),
             data_root,

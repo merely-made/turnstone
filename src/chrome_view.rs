@@ -54,6 +54,14 @@ pub enum ChromeIntent {
     FindPrevious,
     FindNext,
     FindClose,
+    Permission {
+        request: crate::user_agent_decision::UserAgentRequestKey,
+        choice: crate::user_agent_decision::PermissionChoice,
+    },
+    FocusAuthentication(crate::user_agent_decision::AuthenticationField),
+    ToggleAuthenticationMemory,
+    SubmitAuthentication(crate::user_agent_decision::UserAgentRequestKey),
+    CancelAuthentication(crate::user_agent_decision::UserAgentRequestKey),
 }
 
 impl cambium::Action for ChromeIntent {}
@@ -67,6 +75,70 @@ struct RowView {
     /// The row's index in `OmnibarState::suggestions` (what a click commits);
     /// `None` for inert hint rows.
     commit: Option<usize>,
+}
+
+#[derive(Clone, PartialEq)]
+enum DecisionCard {
+    Permission {
+        request: crate::user_agent_decision::UserAgentRequestKey,
+        prompt: String,
+        queued: usize,
+        submitting: bool,
+        error: Option<String>,
+    },
+    Authentication {
+        request: crate::user_agent_decision::UserAgentRequestKey,
+        prompt: String,
+        queued: usize,
+        username: TextInput,
+        password: TextInput,
+        field: crate::user_agent_decision::AuthenticationField,
+        remember_for_process: bool,
+        submitting: bool,
+        error: Option<String>,
+    },
+}
+
+impl std::fmt::Debug for DecisionCard {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Permission {
+                request,
+                prompt,
+                queued,
+                submitting,
+                error,
+            } => formatter
+                .debug_struct("Permission")
+                .field("request", request)
+                .field("prompt", prompt)
+                .field("queued", queued)
+                .field("submitting", submitting)
+                .field("error", error)
+                .finish(),
+            Self::Authentication {
+                request,
+                prompt,
+                queued,
+                field,
+                remember_for_process,
+                submitting,
+                error,
+                ..
+            } => formatter
+                .debug_struct("Authentication")
+                .field("request", request)
+                .field("prompt", prompt)
+                .field("queued", queued)
+                .field("username", &"[redacted]")
+                .field("password", &"[redacted]")
+                .field("field", field)
+                .field("remember_for_process", remember_for_process)
+                .field("submitting", submitting)
+                .field("error", error)
+                .finish(),
+        }
+    }
 }
 
 /// One window's chrome inputs: its size and its caption.
@@ -101,6 +173,7 @@ struct ChromeState {
     find_open: bool,
     find_input: TextInput,
     find_status: String,
+    decision: Option<DecisionCard>,
 }
 
 type ChromeView = Box<dyn AnyView<ChromeState, ChromeIntent, GenetCtx, GenetElement>>;
@@ -255,11 +328,197 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
         ));
     }
 
+    if win.primary
+        && let Some(decision) = &state.decision
+    {
+        let (prompt, queued, submitting, error, mut card_children) = match decision {
+            DecisionCard::Permission {
+                request,
+                prompt,
+                queued,
+                submitting,
+                error,
+            } => {
+                let intent = |choice| {
+                    (!*submitting).then_some(ChromeIntent::Permission {
+                        request: *request,
+                        choice,
+                    })
+                };
+                let row = vec![
+                    browser_button(
+                        "Allow once",
+                        intent(crate::user_agent_decision::PermissionChoice::AllowOnce),
+                    ),
+                    browser_button(
+                        "Always allow",
+                        intent(crate::user_agent_decision::PermissionChoice::AlwaysAllow),
+                    ),
+                    browser_button(
+                        "Deny",
+                        intent(crate::user_agent_decision::PermissionChoice::Deny),
+                    ),
+                ];
+                (
+                    prompt,
+                    *queued,
+                    *submitting,
+                    error,
+                    vec![Box::new(
+                        el::<_, ChromeState, ChromeIntent>("div", row)
+                            .attr("class", "decision-actions"),
+                    ) as ChromeView],
+                )
+            }
+            DecisionCard::Authentication {
+                request,
+                prompt,
+                queued,
+                username,
+                password,
+                field,
+                remember_for_process,
+                submitting,
+                error,
+            } => {
+                let username_field = el::<_, ChromeState, ChromeIntent>(
+                    "div",
+                    caret_field_children::<ChromeState, ChromeIntent>(username, &[]),
+                )
+                .attr(
+                    "class",
+                    if *field == crate::user_agent_decision::AuthenticationField::Username {
+                        "decision-input decision-input-active"
+                    } else {
+                        "decision-input"
+                    },
+                )
+                .attr("role", "textbox")
+                .attr("aria-label", "Username");
+                let username_field = on_click(
+                    username_field,
+                    |_state: &mut ChromeState, _click: PointerClick| {
+                        ChromeIntent::FocusAuthentication(
+                            crate::user_agent_decision::AuthenticationField::Username,
+                        )
+                    },
+                );
+                let password_field = el::<_, ChromeState, ChromeIntent>(
+                    "div",
+                    caret_field_children::<ChromeState, ChromeIntent>(password, &[]),
+                )
+                .attr(
+                    "class",
+                    if *field == crate::user_agent_decision::AuthenticationField::Password {
+                        "decision-input decision-input-active"
+                    } else {
+                        "decision-input"
+                    },
+                )
+                .attr("role", "textbox")
+                .attr("aria-label", "Password");
+                let password_field = on_click(
+                    password_field,
+                    |_state: &mut ChromeState, _click: PointerClick| {
+                        ChromeIntent::FocusAuthentication(
+                            crate::user_agent_decision::AuthenticationField::Password,
+                        )
+                    },
+                );
+                let remember = browser_button(
+                    if *remember_for_process {
+                        "Remember until close: on"
+                    } else {
+                        "Remember until close: off"
+                    },
+                    (!*submitting).then_some(ChromeIntent::ToggleAuthenticationMemory),
+                );
+                let actions = vec![
+                    browser_button(
+                        "Sign in",
+                        (!*submitting).then_some(ChromeIntent::SubmitAuthentication(*request)),
+                    ),
+                    browser_button(
+                        "Cancel",
+                        (!*submitting).then_some(ChromeIntent::CancelAuthentication(*request)),
+                    ),
+                ];
+                (
+                    prompt,
+                    *queued,
+                    *submitting,
+                    error,
+                    vec![
+                        Box::new(
+                            el::<_, ChromeState, ChromeIntent>(
+                                "div",
+                                vec![
+                                    Box::new(username_field) as ChromeView,
+                                    Box::new(password_field) as ChromeView,
+                                ],
+                            )
+                            .attr("class", "decision-fields"),
+                        ) as ChromeView,
+                        remember,
+                        Box::new(
+                            el::<_, ChromeState, ChromeIntent>("div", actions)
+                                .attr("class", "decision-actions"),
+                        ) as ChromeView,
+                    ],
+                )
+            }
+        };
+        card_children.insert(
+            0,
+            Box::new(
+                el::<_, ChromeState, ChromeIntent>("div", prompt.clone())
+                    .attr("class", "decision-prompt")
+                    .attr("role", "heading"),
+            ),
+        );
+        if queued > 1 {
+            card_children.insert(
+                1,
+                Box::new(
+                    el::<_, ChromeState, ChromeIntent>(
+                        "div",
+                        format!("1 of {queued} pending requests"),
+                    )
+                    .attr("class", "decision-status"),
+                ),
+            );
+        }
+        if submitting {
+            card_children.push(Box::new(
+                el::<_, ChromeState, ChromeIntent>("div", "Applying decision")
+                    .attr("class", "decision-status")
+                    .attr("role", "status"),
+            ));
+        }
+        if let Some(error) = error {
+            card_children.push(Box::new(
+                el::<_, ChromeState, ChromeIntent>("div", error.clone())
+                    .attr("class", "decision-error")
+                    .attr("role", "alert"),
+            ));
+        }
+        let left = ((win.w - 620.0) / 2.0).max(8.0);
+        children.push(Box::new(
+            el::<_, ChromeState, ChromeIntent>("div", card_children)
+                .attr("class", "decision-card")
+                .attr("role", "dialog")
+                .attr(
+                    "style",
+                    format!("transform: translate({left}px, 108px); width: 620px;"),
+                ),
+        ));
+    }
+
     Box::new(el::<_, ChromeState, ChromeIntent>("div", children))
 }
 
-fn browser_button(label: &'static str, intent: Option<ChromeIntent>) -> ChromeView {
-    let base = el::<_, ChromeState, ChromeIntent>("div", label).attr(
+fn browser_button(label: impl Into<String>, intent: Option<ChromeIntent>) -> ChromeView {
+    let base = el::<_, ChromeState, ChromeIntent>("div", label.into()).attr(
         "class",
         if intent.is_some() {
             "browser-button"
@@ -379,6 +638,7 @@ impl ChromeSurfaces {
             find_open: false,
             find_input: TextInput::default(),
             find_status: String::new(),
+            decision: None,
         };
         let mut runner = GenetMultiRunner::new(state);
         let primary =
@@ -502,6 +762,58 @@ impl ChromeSurfaces {
         find_input.set_caret_byte(app.document_find.query.len(), false);
         let find_open = app.document_find.open;
         let find_status = app.document_find.status();
+        let decision = app.user_agent_decision.active().map(|decision| {
+            let request = decision.request();
+            let prompt = decision.prompt();
+            let queued = app.user_agent_decision.len();
+            let submitting = app.user_agent_decision.submitting == Some(request);
+            let error = app.user_agent_decision.error.clone();
+            match decision {
+                crate::user_agent_decision::PendingUserAgentDecision::Permission { .. } => {
+                    DecisionCard::Permission {
+                        request,
+                        prompt,
+                        queued,
+                        submitting,
+                        error,
+                    }
+                }
+                crate::user_agent_decision::PendingUserAgentDecision::Authentication { .. } => {
+                    let mut username = TextInput::new(
+                        app.user_agent_decision
+                            .authentication
+                            .username
+                            .as_str()
+                            .to_string(),
+                    );
+                    username.set_caret_byte(
+                        app.user_agent_decision
+                            .authentication
+                            .username
+                            .as_str()
+                            .len(),
+                        false,
+                    );
+                    let password_text = app.user_agent_decision.authentication.password_mask();
+                    let mut password = TextInput::new(password_text.clone());
+                    password.set_caret_byte(password_text.len(), false);
+                    DecisionCard::Authentication {
+                        request,
+                        prompt,
+                        queued,
+                        username,
+                        password,
+                        field: app.user_agent_decision.authentication.field,
+                        remember_for_process: app
+                            .user_agent_decision
+                            .authentication
+                            .remember_for_process,
+                        submitting,
+                        error,
+                    }
+                }
+            }
+        });
         self.runner.update(|state| {
             for &(slot, w, h) in sizes {
                 while state.windows.len() <= slot {
@@ -530,6 +842,7 @@ impl ChromeSurfaces {
             state.find_open = find_open;
             state.find_input = find_input.clone();
             state.find_status = find_status.clone();
+            state.decision = decision.clone();
         });
         self.appearance = chrome.appearance.clone();
         self.absorb_dom_mutations();
@@ -589,7 +902,7 @@ mod tests {
     use layout_dom_api::LayoutDom;
 
     use super::*;
-    use crate::action::Action;
+    use crate::action::{Action, Update};
 
     fn open_omnibar_app() -> App {
         let mut app = App::test_stub();
@@ -746,6 +1059,101 @@ mod tests {
             7,
             "four browser controls plus previous, next, and close"
         );
+    }
+
+    #[test]
+    fn permission_decision_projects_origin_choices_and_accessibility() {
+        let mut app = App::test_stub();
+        let node = uuid::Uuid::new_v4();
+        let id = inker::UserAgentRequestId::new(41);
+        app.apply_update(Update::PermissionRequested {
+            node,
+            id,
+            origin: "https://maps.example/path".into(),
+            descriptors: vec![inker::PermissionDescriptor::Geolocation],
+        });
+
+        let mut chrome = ChromeSurfaces::new();
+        chrome.sync(&app, &[(0, 1024.0, 600.0)]);
+        let intents = browser_button_intents(&mut chrome);
+        assert!(intents.contains(&ChromeIntent::Permission {
+            request: crate::user_agent_decision::UserAgentRequestKey::new(node, id),
+            choice: crate::user_agent_decision::PermissionChoice::AllowOnce,
+        }));
+        assert!(intents.contains(&ChromeIntent::Permission {
+            request: crate::user_agent_decision::UserAgentRequestKey::new(node, id),
+            choice: crate::user_agent_decision::PermissionChoice::AlwaysAllow,
+        }));
+        assert!(intents.contains(&ChromeIntent::Permission {
+            request: crate::user_agent_decision::UserAgentRequestKey::new(node, id),
+            choice: crate::user_agent_decision::PermissionChoice::Deny,
+        }));
+        let dom = chrome.dom.borrow();
+        assert_eq!(dom.all_with_class(dom.document(), "decision-card").len(), 1);
+        assert!(dom.outer_html(dom.document()).contains("maps.example"));
+        drop(dom);
+        let a11y = crate::a11y::a11y_lines(&app);
+        assert!(a11y.iter().any(|line| line == "button: Always allow"));
+        assert!(
+            a11y.iter()
+                .any(|line| { line == "dialog: https://maps.example wants location" })
+        );
+    }
+
+    #[test]
+    fn authentication_card_masks_password_and_a11y_withholds_credentials() {
+        let mut app = App::test_stub();
+        let node = uuid::Uuid::new_v4();
+        app.apply_update(Update::AuthenticationRequested {
+            node,
+            id: inker::UserAgentRequestId::new(42),
+            host: "secure.example".into(),
+            port: 443,
+            realm: Some("private".into()),
+            scheme: "basic".into(),
+            is_proxy: false,
+        });
+        app.update(Action::InsertAuthentication("private-user".into()));
+        app.update(Action::FocusAuthenticationField(
+            crate::user_agent_decision::AuthenticationField::Password,
+        ));
+        app.update(Action::InsertAuthentication("private-password".into()));
+
+        let mut chrome = ChromeSurfaces::new();
+        chrome.sync(&app, &[(0, 1024.0, 600.0)]);
+        let dom = chrome.dom.borrow();
+        let html = dom.outer_html(dom.document());
+        assert!(html.contains("private-user"));
+        assert!(!html.contains("private-password"));
+        assert!(html.contains("\u{2022}"));
+        drop(dom);
+        let a11y = crate::a11y::a11y_lines(&app).join("\n");
+        assert!(a11y.contains("textinput: Username"));
+        assert!(a11y.contains("passwordinput: Password"));
+        assert!(!a11y.contains("private-user"));
+        assert!(!a11y.contains("private-password"));
+    }
+
+    #[test]
+    fn authentication_card_debug_withholds_credential_fields() {
+        let card = DecisionCard::Authentication {
+            request: crate::user_agent_decision::UserAgentRequestKey::new(
+                uuid::Uuid::new_v4(),
+                inker::UserAgentRequestId::new(43),
+            ),
+            prompt: "Sign in".into(),
+            queued: 1,
+            username: TextInput::new("private-user"),
+            password: TextInput::new("private-password"),
+            field: crate::user_agent_decision::AuthenticationField::Username,
+            remember_for_process: false,
+            submitting: false,
+            error: None,
+        };
+        let debug = format!("{card:?}");
+        assert!(!debug.contains("private-user"));
+        assert!(!debug.contains("private-password"));
+        assert!(debug.contains("[redacted]"));
     }
 
     #[test]

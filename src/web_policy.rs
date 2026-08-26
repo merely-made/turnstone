@@ -196,7 +196,7 @@ impl PermissionRegistry {
     }
 }
 
-fn canonical_origin(input: &str) -> String {
+pub(crate) fn canonical_origin(input: &str) -> String {
     match url::Url::parse(input) {
         Ok(url) => {
             let origin = url.origin().ascii_serialization();
@@ -277,7 +277,7 @@ pub enum AuthenticationDisposition {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub enum ExpiredRequest {
+pub enum PendingRequest {
     Permission { node: Uuid, id: UserAgentRequestId },
     Authentication { node: Uuid, id: UserAgentRequestId },
 }
@@ -489,7 +489,7 @@ impl WebPolicyService {
         Ok(())
     }
 
-    pub fn expire(&mut self, now: Instant) -> Vec<ExpiredRequest> {
+    pub fn expire(&mut self, now: Instant) -> Vec<PendingRequest> {
         let expired_permissions = self
             .permissions
             .iter()
@@ -512,7 +512,7 @@ impl WebPolicyService {
                     Some("timed-out"),
                 );
             }
-            expired.push(ExpiredRequest::Permission { node, id });
+            expired.push(PendingRequest::Permission { node, id });
         }
         for (node, id) in expired_authentication {
             let space = self
@@ -527,9 +527,67 @@ impl WebPolicyService {
                     Some("timed-out"),
                 );
             }
-            expired.push(ExpiredRequest::Authentication { node, id });
+            expired.push(PendingRequest::Authentication { node, id });
         }
         expired
+    }
+
+    /// Withdraw every callback held for a surface before that surface starts a
+    /// later navigation or is destroyed. Request ids are surface-scoped, so
+    /// removing the old generation here prevents a reused id from attaching a
+    /// stale visible decision to the later document.
+    pub fn withdraw_node(&mut self, node: Uuid, reason: &str) -> Vec<PendingRequest> {
+        let permissions = self
+            .permissions
+            .keys()
+            .filter_map(|&(candidate, id)| (candidate == node).then_some(id))
+            .collect::<Vec<_>>();
+        let authentication = self
+            .authentication
+            .keys()
+            .filter_map(|&(candidate, id)| (candidate == node).then_some(id))
+            .collect::<Vec<_>>();
+        let mut withdrawn = Vec::with_capacity(permissions.len() + authentication.len());
+        for id in permissions {
+            if let Some(pending) = self.permissions.remove(&(node, id)) {
+                self.update_permission_summary(
+                    node,
+                    &pending.request.origin,
+                    &pending.request.descriptors,
+                    PermissionAnswer::Dismiss,
+                    Some(reason),
+                );
+            }
+            withdrawn.push(PendingRequest::Permission { node, id });
+        }
+        for id in authentication {
+            let space = self
+                .authentication
+                .remove(&(node, id))
+                .map(|pending| pending.challenge.protection_space);
+            if let Some(space) = space {
+                self.update_authentication_summary(
+                    node,
+                    &space,
+                    &HttpAuthenticationAnswer::Cancel,
+                    Some(reason),
+                );
+            }
+            withdrawn.push(PendingRequest::Authentication { node, id });
+        }
+        withdrawn
+    }
+
+    pub fn pending_nodes(&self) -> Vec<Uuid> {
+        let mut nodes = self
+            .permissions
+            .keys()
+            .chain(self.authentication.keys())
+            .map(|(node, _)| *node)
+            .collect::<Vec<_>>();
+        nodes.sort_unstable();
+        nodes.dedup();
+        nodes
     }
 
     pub fn summary(&self, node: Uuid) -> NodePolicySummary {
@@ -799,11 +857,11 @@ mod tests {
         service.receive_authentication(node, pending_challenge, later);
         let expired = service.expire(now + timeout);
         assert_eq!(expired.len(), 2);
-        assert!(expired.contains(&ExpiredRequest::Permission {
+        assert!(expired.contains(&PendingRequest::Permission {
             node,
             id: UserAgentRequestId::new(1)
         }));
-        assert!(expired.contains(&ExpiredRequest::Authentication {
+        assert!(expired.contains(&PendingRequest::Authentication {
             node,
             id: UserAgentRequestId::new(2)
         }));
@@ -878,5 +936,99 @@ mod tests {
         assert!(!projection.contains("private-password"));
         assert!(projection.contains("secure.example"));
         assert!(projection.contains("private"));
+    }
+
+    #[test]
+    fn navigation_withdrawal_removes_old_request_identity() {
+        let node = Uuid::new_v4();
+        let mut service = WebPolicyService::new(
+            PermissionRegistry::private("profile"),
+            Duration::from_secs(5),
+        );
+        service.receive_permission(node, permission(21, "https://old.example/"), Instant::now());
+        service.receive_authentication(node, challenge(22), Instant::now());
+
+        assert_eq!(service.pending_nodes(), vec![node]);
+
+        let withdrawn = service.withdraw_node(node, "navigation-started");
+        assert!(withdrawn.contains(&PendingRequest::Permission {
+            node,
+            id: UserAgentRequestId::new(21),
+        }));
+        assert!(withdrawn.contains(&PendingRequest::Authentication {
+            node,
+            id: UserAgentRequestId::new(22),
+        }));
+        assert!(
+            service
+                .permission_request(node, UserAgentRequestId::new(21))
+                .is_none()
+        );
+        assert!(
+            service
+                .authentication_challenge(node, UserAgentRequestId::new(22))
+                .is_none()
+        );
+        assert_eq!(
+            service.summary(node).permissions[0].disposition,
+            "navigation-started"
+        );
+        assert_eq!(
+            service.summary(node).authentication[0].disposition,
+            "navigation-started"
+        );
+        assert!(service.pending_nodes().is_empty());
+    }
+
+    #[test]
+    fn one_shot_and_process_credentials_do_not_survive_restart() {
+        let path = temporary_policy_path("ephemeral-restart");
+        let node = Uuid::new_v4();
+        let request = permission(31, "https://one.example/");
+        let auth = challenge(32);
+        {
+            let registry =
+                PermissionRegistry::load("default", ProfileStorage::Persistent(path.clone()))
+                    .unwrap();
+            let mut service = WebPolicyService::new(registry, Duration::from_secs(5));
+            service.receive_permission(node, request.clone(), Instant::now());
+            service
+                .complete_permission(
+                    node,
+                    request.id,
+                    PermissionAnswer::Grant,
+                    PermissionRetention::OneShot,
+                )
+                .unwrap();
+            service.receive_authentication(node, auth.clone(), Instant::now());
+            service
+                .complete_authentication(
+                    node,
+                    auth.id,
+                    &HttpAuthenticationAnswer::Credentials(HttpCredentials {
+                        username: "restart-user".into(),
+                        password: "restart-password".into(),
+                    }),
+                    true,
+                )
+                .unwrap();
+        }
+
+        let registry =
+            PermissionRegistry::load("default", ProfileStorage::Persistent(path.clone())).unwrap();
+        let mut restarted = WebPolicyService::new(registry, Duration::from_secs(5));
+        assert_eq!(
+            restarted.registry().state(
+                "https://one.example/path",
+                &PermissionDescriptor::Geolocation,
+            ),
+            PermissionState::Prompt
+        );
+        assert_eq!(
+            restarted.receive_authentication(node, auth, Instant::now()),
+            AuthenticationDisposition::Pending
+        );
+        assert!(!path.exists());
+        let _ = std::fs::remove_dir_all(path.parent().unwrap());
     }
 }

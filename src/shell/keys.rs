@@ -47,7 +47,8 @@ impl Shell {
         let crate::surface::FocusTarget::Content(node) = self.app.focus else {
             return false;
         };
-        if self.app.document_find.open
+        if self.app.user_agent_decision.is_open()
+            || self.app.document_find.open
             || matches!(key, WinitKey::Character(value) if self.ctrl && value.eq_ignore_ascii_case("f"))
         {
             return false;
@@ -204,6 +205,55 @@ impl Shell {
     /// otherwise. Ephemeral content keys (scroll, blur) are delivered inline
     /// and consumed; everything else lowers to an Action through the spine.
     pub(super) fn on_key(&mut self, key: &WinitKey) {
+        if let Some(decision) = self.app.user_agent_decision.active() {
+            let request = decision.request();
+            let action = match decision {
+                crate::user_agent_decision::PendingUserAgentDecision::Permission { .. } => {
+                    matches!(key, WinitKey::Named(WinitNamedKey::Escape)).then_some(
+                        Action::ChoosePermission {
+                            request,
+                            choice: crate::user_agent_decision::PermissionChoice::Dismiss,
+                        },
+                    )
+                }
+                crate::user_agent_decision::PendingUserAgentDecision::Authentication { .. } => {
+                    match key {
+                        WinitKey::Named(WinitNamedKey::Escape) => {
+                            Some(Action::CancelAuthentication { request })
+                        }
+                        WinitKey::Named(WinitNamedKey::Enter) => {
+                            Some(Action::SubmitAuthentication { request })
+                        }
+                        WinitKey::Named(WinitNamedKey::Tab) => {
+                            Some(Action::FocusAuthenticationField(
+                                match self.app.user_agent_decision.authentication.field {
+                                    crate::user_agent_decision::AuthenticationField::Username => {
+                                        crate::user_agent_decision::AuthenticationField::Password
+                                    }
+                                    crate::user_agent_decision::AuthenticationField::Password => {
+                                        crate::user_agent_decision::AuthenticationField::Username
+                                    }
+                                },
+                            ))
+                        }
+                        WinitKey::Named(WinitNamedKey::Backspace) => {
+                            Some(Action::BackspaceAuthentication)
+                        }
+                        WinitKey::Named(WinitNamedKey::Space) => {
+                            Some(Action::InsertAuthentication(" ".into()))
+                        }
+                        WinitKey::Character(text) if !self.ctrl && !self.alt => {
+                            Some(Action::InsertAuthentication(text.to_string()))
+                        }
+                        _ => None,
+                    }
+                }
+            };
+            if let Some(action) = action {
+                self.act(action);
+            }
+            return;
+        }
         if matches!(key, WinitKey::Character(value) if self.ctrl && value.eq_ignore_ascii_case("f"))
         {
             self.act(Action::OpenDocumentFind);

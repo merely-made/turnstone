@@ -21,6 +21,7 @@ use crate::{browse, session};
 mod contributed_pane_arms;
 mod document_find_arms;
 mod runtime_pool;
+mod user_agent_decision_arms;
 
 pub use runtime_pool::{
     FormeRuntime, FormeRuntimeKey, FormeRuntimePool, GraphPaneViews, GraphRuntime, GraphRuntimePool,
@@ -106,6 +107,10 @@ pub struct App {
     /// Find in the captured active document. This is separate from the
     /// omnibar's graph recall and command lanes.
     pub document_find: crate::document_find::DocumentFindState,
+    /// Retained visible decisions for held web permission and authentication
+    /// callbacks. The shell retains the callbacks and policy authority; this
+    /// state is the controlled UI mirror and contains no durable credentials.
+    pub user_agent_decision: crate::user_agent_decision::UserAgentDecisionState,
     /// Per-frame stage costs for the chrome path. Data only, like the rest of
     /// App: the shell writes its own stages into it during `render` and clears
     /// it once the frame is reported. It lives here rather than on Shell
@@ -1004,6 +1009,13 @@ impl App {
             Action::InsertDocumentFind(text) => self.insert_document_find(text),
             Action::BackspaceDocumentFind => self.backspace_document_find(),
             Action::StepDocumentFind(direction) => self.step_document_find(direction),
+            Action::ChoosePermission { request, choice } => self.choose_permission(request, choice),
+            Action::FocusAuthenticationField(field) => self.focus_authentication_field(field),
+            Action::InsertAuthentication(text) => self.insert_authentication(text),
+            Action::BackspaceAuthentication => self.backspace_authentication(),
+            Action::ToggleAuthenticationMemory => self.toggle_authentication_memory(),
+            Action::SubmitAuthentication { request } => self.submit_authentication(request),
+            Action::CancelAuthentication { request } => self.cancel_authentication(request),
             Action::NavBack => self.nav_back(),
             Action::NavForward => self.nav_forward(),
             Action::Reload => self.reload_focused(),

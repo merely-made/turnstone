@@ -211,6 +211,17 @@ pub fn ring_of(action: &Action) -> Ring {
         // carry a narrower, independently verifiable source grant.
         | ChooseKnotDocumentFile { .. }
         | SummonContributedPane { .. }
+        // A web page may ask, but only a literal local interaction may grant,
+        // deny, or supply credentials to its exact pending callback. Keeping
+        // these controls host-only also prevents a denizen from typing into a
+        // credential draft that happens to be visible.
+        | ChoosePermission { .. }
+        | FocusAuthenticationField(_)
+        | InsertAuthentication(_)
+        | BackspaceAuthentication
+        | ToggleAuthenticationMemory
+        | SubmitAuthentication { .. }
+        | CancelAuthentication { .. }
         // Joining a place is a trust act, not a session act, so it sits at the
         // structural floor beside gate management rather than in `Session`
         // with `NewSession` and `SwitchSession`.

@@ -177,6 +177,9 @@ impl Shell {
     /// Ephemeral, so it drives the session's semantic method directly (the
     /// gesture law), never an Action. Shared by winit and the scenario runner.
     pub(super) fn deliver_wheel(&mut self, x: f32, y: f32, dx: f32, dy: f32) {
+        if self.app.user_agent_decision.is_open() {
+            return;
+        }
         let plan = self.surface_plan();
         if let Some(hit) = crate::surface::hit_test(&plan, self.app.focus, x, y)
             && let crate::surface::SurfaceKind::Content(node) = hit.kind
@@ -262,8 +265,30 @@ impl Shell {
                     Action::StepDocumentFind(crate::action::DocumentFindDirection::Next)
                 }
                 crate::chrome_view::ChromeIntent::FindClose => Action::CloseDocumentFind,
+                crate::chrome_view::ChromeIntent::Permission { request, choice } => {
+                    Action::ChoosePermission { request, choice }
+                }
+                crate::chrome_view::ChromeIntent::FocusAuthentication(field) => {
+                    Action::FocusAuthenticationField(field)
+                }
+                crate::chrome_view::ChromeIntent::ToggleAuthenticationMemory => {
+                    Action::ToggleAuthenticationMemory
+                }
+                crate::chrome_view::ChromeIntent::SubmitAuthentication(request) => {
+                    Action::SubmitAuthentication { request }
+                }
+                crate::chrome_view::ChromeIntent::CancelAuthentication(request) => {
+                    Action::CancelAuthentication { request }
+                }
             };
             self.act(action);
+            self.pointer_capture = None;
+            return;
+        }
+        // A held user-agent callback is modal with respect to the page that
+        // requested it. A click outside the retained decision card is consumed
+        // rather than leaking through to content behind the prompt.
+        if self.app.user_agent_decision.is_open() {
             self.pointer_capture = None;
             return;
         }
@@ -1135,6 +1160,9 @@ impl Shell {
         pressure: Option<f32>,
         altitude_angle: Option<f32>,
     ) {
+        if self.app.user_agent_decision.is_open() {
+            return;
+        }
         let position = (x, y);
         let active = if phase == inker::PointerPhase::Down {
             let target = crate::surface::hit_test(

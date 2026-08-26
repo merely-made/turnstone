@@ -4,6 +4,12 @@
 > surfaces is sequenced in
 > [2026-08-25_browser_surface_implementation_plan.md](2026-08-25_browser_surface_implementation_plan.md).
 > This document remains the historical research and acceptance map.
+>
+> **Decision-surface update, 2026-08-26:** Turnstone's D0 host UI now retains
+> and answers exact permission and authentication request identities. A real
+> Weld geolocation grant receipt passes. CEF 151 still does not deliver a
+> top-level server-auth callback, so live authentication remains an E0 engine
+> parity gap rather than a claimed D0 receipt.
 
 Whether turnstone can stand where a browser stands, in two parts. Part 1 is
 the anatomy: the taxonomy of a typical browser's chrome, controls, and
@@ -320,8 +326,9 @@ Items 1 through 5, item 6's mutation, image, download, and streaming paths, and
 item 7's typography pass are closed. Inline audio is deliberately deferred at
 its missing shared host seam. Part 1's first chrome-strip slice is also closed:
 focused-node Back/Forward, Reload/Stop/progress, and retained-link preview. The
-remaining browser-surface work is the explicitly listed find, shallows, regard,
-save/print, zoom, permission, extension, and network-inspection work.
+remaining browser-surface work is the explicitly sequenced engine parity and
+capture, shallows, arrivals/network inspection, and extension work. Live CEF
+server-auth callback delivery remains inside engine parity.
 
 ## Done conditions
 

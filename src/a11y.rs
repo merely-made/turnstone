@@ -163,6 +163,78 @@ fn project_chrome(app: &App) -> UxTree {
         nodes.push((status_id, status));
         children.push(status_id);
     }
+    if let Some(decision) = app.user_agent_decision.active() {
+        let base = "turnstone/chrome/user-agent-decision";
+        let mut decision_children = Vec::new();
+        match decision {
+            crate::user_agent_decision::PendingUserAgentDecision::Permission { .. } => {
+                for (suffix, label) in [
+                    ("allow-once", "Allow once"),
+                    ("always-allow", "Always allow"),
+                    ("deny", "Deny"),
+                ] {
+                    let id = node_id_for_path(&format!("{base}/{suffix}"));
+                    let mut button = Node::new(Role::Button);
+                    button.set_label(label);
+                    nodes.push((id, button));
+                    decision_children.push(id);
+                }
+            }
+            crate::user_agent_decision::PendingUserAgentDecision::Authentication { .. } => {
+                let username_id = node_id_for_path(&format!("{base}/username"));
+                let mut username = Node::new(Role::TextInput);
+                username.set_label("Username");
+                username.set_description("credential value withheld from observation");
+                nodes.push((username_id, username));
+                decision_children.push(username_id);
+
+                let password_id = node_id_for_path(&format!("{base}/password"));
+                let mut password = Node::new(Role::PasswordInput);
+                password.set_label("Password");
+                password.set_description("credential value withheld from observation");
+                nodes.push((password_id, password));
+                decision_children.push(password_id);
+
+                let remember_id = node_id_for_path(&format!("{base}/remember"));
+                let mut remember = Node::new(Role::CheckBox);
+                remember.set_label(
+                    if app.user_agent_decision.authentication.remember_for_process {
+                        "Remember until Turnstone closes, on"
+                    } else {
+                        "Remember until Turnstone closes, off"
+                    },
+                );
+                nodes.push((remember_id, remember));
+                decision_children.push(remember_id);
+
+                for (suffix, label) in [("sign-in", "Sign in"), ("cancel", "Cancel")] {
+                    let id = node_id_for_path(&format!("{base}/{suffix}"));
+                    let mut button = Node::new(Role::Button);
+                    button.set_label(label);
+                    nodes.push((id, button));
+                    decision_children.push(id);
+                }
+            }
+        }
+        if let Some(error) = &app.user_agent_decision.error {
+            let error_id = node_id_for_path(&format!("{base}/error"));
+            let mut status = Node::new(Role::Status);
+            status.set_label(error.clone());
+            nodes.push((error_id, status));
+            decision_children.push(error_id);
+        }
+        let id = node_id_for_path(base);
+        let mut dialog = Node::new(Role::Dialog);
+        dialog.set_label(decision.prompt());
+        dialog.set_description(format!(
+            "request {} of {}",
+            1,
+            app.user_agent_decision.len()
+        ));
+        dialog.set_children(decision_children);
+        nodes.push((id, dialog));
+        children.push(id);
+    }
     if app.shell_chrome_config().projects_shellbar()
         && let Some(caption) = crate::app::focused_caption(&app.graph_runtimes)
     {

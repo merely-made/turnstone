@@ -25,7 +25,7 @@
 use crate::panes::{PaneKindId, PaneSource};
 
 /// A short-lived secret whose debug representation never contains the value.
-#[derive(Clone, PartialEq, Eq)]
+#[derive(Clone, Default, PartialEq, Eq)]
 pub struct SensitiveString(String);
 
 impl SensitiveString {
@@ -35,6 +35,14 @@ impl SensitiveString {
 
     pub fn as_str(&self) -> &str {
         &self.0
+    }
+
+    pub fn push_str(&mut self, value: &str) {
+        self.0.push_str(value);
+    }
+
+    pub fn pop(&mut self) -> Option<char> {
+        self.0.pop()
     }
 }
 
@@ -108,6 +116,20 @@ pub enum Action {
     InsertDocumentFind(String),
     BackspaceDocumentFind,
     StepDocumentFind(DocumentFindDirection),
+    ChoosePermission {
+        request: crate::user_agent_decision::UserAgentRequestKey,
+        choice: crate::user_agent_decision::PermissionChoice,
+    },
+    FocusAuthenticationField(crate::user_agent_decision::AuthenticationField),
+    InsertAuthentication(String),
+    BackspaceAuthentication,
+    ToggleAuthenticationMemory,
+    SubmitAuthentication {
+        request: crate::user_agent_decision::UserAgentRequestKey,
+    },
+    CancelAuthentication {
+        request: crate::user_agent_decision::UserAgentRequestKey,
+    },
     /// Step the focused node back through its own content lineage. No-op at
     /// that node's oldest entry.
     NavBack,
@@ -681,6 +703,21 @@ pub enum Effect {
     ClearContentFind {
         node: uuid::Uuid,
     },
+    /// Answer one exact held web-permission callback. The app captures the
+    /// surface-scoped request identity in the action and the shell owns the
+    /// backend callback plus durable profile registry.
+    AnswerPermissionRequest {
+        request: crate::user_agent_decision::UserAgentRequestKey,
+        answer: inker::PermissionAnswer,
+        retention: crate::web_policy::PermissionRetention,
+    },
+    /// Answer or cancel one exact HTTP authentication challenge. Credential
+    /// values are redacted in Debug and remain process-local.
+    AnswerAuthenticationRequest {
+        request: crate::user_agent_decision::UserAgentRequestKey,
+        credentials: Option<(SensitiveString, SensitiveString)>,
+        remember_for_process: bool,
+    },
     /// Open a lens window (platform work: window + surface creation) showing
     /// the pane space the app seeded at `App::lenses[ordinal]`.
     OpenWindow { ordinal: usize },
@@ -814,6 +851,40 @@ pub enum Update {
         request: u64,
         query: String,
         result: Result<DocumentFindModel, String>,
+    },
+    PermissionRequested {
+        node: uuid::Uuid,
+        id: inker::UserAgentRequestId,
+        origin: String,
+        descriptors: Vec<inker::PermissionDescriptor>,
+    },
+    AuthenticationRequested {
+        node: uuid::Uuid,
+        id: inker::UserAgentRequestId,
+        host: String,
+        port: u16,
+        realm: Option<String>,
+        scheme: String,
+        is_proxy: bool,
+    },
+    PermissionRequestFinished {
+        request: crate::user_agent_decision::UserAgentRequestKey,
+        answer: inker::PermissionAnswer,
+        retention: crate::web_policy::PermissionRetention,
+        terminal: bool,
+        result: Result<(), String>,
+    },
+    AuthenticationRequestFinished {
+        request: crate::user_agent_decision::UserAgentRequestKey,
+        supplied_credentials: bool,
+        remember_for_process: bool,
+        terminal: bool,
+        result: Result<(), String>,
+    },
+    UserAgentRequestWithdrawn {
+        request: crate::user_agent_decision::UserAgentRequestKey,
+        kind: &'static str,
+        reason: &'static str,
     },
     /// The content port could not spawn (or lost) `node`'s session.
     ContentFailed { node: uuid::Uuid, error: String },

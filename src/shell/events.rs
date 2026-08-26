@@ -299,6 +299,14 @@ impl ApplicationHandler for Shell {
             // rides directly on state and only the commit lowers to an
             // Action (`OmnibarInsert`, the same path a future paste takes).
             WindowEvent::Ime(ime) => {
+                if self.app.user_agent_decision.is_open() {
+                    if self.app.user_agent_decision.accepts_text()
+                        && let Ime::Commit(s) = ime
+                    {
+                        self.act(Action::InsertAuthentication(s));
+                    }
+                    return;
+                }
                 if self.app.document_find.open {
                     if let Ime::Commit(s) = ime {
                         self.act(Action::InsertDocumentFind(s));

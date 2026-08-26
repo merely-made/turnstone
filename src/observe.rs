@@ -27,6 +27,10 @@ pub struct Snapshot {
     pub omnibar: OmnibarView,
     /// Find in the captured document, when its field is open.
     pub document_find: Option<DocumentFindView>,
+    /// The active held web permission or authentication decision. Credential
+    /// text is intentionally absent; only public request identity and UI state
+    /// are observable.
+    pub user_agent_decision: Option<UserAgentDecisionView>,
     /// Per-node content lifecycle, as (member, state label) pairs.
     pub content: Vec<(Uuid, String)>,
     pub node_count: usize,
@@ -141,6 +145,19 @@ pub struct DocumentFindView {
     pub current_label: Option<String>,
 }
 
+#[derive(Clone, Debug, PartialEq)]
+pub struct UserAgentDecisionView {
+    pub node: Uuid,
+    pub request: u64,
+    pub kind: &'static str,
+    pub prompt: String,
+    pub queued: usize,
+    pub submitting: bool,
+    pub authentication_field: Option<&'static str>,
+    pub remember_for_process: bool,
+    pub error: Option<String>,
+}
+
 /// A semantic event: something durable or externally observable happened.
 /// Drained by the shell each frame (into the scenario's log, or dropped);
 /// later consumers (diagnostics, automation) subscribe at the same drain.
@@ -191,6 +208,26 @@ pub enum AppEvent {
         host: String,
         realm: Option<String>,
         scheme: String,
+    },
+    PermissionAnswered {
+        node: Uuid,
+        id: inker::UserAgentRequestId,
+        answer: inker::PermissionAnswer,
+        remembered: bool,
+        succeeded: bool,
+    },
+    AuthenticationAnswered {
+        node: Uuid,
+        id: inker::UserAgentRequestId,
+        supplied_credentials: bool,
+        remembered_for_process: bool,
+        succeeded: bool,
+    },
+    UserAgentRequestWithdrawn {
+        node: Uuid,
+        id: inker::UserAgentRequestId,
+        kind: &'static str,
+        reason: &'static str,
     },
     /// A smolweb server asked the person for input. The answer is never part
     /// of the event stream; sensitive answers must not enter diagnostics.
@@ -438,6 +475,35 @@ impl AppEvent {
                 id.get(),
                 realm.as_deref().unwrap_or("")
             ),
+            AppEvent::PermissionAnswered {
+                node,
+                id,
+                answer,
+                remembered,
+                succeeded,
+            } => format!(
+                "permission-answered {node} request={} answer={answer:?} remembered={remembered} succeeded={succeeded}",
+                id.get()
+            ),
+            AppEvent::AuthenticationAnswered {
+                node,
+                id,
+                supplied_credentials,
+                remembered_for_process,
+                succeeded,
+            } => format!(
+                "authentication-answered {node} request={} supplied={supplied_credentials} process-memory={remembered_for_process} succeeded={succeeded}",
+                id.get()
+            ),
+            AppEvent::UserAgentRequestWithdrawn {
+                node,
+                id,
+                kind,
+                reason,
+            } => format!(
+                "user-agent-request-withdrawn {node} request={} kind={kind} reason={reason}",
+                id.get()
+            ),
             AppEvent::SmolwebInputRequested {
                 node,
                 prompt,
@@ -664,6 +730,7 @@ pub fn snapshot(app: &App) -> Snapshot {
         surfaces.push("content".to_string());
     }
     if app.document_find.open
+        || app.user_agent_decision.is_open()
         || app.omnibar.open && app.shell_chrome_config().projects_omnibar()
         || app.shell_chrome_config().projects_shellbar()
             && crate::app::focused_caption(&app.graph_runtimes).is_some()
@@ -704,6 +771,28 @@ pub fn snapshot(app: &App) -> Snapshot {
                 status: app.document_find.status(),
                 current_role: current_match.and_then(|item| item.role.clone()),
                 current_label: current_match.map(|item| item.label.clone()),
+            }
+        }),
+        user_agent_decision: app.user_agent_decision.active().map(|decision| {
+            let request = decision.request();
+            let authentication_field = matches!(
+                decision,
+                crate::user_agent_decision::PendingUserAgentDecision::Authentication { .. }
+            )
+            .then_some(match app.user_agent_decision.authentication.field {
+                crate::user_agent_decision::AuthenticationField::Username => "username",
+                crate::user_agent_decision::AuthenticationField::Password => "password",
+            });
+            UserAgentDecisionView {
+                node: request.node,
+                request: request.id.get(),
+                kind: decision.kind(),
+                prompt: decision.prompt(),
+                queued: app.user_agent_decision.len(),
+                submitting: app.user_agent_decision.submitting == Some(request),
+                authentication_field,
+                remember_for_process: app.user_agent_decision.authentication.remember_for_process,
+                error: app.user_agent_decision.error.clone(),
             }
         }),
         content,

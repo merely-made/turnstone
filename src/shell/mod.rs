@@ -697,7 +697,7 @@ impl Shell {
     /// the window's IME enablement to controlled chrome fields on transitions
     /// (a platform call, so it lives here, not in `update`).
     fn act(&mut self, action: Action) {
-        let accepted_text = self.app.omnibar.open || self.app.document_find.open;
+        let accepted_text = self.accepts_controlled_text();
         let closing = matches!(&action, Action::CloseActivePane)
             .then_some(self.app.active_pane)
             .flatten();
@@ -707,13 +707,25 @@ impl Shell {
         {
             self.evict_pane_renderer(pane);
         }
-        let accepts_text = self.app.omnibar.open || self.app.document_find.open;
+        let accepts_text = self.accepts_controlled_text();
         if accepts_text != accepted_text
             && let Some(window) = self.window.as_ref()
         {
             window.set_ime_allowed(accepts_text);
         }
         self.run_effects(effects);
+    }
+
+    fn accepts_controlled_text(&self) -> bool {
+        self.app.omnibar.open
+            || self.app.document_find.open
+            || self.app.user_agent_decision.accepts_text()
+    }
+
+    fn sync_ime_allowed(&self) {
+        if let Some(window) = self.window.as_ref() {
+            window.set_ime_allowed(self.accepts_controlled_text());
+        }
     }
 
     fn evict_pane_renderer(&mut self, pane: crate::panes::PaneId) {
@@ -910,7 +922,8 @@ impl Shell {
             .and_then(|pane| self.app.graph_for_pane(pane))
             .and_then(|graph| self.app.graph_runtimes.canvas(graph))
             .and_then(crate::app::focused_caption);
-        let chrome = (self.app.document_find.open
+        let chrome = (self.app.user_agent_decision.is_open()
+            || self.app.document_find.open
             || self.app.shell_chrome_config().projects_shellbar() && caption.is_some()
             || self.app.omnibar.open && self.app.shell_chrome_config().projects_omnibar())
         .then_some(area);

@@ -298,6 +298,7 @@ impl Shell {
                 // WITHOUT the departing save — a post-trash save would
                 // resurrect the closed session as a zombie directory.
                 Effect::TrashSession { closing, next } => {
+                    self.withdraw_all_user_agent_requests("session-closed");
                     self.release_place_worker();
                     let (ack_tx, ack_rx) = std::sync::mpsc::sync_channel(1);
                     self.bin_handle
@@ -343,6 +344,7 @@ impl Shell {
                     self.request_redraw();
                 }
                 Effect::SwitchSession { id } => {
+                    self.withdraw_all_user_agent_requests("session-switched");
                     self.save_session();
                     self.release_place_worker();
                     self.content_sessions.clear();
@@ -712,7 +714,80 @@ impl Shell {
                     }
                     self.request_redraw();
                 }
+                Effect::AnswerPermissionRequest {
+                    request,
+                    answer,
+                    retention,
+                } => {
+                    let result =
+                        self.answer_permission_request(request.node, request.id, answer, retention);
+                    let terminal = self
+                        .web_policy
+                        .permission_request(request.node, request.id)
+                        .is_none();
+                    if result.is_err() {
+                        tracing::warn!(
+                            node = %request.node,
+                            request_id = request.id.get(),
+                            "permission decision could not be fully applied"
+                        );
+                    }
+                    let effects = self.app.apply_update(Update::PermissionRequestFinished {
+                        request,
+                        answer,
+                        retention,
+                        terminal,
+                        result,
+                    });
+                    self.run_effects(effects);
+                    self.sync_ime_allowed();
+                }
+                Effect::AnswerAuthenticationRequest {
+                    request,
+                    credentials,
+                    remember_for_process,
+                } => {
+                    let supplied_credentials = credentials.is_some();
+                    let answer = credentials.map_or(
+                        inker::HttpAuthenticationAnswer::Cancel,
+                        |(username, password)| {
+                            inker::HttpAuthenticationAnswer::Credentials(inker::HttpCredentials {
+                                username: username.as_str().to_string(),
+                                password: password.as_str().to_string(),
+                            })
+                        },
+                    );
+                    let result = self.answer_authentication_request(
+                        request.node,
+                        request.id,
+                        answer,
+                        remember_for_process,
+                    );
+                    let terminal = self
+                        .web_policy
+                        .authentication_challenge(request.node, request.id)
+                        .is_none();
+                    if result.is_err() {
+                        tracing::warn!(
+                            node = %request.node,
+                            request_id = request.id.get(),
+                            "authentication decision could not be applied"
+                        );
+                    }
+                    let effects = self
+                        .app
+                        .apply_update(Update::AuthenticationRequestFinished {
+                            request,
+                            supplied_credentials,
+                            remember_for_process,
+                            terminal,
+                            result,
+                        });
+                    self.run_effects(effects);
+                    self.sync_ime_allowed();
+                }
                 Effect::CloseContent { node } => {
+                    self.withdraw_user_agent_requests(node, "surface-closed");
                     self.surface_find_requests.remove(&node);
                     if self.content_sessions.remove(&node).is_some() {
                         tracing::info!(%node, "content session closed");
