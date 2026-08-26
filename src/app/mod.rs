@@ -999,6 +999,7 @@ impl App {
             Action::NavForward => self.nav_forward(),
             Action::Reload => self.reload_focused(),
             Action::Stop => self.stop_focused(),
+            Action::KeepNode { member } => self.keep_node(member),
             Action::SubscribeFocusedFeed { period } => self.subscribe_focused_feed(period),
             Action::UnsubscribeFocusedFeed => self.unsubscribe_focused_feed(),
             Action::RefreshFeeds => self.refresh_feeds(),

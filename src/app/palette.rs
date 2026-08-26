@@ -106,6 +106,11 @@ impl App {
     /// static label would have acted as the wrong one).
     pub fn available_actions(&self) -> Vec<(String, Action)> {
         let mut rows = self.session_actions();
+        if let Some(member) = self.graph_runtimes.focused_member()
+            && !self.node_is_kept(member)
+        {
+            rows.push(("Keep node".to_string(), Action::KeepNode { member }));
+        }
         if self.focused_address().is_some_and(|address| {
             url::Url::parse(&address).is_ok_and(|url| matches!(url.scheme(), "titan" | "spartan"))
         }) {

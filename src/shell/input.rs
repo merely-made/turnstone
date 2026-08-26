@@ -254,6 +254,7 @@ impl Shell {
                 crate::chrome_view::ChromeIntent::NavForward => Action::NavForward,
                 crate::chrome_view::ChromeIntent::Reload => Action::Reload,
                 crate::chrome_view::ChromeIntent::Stop => Action::Stop,
+                crate::chrome_view::ChromeIntent::KeepNode(member) => Action::KeepNode { member },
             };
             self.act(action);
             self.pointer_capture = None;

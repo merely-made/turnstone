@@ -2505,6 +2505,48 @@ fn available_actions_lead_with_the_contextual_rows() {
 }
 
 #[test]
+fn keep_action_is_target_bound_idempotent_and_observable() {
+    let mut app = App::test_stub();
+    app.update(Action::OpenAddress("mere://keep/first".to_string()));
+    let first = app.graph_runtimes.focused_member().expect("first node");
+    let keep_first = app
+        .available_actions()
+        .into_iter()
+        .find(|(label, _)| label == "Keep node")
+        .map(|(_, action)| action)
+        .expect("an unkept focused node offers Keep");
+
+    app.update(Action::OpenAddress("mere://keep/second".to_string()));
+    let second = app.graph_runtimes.focused_member().expect("second node");
+    assert_ne!(first, second);
+    let _ = app.take_events();
+
+    let effects = app.update(keep_first);
+    assert!(app.node_is_kept(first));
+    assert!(!app.node_is_kept(second));
+    assert_eq!(app.graph_runtimes.focused_member(), Some(second));
+    assert_eq!(effects, vec![Effect::SaveSession, Effect::Redraw]);
+    assert_eq!(app.take_events(), vec![AppEvent::NodeKept(first)]);
+
+    assert_eq!(
+        app.update(Action::KeepNode { member: first }),
+        vec![Effect::Redraw],
+        "repeating Keep is an idempotent no-op"
+    );
+    assert!(app.take_events().is_empty());
+
+    app.update(Action::KeepNode { member: second });
+    let snap = crate::observe::snapshot(&app);
+    assert!(snap.focused.as_ref().is_some_and(|node| node.kept));
+    assert!(
+        !app.available_actions()
+            .iter()
+            .any(|(label, _)| label == "Keep node"),
+        "the contextual palette row leaves once its action is complete"
+    );
+}
+
+#[test]
 fn publishing_pane_is_a_summonable_window_control() {
     let mut app = App::test_stub();
     app.update(Action::SummonPane(crate::panes::PaneKindId::new(

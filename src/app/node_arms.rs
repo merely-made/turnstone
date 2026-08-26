@@ -56,6 +56,38 @@ impl App {
             .is_some_and(|canvas| canvas.member_can_forward(node))
     }
 
+    /// Whether one exact member carries the durable keep tag. This is graph
+    /// truth, shared by chrome, the command catalog, feeds, and persistence.
+    pub(crate) fn node_is_kept(&self, member: Uuid) -> bool {
+        self.graph_runtimes
+            .graph_containing_member(member)
+            .and_then(|graph| self.graph_runtimes.canvas(graph))
+            .and_then(|canvas| {
+                let (key, _) = canvas.graph().get_node_by_id(member)?;
+                canvas.graph().node_tags(key)
+            })
+            .is_some_and(|tags| tags.contains(crate::feed::KEEP_TAG))
+    }
+
+    /// Promote one captured member into durable kept state. Idempotence makes
+    /// repeated UI or automation delivery harmless. Release belongs to the
+    /// retention-policy lane rather than being an accidental toggle here.
+    pub(super) fn keep_node(&mut self, member: Uuid) -> Vec<Effect> {
+        if self.node_is_kept(member) {
+            return vec![Effect::Redraw];
+        }
+        let changed = self
+            .graph_runtimes
+            .graph_containing_member(member)
+            .and_then(|graph| self.graph_runtimes.canvas_mut(graph))
+            .is_some_and(|canvas| canvas.tag_node(member, crate::feed::KEEP_TAG));
+        if !changed {
+            return vec![Effect::Redraw];
+        }
+        self.events.push(AppEvent::NodeKept(member));
+        vec![Effect::SaveSession, Effect::Redraw]
+    }
+
     pub(crate) fn set_link_preview(&mut self, preview: Option<String>) -> bool {
         if self.link_preview == preview {
             false

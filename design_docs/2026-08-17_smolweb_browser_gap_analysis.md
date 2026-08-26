@@ -1,5 +1,10 @@
 # Browser gap analysis
 
+> **Successor plan, 2026-08-25:** implementation of the remaining browser
+> surfaces is sequenced in
+> [2026-08-25_browser_surface_implementation_plan.md](2026-08-25_browser_surface_implementation_plan.md).
+> This document remains the historical research and acceptance map.
+
 Whether turnstone can stand where a browser stands, in two parts. Part 1 is
 the anatomy: the taxonomy of a typical browser's chrome, controls, and
 commands, expressed in mere/genet design language, with each element's state
@@ -99,7 +104,7 @@ not concepts.
 | Browser element | Here | State |
 | --- | --- | --- |
 | History | The Trail pane over graph truth: recent + history rows with provenance, and removal is a first-class row | Live |
-| Bookmarks | A kept node with a face is a bookmark with an icon; folders are containment; the Roster is the manifest view | Live as concepts; no one-gesture "keep this" affordance named for it |
+| Bookmarks | A kept node with a face is a bookmark with an icon; folders are containment; the Roster is the manifest view | One-gesture **Keep** landed 2026-08-25 in the browser strip and shared action catalog; folders remain ordinary containment |
 | Feed subscriptions | A property of a kept capsule node; the app-tier watches machinery (W3) is the refetch loop; entries arrive as nodes | Watches landed; the subscription wiring is Part 2's item 5 |
 
 ### Commands and input
@@ -159,9 +164,10 @@ Three contracts fall out of the pass, and they come before the chrome:
 
 The first chrome-strip slice landed on 2026-08-22: focused-node Back and
 Forward, Reload/Stop with exact request cancellation, byte or hosted-surface
-progress, and retained-link prospective-node preview. `keep` remains the next
-strip control. Hosted-page link preview remains gated on an Inker hover-URL
-event rather than inferred DOM access.
+progress, and retained-link prospective-node preview. Target-bound,
+idempotent **Keep** landed on 2026-08-25 with graph-tag truth, shared catalog
+and observation projection, and a headed receipt. Hosted-page link preview
+remains gated on an Inker hover-URL event rather than inferred DOM access.
 
 ### What the table says as a whole
 
@@ -314,8 +320,8 @@ Items 1 through 5, item 6's mutation, image, download, and streaming paths, and
 item 7's typography pass are closed. Inline audio is deliberately deferred at
 its missing shared host seam. Part 1's first chrome-strip slice is also closed:
 focused-node Back/Forward, Reload/Stop/progress, and retained-link preview. The
-remaining browser-surface work is the explicitly listed keep, find, shallows,
-regard, save/print, zoom, permission, extension, and network-inspection work.
+remaining browser-surface work is the explicitly listed find, shallows, regard,
+save/print, zoom, permission, extension, and network-inspection work.
 
 ## Done conditions
 

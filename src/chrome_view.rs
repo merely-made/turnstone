@@ -50,6 +50,7 @@ pub enum ChromeIntent {
     NavForward,
     Reload,
     Stop,
+    KeepNode(uuid::Uuid),
 }
 
 impl cambium::Action for ChromeIntent {}
@@ -88,7 +89,8 @@ struct ChromeState {
     shellbar_visible: bool,
     can_back: bool,
     can_forward: bool,
-    has_focused_node: bool,
+    focused_node: Option<uuid::Uuid>,
+    focused_kept: bool,
     fetching: bool,
     fetch_status: Option<String>,
     focused_url: Option<String>,
@@ -107,23 +109,34 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
     let mut children: Vec<ChromeView> = Vec::new();
 
     if win.primary && state.shellbar_visible {
-        let back = browser_button("Back", state.can_back, ChromeIntent::NavBack);
-        let forward = browser_button("Forward", state.can_forward, ChromeIntent::NavForward);
+        let back = browser_button("Back", state.can_back.then_some(ChromeIntent::NavBack));
+        let forward = browser_button(
+            "Forward",
+            state.can_forward.then_some(ChromeIntent::NavForward),
+        );
         let reload = browser_button(
             if state.fetching { "Stop" } else { "Reload" },
-            state.has_focused_node,
-            if state.fetching {
-                ChromeIntent::Stop
-            } else {
-                ChromeIntent::Reload
-            },
+            state.focused_node.map(|_| {
+                if state.fetching {
+                    ChromeIntent::Stop
+                } else {
+                    ChromeIntent::Reload
+                }
+            }),
+        );
+        let keep = browser_button(
+            if state.focused_kept { "Kept" } else { "Keep" },
+            state
+                .focused_node
+                .filter(|_| !state.focused_kept)
+                .map(ChromeIntent::KeepNode),
         );
         let status = state
             .fetch_status
             .clone()
             .or_else(|| state.focused_url.clone())
             .unwrap_or_else(|| "No focused node".to_string());
-        let mut strip_children = vec![back, forward, reload];
+        let mut strip_children = vec![back, forward, reload, keep];
         strip_children.push(Box::new(
             el::<_, ChromeState, ChromeIntent>("div", status).attr("class", "browser-status"),
         ));
@@ -210,16 +223,16 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
     Box::new(el::<_, ChromeState, ChromeIntent>("div", children))
 }
 
-fn browser_button(label: &'static str, enabled: bool, intent: ChromeIntent) -> ChromeView {
+fn browser_button(label: &'static str, intent: Option<ChromeIntent>) -> ChromeView {
     let base = el::<_, ChromeState, ChromeIntent>("div", label).attr(
         "class",
-        if enabled {
+        if intent.is_some() {
             "browser-button"
         } else {
             "browser-button-disabled"
         },
     );
-    if enabled {
+    if let Some(intent) = intent {
         Box::new(on_click(
             base,
             move |_state: &mut ChromeState, _click: PointerClick| intent,
@@ -322,7 +335,8 @@ impl ChromeSurfaces {
             shellbar_visible: true,
             can_back: false,
             can_forward: false,
-            has_focused_node: false,
+            focused_node: None,
+            focused_kept: false,
             fetching: false,
             fetch_status: None,
             focused_url: None,
@@ -424,6 +438,7 @@ impl ChromeSurfaces {
             .collect();
         let open = omnibar.open;
         let focused = app.graph_runtimes.focused_member();
+        let focused_kept = focused.is_some_and(|member| app.node_is_kept(member));
         let can_back = app.focused_can_back();
         let can_forward = app.focused_can_forward();
         let fetching = focused.is_some_and(|node| app.content.fetch_in_progress(node));
@@ -464,7 +479,8 @@ impl ChromeSurfaces {
             state.shellbar_visible = chrome.projects_shellbar();
             state.can_back = can_back;
             state.can_forward = can_forward;
-            state.has_focused_node = focused.is_some();
+            state.focused_node = focused;
+            state.focused_kept = focused_kept;
             state.fetching = fetching;
             state.fetch_status = fetch_status.clone();
             state.focused_url = focused_url.clone();
@@ -614,6 +630,7 @@ mod tests {
                 ChromeIntent::NavBack,
                 ChromeIntent::NavForward,
                 ChromeIntent::Reload,
+                ChromeIntent::KeepNode(app.graph_runtimes.focused_member().expect("focused node")),
             ]
         );
     }
@@ -638,7 +655,29 @@ mod tests {
                 ChromeIntent::NavBack,
                 ChromeIntent::NavForward,
                 ChromeIntent::Stop,
+                ChromeIntent::KeepNode(app.graph_runtimes.focused_member().expect("focused node")),
             ]
+        );
+    }
+
+    #[test]
+    fn keep_button_targets_the_member_then_projects_kept_state() {
+        let mut app = browser_history_app(true);
+        let member = app.graph_runtimes.focused_member().expect("focused node");
+        let mut chrome = ChromeSurfaces::new();
+        chrome.sync(&app, &[(0, 1024.0, 600.0)]);
+        assert!(browser_button_intents(&mut chrome).contains(&ChromeIntent::KeepNode(member)));
+
+        app.update(Action::KeepNode { member });
+        chrome.sync(&app, &[(0, 1024.0, 600.0)]);
+        assert!(app.node_is_kept(member));
+        assert!(!browser_button_intents(&mut chrome).contains(&ChromeIntent::KeepNode(member)));
+        let dom = chrome.dom.borrow();
+        assert_eq!(
+            dom.all_with_class(dom.document(), "browser-button-disabled")
+                .len(),
+            1,
+            "the one-way control remains visible as disabled Kept state"
         );
     }
 

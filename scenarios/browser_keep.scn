@@ -1,0 +1,16 @@
+# Keep acceptance receipt. The contextual catalog targets the focused member,
+# the action persists graph truth, and the retained strip projects Kept after
+# the same action spine completes. Offline; FRESH profile.
+settle 30
+key escape
+open mere://keep-receipt
+settle 10
+assert snap kept == false
+assert snap actions ~ Keep node
+
+act Keep node
+settle 10
+assert event node-kept
+assert snap kept == true
+capture 01_browser_kept
+log browser Keep receipt complete

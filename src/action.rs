@@ -90,6 +90,10 @@ pub enum Action {
     Reload,
     /// Stop the focused node's active page request or hosted navigation.
     Stop,
+    /// Promote one exact graph member into durable kept state. The member is
+    /// captured when the control is offered so a later focus change cannot
+    /// redirect the gesture.
+    KeepNode { member: uuid::Uuid },
     /// Keep the focused node as a feed source and refresh it on this cadence.
     /// The first refresh is immediate; later refreshes use the host clock.
     SubscribeFocusedFeed { period: servitor::Period },

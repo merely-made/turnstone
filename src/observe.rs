@@ -113,6 +113,8 @@ pub struct FocusedNode {
     pub url: String,
     /// The at-rest caption (display label, plus host when it adds info).
     pub caption: String,
+    /// Durable keep state read from the node's graph tags.
+    pub kept: bool,
 }
 
 /// The omnibar as observed: state plus suggestion rows as display strings.
@@ -263,6 +265,8 @@ pub enum AppEvent {
     },
     /// The focused entry's unread marker was cleared.
     FeedEntryRead(Uuid),
+    /// One exact graph member entered durable kept state.
+    NodeKept(Uuid),
     /// A dropped image textured this node's sprite face.
     NodeSpriteSet(Uuid),
     /// A node's viewer override changed (the settings row).
@@ -488,6 +492,7 @@ impl AppEvent {
                 format!("feed-refresh-failed {node} {error}")
             }
             AppEvent::FeedEntryRead(node) => format!("feed-entry-read {node}"),
+            AppEvent::NodeKept(node) => format!("node-kept {node}"),
             AppEvent::NodeSpriteSet(node) => format!("sprite-set {node}"),
             AppEvent::ViewerChanged { node, viewer } => format!("viewer-changed {node} {viewer}"),
             AppEvent::WindowOpened => "window-opened".to_string(),
@@ -549,6 +554,7 @@ pub fn snapshot(app: &App) -> Snapshot {
             member,
             url,
             caption,
+            kept: app.node_is_kept(member),
         })
     });
     let content = app

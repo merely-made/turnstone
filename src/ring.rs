@@ -134,6 +134,7 @@ pub fn ring_of(action: &Action) -> Ring {
         // Node + view edits, and the omnibar: driving the command surface IS
         // dispatch (an omnibar commit can do anything a suggestion offers).
         SetNodeSprite { .. }
+        | KeepNode { .. }
         | SetViewerOverride { .. }
         | ReseedLayout
         | FitView

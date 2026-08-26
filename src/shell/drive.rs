@@ -180,6 +180,7 @@ impl genet_probe::Automatable for Shell {
 
     fn snapshot(&self) -> genet_probe::ProbeSnapshot {
         let snap = crate::observe::snapshot(&self.app);
+        let kept = snap.focused.as_ref().is_some_and(|node| node.kept);
         let mut out = genet_probe::ProbeSnapshot::default()
             .with_field("focus", snap.focus)
             .with_field("node-count", snap.node_count.to_string())
@@ -194,7 +195,8 @@ impl genet_probe::Automatable for Shell {
             // What the app will DO right now, by label — the automation half of
             // a coherent snapshot. `assert snap actions ~ Fit view` asks whether
             // a verb is on offer before spending a step on it.
-            .with_field("actions", snap.available_actions.join(","));
+            .with_field("actions", snap.available_actions.join(","))
+            .with_field("kept", kept.to_string());
         // Fold the url in with the caption, so `assert snap focused ~ example.com`
         // can name the navigated address, not only the display caption.
         out.focused = snap.focused.map(|n| format!("{}  {}", n.caption, n.url));
