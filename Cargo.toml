@@ -242,6 +242,7 @@ windows = { version = "0.62", features = ["Win32_Foundation"], optional = true }
 # paint/observable chain.
 engine-observables-api = { git = "https://github.com/merely-made/genet.git", branch = "main" }
 genet-paint-types = { git = "https://github.com/merely-made/genet.git", branch = "main" }
+genet-livery = { git = "https://github.com/merely-made/genet.git", branch = "main" }
 genet-scripted-dom = { git = "https://github.com/merely-made/genet.git", branch = "main" }
 genet-static-dom = { git = "https://github.com/merely-made/genet.git", branch = "main" }
 layout-dom-api = { version = "=0.1.0", git = "https://github.com/merely-made/genet.git", branch = "main" }

@@ -186,12 +186,14 @@ Done-conditions:
   `layout-dom-api` name-claim package beside the live 0.1.0 package. A Git patch
   without a version was ambiguous outside the path-overridden checkout;
   Turnstone now selects exactly 0.1.0 in both the direct dependency and patch.
-- **2026-08-25, clean consumer:** the focused Keep receipt passes with only
-  pushed sources: Mere `11d996a6`, Genet `94a4dc4155b`, and Netrender
-  `6f1a4fe70`. The resolved graph still contains parallel registry and Git
-  islands for `genet-livery`/`buckram`/`livery`, plus Fleece 0.2 and 0.4.
-  Current types do not cross those islands, so this is a convergence sidequest
-  rather than a false failure of K0.
+- **2026-08-25, clean consumer:** the first focused Keep receipt passed with
+  pushed Mere `11d996a6`, Genet `94a4dc4155b`, and Netrender `6f1a4fe70`. It
+  exposed parallel registry and Git islands for
+  `genet-livery`/`buckram`/`livery`, plus Fleece 0.2 and 0.4. Genet's twelve
+  already-published support commits are now merged on main at `a7d410c1ca8`,
+  aligning the Livery family versions; Turnstone can therefore patch the
+  published `genet-livery` edge to that same Git source without falsifying a
+  version contract. Fleece remains a separate owner migration.
 - **2026-08-25, consumer build:** Netrender's published 0.1.2 release commits
   remained on a cleanable release worktree while git `main` declared 0.1.1.
   That split gave Turnstone source-distinct `Scene` types. The release history
@@ -218,10 +220,11 @@ Done-conditions:
 - A hosted surface must answer capabilities through its registered session.
   Turnstone DOM inspection would break engine modularity and the shared-device
   boundary.
-- Do not hide the remaining registry/Git dependency islands with blanket root
-  patches. Git Livery is 0.0.2 while the published `genet-livery` island asks
-  for Livery 0.0.3; the owner manifests and releases must align first, then a
-  clean consumer must prove that the duplicate island actually disappears.
+- Root patches may collapse source identity only after the package versions and
+  APIs align. The Livery family now meets that condition. Fleece 0.2 versus 0.4
+  does not, and published `genet-taffy 0.13.0` lacks Buckram's current
+  eight-parameter static-position trait, so neither may be forced together by
+  a convenient top-level patch.
 
 ## Synergies and sidequests
 
@@ -240,10 +243,11 @@ Done-conditions:
   consumer forces them.
 - Inline audio remains deferred until a host-owned playback seam and another
   document consumer force a reusable contract.
-- Dependency convergence remains an owner-first sidequest: Mere Canvas should
-  move from published `genet-livery` to the aligned Genet source, and Mere's
-  Knot/search consumers should move from Fleece 0.2 to the current Fleece 0.4
-  contract. Take each only when its real consumer test can catch a type split.
+- Dependency convergence remains an owner-first sidequest. The Turnstone root
+  now unifies Mere Canvas's published `genet-livery` edge with current Genet.
+  Mere's Knot/search consumers still need a deliberate Fleece 0.2 to 0.4
+  migration, and Genet's current Taffy fork needs a new versioned publication.
+  Take each with a real consumer test that can catch a type split.
 
 ## Progress
 
@@ -265,3 +269,13 @@ Done-conditions:
   outside Turnstone's checkout, then passed
   `keep_action_is_target_bound_idempotent_and_observable`. It also exposed and
   recorded the remaining non-blocking Livery/Buckram and Fleece version islands.
+- **2026-08-25:** merged Genet's twelve-commit published support release into
+  main, pushed `a7d410c1ca8`, and pruned the release, reconciliation, recovery,
+  and proof worktrees/refs. Turnstone now unifies the aligned Livery family at
+  the root; only the incompatible Fleece and not-yet-republished Taffy lanes
+  remain explicit dependency sidequests.
+- **2026-08-25:** refreshed the external consumer to Genet `a7d410c1ca8`,
+  removed the registry copies of `genet-livery`, Buckram, Livery, Host API,
+  Document Resources, and `genet-taffy`, then recompiled and passed the focused
+  Keep test. The final duplicate ledger names only the deliberate Fleece 0.2 /
+  0.4 migration and unrelated Taffy API generations.
