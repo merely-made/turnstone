@@ -2,6 +2,7 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
 
+use accesskit::{Action as A11yAction, Role};
 use cambium::{GenetAppRunner, GenetCtx, GenetElement, RunnerSurfaceSession, View, el, on_click};
 use genet_host_api::{PlacementHint, ProviderId, SourceKindId, SurfaceMultiplicity, SurfaceRole};
 use layout_dom_api::{LayoutDom, NodeKind};
@@ -307,4 +308,32 @@ fn typed_unavailability_becomes_a_generic_retained_surface() {
         SurfaceAvailability::Unavailable(SurfaceUnavailableReason::Locked)
     );
     assert!(root_text(&pane.session().dom(), pane.session().root()).contains("Locked"));
+}
+
+#[test]
+fn retained_projection_and_actions_share_the_live_dom_session() {
+    let mut registry = SurfaceProviderRegistry::new();
+    registry
+        .register_provider(provider("fake", "fake.v1", "fake.surface"))
+        .expect("provider");
+    let mut pane = registry
+        .admit(&PaneKindId::new("fake"), &source("fake.v1"))
+        .expect("admitted surface");
+    let _ = pane.scene(320, 180, 1.0);
+
+    let (tree, routes) = pane.accessibility_tree().expect("painted DOM projection");
+    let (access_id, button) = tree
+        .nodes
+        .iter()
+        .find(|(_, node)| node.role() == Role::Button)
+        .expect("button semantics");
+    assert!(button.supports_action(A11yAction::Click));
+    assert!(button.supports_action(A11yAction::Focus));
+    assert!(button.bounds().is_some());
+    let dom_node = routes[access_id];
+
+    pane.accessibility_action(A11yAction::Focus, dom_node);
+    assert_eq!(pane.session().focus(), Some(dom_node));
+    pane.accessibility_action(A11yAction::Click, dom_node);
+    assert!(root_text(&pane.session().dom(), pane.session().root()).contains("count:1"));
 }

@@ -9,16 +9,15 @@
 //! (the tiling), and `uxtree::stitch`. The document subtree is built here from
 //! the [`StructureFacts`] outline the content port mirrors at spawn (the
 //! `DocumentSession::inspect` accessor landed with the Inspector slice) — so
-//! the whole projection is PURE over `App`, testable headless, and the same
-//! read the observation snapshot serves.
+//! the app-owned base projection is pure over `App` and testable headless.
+//! The shell attaches live contributed DOM subtrees through the per-pane hook,
+//! using the same composed tree for the OS adapter and `assert a11y`.
 //!
-//! Honesty (the no-placebo rule): this is `A11yCapability::Partial` by
-//! declaration. The projection is structural — roles, names, and levels, no
-//! bounds and no per-element focus — and each document root SAYS so in its
-//! description rather than implying coverage it does not have. Pushing the
-//! `TreeUpdate` to an OS adapter is a separate, later piece of work (the
-//! donor never landed it either); producing the coherent tree is this rung's
-//! deletion-matrix bar.
+//! Honesty (the no-placebo rule): app-mirrored live web documents remain
+//! `A11yCapability::Partial`, structural only, and their roots say so.
+//! Contributed retained documents instead project their actual DOM roles,
+//! focus, actions, and painted Livery bounds. The shell namespaces those trees
+//! below pane leaves before publishing the one update through AccessKit.
 
 use crate::panes::PaneContent;
 use accesskit::{Node, Role};
@@ -32,10 +31,15 @@ use crate::content::{NodeContent, OutlineFact};
 /// workbench tiling under its pane leaf and a document subtree under the
 /// canvas leaf for every node with live content.
 pub fn project_app(app: &App) -> UxTree {
-    project_app_capturing(app, &mut None)
+    let mut no_contribution = |_| None;
+    project_app_capturing(app, &mut None, &mut no_contribution)
 }
 
-fn project_app_capturing(app: &App, orrery_pane: &mut Option<crate::panes::PaneId>) -> UxTree {
+fn project_app_capturing(
+    app: &App,
+    orrery_pane: &mut Option<crate::panes::PaneId>,
+    contribution: &mut impl FnMut(crate::panes::PaneId) -> Option<UxTree>,
+) -> UxTree {
     let chrome = project_chrome(app);
     // Live documents, in graph order (deterministic), each from its mirrored
     // structural outline. They stitch under the CANVAS leaf: content insets
@@ -72,6 +76,7 @@ fn project_app_capturing(app: &App, orrery_pane: &mut Option<crate::panes::PaneI
         PaneContent::Registered(kind) if kind.as_str() == crate::panes::kind::FROZEN_PROJECTION => {
             Some(project_frozen_projection(app))
         }
+        PaneContent::Registered(_) => contribution(id),
         _ => None,
     });
     let mut root = Node::new(Role::Window);
@@ -83,8 +88,14 @@ fn project_app_capturing(app: &App, orrery_pane: &mut Option<crate::panes::PaneI
 /// snapshot (what `assert a11y` matches). Values fold into the line when a
 /// node has one (the omnibar's text, a link's target).
 pub fn a11y_lines(app: &App) -> Vec<String> {
-    project_app(app)
-        .nodes
+    tree_lines(&project_app(app))
+}
+
+/// Flatten any already-composed tree to the lines scenario `assert a11y`
+/// reads. The shell uses this overload so live contributed DOM semantics and
+/// the platform adapter are checked from the same projection.
+pub fn tree_lines(tree: &UxTree) -> Vec<String> {
+    tree.nodes
         .iter()
         .map(|(_, n)| {
             let role = format!("{:?}", n.role()).to_lowercase();
@@ -333,6 +344,12 @@ pub enum A11yRoute {
         pane: crate::panes::PaneId,
         member: uuid::Uuid,
     },
+    /// A retained product surface: route the original action, unchanged, to
+    /// the DOM node that Genet projected for this pane.
+    Contributed {
+        pane: crate::panes::PaneId,
+        node: genet_scripted_dom::NodeId,
+    },
 }
 
 /// Routes for every node an assistive action may target.
@@ -345,8 +362,17 @@ pub type A11yRoutes = std::collections::HashMap<accesskit::NodeId, A11yRoute>;
 /// actions on nodes it was served. The reverse would not be harmless, which
 /// is what the coverage test below pins.
 pub fn project_app_with_routes(app: &App) -> (UxTree, A11yRoutes) {
+    project_app_with_routes_and_contributions(app, std::collections::HashMap::new())
+}
+
+pub(crate) fn project_app_with_routes_and_contributions(
+    app: &App,
+    mut contributions: std::collections::HashMap<crate::panes::PaneId, UxTree>,
+) -> (UxTree, A11yRoutes) {
     let mut orrery_pane = None;
-    let tree = project_app_capturing(app, &mut orrery_pane);
+    let tree = project_app_capturing(app, &mut orrery_pane, &mut |pane| {
+        contributions.remove(&pane)
+    });
 
     let mut routes = A11yRoutes::new();
     routes.insert(
@@ -393,6 +419,15 @@ pub(crate) fn apply_route(
                 });
                 Vec::new()
             }
+        }
+        Some(A11yRoute::Contributed { .. }) => {
+            // The shell owns retained sessions and intercepts this variant
+            // before app-only route lowering. Keep a misplaced call loud.
+            app.note(crate::observe::AppEvent::InteractionMissed {
+                what: "a11y-action",
+                target: "contributed route reached app-only lowering".to_string(),
+            });
+            Vec::new()
         }
         None => {
             app.note(crate::observe::AppEvent::InteractionMissed {
@@ -484,6 +519,50 @@ mod route_table {
 mod bridge_integrity {
     use super::*;
     use std::collections::HashSet;
+
+    #[test]
+    fn a_contributed_tree_attaches_below_its_registered_pane() {
+        let mut app = App::test_stub();
+        app.update(crate::action::Action::SummonPane(
+            crate::panes::PaneKindId::new(crate::panes::kind::SETTINGS),
+        ));
+        let pane = app
+            .frisket
+            .iter_leaves()
+            .find_map(|(pane, content, _)| match content {
+                PaneContent::Registered(kind) if kind.as_str() == crate::panes::kind::SETTINGS => {
+                    Some(pane)
+                }
+                _ => None,
+            })
+            .expect("registered pane");
+        let contributed_root = node_id_for_path("test/contributed/root");
+        let contributed_child = node_id_for_path("test/contributed/child");
+        let mut root = Node::new(Role::Group);
+        root.set_label("settings surface");
+        root.set_children(vec![contributed_child]);
+        let mut child = Node::new(Role::Button);
+        child.set_label("Apply");
+        let contribution = UxTree {
+            root: contributed_root,
+            nodes: vec![(contributed_child, child), (contributed_root, root)],
+        };
+
+        let (tree, _) = project_app_with_routes_and_contributions(
+            &app,
+            std::collections::HashMap::from([(pane, contribution)]),
+        );
+        assert!(
+            tree.nodes.iter().any(|(id, _)| *id == contributed_child),
+            "the subtree child remains in the composed update"
+        );
+        assert!(
+            tree.nodes
+                .iter()
+                .any(|(_, node)| node.children().contains(&contributed_root)),
+            "the registered pane leaf points at the contributed root"
+        );
+    }
 
     /// UIA stops traversal at a node whose children reference an id absent
     /// from the pushed tree, which reads to a person as "nothing after that

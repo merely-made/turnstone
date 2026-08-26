@@ -692,12 +692,13 @@ impl Shell {
                 }
             }
             Step::AssertA11y(substr) => {
-                let snap = crate::observe::snapshot(&self.app);
-                if !snap.a11y.iter().any(|l| l.contains(substr)) {
+                let (tree, _, _) = self.projected_a11y_tree();
+                let lines = crate::a11y::tree_lines(&tree);
+                if !lines.iter().any(|l| l.contains(substr)) {
                     return Err(format!(
                         "assert a11y '{substr}': {} lines, none match (first 12: {:?})",
-                        snap.a11y.len(),
-                        snap.a11y.iter().take(12).collect::<Vec<_>>()
+                        lines.len(),
+                        lines.iter().take(12).collect::<Vec<_>>()
                     ));
                 }
             }

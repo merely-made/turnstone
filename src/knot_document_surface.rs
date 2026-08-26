@@ -173,6 +173,7 @@ fn admit_file(path: &Path) -> Result<(), SurfaceAdmissionError> {
 mod tests {
     use super::*;
     use crate::contributed_surface::SurfaceProviderRegistry;
+    use accesskit::{Action, Role};
     use tempfile::tempdir;
 
     #[test]
@@ -245,5 +246,48 @@ mod tests {
             registry.admit(&PaneKindId::new(PANE_KIND), &source),
             Err(SurfaceAdmissionError::InvalidPayload { .. })
         ));
+    }
+
+    #[test]
+    fn retained_accessibility_distinguishes_editable_and_read_only_documents() {
+        let temp = tempdir().unwrap();
+        let path = temp.path().join("field.djot");
+        std::fs::write(&path, "# Field\n").unwrap();
+        let mut registry = SurfaceProviderRegistry::new();
+        registry
+            .register_provider(KnotDocumentProvider::default())
+            .expect("Knot provider");
+
+        let mut editable = registry
+            .admit(&PaneKindId::new(PANE_KIND), &file_source(&path))
+            .expect("editable Knot surface");
+        let _ = editable.scene(480, 320, 1.0);
+        let (editable_tree, _) = editable.accessibility_tree().expect("editable projection");
+        let editor = editable_tree
+            .nodes
+            .iter()
+            .map(|(_, node)| node)
+            .find(|node| node.role() == Role::TextInput)
+            .expect("editable text box");
+        assert_eq!(editor.label(), Some("Document text"));
+        assert!(editor.supports_action(Action::Click));
+        assert!(editor.supports_action(Action::Focus));
+
+        let mut read_only = registry
+            .admit(&PaneKindId::new(PANE_KIND), &read_only_file_source(&path))
+            .expect("read-only Knot surface");
+        let _ = read_only.scene(480, 320, 1.0);
+        let (read_only_tree, _) = read_only
+            .accessibility_tree()
+            .expect("read-only projection");
+        let document = read_only_tree
+            .nodes
+            .iter()
+            .map(|(_, node)| node)
+            .find(|node| node.role() == Role::Document)
+            .expect("read-only document semantics");
+        assert_eq!(document.label(), Some("Read-only document text"));
+        assert!(document.is_read_only());
+        assert!(!document.supports_action(Action::Click));
     }
 }

@@ -354,6 +354,18 @@ impl ContributedSurfacePane {
         &self.layout
     }
 
+    pub(crate) fn accessibility_tree(
+        &self,
+    ) -> Option<(accesskit::TreeUpdate, HashMap<accesskit::NodeId, NodeId>)> {
+        let dom = self.session.dom();
+        let dom = dom.borrow();
+        self.layout.accessibility_tree(&dom, self.session.focus())
+    }
+
+    pub(crate) fn accessibility_focus(&self) -> Option<NodeId> {
+        self.session.focus()
+    }
+
     /// Render using the same retained layout that subsequent hit testing uses.
     pub fn scene(&mut self, width: u32, height: u32, scale_factor: f32) -> netrender::Scene {
         self.viewport = (width, height, scale_factor);
@@ -494,6 +506,24 @@ impl ContributedSurfacePane {
         self.apply(effects)
     }
 
+    /// Route one platform accessibility action through the same semantic
+    /// session paths used by the Cambium reference host. Focus only moves the
+    /// cursor; Click performs activation without inventing a pointer hit.
+    pub(crate) fn accessibility_action(
+        &mut self,
+        action: accesskit::Action,
+        node: NodeId,
+    ) -> SurfaceRequest {
+        match action {
+            accesskit::Action::Click => self.dispatch(ResolvedSurfaceEvent::Click {
+                target: node,
+                event: PointerClick::at((0.0, 0.0)),
+            }),
+            accesskit::Action::Focus => self.focus(Some(node)),
+            _ => SurfaceRequest::None,
+        }
+    }
+
     fn dispatch(&mut self, event: ResolvedSurfaceEvent) -> SurfaceRequest {
         let effects = self.session.dispatch(event);
         self.apply(effects)
@@ -565,6 +595,10 @@ impl ContributedSurfaceSessions {
         self.panes
             .values_mut()
             .any(ContributedSurfacePane::bars_visible)
+    }
+
+    pub(crate) fn iter(&self) -> impl Iterator<Item = (PaneId, &ContributedSurfacePane)> {
+        self.panes.iter().map(|(pane, session)| (*pane, session))
     }
 }
 

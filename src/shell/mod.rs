@@ -1109,6 +1109,47 @@ impl Shell {
         out
     }
 
+    fn projected_a11y_tree(
+        &self,
+    ) -> (
+        uxtree::UxTree,
+        crate::a11y::A11yRoutes,
+        Option<accesskit::NodeId>,
+    ) {
+        let pane_rects = self
+            .surface_plan()
+            .into_iter()
+            .filter_map(|surface| match surface.kind {
+                crate::surface::SurfaceKind::Pane(pane) => Some((pane, surface.rect)),
+                _ => None,
+            })
+            .collect();
+        let focused_pane = match self.app.focus {
+            crate::surface::FocusTarget::Pane(pane) => Some(pane),
+            _ => None,
+        };
+        let contributed = crate::contributed_a11y::project(
+            &self.renderers.contributed,
+            &pane_rects,
+            focused_pane,
+        );
+        let contributed_focus = contributed.focus;
+        let (tree, mut routes) =
+            crate::a11y::project_app_with_routes_and_contributions(&self.app, contributed.trees);
+        routes.extend(contributed.routes.into_iter().map(|(id, route)| {
+            (
+                id,
+                crate::a11y::A11yRoute::Contributed {
+                    pane: route.pane,
+                    node: route.node,
+                },
+            )
+        }));
+        let focus = contributed_focus
+            .filter(|focus| tree.nodes.iter().any(|(candidate, _)| candidate == focus));
+        (tree, routes, focus)
+    }
+
     /// Refresh the OS accessibility tree on a frame cadence.
     ///
     /// Thirty frames is about half a second at sixty; the projection walks
@@ -1116,24 +1157,24 @@ impl Shell {
     /// paying a solve for readers that poll far slower than that.
     fn push_a11y_tree(&mut self) {
         const CADENCE_FRAMES: u32 = 30;
-        let Some(adapter) = self.a11y_adapter.as_mut() else {
+        if self.a11y_adapter.is_none() {
             return;
-        };
+        }
         self.a11y_frames_since_push = self.a11y_frames_since_push.saturating_add(1);
         if self.a11y_frames_since_push < CADENCE_FRAMES {
             return;
         }
         self.a11y_frames_since_push = 0;
-        let (tree, routes) = crate::a11y::project_app_with_routes(&self.app);
+        let (tree, routes, focus) = self.projected_a11y_tree();
         self.a11y_routes = routes;
-        let mut update = tree.to_tree_update(None);
+        let mut update = tree.to_tree_update(focus);
         // Narrator refuses to walk past a node without a bounding rectangle:
         // UIA treats boundless elements as off-screen, so the tree served
         // without these read as "three buttons, the omnibar, then nothing".
-        // The projection does not know per-pane rects yet, so every node
-        // claims the window's extent: coarse geometry, correct names and
-        // structure, which is what a screen-reader walk actually verifies.
-        // Per-node rects from the surface plan are the recorded follow-up.
+        // Contributed retained DOM nodes already carry exact pane-translated
+        // fragment bounds. App-authored structural nodes do not yet, so only
+        // those boundless nodes claim the window's extent: coarse geometry,
+        // correct names and structure, without overwriting precise surfaces.
         let bounds = accesskit::Rect {
             x0: 0.0,
             y0: 0.0,
@@ -1145,11 +1186,11 @@ impl Shell {
                 node.set_bounds(bounds);
             }
         }
-        *self
-            .a11y_shared
-            .lock()
-            .expect("a11y tree slot poisoned") = Some(update.clone());
-        adapter.update_if_active(|| update);
+        *self.a11y_shared.lock().expect("a11y tree slot poisoned") = Some(update.clone());
+        self.a11y_adapter
+            .as_mut()
+            .expect("adapter presence checked above")
+            .update_if_active(|| update);
     }
 
     /// Drain assistive actions queued by the platform thread and lower each
@@ -1163,13 +1204,39 @@ impl Shell {
                 .expect("a11y action queue poisoned"),
         );
         for request in requests {
-            // Click is the platform's default action, the one Narrator's
-            // Enter sends. Everything else (focus, scroll hints) stays with
-            // the reader itself for now.
-            if request.action != accesskit::Action::Click {
+            if !matches!(
+                request.action,
+                accesskit::Action::Click | accesskit::Action::Focus
+            ) {
                 continue;
             }
             let route = self.a11y_routes.get(&request.target_node).cloned();
+            if let Some(crate::a11y::A11yRoute::Contributed { pane, node }) = route.as_ref() {
+                let (pane, node) = (*pane, *node);
+                let landed = if let Some(surface) = self.renderers.contributed.get_mut(pane) {
+                    surface.accessibility_action(request.action, node);
+                    true
+                } else {
+                    false
+                };
+                if !landed {
+                    self.app.note(crate::observe::AppEvent::InteractionMissed {
+                        what: "a11y-action",
+                        target: format!("contributed pane {}", pane.0),
+                    });
+                } else if request.action == accesskit::Action::Focus {
+                    self.app.focus = crate::surface::FocusTarget::Pane(pane);
+                    self.app.active_pane = Some(pane);
+                    self.app.raise_floating_pane(pane);
+                }
+                self.request_redraw();
+                continue;
+            }
+            // App-only routes are activation routes. A reader moving focus
+            // across them must not perform their default action.
+            if request.action != accesskit::Action::Click {
+                continue;
+            }
             let effects =
                 crate::a11y::apply_route(&mut self.app, route.as_ref(), request.target_node);
             self.run_effects(effects);

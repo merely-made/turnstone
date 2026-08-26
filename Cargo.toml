@@ -153,6 +153,9 @@ genet-static-dom = { git = "https://github.com/merely-made/genet.git", branch = 
 # Turnstone owns pane retention and composition; Genet supplies the clean-room
 # Livery cascade/Buckram layout state.
 genet-livery = { version = "=0.0.2", git = "https://github.com/merely-made/genet.git", branch = "main" }
+# The retained pane accessibility projection is owned beside Livery's
+# fragments in Genet; Turnstone only namespaces and places the returned tree.
+genet-render = { git = "https://github.com/merely-made/genet.git", branch = "main" }
 # The chrome layer's document substrate + name types + paint vocabulary
 # (rung 3: the omnibar is turnstone's first DOM surface, composited above the
 # canvas by the layered present).

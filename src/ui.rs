@@ -1334,6 +1334,46 @@ impl RetainedLayout {
         self.rebuilds
     }
 
+    /// Project the exact retained DOM and fragment snapshot last painted by
+    /// this pane into AccessKit. The returned action map keeps DOM identity
+    /// outside the platform tree, where the host can namespace node ids
+    /// without losing the session target an assistive action names.
+    pub fn accessibility_tree(
+        &self,
+        dom: &ScriptedDom,
+        focus: Option<DomNodeId>,
+    ) -> Option<(accesskit::TreeUpdate, HashMap<accesskit::NodeId, DomNodeId>)> {
+        let snapshot = self.snapshot.as_ref()?;
+        let mut tree = genet_render::accesskit_tree(dom, &snapshot.fragments, focus);
+        let mut action_map = HashMap::new();
+        walk_dom(dom, dom.document(), &mut |node| {
+            let id = accesskit::NodeId(dom.opaque_id(node));
+            action_map.insert(id, node);
+            let Some((x, y, width, height)) = snapshot_node_rect(
+                dom,
+                snapshot,
+                node,
+                &self.element_scroll,
+                self.viewport_scroll,
+            ) else {
+                return;
+            };
+            if let Some((_, projected)) = tree
+                .nodes
+                .iter_mut()
+                .find(|(candidate, _)| *candidate == id)
+            {
+                projected.set_bounds(accesskit::Rect::new(
+                    x as f64,
+                    y as f64,
+                    (x + width) as f64,
+                    (y + height) as f64,
+                ));
+            }
+        });
+        Some((tree, action_map))
+    }
+
     /// Bring the retained layout up to date for this frame.
     ///
     /// Draining is unconditional: mutations accumulate on the DOM whether or

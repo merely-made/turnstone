@@ -15,6 +15,7 @@ mod chrome_view;
 mod component;
 mod content;
 mod content_classes;
+mod contributed_a11y;
 pub mod contributed_surface;
 mod denizen;
 mod device_receipts_pane;
