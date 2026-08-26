@@ -25,6 +25,8 @@ pub struct Snapshot {
     /// The focused node, when exactly one is selected.
     pub focused: Option<FocusedNode>,
     pub omnibar: OmnibarView,
+    /// Find in the captured document, when its field is open.
+    pub document_find: Option<DocumentFindView>,
     /// Per-node content lifecycle, as (member, state label) pairs.
     pub content: Vec<(Uuid, String)>,
     pub node_count: usize,
@@ -125,6 +127,18 @@ pub struct OmnibarView {
     pub cursor: usize,
     pub selected: usize,
     pub suggestions: Vec<String>,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct DocumentFindView {
+    pub target: Uuid,
+    pub query: String,
+    pub count: usize,
+    pub current: Option<usize>,
+    pub pending: bool,
+    pub status: String,
+    pub current_role: Option<String>,
+    pub current_label: Option<String>,
 }
 
 /// A semantic event: something durable or externally observable happened.
@@ -649,7 +663,8 @@ pub fn snapshot(app: &App) -> Snapshot {
     if tile_content_here || focused_inset {
         surfaces.push("content".to_string());
     }
-    if app.omnibar.open && app.shell_chrome_config().projects_omnibar()
+    if app.document_find.open
+        || app.omnibar.open && app.shell_chrome_config().projects_omnibar()
         || app.shell_chrome_config().projects_shellbar()
             && crate::app::focused_caption(&app.graph_runtimes).is_some()
     {
@@ -669,6 +684,28 @@ pub fn snapshot(app: &App) -> Snapshot {
                 .map(suggestion_line)
                 .collect(),
         },
+        document_find: app.document_find.open.then(|| {
+            let current = app
+                .document_find
+                .model
+                .current
+                .filter(|index| *index < app.document_find.model.count);
+            let current_match =
+                current.and_then(|index| app.document_find.model.matches.get(index));
+            DocumentFindView {
+                target: app
+                    .document_find
+                    .target
+                    .expect("an open find has a captured target"),
+                query: app.document_find.query.clone(),
+                count: app.document_find.model.count,
+                current,
+                pending: app.document_find.pending,
+                status: app.document_find.status(),
+                current_role: current_match.and_then(|item| item.role.clone()),
+                current_label: current_match.map(|item| item.label.clone()),
+            }
+        }),
         content,
         node_count: app.graph_runtimes.graph().nodes().count(),
         feed_subscriptions: app.feeds.len(),

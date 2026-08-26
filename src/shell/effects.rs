@@ -7,7 +7,9 @@
 use std::sync::mpsc::Receiver;
 
 use fetch::{FetchCommand, FetchUpdate};
-use inker::{EngineProfileBinding, SessionClick, SessionSpawnRequest, SurfaceSpawnRequest};
+use inker::{
+    DocumentFindQuery, EngineProfileBinding, SessionClick, SessionSpawnRequest, SurfaceSpawnRequest,
+};
 
 use crate::action::{Action, Effect, Update};
 use crate::browse;
@@ -19,6 +21,22 @@ use super::Shell;
 /// How many recalled pages the omnibar asks for. The lane sits below the
 /// node and go rows, so a handful is what there is room to read.
 const RECALL_ROW_LIMIT: usize = 5;
+
+pub(super) fn app_find_model(state: inker::DocumentFindState) -> crate::action::DocumentFindModel {
+    crate::action::DocumentFindModel {
+        count: state.count,
+        matches: state
+            .matches
+            .into_iter()
+            .map(|item| crate::action::DocumentFindMatch {
+                label: item.label,
+                role: item.role,
+            })
+            .collect(),
+        current: state.current.filter(|index| *index < state.count),
+        complete: state.complete,
+    }
+}
 
 fn project_reader_lineage_facet(
     app: &mut crate::app::App,
@@ -626,7 +644,76 @@ impl Shell {
                     }
                     self.request_redraw();
                 }
+                Effect::FindContent {
+                    node,
+                    request,
+                    query,
+                    direction,
+                    find_next,
+                } => {
+                    let engine_direction = match direction {
+                        crate::action::DocumentFindDirection::Previous => {
+                            inker::DocumentFindDirection::Previous
+                        }
+                        crate::action::DocumentFindDirection::Next => {
+                            inker::DocumentFindDirection::Next
+                        }
+                    };
+                    let engine_query = DocumentFindQuery::new(query.clone());
+                    let immediate = if let Some(session) = self.content_sessions.get_mut(&node) {
+                        Some(
+                            if find_next {
+                                session.document_find_step(engine_direction)
+                            } else {
+                                session.document_find(&engine_query)
+                            }
+                            .map(app_find_model)
+                            .map_err(|error| error.to_string()),
+                        )
+                    } else if let Some(web) = self
+                        .surface_producers
+                        .get_mut(&node)
+                        .and_then(|producer| producer.as_web_surface())
+                    {
+                        match web.document_find(&engine_query, engine_direction, find_next) {
+                            Ok(()) => {
+                                self.surface_find_requests
+                                    .insert(node, (request, query.clone()));
+                                None
+                            }
+                            Err(error) => Some(Err(error.to_string())),
+                        }
+                    } else {
+                        Some(Err("content has no document find owner".into()))
+                    };
+                    if let Some(result) = immediate {
+                        let effects = self.app.apply_update(Update::DocumentFindChanged {
+                            node,
+                            request,
+                            query,
+                            result,
+                        });
+                        self.run_effects(effects);
+                    }
+                }
+                Effect::ClearContentFind { node } => {
+                    self.surface_find_requests.remove(&node);
+                    if let Some(session) = self.content_sessions.get_mut(&node) {
+                        if let Err(error) = session.clear_document_find() {
+                            tracing::warn!(%node, %error, "retained document find clear failed");
+                        }
+                    } else if let Some(web) = self
+                        .surface_producers
+                        .get_mut(&node)
+                        .and_then(|producer| producer.as_web_surface())
+                        && let Err(error) = web.clear_document_find()
+                    {
+                        tracing::warn!(%node, %error, "hosted document find clear failed");
+                    }
+                    self.request_redraw();
+                }
                 Effect::CloseContent { node } => {
+                    self.surface_find_requests.remove(&node);
                     if self.content_sessions.remove(&node).is_some() {
                         tracing::info!(%node, "content session closed");
                     }

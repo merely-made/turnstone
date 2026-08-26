@@ -1,0 +1,25 @@
+# F0 retained-find receipt. The ordinary Livery document owns matching and
+# reveal; Turnstone observes the same retained model through its action spine.
+# Network-dependent by design, matching rung4_content.scn. Run on a fresh profile.
+settle 30
+key escape
+open https://example.com/
+settle 40
+act Toggle live content
+settle 40
+assert content-live
+assert snap actions ~ Find in document
+
+key ctrl+f
+type documentation
+settle 10
+assert snap document-find-query == documentation
+assert snap document-find-count == 1
+assert snap document-find-current == 1
+assert a11y searchinput: Find in document = documentation
+assert a11y status: 1 of 1 · paragraph
+key enter
+settle 5
+assert snap document-find-current == 1
+capture 01_retained_find
+log F0 retained find receipt complete

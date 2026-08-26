@@ -197,6 +197,17 @@ impl genet_probe::Automatable for Shell {
             // a verb is on offer before spending a step on it.
             .with_field("actions", snap.available_actions.join(","))
             .with_field("kept", kept.to_string());
+        if let Some(find) = snap.document_find {
+            out = out
+                .with_field("document-find-query", find.query)
+                .with_field("document-find-count", find.count.to_string())
+                .with_field(
+                    "document-find-current",
+                    find.current
+                        .map_or_else(String::new, |index| (index + 1).to_string()),
+                )
+                .with_field("document-find-status", find.status);
+        }
         // Fold the url in with the caption, so `assert snap focused ~ example.com`
         // can name the navigated address, not only the display caption.
         out.focused = snap.focused.map(|n| format!("{}  {}", n.caption, n.url));
@@ -324,12 +335,18 @@ impl Shell {
             Step::Open(url) => self.act(Action::OpenAddress(url.clone())),
             Step::Omnibar { command } => self.act(Action::OmnibarOpen { command: *command }),
             Step::Type(text) => {
-                for c in text.chars() {
-                    self.act(Action::OmnibarChar(c));
+                if self.app.document_find.open {
+                    self.act(Action::InsertDocumentFind(text.clone()));
+                } else {
+                    for c in text.chars() {
+                        self.act(Action::OmnibarChar(c));
+                    }
                 }
             }
             Step::Insert(text) => {
-                if self.app.omnibar.open {
+                if self.app.document_find.open {
+                    self.act(Action::InsertDocumentFind(text.clone()));
+                } else if self.app.omnibar.open {
                     self.act(Action::OmnibarInsert(text.clone()));
                 } else if self.deliver_contributed_ime(&winit::event::Ime::Commit(text.clone())) {
                     self.request_redraw();
@@ -360,6 +377,7 @@ impl Shell {
                     EditKey::PageUp => (WinitKey::Named(WinitNamedKey::PageUp), false),
                     EditKey::Space => (WinitKey::Named(WinitNamedKey::Space), false),
                     EditKey::Save => (WinitKey::Character("s".into()), true),
+                    EditKey::Find => (WinitKey::Character("f".into()), true),
                 };
                 let previous_ctrl = self.ctrl;
                 self.ctrl |= ctrl;

@@ -50,6 +50,9 @@ impl Shell {
         match event {
             inker::WebSurfaceEvent::Navigation(inker::NavigationEvent::Started { .. }) => {
                 self.app.content.note_surface_started(node);
+                self.surface_find_requests.remove(&node);
+                let effects = self.app.invalidate_document_find_for(node);
+                self.run_effects(effects);
                 self.request_redraw();
             }
             inker::WebSurfaceEvent::Navigation(inker::NavigationEvent::Committed { url })
@@ -78,6 +81,26 @@ impl Shell {
             inker::WebSurfaceEvent::LoadProgress { value } => {
                 self.app.content.note_surface_progress(node, value);
                 self.request_redraw();
+            }
+            inker::WebSurfaceEvent::DocumentFindChanged(state) => {
+                let Some((request, query)) = self.surface_find_requests.get(&node).cloned() else {
+                    return;
+                };
+                if state.query.text != query {
+                    return;
+                }
+                if state.complete {
+                    self.surface_find_requests.remove(&node);
+                }
+                let effects = self
+                    .app
+                    .apply_update(crate::action::Update::DocumentFindChanged {
+                        node,
+                        request,
+                        query,
+                        result: Ok(super::effects::app_find_model(state)),
+                    });
+                self.run_effects(effects);
             }
             inker::WebSurfaceEvent::NewWindowRequested { url } => {
                 self.app

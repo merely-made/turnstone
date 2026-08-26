@@ -321,6 +321,8 @@ pub struct Shell {
     /// shell owns its non-Send live handle and its imported frame cache.
     surface_engines: inker::SurfaceEngineRegistry,
     surface_producers: std::collections::HashMap<uuid::Uuid, Box<dyn inker::SurfaceProducer>>,
+    /// Exact app request/query identity for progressive hosted find results.
+    surface_find_requests: std::collections::HashMap<uuid::Uuid, (u64, String)>,
     #[cfg(all(feature = "weld", windows))]
     surface_frames:
         std::collections::HashMap<uuid::Uuid, Option<surface_frames::ImportedSurfaceFrame>>,
@@ -606,6 +608,7 @@ impl Shell {
             content_sessions: std::collections::HashMap::new(),
             surface_engines: inker::SurfaceEngineRegistry::new(),
             surface_producers: std::collections::HashMap::new(),
+            surface_find_requests: std::collections::HashMap::new(),
             #[cfg(all(feature = "weld", windows))]
             surface_frames: std::collections::HashMap::new(),
             pending_surface_spawns: Vec::new(),
@@ -645,6 +648,7 @@ impl Shell {
 
     fn clear_surface_content(&mut self) {
         self.surface_producers.clear();
+        self.surface_find_requests.clear();
         #[cfg(all(feature = "weld", windows))]
         self.surface_frames.clear();
     }
@@ -690,10 +694,10 @@ impl Shell {
     }
 
     /// Lower one app intent through the spine and run what falls out. Syncs
-    /// the window's IME enablement to the omnibar on open/close transitions
+    /// the window's IME enablement to controlled chrome fields on transitions
     /// (a platform call, so it lives here, not in `update`).
     fn act(&mut self, action: Action) {
-        let was_open = self.app.omnibar.open;
+        let accepted_text = self.app.omnibar.open || self.app.document_find.open;
         let closing = matches!(&action, Action::CloseActivePane)
             .then_some(self.app.active_pane)
             .flatten();
@@ -703,10 +707,11 @@ impl Shell {
         {
             self.evict_pane_renderer(pane);
         }
-        if self.app.omnibar.open != was_open
+        let accepts_text = self.app.omnibar.open || self.app.document_find.open;
+        if accepts_text != accepted_text
             && let Some(window) = self.window.as_ref()
         {
-            window.set_ime_allowed(self.app.omnibar.open);
+            window.set_ime_allowed(accepts_text);
         }
         self.run_effects(effects);
     }
@@ -905,7 +910,8 @@ impl Shell {
             .and_then(|pane| self.app.graph_for_pane(pane))
             .and_then(|graph| self.app.graph_runtimes.canvas(graph))
             .and_then(crate::app::focused_caption);
-        let chrome = (self.app.shell_chrome_config().projects_shellbar() && caption.is_some()
+        let chrome = (self.app.document_find.open
+            || self.app.shell_chrome_config().projects_shellbar() && caption.is_some()
             || self.app.omnibar.open && self.app.shell_chrome_config().projects_omnibar())
         .then_some(area);
         let mut surfaces = crate::surface::assemble(&base, &tiles, content, None);

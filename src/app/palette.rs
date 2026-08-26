@@ -111,6 +111,14 @@ impl App {
         {
             rows.push(("Keep node".to_string(), Action::KeepNode { member }));
         }
+        if self.graph_runtimes.focused_member().is_some_and(|member| {
+            matches!(
+                self.content.get(member),
+                Some(crate::content::NodeContent::Live)
+            )
+        }) {
+            rows.push(("Find in document".to_string(), Action::OpenDocumentFind));
+        }
         if self.focused_address().is_some_and(|address| {
             url::Url::parse(&address).is_ok_and(|url| matches!(url.scheme(), "titan" | "spartan"))
         }) {

@@ -83,6 +83,7 @@ impl App {
             forme_runtimes: super::FormeRuntimePool::default(),
             pane_context: crate::panes::ContextIndex::default(),
             omnibar: OmnibarState::default(),
+            document_find: crate::document_find::DocumentFindState::default(),
             frame_timings: crate::frame_timing::FrameTimings::default(),
             shell: crate::shell_services::ShellServices::default(),
             data_root,
@@ -652,6 +653,7 @@ impl App {
             .apply_cartography_faces(faces.iter().map(|(id, code)| (*id, code.as_str())));
         // Session-scoped view state resets.
         self.omnibar = OmnibarState::default();
+        self.document_find = crate::document_find::DocumentFindState::default();
         self.focus = FocusTarget::Graph(self.default_graph_pane());
         self.active_pane = None;
         self.maximized = None;

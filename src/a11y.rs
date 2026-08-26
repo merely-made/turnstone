@@ -149,6 +149,20 @@ fn project_chrome(app: &App) -> UxTree {
             children.push(id);
         }
     }
+    if app.document_find.open {
+        let input_id = node_id_for_path("turnstone/chrome/document-find/input");
+        let mut input = Node::new(Role::SearchInput);
+        input.set_label("Find in document");
+        input.set_value(app.document_find.query.clone());
+        nodes.push((input_id, input));
+        children.push(input_id);
+
+        let status_id = node_id_for_path("turnstone/chrome/document-find/status");
+        let mut status = Node::new(Role::Status);
+        status.set_label(app.document_find.status());
+        nodes.push((status_id, status));
+        children.push(status_id);
+    }
     if app.shell_chrome_config().projects_shellbar()
         && let Some(caption) = crate::app::focused_caption(&app.graph_runtimes)
     {

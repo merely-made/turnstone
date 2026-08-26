@@ -19,6 +19,7 @@ pub mod contributed_surface;
 mod denizen;
 mod device_receipts_pane;
 mod device_receipts_service;
+pub mod document_find;
 mod download;
 mod feed;
 pub mod frame_timing;

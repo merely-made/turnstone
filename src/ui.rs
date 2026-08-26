@@ -676,6 +676,15 @@ pub(crate) const CHROME_SHEET: &str = "\
                       border: 1px solid rgb(45, 53, 71); } \
     .browser-status { color: rgb(170, 178, 195); font-size: 12px; padding: 4px 7px; \
                       white-space: nowrap; overflow: hidden; } \
+    .document-find { position: absolute; display: flex; align-items: center; gap: 5px; \
+                     box-sizing: border-box; color: rgb(216, 222, 234); \
+                     background-color: rgb(20, 25, 38); border: 1px solid rgb(70, 82, 110); \
+                     border-radius: 9px; padding: 5px 7px; } \
+    .document-find-input { color: rgb(238, 242, 250); font-size: 13px; padding: 4px 7px; \
+                           width: 220px; background-color: rgb(15, 19, 30); border-radius: 6px; \
+                           white-space: nowrap; overflow: hidden; } \
+    .document-find-status { color: rgb(170, 178, 195); font-size: 12px; padding: 4px 7px; \
+                            width: 170px; white-space: nowrap; overflow: hidden; } \
     .link-preview { position: absolute; color: rgb(238, 242, 250); \
                     background-color: rgb(20, 25, 38); border: 1px solid rgb(206, 84, 47); \
                     border-radius: 7px; padding: 5px 9px; font-size: 12px; \
@@ -774,10 +783,11 @@ pub(crate) fn chrome_sheet(appearance: &crate::shell_services::AppearanceConfig)
         .omni-row-sel {{ color: {}; background-color: {}; font-size: {:.2}px; }} \
         .omni-row-muted {{ color: {}; font-size: {:.2}px; }} \
         .whereami {{ color: {}; background-color: {}; border-color: {}; font-size: {:.2}px; }} \
-        .browser-strip, .link-preview {{ color: {}; background-color: {}; border-color: {}; }} \
+        .browser-strip, .link-preview, .document-find {{ color: {}; background-color: {}; border-color: {}; }} \
         .browser-loading {{ border-bottom-color: {}; }} \
         .browser-button {{ color: {}; background-color: {}; border-color: {}; font-size: {:.2}px; }} \
-        .browser-button-disabled, .browser-status, .link-preview {{ font-size: {:.2}px; }}",
+        .browser-button-disabled, .browser-status, .link-preview, .document-find-status {{ font-size: {:.2}px; }} \
+        .document-find-input {{ color: {}; background-color: {}; font-size: {:.2}px; }}",
         rgb(palette.surface),
         rgb(palette.border),
         rgb(palette.text),
@@ -804,6 +814,9 @@ pub(crate) fn chrome_sheet(appearance: &crate::shell_services::AppearanceConfig)
         rgb(palette.border),
         12.0 * zoom,
         12.0 * zoom,
+        rgb(palette.text),
+        rgb(palette.field),
+        13.0 * zoom,
     )
 }
 

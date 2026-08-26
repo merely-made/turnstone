@@ -255,6 +255,13 @@ impl Shell {
                 crate::chrome_view::ChromeIntent::Reload => Action::Reload,
                 crate::chrome_view::ChromeIntent::Stop => Action::Stop,
                 crate::chrome_view::ChromeIntent::KeepNode(member) => Action::KeepNode { member },
+                crate::chrome_view::ChromeIntent::FindPrevious => {
+                    Action::StepDocumentFind(crate::action::DocumentFindDirection::Previous)
+                }
+                crate::chrome_view::ChromeIntent::FindNext => {
+                    Action::StepDocumentFind(crate::action::DocumentFindDirection::Next)
+                }
+                crate::chrome_view::ChromeIntent::FindClose => Action::CloseDocumentFind,
             };
             self.act(action);
             self.pointer_capture = None;

@@ -47,6 +47,11 @@ impl Shell {
         let crate::surface::FocusTarget::Content(node) = self.app.focus else {
             return false;
         };
+        if self.app.document_find.open
+            || matches!(key, WinitKey::Character(value) if self.ctrl && value.eq_ignore_ascii_case("f"))
+        {
+            return false;
+        }
         if matches!(key, WinitKey::Named(WinitNamedKey::Escape)) {
             return false;
         }
@@ -199,6 +204,35 @@ impl Shell {
     /// otherwise. Ephemeral content keys (scroll, blur) are delivered inline
     /// and consumed; everything else lowers to an Action through the spine.
     pub(super) fn on_key(&mut self, key: &WinitKey) {
+        if matches!(key, WinitKey::Character(value) if self.ctrl && value.eq_ignore_ascii_case("f"))
+        {
+            self.act(Action::OpenDocumentFind);
+            return;
+        }
+        if self.app.document_find.open {
+            let action = match key {
+                WinitKey::Named(WinitNamedKey::Escape) => Some(Action::CloseDocumentFind),
+                WinitKey::Named(WinitNamedKey::Enter) => {
+                    Some(Action::StepDocumentFind(if self.shift {
+                        crate::action::DocumentFindDirection::Previous
+                    } else {
+                        crate::action::DocumentFindDirection::Next
+                    }))
+                }
+                WinitKey::Named(WinitNamedKey::Backspace) => Some(Action::BackspaceDocumentFind),
+                WinitKey::Named(WinitNamedKey::Space) => {
+                    Some(Action::InsertDocumentFind(" ".into()))
+                }
+                WinitKey::Character(text) if !self.ctrl && !self.alt => {
+                    Some(Action::InsertDocumentFind(text.to_string()))
+                }
+                _ => None,
+            };
+            if let Some(action) = action {
+                self.act(action);
+            }
+            return;
+        }
         if !self.app.omnibar.open && self.deliver_contributed_key(key) {
             self.request_redraw();
             return;

@@ -426,6 +426,12 @@ impl App {
                 });
                 vec![Effect::Redraw]
             }
+            Update::DocumentFindChanged {
+                node,
+                request,
+                query,
+                result,
+            } => self.apply_document_find_changed(node, request, query, result),
             Update::ContentFailed { node, error } => {
                 tracing::warn!(%node, %error, "content spawn failed");
                 self.events.push(AppEvent::ContentState {

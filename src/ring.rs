@@ -146,6 +146,11 @@ pub fn ring_of(action: &Action) -> Ring {
         | TogglePhysics
         | ToggleSizeByRecency
         | ToggleNodeContent
+        | OpenDocumentFind
+        | CloseDocumentFind
+        | InsertDocumentFind(_)
+        | BackspaceDocumentFind
+        | StepDocumentFind(_)
         | OmnibarOpen { .. }
         | OmnibarClose
         | OmnibarChar(_)

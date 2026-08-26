@@ -8,13 +8,14 @@ use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
 use inker::{
-    CursorShape, DataTransfer, DataTransferItem, DragEvent, DragOperationSet, DragPhase,
-    FocusReason, FrameHandleOwnership, HttpAuthenticationAnswer, HttpAuthenticationChallenge,
-    HttpProtectionSpace, KeyboardEvent, KeyboardModifiers, MouseButton, MouseEvent, MouseEventKind,
-    NativeTextureHandle, NavigationEvent, PermissionAnswer, PermissionDescriptor,
-    PermissionRequest, PhysicalPosition, PointerButtons, PointerEvent, PointerPhase, PointerType,
-    SurfaceError, SurfaceSettings, SurfaceSyncHandle, SurfaceTextureFormat, UserAgentRequestId,
-    WebFeatureStatus, WebFrameTransportMode, WebMessage, WebSurfaceCapabilities, WebSurfaceEvent,
+    CursorShape, DataTransfer, DataTransferItem, DocumentFindDirection, DocumentFindQuery,
+    DocumentFindState, DragEvent, DragOperationSet, DragPhase, FocusReason, FrameHandleOwnership,
+    HttpAuthenticationAnswer, HttpAuthenticationChallenge, HttpProtectionSpace, KeyboardEvent,
+    KeyboardModifiers, MouseButton, MouseEvent, MouseEventKind, NativeTextureHandle,
+    NavigationEvent, PermissionAnswer, PermissionDescriptor, PermissionRequest, PhysicalPosition,
+    PointerButtons, PointerEvent, PointerPhase, PointerType, SurfaceError, SurfaceSettings,
+    SurfaceSyncHandle, SurfaceTextureFormat, UserAgentRequestId, WebFeatureStatus,
+    WebFrameTransportMode, WebMessage, WebSurfaceCapabilities, WebSurfaceEvent,
 };
 use weld_engine::{WeldFrame, WeldProducerFactory, WeldSurface};
 use welding::{
@@ -66,7 +67,10 @@ impl WeldProducerFactory for TurnstoneWeldFactory {
         )
         .map_err(weld_spawn_error)?;
         producer.set_visible(true).map_err(weld_spawn_error)?;
-        Ok(Box::new(TurnstoneWeldSurface { producer }))
+        Ok(Box::new(TurnstoneWeldSurface {
+            producer,
+            find_query: DocumentFindQuery::default(),
+        }))
     }
 }
 
@@ -101,6 +105,7 @@ pub(super) fn initialize_runtime(
 
 struct TurnstoneWeldSurface {
     producer: WindowsCefProducer,
+    find_query: DocumentFindQuery,
 }
 
 impl WeldSurface for TurnstoneWeldSurface {
@@ -163,6 +168,32 @@ impl WeldSurface for TurnstoneWeldSurface {
 
     fn can_go_forward(&self) -> bool {
         self.producer.can_go_forward()
+    }
+
+    fn document_find(
+        &mut self,
+        query: &DocumentFindQuery,
+        direction: DocumentFindDirection,
+        _find_next: bool,
+    ) -> Result<(), SurfaceError> {
+        self.find_query = query.clone();
+        // CEF calls this fourth argument `findNext`, but Chromium lowers it as
+        // `find_match`: false counts matches without selecting one. Turnstone
+        // always needs an active, revealed match. A query or case change still
+        // starts a new Chromium find session; later calls advance that session.
+        self.producer
+            .find(
+                &query.text,
+                matches!(direction, DocumentFindDirection::Next),
+                query.match_case,
+                true,
+            )
+            .map_err(weld_input_error)
+    }
+
+    fn clear_document_find(&mut self) -> Result<(), SurfaceError> {
+        self.find_query = DocumentFindQuery::default();
+        self.producer.stop_finding(true).map_err(weld_input_error)
     }
 
     fn notify_mouse(&mut self, event: MouseEvent) -> Result<(), SurfaceError> {
@@ -335,6 +366,19 @@ impl WeldSurface for TurnstoneWeldSurface {
 
     fn poll_web_event(&mut self) -> Option<WebSurfaceEvent> {
         if let Some(event) = self.producer.poll_navigation_event() {
+            if let welding::NavigationEvent::FindResult {
+                count,
+                active_match,
+                final_update,
+            } = event
+            {
+                return Some(WebSurfaceEvent::DocumentFindChanged(weld_find_state(
+                    self.find_query.clone(),
+                    count,
+                    active_match,
+                    final_update,
+                )));
+            }
             return Some(map_weld_web_event(event));
         }
         self.poll_web_message().map(WebSurfaceEvent::WebMessage)
@@ -381,6 +425,7 @@ impl WeldSurface for TurnstoneWeldSurface {
             ..Default::default()
         };
         capabilities.devtools = WebFeatureStatus::Supported;
+        capabilities.find_in_page = WebFeatureStatus::Supported;
         capabilities.pointer.mouse = WebFeatureStatus::Supported;
         capabilities.pointer.pen = WebFeatureStatus::Partial {
             detail: "CEF accepts pen contacts, but winit 0.30 does not identify pen versus touch"
@@ -616,6 +661,22 @@ fn map_navigation_event(event: welding::NavigationEvent) -> Option<NavigationEve
     }
 }
 
+fn weld_find_state(
+    query: DocumentFindQuery,
+    count: i32,
+    active_match: i32,
+    complete: bool,
+) -> DocumentFindState {
+    DocumentFindState::engine_managed(
+        query,
+        usize::try_from(count.max(0)).unwrap_or(0),
+        (active_match > 0)
+            .then(|| usize::try_from(active_match - 1).ok())
+            .flatten(),
+        complete,
+    )
+}
+
 fn map_weld_web_event(event: welding::NavigationEvent) -> WebSurfaceEvent {
     match event {
         welding::NavigationEvent::LoadStart { url } => {
@@ -790,6 +851,24 @@ fn weld_input_error(error: welding::WeldError) -> SurfaceError {
 #[cfg(test)]
 mod contract_tests {
     use super::*;
+
+    #[test]
+    fn weld_find_result_uses_the_shared_zero_based_model() {
+        let query = DocumentFindQuery::new("turnstone");
+        let state = weld_find_state(query.clone(), 4, 2, true);
+        assert_eq!(state.query, query);
+        assert_eq!(state.count, 4);
+        assert!(state.matches.is_empty());
+        assert_eq!(state.current, Some(1));
+        assert!(state.complete);
+        assert!(state.current_match().is_none());
+
+        let empty = weld_find_state(DocumentFindQuery::new("missing"), -1, 0, false);
+        assert!(empty.matches.is_empty());
+        assert_eq!(empty.count, 0);
+        assert_eq!(empty.current, None);
+        assert!(!empty.complete);
+    }
 
     #[test]
     fn data_transfer_preserves_files_and_standard_string_types() {

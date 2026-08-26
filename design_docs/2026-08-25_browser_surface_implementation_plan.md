@@ -1,8 +1,8 @@
 # Browser surfaces implementation plan
 
-**Status, 2026-08-25:** in progress. T0, contributed document surfaces, and K0,
-one-gesture Keep, are landed. F0 retained find and D0 decision UI are next and
-may proceed independently. This plan succeeds the
+**Status, 2026-08-26:** in progress. T0 contributed document surfaces, K0
+one-gesture Keep, and F0 retained find are landed. D0 decision UI is next. This
+plan succeeds the
 remaining-work portion of the historical
 [browser gap analysis](2026-08-17_smolweb_browser_gap_analysis.md); the analysis
 remains useful as research and acceptance evidence.
@@ -64,11 +64,12 @@ Done-conditions:
 
 ### F0. Retained find
 
-Build find as a document-session capability returning a retained match list,
-current match, structural label or role, and scroll target. The omnibar may
-summon it, but it must not become a second command catalog. Hosted engines and
-Livery documents implement the same host-facing capability without Turnstone
-peeking into either DOM.
+Landed as a document-session capability returning an authoritative count,
+current match, and, when the engine can disclose them, retained match records
+with structural label or role and reveal target. The omnibar and Ctrl+F summon
+one retained chrome field rather than a second command catalog. Hosted engines
+and Livery documents implement the same host-facing capability without
+Turnstone peeking into either DOM.
 
 Done-conditions:
 
@@ -77,6 +78,11 @@ Done-conditions:
 - The match count and current structural label are observable and accessible.
 - At least one Livery document and one hosted engine pass the same consumer
   tests.
+
+Accepted 2026-08-26. Focused model and adapter tests pass, and both
+`scenarios/browser_find.scn` and
+`scenarios/browser_find_weld_windows.scn` finish `RESULT ok` with visible
+selection plus the same search-input and status accessibility projection.
 
 ### D0. Permission and authentication decisions
 
@@ -200,6 +206,16 @@ Done-conditions:
   and regenerated lock are now on Netrender main at `6f1a4fe70`; the stale
   worktree and branch are pruned, and Turnstone patches the renderer family as
   one source.
+- **2026-08-26, retained find:** Inker now owns the engine-neutral query,
+  direction, reveal, match, and state vocabulary. The count is authoritative
+  and match records may be sparse, which lets Livery disclose structural
+  matches while a hosted engine reports only count and active ordinal
+  (`src/document_find.rs`, `src/app/document_find_arms.rs`).
+- **2026-08-26, hosted find:** CEF's fourth find argument is named `findNext`,
+  but Chromium consumes it as `find_match`. Passing false returned a correct
+  count with no active selection. The Weld adapter now always requests an
+  active, revealed match while query changes still begin a new engine session
+  (`src/shell/weld.rs`).
 
 ## Pitfalls and contradictions
 
@@ -279,3 +295,15 @@ Done-conditions:
   Document Resources, and `genet-taffy`, then recompiled and passed the focused
   Keep test. The final duplicate ledger names only the deliberate Fleece 0.2 /
   0.4 migration and unrelated Taffy API generations.
+- **2026-08-26:** landed the shared retained-find contract in Genet
+  `42941fe18bfa`, including Livery matching and reveal, Weld forwarding, and
+  focused Inker, Livery, and adapter receipts.
+- **2026-08-26:** completed Turnstone F0 with retained query and request
+  correlation, stale-answer rejection, Ctrl+F and palette entry, next/previous
+  wrap, controlled chrome, accessibility, observation, Livery integration, and
+  the Windows Weld adapter. The published-source focused Weld test and binary
+  build pass with local redirects disabled. Both headed engine scenarios are
+  `RESULT ok` and their captures visibly select `documentation` with `1 of 1`.
+  The broader library run passed 345 tests and ignored 5, but remains red on
+  the pre-existing `place::lanes::tests::a_partition_heals_and_both_sides_converge`
+  delivery-after-heal failure; that p2p gate is independent of F0.

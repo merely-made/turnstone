@@ -326,7 +326,10 @@ impl App {
                 node,
                 state: "closed".to_string(),
             });
-            vec![Effect::CloseContent { node }, Effect::Redraw]
+            let mut effects = self.invalidate_document_find_for(node);
+            effects.push(Effect::CloseContent { node });
+            effects.push(Effect::Redraw);
+            effects
         }
     }
 
@@ -341,20 +344,20 @@ impl App {
         let (node, url) = target;
         self.events.push(AppEvent::Reloaded(url.clone()));
         self.link_preview = None;
+        let mut find_effects = self.invalidate_document_find_for(node);
 
         if self.node_uses_web_surface(node) {
             self.content.note_surface_started(node);
-            return vec![
-                Effect::ControlContent {
-                    node,
-                    control: crate::action::ContentControl::Reload,
-                },
-                Effect::Redraw,
-            ];
+            find_effects.push(Effect::ControlContent {
+                node,
+                control: crate::action::ContentControl::Reload,
+            });
+            find_effects.push(Effect::Redraw);
+            return find_effects;
         }
 
         self.content.forget_fetched(node);
-        let mut effects = Vec::new();
+        let mut effects = find_effects;
         if fetch::is_fetchable(&url) {
             effects.push(self.fetch_page_effect(node, url.clone(), url.clone()));
         }
@@ -1001,7 +1004,10 @@ impl App {
         }
         self.events
             .push(AppEvent::ContentNavigated { node: member, url });
-        vec![Effect::SaveSession, Effect::Redraw]
+        let mut effects = self.invalidate_document_find_for(member);
+        effects.push(Effect::SaveSession);
+        effects.push(Effect::Redraw);
+        effects
     }
 
     pub(super) fn set_content_title(&mut self, member: Uuid, title: String) -> Vec<Effect> {
@@ -1051,17 +1057,17 @@ impl App {
                 return vec![Effect::Redraw];
             }
             self.content.note_surface_started(node);
-            return vec![
-                Effect::ControlContent {
-                    node,
-                    control: if back {
-                        crate::action::ContentControl::Back
-                    } else {
-                        crate::action::ContentControl::Forward
-                    },
+            let mut effects = self.invalidate_document_find_for(node);
+            effects.push(Effect::ControlContent {
+                node,
+                control: if back {
+                    crate::action::ContentControl::Back
+                } else {
+                    crate::action::ContentControl::Forward
                 },
-                Effect::Redraw,
-            ];
+            });
+            effects.push(Effect::Redraw);
+            return effects;
         }
 
         let Some(graph) = self.graph_runtimes.graph_containing_member(node) else {
@@ -1087,7 +1093,8 @@ impl App {
             self.content.get(node),
             Some(crate::content::NodeContent::Live | crate::content::NodeContent::Requested)
         );
-        let mut effects = vec![Effect::SaveSession];
+        let mut effects = self.invalidate_document_find_for(node);
+        effects.push(Effect::SaveSession);
         if fetch::is_fetchable(&url) {
             effects.push(self.fetch_page_effect(node, url.clone(), url.clone()));
         }

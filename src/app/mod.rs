@@ -19,6 +19,7 @@ use crate::surface::FocusTarget;
 use crate::{browse, session};
 
 mod contributed_pane_arms;
+mod document_find_arms;
 mod runtime_pool;
 
 pub use runtime_pool::{
@@ -102,6 +103,9 @@ pub struct App {
     /// The summonable omnibar (rung 3): find over graph truth, go through
     /// OpenAddress, `>` for the actions lane.
     pub omnibar: OmnibarState,
+    /// Find in the captured active document. This is separate from the
+    /// omnibar's graph recall and command lanes.
+    pub document_find: crate::document_find::DocumentFindState,
     /// Per-frame stage costs for the chrome path. Data only, like the rest of
     /// App: the shell writes its own stages into it during `render` and clears
     /// it once the frame is reported. It lives here rather than on Shell
@@ -995,6 +999,11 @@ impl App {
                 self.commit_content_navigation(member, url)
             }
             Action::ContentTitleChanged { member, title } => self.set_content_title(member, title),
+            Action::OpenDocumentFind => self.open_document_find(),
+            Action::CloseDocumentFind => self.close_document_find(),
+            Action::InsertDocumentFind(text) => self.insert_document_find(text),
+            Action::BackspaceDocumentFind => self.backspace_document_find(),
+            Action::StepDocumentFind(direction) => self.step_document_find(direction),
             Action::NavBack => self.nav_back(),
             Action::NavForward => self.nav_forward(),
             Action::Reload => self.reload_focused(),

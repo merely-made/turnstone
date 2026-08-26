@@ -55,6 +55,28 @@ pub enum SpaceRef {
     Lens(usize),
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum DocumentFindDirection {
+    Previous,
+    Next,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct DocumentFindMatch {
+    pub label: String,
+    pub role: Option<String>,
+}
+
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct DocumentFindModel {
+    /// Authoritative count, including engine-managed matches that do not carry
+    /// host-visible structural descriptions.
+    pub count: usize,
+    pub matches: Vec<DocumentFindMatch>,
+    pub current: Option<usize>,
+    pub complete: bool,
+}
+
 /// A typed app intent. The shell (keys, later the omnibar / command palette /
 /// automation adapters) produces these; [`crate::app::update`] consumes them.
 #[derive(Clone, Debug, PartialEq)]
@@ -80,6 +102,12 @@ pub enum Action {
     ContentNavigationCommitted { member: uuid::Uuid, url: String },
     /// The active document supplied a title for its existing graph member.
     ContentTitleChanged { member: uuid::Uuid, title: String },
+    /// Capture the focused live document and open its retained find field.
+    OpenDocumentFind,
+    CloseDocumentFind,
+    InsertDocumentFind(String),
+    BackspaceDocumentFind,
+    StepDocumentFind(DocumentFindDirection),
     /// Step the focused node back through its own content lineage. No-op at
     /// that node's oldest entry.
     NavBack,
@@ -642,6 +670,17 @@ pub enum Effect {
         node: uuid::Uuid,
         control: ContentControl,
     },
+    /// Ask one exact live content owner to replace or step its retained find.
+    FindContent {
+        node: uuid::Uuid,
+        request: u64,
+        query: String,
+        direction: DocumentFindDirection,
+        find_next: bool,
+    },
+    ClearContentFind {
+        node: uuid::Uuid,
+    },
     /// Open a lens window (platform work: window + surface creation) showing
     /// the pane space the app seeded at `App::lenses[ordinal]`.
     OpenWindow { ordinal: usize },
@@ -769,6 +808,12 @@ pub enum Update {
     ContentSpawned {
         node: uuid::Uuid,
         facts: Option<crate::content::ContentFacts>,
+    },
+    DocumentFindChanged {
+        node: uuid::Uuid,
+        request: u64,
+        query: String,
+        result: Result<DocumentFindModel, String>,
     },
     /// The content port could not spawn (or lost) `node`'s session.
     ContentFailed { node: uuid::Uuid, error: String },

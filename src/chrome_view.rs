@@ -51,6 +51,9 @@ pub enum ChromeIntent {
     Reload,
     Stop,
     KeepNode(uuid::Uuid),
+    FindPrevious,
+    FindNext,
+    FindClose,
 }
 
 impl cambium::Action for ChromeIntent {}
@@ -95,6 +98,9 @@ struct ChromeState {
     fetch_status: Option<String>,
     focused_url: Option<String>,
     link_preview: Option<String>,
+    find_open: bool,
+    find_input: TextInput,
+    find_status: String,
 }
 
 type ChromeView = Box<dyn AnyView<ChromeState, ChromeIntent, GenetCtx, GenetElement>>;
@@ -171,6 +177,35 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
                     ),
             ));
         }
+    }
+
+    if win.primary && state.find_open {
+        let input = el::<_, ChromeState, ChromeIntent>(
+            "div",
+            caret_field_children::<ChromeState, ChromeIntent>(&state.find_input, &[]),
+        )
+        .attr("class", "document-find-input")
+        .attr("role", "searchbox")
+        .attr("aria-label", "Find in document");
+        let status = el::<_, ChromeState, ChromeIntent>("div", state.find_status.clone())
+            .attr("class", "document-find-status")
+            .attr("role", "status");
+        let find_children = vec![
+            Box::new(input) as ChromeView,
+            Box::new(status) as ChromeView,
+            browser_button("Previous", Some(ChromeIntent::FindPrevious)),
+            browser_button("Next", Some(ChromeIntent::FindNext)),
+            browser_button("Close", Some(ChromeIntent::FindClose)),
+        ];
+        let left = ((win.w - 620.0) / 2.0).max(8.0);
+        children.push(Box::new(
+            el::<_, ChromeState, ChromeIntent>("div", find_children)
+                .attr("class", "document-find")
+                .attr(
+                    "style",
+                    format!("transform: translate({left}px, 58px); width: 620px;"),
+                ),
+        ));
     }
 
     if let Some(caption) = &win.caption
@@ -341,6 +376,9 @@ impl ChromeSurfaces {
             fetch_status: None,
             focused_url: None,
             link_preview: None,
+            find_open: false,
+            find_input: TextInput::default(),
+            find_status: String::new(),
         };
         let mut runner = GenetMultiRunner::new(state);
         let primary =
@@ -460,6 +498,10 @@ impl ChromeSurfaces {
         });
         let focused_url = app.graph_runtimes.focused_url().map(str::to_string);
         let link_preview = app.link_preview.clone();
+        let mut find_input = TextInput::new(app.document_find.query.clone());
+        find_input.set_caret_byte(app.document_find.query.len(), false);
+        let find_open = app.document_find.open;
+        let find_status = app.document_find.status();
         self.runner.update(|state| {
             for &(slot, w, h) in sizes {
                 while state.windows.len() <= slot {
@@ -485,6 +527,9 @@ impl ChromeSurfaces {
             state.fetch_status = fetch_status.clone();
             state.focused_url = focused_url.clone();
             state.link_preview = link_preview.clone();
+            state.find_open = find_open;
+            state.find_input = find_input.clone();
+            state.find_status = find_status.clone();
         });
         self.appearance = chrome.appearance.clone();
         self.absorb_dom_mutations();
@@ -657,6 +702,49 @@ mod tests {
                 ChromeIntent::Stop,
                 ChromeIntent::KeepNode(app.graph_runtimes.focused_member().expect("focused node")),
             ]
+        );
+    }
+
+    #[test]
+    fn document_find_projects_controlled_input_status_and_controls() {
+        let mut app = App::test_stub();
+        app.update(Action::OpenAddress("gemini://capsule.test/find".into()));
+        let node = app.graph_runtimes.focused_member().expect("focused node");
+        app.content.note_live(node, None);
+        app.update(Action::OpenDocumentFind);
+        app.document_find.query = "needle".into();
+        app.document_find.model = crate::action::DocumentFindModel {
+            count: 1,
+            matches: vec![crate::action::DocumentFindMatch {
+                label: "Needle heading".into(),
+                role: Some("heading".into()),
+            }],
+            current: Some(0),
+            complete: true,
+        };
+
+        let mut chrome = ChromeSurfaces::new();
+        chrome.sync(&app, &[(0, 1024.0, 600.0)]);
+        let dom = chrome.dom.borrow();
+        assert_eq!(dom.all_with_class(dom.document(), "document-find").len(), 1);
+        assert_eq!(
+            dom.all_with_class(dom.document(), "document-find-input")
+                .len(),
+            1
+        );
+        assert_eq!(
+            dom.all_with_class(dom.document(), "document-find-status")
+                .len(),
+            1
+        );
+        let enabled = dom.all_with_class(dom.document(), "browser-button").len();
+        let disabled = dom
+            .all_with_class(dom.document(), "browser-button-disabled")
+            .len();
+        assert_eq!(
+            enabled + disabled,
+            7,
+            "four browser controls plus previous, next, and close"
         );
     }
 

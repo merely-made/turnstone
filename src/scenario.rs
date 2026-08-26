@@ -229,6 +229,7 @@ pub enum EditKey {
     PageUp,
     Space,
     Save,
+    Find,
 }
 
 #[derive(Debug)]
@@ -280,9 +281,10 @@ pub fn parse(body: &str) -> Result<Vec<Step>, String> {
                 "pageup" => Step::Key(EditKey::PageUp),
                 "space" => Step::Key(EditKey::Space),
                 "ctrl+s" => Step::Key(EditKey::Save),
+                "ctrl+f" => Step::Key(EditKey::Find),
                 _ => {
                     return err(
-                        "key wants enter|escape|backspace|delete|up|down|left|right|home|end|pagedown|pageup|space|ctrl+s",
+                        "key wants enter|escape|backspace|delete|up|down|left|right|home|end|pagedown|pageup|space|ctrl+s|ctrl+f",
                     );
                 }
             },
@@ -620,5 +622,11 @@ drop-file 350 280 receipt.txt",
     fn save_chord_is_one_focus_routed_key_step() {
         let steps = parse("key ctrl+s").unwrap();
         assert!(matches!(steps.as_slice(), [Step::Key(EditKey::Save)]));
+    }
+
+    #[test]
+    fn find_chord_is_one_focus_routed_key_step() {
+        let steps = parse("key ctrl+f").unwrap();
+        assert!(matches!(steps.as_slice(), [Step::Key(EditKey::Find)]));
     }
 }

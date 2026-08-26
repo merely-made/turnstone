@@ -152,7 +152,7 @@ fleece = { git = "https://github.com/merely-made/genet.git", branch = "main" }
 genet-static-dom = { git = "https://github.com/merely-made/genet.git", branch = "main" }
 # Turnstone owns pane retention and composition; Genet supplies the clean-room
 # Livery cascade/Buckram layout state.
-genet-livery = { git = "https://github.com/merely-made/genet.git", branch = "main" }
+genet-livery = { version = "=0.0.2", git = "https://github.com/merely-made/genet.git", branch = "main" }
 # The chrome layer's document substrate + name types + paint vocabulary
 # (rung 3: the omnibar is turnstone's first DOM surface, composited above the
 # canvas by the layered present).
@@ -225,7 +225,7 @@ weld = ["dep:weld-engine", "dep:welding", "dep:grafting", "dep:windows"]
 # Weld owns CEF's callback-time copy; Grafting owns the generic DX12 shared
 # handle import on Turnstone's existing wgpu device.
 welding = { git = "https://github.com/merely-made/wgpu-weld.git", branch = "main", features = ["cef-runtime"], optional = true }
-grafting = { git = "https://github.com/merely-made/wgpu-graft.git", branch = "main", default-features = false, features = ["wgpu-29"], optional = true }
+grafting = { git = "https://github.com/merely-made/wgpu-graft.git", branch = "main", default-features = false, features = ["wgpu-30"], optional = true }
 windows = { version = "0.62", features = ["Win32_Foundation"], optional = true }
 
 # Registry patches mirrored from mere's workspace manifest: a `[patch]` lives
@@ -242,7 +242,7 @@ windows = { version = "0.62", features = ["Win32_Foundation"], optional = true }
 # paint/observable chain.
 engine-observables-api = { git = "https://github.com/merely-made/genet.git", branch = "main" }
 genet-paint-types = { git = "https://github.com/merely-made/genet.git", branch = "main" }
-genet-livery = { git = "https://github.com/merely-made/genet.git", branch = "main" }
+genet-livery = { version = "=0.0.2", git = "https://github.com/merely-made/genet.git", branch = "main" }
 genet-scripted-dom = { git = "https://github.com/merely-made/genet.git", branch = "main" }
 genet-static-dom = { git = "https://github.com/merely-made/genet.git", branch = "main" }
 layout-dom-api = { version = "=0.1.0", git = "https://github.com/merely-made/genet.git", branch = "main" }
