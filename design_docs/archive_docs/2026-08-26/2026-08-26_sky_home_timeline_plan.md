@@ -1,9 +1,9 @@
 # Sky home daily timeline plan
 
-**Status, 2026-08-26:** in progress. P0's pure timeline and validated derivation
-receipt are complete. Both the exact-Turquet source harness and the full
-Turnstone graph gate pass. Pane registration, retained Cambium presentation,
-and headed acceptance remain open as P1 and P2.
+**Status, 2026-08-26:** landed. P0's pure timeline and validated derivation
+receipt, P1's retained contributed surface, and P2's exact-source plus headed
+acceptance are complete. The canonical headed evidence is
+[`docs/receipts/sky_home_20260826`](../../../docs/receipts/sky_home_20260826/README.md).
 
 ## Purpose and authority
 
@@ -156,6 +156,31 @@ and a configurable settings source belong to later host wiring.
   is syntax-checked identity, and current-rule comparison would be a separate
   operation. Strict DTO parsing rejects unknown fields and noncanonical fact
   ordering.
+- **2026-08-26:** A contributed surface must expose its retained DOM and the
+  exact combined stylesheet to Probe. The first Sky interaction also found a
+  host routing defect: ordinary clicks were incorrectly gated by the
+  `on_pointer` drag-target lookup. Click dispatch now starts at the painted hit
+  node and lets Cambium perform capture, target, and bubble routing.
+- **2026-08-26:** Provider controls need painted button geometry as well as
+  semantic roles. Probe can resolve a transparent element's layout box while
+  the presented hit test selects the painted ancestor; Sky therefore owns a
+  small provider stylesheet for its interactive controls.
+- **2026-08-26:** Running the analytical daily calculation inside winit's deep
+  render/input callback exhausted the Windows main-thread stack even though
+  the same calculation passed in a shallow harness. Surface calculations now
+  run on a named 4 MiB worker and join before atomic state replacement. This is
+  deterministic and stack-safe, but asynchronous progress UI remains outside
+  this bounded first consumer.
+- **2026-08-26:** The opening `PaneSource` is immutable provenance. Valid draft
+  edits remain pane-local, and calculation replaces the applied request,
+  projection, and receipt together. The fixed 2024-04-08 Earth-orientation
+  fixture is disclosed explicitly when another date is selected.
+- **2026-08-26:** The first consumer proves semantic DOM, keyboard-ready
+  controls, and provider-neutral AccessKit projection. The headed receipt uses
+  the same projected tree for its accessibility assertion; it is still not a
+  manual Narrator walk. Restart persistence, scroll-aware Probe coordinates,
+  and disambiguation of multiple contributed panes remain host seams in the
+  existing pane-registry and Probe plans.
 
 ## Progress
 
@@ -187,3 +212,23 @@ and a configurable settings source belong to later host wiring.
   the named-zone half-open-day rule or its rejection of gap and fold anchors.
   The four-test focused verifier remains green, including both New York DST
   day lengths and provider receipt identity.
+- **2026-08-26:** Landed `turnstone.sky` as a versioned, per-source retained
+  Cambium contribution. The palette opens the Boston reference; date, named
+  zone, observer, selected bodies, rise/set policy, fixed EOP input, local
+  labels, event intervals, engine revision, and receipt digest are inspectable
+  in one pane.
+- **2026-08-26:** Added the provider-neutral Probe seam for registered panes and
+  corrected ordinary contributed-surface click delivery. Seven Sky tests and
+  seven generic contributed-surface tests pass against exact Turquet revision
+  `bc3c454f755d0bfd70ab48bd9556a1cda2213d41` and compatible Genet revision
+  `4e60f931a8d8caa29530494b2103e4c744c8ccf9`.
+- **2026-08-26:** The fresh-profile headed scenario changed Boston from
+  2024-04-08 to 2024-04-09 through the semantic Next day button, observed the
+  changed digest and fixed-EOP warning, resolved Next day through AccessKit,
+  and produced a visually inspected 1024 by 600 PNG. The post-check receipt is
+  `RESULT ok`.
+- **2026-08-26:** A broad library run passed 378 tests with five ignored. Its
+  two failures were outside this slice: one verifier-clone CRLF mismatch in a
+  committed HTML receipt and a partition-heal timeout that repeated alone.
+  The focused and headed gates are green; the whole-library gate is not claimed
+  green.

@@ -571,6 +571,9 @@ impl Shell {
         surface_providers
             .register_provider(crate::knot_document_surface::KnotDocumentProvider::default())
             .expect("the built-in Knot document provider is unique");
+        surface_providers
+            .register_provider(crate::sky_surface::SkySurfaceProvider::default())
+            .expect("the built-in Sky provider is unique");
         let mut shell = Self {
             app,
             live_settings,

@@ -1,0 +1,11 @@
+RESULT ok
+scenario=scenarios/sky_home.scn
+capture=docs/receipts/sky_home_20260826/sky_home.png
+bytes=211754
+dimensions=1024x600
+sha256=7c0a8cfe768b7f37d00f919a611db3635d62f1b5a407be7ba35b43fa725b3d49
+turquet_version=0.13.0
+turquet_revision=bc3c454f755d0bfd70ab48bd9556a1cda2213d41
+genet_revision=4e60f931a8d8caa29530494b2103e4c744c8ccf9
+initial_receipt=caff8371d348ba141397a8185e291c533c6ab12d4fe85f9ce3be797707ce411d
+changed_receipt=74883b5db9fa959cccdeb69744da4a99baec5bfd55bade77426cfe6b0d9c450f

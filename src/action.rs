@@ -503,6 +503,13 @@ pub fn palette_actions() -> Vec<(String, Action)> {
             "Open Knot document read-only",
             Action::ChooseKnotDocumentFile { read_only: true },
         ),
+        (
+            "Open Sky reference",
+            Action::SummonContributedPane {
+                kind: PaneKindId::new(crate::sky_surface::PANE_KIND),
+                source: crate::sky_surface::boston_eclipse_reference_source(),
+            },
+        ),
     ];
     actions.extend(
         crate::panes::pane_palette_entries()

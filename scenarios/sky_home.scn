@@ -1,0 +1,29 @@
+# T5a Sky-home acceptance: summon the retained astronomy consumer, prove the
+# exact Boston reference receipt, change the civil day through the semantic
+# control, and capture the resulting presented timeline.
+settle 30
+key escape
+act Open Sky reference
+settle 30
+assert snap panes ~ turnstone.sky
+act Maximize pane
+settle 10
+
+assert text Applied: 2024-04-08 in America/New_York at Boston reference observer
+assert text Fixed Earth orientation input for 2024-04-08
+assert text Rise/set policies: Sun: USNO fixed refraction, upper limb, level horizon
+assert text Receipt caff8371d348ba141397a8185e291c533c6ab12d4fe85f9ce3be797707ce411d
+assert a11y Next day
+assert text Moon: New Moon
+assert text bounded TT solver interval
+assert text sampled instant at TT
+
+click role:button Next day
+settle 30
+assert text Applied: 2024-04-09 in America/New_York at Boston reference observer
+assert text Receipt 74883b5db9fa959cccdeb69744da4a99baec5bfd55bade77426cfe6b0d9c450f
+assert text Fixed Earth-orientation input remains referenced to 2024-04-08.
+assert text sun: upper transit
+assert text bounded TT solver interval
+capture sky_home
+log Sky home changed civil day and presented the corresponding Turquet receipt

@@ -769,11 +769,21 @@ layout can be shared or reset without changing graph/session truth.
 
 - Write-side third-party pane registration through the participant gate.
 - Stored cross-session Overmap relations beyond manifest-derived lineage.
+- Persisting and restoring versioned contributed `PaneSource` values and their
+  user-configurable settings. T5a's Sky source is intentionally immutable
+  opening provenance; its valid draft survives only for the retained pane's
+  current process lifetime.
 - Product display-name changes such as Canvas versus Orrery and Navigator versus
   Gloss.
 - Default layout details. Defaults remain editable and user-configurable.
 
 ## Progress
+
+- 2026-08-26: the Sky T5a consumer exercised the generic contributed-pane path
+  with a second concrete provider. Per-`PaneId` retention and versioned source
+  admission are proven. Restart restoration of the source remains an A8
+  blueprint/persistence concern rather than product-owned state in the Sky
+  session.
 
 - 2026-08-24: corrected the port-contribution accounting. A1 already owns the
   namespaced `External` source identity; A2 remains the graph runtime pool and

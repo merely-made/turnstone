@@ -38,9 +38,6 @@ set.
 
 ## Current implementation plans and product direction
 
-- [Sky home daily timeline](2026-08-26_sky_home_timeline_plan.md): in-progress
-  T5a astronomy consumer. Its named-zone pure model and derivation receipt are
-  verified; contributed-pane and headed acceptance gates remain open.
 - [Browser surfaces implementation plan](2026-08-25_browser_surface_implementation_plan.md): sequenced Keep, find, decision UI, engine parity, arrivals, shallows, and extension work.
 - [Pane registry, graph views, and shell composition](2026-08-08_pane_registry_and_graph_panes_plan.md): registry and multi-graph pane roadmap, with its remaining A-lane gates.
 - [Turnstone engine adoption](2026-08-03_turnstone_engine_adoption_plan.md): selectable engine routing and unavailable-engine behavior.
@@ -63,8 +60,9 @@ set.
 - [Gloss composite pane](2026-07-20_gloss_composite_pane.md): design for configurable section composition in Gloss and Swatch projections.
 - [Recycle bin and Athanor](2026-07-20_recycle_bin_athanor.md): recoverable deletion, identity-preserving restore, and eventual permanent forgetting.
 
-## Completed plans and receipts retained at the active root
+## Completed plans and receipts
 
+- [Sky home daily timeline](archive_docs/2026-08-26/2026-08-26_sky_home_timeline_plan.md): landed T5a astronomy consumer with an exact-source retained pane and [headed receipt](../docs/receipts/sky_home_20260826/README.md).
 - [Livery and Buckram dependency cutover](2026-08-21_livery_buckram_dependency_cutover.md): completed removal of retired layout edges with clean-source acceptance evidence.
 - [Command palette open lag](2026-08-22_command_palette_open_lag.md): closed retained-layout and repaint diagnosis with measured receipts.
 - [Screen-reader pass receipt](2026-08-20_screen_reader_pass_receipt.md): manual Narrator and UIA acceptance record for the Frozen Projection pane.

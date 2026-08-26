@@ -311,6 +311,45 @@ fn typed_unavailability_becomes_a_generic_retained_surface() {
 }
 
 #[test]
+fn admitted_pane_exposes_its_retained_dom_and_complete_probe_stylesheet() {
+    let mut registry = SurfaceProviderRegistry::new();
+    let mut provider = provider("fake", "fake.v1", "fake.surface");
+    provider.css =
+        ".fake-surface { padding: 3px; } button { background-color: rgb(36, 44, 62); }".to_owned();
+    registry.register_provider(provider).expect("provider");
+    let mut pane = registry
+        .admit(&PaneKindId::new("fake"), &source("fake.v1"))
+        .expect("admitted surface");
+
+    pane.scene(240, 120, 1.0);
+    assert!(pane.stylesheet().contains(crate::ui::CAMBIUM_SHEET));
+    assert!(pane.stylesheet().contains(".fake-surface"));
+
+    let dom = pane.dom_ref();
+    let surface = genet_probe::ProbeSurface {
+        name: "contributed",
+        dom: &dom,
+        rect: [0.0, 0.0, 240.0, 120.0],
+        sheet: pane.stylesheet(),
+    };
+    assert!(genet_probe::text_present(&[surface], "count:0 width:240"));
+
+    let surface = genet_probe::ProbeSurface {
+        name: "contributed",
+        dom: &dom,
+        rect: [0.0, 0.0, 240.0, 120.0],
+        sheet: pane.stylesheet(),
+    };
+    let button = genet_probe::resolve(&[surface], &genet_probe::Selector::role("button"))
+        .expect("semantic controls resolve under the exact stylesheet the pane presents")
+        .point;
+    drop(dom);
+
+    assert_eq!(pane.click(button.0, button.1), SurfaceRequest::Redraw);
+    assert!(root_text(&pane.session().dom(), pane.session().root()).contains("count:1"));
+}
+
+#[test]
 fn retained_projection_and_actions_share_the_live_dom_session() {
     let mut registry = SurfaceProviderRegistry::new();
     registry

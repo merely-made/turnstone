@@ -282,6 +282,10 @@ fn unavailable_surface_session(
 pub struct ContributedSurfacePane {
     pane_kind: PaneKindId,
     source: PaneSource,
+    /// The admitted session's retained DOM, kept beside the erased session so
+    /// host diagnostics and semantic automation can borrow it without
+    /// downcasting the provider-owned state.
+    dom: DomHandle,
     session: Box<dyn RetainedSurfaceSession>,
     layout: RetainedLayout,
     scroll: PaneScroll,
@@ -297,9 +301,11 @@ impl ContributedSurfacePane {
         session: Box<dyn RetainedSurfaceSession>,
         stylesheet: impl Into<String>,
     ) -> Self {
+        let dom = session.dom();
         Self {
             pane_kind,
             source,
+            dom,
             session,
             layout: RetainedLayout::new(),
             scroll: PaneScroll::new(),
@@ -332,6 +338,22 @@ impl ContributedSurfacePane {
 
     pub fn session_mut(&mut self) -> &mut dyn RetainedSurfaceSession {
         self.session.as_mut()
+    }
+
+    /// Borrow the provider-owned retained DOM through a stable, erased seam.
+    ///
+    /// Probe, accessibility, and other host readers should inspect this DOM
+    /// rather than downcasting the concrete session or rebuilding its view.
+    pub fn dom_ref(&self) -> std::cell::Ref<'_, ScriptedDom> {
+        self.dom.borrow()
+    }
+
+    /// The complete stylesheet used to lay out and hit-test this pane.
+    ///
+    /// Semantic automation must resolve controls under the same rules as the
+    /// presented surface, including both Turnstone chrome and provider CSS.
+    pub fn stylesheet(&self) -> &str {
+        &self.stylesheet
     }
 
     pub fn scroll(&self) -> &PaneScroll {
@@ -400,11 +422,12 @@ impl ContributedSurfacePane {
         let Some(hit) = self.hit_test(x, y) else {
             return SurfaceRequest::None;
         };
-        let Some(target) = self.session.pointer_target(hit) else {
-            return SurfaceRequest::None;
-        };
         self.dispatch(ResolvedSurfaceEvent::Click {
-            target,
+            // Click dispatch owns DOM capture/target/bubble routing and may
+            // discover an `on_click` handler on any ancestor of the hit node.
+            // `pointer_target` is deliberately narrower: it resolves only an
+            // `on_pointer` drag target and must not gate ordinary buttons.
+            target: hit,
             event: PointerClick::at((x, y)),
         })
     }

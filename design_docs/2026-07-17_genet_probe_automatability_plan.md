@@ -299,6 +299,15 @@ real app.**
 
 Remaining (a de-risked mechanical follow-on, now that the seam is proven):
 
+- **Contributed-pane geometry and identity** — T5a exposes provider-owned DOMs
+  and their complete stylesheets through `with_surfaces`, but Probe still lays
+  those surfaces out without the pane's retained scroll offset and names every
+  contributed pane alike. Carry scroll and stable pane identity before a
+  scenario targets below-fold controls or one of several contributed panes.
+- **Manual assistive-technology receipt** — contributed provider DOMs now join
+  Turnstone's AccessKit tree through a provider-neutral projection, and T5a
+  asserts Sky semantics through that tree. A manual Narrator walk remains the
+  honest gate for claiming screen-reader coverage of a registered surface.
 - **Full retirement of `scenario.rs`'s loop** — re-home its remaining ~28
   app-specific verbs (the asserts, drag/dropfile, divider, the omnibar verbs, and
   the Piccolo `script` step) into `Driveable::app_step`, then delete the

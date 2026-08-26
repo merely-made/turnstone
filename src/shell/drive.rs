@@ -29,6 +29,12 @@ impl genet_probe::Automatable for Shell {
             [f32; 4],
             std::cell::Ref<'_, genet_scripted_dom::ScriptedDom>,
         )> = Vec::new();
+        let mut contributed_guards: Vec<(
+            &'static str,
+            [f32; 4],
+            std::cell::Ref<'_, genet_scripted_dom::ScriptedDom>,
+            &str,
+        )> = Vec::new();
         let knot_sheet = format!(
             "{} {}",
             crate::ui::CAMBIUM_SHEET,
@@ -125,6 +131,16 @@ impl genet_probe::Automatable for Shell {
                             guards.push(("frozen-projection", rect, pane.dom_ref()));
                         }
                     }
+                    Some(PaneContent::Registered(_)) => {
+                        if let Some(pane) = self.renderers.contributed.get(id) {
+                            contributed_guards.push((
+                                "contributed",
+                                rect,
+                                pane.dom_ref(),
+                                pane.stylesheet(),
+                            ));
+                        }
+                    }
                     Some(PaneContent::Overmap(_)) => {
                         if let Some(pane) = self.renderers.overmap.get(&id) {
                             guards.push(("overmap", rect, pane.dom_ref()));
@@ -135,7 +151,7 @@ impl genet_probe::Automatable for Shell {
                 _ => {}
             }
         }
-        let surfaces: Vec<genet_probe::ProbeSurface> = guards
+        let mut surfaces: Vec<genet_probe::ProbeSurface> = guards
             .iter()
             .map(|(name, rect, r)| genet_probe::ProbeSurface {
                 name,
@@ -148,6 +164,14 @@ impl genet_probe::Automatable for Shell {
                 },
             })
             .collect();
+        surfaces.extend(contributed_guards.iter().map(|(name, rect, dom, sheet)| {
+            genet_probe::ProbeSurface {
+                name,
+                dom,
+                rect: *rect,
+                sheet,
+            }
+        }));
         f(&surfaces)
     }
 
