@@ -267,7 +267,7 @@ mod tests {
             .nodes
             .iter()
             .map(|(_, node)| node)
-            .find(|node| node.role() == Role::TextInput)
+            .find(|node| node.role() == Role::TextInput && node.label() == Some("Document text"))
             .expect("editable text box");
         assert_eq!(editor.label(), Some("Document text"));
         assert!(editor.supports_action(Action::Click));

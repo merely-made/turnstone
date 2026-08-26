@@ -771,9 +771,8 @@ mod tests {
 
     #[test]
     fn committed_receipt_matches_the_live_turnstone_endpoint() {
-        assert_eq!(
-            render_g3_receipt().unwrap(),
-            include_str!("../docs/receipts/g3_turnstone_endpoint.html")
-        );
+        let committed =
+            include_str!("../docs/receipts/g3_turnstone_endpoint.html").replace("\r\n", "\n");
+        assert_eq!(render_g3_receipt().unwrap(), committed);
     }
 }
