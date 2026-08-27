@@ -105,6 +105,25 @@ impl Default for DocumentCapabilityFacts {
     }
 }
 
+/// What a live engine reports it is ACTUALLY presenting a document at, after
+/// its own clamping and quantization. App-owned and port-agnostic, mirrored
+/// out of the content port the same way the capability facts are.
+///
+/// This is runtime-only truth and never reaches the sidecar: the persisted
+/// value is the node's REQUEST, and an engine's effective level belongs to the
+/// live session that computed it. Lanes without a read-back (every hosted
+/// surface today) simply have no entry.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct PageZoomFacts {
+    /// The factor the host asked for, echoed back unchanged.
+    pub requested: f32,
+    /// The factor the engine is presenting at.
+    pub applied: f32,
+    /// The engine's own bounds, so a surface can say why a step was refused.
+    pub min: f32,
+    pub max: f32,
+}
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ExtractionLineageFacts {
     pub tool: String,
@@ -175,6 +194,9 @@ pub struct OutlineFact {
 pub struct ContentStates {
     states: HashMap<Uuid, NodeContent>,
     facts: HashMap<Uuid, ContentFacts>,
+    /// The effective page zoom a live engine reported back, per node. Purely
+    /// transient: it dies with the session, and the save path never sees it.
+    page_zoom: HashMap<Uuid, PageZoomFacts>,
     documents: HashMap<Uuid, (String, FetchedDocument)>,
     stream_bytes: HashMap<Uuid, (String, Vec<u8>)>,
     fetch_phases: HashMap<Uuid, PageFetchPhase>,
@@ -189,6 +211,18 @@ impl ContentStates {
     /// The mirrored facts for a live node (absent for requested/failed/none).
     pub fn facts(&self, node: Uuid) -> Option<&ContentFacts> {
         self.facts.get(&node)
+    }
+
+    /// What the node's live engine last reported it is presenting at. `None`
+    /// where the lane has no read-back at all, which is the honest answer for
+    /// every hosted surface today.
+    pub fn page_zoom(&self, node: Uuid) -> Option<PageZoomFacts> {
+        self.page_zoom.get(&node).copied()
+    }
+
+    /// Record one engine's answer to a page-zoom request.
+    pub fn note_page_zoom(&mut self, node: Uuid, zoom: PageZoomFacts) {
+        self.page_zoom.insert(node, zoom);
     }
 
     /// Whether a flip intent on `node` should spawn (true) or close (false):
@@ -210,6 +244,7 @@ impl ContentStates {
     pub fn note_requested(&mut self, node: Uuid) {
         self.states.insert(node, NodeContent::Requested);
         self.facts.remove(&node);
+        self.page_zoom.remove(&node);
     }
 
     /// Begin one actor-backed request and return the exact older request it
@@ -315,16 +350,19 @@ impl ContentStates {
     pub fn note_awaiting_input(&mut self, node: Uuid) {
         self.states.insert(node, NodeContent::AwaitingInput);
         self.facts.remove(&node);
+        self.page_zoom.remove(&node);
     }
 
     pub fn note_awaiting_identity(&mut self, node: Uuid) {
         self.states.insert(node, NodeContent::AwaitingIdentity);
         self.facts.remove(&node);
+        self.page_zoom.remove(&node);
     }
 
     pub fn note_awaiting_trust(&mut self, node: Uuid) {
         self.states.insert(node, NodeContent::AwaitingTrust);
         self.facts.remove(&node);
+        self.page_zoom.remove(&node);
     }
 
     /// Retain the actor-owned response under both member and address. The URL
@@ -419,6 +457,7 @@ impl ContentStates {
     pub fn note_failed(&mut self, node: Uuid, error: String) {
         self.states.insert(node, NodeContent::Failed(error));
         self.facts.remove(&node);
+        self.page_zoom.remove(&node);
         self.stream_bytes.remove(&node);
         self.fetch_phases.remove(&node);
         self.active_fetches.remove(&node);
@@ -428,6 +467,7 @@ impl ContentStates {
     pub fn note_closed(&mut self, node: Uuid) {
         self.states.remove(&node);
         self.facts.remove(&node);
+        self.page_zoom.remove(&node);
     }
 
     /// Nodes currently holding live sessions (the shell composes these).

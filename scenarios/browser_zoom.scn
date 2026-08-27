@@ -1,0 +1,196 @@
+# E0.2 retained per-node page-zoom acceptance receipt (Livery).
+#
+# Start scenarios/fixtures/browser_zoom_server.ps1 on port 43117 first; the run
+# is otherwise loopback-only. FRESH profile, 1024x600 window.
+#
+# The fixture pages make 100% and 125% DISTINGUISHABLE by observation, so no
+# assertion here can pass by reading back a number the app merely stored:
+#   /reflow  a `@media (max-width: 550px)` boundary the zoom step itself
+#            crosses (the retained content rect is 614 CSS px at 100%, 491 at
+#            125%); each branch's marker word is `display: none` in the other,
+#            so document find counts 1/0 one way and 0/1 the other.
+#   /hit     two 200px-tall block links. Presentation y=225 is CSS 225 (the
+#            SECOND link) at 100% and CSS 180 (the FIRST) at 125%.
+#   /reveal  a find target the reveal parks so that presentation y=500 is
+#            inside the link at 125% and past its bottom at 100%.
+settle 30
+key escape
+
+# ---- 1. The ladder, driven through the real command surface -------------
+open http://127.0.0.1:43117/zoom
+settle 80
+act Toggle live content
+settle 80
+assert content-live
+assert snap page-zoom-capability == supported
+assert snap actions ~ Zoom in
+assert snap actions ~ Zoom out
+assert snap actions ~ Reset zoom
+assert snap page-zoom-requested == 100
+assert snap ui-zoom == 110
+assert snap canvas-zoom == 1.000
+
+act Zoom in
+settle 20
+assert snap page-zoom-requested == 110
+assert snap page-zoom-applied == 110
+act Zoom in
+settle 30
+assert snap page-zoom-requested == 125
+assert snap page-zoom-applied == 125
+assert event page-zoom-changed
+capture 01_retained_zoom_125
+
+# ---- 6. The other two scales did not move -------------------------------
+assert snap ui-zoom == 110
+assert snap canvas-zoom == 1.000
+
+# ---- 1 (cont). Back to the default --------------------------------------
+act Reset zoom
+settle 30
+assert snap page-zoom-requested == 100
+assert snap page-zoom-applied == 100
+capture 02_retained_zoom_reset
+
+# ---- 2. Responsive reflow ------------------------------------------------
+open http://127.0.0.1:43117/reflow
+settle 80
+act Toggle live content
+settle 80
+assert content-live
+key ctrl+f
+type LAYOUTWIDE
+settle 20
+assert snap document-find-count == 1
+key escape
+settle 10
+key ctrl+f
+type LAYOUTNARROW
+settle 20
+assert snap document-find-count == 0
+key escape
+settle 10
+
+act Zoom in
+settle 10
+act Zoom in
+settle 40
+assert snap page-zoom-requested == 125
+assert snap page-zoom-applied == 125
+key ctrl+f
+type LAYOUTWIDE
+settle 20
+assert snap document-find-count == 0
+key escape
+settle 10
+key ctrl+f
+type LAYOUTNARROW
+settle 20
+assert snap document-find-count == 1
+key escape
+settle 10
+capture 03_retained_reflow_at_125
+
+# ---- 3. Input geometry ---------------------------------------------------
+open http://127.0.0.1:43117/hit
+settle 80
+act Toggle live content
+settle 80
+assert content-live
+assert snap page-zoom-requested == 100
+click-at 700 225
+settle 80
+assert focused /hit-bottom
+
+# A second address serving the same layout, so this block gets its own node
+# rather than re-opening one that has already navigated away.
+open http://127.0.0.1:43117/hit2
+settle 80
+act Toggle live content
+settle 80
+assert content-live
+assert snap page-zoom-requested == 100
+act Zoom in
+settle 10
+act Zoom in
+settle 40
+assert snap page-zoom-requested == 125
+capture 04_retained_hit_at_125
+click-at 700 225
+settle 80
+assert focused /hit-top
+
+# ---- 4. Find reveal under zoom -------------------------------------------
+open http://127.0.0.1:43117/reveal
+settle 80
+act Toggle live content
+settle 80
+assert content-live
+click-at 700 500
+settle 40
+assert focused 43117/reveal
+
+key ctrl+f
+type REVEALMARK
+settle 20
+assert snap document-find-count == 1
+assert snap document-find-current == 1
+key escape
+settle 10
+click-at 700 500
+settle 40
+assert focused 43117/reveal
+
+key home
+settle 20
+act Zoom in
+settle 10
+act Zoom in
+settle 40
+assert snap page-zoom-requested == 125
+key ctrl+f
+type REVEALMARK
+settle 20
+assert snap document-find-count == 1
+assert snap document-find-current == 1
+key escape
+settle 10
+capture 05_retained_reveal_at_125
+click-at 700 500
+settle 80
+assert focused /landed-reveal
+
+# ---- 7. An engine that reports no page zoom omits the rows ---------------
+# Positive control first: on the Livery lane the same palette filter offers
+# exactly the three zoom rows.
+open http://127.0.0.1:43117/article
+settle 80
+act Toggle live content
+settle 100
+assert content-live
+assert snap page-zoom-capability == supported
+omnibar actions
+type Zoom
+settle 15
+assert suggestions == 3
+key escape
+settle 10
+
+# Pin the same node to the reader lane, which reports no page zoom.
+act Open Apparatus pane
+settle 20
+click-row genet.reader
+settle 150
+assert content-live
+assert snap page-zoom-capability ~ unavailable
+assert snap page-zoom-capability ~ reader sessions do not expose page zoom
+omnibar actions
+type Zoom
+settle 15
+# One row, and it is the palette's "no matching action" placeholder: the three
+# rows the control above found are gone with the capability.
+assert suggestions == 1
+key escape
+settle 10
+capture 06_reader_lane_omits_zoom
+log E0.2 retained page-zoom receipt complete

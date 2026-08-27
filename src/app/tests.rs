@@ -2992,6 +2992,57 @@ fn browser_states_refresh_and_round_trip() {
     let _ = std::fs::remove_dir_all(&dir);
 }
 
+/// The requested page scale rides the same sidecar to the same store, and a
+/// reset leaves nothing behind for it to carry.
+#[test]
+fn requested_page_scale_round_trips_through_the_store() {
+    let mut app = App::test_stub();
+    app.update(Action::OpenAddress("https://example.com/zoom".to_string()));
+    let node = app.graph_runtimes.focused_member().unwrap();
+    app.content.note_live(
+        node,
+        Some(crate::content::ContentFacts {
+            engine: "weld.chromium".into(),
+            structure: None,
+            lineage: None,
+            capabilities: crate::content::DocumentCapabilityFacts {
+                page_zoom: crate::content::CapabilityStatus::Partial {
+                    detail: "applied, but the effective level is not read back".into(),
+                },
+                ..Default::default()
+            },
+        }),
+    );
+    app.update(Action::PageZoomIn { member: node });
+    app.update(Action::PageZoomIn { member: node });
+
+    let dir = std::env::temp_dir().join(format!("turnstone-zoom-test-{}", uuid::Uuid::new_v4()));
+    std::fs::create_dir_all(&dir).unwrap();
+    let round_trip = |browser: &pandect::browser_node_state::BrowserNodeStates| {
+        let mut facets = pandect::NodeFacetStore::new();
+        pandect::write_web_states(&mut facets, browser);
+        crate::session::save_node_facets(&dir, &facets);
+        pandect::read_web_states(&crate::session::load_node_facets(&dir).unwrap_or_default())
+    };
+    assert_eq!(
+        round_trip(&app.browser)
+            .get(node)
+            .and_then(|state| state.page_scale),
+        Some(1.25),
+        "the REQUESTED scale is what persists"
+    );
+
+    app.update(Action::PageZoomReset { member: node });
+    assert_eq!(
+        round_trip(&app.browser)
+            .get(node)
+            .and_then(|state| state.page_scale),
+        None,
+        "reset clears rather than storing the default"
+    );
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
 /// The workbench sidecar round-trips through the persistence port,
 /// pruned to present members (platen's canonical pair underneath).
 #[test]

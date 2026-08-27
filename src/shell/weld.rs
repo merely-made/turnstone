@@ -426,8 +426,10 @@ impl WeldSurface for TurnstoneWeldSurface {
         };
         capabilities.devtools = WebFeatureStatus::Supported;
         capabilities.document.find_in_page = WebFeatureStatus::Supported;
-        capabilities.document.page_zoom =
-            WebFeatureStatus::unsupported("Turnstone's Weld tile has no absolute zoom mapping yet");
+        capabilities.document.page_zoom = WebFeatureStatus::Partial {
+            detail: "the requested scale is applied as a CEF zoom level, but Windows runs CEF's UI thread separately so the effective level cannot be read back"
+                .into(),
+        };
         capabilities.document.page_capture =
             WebFeatureStatus::unsupported("Turnstone has not projected Weld snapshots yet");
         capabilities.document.navigation = WebFeatureStatus::Supported;
@@ -479,11 +481,19 @@ impl WeldSurface for TurnstoneWeldSurface {
         if settings.dev_tools {
             self.producer.open_devtools().map_err(weld_input_error)?;
         }
-        if (settings.zoom_factor - 1.0).abs() > f64::EPSILON {
-            return Err(SurfaceError::Unsupported(
-                "Turnstone's Weld tile has no absolute zoom mapping yet".into(),
-            ));
+        // The contract carries a scale factor; CEF takes a logarithmic level,
+        // where the scale is 1.2^level. A factor that is not a positive finite
+        // number has no level, so it is refused here rather than handed to CEF
+        // as a NaN.
+        if !settings.zoom_factor.is_finite() || settings.zoom_factor <= 0.0 {
+            return Err(SurfaceError::InputFailed(format!(
+                "zoom factor {} is not a positive scale",
+                settings.zoom_factor
+            )));
         }
+        self.producer
+            .set_zoom_level(settings.zoom_factor.ln() / 1.2_f64.ln())
+            .map_err(weld_input_error)?;
         Ok(())
     }
 

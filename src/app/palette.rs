@@ -122,6 +122,15 @@ impl App {
         }) {
             rows.push(("Find in document".to_string(), Action::OpenDocumentFind));
         }
+        // Page zoom is a document scale, so only a live engine that reports the
+        // control offers it. An engine without it simply has no rows.
+        if let Some(member) = self.graph_runtimes.focused_member()
+            && self.page_zoom_offered(member)
+        {
+            rows.push(("Zoom in".to_string(), Action::PageZoomIn { member }));
+            rows.push(("Zoom out".to_string(), Action::PageZoomOut { member }));
+            rows.push(("Reset zoom".to_string(), Action::PageZoomReset { member }));
+        }
         if self.focused_address().is_some_and(|address| {
             url::Url::parse(&address).is_ok_and(|url| matches!(url.scheme(), "titan" | "spartan"))
         }) {

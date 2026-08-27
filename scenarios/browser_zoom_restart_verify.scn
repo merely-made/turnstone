@@ -1,0 +1,20 @@
+# E0.2 restart survival, run 2 of 2. Reads the persisted scale back.
+#
+# Runs against the SAME `TURNSTONE_ROOT` `browser_zoom_restart.scn` left
+# behind, in a fresh process. No zoom row is committed here: every value below
+# comes from the restored node and the session the shell respawned for it, so
+# `page-zoom-applied` also witnesses that the restored request was replayed
+# INTO the new engine rather than merely remembered beside it.
+#
+# Start scenarios/fixtures/browser_zoom_server.ps1 on port 43117 first (the
+# restored node respawns its content, which refetches the fixture page).
+settle 30
+key escape
+settle 120
+assert focused 127.0.0.1:43117/zoom
+assert content-live
+assert snap page-zoom-requested == 125
+assert snap page-zoom-applied == 125
+assert snap ui-zoom == 110
+capture 01_restart_run2_replayed
+log E0.2 restart run 2: the persisted per-node scale replayed at 125%

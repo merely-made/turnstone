@@ -108,12 +108,6 @@ fn polar_empty_crossings_are_described_without_visibility_inference() {
 fn provider_admits_semantic_controls_and_provenance() {
     let pane = admitted_reference();
     assert_eq!(pane.descriptor().surface_id.as_str(), SURFACE_ID);
-    assert!(
-        pane.descriptor()
-            .potential_capabilities
-            .iter()
-            .any(|capability| capability.as_str() == "configure")
-    );
     let handle = pane.session().dom();
     let dom = handle.borrow();
     assert!(text_present(&dom, "Sky"));

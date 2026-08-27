@@ -165,6 +165,19 @@ impl ApparatusPane {
             .and_then(|m| app.browser.get(m))
             .map(|b| index_for_viewer(b.viewer_override.as_deref()))
             .unwrap_or(0);
+        // The REQUESTED scale, which the sidecar holds whether or not a live
+        // engine ever applied it, plus the effective level beside it on the
+        // lanes that read one back (retained sessions do; hosted ones do not).
+        let requested_zoom = crate::app::page_zoom_display(
+            app.graph_runtimes
+                .focused_member()
+                .and_then(|member| app.browser.get(member))
+                .and_then(|state| state.page_scale),
+            app.graph_runtimes
+                .focused_member()
+                .and_then(|member| app.content.page_zoom(member))
+                .map(|zoom| zoom.applied),
+        );
         let capabilities = app
             .graph_runtimes
             .focused_member()
@@ -176,6 +189,7 @@ impl ApparatusPane {
                         facts.capabilities.find_in_page.describe()
                     ),
                     format!("Page zoom: {}", facts.capabilities.page_zoom.describe()),
+                    format!("Requested page zoom: {requested_zoom}"),
                     format!(
                         "Page capture: {}",
                         facts.capabilities.page_capture.describe()
@@ -354,6 +368,72 @@ mod tests {
                 .capabilities
                 .iter()
                 .any(|line| { line == "Navigation controls: partial: host-owned lineage" })
+        );
+    }
+
+    /// The requested page zoom rides beside the capability, labelled as the
+    /// request it is: nothing reads the effective level back yet.
+    #[test]
+    fn the_requested_page_zoom_is_mirrored_beside_the_capability() {
+        let mut app = App::test_stub();
+        app.update(Action::OpenAddress("https://example.com/zoom".to_string()));
+        let node = app.graph_runtimes.focused_member().unwrap();
+        app.content.note_live(
+            node,
+            Some(crate::content::ContentFacts {
+                engine: "weld.chromium".into(),
+                structure: None,
+                lineage: None,
+                capabilities: crate::content::DocumentCapabilityFacts {
+                    page_zoom: crate::content::CapabilityStatus::Partial {
+                        detail: "applied, but the effective level is not read back".into(),
+                    },
+                    ..Default::default()
+                },
+            }),
+        );
+        let mut pane = ApparatusPane::new();
+        pane.sync(&app, 400.0, 600.0);
+        assert!(
+            pane.runner
+                .state()
+                .capabilities
+                .iter()
+                .any(|line| line == "Requested page zoom: 100%")
+        );
+
+        app.update(Action::PageZoomOut { member: node });
+        pane.sync(&app, 400.0, 600.0);
+        assert!(
+            pane.runner
+                .state()
+                .capabilities
+                .iter()
+                .any(|line| line == "Requested page zoom: 90%"),
+            "{:?}",
+            pane.runner.state().capabilities
+        );
+
+        // A retained session answers with the level it settled on, and that
+        // rides beside the request rather than replacing it.
+        app.content.note_page_zoom(
+            node,
+            crate::content::PageZoomFacts {
+                requested: 0.9,
+                applied: 0.9,
+                min: 0.25,
+                max: 5.0,
+            },
+        );
+        pane.sync(&app, 400.0, 600.0);
+        assert!(
+            pane.runner
+                .state()
+                .capabilities
+                .iter()
+                .any(|line| line == "Requested page zoom: 90% (applied 90%)"),
+            "{:?}",
+            pane.runner.state().capabilities
         );
     }
 }

@@ -116,6 +116,16 @@ pub enum Action {
     InsertDocumentFind(String),
     BackspaceDocumentFind,
     StepDocumentFind(DocumentFindDirection),
+    /// Step one member's requested page zoom a rung up the ladder. A document
+    /// scale: chrome appearance and the canvas camera are untouched. The
+    /// member rides along (the `KeepNode` shape) because the palette rows
+    /// resolve the focused node while ctrl+wheel resolves the node under the
+    /// pointer, and a workbench can tile several live documents at once.
+    PageZoomIn { member: uuid::Uuid },
+    /// Step one member's requested page zoom a rung down.
+    PageZoomOut { member: uuid::Uuid },
+    /// Return one member to the default page scale.
+    PageZoomReset { member: uuid::Uuid },
     ChoosePermission {
         request: crate::user_agent_decision::UserAgentRequestKey,
         choice: crate::user_agent_decision::PermissionChoice,
@@ -699,6 +709,10 @@ pub enum Effect {
         node: uuid::Uuid,
         control: ContentControl,
     },
+    /// Apply `scale` as one live surface's page zoom (`1.0` = 100%). The
+    /// requested value is already persisted when this runs; a refusal from the
+    /// engine changes what the document shows, never what the node stores.
+    ScaleContent { node: uuid::Uuid, scale: f32 },
     /// Ask one exact live content owner to replace or step its retained find.
     FindContent {
         node: uuid::Uuid,

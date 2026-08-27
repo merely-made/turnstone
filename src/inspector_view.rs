@@ -252,6 +252,19 @@ fn content_rows(app: &App, node: Option<uuid::Uuid>) -> Vec<(String, String)> {
             "Page zoom".to_string(),
             facts.capabilities.page_zoom.describe(),
         ),
+        // The REQUESTED scale, which is what the sidecar holds. A retained
+        // session answers with the level it actually settled on, and that
+        // rides beside the request; a hosted surface has no read-back, so the
+        // row stays request-only rather than echoing the ask as the applied.
+        (
+            "Requested page zoom".to_string(),
+            crate::app::page_zoom_display(
+                node.and_then(|n| app.browser.get(n))
+                    .and_then(|state| state.page_scale),
+                node.and_then(|n| app.content.page_zoom(n))
+                    .map(|zoom| zoom.applied),
+            ),
+        ),
         (
             "Page capture".to_string(),
             facts.capabilities.page_capture.describe(),
@@ -379,6 +392,11 @@ mod tests {
     use crate::action::{Action, Update};
     use crate::content::{CapabilityStatus, ContentFacts, DocumentCapabilityFacts, StructureFacts};
 
+    /// Weld's page-zoom limit as `Shell::weld` reports it. Copied rather than
+    /// imported: that lane is behind the `weld` feature and these tests run
+    /// without it, so the copy is the thing to re-check when the lane changes.
+    const WELD_PAGE_ZOOM_DETAIL: &str = "the requested scale is applied as a CEF zoom level, but Windows runs CEF's UI thread separately so the effective level cannot be read back";
+
     #[test]
     fn no_focus_reports_none_honestly() {
         let app = App::test_stub();
@@ -467,13 +485,14 @@ mod tests {
             "https://example.com/capabilities".to_string(),
         ));
         let node = app.graph_runtimes.focused_member().unwrap();
+        // Livery's real limits today: it finds and zooms for itself, cannot
+        // hand back a rendered capture, and only shares navigation with the
+        // host that owns lineage and refetch.
         let livery = DocumentCapabilityFacts {
             find_in_page: CapabilityStatus::Supported,
-            page_zoom: CapabilityStatus::Unsupported {
-                reason: "retained sessions do not expose page zoom".into(),
-            },
+            page_zoom: CapabilityStatus::Supported,
             page_capture: CapabilityStatus::Unsupported {
-                reason: "retained sessions do not capture rendered pages".into(),
+                reason: "Livery sessions do not capture rendered pages".into(),
             },
             navigation: CapabilityStatus::Partial {
                 detail: "the host owns document lineage, policy, and refetch".into(),
@@ -490,12 +509,35 @@ mod tests {
         );
         let lines = inspector_lines(&app);
         assert!(lines.iter().any(|line| line == "Find in page: supported"));
+        assert!(lines.iter().any(|line| line == "Page zoom: supported"));
         assert!(lines.iter().any(|line| {
-            line == "Page zoom: unavailable: retained sessions do not expose page zoom"
+            line == "Page capture: unavailable: Livery sessions do not capture rendered pages"
         }));
         assert!(lines.iter().any(|line| {
             line == "Navigation controls: partial: the host owns document lineage, policy, and refetch"
         }));
+        // No engine has answered a zoom request on this node, so the row is
+        // the request alone — the applied half is never invented.
+        assert!(lines.iter().any(|line| line == "Requested page zoom: 100%"));
+        app.content.note_page_zoom(
+            node,
+            crate::content::PageZoomFacts {
+                requested: 1.25,
+                applied: 1.25,
+                min: 0.25,
+                max: 5.0,
+            },
+        );
+        assert!(
+            inspector_lines(&app)
+                .iter()
+                .any(|line| line == "Requested page zoom: 100% (applied 125%)")
+        );
+        // Closing the content takes the effective level with it: the read-back
+        // belongs to the session that computed it, not to the node. The Weld
+        // half below re-opens on the same node, and its request-only row is
+        // what proves the transient entry went with the session.
+        app.content.note_closed(node);
 
         app.content.note_live(
             node,
@@ -505,8 +547,10 @@ mod tests {
                 lineage: None,
                 capabilities: DocumentCapabilityFacts {
                     find_in_page: CapabilityStatus::Supported,
-                    page_zoom: CapabilityStatus::Unsupported {
-                        reason: "Turnstone's Weld tile has no absolute zoom mapping yet".into(),
+                    // Weld's real limit today: the scale IS applied; only the
+                    // read-back is missing (`Shell::weld` reports this string).
+                    page_zoom: CapabilityStatus::Partial {
+                        detail: WELD_PAGE_ZOOM_DETAIL.into(),
                     },
                     page_capture: CapabilityStatus::Unsupported {
                         reason: "Turnstone has not projected Weld snapshots yet".into(),
@@ -521,9 +565,24 @@ mod tests {
                 .iter()
                 .any(|line| line == "Navigation controls: supported")
         );
+        assert!(
+            lines
+                .iter()
+                .any(|line| *line == format!("Page zoom: partial: {WELD_PAGE_ZOOM_DETAIL}"))
+        );
         assert!(lines.iter().any(|line| {
             line == "Page capture: unavailable: Turnstone has not projected Weld snapshots yet"
         }));
+
+        // The requested scale is disclosed as requested, never as applied.
+        assert!(lines.iter().any(|line| line == "Requested page zoom: 100%"));
+        let node = app.graph_runtimes.focused_member().unwrap();
+        app.update(Action::PageZoomIn { member: node });
+        assert!(
+            inspector_lines(&app)
+                .iter()
+                .any(|line| line == "Requested page zoom: 110%")
+        );
     }
 
     /// Closing the content drops the facts with it (no stale mirror).

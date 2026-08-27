@@ -1,0 +1,203 @@
+# E0.2 hosted per-node page-zoom acceptance receipt (Weld / CEF).
+#
+# The retained twin of browser_zoom.scn, adapted only where the capability
+# truth differs: Weld applies the requested scale as a CEF zoom level but
+# Windows runs CEF's UI thread separately, so there is NO effective level to
+# read back. This receipt therefore asserts `page-zoom-requested` and the
+# `partial` capability and never asserts `page-zoom-applied` — its absence is
+# the honest state, not an omission.
+#
+# Start scenarios/fixtures/browser_zoom_server.ps1 on port 43117 first; run
+# with --features weld, TURNSTONE_CEF_PATH, and a FRESH profile.
+#
+# Two hosting rules this receipt keeps, both learned the hard way on
+# 2026-08-27:
+#   * The viewer override is PER NODE, so every fixture page is pinned to
+#     weld.chromium through the Apparatus pane, and the pane is closed again
+#     so the click points land on the same one-Orrery-leaf geometry the
+#     retained receipt uses.
+#   * Each block turns the previous node's content OFF before opening the
+#     next page. Left on, the run accumulates live CEF browsers and a later
+#     surface is still loading when its clicks and finds arrive — a harness
+#     hazard, not a page-zoom fault.
+settle 30
+key escape
+
+# ---- 1. The ladder, driven through the real command surface -------------
+open http://127.0.0.1:43117/zoom
+settle 40
+act Open Apparatus pane
+settle 10
+click-row weld.chromium
+settle 10
+act Toggle live content
+settle 150
+assert content-live
+act Close pane
+settle 40
+assert snap panes == orrery
+
+assert snap page-zoom-capability ~ partial
+assert snap page-zoom-capability ~ cannot be read back
+assert snap actions ~ Zoom in
+assert snap actions ~ Zoom out
+assert snap actions ~ Reset zoom
+assert snap page-zoom-requested == 100
+assert snap ui-zoom == 110
+assert snap canvas-zoom == 1.000
+
+act Zoom in
+settle 30
+assert snap page-zoom-requested == 110
+act Zoom in
+settle 60
+assert snap page-zoom-requested == 125
+assert event page-zoom-changed
+capture 01_weld_zoom_125
+
+# ---- 6. The other two scales did not move -------------------------------
+assert snap ui-zoom == 110
+assert snap canvas-zoom == 1.000
+
+# ---- 1 (cont). Back to the default --------------------------------------
+act Reset zoom
+settle 60
+assert snap page-zoom-requested == 100
+capture 02_weld_zoom_reset
+act Toggle live content
+settle 40
+
+# ---- 2. Responsive reflow ------------------------------------------------
+# Chromium's own find-in-page never matches a `display: none` branch, so the
+# counts below read the layout the CSS viewport actually produced.
+open http://127.0.0.1:43117/reflow
+settle 40
+act Open Apparatus pane
+settle 10
+click-row weld.chromium
+settle 10
+act Toggle live content
+settle 150
+assert content-live
+act Close pane
+settle 40
+
+key ctrl+f
+type LAYOUTWIDE
+settle 250
+assert snap document-find-count == 1
+key escape
+settle 10
+key ctrl+f
+type LAYOUTNARROW
+settle 250
+assert snap document-find-count == 0
+key escape
+settle 10
+
+act Zoom in
+settle 20
+act Zoom in
+settle 150
+assert snap page-zoom-requested == 125
+key ctrl+f
+type LAYOUTWIDE
+settle 250
+assert snap document-find-count == 0
+key escape
+settle 10
+key ctrl+f
+type LAYOUTNARROW
+settle 250
+assert snap document-find-count == 1
+key escape
+settle 10
+capture 03_weld_reflow_at_125
+act Toggle live content
+settle 40
+
+# ---- 3. Input geometry ---------------------------------------------------
+open http://127.0.0.1:43117/hit
+settle 40
+act Open Apparatus pane
+settle 10
+click-row weld.chromium
+settle 10
+act Toggle live content
+settle 200
+assert content-live
+act Close pane
+settle 40
+assert snap page-zoom-requested == 100
+click-at 700 225
+settle 250
+assert focused /hit-bottom
+act Toggle live content
+settle 40
+
+# A second address serving the same layout, so this block gets its own node
+# rather than re-opening one that has already navigated away.
+open http://127.0.0.1:43117/hit2
+settle 40
+act Open Apparatus pane
+settle 10
+click-row weld.chromium
+settle 10
+act Toggle live content
+settle 200
+assert content-live
+act Close pane
+settle 40
+act Zoom in
+settle 20
+act Zoom in
+settle 150
+assert snap page-zoom-requested == 125
+capture 04_weld_hit_at_125
+click-at 700 225
+settle 250
+assert focused /hit-top
+act Toggle live content
+settle 40
+
+# ---- 4. Find reveal under zoom -------------------------------------------
+# The hosted lane's reveal is Chromium's own scroll-into-view, so this asserts
+# what it is entitled to: at scroll 0 the mid-viewport point is filler at both
+# scales, and after the find at 125% the revealed 420px-tall target is under
+# that same point.
+open http://127.0.0.1:43117/reveal
+settle 40
+act Open Apparatus pane
+settle 10
+click-row weld.chromium
+settle 10
+act Toggle live content
+settle 200
+assert content-live
+act Close pane
+settle 40
+click-at 700 300
+settle 250
+assert focused 43117/reveal
+
+act Zoom in
+settle 20
+act Zoom in
+settle 150
+assert snap page-zoom-requested == 125
+click-at 700 300
+settle 250
+assert focused 43117/reveal
+
+key ctrl+f
+type REVEALMARK
+settle 250
+assert snap document-find-count == 1
+assert snap document-find-current == 1
+key escape
+settle 20
+capture 05_weld_reveal_at_125
+click-at 700 300
+settle 250
+assert focused /landed-reveal
+log E0.2 hosted Weld page-zoom receipt complete

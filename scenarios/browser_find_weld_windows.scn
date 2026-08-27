@@ -14,7 +14,7 @@ act Toggle live content
 settle 90
 assert content-live
 assert snap document-find-capability == supported
-assert snap page-zoom-capability ~ unavailable
+assert snap page-zoom-capability ~ partial
 assert snap page-capture-capability ~ unavailable
 assert snap navigation-capability == supported
 

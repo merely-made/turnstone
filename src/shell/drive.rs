@@ -239,6 +239,35 @@ impl genet_probe::Automatable for Shell {
                 .with_field("page-capture-capability", capabilities.page_capture)
                 .with_field("navigation-capability", capabilities.navigation);
         }
+        // The requested scale is always known for a focused node; the applied
+        // half appears only for engines that read their effective value back,
+        // so a scenario asserting `page-zoom-applied` is also asserting the
+        // read-back seam exists.
+        if let Some(node) = snap.focused.as_ref() {
+            out = out.with_field("page-zoom-requested", node.page_zoom_percent.to_string());
+            if let Some(applied) = node.applied_page_zoom_percent {
+                out = out.with_field("page-zoom-applied", applied.to_string());
+            }
+        }
+        // Page zoom is a DOCUMENT scale. The other two scales a receipt could
+        // confuse it with are the chrome's UI zoom and the graph camera's
+        // zoom, so both are projected here: an E0.2 receipt asserts they held
+        // across a page-zoom step rather than trusting that they did. Chrome
+        // zoom is a percentage like the page-zoom pair; the camera keeps three
+        // decimals, because it is a continuous gesture value and not a ladder.
+        out = out.with_field(
+            "ui-zoom",
+            ((self.app.shell_chrome_config().appearance.ui_zoom.max(0.0) * 100.0).round() as i64)
+                .to_string(),
+        );
+        if let Some(zoom) = self
+            .app
+            .graph_for_pane(self.app.default_graph_pane())
+            .and_then(|graph| self.app.graph_runtimes.canvas(graph))
+            .map(|canvas| canvas.viewport().zoom)
+        {
+            out = out.with_field("canvas-zoom", format!("{zoom:.3}"));
+        }
         if let Some(decision) = snap.user_agent_decision {
             out = out
                 .with_field("decision-kind", decision.kind)

@@ -123,6 +123,14 @@ pub struct FocusedNode {
     pub caption: String,
     /// Durable keep state read from the node's graph tags.
     pub kept: bool,
+    /// The page zoom the node REQUESTS, as a percentage (100 = default). This
+    /// is what the node asked for, never what an engine settled on.
+    pub page_zoom_percent: u32,
+    /// The percentage the node's live engine reports it is ACTUALLY presenting
+    /// at. Retained sessions answer a zoom request with their effective level;
+    /// hosted surfaces have no read-back, so this stays `None` for them rather
+    /// than echoing the request as if it were applied.
+    pub applied_page_zoom_percent: Option<u32>,
 }
 
 /// The omnibar as observed: state plus suggestion rows as display strings.
@@ -334,6 +342,12 @@ pub enum AppEvent {
     ViewerChanged {
         node: Uuid,
         viewer: String,
+    },
+    /// A node's REQUESTED page zoom changed. What the engine then applies is
+    /// its own business and is not reported here.
+    PageZoomChanged {
+        node: Uuid,
+        percent: u32,
     },
     /// A lens window was requested (rung 7).
     WindowOpened,
@@ -585,6 +599,9 @@ impl AppEvent {
             AppEvent::NodeKept(node) => format!("node-kept {node}"),
             AppEvent::NodeSpriteSet(node) => format!("sprite-set {node}"),
             AppEvent::ViewerChanged { node, viewer } => format!("viewer-changed {node} {viewer}"),
+            AppEvent::PageZoomChanged { node, percent } => {
+                format!("page-zoom-changed {node} {percent}%")
+            }
             AppEvent::WindowOpened => "window-opened".to_string(),
             AppEvent::WindowClosed => "window-closed".to_string(),
             AppEvent::PaneTornOut(tag) => format!("pane-torn-out {tag}"),
@@ -645,6 +662,13 @@ pub fn snapshot(app: &App) -> Snapshot {
             url,
             caption,
             kept: app.node_is_kept(member),
+            page_zoom_percent: crate::app::page_zoom_percent(
+                app.browser.get(member).and_then(|state| state.page_scale),
+            ),
+            applied_page_zoom_percent: app
+                .content
+                .page_zoom(member)
+                .map(|zoom| crate::app::page_zoom_percent(Some(zoom.applied))),
         })
     });
     let content = app
@@ -1009,6 +1033,11 @@ mod tests {
     use crate::action::Action;
     use crate::content::{CapabilityStatus, ContentFacts, DocumentCapabilityFacts};
 
+    /// Weld's page-zoom limit as `Shell::weld` reports it. Copied rather than
+    /// imported: that lane is behind the `weld` feature and these tests run
+    /// without it, so the copy is the thing to re-check when the lane changes.
+    const WELD_PAGE_ZOOM_DETAIL: &str = "the requested scale is applied as a CEF zoom level, but Windows runs CEF's UI thread separately so the effective level cannot be read back";
+
     #[test]
     fn snapshot_reads_focus_omnibar_and_content_coherently() {
         let mut app = App::test_stub();
@@ -1046,8 +1075,10 @@ mod tests {
                 lineage: None,
                 capabilities: DocumentCapabilityFacts {
                     find_in_page: CapabilityStatus::Supported,
-                    page_zoom: CapabilityStatus::Unsupported {
-                        reason: "absolute zoom mapping is missing".into(),
+                    // Weld's real limit today: the scale IS applied; only the
+                    // read-back is missing.
+                    page_zoom: CapabilityStatus::Partial {
+                        detail: WELD_PAGE_ZOOM_DETAIL.into(),
                     },
                     page_capture: CapabilityStatus::Partial {
                         detail: "visible viewport only".into(),
@@ -1063,10 +1094,111 @@ mod tests {
         assert_eq!(capabilities.find_in_page, "supported");
         assert_eq!(
             capabilities.page_zoom,
-            "unavailable: absolute zoom mapping is missing"
+            format!("partial: {WELD_PAGE_ZOOM_DETAIL}")
         );
         assert_eq!(capabilities.page_capture, "partial: visible viewport only");
         assert_eq!(capabilities.navigation, "supported");
+    }
+
+    /// The snapshot discloses the REQUESTED page zoom, and the change is an
+    /// observable event. A hosted surface has no read-back, so the applied
+    /// half stays absent rather than echoing the request.
+    #[test]
+    fn snapshot_reports_the_requested_page_zoom() {
+        let mut app = App::test_stub();
+        app.update(Action::OpenAddress("https://example.test/zoom".to_string()));
+        let node = app.graph_runtimes.focused_member().unwrap();
+        assert_eq!(
+            snapshot(&app).focused.expect("focused").page_zoom_percent,
+            100,
+            "a node that never zoomed sits at the default scale"
+        );
+
+        app.content.note_live(
+            node,
+            Some(ContentFacts {
+                engine: "weld.chromium".into(),
+                structure: None,
+                lineage: None,
+                capabilities: DocumentCapabilityFacts {
+                    page_zoom: CapabilityStatus::Partial {
+                        detail: WELD_PAGE_ZOOM_DETAIL.into(),
+                    },
+                    ..Default::default()
+                },
+            }),
+        );
+        app.update(Action::PageZoomIn { member: node });
+        app.update(Action::PageZoomIn { member: node });
+        assert_eq!(
+            snapshot(&app).focused.expect("focused").page_zoom_percent,
+            125
+        );
+        assert_eq!(
+            snapshot(&app)
+                .focused
+                .expect("focused")
+                .applied_page_zoom_percent,
+            None,
+            "Weld never reported an effective level, so none is invented"
+        );
+        let described: Vec<String> = app.take_events().iter().map(AppEvent::describe).collect();
+        assert!(
+            described
+                .iter()
+                .any(|event| event == &format!("page-zoom-changed {node} 125%")),
+            "{described:?}"
+        );
+
+        app.update(Action::PageZoomReset { member: node });
+        assert_eq!(
+            snapshot(&app).focused.expect("focused").page_zoom_percent,
+            100
+        );
+    }
+
+    /// A retained session answers a zoom request with the level it settled on,
+    /// and the snapshot carries that beside the request.
+    #[test]
+    fn snapshot_reports_a_retained_engine_applied_page_zoom() {
+        let mut app = App::test_stub();
+        app.update(Action::OpenAddress("https://example.test/zoom".to_string()));
+        let node = app.graph_runtimes.focused_member().unwrap();
+        app.content.note_live(
+            node,
+            Some(ContentFacts {
+                engine: "genet.livery".into(),
+                structure: None,
+                lineage: None,
+                capabilities: DocumentCapabilityFacts {
+                    page_zoom: CapabilityStatus::Supported,
+                    ..Default::default()
+                },
+            }),
+        );
+        app.update(Action::PageZoomIn { member: node });
+        app.content.note_page_zoom(
+            node,
+            crate::content::PageZoomFacts {
+                requested: 1.1,
+                applied: 1.1,
+                min: 0.25,
+                max: 5.0,
+            },
+        );
+        let focused = snapshot(&app).focused.expect("focused");
+        assert_eq!(focused.page_zoom_percent, 110);
+        assert_eq!(focused.applied_page_zoom_percent, Some(110));
+
+        // The read-back belongs to the session, so closing takes it along.
+        app.content.note_closed(node);
+        assert_eq!(
+            snapshot(&app)
+                .focused
+                .expect("focused")
+                .applied_page_zoom_percent,
+            None
+        );
     }
 
     #[test]

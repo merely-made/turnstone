@@ -1023,7 +1023,18 @@ mod tests {
         let mut app = App::test_stub();
         app.update(Action::OpenAddress("gemini://capsule.test/find".into()));
         let node = app.graph_runtimes.focused_member().expect("focused node");
-        app.content.note_live(node, None);
+        app.content.note_live(
+            node,
+            Some(crate::content::ContentFacts {
+                engine: "test.surface".into(),
+                structure: None,
+                lineage: None,
+                capabilities: crate::content::DocumentCapabilityFacts {
+                    find_in_page: crate::content::CapabilityStatus::Supported,
+                    ..Default::default()
+                },
+            }),
+        );
         app.update(Action::OpenDocumentFind);
         app.document_find.query = "needle".into();
         app.document_find.model = crate::action::DocumentFindModel {

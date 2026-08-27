@@ -137,7 +137,9 @@ Done-conditions:
   find, page zoom, capture, and navigation controls.
 - Each claimed permission or authentication callback passes a live consumer
   receipt; partial and unavailable statuses name the missing backend seam.
-- Page zoom persists per node or engine policy without changing chrome scale.
+- The requested page-zoom scale always persists per node; engine policy
+  determines only quantization, bounds, and the effective applied value.
+  Chrome scale never changes.
 - A captured page representation retains source identity and observed-state
   provenance.
 - Save/print consumes the captured representation rather than a graph scene.

@@ -32,6 +32,33 @@ pub use runtime_pool::{
 /// offers the same rows a real one would rather than collapsing to the floor.
 pub const DEFAULT_VIEWPORT: (f32, f32) = (1280.0, 800.0);
 
+/// The page scale a node with no stored request sits at. A sidecar `None` and
+/// a stored `1.0` mean the same thing; only `None` survives the save path's
+/// empty-entry pruning, so reset clears rather than writes.
+pub const PAGE_ZOOM_DEFAULT: f32 = 1.0;
+
+/// One node's REQUESTED page-zoom percentage (100 = the default scale). This
+/// is what the node asked for, never what an engine settled on; the applied
+/// half arrives separately, from the lanes that read their level back.
+pub fn page_zoom_percent(scale: Option<f32>) -> u32 {
+    (scale.unwrap_or(PAGE_ZOOM_DEFAULT).max(0.0) * 100.0).round() as u32
+}
+
+/// The requested page zoom as a display value, with the engine's effective
+/// percentage beside it when the lane reports one. Retained sessions answer a
+/// zoom request with what they actually present; a hosted surface has no
+/// read-back, so it shows the request alone rather than a fabricated echo.
+pub fn page_zoom_display(requested: Option<f32>, applied: Option<f32>) -> String {
+    let requested = page_zoom_percent(requested);
+    match applied {
+        Some(applied) => format!(
+            "{requested}% (applied {}%)",
+            page_zoom_percent(Some(applied))
+        ),
+        None => format!("{requested}%"),
+    }
+}
+
 /// Canonicalize a persisted or requested viewer id after retiring Turnstone's
 /// incumbent static HTML lane. The old id described the same product rung, so
 /// preserving the pin means moving it to Livery rather than clearing it.
@@ -1009,6 +1036,9 @@ impl App {
             Action::InsertDocumentFind(text) => self.insert_document_find(text),
             Action::BackspaceDocumentFind => self.backspace_document_find(),
             Action::StepDocumentFind(direction) => self.step_document_find(direction),
+            Action::PageZoomIn { member } => self.page_zoom_in(member),
+            Action::PageZoomOut { member } => self.page_zoom_out(member),
+            Action::PageZoomReset { member } => self.page_zoom_reset(member),
             Action::ChoosePermission { request, choice } => self.choose_permission(request, choice),
             Action::FocusAuthenticationField(field) => self.focus_authentication_field(field),
             Action::InsertAuthentication(text) => self.insert_authentication(text),

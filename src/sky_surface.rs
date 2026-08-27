@@ -11,10 +11,7 @@ mod view;
 use std::time::Duration;
 
 use cambium::{DomHandle, RetainedSurfaceSession, RunnerSurfaceSession};
-use genet_host_api::{
-    CapabilityId, PlacementHint, ProviderId, SourceKindId, SurfaceDescriptor, SurfaceId,
-    SurfaceMultiplicity, SurfaceRole,
-};
+use genet_host_api::{ProviderId, SourceKindId, SurfaceDescriptor, SurfaceId};
 use jiff::{
     civil::{Date, Time},
     tz::TimeZone,
@@ -445,13 +442,6 @@ impl Default for SkySurfaceProvider {
                 accepted_source: genet_host_api::SurfaceSourceShape::One(SourceKindId::from(
                     SOURCE_SCHEMA,
                 )),
-                roles: vec![
-                    SurfaceRole::from("pane"),
-                    SurfaceRole::from("daily-timeline"),
-                ],
-                multiplicity: SurfaceMultiplicity::PerSource,
-                placement_hint: PlacementHint::from("main"),
-                potential_capabilities: vec![CapabilityId::from("configure")],
             },
         }
     }

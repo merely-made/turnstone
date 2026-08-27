@@ -63,6 +63,105 @@ pub(super) fn app_document_capabilities(
     }
 }
 
+/// Mirror one engine's page-zoom answer into app truth. Transient by
+/// construction: it belongs to the live session that computed it, and the
+/// sidecar keeps only what the node requested.
+fn app_page_zoom_facts(state: inker::DocumentZoomState) -> crate::content::PageZoomFacts {
+    crate::content::PageZoomFacts {
+        requested: state.requested,
+        applied: state.applied,
+        min: state.min,
+        max: state.max,
+    }
+}
+
+/// The scale a freshly spawned surface or session must be seeded with: the
+/// node's persisted request, when it is not already the engine's own default.
+/// A node at the default asks for nothing, so the engine keeps its own.
+fn seed_page_scale(app: &crate::app::App, node: uuid::Uuid) -> Option<f32> {
+    let scale = app.browser.get(node).and_then(|state| state.page_scale)?;
+    ((scale - crate::app::PAGE_ZOOM_DEFAULT).abs() >= f32::EPSILON).then_some(scale)
+}
+
+/// Ask one surface to show `scale` as its page zoom, reporting a refusal
+/// without letting it stand in for the requested value. Split from the effect
+/// arm so the spawn path can seed a producer before it enters the map.
+fn apply_page_scale(
+    app: &mut crate::app::App,
+    node: uuid::Uuid,
+    scale: f32,
+    producer: &mut dyn inker::SurfaceProducer,
+) {
+    if let Err(error) = producer.apply_settings(&inker::SurfaceSettings {
+        zoom_factor: f64::from(scale),
+        ..Default::default()
+    }) {
+        let error = error.to_string();
+        tracing::warn!(%node, scale, %error, "page zoom apply failed");
+        app.note(crate::observe::AppEvent::AffordanceUnavailable {
+            what: "page-zoom",
+            target: error,
+        });
+    }
+}
+
+/// Seed a freshly spawned surface with the page scale its node requested. A
+/// node at the default scale asks for nothing, so the engine keeps its own.
+fn replay_page_scale(
+    app: &mut crate::app::App,
+    node: uuid::Uuid,
+    producer: &mut dyn inker::SurfaceProducer,
+) {
+    let Some(scale) = seed_page_scale(app, node) else {
+        return;
+    };
+    apply_page_scale(app, node, scale, producer);
+}
+
+/// Ask one retained document session to present at `scale`, keeping the
+/// effective level it answers with. Unlike the hosted lane this is a real
+/// read-back, so the answer is worth holding; a lane without the control
+/// refuses quietly, exactly as an absent hosted surface does.
+fn apply_retained_page_scale(
+    app: &mut crate::app::App,
+    node: uuid::Uuid,
+    scale: f32,
+    session: &mut dyn inker::DocumentSession<netrender::Scene>,
+) {
+    match session.set_page_zoom(scale) {
+        Ok(state) => app.content.note_page_zoom(node, app_page_zoom_facts(state)),
+        // A capability-gated surface never offers the rows to a lane that
+        // reports no page zoom, so this is a chord or a script arriving at a
+        // scripted or smolweb session: nothing to say, nothing to break.
+        Err(inker::SessionError::Unsupported(reason)) => {
+            tracing::debug!(%node, scale, %reason, "retained session does not offer page zoom");
+        }
+        Err(error) => {
+            let error = error.to_string();
+            tracing::warn!(%node, scale, %error, "retained page zoom apply failed");
+            app.note(crate::observe::AppEvent::AffordanceUnavailable {
+                what: "page-zoom",
+                target: error,
+            });
+        }
+    }
+}
+
+/// Seed a freshly spawned retained session with the page scale its node
+/// requested — the retained twin of [`replay_page_scale`], and the one seed
+/// point every retained spawn (first open, restart replay, engine switch)
+/// funnels through.
+fn replay_retained_page_scale(
+    app: &mut crate::app::App,
+    node: uuid::Uuid,
+    session: &mut dyn inker::DocumentSession<netrender::Scene>,
+) {
+    let Some(scale) = seed_page_scale(app, node) else {
+        return;
+    };
+    apply_retained_page_scale(app, node, scale, session);
+}
+
 fn project_reader_lineage_facet(
     app: &mut crate::app::App,
     node: uuid::Uuid,
@@ -119,6 +218,190 @@ mod reader_lineage_tests {
         let updated = app.graph_runtimes.facets().get(&node, &facet).unwrap();
         assert_eq!(updated["version"], "0.2.0");
         assert_eq!(updated["block_count"], 4);
+    }
+}
+
+#[cfg(test)]
+mod retained_page_zoom_tests {
+    use super::*;
+    use crate::action::Action;
+
+    /// One REAL Livery session over an inline body — no network, and no stub
+    /// standing in for the capability report the palette gate actually reads.
+    fn livery_session() -> Box<dyn inker::DocumentSession<netrender::Scene>> {
+        crate::shell::standard_content_engines()
+            .spawn(
+                inker::routing::ENGINE_GENET_LIVERY,
+                &SessionSpawnRequest::new("https://example.test/zoom")
+                    .with_viewport(800, 600)
+                    .with_body("<html><body><p>zoom me</p></body></html>")
+                    .with_content_type("text/html"),
+            )
+            .expect("the Livery lane spawns from an inline body")
+    }
+
+    fn opened_node(app: &mut crate::app::App) -> uuid::Uuid {
+        app.update(Action::OpenAddress("https://example.test/zoom".to_string()));
+        app.graph_runtimes.focused_member().expect("a focused node")
+    }
+
+    /// The gate reads capability facts, and a live Livery session now reports
+    /// page zoom as supported — so the three rows are offered without any
+    /// engine-id special case in the palette.
+    #[test]
+    fn a_live_livery_session_is_offered_the_zoom_rows() {
+        let mut app = crate::app::App::test_stub();
+        let node = opened_node(&mut app);
+        let mut session = livery_session();
+        let facts = app_document_capabilities(session.document_capabilities());
+        assert_eq!(facts.page_zoom, crate::content::CapabilityStatus::Supported);
+        app.content.note_live(
+            node,
+            Some(crate::content::ContentFacts {
+                engine: inker::routing::ENGINE_GENET_LIVERY.to_string(),
+                structure: None,
+                lineage: None,
+                capabilities: facts,
+            }),
+        );
+        let labels: Vec<String> = app
+            .available_actions()
+            .into_iter()
+            .map(|(label, _)| label)
+            .collect();
+        for row in ["Zoom in", "Zoom out", "Reset zoom"] {
+            assert!(
+                labels.iter().any(|label| label == row),
+                "{row} is offered to a retained Livery session; got {labels:?}"
+            );
+        }
+
+        // And the row the palette offers reaches the session, which answers
+        // with the level it settled on.
+        let effects = app.update(Action::PageZoomIn { member: node });
+        let scale = effects
+            .iter()
+            .find_map(|effect| match effect {
+                Effect::ScaleContent {
+                    node: target,
+                    scale,
+                } if *target == node => Some(*scale),
+                _ => None,
+            })
+            .expect("zoom in asks for a content scale");
+        apply_retained_page_scale(&mut app, node, scale, session.as_mut());
+        let zoom = app
+            .content
+            .page_zoom(node)
+            .expect("Livery reads its level back");
+        assert_eq!(zoom.requested, 1.1);
+        assert_eq!(zoom.applied, 1.1);
+        assert_eq!((zoom.min, zoom.max), (0.25, 5.0));
+    }
+
+    /// Reset persists `None`, but a live session must still be told to go back
+    /// to 1.0 — the request is cleared, the document is not left magnified.
+    #[test]
+    fn reset_returns_a_live_retained_session_to_the_default_scale() {
+        let mut app = crate::app::App::test_stub();
+        let node = opened_node(&mut app);
+        let mut session = livery_session();
+        app.content.note_live(
+            node,
+            Some(crate::content::ContentFacts {
+                engine: inker::routing::ENGINE_GENET_LIVERY.to_string(),
+                structure: None,
+                lineage: None,
+                capabilities: app_document_capabilities(session.document_capabilities()),
+            }),
+        );
+        app.update(Action::PageZoomIn { member: node });
+        app.update(Action::PageZoomIn { member: node });
+        apply_retained_page_scale(&mut app, node, 1.25, session.as_mut());
+        assert_eq!(
+            app.content.page_zoom(node).map(|zoom| zoom.applied),
+            Some(1.25)
+        );
+
+        let effects = app.update(Action::PageZoomReset { member: node });
+        assert!(
+            effects.contains(&Effect::ScaleContent {
+                node,
+                scale: crate::app::PAGE_ZOOM_DEFAULT,
+            }),
+            "reset still commands the live session back to 100%"
+        );
+        assert!(
+            app.browser
+                .get(node)
+                .and_then(|state| state.page_scale)
+                .is_none(),
+            "reset clears the persisted request rather than storing 1.0"
+        );
+        apply_retained_page_scale(
+            &mut app,
+            node,
+            crate::app::PAGE_ZOOM_DEFAULT,
+            session.as_mut(),
+        );
+        assert_eq!(
+            app.content.page_zoom(node).map(|zoom| zoom.applied),
+            Some(1.0)
+        );
+    }
+
+    /// A lane without the control refuses, and the handler must absorb it: the
+    /// capability gate makes this unreachable through the UI, but a chord or a
+    /// script aimed at one must not panic or invent an applied level.
+    #[test]
+    fn an_unsupported_retained_lane_is_absorbed_quietly() {
+        let mut app = crate::app::App::test_stub();
+        let node = opened_node(&mut app);
+        let mut session = crate::shell::standard_content_engines()
+            .spawn(
+                inker::routing::ENGINE_NEMATIC_GEMTEXT,
+                &SessionSpawnRequest::new("gemini://example.test/zoom")
+                    .with_viewport(800, 600)
+                    .with_body("# heading\n"),
+            )
+            .expect("the gemtext lane spawns from an inline body");
+        assert!(matches!(
+            session.set_page_zoom(1.25),
+            Err(inker::SessionError::Unsupported(_))
+        ));
+        apply_retained_page_scale(&mut app, node, 1.25, session.as_mut());
+        assert!(
+            app.content.page_zoom(node).is_none(),
+            "a refusal leaves no applied level behind"
+        );
+        assert!(
+            !app.take_events().iter().any(|event| matches!(
+                event,
+                crate::observe::AppEvent::AffordanceUnavailable { what, .. } if *what == "page-zoom"
+            )),
+            "an unsupported lane is a quiet debug, not a reported refusal"
+        );
+    }
+
+    /// The spawn seed point: a node carrying a persisted request hands it to a
+    /// freshly spawned session, and a node at the default asks for nothing.
+    #[test]
+    fn a_fresh_retained_session_is_seeded_with_the_persisted_request() {
+        let mut app = crate::app::App::test_stub();
+        let node = opened_node(&mut app);
+        let mut session = livery_session();
+        replay_retained_page_scale(&mut app, node, session.as_mut());
+        assert!(
+            app.content.page_zoom(node).is_none(),
+            "a node at the default scale asks a fresh session for nothing"
+        );
+
+        app.browser.entry(node).page_scale = Some(1.5);
+        replay_retained_page_scale(&mut app, node, session.as_mut());
+        assert_eq!(
+            app.content.page_zoom(node).map(|zoom| zoom.applied),
+            Some(1.5)
+        );
     }
 }
 
@@ -463,6 +746,19 @@ impl Shell {
                                                         )
                                                     })
                                                     .unwrap_or_default();
+                                                // The one seed point for the
+                                                // node's requested page scale:
+                                                // first spawn, restart replay
+                                                // and the engine-switch respawn
+                                                // all arrive here. A refusal is
+                                                // reported and dropped — what
+                                                // the node asked for stays
+                                                // persisted either way.
+                                                replay_page_scale(
+                                                    &mut self.app,
+                                                    node,
+                                                    producer.as_mut(),
+                                                );
                                                 self.surface_producers.insert(node, producer);
                                                 Update::ContentSpawned {
                                                     node,
@@ -525,7 +821,7 @@ impl Shell {
                         }
                     }
                     let update = match self.content_engines.spawn(&decision.engine_id, &spawn) {
-                        Ok(session) => {
+                        Ok(mut session) => {
                             tracing::info!(%node, %url, engine = %decision.engine_id, "content session live");
                             // Mirror the spawn-time facts into app truth (the
                             // adapter conversion): the engine id plus the
@@ -570,6 +866,13 @@ impl Shell {
                                 node,
                                 facts.lineage.as_ref(),
                             );
+                            // The one seed point for a retained session's
+                            // requested page scale: first spawn, restart replay
+                            // and the engine-switch respawn all arrive here.
+                            // The effective level it answers with is kept; a
+                            // refusal is reported and dropped, and what the
+                            // node asked for stays persisted either way.
+                            replay_retained_page_scale(&mut self.app, node, session.as_mut());
                             let subresources = session.subresources();
                             self.content_sessions.insert(node, session);
                             for url in subresources {
@@ -681,6 +984,22 @@ impl Shell {
                     if let Err(error) = result {
                         tracing::warn!(%node, ?control, %error, "web content control failed");
                         self.app.content.note_surface_stopped(node);
+                    }
+                    self.request_redraw();
+                }
+                Effect::ScaleContent { node, scale } => {
+                    if let Some(producer) = self.surface_producers.get_mut(&node) {
+                        let producer = producer.as_mut();
+                        apply_page_scale(&mut self.app, node, scale, producer);
+                    } else if let Some(session) = self.content_sessions.get_mut(&node) {
+                        // The retained lane: the session reflows at the new CSS
+                        // viewport on the next frame, and answers with the
+                        // level it actually settled on.
+                        apply_retained_page_scale(&mut self.app, node, scale, session.as_mut());
+                    } else {
+                        // Nothing live to scale: content is off. The request is
+                        // persisted and the spawn path replays it.
+                        tracing::debug!(%node, scale, "page zoom has no live surface");
                     }
                     self.request_redraw();
                 }

@@ -11,7 +11,7 @@ settle 40
 assert content-live
 assert snap actions ~ Find in document
 assert snap document-find-capability == supported
-assert snap page-zoom-capability ~ unavailable
+assert snap page-zoom-capability == supported
 assert snap page-capture-capability ~ unavailable
 assert snap navigation-capability ~ partial
 

@@ -19,6 +19,41 @@ use super::Shell;
 /// when the key is not a content-scroll key. Space pages down, Shift+Space
 /// pages up (the browser convention); the arrows line-scroll, and Home/End
 /// jump to the ends.
+/// The page-zoom chords, held under ctrl. `=` joins `+` and `_` joins `-` so
+/// neither needs shift, which is what every browser binds.
+#[derive(Clone, Copy)]
+enum PageZoomChord {
+    In,
+    Out,
+    Reset,
+}
+
+impl PageZoomChord {
+    fn for_character(value: &str) -> Option<Self> {
+        Some(match value {
+            "+" | "=" => Self::In,
+            "-" | "_" => Self::Out,
+            "0" => Self::Reset,
+            _ => return None,
+        })
+    }
+
+    fn action(self, member: uuid::Uuid) -> Action {
+        match self {
+            Self::In => Action::PageZoomIn { member },
+            Self::Out => Action::PageZoomOut { member },
+            Self::Reset => Action::PageZoomReset { member },
+        }
+    }
+}
+
+/// Whether a key is a chord this module claims before the focused surface sees
+/// it: Ctrl+F, and the page-zoom chords. A page must not also receive them.
+fn is_claimed_ctrl_chord(key: &WinitKey) -> bool {
+    matches!(key, WinitKey::Character(value)
+        if value.eq_ignore_ascii_case("f") || PageZoomChord::for_character(value).is_some())
+}
+
 fn content_scroll_key(key: &WinitKey, shift: bool) -> Option<SessionScrollKey> {
     Some(match key {
         WinitKey::Named(WinitNamedKey::ArrowDown) => SessionScrollKey::LineDown,
@@ -49,7 +84,7 @@ impl Shell {
         };
         if self.app.user_agent_decision.is_open()
             || self.app.document_find.open
-            || matches!(key, WinitKey::Character(value) if self.ctrl && value.eq_ignore_ascii_case("f"))
+            || (self.ctrl && is_claimed_ctrl_chord(key))
         {
             return false;
         }
@@ -259,6 +294,17 @@ impl Shell {
             self.act(Action::OpenDocumentFind);
             return;
         }
+        // Page zoom on the focused document, beside Ctrl+F because it is the
+        // same shape: a durable document command that never reaches the page.
+        if self.ctrl
+            && let WinitKey::Character(value) = key
+            && let Some(chord) = PageZoomChord::for_character(value)
+        {
+            if let Some(member) = self.app.graph_runtimes.focused_member() {
+                self.act(chord.action(member));
+            }
+            return;
+        }
         if self.app.document_find.open {
             let action = match key {
                 WinitKey::Named(WinitNamedKey::Escape) => Some(Action::CloseDocumentFind),
@@ -460,5 +506,32 @@ mod tests {
             content_scroll_key(&WinitKey::Character("i".into()), false),
             None
         );
+    }
+
+    /// The page-zoom chords, and the claim that keeps them off the page: a
+    /// focused surface must never also receive Ctrl+F or a zoom chord.
+    #[test]
+    fn page_zoom_chords_bind_the_browser_keys_and_are_claimed() {
+        let member = uuid::Uuid::nil();
+        let action =
+            |value: &str| PageZoomChord::for_character(value).map(|chord| chord.action(member));
+        assert_eq!(action("="), Some(Action::PageZoomIn { member }));
+        assert_eq!(action("+"), Some(Action::PageZoomIn { member }));
+        assert_eq!(action("-"), Some(Action::PageZoomOut { member }));
+        assert_eq!(action("_"), Some(Action::PageZoomOut { member }));
+        assert_eq!(action("0"), Some(Action::PageZoomReset { member }));
+        assert_eq!(action("1"), None);
+        assert_eq!(action("f"), None);
+
+        for value in ["=", "+", "-", "_", "0", "f", "F"] {
+            assert!(
+                is_claimed_ctrl_chord(&WinitKey::Character(value.into())),
+                "ctrl+{value} is claimed before the page sees it"
+            );
+        }
+        assert!(!is_claimed_ctrl_chord(&WinitKey::Character("1".into())));
+        assert!(!is_claimed_ctrl_chord(&WinitKey::Named(
+            WinitNamedKey::PageDown
+        )));
     }
 }

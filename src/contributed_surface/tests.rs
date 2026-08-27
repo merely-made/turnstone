@@ -4,7 +4,7 @@ use std::rc::Rc;
 
 use accesskit::{Action as A11yAction, Role};
 use cambium::{GenetAppRunner, GenetCtx, GenetElement, RunnerSurfaceSession, View, el, on_click};
-use genet_host_api::{PlacementHint, ProviderId, SourceKindId, SurfaceMultiplicity, SurfaceRole};
+use genet_host_api::{ProviderId, SourceKindId};
 use layout_dom_api::{LayoutDom, NodeKind};
 
 use super::*;
@@ -32,10 +32,6 @@ fn descriptor(surface: &str, schema: &str) -> SurfaceDescriptor {
         surface_id: SurfaceId::from(surface),
         label: surface.to_owned(),
         accepted_source: genet_host_api::SurfaceSourceShape::One(SourceKindId::from(schema)),
-        roles: vec![SurfaceRole::from("pane")],
-        multiplicity: SurfaceMultiplicity::PerSource,
-        placement_hint: PlacementHint::from("main"),
-        potential_capabilities: Vec::new(),
     }
 }
 

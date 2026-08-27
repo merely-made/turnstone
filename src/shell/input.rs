@@ -184,6 +184,21 @@ impl Shell {
         if let Some(hit) = crate::surface::hit_test(&plan, self.app.focus, x, y)
             && let crate::surface::SurfaceKind::Content(node) = hit.kind
         {
+            // Ctrl+wheel is page zoom, the browser convention, and it takes the
+            // document under the pointer rather than the focused one — a
+            // workbench can tile several live documents at once. The change is
+            // durable, so it lowers through an Action rather than bypassing the
+            // spine as the plain scroll does. An engine that does not report
+            // the control never claims the gesture and scrolls as before; the
+            // canvas camera zoom is untouched (it fires over empty canvas).
+            if self.ctrl && dy != 0.0 && self.app.page_zoom_offered(node) {
+                self.act(if dy > 0.0 {
+                    Action::PageZoomIn { member: node }
+                } else {
+                    Action::PageZoomOut { member: node }
+                });
+                return;
+            }
             if let Some(session) = self.content_sessions.get_mut(&node) {
                 if session.scroll_at(hit.local.0, hit.local.1, dx, dy) {
                     self.request_redraw();

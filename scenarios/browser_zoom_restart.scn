@@ -1,0 +1,32 @@
+# E0.2 restart survival, run 1 of 2. Sets 125% on one node and exits.
+#
+# The scenario DSL cannot restart the app inside one script, so survival is
+# two runs against the SAME `TURNSTONE_ROOT`: this one asks for 125% (the
+# request lands in the `web.page_scale` facet through the ordinary
+# `Effect::SaveSession`), and `browser_zoom_restart_verify.scn` reads it back
+# on the restored node without touching the zoom rows.
+#
+# Start scenarios/fixtures/browser_zoom_server.ps1 on port 43117 first. Run 1
+# needs a FRESH profile; run 2 must reuse it.
+settle 30
+key escape
+open http://127.0.0.1:43117/zoom
+settle 80
+act Toggle live content
+settle 80
+assert content-live
+assert snap page-zoom-requested == 100
+
+act Zoom in
+settle 10
+act Zoom in
+settle 40
+assert snap page-zoom-requested == 125
+assert snap page-zoom-applied == 125
+
+# The zoom arm already emits SaveSession; this makes the persisted state the
+# receipt depends on explicit rather than incidental.
+act Save session
+settle 40
+capture 01_restart_run1_at_125
+log E0.2 restart run 1: 125% requested, session saved

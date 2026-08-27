@@ -151,6 +151,11 @@ pub fn ring_of(action: &Action) -> Ring {
         | InsertDocumentFind(_)
         | BackspaceDocumentFind
         | StepDocumentFind(_)
+        // Page zoom edits how one node is SHOWN, the same tier as its viewer
+        // override — not navigation, and never chrome or session scope.
+        | PageZoomIn { .. }
+        | PageZoomOut { .. }
+        | PageZoomReset { .. }
         | OmnibarOpen { .. }
         | OmnibarClose
         | OmnibarChar(_)

@@ -14,6 +14,18 @@ use crate::ui::{OmnibarState, Suggestion, normalize_address};
 
 use super::App;
 
+/// The Chromium user-agent zoom ladder: the notches its Zoom In / Zoom Out
+/// commands step through. One copy, so the palette rows, the keyboard chords
+/// and the ctrl+wheel gesture all land on the same rungs.
+const PAGE_ZOOM_LADDER: [f32; 17] = [
+    0.25, 0.33, 0.5, 0.67, 0.75, 0.8, 0.9, 1.0, 1.1, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0, 4.0, 5.0,
+];
+
+/// A stored request need not sit exactly on a rung — an older ladder, a
+/// hand-edited sidecar — so a step compares against the current value with
+/// slack rather than searching for an exact match.
+const PAGE_ZOOM_RUNG_EPSILON: f32 = 1e-4;
+
 /// Replace a smolweb input target's query with one UTF-8, percent-encoded
 /// answer. Form-style `+` encoding is wrong here: Gemini input is a URL query,
 /// where a space is `%20`.
@@ -297,6 +309,123 @@ impl App {
         effects.push(Effect::SaveSession);
         effects.push(Effect::Redraw);
         effects
+    }
+
+    /// Whether `member` offers page zoom right now: live content whose engine
+    /// reports the control. The palette rows and the ctrl+wheel gesture ask
+    /// this same question; the arms below ask the refusing version.
+    pub(crate) fn page_zoom_offered(&self, member: Uuid) -> bool {
+        matches!(
+            self.content.get(member),
+            Some(crate::content::NodeContent::Live)
+        ) && self
+            .content
+            .facts(member)
+            .is_some_and(|facts| facts.capabilities.page_zoom.is_available())
+    }
+
+    /// One node's requested scale, defaulting an unset sidecar entry.
+    pub(crate) fn requested_page_scale(&self, member: Uuid) -> f32 {
+        self.browser
+            .get(member)
+            .and_then(|state| state.page_scale)
+            .unwrap_or(super::PAGE_ZOOM_DEFAULT)
+    }
+
+    pub(super) fn page_zoom_in(&mut self, member: Uuid) -> Vec<Effect> {
+        if !self.refuse_unzoomable(member) {
+            return vec![Effect::Redraw];
+        }
+        match PAGE_ZOOM_LADDER
+            .iter()
+            .copied()
+            .find(|rung| *rung > self.requested_page_scale(member) + PAGE_ZOOM_RUNG_EPSILON)
+        {
+            Some(rung) => self.set_page_scale(member, Some(rung)),
+            None => {
+                self.note_page_zoom_refusal("already at the ladder's largest scale");
+                vec![Effect::Redraw]
+            }
+        }
+    }
+
+    pub(super) fn page_zoom_out(&mut self, member: Uuid) -> Vec<Effect> {
+        if !self.refuse_unzoomable(member) {
+            return vec![Effect::Redraw];
+        }
+        match PAGE_ZOOM_LADDER
+            .iter()
+            .copied()
+            .rev()
+            .find(|rung| *rung < self.requested_page_scale(member) - PAGE_ZOOM_RUNG_EPSILON)
+        {
+            Some(rung) => self.set_page_scale(member, Some(rung)),
+            None => {
+                self.note_page_zoom_refusal("already at the ladder's smallest scale");
+                vec![Effect::Redraw]
+            }
+        }
+    }
+
+    pub(super) fn page_zoom_reset(&mut self, member: Uuid) -> Vec<Effect> {
+        if !self.refuse_unzoomable(member) {
+            return vec![Effect::Redraw];
+        }
+        self.set_page_scale(member, None)
+    }
+
+    /// Write `member`'s REQUESTED page scale and ask its live surface to show
+    /// it. The two stay separate on purpose: the engine quantizes and bounds
+    /// what it applies, and never writes back over what was asked for.
+    fn set_page_scale(&mut self, member: Uuid, scale: Option<f32>) -> Vec<Effect> {
+        self.browser.entry(member).page_scale = scale;
+        self.events.push(AppEvent::PageZoomChanged {
+            node: member,
+            percent: super::page_zoom_percent(scale),
+        });
+        vec![
+            Effect::ScaleContent {
+                node: member,
+                scale: scale.unwrap_or(super::PAGE_ZOOM_DEFAULT),
+            },
+            Effect::SaveSession,
+            Effect::Redraw,
+        ]
+    }
+
+    /// The find gate's refusing shape. An engine without page zoom never
+    /// offers the rows, so this only catches a chord or a script aimed at one.
+    fn refuse_unzoomable(&mut self, member: Uuid) -> bool {
+        if !matches!(
+            self.content.get(member),
+            Some(crate::content::NodeContent::Live)
+        ) {
+            self.note_page_zoom_refusal("the node has no live document");
+            return false;
+        }
+        let Some(status) = self
+            .content
+            .facts(member)
+            .map(|facts| facts.capabilities.page_zoom.clone())
+        else {
+            self.note_page_zoom_refusal("live engine did not report document capabilities");
+            return false;
+        };
+        if !status.is_available() {
+            self.events.push(AppEvent::AffordanceUnavailable {
+                what: "page-zoom",
+                target: status.describe(),
+            });
+            return false;
+        }
+        true
+    }
+
+    fn note_page_zoom_refusal(&mut self, reason: &str) {
+        self.events.push(AppEvent::AffordanceUnavailable {
+            what: "page-zoom",
+            target: reason.to_string(),
+        });
     }
 
     pub(super) fn toggle_node_content(&mut self) -> Vec<Effect> {
@@ -1218,5 +1347,136 @@ mod tests {
             ]
         );
         assert!(effects.contains(&Effect::SaveSession));
+    }
+
+    /// A live node whose engine reports the control, ready to zoom.
+    fn note_zoomable(app: &mut App, member: uuid::Uuid) {
+        app.content.note_live(
+            member,
+            Some(crate::content::ContentFacts {
+                engine: "test.surface".into(),
+                structure: None,
+                lineage: None,
+                capabilities: crate::content::DocumentCapabilityFacts {
+                    page_zoom: crate::content::CapabilityStatus::Partial {
+                        detail: "applied, but the effective level is not read back".into(),
+                    },
+                    ..Default::default()
+                },
+            }),
+        );
+    }
+
+    fn requested(app: &App, member: uuid::Uuid) -> Option<f32> {
+        app.browser.get(member).and_then(|state| state.page_scale)
+    }
+
+    #[test]
+    fn page_zoom_steps_the_chromium_ladder_and_persists_the_request() {
+        let mut app = App::test_stub();
+        app.update(Action::OpenAddress("https://example.com/zoom".into()));
+        let member = app.graph_runtimes.focused_member().unwrap();
+        note_zoomable(&mut app, member);
+
+        let effects = app.update(Action::PageZoomIn { member });
+        assert_eq!(requested(&app, member), Some(1.1));
+        assert!(effects.contains(&Effect::SaveSession));
+        assert!(effects.contains(&Effect::ScaleContent {
+            node: member,
+            scale: 1.1
+        }));
+
+        app.update(Action::PageZoomIn { member });
+        assert_eq!(requested(&app, member), Some(1.25));
+
+        app.update(Action::PageZoomOut { member });
+        app.update(Action::PageZoomOut { member });
+        app.update(Action::PageZoomOut { member });
+        assert_eq!(requested(&app, member), Some(0.9), "1.25 → 1.1 → 1.0 → 0.9");
+
+        // Reset CLEARS rather than storing 1.0, so the save path's empty-entry
+        // pruning can drop a node that carries nothing else.
+        let effects = app.update(Action::PageZoomReset { member });
+        assert_eq!(requested(&app, member), None);
+        assert!(effects.contains(&Effect::ScaleContent {
+            node: member,
+            scale: 1.0
+        }));
+        assert!(
+            app.browser.is_empty(),
+            "a reset node has nothing to persist"
+        );
+    }
+
+    #[test]
+    fn the_ladder_ends_report_rather_than_stepping_past_themselves() {
+        let mut app = App::test_stub();
+        app.update(Action::OpenAddress("https://example.com/zoom".into()));
+        let member = app.graph_runtimes.focused_member().unwrap();
+        note_zoomable(&mut app, member);
+        app.browser.entry(member).page_scale = Some(5.0);
+
+        let effects = app.update(Action::PageZoomIn { member });
+        assert_eq!(effects, vec![Effect::Redraw]);
+        assert_eq!(requested(&app, member), Some(5.0));
+        assert!(app.take_events().iter().any(|event| matches!(
+            event,
+            crate::observe::AppEvent::AffordanceUnavailable { what, target }
+                if *what == "page-zoom" && target.contains("largest scale")
+        )));
+
+        app.browser.entry(member).page_scale = Some(0.25);
+        let effects = app.update(Action::PageZoomOut { member });
+        assert_eq!(effects, vec![Effect::Redraw]);
+        assert_eq!(requested(&app, member), Some(0.25));
+    }
+
+    #[test]
+    fn zoom_rows_appear_only_for_a_live_engine_that_reports_the_control() {
+        let mut app = App::test_stub();
+        app.update(Action::OpenAddress("https://example.com/zoom".into()));
+        let member = app.graph_runtimes.focused_member().unwrap();
+        let labels = |app: &App| -> Vec<String> {
+            app.available_actions()
+                .into_iter()
+                .map(|(label, _)| label)
+                .collect()
+        };
+
+        // Content off: no rows.
+        assert!(!labels(&app).iter().any(|label| label == "Zoom in"));
+
+        // Live, but the engine says no: still no rows, and a chord aimed at it
+        // persists nothing.
+        app.content.note_live(
+            member,
+            Some(crate::content::ContentFacts {
+                engine: "test.opaque".into(),
+                structure: None,
+                lineage: None,
+                capabilities: crate::content::DocumentCapabilityFacts {
+                    page_zoom: crate::content::CapabilityStatus::Unsupported {
+                        reason: "opaque surface has no document scale".into(),
+                    },
+                    ..Default::default()
+                },
+            }),
+        );
+        assert!(!labels(&app).iter().any(|label| label == "Zoom in"));
+        let effects = app.update(Action::PageZoomIn { member });
+        assert_eq!(effects, vec![Effect::Redraw]);
+        assert_eq!(requested(&app, member), None);
+        assert!(app.take_events().iter().any(|event| matches!(
+            event,
+            crate::observe::AppEvent::AffordanceUnavailable { what, target }
+                if *what == "page-zoom"
+                    && target.contains("opaque surface has no document scale")
+        )));
+
+        note_zoomable(&mut app, member);
+        let labels = labels(&app);
+        for row in ["Zoom in", "Zoom out", "Reset zoom"] {
+            assert!(labels.iter().any(|label| label == row), "{row} is offered");
+        }
     }
 }
