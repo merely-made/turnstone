@@ -20,6 +20,7 @@ pub mod contributed_surface;
 mod denizen;
 mod device_receipts_pane;
 mod device_receipts_service;
+pub mod distillery_installed_surface;
 pub mod document_find;
 mod download;
 mod feed;

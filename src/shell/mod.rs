@@ -574,6 +574,11 @@ impl Shell {
         surface_providers
             .register_provider(crate::sky_surface::SkySurfaceProvider::default())
             .expect("the built-in Sky provider is unique");
+        surface_providers
+            .register_provider(
+                crate::distillery_installed_surface::DistilleryInstalledProvider::default(),
+            )
+            .expect("the built-in Distillery installed provider is unique");
         let mut shell = Self {
             app,
             live_settings,

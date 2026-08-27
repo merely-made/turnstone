@@ -13,7 +13,9 @@ use cambium::{
     PointerClick, PointerEvent, PointerPhase, ResolvedSurfaceEvent, RetainedSurfaceSession,
     RunnerSurfaceSession, SurfaceEffect, SurfaceViewport, View, WheelEvent, el,
 };
-use genet_host_api::{SurfaceAvailability, SurfaceDescriptor, SurfaceId, SurfaceUnavailableReason};
+use genet_host_api::{
+    SurfaceAvailability, SurfaceDescriptor, SurfaceId, SurfaceSourceShape, SurfaceUnavailableReason,
+};
 use genet_scripted_dom::{NodeId, ScriptedDom};
 
 use crate::panes::{PaneId, PaneKindId, PaneSource, PaneSpec, SourceRef, SourceSchemaId};
@@ -85,25 +87,53 @@ impl fmt::Display for SurfaceAdmissionError {
 
 impl std::error::Error for SurfaceAdmissionError {}
 
-/// A duplicate provider identity.
+/// Why a provider registration was refused.
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct DuplicateSurfaceProvider {
-    pub pane_kind: PaneKindId,
-    pub surface_id: SurfaceId,
+pub enum SurfaceRegistrationError {
+    /// A duplicate provider identity.
+    Duplicate {
+        pane_kind: PaneKindId,
+        surface_id: SurfaceId,
+    },
+    /// The descriptor's declared source kind and the provider's admission
+    /// schema disagree. The descriptor is the stated admission truth, so a
+    /// divergence is a provider bug surfaced at registration rather than a
+    /// silent second truth consulted at admission.
+    SourceShapeMismatch {
+        surface_id: SurfaceId,
+        declared: Option<String>,
+        schema: SourceSchemaId,
+    },
 }
 
-impl fmt::Display for DuplicateSurfaceProvider {
+impl fmt::Display for SurfaceRegistrationError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "duplicate surface '{}' for pane '{}'",
-            self.surface_id.as_str(),
-            self.pane_kind.as_str()
-        )
+        match self {
+            Self::Duplicate {
+                pane_kind,
+                surface_id,
+            } => write!(
+                f,
+                "duplicate surface '{}' for pane '{}'",
+                surface_id.as_str(),
+                pane_kind.as_str()
+            ),
+            Self::SourceShapeMismatch {
+                surface_id,
+                declared,
+                schema,
+            } => write!(
+                f,
+                "surface '{}' declares accepted source {:?} but admits schema '{}'",
+                surface_id.as_str(),
+                declared,
+                schema.as_str()
+            ),
+        }
     }
 }
 
-impl std::error::Error for DuplicateSurfaceProvider {}
+impl std::error::Error for SurfaceRegistrationError {}
 
 /// A product-owned source-to-session factory.
 ///
@@ -141,13 +171,26 @@ impl SurfaceProviderRegistry {
     pub fn register(
         &mut self,
         provider: Box<dyn SurfaceProvider>,
-    ) -> Result<(), DuplicateSurfaceProvider> {
+    ) -> Result<(), SurfaceRegistrationError> {
+        let declared = match &provider.descriptor().accepted_source {
+            SurfaceSourceShape::One(kind) | SurfaceSourceShape::Many(kind) => {
+                Some(kind.as_str().to_owned())
+            }
+            SurfaceSourceShape::None => None,
+        };
+        if declared.as_deref() != Some(provider.source_schema().as_str()) {
+            return Err(SurfaceRegistrationError::SourceShapeMismatch {
+                surface_id: provider.descriptor().surface_id.clone(),
+                declared,
+                schema: provider.source_schema().clone(),
+            });
+        }
         if self.providers.iter().any(|existing| {
             existing.pane_kind() == provider.pane_kind()
                 || (existing.descriptor().provider_id == provider.descriptor().provider_id
                     && existing.descriptor().surface_id == provider.descriptor().surface_id)
         }) {
-            return Err(DuplicateSurfaceProvider {
+            return Err(SurfaceRegistrationError::Duplicate {
                 pane_kind: provider.pane_kind().clone(),
                 surface_id: provider.descriptor().surface_id.clone(),
             });
@@ -159,7 +202,7 @@ impl SurfaceProviderRegistry {
     pub fn register_provider<P: SurfaceProvider + 'static>(
         &mut self,
         provider: P,
-    ) -> Result<(), DuplicateSurfaceProvider> {
+    ) -> Result<(), SurfaceRegistrationError> {
         self.register(Box::new(provider))
     }
 

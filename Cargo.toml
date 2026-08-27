@@ -87,6 +87,9 @@ knot = { package = "knot-editor", git = "https://github.com/merely-made/mere.git
 # The reusable one-document product surface. This stays separate from the
 # broad Knot port graph used by publishing and endpoint composition above.
 knot-document = { git = "https://github.com/merely-made/mere.git", rev = "8807f4cbd9b8864156bb65f4f2d0e4bf4f2d167e" }
+# The installed Distillery projection surface: the independent second provider
+# proving the contributed-surface seam (Knot shared-surface plan P0).
+distillery = { git = "https://github.com/merely-made/mere.git", rev = "8807f4cbd9b8864156bb65f4f2d0e4bf4f2d167e" }
 graphshell-client = { git = "https://github.com/merely-made/mere.git", rev = "8807f4cbd9b8864156bb65f4f2d0e4bf4f2d167e", features = ["accesskit"] }
 graphshell-endpoint = { git = "https://github.com/merely-made/mere.git", rev = "8807f4cbd9b8864156bb65f4f2d0e4bf4f2d167e" }
 chirograph = { git = "https://github.com/merely-made/mere.git", rev = "8807f4cbd9b8864156bb65f4f2d0e4bf4f2d167e" }
