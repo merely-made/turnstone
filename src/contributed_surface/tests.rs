@@ -139,6 +139,23 @@ fn source_schema_is_only_external_schema() {
 }
 
 #[test]
+fn registration_asserts_the_descriptor_source_kind_matches_the_schema() {
+    let mut registry = SurfaceProviderRegistry::new();
+    let lying = FakeProvider {
+        pane: PaneKindId::new("fake"),
+        schema: SourceSchemaId::new("fake.v1"),
+        descriptor: descriptor("fake.surface", "fake.other"),
+        css: String::new(),
+        unavailable: None,
+    };
+    assert!(matches!(
+        registry.register_provider(lying),
+        Err(crate::contributed_surface::SurfaceRegistrationError::SourceShapeMismatch { .. })
+    ));
+    assert!(registry.is_empty());
+}
+
+#[test]
 fn registry_rejects_duplicate_and_validates_schema() {
     let mut registry = SurfaceProviderRegistry::new();
     registry
