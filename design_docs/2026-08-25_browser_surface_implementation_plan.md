@@ -156,6 +156,15 @@ E0.2 begins with per-node page zoom. Capture follows once the hosted async
 request/result path and retained observed-state provenance are explicit. The
 CEF authentication callback remains an independent engine-delivery receipt.
 
+E0.2 zoom accepted 2026-08-27. The `browser_zoom` scenario pair (plus the
+restart pair and `fixtures/browser_zoom_server.ps1`) proves the
+100→125→100 ladder, media-query reflow, transformed hit testing, find
+reveal, restart replay into a freshly spawned engine, and unchanged
+chrome/canvas scale on both retained Livery and hosted Weld. Livery reports
+the applied value through the typed `set_page_zoom`; Weld stays Partial
+because Windows CEF cannot read the effective level back. Capture and the
+CEF authentication receipt remain open.
+
 ### A0. Arrivals, custody, and network inspection
 
 Compose downloads, feeds, shared-place arrivals, and request diagnostics as
