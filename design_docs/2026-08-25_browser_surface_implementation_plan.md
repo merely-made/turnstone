@@ -1,10 +1,11 @@
 # Browser surfaces implementation plan
 
-**Status, 2026-08-26:** in progress. T0 contributed document surfaces, K0
-one-gesture Keep, F0 retained find, the D0 host decision surface, and E0.1
-engine capability disclosure are landed. Per-node page zoom and captured-page
-provenance are next; live CEF server-auth callback delivery remains an explicit
-E0 gap. This plan succeeds the
+**Status, 2026-08-28:** in progress. T0 contributed document surfaces, K0
+one-gesture Keep, F0 retained find, the D0 host decision surface, E0.1 engine
+capability disclosure, and E0.2 per-node page zoom are landed. Captured-page
+provenance is next, planned in the [page capture and provenance
+plan](2026-08-28_page_capture_plan.md); live CEF server-auth callback delivery
+remains an explicit E0 gap. This plan succeeds the
 remaining-work portion of the historical
 [browser gap analysis](2026-08-17_smolweb_browser_gap_analysis.md); the analysis
 remains useful as research and acceptance evidence.
@@ -163,7 +164,9 @@ reveal, restart replay into a freshly spawned engine, and unchanged
 chrome/canvas scale on both retained Livery and hosted Weld. Livery reports
 the applied value through the typed `set_page_zoom`; Weld stays Partial
 because Windows CEF cannot read the effective level back. Capture and the
-CEF authentication receipt remain open.
+CEF authentication receipt remain open. Capture is planned in detail in the
+[page capture and provenance plan](2026-08-28_page_capture_plan.md), whose
+D1-D6 decisions gate its implementation.
 
 ### A0. Arrivals, custody, and network inspection
 
