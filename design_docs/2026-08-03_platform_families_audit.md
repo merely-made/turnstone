@@ -63,7 +63,14 @@ and mere-signals' role. Recorded as open rather than planned, deliberately:
 the first inference consumer should be the already-scoped search fusion, and
 a product assistant lane deserves its own design conversation with the
 participant gate in the room (an inference actor is a participant like any
-other, so the gate model already names its admission path).
+other, so the gate model already names its admission path). Since this
+section was written, the intel crates named above consolidated into `esp`
+(mere `crates/intel/esp`; the old names are compatibility shims), and the
+platform ruled how inference couples (2026-08-28, the consolidation map in
+mere's `2026-08-22_conatus_engine_plan.md`): analytically, reading realms
+into derived data, and generatively, under propose-constrain-commit with
+authority disposing — inference never renders. Any harnessing surface
+designed from here starts inside those two couplings.
 
 ## Also checked in this sweep
 

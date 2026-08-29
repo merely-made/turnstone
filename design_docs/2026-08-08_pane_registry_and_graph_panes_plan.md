@@ -206,7 +206,11 @@ silently redirect a command that is already being composed.
 
 ### Graph authority and Graph pane
 
-Graph truth and projected arrangement are runtimes, not panes:
+Graph truth and projected arrangement are runtimes, not panes — the same
+split the platform later ruled wing-wide (2026-08-28, the consolidation map
+in mere's `2026-08-22_conatus_engine_plan.md`): realms own truth, projection
+shows them, and physics is a stratified capacity living in projection space
+here (Forme) exactly as seiche does on the canvas:
 
 ```rust
 GraphRuntimePool: HashMap<GraphId, GraphRuntime>
