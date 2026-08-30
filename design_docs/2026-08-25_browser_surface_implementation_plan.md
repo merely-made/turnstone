@@ -1,12 +1,13 @@
 # Browser surfaces implementation plan
 
-**Status, 2026-08-28:** in progress. T0 contributed document surfaces, K0
+**Status, 2026-08-30:** in progress. T0 contributed document surfaces, K0
 one-gesture Keep, F0 retained find, the D0 host decision surface, E0.1 engine
 capability disclosure, and E0.2 per-node page zoom are landed. Captured-page
-provenance is next, planned in the [page capture and provenance
-plan](2026-08-28_page_capture_plan.md); live CEF server-auth callback delivery
-remains an explicit E0 gap. This plan succeeds the
-remaining-work portion of the historical
+provenance P1's owner contracts and exact source pins are landed under the
+ruled [page capture and provenance plan](2026-08-28_page_capture_plan.md); its
+clean-source Turnstone compile receipt remains open. Live CEF authentication
+callback delivery remains an independent E0 acceptance tail. This plan
+succeeds the remaining-work portion of the historical
 [browser gap analysis](2026-08-17_smolweb_browser_gap_analysis.md); the analysis
 remains useful as research and acceptance evidence.
 
@@ -163,10 +164,13 @@ restart pair and `fixtures/browser_zoom_server.ps1`) proves the
 reveal, restart replay into a freshly spawned engine, and unchanged
 chrome/canvas scale on both retained Livery and hosted Weld. Livery reports
 the applied value through the typed `set_page_zoom`; Weld stays Partial
-because Windows CEF cannot read the effective level back. Capture and the
-CEF authentication receipt remain open. Capture is planned in detail in the
-[page capture and provenance plan](2026-08-28_page_capture_plan.md), whose
-D1-D6 decisions gate its implementation.
+because Windows CEF cannot read the effective level back. Capture and the CEF
+authentication receipt remain open. Capture is in progress under the
+[page capture and provenance plan](2026-08-28_page_capture_plan.md); its D1-D6
+decisions were ruled 2026-08-30 before P1 began. P1 source is landed but awaits
+its clean-source Turnstone compile receipt before P2 starts. Capture closes
+E0's capture work, while the independent authentication probe remains before E0
+as a whole is marked landed.
 
 ### A0. Arrivals, custody, and network inspection
 
@@ -284,6 +288,12 @@ Done-conditions:
   and one Mere source. The ignored local Cargo override also names the Taffy
   fork explicitly as `genet-taffy`, so local development matches the published
   package identity instead of masking stale lock state.
+- **2026-08-30, capture P1 source alignment:** Genet `da8762fd910` owns the new
+  correlated contract, Mere `9667541261` aligns its 35 Genet pins, and
+  Turnstone pins both plus Welding `844f949a9f` exactly. Turnstone's ignored
+  local lock was produced under sibling-path redirects and cannot attest those
+  published identities. Two bounded clean-source resolver runs wrote no fresh
+  lock, so the P1 consumer compile remains open rather than being called green.
 
 ## Pitfalls and contradictions
 
@@ -401,3 +411,10 @@ Done-conditions:
   native CEF and the Turnstone Weld adapter. The Apparatus, Inspector,
   observation snapshot, probe fields, and command catalog now tell the same
   engine-specific truth.
+- **2026-08-30:** landed capture P1's owner-side source: Genet `da8762fd910`,
+  Welding `844f949a9f`, and Mere alignment `9667541261`, with their focused
+  owner tests and metadata checks recorded in the capture plan. Turnstone
+  `4a6ee8d`, `5b80580`, and `6b1870c` adopt and pin those seams while leaving
+  capture honestly unsupported. The clean-source Turnstone compile
+  done-condition remains open because bounded Cargo 1.96 and 1.97 resolution
+  attempts did not produce a refreshed lock; P2 has not begun.

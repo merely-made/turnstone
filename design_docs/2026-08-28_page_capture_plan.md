@@ -1,10 +1,14 @@
 # Page capture and provenance
 
-**Status:** plan, 2026-08-28. Serves the capture half of E0 in the
+**Status:** in progress, 2026-08-30. D1-D6 were ruled before P1 began. P1's
+owner contracts and exact source pins are landed; its clean-source Turnstone
+compile gate remains open on the resolver receipt recorded below, so P2 has not
+begun. Serves the capture half of E0 in the
 [browser surfaces implementation plan](2026-08-25_browser_surface_implementation_plan.md),
 which keeps E0's done-conditions. E0.2's first half, per-node page zoom, was
-accepted 2026-08-27; this plan is its successor slice and closes E0 when it
-lands.
+accepted 2026-08-27; this plan is its successor slice and closes E0's capture
+work when it lands. E0 itself also retains the independent CEF authentication
+acceptance tail.
 
 ## What a capture is
 
@@ -21,17 +25,17 @@ bytes are the envelope's payload.
 
 ## Decisions
 
-These are open and are Mark's. Each names what the codebase already forces, so
-the choice is between real options rather than tastes.
+Mark ruled these on 2026-08-30. Each names what the codebase already forces, so
+the decision is an implementation boundary rather than a taste.
 
-### D1. The capture contract is synchronous and mandatory; it cannot stay that way
+### D1. The pre-P1 capture contract was synchronous and mandatory
 
 `SurfaceProducer::capture_snapshot_png(&mut self) -> Result<Vec<u8>, SurfaceError>`
-(genet `components/inker/src/surface_engine.rs:888`) is **required** — it has no
-default body, so every producer must write it — and **synchronous**, so it must
-return pixels before it returns at all.
+(pre-P1 genet `components/inker/src/surface_engine.rs`) was **required**: it had
+no default body, so every producer had to write it. It was also **synchronous**,
+so it had to return pixels before returning at all.
 
-No CEF-backed engine can honour that. Welding's capture is a two-step async
+No CEF-backed engine could honour that. Welding's capture is a two-step async
 pair, `request_snapshot_png()` then `poll_snapshot_png()`
 (`welding/src/surface.rs:775-790`), because it encodes and copies through
 Chromium's DevTools screenshot path. Turnstone's tile therefore answers the
@@ -51,11 +55,20 @@ Options:
   (`DocumentFindChanged`), and the shape welding's PDF path already uses
   (`NavigationEvent::PdfPrintFinished`).
 
-**Recommendation: A carried out as C** — one defaulted typed request, result as
-an event carrying the receipt identity, sync method deleted rather than
-deprecated (DOC_POLICY §3: no parallel obsolete system). It matches every engine
-that exists, it matches the zoom slot pattern that just landed, and the custody
-lane it feeds is already asynchronous (see D5).
+**Ruling: replace, with transport-native completion.** Inker owns one request id
+and common request/result vocabulary. Hosted pages start capture through
+`WebSurface` and complete through its ordered event stream. Retained
+`DocumentSession` implementations return the same typed result directly until a
+real retained event stream exists; symmetry alone does not justify inventing
+one. The old synchronous `SurfaceProducer::capture_snapshot_png` is deleted
+rather than deprecated (DOC_POLICY §3: no parallel obsolete system).
+
+The host mints a **capture request id**, not a receipt id: a failed request has
+no durable receipt. The first hosted slice permits one outstanding capture per
+surface and returns a typed busy result for a second. At decision time Welding's
+helper dropped its internal request identity before polling; `844f949a9f`
+subsequently made that identity durable through completion. The Turnstone
+adapter still enforces single-flight before it can claim hosted capture.
 
 ### D2. Screenshot and print-PDF are different artifacts
 
@@ -68,10 +81,12 @@ because one produces a file and the other hands control to a platform dialog.
 So: **distinct artifact kinds sharing one provenance envelope.** Proposed kinds
 are page image (PNG, screen media, screen scale), page document (PDF, print
 media), and page source (exact response bytes — see the view-source sidequest).
-The decision Mark owns is whether the envelope is one record type with a kind
-discriminant, or a kind-specific record per artifact. Recommendation: one
-envelope with a kind field, because the provenance questions are identical
-across kinds and the ledger should answer them uniformly.
+**Ruling: one outer envelope with typed kind-specific details.** Shared identity,
+source, engine, time and content-hash facts stay uniform; image geometry, PDF
+print facts and source-response facts do not. P1 admits only the page-image
+variant. PDF export adds its own variant when implemented. Exact response bytes
+remain the separate view-source sidequest rather than being called a rendered
+page capture.
 
 ### D3. Which page scale the envelope records
 
@@ -80,18 +95,22 @@ scale (persisted, `web.page_scale`) and the **applied** scale (engine-clamped,
 transient, known only for engines that report it). An artifact shows the applied
 one.
 
-Recommendation: record the applied scale when the engine reports it, fall back
-to the requested scale, and **mark which one it is**. A capture that records 5.0
-when Livery clamped a request of 12.0 to 5.0 is correct; one that records 12.0
-because that is what was asked is a false record.
+**Ruling: retain both facts.** Record the requested scale unconditionally and
+the engine-reported applied scale separately as optional. Never relabel the
+requested value as applied when readback is unavailable. A Livery capture can
+therefore prove a request of 12.0 was applied as 5.0, while Weld truthfully
+records the request and an unknown applied value.
 
 ### D4. Capture scope
 
 Viewport-only or full-page. Chromium can capture beyond the viewport, but
 welding does not expose that today, so full-page is engine work, not turnstone
-work. Recommendation: **viewport in this slice**, with `capture_scope` in the
-envelope from the start, so a later full-page capture is a new value rather than
-a schema change.
+work. **Ruling: viewport in this slice**, with `capture_scope` in the envelope
+from the start. The viewport record includes CSS scroll origin, CSS extent,
+output pixel dimensions and named coordinate spaces. An engine may report an
+unknown origin or extent, but that remains explicit and keeps its capability
+Partial rather than fabricating geometry. A later full-page capture becomes a
+new scope value rather than a schema change.
 
 ### D5. Whether a capture writes a user-visible file
 
@@ -100,39 +119,51 @@ plus a convenience copy in the download directory (`src/download.rs:211-240`).
 A capture is not a download — nobody asked for a file in Downloads — but a
 capture nobody can find is not much use either.
 
-Recommendation: **deposit always, copy only on explicit save.** The blob deposit
-makes it durable and node-attached; the file copy becomes the Save action of P5.
+**Ruling: deposit always after an explicit capture is admitted; copy only on
+explicit save.** The blob deposit makes it durable and node-attached; the file
+copy becomes the Save action of P5. The existing download helper always performs
+both operations, so P2 extracts a general representation-deposit command rather
+than routing capture through `download::store`. Session, node and document
+generation are captured when the request starts so a switch or navigation
+cannot redirect a later completion.
 
 ### D6. Retained capture in this slice, or honestly unsupported
 
-`DocumentSession` has **no** capture method at all today, and every retained
-lane reports `page_capture` unsupported (genet
-`components/genet-documents/src/engines.rs:43` and `:827`). Retained capture is
+Before P1, `DocumentSession` had **no** capture method. P1 now gives it a
+defaulted immediate method using the shared result vocabulary, while every
+retained lane still reports `page_capture` unsupported (genet
+`components/genet-documents/src/engines.rs`). Retained implementation remains
 net-new the same way retained zoom was.
 
 Livery can in principle be captured: it emits a paint list that netrender
 already rasterizes to produce the frame on screen. The question is whether this
 slice pays for a rasterize-to-PNG path or ships hosted capture first.
 
-Recommendation: **contract in P1, implementation deferred to P4 and gated on
-Mark's call.** Livery keeps its honest unsupported status until the path exists.
-E0.2 proved a contract can land ahead of a lane implementing it.
+**Ruling: contract in P1, retained implementation deferred beyond the hosted
+landing.** Livery keeps its honest unsupported status until a rasterize-to-PNG
+path exists. P4 remains an explicit later lane and does not block the hosted
+capture receipt; E0's capability rule already permits a typed unavailable
+result. E0.2 proved a contract can land ahead of a lane implementing it.
 
 ## Phases
 
-### P1. The capture contract
+### P1. The capture contract (source landed; consumer gate open)
 
-Put the chosen shape (D1) on both traits in inker: a defaulted typed request and
-a result carrying the artifact bytes, kind, and the facts only the engine knows
-(viewport, applied scale, scope). Retire the mandatory sync method.
+Put the shared typed request/result vocabulary in Inker. `WebSurface` gets a
+defaulted request command and a correlated completion event;
+`DocumentSession` gets a defaulted immediate capture method using the same
+types. The result carries the page-image bytes plus the facts only the engine
+knows (applied scale, viewport geometry, scope and output dimensions). Retire
+the mandatory sync `SurfaceProducer` method.
 
 Done-conditions:
 
 - Every registered engine reports a typed supported, partial, or unsupported
   page-capture status, and no engine is forced to implement a method it cannot
   honour.
-- The result identifies which request it answers, so a second capture cannot be
-  mistaken for the first.
+- The hosted completion identifies which request it answers on both success and
+  failure. Lower transports preserve their own admitted request identities and
+  do not evict completions before the adapter polls them.
 - Turnstone compiles against the new contract with capture still unimplemented,
   proving the contract change is separable from the product work.
 
@@ -145,18 +176,25 @@ Done-conditions:
 
 - A capture on a live Weld surface produces bytes deposited in the session's
   representation store, keyed by content hash.
+- The first Turnstone adapter is single-flight and returns typed busy for a
+  second request while one is outstanding, so host and Welding identities
+  cannot be paired with the wrong provenance record.
 - The deposit happens off the event-loop thread and answers with one app-owned
   update, matching the download custody actor.
 - A capture requested on a node whose surface dies before the result arrives
   fails typed, leaves no partial artifact, and says so in observation.
+- Navigation, node closure and session switch either retain the exact captured
+  target generation or reject the stale completion; none can attach it to the
+  newly current page.
 - Two captures of the same unchanged page deposit one blob — content addressing
   proving itself.
 
 ### P3. The provenance record
 
 The envelope, attached to the node: node identity, source address, engine,
-viewport, page scale with its requested/applied marker, observed time, capture
-scope, artifact kind, and content hash.
+viewport rectangle and output pixels, requested page scale, optional
+engine-reported applied scale, request/completion observation interval, capture
+scope, typed artifact details, and content hash.
 
 Done-conditions:
 
@@ -169,7 +207,7 @@ Done-conditions:
 - Observation and the Inspector can show a node's captures without opening the
   bytes.
 
-### P4. Retained capture (gated on D6)
+### P4. Retained capture (deferred by D6)
 
 Rasterize a Livery session's paint list to the same artifact kinds.
 
@@ -183,21 +221,24 @@ Done-conditions:
 - Retained and hosted captures produce the same envelope shape, distinguishable
   only by the engine field.
 
-### P5. Save and print over the artifact
+### P5. Save and PDF export
 
 There is no page save or print action today: `Action::SaveSession`
 (`src/action.rs:231`) is session persistence, not page saving. So E0's
 "save/print consumes the captured representation rather than a graph scene" is
-not a rewire — it is introducing Save and Print on top of P2's artifact.
+not a rewire. This slice introduces Save over P2's artifact and a distinct PDF
+export artifact. Actual printing remains deferred until Turnstone owns a
+platform path that prints a deposited artifact; Welding's `print_to_pdf`
+produces an artifact and does not consume one.
 
 Done-conditions:
 
 - Save writes the user-visible copy from the deposited artifact, never by
   re-capturing or re-fetching.
-- Print uses the print-media path (`print_to_pdf`) and is offered separately
+- PDF export uses the print-media path (`print_to_pdf`) and is offered separately
   from image capture, so neither pretends to be the other.
-- Both are capability-gated per engine and simply absent where unsupported,
-  matching how the zoom actions behave.
+- Save and PDF export are capability-gated per engine and simply absent where
+  unsupported, matching how the zoom actions behave.
 - A save of a capture taken at 125% produces the artifact that was captured, not
   a fresh one at the current scale.
 
@@ -216,13 +257,14 @@ Done-conditions:
 
 ## Findings
 
-- **2026-08-28, live tree:** `SurfaceProducer::capture_snapshot_png` is required
-  and synchronous (inker `surface_engine.rs:888`), while welding's capture is
-  async (`welding/src/surface.rs:775-790`). Turnstone answers it `Unsupported`
-  (`src/shell/weld.rs:500`). The contract, not the tile, is the thing that is
-  wrong.
-- **2026-08-28, live tree:** `DocumentSession` has no capture method at all;
-  retained capture is net-new, exactly as retained zoom was before E0.2.
+- **2026-08-28, pre-P1 tree:** `SurfaceProducer::capture_snapshot_png` was
+  required and synchronous, while Welding capture was asynchronous. Turnstone
+  answered the mandatory method `Unsupported`. P1 retired that seam in Genet
+  `da8762fd910`; hosted capture now uses a request plus correlated completion,
+  and retained sessions use a defaulted immediate method.
+- **2026-08-28, pre-P1 tree:** `DocumentSession` had no capture method at all.
+  Genet `da8762fd910` adds the defaulted contract without claiming a retained
+  implementation; retained capture remains net-new.
 - **2026-08-28, live tree:** the custody lane already exists and already does
   what capture needs — a serialized off-thread writer depositing into
   `representations.redb` through `muniment::BlobStore`, returning a
@@ -241,16 +283,33 @@ Done-conditions:
   cheap. Hosted engines fetch internally and turnstone never holds those bytes,
   so hosted view source needs an engine seam or an honest unsupported status —
   the same split page capture itself has.
+- **2026-08-30, pre-P1 Welding tree:** `SnapshotChannel` retained internal CDP
+  ids while requests waited, but its public poll result dropped the id and its
+  bounded result queue evicted the oldest completion at sixteen. Welding
+  `844f949a9f` now returns a typed request id with every success or error, counts
+  pending plus unpolled results against one sixteen-slot admission bound, and
+  rejects overflow without evicting an admitted completion. This is
+  source/compile evidence; a new live cross-platform screenshot receipt remains
+  later work.
+- **2026-08-30, live tree:** `download::store` always deposits and creates a
+  user-visible file (`src/download.rs:211-239`). Capture reuses the Muniment
+  store and serialized actor pattern, not that combined operation.
+- **2026-08-30, consumer resolution:** Turnstone's ignored local `Cargo.lock`
+  was produced under `.cargo/config.toml` sibling-path redirects, so it cannot
+  attest the exact published Genet, Mere and Welding identities. Clean-source
+  resolution must run from outside the checkout with `--manifest-path` before a
+  locked compile can count as the P1 consumer receipt.
 
 ## Sidequests
 
 Recorded here so they are not lost, and because each is independently closable:
 
-- **View source**, riding along with P2/P3: retained lanes can serve it from
-  held bytes; hosted lanes cannot without a seam (see Findings).
-- **CEF authentication probe**: one probe of whether `GetAuthCredentials` fires
-  for a proxy challenge. If it does not, keep the partial status and stop
-  digging.
+- **View source**, after P3 rather than inside P1: retained lanes can serve it
+  from held bytes; hosted lanes cannot without a seam (see Findings).
+- **CEF authentication acceptance tail**: one probe of whether
+  `GetAuthCredentials` fires for a proxy challenge. If it does not, keep the
+  partial status and stop digging. This remains required before E0 as a whole is
+  marked landed, although it is independent of capture implementation.
 - **Zoom parity tail**: extend the typed page-zoom command to scripted, reader,
   and smolweb lanes, and settle the `page-zoom-applied` observation nuance — the
   field currently means "this node has been zoomed this session", not "this
@@ -263,3 +322,24 @@ Recorded here so they are not lost, and because each is independently closable:
 - **2026-08-28:** plan written. Contract, artifact-kind, envelope, scope,
   custody, and retained-lane questions raised as decisions D1–D6 ahead of any
   implementation; no code written.
+- **2026-08-30:** D1-D6 ruled. P1 began with transport-native hosted versus
+  retained completion, request rather than receipt identity, dual scale facts,
+  exact viewport geometry, deposit-only custody, and retained capture deferred.
+  Save and PDF export are separated from actual printing; the CEF auth probe is
+  retained as an E0 acceptance tail.
+- **2026-08-30:** P1 source implementation landed. Genet `da8762fd910` owns the
+  shared viewport request/result vocabulary, correlated hosted completion,
+  defaulted retained method and typed busy error; its Inker tests pass 106/106,
+  Graft/Scrying/Weld tests pass 21/21, Pelt routing passes 3/3, and the Pelt
+  desktop library checks. Welding `844f949a9f` retains request identity through
+  completion and rejects a seventeenth admitted capture without eviction; its
+  CEF-featured Welding tests pass 52/52 plus two compile doctests, and the
+  Windows demo checks. Mere `9667541261` aligns all 35 Genet pins; root,
+  Distillery and Graphshell-web `--no-deps` metadata parse offline, while Knot
+  desktop's workspace-membership error remains outside this slice.
+- **2026-08-30:** Turnstone commits `4a6ee8d`, `5b80580` and `6b1870c` retire
+  its obsolete sync stub and pin Genet `da8762fd910`, Welding `844f949a9f` and
+  Mere `9667541261` exactly. The clean-source compile receipt is still open:
+  bounded Cargo 1.96 and 1.97 resolver runs each crossed roughly 418 CPU seconds
+  and 1.5 GB without writing a refreshed ignored lock, so they were stopped.
+  No Turnstone compile is claimed, and P2 waits on this final P1 done-condition.
