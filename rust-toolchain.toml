@@ -1,5 +1,5 @@
-# Match mere's workspace toolchain (its dependency graph floors at
-# rustc >= 1.95; mere pins 1.96 rather than the bare minimum, and turnstone
+# Match Mere and Genet's workspace toolchain (the dependency graph floors at
+# rustc >= 1.95; they pin 1.97.1 rather than the bare minimum, and Turnstone
 # consumes those same subtrees through the facade).
 [toolchain]
-channel = "1.96.0"
+channel = "1.97.1"

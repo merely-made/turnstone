@@ -343,3 +343,7 @@ Recorded here so they are not lost, and because each is independently closable:
   bounded Cargo 1.96 and 1.97 resolver runs each crossed roughly 418 CPU seconds
   and 1.5 GB without writing a refreshed ignored lock, so they were stopped.
   No Turnstone compile is claimed, and P2 waits on this final P1 done-condition.
+- **2026-08-30:** Turnstone's workspace toolchain now pins Rust 1.97.1, matching
+  Mere and Genet; the prior workspace-version mismatch is retired. This does not
+  change the clean-source resolver/compile boundary above: no Turnstone compile
+  is claimed, and P2 remains blocked on that P1 done-condition.
