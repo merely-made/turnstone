@@ -496,12 +496,6 @@ impl WeldSurface for TurnstoneWeldSurface {
             .map_err(weld_input_error)?;
         Ok(())
     }
-
-    fn capture_snapshot_png(&mut self) -> Result<Vec<u8>, SurfaceError> {
-        Err(SurfaceError::Unsupported(
-            "Turnstone has not projected Weld snapshots yet".into(),
-        ))
-    }
 }
 
 fn map_event_modifiers(
