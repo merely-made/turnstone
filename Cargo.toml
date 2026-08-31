@@ -66,7 +66,6 @@ stickleback = { git = "https://github.com/merely-made/mere.git", rev = "49f9b99e
 muniment = { git = "https://github.com/merely-made/mere.git", rev = "49f9b99ed52e543c992a1a45e599dc6760d2ab41", features = ["redb"] }
 proofs = { package = "mere-proofs", git = "https://github.com/merely-made/mere.git", rev = "49f9b99ed52e543c992a1a45e599dc6760d2ab41" }
 chartulary = { git = "https://github.com/merely-made/mere.git", rev = "49f9b99ed52e543c992a1a45e599dc6760d2ab41" }
-codicil = { git = "https://github.com/merely-made/mere.git", rev = "49f9b99ed52e543c992a1a45e599dc6760d2ab41" }
 # Denizen subjects are content-derived: blake3(source) is the 32-byte keyholder.
 blake3 = "1"
 
