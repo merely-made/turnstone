@@ -235,8 +235,8 @@ weld = ["dep:weld-engine", "dep:welding", "dep:grafting", "dep:windows"]
 [target.'cfg(windows)'.dependencies]
 # Weld owns CEF's callback-time copy; Grafting owns the generic DX12 shared
 # handle import on Turnstone's existing wgpu device.
-welding = { git = "https://github.com/merely-made/wgpu-weld.git", rev = "844f949a9fca4c6d6aa11b4bad7e932dca090371", features = ["cef-runtime"], optional = true }
-grafting = { git = "https://github.com/merely-made/wgpu-graft.git", branch = "main", default-features = false, features = ["wgpu-30"], optional = true }
+welding = { git = "https://github.com/merely-made/wgpu-weld.git", rev = "18395ed1043c93f215d0bca38361375681c6fc9c", features = ["cef-runtime"], optional = true }
+grafting = { git = "https://github.com/merely-made/wgpu-graft.git", rev = "8106f7c6b16838eb9ec062f0293249b39c108907", default-features = false, features = ["wgpu-30"], optional = true }
 windows = { version = "0.62", features = ["Win32_Foundation"], optional = true }
 
 # Registry patches mirrored from mere's workspace manifest: a `[patch]` lives
