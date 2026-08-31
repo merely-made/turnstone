@@ -278,7 +278,7 @@ p2panda-store = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2
 p2panda-stream = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.2" }
 p2panda-sync = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.2" }
 # Livery/Buckram require Genet's current taffy fork.
-taffy = { package = "genet-taffy", version = "=0.13.1", git = "https://github.com/merely-made/genet.git", rev = "da8762fd910d855d3bccec8af75d474d360e35b6" }
+taffy = { package = "genet-taffy", version = "=0.14.0", git = "https://github.com/merely-made/genet.git", rev = "da8762fd910d855d3bccec8af75d474d360e35b6" }
 # Genet-Livery uses the current fork's last-line alignment and tab-size APIs.
 # Root patches are not inherited, so a standalone host must select the same
 # Parley package now exposed from the Genet workspace.
