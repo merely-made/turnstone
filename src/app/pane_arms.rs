@@ -508,8 +508,8 @@ impl App {
         // The app vocabulary's axis maps onto Genet's at the platen
         // call (the one place the tile contract is named).
         let axis = match axis {
-            crate::action::WbAxis::Row => genet_host_api::tile::SplitAxis::Row,
-            crate::action::WbAxis::Column => genet_host_api::tile::SplitAxis::Column,
+            crate::action::WbAxis::Row => workbench::SplitAxis::Row,
+            crate::action::WbAxis::Column => workbench::SplitAxis::Column,
         };
         let moved = self
             .workbench_owner_pane()
@@ -530,8 +530,8 @@ impl App {
         after: bool,
     ) -> Vec<Effect> {
         let axis = match axis {
-            crate::action::WbAxis::Row => genet_host_api::tile::SplitAxis::Row,
-            crate::action::WbAxis::Column => genet_host_api::tile::SplitAxis::Column,
+            crate::action::WbAxis::Row => workbench::SplitAxis::Row,
+            crate::action::WbAxis::Column => workbench::SplitAxis::Column,
         };
         let moved = self
             .workbench_owner_pane()

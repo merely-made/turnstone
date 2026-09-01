@@ -10,9 +10,9 @@ use std::rc::Rc;
 
 use cambium::{AnyView, DomHandle, GenetAppRunner, GenetCtx, GenetElement, el, setting_row};
 use genet_host_api::settings::{SettingSpec, SettingValue, SettingsProjection, SettingsProvider};
-use genet_host_api::tile::SettingsRef;
 use genet_scripted_dom::ScriptedDom;
 use pandect::{ApplicationSettings, ShellbarEdge};
+use workbench::SettingsRef;
 
 use crate::settings_provider::{APPLICATION_REFERENCE, ApplicationSettingsProvider};
 use crate::shell_services::{ShellChromeConfig, ThemeMode};

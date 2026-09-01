@@ -5,7 +5,7 @@
 //! by construction).
 //!
 //! Supply, all pre-existing and previously unused: `crate::panes::project_frisket_with`
-//! (the pane tree, with a per-leaf content hook), `mere::workbench::project_workbench`
+//! (the pane tree, with a per-leaf content hook), `mere::platen::project_tile_layout`
 //! (the tiling), and `uxtree::stitch`. The document subtree is built here from
 //! the [`StructureFacts`] outline the content port mirrors at spawn (the
 //! `DocumentSession::inspect` accessor landed with the Inspector slice) — so
@@ -56,7 +56,7 @@ fn project_app_capturing(
     let panes = crate::panes::project_frisket_with(&app.frisket, |content, id| match content {
         PaneContent::Workbench => app
             .workbench_for_pane(id)
-            .map(mere::workbench::project_workbench),
+            .map(mere::platen::project_tile_layout),
         PaneContent::Orrery => {
             if orrery_pane.is_none() {
                 *orrery_pane = Some(id);

@@ -10,10 +10,10 @@ use genet_host_api::settings::{
     SettingControl, SettingMovement, SettingMutability, SettingOption, SettingScope,
     SettingSecurity, SettingSpec, SettingValue, SettingsError, SettingsProvider,
 };
-use genet_host_api::tile::SettingsRef;
 use pandect::{
     ApplicationSettings, ShellbarEdge, load_application_settings, save_application_settings,
 };
+use workbench::SettingsRef;
 
 /// Turnstone's application-owned settings page.
 pub const APPLICATION_REFERENCE: &str = "turnstone/application";
