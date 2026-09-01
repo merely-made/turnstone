@@ -22,6 +22,23 @@ use super::Shell;
 /// node and go rows, so a handful is what there is room to read.
 const RECALL_ROW_LIMIT: usize = 5;
 
+/// Current application titles available to the derived trail index. Graph
+/// nodes and recycle-bin records stay authoritative; the trail port receives
+/// a value projection with each recall request.
+fn recall_sources(app: &crate::app::App) -> Vec<crate::trail_memory::RecallSource> {
+    let graph = app.graph_runtimes.graph();
+    let mut sources = graph
+        .nodes()
+        .filter_map(|(_, node)| {
+            crate::trail_memory::RecallSource::new(node.url(), node.title.clone())
+        })
+        .collect::<Vec<_>>();
+    sources.extend(app.removed.iter().filter_map(|record| {
+        crate::trail_memory::RecallSource::new(&record.url, record.title.as_deref()?)
+    }));
+    sources
+}
+
 pub(super) fn app_find_model(state: inker::DocumentFindState) -> crate::action::DocumentFindModel {
     crate::action::DocumentFindModel {
         count: state.count,
@@ -587,10 +604,18 @@ impl Shell {
                 // The recall lane: the trail actor answers with hits carrying
                 // the query back, and the app drops superseded answers.
                 Effect::RecallQuery { query } => {
+                    let sources = recall_sources(&self.app);
+                    let settings = self.live_settings.snapshot();
+                    let config = crate::trail_memory::RecallConfig::new(
+                        settings.recall_ngram_max_order(),
+                        settings.recall_vector_weight(),
+                    );
                     self.trail_handle
                         .command(crate::trail_memory::TrailCommand::Recall {
                             query,
                             limit: RECALL_ROW_LIMIT,
+                            sources,
+                            config,
                         });
                 }
                 // The session switch (rung 6's second half). Ordering is the

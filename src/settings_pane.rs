@@ -31,6 +31,10 @@ pub struct ChromeSettings {
     /// live snapshot because it is the same kind of thing: an application
     /// setting the app must see change without a restart.
     cascade_budget: u32,
+    /// Highest cumulative token n-gram order for the derived recall vectors.
+    recall_ngram_max_order: u8,
+    /// Vector weight relative to BM25. Zero keeps lexical-only recall.
+    recall_vector_weight: f32,
 }
 
 impl From<&ApplicationSettings> for ChromeSettings {
@@ -42,6 +46,8 @@ impl From<&ApplicationSettings> for ChromeSettings {
             shellbar_edge: settings.shellbar_edge,
             shellbar_hidden: settings.shellbar_hidden,
             cascade_budget: settings.cascade_budget,
+            recall_ngram_max_order: settings.recall_ngram_max_order,
+            recall_vector_weight: settings.recall_vector_weight,
         }
     }
 }
@@ -49,6 +55,14 @@ impl From<&ApplicationSettings> for ChromeSettings {
 impl ChromeSettings {
     pub fn cascade_budget(&self) -> u32 {
         self.cascade_budget
+    }
+
+    pub fn recall_ngram_max_order(&self) -> u8 {
+        self.recall_ngram_max_order
+    }
+
+    pub fn recall_vector_weight(&self) -> f32 {
+        self.recall_vector_weight
     }
 
     pub fn theme_id(&self) -> Option<&str> {
@@ -329,13 +343,14 @@ mod tests {
     fn pane_renders_controls_from_setting_control_not_setting_ids() {
         let pane = SettingsPane::new(root("render"));
         let dom = pane.dom_ref();
-        assert_eq!(dom.all_with_class(dom.document(), "setting-row").len(), 6);
-        assert_eq!(dom.all_with_class(dom.document(), "setting-label").len(), 6);
-        assert_eq!(dom.all_with_class(dom.document(), "setting-apply").len(), 6);
-        // Two number controls now: UI zoom and the cascade budget.
-        assert_eq!(dom.all_with_class(dom.document(), "slider-track").len(), 2);
+        assert_eq!(dom.all_with_class(dom.document(), "setting-row").len(), 8);
+        assert_eq!(dom.all_with_class(dom.document(), "setting-label").len(), 8);
+        assert_eq!(dom.all_with_class(dom.document(), "setting-apply").len(), 8);
+        // UI zoom, cascade budget, and phrase influence are number controls.
+        assert_eq!(dom.all_with_class(dom.document(), "slider-track").len(), 3);
         assert_eq!(dom.all_with_class(dom.document(), "toggle").len(), 1);
-        assert_eq!(dom.all_with_class(dom.document(), "radio").len(), 7);
+        // Theme mode (3), shellbar edge (4), and phrase order (3).
+        assert_eq!(dom.all_with_class(dom.document(), "radio").len(), 10);
     }
 
     #[test]
@@ -359,6 +374,8 @@ mod tests {
         });
         assert!(!live.snapshot().shellbar_visible());
         assert_eq!(live.snapshot().shellbar_edge(), ShellbarEdge::Left);
+        assert_eq!(live.snapshot().recall_ngram_max_order(), 2);
+        assert_eq!(live.snapshot().recall_vector_weight(), 0.0);
         let mut app = crate::app::App::test_stub();
         assert!(app.apply_chrome_settings_snapshot(&live.snapshot()));
         assert!(

@@ -1013,9 +1013,9 @@ pub enum SmolwebSubmissionReceipt {
     Redirect(String),
 }
 
-/// One lexical-recall hit from browsing memory, in app-owned terms (the trail
-/// port converts eidetic-search's `Hit` at the boundary, like the bin does
-/// with `DeletedNode`).
+/// One recall hit from browsing memory, in app-owned terms. The trail port
+/// converts its lexical/vector projection at the boundary, like the bin does
+/// with `DeletedNode`.
 #[derive(Clone, Debug, PartialEq)]
 pub struct RecallHit {
     pub url: String,

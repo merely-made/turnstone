@@ -31,6 +31,12 @@ const SHELLBAR_EDGE_OPTIONS: [(&str, &str); 4] = [
     ("bottom", "Bottom"),
 ];
 
+const RECALL_NGRAM_OPTIONS: [(&str, &str); 3] = [
+    ("1", "Words"),
+    ("2", "Words and pairs"),
+    ("3", "Words, pairs, and triples"),
+];
+
 fn shellbar_edge_value(edge: ShellbarEdge) -> &'static str {
     match edge {
         ShellbarEdge::Left => "left",
@@ -222,6 +228,27 @@ impl SettingsProvider for ApplicationSettingsProvider {
                 },
                 value: SettingValue::Number(f64::from(self.settings.cascade_budget)),
             },
+            Self::application_choice_spec(
+                "recall.phrase_order",
+                "Phrase recall order",
+                self.settings.recall_ngram_max_order.to_string(),
+                &RECALL_NGRAM_OPTIONS,
+                SettingMovement::LocalOnly,
+            ),
+            SettingSpec {
+                id: "recall.phrase_influence".into(),
+                label: "Phrase recall influence (0 off)".into(),
+                scope: SettingScope::Application,
+                movement: SettingMovement::LocalOnly,
+                mutability: SettingMutability::Live,
+                security: SettingSecurity::Ordinary,
+                control: SettingControl::Number {
+                    min: Some(0.0),
+                    max: Some(4.0),
+                    step: Some(0.25),
+                },
+                value: SettingValue::Number(f64::from(self.settings.recall_vector_weight)),
+            },
         ])
     }
 
@@ -265,10 +292,41 @@ impl SettingsProvider for ApplicationSettingsProvider {
             {
                 self.settings.cascade_budget = value as u32;
             }
+            ("recall.phrase_order", SettingValue::Text(value)) => {
+                self.settings.recall_ngram_max_order = match value.as_str() {
+                    "1" => 1,
+                    "2" => 2,
+                    "3" => 3,
+                    _ => {
+                        return Err(invalid_choice(
+                            "recall.phrase_order",
+                            &value,
+                            &RECALL_NGRAM_OPTIONS,
+                        ));
+                    }
+                };
+            }
+            ("recall.phrase_influence", SettingValue::Number(value))
+                if value.is_finite() && (0.0..=4.0).contains(&value) =>
+            {
+                self.settings.recall_vector_weight = value as f32;
+            }
             ("behaviors.cascade_budget", other) => {
                 return Err(SettingsError::InvalidValue {
                     setting_id: "behaviors.cascade_budget".into(),
                     message: format!("expected Number in 1..=16, got {other:?}"),
+                });
+            }
+            ("recall.phrase_order", other) => {
+                return Err(SettingsError::InvalidValue {
+                    setting_id: "recall.phrase_order".into(),
+                    message: format!("expected Text, got {other:?}"),
+                });
+            }
+            ("recall.phrase_influence", other) => {
+                return Err(SettingsError::InvalidValue {
+                    setting_id: "recall.phrase_influence".into(),
+                    message: format!("expected Number in 0..=4, got {other:?}"),
                 });
             }
             ("theme.id" | "theme.mode", other) => {
@@ -327,7 +385,7 @@ mod tests {
             .describe(&SettingsRef(APPLICATION_REFERENCE.into()))
             .unwrap();
 
-        assert_eq!(specs.len(), 6);
+        assert_eq!(specs.len(), 8);
         // Named rather than merely counted: a row that silently stops being
         // described is the failure this test should catch.
         assert!(
@@ -350,6 +408,15 @@ mod tests {
         );
         assert!(matches!(specs[3].control, SettingControl::Choice { .. }));
         assert_eq!(specs[4].control, SettingControl::Toggle);
+        assert!(matches!(specs[6].control, SettingControl::Choice { .. }));
+        assert_eq!(
+            specs[7].control,
+            SettingControl::Number {
+                min: Some(0.0),
+                max: Some(4.0),
+                step: Some(0.25),
+            }
+        );
     }
 
     #[test]
@@ -363,6 +430,20 @@ mod tests {
                 &reference,
                 "theme.id",
                 SettingValue::Text("theme:night".into()),
+            )
+            .unwrap();
+        provider
+            .apply(
+                &reference,
+                "recall.phrase_order",
+                SettingValue::Text("3".into()),
+            )
+            .unwrap();
+        provider
+            .apply(
+                &reference,
+                "recall.phrase_influence",
+                SettingValue::Number(1.5),
             )
             .unwrap();
         provider
@@ -387,11 +468,15 @@ mod tests {
         assert_eq!(provider.settings().ui_zoom, 1.25);
         assert_eq!(provider.settings().shellbar_edge, ShellbarEdge::Bottom);
         assert!(provider.settings().shellbar_hidden);
+        assert_eq!(provider.settings().recall_ngram_max_order, 3);
+        assert_eq!(provider.settings().recall_vector_weight, 1.5);
         let loaded = load_application_settings(&root).unwrap().unwrap();
         assert_eq!(loaded.theme_id.as_deref(), Some("theme:night"));
         assert_eq!(loaded.ui_zoom, 1.25);
         assert_eq!(loaded.shellbar_edge, ShellbarEdge::Bottom);
         assert!(loaded.shellbar_hidden);
+        assert_eq!(loaded.recall_ngram_max_order, 3);
+        assert_eq!(loaded.recall_vector_weight, 1.5);
         let _ = std::fs::remove_dir_all(root);
     }
 
