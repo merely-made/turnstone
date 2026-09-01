@@ -243,6 +243,17 @@ Done-conditions:
   capture without collapsing two different artifacts.
 - **2026-08-25, live tree:** contributed-surface admission and Knot consumption
   landed in `1e9dde1` and `a37e6a1`. That seam is available to D0, A0, and X0.
+- **2026-09-01, repository boundary:** Knot is now consumed from the independent
+  `merely-made/knot-editor` repository at immutable revision
+  `c4d15aa66eee46060081902ba8459f01c9c82f98`. Turnstone still owns surface
+  placement and shell policy; Knot retains document, vault, evidence, sync, and
+  publishing authority. The cutover advances the shared Mere line to
+  `1e59c0b7c930b78046fd62896a4b5fa8e6e9f120`, where Distillery uses the same
+  frozen Genet host API as Turnstone, Cambium, and Knot. The isolated consumer
+  receipt resolved one source identity for each crossing contract, passed 5
+  contributed-surface tests and 5 in-process authoring tests, then passed all 5
+  environment-gated authoring tests against `knot_endpoint` built from the
+  external repository.
 - **2026-08-25, consumer build:** advancing the stale Mere and Genet git
   packages exposed an uninherited Parley patch before Turnstone compiled.
   Genet now exposes its fork as a workspace package in `94a4dc4155b`, and
