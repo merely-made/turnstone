@@ -35,7 +35,7 @@ use eidetic::{
     BrowsingMemory, BrowsingTrace, PageRef, TraceEvent, TraceTransition, bootstrap_browsing_schema,
 };
 use eidetic_fjall::FjallStore;
-use eidetic_search::{TrailIndex, fuse};
+use eidetic_search::{FusedHit, TrailIndex, fuse};
 use esp::embed::{LexicalEmbeddingProvider, SemanticSearch};
 
 use crate::action::{RecallHit, Update};
@@ -335,32 +335,15 @@ impl RecallIndex {
         })
     }
 
-    fn search(
+    fn fused_hits(
         &self,
         query: &str,
         limit: usize,
         config: RecallConfig,
-    ) -> Result<Vec<RecallHit>, String> {
+    ) -> Result<Vec<FusedHit>, String> {
         if limit == 0 {
             return Ok(Vec::new());
         }
-
-        // Zero influence is the compatibility path: preserve TrailIndex's
-        // ranking and metadata exactly, and do not require a vector projection.
-        if !config.vector_enabled() {
-            return Ok(self
-                .lexical
-                .search(query, limit)
-                .map_err(|err| format!("search: {err}"))?
-                .into_iter()
-                .map(|hit| RecallHit {
-                    url: hit.url,
-                    title: hit.title,
-                    at_ms: hit.at_ms,
-                })
-                .collect());
-        }
-
         let candidate_limit = limit.saturating_mul(FUSION_CANDIDATE_MULTIPLIER).max(limit);
         let lexical_hits = self
             .lexical
@@ -400,13 +383,45 @@ impl RecallIndex {
             (1.0, f64::from(config.vector_weight)),
         )
         .into_iter()
-        .filter_map(|fused| {
-            self.documents
-                .get(&fused.url)
-                .map(|document| document.hit.clone())
-        })
         .take(limit)
         .collect())
+    }
+
+    fn search(
+        &self,
+        query: &str,
+        limit: usize,
+        config: RecallConfig,
+    ) -> Result<Vec<RecallHit>, String> {
+        if limit == 0 {
+            return Ok(Vec::new());
+        }
+
+        // Zero influence is the compatibility path: preserve TrailIndex's
+        // ranking and metadata exactly, and do not require a vector projection.
+        if !config.vector_enabled() {
+            return Ok(self
+                .lexical
+                .search(query, limit)
+                .map_err(|err| format!("search: {err}"))?
+                .into_iter()
+                .map(|hit| RecallHit {
+                    url: hit.url,
+                    title: hit.title,
+                    at_ms: hit.at_ms,
+                })
+                .collect());
+        }
+
+        Ok(self
+            .fused_hits(query, limit, config)?
+            .into_iter()
+            .filter_map(|fused| {
+                self.documents
+                    .get(&fused.url)
+                    .map(|document| document.hit.clone())
+            })
+            .collect())
     }
 }
 
@@ -561,6 +576,10 @@ pub fn spawn_trail(wake: Wake, dir: PathBuf) -> (ActorHandle<TrailCommand>, Rece
         },
     )
 }
+
+#[cfg(test)]
+#[path = "trail_memory_evaluation.rs"]
+mod evaluation;
 
 #[cfg(test)]
 mod tests {

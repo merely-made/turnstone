@@ -38,6 +38,7 @@ set.
 
 ## Current implementation plans and product direction
 
+- [Trail recall evaluation](2026-09-02_trail_recall_evaluation_plan.md): private captured-corpus protocol for selecting or rejecting configurable phrase recall against BM25 with held-out ranking and resource budgets.
 - [Page capture and provenance](2026-08-28_page_capture_plan.md): ruled path
   for durable node-attached page captures; P1 owner contracts and exact pins
   are landed, its clean-source Turnstone compile gate remains open, and P2
