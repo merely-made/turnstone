@@ -599,7 +599,7 @@ fn admit_inner(
             members: members.len(),
             roster_members: receipt.snapshot.roster.members.len(),
             delegated_certificates: receipt.snapshot.delegated_certificates,
-            tessera_operations: receipt.snapshot.tessera_operations,
+            standing_operations: receipt.snapshot.standing_operations,
         },
         group_members: group
             .members()
@@ -816,7 +816,7 @@ fn place_snapshot(
             members: moot_snapshot.membership.members.len(),
             roster_members: moot_snapshot.roster.members.len(),
             delegated_certificates: moot_snapshot.delegated_certificates,
-            tessera_operations: moot_snapshot.tessera_operations,
+            standing_operations: moot_snapshot.standing_operations,
         },
         graph: GraphCache {
             nodes: graph_projection.graph.graph().node_count(),

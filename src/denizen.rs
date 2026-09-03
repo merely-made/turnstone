@@ -21,9 +21,9 @@ use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
 use chartulary::{Container, GraphLog, Relation};
-use codicil::{Codicil, LogId};
 use identity::IdentityProvider;
 use identity::delegation::SignedDelegationCertificate;
+use muniment::{Journal, LogId};
 use servitor::delegation::{DelegationTable, root_certificate};
 use servitor::{Cap, Gate, Grant, Mode, Subject};
 use uuid::Uuid;
@@ -405,7 +405,7 @@ pub fn save_nested(session_dir: &Path, log_id: &str, nested: &GraphLog<Container
 pub fn load_nested(session_dir: &Path, log_id: &str) -> Option<GraphLog<Container, Relation>> {
     let path = nested_log_path(session_dir, log_id);
     let text = std::fs::read_to_string(&path).ok()?;
-    match serde_json::from_str::<Codicil<chartulary::Batch<Container, Relation>>>(&text) {
+    match serde_json::from_str::<Journal<chartulary::Batch<Container, Relation>>>(&text) {
         Ok(log) => Some(GraphLog::replay(log)),
         Err(err) => {
             tracing::warn!(%err, path = ?path, "failed to parse a denizen's nested log");
