@@ -1,3 +1,9 @@
+// Copyright 2026 Mark Alan Boykin
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
+// SPDX-License-Identifier: MPL-2.0
+
 //! The section-provider registry: named, id-addressable list sections any pane
 //! can compose (the gloss-composite design, design_docs/2026-07-20_gloss_
 //! composite_pane.md). A provider is a pure `fn(&App) -> Vec<SectionRow>` — the

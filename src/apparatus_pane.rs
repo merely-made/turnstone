@@ -1,3 +1,9 @@
+// Copyright 2026 Mark Alan Boykin
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
+// SPDX-License-Identifier: MPL-2.0
+
 //! The Apparatus pane: the graph-object facet analyzer (taxonomy revised at
 //! the 2026-07-18 harvest) — the selected OBJECT's metadata, analyzed and
 //! edited, retargeting with selection (never settings-as-nodes, the ruled-out

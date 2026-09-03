@@ -1,3 +1,9 @@
+// Copyright 2026 Mark Alan Boykin
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
+// SPDX-License-Identifier: MPL-2.0
+
 //! The persistence port: where turnstone's data lives and how sessions
 //! save/load. Multi-session since rung 6's second half: each session owns
 //! `sessions/<id>/` (graph.json, frame.json, workbench.json,

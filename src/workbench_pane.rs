@@ -1,3 +1,9 @@
+// Copyright 2026 Mark Alan Boykin
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
+// SPDX-License-Identifier: MPL-2.0
+
 //! The Workbench pane's view half (rung 5 slice E, the cambium path): each
 //! cell of the walked tiling drawn as a placed box wearing cambium's
 //! `tab_strip`, with a body hint underneath. The tile CONTENT does not render

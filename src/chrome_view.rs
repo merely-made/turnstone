@@ -1,3 +1,9 @@
+// Copyright 2026 Mark Alan Boykin
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
+// SPDX-License-Identifier: MPL-2.0
+
 //! The chrome as a cambium view over a FOREST of window-roots — the toolkit
 //! question's endpoint, executed 2026-07-18 ("chrome migrates to a cambium
 //! view"), and turnstone's literal consumption of the two forest primitives:
