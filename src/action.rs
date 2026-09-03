@@ -216,6 +216,19 @@ pub enum Action {
     /// recompute gate); `None` reverts to force-directed physics. The first
     /// host wiring of the analytic catalog (projection-engine proof 1).
     SetLayoutStrategy(Option<&'static str>),
+    /// Switch the physics law the graph moves under, by catalog id
+    /// (`mere::canvas::PhysicsLaw::id`). (Physics catalog — P2.)
+    SetPhysicsLaw(&'static str),
+    /// Turn one physics overlay on or off, by catalog id.
+    SetPhysicsOverlay(&'static str, bool),
+    /// Where the Kinds law reads a node's kind from, by catalog id.
+    SetPhysicsKindSource(&'static str),
+    /// Where Orbit's masses and the hub overlays' weights come from.
+    SetPhysicsMassSource(&'static str),
+    /// Where the Depth overlay reads a node's depth from.
+    SetPhysicsDepthSource(&'static str),
+    /// Apply a named physics profile (a law plus overlays), by id.
+    ApplyPhysicsProfile(&'static str),
     /// Toggle the isometric (2.5D foreshortened) view.
     ToggleIsometric,
     /// Orbit the view (yaw) by radians.
@@ -569,6 +582,48 @@ pub fn palette_actions() -> Vec<(String, Action)> {
                 Action::SetLayoutStrategy(Some(id)),
             ),
         );
+    }
+
+    // The physics catalog's rows, derived the same way so the plain names
+    // have one home: the laws, then each overlay as an on/off pair, the
+    // profiles, and the three attribute sources. They follow the Layout
+    // group, after Force-directed. (Physics catalog — P2.)
+    let after_layout = rows
+        .iter()
+        .position(|(_, action)| matches!(action, Action::SetLayoutStrategy(None)))
+        .map(|i| i + 1)
+        .unwrap_or(rows.len());
+    let mut physics: Vec<(String, Action)> = Vec::new();
+    for (id, label) in mere::canvas::CANVAS_PHYSICS_LAWS {
+        physics.push((format!("Physics: {label}"), Action::SetPhysicsLaw(id)));
+    }
+    for (id, label) in mere::canvas::CANVAS_PHYSICS_OVERLAYS {
+        physics.push((
+            format!("Overlay on: {label}"),
+            Action::SetPhysicsOverlay(id, true),
+        ));
+        physics.push((
+            format!("Overlay off: {label}"),
+            Action::SetPhysicsOverlay(id, false),
+        ));
+    }
+    for profile in mere::canvas::CANVAS_PHYSICS_PROFILES {
+        physics.push((
+            format!("Profile: {}", profile.label),
+            Action::ApplyPhysicsProfile(profile.id),
+        ));
+    }
+    for (id, label) in mere::canvas::CANVAS_PHYSICS_KIND_SOURCES {
+        physics.push((format!("Kinds: {label}"), Action::SetPhysicsKindSource(id)));
+    }
+    for (id, label) in mere::canvas::CANVAS_PHYSICS_MASS_SOURCES {
+        physics.push((format!("Mass: {label}"), Action::SetPhysicsMassSource(id)));
+    }
+    for (id, label) in mere::canvas::CANVAS_PHYSICS_DEPTH_SOURCES {
+        physics.push((format!("Depth: {label}"), Action::SetPhysicsDepthSource(id)));
+    }
+    for (offset, row) in physics.into_iter().enumerate() {
+        rows.insert(after_layout + offset, row);
     }
 
     rows

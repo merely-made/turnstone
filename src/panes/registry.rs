@@ -30,6 +30,7 @@ pub mod kind {
     pub const DEVICE_RECEIPTS: &str = "turnstone.device-receipts";
     pub const FROZEN_PROJECTION: &str = "turnstone.frozen-projection";
     pub const SETTINGS: &str = "turnstone.settings";
+    pub const ARRANGE: &str = "turnstone.arrange";
     pub const TRANSCRIPT: &str = "turnstone.transcript";
 }
 
@@ -146,6 +147,7 @@ pub enum PaneRenderer {
     FrozenProjection,
     Settings,
     Transcript,
+    Arrange,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -504,6 +506,21 @@ pub static BUILTIN_PANES: &[PaneDefinition] = &[
             label: "Open Settings pane"
         }),
         Some(|| PaneContent::Registered(PaneKindId::new(kind::SETTINGS)))
+    ),
+    pane!(
+        kind::ARRANGE,
+        "Arrange",
+        PaneSourceShape::fixed(&[FixedSourceKind::Graph]),
+        PaneMultiplicity::PerSpaceAndSource,
+        capabilities(false, false, GRAPH),
+        "turnstone.arrange.config",
+        "turnstone.arrange.view",
+        PaneRenderer::Arrange,
+        Some(PanePaletteEntry {
+            order: 82,
+            label: "Open Arrange pane"
+        }),
+        Some(|| PaneContent::Registered(PaneKindId::new(kind::ARRANGE)))
     ),
     pane!(
         kind::TRANSCRIPT,

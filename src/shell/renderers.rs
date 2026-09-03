@@ -56,6 +56,8 @@ pub(crate) struct PaneRenderers {
     pub(crate) apparatus: HashMap<PaneId, crate::apparatus_pane::ApparatusPane>,
     /// The application-settings projection over the host provider.
     pub(crate) settings: HashMap<PaneId, crate::settings_pane::SettingsPane>,
+    /// The Arrange pane: the active canvas's arrangement and physics, as controls.
+    pub(crate) arrange: HashMap<PaneId, crate::arrange_pane::ArrangePane>,
     /// Owner controls for the retained Knot publishing service.
     pub(crate) publish: HashMap<PaneId, crate::publish_pane::PublishPane>,
     /// Recipient controls for a private ticket.
@@ -90,6 +92,7 @@ impl PaneRenderers {
             workbench,
             apparatus,
             settings,
+            arrange,
             publish,
             shared_knot,
             device_receipts,
@@ -109,6 +112,7 @@ impl PaneRenderers {
         workbench.remove(&pane);
         apparatus.remove(&pane);
         settings.remove(&pane);
+        arrange.remove(&pane);
         publish.remove(&pane);
         shared_knot.remove(&pane);
         device_receipts.remove(&pane);
@@ -144,6 +148,7 @@ impl PaneRenderers {
             workbench,
             apparatus,
             settings,
+            arrange,
             publish,
             shared_knot,
             transcript,
@@ -175,6 +180,7 @@ impl PaneRenderers {
             workbench,
             apparatus,
             settings,
+            arrange,
             publish,
             shared_knot,
             transcript,

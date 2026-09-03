@@ -1080,6 +1080,15 @@ impl Shell {
                     }
                 }
             }
+            PaneContent::Registered(kind) if kind.as_str() == crate::panes::kind::ARRANGE => {
+                if let Some(pane) = self.renderers.arrange.get_mut(&pane_id) {
+                    for intent in pane.click(lx, ly, rw, rh) {
+                        if let Some(action) = intent.into_action() {
+                            out.push(action);
+                        }
+                    }
+                }
+            }
             PaneContent::Registered(kind) if kind.as_str() == crate::panes::kind::SETTINGS => {
                 if let Some(pane) = self.renderers.settings.get_mut(&pane_id) {
                     pane.click(lx, ly, rw, rh);

@@ -554,6 +554,17 @@ impl Shell {
                 pane.scene(rw, rh)
             }
             Some(PaneContent::Registered(kind))
+                if kind.as_str() == crate::panes::kind::ARRANGE =>
+            {
+                let pane = self
+                    .renderers
+                    .arrange
+                    .entry(pane_id)
+                    .or_insert_with(crate::arrange_pane::ArrangePane::new);
+                pane.sync(&self.app, rw as f32, rh as f32);
+                pane.scene(rw, rh)
+            }
+            Some(PaneContent::Registered(kind))
                 if kind.as_str() == crate::panes::kind::SETTINGS =>
             {
                 let live_settings = self.live_settings.clone();

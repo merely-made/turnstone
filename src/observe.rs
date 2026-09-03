@@ -75,6 +75,9 @@ pub struct Snapshot {
     /// When an Inspector pane is in the tree, its rows as "Key: value" lines
     /// (node facts + content facts off the spawn-time mirror).
     pub inspector_rows: Vec<String>,
+    /// When an Arrange pane is in the tree, its rows: the arrangement, the
+    /// physics law, overlays, sources and profile as plain text.
+    pub arrange_rows: Vec<String>,
     /// The Roster's active tab label, mirrored out of the strip's own state.
     pub roster_tab: &'static str,
     /// The root split's ratio, when the pane tree is split at all. The divider
@@ -898,6 +901,14 @@ pub fn snapshot(app: &App) -> Snapshot {
             .iter_leaves()
             .any(|(_, c, _)| matches!(c, crate::panes::PaneContent::Inspector))
             .then(|| crate::inspector_view::inspector_lines(app))
+            .unwrap_or_default(),
+        arrange_rows: app
+            .frisket
+            .iter_leaves()
+            .any(|(_, c, _)| {
+                matches!(c, crate::panes::PaneContent::Registered(kind) if kind.as_str() == crate::panes::kind::ARRANGE)
+            })
+            .then(|| crate::arrange_pane::arrange_rows(app))
             .unwrap_or_default(),
         roster_tab: crate::cambium_pane::tab_label(app.roster_tab),
         split_ratio: match &app.frisket.root {

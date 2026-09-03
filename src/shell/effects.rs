@@ -1277,6 +1277,23 @@ impl Shell {
                     .graph_runtimes
                     .layout_strategy()
                     .map(str::to_string),
+                physics_law: Some(self.app.graph_runtimes.physics_law().id().to_string()),
+                physics_overlays: self
+                    .app
+                    .graph_runtimes
+                    .physics_overlays()
+                    .iter()
+                    .map(|overlay| overlay.id().to_string())
+                    .collect(),
+                physics_kind_source: Some(
+                    self.app.graph_runtimes.physics_kind_source().id().to_string(),
+                ),
+                physics_mass_source: Some(
+                    self.app.graph_runtimes.physics_mass_source().id().to_string(),
+                ),
+                physics_depth_source: Some(
+                    self.app.graph_runtimes.physics_depth_source().id().to_string(),
+                ),
             },
         );
         // Stamp a derived display name the first time the session has content

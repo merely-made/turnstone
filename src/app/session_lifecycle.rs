@@ -544,6 +544,45 @@ impl App {
         if let Some(intent) = session::load_view_intent(&sdir) {
             self.graph_runtimes
                 .set_layout_strategy(intent.layout_strategy);
+            // The physics choice rides the same sidecar: sources first, so
+            // the law's build reads them, then the overlays, then the law.
+            // An unknown id (a newer catalog) falls back to the default
+            // rather than failing the open. (Physics catalog — P2.)
+            if let Some(source) = intent
+                .physics_kind_source
+                .as_deref()
+                .and_then(mere::canvas::PhysicsKindSource::parse)
+            {
+                self.graph_runtimes.set_physics_kind_source(source);
+            }
+            if let Some(source) = intent
+                .physics_mass_source
+                .as_deref()
+                .and_then(mere::canvas::PhysicsMassSource::parse)
+            {
+                self.graph_runtimes.set_physics_mass_source(source);
+            }
+            if let Some(source) = intent
+                .physics_depth_source
+                .as_deref()
+                .and_then(mere::canvas::PhysicsDepthSource::parse)
+            {
+                self.graph_runtimes.set_physics_depth_source(source);
+            }
+            self.graph_runtimes.set_physics_overlays(
+                intent
+                    .physics_overlays
+                    .iter()
+                    .filter_map(|id| mere::canvas::PhysicsOverlay::parse(id))
+                    .collect(),
+            );
+            if let Some(law) = intent
+                .physics_law
+                .as_deref()
+                .and_then(mere::canvas::PhysicsLaw::parse)
+            {
+                self.graph_runtimes.set_physics_law(law);
+            }
         }
         // Preview imagery lives out of the graph now. The first paint queues
         // only visible cache misses; the shell resolves those after the frame,

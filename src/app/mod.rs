@@ -1063,6 +1063,45 @@ impl App {
             Action::MarkFocusedFeedEntryRead => self.mark_focused_feed_entry_read(),
             Action::ReseedLayout => self.reseed_layout(),
             Action::SetLayoutStrategy(id) => self.set_layout_strategy(id),
+            Action::SetPhysicsLaw(id) => {
+                if let Some(law) = mere::canvas::PhysicsLaw::parse(id) {
+                    self.graph_runtimes.set_physics_law(law);
+                }
+                vec![Effect::Redraw]
+            }
+            Action::SetPhysicsOverlay(id, on) => {
+                if let Some(overlay) = mere::canvas::PhysicsOverlay::parse(id) {
+                    let mut overlays = self.graph_runtimes.physics_overlays().to_vec();
+                    overlays.retain(|o| *o != overlay);
+                    if on {
+                        overlays.push(overlay);
+                    }
+                    self.graph_runtimes.set_physics_overlays(overlays);
+                }
+                vec![Effect::Redraw]
+            }
+            Action::SetPhysicsKindSource(id) => {
+                if let Some(source) = mere::canvas::PhysicsKindSource::parse(id) {
+                    self.graph_runtimes.set_physics_kind_source(source);
+                }
+                vec![Effect::Redraw]
+            }
+            Action::SetPhysicsMassSource(id) => {
+                if let Some(source) = mere::canvas::PhysicsMassSource::parse(id) {
+                    self.graph_runtimes.set_physics_mass_source(source);
+                }
+                vec![Effect::Redraw]
+            }
+            Action::SetPhysicsDepthSource(id) => {
+                if let Some(source) = mere::canvas::PhysicsDepthSource::parse(id) {
+                    self.graph_runtimes.set_physics_depth_source(source);
+                }
+                vec![Effect::Redraw]
+            }
+            Action::ApplyPhysicsProfile(id) => {
+                self.graph_runtimes.apply_physics_profile(id);
+                vec![Effect::Redraw]
+            }
             Action::ToggleIsometric => {
                 let on = !self.graph_runtimes.is_isometric();
                 self.graph_runtimes.set_isometric(on);

@@ -272,6 +272,21 @@ pub struct ViewIntentV1 {
     /// force-directed one.
     #[serde(default)]
     pub layout_strategy: Option<String>,
+    /// The physics law id (`mere::canvas::PhysicsLaw::id`); `None` reads as
+    /// Springs, the canvas default, so a session saved before the catalog
+    /// reopens as it always did. (Physics catalog — P2.)
+    #[serde(default)]
+    pub physics_law: Option<String>,
+    /// The overlay ids composed onto the law, in run order.
+    #[serde(default)]
+    pub physics_overlays: Vec<String>,
+    /// The kind / mass / depth source ids; `None` is each catalog's default.
+    #[serde(default)]
+    pub physics_kind_source: Option<String>,
+    #[serde(default)]
+    pub physics_mass_source: Option<String>,
+    #[serde(default)]
+    pub physics_depth_source: Option<String>,
 }
 
 pub fn view_intent_path(session_dir: &Path) -> PathBuf {
@@ -806,6 +821,7 @@ mod tests {
 
         let intent = ViewIntentV1 {
             layout_strategy: Some("kanban.community".to_string()),
+            ..Default::default()
         };
         save_view_intent(&root, &intent);
         assert_eq!(load_view_intent(&root), Some(intent));
@@ -813,6 +829,7 @@ mod tests {
         // Force-directed is a real choice, not the absence of one.
         let native = ViewIntentV1 {
             layout_strategy: None,
+            ..Default::default()
         };
         save_view_intent(&root, &native);
         assert_eq!(load_view_intent(&root), Some(native));
@@ -821,6 +838,35 @@ mod tests {
         // session open, matching the score's posture.
         std::fs::write(view_intent_path(&root), b"{ not json").unwrap();
         assert_eq!(load_view_intent(&root), None);
+    }
+
+    /// The physics choice rides the intent by id, and a sidecar written
+    /// before the catalog (no physics fields at all) still opens, as the
+    /// canvas defaults. (Physics catalog — P2.)
+    #[test]
+    fn the_physics_choice_rides_the_view_intent_by_id() {
+        let root = temp_root("view-intent-physics");
+        let intent = ViewIntentV1 {
+            layout_strategy: None,
+            physics_law: Some("orbit.gravity".to_string()),
+            physics_overlays: vec!["skeleton".to_string(), "tide".to_string()],
+            physics_kind_source: Some("coloring".to_string()),
+            physics_mass_source: Some("pagerank".to_string()),
+            physics_depth_source: Some("layers".to_string()),
+        };
+        save_view_intent(&root, &intent);
+        assert_eq!(load_view_intent(&root), Some(intent));
+
+        std::fs::write(
+            view_intent_path(&root),
+            br#"{"layout_strategy":"grid.default"}"#,
+        )
+        .unwrap();
+        let loaded = load_view_intent(&root).unwrap();
+        assert_eq!(loaded.layout_strategy.as_deref(), Some("grid.default"));
+        assert_eq!(loaded.physics_law, None);
+        assert!(loaded.physics_overlays.is_empty());
+        assert_eq!(loaded.physics_kind_source, None);
     }
 
     #[test]
@@ -837,6 +883,7 @@ mod tests {
                 &root,
                 &ViewIntentV1 {
                     layout_strategy: Some(id.to_string()),
+                    ..Default::default()
                 },
             );
             let loaded = load_view_intent(&root).unwrap().layout_strategy.unwrap();

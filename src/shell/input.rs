@@ -607,6 +607,27 @@ impl Shell {
                                 }
                             }
                             Some(PaneContent::Registered(kind))
+                                if kind.as_str() == crate::panes::kind::ARRANGE =>
+                            {
+                                let dims = plan.iter().find(|s| s.id == hit.id).map(|s| {
+                                    (
+                                        s.rect.w.round().max(1.0) as u32,
+                                        s.rect.h.round().max(1.0) as u32,
+                                    )
+                                });
+                                let intents = match (dims, self.renderers.arrange.get_mut(&id)) {
+                                    (Some((rw, rh)), Some(pane)) => {
+                                        pane.click(hit.local.0, hit.local.1, rw, rh)
+                                    }
+                                    _ => Vec::new(),
+                                };
+                                for intent in intents {
+                                    if let Some(action) = intent.into_action() {
+                                        self.act(action);
+                                    }
+                                }
+                            }
+                            Some(PaneContent::Registered(kind))
                                 if kind.as_str() == crate::panes::kind::SETTINGS =>
                             {
                                 let dims = plan.iter().find(|s| s.id == hit.id).map(|s| {

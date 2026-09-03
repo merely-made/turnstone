@@ -307,6 +307,7 @@ fn pane_kind(pane: &str) -> Option<PaneKindId> {
         "overmap" => Some(PaneKindId::new(kind::OVERMAP)),
         "workbench" => Some(PaneKindId::new(kind::WORKBENCH)),
         "settings" => Some(PaneKindId::new(kind::SETTINGS)),
+        "arrange" => Some(PaneKindId::new(kind::ARRANGE)),
         "publishing" => Some(PaneKindId::new(kind::PUBLISHING)),
         "shared-knot" => Some(PaneKindId::new(kind::SHARED_KNOT)),
         _ => None,

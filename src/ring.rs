@@ -145,6 +145,12 @@ pub fn ring_of(action: &Action) -> Ring {
         | ReseedLayout
         | FitView
         | SetLayoutStrategy(_)
+        | SetPhysicsLaw(_)
+        | SetPhysicsOverlay(_, _)
+        | SetPhysicsKindSource(_)
+        | SetPhysicsMassSource(_)
+        | SetPhysicsDepthSource(_)
+        | ApplyPhysicsProfile(_)
         | ToggleIsometric
         | OrbitBy(_)
         | TiltBy(_)

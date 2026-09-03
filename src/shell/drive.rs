@@ -110,6 +110,13 @@ impl genet_probe::Automatable for Shell {
                         }
                     }
                     Some(PaneContent::Registered(kind))
+                        if kind.as_str() == crate::panes::kind::ARRANGE =>
+                    {
+                        if let Some(pane) = self.renderers.arrange.get(&id) {
+                            guards.push(("arrange", rect, pane.dom_ref()));
+                        }
+                    }
+                    Some(PaneContent::Registered(kind))
                         if kind.as_str() == crate::panes::kind::PUBLISHING =>
                     {
                         if let Some(pane) = self.renderers.publish.get(&id) {
@@ -630,11 +637,12 @@ impl Shell {
                     .iter()
                     .chain(snap.roster_rows.iter())
                     .chain(snap.inspector_rows.iter())
+                    .chain(snap.arrange_rows.iter())
                     .any(|r| r.contains(substr));
                 if !hit {
                     return Err(format!(
-                        "assert row '{substr}': trail {:?} roster {:?} inspector {:?}",
-                        snap.trail_rows, snap.roster_rows, snap.inspector_rows
+                        "assert row '{substr}': trail {:?} roster {:?} inspector {:?} arrange {:?}",
+                        snap.trail_rows, snap.roster_rows, snap.inspector_rows, snap.arrange_rows
                     ));
                 }
             }

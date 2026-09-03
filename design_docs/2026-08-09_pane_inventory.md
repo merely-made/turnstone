@@ -97,3 +97,15 @@ Its invariants are:
 - A two-Roster unit receipt changes one runner's selected tab while the other
   remains unchanged. It is written but cannot execute in the full crate until
   the concurrent Knot share-reader import mismatch is resolved.
+- 2026-09-03: an **Arrange** pane (`turnstone.arrange`, renderer `Arrange`,
+  graph source, per space and source, palette "Open Arrange pane") — the
+  native counterpart of the web host's Find-and-arrange section: the
+  arrangement choice (the canvas strategies, or Free), the physics law, a
+  toggle per overlay, the kind / mass / depth sources, and the profile, all
+  as `cambium::setting_row` controls built from the canvas catalogs. Applied
+  rows leave as `ArrangeIntent`s the shell lowers to the same `Action`s the
+  palette's `Physics:` / `Overlay on|off:` / `Profile:` / `Kinds:` / `Mass:`
+  / `Depth:` rows fire; the observe snapshot's `arrange_rows` feed
+  `assert row`; the choice rides `ViewIntentV1` per session. Receipt:
+  `scenarios/physics_native.scn`. Plan:
+  `mere/design_docs/mere_docs/implementation_strategy/2026-09-02_physics_catalog_plan.md`.

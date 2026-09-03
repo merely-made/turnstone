@@ -1,0 +1,53 @@
+# Physics catalog, native receipt: the Arrange pane and the palette's physics
+# rows are two doors onto one spine. Every choice is fired by palette label
+# (what a person would pick) and read back off the pane's rows.
+settle 40
+act Open Arrange pane
+settle 10
+# The restored session's tree is busy; maximize so the captures read.
+act Maximize pane
+settle 5
+assert maximized
+assert row Arrangement:
+assert row Physics: Springs
+assert row Overlays: none
+act Physics: Orbit
+settle 10
+assert row Physics: Orbit
+assert row Profile: Orbit
+act Overlay on: Skeleton
+settle 5
+assert row Overlays: Skeleton
+assert row Profile: custom
+act Overlay off: Skeleton
+settle 5
+assert row Overlays: none
+act Profile: Crystal
+settle 10
+assert row Physics: Stress
+assert row Overlays: Grid
+assert row Profile: Crystal
+capture 01_arrange_crystal
+act Kinds: By colouring
+act Mass: By rank
+act Depth: By layer
+settle 5
+assert row Kinds: By colouring
+assert row Mass: By rank
+assert row Depth: By layer
+act Layout: Force-directed
+settle 5
+assert row Arrangement: Free
+act Physics: Still
+settle 5
+assert row Physics: Still
+# A law switch keeps the overlays (Crystal's grid survives), so the pair is
+# custom; the profile is what sets both.
+assert row Overlays: Grid
+assert row Profile: custom
+act Profile: Void
+settle 5
+assert row Overlays: none
+assert row Profile: Void
+capture 02_arrange_still
+log physics native receipt complete
