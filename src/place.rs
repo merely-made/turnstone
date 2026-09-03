@@ -208,7 +208,7 @@ pub struct MootCache {
     pub members: usize,
     pub roster_members: usize,
     pub delegated_certificates: usize,
-    pub tessera_operations: usize,
+    pub standing_operations: usize,
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
