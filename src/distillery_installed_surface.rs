@@ -23,7 +23,7 @@ use distillery::{
     DistilleryResidentSnapshotV1, ResidentSettings, RetentionSettings,
     distillery_installed_descriptor, distillery_installed_surface,
 };
-use genet_host_api::SurfaceDescriptor;
+use mere_surface_api::SurfaceDescriptor;
 use serde::{Deserialize, Serialize};
 
 use crate::contributed_surface::{SurfaceAdmissionError, SurfaceProvider};

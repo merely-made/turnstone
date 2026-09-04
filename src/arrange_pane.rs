@@ -29,7 +29,7 @@ use std::rc::Rc;
 use cambium::{
     AnyView, DomHandle, GenetAppRunner, GenetCtx, GenetElement, PointerClick, el, setting_row,
 };
-use genet_host_api::settings::{
+use mere_surface_api::settings::{
     SettingControl, SettingMovement, SettingMutability, SettingOption, SettingScope,
     SettingSecurity, SettingSpec, SettingValue,
 };

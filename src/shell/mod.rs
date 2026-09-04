@@ -33,8 +33,10 @@ use std::sync::Arc;
 use std::sync::mpsc::Receiver;
 
 use fetch::{FetchCommand, FetchUpdate};
-use genet_documents::{
-    LocalFetcher, ReaderSessionEngine, SmolwebInlineMediaPolicy, SmolwebSessionEngine, SmolwebTheme,
+use genet_documents::LocalFetcher;
+use mere_document_lanes::{
+    ReaderSessionEngine, RemoteFetcher, SmolwebInlineMediaPolicy, SmolwebSessionEngine,
+    SmolwebTheme,
 };
 use genet_winit_host::SurfaceHost;
 use image::ImageEncoder;
@@ -82,12 +84,16 @@ const SMOLWEB_SESSION_ENGINE_IDS: &[&str] = &[
 fn standard_content_engines() -> SessionRegistry<Scene> {
     let mut engines = SessionRegistry::new();
     engines.register(Box::new(genet_documents::LiverySessionEngine::new(
-        LocalFetcher,
+        LocalFetcher.with_fallback(RemoteFetcher::shared()),
     )));
     engines.register(Box::new(ReaderSessionEngine::new(SmolwebTheme::System)));
     for engine_id in SMOLWEB_SESSION_ENGINE_IDS {
         engines.register(Box::new(
-            SmolwebSessionEngine::new(*engine_id, LocalFetcher, SmolwebTheme::default())
+            SmolwebSessionEngine::new(
+                *engine_id,
+                LocalFetcher.with_fallback(RemoteFetcher::shared()),
+                SmolwebTheme::default(),
+            )
                 .with_inline_media(smolweb_inline_media_policy()),
         ));
     }

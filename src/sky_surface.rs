@@ -17,7 +17,7 @@ mod view;
 use std::time::Duration;
 
 use cambium::{DomHandle, RetainedSurfaceSession, RunnerSurfaceSession};
-use genet_host_api::{ProviderId, SourceKindId, SurfaceDescriptor, SurfaceId};
+use mere_surface_api::{ProviderId, SourceKindId, SurfaceDescriptor, SurfaceId};
 use jiff::{
     civil::{Date, Time},
     tz::TimeZone,
@@ -445,7 +445,7 @@ impl Default for SkySurfaceProvider {
                 provider_id: ProviderId::from("turnstone"),
                 surface_id: SurfaceId::from(SURFACE_ID),
                 label: "Sky".into(),
-                accepted_source: genet_host_api::SurfaceSourceShape::One(SourceKindId::from(
+                accepted_source: mere_surface_api::SurfaceSourceShape::One(SourceKindId::from(
                     SOURCE_SCHEMA,
                 )),
             },
@@ -500,7 +500,7 @@ impl SurfaceProvider for SkySurfaceProvider {
         Ok(Box::new(RunnerSurfaceSession::new(
             self.descriptor.clone(),
             runner,
-            |_state: &view::SkySurfaceState| genet_host_api::SurfaceAvailability::Available,
+            |_state: &view::SkySurfaceState| mere_surface_api::SurfaceAvailability::Available,
             |state: &mut view::SkySurfaceState, viewport| state.set_viewport(viewport),
             |_action: ()| Vec::new(),
         )))

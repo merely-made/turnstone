@@ -418,3 +418,44 @@ Done-conditions:
   capture honestly unsupported. The clean-source Turnstone compile
   done-condition remains open because bounded Cargo 1.96 and 1.97 resolution
   attempts did not produce a refreshed lock; P2 has not begun.
+
+- **2026-09-03:** repointed onto the platform boundary (P4 of mere's
+  `2026-09-02_platform_boundary_and_repository_topology_plan.md`, and gate E1 of
+  knot-editor's extraction plan). Genet `115d348dedd`, Mere `b57d2021bac`,
+  knot-editor `3c2d30d69de`. Eight crates changed source from genet.git to
+  mere.git with the Cambium and upper-component moves (`cambium`,
+  `cambium-winit`, `sprigging`, `workbench`, `inker`, `errand`, `weld-engine`,
+  `knot-editor-host`); `knot` and `knot-document` now come from the standalone
+  `merely-made/knot-editor` repository, which is E1. `genet-host-api` split by
+  authority and every one of Turnstone's twelve uses was the application half,
+  so the dependency became `mere-surface-api` and the raw Genet remainder is
+  gone from the manifest. `genet-documents` split the same way: the Livery
+  engine and `LocalFetcher` stay on Genet, while the reader and smolweb lanes
+  come from `mere-document-lanes`, and the http(s) schemes that used to be a
+  `netfetch` `#[cfg]` branch are now injected as
+  `LocalFetcher::with_fallback(RemoteFetcher::shared())`, the seam the split
+  introduced. The four `genet_host_api::tile` call sites §9's hazard 1 predicted
+  were already on Workbench's seam and needed no change.
+  **The Mere revision is not Mere's `origin/main`, deliberately.** knot-editor
+  `3c2d30d69de` pins mere at `b57d2021bac`, so pinning Turnstone at main
+  (`d82afa17e2c`, three commits later) resolved **two** mere source identities
+  and **35 duplicate packages** — `cambium`, `inker`, `workbench`,
+  `mere-surface-api`, `chirograph`, `sceno` and `graphshell-endpoint` among them,
+  which is exactly what E1's stop rule forbids. Matching knot-editor's revision
+  is the only value that satisfies the one-source invariant without pushing a new
+  knot-editor. Advancing both together is follow-on work.
+  Receipts: `cargo metadata` reports one revision per repository — genet 23
+  packages, mere 77, knot-editor 2 — and **zero** duplicate package names.
+  `cargo check --workspace` green, 0 errors, 76 warnings, all pre-existing and
+  none fixed. `cargo test --workspace` 414 passed, 1 failed, 6 ignored; the
+  single failure, `place::lanes::tests::a_partition_heals_and_both_sides_converge`,
+  is proven pre-existing — it fails 4/4 on the parent `f7a5388` in a throwaway
+  detached worktree, which reports the identical 414/1/6. Both five-test Knot
+  authoring suites pass 5/5 (`knot_authoring`, `knot_document_surface`), with
+  `contributed_surface` 8/8 and the five external-endpoint tests ignored as
+  designed. Headed: `scenarios/browser_keep.scn` is `RESULT ok` with a capture
+  that retains the disabled **Kept** state; `scenarios/rung4_content.scn` is
+  `RESULT ok` and renders https://example.com through `engine=genet.livery`,
+  which is the receipt for the rewired fetch fallback; and the scripted
+  `run_smolweb_acceptance.ps1 -Only gemini-browse` is `RESULT ok`. Captures in
+  `Code/testing/turnstone/p4_repoint`, `p4_content` and `p4_smolweb`.

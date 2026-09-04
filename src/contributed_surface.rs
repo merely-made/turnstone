@@ -19,7 +19,7 @@ use cambium::{
     PointerClick, PointerEvent, PointerPhase, ResolvedSurfaceEvent, RetainedSurfaceSession,
     RunnerSurfaceSession, SurfaceEffect, SurfaceViewport, View, WheelEvent, el,
 };
-use genet_host_api::{
+use mere_surface_api::{
     SurfaceAvailability, SurfaceDescriptor, SurfaceId, SurfaceSourceShape, SurfaceUnavailableReason,
 };
 use genet_scripted_dom::{NodeId, ScriptedDom};

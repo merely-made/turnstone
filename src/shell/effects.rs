@@ -944,7 +944,7 @@ impl Shell {
                     };
                     let Some(smolweb) = session
                         .as_any()
-                        .downcast_mut::<genet_documents::SmolwebDocumentSession>()
+                        .downcast_mut::<mere_document_lanes::SmolwebDocumentSession>()
                     else {
                         tracing::debug!(%node, %url, "live engine does not support incremental body replacement");
                         continue;

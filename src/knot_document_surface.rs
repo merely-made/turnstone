@@ -10,7 +10,7 @@ use std::io;
 use std::path::{Path, PathBuf};
 
 use cambium::{DomHandle, RetainedSurfaceSession};
-use genet_host_api::{SurfaceDescriptor, SurfaceUnavailableReason};
+use mere_surface_api::{SurfaceDescriptor, SurfaceUnavailableReason};
 use knot_document::{
     DocumentFormat, KNOT_DOCUMENT_CSS, KnotDocumentSession, KnotDocumentSurfaceState,
     knot_document_descriptor, knot_document_surface,
@@ -215,7 +215,7 @@ mod tests {
             .expect("generic unavailable surface");
         assert_eq!(
             pane.availability(),
-            genet_host_api::SurfaceAvailability::Unavailable(SurfaceUnavailableReason::Absent)
+            mere_surface_api::SurfaceAvailability::Unavailable(SurfaceUnavailableReason::Absent)
         );
     }
 

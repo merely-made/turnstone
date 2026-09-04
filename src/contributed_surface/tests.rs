@@ -10,7 +10,7 @@ use std::rc::Rc;
 
 use accesskit::{Action as A11yAction, Role};
 use cambium::{GenetAppRunner, GenetCtx, GenetElement, RunnerSurfaceSession, View, el, on_click};
-use genet_host_api::{ProviderId, SourceKindId};
+use mere_surface_api::{ProviderId, SourceKindId};
 use layout_dom_api::{LayoutDom, NodeKind};
 
 use super::*;
@@ -37,7 +37,7 @@ fn descriptor(surface: &str, schema: &str) -> SurfaceDescriptor {
         provider_id: ProviderId::from("turnstone.test"),
         surface_id: SurfaceId::from(surface),
         label: surface.to_owned(),
-        accepted_source: genet_host_api::SurfaceSourceShape::One(SourceKindId::from(schema)),
+        accepted_source: mere_surface_api::SurfaceSourceShape::One(SourceKindId::from(schema)),
     }
 }
 
