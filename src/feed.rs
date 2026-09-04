@@ -27,18 +27,47 @@ pub const UNREAD_TAG: &str = "unread";
 const FILE_NAME: &str = "feed_subscriptions.json";
 const FORMAT_VERSION: u16 = 1;
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, Default, Deserialize, PartialEq, Eq, Serialize)]
+pub struct FeedEnclosure {
+    pub url: String,
+    pub media_type: Option<String>,
+    pub byte_length: Option<u64>,
+}
+
+#[derive(Clone, Debug, Default, Deserialize, PartialEq, Eq, Serialize)]
+pub struct PodcastResource {
+    pub url: String,
+    pub media_type: Option<String>,
+}
+
+#[derive(Clone, Debug, Default, Deserialize, PartialEq, Eq, Serialize)]
+pub struct PodcastTranscript {
+    pub url: String,
+    pub media_type: Option<String>,
+    pub language: Option<String>,
+    pub rel: Option<String>,
+}
+
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct FeedEntry {
     pub url: String,
+    pub guid: Option<String>,
     pub title: String,
     pub date: Option<String>,
     pub summary: Option<String>,
+    pub enclosures: Vec<FeedEnclosure>,
+    pub duration: Option<String>,
+    pub artwork: Option<String>,
+    pub chapters: Vec<PodcastResource>,
+    pub transcripts: Vec<PodcastTranscript>,
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct ParsedFeed {
     pub title: Option<String>,
+    pub artwork: Option<String>,
     pub entries: Vec<FeedEntry>,
+    pub diagnostics: Vec<String>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -51,6 +80,7 @@ pub struct EntryProjection {
 pub struct FeedMerge {
     pub title: Option<String>,
     pub entries: Vec<EntryProjection>,
+    pub diagnostics: Vec<String>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -71,21 +101,51 @@ pub enum FeedMemberInfo {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct StoredEntry {
     member: Option<Uuid>,
+    #[serde(default)]
+    url: String,
+    #[serde(default)]
+    guid: Option<String>,
     title: String,
     date: Option<String>,
     summary: Option<String>,
+    #[serde(default)]
+    enclosures: Vec<FeedEnclosure>,
+    #[serde(default)]
+    duration: Option<String>,
+    #[serde(default)]
+    artwork: Option<String>,
+    #[serde(default)]
+    chapters: Vec<PodcastResource>,
+    #[serde(default)]
+    transcripts: Vec<PodcastTranscript>,
     unread: bool,
 }
 
 impl StoredEntry {
     fn same_document(&self, entry: &FeedEntry) -> bool {
-        self.title == entry.title && self.date == entry.date && self.summary == entry.summary
+        self.url == entry.url
+            && self.guid == entry.guid
+            && self.title == entry.title
+            && self.date == entry.date
+            && self.summary == entry.summary
+            && self.enclosures == entry.enclosures
+            && self.duration == entry.duration
+            && self.artwork == entry.artwork
+            && self.chapters == entry.chapters
+            && self.transcripts == entry.transcripts
     }
 
     fn replace_document(&mut self, entry: &FeedEntry) {
+        self.url = entry.url.clone();
+        self.guid = entry.guid.clone();
         self.title = entry.title.clone();
         self.date = entry.date.clone();
         self.summary = entry.summary.clone();
+        self.enclosures = entry.enclosures.clone();
+        self.duration = entry.duration.clone();
+        self.artwork = entry.artwork.clone();
+        self.chapters = entry.chapters.clone();
+        self.transcripts = entry.transcripts.clone();
         self.unread = true;
     }
 }
@@ -99,6 +159,10 @@ struct Subscription {
     last_checked_ms: Option<u64>,
     last_success_ms: Option<u64>,
     last_error: Option<String>,
+    #[serde(default)]
+    artwork: Option<String>,
+    #[serde(default)]
+    diagnostics: Vec<String>,
     #[serde(default)]
     entries: BTreeMap<String, StoredEntry>,
 }
@@ -172,6 +236,8 @@ impl FeedSubscriptions {
             last_checked_ms: None,
             last_success_ms: None,
             last_error: None,
+            artwork: None,
+            diagnostics: Vec::new(),
             entries: BTreeMap::new(),
         };
         match self.subscriptions.get_mut(&source) {
@@ -262,12 +328,35 @@ impl FeedSubscriptions {
         subscription.last_success_ms = Some(now_ms);
         subscription.last_error = None;
 
+        let ParsedFeed {
+            title,
+            artwork,
+            entries,
+            diagnostics,
+        } = parsed;
+        subscription.artwork = artwork;
+        subscription.diagnostics = diagnostics.clone();
         let mut merge = FeedMerge {
-            title: parsed.title,
+            title,
             entries: Vec::new(),
+            diagnostics,
         };
-        for entry in parsed.entries {
-            match subscription.entries.get_mut(&entry.url) {
+        for entry in entries {
+            let identity = entry_identity(&entry);
+            if !subscription.entries.contains_key(&identity)
+                && entry.guid.is_some()
+                && let Some(old_identity) = subscription
+                    .entries
+                    .iter()
+                    .find(|(stored_identity, stored)| {
+                        stored.url == entry.url || stored_identity.as_str() == entry.url
+                    })
+                    .map(|(identity, _)| identity.clone())
+                && let Some(stored) = subscription.entries.remove(&old_identity)
+            {
+                subscription.entries.insert(identity.clone(), stored);
+            }
+            match subscription.entries.get_mut(&identity) {
                 Some(stored) if stored.same_document(&entry) => {}
                 Some(stored) => {
                     stored.replace_document(&entry);
@@ -278,12 +367,19 @@ impl FeedSubscriptions {
                 }
                 None => {
                     subscription.entries.insert(
-                        entry.url.clone(),
+                        identity,
                         StoredEntry {
                             member: None,
+                            url: entry.url.clone(),
+                            guid: entry.guid.clone(),
                             title: entry.title.clone(),
                             date: entry.date.clone(),
                             summary: entry.summary.clone(),
+                            enclosures: entry.enclosures.clone(),
+                            duration: entry.duration.clone(),
+                            artwork: entry.artwork.clone(),
+                            chapters: entry.chapters.clone(),
+                            transcripts: entry.transcripts.clone(),
                             unread: true,
                         },
                     );
@@ -301,7 +397,13 @@ impl FeedSubscriptions {
         if let Some(entry) = self
             .subscriptions
             .get_mut(&source)
-            .and_then(|subscription| subscription.entries.get_mut(url))
+            .and_then(|subscription| {
+                subscription
+                    .entries
+                    .iter_mut()
+                    .find(|(identity, entry)| identity.as_str() == url || entry.url == url)
+                    .map(|(_, entry)| entry)
+            })
         {
             entry.member = Some(member);
         }
@@ -343,7 +445,12 @@ impl FeedSubscriptions {
                 .is_some_and(|(_, node)| node.url() == subscription.url)
         });
         for subscription in self.subscriptions.values_mut() {
-            for (url, entry) in &mut subscription.entries {
+            for (identity, entry) in &mut subscription.entries {
+                let url = if entry.url.is_empty() {
+                    identity.as_str()
+                } else {
+                    entry.url.as_str()
+                };
                 entry.member = entry
                     .member
                     .filter(|member| {
@@ -429,6 +536,11 @@ pub fn parse_document(source_url: &str, fetched: &FetchedPage) -> Result<ParsedF
 
 fn parse_xml_feed(source_url: &str, body: &str) -> Result<ParsedFeed, String> {
     let parsed = errand::parse::feed::parse(body).map_err(|error| error.to_string())?;
+    let artwork = parsed
+        .artwork
+        .as_deref()
+        .map(|url| resolve_url(source_url, url))
+        .transpose()?;
     let entries = parsed
         .entries
         .into_iter()
@@ -442,18 +554,60 @@ fn parse_xml_feed(source_url: &str, body: &str) -> Result<ParsedFeed, String> {
                 .unwrap_or_else(|| "entry".to_string());
             Ok(FeedEntry {
                 url: entry_url(source_url, entry.link.as_deref(), &identity, index)?,
+                guid: entry.guid,
                 title: entry
                     .title
                     .filter(|title| !title.trim().is_empty())
                     .unwrap_or(identity),
                 date: entry.date,
                 summary: entry.summary.filter(|summary| !summary.trim().is_empty()),
+                enclosures: entry
+                    .enclosures
+                    .into_iter()
+                    .map(|enclosure| {
+                        Ok(FeedEnclosure {
+                            url: resolve_url(source_url, &enclosure.url)?,
+                            media_type: enclosure.media_type,
+                            byte_length: enclosure.byte_length,
+                        })
+                    })
+                    .collect::<Result<_, String>>()?,
+                duration: entry.duration,
+                artwork: entry
+                    .artwork
+                    .as_deref()
+                    .map(|url| resolve_url(source_url, url))
+                    .transpose()?,
+                chapters: entry
+                    .chapters
+                    .into_iter()
+                    .map(|resource| {
+                        Ok(PodcastResource {
+                            url: resolve_url(source_url, &resource.url)?,
+                            media_type: resource.media_type,
+                        })
+                    })
+                    .collect::<Result<_, String>>()?,
+                transcripts: entry
+                    .transcripts
+                    .into_iter()
+                    .map(|transcript| {
+                        Ok(PodcastTranscript {
+                            url: resolve_url(source_url, &transcript.url)?,
+                            media_type: transcript.media_type,
+                            language: transcript.language,
+                            rel: transcript.rel,
+                        })
+                    })
+                    .collect::<Result<_, String>>()?,
             })
         })
         .collect::<Result<Vec<_>, String>>()?;
     Ok(ParsedFeed {
         title: parsed.title,
+        artwork,
         entries: deduplicate(entries),
+        diagnostics: parsed.diagnostics,
     })
 }
 
@@ -494,18 +648,21 @@ fn parse_json_feed(source_url: &str, body: &str) -> Result<ParsedFeed, String> {
                 .filter(|summary| !summary.trim().is_empty());
             Ok(FeedEntry {
                 url: entry_url(source_url, link, &item.id, index)?,
+                guid: Some(item.id.clone()),
                 title: item
                     .title
                     .filter(|title| !title.trim().is_empty())
                     .unwrap_or_else(|| item.id.clone()),
                 date: item.date_published,
                 summary,
+                ..FeedEntry::default()
             })
         })
         .collect::<Result<Vec<_>, String>>()?;
     Ok(ParsedFeed {
         title: parsed.title,
         entries: deduplicate(entries),
+        ..ParsedFeed::default()
     })
 }
 
@@ -545,6 +702,7 @@ fn parse_gemtext_feed(source_url: &str, body: &str) -> Result<ParsedFeed, String
             url,
             date: Some(date.to_string()),
             summary: None,
+            ..FeedEntry::default()
         });
     }
     if entries.is_empty() {
@@ -553,6 +711,7 @@ fn parse_gemtext_feed(source_url: &str, body: &str) -> Result<ParsedFeed, String
     Ok(ParsedFeed {
         title,
         entries: deduplicate(entries),
+        ..ParsedFeed::default()
     })
 }
 
@@ -593,8 +752,17 @@ fn deduplicate(entries: Vec<FeedEntry>) -> Vec<FeedEntry> {
     let mut seen = BTreeSet::new();
     entries
         .into_iter()
-        .filter(|entry| seen.insert(entry.url.clone()))
+        .filter(|entry| seen.insert(entry_identity(entry)))
         .collect()
+}
+
+fn entry_identity(entry: &FeedEntry) -> String {
+    entry
+        .guid
+        .as_deref()
+        .filter(|guid| !guid.trim().is_empty())
+        .map(|guid| format!("guid:{guid}"))
+        .unwrap_or_else(|| entry.url.clone())
 }
 
 mod period_serde {
@@ -682,7 +850,9 @@ mod tests {
                 title: "One".into(),
                 date: Some("2026-08-18".into()),
                 summary: None,
+                ..FeedEntry::default()
             }],
+            ..ParsedFeed::default()
         };
         let merge = feeds.merge(source, parsed.clone(), 10).unwrap();
         assert_eq!(merge.entries.len(), 1);
@@ -692,5 +862,116 @@ mod tests {
         let mut reopened = FeedSubscriptions::load(dir.path());
         assert!(reopened.start_due(3_599_999).is_empty());
         assert_eq!(reopened.start_due(3_600_020).len(), 1);
+    }
+
+    #[test]
+    fn podcast_facts_resolve_against_the_caller_base_and_guid_wins_deduplication() {
+        let parsed = parse_document(
+            "https://example.test/shows/feed.xml",
+            &FetchedPage::text(
+                Some("application/rss+xml".into()),
+                r#"<rss xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd"
+                    xmlns:podcast="https://podcastindex.org/namespace/1.0"
+                    xmlns:mystery="https://example.test/mystery">
+                  <channel>
+                    <title>Field Notes</title>
+                    <itunes:image href="art/feed.jpg"/>
+                    <item>
+                      <guid>episode-42</guid><title>Wetland</title><link>episodes/42</link>
+                      <enclosure url="audio/42.mp3" type="audio/mpeg" length="123456"/>
+                      <itunes:duration>01:02:03</itunes:duration>
+                      <itunes:image href="art/42.jpg"/>
+                      <podcast:chapters url="chapters/42.json" type="application/json+chapters"/>
+                      <podcast:transcript url="transcripts/42.vtt" type="text/vtt" language="en"/>
+                      <mystery:waveform bins="32"/>
+                    </item>
+                    <item><guid>episode-42</guid><title>Duplicate</title><link>elsewhere</link></item>
+                  </channel>
+                </rss>"#,
+            ),
+        )
+        .unwrap();
+
+        assert_eq!(
+            parsed.artwork.as_deref(),
+            Some("https://example.test/shows/art/feed.jpg")
+        );
+        assert_eq!(parsed.entries.len(), 1);
+        let entry = &parsed.entries[0];
+        assert_eq!(entry.guid.as_deref(), Some("episode-42"));
+        assert_eq!(entry.url, "https://example.test/shows/episodes/42");
+        assert_eq!(
+            entry.enclosures[0].url,
+            "https://example.test/shows/audio/42.mp3"
+        );
+        assert_eq!(entry.enclosures[0].byte_length, Some(123_456));
+        assert_eq!(entry.duration.as_deref(), Some("01:02:03"));
+        assert_eq!(
+            entry.artwork.as_deref(),
+            Some("https://example.test/shows/art/42.jpg")
+        );
+        assert_eq!(
+            entry.chapters[0].url,
+            "https://example.test/shows/chapters/42.json"
+        );
+        assert_eq!(
+            entry.transcripts[0].url,
+            "https://example.test/shows/transcripts/42.vtt"
+        );
+        assert!(
+            parsed
+                .diagnostics
+                .iter()
+                .any(|diagnostic| diagnostic.contains("mystery:waveform"))
+        );
+    }
+
+    #[test]
+    fn guid_identity_survives_an_enclosure_or_link_change() {
+        let source = Uuid::new_v4();
+        let member = Uuid::new_v4();
+        let mut feeds = FeedSubscriptions::default();
+        feeds.subscribe(
+            source,
+            "https://example.test/feed.xml".into(),
+            servitor::Period::Hour,
+        );
+        let entry = |url: &str| FeedEntry {
+            url: url.into(),
+            guid: Some("stable-guid".into()),
+            title: "Episode".into(),
+            enclosures: vec![FeedEnclosure {
+                url: format!("{url}.mp3"),
+                media_type: Some("audio/mpeg".into()),
+                byte_length: None,
+            }],
+            ..FeedEntry::default()
+        };
+        let first = feeds
+            .merge(
+                source,
+                ParsedFeed {
+                    entries: vec![entry("https://example.test/first")],
+                    ..ParsedFeed::default()
+                },
+                10,
+            )
+            .unwrap();
+        assert_eq!(first.entries.len(), 1);
+        feeds.bind_entry(source, "https://example.test/first", member);
+
+        let changed = feeds
+            .merge(
+                source,
+                ParsedFeed {
+                    entries: vec![entry("https://example.test/revised")],
+                    ..ParsedFeed::default()
+                },
+                20,
+            )
+            .unwrap();
+        assert_eq!(changed.entries.len(), 1);
+        assert_eq!(changed.entries[0].member, Some(member));
+        assert_eq!(feeds.subscriptions[&source].entries.len(), 1);
     }
 }

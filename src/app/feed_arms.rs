@@ -187,6 +187,9 @@ impl App {
         let Some(merge) = self.feeds.merge(node, parsed, now_ms) else {
             return Vec::new();
         };
+        for diagnostic in &merge.diagnostics {
+            tracing::warn!(%node, %diagnostic, "feed extension degraded during projection");
+        }
         let changed = merge.entries.len();
         let graph = self
             .graph_runtimes
@@ -197,27 +200,31 @@ impl App {
                 canvas.set_node_title_for(node, title);
             }
             for projection in merge.entries {
-                let member = projection
+                let existing_member = projection
                     .member
-                    .filter(|member| {
-                        canvas
-                            .graph()
-                            .get_node_by_id(*member)
-                            .is_some_and(|(_, entry)| entry.url() == projection.entry.url)
-                    })
-                    .or_else(|| {
-                        canvas
-                            .graph()
-                            .get_node_by_url(&projection.entry.url)
-                            .map(|(_, entry)| entry.id)
-                    })
-                    .unwrap_or_else(|| {
-                        let selected = canvas.selected_members();
-                        let member =
-                            canvas.open_member_as_new_node(Some(node), &projection.entry.url);
-                        canvas.set_selected_members(&selected);
-                        member
-                    });
+                    .filter(|member| canvas.graph().get_node_by_id(*member).is_some());
+                let member = if let Some(member) = existing_member {
+                    let url_changed = canvas
+                        .graph()
+                        .get_node_by_id(member)
+                        .is_some_and(|(_, entry)| entry.url() != projection.entry.url);
+                    if url_changed {
+                        canvas.navigate_member(member, &projection.entry.url);
+                    }
+                    member
+                } else {
+                    canvas
+                        .graph()
+                        .get_node_by_url(&projection.entry.url)
+                        .map(|(_, entry)| entry.id)
+                        .unwrap_or_else(|| {
+                            let selected = canvas.selected_members();
+                            let member =
+                                canvas.open_member_as_new_node(Some(node), &projection.entry.url);
+                            canvas.set_selected_members(&selected);
+                            member
+                        })
+                };
                 canvas.assert_relation_between_members(
                     node,
                     member,
@@ -368,5 +375,56 @@ mod tests {
             effect,
             Effect::FetchFeed { node, .. } if *node == source
         )));
+    }
+
+    #[test]
+    fn guid_stable_episode_url_change_navigates_the_existing_member() {
+        let mut app = App::test_stub();
+        app.now_ms = Some(1_000);
+        app.update(Action::OpenAddress(
+            "https://podcast.test/feed.xml".to_string(),
+        ));
+        let source = app.graph_runtimes.focused_member().unwrap();
+        app.update(Action::SubscribeFocusedFeed {
+            period: servitor::Period::Hour,
+        });
+
+        let episode = |url: &str| {
+            FetchedPage::text(
+                Some("application/rss+xml".into()),
+                format!(
+                    "<rss version=\"2.0\"><channel><title>Pod</title><item><guid>episode-1</guid><title>One</title><link>{url}</link><enclosure url=\"{url}.mp3\" type=\"audio/mpeg\" /></item></channel></rss>"
+                ),
+            )
+        };
+        app.apply_update(Update::FeedFetched {
+            node: source,
+            url: "https://podcast.test/feed.xml".into(),
+            result: Ok(episode("https://podcast.test/episodes/one")),
+        });
+        let member = app
+            .graph_runtimes
+            .graph()
+            .get_node_by_url("https://podcast.test/episodes/one")
+            .unwrap()
+            .1
+            .id;
+
+        app.apply_update(Update::FeedFetched {
+            node: source,
+            url: "https://podcast.test/feed.xml".into(),
+            result: Ok(episode("https://cdn.podcast.test/episodes/one")),
+        });
+
+        assert_eq!(app.graph_runtimes.graph().nodes().count(), 2);
+        assert_eq!(
+            app.graph_runtimes
+                .graph()
+                .get_node_by_url("https://cdn.podcast.test/episodes/one")
+                .unwrap()
+                .1
+                .id,
+            member
+        );
     }
 }

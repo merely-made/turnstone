@@ -145,7 +145,7 @@ mere-document-lanes = { git = "https://github.com/merely-made/mere.git", rev = "
 # Protocol-faithful RSS/Atom parsing for the graph-native feed subscription
 # loop. Gemini feed discovery remains gemtext-native in Turnstone; errand owns
 # the shared XML grammar already used by Nematic.
-errand = { git = "https://github.com/merely-made/mere.git", rev = "d82afa17e2cca86da843f07a2d718d2e69eb9f10" }
+errand = { git = "https://github.com/merely-made/mere.git", rev = "5630e256cddd50d7305b1ec3687d8c2578545584" }
 # Optional app-control scripting. Piccolo is a Turnstone mod/workflow backend,
 # not a browser-page engine; Vano/Boa remain the JavaScript lanes.
 script-engine-api = { git = "https://github.com/merely-made/genet.git", rev = "115d348deddc344d949754e63beaece47cf49f34", optional = true }
