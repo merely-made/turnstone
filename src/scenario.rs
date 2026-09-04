@@ -177,6 +177,12 @@ pub enum Step {
     /// The graph's node count compares as given (a switch shows a different
     /// graph; this is the cheap witness).
     AssertNodes(CmpOp, usize),
+    /// `assert energy <op> <n>` / `assert overlaps <op> <n>`: the layout's
+    /// kinetic energy and its overlapping pairs. (Physics catalog — P4.)
+    AssertEnergy(CmpOp, f32),
+    /// `assert physics running|paused`.
+    AssertPhysicsRunning(bool),
+    AssertOverlaps(CmpOp, usize),
     /// Self-capture the first live lens window's composed frame.
     CaptureLens(String),
     /// The root split's ratio compares as given.
@@ -475,7 +481,7 @@ pub fn parse(body: &str) -> Result<Vec<Step>, String> {
                         Step::AssertNoLensPane(arg.to_string())
                     }
                     "no-surface" if !arg.is_empty() => Step::AssertNoSurface(arg.to_string()),
-                    "windows" | "sessions" | "nodes" => {
+                    "windows" | "sessions" | "nodes" | "overlaps" => {
                         let (op, n) = arg.split_once(char::is_whitespace).ok_or_else(|| {
                             format!("line {}: assert {what} wants '<op> <n>'", i + 1)
                         })?;
@@ -490,6 +496,7 @@ pub fn parse(body: &str) -> Result<Vec<Step>, String> {
                             .parse()
                             .map_err(|_| format!("line {}: bad {what} count", i + 1))?;
                         match what {
+                            "overlaps" => Step::AssertOverlaps(op, n),
                             "sessions" => Step::AssertSessions(op, n),
                             "nodes" => Step::AssertNodes(op, n),
                             _ => Step::AssertWindows(op, n),
@@ -548,6 +555,27 @@ pub fn parse(body: &str) -> Result<Vec<Step>, String> {
                         } else {
                             Step::AssertRatio(op, n)
                         }
+                    }
+                    "physics" => match arg {
+                        "running" => Step::AssertPhysicsRunning(true),
+                        "paused" => Step::AssertPhysicsRunning(false),
+                        _ => return err("assert physics wants running|paused"),
+                    },
+                    "energy" => {
+                        let (op, n) = arg.split_once(char::is_whitespace).ok_or_else(|| {
+                            format!("line {}: assert energy wants '<op> <n>'", i + 1)
+                        })?;
+                        let op = match op {
+                            "==" => CmpOp::Eq,
+                            ">=" => CmpOp::Ge,
+                            "<=" => CmpOp::Le,
+                            _ => return err("assert energy op wants ==|>=|<="),
+                        };
+                        let n = n
+                            .trim()
+                            .parse()
+                            .map_err(|_| format!("line {}: bad energy", i + 1))?;
+                        Step::AssertEnergy(op, n)
                     }
                     "suggestions" => {
                         let (op, n) = arg

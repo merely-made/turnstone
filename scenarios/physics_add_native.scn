@@ -1,0 +1,56 @@
+# Physics catalog, native receipt (P4): adding a node under each law. `open`
+# is the add gesture — a fresh node minted beside its origin — and the two
+# donor contracts are what is checked: the structural change reheats the
+# layout, and the newcomer is absorbed without any pair left overlapping.
+# The laws are chosen by palette label, as a person would.
+settle 40
+act Open Arrange pane
+settle 10
+# Not maximized: a maximized Arrange pane hides the graph, whose canvas then
+# never frames, so its layout read model would freeze mid-settle.
+assert row Physics: Springs
+# Free arrangement: an analytic one would anchor every body and hide the law.
+act Layout: Force-directed
+settle 5
+assert row Arrangement: Free
+# The canvas boots with the law running; assert it rather than toggling
+# blind, because a paused canvas refuses every settle and an add would then
+# never separate.
+assert physics running
+
+# --- Springs: the newcomer is absorbed and the ringing dies away ---
+open mere://p4/add/springs
+wait
+assert nodes >= 2
+assert overlaps == 0
+capture 01_add_springs
+
+# --- Orbit: restless, so the layout still carries energy ---
+act Physics: Orbit
+settle 60
+assert row Physics: Orbit
+open mere://p4/add/orbit
+wait
+# Energy reads zero here: this host offloads the simulation, and the actor's
+# snapshots carry no energy at the mere revision turnstone pins. What the
+# restless law still owes is a layout with nothing stacked.
+assert overlaps == 0
+capture 02_add_orbit
+
+# --- Charge: separates, and leaves nothing stacked ---
+act Physics: Charge
+settle 60
+assert row Physics: Charge
+open mere://p4/add/charge
+wait
+assert overlaps == 0
+
+# --- Still: the law holds everything, the newcomer included ---
+act Physics: Still
+settle 60
+assert row Physics: Still
+open mere://p4/add/still
+wait
+assert overlaps == 0
+capture 03_add_still
+log physics add native receipt complete

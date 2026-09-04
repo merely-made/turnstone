@@ -42,6 +42,14 @@ pub struct Snapshot {
     /// Per-node content lifecycle, as (member, state label) pairs.
     pub content: Vec<(Uuid, String)>,
     pub node_count: usize,
+    /// The layout's kinetic energy and the node pairs closer than a body's
+    /// diameter — a physics law's signature, the same two figures the web
+    /// host publishes. (Physics catalog — P4 native.)
+    pub physics_energy: f32,
+    /// Whether the layout physics is paused — a paused canvas refuses every
+    /// settle, so an add never separates. (Physics catalog — P4 native.)
+    pub physics_paused: bool,
+    pub layout_overlaps: usize,
     /// Durable feed sources in this session and their unread entry count.
     pub feed_subscriptions: usize,
     pub feed_unread: usize,
@@ -850,6 +858,9 @@ pub fn snapshot(app: &App) -> Snapshot {
         }),
         content,
         node_count: app.graph_runtimes.graph().nodes().count(),
+        physics_energy: app.graph_runtimes.layout_stats().energy,
+        physics_paused: app.graph_runtimes.physics_paused(),
+        layout_overlaps: app.graph_runtimes.layout_stats().overlaps,
         feed_subscriptions: app.feeds.len(),
         feed_unread: app.feeds.unread_count(),
         graph_visible: app.graph_runtimes.graph_visible(),

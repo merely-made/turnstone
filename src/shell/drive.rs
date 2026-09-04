@@ -349,6 +349,12 @@ impl genet_probe::Automatable for Shell {
         if self.app.content.any_requested() {
             return Some(true);
         }
+        // The graph's own layout counts as work: without this `wait` returns
+        // while the physics is still settling, and a receipt reads a
+        // mid-settle layout. (Physics catalog — P4 native.)
+        if self.app.graph_runtimes.is_settling() {
+            return Some(true);
+        }
         Some(self.content_sessions.values_mut().any(|s| !s.settled()))
     }
 
@@ -763,6 +769,38 @@ impl Shell {
                 let snap = crate::observe::snapshot(&self.app);
                 if !cmp_usize(op, snap.node_count, *n) {
                     return Err(format!("assert nodes {op:?} {n}: have {}", snap.node_count));
+                }
+            }
+            Step::AssertEnergy(op, n) => {
+                let snap = crate::observe::snapshot(&self.app);
+                if !cmp_f32(op, snap.physics_energy, *n) {
+                    return Err(format!(
+                        "assert energy {op:?} {n}: have {:.1}",
+                        snap.physics_energy
+                    ));
+                }
+            }
+            Step::AssertPhysicsRunning(want) => {
+                let snap = crate::observe::snapshot(&self.app);
+                if snap.physics_paused == *want {
+                    return Err(format!(
+                        "assert physics {}: it is {}",
+                        if *want { "running" } else { "paused" },
+                        if snap.physics_paused {
+                            "paused"
+                        } else {
+                            "running"
+                        }
+                    ));
+                }
+            }
+            Step::AssertOverlaps(op, n) => {
+                let snap = crate::observe::snapshot(&self.app);
+                if !cmp_usize(op, snap.layout_overlaps, *n) {
+                    return Err(format!(
+                        "assert overlaps {op:?} {n}: have {}",
+                        snap.layout_overlaps
+                    ));
                 }
             }
             Step::AssertA11y(substr) => {
