@@ -647,9 +647,13 @@ kept a Turnstone-private topology because the shared contract could not own
 mixed-surface routing, persistence, or stable pane identity. Mark's ruling:
 those are the stack's to own, so the contract is extended rather than
 worked around — `workbench` gains serde and the A5 float layer, Cambium's
-`tab_strip` gains a close affordance and active marking, and Turnstone's
-compositor walks the shared tree, reserving a strip surface per stack and
-compositing one surface per pane as it always has. The user-facing result:
+`tab_strip` gains a close affordance, frisket gains a slot resolver, and a
+`cambium::workspace` composition wires them. Turnstone then renders **one
+frame per window**: its own panes as `Component`s in that frame, contributed
+panes through the retained-surface trait, the graph canvas and WebViews as
+holes it composites. Mark ruled one renderer over the first draft's
+host-composited strip surfaces (2026-09-04): the host's own content is not
+a hole. The user-facing result:
 every tiled pane wears a tab bar (a one-tab stack is the sub-title bar), each
 tab closes from its ×, panes stack by dragging one onto another, and the
 layout is saved and restored. `SpaceBlueprint`, the binary `PaneNode` tree,
