@@ -44,7 +44,7 @@ set.
   are landed, its clean-source Turnstone compile gate remains open, and P2
   custody has not begun.
 - [Browser surfaces implementation plan](2026-08-25_browser_surface_implementation_plan.md): sequenced Keep, find, decision UI, engine parity, arrivals, shallows, and extension work.
-- [Pane registry, graph views, and shell composition](2026-08-08_pane_registry_and_graph_panes_plan.md): registry and multi-graph pane roadmap, with its remaining A-lane gates.
+- [Pane registry, graph views, and shell composition](2026-08-08_pane_registry_and_graph_panes_plan.md): registry and multi-graph pane roadmap, with its remaining A-lane gates; A4 revised 2026-09-04 to adopt the shared Workbench tree (panes as tiles).
 - [Turnstone engine adoption](2026-08-03_turnstone_engine_adoption_plan.md): selectable engine routing and unavailable-engine behavior.
 - [Reticulum browsing](2026-08-03_reticulum_browsing_plan.md): idiomatic NomadNet and Reticulum content routing queued behind the protocol adapter gate.
 - [User-agent taxonomy](2026-08-03_user_agent_taxonomy_plan.md): browser obligations assigned to graph-native Turnstone homes.

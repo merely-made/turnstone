@@ -525,7 +525,8 @@ as tab, pane, float, or modal is a chrome/layout preference over one Settings so
 | Shared projection geometry and physics | `FormeRuntime`, addressed by `(FormeId, projection kind, layout id)` and rebuilt from graph/Forme truth |
 | Graph-pane camera, selection, and view intent | Live `PaneRecord` keyed by `PaneId`; the pane definition decides which fields snapshot into a blueprint |
 | Pane source, follower rule, and instance configuration | `PaneSpec` in `SpaceBlueprint` |
-| Tiled topology, floats, and chrome composition | `SpaceBlueprint` |
+| Tiled topology and floats | `workbench::Workspace`, serialized by Turnstone as the saved layout (A4 as revised 2026-09-04; was `SpaceBlueprint`) |
+| Chrome composition | `SpaceBlueprint`'s `ChromeBlueprint`, until A6/A8 place it |
 | Application shell defaults and settings | Application settings provider |
 | Shell transcript | Bounded local transcript store under explicit retention policy |
 
@@ -641,7 +642,26 @@ decision, not the tab decision: Turnstone's tree is binary, `TileTree` is
 N-ary and recursive, and nested splits and nested panes both want that
 recursion.
 
-**Decision, 2026-08-11: outcome 3.** `SpaceBlueprint` remains Turnstone's
+**Revised by Mark, 2026-09-04: outcome 1.** The 2026-08-11 decision below
+kept a Turnstone-private topology because the shared contract could not own
+mixed-surface routing, persistence, or stable pane identity. Mark's ruling:
+those are the stack's to own, so the contract is extended rather than
+worked around — `workbench` gains serde and the A5 float layer, Cambium's
+`tab_strip` gains a close affordance and active marking, and Turnstone's
+compositor walks the shared tree, reserving a strip surface per stack and
+compositing one surface per pane as it always has. The user-facing result:
+every tiled pane wears a tab bar (a one-tab stack is the sub-title bar), each
+tab closes from its ×, panes stack by dragging one onto another, and the
+layout is saved and restored. `SpaceBlueprint`, the binary `PaneNode` tree,
+`legacy_bridge.rs` and `frame.json` retire; `Grid` is not ported, since
+nothing constructs one. The stack half and the done-conditions live in
+`mere/design_docs/cambium_docs/implementation_strategy/2026-08-31_workbench_component_plan.md`
+(W5); the revisit trigger it fires is
+`genet/docs/2026-07-24_frisket_pane_component_direction.md` follow-on §2.
+Turnstone's half starts only after mere is pushed and this repository's
+pin moves — Mark's steps.
+
+**Decision, 2026-08-11: outcome 3 (superseded above).** `SpaceBlueprint` remains Turnstone's
 serializable topology authority. `genet-host-api::TileTree` stays a useful
 presentation donor for Cambium furniture, but it cannot own mixed GPU/document/
 Cambium surface routing, persistence, stable pane identity, or the inactive-tab
@@ -782,6 +802,14 @@ layout can be shared or reset without changing graph/session truth.
 - Default layout details. Defaults remain editable and user-configurable.
 
 ## Progress
+
+- 2026-09-04: A4 revised to outcome 1 on Mark's ruling, from a screen full of
+  panes with no way to close them: the pane frame becomes Workbench's tree
+  with tabs, floats and serde, and Cambium's strip gets the close ×. The
+  reasons outcome 3 gave are now the stack's work list. Also found this
+  session, in a file the physics receipts touched: the `wait` verb returned
+  before the layout settled because `busy` never asked the canvas; fixed in
+  `39339e8`.
 
 - 2026-08-26: the Sky T5a consumer exercised the generic contributed-pane path
   with a second concrete provider. Per-`PaneId` retention and versioned source
