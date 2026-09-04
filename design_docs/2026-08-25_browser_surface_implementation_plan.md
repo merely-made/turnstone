@@ -459,3 +459,31 @@ Done-conditions:
   which is the receipt for the rewired fetch fallback; and the scripted
   `run_smolweb_acceptance.ps1 -Only gemini-browse` is `RESULT ok`. Captures in
   `Code/testing/turnstone/p4_repoint`, `p4_content` and `p4_smolweb`.
+
+- **2026-09-04:** advanced the Mere pin to `d82afa17e2c`, Mere's
+  `origin/main`, and the Knot pin to knot-editor `fcd004b655b`. **This
+  supersedes the previous entry's "the Mere revision is not Mere's `origin/main`,
+  deliberately".** That paragraph was true only while knot-editor pinned mere at
+  `b57d2021bac`: the constraint was never a preference for the older revision but
+  the one-source invariant, and knot-editor `fcd004b655b` ("Pin mere at
+  d82afa17, the P4 family revision") removes it by moving to the same family
+  revision. Turnstone follows rather than leads. Genet is unchanged at
+  `115d348dedd`, and no source, feature or seam changed with this bump — only
+  the two revision strings, 43 Mere pin lines and 2 Knot ones.
+  The bump carries three Mere commits, one of which is a real behaviour change
+  in a crate Turnstone consumes: `1c1d1b29`, "Stop collecting image sources as
+  outgoing document links", in `inker`. The full suite was therefore re-run
+  rather than assumed.
+  Receipts: `cargo metadata` reports one revision per repository — genet 23
+  packages, mere 77, knot-editor 2 — with **zero** duplicate package names, so
+  the 35 duplicates the previous entry recorded are gone at the intended
+  revision. `cargo check --workspace` green, 0 errors and the same 76
+  pre-existing warnings, none fixed. `cargo test --workspace` 414 passed, 1
+  failed, 6 ignored — identical to the previous commit and to the `f7a5388`
+  baseline, the failure still being the pre-existing
+  `place::lanes::tests::a_partition_heals_and_both_sides_converge`, so the
+  `inker` change regressed nothing here. Both five-test Knot authoring suites
+  5/5, `contributed_surface` 8/8. Headed: `scenarios/rung4_content.scn` is
+  `RESULT ok` and still renders https://example.com through `engine=genet.livery`
+  (559 bytes, text/html), the receipt for the rewired fetch fallback. Capture in
+  `Code/testing/turnstone/p4_content2`.
