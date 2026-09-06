@@ -51,8 +51,10 @@ enum ReaderCommand {
 
 /// Shell-owned handle for local ticket import and private one-document reads.
 pub struct KnotShareReaderService {
-    commands: tokio_mpsc::UnboundedSender<ReaderCommand>,
+    commands: Option<tokio_mpsc::UnboundedSender<ReaderCommand>>,
+    shutdown: Option<tokio::sync::oneshot::Sender<()>>,
     snapshot: Arc<Mutex<SharedKnotSnapshot>>,
+    worker: Option<std::thread::JoinHandle<()>>,
 }
 
 impl KnotShareReaderService {
@@ -60,10 +62,11 @@ impl KnotShareReaderService {
     /// root. It does not require a local Knot authoring host.
     pub fn start(identity: Arc<RootIdentity>) -> Result<Self, String> {
         let (commands, receiver) = tokio_mpsc::unbounded_channel();
+        let (shutdown, shutdown_receive) = tokio::sync::oneshot::channel();
         let snapshot = Arc::new(Mutex::new(SharedKnotSnapshot::default()));
         let (ready_send, ready_receive) = mpsc::sync_channel(1);
         let worker_snapshot = Arc::clone(&snapshot);
-        std::thread::Builder::new()
+        let worker = std::thread::Builder::new()
             .name("turnstone-knot-share-reader".into())
             .spawn(move || {
                 let runtime = match tokio::runtime::Builder::new_multi_thread()
@@ -77,16 +80,29 @@ impl KnotShareReaderService {
                     }
                 };
                 if let Err(error) =
-                    runtime.block_on(run(identity, receiver, worker_snapshot, ready_send))
+                    runtime.block_on(run(identity, receiver, shutdown_receive, worker_snapshot, ready_send))
                 {
                     tracing::warn!(%error, "Knot share reader stopped");
                 }
             })
             .map_err(|error| format!("start Knot share reader: {error}"))?;
-        ready_receive
-            .recv()
-            .map_err(|_| "Knot share reader stopped during startup".to_string())??;
-        Ok(Self { commands, snapshot })
+        let service = Self {
+            commands: Some(commands),
+            shutdown: Some(shutdown),
+            snapshot,
+            worker: Some(worker),
+        };
+        match ready_receive.recv() {
+            Ok(Ok(())) => Ok(service),
+            Ok(Err(error)) => {
+                drop(service);
+                Err(error)
+            }
+            Err(_) => {
+                drop(service);
+                Err("Knot share reader stopped during startup".to_string())
+            }
+        }
     }
 
     pub fn snapshot(&self) -> SharedKnotSnapshot {
@@ -99,13 +115,31 @@ impl KnotShareReaderService {
     /// The pasted ticket stays only in the command and worker stack; it is
     /// not serialized into the shell's retained layout or session state.
     pub fn open(&self, ticket: String) {
-        let _ = self.commands.send(ReaderCommand::Open(ticket));
+        if let Some(commands) = &self.commands {
+            let _ = commands.send(ReaderCommand::Open(ticket));
+        }
+    }
+}
+
+impl Drop for KnotShareReaderService {
+    fn drop(&mut self) {
+        // Closing the command sender lets the async owner close its carrier;
+        // joining makes that close complete before the shell drops its last
+        // service state.
+        self.commands.take();
+        if let Some(shutdown) = self.shutdown.take() {
+            let _ = shutdown.send(());
+        }
+        if let Some(worker) = self.worker.take() {
+            let _ = worker.join();
+        }
     }
 }
 
 async fn run(
     identity: Arc<RootIdentity>,
     mut commands: tokio_mpsc::UnboundedReceiver<ReaderCommand>,
+    mut shutdown: tokio::sync::oneshot::Receiver<()>,
     snapshot: Arc<Mutex<SharedKnotSnapshot>>,
     ready: mpsc::SyncSender<Result<(), String>>,
 ) -> Result<(), String> {
@@ -122,6 +156,7 @@ async fn run(
     if carrier.local_peer_id().to_bytes() != reader_key {
         let error = "Knot share reader carrier identity differs from its reader key".to_string();
         let _ = ready.send(Err(error.clone()));
+        let _ = carrier.close().await;
         return Err(error);
     }
     {
@@ -132,13 +167,28 @@ async fn run(
     }
     let _ = ready.send(Ok(()));
 
-    while let Some(command) = commands.recv().await {
-        match command {
-            ReaderCommand::Open(encoded) => {
-                open_ticket(&carrier, &reader, &snapshot, encoded).await;
+    loop {
+        tokio::select! {
+            biased;
+            _ = &mut shutdown => break,
+            command = commands.recv() => {
+                let Some(command) = command else { break; };
+                match command {
+                    ReaderCommand::Open(encoded) => {
+                        tokio::select! {
+                            biased;
+                            _ = &mut shutdown => break,
+                            _ = open_ticket(&carrier, &reader, &snapshot, encoded) => {}
+                        }
+                    }
+                }
             }
         }
     }
+    carrier
+        .close()
+        .await
+        .map_err(|error| format!("close Knot share reader carrier: {error}"))?;
     Ok(())
 }
 

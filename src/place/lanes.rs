@@ -31,10 +31,8 @@ const WATCH_TICK: std::time::Duration = std::time::Duration::from_millis(250);
 
 /// One place's joined lanes, plus the transport and runtime that carry them.
 ///
-/// Field order is drop order and is load-bearing: the watcher stops first,
-/// then lane tasks abort, then the transport's actors stop, then the runtime
-/// they all lived on shuts down. The runtime last, because aborting a task
-/// needs a live runtime.
+/// The runtime is retained so the synchronous owner can await watcher
+/// cancellation and endpoint close before this value's fields are dropped.
 pub(crate) struct LiveLanes {
     watcher: Option<tokio::task::JoinHandle<()>>,
     moot: MootLanes,
@@ -51,6 +49,16 @@ impl Drop for LiveLanes {
         // ask the app to resync a place that is gone.
         if let Some(watcher) = self.watcher.take() {
             watcher.abort();
+            self._runtime.block_on(async {
+                let _ = watcher.await;
+            });
+        }
+        // The transport owns an iroh endpoint whose Drop path aborts
+        // ungracefully. The place worker is synchronous, but retains the
+        // lane runtime precisely so this owner can await endpoint shutdown
+        // before the runtime and transport are dropped.
+        if let Err(error) = self._runtime.block_on(self._transport.close()) {
+            tracing::warn!(%error, "place transport did not close cleanly");
         }
     }
 }

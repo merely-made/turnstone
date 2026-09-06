@@ -1,0 +1,1 @@
+2026-09-06T07:17:56.825739Z  WARN turnstone::gemini_identity: failed to project Gemini client identity error=client identities are only valid for gemini:// or titan:// capsules

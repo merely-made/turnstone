@@ -1,0 +1,2 @@
+RESULT ok
+id=0x3c7a0eda67e52fb8 role=workbench source=0 rect=773,30 251x570 viewport=251x570 scroll=0; id=0x872172d8a314a7ea role=inset source=0 rect=204,0 305x600 viewport=305x600 scroll=0

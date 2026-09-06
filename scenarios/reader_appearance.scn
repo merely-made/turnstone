@@ -6,8 +6,12 @@ key escape
 
 open http://127.0.0.1:43118/article
 wait 240
+record-idle 01_after_open_wait
 act Toggle live content
 wait 240
+record-idle 02_after_content_wait
+assert content-sessions-idle
+assert content-ready
 assert content-live
 
 # Select the real Reader engine through the Apparatus UI, then add the same
@@ -16,6 +20,9 @@ act Open Apparatus pane
 settle 20
 click-row genet.reader
 wait 240
+record-idle 03_after_reader_wait
+assert content-sessions-idle
+assert content-ready
 assert content-live
 act Open node in Workbench
 settle 30

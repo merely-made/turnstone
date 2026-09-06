@@ -45,6 +45,7 @@
 //! scroll <x> <y> <dy>       # wheel at window px (page scroll / canvas pan)
 //! scroll-reader <role> <dy> # wheel at the live Reader inset|workbench|tile rect
 //! record-reader-appearances <name> # stable sorted Reader appearance observation
+//! record-idle <name>        # bounded global-idle diagnosis after a wait
 //! divider <ratio>           # set the active pane's split ratio (0.0-1.0)
 //! assert pane <tag>         # a pane with that PaneContent tag is in the tree
 //! assert maximized | not-maximized
@@ -72,6 +73,8 @@
 //! assert reader-role <role> # exactly one live Reader role
 //! assert reader-viewport <role> # session viewport matches its live rect
 //! assert reader-scroll <role> ==|>=|<= <px> # role's own retained scroll offset
+//! assert content-sessions-idle # every live document session has settled
+//! assert content-ready # fetches, content requests, and sessions are quiet
 //! assert active-ratio ==|>=|<= <f> # the ACTIVE pane's parent-split ratio (any space)
 //! assert sessions ==|>=|<= <n>  # the manifest set holds n sessions
 //! assert session <substr>   # the live session's label contains substr
@@ -133,6 +136,9 @@ pub enum Step {
     /// Write the live Reader appearance registry/plan intersection as a
     /// scenario receipt, sorted by stable surface id.
     RecordReaderAppearances(String),
+    /// Write the named reasons that currently make Turnstone's global `wait`
+    /// report busy. This is a read-only receipt, not another waiting policy.
+    RecordIdle(String),
     /// Click the list-pane (Trail/Roster) row whose text contains this substring.
     /// The shell resolves the row's window position (it owns the pane rects and
     /// rows), so the receipt names a row by text, not pixels.
@@ -183,6 +189,10 @@ pub enum Step {
     AssertReaderRole(String),
     AssertReaderViewport(String),
     AssertReaderScroll(String, CmpOp, f32),
+    /// The document-session portion of quiescence. Graph layout may still be
+    /// moving, so this deliberately does not claim whole-app idle.
+    AssertContentSessionsIdle,
+    AssertContentReady,
     /// NO lens pane's "ordinal:tag" contains the substring (the lens close
     /// op's departure half).
     AssertNoLensPane(String),
@@ -475,6 +485,7 @@ pub fn parse(body: &str) -> Result<Vec<Step>, String> {
             "record-reader-appearances" if !rest.is_empty() => {
                 Step::RecordReaderAppearances(rest.to_string())
             }
+            "record-idle" if !rest.is_empty() => Step::RecordIdle(rest.to_string()),
             "assert" => {
                 let (what, arg) = rest.split_once(char::is_whitespace).unwrap_or((rest, ""));
                 let arg = arg.trim();
@@ -532,6 +543,8 @@ pub fn parse(body: &str) -> Result<Vec<Step>, String> {
                         };
                         Step::AssertReaderScroll(role.unwrap().to_string(), op, amount.unwrap())
                     }
+                    "content-sessions-idle" if arg.is_empty() => Step::AssertContentSessionsIdle,
+                    "content-ready" if arg.is_empty() => Step::AssertContentReady,
                     "reader-appearances" | "reader-sources" => {
                         let (op, n) = arg.split_once(char::is_whitespace).ok_or_else(|| {
                             format!("line {}: assert {what} wants '<op> <n>'", i + 1)
@@ -740,5 +753,14 @@ drop-file 350 280 receipt.txt",
     fn tab_is_a_focus_routed_key_step() {
         let steps = parse("key tab").unwrap();
         assert!(matches!(steps.as_slice(), [Step::Key(EditKey::Tab)]));
+    }
+
+    #[test]
+    fn idle_diagnostics_and_document_idle_are_typed_steps() {
+        let steps = parse("record-idle after-fetch\nassert content-sessions-idle\nassert content-ready").unwrap();
+        assert!(matches!(
+            steps.as_slice(),
+            [Step::RecordIdle(name), Step::AssertContentSessionsIdle, Step::AssertContentReady] if name == "after-fetch"
+        ));
     }
 }

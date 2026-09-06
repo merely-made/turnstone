@@ -1,0 +1,7 @@
+RESULT ok
+scenario=C:\Users\mark_\Code\repos\turnstone\scenarios\reader_appearance.scn
+scenario-receipt=C:\Users\mark_\Code\scratch\refresh-proof\reader-idle-shutdown-run-02\capture\scenario.done
+fixture-receipt=C:\Users\mark_\Code\scratch\refresh-proof\reader-idle-shutdown-run-02\fixture.done
+captures=01_two_reader_appearances.png,02_inset_scrolled.png,03_independent_scrolls.png,04_inset_survives.png
+observations=01_before_scroll.txt,02_inset_only.txt,03_both_scrolled.txt,04_inset_survives.txt
+idle-observations=01_after_open_wait.txt,02_after_content_wait.txt,03_after_reader_wait.txt

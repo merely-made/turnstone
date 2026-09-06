@@ -1,0 +1,9 @@
+RESULT ok
+waited 103 frames
+waited 0 frames
+waited 0 frames
+captured 01_two_reader_appearances
+captured 02_inset_scrolled
+captured 03_independent_scrolls
+captured 04_inset_survives
+headed Reader appearance isolation receipt complete

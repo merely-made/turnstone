@@ -1,7 +1,7 @@
 # Reader appearance isolation
 
-Status: bounded implementation, focused validation, and headed native Reader
-scroll/close proof complete, 2026-09-06. Whole-app idle behavior remains open.
+Status: bounded implementation, focused tests, and native Reader scroll/close,
+idle-wait, and observed shutdown gates passed, 2026-09-06. CPU/FPS sampling remains open.
 
 This is Turnstone's consumer slice of Mere's
 `design_docs/mere_docs/implementation_strategy/2026-09-05_projection_refresh_and_surface_reuse_plan.md`,
@@ -57,13 +57,42 @@ independent offsets (Workbench 240, inset 160), and unchanged inset identity
 and offset after Workbench closes. The runner also rejects an extra appearance
 or divergent source after either scroll. Screenshots were visually inspected.
 
-The run reached all three 240-frame global wait caps. Its explicit Reader
+The first run reached all three 240-frame global wait caps. Its explicit Reader
 assertions passed; it does not prove whole-app quiescence or frame performance.
-The next idle gate is to identify which busy condition remains active and
-measure whether it stops when its actual work ends. Canvas seeds 360 settling
-ticks while this scenario caps its waits at 240 frames, a possible explanation
-that the current logs cannot confirm. Record pending fetches, requested
-content, graph settling, and unsettled sessions at each cap before changing
-wait budgets. An iroh endpoint-close
+The follow-up below identifies the busy condition and verifies completion
+without changing wait budgets. It supersedes the earlier hypothesis that
+Canvas's 360-tick settling budget explained these 240-frame caps. An iroh endpoint-close
 diagnostic also appeared during successful shutdown. Interactive resize and
 navigation replacement remain outside this native scenario's coverage.
+
+## Idle and shutdown follow-up, 2026-09-06
+
+The diagnostic native run identified pending fetches as the sole busy condition
+after all three capped waits: graph settling was false, content requests were
+complete, and no document session was unsettled. The cause was a failed
+best-effort favicon request: the fetch actor emitted only successful results,
+leaving the failed request in the host's pending map.
+
+Mere now emits a typed terminal favicon result with request identity. Turnstone
+retires exactly that pending request on success or failure, while failures stay
+UI-silent. Three focused favicon tests passed, including same-page out-of-order
+completion and failed-request cleanup. The normal `busy()` poll remains
+allocation-free; detailed diagnostics are collected only on explicit requests.
+
+Share-reader and publishing services now own and join their worker threads,
+signal shutdown, and await transport close. Reader shutdown cancels an in-flight
+request without shortening normal request duration. Place lane teardown awaits
+watcher cancellation and endpoint close before dropping its runtime. The first
+diagnostic run no longer emitted the ungraceful endpoint-drop warning.
+
+The combined native rerun passed the original appearance assertions, reported
+`busy=false` at all three checkpoints without raising wait budgets, and emitted
+neither of the rejected ungraceful-shutdown diagnostics. Waits completed in
+103, 0, and 0 frames instead of reaching the three 240-frame caps. The runner
+now enforces these idle and shutdown conditions. The native build passed;
+three focused favicon tests passed. See the follow-up section of the
+[native receipt](2026-09-06_reader_appearance_native_check_receipt.md).
+
+This observes the native scenario's idle predicate and shutdown, not zero
+background CPU or a frame-rate target. Active place membership and an ongoing
+publishing transfer were not exercised by the fixture.

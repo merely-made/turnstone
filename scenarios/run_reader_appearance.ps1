@@ -43,6 +43,7 @@ foreach ($freshRoot in @($profileRoot, $captureRoot)) {
 $ready = Join-Path $OutputRoot "fixture.ready"
 $serverDone = Join-Path $OutputRoot "fixture.done"
 $scenarioDone = Join-Path $captureRoot "scenario.done"
+$appLog = Join-Path $OutputRoot "app.log"
 $expectedCaptures = @(
     "01_two_reader_appearances.png",
     "02_inset_scrolled.png",
@@ -54,6 +55,11 @@ $expectedObservations = @(
     "02_inset_only.txt",
     "03_both_scrolled.txt",
     "04_inset_survives.txt"
+)
+$expectedIdleObservations = @(
+    "01_after_open_wait.txt",
+    "02_after_content_wait.txt",
+    "03_after_reader_wait.txt"
 )
 
 function Read-ReaderAppearances {
@@ -115,7 +121,7 @@ try {
     [Environment]::SetEnvironmentVariable("TURNSTONE_CAPTURE_DIR", $captureRoot, "Process")
     Push-Location $repositoryRoot
     try {
-        & $binary
+        & $binary 2>&1 | Tee-Object -FilePath $appLog
         $appExit = $LASTEXITCODE
     }
     finally { Pop-Location }
@@ -129,7 +135,13 @@ try {
     if ($scenarioResult.Count -eq 0 -or $scenarioResult[0] -ne "RESULT ok") {
         throw "Reader scenario failed:`n$($scenarioResult -join "`n")"
     }
+    if (Select-String -LiteralPath $scenarioDone -Pattern 'wait: still busy after' -Quiet) {
+        throw "Reader scenario left a capped wait busy; see $scenarioDone"
+    }
     if ($appExit -ne 0) { throw "Reader scenario returned process exit $appExit after RESULT ok" }
+    if (Select-String -LiteralPath $appLog -Pattern "Endpoint dropped without calling|Aborting ungracefully" -Quiet) {
+        throw "Reader scenario emitted an ungraceful endpoint shutdown diagnostic; see $appLog"
+    }
     if (-not (Test-Path -LiteralPath $serverDone)) { throw "Reader fixture produced no receipt" }
     if ((Get-Content -LiteralPath $serverDone)[0] -ne "RESULT ok") {
         throw "Reader fixture failed:`n$((Get-Content -LiteralPath $serverDone) -join "`n")"
@@ -151,6 +163,20 @@ try {
         }
         if ((Get-Content -LiteralPath $observation)[0] -ne "RESULT ok") {
             throw "Reader observation failed: $observationName"
+        }
+    }
+    foreach ($observationName in $expectedIdleObservations) {
+        $observation = Join-Path $captureRoot $observationName
+        if (-not (Test-Path -LiteralPath $observation -PathType Leaf)) {
+            throw "missing idle observation: $observationName"
+        }
+        $lines = Get-Content -LiteralPath $observation
+        if ($lines.Count -ne 2 -or $lines[0] -ne "RESULT ok" -or
+            $lines[1] -notmatch '^busy=(true|false) pending_fetches=(true|false) requested_content=(true|false) graph_settling=(true|false) unsettled_sessions=\[[0-9a-fA-F,-]*\]$') {
+            throw "idle observation is malformed: $observation"
+        }
+        if ($lines[1] -notmatch '^busy=false ') {
+            throw "Reader remained busy at idle observation: $observation ($($lines[1]))"
         }
     }
     $before = Read-ReaderAppearances (Join-Path $captureRoot "01_before_scroll.txt")
@@ -200,7 +226,8 @@ try {
         "scenario-receipt=$scenarioDone",
         "fixture-receipt=$serverDone",
         "captures=$($expectedCaptures -join ',')",
-        "observations=$($expectedObservations -join ',')"
+        "observations=$($expectedObservations -join ',')",
+        "idle-observations=$($expectedIdleObservations -join ',')"
     ))
     Get-Content -LiteralPath $acceptance
 }

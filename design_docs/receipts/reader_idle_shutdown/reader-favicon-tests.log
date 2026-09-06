@@ -1,0 +1,1521 @@
+warning: patch `scrying v0.7.1 (C:\Users\mark_\Code\repos\wgpu-scry\scrying)` was not used in the crate graph
+warning: patch `netrender_text v0.1.1 (C:\Users\mark_\Code\repos\netrender\netrender_text)` was not used in the crate graph
+warning: patch `p2panda-net v0.7.1 (C:\Users\mark_\Code\crates\p2panda\p2panda-net)` was not used in the crate graph
+warning: patch `p2panda-stream v0.7.1 (C:\Users\mark_\Code\crates\p2panda\p2panda-stream)` was not used in the crate graph
+warning: patch `cambium-genet-web-host v0.1.0 (C:\Users\mark_\Code\repos\mere\crates\cambium\cambium-genet-web-host)` was not used in the crate graph
+warning: patch `cambium-genet-winit-host v0.1.0 (C:\Users\mark_\Code\repos\mere\crates\cambium\cambium-genet-winit-host)` was not used in the crate graph
+warning: patch `cambium-nematic v0.3.1 (C:\Users\mark_\Code\repos\mere\crates\cambium\cambium-nematic)` was not used in the crate graph
+warning: patch `cambium-rootstock v0.1.0 (C:\Users\mark_\Code\repos\mere\crates\cambium\cambium-rootstock)` was not used in the crate graph
+warning: patch `cambium-winit-a11y v0.3.0 (C:\Users\mark_\Code\repos\mere\crates\cambium\cambium-winit-a11y)` was not used in the crate graph
+warning: patch `chatelaine v0.0.2 (C:\Users\mark_\Code\repos\mere\crates\dramatis\chatelaine)` was not used in the crate graph
+warning: patch `conatus v0.1.0 (C:\Users\mark_\Code\repos\mere\crates\conatus\conatus)` was not used in the crate graph
+warning: patch `content-contract v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\system\content-contract)` was not used in the crate graph
+warning: patch `djinn v0.0.2 (C:\Users\mark_\Code\repos\mere\ports\djinn)` was not used in the crate graph
+warning: patch `document-host v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\script\document-host)` was not used in the crate graph
+warning: patch `dramatis v0.0.2 (C:\Users\mark_\Code\repos\mere\crates\dramatis\dramatis)` was not used in the crate graph
+warning: patch `gaz v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\dramatis\gaz)` was not used in the crate graph
+warning: patch `gazette v0.0.1 (C:\Users\mark_\Code\repos\mere\ports\gazette)` was not used in the crate graph
+warning: patch `graft-engine v0.2.0 (C:\Users\mark_\Code\repos\mere\crates\inker\engines\graft-engine)` was not used in the crate graph
+warning: patch `hagiograph v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\eidetic\hagiograph)` was not used in the crate graph
+warning: patch `insigne v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\dramatis\insigne)` was not used in the crate graph
+warning: patch `mere-alembic v0.0.1 (C:\Users\mark_\Code\repos\mere\ports\distillery\alembic)` was not used in the crate graph
+warning: patch `mere-athanor v0.0.1 (C:\Users\mark_\Code\repos\mere\ports\distillery\athanor)` was not used in the crate graph
+warning: patch `mere-comms v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\shell\comms)` was not used in the crate graph
+warning: patch `mere-crawl v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\crawl)` was not used in the crate graph
+warning: patch `mere-eidetic-https-fetcher v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\eidetic\eidetic-https-fetcher)` was not used in the crate graph
+warning: patch `mere-eidetic-iroh-fetcher v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\eidetic\eidetic-iroh-fetcher)` was not used in the crate graph
+warning: patch `mere-moot v0.0.1 (C:\Users\mark_\Code\repos\mere\ports\moot)` was not used in the crate graph
+warning: patch `mere-persona-picker v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\dramatis\persona-picker)` was not used in the crate graph
+warning: patch `mien v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\moot\mien)` was not used in the crate graph
+warning: patch `modulus v0.1.0 (C:\Users\mark_\Code\repos\mere\crates\conatus\modulus)` was not used in the crate graph
+warning: patch `moothold v0.1.0 (C:\Users\mark_\Code\repos\mere\crates\moot\moothold)` was not used in the crate graph
+warning: patch `murm v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\murm\murm)` was not used in the crate graph
+warning: patch `nisus v0.1.0 (C:\Users\mark_\Code\repos\mere\crates\conatus\nisus)` was not used in the crate graph
+warning: patch `pelt v0.2.0 (C:\Users\mark_\Code\repos\mere\ports\pelt)` was not used in the crate graph
+warning: patch `pelt-core v0.2.0 (C:\Users\mark_\Code\repos\mere\ports\pelt\core)` was not used in the crate graph
+warning: patch `pelt-desktop v0.2.0 (C:\Users\mark_\Code\repos\mere\ports\pelt\desktop)` was not used in the crate graph
+warning: patch `register-diagnostics v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\system\registry\register-diagnostics)` was not used in the crate graph
+warning: patch `register-input v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\system\registry\register-input)` was not used in the crate graph
+warning: patch `register-knowledge v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\system\registry\register-knowledge)` was not used in the crate graph
+warning: patch `register-layout v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\system\registry\register-layout)` was not used in the crate graph
+warning: patch `register-mod-loader v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\system\registry\register-mod-loader)` was not used in the crate graph
+warning: patch `register-protocol v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\system\registry\register-protocol)` was not used in the crate graph
+warning: patch `register-viewer v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\system\registry\register-viewer)` was not used in the crate graph
+warning: patch `scrying-engine v0.2.0 (C:\Users\mark_\Code\repos\mere\crates\inker\engines\scrying-engine)` was not used in the crate graph
+warning: patch `shell-state v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\system\shell-state)` was not used in the crate graph
+warning: patch `sibylla v0.1.2 (C:\Users\mark_\Code\repos\mere\crates\intel\sibylla)` was not used in the crate graph
+warning: patch `tabard v0.0.1 (C:\Users\mark_\Code\repos\mere\ports\tabard)` was not used in the crate graph
+warning: patch `ux-events v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\system\ux-events)` was not used in the crate graph
+warning: patch `vates v0.1.2 (C:\Users\mark_\Code\repos\mere\crates\intel\vates)` was not used in the crate graph
+warning: patch `netrender_text v0.1.1 (C:\Users\mark_\Code\repos\netrender\netrender_text)` was not used in the crate graph
+help: Check that the patched package version and available features are compatible
+      with the dependency requirements. If the patch has a different version from
+      what is locked in the Cargo.lock file, run `cargo update` to use the new
+      version. This may also occur with an optional dependency that is not enabled.
+warning: unused imports: `astar`, `dijkstra`, `has_path_connecting`, and `kosaraju_scc`
+  --> C:\Users\mark_\Code\repos\mere\crates\graph\graph-kernel\src\graph\mod.rs:21:22
+   |
+21 | use petgraph::algo::{astar, dijkstra, has_path_connecting, kosaraju_scc};
+   |                      ^^^^^  ^^^^^^^^  ^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused imports: `Archived`, `Place`, and `Resolver`
+  --> C:\Users\mark_\Code\repos\mere\crates\graph\graph-kernel\src\graph\mod.rs:25:21
+   |
+25 | use rkyv::{Archive, Archived, Deserialize, Place, Resolver, Serialize, rancor::Fallible};
+   |                     ^^^^^^^^               ^^^^^  ^^^^^^^^
+
+warning: unused import: `HashSet`
+  --> C:\Users\mark_\Code\repos\mere\crates\graph\graph-kernel\src\graph\mod.rs:26:43
+   |
+26 | use std::collections::{BTreeMap, HashMap, HashSet};
+   |                                           ^^^^^^^
+
+warning: unused imports: `GraphSnapshot`, `PersistedAddress`, `PersistedArrangementEdgeData`, `PersistedArrangementSubKind`, `PersistedContainmentEdgeData`, `PersistedContainmentSubKind`, `PersistedEdgeFamily`, `PersistedEdge`, `PersistedImportedEdgeData`, `PersistedImportedSubKind`, `PersistedNavigationTrigger`, `PersistedNodeSessionState`, `PersistedNode`, `PersistedProvenanceEdgeData`, `PersistedProvenanceSubKind`, `PersistedSemanticEdgeData`, `PersistedSemanticSubKind`, `PersistedTraversalEdgeData`, `PersistedTraversalMetrics`, and `PersistedTraversalRecord`
+  --> C:\Users\mark_\Code\repos\mere\crates\graph\graph-kernel\src\graph\mod.rs:35:5
+   |
+35 |     GraphSnapshot, PersistedAddress, PersistedArrangementEdgeData, PersistedArrangementSubKind,
+   |     ^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+36 |     PersistedContainmentEdgeData, PersistedContainmentSubKind, PersistedEdge, PersistedEdgeFamily,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^
+37 |     PersistedImportedEdgeData, PersistedImportedSubKind, PersistedNavigationTrigger, PersistedNode,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^
+38 |     PersistedNodeSessionState, PersistedProvenanceEdgeData, PersistedProvenanceSubKind,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^
+39 |     PersistedSemanticEdgeData, PersistedSemanticSubKind, PersistedTraversalEdgeData,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^
+40 |     PersistedTraversalMetrics, PersistedTraversalRecord,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `VecDeque`
+  --> C:\Users\mark_\Code\repos\mere\crates\graph\graph-kernel\src\graph\query.rs:17:42
+   |
+17 | use std::collections::{HashMap, HashSet, VecDeque};
+   |                                          ^^^^^^^^
+
+warning: unused import: `rancor::Fallible`
+  --> C:\Users\mark_\Code\repos\mere\crates\graph\graph-kernel\src\graph\mod.rs:25:72
+   |
+25 | use rkyv::{Archive, Archived, Deserialize, Place, Resolver, Serialize, rancor::Fallible};
+   |                                                                        ^^^^^^^^^^^^^^^^
+
+warning: unused import: `EdgeRef`
+  --> C:\Users\mark_\Code\repos\mere\crates\graph\graph-kernel\src\graph\mod.rs:24:23
+   |
+24 | use petgraph::visit::{EdgeRef, IntoEdgeReferences};
+   |                       ^^^^^^^
+
+warning: methods `navigate_node`, `branch_history`, `node_history_back`, and `node_history_forward` are never used
+   --> C:\Users\mark_\Code\repos\mere\crates\graph\graph-kernel\src\graph\mod.rs:524:19
+    |
+326 | impl Graph {
+    | ---------- methods in this implementation
+...
+524 |     pub(crate) fn navigate_node(&mut self, key: NodeKey, url: &str) {
+    |                   ^^^^^^^^^^^^^
+...
+538 |     pub(crate) fn branch_history(&mut self, child: NodeKey, parent: NodeKey) {
+    |                   ^^^^^^^^^^^^^^
+...
+550 |     pub(crate) fn node_history_back(&mut self, key: NodeKey) -> Option<String> {
+    |                   ^^^^^^^^^^^^^^^^^
+...
+560 |     pub(crate) fn node_history_forward(&mut self, key: NodeKey) -> Option<String> {
+    |                   ^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: method `assert_semantic_predicate` is never used
+   --> C:\Users\mark_\Code\repos\mere\crates\graph\graph-kernel\src\graph\edge_payload.rs:258:19
+    |
+ 45 | impl EdgePayload {
+    | ---------------- method in this implementation
+...
+258 |     pub(crate) fn assert_semantic_predicate(&mut self, predicate: String) -> bool {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `LogIdAsString` is never constructed
+   --> C:\Users\mark_\Code\repos\mere\crates\graph\graph-kernel\src\graph\identity.rs:129:19
+    |
+129 | pub(crate) struct LogIdAsString;
+    |                   ^^^^^^^^^^^^^
+
+warning: methods `dissolve_remove_node_collect_traversals` and `get_edge_mut` are never used
+   --> C:\Users\mark_\Code\repos\mere\crates\graph\graph-kernel\src\graph\edge_ops.rs:235:19
+    |
+ 31 | impl Graph {
+    | ---------- methods in this implementation
+...
+235 |     pub(crate) fn dissolve_remove_node_collect_traversals(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+411 |     pub(crate) fn get_edge_mut(&mut self, key: EdgeKey) -> Option<&mut EdgePayload> {
+    |                   ^^^^^^^^^^^^
+
+warning: method `get_node_mut` is never used
+  --> C:\Users\mark_\Code\repos\mere\crates\graph\graph-kernel\src\graph\query.rs:37:19
+   |
+30 | impl Graph {
+   | ---------- method in this implementation
+...
+37 |     pub(crate) fn get_node_mut(&mut self, key: NodeKey) -> Option<&mut Node> {
+   |                   ^^^^^^^^^^^^
+
+warning: `mere-kernel` (lib) generated 12 warnings (run `cargo fix --lib -p mere-kernel` to apply 5 suggestions)
+warning: unused import: `std::fmt`
+  --> C:\Users\mark_\Code\repos\mere\crates\system\pandect\src\wallet_grant\mod.rs:20:5
+   |
+20 | use std::fmt;
+   |     ^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `std::path::Path`
+  --> C:\Users\mark_\Code\repos\mere\crates\system\pandect\src\wallet_grant\mod.rs:22:5
+   |
+22 | use std::path::Path;
+   |     ^^^^^^^^^^^^^^^
+
+warning: unused imports: `Aead` and `Payload`
+  --> C:\Users\mark_\Code\repos\mere\crates\system\pandect\src\wallet_grant\mod.rs:25:30
+   |
+25 | use chacha20poly1305::aead::{Aead, KeyInit, Payload};
+   |                              ^^^^           ^^^^^^^
+
+warning: unused imports: `Key`, `XChaCha20Poly1305`, and `XNonce`
+  --> C:\Users\mark_\Code\repos\mere\crates\system\pandect\src\wallet_grant\mod.rs:26:24
+   |
+26 | use chacha20poly1305::{Key, XChaCha20Poly1305, XNonce};
+   |                        ^^^  ^^^^^^^^^^^^^^^^^  ^^^^^^
+
+warning: unused imports: `Ed25519Keypair`, `Ed25519PublicKey`, `Ed25519Signature`, `IdentityProvider`, and `InMemoryProvider`
+  --> C:\Users\mark_\Code\repos\mere\crates\system\pandect\src\wallet_grant\mod.rs:28:5
+   |
+28 |     Ed25519Keypair, Ed25519PublicKey, Ed25519Signature, IdentityProvider, InMemoryProvider,
+   |     ^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^
+
+warning: unused imports: `decode_cbor` and `encode_cbor`
+  --> C:\Users\mark_\Code\repos\mere\crates\system\pandect\src\wallet_grant\mod.rs:30:26
+   |
+30 | use p2panda_core::cbor::{decode_cbor, encode_cbor};
+   |                          ^^^^^^^^^^^  ^^^^^^^^^^^
+
+warning: unused imports: `OsRng` and `RngCore`
+  --> C:\Users\mark_\Code\repos\mere\crates\system\pandect\src\wallet_grant\mod.rs:31:17
+   |
+31 | use rand_core::{OsRng, RngCore};
+   |                 ^^^^^  ^^^^^^^
+
+warning: unused imports: `Deserialize` and `Serialize`
+  --> C:\Users\mark_\Code\repos\mere\crates\system\pandect\src\wallet_grant\mod.rs:32:13
+   |
+32 | use serde::{Deserialize, Serialize};
+   |             ^^^^^^^^^^^  ^^^^^^^^^
+
+warning: unused import: `crate::manifest::PersonaId`
+  --> C:\Users\mark_\Code\repos\mere\crates\system\pandect\src\wallet_grant\mod.rs:35:5
+   |
+35 | use crate::manifest::PersonaId;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `CapabilitySlotRef`, `DeviceGrantRef`, `DeviceRecord`, `DeviceRoster`, `IdentityWalletManifest`, `LocalDeviceIdentity`, `PersonaWalletRef`, `RemoteAuthWrappingKeyBridge`, `RemoteAuthWrappingKeyRecord`, `device_grant_path`, `device_roster_ref`, `ensure_persona_epoch_bridge`, `load_current_private_epoch`, `load_device_grant`, `load_device_roster`, `load_identity_seed`, `load_identity_wallet`, `load_local_device_identity`, `load_persona_wallet`, `load_remote_auth_wrapping_key_bridge`, `save_device_grant`, `save_device_roster`, `save_identity_wallet`, `save_persona_wallet`, `save_remote_auth_wrapping_key_bridge`, and `stage_persona_private_epoch`
+  --> C:\Users\mark_\Code\repos\mere\crates\system\pandect\src\wallet_grant\mod.rs:37:5
+   |
+37 |     CapabilitySlotRef, CarryRef, DeviceExposure, DeviceGrantRef, DeviceId, DeviceMode,
+   |     ^^^^^^^^^^^^^^^^^                            ^^^^^^^^^^^^^^
+38 |     DevicePublicKey, DeviceRecord, DeviceRoster, IdentityWalletManifest, KeyEpochId,
+   |                      ^^^^^^^^^^^^  ^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^
+39 |     LocalDeviceIdentity, PersonaWalletManifest, PersonaWalletRef, RemoteAuthWrappingKeyBridge,
+   |     ^^^^^^^^^^^^^^^^^^^                         ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+40 |     RemoteAuthWrappingKeyRecord, device_grant_path, device_roster_ref, ensure_persona_epoch_bridge,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+41 |     load_current_private_epoch, load_device_grant, load_device_roster, load_identity_seed,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^
+42 |     load_identity_wallet, load_local_device_identity, load_persona_wallet,
+   |     ^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^
+43 |     load_remote_auth_wrapping_key_bridge, save_device_grant, save_device_roster,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^
+44 |     save_identity_wallet, save_persona_wallet, save_remote_auth_wrapping_key_bridge,
+   |     ^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+45 |     stage_persona_private_epoch,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `Ed25519Keypair`, `IdentityProvider`, and `InMemoryProvider`
+  --> C:\Users\mark_\Code\repos\mere\crates\system\pandect\src\wallet_grant\enroll.rs:13:16
+   |
+13 | use identity::{Ed25519Keypair, IdentityProvider, InMemoryProvider, PersonaId};
+   |                ^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^
+
+warning: unused imports: `Ed25519Keypair` and `PersonaId`
+  --> C:\Users\mark_\Code\repos\mere\crates\system\pandect\src\wallet_grant\issue.rs:14:16
+   |
+14 | use identity::{Ed25519Keypair, IdentityProvider, InMemoryProvider, PersonaId};
+   |                ^^^^^^^^^^^^^^                                      ^^^^^^^^^
+
+warning: unused import: `std::io`
+  --> C:\Users\mark_\Code\repos\mere\crates\system\pandect\src\wallet_grant\pairing.rs:10:5
+   |
+10 | use std::io;
+   |     ^^^^^^^
+
+warning: unused import: `std::io`
+  --> C:\Users\mark_\Code\repos\mere\crates\system\pandect\src\wallet_grant\records.rs:10:5
+   |
+10 | use std::io;
+   |     ^^^^^^^
+
+warning: unused import: `std::path::Path`
+  --> C:\Users\mark_\Code\repos\mere\crates\system\pandect\src\wallet_grant\records.rs:11:5
+   |
+11 | use std::path::Path;
+   |     ^^^^^^^^^^^^^^^
+
+warning: unused imports: `Ed25519Keypair`, `IdentityProvider`, `InMemoryProvider`, and `PersonaId`
+  --> C:\Users\mark_\Code\repos\mere\crates\system\pandect\src\wallet_grant\records.rs:13:16
+   |
+13 | use identity::{Ed25519Keypair, IdentityProvider, InMemoryProvider, PersonaId};
+   |                ^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^  ^^^^^^^^^
+
+warning: unused imports: `Ed25519Keypair` and `IdentityProvider`
+  --> C:\Users\mark_\Code\repos\mere\crates\system\pandect\src\wallet_grant\refresh.rs:13:16
+   |
+13 | use identity::{Ed25519Keypair, IdentityProvider, InMemoryProvider, PersonaId};
+   |                ^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^
+
+warning: unused imports: `Ed25519Keypair`, `IdentityProvider`, and `InMemoryProvider`
+  --> C:\Users\mark_\Code\repos\mere\crates\system\pandect\src\wallet_grant\revoke.rs:13:16
+   |
+13 | use identity::{Ed25519Keypair, IdentityProvider, InMemoryProvider, PersonaId};
+   |                ^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^
+
+warning: unused import: `Ed25519Signature`
+  --> C:\Users\mark_\Code\repos\mere\crates\system\pandect\src\wallet_grant\types.rs:14:16
+   |
+14 | use identity::{Ed25519Signature, PersonaId};
+   |                ^^^^^^^^^^^^^^^^
+
+warning: unused imports: `DEVICE_GRANT_SCHEMA_VERSION` and `DeviceGrantError`
+  --> C:\Users\mark_\Code\repos\mere\crates\system\pandect\src\wallet_grant\types.rs:19:5
+   |
+19 |     DEVICE_GRANT_SCHEMA_VERSION, DeviceExposure, DeviceGrantError, DeviceId, DevicePublicKey,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^                  ^^^^^^^^^^^^^^^^
+
+warning: unused imports: `Ed25519Keypair`, `IdentityProvider`, `InMemoryProvider`, and `PersonaId`
+  --> C:\Users\mark_\Code\repos\mere\crates\system\pandect\src\wallet_grant\validate.rs:13:16
+   |
+13 | use identity::{Ed25519Keypair, IdentityProvider, InMemoryProvider, PersonaId};
+   |                ^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^  ^^^^^^^^^
+
+warning: unused imports: `Ed25519Keypair`, `IdentityProvider`, `InMemoryProvider`, and `PersonaId`
+  --> C:\Users\mark_\Code\repos\mere\crates\system\pandect\src\wallet_grant\wrapping.rs:13:16
+   |
+13 | use identity::{Ed25519Keypair, IdentityProvider, InMemoryProvider, PersonaId};
+   |                ^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^  ^^^^^^^^^
+
+warning: unused imports: `install_remote_auth_enrollment_bundle_inner` and `restore_wrapped_private_epochs`
+   --> C:\Users\mark_\Code\repos\mere\crates\system\pandect\src\wallet_grant\mod.rs:102:5
+    |
+102 |     install_remote_auth_enrollment_bundle_inner, restore_wrapped_private_epochs,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `epochs::wrapped_epoch_aad`
+   --> C:\Users\mark_\Code\repos\mere\crates\system\pandect\src\wallet_grant\mod.rs:104:16
+    |
+104 | pub(crate) use epochs::wrapped_epoch_aad;
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `derive_pairing_key_from_transcript` and `remote_auth_pairing_transcript`
+   --> C:\Users\mark_\Code\repos\mere\crates\system\pandect\src\wallet_grant\mod.rs:105:26
+    |
+105 | pub(crate) use pairing::{derive_pairing_key_from_transcript, remote_auth_pairing_transcript};
+    |                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `refresh_remote_auth_private_read_grant`
+   --> C:\Users\mark_\Code\repos\mere\crates\system\pandect\src\wallet_grant\mod.rs:110:5
+    |
+110 |     refresh_remote_auth_private_read_grant, refresh_remote_auth_private_read_grants,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `revoke::revoke_persona_grant_access`
+   --> C:\Users\mark_\Code\repos\mere\crates\system\pandect\src\wallet_grant\mod.rs:113:16
+    |
+113 | pub(crate) use revoke::revoke_persona_grant_access;
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `KeyInit`
+  --> C:\Users\mark_\Code\repos\mere\crates\system\pandect\src\wallet_grant\mod.rs:25:36
+   |
+25 | use chacha20poly1305::aead::{Aead, KeyInit, Payload};
+   |                                    ^^^^^^^
+
+warning: unused variable: `provider`
+  --> C:\Users\mark_\Code\repos\mere\crates\system\pandect\src\wallet_grant\refresh.rs:53:5
+   |
+53 |     provider: &InMemoryProvider,
+   |     ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_provider`
+   |
+   = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: `pandect` (lib) generated 29 warnings (run `cargo fix --lib -p pandect` to apply 28 suggestions)
+warning: unused imports: `BlockProvenanceMap`, `DocumentProvenance`, and `DocumentTrustState`
+  --> C:\Users\mark_\Code\repos\mere\crates\nematic\nematic\src\knot\expand.rs:20:12
+   |
+20 |     Block, BlockProvenanceMap, DocumentProvenance, DocumentTrustState, Engine, EngineInput,
+   |            ^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `EngineDocument`
+ --> C:\Users\mark_\Code\repos\mere\crates\nematic\nematic\src\knot\expand\build.rs:7:80
+  |
+7 | use inker::{Block, BlockProvenanceMap, DocumentProvenance, DocumentTrustState, EngineDocument};
+  |                                                                                ^^^^^^^^^^^^^^
+
+warning: `nematic` (lib) generated 2 warnings (run `cargo fix --lib -p nematic` to apply 2 suggestions)
+warning: constant `LAYOUT_ID_DEFAULT` is never used
+ --> C:\Users\mark_\Code\repos\mere\crates\system\registry\register-lens\src\layout.rs:9:11
+  |
+9 | pub const LAYOUT_ID_DEFAULT: &str = "layout:default";
+  |           ^^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: constant `LAYOUT_ID_GRID` is never used
+  --> C:\Users\mark_\Code\repos\mere\crates\system\registry\register-lens\src\layout.rs:10:11
+   |
+10 | pub const LAYOUT_ID_GRID: &str = "layout:grid";
+   |           ^^^^^^^^^^^^^^
+
+warning: struct `LayoutResolution` is never constructed
+  --> C:\Users\mark_\Code\repos\mere\crates\system\registry\register-lens\src\layout.rs:25:12
+   |
+25 | pub struct LayoutResolution {
+   |            ^^^^^^^^^^^^^^^^
+
+warning: function `resolve_layout_mode` is never used
+  --> C:\Users\mark_\Code\repos\mere\crates\system\registry\register-lens\src\layout.rs:33:8
+   |
+33 | pub fn resolve_layout_mode(layout_id: &str) -> LayoutResolution {
+   |        ^^^^^^^^^^^^^^^^^^^
+
+warning: function `layout_mode_id` is never used
+  --> C:\Users\mark_\Code\repos\mere\crates\system\registry\register-lens\src\layout.rs:72:8
+   |
+72 | pub fn layout_mode_id(layout: &LayoutMode) -> &'static str {
+   |        ^^^^^^^^^^^^^^
+
+warning: `register-lens` (lib) generated 5 warnings
+warning: function `build_affinity_spring` is never used
+  --> C:\Users\mark_\Code\repos\mere\crates\canvas\canvas\src\lib.rs:66:4
+   |
+66 | fn build_affinity_spring(scores: &signals::AffinityScores) -> AffinitySpring {
+   |    ^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `mere-canvas` (lib) generated 1 warning
+warning: missing documentation for a constant
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\authority.rs:50:1
+   |
+50 | pub const STANDARD_WINDOWS_AGENT_ENDPOINT: &str = r"\\.\pipe\openssh-ssh-agent";
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+note: the lint level is defined here
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\lib.rs:65:9
+   |
+65 | #![warn(missing_docs)]
+   |         ^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\authority.rs:56:5
+   |
+56 |     UnknownIntent,
+   |     ^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\authority.rs:58:5
+   |
+58 |     InvalidPayload(#[from] serde_json::Error),
+   |     ^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\authority.rs:60:5
+   |
+60 |     Decision(#[from] DecisionError),
+   |     ^^^^^^^^
+
+warning: missing documentation for a variant
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\authority.rs:62:5
+   |
+62 |     Identity(#[from] IdentityError),
+   |     ^^^^^^^^
+
+warning: missing documentation for a variant
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\authority.rs:64:5
+   |
+64 |     KeyGeneration,
+   |     ^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\authority.rs:66:5
+   |
+66 |     PublicEncoding,
+   |     ^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\authority.rs:68:5
+   |
+68 |     InvalidComment,
+   |     ^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\authority.rs:73:5
+   |
+73 |     InvalidProfileId,
+   |     ^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\authority.rs:75:5
+   |
+75 |     InvalidProfileName,
+   |     ^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\authority.rs:77:5
+   |
+77 |     InvalidIdleWindow,
+   |     ^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\authority.rs:79:5
+   |
+79 |     ConfirmationRequired,
+   |     ^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\authority.rs:81:5
+   |
+81 |     KeyNotFound,
+   |     ^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\authority.rs:83:5
+   |
+83 |     NativeHandoffRequired,
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\authority.rs:85:5
+   |
+85 |     DeviceRevocationConfirmationRequired,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\authority.rs:87:5
+   |
+87 |     CarryUnavailable,
+   |     ^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\authority.rs:89:5
+   |
+89 |     DeviceRevocation(std::io::ErrorKind),
+   |     ^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\authority.rs:95:5
+   |
+95 |     pub operation: SshKeyMutationKind,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\authority.rs:96:5
+   |
+96 |     pub fingerprint: String,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\authority.rs:97:5
+   |
+97 |     pub comment: String,
+   |     ^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\authority.rs:98:5
+   |
+98 |     pub public_openssh: String,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\authority.rs:99:5
+   |
+99 |     pub unlock_policy: String,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\authority.rs:100:5
+    |
+100 |     pub replaced_existing: bool,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+   --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\authority.rs:107:5
+    |
+107 |     Generated,
+    |     ^^^^^^^^^
+
+warning: missing documentation for a variant
+   --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\authority.rs:108:5
+    |
+108 |     Imported,
+    |     ^^^^^^^^
+
+warning: missing documentation for a variant
+   --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\authority.rs:109:5
+    |
+109 |     Removed,
+    |     ^^^^^^^
+
+warning: missing documentation for a variant
+   --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\authority.rs:115:5
+    |
+115 |     SigningDecision,
+    |     ^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+   --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\authority.rs:116:5
+    |
+116 |     SshKeyMutation(SshKeyMutationReceipt),
+    |     ^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+   --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\authority.rs:117:5
+    |
+117 |     DeviceRevocation(DeviceRevocationReceipt),
+    |     ^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+   --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\authority.rs:118:5
+    |
+118 |     ProfileSwitch(ProfileSwitchReceipt),
+    |     ^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+   --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\authority.rs:119:5
+    |
+119 |     ProfileCreated(ProfileCreatedReceipt),
+    |     ^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\authority.rs:126:5
+    |
+126 |     pub id: String,
+    |     ^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\authority.rs:127:5
+    |
+127 |     pub display_name: String,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\authority.rs:128:5
+    |
+128 |     pub master_public_fingerprint: String,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\authority.rs:146:5
+    |
+146 |     pub device_id: String,
+    |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\authority.rs:147:5
+    |
+147 |     pub already_revoked: bool,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\authority.rs:148:5
+    |
+148 |     pub rotated_personas: Vec<String>,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\authority.rs:149:5
+    |
+149 |     pub refreshed_devices: Vec<String>,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a constant
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\projection.rs:28:1
+   |
+28 | pub const SIGNING_APPROVE_ONCE_INTENT: &str = "castellan.signing.approve-once";
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a constant
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\projection.rs:29:1
+   |
+29 | pub const SIGNING_APPROVE_IDLE_INTENT: &str = "castellan.signing.approve-until-idle";
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a constant
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\projection.rs:30:1
+   |
+30 | pub const SIGNING_DENY_INTENT: &str = "castellan.signing.deny";
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a constant
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\projection.rs:31:1
+   |
+31 | pub const SIGNING_DECISION_SCHEMA: &str = "castellan.signing-decision/v1";
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a constant
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\projection.rs:32:1
+   |
+32 | pub const SSH_GENERATE_INTENT: &str = "castellan.ssh.generate";
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a constant
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\projection.rs:33:1
+   |
+33 | pub const SSH_GENERATE_SCHEMA: &str = "castellan.ssh.generate/v1";
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a constant
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\projection.rs:34:1
+   |
+34 | pub const SSH_IMPORT_NATIVE_INTENT: &str = "castellan.ssh.import-native";
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a constant
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\projection.rs:35:1
+   |
+35 | pub const SSH_IMPORT_NATIVE_SCHEMA: &str = "castellan.ssh.import-native/v1";
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a constant
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\projection.rs:36:1
+   |
+36 | pub const SSH_REMOVE_INTENT: &str = "castellan.ssh.remove";
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a constant
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\projection.rs:37:1
+   |
+37 | pub const SSH_REMOVE_SCHEMA: &str = "castellan.ssh.remove/v1";
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a constant
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\projection.rs:38:1
+   |
+38 | pub const DEVICE_REVOKE_INTENT: &str = "castellan.device.revoke";
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a constant
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\projection.rs:39:1
+   |
+39 | pub const DEVICE_REVOKE_SCHEMA: &str = "castellan.device.revoke/v1";
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a constant
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\projection.rs:40:1
+   |
+40 | pub const PROFILE_SWITCH_INTENT: &str = "castellan.profile.switch";
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a constant
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\projection.rs:41:1
+   |
+41 | pub const PROFILE_SWITCH_SCHEMA: &str = "castellan.profile.switch/v1";
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a constant
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\projection.rs:42:1
+   |
+42 | pub const PROFILE_CREATE_INTENT: &str = "castellan.profile.create";
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a constant
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\projection.rs:43:1
+   |
+43 | pub const PROFILE_CREATE_SCHEMA: &str = "castellan.profile.create/v1";
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\projection.rs:49:5
+   |
+49 |     pub request_id: Uuid,
+   |     ^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\projection.rs:56:5
+   |
+56 |     Session,
+   |     ^^^^^^^
+
+warning: missing documentation for a variant
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\projection.rs:57:5
+   |
+57 |     ShortTtl { idle_seconds: u32 },
+   |     ^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\projection.rs:57:16
+   |
+57 |     ShortTtl { idle_seconds: u32 },
+   |                ^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\projection.rs:58:5
+   |
+58 |     PerUse,
+   |     ^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\projection.rs:65:5
+   |
+65 |     pub comment: String,
+   |     ^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\projection.rs:66:5
+   |
+66 |     pub unlock_policy: SshUnlockPolicyIntentV1,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\projection.rs:76:5
+   |
+76 |     pub unlock_policy: SshUnlockPolicyIntentV1,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\projection.rs:83:5
+   |
+83 |     pub fingerprint: String,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\projection.rs:84:5
+   |
+84 |     pub confirmed: bool,
+   |     ^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\projection.rs:91:5
+   |
+91 |     pub device_id: Uuid,
+   |     ^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\projection.rs:92:5
+   |
+92 |     pub confirmed: bool,
+   |     ^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\projection.rs:138:5
+    |
+138 |     pub intent: &'static str,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\projection.rs:139:5
+    |
+139 |     pub schema: &'static str,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\projection.rs:140:5
+    |
+140 |     pub label: &'static str,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\projection.rs:155:5
+    |
+155 |     pub key: String,
+    |     ^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\projection.rs:156:5
+    |
+156 |     pub card: PortableCardV1,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\projection.rs:157:5
+    |
+157 |     pub actions: Vec<IdentityProjectionAction>,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\view.rs:28:5
+   |
+28 |     OsProtected,
+   |     ^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\view.rs:29:5
+   |
+29 |     Passphrase,
+   |     ^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\view.rs:30:5
+   |
+30 |     Ephemeral,
+   |     ^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\view.rs:36:5
+   |
+36 |     Locked,
+   |     ^^^^^^
+
+warning: missing documentation for a variant
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\view.rs:37:5
+   |
+37 |     Unlocked,
+   |     ^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\view.rs:46:23
+   |
+46 |     ReceiptEndpoint { endpoint: String },
+   |                       ^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\view.rs:48:24
+   |
+48 |     StandardEndpoint { endpoint: String },
+   |                        ^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\view.rs:54:5
+   |
+54 |     pub protection: VaultProtectionView,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\view.rs:55:5
+   |
+55 |     pub lock: VaultLockView,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\view.rs:56:5
+   |
+56 |     pub agent: AgentListenerView,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\view.rs:62:5
+   |
+62 |     pub id: String,
+   |     ^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\view.rs:63:5
+   |
+63 |     pub display_name: String,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\view.rs:64:5
+   |
+64 |     pub selected: bool,
+   |     ^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\view.rs:65:5
+   |
+65 |     pub slot_count: usize,
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\view.rs:66:5
+   |
+66 |     pub master_public_fingerprint: String,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\view.rs:72:5
+   |
+72 |     pub profile: String,
+   |     ^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\view.rs:73:5
+   |
+73 |     pub fingerprint: String,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\view.rs:74:5
+   |
+74 |     pub comment: String,
+   |     ^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\view.rs:75:5
+   |
+75 |     pub public_openssh: String,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\view.rs:76:5
+   |
+76 |     pub lineage: String,
+   |     ^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\view.rs:77:5
+   |
+77 |     pub device_loss_note: String,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\view.rs:78:5
+   |
+78 |     pub unlock_policy: String,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\view.rs:84:5
+   |
+84 |     pub device_id: String,
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\view.rs:85:5
+   |
+85 |     pub label: String,
+   |     ^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\view.rs:86:5
+   |
+86 |     pub mode: String,
+   |     ^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\view.rs:87:5
+   |
+87 |     pub exposure: String,
+   |     ^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\view.rs:88:5
+   |
+88 |     pub public_key_fingerprint: String,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\view.rs:89:5
+   |
+89 |     pub revoked: bool,
+   |     ^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\view.rs:90:5
+   |
+90 |     pub grant_ref: Option<String>,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\view.rs:96:5
+   |
+96 |     pub device_id: String,
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\view.rs:97:5
+   |
+97 |     pub grant_ref: Option<String>,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\view.rs:98:5
+   |
+98 |     pub signature_valid: Option<bool>,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\view.rs:99:5
+   |
+99 |     pub issued_at_ms: u64,
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\view.rs:100:5
+    |
+100 |     pub expires_at_ms: Option<u64>,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\view.rs:101:5
+    |
+101 |     pub personas: Vec<String>,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\view.rs:102:5
+    |
+102 |     pub scopes: Vec<String>,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\view.rs:103:5
+    |
+103 |     pub attenuations: Vec<String>,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\view.rs:104:5
+    |
+104 |     pub wrapped_epoch_count: usize,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\view.rs:110:5
+    |
+110 |     pub recovery_policy: Option<String>,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\view.rs:111:5
+    |
+111 |     pub personas: Vec<String>,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\view.rs:112:5
+    |
+112 |     pub devices: Vec<DeviceView>,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\view.rs:113:5
+    |
+113 |     pub grants: Vec<DeviceGrantView>,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\view.rs:114:5
+    |
+114 |     pub unavailable: Vec<String>,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\view.rs:120:5
+    |
+120 |     pub vault: VaultView,
+    |     ^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\view.rs:121:5
+    |
+121 |     pub profiles: Vec<ProfileView>,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\view.rs:122:5
+    |
+122 |     pub ssh_keys: Vec<SshKeyView>,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\view.rs:123:5
+    |
+123 |     pub carry: CarryView,
+    |     ^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\view.rs:124:5
+    |
+124 |     pub pending_signing: Vec<PendingSigningRequest>,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> C:\Users\mark_\Code\repos\mere\ports\castellan\src\view.rs:125:5
+    |
+125 |     pub signing_history: Vec<SigningRecord>,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `castellan` (lib) generated 121 warnings
+   Compiling mere-fetch v0.0.1 (C:\Users\mark_\Code\repos\mere\crates\system\fetch)
+   Compiling knot-editor v0.0.3 (https://github.com/merely-made/knot-editor.git?rev=fcd004b655b595038eba0a7e49f209b8477edadf#fcd004b6)
+   Compiling turnstone v0.1.0 (C:\Users\mark_\Code\repos\turnstone)
+warning: unused imports: `Suggestion` and `normalize_address`
+  --> src\app\mod.rs:19:31
+   |
+19 | use crate::ui::{OmnibarState, Suggestion, normalize_address};
+   |                               ^^^^^^^^^^  ^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `browse`
+  --> src\app\mod.rs:25:13
+   |
+25 | use crate::{browse, session};
+   |             ^^^^^^
+
+warning: unused import: `crate::panes::PaneContent`
+  --> src\app\node_arms.rs:16:5
+   |
+16 | use crate::panes::PaneContent;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `CaretMove`
+  --> src\app\omnibar_arms.rs:12:29
+   |
+12 | use crate::action::{Action, CaretMove, Effect};
+   |                             ^^^^^^^^^
+
+warning: unused import: `Suggestion`
+  --> src\app\omnibar_arms.rs:16:44
+   |
+16 | use crate::ui::{OmnibarMode, OmnibarState, Suggestion, recompute_suggestions_with_limit};
+   |                                            ^^^^^^^^^^
+
+warning: unused import: `crate::panes::PaneContent`
+  --> src\app\palette.rs:16:5
+   |
+16 | use crate::panes::PaneContent;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `uuid::Uuid`
+  --> src\app\session_lifecycle.rs:17:5
+   |
+17 | use uuid::Uuid;
+   |     ^^^^^^^^^^
+
+warning: unused import: `PaneContent`
+  --> src\app\session_lifecycle.rs:22:44
+   |
+22 | use crate::panes::{FrisketLayout, GraphId, PaneContent, SessionId};
+   |                                            ^^^^^^^^^^^
+
+warning: unused import: `crate::action::CaretMove`
+   --> src\shell\drive.rs:466:13
+    |
+466 |         use crate::action::CaretMove;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::sync::mpsc::Receiver`
+  --> src\shell\effects.rs:13:5
+   |
+13 | use std::sync::mpsc::Receiver;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `FetchCommand` and `FetchUpdate`
+  --> src\shell\effects.rs:15:13
+   |
+15 | use fetch::{FetchCommand, FetchUpdate};
+   |             ^^^^^^^^^^^^  ^^^^^^^^^^^
+
+warning: unused import: `SessionClick`
+  --> src\shell\effects.rs:17:46
+   |
+17 |     DocumentFindQuery, EngineProfileBinding, SessionClick, SessionSpawnRequest, SurfaceSpawnRequest,
+   |                                              ^^^^^^^^^^^^
+
+warning: unused import: `crate::panes::PaneContent`
+  --> src\shell\effects.rs:22:5
+   |
+22 | use crate::panes::PaneContent;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::surface::SurfaceKind`
+  --> src\shell\render.rs:25:5
+   |
+25 | use crate::surface::SurfaceKind;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `PhysicalPosition`
+  --> src\shell\lens.rs:19:18
+   |
+19 | use winit::dpi::{PhysicalPosition, PhysicalSize};
+   |                  ^^^^^^^^^^^^^^^^
+
+warning: unused imports: `Key as WinitKey` and `NamedKey as WinitNamedKey`
+  --> src\shell\input.rs:16:23
+   |
+16 | use winit::keyboard::{Key as WinitKey, NamedKey as WinitNamedKey};
+   |                       ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `SessionScrollKey`
+  --> src\shell\input.rs:21:27
+   |
+21 | use inker::{SessionClick, SessionScrollKey};
+   |                           ^^^^^^^^^^^^^^^^
+
+warning: unused import: `CaretMove`
+  --> src\shell\input.rs:24:29
+   |
+24 | use crate::action::{Action, CaretMove};
+   |                             ^^^^^^^^^
+
+warning: unused import: `decode_sprite`
+  --> src\shell\input.rs:27:20
+   |
+27 | use super::{Shell, decode_sprite};
+   |                    ^^^^^^^^^^^^^
+
+warning: unused import: `input::pointer_button`
+  --> src\shell\mod.rs:29:5
+   |
+29 | use input::pointer_button;
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::path::Path`
+  --> src\shell\mod.rs:32:5
+   |
+32 | use std::path::Path;
+   |     ^^^^^^^^^^^^^^^
+
+warning: unused import: `image::ImageEncoder`
+  --> src\shell\mod.rs:39:5
+   |
+39 | use image::ImageEncoder;
+   |     ^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `mere::canvas::WHEEL_PAN_SCALE`
+  --> src\shell\mod.rs:41:5
+   |
+41 | use mere::canvas::WHEEL_PAN_SCALE;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `ColorLoad` and `NetrenderOptions`
+  --> src\shell\mod.rs:47:17
+   |
+47 | use netrender::{ColorLoad, NetrenderOptions};
+   |                 ^^^^^^^^^  ^^^^^^^^^^^^^^^^
+
+warning: unused import: `winit::application::ApplicationHandler`
+  --> src\shell\mod.rs:48:5
+   |
+48 | use winit::application::ApplicationHandler;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `PhysicalPosition` and `PhysicalSize`
+  --> src\shell\mod.rs:49:18
+   |
+49 | use winit::dpi::{PhysicalPosition, PhysicalSize};
+   |                  ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^
+
+warning: unused imports: `ElementState`, `Ime`, `MouseButton`, `MouseScrollDelta`, and `WindowEvent`
+  --> src\shell\mod.rs:50:20
+   |
+50 | use winit::event::{ElementState, Ime, MouseButton, MouseScrollDelta, WindowEvent};
+   |                    ^^^^^^^^^^^^  ^^^  ^^^^^^^^^^^  ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^
+
+warning: unused imports: `Key as WinitKey` and `NamedKey as WinitNamedKey`
+  --> src\shell\mod.rs:52:23
+   |
+52 | use winit::keyboard::{Key as WinitKey, NamedKey as WinitNamedKey};
+   |                       ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `Effect`
+  --> src\shell\mod.rs:61:29
+   |
+61 | use crate::action::{Action, Effect, Update};
+   |                             ^^^^^^
+
+warning: unused import: `session`
+  --> src\shell\mod.rs:64:21
+   |
+64 | use crate::{browse, session};
+   |                     ^^^^^^^
+
+warning: unused import: `mere::canvas::palette`
+  --> src\swatch_pane\mod.rs:31:5
+   |
+31 | use mere::canvas::palette;
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `ColorF`
+  --> src\swatch_pane\mod.rs:32:17
+   |
+32 | use sprigging::{ColorF, LeafRegistry, RenderedLeaves};
+   |                 ^^^^^^
+
+warning: unused import: `crate::content::NodeContent`
+  --> src\swatch_pane\mod.rs:36:5
+   |
+36 | use crate::content::NodeContent;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::overmap`
+  --> src\swatch_pane\mod.rs:37:5
+   |
+37 | use crate::overmap;
+   |     ^^^^^^^^^^^^^^
+
+warning: unused variable: `caption`
+   --> src\shell\render.rs:723:13
+    |
+723 |         let caption = self
+    |             ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_caption`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `ok`
+   --> src\shell\render.rs:957:17
+    |
+957 |             let ok = capture_composed(host, &layers, w, h, &path);
+    |                 ^^ help: if this is intentional, prefix it with an underscore: `_ok`
+
+warning: method `lower_behavior_actions` is never used
+   --> src\app\denizen_arms.rs:143:8
+    |
+ 21 | impl App {
+    | -------- method in this implementation
+...
+143 |     fn lower_behavior_actions(
+    |        ^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: method `lower_denizen_actions` is never used
+  --> src\app\palette.rs:32:19
+   |
+20 | impl App {
+   | -------- method in this implementation
+...
+32 |     pub(super) fn lower_denizen_actions(
+   |                   ^^^^^^^^^^^^^^^^^^^^^
+
+warning: constant `RUN_BUDGET` is never used
+  --> src\denizen.rs:68:11
+   |
+68 | pub const RUN_BUDGET: u64 = 20_000;
+   |           ^^^^^^^^^^
+
+warning: method `ops_received` is never used
+  --> src\place\lanes.rs:93:19
+   |
+83 | impl LiveLanes {
+   | -------------- method in this implementation
+...
+93 |     pub(crate) fn ops_received(&self) -> [u64; 7] {
+   |                   ^^^^^^^^^^^^
+
+warning: function `granted_ring_names` is never used
+   --> src\ring.rs:312:8
+    |
+312 | pub fn granted_ring_names(authority: &impl AuthorityProvider, subject: Subject) -> Vec<String> {
+    |        ^^^^^^^^^^^^^^^^^^
+
+warning: function `roster_grid_rows` is never used
+  --> src\roster_view.rs:99:8
+   |
+99 | pub fn roster_grid_rows(app: &App) -> Vec<RosterGridRow> {
+   |        ^^^^^^^^^^^^^^^^
+
+warning: field `0` is never read
+   --> src\scenario.rs:219:12
+    |
+219 |     Settle(u32),
+    |     ------ ^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+219 -     Settle(u32),
+219 +     Settle(()),
+    |
+
+warning: field `0` is never read
+   --> src\scenario.rs:253:17
+    |
+253 |     AssertEvent(String),
+    |     ----------- ^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+253 -     AssertEvent(String),
+253 +     AssertEvent(()),
+    |
+
+warning: field `0` is never read
+   --> src\scenario.rs:254:9
+    |
+254 |     Log(String),
+    |     --- ^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+254 -     Log(String),
+254 +     Log(()),
+    |
+
+warning: method `theme_id` is never used
+  --> src\settings_pane.rs:74:12
+   |
+61 | impl ChromeSettings {
+   | ------------------- method in this implementation
+...
+74 |     pub fn theme_id(&self) -> Option<&str> {
+   |            ^^^^^^^^
+
+warning: variant `Imported` is never constructed
+   --> src\shell\mod.rs:217:5
+    |
+215 | enum PlannedLayer {
+    |      ------------ variant in this enum
+216 |     Scene(PlannedScene),
+217 |     Imported(CompositeLayer),
+    |     ^^^^^^^^
+
+warning: method `pane_label` is never used
+    --> src\shell\mod.rs:1095:8
+     |
+ 464 | impl Shell {
+     | ---------- method in this implementation
+...
+1095 |     fn pane_label(&self, id: crate::panes::PaneId) -> String {
+     |        ^^^^^^^^^^
+
+warning: function `ime_cursor_area` is never used
+   --> src\ui.rs:894:8
+    |
+894 | pub fn ime_cursor_area(state: &OmnibarState, w: u32) -> ((f32, f32), (f32, f32)) {
+    |        ^^^^^^^^^^^^^^^
+
+warning: function `chrome_has_content` is never used
+   --> src\ui.rs:912:8
+    |
+912 | pub fn chrome_has_content(state: &OmnibarState, caption: Option<&str>) -> bool {
+    |        ^^^^^^^^^^^^^^^^^^
+
+warning: function `scene_from_dom_with_leaves` is never used
+    --> src\ui.rs:1948:8
+     |
+1948 | pub fn scene_from_dom_with_leaves(
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `turnstone` (lib test) generated 51 warnings (run `cargo fix --lib -p turnstone --tests` to apply 36 suggestions)
+    Finished `test` profile [unoptimized] target(s) in 15m 35s
+     Running unittests src\lib.rs (C:/Users/mark_/Code/target-appearance-turnstone\debug\deps\turnstone-1e15e8ab48b07c42.exe)
+
+running 3 tests
+test browse::tests::favicon_completions_remove_only_their_own_request ... ok
+test browse::tests::failed_favicon_completion_clears_its_pending_request ... ok
+test browse::tests::favicon_write_stores_png_bytes_under_their_digest ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 426 filtered out; finished in 0.02s
+

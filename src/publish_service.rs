@@ -103,8 +103,10 @@ struct IssuedShare {
 /// A shell-owned service handle. Dropping the final handle closes its command
 /// channel and stops the private carrier with the worker thread.
 pub struct KnotPublishingService {
-    commands: tokio_mpsc::UnboundedSender<PublishCommand>,
+    commands: Option<tokio_mpsc::UnboundedSender<PublishCommand>>,
+    shutdown: Option<tokio::sync::oneshot::Sender<()>>,
     snapshot: Arc<Mutex<PublishSnapshot>>,
+    worker: Option<std::thread::JoinHandle<()>>,
 }
 
 impl KnotPublishingService {
@@ -113,10 +115,11 @@ impl KnotPublishingService {
     /// active p2panda mDNS for the preferred same-LAN route.
     pub fn start(source: KnotPublishSource, identity: Arc<RootIdentity>) -> Result<Self, String> {
         let (commands, receiver) = tokio_mpsc::unbounded_channel();
+        let (shutdown, shutdown_receive) = tokio::sync::oneshot::channel();
         let snapshot = Arc::new(Mutex::new(PublishSnapshot::default()));
         let (ready_send, ready_receive) = mpsc::sync_channel(1);
         let worker_snapshot = Arc::clone(&snapshot);
-        std::thread::Builder::new()
+        let worker = std::thread::Builder::new()
             .name("turnstone-knot-publishing".into())
             .spawn(move || {
                 let runtime = match tokio::runtime::Builder::new_multi_thread()
@@ -130,16 +133,29 @@ impl KnotPublishingService {
                     }
                 };
                 if let Err(error) =
-                    runtime.block_on(run(source, identity, receiver, worker_snapshot, ready_send))
+                    runtime.block_on(run(source, identity, receiver, shutdown_receive, worker_snapshot, ready_send))
                 {
                     tracing::warn!(%error, "Knot publishing worker stopped");
                 }
             })
             .map_err(|error| format!("start Knot publishing worker: {error}"))?;
-        ready_receive
-            .recv()
-            .map_err(|_| "Knot publishing worker stopped during startup".to_string())??;
-        Ok(Self { commands, snapshot })
+        let service = Self {
+            commands: Some(commands),
+            shutdown: Some(shutdown),
+            snapshot,
+            worker: Some(worker),
+        };
+        match ready_receive.recv() {
+            Ok(Ok(())) => Ok(service),
+            Ok(Err(error)) => {
+                drop(service);
+                Err(error)
+            }
+            Err(_) => {
+                drop(service);
+                Err("Knot publishing worker stopped during startup".to_string())
+            }
+        }
     }
 
     pub fn snapshot(&self) -> PublishSnapshot {
@@ -150,28 +166,36 @@ impl KnotPublishingService {
     }
 
     pub fn refresh(&self) {
-        let _ = self.commands.send(PublishCommand::Refresh);
+        if let Some(commands) = &self.commands {
+            let _ = commands.send(PublishCommand::Refresh);
+        }
     }
 
     pub fn select_source(&self, source_document: String) {
-        let _ = self
-            .commands
-            .send(PublishCommand::SelectSource(source_document));
+        if let Some(commands) = &self.commands {
+            let _ = commands.send(PublishCommand::SelectSource(source_document));
+        }
     }
 
     pub fn unpublish(&self, publication: PublicationId) {
-        let _ = self.commands.send(PublishCommand::Unpublish(publication));
+        if let Some(commands) = &self.commands {
+            let _ = commands.send(PublishCommand::Unpublish(publication));
+        }
     }
 
     pub fn issue_selected(&self, reader: [u8; 32], expires_at_ms: Option<u64>) {
-        let _ = self.commands.send(PublishCommand::Issue {
-            reader,
-            expires_at_ms,
-        });
+        if let Some(commands) = &self.commands {
+            let _ = commands.send(PublishCommand::Issue {
+                reader,
+                expires_at_ms,
+            });
+        }
     }
 
     pub fn revoke(&self, share: u64) {
-        let _ = self.commands.send(PublishCommand::Revoke(share));
+        if let Some(commands) = &self.commands {
+            let _ = commands.send(PublishCommand::Revoke(share));
+        }
     }
 
     pub const fn default_share_hours() -> u64 {
@@ -179,10 +203,23 @@ impl KnotPublishingService {
     }
 }
 
+impl Drop for KnotPublishingService {
+    fn drop(&mut self) {
+        self.commands.take();
+        if let Some(shutdown) = self.shutdown.take() {
+            let _ = shutdown.send(());
+        }
+        if let Some(worker) = self.worker.take() {
+            let _ = worker.join();
+        }
+    }
+}
+
 async fn run(
     source: KnotPublishSource,
     identity: Arc<RootIdentity>,
     mut commands: tokio_mpsc::UnboundedReceiver<PublishCommand>,
+    mut shutdown: tokio::sync::oneshot::Receiver<()>,
     snapshot: Arc<Mutex<PublishSnapshot>>,
     ready: mpsc::SyncSender<Result<(), String>>,
 ) -> Result<(), String> {
@@ -201,6 +238,7 @@ async fn run(
     if carrier.local_peer_id().to_bytes() != source.publisher() {
         let error = "Knot publishing carrier identity differs from its source host".to_string();
         let _ = ready.send(Err(error.clone()));
+        let _ = carrier.close().await;
         return Err(error);
     }
     let policy = publish_policy(
@@ -233,7 +271,7 @@ async fn run(
     let (serve_outcomes_send, mut serve_outcomes) = tokio_mpsc::unbounded_channel();
     let serving_host = host.clone();
     let serving_carrier = Arc::clone(&carrier);
-    tokio::spawn(async move {
+    let serving_task = tokio::spawn(async move {
         loop {
             let outcome = serving_host
                 .accept_and_serve(serving_carrier.as_ref())
@@ -251,11 +289,12 @@ async fn run(
     let mut selected_by_source = BTreeMap::<String, PublicationId>::new();
     let mut issued = BTreeMap::<u64, IssuedShare>::new();
     let mut next_share = 1_u64;
-    loop {
+    let loop_result: Result<(), String> = loop {
         tokio::select! {
             biased;
+            _ = &mut shutdown => break Ok(()),
             command = commands.recv() => {
-                let Some(command) = command else { return Ok(()); };
+                let Some(command) = command else { break Ok(()); };
                 match command {
                     PublishCommand::Refresh => refresh(&host, &snapshot, &selected_by_source).await,
                     PublishCommand::SelectSource(source_document) => {
@@ -365,7 +404,7 @@ async fn run(
             }
             outcome = serve_outcomes.recv() => {
                 let Some(outcome) = outcome else {
-                    return Err("Knot publishing accept loop ended unexpectedly".into());
+                    break Err("Knot publishing accept loop ended unexpectedly".into());
                 };
                 match outcome {
                     Ok(knot::KnotPublishServeOutcome::Responded) => set_status(&snapshot, "Served one admitted reader request."),
@@ -376,6 +415,12 @@ async fn run(
                 }
             }
         }
+    };
+    serving_task.abort();
+    let _ = serving_task.await;
+    match carrier.close().await {
+        Ok(()) => loop_result,
+        Err(error) => Err(format!("close Knot publishing carrier: {error}")),
     }
 }
 

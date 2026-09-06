@@ -51,8 +51,7 @@ pub(crate) fn decode_image_bytes(bytes: &[u8]) -> Option<DecodedImage> {
 #[derive(Debug, Default)]
 pub struct PendingFetches {
     pages: HashMap<fetch::FetchRequestId, PendingPage>,
-    /// Keyed by owner page URL (the actor echoes `owner_url`, not the icon URL).
-    favicons: HashMap<String, Vec<Uuid>>,
+    favicons: HashMap<fetch::FetchRequestId, PendingFavicon>,
     subresources: HashMap<String, Vec<Uuid>>,
     submissions: HashMap<u64, Option<Uuid>>,
 }
@@ -64,6 +63,12 @@ struct PendingPage {
     owner_url: String,
     identity_used: bool,
     kind: PendingPageKind,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+struct PendingFavicon {
+    node: Uuid,
+    owner_url: String,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -112,11 +117,14 @@ impl PendingFetches {
         );
     }
 
-    pub fn note_favicon(&mut self, owner_url: &str, node: Uuid) {
-        self.favicons
-            .entry(owner_url.to_string())
-            .or_default()
-            .push(node);
+    pub fn note_favicon(&mut self, request: fetch::FetchRequestId, owner_url: &str, node: Uuid) {
+        self.favicons.insert(
+            request,
+            PendingFavicon {
+                node,
+                owner_url: owner_url.to_string(),
+            },
+        );
     }
 
     pub fn page_in_flight(&self, url: &str, node: Uuid, owner_url: &str) -> bool {
@@ -140,9 +148,9 @@ impl PendingFetches {
         self.subresources.remove(url).unwrap_or_default()
     }
 
-    /// Whether any page or favicon fetch is still outstanding. The automation
-    /// lane's quiescence read (`wait`): a scenario must not assert against a
-    /// graph whose fetches have not landed.
+    /// Whether any page, favicon, subresource, or submission fetch remains
+    /// outstanding. Every actor command has a terminal completion, even when
+    /// a favicon failure remains deliberately silent in the UI.
     pub fn any_in_flight(&self) -> bool {
         !self.pages.is_empty()
             || !self.favicons.is_empty()
@@ -162,18 +170,9 @@ impl PendingFetches {
         self.pages.remove(&request);
     }
 
-    fn take_favicon(&mut self, owner_url: &str) -> Option<Uuid> {
-        take_one(&mut self.favicons, owner_url)
+    fn take_favicon(&mut self, request: fetch::FetchRequestId) -> Option<PendingFavicon> {
+        self.favicons.remove(&request)
     }
-}
-
-fn take_one<T>(map: &mut HashMap<String, Vec<T>>, key: &str) -> Option<T> {
-    let list = map.get_mut(key)?;
-    let node = list.pop();
-    if list.is_empty() {
-        map.remove(key);
-    }
-    node
 }
 
 /// Convert one fetch-actor answer into the app vocabulary, reattaching the
@@ -337,16 +336,22 @@ pub fn update_from_fetch(update: FetchUpdate, pending: &mut PendingFetches) -> O
                 }),
             }
         }
-        FetchUpdate::Favicon { owner_url, bytes } => {
-            let Some(node) = pending.take_favicon(&owner_url) else {
-                tracing::warn!(url = %owner_url, "favicon completion without a pending requester; dropped");
+        FetchUpdate::Favicon(outcome) => {
+            let Some(pending_favicon) = pending.take_favicon(outcome.request) else {
+                tracing::warn!(request = outcome.request, "favicon completion without a pending requester; dropped");
                 return None;
             };
-            Some(Update::FaviconFetched {
-                node,
-                owner_url,
-                bytes,
-            })
+            match outcome.result {
+                Err(error) => {
+                    tracing::debug!(request = outcome.request, url = %pending_favicon.owner_url, %error, "best-effort favicon fetch failed");
+                    None
+                }
+                Ok(bytes) => Some(Update::FaviconFetched {
+                    node: pending_favicon.node,
+                    owner_url: pending_favicon.owner_url,
+                    bytes,
+                }),
+            }
         }
         FetchUpdate::Subresource(_) => None,
         FetchUpdate::Submission(outcome) => {
@@ -431,9 +436,10 @@ pub fn fetch_commands_for(effect: &Effect, pending: &mut PendingFetches) -> Vec<
             owner_url,
             url,
         } => {
-            pending.note_favicon(owner_url, *node);
+            let request = fetch::next_fetch_request_id();
+            pending.note_favicon(request, owner_url, *node);
             vec![FetchCommand::Favicon {
-                owner_url: owner_url.clone(),
+                request,
                 url: url.clone(),
             }]
         }
@@ -693,10 +699,10 @@ mod tests {
         assert!(pending.take_page(2).is_none());
 
         let unmatched = update_from_fetch(
-            FetchUpdate::Favicon {
-                owner_url: "https://nobody.example".to_string(),
-                bytes: vec![1, 2, 3],
-            },
+            FetchUpdate::Favicon(fetch::FaviconOutcome {
+                request: 99,
+                result: Ok(vec![1, 2, 3]),
+            }),
             &mut pending,
         );
         assert!(
@@ -720,6 +726,65 @@ mod tests {
         expected.sort();
         assert_eq!(requesters, expected);
         assert!(!pending.any_in_flight());
+    }
+
+    #[test]
+    fn failed_favicon_completion_clears_its_pending_request() {
+        let mut pending = PendingFetches::default();
+        let node = Uuid::new_v4();
+        pending.note_favicon(20, "https://example.test/article", node);
+        assert!(
+            pending.any_in_flight(),
+            "favicon work remains pending until its terminal actor answer"
+        );
+        assert!(
+            update_from_fetch(
+                FetchUpdate::Favicon(fetch::FaviconOutcome {
+                    request: 20,
+                    result: Err("404 Not Found".to_string()),
+                }),
+                &mut pending,
+            )
+            .is_none(),
+            "a favicon failure stays invisible to the UI"
+        );
+        assert!(
+            !pending.any_in_flight(),
+            "the terminal failure still clears its exact request"
+        );
+    }
+
+    #[test]
+    fn favicon_completions_remove_only_their_own_request() {
+        let (first, second) = (Uuid::new_v4(), Uuid::new_v4());
+        let mut pending = PendingFetches::default();
+        let owner_url = "https://example.test/article";
+        pending.note_favicon(30, owner_url, first);
+        pending.note_favicon(31, owner_url, second);
+
+        let update = update_from_fetch(
+            FetchUpdate::Favicon(fetch::FaviconOutcome {
+                request: 31,
+                result: Ok(vec![1, 2, 3]),
+            }),
+            &mut pending,
+        );
+        assert!(matches!(
+            update,
+            Some(Update::FaviconFetched { node, owner_url: update_owner_url, bytes })
+                if node == second && update_owner_url == owner_url && bytes == vec![1, 2, 3]
+        ));
+        assert!(pending.any_in_flight(), "the older request remains pending");
+
+        let update = update_from_fetch(
+            FetchUpdate::Favicon(fetch::FaviconOutcome {
+                request: 30,
+                result: Err("gone".to_string()),
+            }),
+            &mut pending,
+        );
+        assert!(update.is_none(), "the older failure stays UI-silent");
+        assert!(!pending.any_in_flight(), "both exact requests are retired");
     }
 
     #[test]

@@ -1,0 +1,6 @@
+
+running 1 test
+test scenario::tests::idle_diagnostics_and_document_idle_are_typed_steps ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 428 filtered out; finished in 0.00s
+

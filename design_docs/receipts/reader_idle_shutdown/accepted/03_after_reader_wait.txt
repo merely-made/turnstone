@@ -1,0 +1,2 @@
+RESULT ok
+busy=false pending_fetches=false requested_content=false graph_settling=false unsettled_sessions=[]

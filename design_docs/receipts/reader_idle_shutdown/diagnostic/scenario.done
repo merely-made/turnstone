@@ -1,0 +1,11 @@
+RESULT fail
+wait: still busy after 240 frames
+wait: still busy after 240 frames
+FAIL: assert content-ready: busy=true pending_fetches=true requested_content=false graph_settling=false unsettled_sessions=[]
+wait: still busy after 240 frames
+FAIL: assert content-ready: busy=true pending_fetches=true requested_content=false graph_settling=false unsettled_sessions=[]
+captured 01_two_reader_appearances
+captured 02_inset_scrolled
+captured 03_independent_scrolls
+captured 04_inset_survives
+headed Reader appearance isolation receipt complete

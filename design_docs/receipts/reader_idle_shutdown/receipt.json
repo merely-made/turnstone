@@ -1,0 +1,52 @@
+{
+  "result": "pass",
+  "date_utc": "2026-09-06",
+  "turnstone_base": "fd78c47",
+  "mere_base": "1f255507",
+  "scope": "Native Reader appearance isolation, fetch quiescence, and observed service shutdown",
+  "dependency_scope": "Existing local Mere/sibling overlay with pinned Distillery; not a published-dependency build",
+  "binary_sha256": "8a2888aa2c553795215fb0ce1fa222b14672a08dee80a60c28e5a9a9bb993f19",
+  "overlay_sha256": "cf04500918b884423f03c22a149a14c2e5ea6897191934457c4db5284acc9357",
+  "source_hash_encoding": "UTF-8 bytes with CRLF normalized to LF",
+  "source_sha256": {
+    "turnstone/src/browse.rs": "4caf9f9cd9381a9f546d3c04d2149e9523f4499fcccd786db66daa75a9d7e2ec",
+    "turnstone/src/scenario.rs": "66aea0ba862f85231a992d94cf03e7d4619bccaeca3940688618ce0792b08143",
+    "turnstone/src/shell/drive.rs": "920d6d89ec43065bad250757d2163f053eb371ecf78fafc95c4107b23ff19ce1",
+    "turnstone/src/publish_service.rs": "45663cca3383eabd8737646343f0b2d7170796b5b974d653a2afadcff250f0ac",
+    "turnstone/src/share_reader_service.rs": "a6d40cb3d6150d4fd62afac018339edf39e3d86d0be7ce87d1c92d85344cc3ca",
+    "turnstone/src/place/lanes.rs": "7b352984c2b56e78bcd5df47d41fc351962931988118d50a14361c1de52a3960",
+    "turnstone/scenarios/reader_appearance.scn": "c69afef2b8ea90f16f950c3bcf9ab99af1f9d31d5f7e14ee065acaf6301527d0",
+    "turnstone/scenarios/run_reader_appearance.ps1": "b86ba2f528a32cf073de8cdbf225160236c578bcaafe63a461de5e012aec4ad0",
+    "mere/crates/system/fetch/src/lib.rs": "060112114357e105cdfc6601274b8e219088b658a168279148081a33f37028c5"
+  },
+  "artifact_sha256": {
+    ".gitattributes": "b7f10290a9fc80afd7649c9fec05be5d8b55dc2f44b29b8fc623eba613ae0edc",
+    "accepted/01_after_open_wait.txt": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3",
+    "accepted/01_before_scroll.txt": "95dadf911dc2f61af361b3027a2b53031a109304a5a4988bdc4ead5a2156555e",
+    "accepted/01_two_reader_appearances.png": "ca2b8fc2bd4fa1e2600b3b26b33f6819b7a63205aab487e2578f9867098fd90f",
+    "accepted/02_after_content_wait.txt": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3",
+    "accepted/02_inset_only.txt": "bbe07ed81d30a9c9e8ecb8d51f9de20dd435e769d945184ceb6d03dd1c38d3e5",
+    "accepted/02_inset_scrolled.png": "425fa179ae4739698f6b16496cd237812d1712a438a59122bba7356549ef303b",
+    "accepted/03_after_reader_wait.txt": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3",
+    "accepted/03_both_scrolled.txt": "d9c90c116669316ca1fc26177fb373e6339868aee000983124b2c48b287fad73",
+    "accepted/03_independent_scrolls.png": "5b8233f61d4a02ea76c41579c8631a802074a2ab6846ed5aa3e47f5bbfd1e9d0",
+    "accepted/04_inset_survives.png": "30152859074e4175ad7d12eb8aca3161cb9cd1eca62ef881e20fa2ab93a2ed4f",
+    "accepted/04_inset_survives.txt": "6a7afa6dfc53ca96ba7744b0bb9051fc29ce476e0808d7b739597d24438fd163",
+    "accepted/acceptance.done": "511c64061623cd58b9f92c5fbcd37716933a9ee0e868a81b347335f3150f9e82",
+    "accepted/app.log": "023d27d77b0e3963ffeb2a696f57614abefbe55696903481acf8f0e470c5aef9",
+    "accepted/fixture.done": "0d620ca3c50a9f36d4592e64efa77cf5a5ca6cfd31ac6d5ebb6e9dc50fda25f4",
+    "accepted/scenario.done": "7563ae1c67f72af65f75659fdd37e029d747ed405cde29c9d479e8699dc7e025",
+    "diagnostic/01_after_open_wait.txt": "fa7f7037e4be246bf9e9bfc95fe91485ae5906a8a680e544a9ee6956dde2c665",
+    "diagnostic/02_after_content_wait.txt": "fa7f7037e4be246bf9e9bfc95fe91485ae5906a8a680e544a9ee6956dde2c665",
+    "diagnostic/03_after_reader_wait.txt": "fa7f7037e4be246bf9e9bfc95fe91485ae5906a8a680e544a9ee6956dde2c665",
+    "diagnostic/app.log": "11c6edaa34f5268ae5f3a072fbfd4833937fdac1601be1f9409b196548b70848",
+    "diagnostic/scenario.done": "f741c4cac73b089d306164e6fe4c40f6d96402a5f2d00c930ec8e24fe8a83384",
+    "reader-favicon-tests.log": "28f7987cf3037e9b2e417aac9559eeba9a8c8da8090af965dd002685054c31af",
+    "reader-idle-parser-test.log": "04542e5c1d6e7cd7569063ac2100c12c5b65a2e44059ec6a26af4423c71f56c8",
+    "reader-idle-shutdown-final-build.log": "26211b0655273545a8cff7ef0e05ddfb12817cdaf3484eddc26c9ccd455702d0"
+  },
+  "limitations": [
+    "No FPS, allocation, or background worker CPU measurement.",
+    "Native fixture does not exercise active place membership or a live publishing transfer during shutdown."
+  ]
+}

@@ -20,6 +20,60 @@ use crate::panes::PaneContent;
 
 use super::Shell;
 
+struct IdleDiagnosis {
+    pending_fetches: bool,
+    requested_content: bool,
+    graph_settling: bool,
+    unsettled_sessions: Vec<uuid::Uuid>,
+}
+
+impl IdleDiagnosis {
+    fn is_busy(&self) -> bool {
+        self.pending_fetches
+            || self.requested_content
+            || self.graph_settling
+            || !self.unsettled_sessions.is_empty()
+    }
+
+    fn content_ready(&self) -> bool {
+        !self.pending_fetches && !self.requested_content && self.unsettled_sessions.is_empty()
+    }
+
+    fn describe(&self) -> String {
+        let sessions = self
+            .unsettled_sessions
+            .iter()
+            .map(uuid::Uuid::to_string)
+            .collect::<Vec<_>>()
+            .join(",");
+        format!(
+            "busy={} pending_fetches={} requested_content={} graph_settling={} unsettled_sessions=[{}]",
+            self.is_busy(),
+            self.pending_fetches,
+            self.requested_content,
+            self.graph_settling,
+            sessions
+        )
+    }
+}
+
+impl Shell {
+    fn idle_diagnosis(&mut self) -> IdleDiagnosis {
+        let mut unsettled_sessions = self
+            .content_sessions
+            .iter_mut()
+            .filter_map(|(node, session)| (!session.settled()).then_some(*node))
+            .collect::<Vec<_>>();
+        unsettled_sessions.sort_unstable();
+        IdleDiagnosis {
+            pending_fetches: self.pending_fetches.any_in_flight(),
+            requested_content: self.app.content.any_requested(),
+            graph_settling: self.app.graph_runtimes.is_settling(),
+            unsettled_sessions,
+        }
+    }
+}
+
 /// turnstone drives through the shared genet-probe harness: implementing this
 /// small surface grants the `resolve` / `click` verbs (used by the collapsed
 /// `click_pane_*` above) for free. `with_surfaces` hands the retained pane DOMs
@@ -334,7 +388,8 @@ impl genet_probe::Automatable for Shell {
     /// Turnstone's quiescence report, driving the `wait` verb. Busy while any of
     /// the three kinds of work a scenario must not race is outstanding:
     ///
-    /// - a page or favicon FETCH is in flight (the port has not answered),
+    /// - a page, favicon, subresource, or submission FETCH is in flight (the
+    ///   port has not answered; favicon failures remain UI-silent),
     /// - a content spawn is `Requested` (the effect is out, no session yet),
     /// - a live session is not `settled()` (script work or layout pending).
     ///
@@ -343,19 +398,19 @@ impl genet_probe::Automatable for Shell {
     /// and it counts a spawn as busy from the effect rather than from the
     /// session, so the gap between them cannot read as quiet.
     fn busy(&mut self) -> Option<bool> {
+        // Keep the hot `wait` poll allocation-free and short-circuiting. The
+        // explicit `record-idle` and content-ready assertions call
+        // `idle_diagnosis` when a receipt needs every concurrent cause.
         if self.pending_fetches.any_in_flight() {
             return Some(true);
         }
         if self.app.content.any_requested() {
             return Some(true);
         }
-        // The graph's own layout counts as work: without this `wait` returns
-        // while the physics is still settling, and a receipt reads a
-        // mid-settle layout. (Physics catalog — P4 native.)
         if self.app.graph_runtimes.is_settling() {
             return Some(true);
         }
-        Some(self.content_sessions.values_mut().any(|s| !s.settled()))
+        Some(self.content_sessions.values_mut().any(|session| !session.settled()))
     }
 
     fn press(&mut self, x: f32, y: f32) {
@@ -548,6 +603,13 @@ impl Shell {
                         name,
                         path.display()
                     )
+                })?;
+            }
+            Step::RecordIdle(name) => {
+                let diagnosis = self.idle_diagnosis();
+                let path = self.shared_out_dir.join(format!("{name}.txt"));
+                std::fs::write(&path, format!("RESULT ok\n{}\n", diagnosis.describe())).map_err(|error| {
+                    format!("record-idle '{}': could not write {}: {error}", name, path.display())
                 })?;
             }
 
@@ -1003,6 +1065,18 @@ impl Shell {
                         role.label(), appearance.scroll_y, op, want,
                         Self::describe_reader_appearances(&appearances)
                     ));
+                }
+            }
+            Step::AssertContentSessionsIdle => {
+                let diagnosis = self.idle_diagnosis();
+                if !diagnosis.unsettled_sessions.is_empty() {
+                    return Err(format!("assert content-sessions-idle: {}", diagnosis.describe()));
+                }
+            }
+            Step::AssertContentReady => {
+                let diagnosis = self.idle_diagnosis();
+                if !diagnosis.content_ready() {
+                    return Err(format!("assert content-ready: {}", diagnosis.describe()));
                 }
             }
             Step::AssertEvent(_) => {}

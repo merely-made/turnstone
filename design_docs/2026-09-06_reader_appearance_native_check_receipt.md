@@ -2,6 +2,45 @@
 
 Date: 2026-09-06
 
+## Idle and shutdown follow-up
+
+The follow-up native run passed, with all original appearance checks retained.
+Its three waits completed in **103, 0, and 0 frames**, within the unchanged
+240-frame budgets. At each checkpoint, pending fetches, requested content,
+graph settling, and unsettled document sessions were all clear. The prior
+iroh endpoint-drop diagnostic was absent. The runner now rejects capped waits,
+busy snapshots, and that ungraceful-shutdown diagnostic.
+
+The first diagnostic run established the cause: a failed favicon fetch stayed
+pending because the actor emitted success only. Mere now emits a terminal
+`FaviconOutcome` keyed by request ID. Turnstone clears exactly that request for
+either result; failure remains UI-silent. The three favicon tests passed,
+including same-page out-of-order completion and failed-request cleanup.
+The idle-command parser test also passed using the same compiled test binary.
+
+Native service owners now signal cancellation, await carrier close, and join
+their worker threads. Reader cancellation preserves normal request duration.
+Place teardown also awaits watcher cancellation and endpoint close on its
+retained runtime. The native fixture does not exercise an active place join
+or publishing transfer; these paths have compilation and ownership review,
+not a transfer-in-progress receipt. A Gemini identity warning for the HTTP
+fixture remains in the raw log and was not suppressed.
+
+The [follow-up artifact receipt](receipts/reader_idle_shutdown/receipt.json)
+contains hashes, the failed diagnostic observations, accepted observations and
+captures, app logs, and unit-test/build logs. The accepted independent-scroll
+capture was visually inspected. This is an idle-predicate and shutdown proof,
+not an FPS, allocation, or background-worker CPU measurement. It uses the same
+local dependency overlay and isolated Cargo cache as the original proof.
+
+```powershell
+$env:CARGO_HOME='C:/Users/mark_/Code/scratch/refresh-proof/cargo-home'
+$env:CARGO_TARGET_DIR='C:/Users/mark_/Code/target-appearance-turnstone'
+cargo test -p turnstone --lib favicon --offline --config C:/Users/mark_/Code/scratch/refresh-proof/turnstone-local.toml -j 1
+cargo build -p turnstone --offline --config C:/Users/mark_/Code/scratch/refresh-proof/turnstone-local.toml -j 1
+scenarios/run_reader_appearance.ps1 -TurnstoneBin C:/Users/mark_/Code/target-appearance-turnstone/debug/turnstone.exe -OutputRoot C:/Users/mark_/Code/scratch/refresh-proof/reader-idle-shutdown-run-02
+```
+
 ## Native result
 
 The executable build and headed scenario passed on 2026-09-06. The fixture,
