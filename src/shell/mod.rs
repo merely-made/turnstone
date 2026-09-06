@@ -15,6 +15,7 @@ mod effects;
 mod events;
 mod gestures;
 mod keys;
+mod reader_observe;
 mod render;
 mod renderers;
 #[cfg(all(feature = "weld", windows))]

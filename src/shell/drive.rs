@@ -525,7 +525,31 @@ impl Shell {
             Step::HoverFile(x, y, path) => self.hover_file(*x, *y, std::path::Path::new(path)),
             Step::DropFile(x, y, path) => self.drop_file(*x, *y, std::path::Path::new(path)),
             Step::Scroll(x, y, dx, dy) => self.deliver_wheel(*x, *y, *dx, *dy),
+            Step::ScrollReader(role, dy) => {
+                let role = super::reader_observe::ReaderAppearanceRole::parse(role).ok_or_else(|| {
+                    format!("scroll-reader: unknown Reader role '{role}'")
+                })?;
+                self.scroll_reader_appearance(role, *dy)?;
+            }
             Step::Divider(ratio) => self.act(Action::SetActivePaneDivider(*ratio)),
+            Step::RecordReaderAppearances(name) => {
+                let observations = self.reader_appearance_observations();
+                let path = self.shared_out_dir.join(format!("{name}.txt"));
+                std::fs::write(
+                    &path,
+                    format!(
+                        "RESULT ok\n{}\n",
+                        Self::describe_reader_appearances(&observations)
+                    ),
+                )
+                .map_err(|error| {
+                    format!(
+                        "record-reader-appearances '{}': could not write {}: {error}",
+                        name,
+                        path.display()
+                    )
+                })?;
+            }
 
             // ---- asserts: read the snapshot, Err on mismatch (former tick) ----
             Step::AssertOmnibar(open) => {
@@ -896,6 +920,88 @@ impl Shell {
                     return Err(format!(
                         "assert no-surface '{kind}': the primary plan is {:?}",
                         snap.surfaces
+                    ));
+                }
+            }
+            Step::AssertReaderAppearances(op, want) => {
+                let appearances = self.reader_appearance_observations();
+                if appearances.windows(2).any(|pair| pair[0].id.0 >= pair[1].id.0) {
+                    return Err(format!(
+                        "assert reader-appearances: observations are not sorted: {}",
+                        Self::describe_reader_appearances(&appearances)
+                    ));
+                }
+                if !cmp_usize(op, appearances.len(), *want) {
+                    return Err(format!(
+                        "assert reader-appearances: got {}, expected {:?} {}; {}",
+                        appearances.len(), op, want,
+                        Self::describe_reader_appearances(&appearances)
+                    ));
+                }
+            }
+            Step::AssertReaderSources(op, want) => {
+                let appearances = self.reader_appearance_observations();
+                let sources = appearances.iter().map(|appearance| appearance.source_group)
+                    .collect::<std::collections::BTreeSet<_>>().len();
+                if !cmp_usize(op, sources, *want) {
+                    return Err(format!(
+                        "assert reader-sources: got {}, expected {:?} {}; {}",
+                        sources, op, want,
+                        Self::describe_reader_appearances(&appearances)
+                    ));
+                }
+            }
+            Step::AssertReaderRole(role) => {
+                let role = super::reader_observe::ReaderAppearanceRole::parse(role).ok_or_else(|| {
+                    format!("assert reader-role: unknown Reader role '{role}'")
+                })?;
+                let appearances = self.reader_appearance_observations();
+                let count = appearances.iter().filter(|appearance| appearance.role == role).count();
+                if count != 1 {
+                    return Err(format!(
+                        "assert reader-role {}: got {count}; {}", role.label(),
+                        Self::describe_reader_appearances(&appearances)
+                    ));
+                }
+            }
+            Step::AssertReaderViewport(role) => {
+                let role = super::reader_observe::ReaderAppearanceRole::parse(role).ok_or_else(|| {
+                    format!("assert reader-viewport: unknown Reader role '{role}'")
+                })?;
+                let appearances = self.reader_appearance_observations();
+                let matching = appearances.iter().filter(|appearance| appearance.role == role).collect::<Vec<_>>();
+                let [appearance] = matching.as_slice() else {
+                    return Err(format!(
+                        "assert reader-viewport {}: expected one appearance; {}", role.label(),
+                        Self::describe_reader_appearances(&appearances)
+                    ));
+                };
+                let expected = (appearance.rect.w.round().max(1.0) as u32, appearance.rect.h.round().max(1.0) as u32);
+                if appearance.viewport != expected {
+                    return Err(format!(
+                        "assert reader-viewport {}: got {}x{}, plan requires {}x{}; {}",
+                        role.label(), appearance.viewport.0, appearance.viewport.1, expected.0, expected.1,
+                        Self::describe_reader_appearances(&appearances)
+                    ));
+                }
+            }
+            Step::AssertReaderScroll(role, op, want) => {
+                let role = super::reader_observe::ReaderAppearanceRole::parse(role).ok_or_else(|| {
+                    format!("assert reader-scroll: unknown Reader role '{role}'")
+                })?;
+                let appearances = self.reader_appearance_observations();
+                let matching = appearances.iter().filter(|appearance| appearance.role == role).collect::<Vec<_>>();
+                let [appearance] = matching.as_slice() else {
+                    return Err(format!(
+                        "assert reader-scroll {}: expected one appearance; {}", role.label(),
+                        Self::describe_reader_appearances(&appearances)
+                    ));
+                };
+                if !cmp_f32(op, appearance.scroll_y, *want) {
+                    return Err(format!(
+                        "assert reader-scroll {}: got {:.1}, expected {:?} {:.1}; {}",
+                        role.label(), appearance.scroll_y, op, want,
+                        Self::describe_reader_appearances(&appearances)
                     ));
                 }
             }

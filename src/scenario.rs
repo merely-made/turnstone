@@ -43,6 +43,8 @@
 //!                           # the node under the pointer (the context menu)
 //! click-row <substr>       # click the list-pane row whose text contains substr
 //! scroll <x> <y> <dy>       # wheel at window px (page scroll / canvas pan)
+//! scroll-reader <role> <dy> # wheel at the live Reader inset|workbench|tile rect
+//! record-reader-appearances <name> # stable sorted Reader appearance observation
 //! divider <ratio>           # set the active pane's split ratio (0.0-1.0)
 //! assert pane <tag>         # a pane with that PaneContent tag is in the tree
 //! assert maximized | not-maximized
@@ -65,6 +67,11 @@
 //! assert no-pane <tag>      # NO pane with that tag is in the PRIMARY tree
 //! assert no-lens-pane <substr> # NO lens "ordinal:tag" pane contains substr
 //! assert no-surface <kind>  # NO surface of that kind in the PRIMARY plan
+//! assert reader-appearances ==|>=|<= <n> # live Reader presentations in the plan
+//! assert reader-sources ==|>=|<= <n> # distinct Reader source documents
+//! assert reader-role <role> # exactly one live Reader role
+//! assert reader-viewport <role> # session viewport matches its live rect
+//! assert reader-scroll <role> ==|>=|<= <px> # role's own retained scroll offset
 //! assert active-ratio ==|>=|<= <f> # the ACTIVE pane's parent-split ratio (any space)
 //! assert sessions ==|>=|<= <n>  # the manifest set holds n sessions
 //! assert session <substr>   # the live session's label contains substr
@@ -119,6 +126,13 @@ pub enum Step {
     RightClick(f32, f32),
     /// A wheel event at window pixel coordinates: content scrolls, canvas pans.
     Scroll(f32, f32, f32, f32),
+    /// A wheel event at the centre of a named, live Reader appearance. The
+    /// shell resolves the rect from its current plan, so the receipt names a
+    /// presentation role rather than relying on a fixed window coordinate.
+    ScrollReader(String, f32),
+    /// Write the live Reader appearance registry/plan intersection as a
+    /// scenario receipt, sorted by stable surface id.
+    RecordReaderAppearances(String),
     /// Click the list-pane (Trail/Roster) row whose text contains this substring.
     /// The shell resolves the row's window position (it owns the pane rects and
     /// rows), so the receipt names a row by text, not pixels.
@@ -164,6 +178,11 @@ pub enum Step {
     /// NO surface of the named kind is in the PRIMARY plan (the one-session-
     /// one-surface rule's cross-window half).
     AssertNoSurface(String),
+    AssertReaderAppearances(CmpOp, usize),
+    AssertReaderSources(CmpOp, usize),
+    AssertReaderRole(String),
+    AssertReaderViewport(String),
+    AssertReaderScroll(String, CmpOp, f32),
     /// NO lens pane's "ordinal:tag" contains the substring (the lens close
     /// op's departure half).
     AssertNoLensPane(String),
@@ -436,6 +455,15 @@ pub fn parse(body: &str) -> Result<Vec<Step>, String> {
                     _ => return err("scroll wants '<x> <y> <dy>' or '<x> <y> <dx> <dy>'"),
                 }
             }
+            "scroll-reader" => {
+                let mut fields = rest.split_whitespace();
+                let role = fields.next();
+                let dy = fields.next().and_then(|value| value.parse().ok());
+                if fields.next().is_some() || role.is_none() || dy.is_none() {
+                    return err("scroll-reader wants '<inset|workbench|tile> <dy>'");
+                }
+                Step::ScrollReader(role.unwrap().to_string(), dy.unwrap())
+            }
             "divider" => {
                 let ratio = rest
                     .parse()
@@ -444,6 +472,9 @@ pub fn parse(body: &str) -> Result<Vec<Step>, String> {
             }
             "capture" if !rest.is_empty() => Step::Capture(rest.to_string()),
             "capture-lens" if !rest.is_empty() => Step::CaptureLens(rest.to_string()),
+            "record-reader-appearances" if !rest.is_empty() => {
+                Step::RecordReaderAppearances(rest.to_string())
+            }
             "assert" => {
                 let (what, arg) = rest.split_once(char::is_whitespace).unwrap_or((rest, ""));
                 let arg = arg.trim();
@@ -481,6 +512,45 @@ pub fn parse(body: &str) -> Result<Vec<Step>, String> {
                         Step::AssertNoLensPane(arg.to_string())
                     }
                     "no-surface" if !arg.is_empty() => Step::AssertNoSurface(arg.to_string()),
+                    "reader-role" if !arg.is_empty() => Step::AssertReaderRole(arg.to_string()),
+                    "reader-viewport" if !arg.is_empty() => {
+                        Step::AssertReaderViewport(arg.to_string())
+                    }
+                    "reader-scroll" => {
+                        let mut fields = arg.split_whitespace();
+                        let role = fields.next();
+                        let op = fields.next();
+                        let amount = fields.next().and_then(|value| value.parse().ok());
+                        if fields.next().is_some() || role.is_none() || op.is_none() || amount.is_none() {
+                            return err("assert reader-scroll wants '<role> ==|>=|<= <px>'");
+                        }
+                        let op = match op.unwrap() {
+                            "==" => CmpOp::Eq,
+                            ">=" => CmpOp::Ge,
+                            "<=" => CmpOp::Le,
+                            _ => return err("assert reader-scroll op wants ==|>=|<="),
+                        };
+                        Step::AssertReaderScroll(role.unwrap().to_string(), op, amount.unwrap())
+                    }
+                    "reader-appearances" | "reader-sources" => {
+                        let (op, n) = arg.split_once(char::is_whitespace).ok_or_else(|| {
+                            format!("line {}: assert {what} wants '<op> <n>'", i + 1)
+                        })?;
+                        let op = match op {
+                            "==" => CmpOp::Eq,
+                            ">=" => CmpOp::Ge,
+                            "<=" => CmpOp::Le,
+                            _ => return err("assert reader count op wants ==|>=|<="),
+                        };
+                        let n = n.trim().parse().map_err(|_| {
+                            format!("line {}: bad {what} count", i + 1)
+                        })?;
+                        if what == "reader-appearances" {
+                            Step::AssertReaderAppearances(op, n)
+                        } else {
+                            Step::AssertReaderSources(op, n)
+                        }
+                    }
                     "windows" | "sessions" | "nodes" | "overlaps" => {
                         let (op, n) = arg.split_once(char::is_whitespace).ok_or_else(|| {
                             format!("line {}: assert {what} wants '<op> <n>'", i + 1)

@@ -1,6 +1,7 @@
 # Reader appearance isolation
 
-Status: bounded implementation and focused validation complete, 2026-09-06.
+Status: bounded implementation and focused validation complete; headed native
+Reader appearance receipt added and pending its first executable run, 2026-09-06.
 
 This is Turnstone's consumer slice of Mere's
 `design_docs/mere_docs/implementation_strategy/2026-09-05_projection_refresh_and_surface_reuse_plan.md`,
@@ -40,5 +41,15 @@ a minimal numeric PaneId. They cover appearance routing, identical overlapping
 rectangles, sibling-close identity, and pane-specific cleanup. The full
 Reader/Smolweb library suite passed 20 tests. The
 [combined receipt](../../mere/ports/graphshell/docs/receipts/projection_refresh_surface_reuse_receipt.json)
-records logs, hashes, and commands. A headed native Reader interaction remains
-an additional gate; Graphshell's browser receipt does not stand in for it.
+records logs, hashes, and commands. The headed native Reader interaction is
+`scenarios/reader_appearance.scn`, run by
+`scenarios/run_reader_appearance.ps1`. It drives the local article fixture,
+selects Reader through Apparatus, opens the same node in Workbench, resolves
+wheel targets from the live Shell plan, and records the sorted appearance ids,
+shared source group, rects, viewports, and retained scroll positions before
+and after each scroll and sibling close. Its runner rejects absent captures or
+observations and checks that the closing receipt contains only the inset.
+Graphshell's browser receipt does not stand in for this native gate.
+The native compile check passed; the headed runner remains pending while an
+external Cargo package-cache holder is active, rather than adding another
+locked build waiter.

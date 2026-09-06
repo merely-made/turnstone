@@ -1,0 +1,62 @@
+# Headed Reader appearance receipt. A single Reader source is first shown as
+# the graph inset, then placed in the Workbench. Role-resolved scrolls use the
+# exact live surface rects, not fixed window coordinates.
+settle 10
+key escape
+
+open http://127.0.0.1:43118/article
+wait 240
+act Toggle live content
+wait 240
+assert content-live
+
+# Select the real Reader engine through the Apparatus UI, then add the same
+# focused node to the Workbench. Reader is deliberately allowed both surfaces.
+act Open Apparatus pane
+settle 20
+click-row genet.reader
+wait 240
+assert content-live
+act Open node in Workbench
+settle 30
+assert pane workbench
+
+# Both sessions name one source group, but carry different stable surface IDs,
+# exact live viewports, and independent retained offsets.
+assert reader-appearances == 2
+assert reader-sources == 1
+assert reader-role inset
+assert reader-role workbench
+assert reader-viewport inset
+assert reader-viewport workbench
+assert reader-scroll inset == 0
+assert reader-scroll workbench == 0
+record-reader-appearances 01_before_scroll
+capture 01_two_reader_appearances
+
+scroll-reader inset 160
+settle 5
+assert reader-scroll inset >= 1
+assert reader-scroll workbench == 0
+record-reader-appearances 02_inset_only
+capture 02_inset_scrolled
+
+scroll-reader workbench 240
+settle 5
+assert reader-scroll inset >= 1
+assert reader-scroll workbench >= 1
+record-reader-appearances 03_both_scrolled
+capture 03_independent_scrolls
+
+# Closing the Workbench retires only that appearance. The inset's id and
+# scroll state remain live, and the composed capture shows the survivor.
+act Close pane
+settle 20
+assert reader-appearances == 1
+assert reader-sources == 1
+assert reader-role inset
+assert reader-viewport inset
+assert reader-scroll inset >= 1
+record-reader-appearances 04_inset_survives
+capture 04_inset_survives
+log headed Reader appearance isolation receipt complete
