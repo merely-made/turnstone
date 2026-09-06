@@ -43,6 +43,11 @@ native = [
 # not paying for them. The C4a fixture and its tests require this feature.
 webrtc-session = ["native", "webrtc-join", "webrtc-carrier/native"]
 
+# The headed W1 fixture can serve Distillery's read-only Chronicle over the
+# existing WebRTC door. It remains opt-in so the ordinary C4 live-board host
+# does not acquire Distillery's product dependency cone.
+distillery-chronicle-fixture = ["webrtc-session", "dep:distillery", "dep:mesh"]
+
 # The joining side of the WebRTC door, buildable for `wasm32-unknown-unknown`:
 # the peer sequence, the wire both sides share, and the door's client
 # functions. No runtime, no transport, no carrier beyond its Wasm-clean core.
@@ -103,11 +108,13 @@ personal-sync = [
 async-trait = { version = "0.1", optional = true }
 base64.workspace = true
 chartulary = { workspace = true, optional = true }
+distillery = { path = "../distillery", optional = true }
 eidetic = { workspace = true, optional = true }
 graphshell-client = { version = "0.0.2", path = "../../crates/graphshell/graphshell-client" }
 graphshell-endpoint = { version = "0.0.2", path = "../../crates/graphshell/graphshell-endpoint" }
 chirograph.workspace = true
 mere = { path = "../../crates/mere", default-features = false, features = ["graph", "canvas"], optional = true }
+mesh = { workspace = true, optional = true }
 muniment = { workspace = true, optional = true }
 sceno.workspace = true
 scenomise.workspace = true
@@ -245,6 +252,11 @@ path = "src/bin/h4f_agent_probe.rs"
 required-features = ["native"]
 
 [dev-dependencies]
+# W1's integration receipt drives the actual Distillery Chronicle endpoint.
+# Distillery depends on Mere's substrate, not Graphshell, so this test-only
+# edge does not enter the product dependency graph.
+distillery = { path = "../distillery" }
+mesh.workspace = true
 # The C0 acceptance fixture derives its shared link the way the real carrier
 # does rather than pasting a constant, so a change to the transcript encoding
 # fails that test too. C2 adds the `native` feature on top: the door's own

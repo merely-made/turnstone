@@ -29,6 +29,8 @@ pub mod capture;
 pub mod carriage;
 #[cfg(all(feature = "native", not(target_arch = "wasm32")))]
 pub mod carrier;
+#[cfg(any(feature = "native", feature = "web"))]
+pub mod distillery_w1;
 #[cfg(feature = "web")]
 pub mod handlers;
 #[cfg(all(feature = "native", not(target_arch = "wasm32")))]

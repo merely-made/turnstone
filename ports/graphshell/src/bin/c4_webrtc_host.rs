@@ -70,6 +70,60 @@ use tokio::sync::Mutex;
 use webrtc_carrier::ReleaseRefV1;
 use webrtc_carrier::native::{Answerer, AnswererConfig, CarrierConfig};
 
+#[cfg(feature = "distillery-chronicle-fixture")]
+use distillery::{ChronicleObserver, ChronicleRevision, ResidentReceipt};
+
+/// The source endpoint the fixture exposes through its fixed host route.
+///
+/// This is a host-side selection, never a browser-supplied route. The normal
+/// C4 live board remains the default; Chronicle is an explicit read-only W1
+/// fixture selected by the person launching the host.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum Endpoint {
+    LiveBoard,
+    DistilleryChronicle,
+}
+
+impl Endpoint {
+    fn parse(value: &str) -> Result<Self, String> {
+        match value {
+            "live-board" => Ok(Self::LiveBoard),
+            "distillery-chronicle" => Ok(Self::DistilleryChronicle),
+            _ => Err(format!(
+                "bad --endpoint {value}; expected live-board or distillery-chronicle"
+            )),
+        }
+    }
+
+    fn label(self) -> &'static str {
+        match self {
+            Self::LiveBoard => "live board",
+            Self::DistilleryChronicle => "Distillery Chronicle",
+        }
+    }
+}
+
+/// The only native HTTP mutation this fixture offers. Chronicle deliberately
+/// has no such path: it is a read-only observation of Distillery authority.
+#[derive(Clone)]
+enum FixtureEndpoint {
+    LiveBoard(SharedLiveEndpoint),
+    #[cfg(feature = "distillery-chronicle-fixture")]
+    DistilleryChronicle,
+}
+
+impl FixtureEndpoint {
+    fn nudge(&self) -> Result<u64, &'static str> {
+        match self {
+            Self::LiveBoard(board) => Ok(board.with(|endpoint| endpoint.append()).0),
+            #[cfg(feature = "distillery-chronicle-fixture")]
+            Self::DistilleryChronicle => {
+                Err("nudge is unsupported by the Distillery Chronicle endpoint")
+            },
+        }
+    }
+}
+
 /// The fixture's own network and trust anchor. Local to this process: a
 /// receipt host is its own root, which is what makes the run reproducible
 /// without a deployment behind it.
@@ -81,6 +135,7 @@ const ROOT_AUTHORITY: [u8; 32] = [7; 32];
 const DELEGATION_TTL_MS: u64 = 60 * 60 * 1000;
 
 struct Args {
+    endpoint: Endpoint,
     signal_port: u16,
     bind: IpAddr,
     advertise: Vec<IpAddr>,
@@ -92,6 +147,7 @@ struct Args {
 impl Args {
     fn parse() -> Result<Self, String> {
         let mut args = Args {
+            endpoint: Endpoint::LiveBoard,
             signal_port: 8788,
             bind: IpAddr::from([0, 0, 0, 0]),
             advertise: Vec::new(),
@@ -103,9 +159,10 @@ impl Args {
         while let Some(flag) = argv.next() {
             let mut value = || argv.next().ok_or_else(|| format!("{flag} needs a value"));
             match flag.as_str() {
+                "--endpoint" => args.endpoint = Endpoint::parse(&value()?)?,
                 "--signal-port" => {
                     args.signal_port = value()?.parse().map_err(|_| "bad --signal-port")?
-                }
+                },
                 "--bind" => args.bind = value()?.parse().map_err(|_| "bad --bind address")?,
                 "--advertise" => args
                     .advertise
@@ -114,7 +171,7 @@ impl Args {
                 "--uses" => args.uses = value()?.parse().map_err(|_| "bad --uses")?,
                 "--invite-ttl-ms" => {
                     args.invite_ttl_ms = value()?.parse().map_err(|_| "bad --invite-ttl-ms")?
-                }
+                },
                 "--help" | "-h" => return Err(USAGE.to_string()),
                 other => return Err(format!("unknown flag {other}\n\n{USAGE}")),
             }
@@ -124,7 +181,8 @@ impl Args {
 }
 
 const USAGE: &str = "c4_webrtc_host \
-[--signal-port 8788] [--bind 0.0.0.0] [--advertise IP]... [--udp-port 0] \
+[--endpoint live-board|distillery-chronicle] [--signal-port 8788] [--bind 0.0.0.0] \
+[--advertise IP]... [--udp-port 0] \
 [--uses 8] [--invite-ttl-ms 3600000]";
 
 fn now_ms() -> u64 {
@@ -183,22 +241,50 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         redemption: issue.redemption,
     }));
 
-    // The product host, with the live endpoint on one catalog route.
+    // The product host has one fixed endpoint route. The default C4 board
+    // retains its resumable mutation path; W1 selects Distillery's checked-in
+    // read-only Chronicle observation explicitly at launch.
     let mut catalog = ResidentEndpointCatalog::new();
-    // `register_resumable_notifying`, not `register_notifying`: the plainer
-    // registration erases resume behind a default that refuses it, and the
-    // first headed run found exactly that — the bell rang, the browser asked
-    // to resume, and the host said the endpoint could not. An endpoint with a
-    // diff history has to be registered as one.
-    // One board for every session, not one per session: a peer that drops
-    // and rejoins must find the board where the host left it, and `POST
-    // /nudge` moves it while a peer is away (the resume-on-reconnect row).
-    let board = SharedLiveEndpoint::new(LiveEndpoint::new());
-    let route_board = board.clone();
-    catalog.register_resumable_notifying("live", "C4 live board", move |_context| {
-        Ok(route_board.clone())
-    })?;
-    let route = ResidentEndpointRoute::new("live", Duration::from_millis(250))?;
+    let (route, fixture_endpoint) = match args.endpoint {
+        Endpoint::LiveBoard => {
+            // `register_resumable_notifying`, not `register_notifying`: the
+            // plainer registration erases resume behind a default that
+            // refuses it. One board survives all admitted sessions so a
+            // rejoining peer finds the board where the host left it.
+            let board = SharedLiveEndpoint::new(LiveEndpoint::new());
+            let route_board = board.clone();
+            catalog.register_resumable_notifying("live", "C4 live board", move |_context| {
+                Ok(route_board.clone())
+            })?;
+            (
+                ResidentEndpointRoute::new("live", Duration::from_millis(250))?,
+                FixtureEndpoint::LiveBoard(board),
+            )
+        },
+        Endpoint::DistilleryChronicle => {
+            #[cfg(feature = "distillery-chronicle-fixture")]
+            {
+                let observer = distillery_chronicle_observer()?;
+                let route_observer = observer.clone();
+                catalog.register_resumable_notifying(
+                    "distillery.chronicle",
+                    "Distillery Chronicle",
+                    move |context| Ok(route_observer.endpoint(context.session().clone())),
+                )?;
+                (
+                    ResidentEndpointRoute::new("distillery.chronicle", Duration::from_millis(250))?,
+                    FixtureEndpoint::DistilleryChronicle,
+                )
+            }
+            #[cfg(not(feature = "distillery-chronicle-fixture"))]
+            {
+                return Err(
+                    "--endpoint distillery-chronicle requires --features distillery-chronicle-fixture"
+                        .into(),
+                );
+            }
+        },
+    };
     let host = Arc::new(Mutex::new(ResidentProjectionHost::new(
         policy.clone(),
         route,
@@ -209,15 +295,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let listener = TcpListener::bind(signal_addr).await?;
 
     println!("graphshell C4a WebRTC host");
+    println!("  endpoint      {}", args.endpoint.label());
     println!("  host key      {}", hex(&host_key));
     println!(
         "  offer         POST http://{signal_addr}/offer   (text/plain: offer SDP in, answer SDP out)"
     );
     println!("  invite        GET  http://{signal_addr}/invite  (the fragment below, as text)");
     println!("  health        GET  http://{signal_addr}/health");
-    println!(
-        "  nudge         POST http://{signal_addr}/nudge   (append a card natively; answers the new revision)"
-    );
+    match args.endpoint {
+        Endpoint::LiveBoard => println!(
+            "  nudge         POST http://{signal_addr}/nudge   (append a card natively; answers the new revision)"
+        ),
+        Endpoint::DistilleryChronicle => println!(
+            "  nudge         POST http://{signal_addr}/nudge   (unsupported by this read-only Chronicle fixture)"
+        ),
+    }
     println!("  carrier bind  {}:{}", args.bind, args.udp_port);
     if args.advertise.is_empty() {
         println!(
@@ -234,8 +326,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .join(", ")
         );
     }
-    println!("  intents       admitted={ADMITTED_INTENT}");
-    println!("                refused ={REFUSED_INTENT}");
+    match args.endpoint {
+        Endpoint::LiveBoard => {
+            println!("  intents       admitted={ADMITTED_INTENT}");
+            println!("                refused ={REFUSED_INTENT}");
+        },
+        Endpoint::DistilleryChronicle => {
+            println!("  intents       none (read-only endpoint)");
+        },
+    }
     println!();
     println!("INVITE FRAGMENT (paste into the browser page):");
     println!("{fragment}");
@@ -255,13 +354,22 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let fragment = fragment.clone();
         let bind = SocketAddr::new(args.bind, args.udp_port);
         let advertise = args.advertise.clone();
-        let board = board.clone();
+        let fixture_endpoint = fixture_endpoint.clone();
         session += 1;
         let id = session;
         tokio::spawn(async move {
             if let Err(error) = serve_request(
-                stream, id, hosted, host, ledger, provider, policy, fragment, bind, advertise,
-                board,
+                stream,
+                id,
+                hosted,
+                host,
+                ledger,
+                provider,
+                policy,
+                fragment,
+                bind,
+                advertise,
+                fixture_endpoint,
             )
             .await
             {
@@ -285,7 +393,7 @@ async fn serve_request(
     fragment: String,
     bind: SocketAddr,
     advertise: Vec<IpAddr>,
-    board: SharedLiveEndpoint,
+    fixture_endpoint: FixtureEndpoint,
 ) -> Result<(), String> {
     let (read, mut write) = stream.split();
     let mut reader = BufReader::new(read);
@@ -324,14 +432,13 @@ async fn serve_request(
         ("OPTIONS", _) => respond(&mut write, "204 No Content", "").await,
         ("GET", "/health") => respond(&mut write, "200 OK", "ok").await,
         ("GET", "/invite") => respond(&mut write, "200 OK", &fragment).await,
-        ("POST", "/nudge") => {
-            let revision = board.with(|endpoint| endpoint.append());
-            println!(
-                "[nudge] the host appended a card natively; board at revision {}",
-                revision.0
-            );
-            respond(&mut write, "200 OK", &revision.0.to_string()).await
-        }
+        ("POST", "/nudge") => match fixture_endpoint.nudge() {
+            Ok(revision) => {
+                println!("[nudge] the host appended a card natively; board at revision {revision}");
+                respond(&mut write, "200 OK", &revision.to_string()).await
+            },
+            Err(message) => respond(&mut write, "405 Method Not Allowed", message).await,
+        },
         ("POST", "/offer") => {
             let mut body = vec![0u8; content_length];
             if content_length > 0 {
@@ -361,7 +468,7 @@ async fn serve_request(
                 Err(error) => {
                     println!("[session {id}] refused the offer: {error}");
                     return respond(&mut write, "400 Bad Request", &error.to_string()).await;
-                }
+                },
             };
             respond(&mut write, "200 OK", &answer).await?;
 
@@ -375,7 +482,7 @@ async fn serve_request(
                 }
             });
             Ok(())
-        }
+        },
         _ => {
             respond(
                 &mut write,
@@ -383,8 +490,36 @@ async fn serve_request(
                 "try POST /offer, GET /invite, GET /health",
             )
             .await
-        }
+        },
     }
+}
+
+/// Load the checked-in W1 job board as a host-local, read-only observation.
+/// The board itself is not retained or mutated by Graphshell: Chronicle
+/// materializes it now and binds each admitted session in the route factory.
+#[cfg(feature = "distillery-chronicle-fixture")]
+fn distillery_chronicle_observer() -> Result<ChronicleObserver, Box<dyn std::error::Error>> {
+    #[derive(serde::Deserialize)]
+    struct Fixture {
+        jobs: Vec<mesh::Job>,
+    }
+
+    let fixture: Fixture = serde_json::from_str(include_str!(
+        "../../../distillery/tests/fixtures/chronicle/distillery_board.json"
+    ))?;
+    let board = mesh::JobBoard::fold_from_snapshot(
+        [0; 32],
+        &mesh::JobBoardSnapshot { jobs: fixture.jobs },
+        std::iter::empty(),
+    );
+    Ok(ChronicleObserver::new(
+        &board,
+        &[
+            ResidentReceipt::MaintenanceIdle,
+            ResidentReceipt::StopRequested,
+        ],
+        ChronicleRevision::new(41, 7, 11),
+    ))
 }
 
 /// Accept the channel, run the door, and hand the admitted session to the

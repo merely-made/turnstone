@@ -1,0 +1,13 @@
+# W1 headed path: the browser joins the opt-in Distillery Chronicle fixture
+# over the existing WebRTC door, then realizes its three read-only job cards.
+wait
+assert snap remote-link == webrtc
+assert snap remote-state == open
+assert snap remote-revision == 11
+assert snap remote-cards == 3
+act session-remote
+settle 1
+assert snap session == remote
+capture distillery_chronicle_w1_mounted
+wait
+log distillery Chronicle W1 headed receipt complete

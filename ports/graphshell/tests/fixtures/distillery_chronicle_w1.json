@@ -1,0 +1,11 @@
+{
+  "endpoint_label": "Distillery Chronicle",
+  "projection_label": "Job Chronicle",
+  "session": "admitted:chronicle-mount",
+  "snapshot_revision": 11,
+  "rediscovered_same_session": true,
+  "resumed_by_diff": true,
+  "resumed_revision": 12,
+  "frozen_instances": 3,
+  "frozen_table_rows": 3
+}
