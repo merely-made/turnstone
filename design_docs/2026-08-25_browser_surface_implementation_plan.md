@@ -193,7 +193,10 @@ Done-conditions:
 Implement the shallows as a persistence-admission boundary. Appearance and
 space placement may reveal that boundary but do not define it. Nodes and
 representations remain ephemeral until the exact member is promoted through
-Keep with a provenance decision.
+Keep with a provenance decision. The [page lifecycle plan](2026-09-06_page_lifecycle_plan.md) rules that capture on
+an unkept node is that promotion (L2), that Keep retains the node only
+(L3), and that trail memory's address-level history sits outside this
+boundary because it holds addresses, not content (L1).
 
 Done-conditions:
 
@@ -487,3 +490,7 @@ Done-conditions:
   `RESULT ok` and still renders https://example.com through `engine=genet.livery`
   (559 bytes, text/html), the receipt for the rewired fetch fallback. Capture in
   `Code/testing/turnstone/p4_content2`.
+- **2026-09-06:** the [page lifecycle plan](2026-09-06_page_lifecycle_plan.md) joined K0, S0, the capture plan and
+  the recycle bin into one walk and ruled L1-L7. S0's persistence boundary
+  now has a written history rule and a capture-admits-Keep rule to build
+  against. No code written here.

@@ -142,3 +142,8 @@ Design locked 2026-07-20; slices 1+2 LANDED the same day.
 
 Slice 3 (athanor's pass: permanent forget + engram bake, "empty the bin" +
 steady-heat schedule, knobs in Apparatus / passes in Steward) is next.
+
+2026-09-06: the [page lifecycle plan](2026-09-06_page_lifecycle_plan.md) extends the record to carry a node's capture
+envelopes and restores them on recovery (L4, phase L-P2), and gives
+athanor's retirement pass blob reaping over a reference set of living
+envelopes, surviving tombstones and download facets (L-P3).

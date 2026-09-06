@@ -8,7 +8,9 @@ begun. Serves the capture half of E0 in the
 which keeps E0's done-conditions. E0.2's first half, per-node page zoom, was
 accepted 2026-08-27; this plan is its successor slice and closes E0's capture
 work when it lands. E0 itself also retains the independent CEF authentication
-acceptance tail.
+acceptance tail. The [page lifecycle plan](2026-09-06_page_lifecycle_plan.md) rules how a capture relates to Keep,
+deletion, drift and sharing (L2, L4, L5, L7); P2 custody and P3's node
+attachment consume those rulings.
 
 ## What a capture is
 
@@ -203,7 +205,8 @@ Done-conditions:
 - The record survives restart and names its artifact by content hash, which
   still resolves in the representation store.
 - An engram export redacts or carries the record deliberately, decided the way
-  the `web.*` runtime facets were (`pandect::graph_engram`), not by omission.
+  the `web.*` runtime facets were (`pandect::graph_codicil::RedactionPolicy`),
+  not by omission.
 - Observation and the Inspector can show a node's captures without opening the
   bytes.
 
@@ -347,3 +350,8 @@ Recorded here so they are not lost, and because each is independently closable:
   Mere and Genet; the prior workspace-version mismatch is retired. This does not
   change the clean-source resolver/compile boundary above: no Turnstone compile
   is claimed, and P2 remains blocked on that P1 done-condition.
+- **2026-09-06:** the [page lifecycle plan](2026-09-06_page_lifecycle_plan.md) ruled the joins this plan left open:
+  capture on an unkept node is the Keep promotion, envelopes ride the
+  recycle bin tombstone and are restored on recovery, drift is asserted
+  only by a fresh capture whose hash differs, and envelopes are attachments
+  that leave the session only when chosen. No code written here.

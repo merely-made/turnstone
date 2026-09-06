@@ -43,6 +43,10 @@ set.
 
 ## Current implementation plans and product direction
 
+- [Page lifecycle](2026-09-06_page_lifecycle_plan.md): one page across
+  visiting, keeping, capturing, annotating, collecting, sharing, revision
+  and deletion; rulings L1-L7 join the surfaces, capture and recycle bin
+  plans and add phases for the missing joins. Plan, no code yet.
 - [Trail recall evaluation](2026-09-02_trail_recall_evaluation_plan.md): private captured-corpus protocol for selecting or rejecting configurable phrase recall against BM25 with held-out ranking and resource budgets.
 - [Page capture and provenance](2026-08-28_page_capture_plan.md): ruled path
   for durable node-attached page captures; P1 owner contracts and exact pins
