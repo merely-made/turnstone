@@ -129,7 +129,7 @@ impl AppBrokerClient {
                     )));
                 }
                 session
-            }
+            },
             other => return Err(unexpected("connected", &other)),
         };
         Ok(Self {
@@ -320,7 +320,7 @@ impl Carrier for AppRouteCarrier {
             Err(_) => {
                 self.client = None;
                 None
-            }
+            },
         }
     }
 

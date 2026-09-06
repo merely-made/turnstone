@@ -675,7 +675,7 @@ mod tests {
         match result {
             IntentResult::Rejected { reason } => {
                 assert!(reason.contains("revoked"), "reason was: {reason}");
-            }
+            },
             other => panic!("a lapsed session must not receive Stale: {other:?}"),
         }
     }

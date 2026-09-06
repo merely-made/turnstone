@@ -559,13 +559,13 @@ impl OperationPolicy<PersonalGraphExt> for PersonalGraphPolicy {
                     Topic::from(self.graph),
                     PERSONAL_GRAPH_LOG,
                 )));
-            }
+            },
             Err(error) => {
                 return Err(Reject::new(
                     "invalid-personal-graph-record",
                     error.to_string(),
                 ));
-            }
+            },
         };
         validate_causal_metadata(operation, &record.parents, PERSONAL_GRAPH_LIMITS)
             .map_err(|error| Reject::new("invalid-personal-graph-causality", error.to_string()))?;
@@ -640,7 +640,7 @@ fn validate_event(event: &PersonalGraphEvent) -> Result<(), Reject> {
             if tag.trim().is_empty() =>
         {
             Err(Reject::new("empty-personal-graph-tag", "tag is empty"))
-        }
+        },
         PersonalGraphEvent::SetFacet { facet, .. }
         | PersonalGraphEvent::RemoveFacet { facet, .. } => validate_facet_name(facet),
         PersonalGraphEvent::AppendAccess { record }
@@ -653,7 +653,7 @@ fn validate_event(event: &PersonalGraphEvent) -> Result<(), Reject> {
                 "access-record-not-portable",
                 "access record was not marked for trusted-peer or public portability",
             ))
-        }
+        },
         PersonalGraphEvent::SetHandlerPreference { key, handler }
             if key.trim().is_empty() || handler.trim().is_empty() =>
         {
@@ -661,7 +661,7 @@ fn validate_event(event: &PersonalGraphEvent) -> Result<(), Reject> {
                 "empty-handler-preference",
                 "handler preference key and value must be non-empty",
             ))
-        }
+        },
         PersonalGraphEvent::ObserveBlobAvailability { observation }
             if observation.device.trim().is_empty() =>
         {
@@ -669,7 +669,7 @@ fn validate_event(event: &PersonalGraphEvent) -> Result<(), Reject> {
                 "empty-blob-availability-device",
                 "blob availability observation must name its source device",
             ))
-        }
+        },
         // Decoding a bundle verifies its identity signature back to a Personae
         // root, so a forged pre-key is refused at intake rather than at the
         // moment somebody tries to key it.
@@ -680,7 +680,7 @@ fn validate_event(event: &PersonalGraphEvent) -> Result<(), Reject> {
             decode_cbor::<GroupSessionDispatch, _>(dispatch.as_slice())
                 .map(|_| ())
                 .map_err(|error| Reject::new("invalid-group-dispatch", error.to_string()))
-        }
+        },
         _ => Ok(()),
     }
 }
@@ -777,7 +777,7 @@ pub fn from_operation(
     match operation.header.extensions.encryption {
         PersonalEncryption::Plaintext => {
             decode_cbor(bytes.as_slice()).map_err(|_| PersonalGraphWireError::Malformed)
-        }
+        },
         PersonalEncryption::GroupV1 => {
             let keyring = keyring.ok_or(PersonalGraphWireError::NoKey)?;
             let envelope: GroupCiphertext =
@@ -786,7 +786,7 @@ pub fn from_operation(
                 .open(&envelope)
                 .map_err(|error| PersonalGraphWireError::Unsealable(error.to_string()))?;
             decode_cbor(plaintext.as_slice()).map_err(|_| PersonalGraphWireError::Malformed)
-        }
+        },
     }
 }
 
@@ -821,7 +821,7 @@ fn to_operation(
             let sealed = encode_cbor(&envelope)
                 .map_err(|error| PersonalGraphError::Seal(error.to_string()))?;
             (sealed, PersonalEncryption::GroupV1)
-        }
+        },
         None => (record_bytes, PersonalEncryption::Plaintext),
     };
     let body = Body::from_bytes(&body_bytes);
@@ -1165,10 +1165,10 @@ pub async fn key_agreement<B: Backend + Clone + Send + Sync + 'static>(
                     let step = match event {
                         PersonalGraphEvent::PublishPrekey { bundle } => {
                             KeyAgreementEvent::Prekey(bundle.clone())
-                        }
+                        },
                         PersonalGraphEvent::GroupDispatch { dispatch } => {
                             KeyAgreementEvent::Dispatch(dispatch.clone())
-                        }
+                        },
                         _ => continue,
                     };
                     steps.push((
@@ -1241,7 +1241,7 @@ pub async fn materialize<B: Backend + Clone + Send + Sync + 'static>(
                         step: KeyAgreementEvent::Prekey(bundle.clone()),
                     });
                     continue;
-                }
+                },
                 PersonalGraphEvent::GroupDispatch { dispatch } => {
                     key_agreement.push(KeyAgreementStep {
                         operation: *stored.operation.hash.as_bytes(),
@@ -1249,8 +1249,8 @@ pub async fn materialize<B: Backend + Clone + Send + Sync + 'static>(
                         step: KeyAgreementEvent::Dispatch(dispatch.clone()),
                     });
                     continue;
-                }
-                _ => {}
+                },
+                _ => {},
             }
             if selection.projects(event) {
                 apply_event(
@@ -1356,10 +1356,10 @@ fn apply_event(
                     );
                 }
             }
-        }
+        },
         PersonalGraphEvent::RemoveNode { id } => {
             apply_graph_delta(graph, GraphDelta::ReplayRemoveNodeById { node_id: *id });
-        }
+        },
         PersonalGraphEvent::SetTitle { node, title } => {
             apply_graph_delta(
                 graph,
@@ -1368,7 +1368,7 @@ fn apply_event(
                     title: title.clone(),
                 },
             );
-        }
+        },
         PersonalGraphEvent::AddTag { node, tag } => {
             apply_graph_delta(
                 graph,
@@ -1377,7 +1377,7 @@ fn apply_event(
                     tag: tag.clone(),
                 },
             );
-        }
+        },
         PersonalGraphEvent::RemoveTag { node, tag } => {
             apply_graph_delta(
                 graph,
@@ -1386,7 +1386,7 @@ fn apply_event(
                     tag: tag.clone(),
                 },
             );
-        }
+        },
         PersonalGraphEvent::AssertRelation {
             from,
             to,
@@ -1400,7 +1400,7 @@ fn apply_event(
                     assertion: assertion.clone(),
                 },
             );
-        }
+        },
         PersonalGraphEvent::RetractRelation { from, to, selector } => {
             apply_graph_delta(
                 graph,
@@ -1410,7 +1410,7 @@ fn apply_event(
                     selector: *selector,
                 },
             );
-        }
+        },
         PersonalGraphEvent::SetFacet { node, facet, value } => {
             apply_graph_delta(
                 graph,
@@ -1420,7 +1420,7 @@ fn apply_event(
                     value: value.clone(),
                 },
             );
-        }
+        },
         PersonalGraphEvent::RemoveFacet { node, facet } => {
             apply_graph_delta(
                 graph,
@@ -1429,12 +1429,12 @@ fn apply_event(
                     facet: facet.clone(),
                 },
             );
-        }
+        },
         PersonalGraphEvent::AppendAccess { record } => {
             access
                 .entry(record.record_id)
                 .or_insert_with(|| record.clone());
-        }
+        },
         PersonalGraphEvent::SaveScene { node, scene } => {
             scenes.insert(*node, scene.clone());
             apply_graph_delta(
@@ -1445,22 +1445,22 @@ fn apply_event(
                     value: serde_json::to_value(scene).expect("saved scene always serializes"),
                 },
             );
-        }
+        },
         PersonalGraphEvent::SetHandlerPreference { key, handler } => {
             handlers.insert(key.clone(), handler.clone());
-        }
+        },
         PersonalGraphEvent::ObserveBlobAvailability { observation } => {
             blob_availability
                 .entry(observation.record_id)
                 .or_insert_with(|| observation.clone());
-        }
+        },
         // Key agreement is not graph content and folds into nothing. It is
         // collected separately, because acting on it changes this device's
         // keys rather than the graph everyone shares.
         PersonalGraphEvent::PublishPrekey { .. }
         | PersonalGraphEvent::GroupDispatch { .. }
         | PersonalGraphEvent::AdmitReader { .. }
-        | PersonalGraphEvent::RetireReader { .. } => {}
+        | PersonalGraphEvent::RetireReader { .. } => {},
     }
 }
 
@@ -1492,7 +1492,7 @@ fn fold_readers(records: &[StoredRecord], order: &[usize]) -> BTreeMap<[u8; 32],
                     if readers.contains_key(&author) {
                         readers.insert(*root, label.clone());
                     }
-                }
+                },
                 PersonalGraphEvent::RetireReader { root } => {
                     // A reader may retire itself; that is leaving, not a
                     // coup. What it may not do is retire the set out of
@@ -1500,8 +1500,8 @@ fn fold_readers(records: &[StoredRecord], order: &[usize]) -> BTreeMap<[u8; 32],
                     if readers.contains_key(&author) && readers.len() > 1 {
                         readers.remove(root);
                     }
-                }
-                _ => {}
+                },
+                _ => {},
             }
         }
     }
@@ -1576,11 +1576,11 @@ fn event_target(event: &PersonalGraphEvent) -> String {
     match event {
         PersonalGraphEvent::AddNode { id, .. } | PersonalGraphEvent::RemoveNode { id } => {
             format!("node/{id}")
-        }
+        },
         PersonalGraphEvent::SetTitle { node, .. } => format!("node/{node}/title"),
         PersonalGraphEvent::AddTag { node, tag } | PersonalGraphEvent::RemoveTag { node, tag } => {
             format!("node/{node}/tag/{tag}")
-        }
+        },
         PersonalGraphEvent::AssertRelation {
             from,
             to,
@@ -1588,34 +1588,34 @@ fn event_target(event: &PersonalGraphEvent) -> String {
         } => format!("relation/{from}/{to}/{}", relation_key(assertion)),
         PersonalGraphEvent::RetractRelation { from, to, selector } => {
             format!("relation/{from}/{to}/{selector:?}")
-        }
+        },
         PersonalGraphEvent::SetFacet { node, facet, .. }
         | PersonalGraphEvent::RemoveFacet { node, facet } => {
             format!("node/{node}/facet/{facet}")
-        }
+        },
         PersonalGraphEvent::AppendAccess { record } => {
             format!("access/{}", record.record_id)
-        }
+        },
         PersonalGraphEvent::SaveScene { node, .. } => format!("scene/{node}"),
         PersonalGraphEvent::SetHandlerPreference { key, .. } => format!("handler/{key}"),
         PersonalGraphEvent::ObserveBlobAvailability { observation } => {
             format!("blob-availability/{}", observation.record_id)
-        }
+        },
         // Concurrent key steps are not a conflict to report: the group scheme
         // orders them itself, and two devices publishing at once is ordinary.
         PersonalGraphEvent::PublishPrekey { bundle } => {
             format!("group-prekey/{}", Hash::digest(bundle))
-        }
+        },
         PersonalGraphEvent::GroupDispatch { dispatch } => {
             format!("group-dispatch/{}", Hash::digest(dispatch))
-        }
+        },
         // Concurrent edits to one root's readership are a genuine conflict
         // worth surfacing: two devices disagreeing about who may read is not
         // something to resolve quietly.
         PersonalGraphEvent::AdmitReader { root, .. }
         | PersonalGraphEvent::RetireReader { root } => {
             format!("reader/{}", hex32(root))
-        }
+        },
     }
 }
 

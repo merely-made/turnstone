@@ -385,12 +385,12 @@ impl IntentSink for FixtureEndpoint {
                         // another action at this position.
                         self.snapshot.scene.revision.0 += 1;
                         Ok(IntentResult::Accepted)
-                    }
+                    },
                     _ => Ok(IntentResult::Rejected {
                         reason: "inspect tile requires one advertised inspection scope".into(),
                     }),
                 }
-            }
+            },
             _ => Ok(IntentResult::Rejected {
                 reason: "intent was not advertised by this projection".into(),
             }),
@@ -479,11 +479,11 @@ fn resolve_all(
                 PresentationResolution::Ready(presentation) => {
                     resolved.push(presentation);
                     break;
-                }
+                },
                 PresentationResolution::NeedsResource(request) => {
                     let response = endpoint.resource(request)?;
                     client.apply_resource(response)?;
-                }
+                },
             }
         }
     }

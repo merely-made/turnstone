@@ -435,7 +435,7 @@ where
                     "native messaging length prefix was truncated",
                 )
                 .into());
-            }
+            },
             count => read += count,
         }
     }
@@ -496,7 +496,7 @@ where
                     "native messaging length prefix was truncated",
                 )
                 .into());
-            }
+            },
             count => read += count,
         }
     }
@@ -651,13 +651,13 @@ impl BrowserSessionClient {
                 CarrierOutput::Notice(notice) => self.notices.push_back(notice),
                 CarrierOutput::Response(response) if response.id == request.id => {
                     return Ok(response);
-                }
+                },
                 CarrierOutput::Response(response) => {
                     return Err(BrowserCarrierError::UnexpectedApplicationOutput(format!(
                         "response {} arrived while waiting for {}",
                         response.id, request.id
                     )));
-                }
+                },
             }
         }
     }
@@ -677,7 +677,7 @@ impl BrowserSessionClient {
                     "response {} arrived while waiting for a notice",
                     response.id
                 )))
-            }
+            },
         }
     }
 

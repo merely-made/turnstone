@@ -210,7 +210,7 @@ where
                 .await?;
                 answered += 1;
                 continue;
-            }
+            },
         };
         let id = request.id;
 
@@ -239,7 +239,7 @@ where
                 write_line(&mut writer, &response).await?;
                 answered += 1;
                 continue;
-            }
+            },
             Err(session_plane) => session_plane,
         };
 
@@ -262,15 +262,15 @@ where
                     &ok(id, CarrierResponseBody::Opened(Box::new(opened))),
                 )
                 .await?;
-            }
+            },
             SessionPlaneVerb::Close => {
                 write_line(&mut writer, &ok(id, CarrierResponseBody::Closed)).await?;
                 break SessionEnd::Closed;
-            }
+            },
             SessionPlaneVerb::Suspend => {
                 write_line(&mut writer, &ok(id, CarrierResponseBody::Suspended)).await?;
                 break SessionEnd::Suspended;
-            }
+            },
         }
     };
 
@@ -862,7 +862,7 @@ mod tests {
                     Some(EXPIRY_MS),
                     "the grant's deadline is offered as a renewal hint"
                 );
-            }
+            },
             other => panic!("expected Opened, got {other:?}"),
         }
         assert_eq!(summary.end, SessionEnd::Closed);

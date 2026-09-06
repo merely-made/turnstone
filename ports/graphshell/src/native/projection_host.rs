@@ -479,7 +479,7 @@ mod tests {
                 opened
                     .send(opened_session.descriptor.label)
                     .expect("report");
-            }
+            },
             other => panic!("expected an opened session, got {other:?}"),
         }
         release.recv().expect("release");

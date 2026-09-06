@@ -230,8 +230,8 @@ pub async fn host_join<P: IdentityProvider, F: JoinFrames>(
                 nonce,
             )?;
             send_json(frames, &ToPeer::Grant { delegation }).await?;
-        }
-        ToHost::Resume {} => {}
+        },
+        ToHost::Resume {} => {},
         other => return Err(unexpected_message("Redeem or Resume", &other)),
     }
 
@@ -309,7 +309,7 @@ impl ServedJoin {
     pub async fn finish(self) -> Result<(), JoinError> {
         drop(self.session);
         match self.pump.await {
-            Ok(end) if end.is_clean() => {}
+            Ok(end) if end.is_clean() => {},
             Ok(end) => return Err(JoinError::Channel(format!("the pump ended badly: {end}"))),
             Err(join) => return Err(JoinError::Channel(format!("the pump panicked: {join}"))),
         }
@@ -367,7 +367,7 @@ pub async fn serve_webrtc_join<P: IdentityProvider>(
             // stop carrying.
             let _ = carrier.close().await;
             return Err(error);
-        }
+        },
     };
 
     let (reader, writer, control) = carrier.into_parts();
@@ -843,7 +843,7 @@ mod tests {
                                 .map_err(|error| error.to_string())?
                                 .ok_or("the session ended mid-operation")?;
                             advance = driver.on_line(&line)?;
-                        }
+                        },
                         Advance::Send(line) => {
                             write
                                 .write_all(line.as_bytes())
@@ -859,7 +859,7 @@ mod tests {
                                 .map_err(|error| error.to_string())?
                                 .ok_or("the session ended mid-operation")?;
                             advance = driver.on_line(&line)?;
-                        }
+                        },
                     }
                 }
             }

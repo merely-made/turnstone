@@ -280,7 +280,7 @@ impl GraphKeyGroup {
                         Ok(()) => report.registered.push(bundle.recipient),
                         Err(_) => report.unreadable += 1,
                     }
-                }
+                },
                 KeyAgreementEvent::Dispatch(bytes) => {
                     let Ok(dispatch) = decode_dispatch(bytes) else {
                         report.unreadable += 1;
@@ -294,7 +294,7 @@ impl GraphKeyGroup {
                         Ok(processed) => report.installed += processed.installed_epochs.len(),
                         Err(_) => report.skipped += 1,
                     }
-                }
+                },
             }
         }
         self.persist()?;
@@ -653,10 +653,10 @@ mod tests {
         let inner = match event {
             PersonalGraphEvent::PublishPrekey { bundle } => {
                 KeyAgreementEvent::Prekey(bundle.clone())
-            }
+            },
             PersonalGraphEvent::GroupDispatch { dispatch } => {
                 KeyAgreementEvent::Dispatch(dispatch.clone())
-            }
+            },
             _ => panic!("only key agreement travels this way"),
         };
         KeyAgreementStep {

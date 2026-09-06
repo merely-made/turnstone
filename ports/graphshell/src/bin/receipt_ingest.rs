@@ -62,13 +62,13 @@ fn parse_args() -> Args {
                 inbox = args
                     .next()
                     .map(|root| receipts::inbox_dir(std::path::Path::new(&root)));
-            }
+            },
             "--dry-run" => dry_run = true,
             "-h" | "--help" => usage(),
             other => {
                 eprintln!("unexpected argument `{other}`");
                 usage();
-            }
+            },
         }
     }
     let Some(dir) = dir else { usage() };
@@ -144,7 +144,7 @@ async fn run(args: &Args) -> Result<(), ReceiptError> {
                 receipts::write_to_inbox(inbox, ingested.node, &args.dir, &ingested.events)?;
             println!("inbox   {}", deposited.display());
             println!("        the resident host authors it within ~10s");
-        }
+        },
         None => println!("inbox   (none given; pass --inbox or --data-root to file it)"),
     }
     Ok(())

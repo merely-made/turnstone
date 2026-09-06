@@ -494,7 +494,7 @@ where
         match &self.resume {
             ResumeMode::Unsupported => {
                 Err("endpoint does not support projection resume".to_string())
-            }
+            },
             ResumeMode::Delegate(resume) => resume(&mut self.endpoint, request),
         }
     }

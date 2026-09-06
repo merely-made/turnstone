@@ -128,7 +128,7 @@ where
     match action {
         NativeIdentityAction::ImportSshPrivate { unlock_policy } => {
             import_ssh_private(host, ui, ImportSshKeyNativeIntentV1 { unlock_policy })
-        }
+        },
     }
 }
 
@@ -152,7 +152,7 @@ where
             return NativeIdentityResult::Rejected {
                 reason: NativeIdentityFailure::SelectedFileUnreadable,
             };
-        }
+        },
     };
     if metadata.len() > MAX_SSH_PRIVATE_KEY_BYTES {
         return NativeIdentityResult::Rejected {
@@ -165,7 +165,7 @@ where
             return NativeIdentityResult::Rejected {
                 reason: NativeIdentityFailure::SelectedFileUnreadable,
             };
-        }
+        },
     };
     if bytes.len() as u64 > MAX_SSH_PRIVATE_KEY_BYTES {
         return NativeIdentityResult::Rejected {
@@ -178,7 +178,7 @@ where
             return NativeIdentityResult::Rejected {
                 reason: NativeIdentityFailure::InvalidPrivateKey,
             };
-        }
+        },
     };
     if private.is_encrypted() {
         let passphrase = match ui.prompt_ssh_private_key_passphrase() {
@@ -192,7 +192,7 @@ where
                 return NativeIdentityResult::Rejected {
                     reason: NativeIdentityFailure::IncorrectPassphrase,
                 };
-            }
+            },
         };
     }
 

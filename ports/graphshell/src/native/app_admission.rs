@@ -150,10 +150,10 @@ impl std::fmt::Display for AppAdmissionError {
             ),
             Self::NotAllowed(app) => {
                 write!(f, "{app} is not an application this device admits")
-            }
+            },
             Self::RouteNotGranted { app, route } => {
                 write!(f, "{app} is not granted the resident route {route}")
-            }
+            },
             Self::Unnamed => f.write_str("the first-party hello named no application"),
             Self::InvalidRoute(route) => write!(
                 f,
@@ -161,7 +161,7 @@ impl std::fmt::Display for AppAdmissionError {
             ),
             Self::RouteOnLegacyHello => {
                 f.write_str("the version-one first-party hello cannot select a resident route")
-            }
+            },
         }
     }
 }
@@ -214,7 +214,7 @@ impl AppHello {
                     return Err(AppAdmissionError::RouteOnLegacyHello);
                 }
                 AppRouteId::identity()
-            }
+            },
             APP_ROUTE_HELLO_SCHEMA => self
                 .route
                 .ok_or_else(|| AppAdmissionError::InvalidRoute(String::new()))?,

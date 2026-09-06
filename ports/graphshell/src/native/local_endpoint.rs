@@ -140,7 +140,7 @@ async fn prepare_unix_endpoint(endpoint: &std::path::Path) -> Result<(), std::io
                 Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(()),
                 Err(error) => Err(error),
             }
-        }
+        },
         Err(error) => Err(error),
     }
 }

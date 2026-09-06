@@ -396,7 +396,7 @@ fn render_item(html: &mut String, presentation: &ResolvedPresentation) {
             html.push_str("</dl>");
             render_actions(html, &presentation.semantics.actions);
             html.push_str("</article>");
-        }
+        },
         ResolvedContent::NativeGlyph(glyph) => {
             write!(
                 html,
@@ -409,7 +409,7 @@ fn render_item(html: &mut String, presentation: &ResolvedPresentation) {
             .unwrap();
             render_actions(html, &presentation.semantics.actions);
             html.push_str("</div></div>");
-        }
+        },
         ResolvedContent::Image { mime_type, bytes } => {
             let encoded = base64::engine::general_purpose::STANDARD.encode(bytes);
             write!(
@@ -425,7 +425,7 @@ fn render_item(html: &mut String, presentation: &ResolvedPresentation) {
             .unwrap();
             render_actions(html, &presentation.semantics.actions);
             html.push_str("</div></div>");
-        }
+        },
         ResolvedContent::EditableText(text) => {
             // Rendered read-only on purpose. This view is the G1 semantic
             // receipt, not an editor: it has no way to accept a change and no
@@ -446,7 +446,7 @@ fn render_item(html: &mut String, presentation: &ResolvedPresentation) {
             .unwrap();
             render_actions(html, &presentation.semantics.actions);
             html.push_str("</article>");
-        }
+        },
         ResolvedContent::LabeledPlaceholder => {
             write!(
                 html,
@@ -458,7 +458,7 @@ fn render_item(html: &mut String, presentation: &ResolvedPresentation) {
             .unwrap();
             render_actions(html, &presentation.semantics.actions);
             html.push_str("</div></div>");
-        }
+        },
     }
 }
 

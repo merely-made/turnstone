@@ -114,11 +114,11 @@ impl<'a, B: Backend> CaptureBatch<'a, B> {
             match &staged.ops[*index] {
                 WriteOp::Put { .. } if accepts(key) => {
                     keys.insert(key.clone());
-                }
+                },
                 WriteOp::Delete { .. } => {
                     keys.remove(key);
-                }
-                _ => {}
+                },
+                _ => {},
             }
         }
         keys.into_iter().collect()
@@ -371,7 +371,7 @@ impl std::fmt::Display for CaptureError {
                     formatter,
                     "browser history address was rejected: {reason:?}"
                 )
-            }
+            },
             Self::InvalidFacet(error) => write!(formatter, "browser history facet: {error}"),
         }
     }
@@ -473,7 +473,7 @@ impl BrowserHistoryCapture {
                         Err(reason) => {
                             outcomes.push(CaptureOutcome::Dropped(reason));
                             continue;
-                        }
+                        },
                     };
                 let projected = host.project_browser_visit(&normalized, persona, device)?;
                 save_access_record(&mut batch, &projected.record)
@@ -521,7 +521,7 @@ impl BrowserHistoryCapture {
             Err(error) => {
                 self.memory = memory_before;
                 return Err(error);
-            }
+            },
         };
         if let Err(error) = batch.commit().await {
             self.memory = memory_before;
@@ -589,7 +589,7 @@ impl BrowserHistoryCapture {
             Err(error) => {
                 self.memory = memory_before;
                 return Err(error);
-            }
+            },
         };
         if let Err(error) = batch.commit().await {
             self.memory = memory_before;

@@ -347,7 +347,7 @@ impl ProjectionDraft {
         );
         if self.reading.kind == "values" {
             match self.reading.value.as_deref() {
-                Some(value) if !value.trim().is_empty() => {}
+                Some(value) if !value.trim().is_empty() => {},
                 _ => issues.push(ValidationIssue::error(
                     "reading.value",
                     "a value field is required for a values reading",
@@ -535,43 +535,43 @@ impl ProjectionEditor {
                 let _ = self.workspace.apply(&TileEvent::Activated(panel.tile_id()));
                 self.panel = panel;
                 ReduceResult::PanelChanged
-            }
+            },
             EditorAction::SetId(value) => {
                 self.draft.id = value;
                 ReduceResult::Changed
-            }
+            },
             EditorAction::SetLabel(value) => {
                 self.draft.label = value;
                 ReduceResult::Changed
-            }
+            },
             EditorAction::SetSource(value) => {
                 self.draft.source = value;
                 ReduceResult::Changed
-            }
+            },
             EditorAction::SetReading(value) => {
                 self.draft.reading = value;
                 ReduceResult::Changed
-            }
+            },
             EditorAction::SetEncoding(value) => {
                 self.draft.encoding = value;
                 ReduceResult::Changed
-            }
+            },
             EditorAction::SetArrangement(value) => {
                 self.draft.arrangement = value;
                 ReduceResult::Changed
-            }
+            },
             EditorAction::SetInteraction(value) => {
                 self.draft.interaction = value;
                 ReduceResult::Changed
-            }
+            },
             EditorAction::SetAppearance(value) => {
                 self.draft.appearance = value;
                 ReduceResult::Changed
-            }
+            },
             EditorAction::SetProvenance(value) => {
                 self.draft.provenance = value;
                 ReduceResult::Changed
-            }
+            },
         }
     }
 

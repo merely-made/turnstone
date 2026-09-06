@@ -207,7 +207,7 @@ pub(crate) async fn connect(
             if ack.epoch == snapshot.scene.epoch && ack.revision == snapshot.scene.revision =>
         {
             println!("  resumed current projection without a fresh snapshot")
-        }
+        },
         other => return Err(format!("unexpected resume answer: {other:?}")),
     }
 
@@ -315,13 +315,13 @@ pub(crate) async fn connect(
     match response.body {
         Err(failure) if expect_revoked && failure.message.contains("revoked") => {
             println!("  revoked transfer intent refused before endpoint dispatch");
-        }
+        },
         Ok(CarrierResponseBody::Intent(IntentResult::Accepted)) if !expect_revoked => {
             println!("  granted transfer intent accepted");
             closed(ok(third
                 .request(close_id + 2, CarrierRequestBody::Close)
                 .await?)?)?;
-        }
+        },
         Err(failure) => return Err(format!("unexpected transfer refusal: {}", failure.message)),
         Ok(body) => return Err(format!("unexpected transfer-intent answer: {body:?}")),
     }
@@ -346,7 +346,7 @@ async fn dial(
                     return Err(format!("connect: {error}"));
                 }
                 sleep(std::time::Duration::from_millis(250)).await;
-            }
+            },
         }
     };
     let subject = me.master_public_key().to_bytes();

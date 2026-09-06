@@ -274,10 +274,10 @@ impl std::fmt::Display for TransferError {
             Self::MissingBlob(hash) => write!(formatter, "transfer blob {hash} is unavailable"),
             Self::BlobHashMismatch(hash) => {
                 write!(formatter, "transfer blob {hash} failed its BLAKE3 check")
-            }
+            },
             Self::ContentMismatch { node_id, reason } => {
                 write!(formatter, "content for {node_id} is invalid: {reason}")
-            }
+            },
             Self::Revoked(grant) => write!(formatter, "transfer grant {grant} is revoked"),
             Self::PartialCopy => formatter.write_str(
                 "copy destination contains only part of this transfer's deterministic id set",
@@ -380,7 +380,7 @@ pub async fn prepare_transfer<HB: Backend, AB: Backend, BB: Backend>(
                 .into_iter()
                 .filter(|record| selected_ids.contains(&record.container_id))
                 .collect()
-        }
+        },
     };
 
     let selection_payload = product.serialize_to_bytes()?;
@@ -503,7 +503,7 @@ where
                 })
                 .collect();
             (product, ids)
-        }
+        },
         TransferOperation::Copy => copied_product(&product, manifest)?,
     };
 

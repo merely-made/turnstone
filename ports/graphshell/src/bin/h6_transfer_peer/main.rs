@@ -71,7 +71,7 @@ async fn main() -> Result<(), String> {
         "serve" => {
             let file = file.ok_or("serve needs --file <path>")?;
             serve(owner, me, seed, peer_key, network, &file, revoked).await
-        }
+        },
         "connect" => {
             let ticket = peer_ticket.ok_or("connect needs --peer <ticket>")?;
             connect(
@@ -85,7 +85,7 @@ async fn main() -> Result<(), String> {
                 expect_revoked,
             )
             .await
-        }
+        },
         other => Err(format!(
             "usage: h6_transfer_peer serve --file <path> [--revoked] | \\\n+             h6_transfer_peer connect --peer <ticket> [--receipt <path>] [--expect-revoked]\n\
              (got {other:?})"

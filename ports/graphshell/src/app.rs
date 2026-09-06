@@ -39,7 +39,7 @@ impl std::fmt::Display for AppError {
             Self::Client(error) => write!(formatter, "Graphshell client: {error}"),
             Self::LocalProjectionMissing => {
                 write!(formatter, "local Mere projection is not mounted")
-            }
+            },
         }
     }
 }

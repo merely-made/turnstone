@@ -107,11 +107,11 @@ async fn main() -> Result<(), String> {
             let peer = transport::PeerID::from_bytes(&peer_key.to_bytes())
                 .map_err(|e| format!("peer id: {e}"))?;
             connect(owner, me, seed, network, PeerSource::Discovered(peer)).await
-        }
+        },
         "connect" => {
             let ticket = peer_ticket.ok_or("connect needs --peer <ticket> or --discover")?;
             connect(owner, me, seed, network, PeerSource::Ticket(ticket)).await
-        }
+        },
         other => Err(format!(
             "usage: g5_peer serve [--revoked] | g5_peer connect --peer <ticket>\n\
              (got {other:?})"

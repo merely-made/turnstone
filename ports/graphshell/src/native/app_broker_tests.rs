@@ -128,7 +128,7 @@ async fn turnstone_opens_a_session_and_reads_a_capture() {
         {
             AppHostMessage::Connected { app, .. } => {
                 assert_eq!(app, AppId::new("turnstone"), "the door names who connected")
-            }
+            },
             other => panic!("expected connected, got {other:?}"),
         }
 
@@ -195,7 +195,7 @@ async fn turnstone_opens_a_session_and_reads_a_capture() {
         match response(&mut app_reader).await {
             CarrierResponseBody::Resource(resource) => {
                 assert_eq!(resource.bytes, capture, "the capture arrives byte for byte")
-            }
+            },
             other => panic!("expected the resource, got {other:?}"),
         }
 
@@ -406,11 +406,11 @@ async fn the_client_reads_cards_over_the_served_endpoint() {
             Ok(open) => {
                 client = Some(open);
                 break;
-            }
+            },
             Err(error) => {
                 last_error = error.to_string();
                 tokio::time::sleep(std::time::Duration::from_millis(20)).await;
-            }
+            },
         }
     }
     let mut client =

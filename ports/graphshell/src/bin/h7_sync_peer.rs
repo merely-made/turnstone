@@ -80,7 +80,7 @@ async fn main() -> Result<(), String> {
             return Err("usage: h7_sync_peer serve|connect --store <path> \
                  [--peer <ticket> | --peer-file <path>]"
                 .into());
-        }
+        },
     };
     let store = store.ok_or("--store is required")?;
     let seed = env_hash("H7_SEED")?;
@@ -124,7 +124,7 @@ async fn main() -> Result<(), String> {
         (None, Some(path)) => Some(wait_for_peer_ticket(&path).await?),
         (None, None) if matches!(role, Role::Qpc) => {
             return Err("connect requires --peer or --peer-file".into());
-        }
+        },
         (None, None) => None,
     };
     if let Some(ticket) = peer_ticket {
@@ -201,7 +201,7 @@ async fn wait_for_peer_ticket(path: &Path) -> Result<String, String> {
             match std::fs::read_to_string(path) {
                 Ok(ticket) if !ticket.trim().is_empty() => {
                     return Ok::<_, String>(ticket.trim().to_string());
-                }
+                },
                 Ok(_) | Err(_) => tokio::time::sleep(Duration::from_millis(100)).await,
             }
         }

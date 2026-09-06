@@ -89,7 +89,7 @@ impl std::fmt::Display for MereHostError {
             Self::WrongSession => write!(formatter, "request names another projection session"),
             Self::MissingResource => {
                 write!(formatter, "resource was not disclosed by this session")
-            }
+            },
         }
     }
 }
@@ -145,7 +145,7 @@ impl<B: Backend> MereHost<B> {
         match &self.persisted_document {
             Some(document) if !self.dirty && document.graph.timestamp_secs == saved_at_secs => {
                 document.clone()
-            }
+            },
             _ => {
                 let mut graph = self.graph.to_snapshot();
                 graph.timestamp_secs = saved_at_secs;
@@ -155,7 +155,7 @@ impl<B: Backend> MereHost<B> {
                     projection_epoch: self.projection_epoch,
                     projection_revision: self.projection_revision,
                 }
-            }
+            },
         }
     }
 
@@ -617,7 +617,7 @@ impl<B: Backend> IntentSink for MereHost<B> {
                 return Ok(IntentResult::Rejected {
                     reason: format!("open payload is invalid: {error}"),
                 });
-            }
+            },
         };
         let node = self
             .graph

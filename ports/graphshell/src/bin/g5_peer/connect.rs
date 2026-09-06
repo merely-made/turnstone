@@ -65,7 +65,7 @@ pub(crate) async fn connect(
                 .map_err(|e| format!("ticket: {e}"))?;
             println!("  peer from ticket: {}", hex8(&peer.to_bytes()));
             peer
-        }
+        },
         PeerSource::Discovered(peer) => {
             // Nothing is added to the address book. If the dial succeeds, mDNS
             // resolved the address by itself.
@@ -79,7 +79,7 @@ pub(crate) async fn connect(
                 hex8(&peer.to_bytes())
             );
             peer
-        }
+        },
     };
 
     // Phase one: open, take a snapshot, and suspend. Suspend rather than
@@ -173,7 +173,7 @@ async fn run_session(
                     return Err(format!("connect: {error}"));
                 }
                 sleep(Duration::from_millis(250)).await;
-            }
+            },
         }
     };
 
@@ -199,7 +199,7 @@ async fn run_session(
         SessionReply::Reject { reason } => {
             println!("  refused at admission: {reason:?}");
             return Ok(Vec::new());
-        }
+        },
         SessionReply::Accept { .. } => println!("  admitted"),
     }
 
@@ -227,11 +227,11 @@ async fn run_session(
                     Err(failure) => println!("  #{id} -> refused: {}", failure.message),
                 }
                 answers.push(decoded);
-            }
+            },
             None => {
                 println!("  #{id} -> the endpoint closed without answering");
                 break;
-            }
+            },
         }
     }
     Ok(answers)

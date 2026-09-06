@@ -258,7 +258,7 @@ async fn a_viewer_dials_is_admitted_and_is_served_over_one_transport() {
     match opened {
         CarrierResponseBody::Opened(opened) => {
             assert_eq!(opened.descriptor.label, "round-trip");
-        }
+        },
         other => panic!("expected an opened session, got {other:?}"),
     }
     assert_eq!(heard, bell(), "the bell crossed the transport");

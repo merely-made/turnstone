@@ -623,7 +623,7 @@ mod tests {
                 assert_eq!(diffs.len(), 3, "one diff per accepted intent");
                 assert_eq!(diffs[0].scene.base, start);
                 assert_eq!(diffs[2].scene.revision, endpoint.current_revision());
-            }
+            },
             other => panic!("expected diffs, got {other:?}"),
         }
     }

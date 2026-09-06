@@ -329,7 +329,7 @@ impl std::fmt::Display for ProductError {
             Self::InvalidCodicil(error) => write!(formatter, "invalid graph codicil: {error}"),
             Self::InvalidContentReference(error) => {
                 write!(formatter, "invalid portable content reference: {error}")
-            }
+            },
         }
     }
 }
@@ -648,7 +648,7 @@ fn transfer_members(graph: &Graph, request: &ExportRequest) -> Result<HashSet<Uu
     match request.scope {
         TransferScope::ObjectOnly => {
             members.insert(request.focused);
-        }
+        },
         TransferScope::DirectRelations => {
             let focused = graph
                 .get_node_key_by_id(request.focused)
@@ -664,7 +664,7 @@ fn transfer_members(graph: &Graph, request: &ExportRequest) -> Result<HashSet<Uu
                     }
                 }
             }
-        }
+        },
         TransferScope::SelectedSubgraph => {
             members.extend(
                 request
@@ -673,7 +673,7 @@ fn transfer_members(graph: &Graph, request: &ExportRequest) -> Result<HashSet<Uu
                     .copied()
                     .filter(|id| graph.get_node_by_id(*id).is_some()),
             );
-        }
+        },
         TransferScope::SavedScene => {
             let scene = request.scene.as_ref().ok_or(ProductError::EmptySelection)?;
             members.extend(
@@ -683,7 +683,7 @@ fn transfer_members(graph: &Graph, request: &ExportRequest) -> Result<HashSet<Uu
                     .copied()
                     .filter(|id| graph.get_node_by_id(*id).is_some()),
             );
-        }
+        },
     }
     Ok(members)
 }

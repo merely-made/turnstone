@@ -57,7 +57,7 @@ pub(crate) fn summarize(body: &chirograph::CarrierResponseBody) -> String {
         ),
         B::Snapshot(snapshot) => {
             format!("snapshot of {} item(s)", snapshot.scene.active_item_count())
-        }
+        },
         B::Resource(_) => "resource".to_string(),
         B::ResourceChunk(chunk) => format!(
             "resource chunk at {} of {} byte(s)",
@@ -81,7 +81,7 @@ pub(crate) fn summarize(body: &chirograph::CarrierResponseBody) -> String {
             ),
             chirograph::ResumeReply::Current(ack) => {
                 format!("already current at revision {}", ack.revision.0)
-            }
+            },
         },
         B::Intent(result) => format!("intent {result:?}"),
         B::Closed => "closed".to_string(),

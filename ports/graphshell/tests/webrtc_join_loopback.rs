@@ -81,7 +81,7 @@ where
                     .map_err(|error| error.to_string())?
                     .ok_or("the session ended mid-operation")?;
                 advance = driver.on_line(&line)?;
-            }
+            },
         }
     }
 }

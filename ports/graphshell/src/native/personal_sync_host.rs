@@ -339,7 +339,7 @@ impl PersonalSyncHost {
                                 "personal sync could not process an incoming operation"
                             );
                             false
-                        }
+                        },
                     }
                 }
             },
@@ -379,7 +379,7 @@ impl PersonalSyncHost {
                     } else {
                         tracing::info!(graph = %hex(&graph), "published this device's group pre-key");
                     }
-                }
+                },
                 Err(error) => tracing::warn!(%error, "group pre-key would not encode"),
             }
         }
@@ -498,7 +498,7 @@ impl PersonalSyncHost {
             Err(error) => {
                 tracing::warn!(%error, "could not list paired devices; refusing the fetch");
                 false
-            }
+            },
         }
     }
 
@@ -613,7 +613,7 @@ impl PersonalSyncHost {
                         "a device that advertised this blob did not supply it"
                     );
                     last = Some(error);
-                }
+                },
             }
         }
         Err(last.unwrap_or_else(|| {
@@ -958,7 +958,7 @@ impl PersonalSyncHost {
                     )));
                 }
                 return Err(key_error(error));
-            }
+            },
         };
         if events.is_empty() {
             return Ok(value);
@@ -1037,7 +1037,7 @@ impl PersonalSyncHost {
                 Ok(probe) => {
                     drop(probe);
                     return Ok(());
-                }
+                },
                 Err(error) => last_error = Some(error),
             }
             tokio::time::sleep(std::time::Duration::from_millis(20)).await;

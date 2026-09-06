@@ -56,7 +56,7 @@ impl std::fmt::Display for TransferSourceError {
             Self::WrongSession => formatter.write_str("request names another transfer session"),
             Self::DisclosureRequired => {
                 formatter.write_str("transfer disclosure has not been accepted")
-            }
+            },
             Self::MissingResource => formatter.write_str("transfer resource is unavailable"),
             Self::InvalidManifest(error) => write!(formatter, "invalid transfer source: {error}"),
         }

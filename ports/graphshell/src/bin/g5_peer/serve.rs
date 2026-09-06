@@ -93,7 +93,7 @@ pub(crate) async fn serve(
             Err(refusal) => {
                 println!("  refused: {refusal:?}");
                 return Ok(());
-            }
+            },
         };
         println!(
             "  session {attempt}: admitted subject {} for {}",

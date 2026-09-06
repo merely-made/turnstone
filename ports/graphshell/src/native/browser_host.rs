@@ -223,7 +223,7 @@ where
                 )
                 .await
             })
-        }
+        },
         BrowserSessionEndpoint::Catalog { mut catalog, route } => {
             // Route selection occurs after admission and before `Connected`.
             // A missing route therefore never yields a live browser session,
@@ -246,7 +246,7 @@ where
                 )
                 .await
             })
-        }
+        },
     };
     write_native_message_async(writer, &connected).await?;
 
@@ -267,7 +267,7 @@ where
                 if terminal || ended {
                     break;
                 }
-            }
+            },
             BrowserMessage::NativeIdentity { request } => {
                 let result = if request.session == session {
                     apply_native_identity_action(&personae, native_ui, request.action)
@@ -284,7 +284,7 @@ where
                     },
                 )
                 .await?;
-            }
+            },
             BrowserMessage::Connect { .. } => {
                 write_native_message_async(
                     writer,
@@ -293,7 +293,7 @@ where
                     },
                 )
                 .await?;
-            }
+            },
         }
     }
 
@@ -453,7 +453,7 @@ mod tests {
                     BrowserHostMessage::Response { response } => match response.body.unwrap() {
                         CarrierResponseBody::Opened(opened) => {
                             opened.descriptor.projections[0].request.clone()
-                        }
+                        },
                         other => panic!("expected opened response, got {other:?}"),
                     },
                     other => panic!("expected carrier response, got {other:?}"),
@@ -513,7 +513,7 @@ mod tests {
                 BrowserHostMessage::Response { response } => match response.body.unwrap() {
                     CarrierResponseBody::Resource(resource) => {
                         serde_json::from_slice::<PortableCardV1>(&resource.bytes).unwrap()
-                    }
+                    },
                     other => panic!("expected resource response, got {other:?}"),
                 },
                 other => panic!("expected carrier response, got {other:?}"),
@@ -659,7 +659,7 @@ mod tests {
                 BrowserHostMessage::Response { response } => match response.body.unwrap() {
                     CarrierResponseBody::Opened(opened) => {
                         assert_eq!(opened.descriptor.label, "Catalog fixture")
-                    }
+                    },
                     other => panic!("expected catalog endpoint descriptor, got {other:?}"),
                 },
                 other => panic!("expected carrier response, got {other:?}"),

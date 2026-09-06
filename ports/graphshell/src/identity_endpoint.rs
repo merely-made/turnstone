@@ -240,7 +240,7 @@ impl<S: IdentityStorage + 'static> IdentityEndpoint<S> {
                 return IntentResult::Rejected {
                     reason: format!("accept payload was not understood: {error}"),
                 };
-            }
+            },
         };
         // Everything the payload can be wrong about is settled before the
         // queue is touched, so a refusal never holds the lock.
@@ -266,7 +266,7 @@ impl<S: IdentityStorage + 'static> IdentityEndpoint<S> {
                 return IntentResult::Rejected {
                     reason: "transfer decisions are unavailable on this device".to_string(),
                 };
-            }
+            },
         };
         if !queue
             .iter()
@@ -669,7 +669,7 @@ impl<S: IdentityStorage + 'static> IntentSink for IdentityEndpoint<S> {
             Ok(_) => {
                 self.mark_changed();
                 Ok(IntentResult::Accepted)
-            }
+            },
             Err(error) => Ok(IntentResult::Rejected {
                 reason: error.to_string(),
             }),

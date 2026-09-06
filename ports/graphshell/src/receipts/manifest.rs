@@ -64,11 +64,11 @@ impl std::fmt::Display for ReceiptError {
         match self {
             Self::NoManifest(path) => {
                 write!(f, "no manifest.json in {}", path.display())
-            }
+            },
             Self::Manifest(error) => write!(f, "manifest.json did not parse: {error}"),
             Self::MissingArtifact(name) => {
                 write!(f, "manifest names `{name}`, which is not in the directory")
-            }
+            },
             Self::DigestMismatch {
                 name,
                 expected,

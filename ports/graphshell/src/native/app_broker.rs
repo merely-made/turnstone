@@ -356,11 +356,11 @@ where
                 if terminal || ended {
                     break;
                 }
-            }
+            },
             AppMessage::TakeNotice => {
                 let notice = carrier.take_notice();
                 write_native_message_async(writer, &AppHostMessage::Notice { notice }).await?;
-            }
+            },
             AppMessage::WaitNotice => {
                 let notice = carrier.wait_for_notice().await?;
                 write_native_message_async(
@@ -370,7 +370,7 @@ where
                     },
                 )
                 .await?;
-            }
+            },
             AppMessage::Connect { .. } => {
                 write_native_message_async(
                     writer,
@@ -379,7 +379,7 @@ where
                     },
                 )
                 .await?;
-            }
+            },
         }
     }
 
