@@ -1,0 +1,11 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Woodshed practice workspace embed proof</title><link rel="stylesheet" href="styles.css"><style>body{margin:0;background:#f1eee4;color:#28352a;font:16px system-ui}header{padding:18px 24px}h1{font-size:21px;font-weight:500;margin:0 0 5px}p{margin:0}graphshell-view{height:740px;width:min(100%,1040px);margin:0 auto}footer{padding:16px 24px;font-size:13px}</style></head>
+<body>
+  <header><h1>Woodshed</h1><p>Practice workspace embedding proof</p></header>
+  <graphshell-view id="graphshell" data-practice-workspace data-ready="false"></graphshell-view>
+  <footer>The same Graphshell component and WASM bundle as the standalone practice page. This wrapper is an embedding receipt, not the native Woodshed application.</footer>
+  <section id="scenario-host" hidden><pre id="scenario-log"></pre><pre id="scenario-result"></pre><div id="scenario-captures"></div></section>
+  <script>document.getElementById('graphshell').dataset.reducedMotion=String(matchMedia('(prefers-reduced-motion: reduce)').matches);</script>
+  <script type="module" src="loader.js"></script>
+</body></html>

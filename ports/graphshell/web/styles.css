@@ -14,6 +14,24 @@ graphshell-view * {
   box-sizing: border-box;
 }
 
+graphshell-view[data-practice-workspace] #gs-semantic-host { display: none; }
+graphshell-view[data-practice-workspace] { min-height:720px; }
+body.full-page:has(graphshell-view[data-practice-workspace]) { overflow:auto; }
+#gs-practice-controls { position:absolute;inset:0;pointer-events:none; }
+#gs-practice-controls > * { position:absolute;margin:0;padding:0;border:0;color:transparent;background:transparent;overflow:hidden; }
+#gs-practice-controls > button { pointer-events:auto;cursor:pointer;font:inherit; }
+#gs-practice-controls > button[data-practice-body] { touch-action:none;cursor:grab; }
+#gs-practice-controls > button:focus-visible { outline:2px solid #d4e6b9;outline-offset:3px; }
+
+/* These semantic buttons use the same rectangles as Genet's painted views. */
+#gs-projection-live { position: absolute; inset: 0; pointer-events: none; }
+#gs-projection-live[hidden] { display: none; }
+#gs-semantic-host #gs-projection-live button {
+  position: absolute; pointer-events: auto; color: transparent;
+  background: transparent; border: 0; padding: 0; margin: 0; cursor: pointer;
+}
+#gs-projection-live button:focus-visible { outline: 2px solid #f0c674; outline-offset: 3px; }
+
 html.full-page,
 body.full-page {
   width: 100%;

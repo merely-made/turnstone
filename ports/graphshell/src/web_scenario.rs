@@ -94,6 +94,7 @@ pub fn run_scenario(text: &str) -> Result<(), JsValue> {
         frames: 0,
     });
     mark(&document().map_err(js)?, "running", None).map_err(js)?;
+    root().map_err(js)?.dispatch_event(&Event::new("graphshell-wake")?).map_err(|_| JsValue::from_str("Could not wake scenario"))?;
     Ok(())
 }
 

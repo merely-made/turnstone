@@ -98,6 +98,8 @@
           <input id="gs-address-title" value="New research object">
           <button data-command="add-address">Add address</button>
           <button data-command="open-projection-editor">Edit projection</button>
+          <button data-command="load-practice-projection">Open practice projection</button>
+          <button data-command="reopen-practice-projection">Reopen saved practice projection</button>
           <label class="file-picker" for="gs-file-input">Choose a file</label>
           <input id="gs-file-input" type="file">
         </section>
@@ -136,6 +138,8 @@
             <input id="gs-projection-reading-key" data-projection-field="reading.key">
           </section>
           <section id="gs-projection-fields-encoding" data-projection-panel-fields="encoding" hidden>
+            <label for="gs-projection-encoding-label">Label field</label>
+            <input id="gs-projection-encoding-label" data-projection-field="encoding.label">
             <label for="gs-projection-encoding-x">X field</label>
             <input id="gs-projection-encoding-x" data-projection-field="encoding.x">
             <label for="gs-projection-encoding-y">Y field</label>
@@ -159,6 +163,11 @@
             <input id="gs-projection-appearance-title" data-projection-field="appearance.title">
             <h3>Preview</h3>
             <p id="gs-projection-editor-preview" data-preview-value=""></p>
+            <p id="gs-projection-execution-status" role="status"></p>
+            <div class="button-row">
+              <button data-command="projection-grid">Grid</button>
+              <button data-command="projection-scatter">Order by tempo</button>
+            </div>
           </section>
           <section id="gs-projection-fields-provenance" data-projection-panel-fields="provenance" hidden>
             <label for="gs-projection-provenance-author">Author</label>
@@ -309,6 +318,7 @@
         </div>
       </section>
 
+      <section id="gs-projection-live" aria-label="Executable projection" hidden></section>
       <section class="semantic-status" aria-label="Host status">
         <h2>Current state</h2>
         <dl>

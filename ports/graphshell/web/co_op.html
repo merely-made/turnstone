@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en" class="full-page">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shared Woodshed practice</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="co_op.css">
+</head>
+<body class="full-page co-op-proof">
+  <graphshell-view id="graphshell" data-owns-title data-ready="false"></graphshell-view>
+  <aside id="practice-panel" aria-label="Shared practice space">
+    <p class="eyebrow">WOODSHED · SHARED PRACTICE PROOF</p>
+    <h1>Thursday practice</h1>
+    <p id="peer-name">Opening local store…</p>
+    <p id="connection-status" role="status"></p>
+    <p id="retained-status" role="status"></p>
+    <div class="actions">
+      <button id="found" data-action="found">Create space and invitation</button>
+      <button id="join" data-action="join">Join invited space</button>
+      <button id="contribute" data-action="contribute">Contribute comparison</button>
+      <button data-action="sync">Sync with peer</button>
+      <button data-action="disconnect">Disconnect and close store</button>
+      <button data-action="reopen">Reopen from disk, offline</button>
+      <button data-action="connect">Reconnect and sync</button>
+    </div>
+    <h2>C Major ↔ A Minor</h2>
+    <p>A keyed comparison from the Woodshed catalog.</p>
+    <table aria-label="Musical comparison">
+      <tbody>
+        <tr><th scope="row">Shared tones</th><td id="shared-tones">—</td></tr>
+        <tr><th scope="row">Different tone</th><td id="moved-tones">—</td></tr>
+      </tbody>
+    </table>
+    <p id="comparison-kind"></p>
+    <h2>Retained work</h2>
+    <ul id="shared-records" aria-label="Effective shared comparisons"></ul>
+    <details><summary>Proof evidence</summary><pre id="evidence"></pre></details>
+    <p class="boundary">Two fixture identities, separate local stores. Signed plaintext graph operations over loopback HTTP.</p>
+    <p id="action-result" role="status" aria-live="polite"></p>
+  </aside>
+  <section id="scenario-host" aria-hidden="true" hidden>
+    <pre id="scenario-log"></pre><pre id="scenario-result"></pre><div id="scenario-captures"></div>
+  </section>
+  <script type="module" src="loader.js"></script>
+  <script type="module" src="co_op.js"></script>
+</body>
+</html>

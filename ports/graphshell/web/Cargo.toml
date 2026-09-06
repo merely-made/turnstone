@@ -89,6 +89,7 @@ web-sys = { version = "0.3", features = [
     "Node",
     "PointerEvent",
     "PointerEventInit",
+    "Performance",
     "Request",
     "RequestInit",
     "RequestMode",

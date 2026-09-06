@@ -23,6 +23,8 @@
 mod web_events;
 mod web_gpu;
 mod web_product;
+mod web_projection;
+mod web_practice;
 mod web_remote;
 mod web_scenario;
 mod web_view;
@@ -31,6 +33,7 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
 
+use genet_render::TextSystem;
 use graphshell::browser_storage::{StoragePersistence, decide, status_line};
 use graphshell::client::{ActionDraft, ActionDraftSemantics, ActionDraftTarget};
 use graphshell::endpoint::{IntentSink, ProjectionSource};
@@ -38,7 +41,6 @@ use graphshell::protocol::{IntentResult, ProjectionSession};
 use mere::canvas::{Canvas, PhysicsBoard, PointerButton, project_canvas_strategy};
 use mere::kernel::geometry::PortablePoint;
 use mere::kernel::graph::NodeKey;
-use genet_render::TextSystem;
 use netrender::Scene;
 use serde::Deserialize;
 use wasm_bindgen::JsCast;
@@ -70,9 +72,9 @@ use muniment::IndexedDbBackend;
 use uuid::Uuid;
 use web_events::{install_events, schedule_frames};
 use web_gpu::{GpuPresenter, PendingCapture};
+use web_product::update_product_semantics;
 use web_remote::RemoteLink;
 use web_scenario::{DomAction, ScenarioRun};
-use web_product::update_product_semantics;
 use web_view::{ChromeModel, build_chrome_scene};
 
 const REMOTE_LABEL: &str = "Remote projection · 2 objects";
@@ -335,6 +337,9 @@ struct BrowserHost {
     primary_member: Option<Uuid>,
     last_detail_member: Option<Uuid>,
     projection_editor: ProjectionEditor,
+    live_projection: Option<web_projection::LiveProjection>,
+    practice: Option<web_practice::PracticeHost>,
+    practice_scene: Scene,
     projection_editor_open: bool,
     projection_editor_status: String,
     projection_editor_save_count: u32,
@@ -464,7 +469,7 @@ impl BrowserHost {
             .remote_mounted()
             .and_then(|mounted| Satisfaction::of(&mounted.scene.tables).line())
             .unwrap_or_default();
-        ChromeModel {
+        let mut model = ChromeModel {
             active_session: match self.active {
                 ActiveSession::Local => format!(
                     "Local Mere · {} objects",
@@ -489,7 +494,11 @@ impl BrowserHost {
             physics_law,
             physics_paused,
             action_draft: self.action_draft.as_ref().map(ActionDraft::semantics),
+        };
+        if let Some(live) = &self.live_projection {
+            live.decorate_chrome(&mut model);
         }
+        model
     }
 
     fn resize_if_needed(&mut self) {
@@ -511,6 +520,18 @@ impl BrowserHost {
         self.scenario_frames = self.scenario_frames.wrapping_add(1);
         self.finish_capture()?;
         self.resize_if_needed();
+        if let Some(practice) = &mut self.practice {
+            let frame = practice.frame(self.width, self.height, host_ms, &mut self.chrome_text, &self.gpu)?;
+            let changed = frame.is_some();
+            if let Some(scene) = frame { self.practice_scene = scene; }
+            let chrome = Scene::new(self.width, self.height);
+            if let Some(name) = self.capture_request.take() {
+                self.capture_pending = Some((name, self.gpu.capture(&self.practice_scene, &chrome, self.width, self.height)));
+            }
+            self.chrome_dirty = false;
+            if changed { self.gpu.present(&self.practice_scene, &chrome, self.width, self.height)?; }
+            return Ok(());
+        }
         self.advance_arrangement_transition(host_ms);
         if self.chrome_dirty {
             // A host command can move bodies without a settle.
@@ -523,19 +544,23 @@ impl BrowserHost {
             )?;
             self.chrome_dirty = false;
         }
-        let content = match self.active {
-            ActiveSession::Local => {
-                let (scene, moving) = self.canvas.frame(self.width, self.height);
-                self.layout_stats_stale |= moving || self.layout_moved;
-                self.layout_moved = moving;
-                scene
-            }
-            ActiveSession::Remote => {
-                // The board's physics runs only while the board is shown: sync
-                // to the acknowledged scene, tick, then draw from the bodies.
-                self.sync_remote_board();
-                self.remote_board.tick();
-                self.remote_scene()
+        let content = if let Some(live) = &mut self.live_projection {
+            live.frame(self.width, self.height, &mut self.chrome_text)?
+        } else {
+            match self.active {
+                ActiveSession::Local => {
+                    let (scene, moving) = self.canvas.frame(self.width, self.height);
+                    self.layout_stats_stale |= moving || self.layout_moved;
+                    self.layout_moved = moving;
+                    scene
+                },
+                ActiveSession::Remote => {
+                    // The board's physics runs only while the board is shown: sync
+                    // to the acknowledged scene, tick, then draw from the bodies.
+                    self.sync_remote_board();
+                    self.remote_board.tick();
+                    self.remote_scene()
+                },
             }
         };
         if let Some(name) = self.capture_request.take() {
@@ -565,7 +590,8 @@ impl BrowserHost {
         let (width, height, rgba) = pending.take()?;
         web_scenario::publish_capture(&name, width, height, &rgba)?;
         self.capture_count += 1;
-        self.probe_events.push(format!("capture-done {name} {width}x{height}"));
+        self.probe_events
+            .push(format!("capture-done {name} {width}x{height}"));
         Ok(())
     }
 
@@ -687,36 +713,51 @@ impl BrowserHost {
     fn run_command(&mut self, command: &str) -> bool {
         self.probe_events.push(format!("command {command}"));
         match command {
+            "load-practice-projection" => self.load_practice_projection(),
+            "reopen-practice-projection" => {
+                self.load_practice_projection();
+                self.reload_live_projection();
+            },
+            "projection-grid" => self.projection_arrangement("grid.default"),
+            "projection-scatter" => self.projection_arrangement("scatter.default"),
             "open-projection-editor" => {
                 self.projection_editor_open = true;
                 self.projection_editor_status = "Draft ready · unsaved".to_string();
-            }
+            },
             "close-projection-editor" => {
                 self.projection_editor_open = false;
-            }
+            },
             "save-projection" => self.save_projection(),
             "reload-projection" => self.reload_projection(),
             "session-local" => {
+                self.live_projection = None;
+                if let Ok(surface) = element("projection-live") {
+                    let _ = surface.set_attribute("hidden", "");
+                }
                 self.active = ActiveSession::Local;
                 self.detail_open = false;
-            }
+            },
             "session-remote" => {
+                self.live_projection = None;
+                if let Ok(surface) = element("projection-live") {
+                    let _ = surface.set_attribute("hidden", "");
+                }
                 self.active = ActiveSession::Remote;
                 self.detail_open = false;
-            }
+            },
             "select-web" => {
                 self.active = ActiveSession::Local;
                 self.canvas.select_by_url(FIXTURE_WEB_ADDRESS);
                 self.primary_member = self.canvas.focused_member();
                 self.detail_open = false;
-            }
+            },
             "open-detail" => {
                 if self.active == ActiveSession::Local && self.current_primary_member().is_none() {
                     self.canvas.select_by_url(FIXTURE_WEB_ADDRESS);
                     self.primary_member = self.canvas.focused_member();
                 }
                 self.detail_open = true;
-            }
+            },
             "close-detail" => self.detail_open = false,
             "invoke-action" => self.invoke_action(),
             "submit-action-draft" => self.submit_action_draft(),
@@ -735,15 +776,15 @@ impl BrowserHost {
                     Err(_) => {
                         self.probe_events.push(format!("command-unknown {command}"));
                         return false;
-                    }
+                    },
                 }
-            }
+            },
             _ => {
                 if !self.run_product_command(command) {
                     self.probe_events.push(format!("command-unknown {command}"));
                     return false;
                 }
-            }
+            },
         }
         if self.active == ActiveSession::Local {
             self.refresh_representation_score();
@@ -770,77 +811,92 @@ impl BrowserHost {
             "source.authority" => {
                 draft.source.authority = value.to_string();
                 EditorAction::SetSource(draft.source)
-            }
+            },
             "source.domain" => {
                 draft.source.domain = value.to_string();
                 EditorAction::SetSource(draft.source)
-            }
+            },
             "source.resource" => {
                 draft.source.resource = value.to_string();
                 EditorAction::SetSource(draft.source)
-            }
+            },
             "reading.key" => {
                 draft.reading.key = value.to_string();
                 EditorAction::SetReading(draft.reading)
-            }
+            },
             "encoding.x" => {
                 draft.encoding.x = Channel::Field(value.to_string());
                 EditorAction::SetEncoding(draft.encoding)
-            }
+            },
             "encoding.y" => {
                 draft.encoding.y = Channel::Field(value.to_string());
                 EditorAction::SetEncoding(draft.encoding)
-            }
+            },
+            "encoding.label" => {
+                draft.encoding.label = Some(Channel::Field(value.to_string()));
+                EditorAction::SetEncoding(draft.encoding)
+            },
             "arrangement.kind" => {
                 draft.arrangement.kind = value.to_string();
                 EditorAction::SetArrangement(draft.arrangement)
-            }
+            },
             "arrangement.direction" => {
                 draft.arrangement.direction = value.to_string();
                 EditorAction::SetArrangement(draft.arrangement)
-            }
+            },
             "arrangement.spacing" => match value.parse::<u32>() {
                 Ok(spacing) => {
                     draft.arrangement.spacing = spacing;
                     EditorAction::SetArrangement(draft.arrangement)
-                }
+                },
                 Err(_) => {
+                    // The typed draft must also become invalid, otherwise Save
+                    // would silently persist the previous spacing value.
+                    draft.arrangement.spacing = 0;
+                    self.projection_editor
+                        .reduce(EditorAction::SetArrangement(draft.arrangement));
+                    self.recompile_projection();
                     self.projection_editor_status =
                         "Invalid · arrangement.spacing must be a number".to_string();
                     self.projection_editor_open = true;
                     self.chrome_dirty = true;
                     return;
-                }
+                },
             },
             "appearance.realization" => {
                 draft.appearance.realization = value.to_string();
                 EditorAction::SetAppearance(draft.appearance)
-            }
+            },
             "appearance.title" => {
                 draft.appearance.title = value.to_string();
                 EditorAction::SetAppearance(draft.appearance)
-            }
+            },
             "provenance.author" => {
                 draft.provenance.author = value.to_string();
                 EditorAction::SetProvenance(draft.provenance)
-            }
+            },
             "provenance.source_revision" => {
                 draft.provenance.source_revision = value.to_string();
                 EditorAction::SetProvenance(draft.provenance)
-            }
+            },
             "provenance.note" => {
                 draft.provenance.note = value.to_string();
                 EditorAction::SetProvenance(draft.provenance)
-            }
+            },
             _ => return,
         };
         self.projection_editor.reduce(action);
+        self.recompile_projection();
         self.projection_editor_status = format!("Edited · {field}");
         self.projection_editor_open = true;
         self.chrome_dirty = true;
     }
 
     fn save_projection(&mut self) {
+        if self.live_projection.is_some() {
+            self.save_live_projection();
+            return;
+        }
         let mut sink = BrowserProjectionSink;
         match self.projection_editor.save(&mut sink) {
             Ok(()) => {
@@ -851,23 +907,27 @@ impl BrowserHost {
                     self.projection_editor.draft().provenance.source_revision,
                     self.projection_editor_save_count
                 );
-            }
+            },
             Err(graphshell::projection_editor::SaveError::Invalid(issues)) => {
                 let summary = issues
                     .first()
                     .map(|issue| format!("{}: {}", issue.field, issue.message))
                     .unwrap_or_else(|| "invalid projection draft".to_string());
                 self.projection_editor_status = format!("Invalid · {summary}");
-            }
+            },
             Err(graphshell::projection_editor::SaveError::Sink(error)) => {
                 self.projection_editor_status = format!("Save failed · {error}");
-            }
+            },
         }
         self.projection_editor_open = true;
         self.chrome_dirty = true;
     }
 
     fn reload_projection(&mut self) {
+        if self.live_projection.is_some() {
+            self.reload_live_projection();
+            return;
+        }
         let result = (|| -> Result<Option<ProjectionDefinition>, String> {
             let storage = window()?
                 .local_storage()
@@ -895,7 +955,7 @@ impl BrowserHost {
                             "Reloaded · {} · {}",
                             definition.id, definition.provenance.source_revision
                         );
-                    }
+                    },
                     Err(issues) => {
                         self.projection_editor_status = format!(
                             "Reload failed · {}",
@@ -904,12 +964,12 @@ impl BrowserHost {
                                 .map(|issue| issue.message.as_str())
                                 .unwrap_or("invalid saved definition")
                         );
-                    }
+                    },
                 }
-            }
+            },
             Ok(None) => {
                 self.projection_editor_status = "Reload skipped · no saved definition".to_string();
-            }
+            },
             Err(error) => self.projection_editor_status = format!("Reload failed · {error}"),
         }
         self.projection_editor_open = true;
@@ -967,7 +1027,7 @@ impl BrowserHost {
                     Ok(None) => "Failed · host browser blocked the external open".to_string(),
                     Err(error) => format!("Failed · {error}"),
                 }
-            }
+            },
             Ok(IntentResult::Accepted) => format!("Accepted · {} invocation(s)", self.action_count),
             Ok(other) => format!("{other:?}"),
             Err(error) => format!("Failed · {error}"),
@@ -999,7 +1059,7 @@ impl BrowserHost {
             Err(error) => {
                 self.action_status = format!("Failed · remote accessibility tree: {error}");
                 return;
-            }
+            },
         };
         // A bounded form opens as a draft. Plain actions are offered as
         // buttons by `update_remote_semantics`; opening the detail is enough.
@@ -1059,7 +1119,7 @@ impl BrowserHost {
                 self.action_status = format!("Choose required values · {error}");
                 self.detail_open = true;
                 return;
-            }
+            },
         };
         self.action_count = self.action_count.saturating_add(1);
         let RemoteLink::Fixture(fixture) = &mut self.remote else {
@@ -1082,25 +1142,25 @@ impl BrowserHost {
                         );
                         self.action_draft = None;
                         self.action_draft_target = None;
-                    }
+                    },
                     Err(error) => {
                         self.action_status =
                             format!("Accepted · failed to mount resnapshot: {error}");
-                    }
+                    },
                 },
                 Err(error) => {
                     self.action_status =
                         format!("Accepted · failed to request resnapshot: {error}");
-                }
+                },
             },
             Ok(IntentResult::Stale { .. }) => {
                 self.action_status = "Stale · reopen the remote action form".to_string();
                 self.action_draft = None;
                 self.action_draft_target = None;
-            }
+            },
             Ok(IntentResult::Rejected { reason }) => {
                 self.action_status = format!("Rejected · {reason}");
-            }
+            },
             Err(error) => self.action_status = format!("Failed · {error}"),
         }
         self.detail_open = true;
@@ -1464,52 +1524,50 @@ fn update_projection_editor_semantics(host: &BrowserHost) -> Result<(), String> 
     let panel = projection_panel_key(host.projection_editor.panel());
     let content_id = host.projection_editor.panel().content_id();
     let preview = projection_preview(draft);
-    set_projection_input_value("projection-source-authority",
-        &draft.source.authority,
-    )?;
+    set_projection_input_value("projection-source-authority", &draft.source.authority)?;
     set_projection_input_value("projection-source-domain", &draft.source.domain)?;
-    set_projection_input_value("projection-source-resource",
-        &draft.source.resource,
-    )?;
+    set_projection_input_value("projection-source-resource", &draft.source.resource)?;
     set_projection_input_value("projection-reading-key", &draft.reading.key)?;
-    set_projection_input_value("projection-encoding-x",
+    set_projection_input_value(
+        "projection-encoding-label",
+        match draft.encoding.label.as_ref() {
+            Some(Channel::Field(value) | Channel::Constant(value)) => value,
+            None => "",
+        },
+    )?;
+    set_projection_input_value(
+        "projection-encoding-x",
         match &draft.encoding.x {
             Channel::Field(value) | Channel::Constant(value) => value,
         },
     )?;
-    set_projection_input_value("projection-encoding-y",
+    set_projection_input_value(
+        "projection-encoding-y",
         match &draft.encoding.y {
             Channel::Field(value) | Channel::Constant(value) => value,
         },
     )?;
-    set_projection_input_value("projection-arrangement-kind",
-        &draft.arrangement.kind,
-    )?;
-    set_projection_input_value("projection-arrangement-direction",
+    set_projection_input_value("projection-arrangement-kind", &draft.arrangement.kind)?;
+    set_projection_input_value(
+        "projection-arrangement-direction",
         &draft.arrangement.direction,
     )?;
-    set_projection_input_value("projection-arrangement-spacing",
+    set_projection_input_value(
+        "projection-arrangement-spacing",
         &draft.arrangement.spacing.to_string(),
     )?;
-    set_projection_input_value("projection-appearance-realization",
+    set_projection_input_value(
+        "projection-appearance-realization",
         &draft.appearance.realization,
     )?;
-    set_projection_input_value("projection-appearance-title",
-        &draft.appearance.title,
-    )?;
-    set_projection_input_value("projection-provenance-author",
-        &draft.provenance.author,
-    )?;
-    set_projection_input_value("projection-provenance-revision",
+    set_projection_input_value("projection-appearance-title", &draft.appearance.title)?;
+    set_projection_input_value("projection-provenance-author", &draft.provenance.author)?;
+    set_projection_input_value(
+        "projection-provenance-revision",
         &draft.provenance.source_revision,
     )?;
-    set_projection_input_value("projection-provenance-note",
-        &draft.provenance.note,
-    )?;
-    set_text(
-        "projection-editor-status",
-        &host.projection_editor_status,
-    );
+    set_projection_input_value("projection-provenance-note", &draft.provenance.note)?;
+    set_text("projection-editor-status", &host.projection_editor_status);
     set_text(
         "projection-editor-source",
         &format!(
@@ -1535,17 +1593,17 @@ fn update_projection_editor_semantics(host: &BrowserHost) -> Result<(), String> 
         "projection-editor-lane",
         &format!("ContentSource::Open · graphshell.projection-editor.panel · {content_id}"),
     );
-    set_text(
-        "projection-editor-preview", &preview);
+    set_text("projection-editor-preview", &preview);
     set_attr(
         &element("projection-editor-preview")?,
         "data-preview-value",
         &preview,
     )?;
     for candidate in ProjectionPanel::ALL {
-        let button = element(
-            &format!("projection-panel-{}", projection_panel_key(candidate)),
-        )?;
+        let button = element(&format!(
+            "projection-panel-{}",
+            projection_panel_key(candidate)
+        ))?;
         button
             .set_attribute(
                 "aria-selected",
@@ -1554,9 +1612,10 @@ fn update_projection_editor_semantics(host: &BrowserHost) -> Result<(), String> 
                     .unwrap_or("false"),
             )
             .map_err(|_| "could not expose selected projection panel")?;
-        let group = element(
-            &format!("projection-fields-{}", projection_panel_key(candidate)),
-        )?;
+        let group = element(&format!(
+            "projection-fields-{}",
+            projection_panel_key(candidate)
+        ))?;
         if candidate == host.projection_editor.panel() {
             group
                 .remove_attribute("hidden")
@@ -1689,7 +1748,7 @@ async fn apply_history_controls(
                 error: Some(error),
                 ..HistoryControlSummary::default()
             };
-        }
+        },
     };
     let input = match history_control_input(&browser_window) {
         Ok(input) => input,
@@ -1699,7 +1758,7 @@ async fn apply_history_controls(
                 error: Some(error),
                 ..HistoryControlSummary::default()
             };
-        }
+        },
     };
     let Some((filter, forget)) = input else {
         return HistoryControlSummary::default();
@@ -1734,7 +1793,7 @@ async fn apply_history_controls(
                     .into_iter()
                     .filter(|record| record.handler.starts_with(BROWSER_HISTORY_HANDLER_PREFIX))
                     .collect();
-            }
+            },
             Err(error) => summary.error = Some(error.to_string()),
         }
     }
@@ -1814,13 +1873,22 @@ fn publish_history_controls(
 }
 
 fn update_semantics(host: &mut BrowserHost) -> Result<(), String> {
+    if host.practice.is_some() {
+        let body=root()?;
+        if body.get_attribute("data-ready").as_deref()!=Some("true") {
+            body.set_attribute("data-ready","true").map_err(|_|"Workspace ready state")?;
+            body.set_attribute("data-session","local").map_err(|_|"Workspace session")?;
+            if owns_title() { document()?.set_title("GRAPHSHELL H3 READY"); }
+        }
+        return Ok(());
+    }
     let document = document()?;
     let model = host.chrome_model();
     set_text("active-session", &model.active_session);
     set_text("selection-status", &model.selection);
     set_text("detail-title", &model.selection);
     set_text("detail-address", &model.detail_address);
-    set_text("action-status", &host.action_status);
+    set_text("action-status", &model.action_status);
     if !host.action_draft_semantics_ready || model.action_draft != host.rendered_action_draft {
         update_action_draft_semantics(&document, model.action_draft.as_ref())?;
         host.rendered_action_draft = model.action_draft.clone();
@@ -1840,6 +1908,9 @@ fn update_semantics(host: &mut BrowserHost) -> Result<(), String> {
         &format!("{} by {}", host.width, host.height),
     );
     update_product_semantics(host, &model)?;
+    if host.live_projection.is_some() {
+        set_text("product-status", &model.product_status);
+    }
     web_remote::update_remote_semantics(host, &document)?;
     set_attr(
         &element("detail-surface")?,
@@ -2095,6 +2166,11 @@ async fn run(root_element: Element) -> Result<(), String> {
         primary_member,
         last_detail_member: None,
         projection_editor: ProjectionEditor::new(initial_projection_draft()),
+        live_projection: None,
+        practice: if root()?.has_attribute("data-practice-workspace") {
+            Some(web_practice::PracticeHost::new(root()?.get_attribute("data-practice-source").as_deref())?)
+        } else { None },
+        practice_scene: Scene::new(width, height),
         projection_editor_open: false,
         projection_editor_status: "Draft ready · unsaved".to_string(),
         projection_editor_save_count: 0,
@@ -2108,6 +2184,7 @@ async fn run(root_element: Element) -> Result<(), String> {
     }));
     web_scenario::install(&state);
     install_events(&state)?;
+    web_practice::install(&state)?;
     web_product::install_product_events(&state)?;
     update_semantics(&mut state.borrow_mut())?;
     publish_capture_receipt(&document, capture_summary)?;
@@ -2126,7 +2203,9 @@ pub fn start() {
 #[wasm_bindgen]
 pub fn mount(root: Element) -> Result<(), JsValue> {
     if ROOT.with(|slot| slot.borrow().is_some()) {
-        return Err(JsValue::from_str("Graphshell is already mounted on this page"));
+        return Err(JsValue::from_str(
+            "Graphshell is already mounted on this page",
+        ));
     }
     wasm_bindgen_futures::spawn_local(async move {
         if let Err(error) = run(root).await {

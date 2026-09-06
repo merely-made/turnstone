@@ -83,6 +83,25 @@ pub(crate) struct GpuPresenter {
 }
 
 impl GpuPresenter {
+    /// Retain Genet's text/layout output. Motion places this fragment under a
+    /// transform instead of rebuilding and reshaping the card every frame.
+    pub(super) fn retain(&self, scene: Scene, old: Option<u64>) -> Result<u64, String> {
+        let fragment = netrender::SceneFragment::from_scene(scene);
+        if let Some(id) = old {
+            if self.core.renderer().update_fragment(id, fragment) == Some(true) {
+                return Ok(id);
+            }
+            return Err("Could not update retained workspace fragment".into());
+        }
+        self.core
+            .renderer()
+            .register_fragment(fragment)
+            .ok_or_else(|| "Retained workspace fragments require Vello".into())
+    }
+
+    pub(super) fn release_fragment(&self, id: u64) {
+        self.core.renderer().remove_fragment(id);
+    }
     pub(crate) async fn boot(
         canvas: HtmlCanvasElement,
         width: u32,

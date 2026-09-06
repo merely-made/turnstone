@@ -6,7 +6,7 @@
 
 //! Browser input and animation-frame wiring for the Graphshell presenter.
 
-use std::cell::RefCell;
+use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
 use wasm_bindgen::JsCast;
@@ -20,6 +20,29 @@ use super::{ActiveSession, BrowserHost, document, root, update_semantics, web_sc
 
 pub(super) fn install_events(state: &Rc<RefCell<BrowserHost>>) -> Result<(), String> {
     let canvas = state.borrow().canvas_element.clone();
+
+    // Host-supplied resolved facts use the same compiler as the built-in specimen.
+    // Membership and shared truth are established by the supplying domain service.
+    let projection_state = state.clone();
+    let projection_load = Closure::<dyn FnMut(Event)>::new(move |_: Event| {
+        let Ok(root) = root() else { return };
+        let Some(json) = root.get_attribute("data-projection-dataset") else {
+            return;
+        };
+        let _ = root.remove_attribute("data-projection-dataset");
+        let definition = root.get_attribute("data-projection-definition");
+        let _ = root.remove_attribute("data-projection-definition");
+        let mut host = projection_state.borrow_mut();
+        host.load_projection_input(&json, definition.as_deref());
+        let _ = update_semantics(&mut host);
+    });
+    root()?
+        .add_event_listener_with_callback(
+            "graphshell-project-dataset",
+            projection_load.as_ref().unchecked_ref(),
+        )
+        .map_err(|_| "could not attach projection input")?;
+    projection_load.forget();
 
     let down_state = state.clone();
     let pointer_down = Closure::<dyn FnMut(PointerEvent)>::new(move |event: PointerEvent| {
@@ -120,6 +143,16 @@ pub(super) fn install_events(state: &Rc<RefCell<BrowserHost>>) -> Result<(), Str
             let _ = update_semantics(&mut host);
             return;
         }
+        if let Some(command) = target.get_attribute("data-practice-command") {
+            click_state.borrow_mut().practice_command(&command);
+            return;
+        }
+        if let Some(occurrence) = target.get_attribute("data-projection-occurrence") {
+            let mut host = click_state.borrow_mut();
+            host.select_projection_occurrence(&occurrence);
+            let _ = update_semantics(&mut host);
+            return;
+        }
         if target.has_attribute("data-action-draft-submit") {
             let mut host = click_state.borrow_mut();
             host.run_command("submit-action-draft");
@@ -194,6 +227,8 @@ pub(super) fn install_events(state: &Rc<RefCell<BrowserHost>>) -> Result<(), Str
                 target.has_attribute("data-action-draft-field")
                     || target.has_attribute("data-action-draft-submit")
                     || target.has_attribute("data-projection-field")
+                    || target.has_attribute("data-projection-occurrence")
+                    || target.has_attribute("data-practice-command")
             })
         {
             return;
@@ -224,9 +259,12 @@ pub(super) fn install_events(state: &Rc<RefCell<BrowserHost>>) -> Result<(), Str
 pub(super) fn schedule_frames(state: Rc<RefCell<BrowserHost>>) -> Result<(), String> {
     type FrameClosure = Closure<dyn FnMut(f64)>;
     let frame = Rc::new(RefCell::new(None::<FrameClosure>));
+    let pending = Rc::new(Cell::new(false));
+    let callback_pending = pending.clone();
     let next = frame.clone();
     let callback_state = state.clone();
     *next.borrow_mut() = Some(Closure::new(move |host_ms: f64| {
+        callback_pending.set(false);
         let deferred = {
             let mut host = callback_state.borrow_mut();
             if let Err(error) = host.render(host_ms) {
@@ -252,12 +290,67 @@ pub(super) fn schedule_frames(state: Rc<RefCell<BrowserHost>>) -> Result<(), Str
             host.probe_events.extend(events);
             let _ = update_semantics(&mut host);
         }
-        if let Ok(window) = window()
+        let continue_frames = {
+            let host = callback_state.borrow();
+            host.practice
+                .as_ref()
+                .is_none_or(|practice| practice.needs_frame())
+                || host.scenario.is_some()
+                || host.capture_pending.is_some()
+                || host.capture_request.is_some()
+        };
+        if continue_frames
+            && !callback_pending.replace(true)
+            && let Ok(window) = window()
             && let Some(callback) = frame.borrow().as_ref()
         {
             let _ = window.request_animation_frame(callback.as_ref().unchecked_ref());
         }
     }));
+    // A sleeping practice workspace wakes on input/resize or an armed probe.
+    // The other host modes retain their existing pump until separately audited.
+    for event in [
+        "click",
+        "input",
+        "change",
+        "keydown",
+        "pointerdown",
+        "pointermove",
+        "pointerup",
+        "pointercancel",
+        "lostpointercapture",
+        "graphshell-wake",
+    ] {
+        let frame = next.clone();
+        let pending = pending.clone();
+        let wake = Closure::<dyn FnMut(Event)>::new(move |_: Event| {
+            if !pending.replace(true)
+                && let Ok(window) = window()
+                && let Some(callback) = frame.borrow().as_ref()
+            {
+                let _ = window.request_animation_frame(callback.as_ref().unchecked_ref());
+            }
+        });
+        root()?
+            .add_event_listener_with_callback(event, wake.as_ref().unchecked_ref())
+            .map_err(|_| "Could not attach frame wake")?;
+        wake.forget();
+    }
+    let resize_frame = next.clone();
+    let resize_pending = pending.clone();
+    let resize = Closure::<dyn FnMut(Event)>::new(move |_: Event| {
+        if !resize_pending.replace(true)
+            && let Ok(window) = window()
+            && let Some(callback) = resize_frame.borrow().as_ref()
+        {
+            let _ = window.request_animation_frame(callback.as_ref().unchecked_ref());
+        }
+    });
+    window()?
+        .add_event_listener_with_callback("resize", resize.as_ref().unchecked_ref())
+        .map_err(|_| "Could not attach resize wake")?;
+    resize.forget();
+    pending.set(true);
     let callback = next.borrow();
     window()?
         .request_animation_frame(

@@ -1,0 +1,46 @@
+# Real Rust reducer, grammar, Cambium/Genet pixels and browser storage.
+assert snap practice-view == relations
+dom click [data-practice-command="motion"]
+settle 2
+assert snap practice-motion == false
+dom click [data-practice-command="select:card:2"]
+settle 2
+assert snap practice-selection == card:2
+dom click [data-practice-command="compare"]
+settle 2
+assert snap practice-view == compare
+assert snap practice-selection == card:2
+capture practice_compare
+wait
+dom click [data-practice-command="save"]
+settle 2
+assert snap practice-saved == true
+dom click [data-practice-command="tone:C"]
+settle 2
+assert snap practice-selection == comparison
+assert snap practice-saved == false
+dom click [data-practice-command="history"]
+settle 2
+assert snap practice-view == history
+capture practice_history
+wait
+dom click [data-practice-command="return:1"]
+settle 2
+assert snap practice-view == relations
+assert snap practice-selection == card:2
+dom click [data-practice-command="reopen"]
+settle 2
+assert snap practice-view == compare
+assert snap practice-selection == card:2
+assert snap practice-saved == true
+dom click [data-practice-command="relations"]
+settle 2
+dom click [data-practice-command="scatter"]
+settle 2
+assert snap practice-layout == scatter.default
+assert snap practice-selection == card:2
+dom click [data-practice-command="save"]
+settle 2
+capture practice_saved
+wait
+log workspace views selection history recipe and persistence complete

@@ -1,0 +1,11 @@
+assert snap practice-view == relations
+dom click [data-practice-command="reopen"]
+settle 2
+assert snap practice-view == relations
+assert snap practice-selection == card:2
+assert snap practice-layout == scatter.default
+assert snap practice-motion == false
+assert snap practice-saved == true
+capture practice_fresh_reopen
+wait
+log workspace fresh page reopen complete

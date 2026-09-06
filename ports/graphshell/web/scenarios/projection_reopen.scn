@@ -1,0 +1,14 @@
+# Run in a NEW page load after projection_authoring.scn, on the same origin.
+assert title GRAPHSHELL H3 READY
+act reopen-practice-projection
+settle 2
+assert snap projection-executable == true
+assert snap projection-selected-occurrence == card:2
+assert dom #gs-projection-editor-status Reopened executable
+assert attr [data-projection-view="spatial"][data-projection-occurrence="card:2"] aria-pressed true
+assert attr [data-projection-view="list"][data-projection-occurrence="card:2"] aria-pressed true
+assert attr [data-projection-view="spatial"][data-projection-occurrence="card:1"] aria-pressed false
+assert dom [data-projection-view="list"][data-projection-occurrence="card:2"] chord:Major
+capture projection_fresh_page
+wait
+log executable projection fresh-page reopen complete

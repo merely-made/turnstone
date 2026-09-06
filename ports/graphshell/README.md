@@ -104,6 +104,28 @@ Turnstone, Genet host packages, and Servo runtime packages.
 Canvas, Cambium over Genet's DOM and layout seam, and NetRender over a WebGPU
 canvas. Its browser dependencies stay out of the `graphshell` package.
 
+### September 5 practice workspace proof
+
+`web/practice.html` is a current-tree browser proof over one disclosed
+Woodshed comparison. Relations, pitch-membership Compare, and History use
+typed occurrence/comparison selection. Save/reopen validates source identity,
+revision, occurrence IDs, and the complete comparison disclosure before it
+restores the bounded workspace state.
+
+The same WASM component runs in `web/practice-embed.html`; that page is an
+embedded-wrapper proof, not the native Woodshed application. Relations use
+real Seiche dragging, Grid/Scatter recipes, fixed-60 Hz physics with at most
+three substeps, demand-driven redraw, and retained Cambium/Genet/Netrender
+faces. Projection fields are not wired into this proof yet.
+
+Build the web package and serve `web/` over loopback HTTP. Run the standalone
+walkthrough at `practice.html?scenario=scenarios/practice_workspace.scn`, the
+same-origin reopen at `practice.html?scenario=scenarios/practice_reopen.scn`,
+and the wrapper check at
+`practice-embed.html?scenario=scenarios/practice_embedded.scn`. The
+current `docs/receipts/practice_workspace_receipt.json` carries the
+current-tree receipt; it is not a release or final benchmark.
+
 Its lib root is `#![cfg(target_arch = "wasm32")]`, so it compiles to nothing on
 a native host and `cargo check --workspace` does not cover its code. Check it
 for the target it is for:

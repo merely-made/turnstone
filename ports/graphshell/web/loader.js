@@ -68,6 +68,15 @@ window.graphshellScenario = () => ({
 });
 
 window.graphshellReceipt = () => ({
+  practice: graphshellRoot()?.hasAttribute('data-practice-workspace') ? {
+    view: graphshellRoot().dataset.practiceView,
+    selection: graphshellRoot().dataset.practiceSelection,
+    history: Number(graphshellRoot().dataset.practiceHistory),
+    layout: graphshellRoot().dataset.practiceLayout,
+    motion: graphshellRoot().dataset.practiceMotion,
+    settling: graphshellRoot().dataset.practiceSettling,
+    metrics: JSON.parse(graphshellRoot().dataset.practiceMetrics || '{}'),
+  } : null,
   title: document.title,
   ready: graphshellRoot().dataset.ready === "true",
   session: graphshellRoot().dataset.session,

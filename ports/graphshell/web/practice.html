@@ -1,0 +1,9 @@
+<!doctype html>
+<html lang="en" class="full-page">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Thursday practice</title><link rel="stylesheet" href="styles.css"></head>
+<body class="full-page">
+  <graphshell-view id="graphshell" data-owns-title data-practice-workspace data-ready="false"></graphshell-view>
+  <section id="scenario-host" hidden><pre id="scenario-log"></pre><pre id="scenario-result"></pre><div id="scenario-captures"></div></section>
+  <script>document.getElementById('graphshell').dataset.reducedMotion=String(matchMedia('(prefers-reduced-motion: reduce)').matches);</script>
+  <script type="module" src="loader.js"></script>
+</body></html>

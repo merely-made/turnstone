@@ -1,0 +1,8 @@
+# Open after contributing and reopening this peer's store offline.
+assert title GRAPHSHELL H3 READY
+settle 240
+assert snap projection-executable == true
+assert snap projection-occurrences == 3
+capture co_op_retained
+wait
+log shared practice retained projection captured

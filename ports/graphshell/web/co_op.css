@@ -1,0 +1,23 @@
+.co-op-proof #gs-product-panel,
+.co-op-proof #gs-semantic-host > nav { display: none; }
+#practice-panel {
+  box-sizing: border-box;
+  position: absolute; top: 76px; bottom: 48px; left: 12px; width: 276px;
+  overflow-y: auto; padding: 16px; border: 1px solid #29404a; border-radius: 12px;
+  background: #0e1a21; color: #dce5e8; font: 13px/1.45 system-ui, sans-serif;
+}
+#practice-panel h1 { font-size: 23px; margin: 6px 0 12px; color: #f0d5a3; }
+#practice-panel h2 { font-size: 15px; margin-top: 22px; }
+#practice-panel .eyebrow { font-size: 10px; color: #96b5ba; letter-spacing: .06em; }
+#practice-panel button {
+  width: 100%; padding: 9px; margin: 3px 0; border-radius: 6px;
+  border: 1px solid #49616b; background: #203d48; color: #f3e3bf; cursor: pointer;
+}
+#practice-panel button:disabled { opacity: .45; cursor: default; }
+#practice-panel button:focus-visible { outline: 2px solid #f0c674; outline-offset: 2px; }
+#practice-panel table { width: 100%; border-collapse: collapse; }
+#practice-panel th, #practice-panel td { text-align: left; padding: 8px 3px; border-bottom: 1px solid #29404a; }
+#practice-panel pre { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 10px; }
+#practice-panel ul { padding-left: 18px; }
+#practice-panel .boundary { color: #91a8ae; font-size: 11px; }
+#action-result[data-error="true"] { color: #ffac9d; }

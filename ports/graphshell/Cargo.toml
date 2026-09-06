@@ -110,6 +110,7 @@ chirograph.workspace = true
 mere = { path = "../../crates/mere", default-features = false, features = ["graph", "canvas"], optional = true }
 muniment = { workspace = true, optional = true }
 sceno.workspace = true
+scenomise.workspace = true
 scenotime.workspace = true
 serde = { version = "1", features = ["derive"], optional = true }
 serde_json.workspace = true

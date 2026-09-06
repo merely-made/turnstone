@@ -1,0 +1,59 @@
+# Actual Woodshed Set export -> definition -> Score -> Scene -> Genet pixels.
+assert title GRAPHSHELL H3 READY
+act load-practice-projection
+settle 2
+assert snap projection-executable == true
+assert snap projection-occurrences == 3
+assert attr [data-projection-view="spatial"][data-projection-occurrence="card:2"] aria-pressed false
+dom click [data-projection-view="spatial"][data-projection-occurrence="card:2"]
+settle 2
+assert attr [data-projection-view="spatial"][data-projection-occurrence="card:2"] aria-pressed true
+assert attr [data-projection-view="list"][data-projection-occurrence="card:2"] aria-pressed true
+assert attr [data-projection-view="list"][data-projection-occurrence="card:1"] aria-pressed false
+capture projection_grid
+wait
+dom click [data-command="projection-scatter"]
+settle 2
+assert snap projection-executable == true
+assert snap projection-selected-occurrence == card:2
+type #gs-projection-appearance-title My practice session
+settle 2
+dom click [data-projection-panel="encoding"]
+type #gs-projection-encoding-label catalog_id
+settle 2
+assert dom [data-projection-view="list"][data-projection-occurrence="card:2"] chord:Major
+dom click [data-command="save-projection"]
+settle 2
+assert dom #gs-projection-editor-status Saved executable
+capture projection_scatter
+wait
+dom click [data-projection-view="list"][data-projection-occurrence="card:1"]
+settle 2
+assert attr [data-projection-view="spatial"][data-projection-occurrence="card:1"] aria-pressed true
+assert attr [data-projection-view="spatial"][data-projection-occurrence="card:2"] aria-pressed false
+type #gs-projection-encoding-x missing
+settle 2
+assert snap projection-executable == false
+dom click [data-command="save-projection"]
+settle 2
+assert dom #gs-projection-editor-status Save failed
+dom click [data-command="reload-projection"]
+settle 2
+assert snap projection-executable == true
+assert snap projection-selected-occurrence == card:2
+assert dom #gs-projection-editor-status Reopened executable
+assert attr [data-projection-view="list"][data-projection-occurrence="card:2"] aria-pressed true
+dom click [data-projection-panel="arrangement"]
+type #gs-projection-arrangement-spacing invalid
+settle 2
+assert snap projection-executable == false
+dom click [data-command="save-projection"]
+settle 2
+assert dom #gs-projection-editor-status Save failed
+dom click [data-command="reload-projection"]
+settle 2
+assert snap projection-executable == true
+assert snap projection-selected-occurrence == card:2
+capture projection_reopened
+wait
+log executable projection authoring proof complete

@@ -1,0 +1,23 @@
+# Paint/label changes retain solved placement; geometry changes resolve it.
+assert title GRAPHSHELL H3 READY
+act load-practice-projection
+settle 2
+assert attr #gs-projection-live data-placement-solves 1
+type #gs-projection-appearance-title Reused placement
+settle 2
+assert attr #gs-projection-live data-placement-solves 1
+dom click [data-projection-panel="encoding"]
+type #gs-projection-encoding-label catalog_id
+settle 2
+assert attr #gs-projection-live data-placement-solves 1
+assert dom [data-projection-view="list"][data-projection-occurrence="card:2"] chord:Major
+dom click [data-command="projection-scatter"]
+settle 2
+assert attr #gs-projection-live data-placement-solves 2
+dom click [data-command="projection-scatter"]
+settle 2
+assert attr #gs-projection-live data-placement-solves 2
+assert snap projection-executable == true
+capture projection_refresh
+wait
+log labels and appearance reuse geometry; changed arrangement solves once
