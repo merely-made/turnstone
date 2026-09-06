@@ -1,0 +1,47 @@
+{
+  "result": "pass",
+  "scope": "Native Reader appearance identity, shared source, distinct viewports, independent scroll and sibling close",
+  "date_utc": "2026-09-06",
+  "turnstone_base": "07b31a8",
+  "mere_base": "1523c828",
+  "genet_revision": "115d348deddc344d949754e63beaece47cf49f34",
+  "dependency_scope": "Local Mere and existing local sibling overlays; pinned Distillery exception; not a clean published dependency build",
+  "binary_sha256": "ba6c5900cbe9deee8b206794f4b56e9b8d5c801b8b90934a2fb2ec733e8d7e2d",
+  "overlay_sha256": "cf04500918b884423f03c22a149a14c2e5ea6897191934457c4db5284acc9357",
+  "source_hash_encoding": "UTF-8 bytes with CRLF normalized to LF",
+  "source_sha256": {
+    "src/scenario.rs": "b617d0c882c302d523556d06483260bb42af5dacb68e649a938b26c246cacb17",
+    "src/shell/reader_observe.rs": "afe4ce4dcb4d89b611758fefa63357d60e2b5b6553e7e0534c442e3bb1fbc779",
+    "src/shell/drive.rs": "ca8c00dd40b651d64feec326652c48729d3c93bfe356b72f0a3c0fb8d7f64f06",
+    "src/shell/input.rs": "31c9e4479af0f80e2c5816be9885c3e27cc494bc065df15ad3007d7f2b6bc8a4",
+    "src/shell/render.rs": "faf57288b0f65b8092bbc0cd242451d1f682367f21bc746bccd720a92b269e5f",
+    "src/shell/mod.rs": "5b851db119d4e8bdad09887d02c93ac95f6360d9dfdb2bd7f3e23612ea265690",
+    "src/surface.rs": "20d8a715166123210ee079761fc561f0c15544ba8ca656663d744eab76077d9b",
+    "src/surface/appearance.rs": "c811ed1f4e9a75b741e809c98edd41289e7ffcf020b570def1f27592afb8032a",
+    "scenarios/reader_appearance.scn": "1d3c472bdf85fb48b78ef9f2cca895981b36f2fee6f89c53da3d5d8c272fbeee",
+    "scenarios/run_reader_appearance.ps1": "735a2e2b608f36ff72f54dfd07f6e1e17d3f2fe72d93aeb7d053b683fcb087ec",
+    "scenarios/fixtures/browser_zoom_server.ps1": "18244f4ac46597af9edfd596fead17b0ac94a0232728c29b46d346e363d77393"
+  },
+  "artifact_sha256": {
+    ".gitattributes": "6790cf7090cfa6941ade9285f9570c42ddb27ec94c62799df93b1feabd3af890",
+    "01_before_scroll.txt": "30e9b4da72dd02b2970db3430475ae59aed1ff07d9bc97119cde4dcc71b41428",
+    "01_two_reader_appearances.png": "3c13a10ad625435a074738e2c34bb24bf555bb17fc25c0ab048dfd54e8b406b0",
+    "02_inset_only.txt": "ca2fb3c45efad98595ad3522324f23e15b2d833345c3030a49e40fc094eb8ec5",
+    "02_inset_scrolled.png": "697fc9efdb862f0681cf386c90a5ef47854153cdbec426e91d0f339d4dfad0f5",
+    "03_both_scrolled.txt": "a622f87a0ef271d99e8bf05c533fd14096ea8492039e03cc8041fc8aadeac068",
+    "03_independent_scrolls.png": "c152db8b27898827dfb1fba0481e9669c85b72f855a409c2f144f719f53a9c5a",
+    "04_inset_survives.png": "e6504adfbbedf65915c26dab7e1ef32e4e288a53bf91032ee74597ecd6e0f880",
+    "04_inset_survives.txt": "5fa07795854f12619d4c0959de37d71aaf8edc0ec5b5f3e2bbc8e1d83be5b993",
+    "acceptance.done": "3f48f2a4257398cc4b9151ebe1a3e460dafa66e669f89c88bf21c0416a5e2762",
+    "checker-audit.log": "3f4e752e67b1d65c0cd54c3389c7faa7c5ee534a438b7d7277f418e20ddc201e",
+    "fixture.done": "0d620ca3c50a9f36d4592e64efa77cf5a5ca6cfd31ac6d5ebb6e9dc50fda25f4",
+    "native-build.log": "f332027b81f1295e3cffdbe0ad5d392a8016ef6c14ff371de9741011fcab6dc1",
+    "native-run.log": "79e6863a75acf74938ed7e0cf690dec09cad8e39f290943509917e437bb66f88",
+    "scenario.done": "b688879bf69403d4b0962144cd2e8ec7c022860be79061e9946ecd5783d6820d"
+  },
+  "limitations": [
+    "Three global wait steps reached the 240-frame cap; no whole-app idle or performance claim.",
+    "Native run verifies initially distinct widths, scrolling and close; interactive resize and navigation replacement are not exercised here.",
+    "Run emitted an iroh endpoint-close shutdown diagnostic despite successful scenario, fixture, runner and process outcomes."
+  ]
+}

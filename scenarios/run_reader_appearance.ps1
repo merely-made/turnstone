@@ -166,6 +166,10 @@ try {
 
     $insetOnlyInset = Reader-Role $afterInset "inset" "inset-only observation"
     $insetOnlyWorkbench = Reader-Role $afterInset "workbench" "inset-only observation"
+    if ($afterInset.Count -ne 2) { throw "inset-only observation expected two Reader appearances" }
+    if ($insetOnlyInset.Source -ne $insetOnlyWorkbench.Source) {
+        throw "Reader appearances stopped sharing one source after inset input"
+    }
     if ($insetOnlyInset.Id -ne $beforeInset.Id -or $insetOnlyWorkbench.Id -ne $beforeWorkbench.Id) {
         throw "Reader appearance id changed while both presentations remained live"
     }
@@ -174,6 +178,10 @@ try {
 
     $bothInset = Reader-Role $afterBoth "inset" "both-scrolled observation"
     $bothWorkbench = Reader-Role $afterBoth "workbench" "both-scrolled observation"
+    if ($afterBoth.Count -ne 2) { throw "both-scrolled observation expected two Reader appearances" }
+    if ($bothInset.Source -ne $bothWorkbench.Source) {
+        throw "Reader appearances stopped sharing one source after Workbench input"
+    }
     if ($bothInset.Id -ne $beforeInset.Id -or $bothWorkbench.Id -ne $beforeWorkbench.Id) {
         throw "Reader appearance id changed during independent scrolling"
     }

@@ -1,0 +1,2 @@
+# Preserve captured bytes, including diagnostic spacing and line endings.
+* -text -whitespace

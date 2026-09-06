@@ -1,0 +1,6 @@
+RESULT ok
+scenario=C:\Users\mark_\Code\repos\turnstone\scenarios\reader_appearance.scn
+scenario-receipt=C:\Users\mark_\Code\scratch\refresh-proof\native-reader-run-01\capture\scenario.done
+fixture-receipt=C:\Users\mark_\Code\scratch\refresh-proof\native-reader-run-01\fixture.done
+captures=01_two_reader_appearances.png,02_inset_scrolled.png,03_independent_scrolls.png,04_inset_survives.png
+observations=01_before_scroll.txt,02_inset_only.txt,03_both_scrolled.txt,04_inset_survives.txt

@@ -36,6 +36,8 @@ capture 01_two_reader_appearances
 
 scroll-reader inset 160
 settle 5
+assert reader-appearances == 2
+assert reader-sources == 1
 assert reader-scroll inset >= 1
 assert reader-scroll workbench == 0
 record-reader-appearances 02_inset_only
@@ -43,6 +45,8 @@ capture 02_inset_scrolled
 
 scroll-reader workbench 240
 settle 5
+assert reader-appearances == 2
+assert reader-sources == 1
 assert reader-scroll inset >= 1
 assert reader-scroll workbench >= 1
 record-reader-appearances 03_both_scrolled

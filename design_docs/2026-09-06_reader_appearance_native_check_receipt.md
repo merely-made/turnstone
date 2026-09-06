@@ -1,8 +1,61 @@
-# Reader appearance native-check receipt
+# Reader appearance native verification receipt
 
 Date: 2026-09-06
 
-## Result
+## Native result
+
+The executable build and headed scenario passed on 2026-09-06. The fixture,
+scenario, app process, and runner all completed successfully. Four captures
+and four state observations are retained in
+[the artifact receipt](receipts/reader_appearance_native/receipt.json).
+
+| Checkpoint | Workbench scroll | Inset scroll |
+| --- | ---: | ---: |
+| Before input | 0 | 0 |
+| Inset input | 0 | 160 |
+| Workbench input | 240 | 160 |
+| Workbench closed | absent | 160 |
+
+The Workbench viewport was 251x570 and the inset 305x600. Both reported the
+same source group while present, backed by `Arc::ptr_eq` within each snapshot.
+Workbench ID `0x7ff62e3ddce5f1e0` and inset ID `0x83646760589b1fb1` remained
+stable. Closing Workbench preserved the inset ID and exact offset.
+The [independent scroll capture](receipts/reader_appearance_native/03_independent_scrolls.png)
+and [surviving inset capture](receipts/reader_appearance_native/04_inset_survives.png)
+were visually inspected. Pixel dimensions and scroll positions are recorded
+from the live host plan and retained Reader sessions, not fixture expectations.
+
+The runner now also checks exactly two appearances and shared source after
+each scroll. A separate scratch checker audit accepted a valid fractional
+offset and rejected fractional drift, an extra appearance, and divergent
+source. That audit is not native acceptance evidence.
+
+Three global `wait 240` steps reached their frame caps. Explicit Reader state
+assertions and all captures passed, but this receipt does not establish
+whole-app idle behavior or frame performance. Interactive resize and document
+replacement were not driven here. The process also emitted an iroh
+endpoint-close diagnostic during shutdown; the successful exit does not close
+that lifecycle concern.
+
+The build used an isolated Cargo cache copied from local cached packages to
+avoid a shared cache lock. Genet's copied checkout was verified at
+`115d348deddc344d949754e63beaece47cf49f34` with no tracked differences. Local
+Mere and existing sibling overrides remain in use, including pinned Distillery.
+This is a local integration proof, not a published-dependency build receipt.
+The native build completed in 49m34s with 76 Turnstone warnings and no errors.
+
+```powershell
+$env:CARGO_HOME='C:/Users/mark_/Code/scratch/refresh-proof/cargo-home'
+$env:CARGO_TARGET_DIR='C:/Users/mark_/Code/target-appearance-turnstone'
+cargo build -p turnstone --offline --config C:/Users/mark_/Code/scratch/refresh-proof/turnstone-local.toml -j 1
+scenarios/run_reader_appearance.ps1 -TurnstoneBin C:/Users/mark_/Code/target-appearance-turnstone/debug/turnstone.exe -OutputRoot C:/Users/mark_/Code/scratch/refresh-proof/native-reader-run-01
+```
+
+Use a fresh output directory for each rerun. Binary, source, overlay, log, and
+capture hashes are in the artifact receipt above. Raw logs are retained,
+including capped waits and shutdown diagnostics.
+
+## Earlier compile-only result
 
 `cargo check` passed for the native Turnstone host. It completed in 1m45s
 with 76 warnings and no errors. This checks the new role-resolved Reader
@@ -20,9 +73,9 @@ The temporary overlay patches local Mere workspace packages. It deliberately
 retains Turnstone's pinned Distillery: the local Distillery WIP has an
 unrelated undeclared `scenomise` use in `chronicle.rs:324`.
 
-## Headed status
+## Earlier blocked build attempts
 
-The executable scenario is pending. Two attempted `cargo build` commands were
+In the earlier compile-only pass, two attempted `cargo build` commands were
 stopped while waiting on an external package-cache lock. At observation time
 38 Cargo processes were active; that count does not identify a particular lock
 owner. No further locked waiters were created.

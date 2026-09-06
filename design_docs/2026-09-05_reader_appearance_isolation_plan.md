@@ -1,7 +1,7 @@
 # Reader appearance isolation
 
-Status: bounded implementation and focused validation complete; headed native
-Reader appearance receipt added and pending its first executable run, 2026-09-06.
+Status: bounded implementation, focused validation, and headed native Reader
+scroll/close proof complete, 2026-09-06. Whole-app idle behavior remains open.
 
 This is Turnstone's consumer slice of Mere's
 `design_docs/mere_docs/implementation_strategy/2026-09-05_projection_refresh_and_surface_reuse_plan.md`,
@@ -50,6 +50,20 @@ shared source group, rects, viewports, and retained scroll positions before
 and after each scroll and sibling close. Its runner rejects absent captures or
 observations and checks that the closing receipt contains only the inset.
 Graphshell's browser receipt does not stand in for this native gate.
-The native compile check passed; the headed runner remains pending while an
-external Cargo package-cache holder is active, rather than adding another
-locked build waiter.
+The native executable build and headed runner passed on 2026-09-06. The
+[native receipt](2026-09-06_reader_appearance_native_check_receipt.md) records
+different viewports (Workbench 251x570, inset 305x600), shared source identity,
+independent offsets (Workbench 240, inset 160), and unchanged inset identity
+and offset after Workbench closes. The runner also rejects an extra appearance
+or divergent source after either scroll. Screenshots were visually inspected.
+
+The run reached all three 240-frame global wait caps. Its explicit Reader
+assertions passed; it does not prove whole-app quiescence or frame performance.
+The next idle gate is to identify which busy condition remains active and
+measure whether it stops when its actual work ends. Canvas seeds 360 settling
+ticks while this scenario caps its waits at 240 frames, a possible explanation
+that the current logs cannot confirm. Record pending fetches, requested
+content, graph settling, and unsettled sessions at each cap before changing
+wait budgets. An iroh endpoint-close
+diagnostic also appeared during successful shutdown. Interactive resize and
+navigation replacement remain outside this native scenario's coverage.

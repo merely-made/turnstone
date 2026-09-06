@@ -32,6 +32,8 @@ set.
 
 - [Reader appearance isolation](2026-09-05_reader_appearance_isolation_plan.md):
   shared Reader content with independent pane state and stable appearance roles.
+- [Reader native verification receipt](2026-09-06_reader_appearance_native_check_receipt.md):
+  headed shared-source, independent-scroll, and sibling-close evidence, with idle limits.
 
 - [Documentation Policy](DOC_POLICY.md): canonical workspace documentation
   rules plus the Turnstone addendum.

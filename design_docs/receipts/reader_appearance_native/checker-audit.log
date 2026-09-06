@@ -1,0 +1,4 @@
+positive: PASS
+fractional-scroll-change: REJECTED: inset scroll after Workbench input changed from 160.5 to 160.75
+extra-appearance: REJECTED: inset-only observation expected two Reader appearances
+divergent-source: REJECTED: Reader appearances stopped sharing one source after inset input
