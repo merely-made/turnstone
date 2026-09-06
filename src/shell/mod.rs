@@ -34,14 +34,14 @@ use std::sync::mpsc::Receiver;
 
 use fetch::{FetchCommand, FetchUpdate};
 use genet_documents::LocalFetcher;
-use mere_document_lanes::{
-    ReaderSessionEngine, RemoteFetcher, SmolwebInlineMediaPolicy, SmolwebSessionEngine,
-    SmolwebTheme,
-};
 use genet_winit_host::SurfaceHost;
 use image::ImageEncoder;
 use inker::{DocumentSession, SessionClick, SessionRegistry, SessionSpawnRequest};
 use mere::canvas::WHEEL_PAN_SCALE;
+use mere_document_lanes::{
+    ReaderSessionEngine, RemoteFetcher, SmolwebInlineMediaPolicy, SmolwebSessionEngine,
+    SmolwebTheme,
+};
 use netrender::external_texture::ExternalTexturePlacement;
 use netrender::{ColorLoad, NetrenderOptions};
 use winit::application::ApplicationHandler;
@@ -328,6 +328,14 @@ pub struct Shell {
     content_engines: SessionRegistry<netrender::Scene>,
     content_sessions:
         std::collections::HashMap<uuid::Uuid, Box<dyn DocumentSession<netrender::Scene>>>,
+    /// Reader's immutable article packet remains in `content_sessions`; each
+    /// visible Reader appearance gets a separate document-canvas session here.
+    /// Other engines stay on the established one-session path until they can
+    /// make the same source/appearance split honestly.
+    reader_appearances: std::collections::HashMap<
+        crate::surface::SurfaceId,
+        (uuid::Uuid, mere_document_lanes::ReaderDocumentSession),
+    >,
     /// Long-lived frame-streaming engines, separate from the retained document
     /// sessions above. The neutral inker registry chooses the producer; the
     /// shell owns its non-Send live handle and its imported frame cache.
@@ -626,6 +634,7 @@ impl Shell {
             height: 600,
             content_engines,
             content_sessions: std::collections::HashMap::new(),
+            reader_appearances: std::collections::HashMap::new(),
             surface_engines: inker::SurfaceEngineRegistry::new(),
             surface_producers: std::collections::HashMap::new(),
             surface_find_requests: std::collections::HashMap::new(),
@@ -666,11 +675,68 @@ impl Shell {
         self.content_sessions.contains_key(node) || self.surface_producers.contains_key(node)
     }
 
+    fn has_independent_reader_appearance(&self, node: &uuid::Uuid) -> bool {
+        self.content_sessions.get(node).is_some_and(|session| {
+            session
+                .as_any_ref()
+                .is::<mere_document_lanes::ReaderDocumentSession>()
+        })
+    }
+
+    fn with_content_appearance<R>(
+        &mut self,
+        node: uuid::Uuid,
+        appearance: crate::surface::SurfaceId,
+        f: impl FnOnce(&mut dyn DocumentSession<netrender::Scene>) -> R,
+    ) -> Option<R> {
+        let reader_source = self
+            .content_sessions
+            .get(&node)
+            .and_then(|session| {
+                session
+                    .as_any_ref()
+                    .downcast_ref::<mere_document_lanes::ReaderDocumentSession>()
+            })
+            .map(mere_document_lanes::ReaderDocumentSession::source_document);
+        if let Some(reader_source) = reader_source {
+            let stale = self
+                .reader_appearances
+                .get(&appearance)
+                .is_none_or(|(known, reader)| {
+                    *known != node
+                        || !std::sync::Arc::ptr_eq(&reader_source, &reader.source_document())
+                });
+            if stale {
+                let reader = self
+                    .content_sessions
+                    .get(&node)
+                    .and_then(|session| {
+                        session
+                            .as_any_ref()
+                            .downcast_ref::<mere_document_lanes::ReaderDocumentSession>()
+                    })?
+                    .new_appearance((1, 1));
+                self.reader_appearances.insert(appearance, (node, reader));
+            }
+            let entry = self.reader_appearances.get_mut(&appearance)?;
+            return (entry.0 == node).then(|| f(&mut entry.1));
+        }
+        self.content_sessions
+            .get_mut(&node)
+            .map(|session| f(session.as_mut()))
+    }
+
     fn clear_surface_content(&mut self) {
+        self.reader_appearances.clear();
         self.surface_producers.clear();
         self.surface_find_requests.clear();
         #[cfg(all(feature = "weld", windows))]
         self.surface_frames.clear();
+    }
+
+    fn clear_reader_appearances(&mut self, node: uuid::Uuid) {
+        self.reader_appearances
+            .retain(|_, (known, _)| *known != node);
     }
 
     #[cfg(all(feature = "weld", windows))]
@@ -750,6 +816,10 @@ impl Shell {
 
     fn evict_pane_renderer(&mut self, pane: crate::panes::PaneId) {
         self.renderers.evict(pane);
+        let lens_slots = self.app.lenses.len();
+        self.reader_appearances.retain(|id, (node, _)| {
+            !crate::surface::appearance::reader_appearance_belongs_to_pane(*id, *node, pane, lens_slots)
+        });
         if self.hovered_pane == Some(pane) {
             self.hovered_pane = None;
         }
@@ -933,9 +1003,12 @@ impl Shell {
             self.app
                 .graph_pane_focused_member(pane)
                 .filter(|id| self.has_live_content(id))
-                .filter(|id| !tiles.iter().any(|(t, _)| t == id))
-                .filter(|id| !tiled_in_lens(id))
-                .filter(|id| !tile_paned(id))
+                .filter(|id| {
+                    self.has_independent_reader_appearance(id)
+                        || (!tiles.iter().any(|(t, _)| t == id)
+                            && !tiled_in_lens(id)
+                            && !tile_paned(id))
+                })
                 .map(|node| (node, crate::surface::content_rect(cr)))
         });
         let caption = focused_graph
@@ -948,6 +1021,44 @@ impl Shell {
             || self.app.omnibar.open && self.app.shell_chrome_config().projects_omnibar())
         .then_some(area);
         let mut surfaces = crate::surface::assemble(&base, &tiles, content, None);
+        let mut appearance_roles: Vec<(uuid::Uuid, u64, Rect)> = pane_rects
+            .iter()
+            .filter_map(|(pane, rect)| match self.app.pane_content(*pane) {
+                Some(PaneContent::Tile(node)) if self.has_live_content(node) => {
+                    Some((*node, 0x1000_0000_0000_0000 | pane.0, *rect))
+                },
+                _ => None,
+            })
+            .collect();
+        for (pane, rect) in &workbench_panes {
+            let geom = self
+                .app
+                .workbench_for_pane(*pane)
+                .and_then(|workbench| workbench.to_arrangement().1);
+            for cell in crate::workbench_tiling::place_workbench(geom.as_ref(), *rect).cells {
+                if let Some(node) = cell.active_member()
+                    && self.content_sessions.contains_key(&node)
+                {
+                    appearance_roles.push((
+                        node,
+                        crate::surface::appearance::workbench_appearance_role(*pane, node),
+                        cell.body(),
+                    ));
+                }
+            }
+        }
+        if let Some((node, rect)) = content {
+            let pane = focused_graph.expect("content inset has a graph pane");
+            appearance_roles.push((node, 0x3000_0000_0000_0000 | pane.0, rect));
+        }
+        appearance_roles.extend(float_rects.iter().filter_map(|(pane, rect)| {
+            match self.app.pane_content(*pane) {
+                Some(PaneContent::Tile(node)) if self.has_live_content(node) => {
+                    Some((*node, 0x1000_0000_0000_0000 | pane.0, *rect))
+                },
+                _ => None,
+            }
+        }));
         surfaces.extend(float_rects.into_iter().filter_map(|(id, rect)| {
             let content = self.app.pane_content(id)?;
             let kind = match content {
@@ -970,6 +1081,7 @@ impl Shell {
                 rect,
             });
         }
+        crate::surface::appearance::assign_content_appearance_ids(&mut surfaces, 0, &appearance_roles);
         surfaces
     }
 

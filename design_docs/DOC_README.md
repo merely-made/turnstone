@@ -30,6 +30,9 @@ set.
 
 ## Project and policy
 
+- [Reader appearance isolation](2026-09-05_reader_appearance_isolation_plan.md):
+  shared Reader content with independent pane state and stable appearance roles.
+
 - [Documentation Policy](DOC_POLICY.md): canonical workspace documentation
   rules plus the Turnstone addendum.
 - `PROJECT_DESCRIPTION.md`: reserved for the maintainer and not present yet.

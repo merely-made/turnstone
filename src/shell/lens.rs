@@ -210,6 +210,40 @@ impl Shell {
             })
             .unwrap_or_default();
         let mut surfaces = crate::surface::assemble(&base, &tiles, None, None);
+        let mut appearance_roles = Vec::new();
+        if let Some((pane, rect)) = workbench_pane {
+            let geom = self
+                .app
+                .workbench_for_pane(pane)
+                .and_then(|workbench| workbench.to_arrangement().1);
+            for cell in crate::workbench_tiling::place_workbench(geom.as_ref(), rect).cells {
+                if let Some(node) = cell.active_member()
+                    && self.content_sessions.contains_key(&node)
+                {
+                    appearance_roles.push((
+                        node,
+                        crate::surface::appearance::workbench_appearance_role(pane, node),
+                        cell.body(),
+                    ));
+                }
+            }
+        }
+        appearance_roles.extend(pane_rects.iter().filter_map(|(pane, rect)| {
+            match self.lens_pane_content(ordinal, *pane) {
+                Some(PaneContent::Tile(node)) if self.content_sessions.contains_key(&node) => {
+                    Some((node, 0x1000_0000_0000_0000 | pane.0, *rect))
+                }
+                _ => None,
+            }
+        }));
+        appearance_roles.extend(float_rects.iter().filter_map(|(pane, rect)| {
+            match self.lens_pane_content(ordinal, *pane) {
+                Some(PaneContent::Tile(node)) if self.content_sessions.contains_key(&node) => {
+                    Some((node, 0x1000_0000_0000_0000 | pane.0, *rect))
+                }
+                _ => None,
+            }
+        }));
         surfaces.extend(float_rects.into_iter().filter_map(|(id, rect)| {
             let content = self.lens_pane_content(ordinal, id)?;
             let kind = match content {
@@ -225,6 +259,11 @@ impl Shell {
                 rect,
             })
         }));
+        crate::surface::appearance::assign_content_appearance_ids(
+            &mut surfaces,
+            ordinal as u32 + 1,
+            &appearance_roles,
+        );
         surfaces
     }
 
@@ -303,10 +342,9 @@ impl Shell {
                 // the primary would frame, at this cell's size (already pumped
                 // above).
                 crate::surface::SurfaceKind::Content(node) => {
-                    let Some(session) = self.content_sessions.get_mut(&node) else {
+                    let Some(scene) = self.with_content_appearance(node, surface.id, |session| session.frame(rw, rh)) else {
                         continue;
                     };
-                    let scene = session.frame(rw, rh);
                     (scene, wgpu::Color::WHITE)
                 }
                 crate::surface::SurfaceKind::Divider(_) => {
@@ -485,9 +523,9 @@ impl Shell {
                             return;
                         }
                         crate::surface::SurfaceKind::Content(node) => {
-                            self.app.focus = crate::surface::FocusTarget::Content(node);
-                            if let Some(session) = self.content_sessions.get_mut(&node) {
-                                match session.click_at(hit.local.0, hit.local.1) {
+                            self.app.focus = crate::surface::FocusTarget::Content { node, appearance: hit.id };
+                            if let Some(outcome) = self.with_content_appearance(node, hit.id, |session| session.click_at(hit.local.0, hit.local.1)) {
+                                match outcome {
                                     SessionClick::Navigate(url) => {
                                         let url = super::content_link_target(&self.app, node, &url);
                                         self.act(Action::OpenAddress(url));
@@ -577,10 +615,9 @@ impl Shell {
                     x,
                     y,
                 ) && let crate::surface::SurfaceKind::Content(node) = hit.kind
-                    && let Some(session) = self.content_sessions.get_mut(&node)
+                    && self.with_content_appearance(node, hit.id, |session| session.scroll_at(hit.local.0, hit.local.1, dx, dy)).unwrap_or(false)
                 {
-                    if session.scroll_at(hit.local.0, hit.local.1, dx, dy)
-                        && let Some(lens) = self.lens_windows.get_mut(&id)
+                    if let Some(lens) = self.lens_windows.get_mut(&id)
                     {
                         lens.window.request_redraw();
                     }

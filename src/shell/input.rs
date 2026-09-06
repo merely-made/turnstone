@@ -205,10 +205,13 @@ impl Shell {
                 });
                 return;
             }
-            if let Some(session) = self.content_sessions.get_mut(&node) {
-                if session.scroll_at(hit.local.0, hit.local.1, dx, dy) {
-                    self.request_redraw();
-                }
+            if self
+                .with_content_appearance(node, hit.id, |session| {
+                    session.scroll_at(hit.local.0, hit.local.1, dx, dy)
+                })
+                .unwrap_or(false)
+            {
+                self.request_redraw();
             } else if let Some(producer) = self.surface_producers.get_mut(&node) {
                 if let Err(error) = producer.send_mouse_input(inker::MouseEvent {
                     position: inker::PhysicalPosition {
@@ -344,10 +347,14 @@ impl Shell {
         if let Some(hit) = hit {
             match hit.kind {
                 crate::surface::SurfaceKind::Content(node) => {
-                    self.app.focus = crate::surface::FocusTarget::Content(node);
-                    if let Some(session) = self.content_sessions.get_mut(&node) {
-                        if button == MouseButton::Left {
-                            match session.pointer_down(hit.local.0, hit.local.1) {
+                    self.app.focus = crate::surface::FocusTarget::Content {
+                        node,
+                        appearance: hit.id,
+                    };
+                    if let Some(outcome) = self.with_content_appearance(node, hit.id, |session| {
+                        (button == MouseButton::Left).then(|| session.pointer_down(hit.local.0, hit.local.1))
+                    }).flatten() {
+                        match outcome {
                                 SessionClick::Navigate(url) => {
                                     let url = super::content_link_target(&self.app, node, &url);
                                     self.act(Action::OpenAddress(url));
@@ -359,7 +366,6 @@ impl Shell {
                                     });
                                 }
                                 SessionClick::Handled | SessionClick::Miss => {}
-                            }
                         }
                     } else if let (Some(producer), Some(surface_button)) = (
                         self.surface_producers.get_mut(&node),
@@ -958,16 +964,16 @@ impl Shell {
         let content_hit = crate::surface::hit_test(&self.surface_plan(), self.app.focus, x, y)
             .and_then(|hit| match hit.kind {
                 crate::surface::SurfaceKind::Content(node) => {
-                    Some((node, hit.local.0, hit.local.1))
+                    Some((node, hit.id, hit.local.0, hit.local.1))
                 }
                 _ => None,
             });
-        let Some((node, local_x, local_y)) = content_hit else {
+        let Some((node, appearance, local_x, local_y)) = content_hit else {
             self.reset_surface_cursor();
             return;
         };
-        if let Some(session) = self.content_sessions.get(&node) {
-            let target = session.links().into_iter().find_map(|link| {
+        if let Some(links) = self.with_content_appearance(node, appearance, |session| session.links()) {
+            let target = links.into_iter().find_map(|link| {
                 let [left, top, width, height] = link.rect;
                 (local_x >= left
                     && local_x <= left + width.max(0.0)

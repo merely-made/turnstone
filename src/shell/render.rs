@@ -778,9 +778,10 @@ impl Shell {
                     (scene, wgpu::Color::WHITE)
                 }
                 crate::surface::SurfaceKind::Content(node) => {
-                    if let Some(session) = self.content_sessions.get_mut(&node) {
+                    if let Some(scene) = self.with_content_appearance(node, surface.id, |session| {
                         // Already pumped above; just frame it at the pane size.
-                        let scene = session.frame(rw, rh);
+                        session.frame(rw, rh)
+                    }) {
                         (scene, wgpu::Color::WHITE)
                     } else {
                         #[cfg(all(feature = "weld", windows))]

@@ -68,7 +68,7 @@ founding brief is `design_docs/2026-07-08_turnstone_founding.md`.
 
 Turnstone exposes its first local Graphshell projection through the library's
 `remote_projection` adapter. Mere cartography maps the live graph into a
-Scenograph spiral and routed relations; Graphshell resolves separately
+sceno spiral and routed relations; Graphshell resolves separately
 transferred cards and returns advertised intents through Servitor. The G3
 receipt and exact acceptance boundary are recorded in
 `docs/2026-07-22_g3_graphshell_endpoint_receipt.md`.

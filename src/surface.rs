@@ -23,6 +23,9 @@
 use crate::panes::PaneId;
 use uuid::Uuid;
 
+#[path = "surface/appearance.rs"]
+pub(crate) mod appearance;
+
 /// A rectangle in physical window pixels. `x`/`y` are the top-left corner.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Rect {
@@ -140,6 +143,14 @@ impl SurfaceId {
         SurfaceId(hi ^ lo)
     }
 
+    /// A distinct retained presentation of one document. The document id
+    /// remains the content authority; `appearance` names only the viewport,
+    /// focus, and raster state that belongs to one visible placement.
+    pub fn content_appearance(node: Uuid, appearance: u64) -> Self {
+        let (hi, lo) = node.as_u64_pair();
+        SurfaceId((hi ^ lo).rotate_left(17) ^ appearance.wrapping_mul(0x9e37_79b9_7f4a_7c15))
+    }
+
     /// A non-canvas pane's id, offset past the reserved canvas(0)/chrome(1). A
     /// pane keeps this id across frames (its `PaneId` is stable), so the tile
     /// cache reuses its texture.
@@ -174,8 +185,10 @@ pub enum FocusTarget {
     Graph(PaneId),
     /// The chrome layer has focus: the omnibar is open and taking keys.
     Chrome,
-    /// A node's live content session has focus and takes pointer/wheel/keys.
-    Content(Uuid),
+    /// One visible appearance of a node's live content session has focus. The
+    /// node identifies shared document content; the surface id identifies
+    /// local viewport/focus/render state.
+    Content { node: Uuid, appearance: SurfaceId },
     /// A retained pane surface has focus and takes product-neutral input.
     Pane(PaneId),
 }
@@ -193,7 +206,7 @@ impl FocusTarget {
         match self {
             FocusTarget::Graph(_) => "graph",
             FocusTarget::Chrome => "chrome",
-            FocusTarget::Content(_) => "content",
+            FocusTarget::Content { .. } => "content",
             FocusTarget::Pane(_) => "pane",
         }
     }
@@ -298,7 +311,10 @@ pub fn focus_for_press(surfaces: &[Surface], focus: FocusTarget, px: f32, py: f3
         Some(hit) => match hit.kind {
             SurfaceKind::Graph(pane) => FocusTarget::Graph(pane),
             SurfaceKind::Chrome => FocusTarget::Chrome,
-            SurfaceKind::Content(node) => FocusTarget::Content(node),
+            SurfaceKind::Content(node) => FocusTarget::Content {
+                node,
+                appearance: hit.id,
+            },
             // This pure plan has no product registry, so ordinary pane presses
             // preserve keyboard focus. The shell promotes a registered
             // contributed pane to `FocusTarget::Pane` after admission. A seam
@@ -441,11 +457,22 @@ mod tests {
         // Press inside the content pane -> content focus.
         assert_eq!(
             focus_for_press(&plan, FocusTarget::Graph(PaneId(0)), 700.0, 400.0),
-            FocusTarget::Content(node(5))
+            FocusTarget::Content {
+                node: node(5),
+                appearance: SurfaceId::content(node(5)),
+            }
         );
         // Press on the canvas -> canvas focus.
         assert_eq!(
-            focus_for_press(&plan, FocusTarget::Content(node(5)), 100.0, 400.0),
+            focus_for_press(
+                &plan,
+                FocusTarget::Content {
+                    node: node(5),
+                    appearance: SurfaceId::content(node(5)),
+                },
+                100.0,
+                400.0,
+            ),
             FocusTarget::Graph(PaneId(0))
         );
     }

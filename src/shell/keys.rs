@@ -85,7 +85,7 @@ impl Shell {
         pressed: bool,
         text: Option<&str>,
     ) -> bool {
-        let crate::surface::FocusTarget::Content(node) = self.app.focus else {
+        let crate::surface::FocusTarget::Content { node, .. } = self.app.focus else {
             return false;
         };
         if self.app.user_agent_decision.is_open()
@@ -121,7 +121,7 @@ impl Shell {
     }
 
     fn deliver_knot_key(&mut self, key: &WinitKey) -> bool {
-        let crate::surface::FocusTarget::Content(node) = self.app.focus else {
+        let crate::surface::FocusTarget::Content { node, .. } = self.app.focus else {
             return false;
         };
         let Some(session) = self.content_sessions.get_mut(&node) else {
@@ -144,7 +144,7 @@ impl Shell {
     }
 
     pub(super) fn deliver_knot_ime(&mut self, ime: &winit::event::Ime) -> bool {
-        let crate::surface::FocusTarget::Content(node) = self.app.focus else {
+        let crate::surface::FocusTarget::Content { node, .. } = self.app.focus else {
             return false;
         };
         self.content_sessions
@@ -209,7 +209,7 @@ impl Shell {
     /// become Actions. Unlike the wheel this is focus-routed, not
     /// position-routed: a page reader's keys go to the page they are reading.
     pub(super) fn deliver_content_key(&mut self, key: &WinitKey) -> bool {
-        let crate::surface::FocusTarget::Content(node) = self.app.focus else {
+        let crate::surface::FocusTarget::Content { node, appearance } = self.app.focus else {
             return false;
         };
         // Escape blurs back to the canvas. Focus is ephemeral UI state (the
@@ -224,9 +224,8 @@ impl Shell {
             return false;
         };
         let moved = self
-            .content_sessions
-            .get_mut(&node)
-            .is_some_and(|session| session.scroll_for_key(scroll));
+            .with_content_appearance(node, appearance, |session| session.scroll_for_key(scroll))
+            .unwrap_or(false);
         // Record the outcome for the scenario probe, and repaint when the page
         // actually moved.
         self.content_scroll_moved = Some(moved);
@@ -373,7 +372,7 @@ impl Shell {
             }
         } else if matches!(self.app.focus, crate::surface::FocusTarget::Pane(_)) {
             None
-        } else if matches!(self.app.focus, crate::surface::FocusTarget::Content(_)) {
+        } else if matches!(self.app.focus, crate::surface::FocusTarget::Content { .. }) {
             // A page holds focus. Its scroll keys and Escape were already
             // consumed above; only the durable node/nav chords still apply
             // here. The canvas VIEW hotkeys (reseed, isometric, orbit) are

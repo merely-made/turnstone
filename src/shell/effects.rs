@@ -905,6 +905,7 @@ impl Shell {
                             // node asked for stays persisted either way.
                             replay_retained_page_scale(&mut self.app, node, session.as_mut());
                             let subresources = session.subresources();
+                            self.clear_reader_appearances(node);
                             self.content_sessions.insert(node, session);
                             for url in subresources {
                                 if self.pending_fetches.note_subresource(&url, node) {
@@ -1176,6 +1177,7 @@ impl Shell {
                 }
                 Effect::CloseContent { node } => {
                     self.withdraw_user_agent_requests(node, "surface-closed");
+                    self.clear_reader_appearances(node);
                     self.surface_find_requests.remove(&node);
                     if self.content_sessions.remove(&node).is_some() {
                         tracing::info!(%node, "content session closed");
