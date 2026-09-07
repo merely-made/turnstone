@@ -21,10 +21,10 @@
 //! rides the observation drain instead of lowering an Effect.
 //!
 //! The same actor answers **recall** (W2): the omnibar lowers
-//! `Effect::RecallQuery`, and [`TrailCommand::Recall`] mints BM25 plus an
-//! optional token n-gram vector projection from the stored corpus (flushing
-//! first, so this minute's pages are findable) and answers
-//! `Update::RecallHits`. Current graph and recycle-bin titles overlay titleless
+//! `Effect::RecallQuery`, and [`TrailCommand::Recall`] mints BM25, a frecency
+//! fold, and an optional token n-gram vector projection from the stored corpus
+//! (flushing first, so this minute's pages are findable), fuses the lanes that
+//! are on, and answers `Update::RecallHits`. Current graph and recycle-bin titles overlay titleless
 //! trace pages only while those derived indexes are minted; they do not rewrite
 //! browsing history. The indexes are held here, never repaired — a corpus,
 //! title projection, or vector-space setting that moved re-mints.
@@ -37,11 +37,13 @@ use std::sync::mpsc::Receiver;
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use armillary::{ActorHandle, Emitter, Wake, spawn_named};
+use eidetic::browsing::frecency::ranked;
 use eidetic::{
-    BrowsingMemory, BrowsingTrace, PageRef, TraceEvent, TraceTransition, bootstrap_browsing_schema,
+    BrowsingMemory, BrowsingTrace, FrecencyConfig, PageRef, TraceEvent, TraceTransition,
+    bootstrap_browsing_schema, frecency,
 };
 use eidetic_fjall::FjallStore;
-use eidetic_search::{FusedHit, TrailIndex, fuse};
+use eidetic_search::{FusedHit, Ranking, TrailIndex, fuse_many};
 use esp::embed::{LexicalEmbeddingProvider, SemanticSearch};
 
 use crate::action::{RecallHit, Update};
@@ -56,34 +58,58 @@ const SEGMENT_SIZE: usize = 32;
 /// durable format authority.
 const PHRASE_VECTOR_DIMENSIONS: usize = 4_096;
 
-/// Standard reciprocal-rank damping. The application setting exposes the only
-/// ranking-relevant weight ratio: phrase vectors relative to BM25.
+/// Standard reciprocal-rank damping. The application settings expose the
+/// ranking-relevant ratios instead: phrase vectors and frecency, each relative
+/// to BM25.
 const RRF_K: f64 = 60.0;
 
 /// Pull a wider head from each input before reducing to the omnibar row limit.
 const FUSION_CANDIDATE_MULTIPLIER: usize = 4;
+
+/// Frecency's fusion weight relative to BM25, on by default. Above 1.0 so a
+/// typed prefix the user has been to before outranks a page BM25 merely likes
+/// the title of — the behavioural lane's whole point (wiring plan W6b).
+const DEFAULT_FRECENCY_WEIGHT: f32 = 2.0;
 
 /// Live application settings consumed by the derived recall index.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct RecallConfig {
     ngram_max_order: u8,
     vector_weight: f32,
+    frecency_weight: f32,
 }
 
 impl RecallConfig {
     pub fn new(ngram_max_order: u8, vector_weight: f32) -> Self {
         Self {
             ngram_max_order: ngram_max_order.clamp(1, 3),
-            vector_weight: if vector_weight.is_finite() {
-                vector_weight.clamp(0.0, 4.0)
-            } else {
-                0.0
-            },
+            vector_weight: Self::clamp_weight(vector_weight),
+            frecency_weight: DEFAULT_FRECENCY_WEIGHT,
+        }
+    }
+
+    /// Weight of the behavioural ranking relative to BM25; zero is the lane's
+    /// off switch. The fold's own policy (per-transition weights, half-life,
+    /// dwell bonus) is eidetic's, not the app's.
+    pub fn with_frecency_weight(mut self, weight: f32) -> Self {
+        self.frecency_weight = Self::clamp_weight(weight);
+        self
+    }
+
+    fn clamp_weight(weight: f32) -> f32 {
+        if weight.is_finite() {
+            weight.clamp(0.0, 4.0)
+        } else {
+            0.0
         }
     }
 
     fn vector_enabled(self) -> bool {
         self.vector_weight > 0.0
+    }
+
+    fn frecency_enabled(self) -> bool {
+        self.frecency_weight > 0.0
     }
 
     fn token_ngram_orders(self) -> Vec<usize> {
@@ -199,7 +225,7 @@ fn open_memory(dir: &Path) -> Option<(FjallStore, BrowsingMemory)> {
         Err(err) => {
             tracing::warn!(%err, dir = %dir.display(), "trail memory: open failed; capture disabled until reopen");
             return None;
-        }
+        },
     };
     if let Err(err) = pollster::block_on(bootstrap_browsing_schema(&mut store)) {
         tracing::warn!(%err, "trail memory: schema bootstrap failed; capture disabled until reopen");
@@ -210,7 +236,7 @@ fn open_memory(dir: &Path) -> Option<(FjallStore, BrowsingMemory)> {
         Err(err) => {
             tracing::warn!(%err, "trail memory: corpus load failed; capture disabled until reopen");
             None
-        }
+        },
     }
 }
 
@@ -332,6 +358,9 @@ pub struct MintReceipt {
     pub lexical: Duration,
     /// The phrase-vector ingest alone; `None` when vector influence is off.
     pub vector: Option<Duration>,
+    /// The frecency fold alone. Always measured: one pass over the corpus, and
+    /// the lane's weight is a fusion-time setting, so it needs no re-mint.
+    pub frecency: Duration,
     /// The whole mint, corpus walk and document fold included.
     pub total: Duration,
 }
@@ -348,6 +377,7 @@ impl MintReceipt {
             corpus_bytes = self.corpus_bytes,
             lexical_us = self.lexical.as_micros() as u64,
             vector_us = self.vector.map(|elapsed| elapsed.as_micros() as u64),
+            frecency_us = self.frecency.as_micros() as u64,
             total_us = self.total.as_micros() as u64,
             "trail memory: recall index minted"
         );
@@ -361,6 +391,10 @@ struct RecallIndex {
     lexical: TrailIndex,
     vector: Option<PhraseSearch>,
     vector_order: Option<u8>,
+    /// The behavioural lane: frecency per URL, folded from the same corpus at
+    /// mint against one reference `now`, so every query this index answers
+    /// decays from the same instant.
+    frecency: BTreeMap<String, f64>,
     documents: BTreeMap<String, RecallDocument>,
     receipt: MintReceipt,
 }
@@ -374,6 +408,9 @@ impl RecallIndex {
             TrailIndex::rebuild(index_dir(dir), traces).map_err(|err| format!("re-mint: {err}"))?;
         let lexical_elapsed = lexical_started.elapsed();
         let documents = recall_documents(traces);
+        let frecency_started = Instant::now();
+        let frecency = frecency(traces, now_ms(), &FrecencyConfig::default());
+        let frecency_elapsed = frecency_started.elapsed();
         let mut vector_elapsed = None;
         let vector = if config.vector_enabled() {
             let vector_started = Instant::now();
@@ -399,6 +436,7 @@ impl RecallIndex {
             lexical,
             vector,
             vector_order: config.vector_enabled().then_some(config.ngram_max_order),
+            frecency,
             receipt: MintReceipt {
                 traces: traces.len(),
                 events,
@@ -406,12 +444,45 @@ impl RecallIndex {
                 corpus_bytes,
                 lexical: lexical_elapsed,
                 vector: vector_elapsed,
+                frecency: frecency_elapsed,
                 total: started.elapsed(),
             },
             documents,
         };
         index.receipt.emit();
         Ok(index)
+    }
+
+    /// Pages whose stored URL or title carries the typed text, best-frecency
+    /// first. Substring, not tokens: the case this lane answers is a typed URL
+    /// prefix, and the page a prefix should recall is the one visited most and
+    /// most recently. Pages with no behavioural evidence (only redirects and
+    /// reloads) score zero and stay out — an empty lane, not a zero-rank one.
+    fn frecency_urls(&self, query: &str, limit: usize) -> Vec<String> {
+        let needle = query.trim().to_lowercase();
+        if needle.is_empty() {
+            return Vec::new();
+        }
+        let matched: BTreeMap<&String, f64> = self
+            .frecency
+            .iter()
+            .filter(|(_, score)| score.is_finite() && **score > 0.0)
+            .filter(|(url, _)| self.carries(url.as_str(), &needle))
+            .map(|(url, score)| (url, *score))
+            .collect();
+        let mut urls: Vec<String> = ranked(&matched).into_iter().cloned().collect();
+        urls.truncate(limit);
+        urls
+    }
+
+    /// Does this page's URL or its indexed title contain the typed text?
+    fn carries(&self, url: &str, needle: &str) -> bool {
+        url.to_lowercase().contains(needle)
+            || self
+                .documents
+                .get(url)
+                .and_then(|document| document.hit.title.as_deref())
+                .is_some_and(|title| title.to_lowercase().contains(needle))
     }
 
     fn fused_hits(
@@ -428,9 +499,6 @@ impl RecallIndex {
             .lexical
             .search(query, candidate_limit)
             .map_err(|err| format!("search: {err}"))?;
-        let Some(vector) = self.vector.as_ref() else {
-            return Err("phrase index is not minted".to_string());
-        };
         let mut seen = HashSet::new();
         let mut lexical_urls = Vec::new();
         for hit in &lexical_hits {
@@ -439,27 +507,43 @@ impl RecallIndex {
             }
         }
 
-        // Ask the flat index for every record before deterministic tie-breaking.
-        // Truncating inside its HashMap-backed ranking could select an arbitrary
-        // subset of equal-score URLs.
-        let mut vector_hits = vector
-            .search(query, vector.len().max(1))
-            .map_err(|err| format!("phrase search: {err}"))?;
-        vector_hits.retain(|(_, score)| score.is_finite() && *score > 0.0);
-        vector_hits.sort_by(|left, right| {
-            right
-                .1
-                .total_cmp(&left.1)
-                .then_with(|| left.0.cmp(&right.0))
-        });
-        vector_hits.truncate(candidate_limit);
-        let vector_urls: Vec<String> = vector_hits.into_iter().map(|(url, _)| url).collect();
+        let mut vector_urls = Vec::new();
+        if config.vector_enabled() {
+            let Some(vector) = self.vector.as_ref() else {
+                return Err("phrase index is not minted".to_string());
+            };
+            // Ask the flat index for every record before deterministic
+            // tie-breaking. Truncating inside its HashMap-backed ranking could
+            // select an arbitrary subset of equal-score URLs.
+            let mut vector_hits = vector
+                .search(query, vector.len().max(1))
+                .map_err(|err| format!("phrase search: {err}"))?;
+            vector_hits.retain(|(_, score)| score.is_finite() && *score > 0.0);
+            vector_hits.sort_by(|left, right| {
+                right
+                    .1
+                    .total_cmp(&left.1)
+                    .then_with(|| left.0.cmp(&right.0))
+            });
+            vector_hits.truncate(candidate_limit);
+            vector_urls = vector_hits.into_iter().map(|(url, _)| url).collect();
+        }
 
-        Ok(fuse(
-            &lexical_urls,
-            &vector_urls,
+        let frecency_urls = if config.frecency_enabled() {
+            self.frecency_urls(query, candidate_limit)
+        } else {
+            Vec::new()
+        };
+
+        // Lane order is the contract fusion's named ranks read: lexical, then
+        // vector, then behavioural.
+        Ok(fuse_many(
+            &[
+                Ranking::new(&lexical_urls, 1.0),
+                Ranking::new(&vector_urls, f64::from(config.vector_weight)),
+                Ranking::new(&frecency_urls, f64::from(config.frecency_weight)),
+            ],
             RRF_K,
-            (1.0, f64::from(config.vector_weight)),
         )
         .into_iter()
         .take(limit)
@@ -476,9 +560,9 @@ impl RecallIndex {
             return Ok(Vec::new());
         }
 
-        // Zero influence is the compatibility path: preserve TrailIndex's
+        // Every lane off is the compatibility path: preserve TrailIndex's
         // ranking and metadata exactly, and do not require a vector projection.
-        if !config.vector_enabled() {
+        if !config.vector_enabled() && !config.frecency_enabled() {
             return Ok(self
                 .lexical
                 .search(query, limit)
@@ -586,7 +670,7 @@ pub fn spawn_trail(wake: Wake, dir: PathBuf) -> (ActorHandle<TrailCommand>, Rece
                         if memory.record_traversal(&owner, event) {
                             flush(store, memory);
                         }
-                    }
+                    },
                     TrailCommand::Recall {
                         query,
                         limit,
@@ -620,12 +704,12 @@ pub fn spawn_trail(wake: Wake, dir: PathBuf) -> (ActorHandle<TrailCommand>, Rece
                             Ok(hits) => out.emit(Update::RecallHits { query, hits }),
                             Err(error) => out.emit(Update::RecallFailed { error }),
                         }
-                    }
+                    },
                     TrailCommand::Flush => {
                         if let Some((store, memory)) = state.as_mut() {
                             flush(store, memory);
                         }
-                    }
+                    },
                     TrailCommand::Reopen(dir) => {
                         if let Some((store, memory)) = state.as_mut() {
                             flush(store, memory);
@@ -638,7 +722,7 @@ pub fn spawn_trail(wake: Wake, dir: PathBuf) -> (ActorHandle<TrailCommand>, Rece
                         indexed_sources.clear();
                         state = open_memory(&dir);
                         current_dir = dir;
-                    }
+                    },
                     TrailCommand::Release(ack) => {
                         if let Some((store, memory)) = state.as_mut() {
                             flush(store, memory);
@@ -649,7 +733,7 @@ pub fn spawn_trail(wake: Wake, dir: PathBuf) -> (ActorHandle<TrailCommand>, Rece
                         indexed_sources.clear();
                         last_to.clear();
                         let _ = ack.send(());
-                    }
+                    },
                 }
             }
         },
@@ -703,7 +787,10 @@ mod tests {
                 candidates: Vec::new(),
             });
             if segment.len() == SEGMENT_SIZE {
-                built.push(BrowsingTrace::from_events("p", std::mem::take(&mut segment)));
+                built.push(BrowsingTrace::from_events(
+                    "p",
+                    std::mem::take(&mut segment),
+                ));
             }
         }
         if !segment.is_empty() {
@@ -735,7 +822,10 @@ mod tests {
         assert_eq!(receipt.events, EVENTS);
         assert_eq!(receipt.pages, PAGES, "distinct destination URLs");
         assert_eq!(receipt.corpus_bytes, expected_corpus_bytes(EVENTS, PAGES));
-        assert!(receipt.lexical > Duration::ZERO, "the lexical lane is timed");
+        assert!(
+            receipt.lexical > Duration::ZERO,
+            "the lexical lane is timed"
+        );
         assert!(
             receipt.vector.is_some_and(|vector| vector > Duration::ZERO),
             "the vector lane is timed when it runs"
@@ -743,7 +833,8 @@ mod tests {
         assert!(receipt.total >= receipt.lexical, "total covers both lanes");
 
         // Vector off leaves that lane unmeasured rather than reporting zero.
-        let lexical_only = RecallIndex::mint(&temp_dir(), &traces, RecallConfig::default()).unwrap();
+        let lexical_only =
+            RecallIndex::mint(&temp_dir(), &traces, RecallConfig::default()).unwrap();
         assert!(lexical_only.receipt.vector.is_none());
         assert_eq!(lexical_only.receipt.events, EVENTS);
     }
@@ -923,7 +1014,8 @@ mod tests {
             query: "open downloads folder".into(),
             limit: 2,
             sources: sources.clone(),
-            config: RecallConfig::default(),
+            // Both behavioural and phrase lanes off: this half is about BM25.
+            config: RecallConfig::default().with_frecency_weight(0.0),
         });
         let Update::RecallHits { hits: lexical, .. } = rx.recv().unwrap() else {
             panic!("lexical recall must answer");
@@ -940,6 +1032,69 @@ mod tests {
             panic!("hybrid recall must answer");
         };
         assert_eq!(hybrid[0].url, target, "bigrams supply phrase order");
+
+        let (ack_tx, ack_rx) = std::sync::mpsc::sync_channel(0);
+        handle.command(TrailCommand::Release(ack_tx));
+        ack_rx.recv().unwrap();
+    }
+
+    /// W6b's done-condition: a typed prefix recalls the page the user keeps
+    /// going back to, not the page whose title repeats the query. The decoy
+    /// wins on BM25 (three occurrences in a short title) and loses on
+    /// behaviour (one link click, two hundred days ago).
+    #[test]
+    fn typed_prefix_recall_follows_frecency_over_title_overlap() {
+        const DAY_MS: u64 = 24 * 60 * 60 * 1_000;
+        let dir = temp_dir();
+        let wake: Wake = Arc::new(|| {});
+        let (handle, rx) = spawn_trail(wake, dir);
+        let target = "https://gazette.test/";
+        let decoy = "https://elsewhere.test/gazette/gazette-gazette";
+        let now = now_ms();
+
+        handle.command(TrailCommand::Record {
+            owner: "p".into(),
+            url: decoy.into(),
+            transition: TraceTransition::LinkClick,
+            at_ms: now - 200 * DAY_MS,
+        });
+        for days_ago in 0..6 {
+            handle.command(TrailCommand::Record {
+                owner: "p".into(),
+                url: target.into(),
+                transition: TraceTransition::UrlTyped,
+                at_ms: now - days_ago * DAY_MS,
+            });
+        }
+        let sources = vec![
+            RecallSource::new(target, "The Morning Paper").unwrap(),
+            RecallSource::new(decoy, "Gazette Gazette Gazette").unwrap(),
+        ];
+
+        let recall = |config| {
+            handle.command(TrailCommand::Recall {
+                query: "gazette".into(),
+                limit: 5,
+                sources: sources.clone(),
+                config,
+            });
+            let Update::RecallHits { hits, .. } = rx.recv().unwrap() else {
+                panic!("recall must answer with hits");
+            };
+            hits
+        };
+
+        let lexical = recall(RecallConfig::default().with_frecency_weight(0.0));
+        assert_eq!(
+            lexical[0].url, decoy,
+            "BM25 alone follows the repeated title term"
+        );
+
+        let behavioural = recall(RecallConfig::default());
+        assert_eq!(
+            behavioural[0].url, target,
+            "frecency lifts the page the prefix was typed into six times"
+        );
 
         let (ack_tx, ack_rx) = std::sync::mpsc::sync_channel(0);
         handle.command(TrailCommand::Release(ack_tx));

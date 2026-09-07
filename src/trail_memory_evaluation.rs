@@ -319,10 +319,10 @@ fn validate_manifest(
             match case.split {
                 EvaluationSplit::Train => {
                     train_targets.insert(url.as_str());
-                }
+                },
                 EvaluationSplit::HeldOut => {
                     held_out_targets.insert(url.as_str());
-                }
+                },
             }
             let bucket = match (case.split, case.kind) {
                 (EvaluationSplit::Train, EvaluationKind::Phrase) => 0,
@@ -361,7 +361,9 @@ fn scored_search(
     query: &str,
     limit: usize,
 ) -> Result<Vec<ScoredUrl>, String> {
-    let recall = RecallConfig::new(config.order, config.weight);
+    // The behavioural lane is held off here: this harness is W6a's phrase-vector
+    // experiment, and its candidate set is not a typed prefix.
+    let recall = RecallConfig::new(config.order, config.weight).with_frecency_weight(0.0);
     if !recall.vector_enabled() {
         return index
             .lexical
@@ -887,6 +889,72 @@ fn training_selection_is_held_out_and_tie_aware() {
 #[ignore = "requires an explicit private Turnstone session and evaluation manifest"]
 fn captured_trail_recall_receipt() {
     run_captured_trail_receipt().unwrap();
+}
+
+/// A stable, non-identifying label for one page of a private corpus. The
+/// receipt needs to show that an order changed, not which pages were visited.
+fn page_label(url: &str) -> String {
+    blake3::hash(url.as_bytes()).to_hex()[..8].to_string()
+}
+
+/// W6b's receipt against a real captured session: what a typed prefix recalls
+/// with the behavioural lane off and on. Needs no manifest — the corpus's own
+/// frecency table supplies the prefixes (the host label of each top page), so
+/// nothing is hand-picked. Prints labels and ranks, never URLs.
+#[test]
+#[ignore = "requires an explicit private Turnstone session"]
+fn captured_trail_frecency_receipt() {
+    let session = std::env::var_os("TURNSTONE_RECALL_EVAL_SESSION")
+        .map(PathBuf::from)
+        .expect("TURNSTONE_RECALL_EVAL_SESSION is required");
+    let corpus = load_evaluation_corpus(&session).unwrap();
+    let index_root = tempfile::tempdir().expect("frecency receipt index root");
+    let index =
+        RecallIndex::mint(index_root.path(), &corpus.traces, RecallConfig::default()).unwrap();
+    let behavioural = eidetic::browsing::frecency::ranked(&index.frecency);
+    println!(
+        "corpus digest={} source=captured pages={} scored_pages={} frecency_us={}",
+        corpus.digest,
+        index.receipt.pages,
+        index.frecency.values().filter(|s| **s > 0.0).count(),
+        index.receipt.frecency.as_micros(),
+    );
+
+    // A typed prefix, taken from the host of each of the top behavioural pages:
+    // the omnibar case W6b exists for.
+    for url in behavioural.iter().take(3) {
+        let host = url
+            .split("://")
+            .nth(1)
+            .and_then(|rest| rest.split('/').next())
+            .unwrap_or(url);
+        let prefix: String = host.chars().take(4).collect();
+        println!(
+            "prefix chars={} expects={}",
+            prefix.chars().count(),
+            page_label(url),
+        );
+        for (lane, config) in [
+            (
+                "without_frecency",
+                RecallConfig::default().with_frecency_weight(0.0),
+            ),
+            ("with_frecency", RecallConfig::default()),
+        ] {
+            let hits = index.search(&prefix, 3, config).unwrap();
+            let top: Vec<String> = hits
+                .iter()
+                .map(|hit| {
+                    let rank = behavioural.iter().position(|url| *url == hit.url);
+                    match rank {
+                        Some(rank) => format!("{}@f{rank}", page_label(&hit.url)),
+                        None => format!("{}@f-", page_label(&hit.url)),
+                    }
+                })
+                .collect();
+            println!("  lane={lane} top={top:?}");
+        }
+    }
 }
 
 /// W6a's mint cost against a real captured session: what a recall after one
