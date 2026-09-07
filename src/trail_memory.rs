@@ -34,7 +34,7 @@
 use std::collections::{BTreeMap, HashMap, HashSet};
 use std::path::{Path, PathBuf};
 use std::sync::mpsc::Receiver;
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use armillary::{ActorHandle, Emitter, Wake, spawn_named};
 use eidetic::{
@@ -300,6 +300,60 @@ fn recall_documents(traces: &[BrowsingTrace]) -> BTreeMap<String, RecallDocument
     documents
 }
 
+/// Events and indexable bytes across a corpus: url plus title, the only text
+/// a trace event carries today.
+fn corpus_size(traces: &[BrowsingTrace]) -> (usize, usize) {
+    let mut events = 0;
+    let mut bytes = 0;
+    for trace in traces {
+        events += trace.events.len();
+        for event in &trace.events {
+            bytes += event.to.url.len() + event.to.title.as_deref().map_or(0, str::len);
+        }
+    }
+    (events, bytes)
+}
+
+/// What one [`RecallIndex::mint`] covered and what it cost. Every recall after
+/// a navigation re-mints from the whole corpus, so this is the price of the
+/// derived-not-repaired doctrine — the measurement the engine decision (keep
+/// tantivy, or an in-tree BM25) waits on. A receipt, not durable state.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct MintReceipt {
+    /// Stored trace segments read.
+    pub traces: usize,
+    /// Traversal events across those segments.
+    pub events: usize,
+    /// Distinct destination URLs — one index document each.
+    pub pages: usize,
+    /// Indexable text size: url + title bytes summed over every event.
+    pub corpus_bytes: usize,
+    /// The tantivy rebuild alone.
+    pub lexical: Duration,
+    /// The phrase-vector ingest alone; `None` when vector influence is off.
+    pub vector: Option<Duration>,
+    /// The whole mint, corpus walk and document fold included.
+    pub total: Duration,
+}
+
+impl MintReceipt {
+    /// One line per mint. Tracing is the receipt's only surface: threading it
+    /// through `Update::RecallHits` would widen the omnibar API for a number
+    /// the omnibar does not render.
+    fn emit(&self) {
+        tracing::info!(
+            traces = self.traces,
+            events = self.events,
+            pages = self.pages,
+            corpus_bytes = self.corpus_bytes,
+            lexical_us = self.lexical.as_micros() as u64,
+            vector_us = self.vector.map(|elapsed| elapsed.as_micros() as u64),
+            total_us = self.total.as_micros() as u64,
+            "trail memory: recall index minted"
+        );
+    }
+}
+
 type PhraseSearch = SemanticSearch<String, LexicalEmbeddingProvider>;
 
 /// One disposable projection over the authoritative trace corpus.
@@ -308,14 +362,21 @@ struct RecallIndex {
     vector: Option<PhraseSearch>,
     vector_order: Option<u8>,
     documents: BTreeMap<String, RecallDocument>,
+    receipt: MintReceipt,
 }
 
 impl RecallIndex {
     fn mint(dir: &Path, traces: &[BrowsingTrace], config: RecallConfig) -> Result<Self, String> {
+        let started = Instant::now();
+        let (events, corpus_bytes) = corpus_size(traces);
+        let lexical_started = Instant::now();
         let lexical =
             TrailIndex::rebuild(index_dir(dir), traces).map_err(|err| format!("re-mint: {err}"))?;
+        let lexical_elapsed = lexical_started.elapsed();
         let documents = recall_documents(traces);
+        let mut vector_elapsed = None;
         let vector = if config.vector_enabled() {
+            let vector_started = Instant::now();
             let provider = LexicalEmbeddingProvider::with_token_ngram_orders(
                 PHRASE_VECTOR_DIMENSIONS,
                 config.token_ngram_orders(),
@@ -329,16 +390,28 @@ impl RecallIndex {
             search
                 .ingest_batch(&items)
                 .map_err(|err| format!("phrase ingest: {err}"))?;
+            vector_elapsed = Some(vector_started.elapsed());
             Some(search)
         } else {
             None
         };
-        Ok(Self {
+        let index = Self {
             lexical,
             vector,
             vector_order: config.vector_enabled().then_some(config.ngram_max_order),
+            receipt: MintReceipt {
+                traces: traces.len(),
+                events,
+                pages: documents.len(),
+                corpus_bytes,
+                lexical: lexical_elapsed,
+                vector: vector_elapsed,
+                total: started.elapsed(),
+            },
             documents,
-        })
+        };
+        index.receipt.emit();
+        Ok(index)
     }
 
     fn fused_hits(
@@ -598,6 +671,97 @@ mod tests {
             .join(uuid::Uuid::new_v4().to_string());
         std::fs::create_dir_all(&dir).unwrap();
         dir
+    }
+
+    /// One synthetic page's url and title. Deterministic, so a test can total
+    /// the corpus bytes without asking the code under test.
+    fn synthetic_page(index: usize) -> (String, String) {
+        (
+            format!("https://page{index}.example/trail/{index}"),
+            format!("Synthetic Page {index}"),
+        )
+    }
+
+    /// `events` traversals cycling over `pages` distinct URLs, chained and
+    /// chunked into `SEGMENT_SIZE` segments exactly as the actor stores them.
+    fn synthetic_traces(events: usize, pages: usize) -> Vec<BrowsingTrace> {
+        let mut built = Vec::new();
+        let mut segment = Vec::new();
+        let mut previous: Option<PageRef> = None;
+        for index in 0..events {
+            let (url, title) = synthetic_page(index % pages);
+            let to = PageRef {
+                url,
+                title: Some(title),
+            };
+            segment.push(TraceEvent {
+                from: previous.replace(to.clone()),
+                to,
+                transition: TraceTransition::LinkClick,
+                at_ms: index as u64 + 1,
+                dwell_ms: None,
+                candidates: Vec::new(),
+            });
+            if segment.len() == SEGMENT_SIZE {
+                built.push(BrowsingTrace::from_events("p", std::mem::take(&mut segment)));
+            }
+        }
+        if !segment.is_empty() {
+            built.push(BrowsingTrace::from_events("p", segment));
+        }
+        built
+    }
+
+    fn expected_corpus_bytes(events: usize, pages: usize) -> usize {
+        (0..events)
+            .map(|index| {
+                let (url, title) = synthetic_page(index % pages);
+                url.len() + title.len()
+            })
+            .sum()
+    }
+
+    /// The W6a receipt: counts are exact against a corpus the test built, and
+    /// both mint lanes are actually timed.
+    #[test]
+    fn mint_receipt_counts_the_corpus_exactly() {
+        const EVENTS: usize = 1_000;
+        const PAGES: usize = 300;
+        let traces = synthetic_traces(EVENTS, PAGES);
+
+        let hybrid = RecallIndex::mint(&temp_dir(), &traces, RecallConfig::new(2, 2.0)).unwrap();
+        let receipt = hybrid.receipt;
+        assert_eq!(receipt.traces, EVENTS.div_ceil(SEGMENT_SIZE));
+        assert_eq!(receipt.events, EVENTS);
+        assert_eq!(receipt.pages, PAGES, "distinct destination URLs");
+        assert_eq!(receipt.corpus_bytes, expected_corpus_bytes(EVENTS, PAGES));
+        assert!(receipt.lexical > Duration::ZERO, "the lexical lane is timed");
+        assert!(
+            receipt.vector.is_some_and(|vector| vector > Duration::ZERO),
+            "the vector lane is timed when it runs"
+        );
+        assert!(receipt.total >= receipt.lexical, "total covers both lanes");
+
+        // Vector off leaves that lane unmeasured rather than reporting zero.
+        let lexical_only = RecallIndex::mint(&temp_dir(), &traces, RecallConfig::default()).unwrap();
+        assert!(lexical_only.receipt.vector.is_none());
+        assert_eq!(lexical_only.receipt.events, EVENTS);
+    }
+
+    /// The W6a cost curve. A measurement run, not a correctness gate: build in
+    /// release and pass `--ignored --nocapture`.
+    #[test]
+    #[ignore = "measurement run: cargo test --release ... -- --ignored --nocapture"]
+    fn mint_receipt_scale_ladder() {
+        for events in [1_000usize, 10_000, 100_000] {
+            // Hold the revisit ratio constant so the curve compares like sizes.
+            let pages = events / 3;
+            let traces = synthetic_traces(events, pages);
+            for config in [RecallConfig::default(), RecallConfig::new(2, 2.0)] {
+                let index = RecallIndex::mint(&temp_dir(), &traces, config).unwrap();
+                println!("synthetic {config:?} {:?}", index.receipt);
+            }
+        }
     }
 
     /// Two records chain `from`, Flush persists, Release closes the store,

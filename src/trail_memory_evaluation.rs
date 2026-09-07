@@ -888,3 +888,21 @@ fn training_selection_is_held_out_and_tie_aware() {
 fn captured_trail_recall_receipt() {
     run_captured_trail_receipt().unwrap();
 }
+
+/// W6a's mint cost against a real captured session: what a recall after one
+/// navigation actually pays. Needs no manifest — the corpus alone answers it.
+/// Copies the session first, like every runner here, and prints counts only.
+#[test]
+#[ignore = "requires an explicit private Turnstone session"]
+fn captured_trail_mint_receipt() {
+    let session = std::env::var_os("TURNSTONE_RECALL_EVAL_SESSION")
+        .map(PathBuf::from)
+        .expect("TURNSTONE_RECALL_EVAL_SESSION is required");
+    let corpus = load_evaluation_corpus(&session).unwrap();
+    println!("corpus digest={} source=captured", corpus.digest);
+    let index_root = tempfile::tempdir().expect("mint receipt index root");
+    for config in [RecallConfig::default(), RecallConfig::new(2, 2.0)] {
+        let index = RecallIndex::mint(index_root.path(), &corpus.traces, config).unwrap();
+        println!("captured {config:?} {:?}", index.receipt);
+    }
+}
