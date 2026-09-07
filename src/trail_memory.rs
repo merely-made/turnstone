@@ -21,8 +21,10 @@
 //! rides the observation drain instead of lowering an Effect.
 //!
 //! The same actor answers **recall** (W2): the omnibar lowers
-//! `Effect::RecallQuery`, and [`TrailCommand::Recall`] mints BM25, a frecency
-//! fold, and an optional token n-gram vector projection from the stored corpus
+//! `Effect::RecallQuery`, and [`TrailCommand::Recall`] projects the corpus
+//! through eidetic's fingerprint-keyed page table (W6d) — one record per page
+//! however many addresses reached it — then mints BM25, a frecency
+//! fold, and an optional token n-gram vector projection over those records
 //! (flushing first, so this minute's pages are findable), fuses the lanes that
 //! are on, and answers `Update::RecallHits`. Current graph and recycle-bin titles overlay titleless
 //! trace pages only while those derived indexes are minted; they do not rewrite
@@ -38,9 +40,11 @@ use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use armillary::{ActorHandle, Emitter, Wake, spawn_named};
 use eidetic::browsing::frecency::ranked;
+use eidetic::browsing::page::fingerprint_index;
 use eidetic::{
-    BrowsingMemory, BrowsingTrace, FrecencyConfig, PageRef, TraceEvent, TraceTransition,
-    bootstrap_browsing_schema, frecency,
+    BrowsingMemory, BrowsingTrace, FrecencyConfig, PageFingerprint, PageRecord, PageRef,
+    TraceEvent, TraceTransition, bootstrap_browsing_schema, canonical_url, frecency_by_page,
+    page_table,
 };
 use eidetic_fjall::FjallStore;
 use eidetic_search::{FusedHit, Ranking, TrailIndex, fuse_many};
@@ -296,48 +300,105 @@ struct RecallDocument {
     text: String,
 }
 
-fn recall_documents(traces: &[BrowsingTrace]) -> BTreeMap<String, RecallDocument> {
-    let mut documents = BTreeMap::<String, RecallDocument>::new();
+/// The page table over a corpus. `|_| None` is the honest text supply today:
+/// nothing captures page bodies yet, so every fingerprint falls back to the
+/// canonical URL. W6c replaces it with the host's extracted main text, and
+/// this is the one place that changes.
+fn page_table_of(traces: &[BrowsingTrace]) -> BTreeMap<PageFingerprint, PageRecord> {
+    page_table(traces, |_| None)
+}
+
+/// One document per page record, keyed by the address a hit opens (the page's
+/// most recent URL). Replaces the URL-string dedup this fold used to do: two
+/// addresses for one page are now one document before the index sees them.
+fn recall_documents(
+    table: &BTreeMap<PageFingerprint, PageRecord>,
+) -> BTreeMap<String, RecallDocument> {
+    table
+        .values()
+        .map(|record| {
+            let hit = RecallHit {
+                url: record.last_url.clone(),
+                title: record.title.clone(),
+                at_ms: record.last_seen_ms,
+            };
+            let mut text = match &hit.title {
+                Some(title) => format!("{title} {}", hit.url),
+                None => hit.url.clone(),
+            };
+            // Empty until W6c attaches extracted main text to the record.
+            if let Some(body) = &record.text {
+                text.push(' ');
+                text.push_str(body);
+            }
+            (record.last_url.clone(), RecallDocument { hit, text })
+        })
+        .collect()
+}
+
+/// The page table as a corpus the lexical index can mint from: the most recent
+/// event that reached each page, with its destination rewritten to the
+/// record's address and best title. One tantivy document per page rather than
+/// one per visit (the 3x duplication W6a measured), while owner, transition
+/// and timestamp stay the real ones rather than invented.
+fn page_corpus(
+    traces: &[BrowsingTrace],
+    table: &BTreeMap<PageFingerprint, PageRecord>,
+) -> Vec<BrowsingTrace> {
+    let fingerprints = fingerprint_index(table);
+    let mut latest: BTreeMap<PageFingerprint, (String, TraceEvent)> = BTreeMap::new();
     for trace in traces {
         for event in &trace.events {
-            let url = event.to.url.clone();
-            let hit = RecallHit {
-                url: url.clone(),
-                title: event.to.title.clone(),
-                at_ms: event.at_ms,
+            let Some(fingerprint) = fingerprints.get(&canonical_url(&event.to.url)).copied() else {
+                continue;
             };
-            let text = match &hit.title {
-                Some(title) => format!("{title} {url}"),
-                None => url.clone(),
-            };
-            let candidate = RecallDocument { hit, text };
-            if let Some(current) = documents.get_mut(&url) {
-                let replace = candidate.hit.at_ms > current.hit.at_ms
-                    || candidate.hit.at_ms == current.hit.at_ms
-                        && candidate.hit.title > current.hit.title;
-                if replace {
-                    *current = candidate;
-                }
-            } else {
-                documents.insert(url, candidate);
+            match latest.get_mut(&fingerprint) {
+                Some(entry) if event.at_ms >= entry.1.at_ms => {
+                    *entry = (trace.owner.clone(), event.clone());
+                },
+                Some(_) => {},
+                None => {
+                    latest.insert(fingerprint, (trace.owner.clone(), event.clone()));
+                },
             }
         }
     }
-    documents
+
+    let mut by_owner: BTreeMap<String, Vec<TraceEvent>> = BTreeMap::new();
+    for (fingerprint, (owner, mut event)) in latest {
+        let Some(record) = table.get(&fingerprint) else {
+            continue;
+        };
+        event.to = PageRef {
+            url: record.last_url.clone(),
+            title: record.title.clone(),
+        };
+        by_owner.entry(owner).or_default().push(event);
+    }
+    by_owner
+        .into_iter()
+        .map(|(owner, mut events)| {
+            events.sort_by_key(|event| event.at_ms);
+            BrowsingTrace::from_events(owner, events)
+        })
+        .collect()
 }
 
-/// Events and indexable bytes across a corpus: url plus title, the only text
-/// a trace event carries today.
-fn corpus_size(traces: &[BrowsingTrace]) -> (usize, usize) {
+/// Events, indexable bytes and distinct destination addresses across a
+/// corpus. Addresses are what the index used to hold one document each of;
+/// the page table's record count subtracted from them is what collapsed.
+fn corpus_size(traces: &[BrowsingTrace]) -> (usize, usize, usize) {
     let mut events = 0;
     let mut bytes = 0;
+    let mut urls = HashSet::new();
     for trace in traces {
         events += trace.events.len();
         for event in &trace.events {
             bytes += event.to.url.len() + event.to.title.as_deref().map_or(0, str::len);
+            urls.insert(event.to.url.as_str());
         }
     }
-    (events, bytes)
+    (events, bytes, urls.len())
 }
 
 /// What one [`RecallIndex::mint`] covered and what it cost. Every recall after
@@ -350,8 +411,12 @@ pub struct MintReceipt {
     pub traces: usize,
     /// Traversal events across those segments.
     pub events: usize,
-    /// Distinct destination URLs — one index document each.
+    /// Distinct pages by content fingerprint — one index document each.
     pub pages: usize,
+    /// Distinct destination addresses that folded into those pages: tracking
+    /// parameters, fragments, mirrors. Zero means every address was its own
+    /// page (the corpus the URL key would have produced).
+    pub collapsed_urls: usize,
     /// Indexable text size: url + title bytes summed over every event.
     pub corpus_bytes: usize,
     /// The tantivy rebuild alone.
@@ -361,6 +426,9 @@ pub struct MintReceipt {
     /// The frecency fold alone. Always measured: one pass over the corpus, and
     /// the lane's weight is a fusion-time setting, so it needs no re-mint.
     pub frecency: Duration,
+    /// The page-table projection alone — fingerprinting every address and
+    /// folding the events onto the records the other lanes then index.
+    pub page_table: Duration,
     /// The whole mint, corpus walk and document fold included.
     pub total: Duration,
 }
@@ -374,7 +442,9 @@ impl MintReceipt {
             traces = self.traces,
             events = self.events,
             pages = self.pages,
+            collapsed_urls = self.collapsed_urls,
             corpus_bytes = self.corpus_bytes,
+            page_table_us = self.page_table.as_micros() as u64,
             lexical_us = self.lexical.as_micros() as u64,
             vector_us = self.vector.map(|elapsed| elapsed.as_micros() as u64),
             frecency_us = self.frecency.as_micros() as u64,
@@ -391,7 +461,9 @@ struct RecallIndex {
     lexical: TrailIndex,
     vector: Option<PhraseSearch>,
     vector_order: Option<u8>,
-    /// The behavioural lane: frecency per URL, folded from the same corpus at
+    /// The behavioural lane. Folded keyed by page fingerprint, so visits split
+    /// across a page's addresses sum into one score, then re-keyed to each
+    /// record's address — the string the other two lanes rank by. Folded at
     /// mint against one reference `now`, so every query this index answers
     /// decays from the same instant.
     frecency: BTreeMap<String, f64>,
@@ -402,14 +474,26 @@ struct RecallIndex {
 impl RecallIndex {
     fn mint(dir: &Path, traces: &[BrowsingTrace], config: RecallConfig) -> Result<Self, String> {
         let started = Instant::now();
-        let (events, corpus_bytes) = corpus_size(traces);
+        let (events, corpus_bytes, urls) = corpus_size(traces);
+        let table_started = Instant::now();
+        let table = page_table_of(traces);
+        let documents = recall_documents(&table);
+        let page_traces = page_corpus(traces, &table);
+        let table_elapsed = table_started.elapsed();
         let lexical_started = Instant::now();
-        let lexical =
-            TrailIndex::rebuild(index_dir(dir), traces).map_err(|err| format!("re-mint: {err}"))?;
+        let lexical = TrailIndex::rebuild(index_dir(dir), &page_traces)
+            .map_err(|err| format!("re-mint: {err}"))?;
         let lexical_elapsed = lexical_started.elapsed();
-        let documents = recall_documents(traces);
         let frecency_started = Instant::now();
-        let frecency = frecency(traces, now_ms(), &FrecencyConfig::default());
+        let frecency: BTreeMap<String, f64> =
+            frecency_by_page(traces, now_ms(), &FrecencyConfig::default(), &table)
+                .into_iter()
+                .filter_map(|(fingerprint, score)| {
+                    table
+                        .get(&fingerprint)
+                        .map(|record| (record.last_url.clone(), score))
+                })
+                .collect();
         let frecency_elapsed = frecency_started.elapsed();
         let mut vector_elapsed = None;
         let vector = if config.vector_enabled() {
@@ -441,10 +525,12 @@ impl RecallIndex {
                 traces: traces.len(),
                 events,
                 pages: documents.len(),
+                collapsed_urls: urls.saturating_sub(documents.len()),
                 corpus_bytes,
                 lexical: lexical_elapsed,
                 vector: vector_elapsed,
                 frecency: frecency_elapsed,
+                page_table: table_elapsed,
                 total: started.elapsed(),
             },
             documents,
@@ -837,6 +923,75 @@ mod tests {
             RecallIndex::mint(&temp_dir(), &traces, RecallConfig::default()).unwrap();
         assert!(lexical_only.receipt.vector.is_none());
         assert_eq!(lexical_only.receipt.events, EVENTS);
+    }
+
+    /// W6d's done-condition: two addresses for one page are one page record,
+    /// one index document, one hit, and one summed frecency.
+    #[test]
+    fn two_urls_for_one_page_recall_once_with_one_frecency() {
+        let now = now_ms();
+        let addresses = [
+            "https://gazette.test/morning?utm_source=newsletter&utm_medium=email",
+            "https://gazette.test/morning#lede",
+            "https://gazette.test/morning",
+        ];
+        let events: Vec<TraceEvent> = addresses
+            .iter()
+            .enumerate()
+            .map(|(nth, url)| TraceEvent {
+                from: None,
+                to: PageRef {
+                    url: (*url).to_string(),
+                    title: Some("The Morning Paper".to_string()),
+                },
+                transition: TraceTransition::UrlTyped,
+                at_ms: now - nth as u64 * 1_000,
+                dwell_ms: None,
+                candidates: Vec::new(),
+            })
+            .collect();
+        let traces = vec![BrowsingTrace::from_events("p", events)];
+
+        let index = RecallIndex::mint(&temp_dir(), &traces, RecallConfig::default()).unwrap();
+        assert_eq!(index.receipt.events, 3);
+        assert_eq!(index.receipt.pages, 1, "one page behind three addresses");
+        assert_eq!(index.receipt.collapsed_urls, 2);
+        assert!(
+            index.receipt.page_table > Duration::ZERO,
+            "the fold is timed"
+        );
+        assert_eq!(
+            index.lexical.doc_count().unwrap(),
+            1,
+            "one index document per page, not per event"
+        );
+
+        let hits = index
+            .search("gazette morning", 5, RecallConfig::default())
+            .unwrap();
+        assert_eq!(hits.len(), 1, "one page, one row");
+        assert_eq!(
+            hits[0].url, addresses[0],
+            "the row opens the latest address"
+        );
+
+        // One combined score, not three split ones — and it is the sum.
+        assert_eq!(index.frecency.len(), 1);
+        let combined = index.frecency[addresses[0]];
+        let single = RecallIndex::mint(
+            &temp_dir(),
+            &traces[..1]
+                .iter()
+                .map(|trace| BrowsingTrace::from_events("p", trace.events[..1].to_vec()))
+                .collect::<Vec<_>>(),
+            RecallConfig::default(),
+        )
+        .unwrap()
+        .frecency[addresses[0]];
+        assert!(
+            (combined - 3.0 * single).abs() < single * 0.01,
+            "three typed visits to one page sum: {combined} vs 3 x {single}"
+        );
     }
 
     /// The W6a cost curve. A measurement run, not a correctness gate: build in

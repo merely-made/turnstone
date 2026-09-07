@@ -207,7 +207,7 @@ fn load_evaluation_corpus(source: &Path) -> Result<EvaluationCorpus, String> {
     let trace_count = memory.traces().count();
     let traversal_count = memory.traces().map(|trace| trace.events.len()).sum();
     let traces = traces_with_titles(&memory, &sources);
-    let documents = recall_documents(&traces);
+    let documents = recall_documents(&page_table_of(&traces));
     let titled_documents = documents
         .values()
         .filter(|document| document.hit.title.is_some())
@@ -799,7 +799,7 @@ fn training_selection_is_held_out_and_tie_aware() {
         })
         .collect();
     let traces = vec![BrowsingTrace::from_events("evaluation-test", events)];
-    let documents = recall_documents(&traces);
+    let documents = recall_documents(&page_table_of(&traces));
     let manifest = EvaluationManifest {
         schema: EVALUATION_SCHEMA.to_string(),
         ranking_k: 3,
