@@ -46,14 +46,13 @@ use std::sync::mpsc::Receiver;
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use armillary::{ActorHandle, Emitter, Wake, spawn_named};
-use eidetic::browsing::frecency::ranked;
 use eidetic::{
     BrowsingMemory, BrowsingTrace, FrecencyConfig, PageFingerprint, PageRef, PageTable,
     PageTextStore, PageTexts, TraceEvent, TraceTransition, bootstrap_browsing_schema,
     frecency_by_page, page_table,
 };
 use eidetic_fjall::FjallStore;
-use eidetic_search::{FusedHit, IndexConfig, Ranking, TrailIndex, fuse_many};
+use eidetic_search::{CandidateIndex, FusedHit, IndexConfig, Ranking, TrailIndex, fuse_many};
 use esp::embed::{LexicalEmbeddingProvider, SemanticSearch};
 
 use crate::action::{RecallHit, Update};
@@ -476,6 +475,13 @@ pub struct MintReceipt {
     /// The page-table projection alone — fingerprinting every address and
     /// folding the events onto the records the other lanes then index.
     pub page_table: Duration,
+    /// The behavioural lane's candidate index alone: one tokenized pass over
+    /// each record's addresses and title, so a keystroke narrows the corpus by
+    /// prefix lookup instead of scanning every page.
+    pub candidates: Duration,
+    /// What that index costs resident, its keys excluded. Divided by
+    /// [`pages`](Self::pages) it is the lane's bytes per page.
+    pub candidate_bytes: usize,
     /// The whole mint, corpus walk and document fold included.
     pub total: Duration,
 }
@@ -494,6 +500,8 @@ impl MintReceipt {
             corpus_bytes = self.corpus_bytes,
             text_bytes = self.text_bytes,
             page_table_us = self.page_table.as_micros() as u64,
+            candidates_us = self.candidates.as_micros() as u64,
+            candidate_bytes = self.candidate_bytes,
             lexical_us = self.lexical.as_micros() as u64,
             vector_us = self.vector.map(|elapsed| elapsed.as_micros() as u64),
             frecency_us = self.frecency.as_micros() as u64,
@@ -516,6 +524,12 @@ struct RecallIndex {
     /// mint against one reference `now`, so every query this index answers
     /// decays from the same instant.
     frecency: BTreeMap<String, f64>,
+    /// Which records a typed query could mean, by token prefix over each
+    /// record's addresses and title. The behavioural lane's narrowing step.
+    candidates: CandidateIndex<String>,
+    /// The same scores as `frecency`, by the candidate index's record id, so a
+    /// wide candidate set is scored by index rather than by key lookup.
+    frecency_by_id: Vec<f64>,
     documents: BTreeMap<String, RecallDocument>,
     receipt: MintReceipt,
 }
@@ -564,6 +578,21 @@ impl RecallIndex {
                 })
                 .collect();
         let frecency_elapsed = frecency_started.elapsed();
+        // The behavioural lane's narrowing step, over the same text the lane
+        // used to substring-scan: every address that resolved to the record,
+        // the address a hit opens, and the title.
+        let candidates_started = Instant::now();
+        let mut frecency_by_id = Vec::with_capacity(table.records.len());
+        let candidates = CandidateIndex::build(table.records.values().map(|record| {
+            let mut texts: Vec<&str> = record.urls.iter().map(String::as_str).collect();
+            texts.push(record.last_url.as_str());
+            if let Some(title) = record.title.as_deref() {
+                texts.push(title);
+            }
+            frecency_by_id.push(frecency.get(&record.last_url).copied().unwrap_or(0.0));
+            (record.last_url.clone(), texts)
+        }));
+        let candidates_elapsed = candidates_started.elapsed();
         let mut vector_elapsed = None;
         let vector = if config.vector_enabled() {
             let vector_started = Instant::now();
@@ -602,44 +631,52 @@ impl RecallIndex {
                 vector: vector_elapsed,
                 frecency: frecency_elapsed,
                 page_table: table_elapsed,
+                candidates: candidates_elapsed,
+                candidate_bytes: candidates.memory_bytes(),
                 total: started.elapsed(),
             },
+            candidates,
+            frecency_by_id,
             documents,
         };
         index.receipt.emit();
         Ok(index)
     }
 
-    /// Pages whose stored URL or title carries the typed text, best-frecency
-    /// first. Substring, not tokens: the case this lane answers is a typed URL
-    /// prefix, and the page a prefix should recall is the one visited most and
-    /// most recently. Pages with no behavioural evidence (only redirects and
-    /// reloads) score zero and stay out — an empty lane, not a zero-rank one.
+    /// Pages the typed text could mean, best-frecency first. The case this
+    /// lane answers is a typed URL prefix, and the page a prefix should recall
+    /// is the one visited most and most recently. Pages with no behavioural
+    /// evidence (only redirects and reloads) score zero and stay out — an empty
+    /// lane, not a zero-rank one.
+    ///
+    /// Narrowing is [`CandidateIndex`]'s token prefix, not the whole-query
+    /// substring this used to scan every page for: `zette` no longer reaches
+    /// `gazette`, and the lane costs a lookup rather than 42k lowercasings.
     fn frecency_urls(&self, query: &str, limit: usize) -> Vec<String> {
-        let needle = query.trim().to_lowercase();
-        if needle.is_empty() {
+        if limit == 0 {
             return Vec::new();
         }
-        let matched: BTreeMap<&String, f64> = self
-            .frecency
-            .iter()
-            .filter(|(_, score)| score.is_finite() && **score > 0.0)
-            .filter(|(url, _)| self.carries(url.as_str(), &needle))
-            .map(|(url, score)| (url, *score))
+        let mut scored: Vec<(u32, f64)> = self
+            .candidates
+            .candidate_ids(query)
+            .into_iter()
+            .map(|id| (id, self.frecency_by_id[id as usize]))
+            .filter(|(_, score)| score.is_finite() && *score > 0.0)
             .collect();
-        let mut urls: Vec<String> = ranked(&matched).into_iter().cloned().collect();
-        urls.truncate(limit);
-        urls
-    }
-
-    /// Does this page's URL or its indexed title contain the typed text?
-    fn carries(&self, url: &str, needle: &str) -> bool {
-        url.to_lowercase().contains(needle)
-            || self
-                .documents
-                .get(url)
-                .and_then(|document| document.hit.title.as_deref())
-                .is_some_and(|title| title.to_lowercase().contains(needle))
+        // Best score first, id as the tiebreak; only the head is ordered,
+        // since a two-character prefix can name thousands of pages.
+        let order = |left: &(u32, f64), right: &(u32, f64)| {
+            right.1.total_cmp(&left.1).then_with(|| left.0.cmp(&right.0))
+        };
+        if scored.len() > limit {
+            scored.select_nth_unstable_by(limit - 1, order);
+            scored.truncate(limit);
+        }
+        scored.sort_unstable_by(order);
+        scored
+            .into_iter()
+            .map(|(id, _)| self.candidates.key(id).clone())
+            .collect()
     }
 
     fn fused_hits(
