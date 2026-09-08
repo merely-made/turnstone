@@ -216,9 +216,6 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 # which had carried them itself.
 serde = { version = "1", features = ["derive"] }
 incipit = { git = "https://github.com/merely-made/mere.git", rev = "2b1ce46e5a15328b4bf4d350ec4b0252d9b404a1" }
-# Phrase-sensitive recall stays a disposable application index. ESP supplies
-# deterministic token n-gram vectors; the trail corpus remains Eidetic authority.
-esp = { git = "https://github.com/merely-made/mere.git", rev = "2b1ce46e5a15328b4bf4d350ec4b0252d9b404a1" }
 serde_json = { version = "1", features = ["float_roundtrip"] }
 # T5a's civil-day boundary is application policy. Jiff supplies civil types
 # and IANA-zone rules needed to distinguish 23-, 24-, and 25-hour local dates.

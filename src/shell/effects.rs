@@ -611,11 +611,7 @@ impl Shell {
                 // the query back, and the app drops superseded answers.
                 Effect::RecallQuery { query } => {
                     let sources = recall_sources(&self.app);
-                    let settings = self.live_settings.snapshot();
-                    let config = crate::trail_memory::RecallConfig::new(
-                        settings.recall_ngram_max_order(),
-                        settings.recall_vector_weight(),
-                    );
+                    let config = crate::trail_memory::RecallConfig::default();
                     self.trail_handle
                         .command(crate::trail_memory::TrailCommand::Recall {
                             query,

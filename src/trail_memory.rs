@@ -30,13 +30,12 @@
 //! `Effect::RecallQuery`, and [`TrailCommand::Recall`] projects the corpus
 //! through eidetic's fingerprint-keyed page table (W6d) — one record per page
 //! however many addresses reached it, now carrying its stored body — then
-//! mints BM25 over title, URL and text, a frecency
-//! fold, and an optional token n-gram vector projection over those records
+//! mints BM25 over title, URL and text and a frecency fold over those records
 //! (flushing first, so this minute's pages are findable), fuses the lanes that
 //! are on, and answers `Update::RecallHits`. Current graph and recycle-bin titles overlay titleless
 //! trace pages only while those derived indexes are minted; they do not rewrite
-//! browsing history. The indexes are held here, never repaired — a corpus,
-//! title projection, or vector-space setting that moved re-mints.
+//! browsing history. The indexes are held here, never repaired — a corpus or
+//! title projection that moved re-mints.
 //! eidetic's concrete types stop at this boundary: the app sees `RecallHit`s,
 //! the same rule the bin port follows with `DeletedNode`.
 
@@ -53,7 +52,6 @@ use eidetic::{
 };
 use eidetic_fjall::FjallStore;
 use eidetic_search::{CandidateIndex, FusedHit, IndexConfig, Ranking, TrailIndex, fuse_many};
-use esp::embed::{LexicalEmbeddingProvider, SemanticSearch};
 
 use crate::action::{RecallHit, Update};
 
@@ -62,14 +60,8 @@ use crate::action::{RecallHit, Update};
 /// is a meaningful corridor slice.
 const SEGMENT_SIZE: usize = 32;
 
-/// Receipt-backed size for the flat phrase-vector index. The index is minted
-/// lazily and discarded with its session, so this is a cost choice rather than
-/// durable format authority.
-const PHRASE_VECTOR_DIMENSIONS: usize = 4_096;
-
-/// Standard reciprocal-rank damping. The application settings expose the
-/// ranking-relevant ratios instead: phrase vectors and frecency, each relative
-/// to BM25.
+/// Standard reciprocal-rank damping. The ranking-relevant ratio is exposed
+/// instead: frecency, relative to BM25.
 const RRF_K: f64 = 60.0;
 
 /// Pull a wider head from each input before reducing to the omnibar row limit.
@@ -83,23 +75,15 @@ const DEFAULT_FRECENCY_WEIGHT: f32 = 2.0;
 /// Live application settings consumed by the derived recall index.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct RecallConfig {
-    ngram_max_order: u8,
-    vector_weight: f32,
     frecency_weight: f32,
 }
 
 impl RecallConfig {
-    pub fn new(ngram_max_order: u8, vector_weight: f32) -> Self {
-        Self {
-            ngram_max_order: ngram_max_order.clamp(1, 3),
-            vector_weight: Self::clamp_weight(vector_weight),
-            frecency_weight: DEFAULT_FRECENCY_WEIGHT,
-        }
-    }
-
     /// Weight of the behavioural ranking relative to BM25; zero is the lane's
     /// off switch. The fold's own policy (per-transition weights, half-life,
-    /// dwell bonus) is eidetic's, not the app's.
+    /// dwell bonus) is eidetic's, not the app's. No live setting moves it now
+    /// that the vector knobs are gone, so only the harnesses call it.
+    #[allow(dead_code)]
     pub fn with_frecency_weight(mut self, weight: f32) -> Self {
         self.frecency_weight = Self::clamp_weight(weight);
         self
@@ -113,22 +97,16 @@ impl RecallConfig {
         }
     }
 
-    fn vector_enabled(self) -> bool {
-        self.vector_weight > 0.0
-    }
-
     fn frecency_enabled(self) -> bool {
         self.frecency_weight > 0.0
-    }
-
-    fn token_ngram_orders(self) -> Vec<usize> {
-        (1..=usize::from(self.ngram_max_order)).collect()
     }
 }
 
 impl Default for RecallConfig {
     fn default() -> Self {
-        Self::new(2, 0.0)
+        Self {
+            frecency_weight: DEFAULT_FRECENCY_WEIGHT,
+        }
     }
 }
 
@@ -303,12 +281,6 @@ fn traces_with_titles(memory: &BrowsingMemory, sources: &[RecallSource]) -> Vec<
         .collect()
 }
 
-#[derive(Clone)]
-struct RecallDocument {
-    hit: RecallHit,
-    text: String,
-}
-
 /// The consent gate (capture plan C4). The single place a policy will refuse
 /// a page: refusing here keeps the body out of the store, and so out of every
 /// index projected from it. A no-op today — C4 replaces this body, not its
@@ -353,26 +325,19 @@ fn page_table_of(traces: &[BrowsingTrace], texts: &PageTexts) -> PageTable {
 /// One document per page record, keyed by the address a hit opens (the page's
 /// most recent URL). Replaces the URL-string dedup this fold used to do: two
 /// addresses for one page are now one document before the index sees them.
-fn recall_documents(table: &PageTable) -> BTreeMap<String, RecallDocument> {
+fn recall_documents(table: &PageTable) -> BTreeMap<String, RecallHit> {
     table
         .records
         .values()
         .map(|record| {
-            let hit = RecallHit {
-                url: record.last_url.clone(),
-                title: record.title.clone(),
-                at_ms: record.last_seen_ms,
-            };
-            let mut text = match &hit.title {
-                Some(title) => format!("{title} {}", hit.url),
-                None => hit.url.clone(),
-            };
-            // The stored body, when this page has one (W6c).
-            if let Some(body) = &record.text {
-                text.push(' ');
-                text.push_str(body);
-            }
-            (record.last_url.clone(), RecallDocument { hit, text })
+            (
+                record.last_url.clone(),
+                RecallHit {
+                    url: record.last_url.clone(),
+                    title: record.title.clone(),
+                    at_ms: record.last_seen_ms,
+                },
+            )
         })
         .collect()
 }
@@ -467,8 +432,6 @@ pub struct MintReceipt {
     pub text_bytes: usize,
     /// The tantivy rebuild alone.
     pub lexical: Duration,
-    /// The phrase-vector ingest alone; `None` when vector influence is off.
-    pub vector: Option<Duration>,
     /// The frecency fold alone. Always measured: one pass over the corpus, and
     /// the lane's weight is a fusion-time setting, so it needs no re-mint.
     pub frecency: Duration,
@@ -503,7 +466,6 @@ impl MintReceipt {
             candidates_us = self.candidates.as_micros() as u64,
             candidate_bytes = self.candidate_bytes,
             lexical_us = self.lexical.as_micros() as u64,
-            vector_us = self.vector.map(|elapsed| elapsed.as_micros() as u64),
             frecency_us = self.frecency.as_micros() as u64,
             total_us = self.total.as_micros() as u64,
             "trail memory: recall index minted"
@@ -511,13 +473,9 @@ impl MintReceipt {
     }
 }
 
-type PhraseSearch = SemanticSearch<String, LexicalEmbeddingProvider>;
-
 /// One disposable projection over the authoritative trace corpus.
 struct RecallIndex {
     lexical: TrailIndex,
-    vector: Option<PhraseSearch>,
-    vector_order: Option<u8>,
     /// The behavioural lane. Folded keyed by page fingerprint, so visits split
     /// across a page's addresses sum into one score, then re-keyed to each
     /// record's address — the string the other two lanes rank by. Folded at
@@ -530,17 +488,14 @@ struct RecallIndex {
     /// The same scores as `frecency`, by the candidate index's record id, so a
     /// wide candidate set is scored by index rather than by key lookup.
     frecency_by_id: Vec<f64>,
-    documents: BTreeMap<String, RecallDocument>,
+    documents: BTreeMap<String, RecallHit>,
     receipt: MintReceipt,
 }
 
 impl RecallIndex {
-    fn mint(
-        dir: &Path,
-        traces: &[BrowsingTrace],
-        texts: &PageTexts,
-        config: RecallConfig,
-    ) -> Result<Self, String> {
+    /// The mint takes no [`RecallConfig`]: both lanes are minted whole and the
+    /// only live setting left, the frecency weight, applies at fusion time.
+    fn mint(dir: &Path, traces: &[BrowsingTrace], texts: &PageTexts) -> Result<Self, String> {
         let started = Instant::now();
         let (events, corpus_bytes, urls) = corpus_size(traces);
         let table_started = Instant::now();
@@ -593,31 +548,8 @@ impl RecallIndex {
             (record.last_url.clone(), texts)
         }));
         let candidates_elapsed = candidates_started.elapsed();
-        let mut vector_elapsed = None;
-        let vector = if config.vector_enabled() {
-            let vector_started = Instant::now();
-            let provider = LexicalEmbeddingProvider::with_token_ngram_orders(
-                PHRASE_VECTOR_DIMENSIONS,
-                config.token_ngram_orders(),
-            )
-            .map_err(|err| format!("phrase provider: {err}"))?;
-            let mut search = SemanticSearch::new(provider);
-            let items: Vec<(String, &str)> = documents
-                .iter()
-                .map(|(url, document)| (url.clone(), document.text.as_str()))
-                .collect();
-            search
-                .ingest_batch(&items)
-                .map_err(|err| format!("phrase ingest: {err}"))?;
-            vector_elapsed = Some(vector_started.elapsed());
-            Some(search)
-        } else {
-            None
-        };
         let index = Self {
             lexical,
-            vector,
-            vector_order: config.vector_enabled().then_some(config.ngram_max_order),
             frecency,
             receipt: MintReceipt {
                 traces: traces.len(),
@@ -628,7 +560,6 @@ impl RecallIndex {
                 collapsed_urls: urls.saturating_sub(documents.len()),
                 corpus_bytes,
                 lexical: lexical_elapsed,
-                vector: vector_elapsed,
                 frecency: frecency_elapsed,
                 page_table: table_elapsed,
                 candidates: candidates_elapsed,
@@ -701,28 +632,6 @@ impl RecallIndex {
             }
         }
 
-        let mut vector_urls = Vec::new();
-        if config.vector_enabled() {
-            let Some(vector) = self.vector.as_ref() else {
-                return Err("phrase index is not minted".to_string());
-            };
-            // Ask the flat index for every record before deterministic
-            // tie-breaking. Truncating inside its HashMap-backed ranking could
-            // select an arbitrary subset of equal-score URLs.
-            let mut vector_hits = vector
-                .search(query, vector.len().max(1))
-                .map_err(|err| format!("phrase search: {err}"))?;
-            vector_hits.retain(|(_, score)| score.is_finite() && *score > 0.0);
-            vector_hits.sort_by(|left, right| {
-                right
-                    .1
-                    .total_cmp(&left.1)
-                    .then_with(|| left.0.cmp(&right.0))
-            });
-            vector_hits.truncate(candidate_limit);
-            vector_urls = vector_hits.into_iter().map(|(url, _)| url).collect();
-        }
-
         let frecency_urls = if config.frecency_enabled() {
             self.frecency_urls(query, candidate_limit)
         } else {
@@ -730,11 +639,10 @@ impl RecallIndex {
         };
 
         // Lane order is the contract fusion's named ranks read: lexical, then
-        // vector, then behavioural.
+        // behavioural.
         Ok(fuse_many(
             &[
                 Ranking::new(&lexical_urls, 1.0),
-                Ranking::new(&vector_urls, f64::from(config.vector_weight)),
                 Ranking::new(&frecency_urls, f64::from(config.frecency_weight)),
             ],
             RRF_K,
@@ -754,9 +662,9 @@ impl RecallIndex {
             return Ok(Vec::new());
         }
 
-        // Every lane off is the compatibility path: preserve TrailIndex's
-        // ranking and metadata exactly, and do not require a vector projection.
-        if !config.vector_enabled() && !config.frecency_enabled() {
+        // The behavioural lane off is the compatibility path: preserve
+        // TrailIndex's ranking and metadata exactly.
+        if !config.frecency_enabled() {
             return Ok(self
                 .lexical
                 .search(query, limit)
@@ -774,9 +682,7 @@ impl RecallIndex {
             .fused_hits(query, limit, config)?
             .into_iter()
             .filter_map(|fused| {
-                self.documents
-                    .get(&fused.url)
-                    .map(|document| document.hit.clone())
+                self.documents.get(&fused.url).cloned()
             })
             .collect())
     }
@@ -802,17 +708,11 @@ fn recall(
     dir: &Path,
     request: RecallRequest<'_>,
 ) -> Result<Vec<RecallHit>, String> {
-    if request.config.vector_enabled()
-        && index.as_ref().and_then(|index| index.vector_order)
-            != Some(request.config.ngram_max_order)
-    {
-        *stale = true;
-    }
     if *stale || index.is_none() {
         flush(store, memory);
         let traces = traces_with_titles(memory, request.sources);
         let texts = stored_page_texts(store);
-        *index = Some(RecallIndex::mint(dir, &traces, &texts, request.config)?);
+        *index = Some(RecallIndex::mint(dir, &traces, &texts)?);
         *stale = false;
     }
     let Some(index) = index.as_ref() else {
@@ -832,7 +732,7 @@ pub fn spawn_trail(wake: Wake, dir: PathBuf) -> (ActorHandle<TrailCommand>, Rece
         move |commands, out: Emitter<Update>| {
             let mut state = open_memory(&dir);
             let mut current_dir = dir.clone();
-            // The derived lexical/vector projection and whether the corpus has
+            // The derived lexical/behavioural projection and whether the corpus has
             // moved since it was minted. Built on the first recall, not at
             // spawn: a session that never searches never pays for one.
             let mut index: Option<RecallIndex> = None;
@@ -1020,14 +920,8 @@ mod tests {
         const PAGES: usize = 300;
         let traces = synthetic_traces(EVENTS, PAGES);
 
-        let hybrid = RecallIndex::mint(
-            &temp_dir(),
-            &traces,
-            &PageTexts::default(),
-            RecallConfig::new(2, 2.0),
-        )
-        .unwrap();
-        let receipt = hybrid.receipt;
+        let index = RecallIndex::mint(&temp_dir(), &traces, &PageTexts::default()).unwrap();
+        let receipt = index.receipt;
         assert_eq!(receipt.traces, EVENTS.div_ceil(SEGMENT_SIZE));
         assert_eq!(receipt.events, EVENTS);
         assert_eq!(receipt.pages, PAGES, "distinct destination URLs");
@@ -1037,17 +931,10 @@ mod tests {
             "the lexical lane is timed"
         );
         assert!(
-            receipt.vector.is_some_and(|vector| vector > Duration::ZERO),
-            "the vector lane is timed when it runs"
+            receipt.frecency > Duration::ZERO,
+            "the behavioural lane is timed"
         );
         assert!(receipt.total >= receipt.lexical, "total covers both lanes");
-
-        // Vector off leaves that lane unmeasured rather than reporting zero.
-        let lexical_only =
-            RecallIndex::mint(&temp_dir(), &traces, &PageTexts::default(), RecallConfig::default())
-                .unwrap();
-        assert!(lexical_only.receipt.vector.is_none());
-        assert_eq!(lexical_only.receipt.events, EVENTS);
     }
 
     /// W6d's done-condition: two addresses for one page are one page record,
@@ -1077,9 +964,7 @@ mod tests {
             .collect();
         let traces = vec![BrowsingTrace::from_events("p", events)];
 
-        let index =
-            RecallIndex::mint(&temp_dir(), &traces, &PageTexts::default(), RecallConfig::default())
-                .unwrap();
+        let index = RecallIndex::mint(&temp_dir(), &traces, &PageTexts::default()).unwrap();
         assert_eq!(index.receipt.events, 3);
         assert_eq!(index.receipt.pages, 1, "one page behind three addresses");
         assert_eq!(index.receipt.collapsed_urls, 2);
@@ -1112,7 +997,6 @@ mod tests {
                 .map(|trace| BrowsingTrace::from_events("p", trace.events[..1].to_vec()))
                 .collect::<Vec<_>>(),
             &PageTexts::default(),
-            RecallConfig::default(),
         )
         .unwrap()
         .frecency[addresses[0]];
@@ -1153,13 +1037,7 @@ mod tests {
             }],
         )];
 
-        let index = RecallIndex::mint(
-            &temp_dir(),
-            &traces,
-            &texts,
-            RecallConfig::default().with_frecency_weight(0.0),
-        )
-        .unwrap();
+        let index = RecallIndex::mint(&temp_dir(), &traces, &texts).unwrap();
         assert_eq!(index.receipt.pages_with_text, 1, "the body reached the index");
 
         // "kestrel" is in neither the URL nor the title.
@@ -1171,13 +1049,7 @@ mod tests {
         assert_eq!(hits[0].url, url);
 
         // The negative control: the same corpus with no stored text cannot.
-        let bare = RecallIndex::mint(
-            &temp_dir(),
-            &traces,
-            &PageTexts::default(),
-            RecallConfig::default().with_frecency_weight(0.0),
-        )
-        .unwrap();
+        let bare = RecallIndex::mint(&temp_dir(), &traces, &PageTexts::default()).unwrap();
         assert_eq!(bare.receipt.pages_with_text, 0);
         assert!(
             bare.search("kestrel", 5, RecallConfig::default().with_frecency_weight(0.0))
@@ -1196,11 +1068,8 @@ mod tests {
             // Hold the revisit ratio constant so the curve compares like sizes.
             let pages = events / 3;
             let traces = synthetic_traces(events, pages);
-            for config in [RecallConfig::default(), RecallConfig::new(2, 2.0)] {
-                let index =
-                    RecallIndex::mint(&temp_dir(), &traces, &PageTexts::default(), config).unwrap();
-                println!("synthetic {config:?} {:?}", index.receipt);
-            }
+            let index = RecallIndex::mint(&temp_dir(), &traces, &PageTexts::default()).unwrap();
+            println!("synthetic pages={pages} {:?}", index.receipt);
         }
     }
 
@@ -1331,56 +1200,6 @@ mod tests {
             assert_eq!(hits[0].url, url);
             assert_eq!(hits[0].title.as_deref(), Some(title));
         }
-
-        let (ack_tx, ack_rx) = std::sync::mpsc::sync_channel(0);
-        handle.command(TrailCommand::Release(ack_tx));
-        ack_rx.recv().unwrap();
-    }
-
-    /// Enabling the phrase vector through live settings re-mints the derived
-    /// projection and corrects a bag-of-words order tie.
-    #[test]
-    fn phrase_vector_influence_remints_and_steers_recall() {
-        let dir = temp_dir();
-        let wake: Wake = Arc::new(|| {});
-        let (handle, rx) = spawn_trail(wake, dir);
-        let decoy = "https://a.example/reversed";
-        let target = "https://z.example/ordered";
-        for (at_ms, url) in [(1, decoy), (2, target)] {
-            handle.command(TrailCommand::Record {
-                owner: "p".into(),
-                url: url.into(),
-                transition: TraceTransition::UrlTyped,
-                at_ms,
-            });
-        }
-        let sources = vec![
-            RecallSource::new(decoy, "Folder Downloads Open").unwrap(),
-            RecallSource::new(target, "Open Downloads Folder").unwrap(),
-        ];
-
-        handle.command(TrailCommand::Recall {
-            query: "open downloads folder".into(),
-            limit: 2,
-            sources: sources.clone(),
-            // Both behavioural and phrase lanes off: this half is about BM25.
-            config: RecallConfig::default().with_frecency_weight(0.0),
-        });
-        let Update::RecallHits { hits: lexical, .. } = rx.recv().unwrap() else {
-            panic!("lexical recall must answer");
-        };
-        assert_eq!(lexical[0].url, decoy, "BM25 ignores phrase order");
-
-        handle.command(TrailCommand::Recall {
-            query: "open downloads folder".into(),
-            limit: 2,
-            sources,
-            config: RecallConfig::new(2, 2.0),
-        });
-        let Update::RecallHits { hits: hybrid, .. } = rx.recv().unwrap() else {
-            panic!("hybrid recall must answer");
-        };
-        assert_eq!(hybrid[0].url, target, "bigrams supply phrase order");
 
         let (ack_tx, ack_rx) = std::sync::mpsc::sync_channel(0);
         handle.command(TrailCommand::Release(ack_tx));
