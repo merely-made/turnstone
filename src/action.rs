@@ -818,6 +818,11 @@ pub enum Effect {
     /// memory (the omnibar's recall lane). Answered by `Update::RecallHits`
     /// carrying the query back, so a late answer to superseded text drops.
     RecallQuery { query: String },
+    /// Hand the trail port a fetched page's extracted main text, so recall
+    /// reaches the body and not just the title and URL (wiring plan W6c).
+    /// Best-effort like every other enrichment: dropping it costs recall
+    /// reach, never correctness.
+    RecordPageText { url: String, text: String },
     /// Close a session (overmap O3): the shell releases the bin store (its
     /// open files block the rename on Windows), moves the closing session's
     /// whole directory to the manifest trash via `App::apply_trash`, and

@@ -1,0 +1,38 @@
+# Page-text recall receipt (search wiring W6c): a term that appears only in a
+# page BODY recalls that page from the omnibar.
+#
+# Start scenarios/fixtures/trail_text_server.ps1 on port 43121 first; the run
+# is otherwise loopback-only. FRESH profile.
+#
+# The fixture makes the claim unfakeable in both directions. HAGIOSCOPE is in
+# the body of /notes/7 and in neither its path nor its title ("Field notes");
+# PARBUCKLE is in the body of /notes/8 alone. A recall lane reading only titles
+# and URLs answers nothing for either word, and one that pooled the bodies
+# would answer the same page for both — so the two asserts together say the
+# text reached the index AND stayed attached to its own address.
+settle 30
+key escape
+
+# ---- 1. Visit both pages so the fetch path extracts and stores their text ---
+open http://127.0.0.1:43121/notes/7
+settle 60
+open http://127.0.0.1:43121/notes/8
+settle 60
+
+# ---- 2. A body-only term recalls its own page --------------------------------
+omnibar find
+type hagioscope
+settle 40
+assert snap suggestions ~ recall http://127.0.0.1:43121/notes/7
+capture 01_body_term_recalls_the_page
+key escape
+settle 10
+
+# ---- 3. The other body-only term recalls the OTHER page ----------------------
+omnibar find
+type parbuckle
+settle 40
+assert snap suggestions ~ recall http://127.0.0.1:43121/notes/8
+capture 02_the_other_body_term_recalls_the_other_page
+key escape
+settle 10

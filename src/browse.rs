@@ -520,6 +520,12 @@ pub fn apply_page(
                         tracing::info!(%url, %title, "node title enriched from the page");
                     }
                 }
+                if let Some(text) = page_text(&doc) {
+                    effects.push(Effect::RecordPageText {
+                        url: url.clone(),
+                        text,
+                    });
+                }
                 // Best-effort: chase the page's favicon; the bytes route back
                 // as a FaviconFetched update correlated to this node.
                 if let Some(icon_url) = favicon_url_for(&url, &doc) {
@@ -578,6 +584,18 @@ pub fn apply_favicon(
     }
     effects.push(Effect::Redraw);
     effects
+}
+
+/// The page body recall should reach: fleece's reader-mode article text, and
+/// its whole canonical DOM text when no article block stands out (a landing
+/// page, a link list, an app shell — `extract_main_text` answers `None` for
+/// all three, and those pages are exactly the ones a body-term recall is
+/// otherwise blind to). Empty text is `None`, not an empty document.
+fn page_text(doc: &genet_static_dom::StaticDocument) -> Option<String> {
+    fleece::extract_main_text(doc)
+        .or_else(|| Some(fleece::extract_text(doc)))
+        .map(|text| text.trim().to_string())
+        .filter(|text| !text.is_empty())
 }
 
 /// The favicon URL for a fetched page: the document's declared

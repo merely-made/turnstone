@@ -20,10 +20,17 @@
 //! is an observer of browsing, never a gate on it — which is also why it
 //! rides the observation drain instead of lowering an Effect.
 //!
+//! Page bodies ride the same channel ([`TrailCommand::RecordText`], W6c): the
+//! fetch path extracts them through fleece and the actor writes them into the
+//! session store through eidetic's [`PageTextStore`] — blob for the bytes, one
+//! slot per address for the index. What may be stored is [`consented_to_keep`]'s
+//! question (capture plan C4), named here and answered by a later slice.
+//!
 //! The same actor answers **recall** (W2): the omnibar lowers
 //! `Effect::RecallQuery`, and [`TrailCommand::Recall`] projects the corpus
 //! through eidetic's fingerprint-keyed page table (W6d) — one record per page
-//! however many addresses reached it — then mints BM25, a frecency
+//! however many addresses reached it, now carrying its stored body — then
+//! mints BM25 over title, URL and text, a frecency
 //! fold, and an optional token n-gram vector projection over those records
 //! (flushing first, so this minute's pages are findable), fuses the lanes that
 //! are on, and answers `Update::RecallHits`. Current graph and recycle-bin titles overlay titleless
@@ -40,14 +47,13 @@ use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use armillary::{ActorHandle, Emitter, Wake, spawn_named};
 use eidetic::browsing::frecency::ranked;
-use eidetic::browsing::page::fingerprint_index;
 use eidetic::{
-    BrowsingMemory, BrowsingTrace, FrecencyConfig, PageFingerprint, PageRecord, PageRef,
-    TraceEvent, TraceTransition, bootstrap_browsing_schema, canonical_url, frecency_by_page,
-    page_table,
+    BrowsingMemory, BrowsingTrace, FrecencyConfig, PageFingerprint, PageRef, PageTable,
+    PageTextStore, PageTexts, TraceEvent, TraceTransition, bootstrap_browsing_schema,
+    frecency_by_page, page_table,
 };
 use eidetic_fjall::FjallStore;
-use eidetic_search::{FusedHit, Ranking, TrailIndex, fuse_many};
+use eidetic_search::{FusedHit, IndexConfig, Ranking, TrailIndex, fuse_many};
 use esp::embed::{LexicalEmbeddingProvider, SemanticSearch};
 
 use crate::action::{RecallHit, Update};
@@ -158,6 +164,10 @@ pub enum TrailCommand {
         transition: TraceTransition,
         at_ms: u64,
     },
+    /// Keep one fetched page's extracted main text, keyed by the address it
+    /// was fetched from (wiring plan W6c). Best-effort: a failure warns and
+    /// the page stays recallable by title and URL alone.
+    RecordText { url: String, text: String },
     /// Flush every open segment to the store (a lifecycle edge).
     Flush,
     /// Answer lexical recall over the stored corpus (the omnibar's recall
@@ -300,21 +310,53 @@ struct RecallDocument {
     text: String,
 }
 
-/// The page table over a corpus. `|_| None` is the honest text supply today:
-/// nothing captures page bodies yet, so every fingerprint falls back to the
-/// canonical URL. W6c replaces it with the host's extracted main text, and
-/// this is the one place that changes.
-fn page_table_of(traces: &[BrowsingTrace]) -> BTreeMap<PageFingerprint, PageRecord> {
-    page_table(traces, |_| None)
+/// The consent gate (capture plan C4). The single place a policy will refuse
+/// a page: refusing here keeps the body out of the store, and so out of every
+/// index projected from it. A no-op today — C4 replaces this body, not its
+/// call site.
+fn consented_to_keep(_url: &str) -> bool {
+    true
+}
+
+/// Write one page's extracted text into the session store. Warns and returns
+/// on failure: a browser that cannot remember a body must still browse.
+fn keep_page_text(store: &FjallStore, url: &str, text: &str) {
+    if !consented_to_keep(url) {
+        tracing::info!(%url, "trail memory: page text withheld by consent");
+        return;
+    }
+    let texts = PageTextStore::new(store);
+    if let Err(err) = pollster::block_on(texts.put(url, text, now_ms())) {
+        tracing::warn!(%err, %url, "trail memory: page text not stored");
+    }
+}
+
+/// Every stored page body for the open session. An unreadable store yields an
+/// empty snapshot rather than failing the recall: pages then recall by title
+/// and URL, which is what they did before W6c.
+fn stored_page_texts(store: &FjallStore) -> PageTexts {
+    match pollster::block_on(PageTextStore::new(store).load_all()) {
+        Ok(texts) => texts,
+        Err(err) => {
+            tracing::warn!(%err, "trail memory: page texts unreadable; recall falls back to titles");
+            PageTexts::default()
+        },
+    }
+}
+
+/// The page table over a corpus, taking each page's body from the store's
+/// snapshot (W6c). A page with no stored text still gets a record; its
+/// fingerprint falls back to the canonical URL, which the record names.
+fn page_table_of(traces: &[BrowsingTrace], texts: &PageTexts) -> PageTable {
+    page_table(traces, texts.lookup())
 }
 
 /// One document per page record, keyed by the address a hit opens (the page's
 /// most recent URL). Replaces the URL-string dedup this fold used to do: two
 /// addresses for one page are now one document before the index sees them.
-fn recall_documents(
-    table: &BTreeMap<PageFingerprint, PageRecord>,
-) -> BTreeMap<String, RecallDocument> {
+fn recall_documents(table: &PageTable) -> BTreeMap<String, RecallDocument> {
     table
+        .records
         .values()
         .map(|record| {
             let hit = RecallHit {
@@ -326,7 +368,7 @@ fn recall_documents(
                 Some(title) => format!("{title} {}", hit.url),
                 None => hit.url.clone(),
             };
-            // Empty until W6c attaches extracted main text to the record.
+            // The stored body, when this page has one (W6c).
             if let Some(body) = &record.text {
                 text.push(' ');
                 text.push_str(body);
@@ -341,15 +383,13 @@ fn recall_documents(
 /// record's address and best title. One tantivy document per page rather than
 /// one per visit (the 3x duplication W6a measured), while owner, transition
 /// and timestamp stay the real ones rather than invented.
-fn page_corpus(
-    traces: &[BrowsingTrace],
-    table: &BTreeMap<PageFingerprint, PageRecord>,
-) -> Vec<BrowsingTrace> {
-    let fingerprints = fingerprint_index(table);
+fn page_corpus(traces: &[BrowsingTrace], table: &PageTable) -> Vec<BrowsingTrace> {
     let mut latest: BTreeMap<PageFingerprint, (String, TraceEvent)> = BTreeMap::new();
     for trace in traces {
         for event in &trace.events {
-            let Some(fingerprint) = fingerprints.get(&canonical_url(&event.to.url)).copied() else {
+            // The table's own memo, so the address is canonicalized once for
+            // the whole mint rather than once per fold.
+            let Some(fingerprint) = table.by_address.get(&event.to.url).copied() else {
                 continue;
             };
             match latest.get_mut(&fingerprint) {
@@ -366,7 +406,7 @@ fn page_corpus(
 
     let mut by_owner: BTreeMap<String, Vec<TraceEvent>> = BTreeMap::new();
     for (fingerprint, (owner, mut event)) in latest {
-        let Some(record) = table.get(&fingerprint) else {
+        let Some(record) = table.records.get(&fingerprint) else {
             continue;
         };
         event.to = PageRef {
@@ -413,12 +453,19 @@ pub struct MintReceipt {
     pub events: usize,
     /// Distinct pages by content fingerprint — one index document each.
     pub pages: usize,
+    /// How many of those pages carried a stored body into the index (W6c).
+    /// Zero on a corpus captured before text was kept, or refused by consent.
+    pub pages_with_text: usize,
     /// Distinct destination addresses that folded into those pages: tracking
     /// parameters, fragments, mirrors. Zero means every address was its own
     /// page (the corpus the URL key would have produced).
     pub collapsed_urls: usize,
-    /// Indexable text size: url + title bytes summed over every event.
+    /// Indexable text size: url + title bytes summed over every event. The
+    /// page bodies are counted separately, by [`text_bytes`](Self::text_bytes),
+    /// because they are per page rather than per event.
     pub corpus_bytes: usize,
+    /// Stored body bytes the index carried, summed over the pages that had one.
+    pub text_bytes: usize,
     /// The tantivy rebuild alone.
     pub lexical: Duration,
     /// The phrase-vector ingest alone; `None` when vector influence is off.
@@ -442,8 +489,10 @@ impl MintReceipt {
             traces = self.traces,
             events = self.events,
             pages = self.pages,
+            pages_with_text = self.pages_with_text,
             collapsed_urls = self.collapsed_urls,
             corpus_bytes = self.corpus_bytes,
+            text_bytes = self.text_bytes,
             page_table_us = self.page_table.as_micros() as u64,
             lexical_us = self.lexical.as_micros() as u64,
             vector_us = self.vector.map(|elapsed| elapsed.as_micros() as u64),
@@ -472,17 +521,36 @@ struct RecallIndex {
 }
 
 impl RecallIndex {
-    fn mint(dir: &Path, traces: &[BrowsingTrace], config: RecallConfig) -> Result<Self, String> {
+    fn mint(
+        dir: &Path,
+        traces: &[BrowsingTrace],
+        texts: &PageTexts,
+        config: RecallConfig,
+    ) -> Result<Self, String> {
         let started = Instant::now();
         let (events, corpus_bytes, urls) = corpus_size(traces);
         let table_started = Instant::now();
-        let table = page_table_of(traces);
+        let table = page_table_of(traces, texts);
         let documents = recall_documents(&table);
         let page_traces = page_corpus(traces, &table);
         let table_elapsed = table_started.elapsed();
         let lexical_started = Instant::now();
-        let lexical = TrailIndex::rebuild(index_dir(dir), &page_traces)
-            .map_err(|err| format!("re-mint: {err}"))?;
+        // The record's own text, not the snapshot's: the page table already
+        // resolved which body belongs to the address a document is keyed by.
+        let bodies: BTreeMap<&str, &str> = table
+            .records
+            .values()
+            .filter_map(|record| Some((record.last_url.as_str(), record.text.as_deref()?)))
+            .collect();
+        // Re-minted on every recall and never opened from disk, so the
+        // projection stays in memory: the persisted write is pure cost here.
+        let lexical = TrailIndex::rebuild_with_config(
+            index_dir(dir),
+            &page_traces,
+            |url| bodies.get(url).map(|text| (*text).to_string()),
+            IndexConfig { persist: false, ..IndexConfig::default() },
+        )
+        .map_err(|err| format!("re-mint: {err}"))?;
         let lexical_elapsed = lexical_started.elapsed();
         let frecency_started = Instant::now();
         let frecency: BTreeMap<String, f64> =
@@ -490,6 +558,7 @@ impl RecallIndex {
                 .into_iter()
                 .filter_map(|(fingerprint, score)| {
                     table
+                        .records
                         .get(&fingerprint)
                         .map(|record| (record.last_url.clone(), score))
                 })
@@ -525,6 +594,8 @@ impl RecallIndex {
                 traces: traces.len(),
                 events,
                 pages: documents.len(),
+                pages_with_text: bodies.len(),
+                text_bytes: bodies.values().map(|text| text.len()).sum(),
                 collapsed_urls: urls.saturating_sub(documents.len()),
                 corpus_bytes,
                 lexical: lexical_elapsed,
@@ -703,7 +774,8 @@ fn recall(
     if *stale || index.is_none() {
         flush(store, memory);
         let traces = traces_with_titles(memory, request.sources);
-        *index = Some(RecallIndex::mint(dir, &traces, request.config)?);
+        let texts = stored_page_texts(store);
+        *index = Some(RecallIndex::mint(dir, &traces, &texts, request.config)?);
         *stale = false;
     }
     let Some(index) = index.as_ref() else {
@@ -790,6 +862,15 @@ pub fn spawn_trail(wake: Wake, dir: PathBuf) -> (ActorHandle<TrailCommand>, Rece
                             Ok(hits) => out.emit(Update::RecallHits { query, hits }),
                             Err(error) => out.emit(Update::RecallFailed { error }),
                         }
+                    },
+                    TrailCommand::RecordText { url, text } => {
+                        let Some((store, _)) = state.as_ref() else {
+                            continue;
+                        };
+                        keep_page_text(store, &url, &text);
+                        // The body is part of the corpus the index is minted
+                        // from, so a new one makes the projection stale.
+                        index_stale = true;
                     },
                     TrailCommand::Flush => {
                         if let Some((store, memory)) = state.as_mut() {
@@ -902,7 +983,13 @@ mod tests {
         const PAGES: usize = 300;
         let traces = synthetic_traces(EVENTS, PAGES);
 
-        let hybrid = RecallIndex::mint(&temp_dir(), &traces, RecallConfig::new(2, 2.0)).unwrap();
+        let hybrid = RecallIndex::mint(
+            &temp_dir(),
+            &traces,
+            &PageTexts::default(),
+            RecallConfig::new(2, 2.0),
+        )
+        .unwrap();
         let receipt = hybrid.receipt;
         assert_eq!(receipt.traces, EVENTS.div_ceil(SEGMENT_SIZE));
         assert_eq!(receipt.events, EVENTS);
@@ -920,7 +1007,8 @@ mod tests {
 
         // Vector off leaves that lane unmeasured rather than reporting zero.
         let lexical_only =
-            RecallIndex::mint(&temp_dir(), &traces, RecallConfig::default()).unwrap();
+            RecallIndex::mint(&temp_dir(), &traces, &PageTexts::default(), RecallConfig::default())
+                .unwrap();
         assert!(lexical_only.receipt.vector.is_none());
         assert_eq!(lexical_only.receipt.events, EVENTS);
     }
@@ -952,7 +1040,9 @@ mod tests {
             .collect();
         let traces = vec![BrowsingTrace::from_events("p", events)];
 
-        let index = RecallIndex::mint(&temp_dir(), &traces, RecallConfig::default()).unwrap();
+        let index =
+            RecallIndex::mint(&temp_dir(), &traces, &PageTexts::default(), RecallConfig::default())
+                .unwrap();
         assert_eq!(index.receipt.events, 3);
         assert_eq!(index.receipt.pages, 1, "one page behind three addresses");
         assert_eq!(index.receipt.collapsed_urls, 2);
@@ -984,6 +1074,7 @@ mod tests {
                 .iter()
                 .map(|trace| BrowsingTrace::from_events("p", trace.events[..1].to_vec()))
                 .collect::<Vec<_>>(),
+            &PageTexts::default(),
             RecallConfig::default(),
         )
         .unwrap()
@@ -991,6 +1082,71 @@ mod tests {
         assert!(
             (combined - 3.0 * single).abs() < single * 0.01,
             "three typed visits to one page sum: {combined} vs 3 x {single}"
+        );
+    }
+
+    /// W6c's done-condition in the small: a term that appears only in a page
+    /// BODY — not in its URL, not in its title — recalls the page, through the
+    /// same store the actor writes to.
+    #[test]
+    fn a_body_only_term_recalls_the_page() {
+        const BODY: &str = "A kestrel hovers on a fixed point of air, head still while \
+                            the wings work, and stoops only when the vole below commits \
+                            to a run across the open verge.";
+        let url = "https://field.test/notes/7";
+        let dir = temp_dir();
+        let store = FjallStore::open(&dir).unwrap();
+        // The write path the actor takes, consent hook included.
+        keep_page_text(&store, url, BODY);
+        let texts = stored_page_texts(&store);
+        assert_eq!(texts.get(url), Some(BODY), "the store round-trips the body");
+
+        let traces = vec![BrowsingTrace::from_events(
+            "p",
+            vec![TraceEvent {
+                from: None,
+                to: PageRef {
+                    url: url.to_string(),
+                    title: Some("Notes".to_string()),
+                },
+                transition: TraceTransition::UrlTyped,
+                at_ms: now_ms(),
+                dwell_ms: None,
+                candidates: Vec::new(),
+            }],
+        )];
+
+        let index = RecallIndex::mint(
+            &temp_dir(),
+            &traces,
+            &texts,
+            RecallConfig::default().with_frecency_weight(0.0),
+        )
+        .unwrap();
+        assert_eq!(index.receipt.pages_with_text, 1, "the body reached the index");
+
+        // "kestrel" is in neither the URL nor the title.
+        assert!(!url.contains("kestrel"));
+        let hits = index
+            .search("kestrel", 5, RecallConfig::default().with_frecency_weight(0.0))
+            .unwrap();
+        assert_eq!(hits.len(), 1, "a body term recalls the page");
+        assert_eq!(hits[0].url, url);
+
+        // The negative control: the same corpus with no stored text cannot.
+        let bare = RecallIndex::mint(
+            &temp_dir(),
+            &traces,
+            &PageTexts::default(),
+            RecallConfig::default().with_frecency_weight(0.0),
+        )
+        .unwrap();
+        assert_eq!(bare.receipt.pages_with_text, 0);
+        assert!(
+            bare.search("kestrel", 5, RecallConfig::default().with_frecency_weight(0.0))
+                .unwrap()
+                .is_empty(),
+            "without the body the term is unrecallable — the instrument works"
         );
     }
 
@@ -1004,7 +1160,8 @@ mod tests {
             let pages = events / 3;
             let traces = synthetic_traces(events, pages);
             for config in [RecallConfig::default(), RecallConfig::new(2, 2.0)] {
-                let index = RecallIndex::mint(&temp_dir(), &traces, config).unwrap();
+                let index =
+                    RecallIndex::mint(&temp_dir(), &traces, &PageTexts::default(), config).unwrap();
                 println!("synthetic {config:?} {:?}", index.receipt);
             }
         }

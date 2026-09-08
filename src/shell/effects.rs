@@ -624,6 +624,12 @@ impl Shell {
                             config,
                         });
                 }
+                // The body a fetched page carried, on the same channel as the
+                // traversals so one page's text and its visit stay ordered.
+                Effect::RecordPageText { url, text } => {
+                    self.trail_handle
+                        .command(crate::trail_memory::TrailCommand::RecordText { url, text });
+                }
                 // The session switch (rung 6's second half). Ordering is the
                 // point of this being an EFFECT: the departing session saves
                 // under ITS directory while it is still the live state, the

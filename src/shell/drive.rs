@@ -287,6 +287,11 @@ impl genet_probe::Automatable for Shell {
             // a coherent snapshot. `assert snap actions ~ Fit view` asks whether
             // a verb is on offer before spending a step on it.
             .with_field("actions", snap.available_actions.join(","))
+            // The omnibar's offered rows as their display strings, so a
+            // recall receipt can name the row it expects ("recall <url>")
+            // without a verb of its own — the same minimal-shared-and-grow
+            // rule the panes and actions fields follow.
+            .with_field("suggestions", snap.omnibar.suggestions.join(","))
             .with_field("kept", kept.to_string());
         if let Some(find) = snap.document_find {
             out = out
