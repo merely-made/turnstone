@@ -68,6 +68,9 @@ enum EvaluationKind {
 
 struct EvaluationCorpus {
     traces: Vec<BrowsingTrace>,
+    /// The page bodies the session kept (W6c); empty for a corpus captured
+    /// before text was stored.
+    texts: PageTexts,
     documents: BTreeMap<String, RecallDocument>,
     trace_count: usize,
     traversal_count: usize,
@@ -207,7 +210,8 @@ fn load_evaluation_corpus(source: &Path) -> Result<EvaluationCorpus, String> {
     let trace_count = memory.traces().count();
     let traversal_count = memory.traces().map(|trace| trace.events.len()).sum();
     let traces = traces_with_titles(&memory, &sources);
-    let documents = recall_documents(&page_table_of(&traces));
+    let texts = stored_page_texts(&store);
+    let documents = recall_documents(&page_table_of(&traces, &texts));
     let titled_documents = documents
         .values()
         .filter(|document| document.hit.title.is_some())
@@ -218,6 +222,7 @@ fn load_evaluation_corpus(source: &Path) -> Result<EvaluationCorpus, String> {
 
     Ok(EvaluationCorpus {
         traces,
+        texts,
         documents,
         trace_count,
         traversal_count,
@@ -481,6 +486,7 @@ fn build_orders(
         let index = RecallIndex::mint(
             &directory.path().join("memory"),
             &corpus.traces,
+            &corpus.texts,
             RecallConfig::new(order, 1.0),
         )?;
         let build_us = started.elapsed().as_micros();
@@ -799,7 +805,7 @@ fn training_selection_is_held_out_and_tie_aware() {
         })
         .collect();
     let traces = vec![BrowsingTrace::from_events("evaluation-test", events)];
-    let documents = recall_documents(&page_table_of(&traces));
+    let documents = recall_documents(&page_table_of(&traces, &PageTexts::default()));
     let manifest = EvaluationManifest {
         schema: EVALUATION_SCHEMA.to_string(),
         ranking_k: 3,
@@ -839,6 +845,7 @@ fn training_selection_is_held_out_and_tie_aware() {
     validate_manifest(&manifest, &documents, 1).unwrap();
     let corpus = EvaluationCorpus {
         traces,
+        texts: PageTexts::default(),
         documents,
         trace_count: 1,
         traversal_count: records.len(),
@@ -909,8 +916,13 @@ fn captured_trail_frecency_receipt() {
         .expect("TURNSTONE_RECALL_EVAL_SESSION is required");
     let corpus = load_evaluation_corpus(&session).unwrap();
     let index_root = tempfile::tempdir().expect("frecency receipt index root");
-    let index =
-        RecallIndex::mint(index_root.path(), &corpus.traces, RecallConfig::default()).unwrap();
+    let index = RecallIndex::mint(
+        index_root.path(),
+        &corpus.traces,
+        &corpus.texts,
+        RecallConfig::default(),
+    )
+    .unwrap();
     let behavioural = eidetic::browsing::frecency::ranked(&index.frecency);
     println!(
         "corpus digest={} source=captured pages={} scored_pages={} frecency_us={}",
@@ -970,7 +982,311 @@ fn captured_trail_mint_receipt() {
     println!("corpus digest={} source=captured", corpus.digest);
     let index_root = tempfile::tempdir().expect("mint receipt index root");
     for config in [RecallConfig::default(), RecallConfig::new(2, 2.0)] {
-        let index = RecallIndex::mint(index_root.path(), &corpus.traces, config).unwrap();
+        let index =
+            RecallIndex::mint(index_root.path(), &corpus.traces, &corpus.texts, config).unwrap();
         println!("captured {config:?} {:?}", index.receipt);
     }
+}
+
+// --- W6e: the Firefox history corpus lane -----------------------------------
+//
+// A second corpus for the same receipts W6a-W6d took on a captured session:
+// two years of real browsing, exported by `mere/scripts/firefox_history_export.py`
+// and lowered through `mere_import::history_to_traces`. The export lives outside
+// the repo and is named by environment; nothing here prints an address, a title,
+// or a term.
+
+/// Firefox's own `frecency` per place, keyed by the BLAKE3 hex of the place URL
+/// — the same digest the exporter's default writes.
+type FirefoxFrecency = HashMap<String, f64>;
+
+fn firefox_env(name: &str) -> Result<PathBuf, String> {
+    std::env::var_os(name)
+        .map(PathBuf::from)
+        .ok_or_else(|| format!("{name} is required"))
+}
+
+fn read_json<T: serde::de::DeserializeOwned>(path: &Path) -> Result<T, String> {
+    let bytes = fs::read(path).map_err(|error| format!("read export: {error}"))?;
+    serde_json::from_slice(&bytes).map_err(|error| format!("parse export: {error}"))
+}
+
+/// Fractional ranks, ties averaged — Spearman's input.
+fn fractional_ranks(values: &[f64]) -> Vec<f64> {
+    let mut order: Vec<usize> = (0..values.len()).collect();
+    order.sort_by(|left, right| values[*left].total_cmp(&values[*right]));
+    let mut ranks = vec![0.0; values.len()];
+    let mut start = 0;
+    while start < order.len() {
+        let mut end = start + 1;
+        while end < order.len() && values[order[end]] == values[order[start]] {
+            end += 1;
+        }
+        // Average rank over the tied block, 1-based.
+        let shared = (start + end + 1) as f64 / 2.0;
+        for slot in &order[start..end] {
+            ranks[*slot] = shared;
+        }
+        start = end;
+    }
+    ranks
+}
+
+/// Spearman's rho: Pearson correlation of the fractional ranks.
+fn spearman(left: &[f64], right: &[f64]) -> f64 {
+    if left.len() < 2 || left.len() != right.len() {
+        return f64::NAN;
+    }
+    let (a, b) = (fractional_ranks(left), fractional_ranks(right));
+    let n = a.len() as f64;
+    let mean_a = a.iter().sum::<f64>() / n;
+    let mean_b = b.iter().sum::<f64>() / n;
+    let mut covariance = 0.0;
+    let mut var_a = 0.0;
+    let mut var_b = 0.0;
+    for (x, y) in a.iter().zip(&b) {
+        covariance += (x - mean_a) * (y - mean_b);
+        var_a += (x - mean_a).powi(2);
+        var_b += (y - mean_b).powi(2);
+    }
+    if var_a == 0.0 || var_b == 0.0 {
+        return f64::NAN;
+    }
+    covariance / (var_a * var_b).sqrt()
+}
+
+/// The best Firefox score among the addresses that collapsed onto each page.
+/// Firefox scores a place; a page record may own several, and the one a user
+/// would have seen ranked is the highest.
+fn firefox_by_page(table: &PageTable, firefox: &FirefoxFrecency) -> BTreeMap<PageFingerprint, f64> {
+    let mut best: BTreeMap<PageFingerprint, f64> = BTreeMap::new();
+    for (raw, fingerprint) in &table.by_address {
+        let Some(score) = firefox.get(blake3::hash(raw.as_bytes()).to_hex().as_str()) else {
+            continue;
+        };
+        let slot = best.entry(*fingerprint).or_insert(f64::MIN);
+        *slot = slot.max(*score);
+    }
+    best
+}
+
+/// Rank correlation and top-100 overlap of our fold against Firefox's, over the
+/// pages both scored.
+fn compare_frecency(
+    label: &str,
+    traces: &[BrowsingTrace],
+    table: &PageTable,
+    firefox: &BTreeMap<PageFingerprint, f64>,
+    now_ms: u64,
+    config: &FrecencyConfig,
+) {
+    let ours = frecency_by_page(traces, now_ms, config, table);
+    let mut mine = Vec::new();
+    let mut theirs = Vec::new();
+    for (fingerprint, score) in &ours {
+        if let Some(other) = firefox.get(fingerprint) {
+            mine.push(*score);
+            theirs.push(*other);
+        }
+    }
+    let top = |scores: &BTreeMap<PageFingerprint, f64>| -> BTreeSet<PageFingerprint> {
+        let mut ranked: Vec<(&PageFingerprint, f64)> =
+            scores.iter().map(|(key, s)| (key, *s)).collect();
+        ranked.sort_by(|l, r| r.1.total_cmp(&l.1).then_with(|| l.0.cmp(r.0)));
+        ranked.into_iter().take(100).map(|(key, _)| *key).collect()
+    };
+    let overlap = top(&ours).intersection(&top(firefox)).count();
+    println!(
+        "  frecency lane={label} shared_pages={} spearman={:.4} top100_overlap={overlap}",
+        mine.len(),
+        spearman(&mine, &theirs),
+    );
+}
+
+fn percentile(sorted: &[u64], percent: usize) -> u64 {
+    if sorted.is_empty() {
+        return 0;
+    }
+    let index = (sorted.len() * percent / 100).min(sorted.len() - 1);
+    sorted[index]
+}
+
+fn run_firefox_history_receipt() -> Result<(), String> {
+    let export = firefox_env("TURNSTONE_FIREFOX_EXPORT")?;
+    let sidecar = firefox_env("TURNSTONE_FIREFOX_FRECENCY")?;
+    let items: Vec<mere_import::ImportedHistoryVisitItem> = read_json(&export)?;
+    let firefox: FirefoxFrecency = read_json(&sidecar)?;
+    let built = Instant::now();
+    let traces = mere_import::history_to_traces(&items, "firefox");
+    let build_ms = built.elapsed().as_millis();
+
+    // A fresh store, in the same scratch root the export lives under. Written
+    // and read back, so the receipt covers the storage path a real import takes
+    // rather than an in-memory corpus.
+    let scratch = std::env::var_os("TURNSTONE_FIREFOX_TMP")
+        .map(PathBuf::from)
+        .unwrap_or_else(std::env::temp_dir);
+    fs::create_dir_all(&scratch).map_err(|error| format!("scratch root: {error}"))?;
+    let root = tempfile::TempDir::new_in(&scratch).map_err(|error| format!("temp: {error}"))?;
+    let memory_root = root.path().join("memory");
+    let mut store =
+        FjallStore::open(&memory_root).map_err(|error| format!("open store: {error}"))?;
+    pollster::block_on(eidetic::bootstrap(&mut store))
+        .map_err(|error| format!("bootstrap: {error}"))?;
+    pollster::block_on(bootstrap_browsing_schema(&mut store))
+        .map_err(|error| format!("bootstrap browsing schema: {error}"))?;
+    let wrote = Instant::now();
+    for trace in &traces {
+        pollster::block_on(eidetic::browsing::save_trace(&mut store, trace, now_ms()))
+            .map_err(|error| format!("save trace: {error}"))?;
+    }
+    let write_ms = wrote.elapsed().as_millis();
+    let read = Instant::now();
+    let memory = pollster::block_on(BrowsingMemory::load(&mut store, SEGMENT_SIZE))
+        .map_err(|error| format!("load memory: {error}"))?;
+    let stored: Vec<BrowsingTrace> = memory.traces().cloned().collect();
+    let read_ms = read.elapsed().as_millis();
+    let texts = stored_page_texts(&store);
+    println!(
+        "corpus source=firefox_export items={} traces={} stored_traces={} lower_ms={build_ms} store_write_ms={write_ms} store_read_ms={read_ms}",
+        items.len(),
+        traces.len(),
+        stored.len(),
+    );
+
+    // (b) what the mapping produced, and what the interaction timer gave dwell.
+    let mut kinds: BTreeMap<String, usize> = BTreeMap::new();
+    let mut dwells: Vec<u64> = Vec::new();
+    for event in stored.iter().flat_map(|trace| trace.events.iter()) {
+        *kinds.entry(format!("{:?}", event.transition)).or_insert(0) += 1;
+        if let Some(dwell) = event.dwell_ms {
+            dwells.push(dwell);
+        }
+    }
+    for (kind, count) in &kinds {
+        println!("  transition {kind} {count}");
+    }
+    dwells.sort_unstable();
+    let threshold = FrecencyConfig::default().dwell_threshold_ms;
+    println!(
+        "  dwell with_dwell={} median_ms={} p90_ms={} over_threshold={} threshold_ms={threshold}",
+        dwells.len(),
+        percentile(&dwells, 50),
+        percentile(&dwells, 90),
+        dwells.iter().filter(|d| **d >= threshold).count(),
+    );
+
+    // (a) the mint receipt, behavioural lane on, vector lane off.
+    let index_root =
+        tempfile::TempDir::new_in(&scratch).map_err(|error| format!("index temp: {error}"))?;
+    let index = RecallIndex::mint(index_root.path(), &stored, &texts, RecallConfig::default())?;
+    println!("  mint vector=off {:?}", index.receipt);
+
+    // (c) our behavioural fold against Firefox's own frecency.
+    let table = page_table_of(&stored, &texts);
+    let their_scores = firefox_by_page(&table, &firefox);
+    let now = now_ms();
+    let no_bonus = FrecencyConfig {
+        dwell_bonus: 0.0,
+        ..FrecencyConfig::default()
+    };
+    println!("  firefox_scored_pages={}", their_scores.len());
+    compare_frecency(
+        "dwell_bonus_on",
+        &stored,
+        &table,
+        &their_scores,
+        now,
+        &FrecencyConfig::default(),
+    );
+    compare_frecency(
+        "dwell_bonus_off",
+        &stored,
+        &table,
+        &their_scores,
+        now,
+        &no_bonus,
+    );
+
+    // (d) how far the canonical key collapsed the address space.
+    let mut per_record: BTreeMap<PageFingerprint, usize> = BTreeMap::new();
+    for fingerprint in table.by_address.values() {
+        *per_record.entry(*fingerprint).or_insert(0) += 1;
+    }
+    let canonical: BTreeSet<&String> = table
+        .records
+        .values()
+        .flat_map(|record| record.urls.iter())
+        .collect();
+    let mut sizes: Vec<usize> = per_record.values().copied().collect();
+    sizes.sort_unstable_by(|left, right| right.cmp(left));
+    sizes.truncate(5);
+    println!(
+        "  collapse raw_addresses={} canonical_addresses={} pages={} top5_sizes={sizes:?}",
+        table.by_address.len(),
+        canonical.len(),
+        table.records.len(),
+    );
+
+    // (e) typed-prefix queries built from the corpus itself: the first two
+    // characters of the host of each of the three most-visited pages. The
+    // characters are never printed, only the lengths, labels and orders.
+    let mut busiest: Vec<&eidetic::PageRecord> = table.records.values().collect();
+    busiest.sort_by(|left, right| {
+        right
+            .visits
+            .cmp(&left.visits)
+            .then_with(|| left.last_url.cmp(&right.last_url))
+    });
+    for record in busiest.iter().take(3) {
+        let host = record
+            .last_url
+            .split("://")
+            .nth(1)
+            .and_then(|rest| rest.split('/').next())
+            .unwrap_or(record.last_url.as_str());
+        let prefix: String = host.chars().take(2).collect();
+        let expected = index.frecency_urls(&prefix, 1).first().cloned();
+        for (lane, config) in [
+            (
+                "without_frecency",
+                RecallConfig::default().with_frecency_weight(0.0),
+            ),
+            ("with_frecency", RecallConfig::default()),
+        ] {
+            let mut timings = Vec::new();
+            let mut first = None;
+            for _ in 0..TIMING_ROUNDS {
+                let started = Instant::now();
+                let hits = index.search(&prefix, 5, config)?;
+                timings.push(started.elapsed().as_micros());
+                first = hits.first().map(|hit| hit.url.clone());
+            }
+            timings.sort_unstable();
+            println!(
+                "  query prefix_chars={} page={} lane={lane} median_us={} top_is_top_frecency={} hit={}",
+                prefix.chars().count(),
+                page_label(&record.last_url),
+                timings[timings.len() / 2],
+                first.is_some() && first == expected,
+                first.as_deref().map_or("none".to_string(), page_label),
+            );
+        }
+    }
+
+    // The vector lane last: 4,096 dims per page is the memory risk on a corpus
+    // this wide, and every other number is already printed if it falls over.
+    let vector = RecallIndex::mint(index_root.path(), &stored, &texts, RecallConfig::new(2, 2.0))?;
+    println!("  mint vector=on {:?}", vector.receipt);
+    Ok(())
+}
+
+/// W6e's receipt: two years of real Firefox history, lowered through the
+/// import mapping and minted. Reads an export named by environment, writes only
+/// under the scratch root, and prints counts, durations, correlations and
+/// BLAKE3 labels — never an address, a title, or a term.
+#[test]
+#[ignore = "requires an exported Firefox history corpus"]
+fn firefox_history_corpus_receipt() {
+    run_firefox_history_receipt().unwrap();
 }
