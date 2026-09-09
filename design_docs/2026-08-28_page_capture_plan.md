@@ -373,7 +373,7 @@ Recorded here so they are not lost, and because each is independently closable:
   check reached Turnstone and passed with pre-existing warnings. The Weld
   feature check reached a pre-Turnstone dependency mismatch: pinned Welding
   `c65cc108` expects the older `Dx12SharedTexture` shape while the workspace
-  patch selects the current dirty `wgpu-graft` checkout. Its six E0560/E0308
+  patch selects the clean local `wgpu-graft` checkout at `403a30c2`. Its six E0560/E0308
   errors leave the adapter compile and headed pixels open; this partial
   consumer proof does not close P1's clean-source pin gate. The named commands,
   regression manifest, runner hashes and retained Weld diagnostic are in the
