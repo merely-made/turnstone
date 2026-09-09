@@ -378,3 +378,17 @@ Recorded here so they are not lost, and because each is independently closable:
   consumer proof does not close P1's clean-source pin gate. The named commands,
   regression manifest, runner hashes and retained Weld diagnostic are in the
   [S9 receipt](../docs/receipts/page_capture_s9_20260908/README.md).
+
+- **2026-09-09, P3a in progress:** An explicit source-document capture path now
+  preserves only node-plus-current-URL-scoped fetched HTML bytes with an
+  observed `PageStreamed` effective URL, content type, and acquisition time.
+  It stores LocalOnly raw-byte and Fleece annotation artifacts through the
+  existing session Eidetic/Fjall store. It refuses targets lacking an observed
+  final URL, does not promote recall text or PNGs, and does not support hosted
+  Weld. Every Turnstone Mere git pin moved together from `2b1cd731` to
+  `725b0f35` for the current Eidetic bridge; focused resolver validation is
+  pending the shared dependency cache. On a current completion, the node now
+  appends only the annotation manifest to its durable
+  `capture.source-annotations/v1` facet series and triggers `SaveSession`; a
+  stale completion remains in Eidetic but is reported as unattached rather
+  than being rebound to a later target.

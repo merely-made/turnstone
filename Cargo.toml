@@ -141,7 +141,7 @@ genet-documents = { git = "https://github.com/merely-made/genet.git", rev = "9e8
 # reader and smolweb lanes, and the remote fetcher that supplies the http(s)
 # schemes Genet's `LocalFetcher` no longer branches on. The two compose at
 # `LocalFetcher::with_fallback`, which is the seam the split introduced.
-mere-document-lanes = { git = "https://github.com/merely-made/mere.git", rev = "33287b0efbe0bd45bd46b87a598d5f4fc62414e2", features = ["netfetch", "smolweb"] }
+mere-document-lanes = { git = "https://github.com/merely-made/mere.git", rev = "33287b0efbe0bd45bd46b87a598d5f4fc62414e2", features = ["netfetch", "smolweb", "eidetic-bridge"] }
 # Protocol-faithful RSS/Atom parsing for the graph-native feed subscription
 # loop. Gemini feed discovery remains gemtext-native in Turnstone; errand owns
 # the shared XML grammar already used by Nematic.

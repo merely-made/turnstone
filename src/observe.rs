@@ -306,6 +306,28 @@ pub enum AppEvent {
         node: Uuid,
         error: String,
     },
+    /// An explicit Fleece source-document capture reached local Eidetic custody.
+    SourceDocumentCaptured {
+        node: Uuid,
+        url: String,
+        raw_manifest: String,
+        annotation_manifest: String,
+    },
+    /// The explicit action was refused or its local custody write failed.
+    SourceDocumentCaptureFailed {
+        node: Uuid,
+        url: String,
+        error: String,
+    },
+    /// Eidetic custody succeeded, but the target changed before the manifest
+    /// reference could attach to its node.
+    SourceDocumentCaptureUnattached {
+        node: Uuid,
+        url: String,
+        raw_manifest: String,
+        annotation_manifest: String,
+        reason: String,
+    },
     /// A capsule asked for a client identity. The origin is public routing
     /// context; certificate and key bytes never enter observation.
     GeminiIdentityRequested {
@@ -579,6 +601,26 @@ impl AppEvent {
             AppEvent::DownloadFailed { node, error } => {
                 format!("download-failed {node} {error}")
             }
+            AppEvent::SourceDocumentCaptured {
+                node,
+                url,
+                raw_manifest,
+                annotation_manifest,
+            } => format!(
+                "source-document-captured {node} {url} raw={raw_manifest} annotation={annotation_manifest}"
+            ),
+            AppEvent::SourceDocumentCaptureFailed { node, url, error } => {
+                format!("source-document-capture-failed {node} {url} {error}")
+            }
+            AppEvent::SourceDocumentCaptureUnattached {
+                node,
+                url,
+                raw_manifest,
+                annotation_manifest,
+                reason,
+            } => format!(
+                "source-document-capture-unattached {node} {url} raw={raw_manifest} annotation={annotation_manifest} {reason}"
+            ),
             AppEvent::GeminiIdentityRequested {
                 node,
                 origin,

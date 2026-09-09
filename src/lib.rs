@@ -53,6 +53,7 @@ pub mod remote_projection;
 mod ring;
 mod roster_view;
 mod scenario;
+mod source_capture;
 #[cfg(feature = "piccolo")]
 mod script;
 mod sections;

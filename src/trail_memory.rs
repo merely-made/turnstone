@@ -53,7 +53,7 @@ use eidetic::{
 use eidetic_fjall::FjallStore;
 use eidetic_search::{CandidateIndex, FusedHit, IndexConfig, Ranking, TrailIndex, fuse_many};
 
-use crate::action::{RecallHit, Update};
+use crate::action::{RecallHit, StoredSourceDocument, Update};
 
 /// Traversals per stored trace segment. Segments are the flush granularity:
 /// small enough that a crash loses minutes, large enough that a stored trace
@@ -145,6 +145,13 @@ pub enum TrailCommand {
     /// was fetched from (wiring plan W6c). Best-effort: a failure warns and
     /// the page stays recallable by title and URL alone.
     RecordText { url: String, text: String },
+    /// An explicit request to preserve one fetched HTML response. This remains
+    /// separate from `RecordText`: recall text is never source evidence.
+    CaptureSourceDocument {
+        node: uuid::Uuid,
+        url: String,
+        document: crate::content::FetchedDocument,
+    },
     /// Flush every open segment to the store (a lifecycle edge).
     Flush,
     /// Answer lexical recall over the stored corpus (the omnibar's recall
@@ -300,6 +307,108 @@ fn keep_page_text(store: &FjallStore, url: &str, text: &str) {
     if let Err(err) = pollster::block_on(texts.put(url, text, now_ms())) {
         tracing::warn!(%err, %url, "trail memory: page text not stored");
     }
+}
+
+/// Store the exact acquired bytes and the Fleece annotation that describes a
+/// canonical-text projection of those bytes. This is invoked only by the
+/// explicit action path, never by fetch enrichment or trail recall.
+fn capture_source_document(
+    store: &mut FjallStore,
+    document: &crate::content::FetchedDocument,
+) -> Result<StoredSourceDocument, String> {
+    use eidetic::models::OpaqueBlob;
+    use eidetic::{
+        ModerationState, PrivacyClass, ProvenanceOrigin, ProvenanceRecord, Timestamp,
+        TrustEnvelope, TrustLevel,
+    };
+    use mere_document_lanes::eidetic_bridge::{CaptureDomMode, CaptureEvidenceV1};
+
+    if document.acquired_at_ms == 0 {
+        return Err("source capture requires an observed acquisition time".to_string());
+    }
+    if !document
+        .content_type
+        .as_deref()
+        .is_some_and(|content_type| {
+            content_type
+                .split(';')
+                .next()
+                .is_some_and(|media| media.trim().eq_ignore_ascii_case("text/html"))
+        })
+    {
+        return Err(
+            "source capture requires an observed text/html response content type".to_string(),
+        );
+    }
+    let captured_at = Timestamp(document.acquired_at_ms);
+    let effective_url = document
+        .effective_url
+        .clone()
+        .ok_or_else(|| "source capture requires an observed final response URL".to_string())?;
+    let parsed = genet_static_dom::StaticDocument::parse(&document.body);
+    let extracted = fleece::extract_document(&parsed);
+    let character_count = extracted.page.text.chars().count() as u64;
+    let anchor = fleece::anchor_for_range(
+        &extracted.page.text,
+        fleece::TextPositionSelector {
+            start: 0,
+            end: character_count,
+        },
+        extracted.contract.quote_context,
+    )
+    .ok_or_else(|| "Fleece produced no canonical text for a whole-document anchor".to_string())?;
+    let raw_manifest = pollster::block_on(eidetic::save_typed(
+        store,
+        &OpaqueBlob(document.bytes.clone()),
+        Vec::new(),
+        PrivacyClass::LocalOnly,
+        ProvenanceRecord {
+            origin: ProvenanceOrigin::Imported {
+                source: effective_url.clone(),
+            },
+            upstream: Vec::new(),
+            tooling: Some("turnstone-source-document-capture/v1".into()),
+            generated_at: captured_at,
+        },
+        TrustEnvelope {
+            level: TrustLevel::SelfAsserted,
+            signatures: Vec::new(),
+            moderation_state: ModerationState::Unreviewed,
+        },
+        captured_at,
+    ))
+    .map_err(|error| format!("raw source deposit: {error}"))?;
+    let evidence = CaptureEvidenceV1::new(
+        effective_url,
+        eidetic::Hash::of(&document.bytes),
+        captured_at,
+        document.content_type.clone(),
+        CaptureDomMode::Source,
+        Some(raw_manifest),
+        None,
+    )
+    .map_err(|error| format!("source capture evidence: {error}"))?;
+    let record = mere_document_lanes::FleeceAnnotationRecord::from_fleece(
+        mere_document_lanes::CaptureIdentity::from_evidence(evidence)
+            .map_err(|error| format!("source capture identity: {error}"))?,
+        &extracted,
+        &anchor,
+    )
+    .map_err(|error| format!("Fleece annotation: {error}"))?;
+    pollster::block_on(mere_document_lanes::bootstrap_fleece_annotation_schema(
+        store,
+    ))
+    .map_err(|error| format!("Fleece schema bootstrap: {error}"))?;
+    let annotation_manifest = pollster::block_on(mere_document_lanes::save_fleece_annotation(
+        store,
+        &record,
+        document.acquired_at_ms,
+    ))
+    .map_err(|error| format!("Fleece annotation deposit: {error}"))?;
+    Ok(StoredSourceDocument {
+        raw_manifest: raw_manifest.to_string(),
+        annotation_manifest: annotation_manifest.to_string(),
+    })
 }
 
 /// Every stored page body for the open session. An unreadable store yields an
@@ -809,6 +918,17 @@ pub fn spawn_trail(wake: Wake, dir: PathBuf) -> (ActorHandle<TrailCommand>, Rece
                         // from, so a new one makes the projection stale.
                         index_stale = true;
                     },
+                    TrailCommand::CaptureSourceDocument {
+                        node,
+                        url,
+                        document,
+                    } => {
+                        let result = match state.as_mut() {
+                            Some((store, _)) => capture_source_document(store, &document),
+                            None => Err("the session Eidetic store is not open".to_string()),
+                        };
+                        out.emit(Update::SourceDocumentCaptured { node, url, result });
+                    },
                     TrailCommand::Flush => {
                         if let Some((store, memory)) = state.as_mut() {
                             flush(store, memory);
@@ -1112,6 +1232,93 @@ mod tests {
             "the chain: last destination becomes the next origin"
         );
         assert_eq!(events[1].transition, TraceTransition::Back);
+    }
+
+    #[test]
+    fn source_capture_refuses_incomplete_acquisition_context() {
+        let dir = temp_dir();
+        let mut store = FjallStore::open(&dir).unwrap();
+        let complete = crate::content::FetchedDocument {
+            bytes: b"<p>kestrel</p>".to_vec(),
+            content_type: Some("text/html".into()),
+            body: "<p>kestrel</p>".into(),
+            effective_url: Some("https://example.test/kestrel".into()),
+            acquired_at_ms: 9,
+        };
+        let missing_url = crate::content::FetchedDocument {
+            effective_url: None,
+            ..complete.clone()
+        };
+        assert!(
+            capture_source_document(&mut store, &missing_url)
+                .unwrap_err()
+                .contains("final response URL")
+        );
+        let missing_time = crate::content::FetchedDocument {
+            acquired_at_ms: 0,
+            ..complete
+        };
+        assert!(
+            capture_source_document(&mut store, &missing_time)
+                .unwrap_err()
+                .contains("acquisition time")
+        );
+    }
+
+    #[test]
+    fn explicit_source_capture_keeps_exact_bytes_and_reopens_annotation() {
+        let dir = temp_dir();
+        let exact = b"<html><body><main><p>source-only kestrel</p></main></body></html>";
+        let document = crate::content::FetchedDocument {
+            bytes: exact.to_vec(),
+            content_type: Some("text/html; charset=utf-8".into()),
+            body: String::from_utf8(exact.to_vec()).unwrap(),
+            effective_url: Some("https://final.example/kestrel".into()),
+            acquired_at_ms: 1_700_000_000_000,
+        };
+        let mut store = FjallStore::open(&dir).unwrap();
+        let stored = capture_source_document(&mut store, &document).unwrap();
+        assert_ne!(stored.raw_manifest, stored.annotation_manifest);
+        drop(store);
+
+        let mut reopened = FjallStore::open(&dir).unwrap();
+        let manifests = pollster::block_on(eidetic::typed::list_typed::<
+            mere_document_lanes::FleeceAnnotationRecord,
+        >(&mut reopened))
+        .unwrap();
+        assert_eq!(manifests.len(), 1);
+        let record = pollster::block_on(mere_document_lanes::load_fleece_annotation(
+            &mut reopened,
+            manifests[0].id,
+        ))
+        .unwrap()
+        .unwrap();
+        let evidence = record.extraction.capture.evidence.as_ref().unwrap();
+        let raw_manifest_id = evidence.raw_manifest.expect("raw manifest");
+        assert_eq!(evidence.final_source, "https://final.example/kestrel");
+        assert_eq!(raw_manifest_id.to_string(), stored.raw_manifest);
+        assert_eq!(evidence.capture_hash, eidetic::Hash::of(exact));
+        assert!(evidence.has_authoritative_acquisition_context());
+        let raw_manifest = pollster::block_on(eidetic::manifest::load_manifest(
+            &mut reopened,
+            raw_manifest_id,
+        ))
+        .unwrap()
+        .unwrap();
+        let raw = pollster::block_on(eidetic::manifest::resolve_blob(
+            &mut reopened,
+            &mut eidetic::NoFetcher,
+            &raw_manifest,
+        ))
+        .unwrap();
+        assert_eq!(raw, exact, "the raw response bytes are not Fleece text");
+        assert!(
+            record
+                .extraction
+                .canonical_text_record
+                .canonical_text
+                .contains("kestrel")
+        );
     }
 
     /// A segment that fills flushes without an explicit Flush command.

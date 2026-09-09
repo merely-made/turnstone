@@ -356,3 +356,20 @@ Verified 2026-09-06 against the working tree.
 - **2026-09-06:** plan written. L1-L7 ruled from a working-tree assessment;
   cross-references added to the surfaces, capture and recycle bin documents
   and to `DOC_README.md`. No code written.
+- **2026-09-09, P3a in progress:** Turnstone now has an explicit
+  `CaptureSourceDocument` action/effect and a node-plus-current-URL-scoped
+  fetched-document candidate. It deposits exact raw response bytes and a
+  LocalOnly Fleece annotation into the existing session Eidetic/Fjall memory
+  store; recall `PageTextStore` text and viewport PNG capture do not enter the
+  path. The candidate accepts only an observed response URL from
+  `PageStreamed`. The current terminal fetch contract has no final URL for a
+  non-streamed HTTP response, so those captures refuse rather than inventing
+  final-source evidence. Hosted Weld remains unsupported for the same reason:
+  it does not expose source response bytes. Validation is pending the
+  clean-source resolver gate. The Mere dependency transaction advances every
+  Turnstone Mere git pin together from `2b1cd731` to `725b0f35`, the current
+  shared commit that provides the Eidetic bridge. On a current completion,
+  the node appends only the annotation manifest to its durable
+  `capture.source-annotations/v1` facet series and triggers `SaveSession`; a
+  stale completion remains in Eidetic but is reported as unattached rather
+  than being rebound to a later target.

@@ -99,12 +99,29 @@ impl App {
                     Some(crate::content::NodeContent::Live)
                 );
                 if let Ok(fetched) = &result {
+                    let observed = self.content.fetched(node, &url);
+                    let effective_url = observed.and_then(|previous| previous.effective_url.clone());
+                    let content_type = fetched.content_type.clone().or_else(|| {
+                        observed.and_then(|previous| previous.content_type.clone())
+                    });
+                    let acquired_at_ms = observed
+                        .map(|previous| previous.acquired_at_ms)
+                        .filter(|observed_at| *observed_at != 0)
+                        .unwrap_or_else(|| {
+                            std::time::SystemTime::now()
+                                .duration_since(std::time::UNIX_EPOCH)
+                                .map(|duration| duration.as_millis() as u64)
+                                .unwrap_or(0)
+                        });
                     self.content.note_fetched(
                         node,
                         url.clone(),
                         crate::content::FetchedDocument {
-                            content_type: fetched.content_type.clone(),
+                            bytes: fetched.bytes.clone(),
+                            content_type,
                             body: fetched.body.clone(),
+                            effective_url,
+                            acquired_at_ms,
                         },
                         fetched.bytes.len(),
                     );
@@ -518,6 +535,50 @@ impl App {
                 self.events.push(AppEvent::RecallFailed(error));
                 vec![Effect::Redraw]
             }
+            Update::SourceDocumentCaptured { node, url, result } => match result {
+                Ok(stored) => {
+                    let current = self
+                        .graph_runtimes
+                        .graph_containing_member(node)
+                        .and_then(|graph| self.graph_runtimes.canvas(graph))
+                        .is_some_and(|canvas| browse::still_current(canvas, node, &url));
+                    if !current {
+                        self.events.push(AppEvent::SourceDocumentCaptureUnattached {
+                            node,
+                            url,
+                            raw_manifest: stored.raw_manifest,
+                            annotation_manifest: stored.annotation_manifest,
+                            reason: "target changed before capture completion".into(),
+                        });
+                        return vec![Effect::Redraw];
+                    }
+                    if let Err(error) = crate::source_capture::append_reference(
+                        self.graph_runtimes.facets_mut(),
+                        node,
+                        stored.annotation_manifest.clone(),
+                    ) {
+                        self.events.push(AppEvent::SourceDocumentCaptureUnattached {
+                            node,
+                            url,
+                            raw_manifest: stored.raw_manifest,
+                            annotation_manifest: stored.annotation_manifest,
+                            reason: format!("could not attach capture reference: {error}"),
+                        });
+                        return vec![Effect::Redraw];
+                    }
+                    self.events.push(AppEvent::SourceDocumentCaptured {
+                        node,
+                        url,
+                        raw_manifest: stored.raw_manifest,
+                        annotation_manifest: stored.annotation_manifest,
+                    });
+                    vec![Effect::SaveSession, Effect::Redraw]
+                }
+                Err(error) => {
+                    self.events.push(AppEvent::SourceDocumentCaptureFailed { node, url, error });
+                    vec![Effect::Redraw]
+                }
+            },
             Update::PlaceLanesAdvanced {
                 session,
                 generation,

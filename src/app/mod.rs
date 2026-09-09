@@ -1046,6 +1046,13 @@ impl App {
             Action::PageZoomOut { member } => self.page_zoom_out(member),
             Action::PageZoomReset { member } => self.page_zoom_reset(member),
             Action::CapturePage { member } => vec![Effect::CaptureContent { node: member }],
+            Action::CaptureSourceDocument { member } => self
+                .graph_runtimes
+                .graph_containing_member(member)
+                .and_then(|graph| self.graph_runtimes.canvas(graph))
+                .and_then(|canvas| canvas.graph().get_node_by_id(member).map(|(_, node)| node.url().to_owned()))
+                .map(|url| vec![Effect::CaptureSourceDocument { node: member, url }])
+                .unwrap_or_default(),
             Action::ChoosePermission { request, choice } => self.choose_permission(request, choice),
             Action::FocusAuthenticationField(field) => self.focus_authentication_field(field),
             Action::InsertAuthentication(text) => self.insert_authentication(text),
