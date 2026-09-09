@@ -12,6 +12,7 @@
 
 use serde::{Deserialize, Serialize};
 
+pub(crate) mod captured_collection;
 pub mod invite;
 pub(crate) mod lanes;
 pub mod projection;
@@ -179,17 +180,17 @@ impl std::fmt::Display for PlaceBindingError {
         match self {
             Self::UnsupportedVersion(version) => {
                 write!(formatter, "unsupported place binding version {version}")
-            }
+            },
             Self::EmptyDefaultChannel => write!(formatter, "default channel is empty"),
             Self::DefaultChannelTooLong(length) => {
                 write!(
                     formatter,
                     "default channel is {length} bytes; maximum is 128"
                 )
-            }
+            },
             Self::DefaultChannelHasControl => {
                 write!(formatter, "default channel contains a control character")
-            }
+            },
         }
     }
 }
@@ -203,9 +204,114 @@ pub struct OfflinePlaceSnapshot {
     pub graph: GraphCache,
     pub chat: ChatCache,
     pub group: GroupCache,
+    /// Rebuildable search/read view over this Moot's effective captured-page
+    /// contributions and the Fleece records this session currently holds.
+    pub captured: CapturedCollectionCache,
     /// What the shared graph actually holds, as opposed to how much of it.
     /// Already authority-filtered: see [`projection::SharedGraph`].
     pub shared: projection::SharedGraph,
+}
+
+/// App-owned captured-page view. Gemot and Eidetic remain authoritative; this
+/// cache can be discarded and rebuilt from both at any time.
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct CapturedCollectionCache {
+    pub groups: Vec<CapturedContentGroup>,
+    pub rejected: Vec<CapturedContributionStatus>,
+}
+
+impl CapturedCollectionCache {
+    /// Search the current derived view. The index is transient and one result
+    /// represents one exact canonical-text group.
+    pub fn search(&self, query: &str, limit: usize) -> Vec<CapturedSearchHit> {
+        use eidetic_search::{DocumentIndex, DocumentIndexConfig, SearchDocument};
+
+        let index = DocumentIndex::from_documents(
+            DocumentIndexConfig::default(),
+            self.groups.iter().enumerate().map(|(position, group)| {
+                let latest = group
+                    .contributions
+                    .last()
+                    .expect("a captured content group always has a contribution");
+                let mut aliases: Vec<_> = group
+                    .contributions
+                    .iter()
+                    .map(|contribution| contribution.source.clone())
+                    .filter(|source| source != &latest.source)
+                    .collect();
+                aliases.sort();
+                aliases.dedup();
+                SearchDocument {
+                    key: position,
+                    primary_address: latest.source.clone(),
+                    aliases,
+                    title: Some(latest.title.clone()),
+                    body: Some(group.canonical_text.clone()),
+                }
+            }),
+        );
+        index
+            .search(query, limit)
+            .into_iter()
+            .filter_map(|hit| {
+                self.groups.get(hit.key).map(|group| CapturedSearchHit {
+                    canonical_text_hash: group.canonical_text_hash.clone(),
+                    title: group
+                        .contributions
+                        .last()
+                        .map(|contribution| contribution.title.clone())
+                        .unwrap_or_default(),
+                    source: hit.primary_address,
+                    contribution_count: group.contributions.len(),
+                })
+            })
+            .collect()
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct CapturedContentGroup {
+    pub extraction_schema: String,
+    pub normalization: String,
+    pub reader_profile: String,
+    pub canonical_text_hash: String,
+    pub canonical_text_iri: String,
+    pub canonical_text: String,
+    pub contributions: Vec<CapturedContribution>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct CapturedContribution {
+    pub share_operation: [u8; 32],
+    pub annotation_manifest: [u8; 32],
+    pub contributor: [u8; 32],
+    pub source: String,
+    pub title: String,
+    pub shared_at_ms: u64,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct CapturedContributionStatus {
+    pub share_operation: [u8; 32],
+    pub annotation_manifest: [u8; 32],
+    pub title: String,
+    pub reason: CapturedRejectionReason,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum CapturedRejectionReason {
+    UnsupportedSchema(String),
+    MissingRecord,
+    InvalidRecord(String),
+    LibraryUnavailable(String),
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct CapturedSearchHit {
+    pub canonical_text_hash: String,
+    pub title: String,
+    pub source: String,
+    pub contribution_count: usize,
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Eq)]

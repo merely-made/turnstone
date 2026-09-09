@@ -392,3 +392,20 @@ Recorded here so they are not lost, and because each is independently closable:
   `capture.source-annotations/v1` facet series and triggers `SaveSession`; a
   stale completion remains in Eidetic but is reported as unattached rather
   than being rebound to a later target.
+
+- **2026-09-09, P3c implementation:** Turnstone now consumes Mere's optional
+  `captured-web` projection at the shell-owned place boundary. The trail actor
+  remains the only owner of `sessions/<id>/memory`; on open, reopen and an
+  explicit source capture it publishes a read-only library of locally held
+  `FleeceAnnotationRecord`s. The place worker narrows the Moot roster through
+  Gemot's full `authorized_fauna` service view, including membership and
+  per-share withdrawal, then remints an app-owned captured collection from
+  that roster and the local library. Exact canonical text forms one search
+  group while each signed share stays a separate contribution. Missing,
+  invalid, unsupported and store-unavailable references remain explicit
+  statuses and supply no search text. All 43 Mere dependencies now pin the
+  actual P3b origin commit `b99e532a2075d8d755ce6a8af52c9b7b6b6ba63d`.
+  `cargo metadata --offline --no-deps`, `git diff --check`, and a Rustfmt
+  check of the new captured-collection module pass. The focused Turnstone
+  tests are authored but remain uncompiled: the isolated clean target was
+  stopped while still compiling dependencies, before reaching Turnstone.

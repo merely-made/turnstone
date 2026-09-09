@@ -213,25 +213,41 @@ fn now_ms() -> u64 {
 /// Open the store, seed the schema engram, and load the stored corpus. A
 /// `None` disables capture until the next `Reopen` — a browser that cannot
 /// remember must still browse.
-fn open_memory(dir: &Path) -> Option<(FjallStore, BrowsingMemory)> {
+fn open_memory(
+    dir: &Path,
+    capture_library: &crate::place::captured_collection::LocalCaptureLibrary,
+) -> Option<(FjallStore, BrowsingMemory)> {
     if let Err(err) = std::fs::create_dir_all(dir) {
+        capture_library.unavailable(format!("create session capture directory: {err}"));
         tracing::warn!(%err, dir = %dir.display(), "trail memory: create dir failed; capture disabled until reopen");
         return None;
     }
     let mut store = match FjallStore::open(dir) {
         Ok(store) => store,
         Err(err) => {
+            capture_library.unavailable(format!("open session capture store: {err}"));
             tracing::warn!(%err, dir = %dir.display(), "trail memory: open failed; capture disabled until reopen");
             return None;
         },
     };
     if let Err(err) = pollster::block_on(bootstrap_browsing_schema(&mut store)) {
+        capture_library.unavailable(format!("bootstrap browsing schema: {err}"));
         tracing::warn!(%err, "trail memory: schema bootstrap failed; capture disabled until reopen");
         return None;
     }
     match pollster::block_on(BrowsingMemory::load(&mut store, SEGMENT_SIZE)) {
-        Ok(memory) => Some((store, memory)),
+        Ok(memory) => {
+            if let Err(error) = crate::place::captured_collection::refresh_local_capture_library(
+                &mut store,
+                dir,
+                capture_library,
+            ) {
+                capture_library.unavailable(error);
+            }
+            Some((store, memory))
+        }
         Err(err) => {
+            capture_library.unavailable(format!("load browsing corpus: {err}"));
             tracing::warn!(%err, "trail memory: corpus load failed; capture disabled until reopen");
             None
         },
@@ -835,11 +851,25 @@ fn recall(
 /// failures warn and capture continues; the recall pane (W2) is the first
 /// reader of what lands here.
 pub fn spawn_trail(wake: Wake, dir: PathBuf) -> (ActorHandle<TrailCommand>, Receiver<Update>) {
+    spawn_trail_with_capture_library(
+        wake,
+        dir,
+        crate::place::captured_collection::LocalCaptureLibrary::default(),
+    )
+}
+
+/// Spawn the trail actor with the capture library consumed by the place
+/// worker. Only plain records cross this seam; the Fjall handle stays here.
+pub(crate) fn spawn_trail_with_capture_library(
+    wake: Wake,
+    dir: PathBuf,
+    capture_library: crate::place::captured_collection::LocalCaptureLibrary,
+) -> (ActorHandle<TrailCommand>, Receiver<Update>) {
     spawn_named(
         "trail-memory",
         wake,
         move |commands, out: Emitter<Update>| {
-            let mut state = open_memory(&dir);
+            let mut state = open_memory(&dir, &capture_library);
             let mut current_dir = dir.clone();
             // The derived lexical/behavioural projection and whether the corpus has
             // moved since it was minted. Built on the first recall, not at
@@ -924,7 +954,19 @@ pub fn spawn_trail(wake: Wake, dir: PathBuf) -> (ActorHandle<TrailCommand>, Rece
                         document,
                     } => {
                         let result = match state.as_mut() {
-                            Some((store, _)) => capture_source_document(store, &document),
+                            Some((store, _)) => {
+                                let result = capture_source_document(store, &document);
+                                if result.is_ok()
+                                    && let Err(error) = crate::place::captured_collection::refresh_local_capture_library(
+                                        store,
+                                        &current_dir,
+                                        &capture_library,
+                                    )
+                                {
+                                    capture_library.unavailable(error);
+                                }
+                                result
+                            }
                             None => Err("the session Eidetic store is not open".to_string()),
                         };
                         out.emit(Update::SourceDocumentCaptured { node, url, result });
@@ -944,7 +986,7 @@ pub fn spawn_trail(wake: Wake, dir: PathBuf) -> (ActorHandle<TrailCommand>, Rece
                         index = None;
                         index_stale = true;
                         indexed_sources.clear();
-                        state = open_memory(&dir);
+                        state = open_memory(&dir, &capture_library);
                         current_dir = dir;
                     },
                     TrailCommand::Release(ack) => {
@@ -956,6 +998,7 @@ pub fn spawn_trail(wake: Wake, dir: PathBuf) -> (ActorHandle<TrailCommand>, Rece
                         index_stale = true;
                         indexed_sources.clear();
                         last_to.clear();
+                        capture_library.unavailable("the session capture store is released");
                         let _ = ack.send(());
                     },
                 }

@@ -313,10 +313,15 @@ Verified 2026-09-06 against the working tree.
 - Athanor's retirement pass runs at session open (`src/recycle.rs`
   `retire_then_list`), not on a clock; the engram bake is still the recycle
   bin doc's open slice 3.
-- Node attachment of capture envelopes is unbuilt: P1 landed the request and
-  result vocabulary in genet (`components/shared/document-session-api/src/page_capture.rs`),
-  and P2 custody has not begun, so L2 and L4 shape P2 and P3 rather than
-  retrofit them.
+- The explicit source-capture path now stores exact response bytes and a
+  `FleeceAnnotationRecord` in the session Eidetic store, then appends the
+  annotation manifest to `capture.source-annotations/v1` only if the node and
+  URL are still current. The P3c place consumer reads those records through a
+  trail-actor-owned in-memory library, so the place worker never opens a
+  second Fjall handle. Gemot authority and per-share withdrawal select the
+  effective contributions; the app's grouped searchable collection is a
+  rebuildable projection. This does not implement L2 Keep promotion or L4 bin
+  custody.
 - A note is already a routed `knot://` document, and Knot clips carry a
   selector, fidelity and an observed edge
   (`src/knot_authoring.rs`, mere's archived djot editor plan reframe of

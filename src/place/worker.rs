@@ -72,12 +72,14 @@ impl AuthorityClock {
 pub struct PlaceWorkerSettings {
     pub retention: MootRetentionSettings,
     pub authority_clock: AuthorityClock,
+    pub(crate) capture_library: crate::place::captured_collection::LocalCaptureLibrary,
 }
 
 impl Default for PlaceWorkerSettings {
     fn default() -> Self {
         Self {
             authority_clock: AuthorityClock::SystemTime,
+            capture_library: crate::place::captured_collection::LocalCaptureLibrary::default(),
             retention: MootRetentionSettings {
                 revision: PolicyRevision(Digest::blake3(b"turnstone.place.offline-retention.v1")),
                 availability: AvailabilityPolicy {
@@ -143,6 +145,10 @@ pub(crate) struct OpenPlace {
     /// The binding this place was opened under, so a later command names the
     /// same scopes the projections fold from.
     pub(crate) binding: PlaceBindingV1,
+    /// Session-scoped capture library expected for this open. This prevents a
+    /// cross-actor session switch from briefly resolving against the departed
+    /// session's in-memory records.
+    pub(crate) capture_directory: PathBuf,
     pub(crate) moot: MootFile,
     pub(crate) graph: Replica<RedbBackend>,
     pub(crate) chat: ChatReplica<RedbBackend>,
@@ -681,6 +687,7 @@ pub(crate) fn open_cached_place(
     let open = OpenPlace {
         lanes: None,
         binding: binding.clone(),
+        capture_directory: crate::trail_memory::memory_dir(directory),
         moot,
         graph,
         chat,
@@ -709,6 +716,7 @@ fn author_into_place(
     command: &PlaceCommand,
     settings: &PlaceWorkerSettings,
 ) -> Result<(), String> {
+    let at_ms = settings.authority_clock.now_ms();
     let subject = identity.master_public_key().to_bytes();
     let needed = match command {
         PlaceCommand::SendMessage { .. } => commons::chat::chat_write_capability(binding.chat.0),
@@ -723,7 +731,7 @@ fn author_into_place(
             delegations: &delegations,
             rules: &moot_snapshot.governance.rules,
             moot_id: binding.moot.0,
-            now_ms: settings.authority_clock.now_ms(),
+            now_ms: at_ms,
         },
     };
     if !matches!(
@@ -790,6 +798,7 @@ fn place_snapshot(
 ) -> Result<OfflinePlaceSnapshot, String> {
     let moot_snapshot = pollster::block_on(open.moot.snapshot())
         .map_err(|error| format!("materialize Gemot: {error}"))?;
+    let at_ms = settings.authority_clock.now_ms();
 
     // The single authority view both Commons domains project through. It is
     // built from the Moot's own converged constitution and delegation fold, so
@@ -802,9 +811,25 @@ fn place_snapshot(
             delegations: &delegations,
             rules: &moot_snapshot.governance.rules,
             moot_id,
-            now_ms: settings.authority_clock.now_ms(),
+            now_ms: at_ms,
         },
     };
+
+    // The service view applies Gemot's complete converged read policy,
+    // including membership and targeted withdrawals. Narrow the roster to
+    // that set before any locally held capture text is grouped.
+    let authorized_fauna = pollster::block_on(open.moot.authorized_fauna(at_ms))
+        .map_err(|error| format!("materialize authorized Gemot fauna: {error}"))?;
+    let captured_roster = crate::place::captured_collection::effective_roster(
+        &moot_snapshot.roster,
+        &authorized_fauna,
+    );
+    let captured = crate::place::captured_collection::remint(
+        &captured_roster,
+        &authority,
+        &open.capture_directory,
+        &settings.capture_library,
+    );
 
     let graph_projection = pollster::block_on(open.graph.projection_with_authority(&authority))
         .map_err(|error| format!("materialize Commons graph: {error}"))?;
@@ -844,6 +869,7 @@ fn place_snapshot(
             epochs: open.group.epoch_count(),
             has_current_epoch: open.group.current_epoch().is_some(),
         },
+        captured,
         shared: crate::place::projection::SharedGraph::from_projection(&graph_projection),
     })
 }
