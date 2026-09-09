@@ -1,9 +1,10 @@
 # Page capture and provenance
 
-**Status:** in progress, 2026-09-08. D1-D6 were ruled before P1 began. P1's
+**Status:** in progress, 2026-09-09. D1-D6 were ruled before P1 began. P1's
 owner contracts and exact source pins are landed; its clean-source Turnstone
-compile gate remains open on the resolver receipt recorded below. P2 has begun
-only at the host correlation boundary; custody and envelopes remain unbuilt.
+compile gate closed 2026-09-09 (welding `65d057de`, grafting `403a30c2`, mere
+`2b1ce46e`; see Progress). P2 has begun only at the host correlation boundary;
+custody, envelopes and the hosted Weld capture hook itself remain unbuilt.
 Serves the capture half of E0 in the
 [browser surfaces implementation plan](2026-08-25_browser_surface_implementation_plan.md),
 which keeps E0's done-conditions. E0.2's first half, per-node page zoom, was
@@ -378,3 +379,25 @@ Recorded here so they are not lost, and because each is independently closable:
   consumer proof does not close P1's clean-source pin gate. The named commands,
   regression manifest, runner hashes and retained Weld diagnostic are in the
   [S9 receipt](../docs/receipts/page_capture_s9_20260908/README.md).
+- **2026-09-09:** P1's clean-source Turnstone compile gate closed. Worktree
+  `turnstone-weld-pin-20260909` moved welding to `65d057def7db2b5034add6e316cbd51d97c163a1`
+  and grafting to `403a30c2fab39c573d1eebb57a0995e2c3347ff1` (commit `0c8461f`,
+  pin choice left open for Mark), then migrated `src/shell/weld.rs` and
+  `src/shell/surface_frames.rs` against those heads and the committed mere
+  `weld-engine` pin `2b1ce46e`: the local `WeldSurface` trait impl dropped its
+  two now-removed pollers in favour of welding's unified `poll_web_event`
+  (`CefSurfaceEvent`), and `acquire_frame` / the DX12 import branches in
+  `surface_frames.rs` moved to welding's and grafting's owned/borrowed
+  `Dx12SharedTexture` constructors, preserving the transferred-handle
+  Drop-closes-handle behaviour and the borrowed-handle no-close behaviour.
+  `cargo check --offline --features weld -j 2` and `cargo check --offline
+  --no-default-features --lib -j 2` both exit 0; all five S9 correlation
+  tests still pass. `request_page_capture` is not a member of the pinned
+  `weld_engine::WeldSurface` trait and `weld_engine::WeldProducer` does not
+  forward `inker::WebSurface`'s default for it, so a Weld-backed producer's
+  capture request now resolves to that default (`Err(Unsupported)`) rather
+  than reaching `welding`'s still-present `request_snapshot_png`; P2's hosted
+  Weld capture hook remains unbuilt and needs a mere-side change this pass did
+  not make. See the [S9 receipt](../docs/receipts/page_capture_s9_20260908/README.md)'s
+  2026-09-09 correction for the exact commands and the corrected E0308
+  provenance.

@@ -10,7 +10,6 @@
 //! per-tile CEF producer, and the vocabulary translations for the deliberately
 //! small first projection.
 
-use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
@@ -19,18 +18,16 @@ use inker::{
     DocumentFindState, DragEvent, DragOperationSet, DragPhase, FocusReason, FrameHandleOwnership,
     HttpAuthenticationAnswer, HttpAuthenticationChallenge, HttpProtectionSpace, KeyboardEvent,
     KeyboardModifiers, MouseButton, MouseEvent, MouseEventKind, NativeTextureHandle,
-    NavigationEvent, PageCaptureImageArtifact, PageCaptureOutput, PageCaptureRequest,
-    PageCaptureRequestId, PageCaptureScope, PageCaptureViewportFacts, PermissionAnswer,
-    PermissionDescriptor, PermissionRequest, PhysicalPosition,
+    NavigationEvent, PermissionAnswer, PermissionDescriptor, PermissionRequest, PhysicalPosition,
     PointerButtons, PointerEvent, PointerPhase, PointerType, SurfaceError, SurfaceSettings,
     SurfaceSyncHandle, SurfaceTextureFormat, UserAgentRequestId, WebFeatureStatus,
     WebFrameTransportMode, WebMessage, WebSurfaceCapabilities, WebSurfaceEvent,
 };
 use weld_engine::{WeldFrame, WeldProducerFactory, WeldSurface};
 use welding::{
-    CefRuntime, CefRuntimeConfig, CefSurfaceConfig, CefSurfaceProducer, FocusDirection,
-    HostWgpuContext, KeyEvent, KeyEventKind, MouseAction, PlatformCefConfig as WindowsCefConfig,
-    PlatformCefProducer as WindowsCefProducer,
+    CefRuntime, CefRuntimeConfig, CefSandboxMode, CefSurfaceConfig, CefSurfaceProducer,
+    FocusDirection, HostWgpuContext, KeyEvent, KeyEventKind, MouseAction,
+    PlatformCefConfig as WindowsCefConfig, PlatformCefProducer as WindowsCefProducer,
 };
 use winit::dpi::PhysicalSize;
 
@@ -79,7 +76,6 @@ impl WeldProducerFactory for TurnstoneWeldFactory {
         Ok(Box::new(TurnstoneWeldSurface {
             producer,
             find_query: DocumentFindQuery::default(),
-            capture_requests: HashMap::new(),
         }))
     }
 }
@@ -94,7 +90,10 @@ pub(super) fn initialize_runtime(
             cache_root.display()
         )
     })?;
-    let mut config = CefRuntimeConfig::new(cef_path);
+    // Historical welding behaviour ran without Chromium's process sandbox;
+    // make that explicit now that `CefRuntimeConfig::new` requires a mode
+    // rather than defaulting to it.
+    let mut config = CefRuntimeConfig::new(cef_path, CefSandboxMode::UnsandboxedTrustedContent);
     config.cache_path = Some(cache_root.to_path_buf());
     config.user_agent = std::env::var("TURNSTONE_WELD_USER_AGENT")
         .ok()
@@ -116,7 +115,6 @@ pub(super) fn initialize_runtime(
 struct TurnstoneWeldSurface {
     producer: WindowsCefProducer,
     find_query: DocumentFindQuery,
-    capture_requests: HashMap<welding::SnapshotRequestId, PageCaptureRequestId>,
 }
 
 impl WeldSurface for TurnstoneWeldSurface {
@@ -130,9 +128,9 @@ impl WeldSurface for TurnstoneWeldSurface {
         let Some(frame) = self.producer.acquire_native_frame() else {
             return Ok(None);
         };
-        let size = frame.size;
-        let format = map_texture_format(frame.format)?;
-        let resource_epoch = frame.generation;
+        let size = frame.size();
+        let format = map_texture_format(frame.format())?;
+        let resource_epoch = frame.generation();
         let handle = frame.into_raw_handle() as u64;
         Ok(Some(WeldFrame {
             texture: NativeTextureHandle::D3d12Shared {
@@ -358,75 +356,59 @@ impl WeldSurface for TurnstoneWeldSurface {
             .map_err(weld_input_error)
     }
 
-    fn poll_navigation_event(&mut self) -> Option<NavigationEvent> {
-        self.producer
-            .poll_navigation_event()
-            .and_then(map_navigation_event)
-    }
-
     fn poll_cursor_shape(&mut self) -> Option<CursorShape> {
         self.producer.poll_cursor_shape().map(map_cursor_shape)
     }
 
-    fn poll_web_message(&mut self) -> Option<WebMessage> {
-        self.producer.poll_web_message().map(|payload| WebMessage {
-            tag: "weld".into(),
-            payload,
-        })
-    }
-
+    /// welding `39ed0b1` ("Unify CEF web events with caller request IDs")
+    /// retired the separate `poll_navigation_event` / `poll_web_message`
+    /// producer methods in favour of one ordered `poll_web_event` stream
+    /// (`welding::CefSurfaceEvent`). This drains that stream directly rather
+    /// than keeping the two now-nonexistent pollers as private helpers, since
+    /// nothing else in this adapter needs to poll them individually.
     fn poll_web_event(&mut self) -> Option<WebSurfaceEvent> {
-        if let Some(event) = self.producer.poll_navigation_event() {
-            if let welding::NavigationEvent::FindResult {
+        match self.producer.poll_web_event()? {
+            welding::CefSurfaceEvent::Navigation(welding::NavigationEvent::FindResult {
                 count,
                 active_match,
                 final_update,
-            } = event
-            {
-                return Some(WebSurfaceEvent::DocumentFindChanged(weld_find_state(
-                    self.find_query.clone(),
-                    count,
-                    active_match,
-                    final_update,
-                )));
+            }) => Some(WebSurfaceEvent::DocumentFindChanged(weld_find_state(
+                self.find_query.clone(),
+                count,
+                active_match,
+                final_update,
+            ))),
+            welding::CefSurfaceEvent::Navigation(event) => Some(map_weld_web_event(event)),
+            welding::CefSurfaceEvent::WebMessage(payload) => {
+                Some(WebSurfaceEvent::WebMessage(WebMessage {
+                    tag: "weld".into(),
+                    payload,
+                }))
             }
-            return Some(map_weld_web_event(event));
+            other => Some(WebSurfaceEvent::BackendDiagnostic {
+                severity: "debug".into(),
+                message: format!("unprojected Weld event: {other:?}"),
+            }),
         }
-        if let Some(completion) = self.producer.poll_snapshot_png() {
-            let Some(id) = self.capture_requests.remove(&completion.id) else {
-                return Some(WebSurfaceEvent::BackendDiagnostic {
-                    severity: "error".into(),
-                    message: format!("Weld returned unknown or duplicate snapshot request {}", completion.id),
-                });
-            };
-            let result = completion.result.map_err(weld_input_error).and_then(|png| {
-                let image = image::load_from_memory_with_format(&png, image::ImageFormat::Png)
-                    .map_err(|error| SurfaceError::InputFailed(format!("Weld returned invalid PNG snapshot: {error}")))?;
-                Ok(PageCaptureOutput {
-                    scope: PageCaptureScope::Viewport,
-                    image: PageCaptureImageArtifact::Png(png),
-                    viewport: PageCaptureViewportFacts::unknown_css(image.width(), image.height()),
-                    applied_page_scale: None,
-                })
-            });
-            return Some(WebSurfaceEvent::PageCaptureCompleted { id, result });
-        }
-        self.poll_web_message().map(WebSurfaceEvent::WebMessage)
     }
 
-    fn request_page_capture(&mut self, request: PageCaptureRequest) -> Result<(), SurfaceError> {
-        if !self.capture_requests.is_empty() {
-            return Err(SurfaceError::Busy {
-                operation: "page capture".into(),
-            });
-        }
-        let weld_id = self.producer.request_snapshot_png().map_err(weld_input_error)?;
-        if self.capture_requests.insert(weld_id, request.id).is_some() {
-            return Err(SurfaceError::InputFailed(format!("Weld reused live snapshot request {weld_id}")));
-        }
-        Ok(())
-    }
-
+    // `request_page_capture` is not a member of the pinned mere `2b1ce46e`
+    // `weld_engine::WeldSurface` trait (it is a *default* method on
+    // `inker::WebSurface`, per P1's contract, and no engine is forced to
+    // implement it). `weld_engine::WeldProducer` — the type this crate
+    // wraps `TurnstoneWeldSurface` in via `WeldProducerFactory` — does not
+    // override that default either, so a Weld-backed producer's
+    // `as_web_surface().request_page_capture(..)` call currently resolves to
+    // `WebSurface`'s default `Err(SurfaceError::Unsupported(..))`. That is
+    // the correct place for the request to enter: `Shell::request_page_capture`
+    // (src/shell/render.rs) already handles that typed error by rolling back
+    // the pending `CaptureCorrelation` entry, so the S9 correlation semantics
+    // (single-flight, typed Busy, exact-target refusal — all owned by
+    // src/shell/page_capture.rs, untouched here) are preserved regardless of
+    // whether the Weld transport itself honours the request. Driving
+    // `welding`'s still-present `request_snapshot_png` / `poll_snapshot_png`
+    // through this adapter (P2) needs a hook mere's weld-engine does not
+    // expose at this pin; that remains open, tracked by the plan doc.
     fn answer_permission(
         &mut self,
         id: UserAgentRequestId,
@@ -473,7 +455,9 @@ impl WeldSurface for TurnstoneWeldSurface {
             detail: "the requested scale is applied as a CEF zoom level, but Windows runs CEF's UI thread separately so the effective level cannot be read back"
                 .into(),
         };
-        capabilities.document.page_capture = WebFeatureStatus::Supported;
+        capabilities.document.page_capture = WebFeatureStatus::unsupported(
+            "mere weld-engine 2b1ce46e does not route page-capture requests through WeldSurface yet (P2)",
+        );
         capabilities.document.navigation = WebFeatureStatus::Supported;
         capabilities.pointer.mouse = WebFeatureStatus::Supported;
         capabilities.pointer.pen = WebFeatureStatus::Partial {
@@ -688,25 +672,6 @@ fn map_mouse_action(kind: MouseEventKind) -> MouseAction {
             delta_x: delta_x.round() as i32,
             delta_y: delta_y.round() as i32,
         },
-    }
-}
-
-fn map_navigation_event(event: welding::NavigationEvent) -> Option<NavigationEvent> {
-    match event {
-        welding::NavigationEvent::LoadStart { url } => Some(NavigationEvent::Started { url }),
-        welding::NavigationEvent::LoadEnd { url, .. } => {
-            Some(NavigationEvent::Finished { url, title: None })
-        }
-        welding::NavigationEvent::LoadError {
-            url, error_text, ..
-        } => Some(NavigationEvent::Failed {
-            url,
-            reason: error_text,
-        }),
-        welding::NavigationEvent::AddressChanged { url } => {
-            Some(NavigationEvent::Committed { url })
-        }
-        _ => None,
     }
 }
 

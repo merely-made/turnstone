@@ -40,7 +40,10 @@ fn main() {
     if let Some(cef_path) =
         std::env::var_os("TURNSTONE_CEF_PATH").or_else(|| std::env::var_os("CEF_PATH"))
     {
-        match welding::CefRuntime::execute_process_from(std::path::Path::new(&cef_path)) {
+        match welding::CefRuntime::execute_process_from(
+            std::path::Path::new(&cef_path),
+            welding::CefSandboxMode::UnsandboxedTrustedContent,
+        ) {
             Ok(Some(code)) => std::process::exit(code),
             Ok(None) => {}
             Err(error) => {

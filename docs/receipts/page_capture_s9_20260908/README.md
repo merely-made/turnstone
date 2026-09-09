@@ -95,3 +95,72 @@ local Welding 0.15.0 patch was unused. This partial consumer check does not
 close the P1 clean-source pin gate. Successful capture bytes remain logged and dropped;
 deposit, envelope persistence, observation identity, CSS viewport and applied
 scale facts, and headed pixel proof remain open.
+
+## 2026-09-09 correction
+
+The excerpt above attributes the `E0308` mismatched-types error to
+`welding/src/native_frame/dx12.rs:349`. That line number is where the
+`import_dx12_shared_texture` function this error concerns is *defined*; the
+error itself was reported at the *call site*, `src/shell/surface_frames.rs:92`
+(Turnstone's own code, passing `&native` where `grafting::import_dx12_shared_texture`
+takes `Dx12SharedTexture` by value). None of the eighteen errors that blocked
+this feature check originate inside welding or grafting themselves — all are
+in Turnstone's own `src/shell/weld.rs` and `src/shell/surface_frames.rs`.
+
+More broadly: the Weld renderer adapter has been uncompiled since the P1
+capture contract landed, because `cargo check --offline --no-default-features
+--lib` — the check this repo has been running to validate ordinary changes —
+excludes the `weld` feature entirely, so drift in `src/shell/weld.rs` and
+`src/shell/surface_frames.rs` against either the pinned mere `weld-engine`
+trait or the pinned `welding`/`grafting` APIs went unnoticed until a
+feature-gated check was run again.
+
+This was corrected in worktree `turnstone-weld-pin-20260909` (branch
+`slice/weld-pin-20260909`), pinning welding to
+`65d057def7db2b5034add6e316cbd51d97c163a1` and grafting to
+`403a30c2fab39c573d1eebb57a0995e2c3347ff1` (commit `0c8461f`, "Move welding
+and grafting pins to current heads (pin choice pending)"), then migrating the
+adapter against those heads and the committed mere `weld-engine` pin
+`2b1ce46e5a15328b4bf4d350ec4b0252d9b404a1`. Exact commands and their outcomes,
+with `CARGO_TARGET_DIR=C:\Users\mark_\Code\.targets\weld-pin-20260909`:
+
+```text
+cargo check --offline --features weld -j 2
+```
+
+Exit 0. Both the `turnstone` lib and bin targets compiled; 76 pre-existing
+warnings in the lib, none from the migrated files.
+
+```text
+cargo check --offline --no-default-features --lib -j 2
+```
+
+Exit 0, unchanged from the earlier pass in this receipt (77 pre-existing
+warnings; the weld renderer is compiled out under this feature set).
+
+```text
+cargo test --offline --lib page_capture -j 2
+```
+
+Exit 0. All five `page_capture::tests::*` S9 correlation regressions
+(`exact_completion_is_single_use`, `navigation_and_surface_replacement_refuse_old_completion`,
+`session_switch_refuses_completion`,
+`generation_exhaustion_rotates_surface_and_retires_pending`,
+`admission_failure_spends_id_and_allocator_exhaustion_refuses`) still pass,
+unmodified by the migration.
+
+```text
+git diff --check
+```
+
+Clean.
+
+No headed CEF run was attempted; this closes the source-compile gate only.
+`Shell::request_page_capture`'s call into `WebSurface::request_page_capture`
+now resolves to `inker::WebSurface`'s default (`Err(SurfaceError::Unsupported)`),
+because the pinned mere `weld-engine` `WeldProducer` does not forward that
+default to `TurnstoneWeldSurface` at this pin — P2 (driving `welding`'s
+`request_snapshot_png`/`poll_snapshot_png` behind the P1 contract) remains
+open and unchanged by this pass; see `src/shell/weld.rs` for the in-source
+note. `Shell::request_page_capture`'s correlation rollback on that typed
+error keeps the S9 semantics intact.
