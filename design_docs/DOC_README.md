@@ -50,8 +50,8 @@ set.
 - [Trail recall evaluation](2026-09-02_trail_recall_evaluation_plan.md): private captured-corpus protocol for selecting or rejecting configurable phrase recall against BM25 with held-out ranking and resource budgets.
 - [Page capture and provenance](2026-08-28_page_capture_plan.md): ruled path
   for durable node-attached page captures; P1 owner contracts and exact pins
-  are landed, its clean-source Turnstone compile gate remains open, and P2
-  custody has not begun.
+  are landed, its clean-source Turnstone compile gate remains open, and P2 has
+  begun at target correlation while custody and envelopes remain unbuilt.
 - [Browser surfaces implementation plan](2026-08-25_browser_surface_implementation_plan.md): sequenced Keep, find, decision UI, engine parity, arrivals, shallows, and extension work.
 - [Pane registry, graph views, and shell composition](2026-08-08_pane_registry_and_graph_panes_plan.md): registry and multi-graph pane roadmap, with its remaining A-lane gates; A4 revised 2026-09-04 to adopt the shared Workbench tree (panes as tiles).
 - [Turnstone engine adoption](2026-08-03_turnstone_engine_adoption_plan.md): selectable engine routing and unavailable-engine behavior.

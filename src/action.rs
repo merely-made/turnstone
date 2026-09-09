@@ -132,6 +132,9 @@ pub enum Action {
     PageZoomOut { member: uuid::Uuid },
     /// Return one member to the default page scale.
     PageZoomReset { member: uuid::Uuid },
+    /// Capture this exact live page member. The target is resolved when the
+    /// action is offered so a later focus change cannot redirect completion.
+    CapturePage { member: uuid::Uuid },
     ChoosePermission {
         request: crate::user_agent_decision::UserAgentRequestKey,
         choice: crate::user_agent_decision::PermissionChoice,
@@ -774,6 +777,8 @@ pub enum Effect {
     /// requested value is already persisted when this runs; a refusal from the
     /// engine changes what the document shows, never what the node stores.
     ScaleContent { node: uuid::Uuid, scale: f32 },
+    /// Start one host-correlated viewport capture of this live web surface.
+    CaptureContent { node: uuid::Uuid },
     /// Ask one exact live content owner to replace or step its retained find.
     FindContent {
         node: uuid::Uuid,

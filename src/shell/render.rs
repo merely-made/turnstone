@@ -29,6 +29,35 @@ use winit::dpi::{PhysicalPosition, PhysicalSize};
 use super::{CompositeLayer, PlannedLayer, PlannedScene, Shell, pane_display_label};
 
 impl Shell {
+    /// Start one target-bound hosted capture. The pending target is recorded
+    /// before the engine is called, and the request id remains spent even when
+    /// the engine refuses admission.
+    pub(super) fn request_page_capture(
+        &mut self,
+        node: uuid::Uuid,
+    ) -> Result<inker::PageCaptureRequestId, String> {
+        let session = *self.app.session_id.as_uuid();
+        let pending = self
+            .page_captures
+            .begin(session, node)
+            .map_err(|error| format!("capture target refused: {error:?}"))?;
+        let result = self
+            .surface_producers
+            .get_mut(&node)
+            .and_then(|producer| producer.as_web_surface())
+            .ok_or_else(|| "capture target has no hosted web surface".to_string())
+            .and_then(|surface| {
+                surface
+                    .request_page_capture(inker::PageCaptureRequest::viewport(pending.request))
+                    .map_err(|error| error.to_string())
+            });
+        if let Err(error) = result {
+            let _ = self.page_captures.finish(session, node, pending.request);
+            return Err(error);
+        }
+        Ok(pending.request)
+    }
+
     /// Drain each producer's one host-facing stream before building a frame.
     /// The bounded batch prevents a faulty producer from monopolising the UI
     /// thread; another redraw continues the drain.
@@ -55,6 +84,7 @@ impl Shell {
     fn consume_surface_web_event(&mut self, node: uuid::Uuid, event: inker::WebSurfaceEvent) {
         match event {
             inker::WebSurfaceEvent::Navigation(inker::NavigationEvent::Started { .. }) => {
+                self.page_captures.advance_document(node);
                 self.withdraw_user_agent_requests(node, "navigation-started");
                 self.app.content.note_surface_started(node);
                 self.surface_find_requests.remove(&node);
@@ -88,6 +118,22 @@ impl Shell {
             inker::WebSurfaceEvent::LoadProgress { value } => {
                 self.app.content.note_surface_progress(node, value);
                 self.request_redraw();
+            }
+            inker::WebSurfaceEvent::PageCaptureCompleted { id, result } => {
+                let session = *self.app.session_id.as_uuid();
+                match self.page_captures.finish(session, node, id) {
+                    Ok(pending) => match result {
+                        Ok(output) => tracing::info!(
+                            %node,
+                            request_id = id.get(),
+                            generation = pending.target.document_generation,
+                            bytes = match &output.image { inker::PageCaptureImageArtifact::Png(bytes) => bytes.len() },
+                            "page capture correlated; durable deposit is not implemented"
+                        ),
+                        Err(error) => tracing::warn!(%node, request_id = id.get(), %error, "page capture failed"),
+                    },
+                    Err(refusal) => tracing::warn!(%node, request_id = id.get(), ?refusal, "page capture completion refused"),
+                }
             }
             inker::WebSurfaceEvent::DocumentFindChanged(state) => {
                 let Some((request, query)) = self.surface_find_requests.get(&node).cloned() else {

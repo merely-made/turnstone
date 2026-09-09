@@ -15,6 +15,7 @@ mod effects;
 mod events;
 mod gestures;
 mod keys;
+mod page_capture;
 mod reader_observe;
 mod render;
 mod renderers;
@@ -344,6 +345,7 @@ pub struct Shell {
     surface_producers: std::collections::HashMap<uuid::Uuid, Box<dyn inker::SurfaceProducer>>,
     /// Exact app request/query identity for progressive hosted find results.
     surface_find_requests: std::collections::HashMap<uuid::Uuid, (u64, String)>,
+    page_captures: page_capture::CaptureCorrelation,
     #[cfg(all(feature = "weld", windows))]
     surface_frames:
         std::collections::HashMap<uuid::Uuid, Option<surface_frames::ImportedSurfaceFrame>>,
@@ -639,6 +641,7 @@ impl Shell {
             surface_engines: inker::SurfaceEngineRegistry::new(),
             surface_producers: std::collections::HashMap::new(),
             surface_find_requests: std::collections::HashMap::new(),
+            page_captures: page_capture::CaptureCorrelation::default(),
             #[cfg(all(feature = "weld", windows))]
             surface_frames: std::collections::HashMap::new(),
             pending_surface_spawns: Vec::new(),
@@ -731,6 +734,7 @@ impl Shell {
         self.reader_appearances.clear();
         self.surface_producers.clear();
         self.surface_find_requests.clear();
+        self.page_captures.clear_surfaces();
         #[cfg(all(feature = "weld", windows))]
         self.surface_frames.clear();
     }

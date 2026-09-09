@@ -793,6 +793,7 @@ impl Shell {
                                                     producer.as_mut(),
                                                 );
                                                 self.surface_producers.insert(node, producer);
+                                                self.page_captures.register_surface(node);
                                                 Update::ContentSpawned {
                                                     node,
                                                     facts: Some(crate::content::ContentFacts {
@@ -1037,6 +1038,11 @@ impl Shell {
                     }
                     self.request_redraw();
                 }
+                Effect::CaptureContent { node } => {
+                    if let Err(error) = self.request_page_capture(node) {
+                        tracing::warn!(%node, %error, "page capture request refused");
+                    }
+                }
                 Effect::FindContent {
                     node,
                     request,
@@ -1185,6 +1191,7 @@ impl Shell {
                         tracing::info!(%node, "content session closed");
                     }
                     if self.surface_producers.remove(&node).is_some() {
+                        self.page_captures.remove_surface(node);
                         #[cfg(all(feature = "weld", windows))]
                         self.surface_frames.remove(&node);
                         tracing::info!(%node, "surface content closed");

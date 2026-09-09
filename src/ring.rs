@@ -239,6 +239,10 @@ pub fn ring_of(action: &Action) -> Ring {
         | ToggleAuthenticationMemory
         | SubmitAuthentication { .. }
         | CancelAuthentication { .. }
+        // A viewport capture may contain authenticated page content. Keep the
+        // admission gesture literal until attachment disclosure has its own
+        // narrower authority.
+        | CapturePage { .. }
         // Joining a place is a trust act, not a session act, so it sits at the
         // structural floor beside gate management rather than in `Session`
         // with `NewSession` and `SwitchSession`.

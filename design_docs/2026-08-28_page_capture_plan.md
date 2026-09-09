@@ -1,9 +1,10 @@
 # Page capture and provenance
 
-**Status:** in progress, 2026-08-30. D1-D6 were ruled before P1 began. P1's
+**Status:** in progress, 2026-09-08. D1-D6 were ruled before P1 began. P1's
 owner contracts and exact source pins are landed; its clean-source Turnstone
-compile gate remains open on the resolver receipt recorded below, so P2 has not
-begun. Serves the capture half of E0 in the
+compile gate remains open on the resolver receipt recorded below. P2 has begun
+only at the host correlation boundary; custody and envelopes remain unbuilt.
+Serves the capture half of E0 in the
 [browser surfaces implementation plan](2026-08-25_browser_surface_implementation_plan.md),
 which keeps E0's done-conditions. E0.2's first half, per-node page zoom, was
 accepted 2026-08-27; this plan is its successor slice and closes E0's capture
@@ -355,3 +356,23 @@ Recorded here so they are not lost, and because each is independently closable:
   recycle bin tombstone and are restored on recovery, drift is asserted
   only by a fresh capture whose hash differs, and envelopes are attachments
   that leave the session only when chosen. No code written here.
+- **2026-09-08:** P2 correlation began in Turnstone's production host path.
+  `Action::CapturePage` preserves the chosen member through
+  `Effect::CaptureContent`; the shell freezes session UUID, node UUID,
+  document generation, surface UUID and a shell-lifetime nonwrapping request
+  id before calling Inker/Welding. Navigation, surface replacement, session
+  switch, duplicate completion, generation exhaustion and allocator exhaustion
+  refuse without accepting a replacement target. The Weld adapter preserves
+  request identity and validates PNG dimensions, while CSS viewport and applied
+  page scale remain explicitly unknown. Successful bytes are currently logged
+  and dropped: Muniment deposit, observation identity, envelope persistence,
+  Keep promotion and headed pixel proof remain open. The earlier clean-source
+  P1 compile gate also remains open. A disposable external runner importing the
+  exact production correlation module with real Inker and UUID types passed
+  6/6 refusal and exhaustion tests. An isolated offline no-default library
+  check reached Turnstone and passed with pre-existing warnings. The Weld
+  feature check reached a pre-Turnstone dependency mismatch: pinned Welding
+  `c65cc108` expects the older `Dx12SharedTexture` shape while the workspace
+  patch selects the current dirty `wgpu-graft` checkout. Its six E0560/E0308
+  errors leave the adapter compile and headed pixels open; this partial
+  consumer proof does not close P1's clean-source pin gate.

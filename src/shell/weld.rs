@@ -10,6 +10,7 @@
 //! per-tile CEF producer, and the vocabulary translations for the deliberately
 //! small first projection.
 
+use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
@@ -18,7 +19,9 @@ use inker::{
     DocumentFindState, DragEvent, DragOperationSet, DragPhase, FocusReason, FrameHandleOwnership,
     HttpAuthenticationAnswer, HttpAuthenticationChallenge, HttpProtectionSpace, KeyboardEvent,
     KeyboardModifiers, MouseButton, MouseEvent, MouseEventKind, NativeTextureHandle,
-    NavigationEvent, PermissionAnswer, PermissionDescriptor, PermissionRequest, PhysicalPosition,
+    NavigationEvent, PageCaptureImageArtifact, PageCaptureOutput, PageCaptureRequest,
+    PageCaptureRequestId, PageCaptureScope, PageCaptureViewportFacts, PermissionAnswer,
+    PermissionDescriptor, PermissionRequest, PhysicalPosition,
     PointerButtons, PointerEvent, PointerPhase, PointerType, SurfaceError, SurfaceSettings,
     SurfaceSyncHandle, SurfaceTextureFormat, UserAgentRequestId, WebFeatureStatus,
     WebFrameTransportMode, WebMessage, WebSurfaceCapabilities, WebSurfaceEvent,
@@ -76,6 +79,7 @@ impl WeldProducerFactory for TurnstoneWeldFactory {
         Ok(Box::new(TurnstoneWeldSurface {
             producer,
             find_query: DocumentFindQuery::default(),
+            capture_requests: HashMap::new(),
         }))
     }
 }
@@ -112,6 +116,7 @@ pub(super) fn initialize_runtime(
 struct TurnstoneWeldSurface {
     producer: WindowsCefProducer,
     find_query: DocumentFindQuery,
+    capture_requests: HashMap<welding::SnapshotRequestId, PageCaptureRequestId>,
 }
 
 impl WeldSurface for TurnstoneWeldSurface {
@@ -387,7 +392,39 @@ impl WeldSurface for TurnstoneWeldSurface {
             }
             return Some(map_weld_web_event(event));
         }
+        if let Some(completion) = self.producer.poll_snapshot_png() {
+            let Some(id) = self.capture_requests.remove(&completion.id) else {
+                return Some(WebSurfaceEvent::BackendDiagnostic {
+                    severity: "error".into(),
+                    message: format!("Weld returned unknown or duplicate snapshot request {}", completion.id),
+                });
+            };
+            let result = completion.result.map_err(weld_input_error).and_then(|png| {
+                let image = image::load_from_memory_with_format(&png, image::ImageFormat::Png)
+                    .map_err(|error| SurfaceError::InputFailed(format!("Weld returned invalid PNG snapshot: {error}")))?;
+                Ok(PageCaptureOutput {
+                    scope: PageCaptureScope::Viewport,
+                    image: PageCaptureImageArtifact::Png(png),
+                    viewport: PageCaptureViewportFacts::unknown_css(image.width(), image.height()),
+                    applied_page_scale: None,
+                })
+            });
+            return Some(WebSurfaceEvent::PageCaptureCompleted { id, result });
+        }
         self.poll_web_message().map(WebSurfaceEvent::WebMessage)
+    }
+
+    fn request_page_capture(&mut self, request: PageCaptureRequest) -> Result<(), SurfaceError> {
+        if !self.capture_requests.is_empty() {
+            return Err(SurfaceError::Busy {
+                operation: "page capture".into(),
+            });
+        }
+        let weld_id = self.producer.request_snapshot_png().map_err(weld_input_error)?;
+        if self.capture_requests.insert(weld_id, request.id).is_some() {
+            return Err(SurfaceError::InputFailed(format!("Weld reused live snapshot request {weld_id}")));
+        }
+        Ok(())
     }
 
     fn answer_permission(
@@ -436,8 +473,7 @@ impl WeldSurface for TurnstoneWeldSurface {
             detail: "the requested scale is applied as a CEF zoom level, but Windows runs CEF's UI thread separately so the effective level cannot be read back"
                 .into(),
         };
-        capabilities.document.page_capture =
-            WebFeatureStatus::unsupported("Turnstone has not projected Weld snapshots yet");
+        capabilities.document.page_capture = WebFeatureStatus::Supported;
         capabilities.document.navigation = WebFeatureStatus::Supported;
         capabilities.pointer.mouse = WebFeatureStatus::Supported;
         capabilities.pointer.pen = WebFeatureStatus::Partial {

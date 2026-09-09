@@ -1045,6 +1045,7 @@ impl App {
             Action::PageZoomIn { member } => self.page_zoom_in(member),
             Action::PageZoomOut { member } => self.page_zoom_out(member),
             Action::PageZoomReset { member } => self.page_zoom_reset(member),
+            Action::CapturePage { member } => vec![Effect::CaptureContent { node: member }],
             Action::ChoosePermission { request, choice } => self.choose_permission(request, choice),
             Action::FocusAuthenticationField(field) => self.focus_authentication_field(field),
             Action::InsertAuthentication(text) => self.insert_authentication(text),

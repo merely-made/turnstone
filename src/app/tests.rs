@@ -10,6 +10,16 @@
 use super::*;
 
 #[test]
+fn capture_action_preserves_explicit_member_for_the_host() {
+    let mut app = App::test_stub();
+    let member = uuid::Uuid::new_v4();
+    assert_eq!(
+        app.update(Action::CapturePage { member }),
+        vec![Effect::CaptureContent { node: member }]
+    );
+}
+
+#[test]
 fn retired_static_viewer_pins_migrate_to_livery() {
     let node = uuid::Uuid::new_v4();
     let mut states = pandect::browser_node_state::BrowserNodeStates::new();
