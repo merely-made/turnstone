@@ -36,6 +36,10 @@ pub(crate) struct ChromeModel {
     /// The physics law's plain label (the catalog's `PhysicsLaw::label`).
     pub physics_law: String,
     pub physics_paused: bool,
+    /// Labels disclosed by a mounted remote presentation. The canvas scene
+    /// carries the geometry; this retained chrome layer supplies a readable
+    /// face for each item without inventing product fields in the renderer.
+    pub remote_cards: Vec<String>,
     pub action_draft: Option<ActionDraftSemantics>,
 }
 
@@ -122,6 +126,24 @@ fn chrome_view(model: ChromeModel) -> impl View<(), (), GenetCtx, Element = Gene
     } else {
         "detail hidden"
     };
+    let remote_cards: Vec<ChromeChild> = model
+        .remote_cards
+        .iter()
+        .enumerate()
+        .map(|(index, label)| {
+            Box::new(
+                el(
+                    "article",
+                    (
+                        el("div", text(format!("JOB {}", index + 1)))
+                            .attr("class", "remote-card-kicker"),
+                        el("div", text(label.clone())).attr("class", "remote-card-title"),
+                    ),
+                )
+                .attr("class", "remote-card"),
+            ) as ChromeChild
+        })
+        .collect();
     el(
         "div",
         (
@@ -147,6 +169,7 @@ fn chrome_view(model: ChromeModel) -> impl View<(), (), GenetCtx, Element = Gene
                 ),
             )
             .attr("class", "topbar"),
+            el("div", remote_cards).attr("class", "remote-cards"),
             el(
                 "div",
                 (
@@ -243,6 +266,16 @@ fn stylesheet(width: u32, height: u32) -> String {
 .pill {{ padding: 8px 13px; margin-right: 8px; border-radius: 16px;
   background-color: #17242c; color: #8da2a9; }}
 .pill.active {{ background-color: #294b52; color: #f4dfae; }}
+.remote-cards {{ position: absolute; left: 300px; right: 18px; top: 82px;
+  bottom: 58px; display: flex; flex-direction: column; align-items: center;
+  gap: 24px; overflow: hidden; pointer-events: none; }}
+.remote-card {{ width: 280px; max-width: 100%; min-height: 156px; box-sizing: border-box;
+  padding: 14px 16px;
+  border: 1px solid #385565; border-radius: 10px; background-color: #172a35;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, .28); }}
+.remote-card-kicker {{ color: #79a9be; font-size: 10px; letter-spacing: .12em; }}
+.remote-card-title {{ margin-top: 8px; color: #f0dfb8; font-size: 13px;
+  overflow-wrap: anywhere; }}
 .rail {{ position: absolute; left: 12px; top: {rail_top}px; width: {rail_width}px;
   height: 154px; padding: 14px; border-radius: 12px; background-color: #101820;
   border: 1px solid #29404a; }}
@@ -279,6 +312,9 @@ fn stylesheet(width: u32, height: u32) -> String {
   padding: 7px 10px; border-radius: 13px; background-color: #101820; }}
 .proof-pass {{ color: #8cc7a6; margin-right: 8px; }}
 .proof-copy {{ color: #718891; }}
+@media (max-width: 719px) {{
+  .remote-cards {{ left: 12px; right: 12px; top: 122px; bottom: 170px; }}
+}}
 "#,
         proof_top = height.saturating_sub(if narrow { 158 } else { 42 }),
     )

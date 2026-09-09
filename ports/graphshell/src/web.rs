@@ -465,6 +465,11 @@ impl BrowserHost {
             ActiveSession::Remote => self.remote_selection(),
         };
         let (product_status, arrangement, physics_law, physics_paused) = self.product_chrome();
+        let remote_cards = if self.active == ActiveSession::Remote {
+            self.remote_card_labels()
+        } else {
+            Vec::new()
+        };
         // Satisfaction belongs to the remote scene, so it is only spoken when
         // one is mounted. A local canvas has no holds to report on.
         let satisfaction = self
@@ -495,6 +500,7 @@ impl BrowserHost {
             arrangement,
             physics_law,
             physics_paused,
+            remote_cards,
             action_draft: self.action_draft.as_ref().map(ActionDraft::semantics),
         };
         if let Some(live) = &self.live_projection {
@@ -2131,6 +2137,7 @@ async fn run(root_element: Element) -> Result<(), String> {
         arrangement: "phyllotaxis.default".to_string(),
         physics_law: mere::canvas::PhysicsLaw::Springs.label().to_string(),
         physics_paused: false,
+        remote_cards: Vec::new(),
         action_draft: None,
     };
     // The chrome's font. A browser has no system fonts for fontique to find,

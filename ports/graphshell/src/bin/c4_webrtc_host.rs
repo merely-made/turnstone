@@ -58,10 +58,10 @@ use graphshell::live_endpoint::{
     ADMITTED_INTENT, LiveEndpoint, REFUSED_INTENT, SharedLiveEndpoint,
 };
 use graphshell::native::endpoint_catalog::{ResidentEndpointCatalog, ResidentEndpointRoute};
-use graphshell::native::projection_host::ResidentProjectionHost;
+use graphshell::native::projection_host::{ResidentProjectionHost, admit_webrtc_catalog};
 use graphshell::webrtc_door::{InviteTerms, issue_invite};
-use graphshell::webrtc_session::{HostedInvite, serve_webrtc_join};
-use notochord::{NetworkId, ProfileRef, RevocationLedger, TrustedRoot};
+use graphshell::webrtc_session::HostedInvite;
+use notochord::{NetworkId, ProfileRef, TrustedRoot};
 use personae::{IdentityProvider, InMemoryProvider};
 use rand_core::{OsRng, RngCore};
 use tokio::io::{AsyncBufReadExt, AsyncReadExt, AsyncWriteExt, BufReader};
@@ -341,16 +341,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!();
     println!("READY — waiting for a browser offer. Ctrl-C to stop.");
 
-    let ledger = Arc::new(RevocationLedger::new());
     let mut session = 0u64;
 
     loop {
         let (stream, _peer) = listener.accept().await?;
         let hosted = Arc::clone(&hosted);
         let host = Arc::clone(&host);
-        let ledger = Arc::clone(&ledger);
         let provider = Arc::clone(&provider);
-        let policy = policy.clone();
         let fragment = fragment.clone();
         let bind = SocketAddr::new(args.bind, args.udp_port);
         let advertise = args.advertise.clone();
@@ -363,9 +360,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 id,
                 hosted,
                 host,
-                ledger,
                 provider,
-                policy,
                 fragment,
                 bind,
                 advertise,
@@ -387,9 +382,7 @@ async fn serve_request(
     id: u64,
     hosted: Arc<Mutex<HostedInvite>>,
     host: Arc<Mutex<ResidentProjectionHost>>,
-    ledger: Arc<RevocationLedger>,
     provider: Arc<InMemoryProvider>,
-    policy: notochord::LocalNetworkPolicy,
     fragment: String,
     bind: SocketAddr,
     advertise: Vec<IpAddr>,
@@ -475,9 +468,7 @@ async fn serve_request(
             // The answer is on its way; everything after it is the shipping
             // path. Spawned so the signaling socket is free immediately.
             tokio::spawn(async move {
-                if let Err(error) =
-                    admit_and_serve(id, answerer, hosted, host, ledger, provider, policy).await
-                {
+                if let Err(error) = admit_and_serve(id, answerer, hosted, host, provider).await {
                     println!("[session {id}] {error}");
                 }
             });
@@ -529,9 +520,7 @@ async fn admit_and_serve(
     answerer: Answerer,
     hosted: Arc<Mutex<HostedInvite>>,
     host: Arc<Mutex<ResidentProjectionHost>>,
-    ledger: Arc<RevocationLedger>,
     provider: Arc<InMemoryProvider>,
-    policy: notochord::LocalNetworkPolicy,
 ) -> Result<(), String> {
     let carrier = answerer
         .accept()
@@ -553,58 +542,40 @@ async fn admit_and_serve(
         );
     }
 
-    let live = host.lock().await.live_sessions();
+    // The invitation's use count is the one piece of shared state the door
+    // mutates, so it is held only across the join itself. The resident host
+    // owns the policy, revocations, live-session count, and catalog route.
     let served = {
-        // The invitation's use count is the one piece of shared state the
-        // join mutates, so it is held only across the join itself.
         let mut hosted = hosted.lock().await;
-        serve_webrtc_join(
+        admit_webrtc_catalog(
+            &host,
             carrier,
             provider.as_ref(),
             &mut hosted,
-            &policy,
-            &ledger,
             ROOT_AUTHORITY,
             DELEGATION_TTL_MS,
-            now_ms(),
-            live,
+            now_ms,
         )
         .await
-        .map_err(|error| format!("join refused: {error}"))?
+        .map_err(|error| format!("join or catalog route refused: {error}"))?
     };
     println!("[session {id}] admitted");
-
-    let projection = host
-        .lock()
-        .await
-        .serve_admitted(served.session, now_ms)
-        .map_err(|error| format!("the resident host could not serve: {error}"))?;
+    let projection = served.projection();
     println!(
         "[session {id}] serving subject {} on {}",
         hex8(&projection.subject()),
         projection.session().0
     );
 
-    let summary = projection
-        .finished()
+    let summary = served
+        .finish()
         .await
-        .map_err(|error| format!("the serving task failed: {error}"))?
-        .map_err(|error| format!("session loop: {error}"))?;
+        .map_err(|error| format!("the served WebRTC projection failed: {error}"))?;
     println!(
         "[session {id}] served {} request(s); ended {:?}",
         summary.answered, summary.end
     );
 
-    // The pump and the carrier outlive the session loop on purpose; ending
-    // them politely is what flushes the loop's final answer. See
-    // `ServedJoin::finish`.
-    match served.pump.await {
-        Ok(end) => println!("[session {id}] pump ended: {end}"),
-        Err(error) => println!("[session {id}] pump panicked: {error}"),
-    }
-    if let Err(error) = served.control.close().await {
-        println!("[session {id}] carrier did not close cleanly: {error}");
-    }
     Ok(())
 }
 

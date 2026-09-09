@@ -180,6 +180,12 @@ impl BrowserHost {
             .map(|ack| ack.revision.0)
     }
 
+    /// Authority-emitted generation carried by the mounted scene.
+    pub(crate) fn remote_generation(&self) -> Option<u64> {
+        self.remote_mounted()
+            .map(|mounted| mounted.scene.tables.generation)
+    }
+
     /// Whether a remote answer is still to come — what the scenario lane's
     /// `wait` holds on.
     pub(crate) fn remote_in_flight(&self) -> bool {
@@ -263,6 +269,46 @@ impl BrowserHost {
             })
             .filter(|(_, action)| seen.insert(action.intent.0.clone()))
             .collect()
+    }
+
+    /// Names advertised by the mounted endpoint's presentation semantics.
+    pub(crate) fn remote_card_labels(&self) -> Vec<String> {
+        let Some(session) = self.remote_session.as_ref() else {
+            return Vec::new();
+        };
+        let Some(client) = self.remote_client() else {
+            return Vec::new();
+        };
+        client
+            .accessibility_tree(session, &remote_profile())
+            .map(|tree| tree.children.into_iter().map(|item| item.label).collect())
+            .unwrap_or_default()
+    }
+
+    /// Count overlapping mounted footprints at the positions drawn this frame.
+    pub(crate) fn remote_card_overlaps(&self) -> usize {
+        let Some(mounted) = self.remote_mounted() else {
+            return 0;
+        };
+        let bounds: Vec<_> = mounted
+            .scene
+            .active_items_in_order()
+            .into_iter()
+            .filter_map(|(instance, item)| {
+                let (x, y) = self
+                    .remote_board
+                    .position(&instance.0.to_string())
+                    .unwrap_or((item.transform.translate.x, item.transform.translate.y));
+                let footprint = item.footprint.bounds()?;
+                Some((
+                    x + footprint.origin.x,
+                    y + footprint.origin.y,
+                    x + footprint.origin.x + footprint.size.w,
+                    y + footprint.origin.y + footprint.size.h,
+                ))
+            })
+            .collect();
+        axis_aligned_overlap_count(&bounds)
     }
 
     /// Invoke the `index`th advertised action. A bounded form opens as a
@@ -508,10 +554,33 @@ impl BrowserHost {
     }
 }
 
+/// Count pairs of axis-aligned bounds with positive shared area. Touching
+/// edges are adjacent, not overlapping.
+fn axis_aligned_overlap_count(bounds: &[(f32, f32, f32, f32)]) -> usize {
+    bounds
+        .iter()
+        .enumerate()
+        .map(|(index, &(left, top, right, bottom))| {
+            bounds[index + 1..]
+                .iter()
+                .filter(|&&(other_left, other_top, other_right, other_bottom)| {
+                    left < other_right
+                        && other_left < right
+                        && top < other_bottom
+                        && other_top < bottom
+                })
+                .count()
+        })
+        .sum()
+}
+
 /// Mirror the remote link into the DOM: tokens on `<body>` and the
 /// advertised actions as buttons, so the accessibility tree carries what
 /// the endpoint offers and a scenario can press it.
-pub(super) fn update_remote_semantics(host: &BrowserHost, document: &Document) -> Result<(), String> {
+pub(super) fn update_remote_semantics(
+    host: &BrowserHost,
+    document: &Document,
+) -> Result<(), String> {
     let body = root()?;
     let set = |name: &str, value: &str| {
         body.set_attribute(name, value)
@@ -548,6 +617,21 @@ pub(super) fn update_remote_semantics(host: &BrowserHost, document: &Document) -
             .remote_mounted()
             .map(|mounted| mounted.scene.tables.items.len().to_string())
             .unwrap_or_default(),
+    )?;
+    set(
+        "data-remote-generation",
+        &host
+            .remote_generation()
+            .map(|generation| generation.to_string())
+            .unwrap_or_default(),
+    )?;
+    set(
+        "data-remote-card-labels",
+        &host.remote_card_labels().join("\n"),
+    )?;
+    set(
+        "data-remote-overlaps",
+        &host.remote_card_overlaps().to_string(),
     )?;
     if let RemoteLink::WebRtc(link) = &host.remote {
         set("data-remote-subject", &link.subject)?;
@@ -1045,4 +1129,22 @@ fn describe(value: &JsValue) -> String {
 
 fn hex(bytes: &[u8]) -> String {
     bytes.iter().map(|byte| format!("{byte:02x}")).collect()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::axis_aligned_overlap_count;
+
+    #[test]
+    fn remote_card_bounds_only_count_positive_shared_area() {
+        let separate_or_touching = [
+            (0.0, 0.0, 280.0, 156.0),
+            (280.0, 0.0, 560.0, 156.0),
+            (600.0, 0.0, 880.0, 156.0),
+        ];
+        assert_eq!(axis_aligned_overlap_count(&separate_or_touching), 0);
+
+        let overlapping = [(0.0, 0.0, 280.0, 156.0), (279.0, 0.0, 559.0, 156.0)];
+        assert_eq!(axis_aligned_overlap_count(&overlapping), 1);
+    }
 }

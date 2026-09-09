@@ -59,6 +59,12 @@ use crate::native::endpoint_catalog::{
 };
 use crate::session_loop::{SessionLoopError, SessionSummary};
 use crate::session_notices::serve_admitted_session_notifying;
+#[cfg(feature = "webrtc-session")]
+use crate::webrtc_session::{HostedInvite, JoinError, ServedJoin, serve_webrtc_join};
+#[cfg(feature = "webrtc-session")]
+use personae::IdentityProvider;
+#[cfg(feature = "webrtc-session")]
+use webrtc_carrier::native::{Carrier, CarrierControl, PumpEnd};
 
 /// Why a resident host could not serve a peer.
 #[derive(Debug, thiserror::Error)]
@@ -84,6 +90,69 @@ pub struct ServedProjection {
     subject: [u8; 32],
     session: ProjectionSession,
     handle: JoinHandle<Result<SessionSummary, SessionLoopError>>,
+}
+
+/// A WebRTC door join whose admitted session is now served from this host's
+/// configured catalog route.
+///
+/// The signaling host retains ownership of SDP exchange and invitation
+/// storage. Once it has accepted a data channel, this object keeps the three
+/// things whose lifetimes must remain coupled: the catalog-serving task, the
+/// frame pump, and the carrier control used for an orderly close.
+#[cfg(feature = "webrtc-session")]
+#[derive(Debug)]
+pub struct ServedWebRtcProjection {
+    projection: ServedProjection,
+    pump: tokio::task::JoinHandle<PumpEnd>,
+    control: CarrierControl,
+}
+
+#[cfg(feature = "webrtc-session")]
+impl ServedWebRtcProjection {
+    /// The already-admitted projection session this browser is served on.
+    pub fn projection(&self) -> &ServedProjection {
+        &self.projection
+    }
+
+    /// Wait for the projection loop, then flush and close its WebRTC carrier.
+    ///
+    /// The order is part of the wire contract: dropping the projection stream
+    /// first lets the frame pump carry the terminal reply before carrier close
+    /// shuts down the data channel.
+    pub async fn finish(self) -> Result<SessionSummary, ResidentWebRtcProjectionError> {
+        let summary = self
+            .projection
+            .finished()
+            .await?
+            .map_err(ResidentWebRtcProjectionError::Session)?;
+        match self.pump.await {
+            Ok(end) if end.is_clean() => {},
+            Ok(end) => return Err(ResidentWebRtcProjectionError::Pump(end.to_string())),
+            Err(error) => return Err(ResidentWebRtcProjectionError::Pump(error.to_string())),
+        }
+        self.control
+            .close()
+            .await
+            .map_err(|error| ResidentWebRtcProjectionError::Close(error.to_string()))?;
+        Ok(summary)
+    }
+}
+
+/// A failure while taking a browser from a live WebRTC carrier into a resident
+/// catalog route.
+#[cfg(feature = "webrtc-session")]
+#[derive(Debug, thiserror::Error)]
+pub enum ResidentWebRtcProjectionError {
+    #[error(transparent)]
+    Join(#[from] JoinError),
+    #[error(transparent)]
+    Projection(#[from] ResidentProjectionError),
+    #[error("the served projection ended with an error: {0}")]
+    Session(SessionLoopError),
+    #[error("the WebRTC frame pump ended badly: {0}")]
+    Pump(String),
+    #[error("the WebRTC carrier did not close cleanly: {0}")]
+    Close(String),
 }
 
 impl ServedProjection {
@@ -267,6 +336,64 @@ impl ResidentProjectionHost {
             handle,
         })
     }
+}
+
+/// Admit one live WebRTC carrier and serve it from a resident host's selected
+/// catalog route.
+///
+/// A signaling listener owns the invitation and SDP exchange. This adapter
+/// reads the host's policy, revocation ledger, and session count under a short
+/// lock, runs the potentially slow DTLS join without that lock, then takes a
+/// second short lock to open the already-selected catalog route. Concurrent
+/// offers therefore do not queue behind one visitor's ICE or redemption
+/// exchange.
+#[cfg(feature = "webrtc-session")]
+#[allow(clippy::too_many_arguments)]
+pub async fn admit_webrtc_catalog<P, N>(
+    host: &Arc<tokio::sync::Mutex<ResidentProjectionHost>>,
+    carrier: Carrier,
+    provider: &P,
+    hosted: &mut HostedInvite,
+    root_authority: [u8; 32],
+    delegation_ttl_ms: u64,
+    now_ms: N,
+) -> Result<ServedWebRtcProjection, ResidentWebRtcProjectionError>
+where
+    P: IdentityProvider,
+    N: Fn() -> u64 + Send + 'static,
+{
+    let (policy, admission_ledger, active_sessions) = {
+        let host = host.lock().await;
+        let ledger = host
+            .revocations
+            .read()
+            .expect("the revocation ledger lock is never poisoned by this host")
+            .clone();
+        (host.policy.clone(), ledger, host.live_sessions())
+    };
+    let joined = serve_webrtc_join(
+        carrier,
+        provider,
+        hosted,
+        &policy,
+        &admission_ledger,
+        root_authority,
+        delegation_ttl_ms,
+        now_ms(),
+        active_sessions,
+    )
+    .await?;
+    let ServedJoin {
+        session,
+        pump,
+        control,
+    } = joined;
+    let projection = host.lock().await.serve_admitted(session, now_ms)?;
+    Ok(ServedWebRtcProjection {
+        projection,
+        pump,
+        control,
+    })
 }
 
 #[cfg(test)]

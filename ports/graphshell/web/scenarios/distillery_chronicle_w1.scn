@@ -5,9 +5,18 @@ assert snap remote-link == webrtc
 assert snap remote-state == open
 assert snap remote-revision == 11
 assert snap remote-cards == 3
+# The labels are the endpoint's PortableCard semantics, not viewer-generated
+# placeholders. The three fixture jobs have distinct source identities.
+assert snap remote-card-labels ~ Job 7c91fe088ec62eda928575e67c04459aa9860ebf2206f386f79747df7336bbfc
+assert snap remote-card-labels ~ Job 9fd6f2d84d407ff33e382b4aeb1c02851cc6096ecf395bd998d3d229f5f36de9
+assert snap remote-card-labels ~ Job f38f6d0bda9f26c13b465368ab6d03fe3a45a1c9d2499b0907445aa8180491d8
 act session-remote
 settle 1
 assert snap session == remote
+# This reads the rendered board positions and the score footprints after the
+# remote frame has settled, so the cards are individually placed, not merely
+# counted in the admitted snapshot.
+assert snap remote-overlaps == 0
 capture distillery_chronicle_w1_mounted
 wait
 log distillery Chronicle W1 headed receipt complete
