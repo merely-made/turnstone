@@ -22,7 +22,7 @@ mod renderers;
 #[cfg(all(feature = "weld", windows))]
 mod surface_frames;
 #[cfg(all(feature = "weld", windows))]
-mod weld;
+pub(crate) mod weld;
 use render::{capture_composed, decode_sprite};
 mod lens;
 use lens::LensWindow;

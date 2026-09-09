@@ -31,46 +31,9 @@
 //! `i` toggles the isometric view, `q`/`e` orbit, `[`/`]` tilt, `h` toggles
 //! height-by-degree.
 
-use winit::event_loop::EventLoop;
-
 fn main() {
-    // CEF re-executes this executable for renderer/GPU/utility subprocesses.
-    // It must inspect that role before tracing, winit, or any thread pool.
-    #[cfg(all(feature = "weld", windows))]
-    if let Some(cef_path) =
-        std::env::var_os("TURNSTONE_CEF_PATH").or_else(|| std::env::var_os("CEF_PATH"))
-    {
-        match welding::CefRuntime::execute_process_from(
-            std::path::Path::new(&cef_path),
-            welding::CefSandboxMode::UnsandboxedTrustedContent,
-        ) {
-            Ok(Some(code)) => std::process::exit(code),
-            Ok(None) => {}
-            Err(error) => {
-                eprintln!("turnstone: CEF subprocess probe failed: {error}");
-                std::process::exit(1);
-            }
-        }
-    }
-
-    tracing_subscriber::fmt()
-        .with_env_filter(
-            tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new("turnstone=info")),
-        )
-        .init();
-
-    // Which graph actually shows (restored session / fresh-from-address /
-    // sample) is decided and logged inside `App::boot`, after the restore
-    // attempt; claiming it here would lie on a restoring launch.
-    let address = std::env::args().nth(1);
-    match &address {
-        Some(url) => tracing::info!(%url, "turnstone starting on an address"),
-        None => tracing::info!("turnstone starting"),
-    }
-
-    let event_loop = EventLoop::new().expect("failed to create event loop");
-    let proxy = event_loop.create_proxy();
-    let mut shell = turnstone::shell::Shell::new(proxy, address);
-    event_loop.run_app(&mut shell).expect("event loop error");
+    // The direct, unsandboxed route (see `turnstone::launch` for the other,
+    // sandboxed one: CEF's Windows bootstrap calling the sibling
+    // `sandbox_bootstrap_win` crate's `RunWinMain` cdylib export).
+    std::process::exit(turnstone::launch::run_direct(std::env::args().nth(1)));
 }

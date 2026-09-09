@@ -26,10 +26,43 @@ use inker::{
 use weld_engine::{WeldFrame, WeldProducerFactory, WeldSurface};
 use welding::{
     CefRuntime, CefRuntimeConfig, CefSandboxMode, CefSurfaceConfig, CefSurfaceProducer,
-    FocusDirection, HostWgpuContext, KeyEvent, KeyEventKind, MouseAction,
-    PlatformCefConfig as WindowsCefConfig, PlatformCefProducer as WindowsCefProducer,
+    CefWindowsSandboxContext, FocusDirection, HostWgpuContext, KeyEvent, KeyEventKind,
+    MouseAction, PlatformCefConfig as WindowsCefConfig, PlatformCefProducer as WindowsCefProducer,
 };
 use winit::dpi::PhysicalSize;
+
+/// Route through which this process reached Weld's CEF hosting.
+///
+/// Set once, early in `main`/`RunWinMain` via [`set_sandbox_route`], before
+/// the event loop starts; [`initialize_runtime`] reads it lazily whenever the
+/// user first selects `weld.chromium`. Kept thread-local rather than in a
+/// process-wide static: `CefWindowsSandboxContext` wraps raw, non-`Sync`
+/// pointers, but everything that ever touches it — the entry point, the
+/// winit event loop, and `ensure_weld_engine` — runs on the one thread that
+/// called `main`/`RunWinMain`, so a thread-local needs no synchronization.
+pub(crate) enum WeldSandboxRoute {
+    /// The ordinary `turnstone.exe`. CEF's Windows sandbox context cannot be
+    /// created on this path, so `CefSandboxMode::Sandboxed` is refused here
+    /// (see [`requested_sandbox_preference`]).
+    Direct,
+    /// Entered through CEF's `bootstrap.exe` calling the sibling
+    /// `sandbox_bootstrap_win` crate's `RunWinMain` cdylib export. Borrows
+    /// the bootstrap-owned sandbox context and defaults to
+    /// `CefSandboxMode::Sandboxed`.
+    Bootstrap(CefWindowsSandboxContext<'static>),
+}
+
+thread_local! {
+    static SANDBOX_ROUTE: std::cell::RefCell<Option<WeldSandboxRoute>> =
+        const { std::cell::RefCell::new(None) };
+}
+
+/// Record which entry point this process launched through. Called once, by
+/// `crate::launch::run_direct` or `crate::launch::run_bootstrap`, before the
+/// event loop starts.
+pub(crate) fn set_sandbox_route(route: WeldSandboxRoute) {
+    SANDBOX_ROUTE.with(|cell| *cell.borrow_mut() = Some(route));
+}
 
 pub(super) struct TurnstoneWeldFactory {
     runtime: Arc<CefRuntime>,
@@ -90,9 +123,9 @@ pub(super) fn initialize_runtime(
             cache_root.display()
         )
     })?;
-    // Historical welding behaviour ran without Chromium's process sandbox;
-    // make that explicit now that `CefRuntimeConfig::new` requires a mode
-    // rather than defaulting to it.
+    // The sandbox mode itself is decided below, from the launch route (plus
+    // an optional explicit override); `UnsandboxedTrustedContent` here is
+    // just a placeholder `CefRuntimeConfig::new` needs a value for.
     let mut config = CefRuntimeConfig::new(cef_path, CefSandboxMode::UnsandboxedTrustedContent);
     config.cache_path = Some(cache_root.to_path_buf());
     config.user_agent = std::env::var("TURNSTONE_WELD_USER_AGENT")
@@ -107,9 +140,94 @@ pub(super) fn initialize_runtime(
                 .into(),
         );
     }
-    CefRuntime::initialize(config)
-        .map(Arc::new)
-        .map_err(|error| format!("could not initialize Weld CEF runtime: {error}"))
+
+    let preference = requested_sandbox_preference()?;
+    SANDBOX_ROUTE.with(move |cell| {
+        let route = cell.borrow();
+        match (route.as_ref().unwrap_or(&WeldSandboxRoute::Direct), preference) {
+            (WeldSandboxRoute::Direct, Some(SandboxPreference::Sandboxed)) => Err(
+                "TURNSTONE_WELD_SANDBOX=sandboxed requires launching through the CEF Windows \
+                 bootstrap route (RunWinMain); the direct turnstone.exe entry point cannot \
+                 create a sandbox context"
+                    .to_string(),
+            ),
+            (WeldSandboxRoute::Direct, _) => {
+                config.sandbox = CefSandboxMode::UnsandboxedTrustedContent;
+                CefRuntime::initialize(config)
+                    .map(Arc::new)
+                    .map_err(|error| format!("could not initialize Weld CEF runtime: {error}"))
+            }
+            (WeldSandboxRoute::Bootstrap(_), Some(SandboxPreference::Unsandboxed)) => Err(
+                "TURNSTONE_WELD_SANDBOX=unsandboxed is not supported when launched through the \
+                 CEF Windows bootstrap route; that context always initializes \
+                 CefSandboxMode::Sandboxed"
+                    .to_string(),
+            ),
+            (WeldSandboxRoute::Bootstrap(context), _) => {
+                config.sandbox = CefSandboxMode::Sandboxed;
+                context
+                    .initialize(config)
+                    .map(Arc::new)
+                    .map_err(|error| format!("could not initialize Weld CEF runtime: {error}"))
+            }
+        }
+    })
+}
+
+/// Explicit `TURNSTONE_WELD_SANDBOX` override. Absent, the launch route
+/// decides: `Sandboxed` under the bootstrap, `UnsandboxedTrustedContent` for
+/// the direct executable. Present, it must match what the route can
+/// deliver — an unsupported combination is a clear error, never a silent
+/// downgrade.
+#[derive(Clone, Copy, Debug)]
+enum SandboxPreference {
+    Sandboxed,
+    Unsandboxed,
+}
+
+fn requested_sandbox_preference() -> Result<Option<SandboxPreference>, String> {
+    match std::env::var("TURNSTONE_WELD_SANDBOX") {
+        Ok(value) => match value.as_str() {
+            "sandboxed" => Ok(Some(SandboxPreference::Sandboxed)),
+            "unsandboxed" => Ok(Some(SandboxPreference::Unsandboxed)),
+            other => Err(format!(
+                "TURNSTONE_WELD_SANDBOX={other:?} is not recognized; expected \"sandboxed\" or \"unsandboxed\""
+            )),
+        },
+        Err(std::env::VarError::NotPresent) => Ok(None),
+        Err(std::env::VarError::NotUnicode(_)) => {
+            Err("TURNSTONE_WELD_SANDBOX is not valid UTF-8".into())
+        }
+    }
+}
+
+#[cfg(test)]
+mod sandbox_preference_tests {
+    use super::*;
+
+    #[test]
+    fn unset_is_no_preference() {
+        // SAFETY: test-only env mutation; this crate's test binary does not
+        // run these tests concurrently with anything else reading this var.
+        unsafe {
+            std::env::remove_var("TURNSTONE_WELD_SANDBOX");
+        }
+        assert!(matches!(requested_sandbox_preference(), Ok(None)));
+    }
+
+    #[test]
+    fn unrecognized_value_is_a_clear_error_not_a_silent_default() {
+        // SAFETY: see `unset_is_no_preference`.
+        unsafe {
+            std::env::set_var("TURNSTONE_WELD_SANDBOX", "yolo");
+        }
+        let error = requested_sandbox_preference().unwrap_err();
+        assert!(error.contains("TURNSTONE_WELD_SANDBOX"));
+        // SAFETY: see `unset_is_no_preference`.
+        unsafe {
+            std::env::remove_var("TURNSTONE_WELD_SANDBOX");
+        }
+    }
 }
 
 struct TurnstoneWeldSurface {

@@ -171,6 +171,96 @@ page, and records cursor, input, and same-member navigation round trips.
 Lens-window composition, CEF wake-driven redraws, and the still-unprojected W8
 operations above remain outside this first cut.
 
+#### E2-Weld Windows sandbox bootstrap (2026-09-09)
+
+Mark ruled Chromium's process sandbox default for Weld on Windows
+(2026-09-09). The first cut above always ran CEF with
+`CefSandboxMode::UnsandboxedTrustedContent`: Windows' ordinary re-executed-
+binary entry point (`CefRuntime::execute_process_from` /
+`CefRuntime::initialize`) rejects `Sandboxed` outright, because CEF 151 can
+only create the sandbox context inside `bootstrap.exe` calling an exported
+`RunWinMain` in a client DLL (wgpu-weld `a4f5cf7`, "Wire the Windows CEF
+sandbox bootstrap"; `welding::CefWindowsSandboxContext` and
+`validate_direct_entrypoint` in `welding/src/runtime.rs`).
+
+Turnstone now has both routes:
+
+- **Direct** (`turnstone.exe`, unchanged): `src/launch.rs::run_direct` probes
+  the CEF subprocess role and, if the process reaches `ensure_weld_engine`,
+  `shell::weld::initialize_runtime` initializes `CefSandboxMode::
+  UnsandboxedTrustedContent`. This route cannot create a sandbox context, so
+  it stays the explicit fallback.
+- **Bootstrap** (sandboxed, new default): a second crate,
+  `sandbox_bootstrap_win` (workspace member, `crate-type = ["cdylib"]`),
+  exports `RunWinMain`. It is a separate crate rather than a second
+  crate-type on `turnstone`'s own `[lib]`, which would give the cdylib and
+  the `turnstone` `[[bin]]` the same output name and collide on
+  `turnstone.pdb` (cargo#6313). `RunWinMain` calls
+  `turnstone::launch::run_bootstrap`, which borrows CEF's sandbox context via
+  `CefWindowsSandboxContext::from_raw`, runs the subprocess probe under it,
+  records the route (`shell::weld::WeldSandboxRoute::Bootstrap`, thread-local
+  — the context wraps raw non-`Sync` pointers, but everything that touches
+  it runs on the one thread that called `RunWinMain`), and starts the
+  ordinary app. `initialize_runtime` then initializes
+  `CefSandboxMode::Sandboxed` through that context.
+
+`TURNSTONE_WELD_SANDBOX` (`sandboxed` / `unsandboxed`) overrides the
+route's default. An unsupported combination — `sandboxed` on the direct
+route, or `unsandboxed` on the bootstrap route — is a clear error out of
+`initialize_runtime`, never a silent downgrade to unsandboxed.
+
+**Bundle layout** (mirrors wgpu-weld's `demo-weld-win`/`cef::build_util::
+win::bundle`): a directory containing
+
+- `turnstone.exe` — CEF's `bootstrap.exe`, copied and renamed.
+- `turnstone.dll` (+ `.pdb`) — `sandbox_bootstrap_win`'s built
+  `sandbox_bootstrap_win.dll`, copied and renamed to sit beside it (the
+  raw build output keeps the crate's own name; only the bundle stage
+  renames it to match the bootstrap executable).
+- The full CEF binary distribution (`libcef.dll`, `icudtl.dat`, `*.pak`,
+  `v8_context_snapshot.bin`, `chrome_elf.dll`, etc.) and its `locales/`
+  directory, copied beside them.
+
+No automated bundler binary was added in this slice (out of scope); the
+layout above is assembled by copying those files from a CEF distribution
+(`TURNSTONE_CEF_PATH`/`CEF_PATH`) into a staging directory.
+
+**Launch commands:**
+
+```text
+# Direct, unsandboxed fallback (unchanged):
+set TURNSTONE_CEF_PATH=<path to a CEF binary distribution>
+cargo run --features weld
+
+# Bootstrap, sandboxed (new default): from the assembled bundle directory
+<bundle>\turnstone.exe
+```
+
+**Verification, 2026-09-09:** `cargo check --offline --features weld` and
+`cargo check --offline --no-default-features --lib` both pass clean (only
+pre-existing warnings); `cargo check --offline -p turnstone-sandbox-
+bootstrap-win` passes with no PDB-collision warning; `cargo test --offline
+--features weld --lib` passes the new `shell::weld` unit coverage (6/6).
+
+A CEF 151.3.24 distribution with `bootstrap.exe` was available locally
+(`Code/cef-cache/wgpu-weld/151.3.24/cef_windows_x86_64`), so the bundle above
+was assembled from it (`sandbox_bootstrap_win.dll`/`.pdb` renamed to
+`turnstone.dll`/`.pdb`, `bootstrap.exe` copied to `turnstone.exe`, the rest of
+the CEF distribution and `locales/` copied alongside) and the bootstrap route
+was run headed: `turnstone.exe` launched, logged
+`turnstone::launch: turnstone starting` (confirming `RunWinMain` →
+`run_bootstrap` → `CefWindowsSandboxContext::from_raw` → the subprocess probe
+returning the browser-process `None` → `set_sandbox_route(Bootstrap)` all
+ran), then booted the ordinary sample-graph window with no errors in the
+log. Windows Firewall prompted to allow "CEF Bootstrap Application" network
+access — declined (Cancel), leaving firewall state untouched, since granting
+it would be a system-security-settings change outside this task. This
+receipt covers the process-role probe and bootstrap boot; it does not
+additionally exercise `ensure_weld_engine`/`context.initialize` by pinning
+`weld.chromium` in the running window (unchanged from the existing E2
+receipt above, and covered by the new unit tests' route-selection logic
+rather than a fresh headed capture here).
+
 ### E3. Activation model
 
 The picker plan's decision 1 and 2: a global `EngineEnableSet` app setting

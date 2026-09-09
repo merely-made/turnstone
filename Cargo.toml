@@ -1,4 +1,11 @@
 [workspace]
+# `sandbox_bootstrap_win` is the cdylib CEF's Windows sandbox bootstrap.exe
+# loads (see design_docs/2026-08-03_turnstone_engine_adoption_plan.md,
+# "E2-Weld Windows sandbox bootstrap"). It is a separate crate rather than a
+# second crate-type on this package's own `[lib]`, which would give the
+# cdylib and the `turnstone` `[[bin]]` the same output name and collide on
+# `turnstone.pdb` in the shared target directory (cargo#6313).
+members = [".", "sandbox_bootstrap_win"]
 
 [package]
 name = "turnstone"

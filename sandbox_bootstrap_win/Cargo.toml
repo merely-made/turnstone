@@ -1,0 +1,24 @@
+[package]
+name = "turnstone-sandbox-bootstrap-win"
+version = "0.1.0"
+edition = "2024"
+license = "MPL-2.0"
+publish = false
+description = "CEF's Windows sandbox bootstrap.exe client-DLL entry point for Turnstone's Weld renderer."
+
+# A separate crate rather than a second crate-type on the `turnstone` package's
+# own `[lib]`: that would give this cdylib and the `turnstone` `[[bin]]` the
+# same output name and collide on `turnstone.pdb` in the shared target
+# directory (cargo#6313). See
+# design_docs/2026-08-03_turnstone_engine_adoption_plan.md, "E2-Weld Windows
+# sandbox bootstrap", for the bundle layout this cdylib is built for.
+[lib]
+name = "sandbox_bootstrap_win"
+crate-type = ["cdylib"]
+path = "src/lib.rs"
+
+[target.'cfg(windows)'.dependencies]
+# `run_bootstrap`'s exported signature is raw pointers only (no CEF types
+# cross this crate boundary), so this crate needs no `welding`/`cef`
+# dependency of its own; it only calls into `turnstone::launch`.
+turnstone = { path = "..", features = ["weld"] }
