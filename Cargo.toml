@@ -270,11 +270,12 @@ genet-scripted-dom = { git = "https://github.com/merely-made/genet.git", rev = "
 genet-static-dom = { git = "https://github.com/merely-made/genet.git", rev = "9e8f9dc2f3ddc0af1658580bb51964462a03923f" }
 layout-dom-api = { version = "=0.1.0", git = "https://github.com/merely-made/genet.git", rev = "9e8f9dc2f3ddc0af1658580bb51964462a03923f" }
 # The renderer family is published, but Turnstone also consumes its current git
-# surface directly. Patch the full family together so Mere Canvas and the host
-# cannot receive source-distinct `Scene` or paint vocabulary types.
+# surface directly. Patch the four runtime crates together so Mere Canvas and
+# the host cannot receive source-distinct `Scene` or paint vocabulary types.
+# `netrender_text` is only Netrender's dev-only Parley adapter, so it does not
+# reach this application graph and must not add an unused root patch.
 netrender = { git = "https://github.com/merely-made/netrender.git", rev = "6f1a4fe70a58a57ba6b248acfa662f0ec4e44a25" }
 netrender_device = { git = "https://github.com/merely-made/netrender.git", rev = "6f1a4fe70a58a57ba6b248acfa662f0ec4e44a25" }
-netrender_text = { git = "https://github.com/merely-made/netrender.git", rev = "6f1a4fe70a58a57ba6b248acfa662f0ec4e44a25" }
 paint_list_api = { git = "https://github.com/merely-made/netrender.git", rev = "6f1a4fe70a58a57ba6b248acfa662f0ec4e44a25" }
 paint_list_render = { git = "https://github.com/merely-made/netrender.git", rev = "6f1a4fe70a58a57ba6b248acfa662f0ec4e44a25" }
 #
