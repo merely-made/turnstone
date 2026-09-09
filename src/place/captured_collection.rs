@@ -158,13 +158,10 @@ pub(crate) fn remint(
         CaptureLibraryState::Unavailable(error) => {
             let mut rejected = Vec::new();
             for share in roster.authorized_fauna(authority) {
-                let reason = if share.schema_id == mere_document_lanes::FLEECE_ANNOTATION_SCHEMA_ID
-                {
-                    CapturedRejectionReason::LibraryUnavailable(error.clone())
-                } else {
-                    CapturedRejectionReason::UnsupportedSchema(share.schema_id.clone())
-                };
-                rejected.push(status(share, reason));
+                rejected.push(status(
+                    share,
+                    CapturedRejectionReason::LibraryUnavailable(error.clone()),
+                ));
             }
             rejected.sort_by_key(|item| item.share_operation);
             return CapturedCollectionCache {
@@ -181,9 +178,7 @@ pub(crate) fn remint(
     let mut projectable = roster.clone();
     let mut rejected = Vec::new();
     projectable.fauna.retain(|share| {
-        if share.schema_id == mere_document_lanes::FLEECE_ANNOTATION_SCHEMA_ID
-            && let Some(error) = invalid.get(&share.manifest_id)
-        {
+        if let Some(error) = invalid.get(&share.manifest_id) {
             rejected.push(status(
                 share,
                 CapturedRejectionReason::InvalidRecord(error.clone()),
@@ -297,11 +292,8 @@ mod tests {
 
     fn empty_roster(fauna: Vec<gemot::moot::FaunaEntry>) -> gemot::moot::MootRoster {
         gemot::moot::MootRoster {
-            declaration: None,
-            members: BTreeMap::new(),
-            membership_revision: [0; 32],
             fauna,
-            withdrawals: Vec::new(),
+            ..Default::default()
         }
     }
 

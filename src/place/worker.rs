@@ -826,7 +826,7 @@ fn place_snapshot(
     );
     let captured = crate::place::captured_collection::remint(
         &captured_roster,
-        &authority,
+        &authority.authority,
         &open.capture_directory,
         &settings.capture_library,
     );

@@ -1057,23 +1057,39 @@ impl Shell {
                             "source capture requires the exact current fetched HTML response; hosted Weld pages do not expose one".to_string()
                         });
                     match result {
-                        Ok(document) => self.trail_handle.command(
-                            crate::trail_memory::TrailCommand::CaptureSourceDocument {
-                                node,
-                                url,
-                                document,
-                            },
-                        ),
+                        Ok(document) => {
+                            let delivered = self.trail_handle.command(
+                                crate::trail_memory::TrailCommand::CaptureSourceDocument {
+                                    node,
+                                    url: url.clone(),
+                                    document,
+                                },
+                            );
+                            if !delivered {
+                                let effects = self.app.apply_update(
+                                    crate::action::Update::SourceDocumentCaptured {
+                                        node,
+                                        url,
+                                        result: Err(
+                                            "the session Eidetic actor is unavailable".into(),
+                                        ),
+                                    },
+                                );
+                                self.run_effects(effects);
+                            }
+                        },
                         Err(error) => {
-                            let effects = self.app.apply_update(crate::action::Update::SourceDocumentCaptured {
-                                node,
-                                url,
-                                result: Err(error),
-                            });
+                            let effects = self.app.apply_update(
+                                crate::action::Update::SourceDocumentCaptured {
+                                    node,
+                                    url,
+                                    result: Err(error),
+                                },
+                            );
                             self.run_effects(effects);
-                        }
+                        },
                     }
-                }
+                },
                 Effect::FindContent {
                     node,
                     request,
