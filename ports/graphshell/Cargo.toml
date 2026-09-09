@@ -116,6 +116,7 @@ chirograph.workspace = true
 mere = { path = "../../crates/mere", default-features = false, features = ["graph", "canvas"], optional = true }
 mesh = { workspace = true, optional = true }
 muniment = { workspace = true, optional = true }
+scenograph.workspace = true
 sceno.workspace = true
 scenomise.workspace = true
 scenotime.workspace = true

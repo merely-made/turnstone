@@ -64,7 +64,7 @@ use graphshell::product::{ProjectionClock, RelationFamilyFilter, SavedSceneV1};
 use graphshell::projection_editor::{
     Appearance, Channel, EditorAction, Encoding, Interaction, ProjectionDefinition,
     ProjectionDefinitionSink, ProjectionDraft, ProjectionEditor, ProjectionPanel, Provenance,
-    Reading, SelectionMode, SourceBinding,
+    PublicSourceRevision, Reading, RevisionEvidence, SelectionMode, SourceBinding,
 };
 use graphshell::view::ProjectionLayoutView;
 use graphshell_client::frozen::Satisfaction;
@@ -402,6 +402,7 @@ fn initial_projection_draft() -> ProjectionDraft {
             kind: "phyllotaxis.default".to_string(),
             direction: "horizontal".to_string(),
             spacing: 16,
+            options: Default::default(),
         },
         interaction: Interaction {
             selection: SelectionMode::Single,
@@ -415,7 +416,8 @@ fn initial_projection_draft() -> ProjectionDraft {
         },
         provenance: Provenance {
             author: "Graphshell reference host".to_string(),
-            source_revision: "fixture-v1".to_string(),
+            source_revision: Some("fixture-v1".into()),
+            revision_evidence: RevisionEvidence::PublicGeneration,
             note: "Host-owned editor fixture".to_string(),
         },
     }
@@ -876,7 +878,8 @@ impl BrowserHost {
                 EditorAction::SetProvenance(draft.provenance)
             },
             "provenance.source_revision" => {
-                draft.provenance.source_revision = value.to_string();
+                draft.provenance.source_revision = Some(value.into());
+                draft.provenance.revision_evidence = RevisionEvidence::PublicGeneration;
                 EditorAction::SetProvenance(draft.provenance)
             },
             "provenance.note" => {
@@ -904,7 +907,7 @@ impl BrowserHost {
                     self.projection_editor_save_count.saturating_add(1);
                 self.projection_editor_status = format!(
                     "Saved · {} · {} save(s)",
-                    self.projection_editor.draft().provenance.source_revision,
+                    source_revision_label(&self.projection_editor.draft().provenance),
                     self.projection_editor_save_count
                 );
             },
@@ -953,7 +956,8 @@ impl BrowserHost {
                         self.projection_editor = ProjectionEditor::new(draft);
                         self.projection_editor_status = format!(
                             "Reloaded · {} · {}",
-                            definition.id, definition.provenance.source_revision
+                            definition.id,
+                            source_revision_label(&definition.provenance)
                         );
                     },
                     Err(issues) => {
@@ -1498,6 +1502,17 @@ fn projection_preview(draft: &ProjectionDraft) -> String {
     )
 }
 
+fn source_revision_label(provenance: &Provenance) -> &str {
+    match provenance.revision_evidence {
+        RevisionEvidence::PublicGeneration => provenance
+            .source_revision
+            .as_ref()
+            .map(PublicSourceRevision::as_str)
+            .unwrap_or("missing public revision"),
+        RevisionEvidence::RuntimeVerified => "runtime verified",
+    }
+}
+
 fn update_projection_editor_semantics(host: &BrowserHost) -> Result<(), String> {
     let surface = element("projection-editor")?;
     if host.projection_editor_open {
@@ -1564,7 +1579,12 @@ fn update_projection_editor_semantics(host: &BrowserHost) -> Result<(), String> 
     set_projection_input_value("projection-provenance-author", &draft.provenance.author)?;
     set_projection_input_value(
         "projection-provenance-revision",
-        &draft.provenance.source_revision,
+        draft
+            .provenance
+            .source_revision
+            .as_ref()
+            .map(PublicSourceRevision::as_str)
+            .unwrap_or(""),
     )?;
     set_projection_input_value("projection-provenance-note", &draft.provenance.note)?;
     set_text("projection-editor-status", &host.projection_editor_status);
@@ -1579,7 +1599,9 @@ fn update_projection_editor_semantics(host: &BrowserHost) -> Result<(), String> 
         "projection-editor-provenance",
         &format!(
             "{} · source {} · {}",
-            draft.provenance.author, draft.provenance.source_revision, draft.provenance.note
+            draft.provenance.author,
+            source_revision_label(&draft.provenance),
+            draft.provenance.note
         ),
     );
     set_text(

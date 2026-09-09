@@ -13,11 +13,17 @@
 //! handle. A host supplies [`ProjectionDefinitionSink`] when it elects to
 //! persist a valid definition.
 
+use std::collections::BTreeMap;
+
+pub use scenograph::{
+    Appearance, Arrangement, AuthoredDefinitionError, AuthoredProjectionDefinition, Channel,
+    Encoding, Interaction, PROJECTION_DEFINITION_VERSION, ProjectionDefinition, ProjectionDraft,
+    ProjectionInputBinding, ProjectionVariant, Provenance, PublicSourceRevision, Reading,
+    RevisionEvidence, RuntimeProjectionBinding, RuntimeSourceBinding, SelectionMode, SourceBinding,
+    ValidationIssue, ValidationSeverity,
+};
 use serde::{Deserialize, Serialize};
 use workbench::{ContentSource, Tile, TileEvent, TileId, TileTree, Workbench, WorkbenchOutcome};
-
-/// The stable schema version for definitions emitted by this editor.
-pub const PROJECTION_DEFINITION_VERSION: u16 = 1;
 
 /// The plain panels a host may expose for projection authoring.
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
@@ -115,345 +121,68 @@ fn projection_editor_workbench() -> Workbench {
     Workbench::new(TileTree::stack(tabs, 0))
 }
 
-/// A source and domain binding selected by the author.
-#[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
-pub struct SourceBinding {
-    /// The authority or owner identifier, not an authority handle.
-    pub authority: String,
-    /// The domain or namespace in which the source is interpreted.
-    pub domain: String,
-    /// A source-local resource, dataset, or graph identifier.
-    pub resource: String,
-}
+/// Chronicle's stable authored definition id.
+pub const CHRONICLE_DEFINITION_ID: &str = "distillery.chronicle";
+/// The arrangement-owned guide toggle used by Chronicle.
+pub const CHRONICLE_ERA_BANDS_OPTION: &str = "era_bands";
 
-/// The facts and grain an arrangement reads from its source.
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Reading {
-    /// A registered reading id resolved by the host/catalog.
-    pub kind: String,
-    /// The identity field used to address records.
-    pub key: String,
-    /// The value field for a value-oriented reading.
-    pub value: Option<String>,
-}
-
-impl Default for Reading {
-    fn default() -> Self {
-        Self {
-            kind: "nodes".into(),
-            key: String::new(),
-            value: None,
-        }
+/// Build the one Chronicle recipe used for its named Distillery and Djinn
+/// inputs. The caller supplies source locators and authority-emitted
+/// generations; this authoring seam never acquires either authority.
+pub fn chronicle_definition(
+    sources: BTreeMap<String, ProjectionInputBinding>,
+    author: impl Into<String>,
+    definition_revision: impl Into<String>,
+) -> AuthoredProjectionDefinition {
+    AuthoredProjectionDefinition {
+        version: PROJECTION_DEFINITION_VERSION,
+        id: CHRONICLE_DEFINITION_ID.to_owned(),
+        label: "Job Chronicle".to_owned(),
+        sources,
+        reading: Reading {
+            kind: "mesh.jobs".to_owned(),
+            key: "job_id".to_owned(),
+            value: Some("state".to_owned()),
+        },
+        encoding: Encoding {
+            x: Channel::Field("observation_tick".to_owned()),
+            y: Channel::Field("lease_epoch".to_owned()),
+            color: Some(Channel::Field("state".to_owned())),
+            label: Some(Channel::Field("job_id".to_owned())),
+        },
+        arrangement: Arrangement {
+            kind: "timeline.default".to_owned(),
+            direction: "observation_tick".to_owned(),
+            spacing: 180,
+            options: BTreeMap::from([(CHRONICLE_ERA_BANDS_OPTION.to_owned(), "true".to_owned())]),
+        },
+        interaction: Interaction::default(),
+        appearance: Appearance {
+            realization: "portable-card".to_owned(),
+            title: "Job Chronicle".to_owned(),
+            theme: "chronicle".to_owned(),
+        },
+        provenance: Provenance {
+            author: author.into(),
+            source_revision: Some(PublicSourceRevision::from(definition_revision.into())),
+            revision_evidence: RevisionEvidence::PublicGeneration,
+            note: "One read-only job-board recipe; source bindings carry authority generation expectations."
+                .to_owned(),
+        },
     }
 }
 
-/// A field or literal assigned to a visual channel.
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case", tag = "kind", content = "value")]
-pub enum Channel {
-    Field(String),
-    Constant(String),
-}
-
-/// Encodings map reading fields to arrangement channels.
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Encoding {
-    pub x: Channel,
-    pub y: Channel,
-    pub color: Option<Channel>,
-    pub label: Option<Channel>,
-}
-
-impl Default for Encoding {
-    fn default() -> Self {
-        Self {
-            x: Channel::Field(String::new()),
-            y: Channel::Field(String::new()),
-            color: None,
-            label: None,
-        }
+/// The Chronicle variant that hides lease-epoch guide bands while preserving
+/// the base definition and every non-arrangement field.
+pub fn chronicle_era_bands_off_variant() -> ProjectionVariant {
+    ProjectionVariant {
+        definition_id: CHRONICLE_DEFINITION_ID.to_owned(),
+        id: "era-bands-off".to_owned(),
+        arrangement_options: BTreeMap::from([(
+            CHRONICLE_ERA_BANDS_OPTION.to_owned(),
+            "false".to_owned(),
+        )]),
     }
-}
-
-/// The spatial or tabular arrangement requested by the author.
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Arrangement {
-    /// A registered arrangement id resolved by the host/catalog.
-    pub kind: String,
-    /// An open direction or coordinate parameter understood by that id.
-    pub direction: String,
-    /// Positive spacing in the arrangement's own units.
-    pub spacing: u32,
-}
-
-impl Default for Arrangement {
-    fn default() -> Self {
-        Self {
-            kind: "grid".into(),
-            direction: "horizontal".into(),
-            spacing: 16,
-        }
-    }
-}
-
-/// Interaction affordances offered by a realization.
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Interaction {
-    pub selection: SelectionMode,
-    pub pan: bool,
-    pub zoom: bool,
-}
-
-impl Default for Interaction {
-    fn default() -> Self {
-        Self {
-            selection: SelectionMode::Single,
-            pan: true,
-            zoom: true,
-        }
-    }
-}
-
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum SelectionMode {
-    None,
-    Single,
-    Multiple,
-}
-
-/// Appearance and realization choices. Rendering remains host-owned.
-#[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Appearance {
-    /// A registered realization id. Rendering and resolution stay host-owned.
-    pub realization: String,
-    pub title: String,
-    pub theme: String,
-}
-
-/// Human and machine provenance attached to a saved definition.
-#[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Provenance {
-    pub author: String,
-    pub source_revision: String,
-    pub note: String,
-}
-
-/// The editable form. It intentionally retains incomplete values so a host
-/// can show useful field-level validation instead of rejecting keystrokes.
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct ProjectionDraft {
-    pub version: u16,
-    pub id: String,
-    pub label: String,
-    pub source: SourceBinding,
-    pub reading: Reading,
-    pub encoding: Encoding,
-    pub arrangement: Arrangement,
-    pub interaction: Interaction,
-    pub appearance: Appearance,
-    pub provenance: Provenance,
-}
-
-/// The complete, validated, durable projection definition.
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct ProjectionDefinition {
-    pub version: u16,
-    pub id: String,
-    pub label: String,
-    pub source: SourceBinding,
-    pub reading: Reading,
-    pub encoding: Encoding,
-    pub arrangement: Arrangement,
-    pub interaction: Interaction,
-    pub appearance: Appearance,
-    pub provenance: Provenance,
-}
-
-impl ProjectionDraft {
-    /// Start an empty draft with safe enum and layout defaults.
-    pub fn new() -> Self {
-        Self {
-            version: PROJECTION_DEFINITION_VERSION,
-            id: String::new(),
-            label: String::new(),
-            source: SourceBinding::default(),
-            reading: Reading::default(),
-            encoding: Encoding::default(),
-            arrangement: Arrangement::default(),
-            interaction: Interaction::default(),
-            appearance: Appearance::default(),
-            provenance: Provenance::default(),
-        }
-    }
-
-    /// Validate and promote this draft to the durable definition.
-    pub fn to_definition(&self) -> Result<ProjectionDefinition, Vec<ValidationIssue>> {
-        self.validate()?;
-        Ok(ProjectionDefinition {
-            version: self.version,
-            id: self.id.clone(),
-            label: self.label.clone(),
-            source: self.source.clone(),
-            reading: self.reading.clone(),
-            encoding: self.encoding.clone(),
-            arrangement: self.arrangement.clone(),
-            interaction: self.interaction.clone(),
-            appearance: self.appearance.clone(),
-            provenance: self.provenance.clone(),
-        })
-    }
-
-    /// Check all required fields without contacting a host or authority.
-    pub fn validate(&self) -> Result<(), Vec<ValidationIssue>> {
-        let mut issues = Vec::new();
-        if self.version != PROJECTION_DEFINITION_VERSION {
-            issues.push(ValidationIssue::error(
-                "version",
-                "unsupported projection definition version",
-            ));
-        }
-        required(&mut issues, "id", &self.id, "an id is required");
-        required(&mut issues, "label", &self.label, "a label is required");
-        required(
-            &mut issues,
-            "source.authority",
-            &self.source.authority,
-            "an authority binding is required",
-        );
-        required(
-            &mut issues,
-            "source.domain",
-            &self.source.domain,
-            "a domain binding is required",
-        );
-        required(
-            &mut issues,
-            "source.resource",
-            &self.source.resource,
-            "a source resource is required",
-        );
-        required(
-            &mut issues,
-            "reading.kind",
-            &self.reading.kind,
-            "a registered reading id is required",
-        );
-        required(
-            &mut issues,
-            "reading.key",
-            &self.reading.key,
-            "a reading key is required",
-        );
-        if self.reading.kind == "values" {
-            match self.reading.value.as_deref() {
-                Some(value) if !value.trim().is_empty() => {},
-                _ => issues.push(ValidationIssue::error(
-                    "reading.value",
-                    "a value field is required for a values reading",
-                )),
-            }
-        }
-        channel_required(&mut issues, "encoding.x", &self.encoding.x);
-        channel_required(&mut issues, "encoding.y", &self.encoding.y);
-        required(
-            &mut issues,
-            "arrangement.kind",
-            &self.arrangement.kind,
-            "a registered arrangement id is required",
-        );
-        required(
-            &mut issues,
-            "arrangement.direction",
-            &self.arrangement.direction,
-            "an arrangement direction or coordinate mode is required",
-        );
-        if self.arrangement.spacing == 0 {
-            issues.push(ValidationIssue::error(
-                "arrangement.spacing",
-                "spacing must be greater than zero",
-            ));
-        }
-        required(
-            &mut issues,
-            "appearance.realization",
-            &self.appearance.realization,
-            "a registered realization id is required",
-        );
-        required(
-            &mut issues,
-            "appearance.title",
-            &self.appearance.title,
-            "a preview title is required",
-        );
-        required(
-            &mut issues,
-            "provenance.author",
-            &self.provenance.author,
-            "an author is required",
-        );
-        required(
-            &mut issues,
-            "provenance.source_revision",
-            &self.provenance.source_revision,
-            "the source revision is required for reproducibility",
-        );
-        if issues.is_empty() {
-            Ok(())
-        } else {
-            Err(issues)
-        }
-    }
-}
-
-impl Default for ProjectionDraft {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-impl ProjectionDefinition {
-    /// Serialize in declaration order using the existing serde JSON stack.
-    pub fn to_json_bytes(&self) -> Result<Vec<u8>, serde_json::Error> {
-        serde_json::to_vec(self)
-    }
-}
-
-fn required(issues: &mut Vec<ValidationIssue>, field: &str, value: &str, message: &str) {
-    if value.trim().is_empty() {
-        issues.push(ValidationIssue::error(field, message));
-    }
-}
-
-fn channel_required(issues: &mut Vec<ValidationIssue>, field: &str, channel: &Channel) {
-    let value = match channel {
-        Channel::Field(value) | Channel::Constant(value) => value,
-    };
-    required(issues, field, value, "an encoding channel is required");
-}
-
-/// A field-specific validation problem suitable for a panel or summary.
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct ValidationIssue {
-    pub field: String,
-    pub message: String,
-    pub severity: ValidationSeverity,
-}
-
-impl ValidationIssue {
-    fn error(field: &str, message: &str) -> Self {
-        Self {
-            field: field.to_string(),
-            message: message.to_string(),
-            severity: ValidationSeverity::Error,
-        }
-    }
-}
-
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum ValidationSeverity {
-    Error,
 }
 
 /// Typed messages understood by the reducer. Hosts can map these to any UI.
@@ -649,10 +378,40 @@ mod tests {
             },
             provenance: Provenance {
                 author: "mark".into(),
-                source_revision: "rev-7".into(),
+                source_revision: Some("rev-7".into()),
+                revision_evidence: RevisionEvidence::PublicGeneration,
                 note: "fixture".into(),
             },
         }
+    }
+
+    fn chronicle_sources() -> BTreeMap<String, ProjectionInputBinding> {
+        BTreeMap::from([
+            (
+                "distillery".to_owned(),
+                ProjectionInputBinding {
+                    source: SourceBinding {
+                        authority: "distillery.endpoint".to_owned(),
+                        domain: "mesh.job-board".to_owned(),
+                        resource: "distillery.chronicle".to_owned(),
+                    },
+                    expects_generation: Some("generation:distillery-fixture".into()),
+                    revision_evidence: RevisionEvidence::PublicGeneration,
+                },
+            ),
+            (
+                "djinn".to_owned(),
+                ProjectionInputBinding {
+                    source: SourceBinding {
+                        authority: "djinn.resident".to_owned(),
+                        domain: "mesh.job-board".to_owned(),
+                        resource: "distillery.chronicle".to_owned(),
+                    },
+                    expects_generation: Some("generation:djinn-fixture".into()),
+                    revision_evidence: RevisionEvidence::PublicGeneration,
+                },
+            ),
+        ])
     }
 
     #[test]
@@ -720,7 +479,12 @@ mod tests {
         let mut draft = valid_draft();
         draft.source.domain.clear();
         draft.arrangement.spacing = 0;
-        draft.provenance.source_revision.clear();
+        draft
+            .provenance
+            .source_revision
+            .as_mut()
+            .expect("fixture has source revision")
+            .clear();
         let issues = draft.validate().expect_err("invalid draft");
         assert!(issues.iter().any(|issue| issue.field == "source.domain"));
         assert!(
@@ -779,5 +543,97 @@ mod tests {
             .expect_err("invalid draft is refused");
         assert!(matches!(error, SaveError::Invalid(_)));
         assert!(sink.saved.is_empty());
+    }
+
+    #[test]
+    fn chronicle_is_one_recipe_bound_to_two_checkable_sources() {
+        let authored = chronicle_definition(
+            chronicle_sources(),
+            "Distillery W2",
+            "chronicle-definition-v1",
+        );
+        authored.validate().expect("complete authored definition");
+        let distillery = authored.bind("distillery", None).expect("distillery bind");
+        let djinn = authored.bind("djinn", None).expect("djinn bind");
+
+        assert_eq!(authored.id, CHRONICLE_DEFINITION_ID);
+        assert_eq!(distillery.id, authored.id);
+        assert_eq!(djinn.id, authored.id);
+        assert_ne!(distillery.source, djinn.source);
+        assert_eq!(distillery.reading, djinn.reading);
+        assert_eq!(distillery.encoding, djinn.encoding);
+        assert_eq!(distillery.arrangement, djinn.arrangement);
+        assert_eq!(distillery.interaction, djinn.interaction);
+        assert_eq!(distillery.appearance, djinn.appearance);
+        assert_eq!(
+            distillery.provenance.source_revision,
+            Some(PublicSourceRevision::from("generation:distillery-fixture"))
+        );
+        assert_eq!(
+            djinn.provenance.source_revision,
+            Some(PublicSourceRevision::from("generation:djinn-fixture"))
+        );
+
+        let first = authored.to_json_bytes().expect("authoring bytes");
+        let second = authored.to_json_bytes().expect("authoring bytes");
+        assert_eq!(first, second);
+        assert_eq!(
+            serde_json::from_slice::<AuthoredProjectionDefinition>(&first).expect("authoring wire"),
+            authored
+        );
+    }
+
+    #[test]
+    fn chronicle_era_bands_off_is_a_variant_not_another_recipe() {
+        let authored = chronicle_definition(
+            chronicle_sources(),
+            "Distillery W2",
+            "chronicle-definition-v1",
+        );
+        let base = authored.bind("distillery", None).expect("base bind");
+        let variant = chronicle_era_bands_off_variant();
+        let without_bands = authored
+            .bind("distillery", Some(&variant))
+            .expect("variant bind");
+
+        assert_eq!(variant.definition_id, authored.id);
+        assert_eq!(base.id, without_bands.id);
+        assert_eq!(base.source, without_bands.source);
+        assert_eq!(base.reading, without_bands.reading);
+        assert_eq!(base.encoding, without_bands.encoding);
+        assert_eq!(base.interaction, without_bands.interaction);
+        assert_eq!(base.appearance, without_bands.appearance);
+        assert_eq!(base.provenance, without_bands.provenance);
+        assert_eq!(
+            base.arrangement.options.get(CHRONICLE_ERA_BANDS_OPTION),
+            Some(&"true".to_owned())
+        );
+        assert_eq!(
+            without_bands
+                .arrangement
+                .options
+                .get(CHRONICLE_ERA_BANDS_OPTION),
+            Some(&"false".to_owned())
+        );
+    }
+
+    #[test]
+    fn authored_definition_refuses_a_variant_for_another_recipe() {
+        let authored = chronicle_definition(
+            chronicle_sources(),
+            "Distillery W2",
+            "chronicle-definition-v1",
+        );
+        let variant = ProjectionVariant {
+            definition_id: "other.recipe".to_owned(),
+            id: "era-bands-off".to_owned(),
+            arrangement_options: BTreeMap::new(),
+        };
+        assert_eq!(
+            authored.bind("distillery", Some(&variant)),
+            Err(AuthoredDefinitionError::VariantForAnotherDefinition(
+                "other.recipe".to_owned()
+            ))
+        );
     }
 }

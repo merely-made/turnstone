@@ -160,7 +160,7 @@ fn dataset_for(record: &ComparisonRecord) -> ProjectionDataset {
             domain: record.source.domain.clone(),
             resource: record.source.resource.clone(),
         },
-        revision: record.revision.clone(),
+        revision: record.revision.clone().into(),
         fields: BTreeMap::from([
             ("occurrence_id".into(), ProjectionFieldType::Text),
             ("label".into(), ProjectionFieldType::Text),

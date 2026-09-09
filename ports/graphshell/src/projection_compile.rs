@@ -21,7 +21,9 @@ use sceno::{
 };
 use serde::{Deserialize, Serialize};
 
-use crate::projection_editor::{Channel, ProjectionDefinition, SourceBinding};
+use crate::projection_editor::{
+    Channel, ProjectionDefinition, PublicSourceRevision, RevisionEvidence, SourceBinding,
+};
 
 /// A bounded starting definition for the disclosed practice dataset. These
 /// field names are a host recipe, not an inferred product schema.
@@ -47,6 +49,7 @@ pub fn default_definition(dataset: &ProjectionDataset) -> ProjectionDefinition {
             kind: GRID_ARRANGEMENT_ID.into(),
             direction: "coordinates".into(),
             spacing: 16,
+            options: BTreeMap::new(),
         },
         interaction: Interaction {
             selection: SelectionMode::Single,
@@ -60,7 +63,8 @@ pub fn default_definition(dataset: &ProjectionDataset) -> ProjectionDefinition {
         },
         provenance: Provenance {
             author: "Graphshell".into(),
-            source_revision: dataset.revision.clone(),
+            source_revision: Some(dataset.revision.clone()),
+            revision_evidence: RevisionEvidence::PublicGeneration,
             note: "Disclosed Woodshed Set; grid ranks numeric fields, scatter uses their values."
                 .into(),
         },
@@ -132,7 +136,7 @@ pub struct ProjectionOccurrence {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct ProjectionDataset {
     pub source: SourceBinding,
-    pub revision: String,
+    pub revision: PublicSourceRevision,
     pub fields: BTreeMap<String, ProjectionFieldType>,
     pub occurrences: Vec<ProjectionOccurrence>,
 }
@@ -481,11 +485,6 @@ fn source_matches(
             &definition.source.resource,
             &dataset.source.resource,
         ),
-        (
-            "provenance.source_revision",
-            &definition.provenance.source_revision,
-            &dataset.revision,
-        ),
     ] {
         if expected != actual {
             issues.push(CompileIssue::new(
@@ -493,6 +492,12 @@ fn source_matches(
                 "definition does not match the resolved dataset",
             ));
         }
+    }
+    if definition.provenance.source_revision.as_ref() != Some(&dataset.revision) {
+        issues.push(CompileIssue::new(
+            "provenance.source_revision",
+            "definition does not match the resolved dataset",
+        ));
     }
 }
 
@@ -541,6 +546,12 @@ fn validate_arrangement(issues: &mut Vec<CompileIssue>, definition: &ProjectionD
         issues.push(CompileIssue::new(
             "arrangement.direction",
             "this compiler requires the coordinates direction",
+        ));
+    }
+    if !definition.arrangement.options.is_empty() {
+        issues.push(CompileIssue::new(
+            "arrangement.options",
+            "this compiler does not support arrangement options",
         ));
     }
 }
@@ -719,7 +730,7 @@ mod tests {
             .values
             .insert("label".into(), ProjectionValue::Text("New caption".into()));
         data.revision = "new-revision".into();
-        recipe.provenance.source_revision = data.revision.clone();
+        recipe.provenance.source_revision = Some(data.revision.clone());
         let next = refresh(&previous, &recipe, &data).unwrap();
         assert!(next.placement_reused);
         assert_eq!(next.scene, compile(&recipe, &data).unwrap().scene);
@@ -872,6 +883,7 @@ mod tests {
                 kind: kind.into(),
                 direction: COORDINATES_DIRECTION.into(),
                 spacing: 16,
+                options: BTreeMap::new(),
             },
             interaction: Interaction {
                 selection: SelectionMode::Single,
@@ -885,7 +897,8 @@ mod tests {
             },
             provenance: Provenance {
                 author: "fixture".into(),
-                source_revision: "woodshed-fixture-v1".into(),
+                source_revision: Some("woodshed-fixture-v1".into()),
+                revision_evidence: RevisionEvidence::PublicGeneration,
                 note: "real-set-shaped fixture".into(),
             },
         }
@@ -949,7 +962,7 @@ mod tests {
     fn rejects_unresolved_channels_binding_and_stale_selection() {
         let mut definition = definition(SCATTER_ARRANGEMENT_ID);
         definition.encoding.color = Some(Channel::Field("label".into()));
-        definition.provenance.source_revision = "stale".into();
+        definition.provenance.source_revision = Some("stale".into());
         let snapshot = ProjectionSnapshot {
             definition,
             selected_occurrence: Some("gone".into()),
@@ -965,6 +978,21 @@ mod tests {
             issues
                 .iter()
                 .any(|issue| issue.field == "selected_occurrence")
+        );
+    }
+
+    #[test]
+    fn refuses_an_arrangement_option_the_executable_compiler_does_not_own() {
+        let mut definition = definition(GRID_ARRANGEMENT_ID);
+        definition
+            .arrangement
+            .options
+            .insert("era_bands".into(), "false".into());
+        let issues = compile(&definition, &dataset()).expect_err("must refuse unknown option");
+        assert!(
+            issues
+                .iter()
+                .any(|issue| issue.field == "arrangement.options")
         );
     }
 
