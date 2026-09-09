@@ -37,7 +37,9 @@ Runner input SHA-256 values:
 
 The runner stayed outside the repository at
 `C:\Users\mark_\Code\scratch\turnstone-capture-correlation`; its manifest,
-source and lock are identified by those hashes rather than copied here.
+source and lock are identified by those hashes rather than copied here. Its
+Inker dependency was the local Mere path recorded in the runner manifest. The
+hashes preserve that runner input without assigning it a later checkout head.
 
 ## Source checks
 
@@ -50,7 +52,20 @@ cargo check --offline --no-default-features --lib -j 2
 
 It finished successfully in 1m08s with 77 pre-existing warnings. The terminal
 stream was not redirected, so this records the command and exit result rather
-than claiming a raw-log artifact.
+than claiming a raw-log artifact. This was a library-only build with Turnstone's
+empty default feature set, so the Weld renderer host was disabled.
+
+The resolved Turnstone lock had SHA-256
+`39fddda030b020a7221b3150141c7a5091a380cad9602cbc6e7bdf6543614f65`.
+It selected Genet `9e8f9dc2f3ddc0af1658580bb51964462a03923f` for
+`genet-documents` and Mere `2b1ce46e5a15328b4bf4d350ec4b0252d9b404a1` for
+Inker and `weld-engine`. These are the full-check inputs; they are distinct from
+the external runner's local Mere path.
+
+The toolchain was Rust/Cargo 1.97.1 on `x86_64-pc-windows-msvc` (rustc commit
+`8bab26f4f68e0e26f0bb7960be334d5b520ea452`). The Weld command enabled the
+Windows CEF/Welding hosted-surface adapter; it was a source compile attempt,
+not a headed renderer run.
 
 The locked Weld check refused before resolution because the checked lock would
 change:
@@ -73,9 +88,10 @@ preserves its bytes via the local `.gitattributes` and has SHA-256
 This failure occurred before Turnstone compiled, so
 the no-default pass does not validate the Weld adapter.
 
-Dependency workspace state for the passing partial consumer check was Mere
-`54a852ac57fd4e99784175c78fa01a84e3065ea0` (dirty) and Genet
-`650b28114ac12db0ac50d77f359f138a14801724` (dirty). It does not close the P1
-clean-source pin gate. Successful capture bytes remain logged and dropped;
+The local Cargo configuration patched Grafting to the clean checkout at
+`403a30c2fab39c573d1eebb57a0995e2c3347ff1`; its current API produced the Weld
+mismatch. The pinned Git Welding 0.14.0 package remained selected because the
+local Welding 0.15.0 patch was unused. This partial consumer check does not
+close the P1 clean-source pin gate. Successful capture bytes remain logged and dropped;
 deposit, envelope persistence, observation identity, CSS viewport and applied
 scale facts, and headed pixel proof remain open.
