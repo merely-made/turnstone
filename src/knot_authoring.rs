@@ -27,6 +27,10 @@ use cambium::{
 };
 use genet_scripted_dom::ScriptedDom;
 use graphshell::client::{ResolvedContent, ResolvedPresentation, RetainedEndpointSession};
+use graphshell::projection_editor::{
+    ProjectionInputBinding, PublicSourceRevision, RevisionEvidence, RuntimeSourceBinding,
+    SourceBinding,
+};
 use graphshell::protocol::{
     AdvertisedAction, CapabilityProfile, DerivedTextV1, EDITABLE_TEXT_SAVE_INTENT, EditableTextV1,
     InsertKnotClipV1, InsertKnotClipV2, IntentResult, KNOT_BLOCK_RUN_INTENT,
@@ -50,6 +54,8 @@ const DEFAULT_MAX_SOURCE_BYTES: u64 = 8 * 1024 * 1024;
 const DEFAULT_EFFECT_MAX_DEPTH: u8 = 1;
 const DEFAULT_EFFECT_MAX_OPS: u64 = 100_000;
 const POLL_INTERVAL: Duration = Duration::from_millis(100);
+const KNOT_PROJECTION_AUTHORITY: &str = "knot";
+const KNOT_PROJECTION_DOMAIN: &str = "knot.document.v1";
 
 pub(crate) const KNOT_SHEET: &str = "\
     .knot-root { background-color: rgb(22, 27, 40); color: rgb(205, 212, 226); } \
@@ -87,6 +93,53 @@ struct DocumentBinding {
     resolve_action: Option<AdvertisedAction>,
     run_action: Option<AdvertisedAction>,
     editable: EditableTextV1,
+}
+
+/// An in-process freshness witness for an editable Knot resource.
+///
+/// This wraps the endpoint-minted save token only while the retained session is
+/// alive. It is deliberately neither serializable nor inspectable: files and
+/// other sources without a public, durable revision can participate in a
+/// runtime-verified Scenograph binding, but cannot turn that token into saved
+/// provenance.
+#[derive(Clone, Eq, PartialEq)]
+pub struct KnotRuntimeWitness {
+    base_token: Vec<u8>,
+}
+
+impl KnotRuntimeWitness {
+    /// Check that the endpoint still recognizes the observed save token.
+    ///
+    /// The caller receives only the comparison result, never the token.
+    pub fn matches_save_token(&self, candidate: &[u8]) -> bool {
+        self.base_token == candidate
+    }
+}
+
+fn knot_projection_input_binding(editable: &EditableTextV1) -> ProjectionInputBinding {
+    ProjectionInputBinding {
+        source: SourceBinding {
+            authority: KNOT_PROJECTION_AUTHORITY.to_owned(),
+            domain: KNOT_PROJECTION_DOMAIN.to_owned(),
+            resource: editable.address.clone(),
+        },
+        expects_generation: editable
+            .public_revision
+            .as_ref()
+            .map(|revision| PublicSourceRevision::new(knot::hex32(revision))),
+        revision_evidence: if editable.public_revision.is_some() {
+            RevisionEvidence::PublicGeneration
+        } else {
+            RevisionEvidence::RuntimeVerified
+        },
+    }
+}
+
+fn knot_runtime_source_binding(
+    source: SourceBinding,
+    base_token: Vec<u8>,
+) -> RuntimeSourceBinding<KnotRuntimeWitness> {
+    RuntimeSourceBinding::new(source, KnotRuntimeWitness { base_token })
 }
 
 struct OpenedDocument {
@@ -1762,6 +1815,7 @@ pub struct KnotDocumentSession {
     registration: u64,
     address: String,
     base_token: Vec<u8>,
+    projection_input: Option<ProjectionInputBinding>,
     events: Receiver<HubEvent>,
     revision_refreshes: u64,
     dom: DomHandle,
@@ -1782,6 +1836,7 @@ impl KnotDocumentSession {
     ) -> Self {
         let address = opened.binding.editable.address.clone();
         let base_token = opened.binding.editable.base_token.clone();
+        let projection_input = knot_projection_input_binding(&opened.binding.editable);
         let resolve_available = opened.binding.resolve_action.is_some();
         let run_available = opened.binding.run_action.is_some();
         let dom: DomHandle = Rc::new(std::cell::RefCell::new(ScriptedDom::new()));
@@ -1808,6 +1863,7 @@ impl KnotDocumentSession {
             registration: opened.registration,
             address,
             base_token,
+            projection_input: Some(projection_input),
             events: opened.events,
             revision_refreshes: 0,
             dom,
@@ -1932,6 +1988,31 @@ impl KnotDocumentSession {
         }
     }
 
+    /// The current Knot input in Scenograph's durable binding vocabulary.
+    ///
+    /// A synchronized vault resource carries its authority-issued operation
+    /// head as a [`PublicSourceRevision`]. A file or other source without one
+    /// instead reports `RuntimeVerified`, and is bindable only through
+    /// [`Self::runtime_projection_source`].
+    pub fn projection_input_binding(&self) -> Option<&ProjectionInputBinding> {
+        self.projection_input.as_ref()
+    }
+
+    /// Return the live-only Scenograph source binding for an unversioned Knot
+    /// resource.
+    ///
+    /// The returned witness retains the save token privately. It cannot be
+    /// produced for a synchronized vault, whose public operation head belongs
+    /// in durable provenance instead.
+    pub fn runtime_projection_source(&self) -> Option<RuntimeSourceBinding<KnotRuntimeWitness>> {
+        self.projection_input
+            .as_ref()
+            .filter(|binding| binding.revision_evidence == RevisionEvidence::RuntimeVerified)
+            .map(|binding| {
+                knot_runtime_source_binding(binding.source.clone(), self.base_token.clone())
+            })
+    }
+
     fn invoke_effect(&mut self, kind: KnotEffectKind) {
         let available = match kind {
             KnotEffectKind::Resolve => self.runner.state().resolve_available,
@@ -1982,6 +2063,7 @@ impl KnotDocumentSession {
                 HubEvent::Remote(binding) => {
                     self.revision_refreshes += 1;
                     let target = binding.target;
+                    self.projection_input = Some(knot_projection_input_binding(&binding.editable));
                     if binding.editable.base_token == self.base_token {
                         let resolve_available = binding.resolve_action.is_some();
                         let run_available = binding.run_action.is_some();
@@ -2033,6 +2115,7 @@ impl KnotDocumentSession {
                 }),
                 HubEvent::Reloaded(binding) => {
                     let target = binding.target;
+                    self.projection_input = Some(knot_projection_input_binding(&binding.editable));
                     self.base_token = binding.editable.base_token;
                     let source = binding.editable.source;
                     let derived = binding.editable.derived;
@@ -2051,6 +2134,7 @@ impl KnotDocumentSession {
                 }
                 HubEvent::Saved { source, binding } => {
                     let target = binding.target;
+                    self.projection_input = Some(knot_projection_input_binding(&binding.editable));
                     self.base_token = binding.editable.base_token;
                     let derived = binding.editable.derived;
                     let resolve_available = binding.resolve_action.is_some();
@@ -2075,6 +2159,7 @@ impl KnotDocumentSession {
                 }),
                 HubEvent::Revoked(reason) => {
                     self.base_token.clear();
+                    self.projection_input = None;
                     let address = self.address.clone();
                     self.runner.update(|state| {
                         state.editor = KnotEditor::scratch(address, String::new());
@@ -2202,6 +2287,7 @@ impl DocumentSession<Scene> for KnotDocumentSession {
 
 #[cfg(test)]
 mod tests {
+    use std::collections::BTreeMap;
     use std::fs;
     use std::path::Path;
     use std::time::{Duration, Instant};
@@ -2211,6 +2297,121 @@ mod tests {
     use layout_dom_api::{LayoutDom, NodeKind};
 
     use super::*;
+
+    fn editable_projection_fixture(
+        address: &str,
+        public_revision: Option<[u8; 32]>,
+        base_token: Vec<u8>,
+    ) -> EditableTextV1 {
+        EditableTextV1 {
+            address: address.to_owned(),
+            media_type: "text/vnd.knot".to_owned(),
+            encoding: graphshell::protocol::TextEncoding::Utf8,
+            source: "# Field\n".to_owned(),
+            base_token,
+            public_revision,
+            derived: None,
+        }
+    }
+
+    fn knot_projection_recipe(
+        binding: ProjectionInputBinding,
+    ) -> graphshell::projection_editor::AuthoredProjectionDefinition {
+        use graphshell::projection_editor::{
+            Appearance, Arrangement, AuthoredProjectionDefinition, Channel, Encoding, Interaction,
+            PROJECTION_DEFINITION_VERSION, Provenance, Reading,
+        };
+
+        AuthoredProjectionDefinition {
+            version: PROJECTION_DEFINITION_VERSION,
+            id: "turnstone.knot.outline".to_owned(),
+            label: "Knot outline".to_owned(),
+            sources: BTreeMap::from([("document".to_owned(), binding)]),
+            reading: Reading {
+                kind: "knot.outline".to_owned(),
+                key: "source_range".to_owned(),
+                value: Some("heading".to_owned()),
+            },
+            encoding: Encoding {
+                x: Channel::Field("source_range.start".to_owned()),
+                y: Channel::Field("depth".to_owned()),
+                color: None,
+                label: Some(Channel::Field("heading".to_owned())),
+            },
+            arrangement: Arrangement::default(),
+            interaction: Interaction::default(),
+            appearance: Appearance {
+                realization: "turnstone.knot-outline".to_owned(),
+                title: "Knot outline".to_owned(),
+                theme: "turnstone".to_owned(),
+            },
+            provenance: Provenance {
+                author: "turnstone-test".to_owned(),
+                source_revision: Some(PublicSourceRevision::from("turnstone.knot.outline/v1")),
+                revision_evidence: RevisionEvidence::PublicGeneration,
+                note: "fixture".to_owned(),
+            },
+        }
+    }
+
+    #[test]
+    fn synced_knot_head_becomes_public_scenograph_revision_without_save_token() {
+        let head = [0x5a; 32];
+        let editable = editable_projection_fixture(
+            "knot://vault/field-note",
+            Some(head),
+            vec![0xde, 0xad, 0xbe, 0xef],
+        );
+
+        let input = knot_projection_input_binding(&editable);
+        assert_eq!(input.source.authority, KNOT_PROJECTION_AUTHORITY);
+        assert_eq!(input.source.domain, KNOT_PROJECTION_DOMAIN);
+        assert_eq!(input.source.resource, "knot://vault/field-note");
+        assert_eq!(
+            input.expects_generation,
+            Some(PublicSourceRevision::new(knot::hex32(&head)))
+        );
+        assert_eq!(input.revision_evidence, RevisionEvidence::PublicGeneration);
+        assert!(editable.public_revision.is_some());
+
+        let definition = knot_projection_recipe(input)
+            .bind("document", None)
+            .expect("a public source generation binds durably");
+        let json = String::from_utf8(definition.to_json_bytes().unwrap()).unwrap();
+        assert!(json.contains(&knot::hex32(&head)));
+        assert!(!json.contains("base_token"));
+        assert!(!json.contains("deadbeef"));
+    }
+
+    #[test]
+    fn unversioned_knot_source_requires_a_runtime_witness_without_durable_token() {
+        let editable = editable_projection_fixture(
+            "file:///C:/notes/field.knot",
+            None,
+            vec![0xde, 0xad, 0xbe, 0xef],
+        );
+        let input = knot_projection_input_binding(&editable);
+        assert_eq!(input.expects_generation, None);
+        assert_eq!(input.revision_evidence, RevisionEvidence::RuntimeVerified);
+        let runtime_source =
+            knot_runtime_source_binding(input.source.clone(), editable.base_token.clone());
+
+        let binding = knot_projection_recipe(input)
+            .bind_runtime("document", runtime_source, None)
+            .expect("runtime-verified source binds only in this process");
+        assert!(binding.with_witness(|witness| witness.matches_save_token(&editable.base_token)));
+        let recorded = binding.into_recorded_definition();
+        assert_eq!(recorded.provenance.source_revision, None);
+        assert_eq!(
+            recorded.provenance.revision_evidence,
+            RevisionEvidence::RuntimeVerified
+        );
+        let json = String::from_utf8(recorded.to_json_bytes().unwrap()).unwrap();
+        assert!(json.contains("\"revision_evidence\":\"runtime_verified\""));
+        assert!(!json.contains("source_revision"));
+        assert!(!json.contains("base_token"));
+        assert!(!json.contains("deadbeef"));
+    }
 
     #[test]
     fn sealed_cache_age_uses_readable_units() {
