@@ -1,0 +1,17 @@
+command: cargo check --offline --features weld -j 2
+result: failure before Turnstone compiled
+
+error[E0560]: struct `Dx12SharedTexture` has no field named `handle`
+error[E0560]: struct `Dx12SharedTexture` has no field named `size`
+error[E0560]: struct `Dx12SharedTexture` has no field named `format`
+error[E0560]: struct `Dx12SharedTexture` has no field named `generation`
+error[E0560]: struct `Dx12SharedTexture` has no field named `producer_sync`
+error[E0308]: mismatched types
+  --> welding/src/native_frame/dx12.rs:349
+  expected `Dx12SharedTexture`, found `&Dx12SharedTexture`
+  when calling `import_dx12_shared_texture`
+
+The errors came from pinned Welding c65cc1086c8743c94d4bb69f8eac90e077a1dc9b
+against grafting 403a30c2fab39c573d1eebb57a0995e2c3347ff1.
+This is the complete retained bounded diagnostic excerpt. The original terminal
+stream was not redirected to a file, so no digest for the full stream exists.

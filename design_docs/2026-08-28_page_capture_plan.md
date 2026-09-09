@@ -375,4 +375,6 @@ Recorded here so they are not lost, and because each is independently closable:
   `c65cc108` expects the older `Dx12SharedTexture` shape while the workspace
   patch selects the current dirty `wgpu-graft` checkout. Its six E0560/E0308
   errors leave the adapter compile and headed pixels open; this partial
-  consumer proof does not close P1's clean-source pin gate.
+  consumer proof does not close P1's clean-source pin gate. The named commands,
+  regression manifest, runner hashes and retained Weld diagnostic are in the
+  [S9 receipt](../docs/receipts/page_capture_s9_20260908/README.md).
