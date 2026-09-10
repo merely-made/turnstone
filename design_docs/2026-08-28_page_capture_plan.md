@@ -379,8 +379,6 @@ Recorded here so they are not lost, and because each is independently closable:
   consumer proof does not close P1's clean-source pin gate. The named commands,
   regression manifest, runner hashes and retained Weld diagnostic are in the
   [S9 receipt](../docs/receipts/page_capture_s9_20260908/README.md).
-<<<<<<< ours — heading `Progress` (F, confidence: medium)
-// hint: Logic changed on both sides. Requires understanding intent of each change.
 - **2026-09-09:** P1's clean-source Turnstone compile gate closed. Worktree
   `turnstone-weld-pin-20260909` moved welding to `65d057def7db2b5034add6e316cbd51d97c163a1`
   and grafting to `403a30c2fab39c573d1eebb57a0995e2c3347ff1` (commit `0c8461f`,
@@ -403,7 +401,6 @@ Recorded here so they are not lost, and because each is independently closable:
   not make. See the [S9 receipt](../docs/receipts/page_capture_s9_20260908/README.md)'s
   2026-09-09 correction for the exact commands and the corrected E0308
   provenance.
-=======
 
 - **2026-09-09, P3a in progress:** An explicit source-document capture path now
   preserves only node-plus-current-URL-scoped fetched HTML bytes with an
@@ -435,4 +432,3 @@ Recorded here so they are not lost, and because each is independently closable:
   check of the new captured-collection module pass. The focused Turnstone
   tests are authored but remain uncompiled: the isolated clean target was
   stopped while still compiling dependencies, before reaching Turnstone.
->>>>>>> theirs — heading `Progress` (F, confidence: medium)
