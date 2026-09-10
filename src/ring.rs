@@ -196,7 +196,10 @@ pub fn ring_of(action: &Action) -> Ring {
         // Acting inside a place this profile already joined. Authoring is
         // attributable to the user's Personae root and other members see it as
         // their words, so it is grantable but never implied by `session`.
-        SendPlaceMessage { .. } | ShareFocusedNode | ResyncPlace => Ring::Place,
+        SendPlaceMessage { .. }
+        | ShareFocusedNode
+        | ResyncPlace
+        | SetPlaceCollection(_) => Ring::Place,
 
         // Authoring content into the graph. Its own ring, so granting it is a
         // separate decision from granting dispatch.

@@ -1156,6 +1156,7 @@ impl App {
                 }
             },
             Action::ResyncPlace => self.resync_place(),
+            Action::SetPlaceCollection(selection) => self.set_place_collection(selection),
             // Multi-session (rung 6's second half). Both lower to the shell's
             // SwitchSession effect: the PORT saves the departing session and
             // tears down its live handles before the app adopts the target —

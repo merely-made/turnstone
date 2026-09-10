@@ -329,6 +329,12 @@ Verified 2026-09-06 against the working tree.
   (`src/content_classes.rs`, `src/content.rs`).
 - Collections are containment edges and the Roster is the manifest view
   (browser gap analysis, Collections table).
+- Captured-search collection scope is a local view choice over an exact Gemot
+  `CollectionVersion`, not another collection or sharing fact. The worker
+  admits only that version's current `effective_selected` contributions. A
+  stale version exposes zero captured content; clearing the choice restores
+  `AllEffective`. This choice currently survives worker resync only. Durable
+  cold-reopen restoration and a headed selection surface remain open.
 - The engram export is `pandect::graph_codicil`, not `graph_engram` as the
   capture plan named it; that citation was corrected in this pass. Its
   `RedactionPolicy` (`graph_codicil.rs:105`) drops thumbnail, favicon and
@@ -378,3 +384,12 @@ Verified 2026-09-06 against the working tree.
   `capture.source-annotations/v1` facet series and triggers `SaveSession`; a
   stale completion remains in Eidetic but is reported as unattached rather
   than being rebound to a later target.
+- **2026-09-10, collection-scoped capture search verified:** The app and
+  shell now carry an exact collection version through a dedicated local-view
+  action, effect, worker command, and completion. The place worker remints from
+  `authorized_collection(...).effective_selected`; stale, unavailable, and
+  foreign selections fail closed with zero captured content, and `None`
+  returns to `AllEffective`. A worker/storage error keeps the prior snapshot.
+  Nineteen focused tests pass across the app seam, worker, captured collection,
+  and source-capture regression filters. Cold-reopen persistence and headed UI
+  remain open.

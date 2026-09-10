@@ -10,6 +10,7 @@
 //! Commons chat, and Stickleback group state for one Turnstone session, then
 //! emits only app-owned summaries tagged with the session and open generation.
 
+use std::collections::BTreeSet;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::sync::mpsc::Receiver;
@@ -18,8 +19,8 @@ use armillary::{ActorHandle, Emitter, Wake, spawn_named};
 use commons::chat::ChatReplica;
 use commons::{GemotAuthorityView, Replica};
 use gemot::moot::{
-    AvailabilityPolicy, ErasurePolicy, KeepBound, MootAuthority, MootFile, MootId,
-    MootRetentionSettings, PolicyRevision,
+    AvailabilityPolicy, CollectionId, CollectionRef, CollectionVersion, ErasurePolicy, KeepBound,
+    MootAuthority, MootFile, MootId, MootRetentionSettings, PolicyRevision,
 };
 use identity::{IdentityProvider, SealedRecordStorage};
 use muniment::RedbBackend;
@@ -34,7 +35,9 @@ use crate::identity::RootIdentity;
 use crate::panes::SessionId;
 use crate::place::invite::PlaceInviteV1;
 use crate::place::{
-    ChatCache, GraphCache, GroupCache, MootCache, OfflinePlaceSnapshot, PlaceBindingV1,
+    CapturedCollectionSelection, CapturedCollectionSelectionStatus, ChatCache, GraphCache,
+    GroupCache, MootCache, OfflinePlaceSnapshot, PlaceBindingV1, PlaceCollectionId,
+    PlaceCollectionVersion, PlaceId,
 };
 
 const GROUP_SESSION_RECORD: &str = "group.session";
@@ -117,6 +120,12 @@ pub enum PlaceWorkerCommand {
         session: SessionId,
         generation: u64,
     },
+    /// Set or clear the exact local collection version used for captured search.
+    SetCollection {
+        session: SessionId,
+        generation: u64,
+        selection: Option<PlaceCollectionVersion>,
+    },
     /// Author one fact into the shared place and push it to live peers.
     Author {
         session: SessionId,
@@ -149,6 +158,8 @@ pub(crate) struct OpenPlace {
     /// cross-actor session switch from briefly resolving against the departed
     /// session's in-memory records.
     pub(crate) capture_directory: PathBuf,
+    /// Local view state. It authors no Gemot operation and resets with this open.
+    pub(crate) collection_selection: Option<PlaceCollectionVersion>,
     pub(crate) moot: MootFile,
     pub(crate) graph: Replica<RedbBackend>,
     pub(crate) chat: ChatReplica<RedbBackend>,
@@ -224,7 +235,7 @@ pub fn admit_invitation(
                 let _ = std::fs::remove_dir_all(place_store_dir(directory));
             }
             Err(error)
-        }
+        },
     }
 }
 
@@ -589,8 +600,8 @@ fn admit_inner(
             return Err(
                 "group welcome installed an epoch the invitation does not name".to_string(),
             );
-        }
-        Some(_) => {}
+        },
+        Some(_) => {},
     }
     // `auth_heads()` returns sorted heads, and the envelope's are bounded and
     // compared as given: a reordered or padded list is a different claim.
@@ -688,6 +699,7 @@ pub(crate) fn open_cached_place(
         lanes: None,
         binding: binding.clone(),
         capture_directory: crate::trail_memory::memory_dir(directory),
+        collection_selection: None,
         moot,
         graph,
         chat,
@@ -763,7 +775,7 @@ fn author_into_place(
             if let Some(lanes) = &open.lanes {
                 lanes.publish_chat(operation)?;
             }
-        }
+        },
         PlaceCommand::ShareNode { address } => {
             if address.trim().is_empty() {
                 return Err("a shared node needs an address".to_string());
@@ -781,7 +793,7 @@ fn author_into_place(
             if let Some(lanes) = &open.lanes {
                 lanes.publish_graph(operation)?;
             }
-        }
+        },
     }
     Ok(())
 }
@@ -820,10 +832,84 @@ fn place_snapshot(
     // that set before any locally held capture text is grouped.
     let authorized_fauna = pollster::block_on(open.moot.authorized_fauna(at_ms))
         .map_err(|error| format!("materialize authorized Gemot fauna: {error}"))?;
-    let captured_roster = crate::place::captured_collection::effective_roster(
-        &moot_snapshot.roster,
-        &authorized_fauna,
-    );
+    let (captured_fauna, captured_selection) = match &open.collection_selection {
+        None => (
+            authorized_fauna.clone(),
+            CapturedCollectionSelection::AllEffective,
+        ),
+        Some(requested) if requested.moot.0 != moot_id => (
+            Vec::new(),
+            CapturedCollectionSelection::Collection {
+                requested: requested.clone(),
+                status: CapturedCollectionSelectionStatus::ForeignMoot,
+            },
+        ),
+        Some(requested) => {
+            let domain_requested = CollectionVersion {
+                collection: CollectionRef {
+                    moot_id: requested.moot.0,
+                    collection_id: CollectionId(requested.collection.0),
+                },
+                frontier: requested.frontier.clone(),
+                membership_commitment: requested.membership_commitment,
+            };
+            match pollster::block_on(
+                open.moot
+                    .authorized_collection(domain_requested.collection.collection_id, at_ms),
+            )
+            .map_err(|error| format!("materialize selected Gemot collection: {error}"))?
+            {
+                None => (
+                    Vec::new(),
+                    CapturedCollectionSelection::Collection {
+                        requested: requested.clone(),
+                        status: CapturedCollectionSelectionStatus::Unavailable,
+                    },
+                ),
+                Some(view) if view.version != domain_requested => {
+                    let current = PlaceCollectionVersion {
+                        moot: PlaceId(view.version.collection.moot_id),
+                        collection: PlaceCollectionId(view.version.collection.collection_id.0),
+                        frontier: view.version.frontier,
+                        membership_commitment: view.version.membership_commitment,
+                    };
+                    (
+                        Vec::new(),
+                        CapturedCollectionSelection::Collection {
+                            requested: requested.clone(),
+                            status: CapturedCollectionSelectionStatus::Stale { current },
+                        },
+                    )
+                },
+                Some(view) => {
+                    let shares: BTreeSet<_> = view
+                        .effective_selected
+                        .iter()
+                        .map(|reference| reference.share)
+                        .collect();
+                    let effective: Vec<_> = authorized_fauna
+                        .iter()
+                        .filter(|entry| shares.contains(&entry.op_hash))
+                        .cloned()
+                        .collect();
+                    let status = CapturedCollectionSelectionStatus::Ready {
+                        name: view.name,
+                        effective_contributions: effective.len(),
+                        pending_facts: view.pending.len(),
+                    };
+                    (
+                        effective,
+                        CapturedCollectionSelection::Collection {
+                            requested: requested.clone(),
+                            status,
+                        },
+                    )
+                },
+            }
+        },
+    };
+    let captured_roster =
+        crate::place::captured_collection::effective_roster(&moot_snapshot.roster, &captured_fauna);
     let captured = crate::place::captured_collection::remint(
         &captured_roster,
         &authority.authority,
@@ -870,6 +956,7 @@ fn place_snapshot(
             has_current_epoch: open.group.current_epoch().is_some(),
         },
         captured,
+        captured_selection,
         shared: crate::place::projection::SharedGraph::from_projection(&graph_projection),
     })
 }
@@ -887,6 +974,7 @@ pub fn spawn_place_worker(
         wake,
         move |commands, out: Emitter<Update>| {
             let mut live: Option<OpenPlace> = None;
+            let mut live_scope: Option<(SessionId, u64)> = None;
             while let Ok(command) = commands.recv() {
                 match command {
                     PlaceWorkerCommand::Open {
@@ -896,23 +984,25 @@ pub fn spawn_place_worker(
                         binding,
                     } => {
                         live = None;
+                        live_scope = None;
                         match open_cached_place(&directory, &binding, identity.as_ref(), &settings)
                         {
                             Ok((opened, snapshot)) => {
+                                live_scope = Some((session, generation));
                                 live = Some(opened);
                                 out.emit(Update::PlaceOpened {
                                     session,
                                     generation,
                                     result: Ok(snapshot),
                                 });
-                            }
+                            },
                             Err(error) => out.emit(Update::PlaceOpened {
                                 session,
                                 generation,
                                 result: Err(error),
                             }),
                         }
-                    }
+                    },
                     PlaceWorkerCommand::Join {
                         session,
                         generation,
@@ -924,6 +1014,7 @@ pub fn spawn_place_worker(
                         // admission just established actually reopens through
                         // the same path every later boot will use.
                         live = None;
+                        live_scope = None;
                         let joined =
                             admit_invitation(&directory, &invite, identity.as_ref(), &settings)
                                 .and_then(|admitted| {
@@ -958,20 +1049,21 @@ pub fn spawn_place_worker(
                                 });
                         match joined {
                             Ok((binding, opened, snapshot)) => {
+                                live_scope = Some((session, generation));
                                 live = Some(opened);
                                 out.emit(Update::PlaceJoined {
                                     session,
                                     generation,
                                     result: Ok((binding, snapshot)),
                                 });
-                            }
+                            },
                             Err(error) => out.emit(Update::PlaceJoined {
                                 session,
                                 generation,
                                 result: Err(error),
                             }),
                         }
-                    }
+                    },
                     PlaceWorkerCommand::Resync {
                         session,
                         generation,
@@ -987,7 +1079,34 @@ pub fn spawn_place_worker(
                             generation,
                             result,
                         });
-                    }
+                    },
+                    PlaceWorkerCommand::SetCollection {
+                        session,
+                        generation,
+                        selection,
+                    } => {
+                        let result = match &mut live {
+                            Some(_) if live_scope != Some((session, generation)) => Err(
+                                "collection selection belongs to a departed place generation"
+                                    .to_string(),
+                            ),
+                            Some(open) => {
+                                let previous =
+                                    std::mem::replace(&mut open.collection_selection, selection);
+                                let result = place_snapshot(open, open.binding.moot.0, &settings);
+                                if result.is_err() {
+                                    open.collection_selection = previous;
+                                }
+                                result
+                            },
+                            None => Err("no open place to select a collection in".to_string()),
+                        };
+                        out.emit(Update::PlaceCollectionSet {
+                            session,
+                            generation,
+                            result,
+                        });
+                    },
                     PlaceWorkerCommand::Author {
                         session,
                         generation,
@@ -1005,7 +1124,7 @@ pub fn spawn_place_worker(
                                     &settings,
                                 )
                                 .and_then(|()| place_snapshot(open, binding.moot.0, &settings))
-                            }
+                            },
                             None => Err("no open place to author into".to_string()),
                         };
                         out.emit(Update::PlaceCommandDone {
@@ -1014,11 +1133,12 @@ pub fn spawn_place_worker(
                             request,
                             result,
                         });
-                    }
+                    },
                     PlaceWorkerCommand::Release(ack) => {
                         live = None;
+                        live_scope = None;
                         let _ = ack.send(());
-                    }
+                    },
                 }
             }
             drop(live);
@@ -1031,10 +1151,17 @@ pub(crate) mod tests {
     use super::*;
     use chartulary::{Author, Container};
     use commons::chat::{Channel, ChatEvent, Message};
+    use eidetic_fjall::FjallStore;
+    use fleece::{TextPositionSelector, anchor_for_range, extract_document};
     use gemot::moot::constitution::{CapabilityGrant, ConstitutionRules};
+    use gemot::moot::standing::Policy;
     use gemot::moot::{
-        MOOT_ACT_ACTION, MOOT_DELEGATION_DOMAIN, MootAccessLevel, MootMember, MootMembershipAction,
+        CollectionChange, ContributionRef, MOOT_ACT_ACTION, MOOT_DELEGATION_DOMAIN,
+        MootAccessLevel, MootMember, MootMembershipAction,
     };
+    use genet_static_dom::StaticDocument;
+    use mere_document_lanes::FleeceAnnotationRecord;
+    use mere_document_lanes::eidetic_bridge::{CaptureIdentity, FLEECE_ANNOTATION_SCHEMA_ID};
     use stickleback::DropExportProfile;
 
     use crate::place::invite::{ArtifactRefV1, PLACE_INVITE_VERSION};
@@ -1053,6 +1180,7 @@ pub(crate) mod tests {
     /// under the `commons` prefix these fixtures grant.
     const AUTHORITY_AT_MS: u64 = 50;
     const ROOT_GRANT: [u8; 32] = [0x67; 32];
+    const COLLECTION_GRANT: [u8; 32] = [0x68; 32];
 
     pub(crate) fn settings() -> PlaceWorkerSettings {
         PlaceWorkerSettings {
@@ -1252,6 +1380,190 @@ pub(crate) mod tests {
             })))
             .unwrap();
         }
+    }
+
+    fn seed_exact_collection(
+        directory: &Path,
+        identity: &RootIdentity,
+        binding: &PlaceBindingV1,
+    ) -> (PlaceWorkerSettings, PlaceCollectionVersion, [u8; 32]) {
+        seed_profile(directory, identity, binding, 0);
+        let founder = founder_for(binding);
+        assert_eq!(
+            identity.master_public_key().to_bytes(),
+            founder.master_public_key().to_bytes(),
+            "the focused collection fixture uses the Moot founder"
+        );
+
+        let capture_directory = crate::trail_memory::memory_dir(directory);
+        let document = extract_document(&StaticDocument::parse(
+            "<main><p>Exact collection selection keeps this field note.</p></main>",
+        ));
+        let anchor = anchor_for_range(
+            &document.page.text,
+            TextPositionSelector {
+                start: 0,
+                end: document.page.text.chars().count() as u64,
+            },
+            document.contract.quote_context,
+        )
+        .unwrap();
+        let record = FleeceAnnotationRecord::from_fleece(
+            CaptureIdentity::new(
+                "https://collection.test/field-note",
+                eidetic::Hash::of(b"exact-collection-source"),
+            )
+            .unwrap(),
+            &document,
+            &anchor,
+        )
+        .unwrap();
+        let other_document = extract_document(&StaticDocument::parse(
+            "<main><p>An unselected capture remains in the Moot.</p></main>",
+        ));
+        let other_anchor = anchor_for_range(
+            &other_document.page.text,
+            TextPositionSelector {
+                start: 0,
+                end: other_document.page.text.chars().count() as u64,
+            },
+            other_document.contract.quote_context,
+        )
+        .unwrap();
+        let other_record = FleeceAnnotationRecord::from_fleece(
+            CaptureIdentity::new(
+                "https://collection.test/unselected",
+                eidetic::Hash::of(b"unselected-collection-source"),
+            )
+            .unwrap(),
+            &other_document,
+            &other_anchor,
+        )
+        .unwrap();
+        let (manifest, other_manifest) = {
+            let mut store = FjallStore::open(&capture_directory).unwrap();
+            pollster::block_on(mere_document_lanes::bootstrap_fleece_annotation_schema(
+                &mut store,
+            ))
+            .unwrap();
+            (
+                pollster::block_on(mere_document_lanes::save_fleece_annotation(
+                    &mut store, &record, 20,
+                ))
+                .unwrap(),
+                pollster::block_on(mere_document_lanes::save_fleece_annotation(
+                    &mut store,
+                    &other_record,
+                    21,
+                ))
+                .unwrap(),
+            )
+        };
+
+        let settings = settings();
+        {
+            let mut store = FjallStore::open(&capture_directory).unwrap();
+            crate::place::captured_collection::refresh_local_capture_library(
+                &mut store,
+                &capture_directory,
+                &settings.capture_library,
+            )
+            .unwrap();
+        }
+
+        let collection_id = CollectionId([0xc7; 32]);
+        let collection = CollectionRef {
+            moot_id: binding.moot.0,
+            collection_id,
+        };
+        let moot = pollster::block_on(MootFile::open_existing(
+            place_store_dir(directory).join("gemot"),
+            MootId(binding.moot.0),
+            settings.retention.clone(),
+        ))
+        .unwrap();
+        let mut rules = place_rules(founder.master_public_key().to_bytes());
+        rules.admission = Policy::MembersOnly {
+            rate_limit: 20,
+            rate_window_ms: 60_000,
+        };
+        rules.grant(CapabilityGrant {
+            id: COLLECTION_GRANT,
+            subject: founder.master_public_key().to_bytes(),
+            path_prefix: cap_path(&Cap::scope("moot").unwrap()),
+            not_before_ms: 1,
+            expires_at_ms: Some(1_000),
+            delegation_depth: 0,
+        });
+        pollster::block_on(moot.amend(founder.master_keypair().to_seed(), rules, 2)).unwrap();
+        pollster::block_on(moot.membership_store().author_for_identity(
+            &founder,
+            MootMembershipAction::Create {
+                initial_members: vec![MootMember {
+                    member: founder.master_public_key().to_bytes(),
+                    access: MootAccessLevel::Manage,
+                }],
+            },
+        ))
+        .unwrap();
+        let share = pollster::block_on(moot.share_for_identity(
+            &founder,
+            *manifest.0.as_bytes(),
+            FLEECE_ANNOTATION_SCHEMA_ID.into(),
+            "Field note".into(),
+            20,
+        ))
+        .unwrap();
+        pollster::block_on(moot.share_for_identity(
+            &founder,
+            *other_manifest.0.as_bytes(),
+            FLEECE_ANNOTATION_SCHEMA_ID.into(),
+            "Unselected note".into(),
+            21,
+        ))
+        .unwrap();
+        pollster::block_on(moot.declare_collection_for_identity(
+            &founder,
+            collection_id,
+            "Field notes".into(),
+            None,
+            22,
+        ))
+        .unwrap();
+        let declared =
+            pollster::block_on(moot.authorized_collection(collection_id, AUTHORITY_AT_MS))
+                .unwrap()
+                .unwrap();
+        pollster::block_on(moot.set_collection_membership_for_identity(
+            &founder,
+            collection,
+            declared.heads,
+            CollectionChange::SetMembership {
+                contribution: ContributionRef {
+                    moot_id: binding.moot.0,
+                    share: share.operation,
+                },
+                included: true,
+            },
+            23,
+        ))
+        .unwrap();
+        let version =
+            pollster::block_on(moot.authorized_collection(collection_id, AUTHORITY_AT_MS))
+                .unwrap()
+                .unwrap()
+                .version;
+        drop(moot);
+        (
+            settings,
+            PlaceCollectionVersion {
+                moot: PlaceId(version.collection.moot_id),
+                collection: PlaceCollectionId(version.collection.collection_id.0),
+                frontier: version.frontier,
+                membership_commitment: version.membership_commitment,
+            },
+            share.operation,
+        )
     }
 
     #[test]
@@ -1695,6 +2007,433 @@ pub(crate) mod tests {
         assert_eq!(withdrawn.chat.revoked_authority, 3);
         assert_eq!(withdrawn.moot.delegated_certificates, 1);
         let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn worker_sets_and_clears_an_exact_collection_selection() {
+        let root = tempfile::tempdir().unwrap();
+        let directory = root.path().join("profile");
+        let identity = Arc::new(RootIdentity::Unsealed(InMemoryProvider::from_seed(
+            [0x93; 32],
+        )));
+        let binding = binding(0x43);
+        seed_profile(&directory, identity.as_ref(), &binding, 1);
+
+        let wake: Wake = Arc::new(|| {});
+        let (worker, updates) = spawn_place_worker(wake, identity, settings());
+        let session = SessionId::new();
+        worker.command(PlaceWorkerCommand::Open {
+            session,
+            generation: 1,
+            directory,
+            binding,
+        });
+        assert!(matches!(
+            updates
+                .recv_timeout(std::time::Duration::from_secs(5))
+                .unwrap(),
+            Update::PlaceOpened { result: Ok(_), .. }
+        ));
+
+        let requested = PlaceCollectionVersion {
+            moot: PlaceId([0xfe; 32]),
+            collection: PlaceCollectionId([7; 32]),
+            frontier: Vec::new(),
+            membership_commitment: [0; 32],
+        };
+        worker.command(PlaceWorkerCommand::SetCollection {
+            session,
+            generation: 1,
+            selection: Some(requested.clone()),
+        });
+        let selected = updates
+            .recv_timeout(std::time::Duration::from_secs(5))
+            .unwrap();
+        let Update::PlaceCollectionSet {
+            result: Ok(snapshot),
+            ..
+        } = selected
+        else {
+            panic!("collection selection did not return a snapshot");
+        };
+        assert!(snapshot.captured.groups.is_empty());
+        assert!(snapshot.captured.rejected.is_empty());
+        assert_eq!(
+            snapshot.captured_selection,
+            CapturedCollectionSelection::Collection {
+                requested,
+                status: CapturedCollectionSelectionStatus::ForeignMoot,
+            }
+        );
+
+        worker.command(PlaceWorkerCommand::SetCollection {
+            session,
+            generation: 1,
+            selection: None,
+        });
+        let cleared = updates
+            .recv_timeout(std::time::Duration::from_secs(5))
+            .unwrap();
+        assert!(matches!(
+            cleared,
+            Update::PlaceCollectionSet {
+                result: Ok(OfflinePlaceSnapshot {
+                    captured_selection: CapturedCollectionSelection::AllEffective,
+                    ..
+                }),
+                ..
+            }
+        ));
+    }
+
+    #[test]
+    fn worker_rejects_a_departed_generation_without_rescoping_the_open_place() {
+        let root = tempfile::tempdir().unwrap();
+        let first_directory = root.path().join("first");
+        let second_directory = root.path().join("second");
+        let identity = Arc::new(RootIdentity::Unsealed(InMemoryProvider::from_seed(
+            [0x94; 32],
+        )));
+        let first_binding = binding(0x47);
+        let second_binding = binding(0x48);
+        seed_profile(&first_directory, identity.as_ref(), &first_binding, 0);
+        seed_profile(&second_directory, identity.as_ref(), &second_binding, 0);
+
+        let wake: Wake = Arc::new(|| {});
+        let (worker, updates) = spawn_place_worker(wake, identity, settings());
+        let first_session = SessionId::new();
+        let second_session = SessionId::new();
+        worker.command(PlaceWorkerCommand::Open {
+            session: first_session,
+            generation: 1,
+            directory: first_directory,
+            binding: first_binding.clone(),
+        });
+        assert!(matches!(
+            updates
+                .recv_timeout(std::time::Duration::from_secs(5))
+                .unwrap(),
+            Update::PlaceOpened { result: Ok(_), .. }
+        ));
+        worker.command(PlaceWorkerCommand::Open {
+            session: second_session,
+            generation: 2,
+            directory: second_directory,
+            binding: second_binding,
+        });
+        assert!(matches!(
+            updates
+                .recv_timeout(std::time::Duration::from_secs(5))
+                .unwrap(),
+            Update::PlaceOpened { result: Ok(_), .. }
+        ));
+
+        worker.command(PlaceWorkerCommand::SetCollection {
+            session: first_session,
+            generation: 1,
+            selection: Some(PlaceCollectionVersion {
+                moot: first_binding.moot,
+                collection: PlaceCollectionId([0x49; 32]),
+                frontier: Vec::new(),
+                membership_commitment: [0x4a; 32],
+            }),
+        });
+        assert!(matches!(
+            updates
+                .recv_timeout(std::time::Duration::from_secs(5))
+                .unwrap(),
+            Update::PlaceCollectionSet {
+                session,
+                generation: 1,
+                result: Err(ref error),
+            } if session == first_session
+                && error == "collection selection belongs to a departed place generation"
+        ));
+
+        worker.command(PlaceWorkerCommand::Resync {
+            session: second_session,
+            generation: 2,
+        });
+        assert!(matches!(
+            updates
+                .recv_timeout(std::time::Duration::from_secs(5))
+                .unwrap(),
+            Update::PlaceOpened {
+                session,
+                generation: 2,
+                result: Ok(OfflinePlaceSnapshot {
+                    captured_selection: CapturedCollectionSelection::AllEffective,
+                    ..
+                }),
+            } if session == second_session
+        ));
+    }
+
+    #[test]
+    fn worker_exact_collection_version_returns_only_its_ready_capture() {
+        let root = tempfile::tempdir().unwrap();
+        let directory = root.path().join("profile");
+        let binding = binding(0x44);
+        let identity = Arc::new(RootIdentity::Unsealed(founder_for(&binding)));
+        let (settings, requested, selected_share) =
+            seed_exact_collection(&directory, identity.as_ref(), &binding);
+
+        let wake: Wake = Arc::new(|| {});
+        let (worker, updates) = spawn_place_worker(wake, identity, settings);
+        let session = SessionId::new();
+        worker.command(PlaceWorkerCommand::Open {
+            session,
+            generation: 1,
+            directory,
+            binding,
+        });
+        assert!(matches!(
+            updates
+                .recv_timeout(std::time::Duration::from_secs(5))
+                .unwrap(),
+            Update::PlaceOpened { result: Ok(_), .. }
+        ));
+        worker.command(PlaceWorkerCommand::SetCollection {
+            session,
+            generation: 1,
+            selection: Some(requested.clone()),
+        });
+        let Update::PlaceCollectionSet {
+            result: Ok(snapshot),
+            ..
+        } = updates
+            .recv_timeout(std::time::Duration::from_secs(5))
+            .unwrap()
+        else {
+            panic!("exact selection did not return a snapshot");
+        };
+        assert_eq!(snapshot.captured.groups.len(), 1);
+        assert!(snapshot.captured.rejected.is_empty());
+        assert_eq!(snapshot.captured.groups[0].contributions.len(), 1);
+        assert_eq!(
+            snapshot.captured.groups[0].contributions[0].share_operation,
+            selected_share
+        );
+        assert_eq!(
+            snapshot.captured_selection,
+            CapturedCollectionSelection::Collection {
+                requested,
+                status: CapturedCollectionSelectionStatus::Ready {
+                    name: "Field notes".into(),
+                    effective_contributions: 1,
+                    pending_facts: 0,
+                },
+            }
+        );
+    }
+
+    #[test]
+    fn worker_stale_collection_version_withholds_available_capture() {
+        let root = tempfile::tempdir().unwrap();
+        let directory = root.path().join("profile");
+        let binding = binding(0x45);
+        let founder = founder_for(&binding);
+        let identity = Arc::new(RootIdentity::Unsealed(founder_for(&binding)));
+        let (settings, requested, selected_share) =
+            seed_exact_collection(&directory, identity.as_ref(), &binding);
+
+        let moot = pollster::block_on(MootFile::open_existing(
+            place_store_dir(&directory).join("gemot"),
+            MootId(binding.moot.0),
+            settings.retention.clone(),
+        ))
+        .unwrap();
+        let current = pollster::block_on(
+            moot.authorized_collection(CollectionId(requested.collection.0), AUTHORITY_AT_MS),
+        )
+        .unwrap()
+        .unwrap();
+        pollster::block_on(moot.set_collection_membership_for_identity(
+            &founder,
+            current.collection,
+            current.heads,
+            CollectionChange::SetMembership {
+                contribution: ContributionRef {
+                    moot_id: binding.moot.0,
+                    share: selected_share,
+                },
+                included: false,
+            },
+            30,
+        ))
+        .unwrap();
+        drop(moot);
+
+        let wake: Wake = Arc::new(|| {});
+        let (worker, updates) = spawn_place_worker(wake, identity, settings);
+        let session = SessionId::new();
+        worker.command(PlaceWorkerCommand::Open {
+            session,
+            generation: 1,
+            directory,
+            binding,
+        });
+        let Update::PlaceOpened {
+            result: Ok(all_effective),
+            ..
+        } = updates
+            .recv_timeout(std::time::Duration::from_secs(5))
+            .unwrap()
+        else {
+            panic!("place did not open");
+        };
+        assert_eq!(
+            all_effective.captured.groups.len(),
+            2,
+            "the capture is available outside the stale collection selection"
+        );
+
+        worker.command(PlaceWorkerCommand::SetCollection {
+            session,
+            generation: 1,
+            selection: Some(requested.clone()),
+        });
+        let Update::PlaceCollectionSet {
+            result: Ok(snapshot),
+            ..
+        } = updates
+            .recv_timeout(std::time::Duration::from_secs(5))
+            .unwrap()
+        else {
+            panic!("stale selection did not return a snapshot");
+        };
+        assert!(snapshot.captured.groups.is_empty());
+        assert!(snapshot.captured.rejected.is_empty());
+        let CapturedCollectionSelection::Collection {
+            requested: retained,
+            status: CapturedCollectionSelectionStatus::Stale { current },
+        } = snapshot.captured_selection
+        else {
+            panic!("advanced collection history did not report stale");
+        };
+        assert_eq!(retained, requested);
+        assert_ne!(current, requested);
+    }
+
+    #[test]
+    fn worker_authority_shrink_keeps_the_exact_version_and_withholds_its_share() {
+        let root = tempfile::tempdir().unwrap();
+        let directory = root.path().join("profile");
+        let binding = binding(0x46);
+        let identity = Arc::new(RootIdentity::Unsealed(founder_for(&binding)));
+        let (settings, requested, selected_share) =
+            seed_exact_collection(&directory, identity.as_ref(), &binding);
+
+        let wake: Wake = Arc::new(|| {});
+        let (worker, updates) = spawn_place_worker(wake, identity, settings.clone());
+        let session = SessionId::new();
+        worker.command(PlaceWorkerCommand::Open {
+            session,
+            generation: 1,
+            directory: directory.clone(),
+            binding: binding.clone(),
+        });
+        let Update::PlaceOpened {
+            result: Ok(all_effective),
+            ..
+        } = updates
+            .recv_timeout(std::time::Duration::from_secs(5))
+            .unwrap()
+        else {
+            panic!("place did not open before the withdrawal");
+        };
+        assert_eq!(
+            all_effective.captured.groups.len(),
+            2,
+            "both effective captures are initially visible"
+        );
+        worker.command(PlaceWorkerCommand::SetCollection {
+            session,
+            generation: 1,
+            selection: Some(requested.clone()),
+        });
+        assert!(matches!(
+            updates
+                .recv_timeout(std::time::Duration::from_secs(5))
+                .unwrap(),
+            Update::PlaceCollectionSet {
+                result: Ok(OfflinePlaceSnapshot {
+                    captured_selection: CapturedCollectionSelection::Collection {
+                        status: CapturedCollectionSelectionStatus::Ready {
+                            effective_contributions: 1,
+                            ..
+                        },
+                        ..
+                    },
+                    ..
+                }),
+                ..
+            }
+        ));
+
+        let (ack_tx, ack_rx) = std::sync::mpsc::sync_channel(1);
+        worker.command(PlaceWorkerCommand::Release(ack_tx));
+        ack_rx
+            .recv_timeout(std::time::Duration::from_secs(5))
+            .unwrap();
+        let founder = founder_for(&binding);
+        let moot = pollster::block_on(MootFile::open_existing(
+            place_store_dir(&directory).join("gemot"),
+            MootId(binding.moot.0),
+            settings.retention.clone(),
+        ))
+        .unwrap();
+        pollster::block_on(moot.withdraw_share_for_identity(&founder, selected_share, 30)).unwrap();
+        drop(moot);
+
+        worker.command(PlaceWorkerCommand::Open {
+            session,
+            generation: 2,
+            directory,
+            binding,
+        });
+        let Update::PlaceOpened {
+            result: Ok(all_effective),
+            ..
+        } = updates
+            .recv_timeout(std::time::Duration::from_secs(5))
+            .unwrap()
+        else {
+            panic!("place did not reopen after the withdrawal");
+        };
+        assert_eq!(
+            all_effective.captured.groups.len(),
+            1,
+            "the unselected capture remains visible after authority shrinks"
+        );
+        worker.command(PlaceWorkerCommand::SetCollection {
+            session,
+            generation: 2,
+            selection: Some(requested.clone()),
+        });
+        let Update::PlaceCollectionSet {
+            result: Ok(snapshot),
+            ..
+        } = updates
+            .recv_timeout(std::time::Duration::from_secs(5))
+            .unwrap()
+        else {
+            panic!("post-withdrawal selection did not return a snapshot");
+        };
+        assert!(snapshot.captured.groups.is_empty());
+        assert!(snapshot.captured.rejected.is_empty());
+        assert_eq!(
+            snapshot.captured_selection,
+            CapturedCollectionSelection::Collection {
+                requested,
+                status: CapturedCollectionSelectionStatus::Ready {
+                    name: "Field notes".into(),
+                    effective_contributions: 0,
+                    pending_facts: 1,
+                },
+            },
+            "fauna authority changes effectiveness without retargeting collection history"
+        );
     }
 
     #[test]

@@ -466,6 +466,25 @@ impl App {
         }]
     }
 
+    /// Ask the open place worker to remint captured search through one exact
+    /// collection version. This is a local view choice and authors no Moot fact.
+    pub fn set_place_collection(
+        &mut self,
+        selection: Option<crate::place::PlaceCollectionVersion>,
+    ) -> Vec<Effect> {
+        let Some(generation) = self.place.generation() else {
+            self.events.push(AppEvent::PlaceRefused(
+                "this session is not in a place".into(),
+            ));
+            return vec![Effect::Redraw];
+        };
+        vec![Effect::SetPlaceCollection {
+            session: self.session_id,
+            generation,
+            selection,
+        }]
+    }
+
     /// Adopt `id`'s persisted state wholesale — the load half of a boot and
     /// the whole of a switch. Rebuilds canvas / panes / workbench / browser /
     /// content from `sessions/<id>/` (missing files start fresh), reseeds

@@ -111,6 +111,19 @@ macro_rules! place_id {
 place_id!(PlaceId, "Moot id");
 place_id!(SharedContainerId, "Commons root container id");
 place_id!(ChatSpaceId, "Commons chat space id");
+place_id!(PlaceCollectionId, "Moot collection id");
+
+/// App-owned form of one exact Gemot collection version.
+///
+/// The worker converts this at the Gemot boundary. Keeping it here prevents
+/// durable app state and surfaces from acquiring domain-crate types.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PlaceCollectionVersion {
+    pub moot: PlaceId,
+    pub collection: PlaceCollectionId,
+    pub frontier: Vec<[u8; 32]>,
+    pub membership_commitment: [u8; 32],
+}
 
 /// The public, durable binding between one Turnstone session and one governed
 /// shared place.
@@ -207,9 +220,40 @@ pub struct OfflinePlaceSnapshot {
     /// Rebuildable search/read view over this Moot's effective captured-page
     /// contributions and the Fleece records this session currently holds.
     pub captured: CapturedCollectionCache,
+    /// The exact collection version used to scope `captured`, or the explicit
+    /// reason that version could not currently be projected.
+    pub captured_selection: CapturedCollectionSelection,
     /// What the shared graph actually holds, as opposed to how much of it.
     /// Already authority-filtered: see [`projection::SharedGraph`].
     pub shared: projection::SharedGraph,
+}
+
+/// Local view choice for captured-page search. This is not a Gemot fact.
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub enum CapturedCollectionSelection {
+    /// Search every currently effective captured-page contribution in the Moot.
+    #[default]
+    AllEffective,
+    /// Search only one exact, historically identified collection version.
+    Collection {
+        requested: PlaceCollectionVersion,
+        status: CapturedCollectionSelectionStatus,
+    },
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum CapturedCollectionSelectionStatus {
+    Ready {
+        name: String,
+        effective_contributions: usize,
+        pending_facts: usize,
+    },
+    /// The named collection exists, but its current causal version has moved.
+    Stale { current: PlaceCollectionVersion },
+    /// The collection has no currently authorized projection.
+    Unavailable,
+    /// The requested version belongs to another Moot.
+    ForeignMoot,
 }
 
 /// App-owned captured-page view. Gemot and Eidetic remain authoritative; this

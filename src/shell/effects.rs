@@ -572,6 +572,19 @@ impl Shell {
                             generation,
                         });
                 }
+                Effect::SetPlaceCollection {
+                    session,
+                    generation,
+                    selection,
+                } => {
+                    self.place_handle.command(
+                        crate::place::worker::PlaceWorkerCommand::SetCollection {
+                            session,
+                            generation,
+                            selection,
+                        },
+                    );
+                }
                 Effect::ClosePlace { .. } => self.release_place_worker(),
                 Effect::StoreImage { hex, bytes } => {
                     session::save_image_blob(&self.app.session_dir(), &hex, &bytes);

@@ -267,6 +267,9 @@ pub enum Action {
     /// Re-fold the active place's projections from what its lanes have drained
     /// in. Cheap and idempotent; it authors nothing.
     ResyncPlace,
+    /// Scope captured-page search to one exact Gemot collection version.
+    /// `None` clears the local choice and searches all effective contributions.
+    SetPlaceCollection(Option<crate::place::PlaceCollectionVersion>),
     /// Flip the focused node's live content: spawn a document session for it
     /// through the content port, or close the one it has (rung 4; the
     /// session-engines plan's phase-4 consumer intent).
@@ -757,6 +760,12 @@ pub enum Effect {
         session: crate::panes::SessionId,
         generation: u64,
     },
+    /// Change the open place's local captured-search scope and remint it.
+    SetPlaceCollection {
+        session: crate::panes::SessionId,
+        generation: u64,
+        selection: Option<crate::place::PlaceCollectionVersion>,
+    },
     /// Release any retained place handles. The shell waits for acknowledgement
     /// on switch, trash, and shutdown before touching the session directory.
     ClosePlace {
@@ -1034,6 +1043,13 @@ pub enum Update {
         session: crate::panes::SessionId,
         generation: u64,
         request: u64,
+        result: Result<crate::place::OfflinePlaceSnapshot, String>,
+    },
+    /// A local captured-search collection choice was resolved and reminted.
+    /// Failure retains the prior snapshot because it authored nothing.
+    PlaceCollectionSet {
+        session: crate::panes::SessionId,
+        generation: u64,
         result: Result<crate::place::OfflinePlaceSnapshot, String>,
     },
     /// One invitation admission completed.

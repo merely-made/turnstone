@@ -388,6 +388,151 @@ fn stale_place_update_from_a_departed_session_is_ignored() {
 }
 
 #[test]
+fn place_collection_selection_lowers_the_exact_version_and_clear() {
+    let mut app = App::test_stub();
+    assert_eq!(
+        app.update(Action::SetPlaceCollection(None)),
+        vec![Effect::Redraw]
+    );
+    assert!(matches!(
+        app.take_events().last(),
+        Some(crate::observe::AppEvent::PlaceRefused(reason))
+            if reason == "this session is not in a place"
+    ));
+
+    let binding = crate::place::PlaceBindingV1::new(
+        crate::place::PlaceId([0x31; 32]),
+        crate::place::SharedContainerId([0x32; 32]),
+        crate::place::ChatSpaceId([0x33; 32]),
+        "hall",
+    )
+    .unwrap();
+    app.place = crate::place::PlaceState::Offline {
+        binding,
+        generation: 7,
+        snapshot: crate::place::OfflinePlaceSnapshot::default(),
+    };
+    let requested = crate::place::PlaceCollectionVersion {
+        moot: crate::place::PlaceId([0x31; 32]),
+        collection: crate::place::PlaceCollectionId([0x41; 32]),
+        frontier: vec![[0x51; 32], [0x52; 32]],
+        membership_commitment: [0x61; 32],
+    };
+    assert_eq!(
+        app.update(Action::SetPlaceCollection(Some(requested.clone()))),
+        vec![Effect::SetPlaceCollection {
+            session: app.session_id,
+            generation: 7,
+            selection: Some(requested),
+        }]
+    );
+    assert_eq!(
+        app.update(Action::SetPlaceCollection(None)),
+        vec![Effect::SetPlaceCollection {
+            session: app.session_id,
+            generation: 7,
+            selection: None,
+        }]
+    );
+}
+
+#[test]
+fn place_collection_completion_is_correlated_and_failure_keeps_the_snapshot() {
+    let mut app = App::test_stub();
+    let binding = crate::place::PlaceBindingV1::new(
+        crate::place::PlaceId([0x71; 32]),
+        crate::place::SharedContainerId([0x72; 32]),
+        crate::place::ChatSpaceId([0x73; 32]),
+        "hall",
+    )
+    .unwrap();
+    let prior = crate::place::OfflinePlaceSnapshot {
+        graph: crate::place::GraphCache {
+            nodes: 2,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+    app.place = crate::place::PlaceState::Offline {
+        binding: binding.clone(),
+        generation: 9,
+        snapshot: prior.clone(),
+    };
+
+    assert!(
+        app.apply_update(Update::PlaceCollectionSet {
+            session: app.session_id,
+            generation: 8,
+            result: Ok(crate::place::OfflinePlaceSnapshot::default()),
+        })
+        .is_empty()
+    );
+    assert_eq!(
+        app.place,
+        crate::place::PlaceState::Offline {
+            binding: binding.clone(),
+            generation: 9,
+            snapshot: prior.clone(),
+        }
+    );
+
+    assert_eq!(
+        app.apply_update(Update::PlaceCollectionSet {
+            session: app.session_id,
+            generation: 9,
+            result: Err("collection storage unavailable".into()),
+        }),
+        vec![Effect::Redraw]
+    );
+    assert_eq!(
+        app.place,
+        crate::place::PlaceState::Offline {
+            binding: binding.clone(),
+            generation: 9,
+            snapshot: prior,
+        }
+    );
+    assert!(matches!(
+        app.take_events().last(),
+        Some(crate::observe::AppEvent::PlaceRefused(reason))
+            if reason == "collection storage unavailable"
+    ));
+
+    let reminted = crate::place::OfflinePlaceSnapshot {
+        captured_selection: crate::place::CapturedCollectionSelection::Collection {
+            requested: crate::place::PlaceCollectionVersion {
+                moot: crate::place::PlaceId([0x71; 32]),
+                collection: crate::place::PlaceCollectionId([0x81; 32]),
+                frontier: vec![[0x91; 32]],
+                membership_commitment: [0xa1; 32],
+            },
+            status: crate::place::CapturedCollectionSelectionStatus::Ready {
+                name: "field notes".into(),
+                effective_contributions: 1,
+                pending_facts: 0,
+            },
+        },
+        ..Default::default()
+    };
+    assert_eq!(
+        app.apply_update(Update::PlaceCollectionSet {
+            session: app.session_id,
+            generation: 9,
+            result: Ok(reminted.clone()),
+        }),
+        vec![Effect::Redraw]
+    );
+    assert_eq!(
+        app.place,
+        crate::place::PlaceState::Offline {
+            binding,
+            generation: 9,
+            snapshot: reminted,
+        }
+    );
+}
+
+#[test]
 fn a_refused_invitation_leaves_no_binding_in_app_state() {
     let mut app = App::test_stub();
     let invite = Box::new(crate::place::invite::PlaceInviteV1 {

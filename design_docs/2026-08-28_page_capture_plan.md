@@ -426,9 +426,20 @@ Recorded here so they are not lost, and because each is independently closable:
   that roster and the local library. Exact canonical text forms one search
   group while each signed share stays a separate contribution. Missing,
   invalid, unsupported and store-unavailable references remain explicit
-  statuses and supply no search text. All 43 Mere dependencies now pin the
-  actual P3b origin commit `b99e532a2075d8d755ce6a8af52c9b7b6b6ba63d`.
-  `cargo metadata --offline --no-deps`, `git diff --check`, and a Rustfmt
-  check of the new captured-collection module pass. The focused Turnstone
-  tests are authored but remain uncompiled: the isolated clean target was
-  stopped while still compiling dependencies, before reaching Turnstone.
+  statuses and supply no search text. All 43 Mere dependencies now pin
+  `c328e6fc9028f0024a82c4a0086bf15605812630`; both Knot dependencies pin
+  `2309dc54f501ffd4de0392e8be59edeade6b4d07`. Locked offline metadata and the
+  focused captured-collection and source-capture tests pass in Turnstone's
+  actual feature graph.
+
+- **2026-09-10, collection-scoped capture search verified:** Turnstone's
+  local view choice now carries one exact Gemot `CollectionVersion`, including
+  its causal frontier and membership commitment; choosing it authors no Moot
+  fact. Only an exact current authorized version admits
+  `effective_selected` contributions to the captured-search remint. A stale,
+  unavailable, or foreign-Moot selection exposes zero captured content, while
+  clearing the choice restores `AllEffective`. Operational failure retains the
+  prior app snapshot. Nineteen focused tests pass across the app seam, worker,
+  captured collection, and source-capture regression filters. Cold-reopen
+  persistence for this local choice and a headed collection-selection surface
+  remain open.

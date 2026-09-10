@@ -623,6 +623,32 @@ impl App {
                 }
                 vec![Effect::Redraw]
             }
+            Update::PlaceCollectionSet {
+                session,
+                generation,
+                result,
+            } => {
+                if session != self.session_id || self.place.generation() != Some(generation) {
+                    return Vec::new();
+                }
+                match result {
+                    Ok(snapshot) => {
+                        if let Some(binding) = self.place.binding().cloned() {
+                            self.reconcile_shared_graph(&snapshot.shared);
+                            self.place = crate::place::PlaceState::Offline {
+                                binding,
+                                generation,
+                                snapshot,
+                            };
+                        }
+                    }
+                    Err(error) => {
+                        tracing::warn!(%error, "place collection selection refused");
+                        self.events.push(AppEvent::PlaceRefused(error));
+                    }
+                }
+                vec![Effect::Redraw]
+            }
             Update::PlaceJoined {
                 session,
                 generation,
