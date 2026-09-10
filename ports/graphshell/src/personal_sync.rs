@@ -20,7 +20,6 @@ use mere::kernel::graph::{EdgeAssertion, Graph, RelationSelector};
 use muniment::Backend;
 use p2panda_core::cbor::{decode_cbor, encode_cbor};
 use p2panda_core::{Body, Hash, Header, Operation, SigningKey, Topic, VerifyingKey};
-use p2panda_store::logs::LogStore;
 use p2panda_store::topics::TopicStore;
 use personae::{DerivedKeyAttestation, IdentityError, IdentityProvider};
 use serde::{Deserialize, Serialize};
@@ -870,13 +869,8 @@ async fn load_records<B: Backend + Clone + Send + Sync + 'static>(
         logs.sort_unstable();
         logs.dedup();
         for log_id in logs {
-            let entries = LogStore::<
-                Operation<PersonalGraphExt>,
-                VerifyingKey,
-                u64,
-                u32,
-                Hash,
-            >::get_log_entries(store, &author, &log_id, None, None)
+            let entries = store
+                .get_log_entries(&author, &log_id, None, None)
             .await?
             .unwrap_or_default();
             for (operation, _) in entries {
@@ -1142,13 +1136,8 @@ pub async fn key_agreement<B: Backend + Clone + Send + Sync + 'static>(
         logs.sort_unstable();
         logs.dedup();
         for log_id in logs {
-            let entries = LogStore::<
-                Operation<PersonalGraphExt>,
-                VerifyingKey,
-                u64,
-                u32,
-                Hash,
-            >::get_log_entries(store, &author, &log_id, None, None)
+            let entries = store
+                .get_log_entries(&author, &log_id, None, None)
             .await?
             .unwrap_or_default();
             for (operation, _) in entries {

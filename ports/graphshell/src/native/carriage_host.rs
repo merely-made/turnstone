@@ -40,7 +40,6 @@ use crate::carriage::{
     carriage_log, carriage_topic, propose_carriage_purge, sign_lease,
 };
 
-use p2panda_store::logs::LogStore;
 use p2panda_store::topics::TopicStore;
 
 /// Everything opening a carriage host needs to know.
@@ -124,9 +123,8 @@ async fn scan_held(
         logs.sort_unstable();
         logs.dedup();
         for log_id in logs {
-            let entries = LogStore::<Operation<CarriageExt>, VerifyingKey, [u8; 32], u32, Hash>::get_log_entries(
-                store, &author, &log_id, None, None,
-            )
+            let entries = store
+                .get_log_entries(&author, &log_id, None, None)
             .await?
             .unwrap_or_default();
             for (operation, _) in entries {
@@ -398,14 +396,9 @@ impl CarriageHost {
         };
         let verifying_key = self.writer.verifying_key();
         let log_id = carriage_log(slot);
-        let entries =
-            LogStore::<Operation<CarriageExt>, VerifyingKey, [u8; 32], u32, Hash>::get_log_entries(
-                &self.store,
-                &verifying_key,
-                &log_id,
-                None,
-                None,
-            )
+        let entries = self
+            .store
+            .get_log_entries(&verifying_key, &log_id, None, None)
             .await?
             .unwrap_or_default();
         let latest = entries
@@ -485,13 +478,9 @@ impl CarriageHost {
             if !logs.contains(&carriage_log(slot)) {
                 continue;
             }
-            let entries = LogStore::<Operation<CarriageExt>, VerifyingKey, [u8; 32], u32, Hash>::get_log_entries(
-                &self.store,
-                &author,
-                &carriage_log(slot),
-                None,
-                None,
-            )
+            let entries = self
+                .store
+                .get_log_entries(&author, &carriage_log(slot), None, None)
             .await?
             .unwrap_or_default();
             for (operation, _) in entries {
@@ -536,13 +525,9 @@ impl CarriageHost {
                 if !logs.contains(&carriage_log(*slot)) {
                     continue;
                 }
-                let entries = LogStore::<Operation<CarriageExt>, VerifyingKey, [u8; 32], u32, Hash>::get_log_entries(
-                    &self.store,
-                    author,
-                    &carriage_log(*slot),
-                    None,
-                    None,
-                )
+                let entries = self
+                    .store
+                    .get_log_entries(author, &carriage_log(*slot), None, None)
                 .await?
                 .unwrap_or_default();
                 for (operation, _) in entries {
