@@ -243,6 +243,7 @@ pub fn ring_of(action: &Action) -> Ring {
         // admission gesture literal until attachment disclosure has its own
         // narrower authority.
         | CapturePage { .. }
+        | CaptureSourceDocument { .. }
         // Joining a place is a trust act, not a session act, so it sits at the
         // structural floor beside gate management rather than in `Session`
         // with `NewSession` and `SwitchSession`.

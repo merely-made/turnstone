@@ -379,6 +379,8 @@ Recorded here so they are not lost, and because each is independently closable:
   consumer proof does not close P1's clean-source pin gate. The named commands,
   regression manifest, runner hashes and retained Weld diagnostic are in the
   [S9 receipt](../docs/receipts/page_capture_s9_20260908/README.md).
+<<<<<<< ours — heading `Progress` (F, confidence: medium)
+// hint: Logic changed on both sides. Requires understanding intent of each change.
 - **2026-09-09:** P1's clean-source Turnstone compile gate closed. Worktree
   `turnstone-weld-pin-20260909` moved welding to `65d057def7db2b5034add6e316cbd51d97c163a1`
   and grafting to `403a30c2fab39c573d1eebb57a0995e2c3347ff1` (commit `0c8461f`,
@@ -401,3 +403,36 @@ Recorded here so they are not lost, and because each is independently closable:
   not make. See the [S9 receipt](../docs/receipts/page_capture_s9_20260908/README.md)'s
   2026-09-09 correction for the exact commands and the corrected E0308
   provenance.
+=======
+
+- **2026-09-09, P3a in progress:** An explicit source-document capture path now
+  preserves only node-plus-current-URL-scoped fetched HTML bytes with an
+  observed `PageStreamed` effective URL, content type, and acquisition time.
+  It stores LocalOnly raw-byte and Fleece annotation artifacts through the
+  existing session Eidetic/Fjall store. It refuses targets lacking an observed
+  final URL, does not promote recall text or PNGs, and does not support hosted
+  Weld. Every Turnstone Mere git pin moved together from `2b1cd731` to
+  `725b0f35` for the current Eidetic bridge; focused resolver validation is
+  pending the shared dependency cache. On a current completion, the node now
+  appends only the annotation manifest to its durable
+  `capture.source-annotations/v1` facet series and triggers `SaveSession`; a
+  stale completion remains in Eidetic but is reported as unattached rather
+  than being rebound to a later target.
+
+- **2026-09-09, P3c implementation:** Turnstone now consumes Mere's optional
+  `captured-web` projection at the shell-owned place boundary. The trail actor
+  remains the only owner of `sessions/<id>/memory`; on open, reopen and an
+  explicit source capture it publishes a read-only library of locally held
+  `FleeceAnnotationRecord`s. The place worker narrows the Moot roster through
+  Gemot's full `authorized_fauna` service view, including membership and
+  per-share withdrawal, then remints an app-owned captured collection from
+  that roster and the local library. Exact canonical text forms one search
+  group while each signed share stays a separate contribution. Missing,
+  invalid, unsupported and store-unavailable references remain explicit
+  statuses and supply no search text. All 43 Mere dependencies now pin the
+  actual P3b origin commit `b99e532a2075d8d755ce6a8af52c9b7b6b6ba63d`.
+  `cargo metadata --offline --no-deps`, `git diff --check`, and a Rustfmt
+  check of the new captured-collection module pass. The focused Turnstone
+  tests are authored but remain uncompiled: the isolated clean target was
+  stopped while still compiling dependencies, before reaching Turnstone.
+>>>>>>> theirs — heading `Progress` (F, confidence: medium)

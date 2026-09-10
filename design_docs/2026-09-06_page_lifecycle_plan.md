@@ -313,10 +313,15 @@ Verified 2026-09-06 against the working tree.
 - Athanor's retirement pass runs at session open (`src/recycle.rs`
   `retire_then_list`), not on a clock; the engram bake is still the recycle
   bin doc's open slice 3.
-- Node attachment of capture envelopes is unbuilt: P1 landed the request and
-  result vocabulary in genet (`components/shared/document-session-api/src/page_capture.rs`),
-  and P2 custody has not begun, so L2 and L4 shape P2 and P3 rather than
-  retrofit them.
+- The explicit source-capture path now stores exact response bytes and a
+  `FleeceAnnotationRecord` in the session Eidetic store, then appends the
+  annotation manifest to `capture.source-annotations/v1` only if the node and
+  URL are still current. The P3c place consumer reads those records through a
+  trail-actor-owned in-memory library, so the place worker never opens a
+  second Fjall handle. Gemot authority and per-share withdrawal select the
+  effective contributions; the app's grouped searchable collection is a
+  rebuildable projection. This does not implement L2 Keep promotion or L4 bin
+  custody.
 - A note is already a routed `knot://` document, and Knot clips carry a
   selector, fidelity and an observed edge
   (`src/knot_authoring.rs`, mere's archived djot editor plan reframe of
@@ -356,3 +361,20 @@ Verified 2026-09-06 against the working tree.
 - **2026-09-06:** plan written. L1-L7 ruled from a working-tree assessment;
   cross-references added to the surfaces, capture and recycle bin documents
   and to `DOC_README.md`. No code written.
+- **2026-09-09, P3a in progress:** Turnstone now has an explicit
+  `CaptureSourceDocument` action/effect and a node-plus-current-URL-scoped
+  fetched-document candidate. It deposits exact raw response bytes and a
+  LocalOnly Fleece annotation into the existing session Eidetic/Fjall memory
+  store; recall `PageTextStore` text and viewport PNG capture do not enter the
+  path. The candidate accepts only an observed response URL from
+  `PageStreamed`. The current terminal fetch contract has no final URL for a
+  non-streamed HTTP response, so those captures refuse rather than inventing
+  final-source evidence. Hosted Weld remains unsupported for the same reason:
+  it does not expose source response bytes. Validation is pending the
+  clean-source resolver gate. The Mere dependency transaction advances every
+  Turnstone Mere git pin together from `2b1cd731` to `725b0f35`, the current
+  shared commit that provides the Eidetic bridge. On a current completion,
+  the node appends only the annotation manifest to its durable
+  `capture.source-annotations/v1` facet series and triggers `SaveSession`; a
+  stale completion remains in Eidetic but is reported as unattached rather
+  than being rebound to a later target.

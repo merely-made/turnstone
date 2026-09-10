@@ -144,8 +144,16 @@ pub struct ExtractionLineageFacts {
 /// a second network request for bytes the host already owns.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct FetchedDocument {
+    /// Exact acquired response bytes. The decoded body is only for rendering;
+    /// source capture always deposits these bytes.
+    pub bytes: Vec<u8>,
     pub content_type: Option<String>,
     pub body: String,
+    /// The source URL this fetch actor retained for the response. This is
+    /// scoped with the node so a later navigation cannot borrow its evidence.
+    pub effective_url: Option<String>,
+    /// Milliseconds since the Unix epoch when Turnstone admitted these bytes.
+    pub acquired_at_ms: u64,
 }
 
 /// Network progress remains app truth even after the first prefix has become
@@ -406,13 +414,28 @@ impl ContentStates {
         }
         entry.1.extend_from_slice(chunk);
         let received_bytes = entry.1.len();
+        let acquired_at_ms = self
+            .documents
+            .get(&node)
+            .filter(|(owner, _)| owner == &url)
+            .map(|(_, previous)| previous.acquired_at_ms)
+            .filter(|observed_at| *observed_at != 0)
+            .unwrap_or_else(|| {
+                std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .map(|duration| duration.as_millis() as u64)
+                    .unwrap_or(0)
+            });
         self.documents.insert(
             node,
             (
                 url,
                 FetchedDocument {
+                    bytes: entry.1.clone(),
                     content_type: content_type.clone(),
                     body: String::from_utf8_lossy(&entry.1).into_owned(),
+                    effective_url: Some(response_url.clone()),
+                    acquired_at_ms,
                 },
             ),
         );
@@ -443,6 +466,20 @@ impl ContentStates {
         self.documents
             .get(&node)
             .and_then(|(owner, document)| (owner == url).then_some(document))
+    }
+
+    /// A source-capture candidate is available only for the exact current
+    /// node/address pair. Incidental recall text never enters this seam.
+    pub fn source_capture_candidate(&self, node: Uuid, url: &str) -> Option<&FetchedDocument> {
+        self.fetched(node, url).filter(|document| {
+            document.content_type.as_deref().is_some_and(|type_| {
+                type_
+                    .split(';')
+                    .next()
+                    .is_some_and(|media| media.trim().eq_ignore_ascii_case("text/html"))
+            })
+        })
+        .filter(|document| document.effective_url.is_some() && document.acquired_at_ms != 0)
     }
 
     pub fn forget_fetched(&mut self, node: Uuid) {
@@ -538,8 +575,11 @@ mod tests {
     fn fetched_documents_are_member_and_address_scoped() {
         let node = Uuid::new_v4();
         let document = FetchedDocument {
+            bytes: b"# Capsule".to_vec(),
             content_type: Some("text/gemini".into()),
             body: "# Capsule".into(),
+            effective_url: Some("gemini://example/one".into()),
+            acquired_at_ms: 1,
         };
         let mut states = ContentStates::default();
         states.note_fetched(node, "gemini://example/one".into(), document.clone(), 9);
@@ -548,6 +588,54 @@ mod tests {
             Some(&document)
         );
         assert!(states.fetched(node, "gemini://example/two").is_none());
+    }
+
+    #[test]
+    fn source_candidates_are_html_and_address_scoped() {
+        let node = Uuid::new_v4();
+        let mut states = ContentStates::default();
+        states.note_fetched(
+            node,
+            "https://example.test/page".into(),
+            FetchedDocument {
+                bytes: b"<p>exact</p>".to_vec(),
+                content_type: Some("text/html; charset=utf-8".into()),
+                body: "<p>exact</p>".into(),
+                effective_url: Some("https://example.test/page".into()),
+                acquired_at_ms: 7,
+            },
+            12,
+        );
+        assert_eq!(
+            states
+                .source_capture_candidate(node, "https://example.test/page")
+                .unwrap()
+                .bytes,
+            b"<p>exact</p>"
+        );
+        assert!(
+            states
+                .source_capture_candidate(node, "https://example.test/other")
+                .is_none()
+        );
+        states.note_fetched(
+            node,
+            "https://example.test/page".into(),
+            FetchedDocument {
+                bytes: b"<p>unobserved target</p>".to_vec(),
+                content_type: Some("text/html".into()),
+                body: "<p>unobserved target</p>".into(),
+                effective_url: None,
+                acquired_at_ms: 8,
+            },
+            24,
+        );
+        assert!(
+            states
+                .source_capture_candidate(node, "https://example.test/page")
+                .is_none(),
+            "the request owner is never promoted to final-source evidence"
+        );
     }
 
     #[test]

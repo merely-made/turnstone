@@ -135,6 +135,9 @@ pub enum Action {
     /// Capture this exact live page member. The target is resolved when the
     /// action is offered so a later focus change cannot redirect completion.
     CapturePage { member: uuid::Uuid },
+    /// Explicitly preserve the current fetched HTML source and its Fleece
+    /// annotation. This does not inspect a rendered surface or recall text.
+    CaptureSourceDocument { member: uuid::Uuid },
     ChoosePermission {
         request: crate::user_agent_decision::UserAgentRequestKey,
         choice: crate::user_agent_decision::PermissionChoice,
@@ -779,6 +782,9 @@ pub enum Effect {
     ScaleContent { node: uuid::Uuid, scale: f32 },
     /// Start one host-correlated viewport capture of this live web surface.
     CaptureContent { node: uuid::Uuid },
+    /// Preserve one exact, app-held fetched HTML response through the session
+    /// Eidetic store. `url` is captured with the action for a stale-target gate.
+    CaptureSourceDocument { node: uuid::Uuid, url: String },
     /// Ask one exact live content owner to replace or step its retained find.
     FindContent {
         node: uuid::Uuid,
@@ -995,6 +1001,12 @@ pub enum Update {
     /// store). Loud: a recall lane that silently shows nothing is
     /// indistinguishable from a trail with nothing in it.
     RecallFailed { error: String },
+    /// The session Eidetic actor completed an explicit source-document capture.
+    SourceDocumentCaptured {
+        node: uuid::Uuid,
+        url: String,
+        result: Result<StoredSourceDocument, String>,
+    },
     /// One retained-place open completed. The app accepts it only while both
     /// the session and generation still match its active opening.
     PlaceOpened {
@@ -1042,6 +1054,13 @@ pub enum Update {
             String,
         >,
     },
+}
+
+/// Manifest identities written by one explicit source-document capture.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct StoredSourceDocument {
+    pub raw_manifest: String,
+    pub annotation_manifest: String,
 }
 
 /// A successfully fetched page document, in app-owned terms.

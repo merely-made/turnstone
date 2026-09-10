@@ -20,6 +20,106 @@ fn capture_action_preserves_explicit_member_for_the_host() {
 }
 
 #[test]
+fn source_capture_refuses_a_member_without_a_current_target() {
+    let mut app = App::test_stub();
+    assert!(
+        app.update(Action::CaptureSourceDocument {
+            member: uuid::Uuid::new_v4()
+        })
+        .is_empty()
+    );
+}
+
+#[test]
+fn source_capture_carries_current_target_without_requesting_png() {
+    let mut app = App::test_stub();
+    let url = "https://example.test/source";
+    let key = app.graph_runtimes.visit(url);
+    let node = app.graph_runtimes.graph().get_node(key).unwrap().id;
+
+    assert_eq!(
+        app.update(Action::CaptureSourceDocument { member: node }),
+        vec![Effect::CaptureSourceDocument {
+            node,
+            url: url.to_string(),
+        }]
+    );
+}
+
+#[test]
+fn source_capture_completion_attaches_an_ordered_node_reference_series() {
+    let mut app = App::test_stub();
+    let url = "https://example.test/source";
+    let key = app.graph_runtimes.visit(url);
+    let node = app.graph_runtimes.graph().get_node(key).unwrap().id;
+    let stored = |annotation_manifest: &str| crate::action::StoredSourceDocument {
+        raw_manifest: format!("raw-{annotation_manifest}"),
+        annotation_manifest: annotation_manifest.into(),
+    };
+
+    assert_eq!(
+        app.apply_update(Update::SourceDocumentCaptured {
+            node,
+            url: url.into(),
+            result: Ok(stored("annotation-first")),
+        }),
+        vec![Effect::SaveSession, Effect::Redraw]
+    );
+    assert_eq!(
+        app.apply_update(Update::SourceDocumentCaptured {
+            node,
+            url: url.into(),
+            result: Ok(stored("annotation-second")),
+        }),
+        vec![Effect::SaveSession, Effect::Redraw]
+    );
+    assert_eq!(
+        crate::source_capture::references(app.graph_runtimes.facets(), node),
+        vec!["annotation-first".to_string(), "annotation-second".to_string()]
+    );
+}
+
+#[test]
+fn stale_or_failed_source_capture_completion_never_attaches_a_reference() {
+    let mut app = App::test_stub();
+    let url = "https://example.test/source";
+    let key = app.graph_runtimes.visit(url);
+    let node = app.graph_runtimes.graph().get_node(key).unwrap().id;
+    let stored = crate::action::StoredSourceDocument {
+        raw_manifest: "raw-stale".into(),
+        annotation_manifest: "annotation-stale".into(),
+    };
+
+    assert_eq!(
+        app.apply_update(Update::SourceDocumentCaptured {
+            node,
+            url: "https://example.test/changed".into(),
+            result: Ok(stored),
+        }),
+        vec![Effect::Redraw]
+    );
+    assert!(matches!(
+        app.take_events().last(),
+        Some(crate::observe::AppEvent::SourceDocumentCaptureUnattached { .. })
+    ));
+    assert!(crate::source_capture::references(app.graph_runtimes.facets(), node).is_empty());
+
+    assert_eq!(
+        app.apply_update(Update::SourceDocumentCaptured {
+            node,
+            url: url.into(),
+            result: Err("eidetic write failed".into()),
+        }),
+        vec![Effect::Redraw]
+    );
+    assert!(matches!(
+        app.take_events().last(),
+        Some(crate::observe::AppEvent::SourceDocumentCaptureFailed { .. })
+    ));
+    assert!(crate::source_capture::references(app.graph_runtimes.facets(), node).is_empty());
+}
+
+#[test]
 fn retired_static_viewer_pins_migrate_to_livery() {
     let node = uuid::Uuid::new_v4();
     let mut states = pandect::browser_node_state::BrowserNodeStates::new();

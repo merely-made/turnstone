@@ -1,4 +1,6 @@
 /target
+# Local sibling path overrides make an in-checkout lock machine-specific.
+# Generate locked receipts in a clean worktree without `.cargo/config.toml`.
 Cargo.lock
 # Local-dev sibling patches (mirrors mere's convention): committed manifests
 # resolve owned sibling repos from GitHub; this file redirects them to the

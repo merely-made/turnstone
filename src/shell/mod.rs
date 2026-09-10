@@ -530,9 +530,12 @@ impl Shell {
         let trail_wake: armillary::Wake = Arc::new(move || {
             let _ = trail_proxy.send_event(());
         });
-        let (trail_handle, trail_rx) = crate::trail_memory::spawn_trail(
+        let capture_library =
+            crate::place::captured_collection::LocalCaptureLibrary::default();
+        let (trail_handle, trail_rx) = crate::trail_memory::spawn_trail_with_capture_library(
             trail_wake,
             crate::trail_memory::memory_dir(&app.session_dir()),
+            capture_library.clone(),
         );
 
         let place_proxy = proxy.clone();
@@ -542,7 +545,10 @@ impl Shell {
         let (place_handle, place_rx) = crate::place::worker::spawn_place_worker(
             place_wake,
             app.identity.clone(),
-            crate::place::worker::PlaceWorkerSettings::default(),
+            crate::place::worker::PlaceWorkerSettings {
+                capture_library,
+                ..crate::place::worker::PlaceWorkerSettings::default()
+            },
         );
 
         // The content port's ordinary lanes: both Genet static renderers plus

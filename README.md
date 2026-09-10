@@ -25,6 +25,9 @@ cargo test    # unit tests
 
 Turnstone pulls `mere` and the genet engine family as git dependencies; a plain
 `cargo build` fetches them. Headed self-drive receipts live under `scenarios/`.
+`Cargo.lock` remains untracked while local sibling path overrides are active.
+For a reproducible locked receipt, generate the lock in a clean worktree without
+the ignored `.cargo/config.toml` override.
 
 ## Status
 

@@ -69,6 +69,10 @@ transport = { package = "mere-transport", git = "https://github.com/merely-made/
 # need a reactor. Scoped to the worker thread; the app and panes stay sync.
 tokio = { version = "1", features = ["rt-multi-thread", "sync", "time"] }
 gemot = { git = "https://github.com/merely-made/mere.git", rev = "33287b0efbe0bd45bd46b87a598d5f4fc62414e2" }
+# Optional Mere port surface enabled only for the captured-page projection.
+# Turnstone keeps the resulting cache in app-owned vocabulary below the
+# shell-owned place worker.
+moot-port = { package = "mere-moot", git = "https://github.com/merely-made/mere.git", rev = "33287b0efbe0bd45bd46b87a598d5f4fc62414e2", features = ["captured-web"] }
 stickleback = { git = "https://github.com/merely-made/mere.git", rev = "33287b0efbe0bd45bd46b87a598d5f4fc62414e2" }
 muniment = { git = "https://github.com/merely-made/mere.git", rev = "33287b0efbe0bd45bd46b87a598d5f4fc62414e2", features = ["redb"] }
 proofs = { package = "mere-proofs", git = "https://github.com/merely-made/mere.git", rev = "33287b0efbe0bd45bd46b87a598d5f4fc62414e2" }
@@ -148,7 +152,7 @@ genet-documents = { git = "https://github.com/merely-made/genet.git", rev = "9e8
 # reader and smolweb lanes, and the remote fetcher that supplies the http(s)
 # schemes Genet's `LocalFetcher` no longer branches on. The two compose at
 # `LocalFetcher::with_fallback`, which is the seam the split introduced.
-mere-document-lanes = { git = "https://github.com/merely-made/mere.git", rev = "33287b0efbe0bd45bd46b87a598d5f4fc62414e2", features = ["netfetch", "smolweb"] }
+mere-document-lanes = { git = "https://github.com/merely-made/mere.git", rev = "33287b0efbe0bd45bd46b87a598d5f4fc62414e2", features = ["netfetch", "smolweb", "eidetic-bridge"] }
 # Protocol-faithful RSS/Atom parsing for the graph-native feed subscription
 # loop. Gemini feed discovery remains gemtext-native in Turnstone; errand owns
 # the shared XML grammar already used by Nematic.
@@ -273,16 +277,17 @@ genet-scripted-dom = { git = "https://github.com/merely-made/genet.git", rev = "
 genet-static-dom = { git = "https://github.com/merely-made/genet.git", rev = "9e8f9dc2f3ddc0af1658580bb51964462a03923f" }
 layout-dom-api = { version = "=0.1.0", git = "https://github.com/merely-made/genet.git", rev = "9e8f9dc2f3ddc0af1658580bb51964462a03923f" }
 # The renderer family is published, but Turnstone also consumes its current git
-# surface directly. Patch the full family together so Mere Canvas and the host
-# cannot receive source-distinct `Scene` or paint vocabulary types.
+# surface directly. Patch the four runtime crates together so Mere Canvas and
+# the host cannot receive source-distinct `Scene` or paint vocabulary types.
+# `netrender_text` is only Netrender's dev-only Parley adapter, so it does not
+# reach this application graph and must not add an unused root patch.
 netrender = { git = "https://github.com/merely-made/netrender.git", rev = "6f1a4fe70a58a57ba6b248acfa662f0ec4e44a25" }
 netrender_device = { git = "https://github.com/merely-made/netrender.git", rev = "6f1a4fe70a58a57ba6b248acfa662f0ec4e44a25" }
-netrender_text = { git = "https://github.com/merely-made/netrender.git", rev = "6f1a4fe70a58a57ba6b248acfa662f0ec4e44a25" }
 paint_list_api = { git = "https://github.com/merely-made/netrender.git", rev = "6f1a4fe70a58a57ba6b248acfa662f0ec4e44a25" }
 paint_list_render = { git = "https://github.com/merely-made/netrender.git", rev = "6f1a4fe70a58a57ba6b248acfa662f0ec4e44a25" }
 #
 # The published `mere-p2panda-net =0.7.2` owns the exact-ALPN net crate. Its
-# seven sibling packages remain on the owned dalek-3 fork and move together at
+# six sibling packages remain on the owned dalek-3 fork and move together at
 # the matching immutable release tag. There is deliberately no `p2panda-net`
 # patch: Turnstone consumes the renamed published package through Mere.
 p2panda-auth = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.2" }
@@ -290,7 +295,6 @@ p2panda-core = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2p
 p2panda-discovery = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.2" }
 p2panda-encryption = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.2" }
 p2panda-store = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.2" }
-p2panda-stream = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.2" }
 p2panda-sync = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.2" }
 # Livery/Buckram require Genet's current taffy fork.
 taffy = { package = "genet-taffy", version = "=0.14.0", git = "https://github.com/merely-made/genet.git", rev = "9e8f9dc2f3ddc0af1658580bb51964462a03923f" }
