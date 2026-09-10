@@ -286,10 +286,11 @@ netrender_device = { git = "https://github.com/merely-made/netrender.git", rev =
 paint_list_api = { git = "https://github.com/merely-made/netrender.git", rev = "6f1a4fe70a58a57ba6b248acfa662f0ec4e44a25" }
 paint_list_render = { git = "https://github.com/merely-made/netrender.git", rev = "6f1a4fe70a58a57ba6b248acfa662f0ec4e44a25" }
 #
-# The published `mere-p2panda-net =0.7.3` owns the exact-ALPN net crate. Its
-# six sibling packages remain on the owned dalek-3 fork and move together at
-# the matching immutable release tag. There is deliberately no `p2panda-net`
-# patch: Turnstone consumes the renamed published package through Mere.
+# The tagged `mere-p2panda-net =0.7.3` source owns the exact-ALPN net crate.
+# It resolves through this root patch until its crates.io release is available.
+# Its six sibling packages remain on the owned dalek-3 fork and move together
+# at the matching immutable release tag.
+mere-p2panda-net = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.3" }
 p2panda-auth = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.3" }
 p2panda-core = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.3" }
 p2panda-discovery = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.3" }
