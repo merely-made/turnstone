@@ -475,7 +475,7 @@ impl Shell {
             let fetch_commands = browse::fetch_commands_for(&effect, &mut self.pending_fetches);
             if !fetch_commands.is_empty() {
                 for command in fetch_commands {
-                    self.fetch_handle.command(command);
+                    self.command_fetch(command);
                 }
                 continue;
             }
@@ -492,7 +492,7 @@ impl Shell {
                         let fetch = self.app.fetch_page_effect(node, fetch_url, owner_url);
                         for command in browse::fetch_commands_for(&fetch, &mut self.pending_fetches)
                         {
-                            self.fetch_handle.command(command);
+                            self.command_fetch(command);
                         }
                     }
                     Err(error) => {
@@ -739,6 +739,10 @@ impl Shell {
                         .get(node)
                         .and_then(|b| b.viewer_override.clone())
                         .or_else(|| {
+                            crate::nomadnet::is_micron_address(&url)
+                                .then(|| crate::nomadnet::ENGINE_ID.to_string())
+                        })
+                        .or_else(|| {
                             (self
                                 .content_engines
                                 .contains(crate::knot_authoring::ENGINE_ID)
@@ -851,13 +855,13 @@ impl Shell {
                     // the toggle arrived before that body, leave the app in
                     // Requested and let PageFetched re-issue this spawn. The
                     // engine must not perform a second top-level request.
-                    if fetch::is_fetchable(&url) && fetched.is_none() {
+                    if crate::browse::is_fetchable(&url) && fetched.is_none() {
                         if !self.pending_fetches.page_in_flight(&url, node, &url) {
                             let fetch = self.app.fetch_page_effect(node, url.clone(), url.clone());
                             for command in
                                 browse::fetch_commands_for(&fetch, &mut self.pending_fetches)
                             {
-                                self.fetch_handle.command(command);
+                                self.command_fetch(command);
                             }
                         }
                         continue;
@@ -958,6 +962,12 @@ impl Shell {
                         .facts(node)
                         .map(|facts| facts.engine.clone())
                         .unwrap_or_else(|| inker::routing::ENGINE_NEMATIC_GEMTEXT.to_string());
+                    if engine == crate::nomadnet::ENGINE_ID {
+                        // Generic smolweb body replacement selects by URL scheme.
+                        // Re-enter the explicit Micron parser for this native address.
+                        self.run_effects(vec![Effect::SpawnContent { node, url }]);
+                        continue;
+                    }
                     let Some(session) = self.content_sessions.get_mut(&node) else {
                         self.run_effects(vec![Effect::SpawnContent { node, url }]);
                         continue;
@@ -1087,7 +1097,7 @@ impl Shell {
                                         node,
                                         url,
                                         result: Err(
-                                            "the session Eidetic actor is unavailable".into(),
+                                            "the session Eidetic actor is unavailable".into()
                                         ),
                                     },
                                 );

@@ -77,11 +77,25 @@ sets.
 > receipt: Windows rejected UDP port 62166 with error 10013, and its exclusion
 > table includes 62084..62183. No OS settings were changed.
 >
-> **Reticulum and Micron boundary, 2026-09-11:** Retinue supplies a
-> native NomadNet page access/serving through its new `nomadnet` adapter at
-> `c98b1a46a1166b6180d7d01d03d80fcbbebb653f`. Mere and standalone Knot now have
-> an evidence-qualified partial Micron preview. This Turnstone pin does not yet
-> adopt those presentation changes or add a NomadNet address-entry route.
+> **Reticulum and Micron consumer, 2026-09-11:** Turnstone now adopts Mere
+> `1777b19840a6478a0faf3ab060a3ff71d5532321`, Knot
+> `0c8cdefb17ffa86a4e6b2a508d9a0aeb8fd2ccac`, and Retinue
+> `2a763c72ec7c7ff61b8cd7adb86d084a02d2c4d6`. Native destination/path input
+> (`destinationhex:/page/path`) reaches Retinue path discovery and page fetching;
+> local `.mu`/`.micron` files and fetched pages use the shared captured-subset
+> renderer. This address spelling remains a destination and opaque path, not a
+> newly registered URL scheme. Fetching runs off the UI thread and retains the
+> browser's exact request, cancellation, reload, and stale-completion handling.
+> `TURNSTONE_NOMADNET_TCP` selects the Reticulum TCP interface; optional
+> `TURNSTONE_NOMADNET_TIMEOUT_SECS` and `TURNSTONE_NOMADNET_MAX_PAGE_BYTES`
+> configure the operation deadline and accepted page size. The latter is checked
+> after Resource reassembly, not a wire-allocation ceiling. Peer identity is
+> discovered; the temporary client identity is created per fetch. These are
+> process-launch settings in this slice, not a dedicated connection-settings UI.
+> The [consumer acceptance](../docs/receipts/nomadnet_acceptance_20260911/README.md)
+> passed: actual local-file rendering, physical native address entry, stock-node
+> fetch/render, Reload, and Stop releasing the native connection. The updated
+> full library suite passed **458 tests, 9 ignored, 0 failed**.
 > GPL NomadNet implementation source was not used for these integrations.
 > The same suite now includes a deterministic browser-control receipt: a local
 > Gemini response stays open while the rendered Stop control cancels its exact
@@ -102,6 +116,29 @@ sets.
 > switched back to `genet.livery`.
 
 ## Part 1: the anatomy of a browser, in this design language
+
+### Micron qualification limits (2026-09-11)
+
+The shared preview qualifies LF-delimited plain lines, the captured level-one
+heading spelling, the exact three-dash rule, and balanced same-line bold and
+italic pairs. It preserves other source visibly and inertly with an explicit
+partial-preview notice. Unknown input is not silently interpreted as Markdown.
+
+The following remain unqualified: additional heading levels and whitespace
+variants; CRLF styling equivalence; nested, overlapping, or cross-line style
+controls; colour and alignment controls; link activation and relative-target
+resolution; forms, directives, and tables. Captured link-looking text alone
+does not establish clickable-link semantics. These need additional admissible
+specification or black-box captures and implementation, rather than a claim
+that clean-room implementation is impossible.
+
+Native Retinue and stock Python have independent small and 128 KiB transfer
+receipts. Stock Go `view-mu` accepts the small native response, but its large
+Resource transfer repeats requests and times out; that interoperability defect
+remains open. Knot's thin outer-canvas black margins after scrolling and
+clipboard-paste failure are separate reproduced host defects. Persistent
+NomadNet identities and resident/public hosting are beyond the local serving
+acceptance. No GPL/AGPL implementation source supplied these parser rules.
 
 The taxonomy of a typical browser, each element named in mere/genet terms,
 with its state in this tree. The recurring pattern is that the conventional

@@ -15,6 +15,7 @@ mod effects;
 mod events;
 mod gestures;
 mod keys;
+mod nomadnet_fetch;
 mod page_capture;
 mod reader_observe;
 mod render;
@@ -89,6 +90,7 @@ fn standard_content_engines() -> SessionRegistry<Scene> {
         LocalFetcher.with_fallback(RemoteFetcher::shared()),
     )));
     engines.register(Box::new(ReaderSessionEngine::new(SmolwebTheme::System)));
+    engines.register(Box::new(crate::nomadnet::MicronSessionEngine::new()));
     for engine_id in SMOLWEB_SESSION_ENGINE_IDS {
         engines.register(Box::new(
             SmolwebSessionEngine::new(
@@ -256,6 +258,8 @@ pub struct Shell {
     gemini_trust: Arc<crate::gemini_trust::GeminiTrustStore>,
     /// Completed fetches, drained in `user_event` on each wake.
     fetch_rx: Receiver<FetchUpdate>,
+    nomadnet_handle: armillary::ActorHandle<FetchCommand>,
+    nomadnet_rx: Receiver<FetchUpdate>,
     /// Serialized download custody writes, kept off the event-loop thread.
     download_handle: armillary::ActorHandle<crate::download::DownloadCommand>,
     /// Completed custody writes, drained beside fetch answers.
@@ -506,6 +510,7 @@ impl Shell {
         let fetch_wake: armillary::Wake = Arc::new(move || {
             let _ = fetch_proxy.send_event(());
         });
+        let (nomadnet_handle, nomadnet_rx) = nomadnet_fetch::spawn(Arc::clone(&fetch_wake));
         let (fetch_handle, fetch_rx) = fetch::spawn_fetcher(fetch_wake);
 
         let download_proxy = proxy.clone();
@@ -615,6 +620,8 @@ impl Shell {
             fetch_handle,
             gemini_trust,
             fetch_rx,
+            nomadnet_handle,
+            nomadnet_rx,
             download_handle,
             download_rx,
             bin_handle,
@@ -829,7 +836,9 @@ impl Shell {
         self.renderers.evict(pane);
         let lens_slots = self.app.lenses.len();
         self.reader_appearances.retain(|id, (node, _)| {
-            !crate::surface::appearance::reader_appearance_belongs_to_pane(*id, *node, pane, lens_slots)
+            !crate::surface::appearance::reader_appearance_belongs_to_pane(
+                *id, *node, pane, lens_slots,
+            )
         });
         if self.hovered_pane == Some(pane) {
             self.hovered_pane = None;
@@ -1092,7 +1101,11 @@ impl Shell {
                 rect,
             });
         }
-        crate::surface::appearance::assign_content_appearance_ids(&mut surfaces, 0, &appearance_roles);
+        crate::surface::appearance::assign_content_appearance_ids(
+            &mut surfaces,
+            0,
+            &appearance_roles,
+        );
         surfaces
     }
 
@@ -1615,6 +1628,58 @@ mod tests {
         assert_eq!(decision.engine_id, inker::routing::ENGINE_GENET_LIVERY);
         assert!(engines.contains(&decision.engine_id));
         assert!(!engines.contains(inker::routing::ENGINE_GENET_WEB));
+    }
+
+    #[test]
+    fn micron_file_uses_shared_subset_and_preserves_unknown_source() {
+        let temp = tempfile::tempdir().unwrap();
+        let path = temp.path().join("reading.mu");
+        let source = "> Heading\n---\nplain\n[Local page`:/page/probe.mu]\n";
+        std::fs::write(&path, source).unwrap();
+        let address = url::Url::from_file_path(&path).unwrap().to_string();
+        assert!(crate::nomadnet::is_micron_address(&address));
+        let engines = standard_content_engines();
+        let mut session = engines
+            .spawn(
+                crate::nomadnet::ENGINE_ID,
+                &SessionSpawnRequest::new(&address).with_viewport(640, 480),
+            )
+            .expect("local Micron file loads through the registered native lane");
+        assert!(
+            session
+                .frame(640, 480)
+                .ops
+                .iter()
+                .any(|op| matches!(op, netrender::SceneOp::GlyphRun(_)))
+        );
+        let native = session
+            .as_any()
+            .downcast_mut::<mere_document_lanes::SmolwebDocumentSession>()
+            .unwrap();
+        let document = native.document_mut().document();
+        assert_eq!(
+            document.provenance.source_kind.as_deref(),
+            Some("nematic.micron-subset")
+        );
+        assert!(document.content_type.is_empty());
+        assert!(
+            document
+                .blocks
+                .iter()
+                .any(|block| matches!(block, inker::Block::Heading { level: 1, .. }))
+        );
+        assert!(
+            document
+                .blocks
+                .iter()
+                .any(|block| matches!(block, inker::Block::Rule))
+        );
+        assert!(document.blocks.iter().any(
+            |block| matches!(block, inker::Block::Badge { text } if text.contains("Partial Micron"))
+        ));
+        assert!(document.blocks.iter().any(|block| matches!(block, inker::Block::Preformatted { text } if text == "[Local page`:/page/probe.mu]")));
+        assert!(document.outgoing_links().is_empty());
+        assert_eq!(std::fs::read(&path).unwrap(), source.as_bytes());
     }
 
     #[test]

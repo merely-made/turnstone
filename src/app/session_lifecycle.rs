@@ -138,7 +138,7 @@ impl App {
             let key = app
                 .with_graph_pane(pane, |canvas| canvas.visit(url))
                 .expect("the default graph pane must resolve during boot");
-            if fetch::is_fetchable(url)
+            if crate::browse::is_fetchable(url)
                 && let Some(node) = app.graph_runtimes.graph().get_node(key).map(|n| n.id)
             {
                 effects.push(app.fetch_page_effect(node, url.to_string(), url.to_string()));

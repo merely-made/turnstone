@@ -274,7 +274,7 @@ impl App {
         self.events
             .push(AppEvent::NodeRecovered(record.url.clone()));
         let mut effects = vec![Effect::SaveSession, Effect::Redraw];
-        if fetch::is_fetchable(&record.url) {
+        if crate::browse::is_fetchable(&record.url) {
             effects.push(self.fetch_page_effect(member, record.url.clone(), record.url.clone()));
         }
         effects
@@ -493,7 +493,7 @@ impl App {
 
         self.content.forget_fetched(node);
         let mut effects = find_effects;
-        if fetch::is_fetchable(&url) {
+        if crate::browse::is_fetchable(&url) {
             effects.push(self.fetch_page_effect(node, url.clone(), url.clone()));
         }
         // A live (or in-flight) session respawns fresh; a node
@@ -1114,7 +1114,7 @@ impl App {
             && let Some(node) = self.graph_runtimes.graph().get_node(key).map(|n| n.id)
         {
             effects.extend(self.begin_smolweb_submission(Some(node), url));
-        } else if fetch::is_fetchable(&url)
+        } else if crate::browse::is_fetchable(&url)
             && let Some(node) = self.graph_runtimes.graph().get_node(key).map(|n| n.id)
         {
             effects.push(self.fetch_page_effect(node, url.clone(), url));
@@ -1230,7 +1230,7 @@ impl App {
         );
         let mut effects = self.invalidate_document_find_for(node);
         effects.push(Effect::SaveSession);
-        if fetch::is_fetchable(&url) {
+        if crate::browse::is_fetchable(&url) {
             effects.push(self.fetch_page_effect(node, url.clone(), url.clone()));
         }
         if content_on {

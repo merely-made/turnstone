@@ -3088,6 +3088,41 @@ fn stop_cancels_only_the_focused_request_and_rejects_its_late_answer() {
     assert!(app.content.fetched(node, url).is_none());
 }
 
+#[test]
+fn nomadnet_omnibar_stop_and_reload_keep_native_request_identity() {
+    let address = "7fc8950ec4e50695be76eddc8e539ee8:/page/turnstone.mu";
+    assert_eq!(
+        crate::ui::normalize_address(address).as_deref(),
+        Some(address)
+    );
+    let mut app = App::test_stub();
+    let opened = app.update(Action::OpenAddress(address.into()));
+    let node = app.graph_runtimes.focused_member().unwrap();
+    let request = app.content.active_fetch(node).expect("native fetch starts");
+    assert!(opened.iter().any(|effect| matches!(effect,
+        Effect::FetchPage { url, .. } if url == address)));
+    let stopped = app.update(Action::Stop);
+    assert!(stopped.contains(&Effect::CancelPage { request, node }));
+    assert!(
+        app.apply_update(Update::PageFetched {
+            request,
+            node,
+            url: address.into(),
+            result: Ok(crate::action::FetchedPage::text(None, "late")),
+        })
+        .is_empty()
+    );
+    assert!(app.content.fetched(node, address).is_none());
+    let reloaded = app.update(Action::Reload);
+    let next = app
+        .content
+        .active_fetch(node)
+        .expect("native reload starts");
+    assert_ne!(request, next);
+    assert!(reloaded.iter().any(|effect| matches!(effect,
+        Effect::FetchPage { url, request, .. } if url == address && *request == next)));
+}
+
 /// The workbench lane end to end at the App tier: opening the focused
 /// node tiles it, summons the Workbench pane, and spawns its content;
 /// stacking collapses cells; closing empties honestly.

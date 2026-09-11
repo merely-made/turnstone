@@ -135,7 +135,11 @@ impl ApplicationHandler for Shell {
     /// completed fetch is waiting. Drain fetches through the spine, then
     /// redraw so `frame()` folds everything in (and chains while settling).
     fn user_event(&mut self, event_loop: &ActiveEventLoop, _event: ()) {
-        while let Ok(raw) = self.fetch_rx.try_recv() {
+        while let Ok(raw) = self
+            .fetch_rx
+            .try_recv()
+            .or_else(|_| self.nomadnet_rx.try_recv())
+        {
             let raw = match raw {
                 FetchUpdate::Subresource(outcome) => {
                     let requesters = self.pending_fetches.take_subresources(&outcome.url);

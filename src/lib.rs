@@ -40,6 +40,7 @@ mod inspector_pane;
 mod inspector_view;
 mod knot_authoring;
 pub mod knot_document_surface;
+pub mod nomadnet;
 pub mod launch;
 pub mod observe;
 mod overmap;
