@@ -521,6 +521,9 @@ mod tests {
     /// traffic without losing anything, and reconnecting converges both sides.
     #[test]
     fn a_partition_heals_and_both_sides_converge() {
+        let _ = tracing_subscriber::fmt()
+            .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
+            .try_init();
         let root =
             std::env::temp_dir().join(format!("turnstone-place-partition-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&root);
@@ -640,7 +643,7 @@ mod tests {
 
         // Heal: the host rejoins and catches up on what it missed.
         let (endpoint, gossip) = host_transport.sync_parts().unwrap();
-        let _rejoined = runtime
+        let rejoined = runtime
             .block_on(async {
                 let moot = host_open
                     .moot
@@ -658,7 +661,8 @@ mod tests {
         loop {
             assert!(
                 Instant::now() < deadline,
-                "the partitioned message never arrived after healing"
+                "the partitioned message never arrived after healing; host chat accepted {} operations; status {:?}",
+                rejoined.2.ops_received(), rejoined.2.sync_status(),
             );
             std::thread::sleep(Duration::from_millis(400));
             let projection = pollster::block_on(host_open.chat.projection()).unwrap();
@@ -674,7 +678,7 @@ mod tests {
         let (ack_tx, ack_rx) = std::sync::mpsc::sync_channel(1);
         worker.command(PlaceWorkerCommand::Release(ack_tx));
         ack_rx.recv_timeout(Duration::from_secs(5)).unwrap();
-        drop(_rejoined);
+        drop(rejoined);
         drop(host_open);
         let _ = std::fs::remove_dir_all(&root);
     }

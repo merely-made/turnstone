@@ -60,13 +60,29 @@ sets.
 > and relation-labelled link. The concurrent full `--lib --no-default-features`
 > gate reached 453 passed and 9 ignored, but its existing
 > `place::lanes::tests::a_partition_heals_and_both_sides_converge` timed out,
-> so it is not a full-green receipt for this slice.
+> so that initial run was not a full-green receipt.
+>
+> **Partition repair, 2026-09-11:** The clean consumer now pins all owned
+> p2panda sibling patches to `85f88345a1d6677c32099d3d306efcb9dafeb12d`.
+> A host accepting a one-way invitation peer retains its authenticated inbound
+> transport paths as local dial hints, and a new sync manager discovers existing
+> gossip neighbours. Address-book records retain precedence; hints are bounded
+> by configurable capacity and lifetime and are not signed discovery records.
+> The original partition test passes with its timeout and assertions unchanged.
+> From `C:/t/turnstone-clean-cwd`, without local dependency patches:
+> `cargo +1.97.1 test --manifest-path C:/Users/mark_/Code/repos/turnstone/Cargo.toml --lib --no-default-features`
+> passed **454 tests, 9 ignored, 0 failed**, in 110.75 seconds. Log:
+> `C:/t/turnstone-immutable-final.log`. `cargo tree` confirms the git revision.
+> The shared fork's broader seeded-port suite remains a separate partial
+> receipt: Windows rejected UDP port 62166 with error 10013, and its exclusion
+> table includes 62084..62183. No OS settings were changed.
 >
 > **Reticulum and Micron boundary, 2026-09-11:** Retinue supplies a
-> Gemini-over-Reticulum example, but no public NomadNet client or Micron API;
-> Micron remains native raw source until its parser and view exist in their
-> owning layers. Turnstone does not add a pretend `nomadnet://` route or read
-> GPL NomadNet implementation source.
+> native NomadNet page access/serving through its new `nomadnet` adapter at
+> `c98b1a46a1166b6180d7d01d03d80fcbbebb653f`. Mere and standalone Knot now have
+> an evidence-qualified partial Micron preview. This Turnstone pin does not yet
+> adopt those presentation changes or add a NomadNet address-entry route.
+> GPL NomadNet implementation source was not used for these integrations.
 > The same suite now includes a deterministic browser-control receipt: a local
 > Gemini response stays open while the rendered Stop control cancels its exact
 > request, the control returns to Reload and issues a second request, and a
