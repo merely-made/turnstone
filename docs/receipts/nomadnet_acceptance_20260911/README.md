@@ -1,7 +1,8 @@
 # Native Micron and NomadNet acceptance, 2026-09-11
 
-RESULT: clean-pinned tests/build and bounded native UI acceptance passed, with
-the initial-request timeout and error-view recovery limitation recorded below.
+RESULT: clean-pinned tests/build, cold native startup, and automatic failed-view
+Reload recovery passed. Initial acceptance and follow-through receipts are
+separated below; full Micron and broader interoperability remain unqualified.
 
 ## Pinned consumer
 
@@ -111,6 +112,60 @@ and the app's TCP connection disappeared. Log: `C:/t/turnstone-nomadnet-clean-ui
 The exact app executable was checked before stopping PID 28452. The task-local
 stock daemon PID 436 was stopped with TERM. No recovery or HOME mutation was
 performed during this final run.
+
+## Startup and failed-view follow-through
+
+The initial timeout was investigated without stock-reader priming. A fresh
+browser profile fetched directly from a restarted stock node at 14:02:37 UTC.
+A transparent TCP relay then captured two simultaneous path requests when
+restoring the existing Workbench tile with the same command-line address.
+The capture is `C:/t/turnstone-cold-wire.log`. The relay forwards bytes unchanged
+and never originates a Reticulum packet.
+
+Code inspection found that boot appended its launch FetchPage after the restored
+SpawnContent. The spawn therefore created a second fetch identity before the
+queued launch fetch ran. Boot now admits the launch fetch before the matching
+restored spawn. A persisted-node regression exercises adoption and that same
+launch-address path, asserting one fetch identity and the required ordering.
+
+Reload also now moves Failed content back to Requested. A regression verifies
+that a failed native request followed by Reload and success produces the content
+spawn with the replacement body, instead of retaining an error presentation.
+
+Clean pinned Rust 1.97.1 full library tests passed **460 tests, 9 ignored,
+0 failed**, in 103.54 seconds. Log: `C:/t/turnstone-native-recovery-tests.log`.
+The same absolute-manifest, `--locked`, clean-cwd commands listed above were used.
+The desktop build passed in 32.55 seconds:
+`C:/t/turnstone-native-recovery-build.log`.
+
+For the final cold check, a new task-local stock node was created at
+`/tmp/turnstone-nomadnet-cold-final-20260911`. Only its configuration, retained
+fixture identity, and the static page were copied; RNS routing/storage state
+was new. No external reader connected. The rebuilt browser restored its two
+Workbench tiles with the native command-line address and an ephemeral Retinue
+endpoint. Its configured interface was the transparent relay at `127.0.0.1:42430`
+forwarding to the stock node at `127.0.0.1:42429`.
+
+The relay recorded exactly one path request at epoch 1789135835.256, a stock
+path response at 1789135835.259, then link establishment and the page response.
+Turnstone logged 134 bytes at **14:10:36.440 UTC** and automatically created the
+Micron session at **14:10:36.450**. [Cold startup](cold-start-fixed.jpg) shows the
+rendered restored page. There was no Reload or manual Workbench action to obtain
+this first response.
+
+The relay was then stopped to deliberately make a visible Reload fail with
+connection-refused error 10061 at **14:11:11.875**. The [error view](reload-error.jpg)
+replaced the prior content. After restarting the same transparent relay, a
+single visible Reload fetched 134 bytes at **14:11:42.430** and recreated the
+session at **14:11:42.439**. The [recovered view](reload-recovered.jpg) appeared
+automatically, without reopening Workbench. Log:
+`C:/t/turnstone-native-recovery-ui.out`.
+
+The request deadline and transport implementation were unchanged. These checks
+qualify the corrected startup and error-recovery paths; they do not prove the
+precise network cause of the earlier uncaptured timeout or every network fault.
+The verified task app, transparent relay, and stock daemon were stopped after
+capture; listeners 42429 and 42430 were absent. Fixtures and logs were retained.
 
 ## Remaining limits
 

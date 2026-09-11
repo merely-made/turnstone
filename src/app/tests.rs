@@ -831,6 +831,68 @@ fn adopt_session_restores_the_saved_canvas_layout_from_facets() {
     let _ = std::fs::remove_dir_all(&app.data_root);
 }
 
+#[test]
+fn boot_launch_fetch_precedes_the_restored_content_spawn() {
+    let root = std::env::temp_dir().join(format!("turnstone-boot-fetch-{}", uuid::Uuid::new_v4()));
+    let url = "7fc8950ec4e50695be76eddc8e539ee8:/page/turnstone.mu";
+    let mut app = App::test_stub();
+    app.data_root = root.clone();
+    app.sessions = pandect::ManifestStore::with_root(session::sessions_root(&root));
+    let session_id = crate::panes::SessionId::new();
+    let mut manifest = pandect::GraphSessionManifest::new(
+        session_id,
+        crate::panes::GraphId::new(),
+    );
+    manifest.storage_path = Some(session::session_dir(&root, session_id));
+    app.sessions.insert(manifest);
+    app.sessions.flush_dirty().unwrap();
+
+    let key = app.graph_runtimes.visit(url);
+    let node = app.graph_runtimes.graph().get_node(key).unwrap().id;
+    let session_dir = session::session_dir(&root, session_id);
+    session::save_session_graph(&session_dir, app.graph_runtimes.graph());
+    let mut facets = pandect::NodeFacetStore::new();
+    let mut browser = pandect::browser_node_state::BrowserNodeStates::new();
+    browser.entry(node).content_on = true;
+    pandect::write_web_states(&mut facets, &browser);
+    session::save_node_facets(&session_dir, &facets);
+
+    // This is the exact boot sequence after profile and identity setup. The
+    // restored content produces SpawnContent, then the command-line address
+    // is applied to that same persisted node.
+    let mut effects = app.adopt_session(session_id);
+    app.apply_launch_address(url, &mut effects);
+
+    let fetches: Vec<_> = effects
+        .iter()
+        .enumerate()
+        .filter_map(|(index, effect)| match effect {
+            Effect::FetchPage {
+                request,
+                node: actual,
+                url: actual_url,
+                ..
+            } if *actual == node && actual_url == url => Some((index, *request)),
+            _ => None,
+        })
+        .collect();
+    assert_eq!(fetches.len(), 1, "one launch address has one fetch identity");
+    let spawn = effects
+        .iter()
+        .position(|effect| matches!(
+            effect,
+            Effect::SpawnContent { node: actual, url: actual_url }
+                if *actual == node && actual_url == url
+        ))
+        .expect("restored content-on node respawns");
+    assert!(
+        fetches[0].0 < spawn,
+        "the pending request must exist before SpawnContent: {effects:?}"
+    );
+    assert_eq!(app.content.active_fetch(node), Some(fetches[0].1));
+    let _ = std::fs::remove_dir_all(root);
+}
+
 /// The B1 residency arc, headless: a staged install shows its ask, the
 /// confirm mints the denizen (node + binding facet + gate-projected grant
 /// in a persisted nested world), and the runtime rebuilds from durable
@@ -3718,6 +3780,67 @@ fn actor_fetched_body_is_retained_for_the_requested_content_spawn() {
         Effect::SpawnContent { node: actual, url }
             if *actual == node && url == "gemini://capsule.test/"
     )));
+}
+
+#[test]
+fn reload_after_a_failed_native_fetch_replaces_the_error_with_a_content_spawn() {
+    let mut app = App::test_stub();
+    let url = "7fc8950ec4e50695be76eddc8e539ee8:/page/turnstone.mu";
+    app.update(Action::OpenAddress(url.into()));
+    let node = app.graph_runtimes.focused_member().expect("opened node");
+    app.content.note_requested(node);
+    let first_request = app.content.active_fetch(node).expect("first request");
+    app.apply_update(Update::PageFetched {
+        request: first_request,
+        node,
+        url: url.into(),
+        result: Err("native page temporarily unavailable".into()),
+    });
+    assert!(matches!(
+        app.content.get(node),
+        Some(crate::content::NodeContent::Failed(_))
+    ));
+
+    let reload = app.update(Action::Reload);
+    let request = reload
+        .iter()
+        .find_map(|effect| match effect {
+            Effect::FetchPage { request, node: actual, url: actual_url, .. }
+                if *actual == node && actual_url == url => Some(*request),
+            _ => None,
+        })
+        .expect("reload requests the native page again");
+    assert!(reload.iter().any(|effect| matches!(
+        effect,
+        Effect::SpawnContent { node: actual, url: actual_url }
+            if *actual == node && actual_url == url
+    )));
+    assert_eq!(
+        app.content.get(node),
+        Some(&crate::content::NodeContent::Requested),
+        "a successful replacement must be eligible to spawn"
+    );
+
+    let settled = app.apply_update(Update::PageFetched {
+        request,
+        node,
+        url: url.into(),
+        result: Ok(crate::action::FetchedPage::text(
+            None,
+            "> Turnstone\nRecovered native page\n",
+        )),
+    });
+    assert!(settled.iter().any(|effect| matches!(
+        effect,
+        Effect::SpawnContent { node: actual, url: actual_url }
+            if *actual == node && actual_url == url
+    )));
+    assert_eq!(
+        app.content
+            .fetched(node, url)
+            .map(|document| document.body.as_str()),
+        Some("> Turnstone\nRecovered native page\n")
+    );
 }
 
 #[test]

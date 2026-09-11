@@ -131,18 +131,7 @@ impl App {
         };
         let mut effects = app.adopt_session(session_id);
         if let Some(url) = address {
-            // The launch address is a pane-facing visit just like an omnibar
-            // address. Saving it only on Canvas would be erased on the first
-            // pane render when its local selection is restored.
-            let pane = app.default_graph_pane();
-            let key = app
-                .with_graph_pane(pane, |canvas| canvas.visit(url))
-                .expect("the default graph pane must resolve during boot");
-            if crate::browse::is_fetchable(url)
-                && let Some(node) = app.graph_runtimes.graph().get_node(key).map(|n| n.id)
-            {
-                effects.push(app.fetch_page_effect(node, url.to_string(), url.to_string()));
-            }
+            app.apply_launch_address(url, &mut effects);
         } else if minted && app.graph_runtimes.graph().nodes().count() == 0 {
             // A bare FIRST launch: the sample graph, with the omnibar open by
             // itself so the app is discoverable without documentation. A bare
@@ -156,6 +145,37 @@ impl App {
             app.recompute_omnibar_suggestions();
         }
         (app, effects)
+    }
+
+    /// Layer a command-line address over restored state. Kept separate from
+    /// credential and profile bootstrapping so its effect ordering is covered
+    /// without touching a person's profile during tests.
+    pub(super) fn apply_launch_address(&mut self, url: &str, effects: &mut Vec<Effect>) {
+        // The launch address is a pane-facing visit just like an omnibar
+        // address. Saving it only on Canvas would be erased on the first pane
+        // render when its local selection is restored.
+        let pane = self.default_graph_pane();
+        let key = self
+            .with_graph_pane(pane, |canvas| canvas.visit(url))
+            .expect("the default graph pane must resolve during boot");
+        if crate::browse::is_fetchable(url)
+            && let Some(node) = self.graph_runtimes.graph().get_node(key).map(|n| n.id)
+        {
+            // A restored content-on node already has a SpawnContent effect
+            // from adopt_session. The fetch must precede that spawn so the
+            // shell records one request before it decides whether a body is
+            // pending. Appending it would start a request in SpawnContent,
+            // then immediately supersede it with this launch request.
+            let fetch = self.fetch_page_effect(node, url.to_string(), url.to_string());
+            if let Some(index) = effects.iter().position(|effect| {
+                matches!(effect, Effect::SpawnContent { node: actual, url: actual_url }
+                    if *actual == node && actual_url == url)
+            }) {
+                effects.insert(index, fetch);
+            } else {
+                effects.push(fetch);
+            }
+        }
     }
 
     /// Mint a fresh session: a new manifest under `sessions/<id>/`, written

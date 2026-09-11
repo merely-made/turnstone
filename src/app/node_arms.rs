@@ -496,11 +496,17 @@ impl App {
         if crate::browse::is_fetchable(&url) {
             effects.push(self.fetch_page_effect(node, url.clone(), url.clone()));
         }
-        // A live (or in-flight) session respawns fresh; a node
-        // without content stays without (reload is not a spawn).
+        // A live, in-flight, or failed session restarts fresh. A failure has
+        // no shell handle, but it is still a requested content surface: leave
+        // it in Requested so the successful replacement body spawns instead
+        // of merely replacing the cache behind its error tile.
         if matches!(
             self.content.get(node),
-            Some(crate::content::NodeContent::Live | crate::content::NodeContent::Requested)
+            Some(
+                crate::content::NodeContent::Live
+                    | crate::content::NodeContent::Requested
+                    | crate::content::NodeContent::Failed(_)
+            )
         ) {
             self.content.note_requested(node);
             self.events.push(AppEvent::ContentState {

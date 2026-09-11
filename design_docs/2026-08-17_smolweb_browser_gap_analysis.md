@@ -95,7 +95,10 @@ sets.
 > The [consumer acceptance](../docs/receipts/nomadnet_acceptance_20260911/README.md)
 > passed: actual local-file rendering, physical native address entry, stock-node
 > fetch/render, Reload, and Stop releasing the native connection. The updated
-> full library suite passed **458 tests, 9 ignored, 0 failed**.
+> full library suite passed **460 tests, 9 ignored, 0 failed** after startup
+> fetch ordering and failed-view Reload recovery fixes. Cold native discovery
+> with fresh RNS state and automatic error-to-content recovery passed in the
+> rebuilt UI without external reader priming or manual Workbench reopening.
 > GPL NomadNet implementation source was not used for these integrations.
 > The same suite now includes a deterministic browser-control receipt: a local
 > Gemini response stays open while the rendered Stop control cancels its exact
