@@ -456,8 +456,8 @@ impl BrowserHost {
     /// reads them). (Physics catalog — P2.)
     fn apply_physics_from_form(&mut self) -> Result<String, String> {
         let law_id = select_value("physics-select")?;
-        let law = PhysicsLaw::parse(&law_id)
-            .ok_or_else(|| format!("unknown physics law {law_id}"))?;
+        let law =
+            PhysicsLaw::parse(&law_id).ok_or_else(|| format!("unknown physics law {law_id}"))?;
         let mut overlays = Vec::new();
         for overlay in PhysicsOverlay::ALL {
             if element_as::<HtmlInputElement>(&format!("overlay-{}", overlay.id()))?.checked() {
@@ -742,7 +742,7 @@ pub(super) fn update_product_semantics(
             match (host.drag_drop, host.canvas.focused_screen_position()) {
                 (Some((dx, dy)), Some((x, y))) => {
                     format!("{:.0}", ((x - dx).powi(2) + (y - dy).powi(2)).sqrt())
-                }
+                },
                 _ => String::new(),
             },
         ),
@@ -833,7 +833,11 @@ fn select_value(id: &str) -> Result<String, String> {
 /// Fill an empty `<select>` from a `(value, label)` catalog, with an optional
 /// disabled placeholder first. A select that already has options is left
 /// alone, so this is safe to call every frame.
-fn fill_select(id: &str, options: &[(&str, &str)], placeholder: Option<&str>) -> Result<(), String> {
+fn fill_select(
+    id: &str,
+    options: &[(&str, &str)],
+    placeholder: Option<&str>,
+) -> Result<(), String> {
     let select = element_as::<HtmlSelectElement>(id)?;
     if select.length() > 0 {
         return Ok(());
@@ -927,7 +931,10 @@ fn sync_physics_controls(host: &BrowserHost) -> Result<(), String> {
     }
     set_select_value("kind-source-select", host.canvas.physics_kind_source().id())?;
     set_select_value("mass-source-select", host.canvas.physics_mass_source().id())?;
-    set_select_value("depth-source-select", host.canvas.physics_depth_source().id())?;
+    set_select_value(
+        "depth-source-select",
+        host.canvas.physics_depth_source().id(),
+    )?;
     set_select_value(
         "profile-select",
         host.canvas.physics_profile_id().unwrap_or(""),

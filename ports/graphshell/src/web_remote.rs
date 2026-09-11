@@ -137,14 +137,13 @@ impl BrowserHost {
     /// burst, the others keep their simulated positions, every slot is
     /// re-anchored. The score is read, never written. (Physics catalog — P3.)
     pub(crate) fn sync_remote_board(&mut self) {
-        self.remote_board
-            .set_choice(mere::canvas::PhysicsChoice {
-                law: self.canvas.physics_law(),
-                overlays: self.canvas.physics_overlays().to_vec(),
-                kind: self.canvas.physics_kind_source(),
-                mass: self.canvas.physics_mass_source(),
-                depth: self.canvas.physics_depth_source(),
-            });
+        self.remote_board.set_choice(mere::canvas::PhysicsChoice {
+            law: self.canvas.physics_law(),
+            overlays: self.canvas.physics_overlays().to_vec(),
+            kind: self.canvas.physics_kind_source(),
+            mass: self.canvas.physics_mass_source(),
+            depth: self.canvas.physics_depth_source(),
+        });
         let revision = self.remote_revision();
         if revision == self.remote_board_revision && !self.remote_board.is_empty() {
             return;
@@ -196,7 +195,7 @@ impl BrowserHost {
                     link.pending.is_some()
                         || link.driver.is_awaiting()
                         || link.driver.queued_notices() > 0
-                }
+                },
             }
     }
 
@@ -239,7 +238,7 @@ impl BrowserHost {
                     .map(|session| session.0.clone())
                     .unwrap_or_default();
                 (label, address)
-            }
+            },
         }
     }
 
@@ -398,7 +397,7 @@ impl BrowserHost {
                         self.remote_fail("the session writer is gone".to_string());
                     }
                 }
-            }
+            },
             Ok(Advance::Done(outcome)) => self.finish_remote(outcome),
             Ok(Advance::Noted) => self.drain_remote_bells(),
             Err(error) => self.remote_fail(error),
@@ -452,17 +451,17 @@ impl BrowserHost {
                         .and_then(|core| core.mount(0));
                     self.begin_remote(RemoteOp::Mount, progress);
                 }
-            }
+            },
             (Some(RemoteOp::Mount), Outcome::Mounted(session)) => {
                 self.remote_session = Some(session);
                 self.remote_status = "open".to_string();
                 self.chrome_dirty = true;
-            }
+            },
             (Some(RemoteOp::Resnapshot), Outcome::Resnapshotted) => {
                 let revision = self.remote_revision().unwrap_or_default();
                 self.action_status = format!("{} · revision after {revision}", self.action_status);
                 self.chrome_dirty = true;
-            }
+            },
             (Some(RemoteOp::Invoke), Outcome::Intent(result)) => {
                 self.action_draft = None;
                 self.action_draft_target = None;
@@ -478,7 +477,7 @@ impl BrowserHost {
                             .map(|core| core.poll())
                             .ok_or_else(|| "not discovered".to_string());
                         self.begin_remote(RemoteOp::Poll, progress);
-                    }
+                    },
                     IntentResult::Rejected { reason } => {
                         self.action_status = format!("Rejected · {reason}");
                         // No bell on a refusal: read the position back by
@@ -490,21 +489,21 @@ impl BrowserHost {
                             _ => Err("not mounted".to_string()),
                         };
                         self.begin_remote(RemoteOp::Resnapshot, progress);
-                    }
+                    },
                     IntentResult::Stale {
                         current_revision, ..
                     } => {
                         self.action_status =
                             format!("Stale · host at {} · reopen the action", current_revision.0);
-                    }
+                    },
                 }
                 self.chrome_dirty = true;
-            }
+            },
             // A poll answers with whether the core itself folded anything;
             // the bells the driver queued are drained either way.
             (Some(RemoteOp::Poll), Outcome::Changed(_) | Outcome::Descriptor(_)) => {
                 self.drain_remote_bells()
-            }
+            },
             (Some(RemoteOp::Resume), Outcome::Changed(changed)) => {
                 let after = self.remote_revision().unwrap_or_default();
                 let before = self
@@ -519,10 +518,10 @@ impl BrowserHost {
                 };
                 self.chrome_dirty = true;
                 self.drain_remote_bells();
-            }
+            },
             (op, outcome) => {
                 self.remote_fail(format!("unexpected answer to {op:?}: {outcome:?}"));
-            }
+            },
         }
     }
 
@@ -640,9 +639,7 @@ pub(super) fn update_remote_semantics(
     }
     let group = element("remote-actions")?;
     let actions = host.remote_actions();
-    let rendered = group
-        .get_attribute("data-rendered")
-        .unwrap_or_default();
+    let rendered = group.get_attribute("data-rendered").unwrap_or_default();
     let signature = actions
         .iter()
         .map(|(_, action)| action.intent.0.as_str())
@@ -723,7 +720,7 @@ async fn join(
             http("GET", &format!("{signal_url}/invite"), None)
                 .await
                 .map_err(|error| format!("GET /invite: {error}"))?
-        }
+        },
     };
     let invite_fragment = fragment.trim().to_string();
     let invite = InviteV1::parse_fragment(&invite_fragment)
@@ -800,7 +797,7 @@ fn spawn_pumps(
                     let mut host = state.borrow_mut();
                     host.on_remote_line(&line);
                     let _ = update_semantics(&mut host);
-                }
+                },
                 Ok(None) => {
                     let mut host = state.borrow_mut();
                     let closing = host.link_mut().is_some_and(|link| link.closing);
@@ -814,14 +811,14 @@ fn spawn_pumps(
                     host.chrome_dirty = true;
                     let _ = update_semantics(&mut host);
                     break;
-                }
+                },
                 Err(error) => {
                     let mut host = state.borrow_mut();
                     host.remote_joining = false;
                     host.remote_fail(format!("recv: {error}"));
                     let _ = update_semantics(&mut host);
                     break;
-                }
+                },
             }
         }
         // Parked, never dropped: the channel's own close event still lands
@@ -839,7 +836,7 @@ impl BrowserHost {
             Some(link) => {
                 link.pending = Some(RemoteOp::Discover);
                 link.driver.discover()
-            }
+            },
             None => return,
         };
         self.carry_remote(advance);
@@ -927,7 +924,7 @@ impl BrowserHost {
                     host.action_status = format!("Nudged · host at revision {}", revision.trim());
                     host.probe_events
                         .push(format!("remote-nudged revision {}", revision.trim()));
-                }
+                },
                 Err(error) => host.remote_fail(format!("nudge: {error}")),
             }
             host.chrome_dirty = true;
@@ -1013,10 +1010,10 @@ async fn offer_and_signal(
                     if candidate_is_usable(&candidate.candidate) {
                         candidates.borrow_mut().push(candidate.candidate);
                     }
-                }
+                },
                 None => {
                     let _ = finish.call0(&JsValue::NULL);
-                }
+                },
             });
     }
     status("creating the offer");
@@ -1032,9 +1029,11 @@ async fn offer_and_signal(
         .await
         .map_err(|error| describe(&error))?;
     if candidates.borrow().is_empty() {
-        return Err("offer has no usable ICE candidates (mDNS .local names only) — \
+        return Err(
+            "offer has no usable ICE candidates (mDNS .local names only) — \
                     disable chrome://flags/#enable-webrtc-hide-local-ips-with-mdns"
-            .to_string());
+                .to_string(),
+        );
     }
     let full_offer = offer_with_candidates(&offer, &candidates.borrow());
     status("posting the offer");
@@ -1070,7 +1069,10 @@ fn offer_with_candidates(offer: &str, candidates: &[String]) -> String {
 fn resolver() -> (Promise, Function) {
     let mut slot: Option<Function> = None;
     let promise = Promise::new(&mut |resolve, _reject| slot = Some(resolve));
-    (promise, slot.expect("a Promise executor runs synchronously"))
+    (
+        promise,
+        slot.expect("a Promise executor runs synchronously"),
+    )
 }
 
 fn timeout(ms: i32) -> Result<Promise, String> {

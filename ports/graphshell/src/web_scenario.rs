@@ -94,7 +94,10 @@ pub fn run_scenario(text: &str) -> Result<(), JsValue> {
         frames: 0,
     });
     mark(&document().map_err(js)?, "running", None).map_err(js)?;
-    root().map_err(js)?.dispatch_event(&Event::new("graphshell-wake")?).map_err(|_| JsValue::from_str("Could not wake scenario"))?;
+    root()
+        .map_err(js)?
+        .dispatch_event(&Event::new("graphshell-wake")?)
+        .map_err(|_| JsValue::from_str("Could not wake scenario"))?;
     Ok(())
 }
 
@@ -142,7 +145,7 @@ pub(super) fn tick(host: &mut BrowserHost) {
                     let _ = document.dispatch_event(&event);
                 }
             }
-        }
+        },
     }
 }
 
@@ -171,7 +174,12 @@ fn page_element(document: &web_sys::Document, id: &str) -> Result<Element, Strin
 /// Finish a capture whose readback has landed: encode the pixels as a PNG
 /// through a 2D canvas (the browser's encoder, so no image dependency) and
 /// hang the data URL off the DOM where a receipt can collect it.
-pub(super) fn publish_capture(name: &str, width: u32, height: u32, rgba: &[u8]) -> Result<(), String> {
+pub(super) fn publish_capture(
+    name: &str,
+    width: u32,
+    height: u32,
+    rgba: &[u8],
+) -> Result<(), String> {
     let document = document()?;
     let canvas: HtmlCanvasElement = document
         .create_element("canvas")
@@ -212,7 +220,10 @@ pub(super) fn publish_capture(name: &str, width: u32, height: u32, rgba: &[u8]) 
 
 /// Parse exactly `count` whitespace-separated numbers from a verb's arguments.
 fn numbers(rest: &str, count: usize) -> Result<Vec<f32>, String> {
-    let parsed: Vec<f32> = rest.split_whitespace().filter_map(|t| t.parse().ok()).collect();
+    let parsed: Vec<f32> = rest
+        .split_whitespace()
+        .filter_map(|t| t.parse().ok())
+        .collect();
     if parsed.len() == count {
         Ok(parsed)
     } else {
@@ -229,7 +240,9 @@ impl Probe<'_> {
     /// Queue a pointer event for the canvas. Queued, not dispatched: see
     /// [`DomAction`].
     fn pointer(&mut self, kind: &'static str, x: f32, y: f32) {
-        self.host.deferred_dom.push(DomAction::Pointer { kind, x, y });
+        self.host
+            .deferred_dom
+            .push(DomAction::Pointer { kind, x, y });
     }
 
     /// Where the single focused node is, in the pointer's screen space.
@@ -251,9 +264,11 @@ impl Probe<'_> {
                 // Resolved now, so a wrong selector fails this step; clicked
                 // after the tick, so the host's listener can take the host.
                 html_element(css)?;
-                self.host.deferred_dom.push(DomAction::Click(css.to_string()));
+                self.host
+                    .deferred_dom
+                    .push(DomAction::Click(css.to_string()));
                 Ok(())
-            }
+            },
             "focus" => html_element(rest)?
                 .focus()
                 .map_err(|_| format!("focus '{rest}': refused")),
@@ -261,7 +276,7 @@ impl Probe<'_> {
                 let spec = parse_chord(rest)?;
                 self.host.deferred_dom.push(DomAction::Key(spec));
                 Ok(())
-            }
+            },
             "type" => {
                 let (css, text) = split_first(rest);
                 let target = find(css)?;
@@ -275,7 +290,7 @@ impl Probe<'_> {
                     text: text.to_string(),
                 });
                 Ok(())
-            }
+            },
             // The drag gesture in three steps: the queued pointer events need a
             // frame between them to take, so a receipt steps them itself.
             // (Physics catalog — P4.)
@@ -283,19 +298,19 @@ impl Probe<'_> {
                 let (x, y) = self.focused_point()?;
                 self.press(x, y);
                 Ok(())
-            }
+            },
             "move-by" => {
                 let d = numbers(rest, 2)?;
                 let (x, y) = self.focused_point()?;
                 self.moved(x + d[0], y + d[1]);
                 Ok(())
-            }
+            },
             "release-at" => {
                 let (x, y) = self.focused_point()?;
                 self.release(x, y);
                 self.host.drag_drop = Some((x, y));
                 Ok(())
-            }
+            },
             // `add-node <x> <y> <url>`: the empty-space add gesture, at a point
             // the receipt picks. (Physics catalog — P4.)
             "add-node" => {
@@ -307,7 +322,7 @@ impl Probe<'_> {
                 self.host.canvas.add_node_at((n[0], n[1]), url.trim());
                 self.host.chrome_dirty = true;
                 Ok(())
-            }
+            },
             "select" => {
                 let (css, value) = split_first(rest);
                 if find(css)?.dyn_ref::<HtmlSelectElement>().is_none() {
@@ -318,7 +333,7 @@ impl Probe<'_> {
                     value: value.to_string(),
                 });
                 Ok(())
-            }
+            },
             "check" => {
                 let (css, state) = split_first(rest);
                 let on = match state.trim() {
@@ -334,7 +349,7 @@ impl Probe<'_> {
                     on,
                 });
                 Ok(())
-            }
+            },
             "click-at" => {
                 let mut parts = rest.split_whitespace();
                 let x: f32 = parts
@@ -348,7 +363,7 @@ impl Probe<'_> {
                 self.press(x, y);
                 self.release(x, y);
                 Ok(())
-            }
+            },
             "assert" => self.app_assert(rest, line),
             _ => Err(format!("unknown verb: {line}")),
         }
@@ -363,21 +378,30 @@ impl Probe<'_> {
                 if text.contains(expected) {
                     Ok(())
                 } else {
-                    Err(format!("assert dom {css} '{expected}': got '{}'", text.trim()))
+                    Err(format!(
+                        "assert dom {css} '{expected}': got '{}'",
+                        text.trim()
+                    ))
                 }
-            }
+            },
             "attr" => {
                 let mut parts = arg.splitn(3, char::is_whitespace);
-                let css = parts.next().ok_or("assert attr wants <css> <name> <value>")?;
-                let name = parts.next().ok_or("assert attr wants <css> <name> <value>")?;
+                let css = parts
+                    .next()
+                    .ok_or("assert attr wants <css> <name> <value>")?;
+                let name = parts
+                    .next()
+                    .ok_or("assert attr wants <css> <name> <value>")?;
                 let expected = parts.next().unwrap_or("").trim();
                 let got = find(css)?.get_attribute(name);
                 if got.as_deref() == Some(expected) {
                     Ok(())
                 } else {
-                    Err(format!("assert attr {css} {name} '{expected}': got {got:?}"))
+                    Err(format!(
+                        "assert attr {css} {name} '{expected}': got {got:?}"
+                    ))
                 }
-            }
+            },
             "title" => {
                 let title = document()?.title();
                 if title.contains(arg) {
@@ -385,11 +409,14 @@ impl Probe<'_> {
                 } else {
                     Err(format!("assert title '{arg}': got '{title}'"))
                 }
-            }
+            },
             "focused" => {
                 let wanted = find(arg)?;
                 let active = document()?.active_element();
-                if active.as_ref().is_some_and(|active| active.is_same_node(Some(&wanted))) {
+                if active
+                    .as_ref()
+                    .is_some_and(|active| active.is_same_node(Some(&wanted)))
+                {
                     Ok(())
                 } else {
                     Err(format!(
@@ -397,7 +424,7 @@ impl Probe<'_> {
                         active.map(|active| active.tag_name())
                     ))
                 }
-            }
+            },
             _ => Err(format!("unknown assertion: {line}")),
         }
     }
@@ -446,7 +473,9 @@ impl Automatable for Probe<'_> {
         snap = snap.with_field("camera", camera);
         snap = snap.with_field(
             "focused-node",
-            canvas.get_attribute("data-focused-node").unwrap_or_default(),
+            canvas
+                .get_attribute("data-focused-node")
+                .unwrap_or_default(),
         );
         snap = snap.with_field("action-status", self.host.action_status.clone());
         snap = snap.with_field("remote-link", self.host.remote_link_name());
@@ -530,14 +559,27 @@ fn html_element(css: &str) -> Result<HtmlElement, String> {
 /// is free, and the effect is in the DOM by the next frame, which is when
 /// the next step looks.
 pub(crate) enum DomAction {
-    Pointer { kind: &'static str, x: f32, y: f32 },
+    Pointer {
+        kind: &'static str,
+        x: f32,
+        y: f32,
+    },
     Click(String),
     Key(KeySpec),
-    Type { css: String, text: String },
+    Type {
+        css: String,
+        text: String,
+    },
     /// Set a `<select>`'s value, then fire `change`.
-    Select { css: String, value: String },
+    Select {
+        css: String,
+        value: String,
+    },
     /// Set a checkbox on or off, then fire `change`.
-    Check { css: String, on: bool },
+    Check {
+        css: String,
+        on: bool,
+    },
 }
 
 /// A parsed key chord: modifiers and the `KeyboardEvent.key` value.
@@ -582,11 +624,11 @@ fn dispatch(action: DomAction) -> Result<(), String> {
                 .dispatch_event(&event)
                 .map_err(|_| format!("could not dispatch {kind}"))?;
             Ok(())
-        }
+        },
         DomAction::Click(css) => {
             html_element(&css)?.click();
             Ok(())
-        }
+        },
         DomAction::Key(spec) => {
             let init = KeyboardEventInit::new();
             init.set_bubbles(true);
@@ -609,7 +651,7 @@ fn dispatch(action: DomAction) -> Result<(), String> {
                 .dispatch_event(&event)
                 .map_err(|_| "could not dispatch the key event".to_string())?;
             Ok(())
-        }
+        },
         DomAction::Select { css, value } => {
             let target = find(&css)?;
             let select = target
@@ -627,7 +669,7 @@ fn dispatch(action: DomAction) -> Result<(), String> {
                 .dispatch_event(&event)
                 .map_err(|_| "could not dispatch the change event".to_string())?;
             Ok(())
-        }
+        },
         DomAction::Check { css, on } => {
             let target = find(&css)?;
             let input = target
@@ -642,7 +684,7 @@ fn dispatch(action: DomAction) -> Result<(), String> {
                 .dispatch_event(&event)
                 .map_err(|_| "could not dispatch the change event".to_string())?;
             Ok(())
-        }
+        },
         DomAction::Type { css, text } => {
             let target = find(&css)?;
             if let Some(input) = target.dyn_ref::<HtmlInputElement>() {
@@ -658,7 +700,7 @@ fn dispatch(action: DomAction) -> Result<(), String> {
                 .dispatch_event(&event)
                 .map_err(|_| "could not dispatch the input event".to_string())?;
             Ok(())
-        }
+        },
     }
 }
 
@@ -673,7 +715,11 @@ fn parse_chord(chord: &str) -> Result<KeySpec, String> {
         meta: false,
     };
     let mut named = false;
-    for part in chord.split('+').map(str::trim).filter(|part| !part.is_empty()) {
+    for part in chord
+        .split('+')
+        .map(str::trim)
+        .filter(|part| !part.is_empty())
+    {
         match part.to_ascii_lowercase().as_str() {
             "ctrl" | "control" => spec.ctrl = true,
             "shift" => spec.shift = true,
@@ -682,7 +728,7 @@ fn parse_chord(chord: &str) -> Result<KeySpec, String> {
             name => {
                 spec.key = key_name(name, part);
                 named = true;
-            }
+            },
         }
     }
     if !named {
