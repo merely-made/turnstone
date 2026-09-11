@@ -1550,6 +1550,56 @@ mod tests {
         );
     }
 
+    /// Scroll is a complete retained-document lane, not a gemtext fallback:
+    /// its shared route, remote fetcher and ScrollEngine must remain registered
+    /// together in the product host.
+    #[test]
+    fn scroll_route_lands_in_a_live_nematic_session() {
+        let engines = standard_content_engines();
+        let decision = standard_route_policy().route(&inker::EngineRouteRequest {
+            workspace_id: inker::WorkspaceRouteId::new("turnstone-test"),
+            view: None,
+            node: None,
+            address: "scroll://archive.test/reading.scroll".to_string(),
+            content_type: Some("text/scroll".to_string()),
+            pinned_engine: None,
+        });
+
+        assert_eq!(decision.engine_id, inker::routing::ENGINE_NEMATIC_SCROLL);
+        assert!(engines.contains(&decision.engine_id));
+
+        let request = SessionSpawnRequest::new("scroll://archive.test/reading.scroll")
+            .with_content_type("text/scroll")
+            .with_body(
+                "# Scroll reading\n\
+                 A protocol-faithful source keeps its own structure.\n\
+                 => /reference Source record [Citation]\n",
+            )
+            .with_viewport(640, 480);
+        let mut session = engines
+            .spawn(&decision.engine_id, &request)
+            .expect("the registered Scroll lane spawns");
+        let scene = session.frame(640, 480);
+        assert!(
+            scene
+                .ops
+                .iter()
+                .any(|op| matches!(op, netrender::SceneOp::GlyphRun(_))),
+            "scrolltext reaches the retained scene"
+        );
+        let report = session.inspect().expect("Scroll exposes structure");
+        assert_eq!(report.title.as_deref(), Some("Scroll reading"));
+        assert_eq!(report.links, vec!["/reference"]);
+
+        let link = session.links().into_iter().next().expect("laid-out link");
+        let [x, y, width, height] = link.rect;
+        let SessionClick::Navigate(href) = session.click_at(x + width / 2.0, y + height / 2.0)
+        else {
+            panic!("the laid-out Scroll link must navigate");
+        };
+        assert_eq!(href, "/reference");
+    }
+
     #[test]
     fn automatic_html_routes_to_the_registered_livery_session() {
         let engines = standard_content_engines();

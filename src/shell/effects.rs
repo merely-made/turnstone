@@ -506,7 +506,10 @@ impl Shell {
                 Effect::SaveSession => self.save_session(),
                 Effect::ChooseKnotDocumentFile { read_only } => {
                     if let Some(path) = rfd::FileDialog::new()
-                        .add_filter("Djot or Knot", &["djot", "knot"])
+                        .add_filter(
+                            "Knot, Djot, Scroll, Gemtext, or Micron",
+                            &["knot", "djot", "scroll", "gmi", "gemini", "mu", "micron"],
+                        )
                         .pick_file()
                     {
                         let source = if read_only {

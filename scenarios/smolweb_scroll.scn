@@ -1,0 +1,16 @@
+# Scroll headed receipt. The local TLS fixture validates Scroll's distinct
+# request line and three response metadata lines; this surface proves that a
+# text/scroll body arrives through Turnstone's actor, route policy and native
+# Nematic engine rather than degrading to gemtext.
+settle 30
+key escape
+open scroll://127.0.0.1:19657/reading.scroll
+settle 60
+assert visible
+act Toggle live content
+settle 60
+assert content-live
+assert surface content
+assert focused reading.scroll
+capture 01_scroll_document
+log smolweb Scroll browse receipt complete

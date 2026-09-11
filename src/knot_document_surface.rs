@@ -154,7 +154,13 @@ fn invalid_payload(message: String) -> SurfaceAdmissionError {
 fn admit_file(path: &Path) -> Result<(), SurfaceAdmissionError> {
     if !matches!(
         DocumentFormat::from_path(path),
-        Some(DocumentFormat::Djot | DocumentFormat::Knot)
+        Some(
+            DocumentFormat::Djot
+                | DocumentFormat::Knot
+                | DocumentFormat::Scroll
+                | DocumentFormat::Gemtext
+                | DocumentFormat::Micron
+        )
     ) {
         return Err(SurfaceAdmissionError::Unavailable {
             reason: SurfaceUnavailableReason::Unsupported,
@@ -234,6 +240,63 @@ mod tests {
             session.snapshot().write_posture,
             knot_document::KnotDocumentWritePostureV1::ReadOnly
         );
+    }
+
+    #[test]
+    fn native_protocol_sources_are_admitted_by_extension() {
+        let temp = tempdir().unwrap();
+        let scroll = temp.path().join("reading.scroll");
+        let gemtext = temp.path().join("capsule.gmi");
+        let micron = temp.path().join("node.mu");
+        std::fs::write(&scroll, "# Reading\n").unwrap();
+        std::fs::write(&gemtext, "# Capsule\n").unwrap();
+        std::fs::write(&micron, "Micron source: café and 東京.\n").unwrap();
+        let mut registry = SurfaceProviderRegistry::new();
+        registry
+            .register_provider(KnotDocumentProvider::default())
+            .expect("Knot provider");
+
+        for path in [&scroll, &gemtext, &micron] {
+            let pane = registry
+                .admit(&PaneKindId::new(PANE_KIND), &file_source(path))
+                .expect("native protocol source admission");
+            assert!(pane.availability().is_available());
+        }
+    }
+
+    #[test]
+    fn native_protocol_file_sessions_edit_and_save_exact_source_bytes() {
+        let temp = tempdir().unwrap();
+        for (name, source) in [
+            ("reading.scroll", "# Scroll\r\n=> /about About [Citation]\r\n"),
+            ("capsule.gmi", "# Gemini\r\n=> /about About\r\n"),
+            ("node.mu", "Micron source: café and 東京.\r\n"),
+        ] {
+            let path = temp.path().join(name);
+            std::fs::write(&path, source).unwrap();
+            let mut session = open_session(&KnotDocumentFileSourceV1 {
+                path: path.clone(),
+                access: KnotDocumentAccessV1::ReadWrite,
+            })
+            .expect("editable native protocol session");
+            session
+                .apply(knot_document::KnotDocumentIntentV1::Edit(
+                    cambium::TextCommand::SelectAll,
+                ))
+                .unwrap();
+            let edited = format!("{source}\r\nNative source remains exact.\r\n");
+            session
+                .apply(knot_document::KnotDocumentIntentV1::Edit(
+                    cambium::TextCommand::Insert(edited.clone()),
+                ))
+                .unwrap();
+            let saved = session
+                .apply(knot_document::KnotDocumentIntentV1::Save)
+                .expect("native source save");
+            assert!(!saved.dirty);
+            assert_eq!(saved.text, edited);
+            assert_eq!(std::fs::read(&path).unwrap(), edited.as_bytes());
+        }
     }
 
     #[test]

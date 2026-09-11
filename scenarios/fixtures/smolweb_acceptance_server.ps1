@@ -6,7 +6,7 @@
 
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet("GeminiImage", "GeminiDownload", "GeminiStreaming", "GeminiTypography", "GeminiBrowserControls", "Titan", "Spartan")]
+    [ValidateSet("GeminiImage", "GeminiDownload", "GeminiStreaming", "GeminiTypography", "GeminiBrowserControls", "Titan", "Spartan", "Scroll")]
     [string] $Mode,
 
     [Parameter(Mandatory = $true)]
@@ -154,7 +154,7 @@ try {
     $listener.Start()
     [System.IO.File]::WriteAllText($ReadyPath, "READY $Mode 127.0.0.1:$Port`n")
 
-    if ($Mode -in @("GeminiImage", "GeminiDownload", "GeminiStreaming", "GeminiTypography", "GeminiBrowserControls", "Titan")) {
+    if ($Mode -in @("GeminiImage", "GeminiDownload", "GeminiStreaming", "GeminiTypography", "GeminiBrowserControls", "Titan", "Scroll")) {
         $rsa = [System.Security.Cryptography.RSA]::Create(2048)
         $certificateRequest = [System.Security.Cryptography.X509Certificates.CertificateRequest]::new(
             "CN=127.0.0.1",
@@ -188,7 +188,31 @@ try {
             $tls = Open-TlsServerStream -Client $client -Certificate $certificate
             try {
                 $packet = Read-CrlfPacket -Stream $tls
-                if ($Mode -eq "Titan") {
+                if ($Mode -eq "Scroll") {
+                    $expectedTarget = "scroll://127.0.0.1:$Port/reading.scroll "
+                    if ($packet.Line -ne $expectedTarget) {
+                        throw "Scroll target was '$($packet.Line)', expected '$expectedTarget'"
+                    }
+                    $body = @'
+# Scroll acceptance
+A retained Scroll document keeps its own source grammar.
+=> /reference Source record [Citation]
+'@
+                    Write-Response -Stream $tls -Text (
+                        "20 text/scroll`r`n" +
+                        "Turnstone acceptance`r`n" +
+                        "2026-09-11T00:00:00Z`r`n" +
+                        "`r`n" +
+                        $body
+                    )
+                    $receipt.Add("RESULT ok")
+                    $receipt.Add("protocol=scroll")
+                    $receipt.Add("target=$expectedTarget")
+                    $receipt.Add("response=20 text/scroll")
+                    $receipt.Add("metadata=author,published,modified")
+                    $receipt.Add("link-relation=Citation")
+                }
+                elseif ($Mode -eq "Titan") {
                     $fields = $packet.Line -split ";"
                     $target = $fields[0]
                     $parameters = @{}

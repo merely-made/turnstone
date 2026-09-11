@@ -46,6 +46,27 @@ sets.
 > typography, and Livery-to-Knot source evidence all have checked-in `RESULT ok`
 > receipts and headed captures in
 > [`docs/receipts/smolweb_acceptance_20260821`](../docs/receipts/smolweb_acceptance_20260821/README.md).
+>
+> **Scroll verification, 2026-09-11:** Turnstone's ordinary content registry
+> already registers `nematic.scroll`, its route policy maps `scroll://` to
+> that engine, and the shared fetch actor reaches Errand's TLS Scroll client.
+> A focused route/session regression and a local headed TLS fixture cover
+> the complete product composition: Scroll's request line, success metadata,
+> `text/scroll` response, retained native rendering, and a followable link.
+> Scroll uses the protocol's TOFU posture. It has no client-certificate UI in
+> Turnstone, so this is read-only browsing rather than a claim of complete
+> Scroll authoring. A clean-scratch `cargo +1.97.1` build and headed local
+> receipt passed on 2026-09-11; the capture visibly retains the heading, body,
+> and relation-labelled link. The concurrent full `--lib --no-default-features`
+> gate reached 453 passed and 9 ignored, but its existing
+> `place::lanes::tests::a_partition_heals_and_both_sides_converge` timed out,
+> so it is not a full-green receipt for this slice.
+>
+> **Reticulum and Micron boundary, 2026-09-11:** Retinue supplies a
+> Gemini-over-Reticulum example, but no public NomadNet client or Micron API;
+> Micron remains native raw source until its parser and view exist in their
+> owning layers. Turnstone does not add a pretend `nomadnet://` route or read
+> GPL NomadNet implementation source.
 > The same suite now includes a deterministic browser-control receipt: a local
 > Gemini response stays open while the rendered Stop control cancels its exact
 > request, the control returns to Reload and issues a second request, and a

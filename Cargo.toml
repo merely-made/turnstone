@@ -93,10 +93,10 @@ graphshell = { git = "https://github.com/merely-made/mere.git", rev = "c328e6fc9
 # endpoint rather than spawning it: a subprocess is unshippable in a browser
 # tab or an iOS app, so the spawn path cannot be the only one.
 graphshell-local = { git = "https://github.com/merely-made/mere.git", rev = "c328e6fc9028f0024a82c4a0086bf15605812630" }
-knot = { package = "knot-editor", git = "https://github.com/merely-made/knot-editor.git", rev = "2309dc54f501ffd4de0392e8be59edeade6b4d07" }
+knot = { package = "knot-editor", git = "https://github.com/merely-made/knot-editor.git", rev = "6977ee725fc1b488cd4bf7b606f8d85ea0a9bde2" }
 # The reusable one-document product surface. This stays separate from the
 # broad Knot port graph used by publishing and endpoint composition above.
-knot-document = { git = "https://github.com/merely-made/knot-editor.git", rev = "2309dc54f501ffd4de0392e8be59edeade6b4d07" }
+knot-document = { git = "https://github.com/merely-made/knot-editor.git", rev = "6977ee725fc1b488cd4bf7b606f8d85ea0a9bde2" }
 # The installed Distillery projection surface: the independent second provider
 # proving the contributed-surface seam (Knot shared-surface plan P0).
 distillery = { git = "https://github.com/merely-made/mere.git", rev = "c328e6fc9028f0024a82c4a0086bf15605812630" }
@@ -263,6 +263,7 @@ windows = { version = "0.62", features = ["Win32_Foundation"], optional = true }
 # mere must restate them. Owned sources are pinned to immutable revisions or
 # release tags; no local paths appear here, so a clean checkout compiles anywhere.
 [patch.crates-io]
+gemini-protocol = { git = "https://github.com/merely-made/smolweb.git", rev = "882baeb1b59bbdbb305e475f6675f69af997c4f4" }
 # No Stylo-family patch: Genet's live route is Livery/Buckram. The surviving
 # `stylo_malloc_size_of` utility is independent and does not link a CSS engine.
 #
