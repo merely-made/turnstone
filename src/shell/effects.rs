@@ -572,6 +572,23 @@ impl Shell {
                     let follow_up = self.app.finish_leave_place(session, generation, result);
                     self.run_effects(follow_up);
                 }
+                Effect::ReconnectPlace {
+                    session,
+                    generation,
+                    binding,
+                } => {
+                    if self.app.session_id != session
+                        || self.app.place.generation() != Some(generation)
+                    {
+                        continue;
+                    }
+                    self.place_handle.command(crate::place::worker::PlaceWorkerCommand::Reconnect {
+                        session,
+                        generation,
+                        directory: session::session_dir(&self.app.data_root, session),
+                        binding,
+                    });
+                }
                 Effect::RunPlaceCommand {
                     session,
                     generation,

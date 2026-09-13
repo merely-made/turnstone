@@ -1141,6 +1141,7 @@ impl App {
             Action::SaveSession => vec![Effect::SaveSession],
             Action::JoinPlace(invite) => self.join_place(invite),
             Action::LeavePlace => self.leave_place(),
+            Action::ReconnectPlace => self.reconnect_place(),
             Action::SendPlaceMessage { channel, body } => {
                 self.run_place_command(crate::place::worker::PlaceCommand::SendMessage {
                     channel,

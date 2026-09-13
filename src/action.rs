@@ -263,6 +263,8 @@ pub enum Action {
     /// Leave the active place locally, detaching its binding while preserving
     /// retained stores and shared membership records.
     LeavePlace,
+    /// Dial saved contact hints for the currently admitted place.
+    ReconnectPlace,
     /// Send one message to a channel of the active place.
     SendPlaceMessage { channel: String, body: String },
     /// Share the focused node's address into the place's shared graph.
@@ -576,6 +578,7 @@ pub fn palette_actions() -> Vec<(String, Action)> {
         ("Rename session", Action::BeginRenameSession),
         ("Close session", Action::CloseSession),
         ("Leave place", Action::LeavePlace),
+        ("Reconnect place", Action::ReconnectPlace),
     ]);
 
     let mut rows: Vec<(String, Action)> = actions
@@ -758,6 +761,11 @@ pub enum Effect {
     LeavePlace {
         session: crate::panes::SessionId,
         generation: u64,
+    },
+    ReconnectPlace {
+        session: crate::panes::SessionId,
+        generation: u64,
+        binding: crate::place::PlaceBindingV1,
     },
     /// Author one fact into the active place and publish it to live peers.
     RunPlaceCommand {

@@ -4321,3 +4321,80 @@ fn spartan_prompt_target_resolves_against_its_source_member() {
         crate::ui::SmolwebSubmissionProtocol::Spartan
     );
 }
+
+#[test]
+fn reconnect_place_requires_binding_and_ignores_departed_generation() {
+    let mut app = App::test_stub();
+    assert_eq!(app.update(Action::ReconnectPlace), vec![Effect::Redraw]);
+    assert_eq!(app.place, crate::place::PlaceState::Personal);
+    let binding = crate::place::PlaceBindingV1::new(
+        crate::place::PlaceId([0xa1; 32]),
+        crate::place::SharedContainerId([0xa2; 32]),
+        crate::place::ChatSpaceId([0xa3; 32]), "hall",
+    ).unwrap();
+    app.next_place_generation = 8;
+    app.place = crate::place::PlaceState::Offline {
+        binding: binding.clone(), generation: 8,
+        snapshot: crate::place::OfflinePlaceSnapshot::default(),
+    };
+    assert_eq!(app.update(Action::ReconnectPlace), vec![Effect::ReconnectPlace {
+        session: app.session_id, generation: 9, binding: binding.clone(),
+    }]);
+    let stale = Update::PlaceOpened {
+        session: app.session_id, generation: 8,
+        result: Ok(crate::place::OfflinePlaceSnapshot::default()),
+    };
+    assert!(app.apply_update(stale).is_empty());
+    assert!(matches!(app.place, crate::place::PlaceState::Opening { generation: 9, .. }));
+    app.apply_update(Update::PlaceOpened {
+        session: app.session_id, generation: 9, result: Err("offer expired".into()),
+    });
+    assert!(matches!(app.place, crate::place::PlaceState::Degraded { generation: 9, .. }));
+    assert_eq!(app.place.binding(), Some(&binding));
+    assert_eq!(app.update(Action::ReconnectPlace), vec![Effect::ReconnectPlace {
+        session: app.session_id, generation: 10, binding,
+    }]);
+    assert!(app.apply_update(Update::PlaceOpened {
+        session: app.session_id, generation: 9,
+        result: Ok(crate::place::OfflinePlaceSnapshot::default()),
+    }).is_empty());
+}
+
+#[test]
+fn reconnect_metadata_failure_does_not_remove_the_admitted_binding() {
+    let directory = std::env::temp_dir().join(format!("turnstone-reconnect-leave-{}", uuid::Uuid::new_v4()));
+    let binding = crate::place::PlaceBindingV1::new(
+        crate::place::PlaceId([0xb1; 32]),
+        crate::place::SharedContainerId([0xb2; 32]),
+        crate::place::ChatSpaceId([0xb3; 32]), "hall",
+    ).unwrap();
+    crate::session::save_place_binding(&directory, &binding).unwrap();
+    std::fs::create_dir(directory.join(crate::place::rendezvous::RENDEZVOUS_FILE)).unwrap();
+    assert!(crate::session::remove_place_binding(&directory).is_err());
+    assert_eq!(crate::session::load_place_binding(&directory).unwrap(), Some(binding));
+}
+
+#[cfg(windows)]
+#[test]
+fn reconnect_hint_cleanup_can_fail_at_binding_removal_without_losing_history() {
+    use std::os::windows::fs::OpenOptionsExt;
+    let directory = std::env::temp_dir().join(format!("turnstone-reconnect-leave-locked-{}", uuid::Uuid::new_v4()));
+    let binding = crate::place::PlaceBindingV1::new(
+        crate::place::PlaceId([0xc1; 32]),
+        crate::place::SharedContainerId([0xc2; 32]),
+        crate::place::ChatSpaceId([0xc3; 32]), "hall",
+    ).unwrap();
+    crate::session::save_place_binding(&directory, &binding).unwrap();
+    let hints = directory.join(crate::place::rendezvous::RENDEZVOUS_FILE);
+    std::fs::write(&hints, b"contact metadata").unwrap();
+    std::fs::write(directory.join("retained-history"), b"history").unwrap();
+    let locked = std::fs::OpenOptions::new().read(true).share_mode(0)
+        .open(crate::session::place_binding_path(&directory)).unwrap();
+    assert!(crate::session::remove_place_binding(&directory).is_err());
+    drop(locked);
+    assert_eq!(crate::session::load_place_binding(&directory).unwrap(), Some(binding));
+    assert!(!hints.exists());
+    assert_eq!(std::fs::read(directory.join("retained-history")).unwrap(), b"history");
+    assert!(crate::session::remove_place_binding(&directory).unwrap());
+    assert_eq!(crate::session::load_place_binding(&directory).unwrap(), None);
+}

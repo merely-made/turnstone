@@ -16,6 +16,7 @@ pub(crate) mod captured_collection;
 pub mod invite;
 pub(crate) mod lanes;
 pub mod projection;
+pub(crate) mod rendezvous;
 pub mod worker;
 
 /// The only binding version this Turnstone build understands.

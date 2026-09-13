@@ -403,6 +403,23 @@ impl App {
         }]
     }
 
+    /// Reopen admitted state and dial its saved contact hints on an explicit gesture.
+    pub fn reconnect_place(&mut self) -> Vec<Effect> {
+        let Some(binding) = self.place.binding().cloned() else {
+            self.events.push(AppEvent::PlaceRefused(
+                "join a place before reconnecting".into(),
+            ));
+            return vec![Effect::Redraw];
+        };
+        self.next_place_generation = self.next_place_generation.wrapping_add(1);
+        let generation = self.next_place_generation;
+        self.place = crate::place::PlaceState::Opening {
+            binding: binding.clone(),
+            generation,
+        };
+        vec![Effect::ReconnectPlace { session: self.session_id, generation, binding }]
+    }
+
     /// Request local departure. The shell releases the worker and removes the
     /// binding before completing the transition to a personal session.
     pub fn leave_place(&mut self) -> Vec<Effect> {

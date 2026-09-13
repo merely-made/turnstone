@@ -729,14 +729,14 @@ is refused before it authors, and an operation that arrives from a peer whose
 grant was withdrawn stays retained and out of the projection. Those are
 different mechanisms and only the second is about convergence.
 
-**The restart receipt pins an open gap on purpose.** A restarted place comes
+**Historical restart receipt, before explicit reconnect:** a restarted place comes
 back **offline**, holding everything it converged on, because `Open` does not
 dial: only `Join` carries a rendezvous and the invitation is not persisted. It
 is fully usable offline, which the receipt asserts by authoring into it, and
 that authored fact will publish whenever it next joins. But nothing
 reconnects on its own.
 
-That is the next real decision, and it is not merely "persist the ticket": an
+At that checkpoint the next decision was not merely "persist the ticket": an
 endpoint ticket names a live address that will not survive the peer's own
 restart. The options are a persisted peer-id address book plus discovery, a
 relay the place agrees on, or an explicit reconnect gesture. Discovery is the
@@ -761,6 +761,49 @@ resolution does not pass `--locked`. It does not claim a release build or a
 headed leave/reconnect run. Worker acknowledgement timeout prevents binding
 removal by the shell's ordered result handling; the focused app tests inject
 the failure outcome rather than exercising a physical worker timeout.
+
+**Explicit reconnect continuation (2026-09-13):** the host command palette now
+offers **Reconnect place**. Ordinary `Open` remains offline. A successful
+admission saves `place-rendezvous.json`, containing only recognized contact
+hints, stable place identifiers, a format version, and the original offer's
+expiry. It contains no governance drop, welcome frame, direct frame, or key
+artifact. Parsing is bounded to 512 KiB, 16 hints, and 4096 bytes per hint.
+Replacing the descriptor uses adjacent-file rename without first deleting the
+previous descriptor.
+
+Reconnect requires the local binding, validates the retained group state against
+the local identity, checks retained membership, then dials saved hints through
+the existing lanes. It never
+replays an old invitation. Subsequent sync imports newer governance facts;
+projection and authoring continue to use their existing authority checks.
+Retained membership is not a claim to know every remote revocation before
+sync. Expiry requires a renewed offer. A stale address remains possible when
+the remote peer restarts; automatic discovery and background reconnection
+remain open.
+
+Leaving removes hints before the binding, after worker release. If hint
+removal fails, the binding remains. If binding removal fails afterward, the
+place can still reopen offline, while reconnect requires renewed hints; retrying
+leave can finish removal. Neither case deletes retained history or changes
+governance membership. These are local filesystem/runtime guarantees, not a
+radio or physical power-cut receipt.
+
+Validation passed with `cargo test --lib <filter> --offline --target-dir
+C:/t/turnstone-leave-target -j 1`: `rendezvous` (4 tests), `reconnect`
+(6 tests), `a_restarted_place_keeps_what_it_converged_on` (1 test), and
+`gate_management_resists_even_a_total_app_grant` (1 test). The live local
+two-peer test retains the host, restarts the guest, authors offline, reconnects
+from saved hints, repeats the reconnect command, and verifies that the host
+receives both offline and subsequent live messages. Negative worker tests
+cover locally recorded membership removal, stale commands against a newer
+scope, and reuse of a released generation. Descriptor replacement and both
+partial leave failure paths are covered on Windows. `git diff --check` and
+the new descriptor module's formatting check pass.
+
+These tests use the ignored local Cargo lock/config resolution, not a locked
+release build or a headed two-process receipt. Remote revocation during the
+offline interval remains untested; the local membership refusal test must not
+be read as that proof.
 
 ### T4. Knot through the existing content lane
 

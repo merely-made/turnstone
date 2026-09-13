@@ -333,6 +333,10 @@ mod tests {
             } => panic!("join refused: {error}"),
             _ => panic!("join answered with an unrelated update"),
         }
+        assert!(
+            guest.join(crate::place::rendezvous::RENDEZVOUS_FILE).exists(),
+            "successful Join persists bounded reconnect contact metadata"
+        );
 
         // Catch-up WITHOUT polling Resync: the lane watcher nudges, the app
         // answers by resyncing, and the joiner converges on its own. This
@@ -1013,15 +1017,16 @@ mod tests {
             s.graph.nodes == 2 && s.chat.messages == 2
         });
 
-        // The worker dies, taking every lane and handle with it.
+        // The worker dies, taking every guest lane and handle with it. Keep
+        // the host lane alive so reconnect exercises a real peer.
         let (ack_tx, ack_rx) = std::sync::mpsc::sync_channel(1);
         worker.command(PlaceWorkerCommand::Release(ack_tx));
         ack_rx.recv_timeout(Duration::from_secs(5)).unwrap();
         drop(worker);
         drop(updates);
-        drop(host_lanes);
 
-        // A fresh worker reopens from the persisted binding alone.
+        // A fresh worker first reopens cached state offline, preserving the
+        // existing restart receipt.
         let (restarted, restarted_updates) = spawn_place_worker(wake, identity, settings());
         // Retried because a real restart is a new PROCESS: reopening the same
         // redb in-process can briefly race the previous handle's file lock
@@ -1067,38 +1072,128 @@ mod tests {
             "the sealed epoch reopened"
         );
 
-        // The reopened place has no lanes, because `Open` does not dial and no
-        // rendezvous was persisted. It is still fully usable: authoring stores
-        // locally and will publish whenever it next joins, which is the whole
-        // reason those are separate steps.
+        // Cached reopening remains usable offline, as the original restart
+        // receipt requires.
         restarted.command(PlaceWorkerCommand::Author {
             session,
             generation: 2,
-            request: 9,
+            request: 8,
             command: PlaceCommand::SendMessage {
                 channel: "hall".into(),
-                body: "authored after restart, offline".into(),
+                body: "authored while offline".into(),
             },
         });
         match restarted_updates.recv_timeout(Duration::from_secs(30)) {
             Ok(Update::PlaceCommandDone {
-                request: 9,
+                request: 8,
                 result: Ok(snapshot),
                 ..
-            }) => assert_eq!(
-                snapshot.chat.messages,
-                converged.chat.messages + 1,
-                "an offline place still authors"
-            ),
-            Ok(Update::PlaceCommandDone {
+            }) => assert_eq!(snapshot.chat.messages, converged.chat.messages + 1),
+            _ => panic!("offline authoring answered unexpectedly"),
+        }
+
+        // Reconnect from bounded contact metadata, without replaying the
+        // invitation, then author a fact through the live peer.
+        restarted.command(PlaceWorkerCommand::Reconnect {
+            session,
+            generation: 3,
+            directory: guest.clone(),
+            binding: b.clone(),
+        });
+        let reconnect_deadline = Instant::now() + Duration::from_secs(30);
+        let reconnected = loop {
+            assert!(Instant::now() < reconnect_deadline, "reconnect answer deadline");
+            match restarted_updates.recv_timeout(Duration::from_secs(30)) {
+                Ok(Update::PlaceOpened {
+                    result: Ok(snapshot),
+                    generation: 3,
+                    ..
+                }) => break snapshot,
+                Ok(Update::PlaceOpened {
+                    result: Err(error), ..
+                }) => panic!("reconnect failed: {error}"),
+                Err(error) => panic!("reconnect answer timed out: {error}"),
+                _ => continue,
+            }
+        };
+        assert_eq!(reconnected.graph.nodes, reopened.graph.nodes);
+        assert_eq!(reconnected.chat.messages, reopened.chat.messages + 1);
+        // Repeating the same lifecycle generation is idempotent and does not
+        // tear down or duplicate the already-live lanes.
+        restarted.command(PlaceWorkerCommand::Reconnect {
+            session,
+            generation: 3,
+            directory: guest.clone(),
+            binding: b.clone(),
+        });
+        let duplicate_deadline = Instant::now() + Duration::from_secs(30);
+        let duplicate = loop {
+            assert!(Instant::now() < duplicate_deadline, "duplicate reconnect deadline");
+            match restarted_updates.recv_timeout(Duration::from_secs(1)) {
+            Ok(Update::PlaceOpened {
+                generation: 3,
+                result: Ok(snapshot),
+                ..
+            }) => break snapshot,
+            Ok(Update::PlaceOpened {
                 result: Err(error), ..
-            }) => panic!("offline authoring refused: {error}"),
-            _ => panic!("author answered with an unrelated update"),
+            }) => panic!("duplicate reconnect refused: {error}"),
+            Err(std::sync::mpsc::RecvTimeoutError::Timeout) => continue,
+            Err(error) => panic!("duplicate reconnect channel closed: {error}"),
+            _ => continue,
+            }
+        };
+        assert_eq!(duplicate.chat.messages, reconnected.chat.messages);
+        restarted.command(PlaceWorkerCommand::Author {
+            session,
+            generation: 3,
+            request: 9,
+            command: PlaceCommand::SendMessage {
+                channel: "hall".into(),
+                body: "authored after reconnect".into(),
+            },
+        });
+        let author_deadline = Instant::now() + Duration::from_secs(30);
+        loop {
+            assert!(Instant::now() < author_deadline, "author response deadline");
+            match restarted_updates.recv_timeout(Duration::from_secs(1)) {
+                Ok(Update::PlaceCommandDone {
+                    request: 9, result: Ok(snapshot), ..
+                }) => {
+                    assert_eq!(snapshot.chat.messages, converged.chat.messages + 2);
+                    break;
+                },
+                Ok(Update::PlaceCommandDone {
+                    request: 9, result: Err(error), ..
+                }) => panic!("reconnected authoring refused: {error}"),
+                Err(std::sync::mpsc::RecvTimeoutError::Timeout) => continue,
+                Err(error) => panic!("author response channel closed: {error}"),
+                _ => continue,
+            }
+        }
+
+        let deadline = Instant::now() + Duration::from_secs(45);
+        loop {
+            assert!(Instant::now() < deadline, "reconnected author never reached host");
+            std::thread::sleep(Duration::from_millis(300));
+            let projection = pollster::block_on(host_open.chat.projection()).unwrap();
+            if projection
+                .messages
+                .iter()
+                .any(|message| message.message.body == "authored while offline")
+                && projection
+                    .messages
+                    .iter()
+                    .any(|message| message.message.body == "authored after reconnect")
+            {
+                break;
+            }
         }
 
         let (ack_tx, ack_rx) = std::sync::mpsc::sync_channel(1);
         restarted.command(PlaceWorkerCommand::Release(ack_tx));
         ack_rx.recv_timeout(Duration::from_secs(5)).unwrap();
+        drop(host_lanes);
         drop(host_open);
         let _ = std::fs::remove_dir_all(&root);
     }

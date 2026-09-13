@@ -111,6 +111,14 @@ pub enum PlaceWorkerCommand {
         directory: PathBuf,
         invite: Box<PlaceInviteV1>,
     },
+    /// Reopen retained state and reconnect using the admitted rendezvous
+    /// descriptor. This never replays invitation welcome material.
+    Reconnect {
+        session: SessionId,
+        generation: u64,
+        directory: PathBuf,
+        binding: PlaceBindingV1,
+    },
     /// Re-fold the open place's projections without touching its lanes.
     ///
     /// The live lanes drain received operations straight into the retained
@@ -1012,6 +1020,7 @@ pub fn spawn_place_worker(
         move |commands, out: Emitter<Update>| {
             let mut live: Option<OpenPlace> = None;
             let mut live_scope: Option<(SessionId, u64)> = None;
+            let mut lifecycle_generation = 0u64;
             while let Ok(command) = commands.recv() {
                 match command {
                     PlaceWorkerCommand::Open {
@@ -1020,6 +1029,7 @@ pub fn spawn_place_worker(
                         directory,
                         binding,
                     } => {
+                        lifecycle_generation = lifecycle_generation.max(generation);
                         live = None;
                         live_scope = None;
                         match open_cached_place(&directory, &binding, identity.as_ref(), &settings)
@@ -1046,6 +1056,7 @@ pub fn spawn_place_worker(
                         directory,
                         invite,
                     } => {
+                        lifecycle_generation = lifecycle_generation.max(generation);
                         // Admission first, then the ordinary cached open. The
                         // second step is not a formality: it proves the place
                         // admission just established actually reopens through
@@ -1055,6 +1066,10 @@ pub fn spawn_place_worker(
                         let joined =
                             admit_invitation(&directory, &invite, identity.as_ref(), &settings)
                                 .and_then(|admitted| {
+                                    crate::place::rendezvous::save_admitted_rendezvous(
+                                        &directory,
+                                        &invite,
+                                    )?;
                                     open_cached_place(
                                         &directory,
                                         &admitted.binding,
@@ -1101,6 +1116,92 @@ pub fn spawn_place_worker(
                             }),
                         }
                     },
+                    PlaceWorkerCommand::Reconnect {
+                        session,
+                        generation,
+                        directory,
+                        binding,
+                    } => {
+                        if generation < lifecycle_generation {
+                            out.emit(Update::PlaceOpened {
+                                session,
+                                generation,
+                                result: Err("reconnect generation is stale".into()),
+                            });
+                            continue;
+                        }
+                        if generation == lifecycle_generation {
+                            let result = if live_scope == Some((session, generation)) {
+                                live.as_ref().map_or_else(
+                                    || Err("reconnect has no open place".into()),
+                                    |open| place_snapshot(open, open.binding.moot.0, &settings),
+                                )
+                            } else {
+                                Err("reconnect generation was already released".into())
+                            };
+                            out.emit(Update::PlaceOpened {
+                                session,
+                                generation,
+                                result,
+                            });
+                            continue;
+                        }
+                        lifecycle_generation = generation;
+                        live = None;
+                        live_scope = None;
+                        let reconnected = open_cached_place(
+                            &directory,
+                            &binding,
+                            identity.as_ref(),
+                            &settings,
+                        )
+                        .and_then(|(mut opened, _cached)| {
+                            let local_root = identity.master_public_key().to_bytes();
+                            let membership = pollster::block_on(opened.moot.snapshot())
+                                .map_err(|error| format!("materialize retained Moot: {error}"))?;
+                            if !membership
+                                .membership
+                                .members
+                                .iter()
+                                .any(|member| member.member == local_root)
+                            {
+                                return Err(
+                                    "this identity is no longer a member in retained place state"
+                                        .into(),
+                                );
+                            }
+                            let tickets = crate::place::rendezvous::load_rendezvous(
+                                &directory,
+                                &binding,
+                                settings.authority_clock.now_ms(),
+                            )?;
+                            opened.lanes = Some(crate::place::lanes::join_live(
+                                &opened,
+                                &binding,
+                                identity.as_ref(),
+                                &tickets,
+                                Some((out.clone(), session, generation)),
+                            )?);
+                            place_snapshot(&opened, binding.moot.0, &settings)
+                                .map(|snapshot| (opened, snapshot))
+                        });
+                        match reconnected {
+                            Ok((opened, snapshot)) => {
+                                live_scope = Some((session, generation));
+                                live = Some(opened);
+                                out.emit(Update::PlaceOpened {
+                                    session,
+                                    generation,
+                                    result: Ok(snapshot),
+                                });
+                            }
+                            Err(error) => out.emit(Update::PlaceOpened {
+                                session,
+                                generation,
+                                result: Err(error),
+                            }),
+                        }
+                    },
                     PlaceWorkerCommand::Resync {
                         session,
                         generation,
@@ -1108,6 +1209,9 @@ pub fn spawn_place_worker(
                         // Only meaningful with an open place; a resync of
                         // nothing answers with the error rather than silence.
                         let result = match &live {
+                            Some(_) if live_scope != Some((session, generation)) => {
+                                Err("resync belongs to a departed place generation".to_string())
+                            }
                             Some(open) => place_snapshot(open, open.binding.moot.0, &settings),
                             None => Err("no open place to resync".to_string()),
                         };
@@ -2141,6 +2245,193 @@ pub(crate) mod tests {
                 }),
                 ..
             }
+        ));
+    }
+
+    #[test]
+    fn reconnect_refuses_removed_local_membership_before_dialing_and_keeps_cache() {
+        let root = tempfile::tempdir().unwrap();
+        let directory = root.path().join("profile");
+        let binding = binding(0x4c);
+        let identity = Arc::new(RootIdentity::Unsealed(InMemoryProvider::from_seed(
+            [0x95; 32],
+        )));
+        seed_profile(&directory, identity.as_ref(), &binding, 2);
+
+        // This is retained membership state, not a claim about a remote
+        // revocation that has not arrived. The founder removes this profile
+        // before the worker tries to turn saved contact data into a live lane.
+        let founder = founder_for(&binding);
+        let moot = pollster::block_on(MootFile::open_existing(
+            place_store_dir(&directory).join("gemot"),
+            MootId(binding.moot.0),
+            settings().retention,
+        ))
+        .unwrap();
+        pollster::block_on(moot.membership_store().author_for_identity(
+            &founder,
+            MootMembershipAction::Create {
+                initial_members: vec![
+                    MootMember {
+                        member: founder.master_public_key().to_bytes(),
+                        access: MootAccessLevel::Manage,
+                    },
+                    MootMember {
+                        member: identity.master_public_key().to_bytes(),
+                        access: MootAccessLevel::Write,
+                    },
+                ],
+            },
+        ))
+        .unwrap();
+        pollster::block_on(moot.membership_store().author_for_identity(
+            &founder,
+            MootMembershipAction::Remove {
+                member: identity.master_public_key().to_bytes(),
+            },
+        ))
+        .unwrap();
+        drop(moot);
+
+        let session = SessionId::new();
+        let (worker, updates) = spawn_place_worker(Arc::new(|| {}), identity.clone(), settings());
+        worker.command(PlaceWorkerCommand::Reconnect {
+            session,
+            generation: 1,
+            directory: directory.clone(),
+            binding: binding.clone(),
+        });
+        assert!(matches!(
+            updates
+                .recv_timeout(std::time::Duration::from_secs(5))
+                .unwrap(),
+            Update::PlaceOpened {
+                session: received_session,
+                generation: 1,
+                result: Err(ref error),
+            } if received_session == session
+                && error == "this identity is no longer a member in retained place state"
+        ));
+
+        let (_, cached) =
+            open_cached_place(&directory, &binding, identity.as_ref(), &settings()).unwrap();
+        assert_eq!((cached.graph.nodes, cached.chat.messages), (2, 2));
+    }
+
+    #[test]
+    fn stale_reconnect_cannot_disturb_a_newer_open_scope() {
+        let root = tempfile::tempdir().unwrap();
+        let stale_directory = root.path().join("stale");
+        let current_directory = root.path().join("current");
+        let identity = Arc::new(RootIdentity::Unsealed(InMemoryProvider::from_seed(
+            [0x96; 32],
+        )));
+        let stale_binding = binding(0x4d);
+        let current_binding = binding(0x4e);
+        seed_profile(&stale_directory, identity.as_ref(), &stale_binding, 0);
+        seed_profile(&current_directory, identity.as_ref(), &current_binding, 1);
+
+        let (worker, updates) = spawn_place_worker(Arc::new(|| {}), identity, settings());
+        let current_session = SessionId::new();
+        worker.command(PlaceWorkerCommand::Open {
+            session: current_session,
+            generation: 2,
+            directory: current_directory,
+            binding: current_binding,
+        });
+        assert!(matches!(
+            updates
+                .recv_timeout(std::time::Duration::from_secs(5))
+                .unwrap(),
+            Update::PlaceOpened {
+                session,
+                generation: 2,
+                result: Ok(_),
+            } if session == current_session
+        ));
+
+        let stale_session = SessionId::new();
+        worker.command(PlaceWorkerCommand::Reconnect {
+            session: stale_session,
+            generation: 1,
+            directory: stale_directory,
+            binding: stale_binding,
+        });
+        assert!(matches!(
+            updates
+                .recv_timeout(std::time::Duration::from_secs(5))
+                .unwrap(),
+            Update::PlaceOpened {
+                session,
+                generation: 1,
+                result: Err(ref error),
+            } if session == stale_session && error == "reconnect generation is stale"
+        ));
+
+        worker.command(PlaceWorkerCommand::Resync {
+            session: current_session,
+            generation: 2,
+        });
+        assert!(matches!(
+            updates
+                .recv_timeout(std::time::Duration::from_secs(5))
+                .unwrap(),
+            Update::PlaceOpened {
+                session,
+                generation: 2,
+                result: Ok(OfflinePlaceSnapshot {
+                    graph: GraphCache { nodes: 1, .. },
+                    ..
+                }),
+            } if session == current_session
+        ));
+    }
+
+    #[test]
+    fn reconnect_for_a_released_generation_is_refused() {
+        let root = tempfile::tempdir().unwrap();
+        let directory = root.path().join("profile");
+        let binding = binding(0x4f);
+        let identity = Arc::new(RootIdentity::Unsealed(InMemoryProvider::from_seed(
+            [0x97; 32],
+        )));
+        seed_profile(&directory, identity.as_ref(), &binding, 0);
+
+        let (worker, updates) = spawn_place_worker(Arc::new(|| {}), identity, settings());
+        let session = SessionId::new();
+        worker.command(PlaceWorkerCommand::Open {
+            session,
+            generation: 1,
+            directory: directory.clone(),
+            binding: binding.clone(),
+        });
+        assert!(matches!(
+            updates
+                .recv_timeout(std::time::Duration::from_secs(5))
+                .unwrap(),
+            Update::PlaceOpened { result: Ok(_), .. }
+        ));
+        let (ack_tx, ack_rx) = std::sync::mpsc::sync_channel(1);
+        worker.command(PlaceWorkerCommand::Release(ack_tx));
+        ack_rx
+            .recv_timeout(std::time::Duration::from_secs(5))
+            .unwrap();
+
+        worker.command(PlaceWorkerCommand::Reconnect {
+            session,
+            generation: 1,
+            directory,
+            binding,
+        });
+        assert!(matches!(
+            updates
+                .recv_timeout(std::time::Duration::from_secs(5))
+                .unwrap(),
+            Update::PlaceOpened {
+                session: received_session,
+                generation: 1,
+                result: Err(ref error),
+            } if received_session == session && error == "reconnect generation was already released"
         ));
     }
 
