@@ -153,9 +153,54 @@ outgoing request Resources remain unsupported by Retinue.
 The two existing smolweb input tests also pass. The immutable dependency graph
 uses one Mere `91c6238d`, Genet `101d9e9a`, Knot `d100402` and Retinue `2563202`
 source identity each. The Retinue typed map receipt supplies the independent
-stock-client interoperability evidence. These are automated seams,
-not a headed desktop acceptance: that still needs a real node, a visibly edited
-form and an observed response in a Turnstone window.
+stock-client interoperability evidence. These are automated seams rather than a
+headed desktop acceptance; that acceptance was taken on 2026-09-13 and is
+recorded below.
+
+**Headed form acceptance, 2026-09-13.** Artifacts are at
+`C:\t\micron-headed-20260913`, whose `RECEIPT.md` indexes the captures, logs,
+scenarios and scripts. Two independent instruments observed the sends: a
+controlled public-RNS `nomadnetwork/node` request handler appending every
+received typed map to `handler/requests.jsonl` with a wall-clock timestamp, and
+a real stock `nomadnet` 1.4.2 daemon under WSL whose stock executable page
+records the `field_*` environment it receives to `stock-node/submissions.jsonl`.
+Stock NomadNet stayed black-box. The binary was Turnstone `d710af9`, built from
+`C:/t` with the isolated Cargo home, Rust 1.97.1 and an absolute manifest, using
+`--offline` without `--locked`: Turnstone gitignores `Cargo.lock` by policy and
+the in-repo lock records local path overrides, so a locked receipt needs a clean
+worktree. The `--offline` build re-resolved the 14 path-patched packages to
+their declared git revs, which is the clean-cwd resolution. The window drove
+itself through `TURNSTONE_SCENARIO` scenarios with no OS input; because
+`assert text` does not see omnibar text, outcome assertions use
+`assert event smolweb-submission-succeeded|failed`.
+
+Opening the page, opening the form and editing fields produced no request beyond
+the ordinary page fetch — Turnstone sends empty bytes there where stock NomadNet
+sends `nil`. Scenario s1 edited every field and sent once: exactly one observed
+map with `field_hd_text="edited café 雪"`, `field_hd_empty="filled"`,
+`field_hd_mask="secret"`, `field_hd_checks="red,blue"`,
+`field_hd_radio="blue"`, and the reply visible in the omnibar. The three
+cancellation paths — s2 Escape, s3 navigate away, s4 Reload — each sent one map,
+showed `Cancelled locally; the remote outcome may be unknown`, and never
+displayed the handler's late reply, which was sent 8 s later. s5 with
+`TURNSTONE_NOMADNET_TIMEOUT_SECS=3` against an 8 s handler gave
+`failed: Micron form request timed out after 3s; remote outcome may be unknown`
+with one request and no retry. s6 with `TURNSTONE_NOMADNET_MAX_PAGE_BYTES=4096`
+gave `failed: Micron form response exceeds TURNSTONE_NOMADNET_MAX_PAGE_BYTES`
+for both a 64 KiB and a 5 MiB reply, because the cap is applied to received
+bytes before decoding. A further scenario sent the edited map to the stock
+daemon, which recorded one `submissions.jsonl` line of the same shape plus
+`link_id`; the node passes the `str → str` map verbatim as `field_*`
+environment and does no splitting or typing. Knot supplied the second consumer
+half of the same acceptance, including a defaults send to the same daemon.
+
+Still open after this acceptance: inline form widgets, partial refresh, outgoing
+request Resources, multi-segment responses, authentication and dynamic page
+hosting in Djinn. The cross-consumer follow-up is Knot's, not Turnstone's — it
+compares its response cap only after unpacking, so a 5 MiB reply surfaces as an
+invalid-response error when Retinue's single-segment `MAX_SEGMENT_SIZE`
+(1,048,575 bytes) is hit; Turnstone's before-decode ordering is the reference
+behaviour here.
 The shared reading implementation retains inline color/underline and block
 alignment/indent through Inker and document-canvas, with horizontal viewport
 navigation. Turnstone also descends through these retained wrappers when
