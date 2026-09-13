@@ -666,6 +666,94 @@ impl App {
                 self.reflow_omnibar();
                 vec![Effect::Redraw]
             },
+            Update::PlaceFounded {
+                session,
+                generation,
+                result,
+            } => {
+                if session != self.session_id || self.place.generation() != Some(generation) {
+                    return Vec::new();
+                }
+                self.place = match result {
+                    Ok((binding, snapshot)) => {
+                        self.reconcile_shared_graph(&snapshot.shared);
+                        crate::place::PlaceState::Offline {
+                            binding,
+                            generation,
+                            snapshot,
+                        }
+                    },
+                    // Founding that failed founded nothing: there is no place
+                    // to be degraded about, exactly as with a refused invite.
+                    Err(error) => {
+                        tracing::warn!(%error, "founding refused");
+                        self.events
+                            .push(AppEvent::PlaceRefused(format!("founding place: {error}")));
+                        crate::place::PlaceState::Failed { error }
+                    },
+                };
+                self.reflow_omnibar();
+                vec![Effect::Redraw]
+            },
+            Update::PlacePrekeyOffered {
+                session,
+                generation,
+                result,
+            } => {
+                let Some(pending) = self
+                    .pending_place_artifact
+                    .take_if(|pending| {
+                        session == self.session_id && pending.generation == generation
+                    })
+                else {
+                    return Vec::new();
+                };
+                match result {
+                    Ok(prekey) => {
+                        use base64::Engine as _;
+                        let offer = crate::place::PlacePrekeyOfferV1 {
+                            version: crate::place::PLACE_CARD_VERSION,
+                            moot: pending.moot,
+                            root: crate::place::hex32(&self.personae_root()),
+                            prekey: base64::engine::general_purpose::STANDARD.encode(&prekey),
+                        };
+                        match serde_json::to_vec_pretty(&offer) {
+                            Ok(bytes) => vec![Effect::WritePlaceArtifact {
+                                path: pending.path,
+                                bytes,
+                            }],
+                            Err(error) => {
+                                self.refuse_place(format!("encode pre-key offer: {error}"))
+                            },
+                        }
+                    },
+                    Err(error) => self.refuse_place(format!("offering a pre-key: {error}")),
+                }
+            },
+            Update::PlaceInvited {
+                session,
+                generation,
+                result,
+            } => {
+                let Some(pending) = self
+                    .pending_place_artifact
+                    .take_if(|pending| {
+                        session == self.session_id && pending.generation == generation
+                    })
+                else {
+                    return Vec::new();
+                };
+                match result {
+                    Ok(invite) => match serde_json::to_vec_pretty(&*invite) {
+                        Ok(bytes) => vec![Effect::WritePlaceArtifact {
+                            path: pending.path,
+                            bytes,
+                        }],
+                        Err(error) => self.refuse_place(format!("encode invitation: {error}")),
+                    },
+                    Err(error) => self.refuse_place(format!("authoring an invitation: {error}")),
+                }
+            },
             Update::PlaceJoined {
                 session,
                 generation,

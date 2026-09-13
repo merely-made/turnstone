@@ -19,6 +19,7 @@ use commons::chat::ChatExt;
 use gemot::moot::MootLanes;
 use identity::IdentityProvider;
 use stickleback::JoinedSpace;
+use transport::p2panda_transport::MdnsDiscoveryMode;
 use transport::{P2pandaTransport, sync_overlay_topic};
 
 use crate::place::PlaceBindingV1;
@@ -35,6 +36,10 @@ const WATCH_TICK: std::time::Duration = std::time::Duration::from_millis(250);
 /// cancellation and endpoint close before this value's fields are dropped.
 pub(crate) struct LiveLanes {
     watcher: Option<tokio::task::JoinHandle<()>>,
+    /// This bind's own dialable ticket(s), read once the endpoint is up.
+    local_rendezvous: Vec<String>,
+    /// How many peer tickets this bind dialed. Zero is a listen-only bind.
+    dialed_rendezvous: usize,
     moot: MootLanes,
     graph: JoinedSpace<CommonsExt>,
     chat: JoinedSpace<ChatExt>,
@@ -103,6 +108,12 @@ impl LiveLanes {
             self.graph.sync_status().ops_received,
             self.chat.sync_status().ops_received,
         ]
+    }
+
+    /// This bind's own tickets, and how many peers it dialed. Neither says a
+    /// peer is reachable; the first says where this one can be reached.
+    pub(crate) fn rendezvous(&self) -> (Vec<String>, usize) {
+        (self.local_rendezvous.clone(), self.dialed_rendezvous)
     }
 
     pub(crate) fn sync_snapshot(&self) -> Vec<crate::place::PlaceLaneSnapshot> {
@@ -195,7 +206,7 @@ mod tests {
 
     /// Issue a capability delegation on the host's retained delegation lane.
     fn delegate_to(host: &Path, founder: &InMemoryProvider, moot: [u8; 32], subject: [u8; 32]) {
-        let rules = place_rules(founder.master_public_key().to_bytes());
+        let rules = place_rules(founder.master_public_key().to_bytes(), moot);
         let moot_file = pollster::block_on(gemot::moot::MootFile::open_existing(
             place_store_dir(host).join("gemot"),
             gemot::moot::MootId(moot),
@@ -217,7 +228,7 @@ mod tests {
         // The founder's own writes must be Effective on the joiner, and a root
         // grant alone covers nothing: MootDelegations::covers walks
         // certificates only, so the founder delegates to itself.
-        let rules = place_rules(founder.master_public_key().to_bytes());
+        let rules = place_rules(founder.master_public_key().to_bytes(), moot);
         let moot_file = pollster::block_on(gemot::moot::MootFile::open_existing(
             stores.join("gemot"),
             gemot::moot::MootId(moot),
@@ -268,6 +279,138 @@ mod tests {
             })))
             .unwrap();
         }
+    }
+
+
+
+    /// The founder path through the worker: `Found` opens a place nobody was
+    /// invited to, binds listen-only, and reports its own rendezvous without
+    /// ever reading as connected.
+    #[test]
+    fn a_founder_binds_listen_only_and_reports_its_own_rendezvous() {
+        let root =
+            std::env::temp_dir().join(format!("turnstone-place-founder-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&root);
+        let host = root.join("host");
+        std::fs::create_dir_all(&host).unwrap();
+        let founder = RootIdentity::Unsealed(InMemoryProvider::from_seed([0xf1; 32]));
+
+        let wake: armillary::Wake = Arc::new(|| {});
+        let (worker, updates) = spawn_place_worker(
+            wake,
+            Arc::new(founder),
+            crate::place::worker::PlaceWorkerSettings::default(),
+        );
+        let session = SessionId::new();
+        worker.command(PlaceWorkerCommand::Found {
+            session,
+            generation: 1,
+            directory: host.clone(),
+            name: "Hearth".into(),
+        });
+        let binding = match updates.recv_timeout(Duration::from_secs(60)) {
+            Ok(Update::PlaceFounded {
+                result: Ok((binding, snapshot)),
+                ..
+            }) => {
+                let sync = snapshot.sync.clone().expect("a founded place binds lanes");
+                assert_eq!(sync.lanes.len(), 9);
+                assert_eq!(sync.dialed_rendezvous, 0, "a founder dials nobody");
+                assert!(
+                    !sync.local_rendezvous.is_empty(),
+                    "the founder's own ticket is what its first invitation carries"
+                );
+                let state = crate::place::PlaceState::Offline {
+                    binding: binding.clone(),
+                    generation: 1,
+                    snapshot,
+                };
+                let status = state.status_lines();
+                assert!(
+                    status
+                        .iter()
+                        .any(|line| line == "Listening for peers: none dialed"),
+                    "a founder with no peers never reads as connected: {status:?}"
+                );
+                assert!(
+                    status
+                        .iter()
+                        .any(|line| line.starts_with("Local rendezvous: ")),
+                    "{status:?}"
+                );
+                binding
+            },
+            Ok(Update::PlaceFounded {
+                result: Err(error), ..
+            }) => panic!("founding refused: {error}"),
+            _ => panic!("founding answered with an unrelated update"),
+        };
+        assert!(
+            host.join(crate::place::rendezvous::RENDEZVOUS_FILE).exists(),
+            "founding leaves the empty descriptor a reconnect reopens"
+        );
+        assert_eq!(
+            crate::session::load_place_binding(&host).unwrap().unwrap(),
+            binding
+        );
+
+        let (ack_tx, ack_rx) = std::sync::mpsc::sync_channel(1);
+        worker.command(PlaceWorkerCommand::Release(ack_tx));
+        ack_rx.recv_timeout(Duration::from_secs(30)).unwrap();
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+
+    /// A founder restarts: the descriptor it saved has no ticket in it, so the
+    /// reopen binds listen-only instead of refusing. This is the same
+    /// `Reconnect` a joiner takes, which is the point — one path, two roles.
+    #[test]
+    fn a_founder_reconnects_through_an_empty_descriptor() {
+        let root = std::env::temp_dir()
+            .join(format!("turnstone-place-refound-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&root);
+        let host = root.join("host");
+        std::fs::create_dir_all(&host).unwrap();
+        let founder = RootIdentity::Unsealed(InMemoryProvider::from_seed([0xf2; 32]));
+        let settings = crate::place::worker::PlaceWorkerSettings::default();
+
+        // Exactly what the `Found` command leaves behind on disk, without the
+        // live bind: this test is about what a LATER process finds there.
+        let binding =
+            crate::place::worker::found_place(&host, &founder, "Hearth", &settings).unwrap();
+        crate::session::save_place_binding(&host, &binding).unwrap();
+        crate::place::rendezvous::save_founder_rendezvous(&host, &binding).unwrap();
+
+        let (worker, updates) =
+            spawn_place_worker(Arc::new(|| {}), Arc::new(founder), settings);
+        let session = SessionId::new();
+        worker.command(PlaceWorkerCommand::Reconnect {
+            session,
+            generation: 1,
+            directory: host.clone(),
+            binding: binding.clone(),
+        });
+        match updates.recv_timeout(Duration::from_secs(60)) {
+            Ok(Update::PlaceOpened {
+                result: Ok(snapshot),
+                generation: 1,
+                ..
+            }) => {
+                let sync = snapshot.sync.expect("a founder reconnect binds lanes");
+                assert_eq!(sync.lanes.len(), 9);
+                assert_eq!(sync.dialed_rendezvous, 0, "there was nothing to dial");
+                assert!(!sync.local_rendezvous.is_empty());
+            },
+            Ok(Update::PlaceOpened {
+                result: Err(error), ..
+            }) => panic!("founder reconnect refused: {error}"),
+            _ => panic!("reconnect answered with an unrelated update"),
+        }
+
+        let (ack_tx, ack_rx) = std::sync::mpsc::sync_channel(1);
+        worker.command(PlaceWorkerCommand::Release(ack_tx));
+        ack_rx.recv_timeout(Duration::from_secs(30)).unwrap();
+        let _ = std::fs::remove_dir_all(&root);
     }
 
     /// The T3a lane-join receipt: a joiner admits over a ticket and catches up
@@ -1318,7 +1461,11 @@ fn transport_salt(moot: [u8; 32]) -> Vec<u8> {
     salt
 }
 
-/// Dial the invitation's tickets and join all seven of the place's lanes.
+/// Dial the given tickets and join all nine of the place's lanes.
+///
+/// An EMPTY ticket list is a listen-only bind, not a refusal: a founder who
+/// has invited nobody yet still needs an endpoint before it can mint the
+/// rendezvous its first invitation carries.
 ///
 /// Takes the already-opened place rather than opening its own, so the lanes
 /// drain into the same stores the worker's projections fold from. The
@@ -1335,9 +1482,6 @@ pub(crate) fn join_live(
         u64,
     )>,
 ) -> Result<LiveLanes, String> {
-    if tickets.is_empty() {
-        return Err("no dialable rendezvous".to_string());
-    }
     let keypair = identity
         .derive_keypair(&transport_salt(binding.moot.0))
         .map_err(|error| format!("derive transport identity: {error}"))?;
@@ -1353,12 +1497,21 @@ pub(crate) fn join_live(
         .build()
         .map_err(|error| format!("build lane runtime: {error}"))?;
 
-    let (transport, moot_lanes, graph, chat) = runtime.block_on(async {
+    let (transport, local_rendezvous, moot_lanes, graph, chat) = runtime.block_on(async {
+        // Active mDNS so two peers on one LAN re-find each other by node id
+        // after either restarts on a fresh port; a ticket fixes an address,
+        // not an identity.
         let transport = P2pandaTransport::builder(&keypair)
             .gossip()
+            .mdns(MdnsDiscoveryMode::Active)
             .bind()
             .await
             .map_err(|error| format!("bind place transport: {error}"))?;
+        let local_rendezvous: Vec<String> = transport
+            .ticket()
+            .await
+            .map(|ticket| vec![ticket])
+            .unwrap_or_default();
         for ticket in tickets {
             let peer = transport
                 .add_peer_ticket(ticket)
@@ -1387,11 +1540,13 @@ pub(crate) fn join_live(
             .join(endpoint, gossip)
             .await
             .map_err(|error| format!("join chat lane: {error}"))?;
-        Ok::<_, String>((transport, moot_lanes, graph, chat))
+        Ok::<_, String>((transport, local_rendezvous, moot_lanes, graph, chat))
     })?;
 
     let mut lanes = LiveLanes {
         watcher: None,
+        local_rendezvous,
+        dialed_rendezvous: tickets.len(),
         moot: moot_lanes,
         graph,
         chat,

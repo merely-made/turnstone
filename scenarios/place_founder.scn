@@ -1,0 +1,57 @@
+# T5a founder path (design_docs/2026-07-28_turnstone_place_port_plan.md,
+# "T5a. Founder path and two-window proof"). Founds a place, exports a card,
+# invites the joiner's offered pre-key, and exchanges one message each way.
+# Runs paired with scenarios/place_joiner.scn through a shared exchange
+# directory named by ${EXCHANGE} (set by scenarios/place_two_windows.ps1,
+# which also isolates LOCALAPPDATA/TURNSTONE_ROOT/PERSONAE_PROFILE per role).
+settle 30
+key escape
+
+act Found place
+settle 5
+assert omnibar open
+type Demo
+key enter
+settle 10
+assert omnibar closed
+
+# `join_live` opens listen-only with no peers dialed yet; the founder's own
+# transport ticket appears as a "Local rendezvous: <ticket>" status line
+# (src/place.rs status_lines) once the bind completes.
+wait-status 300 Local rendezvous
+
+act Export place card
+settle 5
+type ${EXCHANGE}\demo.place-card.json
+key enter
+settle 10
+wait-file 600 ${EXCHANGE}\demo.place-card.json
+
+# The joiner offers a pre-key against the card (place_joiner.scn); wait for
+# its file in the exchange directory before inviting it.
+wait-file 3000 ${EXCHANGE}\demo.place-card.json.prekey.json
+
+act Invite to place
+settle 5
+type ${EXCHANGE}\demo.place-card.json.prekey.json
+key enter
+settle 10
+wait-file 600 ${EXCHANGE}\demo.place-card.json.prekey.json.invite.json
+
+act Send place message
+settle 5
+type hello from founder
+key enter
+settle 10
+
+# Message bodies are not status facts; the retained-history count is. One
+# message is the founder's own, two means the joiner's reply arrived and was
+# folded through resync after the lane watcher's nudge.
+wait-status 3000 Retained history: 0 shared nodes, 2 messages
+
+act Place status
+settle 10
+capture founder_status
+record-place founder
+
+log founder path complete

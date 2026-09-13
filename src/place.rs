@@ -218,9 +218,84 @@ impl std::fmt::Display for PlaceBindingError {
 
 impl std::error::Error for PlaceBindingError {}
 
+/// The only card and pre-key-offer version this build understands.
+pub const PLACE_CARD_VERSION: u16 = 1;
+
+/// A place's public calling card: where it is and who founded it.
+///
+/// Carries no authority whatsoever. It exists so someone who wants in can
+/// name the Moot their pre-key belongs to; the invitation stays the only
+/// envelope admission reads.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct PlaceCardV1 {
+    pub version: u16,
+    pub binding: PlaceBindingV1,
+    /// The founder's Personae root, hex.
+    pub founder_root: String,
+    /// The founder's dialable contact hints at export time.
+    pub rendezvous: Vec<invite::RendezvousV1>,
+}
+
+impl PlaceCardV1 {
+    pub fn validate(&self) -> Result<(), String> {
+        if self.version != PLACE_CARD_VERSION {
+            return Err(format!("unsupported place card version {}", self.version));
+        }
+        self.binding.validate().map_err(|error| error.to_string())?;
+        decode_hex("founder root", &self.founder_root).map_err(|error| error.to_string())?;
+        Ok(())
+    }
+}
+
+/// One profile's published group pre-key for one Moot.
+///
+/// Also authority-free: the bundle carries its own Personae attestation, and
+/// the inviter re-derives the root from it rather than trusting `root` here.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct PlacePrekeyOfferV1 {
+    pub version: u16,
+    pub moot: PlaceId,
+    /// The offering profile's Personae root, hex.
+    pub root: String,
+    /// The published pre-key bundle, base64.
+    pub prekey: String,
+}
+
+impl PlacePrekeyOfferV1 {
+    /// Bounded, decoded bundle bytes, or the reason they cannot be read.
+    pub fn prekey_bytes(&self) -> Result<Vec<u8>, String> {
+        use base64::Engine as _;
+        if self.version != PLACE_CARD_VERSION {
+            return Err(format!(
+                "unsupported pre-key offer version {}",
+                self.version
+            ));
+        }
+        decode_hex("offering root", &self.root).map_err(|error| error.to_string())?;
+        base64::engine::general_purpose::STANDARD
+            .decode(&self.prekey)
+            .map_err(|error| format!("decode pre-key bundle: {error}"))
+    }
+}
+
+/// Hex for a 32-byte public identifier, the one spelling the card uses.
+pub fn hex32(bytes: &[u8; 32]) -> String {
+    encode_hex(bytes)
+}
+
 /// Cached, app-owned summary of the retained place domains.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct OfflinePlaceSnapshot {
+    /// This profile's Personae root, as the worker evaluated authority for.
+    pub personae_root: [u8; 32],
+    /// blake3 over the canonical effective shared-graph projection. Two
+    /// converged peers produce the same string; a different one is a real
+    /// difference, not a display artifact.
+    pub graph_digest: String,
+    /// blake3 over the canonical effective chat projection.
+    pub chat_digest: String,
     /// Local lane observations at the last worker refresh, not peer liveness
     /// or message delivery. None means this open has no sync lanes.
     pub sync: Option<PlaceSyncSnapshot>,
@@ -246,6 +321,11 @@ pub struct OfflinePlaceSnapshot {
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct PlaceSyncSnapshot {
     pub lanes: Vec<PlaceLaneSnapshot>,
+    /// This bind's own dialable ticket(s). What a peer needs to reach here;
+    /// holding one says nothing about whether anyone did.
+    pub local_rendezvous: Vec<String>,
+    /// How many peer tickets this bind dialed. Zero is listen-only.
+    pub dialed_rendezvous: usize,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -515,6 +595,17 @@ impl PlaceState {
                 rows.push("Writing: permissions are checked again for each action".into());
                 rows.push("Delivery: these sync observations do not confirm message delivery".into());
                 if let Some(sync) = &snapshot.sync {
+                    // Listen-only is a real state and must never read as
+                    // connected: a founder alone in a place has lanes open and
+                    // nobody on them.
+                    if sync.dialed_rendezvous == 0 {
+                        rows.push("Listening for peers: none dialed".into());
+                    }
+                    rows.extend(
+                        sync.local_rendezvous
+                            .iter()
+                            .map(|ticket| format!("Local rendezvous: {ticket}")),
+                    );
                     rows.extend(sync.lanes.iter().map(|lane| format!(
                         "{}: {}; {} completed rounds; {} accepted operations",
                         lane.label(), if lane.syncing { "syncing at last refresh" } else { "idle at last refresh" },

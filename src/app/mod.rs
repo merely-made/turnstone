@@ -122,6 +122,18 @@ fn pane_label(content: &PaneContent) -> String {
 /// The application state: hosted graph runtimes, chrome state, and session
 /// persistence. A graph pane resolves one runtime; the application itself
 /// does not own one singleton graph surface.
+/// Where a pending place answer will be written, and which Moot it is about.
+///
+/// The worker answers with material, never with a file: which path a person
+/// chose is app state, so the answer is matched to it here rather than
+/// round-tripped through a command that has no business knowing it.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(crate) struct PendingPlaceArtifact {
+    pub generation: u64,
+    pub path: String,
+    pub moot: crate::place::PlaceId,
+}
+
 pub struct App {
     /// Live graph authority, keyed by `GraphId`. The active cursor supports
     /// legacy callers until their PaneId routing is migrated; it is not a
@@ -178,6 +190,9 @@ pub struct App {
     /// Monotonic identity for place-worker opens. It is never reset on a
     /// session switch, so a late answer cannot alias a later visit.
     pub(crate) next_place_generation: u64,
+    /// Where a pending place answer will be written, and what it is about.
+    /// Set when a founding-vocabulary prompt commits, consumed by the answer.
+    pub(crate) pending_place_artifact: Option<PendingPlaceArtifact>,
     /// Monotonic id for authored place commands, so a late answer is
     /// attributable to the command that asked for it.
     pub(crate) next_place_request: u64,
@@ -1144,6 +1159,29 @@ impl App {
             }
             Action::ToggleSizeByRecency => self.toggle_size_by_recency(),
             Action::SaveSession => vec![Effect::SaveSession],
+            Action::BeginFoundPlace => self.begin_place_prompt(crate::ui::PlacePrompt::FoundPlace),
+            Action::FoundPlace { name } => self.found_place(name),
+            Action::BeginExportPlaceCard => {
+                self.begin_place_prompt(crate::ui::PlacePrompt::ExportCard)
+            },
+            Action::ExportPlaceCard { path } => self.export_place_card(path),
+            Action::BeginOfferPlacePrekey => {
+                self.begin_place_prompt(crate::ui::PlacePrompt::OfferPrekey)
+            },
+            Action::OfferPlacePrekey { path } => self.offer_place_prekey(path),
+            Action::OfferPlacePrekeyForCard { card, out } => {
+                self.offer_place_prekey_for_card(card, out)
+            },
+            Action::BeginInviteToPlace => self.begin_place_prompt(crate::ui::PlacePrompt::Invite),
+            Action::InviteToPlace { path } => self.invite_to_place(path),
+            Action::InviteToPlaceWithPrekey { prekey, out } => {
+                self.invite_to_place_with_prekey(prekey, out)
+            },
+            Action::BeginJoinPlaceFile => self.begin_place_prompt(crate::ui::PlacePrompt::Join),
+            Action::JoinPlaceFile { path } => self.join_place_file(path),
+            Action::BeginSendPlaceMessage => {
+                self.begin_place_prompt(crate::ui::PlacePrompt::SendMessage)
+            },
             Action::JoinPlace(invite) => self.join_place(invite),
             Action::LeavePlace => self.leave_place(),
             Action::ReconnectPlace => self.reconnect_place(),

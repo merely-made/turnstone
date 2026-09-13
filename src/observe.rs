@@ -30,6 +30,9 @@ use crate::ui::Suggestion;
 pub struct Snapshot {
     /// Same last-refresh facts as the place status surface, without its filter.
     pub place_status: Vec<String>,
+    /// Machine-readable place facts, when this session is in one. Ids and
+    /// counts a second peer can be compared against; not a liveness claim.
+    pub place: Option<PlaceFacts>,
     /// The focused node, when exactly one is selected.
     pub focused: Option<FocusedNode>,
     pub omnibar: OmnibarView,
@@ -713,6 +716,87 @@ impl AppEvent {
     }
 }
 
+/// The place receipt: what this profile is, which place it is in, and one
+/// digest each over the two shared projections. Two converged peers differ in
+/// `personae_root` and agree on every id and digest.
+#[derive(Clone, Debug, PartialEq, serde::Serialize)]
+pub struct PlaceFacts {
+    pub personae_root: String,
+    pub moot: String,
+    pub root: String,
+    pub chat: String,
+    pub default_channel: String,
+    /// This bind's own dialable tickets at the last refresh.
+    pub local_rendezvous: Vec<String>,
+    /// Effective Gemot membership at the last refresh.
+    pub members: usize,
+    pub graph_nodes: usize,
+    pub chat_messages: usize,
+    pub graph_digest: String,
+    pub chat_digest: String,
+    pub lanes: Vec<PlaceLaneFacts>,
+}
+
+/// One lane's local observation. Not peer reachability or delivery.
+#[derive(Clone, Debug, PartialEq, serde::Serialize)]
+pub struct PlaceLaneFacts {
+    pub name: String,
+    pub syncing: bool,
+    pub sync_rounds: u64,
+    pub ops_received: u64,
+}
+
+/// The place facts, when this session holds an opened place.
+pub fn place_facts(app: &App) -> Option<PlaceFacts> {
+    let crate::place::PlaceState::Offline {
+        binding, snapshot, ..
+    } = &app.place
+    else {
+        return None;
+    };
+    Some(PlaceFacts {
+        personae_root: crate::place::hex32(&snapshot.personae_root),
+        moot: crate::place::hex32(&binding.moot.0),
+        root: crate::place::hex32(&binding.root.0),
+        chat: crate::place::hex32(&binding.chat.0),
+        default_channel: binding.default_channel.clone(),
+        local_rendezvous: snapshot
+            .sync
+            .as_ref()
+            .map(|sync| sync.local_rendezvous.clone())
+            .unwrap_or_default(),
+        members: snapshot.moot.members,
+        graph_nodes: snapshot.graph.nodes,
+        chat_messages: snapshot.chat.messages,
+        graph_digest: snapshot.graph_digest.clone(),
+        chat_digest: snapshot.chat_digest.clone(),
+        lanes: snapshot
+            .sync
+            .as_ref()
+            .map(|sync| {
+                sync.lanes
+                    .iter()
+                    .map(|lane| PlaceLaneFacts {
+                        name: lane.name.to_string(),
+                        syncing: lane.syncing,
+                        sync_rounds: lane.sync_rounds,
+                        ops_received: lane.ops_received,
+                    })
+                    .collect()
+            })
+            .unwrap_or_default(),
+    })
+}
+
+/// The machine-readable place receipt a scenario writes out: the same status
+/// lines a person reads, plus the facts two peers are compared on.
+pub fn place_record(app: &App) -> serde_json::Value {
+    serde_json::json!({
+        "status": app.place.status_lines(),
+        "place": place_facts(app),
+    })
+}
+
 /// Read the application snapshot. Pure; the app is not disturbed.
 pub fn snapshot(app: &App) -> Snapshot {
     let focused = app.graph_runtimes.focused_member().and_then(|member| {
@@ -834,6 +918,7 @@ pub fn snapshot(app: &App) -> Snapshot {
     }
     Snapshot {
         place_status: app.place.status_lines(),
+        place: place_facts(app),
         focused,
         omnibar: OmnibarView {
             open: app.omnibar.open,

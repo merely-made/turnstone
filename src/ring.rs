@@ -261,6 +261,22 @@ pub fn ring_of(action: &Action) -> Ring {
         // always requires a local gesture. Every admission check still runs
         // afterwards; this only decides who may ask.
         | JoinPlace(_)
+        // The founding half of the vocabulary is the same trust act seen from
+        // the other side: founding, carding, offering, inviting and joining
+        // all decide WHICH community this profile's root appears in.
+        | BeginFoundPlace
+        | FoundPlace { .. }
+        | BeginExportPlaceCard
+        | ExportPlaceCard { .. }
+        | BeginOfferPlacePrekey
+        | OfferPlacePrekey { .. }
+        | OfferPlacePrekeyForCard { .. }
+        | BeginInviteToPlace
+        | InviteToPlace { .. }
+        | InviteToPlaceWithPrekey { .. }
+        | BeginJoinPlaceFile
+        | JoinPlaceFile { .. }
+        | BeginSendPlaceMessage
         // Leaving is still a host-owned session transition. A denizen may not
         // detach the user's place binding or tear down their live lanes.
         | LeavePlace
@@ -284,7 +300,20 @@ pub fn emit_allowed(
         // belongs in the message rather than in a second enum variant that
         // would behave the same. Split the ring only if the policies diverge.
         let what = match action {
-            Action::JoinPlace(_) => "joining a place",
+            Action::JoinPlace(_) | Action::JoinPlaceFile { .. } | Action::BeginJoinPlaceFile => {
+                "joining a place"
+            }
+            Action::BeginFoundPlace | Action::FoundPlace { .. } => "founding a place",
+            Action::BeginExportPlaceCard | Action::ExportPlaceCard { .. } => {
+                "exporting a place card"
+            }
+            Action::BeginOfferPlacePrekey
+            | Action::OfferPlacePrekey { .. }
+            | Action::OfferPlacePrekeyForCard { .. } => "offering a place pre-key",
+            Action::BeginInviteToPlace
+            | Action::InviteToPlace { .. }
+            | Action::InviteToPlaceWithPrekey { .. } => "inviting to a place",
+            Action::BeginSendPlaceMessage => "opening the place message prompt",
             Action::LeavePlace => "leaving a place",
             Action::ReconnectPlace => "reconnecting a place",
             Action::ShowPlaceStatus => "inspecting place status",

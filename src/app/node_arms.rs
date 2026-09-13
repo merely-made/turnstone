@@ -562,6 +562,62 @@ impl App {
         vec![Effect::Redraw]
     }
 
+    /// One committed place prompt: the typed line becomes the paired action.
+    fn commit_place_prompt(&mut self, prompt: crate::ui::PlacePrompt) -> Vec<Effect> {
+        use crate::ui::PlacePrompt;
+        let text = self.omnibar.text.trim().to_string();
+        let action = match prompt {
+            PlacePrompt::FoundPlace => Action::FoundPlace { name: text.clone() },
+            PlacePrompt::ExportCard => Action::ExportPlaceCard { path: text.clone() },
+            PlacePrompt::OfferPrekey => Action::OfferPlacePrekey { path: text.clone() },
+            PlacePrompt::Invite => Action::InviteToPlace { path: text.clone() },
+            PlacePrompt::Join => Action::JoinPlaceFile { path: text.clone() },
+            PlacePrompt::SendMessage => match self.place.binding() {
+                Some(binding) => Action::SendPlaceMessage {
+                    channel: binding.default_channel.clone(),
+                    body: text.clone(),
+                },
+                None => {
+                    self.omnibar = OmnibarState::default();
+                    let mut fx = self.refuse_place("this session is not in a place");
+                    fx.push(Effect::Redraw);
+                    return fx;
+                },
+            },
+        };
+        let label = match prompt {
+            PlacePrompt::FoundPlace => "Found place",
+            PlacePrompt::ExportCard => "Export place card",
+            PlacePrompt::OfferPrekey => "Offer place pre-key",
+            PlacePrompt::Invite => "Invite to place",
+            PlacePrompt::Join => "Join place",
+            PlacePrompt::SendMessage => "Send place message",
+        };
+        let target = self.fallback_shell_context();
+        let entry = self.shell.record_omnibar(
+            ShellInput::Omnibar(text),
+            ShellIntent::Command {
+                label: label.into(),
+                action: action.clone(),
+            },
+            target,
+            EntryPrivacy::Ordinary,
+        );
+        self.omnibar = OmnibarState::default();
+        if self.focus == FocusTarget::Chrome {
+            self.focus = FocusTarget::Graph(self.default_graph_pane());
+        }
+        let mut fx = self.update(action);
+        self.shell.complete(
+            entry,
+            ShellOutcome::Completed {
+                summary: label.to_lowercase(),
+            },
+        );
+        fx.push(Effect::Redraw);
+        fx
+    }
+
     pub(super) fn commit_omnibar(&mut self) -> Vec<Effect> {
         if let crate::ui::OmnibarMode::MicronForm(prompt) = self.omnibar.mode.clone() {
             return self.commit_micron_form(prompt);
@@ -583,6 +639,10 @@ impl App {
         }
         if let crate::ui::OmnibarMode::SmolwebInput(input) = self.omnibar.mode.clone() {
             return self.commit_smolweb_input(input);
+        }
+        // Place prompts capture the whole line, exactly like rename.
+        if let crate::ui::OmnibarMode::Place(prompt) = self.omnibar.mode {
+            return self.commit_place_prompt(prompt);
         }
         // Rename mode captures the whole line as the new name and
         // commits it, bypassing the find/go/actions lanes.

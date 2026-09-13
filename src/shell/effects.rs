@@ -551,6 +551,62 @@ impl Shell {
                             invite,
                         });
                 }
+                Effect::FoundPlace {
+                    session,
+                    generation,
+                    name,
+                } => {
+                    self.place_handle
+                        .command(crate::place::worker::PlaceWorkerCommand::Found {
+                            session,
+                            generation,
+                            directory: session::session_dir(&self.app.data_root, session),
+                            name,
+                        });
+                }
+                Effect::OfferPlacePrekey {
+                    session,
+                    generation,
+                    moot,
+                } => {
+                    self.place_handle.command(
+                        crate::place::worker::PlaceWorkerCommand::OfferPrekey {
+                            session,
+                            generation,
+                            directory: session::session_dir(&self.app.data_root, session),
+                            moot,
+                        },
+                    );
+                }
+                Effect::InvitePlace {
+                    session,
+                    generation,
+                    prekey,
+                } => {
+                    self.place_handle
+                        .command(crate::place::worker::PlaceWorkerCommand::Invite {
+                            session,
+                            generation,
+                            directory: session::session_dir(&self.app.data_root, session),
+                            prekey,
+                        });
+                }
+                Effect::WritePlaceArtifact { path, bytes } => {
+                    if let Err(error) = std::fs::write(&path, &bytes) {
+                        let follow_up =
+                            self.app.refuse_place(format!("write {path}: {error}"));
+                        self.run_effects(follow_up);
+                    }
+                }
+                Effect::ReadPlaceArtifact { path, kind } => {
+                    match read_place_artifact(&path, kind) {
+                        Ok(action) => self.act(action),
+                        Err(error) => {
+                            let follow_up = self.app.refuse_place(error);
+                            self.run_effects(follow_up);
+                        }
+                    }
+                }
                 Effect::LeavePlace {
                     session,
                     generation,
@@ -1463,6 +1519,55 @@ impl Shell {
             m.touch();
         }) {
             let _ = self.app.sessions.flush_dirty();
+        }
+    }
+}
+
+/// Read one place artifact and lower what it holds back into an action.
+///
+/// Bounded and parsed to exactly the shape the caller asked for. A file that
+/// is missing, oversize, or of another kind is a refusal with the reason, not
+/// a guess and never a panic.
+fn read_place_artifact(
+    path: &str,
+    kind: crate::action::PlaceArtifactKind,
+) -> Result<Action, String> {
+    use crate::action::PlaceArtifactKind;
+
+    /// The invitation bound already covers the largest artifact here.
+    const MAX_BYTES: u64 = 4 * 1024 * 1024;
+
+    let metadata =
+        std::fs::metadata(path).map_err(|error| format!("open {path}: {error}"))?;
+    if metadata.len() > MAX_BYTES {
+        return Err(format!("{path} is larger than {MAX_BYTES} bytes"));
+    }
+    let bytes = std::fs::read(path).map_err(|error| format!("read {path}: {error}"))?;
+    match kind {
+        PlaceArtifactKind::Card => {
+            let card: crate::place::PlaceCardV1 = serde_json::from_slice(&bytes)
+                .map_err(|error| format!("{path} is not a place card: {error}"))?;
+            card.validate()?;
+            Ok(Action::OfferPlacePrekeyForCard {
+                card: Box::new(card),
+                out: format!("{path}.prekey.json"),
+            })
+        }
+        PlaceArtifactKind::Prekey => {
+            let offer: crate::place::PlacePrekeyOfferV1 = serde_json::from_slice(&bytes)
+                .map_err(|error| format!("{path} is not a pre-key offer: {error}"))?;
+            Ok(Action::InviteToPlaceWithPrekey {
+                prekey: offer.prekey_bytes()?,
+                out: format!("{path}.invite.json"),
+            })
+        }
+        PlaceArtifactKind::Invite => {
+            let invite: crate::place::invite::PlaceInviteV1 = serde_json::from_slice(&bytes)
+                .map_err(|error| format!("{path} is not an invitation: {error}"))?;
+            invite
+                .validate()
+                .map_err(|error| format!("{path}: {error}"))?;
+            Ok(Action::JoinPlace(Box::new(invite)))
         }
     }
 }

@@ -112,6 +112,7 @@ impl App {
     /// static label would have acted as the wrong one).
     pub fn available_actions(&self) -> Vec<(String, Action)> {
         let mut rows = self.session_actions();
+        rows.extend(self.place_founding_actions());
         rows.extend(self.place_collection_actions());
         if let Some(member) = self.graph_runtimes.focused_member()
             && !self.node_is_kept(member)
@@ -157,6 +158,29 @@ impl App {
         }
         rows.extend(crate::action::palette_actions());
         rows
+    }
+
+    /// The founding half of the place vocabulary. Offered by situation: a
+    /// personal session can found, join, or offer a pre-key; a session already
+    /// in a place can export its card, invite, and speak. Offering a row that
+    /// could only refuse would teach the palette to lie.
+    pub(super) fn place_founding_actions(&self) -> Vec<(String, Action)> {
+        let rows: &[(&str, Action)] = if self.place.binding().is_some() {
+            &[
+                ("Export place card", Action::BeginExportPlaceCard),
+                ("Invite to place", Action::BeginInviteToPlace),
+                ("Send place message", Action::BeginSendPlaceMessage),
+            ]
+        } else {
+            &[
+                ("Found place", Action::BeginFoundPlace),
+                ("Join place", Action::BeginJoinPlaceFile),
+                ("Offer place pre-key", Action::BeginOfferPlacePrekey),
+            ]
+        };
+        rows.iter()
+            .map(|(label, action)| (label.to_string(), action.clone()))
+            .collect()
     }
 
     /// Captured-page scope is a local reading choice. The worker supplies the

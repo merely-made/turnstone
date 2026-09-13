@@ -310,6 +310,32 @@ pub struct GeminiTrustPrompt {
     pub seen: String,
 }
 
+/// Which place question the omnibar is asking. One variant per palette row
+/// in the founding vocabulary, so a commit cannot land in the wrong action.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum PlacePrompt {
+    FoundPlace,
+    ExportCard,
+    OfferPrekey,
+    Invite,
+    Join,
+    SendMessage,
+}
+
+impl PlacePrompt {
+    /// The one-line hint shown while this prompt is open.
+    pub fn hint(self) -> &'static str {
+        match self {
+            Self::FoundPlace => "Enter a place name and press Enter to found it",
+            Self::ExportCard => "Enter a path and press Enter to write the place card",
+            Self::OfferPrekey => "Enter a card path and press Enter to offer a pre-key",
+            Self::Invite => "Enter a pre-key path and press Enter to invite",
+            Self::Join => "Enter an invitation path and press Enter to join",
+            Self::SendMessage => "Enter a message and press Enter to send it",
+        }
+    }
+}
+
 /// What the omnibar is capturing: an address/action (the default three lanes)
 /// or a free-text rename for a session. Rename mode captures the whole line as
 /// the new name and commits it as [`crate::action::Action::RenameSession`],
@@ -323,6 +349,9 @@ pub enum OmnibarMode {
     /// Filter the active place's local status observations.
     PlaceStatus,
     RenameSession(crate::panes::SessionId),
+    /// One free-text place prompt. Same shape as `RenameSession`: the whole
+    /// line is the answer, and Enter commits it into the paired action.
+    Place(PlacePrompt),
     SmolwebInput(SmolwebInputPrompt),
     SmolwebSubmission(SmolwebSubmissionPrompt),
     MicronForm(MicronFormPrompt),
@@ -630,6 +659,13 @@ pub fn recompute_suggestions_with_limit(
             Suggestion::Prompt(format!("Presented: {}", input.seen)),
             Suggestion::Prompt("Type trust and press Enter to replace the pin".to_string()),
         ]);
+        state.selected = 0;
+        return;
+    }
+
+    // Place prompts capture the whole line, exactly like rename.
+    if let OmnibarMode::Place(prompt) = state.mode {
+        state.suggestions.push(Suggestion::Hint(prompt.hint()));
         state.selected = 0;
         return;
     }

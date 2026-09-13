@@ -54,6 +54,7 @@ impl App {
             content: ContentStates::default(),
             feeds: crate::feed::FeedSubscriptions::default(),
             place: crate::place::PlaceState::default(),
+            pending_place_artifact: None,
             next_place_generation: 0,
             next_place_request: 0,
             next_smolweb_submission: 0,

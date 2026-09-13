@@ -99,6 +99,7 @@ impl App {
             content: ContentStates::default(),
             feeds: crate::feed::FeedSubscriptions::default(),
             place: crate::place::PlaceState::default(),
+            pending_place_artifact: None,
             next_place_generation: 0,
             next_place_request: 0,
             next_smolweb_submission: 0,
@@ -385,6 +386,180 @@ impl App {
         let (key, _) = graph.get_node_by_url(&recent.url)?;
         let label = graph.node_display_label(key);
         (!label.trim().is_empty()).then_some(label)
+    }
+
+    /// This profile's Personae root. The same root the worker evaluates
+    /// authority for; read here so a card can name it without a round trip.
+    pub(crate) fn personae_root(&self) -> [u8; 32] {
+        use identity::IdentityProvider as _;
+        self.identity.master_public_key().to_bytes()
+    }
+
+    /// Refuse one place gesture out loud, changing nothing.
+    pub(crate) fn refuse_place(&mut self, reason: impl Into<String>) -> Vec<Effect> {
+        self.events.push(AppEvent::PlaceRefused(reason.into()));
+        vec![Effect::Redraw]
+    }
+
+    /// Open one free-text place prompt, in the rename shape.
+    ///
+    /// The precondition is checked HERE rather than only at commit, so a
+    /// prompt that could not possibly succeed never opens.
+    pub(super) fn begin_place_prompt(&mut self, prompt: crate::ui::PlacePrompt) -> Vec<Effect> {
+        use crate::ui::PlacePrompt;
+        let joined = self.place.binding().is_some();
+        match prompt {
+            PlacePrompt::FoundPlace | PlacePrompt::OfferPrekey | PlacePrompt::Join if joined => {
+                return self.refuse_place("leave this place before joining or founding another");
+            },
+            PlacePrompt::ExportCard | PlacePrompt::Invite | PlacePrompt::SendMessage
+                if !joined =>
+            {
+                return self.refuse_place("this session is not in a place");
+            },
+            _ => {},
+        }
+        self.omnibar = OmnibarState {
+            open: true,
+            mode: crate::ui::OmnibarMode::Place(prompt),
+            ..OmnibarState::default()
+        };
+        let target = self.fallback_shell_context();
+        self.shell.begin_omnibar(target);
+        self.focus = FocusTarget::Chrome;
+        self.recompute_omnibar_suggestions();
+        self.events.push(AppEvent::OmnibarOpened);
+        vec![Effect::Redraw]
+    }
+
+    /// Found a place in this session. Claims no binding: `Joining` carries a
+    /// generation and nothing else until the worker answers.
+    pub fn found_place(&mut self, name: String) -> Vec<Effect> {
+        if self.place.binding().is_some() {
+            return self.refuse_place("leave this place before founding another");
+        }
+        let name = name.trim().to_string();
+        if name.is_empty() {
+            return self.refuse_place("a place needs a name");
+        }
+        self.next_place_generation = self.next_place_generation.wrapping_add(1);
+        let generation = self.next_place_generation;
+        self.place = crate::place::PlaceState::Joining { generation };
+        vec![Effect::FoundPlace {
+            session: self.session_id,
+            generation,
+            name,
+        }]
+    }
+
+    /// Write this place's card. Contact metadata and public ids only.
+    pub fn export_place_card(&mut self, path: String) -> Vec<Effect> {
+        let Some(binding) = self.place.binding().cloned() else {
+            return self.refuse_place("open a place before exporting its card");
+        };
+        let local_rendezvous = match &self.place {
+            crate::place::PlaceState::Offline { snapshot, .. } => snapshot
+                .sync
+                .as_ref()
+                .map(|sync| sync.local_rendezvous.clone())
+                .unwrap_or_default(),
+            _ => Vec::new(),
+        };
+        let card = crate::place::PlaceCardV1 {
+            version: crate::place::PLACE_CARD_VERSION,
+            binding,
+            founder_root: crate::place::hex32(&self.personae_root()),
+            rendezvous: local_rendezvous
+                .into_iter()
+                .map(|hint| crate::place::invite::RendezvousV1 {
+                    carrier: crate::place::invite::P2PANDA_ENDPOINT_TICKET.into(),
+                    hint,
+                })
+                .collect(),
+        };
+        match serde_json::to_vec_pretty(&card) {
+            Ok(bytes) => vec![Effect::WritePlaceArtifact { path, bytes }],
+            Err(error) => self.refuse_place(format!("encode place card: {error}")),
+        }
+    }
+
+    /// Read a card, so a pre-key can be offered against the Moot it names.
+    pub fn offer_place_prekey(&mut self, path: String) -> Vec<Effect> {
+        if self.place.binding().is_some() {
+            return self.refuse_place("leave this place before offering a pre-key elsewhere");
+        }
+        vec![Effect::ReadPlaceArtifact {
+            path,
+            kind: crate::action::PlaceArtifactKind::Card,
+        }]
+    }
+
+    /// Publish this profile's group identity for the card's Moot.
+    pub(crate) fn offer_place_prekey_for_card(
+        &mut self,
+        card: Box<crate::place::PlaceCardV1>,
+        out: String,
+    ) -> Vec<Effect> {
+        if let Err(error) = card.validate() {
+            return self.refuse_place(error);
+        }
+        self.next_place_generation = self.next_place_generation.wrapping_add(1);
+        let generation = self.next_place_generation;
+        self.pending_place_artifact = Some(super::PendingPlaceArtifact {
+            generation,
+            path: out,
+            moot: card.binding.moot,
+        });
+        vec![Effect::OfferPlacePrekey {
+            session: self.session_id,
+            generation,
+            moot: card.binding.moot.0,
+        }]
+    }
+
+    /// Read a pre-key offer, so an invitation can be authored for it.
+    pub fn invite_to_place(&mut self, path: String) -> Vec<Effect> {
+        if self.place.binding().is_none() {
+            return self.refuse_place("open a place before inviting anyone");
+        }
+        vec![Effect::ReadPlaceArtifact {
+            path,
+            kind: crate::action::PlaceArtifactKind::Prekey,
+        }]
+    }
+
+    pub(crate) fn invite_to_place_with_prekey(
+        &mut self,
+        prekey: Vec<u8>,
+        out: String,
+    ) -> Vec<Effect> {
+        let Some(binding) = self.place.binding().cloned() else {
+            return self.refuse_place("open a place before inviting anyone");
+        };
+        let Some(generation) = self.place.generation() else {
+            return self.refuse_place("open a place before inviting anyone");
+        };
+        self.pending_place_artifact = Some(super::PendingPlaceArtifact {
+            generation,
+            path: out,
+            moot: binding.moot,
+        });
+        vec![Effect::InvitePlace {
+            session: self.session_id,
+            generation,
+            prekey,
+        }]
+    }
+
+    /// Read an invitation file, so the existing join path can admit it.
+    pub fn join_place_file(&mut self, path: String) -> Vec<Effect> {
+        if self.place.binding().is_some() {
+            return self.refuse_place("leave this place before joining another");
+        }
+        vec![Effect::ReadPlaceArtifact {
+            path,
+            kind: crate::action::PlaceArtifactKind::Invite,
+        }]
     }
 
     /// Ask the worker to admit `invite` into the current session.

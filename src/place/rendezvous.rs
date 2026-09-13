@@ -53,9 +53,8 @@ impl PlaceRendezvousV1 {
                 tickets.push(entry.hint.clone());
             }
         }
-        if tickets.is_empty() {
-            return Err("this place has no saved dialable rendezvous".into());
-        }
+        // An empty list is not a failure. A founder saves a ticketless
+        // descriptor on purpose, and reopening it is a listen-only bind.
         Ok(tickets)
     }
 }
@@ -79,6 +78,27 @@ pub(crate) fn save_admitted_rendezvous(
     if bytes.len() as u64 > MAX_BYTES {
         return Err("saved rendezvous exceeds the byte limit".into());
     }
+    replace_descriptor(directory, &bytes)
+}
+
+/// Called by the worker after founding. The founder has dialed nobody, so
+/// the descriptor it saves is deliberately empty: a place it holds itself
+/// needs an endpoint, not a contact hint, and reopening it listens.
+pub(crate) fn save_founder_rendezvous(
+    directory: &Path,
+    binding: &PlaceBindingV1,
+) -> Result<(), String> {
+    let saved = PlaceRendezvousV1 {
+        version: 1,
+        moot: binding.moot,
+        root: binding.root,
+        chat: binding.chat,
+        // Nothing to expire: an empty offer replays no welcome and reveals
+        // no address, so bounding it would only break the founder's reopen.
+        not_after_ms: u64::MAX,
+        rendezvous: Vec::new(),
+    };
+    let bytes = serde_json::to_vec(&saved).map_err(|error| error.to_string())?;
     replace_descriptor(directory, &bytes)
 }
 

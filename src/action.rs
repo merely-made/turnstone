@@ -91,6 +91,19 @@ pub struct DocumentFindModel {
     pub complete: bool,
 }
 
+/// Which place artifact a read is expected to hold. The shell parses the
+/// bytes into exactly this shape and refuses anything else; a mislabelled
+/// file is a refusal, never a guess.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum PlaceArtifactKind {
+    /// A place card, read to offer a pre-key against its Moot.
+    Card,
+    /// A published pre-key offer, read to author an invitation for it.
+    Prekey,
+    /// An invitation envelope, read to join through it.
+    Invite,
+}
+
 /// A typed app intent. The shell (keys, later the omnibar / command palette /
 /// automation adapters) produces these; [`crate::app::update`] consumes them.
 #[derive(Clone, Debug, PartialEq)]
@@ -276,6 +289,51 @@ pub enum Action {
     ToggleSizeByRecency,
     /// Persist the session now (close path; enrichment saves ride effects).
     SaveSession,
+    /// Prompt for a place name, then found one. The founding half of the
+    /// vocabulary follows the rename shape: `Begin*` opens the omnibar, the
+    /// commit action below carries the typed line.
+    BeginFoundPlace,
+    /// Found a new place in this session and open it listen-only.
+    FoundPlace {
+        name: String,
+    },
+    /// Prompt for the path a place card is written to.
+    BeginExportPlaceCard,
+    /// Write this place's card: binding, founder root, current rendezvous.
+    /// Carries no authority and no key material.
+    ExportPlaceCard {
+        path: String,
+    },
+    /// Prompt for the card path a pre-key is offered against.
+    BeginOfferPlacePrekey,
+    /// Publish this profile's group identity for the card's Moot.
+    OfferPlacePrekey {
+        path: String,
+    },
+    /// The card read back by the shell, with the offer's output path.
+    OfferPlacePrekeyForCard {
+        card: Box<crate::place::PlaceCardV1>,
+        out: String,
+    },
+    /// Prompt for the pre-key offer an invitation answers.
+    BeginInviteToPlace,
+    /// Admit one offered pre-key's root and author its invitation.
+    InviteToPlace {
+        path: String,
+    },
+    /// The offer read back by the shell, with the invitation's output path.
+    InviteToPlaceWithPrekey {
+        prekey: Vec<u8>,
+        out: String,
+    },
+    /// Prompt for the invitation file to join through.
+    BeginJoinPlaceFile,
+    /// Read and validate one invitation file, then join through it.
+    JoinPlaceFile {
+        path: String,
+    },
+    /// Prompt for a message body on the active place's default channel.
+    BeginSendPlaceMessage,
     /// Admit an invitation into the current session, then open the place.
     ///
     /// The envelope carries no authority. Nothing durable exists for this place
@@ -798,6 +856,36 @@ pub enum Effect {
         generation: u64,
         binding: crate::place::PlaceBindingV1,
     },
+    /// Found a place in this session's directory and open it listen-only.
+    FoundPlace {
+        session: crate::panes::SessionId,
+        generation: u64,
+        name: String,
+    },
+    /// Publish this profile's group identity for one Moot.
+    OfferPlacePrekey {
+        session: crate::panes::SessionId,
+        generation: u64,
+        moot: [u8; 32],
+    },
+    /// Admit one offered pre-key's root and author its invitation.
+    InvitePlace {
+        session: crate::panes::SessionId,
+        generation: u64,
+        prekey: Vec<u8>,
+    },
+    /// Write one place artifact where the person asked for it. Files are a
+    /// shell concern; the worker never touches the filesystem outside the
+    /// session's own store.
+    WritePlaceArtifact {
+        path: String,
+        bytes: Vec<u8>,
+    },
+    /// Read one place artifact and lower what it holds back into an action.
+    ReadPlaceArtifact {
+        path: String,
+        kind: PlaceArtifactKind,
+    },
     /// Admit one invitation, then open the place it names.
     ///
     /// Boxed because the envelope carries inline artifacts and every `Effect`
@@ -1177,6 +1265,34 @@ pub enum Update {
     },
     /// One invitation admission completed.
     ///
+    /// One place was founded here, and is open listen-only.
+    ///
+    /// Distinct from [`Update::PlaceJoined`]: nothing was admitted, because
+    /// there was nothing to be admitted into until this succeeded.
+    PlaceFounded {
+        session: crate::panes::SessionId,
+        generation: u64,
+        result: Result<
+            (
+                crate::place::PlaceBindingV1,
+                crate::place::OfflinePlaceSnapshot,
+            ),
+            String,
+        >,
+    },
+    /// This profile's published group pre-key for one Moot. An offer, not an
+    /// admission: holding it grants the holder nothing.
+    PlacePrekeyOffered {
+        session: crate::panes::SessionId,
+        generation: u64,
+        result: Result<Vec<u8>, String>,
+    },
+    /// One authored invitation for an offered pre-key.
+    PlaceInvited {
+        session: crate::panes::SessionId,
+        generation: u64,
+        result: Result<Box<crate::place::invite::PlaceInviteV1>, String>,
+    },
     /// Distinct from [`Update::PlaceOpened`] because the failure means
     /// something different: an open that fails leaves a degraded but real
     /// place, while an admission that fails means there is no place at all.

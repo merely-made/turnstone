@@ -1,0 +1,43 @@
+# T5a joiner path, paired with scenarios/place_founder.scn through the shared
+# exchange directory named by ${EXCHANGE} (see scenarios/place_two_windows.ps1
+# and design_docs/2026-07-28_turnstone_place_port_plan.md, "T5a").
+settle 30
+key escape
+
+# Wait for the founder's exported card before offering a pre-key against it.
+wait-file 3000 ${EXCHANGE}\demo.place-card.json
+
+act Offer place pre-key
+settle 5
+type ${EXCHANGE}\demo.place-card.json
+key enter
+settle 10
+wait-file 600 ${EXCHANGE}\demo.place-card.json.prekey.json
+
+# Wait for the founder's invitation (naming this pre-key) before joining.
+wait-file 3000 ${EXCHANGE}\demo.place-card.json.prekey.json.invite.json
+
+act Join place
+settle 5
+type ${EXCHANGE}\demo.place-card.json.prekey.json.invite.json
+key enter
+settle 10
+wait-status 600 Local rendezvous
+
+# The founder's message shows as one retained message after the chat lane
+# drains and the app resyncs; bodies are not status facts.
+wait-status 3000 Retained history: 0 shared nodes, 1 messages
+
+act Send place message
+settle 5
+type hello from joiner
+key enter
+settle 10
+wait-status 600 Retained history: 0 shared nodes, 2 messages
+
+act Place status
+settle 10
+capture joiner_status
+record-place joiner
+
+log joiner path complete

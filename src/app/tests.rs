@@ -2898,10 +2898,13 @@ fn available_actions_lead_with_the_contextual_rows() {
         "contextual rows lead the static registry: {rows:?}"
     );
 
-    // The catalog is exactly the two sources, nothing invented or dropped.
+    // The catalog is exactly its sources, nothing invented or dropped: the
+    // session rows, the situational place rows, then the static registry.
     assert_eq!(
         rows.len(),
-        app.session_actions().len() + crate::action::palette_actions().len()
+        app.session_actions().len()
+            + app.place_founding_actions().len()
+            + crate::action::palette_actions().len()
     );
 
     // And the snapshot reports THAT list, by label and in that order, so an
@@ -4562,6 +4565,8 @@ fn place_status_refresh_is_local_filtered_and_generation_scoped() {
                 ops_received: 3,
                 last_activity_ms: Some(42),
             }],
+            local_rendezvous: vec!["ticket".into()],
+            dialed_rendezvous: 1,
         }),
         permissions: Some(PlacePermissionSnapshot {
             message_write: true,
@@ -4758,4 +4763,272 @@ fn micron_form_rejects_refreshed_source_before_send_and_on_reply() {
             assert!(app.omnibar.suggestions.iter().any(|row| matches!(row, crate::ui::Suggestion::Prompt(text) if text.contains("page changed"))));
         }
     }
+}
+
+/// The founding vocabulary through the omnibar: every `Begin*` opens the
+/// prompt its label promises, Enter commits the typed line into the paired
+/// action, Escape leaves the session exactly as it was, and a row offered in
+/// the wrong situation refuses out loud instead of lowering an effect.
+#[test]
+fn place_founding_prompts_commit_escape_and_refuse() {
+    use crate::ui::{OmnibarMode, PlacePrompt};
+
+    let mut app = App::test_stub();
+
+    // A personal session is offered the three rows it can act on.
+    let labels: Vec<String> = app
+        .available_actions()
+        .into_iter()
+        .map(|(label, _)| label)
+        .collect();
+    for label in ["Found place", "Join place", "Offer place pre-key"] {
+        assert!(labels.iter().any(|row| row == label), "missing {label}");
+    }
+    for label in ["Export place card", "Invite to place", "Send place message"] {
+        assert!(
+            !labels.iter().any(|row| row == label),
+            "{label} cannot act on a personal session"
+        );
+    }
+
+    // Found: prompt, type, commit.
+    app.update(Action::BeginFoundPlace);
+    assert!(app.omnibar.open);
+    assert_eq!(app.omnibar.mode, OmnibarMode::Place(PlacePrompt::FoundPlace));
+    app.omnibar.text = "Hearth".to_string();
+    let session = app.session_id;
+    let effects = app.update(Action::OmnibarCommit);
+    assert!(effects.iter().any(|effect| matches!(
+        effect,
+        Effect::FoundPlace { name, session: s, .. } if name == "Hearth" && *s == session
+    )));
+    assert!(matches!(app.place, crate::place::PlaceState::Joining { .. }));
+    assert!(!app.omnibar.open, "commit closes the bar");
+
+    // A refused founding leaves no place at all, and says so.
+    let generation = app.place.generation().unwrap();
+    app.apply_update(Update::PlaceFounded {
+        session,
+        generation,
+        result: Err("disk full".into()),
+    });
+    assert!(matches!(app.place, crate::place::PlaceState::Failed { .. }));
+    assert!(app.take_events().iter().any(|event| matches!(
+        event,
+        crate::observe::AppEvent::PlaceRefused(reason) if reason.contains("disk full")
+    )));
+
+    // Escape cancels without lowering anything.
+    app.place = crate::place::PlaceState::Personal;
+    app.update(Action::BeginJoinPlaceFile);
+    assert_eq!(app.omnibar.mode, OmnibarMode::Place(PlacePrompt::Join));
+    app.update(Action::OmnibarClose);
+    assert!(!app.omnibar.open);
+    assert_eq!(app.omnibar.mode, OmnibarMode::Address);
+
+    // Reading is a shell effect, and the kind is named by the prompt.
+    assert_eq!(
+        app.update(Action::JoinPlaceFile {
+            path: "invite.json".into()
+        }),
+        vec![Effect::ReadPlaceArtifact {
+            path: "invite.json".into(),
+            kind: crate::action::PlaceArtifactKind::Invite,
+        }]
+    );
+    assert_eq!(
+        app.update(Action::OfferPlacePrekey {
+            path: "card.json".into()
+        }),
+        vec![Effect::ReadPlaceArtifact {
+            path: "card.json".into(),
+            kind: crate::action::PlaceArtifactKind::Card,
+        }]
+    );
+
+    // The place-side rows refuse a personal session rather than pretending.
+    for action in [
+        Action::BeginExportPlaceCard,
+        Action::BeginInviteToPlace,
+        Action::BeginSendPlaceMessage,
+    ] {
+        assert_eq!(app.update(action), vec![Effect::Redraw]);
+        assert!(!app.omnibar.open);
+        assert!(matches!(
+            app.take_events().last(),
+            Some(crate::observe::AppEvent::PlaceRefused(_))
+        ));
+    }
+    assert_eq!(
+        app.update(Action::InviteToPlace {
+            path: "offer.json".into()
+        }),
+        vec![Effect::Redraw]
+    );
+}
+
+/// The same vocabulary from inside a place: the card carries public ids and
+/// this bind's own rendezvous, an invitation answer is written where the
+/// person asked, a message goes to the binding's default channel, and a
+/// stale answer writes nothing.
+#[test]
+fn place_artifacts_are_written_where_the_person_asked() {
+    use crate::ui::{OmnibarMode, PlacePrompt};
+
+    let mut app = App::test_stub();
+    let binding = crate::place::PlaceBindingV1::new(
+        crate::place::PlaceId([0x91; 32]),
+        crate::place::SharedContainerId([0x92; 32]),
+        crate::place::ChatSpaceId([0x93; 32]),
+        "general",
+    )
+    .unwrap();
+    app.place = crate::place::PlaceState::Offline {
+        binding: binding.clone(),
+        generation: 4,
+        snapshot: crate::place::OfflinePlaceSnapshot {
+            sync: Some(crate::place::PlaceSyncSnapshot {
+                lanes: Vec::new(),
+                local_rendezvous: vec!["ticket-one".into()],
+                dialed_rendezvous: 0,
+            }),
+            ..Default::default()
+        },
+    };
+
+    // The card: public ids, the founder's root, the current rendezvous.
+    app.update(Action::BeginExportPlaceCard);
+    assert_eq!(app.omnibar.mode, OmnibarMode::Place(PlacePrompt::ExportCard));
+    app.omnibar.text = "place-card.json".to_string();
+    let effects = app.update(Action::OmnibarCommit);
+    let bytes = effects
+        .iter()
+        .find_map(|effect| match effect {
+            Effect::WritePlaceArtifact { path, bytes } if path == "place-card.json" => Some(bytes),
+            _ => None,
+        })
+        .expect("the card is written where it was asked for");
+    let card: crate::place::PlaceCardV1 = serde_json::from_slice(bytes).unwrap();
+    card.validate().unwrap();
+    assert_eq!(card.binding, binding);
+    assert_eq!(card.rendezvous.len(), 1);
+    assert_eq!(card.rendezvous[0].hint, "ticket-one");
+    assert_eq!(
+        card.founder_root,
+        crate::place::hex32(&app.personae_root()),
+        "the card names this profile's own root"
+    );
+
+    // A message commits on the binding's default channel.
+    app.update(Action::BeginSendPlaceMessage);
+    app.omnibar.text = "hello".to_string();
+    let effects = app.update(Action::OmnibarCommit);
+    assert!(effects.iter().any(|effect| matches!(
+        effect,
+        Effect::RunPlaceCommand {
+            command: crate::place::worker::PlaceCommand::SendMessage { channel, body },
+            ..
+        } if channel == "general" && body == "hello"
+    )));
+
+    // An invitation answer is written to the path the offer named.
+    let effects = app.update(Action::InviteToPlaceWithPrekey {
+        prekey: vec![1, 2, 3],
+        out: "offer.json.invite.json".into(),
+    });
+    assert_eq!(
+        effects,
+        vec![Effect::InvitePlace {
+            session: app.session_id,
+            generation: 4,
+            prekey: vec![1, 2, 3],
+        }]
+    );
+    // A stale answer writes nothing and does not consume the pending path.
+    assert!(
+        app.apply_update(Update::PlaceInvited {
+            session: app.session_id,
+            generation: 3,
+            result: Err("stale".into()),
+        })
+        .is_empty()
+    );
+    assert!(
+        app.apply_update(Update::PlaceInvited {
+            session: app.session_id,
+            generation: 4,
+            result: Err("no such member".into()),
+        })
+        .iter()
+        .all(|effect| matches!(effect, Effect::Redraw))
+    );
+    assert!(app.take_events().iter().any(|event| matches!(
+        event,
+        crate::observe::AppEvent::PlaceRefused(reason) if reason.contains("no such member")
+    )));
+}
+
+/// A pre-key offer is composed from the worker's answer and this profile's
+/// own root, and lands beside the card it answers.
+#[test]
+fn place_prekey_offer_is_written_beside_its_card() {
+    let mut app = App::test_stub();
+    let binding = crate::place::PlaceBindingV1::new(
+        crate::place::PlaceId([0xa1; 32]),
+        crate::place::SharedContainerId([0xa2; 32]),
+        crate::place::ChatSpaceId([0xa3; 32]),
+        "general",
+    )
+    .unwrap();
+    let card = crate::place::PlaceCardV1 {
+        version: crate::place::PLACE_CARD_VERSION,
+        binding: binding.clone(),
+        founder_root: crate::place::hex32(&[0xb1; 32]),
+        rendezvous: Vec::new(),
+    };
+    let effects = app.update(Action::OfferPlacePrekeyForCard {
+        card: Box::new(card),
+        out: "card.json.prekey.json".into(),
+    });
+    let generation = match effects.as_slice() {
+        [
+            Effect::OfferPlacePrekey {
+                generation, moot, ..
+            },
+        ] => {
+            assert_eq!(*moot, binding.moot.0);
+            *generation
+        },
+        other => panic!("offering a pre-key lowers one worker command: {other:?}"),
+    };
+
+    let effects = app.apply_update(Update::PlacePrekeyOffered {
+        session: app.session_id,
+        generation,
+        result: Ok(vec![7, 8, 9]),
+    });
+    let bytes = effects
+        .iter()
+        .find_map(|effect| match effect {
+            Effect::WritePlaceArtifact { path, bytes } if path == "card.json.prekey.json" => {
+                Some(bytes)
+            },
+            _ => None,
+        })
+        .expect("the offer lands beside the card");
+    let offer: crate::place::PlacePrekeyOfferV1 = serde_json::from_slice(bytes).unwrap();
+    assert_eq!(offer.moot, binding.moot);
+    assert_eq!(offer.root, crate::place::hex32(&app.personae_root()));
+    assert_eq!(offer.prekey_bytes().unwrap(), vec![7, 8, 9]);
+
+    // The answer was consumed; a replay writes nothing.
+    assert!(app.pending_place_artifact.is_none());
+    assert!(
+        app.apply_update(Update::PlacePrekeyOffered {
+            session: app.session_id,
+            generation,
+            result: Ok(vec![7, 8, 9]),
+        })
+        .is_empty()
+    );
 }

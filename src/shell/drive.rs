@@ -57,6 +57,36 @@ impl IdleDiagnosis {
     }
 }
 
+/// Re-check `condition` once per (simulated) frame for up to `frames`
+/// attempts, sleeping briefly between attempts. `wait-row`/`wait-status`/
+/// `wait-file` are "sticky" over the SHARED genet-probe scenario loop's own
+/// frame pump (`Scenario::tick` advances its step index unconditionally once
+/// per call — see `genet_probe::scenario`), so there is no hook to hold a
+/// single step across several of ITS frames. This polls within the one call
+/// turnstone's `app_step` gets instead: background work (file writes, network
+/// I/O) runs on other threads/tasks, so a short sleep between checks still
+/// lets it progress. Returns true the moment `condition` holds.
+impl Shell {
+    /// A wait that holds the frame loop still needs the place worker's answers,
+    /// which the loop would otherwise drain; drain them here between checks.
+    fn wait_frames(&mut self, frames: u32, mut condition: impl FnMut(&Shell) -> bool) -> bool {
+        let attempts = frames.max(1);
+        for attempt in 0..attempts {
+            while let Ok(update) = self.place_rx.try_recv() {
+                let effects = self.app.apply_update(update);
+                self.run_effects(effects);
+            }
+            if condition(self) {
+                return true;
+            }
+            if attempt + 1 < attempts {
+                std::thread::sleep(std::time::Duration::from_millis(16));
+            }
+        }
+        false
+    }
+}
+
 impl Shell {
     fn idle_diagnosis(&mut self) -> IdleDiagnosis {
         let mut unsettled_sessions = self
@@ -1085,6 +1115,61 @@ impl Shell {
                 }
             }
             Step::AssertEvent(_) => {}
+
+            // ---- T5a: sticky waits and the place record receipt ----
+            Step::WaitRow(frames, substr) => {
+                let ok = self.wait_frames(*frames, |shell| {
+                    let snap = crate::observe::snapshot(&shell.app);
+                    snap.trail_rows
+                        .iter()
+                        .chain(snap.roster_rows.iter())
+                        .chain(snap.inspector_rows.iter())
+                        .chain(snap.arrange_rows.iter())
+                        .any(|r| r.contains(substr.as_str()))
+                });
+                if !ok {
+                    let snap = crate::observe::snapshot(&self.app);
+                    return Err(format!(
+                        "wait-row '{substr}' after {frames} frames: trail {:?} roster {:?} inspector {:?} arrange {:?}",
+                        snap.trail_rows, snap.roster_rows, snap.inspector_rows, snap.arrange_rows
+                    ));
+                }
+            }
+            Step::WaitStatus(frames, substr) => {
+                let ok = self.wait_frames(*frames, |shell| {
+                    crate::observe::snapshot(&shell.app)
+                        .place_status
+                        .iter()
+                        .any(|line| line.contains(substr.as_str()))
+                });
+                if !ok {
+                    let status = crate::observe::snapshot(&self.app).place_status;
+                    return Err(format!(
+                        "wait-status '{substr}' after {frames} frames: place status is {status:?}"
+                    ));
+                }
+            }
+            Step::WaitFile(frames, path) => {
+                let p = std::path::Path::new(path.as_str());
+                let ok = self.wait_frames(*frames, |_| {
+                    std::fs::metadata(p).is_ok_and(|meta| meta.len() > 0)
+                });
+                if !ok {
+                    return Err(format!(
+                        "wait-file '{path}' after {frames} frames: still missing or empty"
+                    ));
+                }
+            }
+            Step::RecordPlace(name) => {
+                let value = crate::observe::place_record(&self.app);
+                let body = serde_json::to_string_pretty(&value).map_err(|error| {
+                    format!("record-place '{name}': could not serialize: {error}")
+                })?;
+                let path = self.shared_out_dir.join(format!("{name}.json"));
+                std::fs::write(&path, body).map_err(|error| {
+                    format!("record-place '{name}': could not write {}: {error}", path.display())
+                })?;
+            }
         }
         self.request_redraw();
         Ok(())

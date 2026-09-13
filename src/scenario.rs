@@ -75,6 +75,17 @@
 //! assert reader-scroll <role> ==|>=|<= <px> # role's own retained scroll offset
 //! assert content-sessions-idle # every live document session has settled
 //! assert content-ready # fetches, content requests, and sessions are quiet
+//! wait-row <frames> <substr> # like `assert row`, re-checked once per pumped
+//!                            # frame for up to <frames> frames; passes the
+//!                            # moment it matches, fails with `assert row`'s
+//!                            # diagnostics if the budget runs out
+//! wait-status <frames> <substr> # like wait-row, over the place status lines
+//!                            # (`crate::observe::snapshot(..).place_status`)
+//! wait-file <frames> <path>  # like wait-row, satisfied once <path> exists
+//!                            # and is non-empty (cross-process sequencing
+//!                            # through an exchange directory)
+//! record-place <name>        # write crate::observe::place_record(..), pretty
+//!                            # printed, to <name>.json in the capture dir
 //! assert active-ratio ==|>=|<= <f> # the ACTIVE pane's parent-split ratio (any space)
 //! assert sessions ==|>=|<= <n>  # the manifest set holds n sessions
 //! assert session <substr>   # the live session's label contains substr
@@ -94,6 +105,12 @@
 //! Asserts read the observation surface ([`crate::observe`]) — the same
 //! snapshot/event pair the a11y and automation lanes consume — so a green
 //! scenario certifies the surface those lanes will stand on.
+//!
+//! Every line is expanded for `${NAME}` before parsing: each occurrence is
+//! replaced with the process environment variable of that name (a missing
+//! variable is a parse error, named by line). This lets one scenario file
+//! reference a path chosen by its driver (an exchange directory, say)
+//! without hardcoding it — see `wait-file` above and `scenarios/place_*.scn`.
 
 /// One parsed scenario step. `TURNSTONE_SCENARIO` runs on the shared
 /// `genet_probe::Scenario` loop; the generic verbs (act/settle/capture/log,
@@ -251,6 +268,18 @@ pub enum Step {
     /// A semantic event whose description contains the substring was emitted
     /// at some point this run.
     AssertEvent(String),
+    /// Like [`Step::AssertRow`], but re-checked once per pumped frame for up
+    /// to this many frames: passes the moment a row matches, otherwise fails
+    /// with the same diagnostics once the budget runs out.
+    WaitRow(u32, String),
+    /// Like [`Step::WaitRow`], over `crate::observe::snapshot(..).place_status`.
+    WaitStatus(u32, String),
+    /// Like [`Step::WaitRow`], satisfied once the named path exists and is
+    /// non-empty — cross-process sequencing through a shared exchange dir.
+    WaitFile(u32, String),
+    /// Write the place observation facts (`crate::observe::place_record`),
+    /// pretty-printed, to `<name>.json` in the capture directory.
+    RecordPlace(String),
     Log(String),
 }
 
@@ -289,6 +318,30 @@ fn parse_xy(s: &str) -> Option<(f32, f32)> {
     Some((x, y))
 }
 
+/// Replace every `${NAME}` in `line` with that process environment variable.
+/// A name with no value set is a parse error (named by line), so a typo'd or
+/// forgotten export fails loudly instead of leaving a literal `${NAME}` to be
+/// matched against by accident.
+fn expand_env(line: &str, line_no: usize) -> Result<String, String> {
+    let mut out = String::with_capacity(line.len());
+    let mut rest = line;
+    while let Some(start) = rest.find("${") {
+        let Some(end) = rest[start + 2..].find('}') else {
+            out.push_str(&rest[..start + 2]);
+            rest = &rest[start + 2..];
+            continue;
+        };
+        let name = &rest[start + 2..start + 2 + end];
+        let value = std::env::var(name)
+            .map_err(|_| format!("line {line_no}: ${{{name}}} is not set"))?;
+        out.push_str(&rest[..start]);
+        out.push_str(&value);
+        rest = &rest[start + 2 + end + 1..];
+    }
+    out.push_str(rest);
+    Ok(out)
+}
+
 pub fn parse(body: &str) -> Result<Vec<Step>, String> {
     let mut steps = Vec::new();
     for (i, raw) in body.lines().enumerate() {
@@ -296,6 +349,8 @@ pub fn parse(body: &str) -> Result<Vec<Step>, String> {
         if line.is_empty() || line.starts_with('#') {
             continue;
         }
+        let line = expand_env(line, i + 1)?;
+        let line = line.as_str();
         let (verb, rest) = line.split_once(char::is_whitespace).unwrap_or((line, ""));
         let rest = rest.trim();
         let err = |msg: &str| Err(format!("line {}: {msg}: '{line}'", i + 1));
@@ -681,6 +736,24 @@ pub fn parse(body: &str) -> Result<Vec<Step>, String> {
                     _ => return err("unknown assert"),
                 }
             }
+            "wait-row" | "wait-status" | "wait-file" => {
+                let (frames, arg) = rest.split_once(char::is_whitespace).ok_or_else(|| {
+                    format!("line {}: {verb} wants '<frames> <substr>'", i + 1)
+                })?;
+                let frames: u32 = frames.trim().parse().map_err(|_| {
+                    format!("line {}: bad {verb} frame count '{frames}'", i + 1)
+                })?;
+                let arg = arg.trim();
+                if arg.is_empty() {
+                    return err(&format!("{verb} wants '<frames> <substr>'"));
+                }
+                match verb {
+                    "wait-row" => Step::WaitRow(frames, arg.to_string()),
+                    "wait-status" => Step::WaitStatus(frames, arg.to_string()),
+                    _ => Step::WaitFile(frames, arg.to_string()),
+                }
+            }
+            "record-place" if !rest.is_empty() => Step::RecordPlace(rest.to_string()),
             "log" => Step::Log(rest.to_string()),
             _ => return err("unknown verb"),
         });
@@ -753,6 +826,55 @@ drop-file 350 280 receipt.txt",
     fn tab_is_a_focus_routed_key_step() {
         let steps = parse("key tab").unwrap();
         assert!(matches!(steps.as_slice(), [Step::Key(EditKey::Tab)]));
+    }
+
+    #[test]
+    fn wait_row_wait_status_wait_file_are_typed_steps() {
+        let steps = parse(
+            "wait-row 300 hello\nwait-status 60 Local rendezvous\nwait-file 3000 C:\\t\\exchange\\demo.place-card.json",
+        )
+        .unwrap();
+        assert!(matches!(
+            steps.as_slice(),
+            [Step::WaitRow(300, row), Step::WaitStatus(60, status), Step::WaitFile(3000, path)]
+                if row == "hello"
+                && status == "Local rendezvous"
+                && path == "C:\\t\\exchange\\demo.place-card.json"
+        ));
+    }
+
+    #[test]
+    fn record_place_is_a_typed_step() {
+        let steps = parse("record-place founder").unwrap();
+        assert!(matches!(steps.as_slice(), [Step::RecordPlace(name)] if name == "founder"));
+    }
+
+    #[test]
+    fn env_substitution_expands_at_parse_time_backslashes_and_colons_intact() {
+        // SAFETY: test-local env var, no other test in this process reads it.
+        unsafe { std::env::set_var("TURNSTONE_TEST_EXCHANGE", "C:\\t\\exchange") };
+        let steps = parse("type ${TURNSTONE_TEST_EXCHANGE}\\demo.place-card.json").unwrap();
+        unsafe { std::env::remove_var("TURNSTONE_TEST_EXCHANGE") };
+        assert!(matches!(
+            steps.as_slice(),
+            [Step::Type(text)] if text == "C:\\t\\exchange\\demo.place-card.json"
+        ));
+    }
+
+    #[test]
+    fn env_substitution_names_the_missing_variable_and_line() {
+        let err = parse("wait-file 60 ${TURNSTONE_TEST_DOES_NOT_EXIST}\\card.json").unwrap_err();
+        assert!(err.contains("line 1"), "{err}");
+        assert!(err.contains("TURNSTONE_TEST_DOES_NOT_EXIST"), "{err}");
+    }
+
+    #[test]
+    fn type_preserves_backslashes_and_colons_unchanged() {
+        let steps = parse("type C:\\t\\exchange\\demo.place-card.json").unwrap();
+        assert!(matches!(
+            steps.as_slice(),
+            [Step::Type(text)] if text == "C:\\t\\exchange\\demo.place-card.json"
+        ));
     }
 
     #[test]

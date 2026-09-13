@@ -18,12 +18,19 @@ use std::sync::mpsc::Receiver;
 use armillary::{ActorHandle, Emitter, Wake, spawn_named};
 use commons::chat::ChatReplica;
 use commons::{GemotAuthorityView, Replica};
+use gemot::moot::constitution::{CapabilityGrant, ConstitutionRules};
 use gemot::moot::{
     AvailabilityPolicy, CollectionEvent, CollectionId, CollectionRef, CollectionVersion,
-    ErasurePolicy, KeepBound, MootAuthority, MootFile, MootId, MootRetentionSettings,
+    ErasurePolicy, KeepBound, MOOT_ACT_ACTION, MOOT_DELEGATION_DOMAIN, MootAccessLevel,
+    MootAuthority, MootFile, MootId, MootMember, MootMembershipAction, MootRetentionSettings,
     PolicyRevision,
 };
+use identity::delegation::{
+    CapabilityScope, DelegationCertificate, DelegationParent, SignedDelegationCertificate,
+    delegation_signing_salt,
+};
 use identity::{IdentityProvider, SealedRecordStorage};
+use servitor::{Cap, cap_path};
 use muniment::RedbBackend;
 use proofs::Digest;
 use stickleback::{
@@ -43,6 +50,10 @@ use crate::place::{
 
 const GROUP_SESSION_RECORD: &str = "group.session";
 const GROUP_PREKEY_RECORD: &str = "group.prekey";
+
+/// How long an authored invitation stays usable: seven days. Long enough to
+/// hand over out of band, short enough that a forwarded envelope dies.
+const INVITE_LIFETIME_MS: u64 = 7 * 24 * 60 * 60 * 1000;
 
 /// Host-set evaluation time for converged authority.
 ///
@@ -118,6 +129,30 @@ pub enum PlaceWorkerCommand {
         generation: u64,
         directory: PathBuf,
         binding: PlaceBindingV1,
+    },
+    /// Found a new place in this session's directory and open it live,
+    /// listen-only. Nothing is dialed: the founder has invited nobody yet.
+    Found {
+        session: SessionId,
+        generation: u64,
+        directory: PathBuf,
+        name: String,
+    },
+    /// Publish this profile's group identity for one Moot named by a card.
+    /// Authority-free: a pre-key is an offer, not an admission.
+    OfferPrekey {
+        session: SessionId,
+        generation: u64,
+        directory: PathBuf,
+        moot: [u8; 32],
+    },
+    /// Admit one offered pre-key's root and author its invitation, carrying
+    /// this open's own live rendezvous.
+    Invite {
+        session: SessionId,
+        generation: u64,
+        directory: PathBuf,
+        prekey: Vec<u8>,
     },
     /// Re-fold the open place's projections without touching its lanes.
     ///
@@ -299,6 +334,7 @@ pub fn prepare_group_identity(
 /// The caller supplies `joiner_prekey` out of band. Which channel carried it is
 /// not this function's concern and must never become evidence: the bundle
 /// carries its own Personae attestation, which is what binds it to a person.
+#[allow(clippy::too_many_arguments)]
 pub fn author_invitation(
     directory: &Path,
     binding: &PlaceBindingV1,
@@ -307,6 +343,35 @@ pub fn author_invitation(
     not_after_ms: u64,
     rendezvous: Vec<crate::place::invite::RendezvousV1>,
     settings: &PlaceWorkerSettings,
+) -> Result<PlaceInviteV1, String> {
+    let moot = pollster::block_on(MootFile::open_existing(
+        place_store_dir(directory).join("gemot"),
+        MootId(binding.moot.0),
+        settings.retention.clone(),
+    ))
+    .map_err(|error| format!("open Gemot store: {error}"))?;
+    author_invitation_with(
+        &moot,
+        directory,
+        binding,
+        identity,
+        joiner_prekey,
+        not_after_ms,
+        rendezvous,
+    )
+}
+
+/// [`author_invitation`] against an already-open Moot, for the worker that
+/// holds this place's only store handle.
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn author_invitation_with(
+    moot: &MootFile,
+    directory: &Path,
+    binding: &PlaceBindingV1,
+    identity: &dyn IdentityProvider,
+    joiner_prekey: &[u8],
+    not_after_ms: u64,
+    rendezvous: Vec<crate::place::invite::RendezvousV1>,
 ) -> Result<PlaceInviteV1, String> {
     binding
         .validate()
@@ -320,13 +385,6 @@ pub fn author_invitation(
         .personae_root()
         .map_err(|error| format!("verify joiner pre-key: {error}"))?;
 
-    let stores = place_store_dir(directory);
-    let moot = pollster::block_on(MootFile::open_existing(
-        stores.join("gemot"),
-        MootId(binding.moot.0),
-        settings.retention.clone(),
-    ))
-    .map_err(|error| format!("open Gemot store: {error}"))?;
     let snapshot = pollster::block_on(moot.snapshot())
         .map_err(|error| format!("materialize Gemot: {error}"))?;
     // The recipient must already be a governed member. Inviting someone the
@@ -444,6 +502,291 @@ pub fn found_place_group(
         .create(&[])
         .map_err(|error| format!("create place group: {error}"))?;
     save_group_session(directory, identity, &group)
+}
+
+/// The channel a founded place opens with. Renaming is a later product
+/// decision; founding without one would leave nowhere to speak.
+pub const DEFAULT_CHANNEL: &str = "general";
+
+/// Domain-separated 32 bytes for one place-scoped derivation.
+fn place_tag(domain: &[u8], moot: [u8; 32]) -> [u8; 32] {
+    let mut input = Vec::with_capacity(domain.len() + 32);
+    input.extend_from_slice(domain);
+    input.extend_from_slice(&moot);
+    *blake3::hash(&input).as_bytes()
+}
+
+/// Salt for the key that signs this place's constitutional genesis.
+///
+/// A derived key, not the master: `IdentityProvider` never surrenders the
+/// master seed, and Gemot's genesis wants a signing seed. The constitution's
+/// checkpoint signer is therefore this profile's place-founding key, while
+/// membership and every capability grant still name the Personae root.
+fn founding_salt(moot: [u8; 32]) -> Vec<u8> {
+    let mut salt = Vec::with_capacity(61);
+    salt.extend_from_slice(b"turnstone.place.founding.v1/");
+    salt.extend_from_slice(&moot);
+    salt
+}
+
+/// The constitutional root grant's id, derived from the Moot it governs.
+/// Deterministic so a later revocation or audit can recompute it.
+fn root_grant_id(moot: [u8; 32]) -> [u8; 32] {
+    place_tag(b"turnstone.place.root-grant.v1/", moot)
+}
+
+/// `cap_path` encodes a scope as `scope/<path>`, and personae matches on a
+/// slash boundary, so this one prefix covers both `commons/container/...`
+/// and `commons/chat/...`. Deriving it beats writing the literal: the
+/// encoding is servitor's to change.
+pub fn place_capability_prefix() -> String {
+    cap_path(&Cap::scope("commons").expect("the `commons` scope is well formed"))
+}
+
+/// The Moot-scoped capability a place delegation carries.
+pub fn place_scope(moot: [u8; 32]) -> CapabilityScope {
+    CapabilityScope {
+        domain: MOOT_DELEGATION_DOMAIN.into(),
+        resource: moot.to_vec(),
+        path_prefix: place_capability_prefix(),
+        actions: [MOOT_ACT_ACTION.to_string()].into_iter().collect(),
+    }
+}
+
+/// Founder-only constitution with ONE root grant over both Commons domains.
+///
+/// `checkpoint_signer` is the key that authors constitutional events;
+/// `grant_subject` is the Personae root that may delegate beneath the grant.
+/// They differ in product (a derived founding key signs, the root holds
+/// authority) and coincide in fixtures.
+pub fn place_rules(
+    checkpoint_signer: [u8; 32],
+    grant_subject: [u8; 32],
+    moot: [u8; 32],
+    not_before_ms: u64,
+    expires_at_ms: Option<u64>,
+) -> ConstitutionRules {
+    let mut rules = ConstitutionRules::founder_only(checkpoint_signer);
+    rules.grant(CapabilityGrant {
+        id: root_grant_id(moot),
+        subject: grant_subject,
+        path_prefix: place_capability_prefix(),
+        not_before_ms,
+        expires_at_ms,
+        delegation_depth: 2,
+    });
+    rules
+}
+
+/// Gemot authors delegation facts under the scope-derived key that signed
+/// the certificate, not the master key: the master secret stays behind the
+/// provider.
+pub fn founder_signing_key(
+    identity: &dyn IdentityProvider,
+    moot: [u8; 32],
+) -> Result<identity::Ed25519Keypair, String> {
+    identity
+        .derive_keypair(&delegation_signing_salt(&place_scope(moot)))
+        .map_err(|error| format!("derive place delegation signing key: {error}"))
+}
+
+/// One signed delegation admitting `subject` to both Commons domains.
+///
+/// Deterministic in its nonce, so a caller can recompute the certificate id
+/// later to revoke it without having retained the certificate.
+pub fn place_delegation(
+    issuer: &dyn IdentityProvider,
+    moot: [u8; 32],
+    subject: [u8; 32],
+    issued_at_ms: u64,
+    not_before_ms: u64,
+    expires_at_ms: Option<u64>,
+) -> Result<SignedDelegationCertificate, String> {
+    let mut nonce_input = Vec::with_capacity(64);
+    nonce_input.extend_from_slice(&moot);
+    nonce_input.extend_from_slice(&subject);
+    let nonce = place_tag(
+        b"turnstone.place.delegation.v1/",
+        *blake3::hash(&nonce_input).as_bytes(),
+    );
+    SignedDelegationCertificate::issue(
+        &ProviderRef(issuer),
+        DelegationCertificate::new(
+            DelegationParent::Root(root_grant_id(moot)),
+            issuer.master_public_key().to_bytes(),
+            subject,
+            place_scope(moot),
+            issued_at_ms,
+            not_before_ms,
+            expires_at_ms,
+            0,
+            nonce,
+        ),
+    )
+    .map_err(|error| format!("issue place delegation: {error}"))
+}
+
+/// `SignedDelegationCertificate::issue` takes a sized provider and the worker
+/// holds a trait object. Borrowing through this bridges the two without
+/// copying key material or widening any public signature.
+struct ProviderRef<'a>(&'a dyn IdentityProvider);
+
+impl IdentityProvider for ProviderRef<'_> {
+    fn master_public_key(&self) -> identity::Ed25519PublicKey {
+        self.0.master_public_key()
+    }
+
+    fn derive_keypair(
+        &self,
+        salt: &[u8],
+    ) -> Result<identity::Ed25519Keypair, identity::IdentityError> {
+        self.0.derive_keypair(salt)
+    }
+
+    fn attest_derived_key(
+        &self,
+        salt: &[u8],
+    ) -> Result<identity::DerivedKeyAttestation, identity::IdentityError> {
+        self.0.attest_derived_key(salt)
+    }
+}
+
+/// 32 unpredictable bytes for one place identifier.
+fn random_id() -> Result<[u8; 32], String> {
+    let mut bytes = [0u8; 32];
+    getrandom::getrandom(&mut bytes).map_err(|error| format!("draw place identifier: {error}"))?;
+    Ok(bytes)
+}
+
+/// Found a new place in `directory` and return its durable binding.
+///
+/// The founding counterpart to [`admit_invitation`]: it creates the Moot,
+/// its constitution, its membership fold, this profile's own delegation, the
+/// crypto group, and the default channel. Nothing here dials, writes
+/// `place.json`, or claims app state; the worker does that once this returns.
+///
+/// The self-delegation is not ceremony. Without it the founder's own writes
+/// project as pending against its own Moot, because authority is evaluated
+/// through the converged delegation fold for everyone, the founder included.
+pub fn found_place(
+    directory: &Path,
+    identity: &dyn IdentityProvider,
+    name: &str,
+    settings: &PlaceWorkerSettings,
+) -> Result<PlaceBindingV1, String> {
+    let name = name.trim();
+    if name.is_empty() {
+        return Err("a place needs a name".to_string());
+    }
+    let moot_id = random_id()?;
+    let binding = PlaceBindingV1::new(
+        PlaceId(moot_id),
+        crate::place::SharedContainerId(random_id()?),
+        crate::place::ChatSpaceId(random_id()?),
+        DEFAULT_CHANNEL,
+    )
+    .map_err(|error| format!("place binding: {error}"))?;
+
+    let now_ms = settings.authority_clock.now_ms();
+    let root = identity.master_public_key().to_bytes();
+    let founding = identity
+        .derive_keypair(&founding_salt(moot_id))
+        .map_err(|error| format!("derive place founding key: {error}"))?;
+    let founder_id = founding.public_key().to_bytes();
+    let rules = place_rules(founder_id, root, moot_id, now_ms, None);
+
+    let stores = place_store_dir(directory);
+    std::fs::create_dir_all(&stores).map_err(|error| format!("create place store: {error}"))?;
+    let moot = pollster::block_on(MootFile::open(
+        stores.join("gemot"),
+        MootId(moot_id),
+        founder_id,
+        settings.retention.clone(),
+    ))
+    .map_err(|error| format!("open Gemot store: {error}"))?;
+    pollster::block_on(moot.found(founding.to_seed(), None, None, rules.clone(), now_ms))
+        .map_err(|error| format!("found Gemot constitution: {error}"))?;
+    pollster::block_on(moot.membership_store().author_for_identity(
+        identity,
+        MootMembershipAction::Create {
+            initial_members: vec![MootMember {
+                member: root,
+                access: MootAccessLevel::Manage,
+            }],
+        },
+    ))
+    .map_err(|error| format!("create Gemot membership: {error}"))?;
+    pollster::block_on(moot.delegation_store().author_issue(
+        &founder_signing_key(identity, moot_id)?,
+        &rules,
+        place_delegation(identity, moot_id, root, now_ms, now_ms, None)?,
+    ))
+    .map_err(|error| format!("issue founder delegation: {error}"))?;
+    drop(moot);
+
+    found_place_group(directory, identity, moot_id)?;
+    let group = load_group_session(directory, identity, moot_id)?;
+    let keyring = DataKeyring::from_bytes(
+        &group
+            .data_keyring_state()
+            .map_err(|error| format!("read group data epochs: {error}"))?,
+    )
+    .map_err(|error| format!("decode group data epochs: {error}"))?;
+    let chat_backend = RedbBackend::open(stores.join("commons-chat.redb"))
+        .map_err(|error| format!("open Commons chat cache: {error}"))?;
+    let mut chat = ChatReplica::for_identity(chat_backend, binding.chat.0, identity, keyring)
+        .map_err(|error| format!("bind Commons chat writer: {error}"))?;
+    // The place's name lives where peers converge on it, as the default
+    // channel's title, rather than in a local sidecar only the founder reads.
+    pollster::block_on(chat.author(commons::chat::ChatEvent::Channel(
+        commons::chat::Channel {
+            id: binding.default_channel.clone(),
+            title: name.to_string(),
+        },
+    )))
+    .map_err(|error| format!("open the default channel: {error}"))?;
+    drop(chat);
+    Ok(binding)
+}
+
+/// Add one invited root to this place's Moot membership and delegate both
+/// Commons domains to it. Idempotent in membership: a root already admitted
+/// is left at the access it holds.
+///
+/// Takes the already-open Moot rather than opening its own, because the
+/// caller is the worker holding this place's only store handle.
+fn admit_member(
+    moot: &MootFile,
+    binding: &PlaceBindingV1,
+    identity: &dyn IdentityProvider,
+    joiner_root: [u8; 32],
+    now_ms: u64,
+) -> Result<(), String> {
+    let moot_id = binding.moot.0;
+    let snapshot = pollster::block_on(moot.snapshot())
+        .map_err(|error| format!("materialize Gemot: {error}"))?;
+    if !snapshot
+        .membership
+        .members
+        .iter()
+        .any(|member| member.member == joiner_root)
+    {
+        pollster::block_on(moot.membership_store().author_for_identity(
+            identity,
+            MootMembershipAction::Add {
+                member: joiner_root,
+                access: MootAccessLevel::Write,
+            },
+        ))
+        .map_err(|error| format!("add the invited root to membership: {error}"))?;
+    }
+    pollster::block_on(moot.delegation_store().author_issue(
+        &founder_signing_key(identity, moot_id)?,
+        &snapshot.governance.rules,
+        place_delegation(identity, moot_id, joiner_root, now_ms, now_ms, None)?,
+    ))
+    .map_err(|error| format!("delegate the Commons domains: {error}"))?;
+    Ok(())
 }
 
 /// Reopen the sealed group session established by [`prepare_group_identity`].
@@ -815,6 +1158,36 @@ fn author_into_place(
     Ok(())
 }
 
+/// One message as both converged peers see it. Sorted by the operation id,
+/// which is content-derived, so two peers that hold the same messages
+/// serialize the same bytes whatever order they arrived in.
+fn canonical_chat(
+    projection: &commons::chat::ChatProjection,
+) -> Vec<(String, String, String, u64)> {
+    let mut rows: Vec<_> = projection
+        .messages
+        .iter()
+        .map(|authored| {
+            (
+                crate::place::hex32(&authored.operation),
+                crate::place::hex32(&authored.author),
+                authored.message.body.clone(),
+                authored.message.sent_at_ms,
+            )
+        })
+        .collect();
+    rows.sort();
+    rows
+}
+
+/// blake3 over a domain tag and one canonical projection, hex.
+fn projection_digest<T: serde::Serialize>(domain: &[u8], value: &T) -> String {
+    let mut hasher = blake3::Hasher::new();
+    hasher.update(domain);
+    hasher.update(&serde_json::to_vec(value).unwrap_or_default());
+    hasher.finalize().to_hex().to_string()
+}
+
 /// Fold the current app-owned snapshot from an open place's stores.
 ///
 /// Factored from the open path so a resync can re-fold WITHOUT dropping the
@@ -999,7 +1372,14 @@ fn place_snapshot(
         .members()
         .map_err(|error| format!("materialize group membership: {error}"))?
         .len();
+    let shared = crate::place::projection::SharedGraph::from_projection(&graph_projection);
     Ok(OfflinePlaceSnapshot {
+        personae_root: open.subject,
+        graph_digest: projection_digest(b"turnstone.place.graph-digest.v1", &shared),
+        chat_digest: projection_digest(
+            b"turnstone.place.chat-digest.v1",
+            &canonical_chat(&chat_projection),
+        ),
         moot: MootCache {
             membership_epoch: moot_snapshot.membership.epoch,
             members: moot_snapshot.membership.members.len(),
@@ -1030,9 +1410,14 @@ fn place_snapshot(
         captured,
         captured_selection,
         collection_choices,
-        shared: crate::place::projection::SharedGraph::from_projection(&graph_projection),
-        sync: open.lanes.as_ref().map(|lanes| crate::place::PlaceSyncSnapshot {
-            lanes: lanes.sync_snapshot(),
+        shared,
+        sync: open.lanes.as_ref().map(|lanes| {
+            let (local_rendezvous, dialed_rendezvous) = lanes.rendezvous();
+            crate::place::PlaceSyncSnapshot {
+                lanes: lanes.sync_snapshot(),
+                local_rendezvous,
+                dialed_rendezvous,
+            }
         }),
         permissions: Some(crate::place::PlacePermissionSnapshot {
             message_write,
@@ -1150,6 +1535,146 @@ pub fn spawn_place_worker(
                                 result: Err(error),
                             }),
                         }
+                    },
+                    PlaceWorkerCommand::Found {
+                        session,
+                        generation,
+                        directory,
+                        name,
+                    } => {
+                        lifecycle_generation = lifecycle_generation.max(generation);
+                        live = None;
+                        live_scope = None;
+                        let founded = found_place(
+                            &directory,
+                            identity.as_ref(),
+                            &name,
+                            &settings,
+                        )
+                        .and_then(|binding| {
+                            crate::session::save_place_binding(&directory, &binding)
+                                .map_err(|error| format!("persist place binding: {error}"))?;
+                            // An EMPTY descriptor, saved on purpose: reconnect
+                            // must reach the same listen-only bind as this open.
+                            crate::place::rendezvous::save_founder_rendezvous(
+                                &directory, &binding,
+                            )?;
+                            open_cached_place(
+                                &directory,
+                                &binding,
+                                identity.as_ref(),
+                                &settings,
+                            )
+                            .map(|(opened, snapshot)| (binding, opened, snapshot))
+                        })
+                        .and_then(|(binding, mut opened, _stale)| {
+                            opened.lanes = Some(crate::place::lanes::join_live(
+                                &opened,
+                                &binding,
+                                identity.as_ref(),
+                                &[],
+                                Some((out.clone(), session, generation)),
+                            )?);
+                            // Re-fold AFTER binding, so the answer already
+                            // carries this bind's own rendezvous.
+                            place_snapshot(&opened, binding.moot.0, &settings)
+                                .map(|snapshot| (binding, opened, snapshot))
+                        });
+                        match founded {
+                            Ok((binding, opened, snapshot)) => {
+                                live_scope = Some((session, generation));
+                                live = Some(opened);
+                                out.emit(Update::PlaceFounded {
+                                    session,
+                                    generation,
+                                    result: Ok((binding, snapshot)),
+                                });
+                            },
+                            Err(error) => out.emit(Update::PlaceFounded {
+                                session,
+                                generation,
+                                result: Err(error),
+                            }),
+                        }
+                    },
+                    PlaceWorkerCommand::OfferPrekey {
+                        session,
+                        generation,
+                        directory,
+                        moot,
+                    } => {
+                        let result =
+                            prepare_group_identity(&directory, identity.as_ref(), moot);
+                        out.emit(Update::PlacePrekeyOffered {
+                            session,
+                            generation,
+                            result,
+                        });
+                    },
+                    PlaceWorkerCommand::Invite {
+                        session,
+                        generation,
+                        directory,
+                        prekey,
+                    } => {
+                        let result = match &live {
+                            Some(_) if live_scope != Some((session, generation)) => Err(
+                                "invitation belongs to a departed place generation".to_string(),
+                            ),
+                            None => Err("open a place before inviting anyone".to_string()),
+                            Some(open) => {
+                                let binding = open.binding.clone();
+                                let now_ms = settings.authority_clock.now_ms();
+                                // The rendezvous an invitation carries is THIS
+                                // bind's ticket, minted when the endpoint came
+                                // up. A founder must be live before it invites.
+                                let rendezvous: Vec<_> = open
+                                    .lanes
+                                    .as_ref()
+                                    .map(|lanes| lanes.rendezvous().0)
+                                    .unwrap_or_default()
+                                    .into_iter()
+                                    .map(|hint| crate::place::invite::RendezvousV1 {
+                                        carrier: crate::place::invite::P2PANDA_ENDPOINT_TICKET
+                                            .into(),
+                                        hint,
+                                    })
+                                    .collect();
+                                GroupPrekeyBundle::from_bytes(&prekey)
+                                    .map_err(|error| format!("decode offered pre-key: {error}"))
+                                    .and_then(|bundle| {
+                                        bundle.personae_root().map_err(|error| {
+                                            format!("verify offered pre-key: {error}")
+                                        })
+                                    })
+                                    .and_then(|joiner_root| {
+                                        admit_member(
+                                            &open.moot,
+                                            &binding,
+                                            identity.as_ref(),
+                                            joiner_root,
+                                            now_ms,
+                                        )
+                                    })
+                                    .and_then(|()| {
+                                        author_invitation_with(
+                                            &open.moot,
+                                            &directory,
+                                            &binding,
+                                            identity.as_ref(),
+                                            &prekey,
+                                            now_ms.saturating_add(INVITE_LIFETIME_MS),
+                                            rendezvous,
+                                        )
+                                    })
+                                    .map(Box::new)
+                            },
+                        };
+                        out.emit(Update::PlaceInvited {
+                            session,
+                            generation,
+                            result,
+                        });
                     },
                     PlaceWorkerCommand::Reconnect {
                         session,
@@ -1362,7 +1887,6 @@ pub(crate) mod tests {
     /// reproducible. `commons/container/...` and `commons/chat/...` both sit
     /// under the `commons` prefix these fixtures grant.
     const AUTHORITY_AT_MS: u64 = 50;
-    const ROOT_GRANT: [u8; 32] = [0x67; 32];
     const COLLECTION_GRANT: [u8; 32] = [0x68; 32];
 
     pub(crate) fn settings() -> PlaceWorkerSettings {
@@ -1376,78 +1900,35 @@ pub(crate) mod tests {
         InMemoryProvider::from_seed([binding.moot.0[0].wrapping_add(40); 32])
     }
 
-    /// `cap_path` encodes a scope as `scope/<path>`, and personae matches on a
-    /// slash boundary, so this one prefix covers both `commons/container/...`
-    /// and `commons/chat/...`. Deriving it beats writing the literal: the
-    /// encoding is servitor's to change.
-    fn place_capability_prefix() -> String {
-        cap_path(&Cap::scope("commons").unwrap())
+    /// The fixtures' constitution: the product rules at a pinned window, so
+    /// an authority verdict stays reproducible. Same one grant, same id.
+    pub(crate) fn place_rules(founder_id: [u8; 32], moot: [u8; 32]) -> ConstitutionRules {
+        super::place_rules(founder_id, founder_id, moot, 10, Some(1_000))
     }
 
-    pub(crate) fn place_rules(founder_id: [u8; 32]) -> ConstitutionRules {
-        let mut rules = ConstitutionRules::founder_only(founder_id);
-        rules.grant(CapabilityGrant {
-            id: ROOT_GRANT,
-            subject: founder_id,
-            path_prefix: place_capability_prefix(),
-            not_before_ms: 10,
-            expires_at_ms: Some(1_000),
-            delegation_depth: 2,
-        });
-        rules
-    }
-
-    fn place_scope(moot: [u8; 32]) -> CapabilityScope {
-        CapabilityScope {
-            domain: MOOT_DELEGATION_DOMAIN.into(),
-            resource: moot.to_vec(),
-            path_prefix: place_capability_prefix(),
-            actions: [MOOT_ACT_ACTION.to_string()].into_iter().collect(),
-        }
-    }
-
-    /// Gemot authors delegation facts under the scope-derived key that signed
-    /// the certificate, not the master key: the master secret stays behind the
-    /// provider.
     pub(crate) fn founder_signing_key(
         founder: &InMemoryProvider,
         moot: [u8; 32],
     ) -> identity::Ed25519Keypair {
-        founder
-            .derive_keypair(&delegation_signing_salt(&place_scope(moot)))
-            .unwrap()
+        super::founder_signing_key(founder, moot).unwrap()
     }
 
     /// The founder's signed delegation admitting one profile root to both
-    /// Commons domains. Deterministic, so a later test can recompute its id to
-    /// revoke it.
+    /// Commons domains, at the pinned window. Deterministic, so a later test
+    /// can recompute its id to revoke it.
     pub(crate) fn place_delegation(
         founder: &InMemoryProvider,
         moot: [u8; 32],
         subject: [u8; 32],
     ) -> SignedDelegationCertificate {
-        SignedDelegationCertificate::issue(
-            founder,
-            DelegationCertificate::new(
-                DelegationParent::Root(ROOT_GRANT),
-                founder.master_public_key().to_bytes(),
-                subject,
-                place_scope(moot),
-                15,
-                20,
-                Some(900),
-                0,
-                [subject[0] ^ 0x5a; 32],
-            ),
-        )
-        .unwrap()
+        super::place_delegation(founder, moot, subject, 15, 20, Some(900)).unwrap()
     }
 
     /// Withdraw the seeded delegation on the retained Gemot lane.
     fn revoke_place_delegation(directory: &Path, binding: &PlaceBindingV1, subject: [u8; 32]) {
         let founder = founder_for(binding);
         let founder_id = founder.master_public_key().to_bytes();
-        let rules = place_rules(founder_id);
+        let rules = place_rules(founder_id, binding.moot.0);
         let certificate = place_delegation(&founder, binding.moot.0, subject);
         let moot = pollster::block_on(MootFile::open(
             place_store_dir(directory).join("gemot"),
@@ -1497,7 +1978,7 @@ pub(crate) mod tests {
         let settings = settings();
         let stores = place_store_dir(directory);
         std::fs::create_dir_all(&stores).unwrap();
-        let rules = place_rules(founder_id);
+        let rules = place_rules(founder_id, binding.moot.0);
         let moot = pollster::block_on(MootFile::open(
             stores.join("gemot"),
             MootId(binding.moot.0),
@@ -1679,7 +2160,7 @@ pub(crate) mod tests {
             settings.retention.clone(),
         ))
         .unwrap();
-        let mut rules = place_rules(founder.master_public_key().to_bytes());
+        let mut rules = place_rules(founder.master_public_key().to_bytes(), binding.moot.0);
         rules.admission = Policy::MembersOnly {
             rate_limit: 20,
             rate_window_ms: 60_000,
@@ -1814,7 +2295,7 @@ pub(crate) mod tests {
             founder.master_keypair().to_seed(),
             None,
             None,
-            place_rules(founder_id),
+            place_rules(founder_id, binding.moot.0),
             1,
         ))
         .unwrap();
@@ -2126,7 +2607,7 @@ pub(crate) mod tests {
             founder.master_keypair().to_seed(),
             None,
             None,
-            place_rules(founder_id),
+            place_rules(founder_id, binding.moot.0),
             1,
         ))
         .unwrap();
@@ -2148,6 +2629,105 @@ pub(crate) mod tests {
             },
         ))
         .unwrap();
+    }
+
+
+    /// Found, offer, invite, admit — through the product functions only, with
+    /// no fixture standing between the two profiles.
+    ///
+    /// The refusal in the middle is the point of the ordering: a pre-key whose
+    /// root the Moot has never admitted cannot be invited, so an envelope is
+    /// only ever minted for someone governance already knows.
+    #[test]
+    fn a_founded_place_invites_an_offered_prekey_and_admits_it() {
+        let root = std::env::temp_dir()
+            .join(format!("turnstone-place-found-{}", uuid::Uuid::new_v4()));
+        let host = root.join("host");
+        let guest = root.join("guest");
+        std::fs::create_dir_all(&host).unwrap();
+        std::fs::create_dir_all(&guest).unwrap();
+        let host_identity = RootIdentity::Unsealed(InMemoryProvider::from_seed([0xd1; 32]));
+        let guest_identity = RootIdentity::Unsealed(InMemoryProvider::from_seed([0xd2; 32]));
+        // The product clock, not a fixture's: the windows under test are the
+        // ones a real founding opens.
+        let settings = PlaceWorkerSettings::default();
+        let now_ms = settings.authority_clock.now_ms();
+
+        let binding = found_place(&host, &host_identity, "Hearth", &settings).unwrap();
+        assert_eq!(binding.default_channel, DEFAULT_CHANNEL);
+        assert_ne!(binding.moot.0, binding.root.0);
+        assert_ne!(binding.moot.0, binding.chat.0);
+        assert_ne!(binding.root.0, binding.chat.0);
+
+        // The founder's own writes read Effective against its own Moot; the
+        // self-delegation is what makes that true.
+        let (opened, snapshot) =
+            open_cached_place(&host, &binding, &host_identity, &settings).unwrap();
+        let permissions = snapshot.permissions.clone().unwrap();
+        assert!(permissions.message_write, "the founder may speak here");
+        assert!(permissions.graph_write, "the founder may share here");
+        assert_eq!(snapshot.moot.members, 1);
+        assert_eq!(snapshot.chat.channels, 1);
+        assert_eq!(snapshot.personae_root, host_identity.master_public_key().to_bytes());
+        assert!(!snapshot.graph_digest.is_empty() && !snapshot.chat_digest.is_empty());
+        drop(opened);
+
+        // The guest publishes its group identity for this Moot. An offer, not
+        // an admission: nothing on the host has changed yet.
+        let prekey = prepare_group_identity(&guest, &guest_identity, binding.moot.0).unwrap();
+        let refused = author_invitation(
+            &host,
+            &binding,
+            &host_identity,
+            &prekey,
+            now_ms + 60_000,
+            Vec::new(),
+            &settings,
+        )
+        .unwrap_err();
+        assert!(
+            refused.contains("membership does not contain the invited root"),
+            "{refused}"
+        );
+
+        let moot = pollster::block_on(MootFile::open_existing(
+            place_store_dir(&host).join("gemot"),
+            MootId(binding.moot.0),
+            settings.retention.clone(),
+        ))
+        .unwrap();
+        let guest_root = guest_identity.master_public_key().to_bytes();
+        admit_member(&moot, &binding, &host_identity, guest_root, now_ms).unwrap();
+        // Idempotent: inviting the same root twice must not double the fold.
+        admit_member(&moot, &binding, &host_identity, guest_root, now_ms).unwrap();
+        let invite = author_invitation_with(
+            &moot,
+            &host,
+            &binding,
+            &host_identity,
+            &prekey,
+            now_ms + 7 * 24 * 60 * 60 * 1000,
+            Vec::new(),
+        )
+        .unwrap();
+        drop(moot);
+
+        let admitted = admit_invitation(&guest, &invite, &guest_identity, &settings).unwrap();
+        assert_eq!(admitted.binding, binding);
+        assert_eq!(admitted.moot.members, 2);
+        assert_eq!(admitted.group_members, 2);
+
+        // The admitted guest reopens through the ordinary path and holds the
+        // capability the delegation granted.
+        let (guest_open, guest_snapshot) =
+            open_cached_place(&guest, &binding, &guest_identity, &settings).unwrap();
+        assert!(guest_snapshot.permissions.clone().unwrap().message_write);
+        assert_eq!(guest_snapshot.personae_root, guest_root);
+        // Two peers that have converged on nothing yet still agree on the
+        // digest of nothing; the point is that the digest is comparable.
+        assert_eq!(guest_snapshot.graph_digest, snapshot.graph_digest);
+        drop(guest_open);
+        let _ = std::fs::remove_dir_all(&root);
     }
 
     #[test]
