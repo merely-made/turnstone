@@ -658,7 +658,7 @@ fn address_kind_label(kind: mere::kernel::address::AddressKind) -> &'static str 
 
 fn relation_kind_label(kind: RelationKind) -> &'static str {
     match kind {
-        RelationKind::Semantic(_) => "semantic",
+        RelationKind::Semantic(_) | RelationKind::OpenPredicate => "semantic",
         RelationKind::Traversal => "traversal",
         RelationKind::Containment(_) => "containment",
         RelationKind::Arrangement(_) => "arrangement",

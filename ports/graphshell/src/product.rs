@@ -630,14 +630,7 @@ impl<B: Backend> MereHost<B> {
 }
 
 fn family_of(kind: RelationKind) -> EdgeFamily {
-    match kind {
-        RelationKind::Semantic(_) => EdgeFamily::Semantic,
-        RelationKind::Traversal => EdgeFamily::Traversal,
-        RelationKind::Containment(_) => EdgeFamily::Containment,
-        RelationKind::Arrangement(_) => EdgeFamily::Arrangement,
-        RelationKind::Imported(_) => EdgeFamily::Imported,
-        RelationKind::Provenance(_) => EdgeFamily::Provenance,
-    }
+    kind.family()
 }
 
 fn transfer_members(graph: &Graph, request: &ExportRequest) -> Result<HashSet<Uuid>, ProductError> {
