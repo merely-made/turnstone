@@ -4,11 +4,11 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // SPDX-License-Identifier: MPL-2.0
 
-//! Turnstone's live-lane composition: dial a ticket, hold seven handles.
+//! Turnstone's live-lane composition: dial a ticket, hold nine handles.
 //!
 //! The shell-owned counterpart to the domain join helpers. Everything here is
 //! composition: the transport crate owns dialing and overlay tagging, Gemot
-//! owns its five lanes, Commons owns graph and chat, and this module only
+//! owns its seven lanes, Commons owns graph and chat, and this module only
 //! decides what a *place* joins and in what order it lets go. Session and
 //! transport identity never become content authority; every accept closure
 //! runs the owning domain's admission, and projections stay
@@ -63,7 +63,7 @@ impl Drop for LiveLanes {
     }
 }
 
-/// Shared counter handles across all seven lanes, sampled by the watcher.
+/// Shared counter handles across all nine lanes, sampled by the watcher.
 struct LaneCounters {
     handles: Vec<std::sync::Arc<std::sync::Mutex<stickleback::SyncStatus>>>,
 }
@@ -88,9 +88,9 @@ impl LiveLanes {
         LaneCounters { handles }
     }
 
-    /// Per-lane received/sent counters, Gemot's five then graph then chat,
-    /// for the status surface: it must be able to say which lane is behind.
-    pub(crate) fn ops_received(&self) -> [u64; 7] {
+    /// Per-lane accepted-operation counters, Gemot's seven then graph then chat.
+    /// These counters do not establish whether a lane is caught up.
+    pub(crate) fn ops_received(&self) -> [u64; 9] {
         let gemot = self.moot.sync_status();
         [
             gemot[0].ops_received,
@@ -98,9 +98,41 @@ impl LiveLanes {
             gemot[2].ops_received,
             gemot[3].ops_received,
             gemot[4].ops_received,
+            gemot[5].ops_received,
+            gemot[6].ops_received,
             self.graph.sync_status().ops_received,
             self.chat.sync_status().ops_received,
         ]
+    }
+
+    pub(crate) fn sync_snapshot(&self) -> Vec<crate::place::PlaceLaneSnapshot> {
+        const NAMES: [&str; 9] = [
+            "gemot/constitution/v1",
+            "gemot/delegation/v1",
+            "gemot/membership/v1",
+            "gemot/records/v1",
+            "gemot/standing/v1",
+            "gemot/tulpa/v1",
+            "gemot/flora/v1",
+            "commons/graph/v1",
+            "commons/chat/v1",
+        ];
+        let statuses = self
+            .moot
+            .sync_status()
+            .into_iter()
+            .chain([self.graph.sync_status(), self.chat.sync_status()]);
+        NAMES
+            .into_iter()
+            .zip(statuses)
+            .map(|(name, status)| crate::place::PlaceLaneSnapshot {
+                name,
+                syncing: status.syncing,
+                sync_rounds: status.sync_rounds,
+                ops_received: status.ops_received,
+                last_activity_ms: status.last_activity_ms,
+            })
+            .collect()
     }
 
     /// Push one freshly authored graph operation onto the live lane.
@@ -1071,6 +1103,7 @@ mod tests {
             reopened.group.has_current_epoch,
             "the sealed epoch reopened"
         );
+        assert!(reopened.sync.is_none(), "cached Open has no live lane status");
 
         // Cached reopening remains usable offline, as the original restart
         // receipt requires.
@@ -1118,6 +1151,11 @@ mod tests {
         };
         assert_eq!(reconnected.graph.nodes, reopened.graph.nodes);
         assert_eq!(reconnected.chat.messages, reopened.chat.messages + 1);
+        assert_eq!(
+            reconnected.sync.as_ref().map(|status| status.lanes.len()),
+            Some(9),
+            "Reconnect reports all seven Gemot plus graph and chat lanes"
+        );
         // Repeating the same lifecycle generation is idempotent and does not
         // tear down or duplicate the already-live lanes.
         restarted.command(PlaceWorkerCommand::Reconnect {

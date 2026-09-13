@@ -165,6 +165,10 @@ pub(crate) struct OpenPlace {
     /// The binding this place was opened under, so a later command names the
     /// same scopes the projections fold from.
     pub(crate) binding: PlaceBindingV1,
+    /// Stable local root used for the refresh-time capability projection.
+    /// Writes still recheck the current identity and authority immediately
+    /// before authoring.
+    pub(crate) subject: [u8; 32],
     /// Session-scoped capture library expected for this open. This prevents a
     /// cross-actor session switch from briefly resolving against the departed
     /// session's in-memory records.
@@ -710,6 +714,7 @@ pub(crate) fn open_cached_place(
         directory: directory.to_path_buf(),
         lanes: None,
         binding: binding.clone(),
+        subject: identity.master_public_key().to_bytes(),
         capture_directory: crate::trail_memory::memory_dir(directory),
         collection_selection: crate::session::load_place_collection(directory)?,
         moot,
@@ -838,6 +843,29 @@ fn place_snapshot(
             now_ms: at_ms,
         },
     };
+
+    // These are refresh-time facts for the local subject, evaluated through
+    // the same converged authority and scoped capabilities used by the write
+    // preflight above. They describe current effective authority only; a
+    // subsequent authoring attempt must still recheck the live fold.
+    let message_write = matches!(
+        commons::CommonsAuthority::classify(
+            &authority,
+            servitor::Subject(open.subject),
+            &commons::chat::chat_write_capability(open.binding.chat.0),
+            servitor::Mode::Write,
+        ),
+        commons::AuthorityState::Effective
+    );
+    let graph_write = matches!(
+        commons::CommonsAuthority::classify(
+            &authority,
+            servitor::Subject(open.subject),
+            &commons::commons_write_capability(open.binding.root.0),
+            servitor::Mode::Write,
+        ),
+        commons::AuthorityState::Effective
+    );
 
     // The service view applies Gemot's complete converged read policy,
     // including membership and targeted withdrawals. Narrow the roster to
@@ -1003,6 +1031,13 @@ fn place_snapshot(
         captured_selection,
         collection_choices,
         shared: crate::place::projection::SharedGraph::from_projection(&graph_projection),
+        sync: open.lanes.as_ref().map(|lanes| crate::place::PlaceSyncSnapshot {
+            lanes: lanes.sync_snapshot(),
+        }),
+        permissions: Some(crate::place::PlacePermissionSnapshot {
+            message_write,
+            graph_write,
+        }),
     })
 }
 
@@ -2128,6 +2163,9 @@ pub(crate) mod tests {
         let (_, admitted) =
             open_cached_place(&directory, &binding, &identity, &settings()).unwrap();
         assert_eq!((admitted.graph.nodes, admitted.chat.messages), (2, 2));
+        assert_eq!(admitted.permissions, Some(crate::place::PlacePermissionSnapshot {
+            message_write: true, graph_write: true,
+        }));
         assert_eq!(admitted.chat.channels, 1);
         assert_eq!(
             (
@@ -2145,8 +2183,17 @@ pub(crate) mod tests {
             identity.master_public_key().to_bytes(),
         );
 
-        let (_, withdrawn) =
+        let (mut withdrawn_open, withdrawn) =
             open_cached_place(&directory, &binding, &identity, &settings()).unwrap();
+        assert_eq!(withdrawn.permissions, Some(crate::place::PlacePermissionSnapshot {
+            message_write: false, graph_write: false,
+        }));
+        assert!(author_into_place(
+            &mut withdrawn_open, &binding, &identity,
+            &PlaceCommand::SendMessage { channel: "hall".into(), body: "refused after revocation".into() },
+            &settings(),
+        ).unwrap_err().contains("no effective capability"));
+        drop(withdrawn_open);
         assert_eq!(
             (withdrawn.graph.nodes, withdrawn.graph.edges),
             (0, 0),

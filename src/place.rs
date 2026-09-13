@@ -221,6 +221,11 @@ impl std::error::Error for PlaceBindingError {}
 /// Cached, app-owned summary of the retained place domains.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct OfflinePlaceSnapshot {
+    /// Local lane observations at the last worker refresh, not peer liveness
+    /// or message delivery. None means this open has no sync lanes.
+    pub sync: Option<PlaceSyncSnapshot>,
+    /// Local authority evaluation at refresh. Every write checks again.
+    pub permissions: Option<PlacePermissionSnapshot>,
     pub moot: MootCache,
     pub graph: GraphCache,
     pub chat: ChatCache,
@@ -236,6 +241,43 @@ pub struct OfflinePlaceSnapshot {
     /// What the shared graph actually holds, as opposed to how much of it.
     /// Already authority-filtered: see [`projection::SharedGraph`].
     pub shared: projection::SharedGraph,
+}
+
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct PlaceSyncSnapshot {
+    pub lanes: Vec<PlaceLaneSnapshot>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct PlacePermissionSnapshot {
+    pub message_write: bool,
+    pub graph_write: bool,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct PlaceLaneSnapshot {
+    pub name: &'static str,
+    pub syncing: bool,
+    pub sync_rounds: u64,
+    pub ops_received: u64,
+    pub last_activity_ms: Option<u64>,
+}
+
+impl PlaceLaneSnapshot {
+    fn label(&self) -> &str {
+        match self.name {
+            "gemot/constitution/v1" => "Constitution",
+            "gemot/delegation/v1" => "Delegation",
+            "gemot/membership/v1" => "Membership",
+            "gemot/records/v1" => "Records",
+            "gemot/standing/v1" => "Standing",
+            "gemot/tulpa/v1" => "Tulpa",
+            "gemot/flora/v1" => "Flora",
+            "commons/graph/v1" => "Shared graph",
+            "commons/chat/v1" => "Chat",
+            other => other,
+        }
+    }
 }
 
 /// Local view choice for captured-page search. This is not a Gemot fact.
@@ -446,6 +488,48 @@ impl Default for PlaceState {
 }
 
 impl PlaceState {
+    /// Shared by the status surface and observation. Facts are from the last
+    /// worker snapshot; opening this view requests a fresh local snapshot.
+    pub fn status_lines(&self) -> Vec<String> {
+        let mut rows = match self {
+            Self::Personal => vec!["Personal session: no shared place joined".into()],
+            Self::Joining { .. } => vec!["Place: checking invitation".into()],
+            Self::Opening { .. } => vec!["Place: opening retained state or reconnecting".into()],
+            Self::Degraded { error, .. } => vec![format!("Place unavailable: {error}")],
+            Self::Failed { error } => vec![format!("Place not joined: {error}")],
+            Self::Offline { snapshot, .. } => {
+                let mut rows = vec![match &snapshot.sync {
+                    None => "Last refresh: retained data only; no local sync lanes opened".into(),
+                    Some(_) => "Last refresh: local sync lanes opened; peer reachability unknown".into(),
+                }];
+                rows.push(format!("Retained history: {} shared nodes, {} messages",
+                    snapshot.graph.nodes, snapshot.chat.messages));
+                match &snapshot.permissions {
+                    Some(permissions) => {
+                        let permission = |effective| if effective { "effective" } else { "not effective" };
+                        rows.push(format!("Message permission: {} locally at last refresh", permission(permissions.message_write)));
+                        rows.push(format!("Shared graph permission: {} locally at last refresh", permission(permissions.graph_write)));
+                    },
+                    None => rows.push("Writing permissions: not evaluated".into()),
+                }
+                rows.push("Writing: permissions are checked again for each action".into());
+                rows.push("Delivery: these sync observations do not confirm message delivery".into());
+                if let Some(sync) = &snapshot.sync {
+                    rows.extend(sync.lanes.iter().map(|lane| format!(
+                        "{}: {}; {} completed rounds; {} accepted operations",
+                        lane.label(), if lane.syncing { "syncing at last refresh" } else { "idle at last refresh" },
+                        lane.sync_rounds, lane.ops_received)));
+                }
+                rows
+            },
+        };
+        if self.binding().is_some() {
+            rows.push("Reconnect: saved contacts must still be valid".into());
+            rows.push("Leave: detach this session and retain its history".into());
+        }
+        rows
+    }
+
     pub fn binding(&self) -> Option<&PlaceBindingV1> {
         match self {
             Self::Opening { binding, .. }

@@ -263,7 +263,8 @@ pub fn ring_of(action: &Action) -> Ring {
         // Leaving is still a host-owned session transition. A denizen may not
         // detach the user's place binding or tear down their live lanes.
         | LeavePlace
-        | ReconnectPlace => Ring::HostOnly,
+        | ReconnectPlace
+        | ShowPlaceStatus => Ring::HostOnly,
     }
 }
 
@@ -285,6 +286,7 @@ pub fn emit_allowed(
             Action::JoinPlace(_) => "joining a place",
             Action::LeavePlace => "leaving a place",
             Action::ReconnectPlace => "reconnecting a place",
+            Action::ShowPlaceStatus => "inspecting place status",
             Action::SubscribeFocusedFeed { .. }
             | Action::UnsubscribeFocusedFeed
             | Action::RefreshFeeds
@@ -427,6 +429,7 @@ pub fn decode_envelope(name: &str, payload: &str) -> Result<Action, EnvelopeErro
         "close-session" => Action::CloseSession,
         "leave-place" => Action::LeavePlace,
         "reconnect-place" => Action::ReconnectPlace,
+        "place-status" => Action::ShowPlaceStatus,
         "delete-focused-node" => Action::DeleteFocusedNode,
         "recover-deleted-node" => Action::RecoverDeletedNode(member(payload)?),
         "empty-recycle-bin" => Action::EmptyRecycleBin,
@@ -513,6 +516,7 @@ mod tests {
         for action in [
             Action::LeavePlace,
             Action::ReconnectPlace,
+            Action::ShowPlaceStatus,
             Action::ConfirmInstallDenizen,
             Action::CancelInstallDenizen,
             Action::InstallDenizen {

@@ -71,6 +71,23 @@ impl App {
                 .note_suggestions(started.elapsed(), false);
             return;
         }
+        if matches!(self.omnibar.mode, OmnibarMode::PlaceStatus) {
+            let query = self.omnibar.text.trim().to_lowercase();
+            let limit = row_limit.max(1);
+            self.omnibar.suggestions = self.place.status_lines().into_iter()
+                .filter(|line| line.to_lowercase().contains(&query))
+                .take(if limit > 1 { limit - 1 } else { limit })
+                .map(Suggestion::Prompt)
+                .collect();
+            if self.omnibar.suggestions.is_empty() {
+                self.omnibar.suggestions.push(Suggestion::Hint("No matching place status; clear the filter"));
+            }
+            if limit > 1 {
+                self.omnibar.suggestions.insert(0, Suggestion::Hint("Place status: type to filter; reopen to refresh"));
+            }
+            self.frame_timings.note_suggestions(started.elapsed(), false);
+            return;
+        }
         let actions = self.available_actions();
         recompute_suggestions_with_limit(
             &mut self.omnibar,
@@ -237,6 +254,27 @@ impl App {
         self.omnibar.cursor = self.omnibar.text.len();
         self.focus = FocusTarget::Chrome;
         self.recompute_omnibar_suggestions();
+        self.events.push(AppEvent::OmnibarOpened);
+        effects.push(Effect::Redraw);
+        effects
+    }
+
+    pub(super) fn open_place_status(&mut self) -> Vec<Effect> {
+        let mut effects = self.cancel_smolweb_conversation();
+        let target = self.fallback_shell_context();
+        self.shell.begin_omnibar(target);
+        self.recall.clear();
+        self.recall_query.clear();
+        self.omnibar = OmnibarState {
+            open: true,
+            mode: OmnibarMode::PlaceStatus,
+            ..OmnibarState::default()
+        };
+        self.focus = FocusTarget::Chrome;
+        self.recompute_omnibar_suggestions();
+        if let crate::place::PlaceState::Offline { generation, .. } = self.place {
+            effects.push(Effect::ResyncPlace { session: self.session_id, generation });
+        }
         self.events.push(AppEvent::OmnibarOpened);
         effects.push(Effect::Redraw);
         effects

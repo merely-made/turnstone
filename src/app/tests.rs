@@ -4361,6 +4361,58 @@ fn reconnect_place_requires_binding_and_ignores_departed_generation() {
 }
 
 #[test]
+fn place_status_refresh_is_local_filtered_and_generation_scoped() {
+    use crate::place::{OfflinePlaceSnapshot, PlaceLaneSnapshot, PlacePermissionSnapshot, PlaceSyncSnapshot};
+    let mut app = App::test_stub();
+    let effects = app.update(Action::ShowPlaceStatus);
+    assert!(!effects.iter().any(|effect| matches!(effect, Effect::ResyncPlace { .. })));
+    assert_eq!(crate::observe::snapshot(&app).place_status,
+        vec!["Personal session: no shared place joined"]);
+
+    let binding = crate::place::PlaceBindingV1::new(
+        crate::place::PlaceId([0xc1; 32]),
+        crate::place::SharedContainerId([0xc2; 32]),
+        crate::place::ChatSpaceId([0xc3; 32]), "hall",
+    ).unwrap();
+    app.place = crate::place::PlaceState::Offline {
+        binding, generation: 8, snapshot: OfflinePlaceSnapshot::default(),
+    };
+    let effects = app.update(Action::ShowPlaceStatus);
+    assert!(effects.contains(&Effect::ResyncPlace { session: app.session_id, generation: 8 }));
+    assert!(!effects.iter().any(|effect| matches!(effect, Effect::ReconnectPlace { .. })));
+    assert!(crate::observe::snapshot(&app).place_status[0].contains("retained data only"));
+    app.update(Action::OmnibarInsert("flora".into()));
+    let current = OfflinePlaceSnapshot {
+        sync: Some(PlaceSyncSnapshot { lanes: vec![PlaceLaneSnapshot {
+            name: "gemot/flora/v1", syncing: false, sync_rounds: 2, ops_received: 3,
+            last_activity_ms: Some(42),
+        }] }),
+        permissions: Some(PlacePermissionSnapshot { message_write: true, graph_write: false }),
+        ..Default::default()
+    };
+    app.apply_update(Update::PlaceOpened {
+        session: app.session_id, generation: 8, result: Ok(current),
+    });
+    assert!(app.omnibar.suggestions.iter().any(|row| matches!(row,
+        crate::ui::Suggestion::Prompt(text) if text == "Flora: idle at last refresh; 2 completed rounds; 3 accepted operations")));
+    let observed = crate::observe::snapshot(&app).place_status;
+    assert!(observed[0].contains("peer reachability unknown"));
+    assert!(observed.iter().any(|line| line == "Message permission: effective locally at last refresh"));
+    assert!(observed.iter().any(|line| line == "Shared graph permission: not effective locally at last refresh"));
+    assert!(app.apply_update(Update::PlaceOpened {
+        session: app.session_id, generation: 7, result: Ok(OfflinePlaceSnapshot::default()),
+    }).is_empty());
+    assert_eq!(crate::observe::snapshot(&app).place_status, observed);
+    app.apply_update(Update::PlaceOpened {
+        session: app.session_id, generation: 8, result: Err("refresh failed".into()),
+    });
+    assert!(crate::observe::snapshot(&app).place_status[0].contains("refresh failed"));
+    app.update(Action::ShowPlaceStatus);
+    assert!(app.omnibar.suggestions.iter().any(|row| matches!(row,
+        crate::ui::Suggestion::Prompt(text) if text.contains("refresh failed"))));
+}
+
+#[test]
 fn reconnect_metadata_failure_does_not_remove_the_admitted_binding() {
     let directory = std::env::temp_dir().join(format!("turnstone-reconnect-leave-{}", uuid::Uuid::new_v4()));
     let binding = crate::place::PlaceBindingV1::new(

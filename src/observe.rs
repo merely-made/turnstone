@@ -28,6 +28,8 @@ use crate::ui::Suggestion;
 /// One coherent read of the application's observable state.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Snapshot {
+    /// Same last-refresh facts as the place status surface, without its filter.
+    pub place_status: Vec<String>,
     /// The focused node, when exactly one is selected.
     pub focused: Option<FocusedNode>,
     pub omnibar: OmnibarView,
@@ -831,6 +833,7 @@ pub fn snapshot(app: &App) -> Snapshot {
         surfaces.push("chrome".to_string());
     }
     Snapshot {
+        place_status: app.place.status_lines(),
         focused,
         omnibar: OmnibarView {
             open: app.omnibar.open,

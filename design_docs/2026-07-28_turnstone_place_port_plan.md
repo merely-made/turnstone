@@ -884,6 +884,35 @@ space for anyone to be admitted into.
 
 ### T5. Headed receipt
 
+**Local status continuation (2026-09-13, implemented):** `Place status` opens
+a filterable host-owned omnibar view and requests a fresh local worker
+snapshot through the existing session/generation-scoped resync path. It does
+not dial peers. The same status lines enter the application observation
+snapshot. Ordinary retained reopening and live lane handles are distinguished
+without relabelling the existing `Offline` cache-state variant as a connection
+verdict. Lane facts are explicitly observations at the last refresh.
+
+The projection covers all nine lanes: constitution, delegation, membership,
+records, standing, Tulpa, FLORA, shared graph, and chat. The earlier seven-entry
+counter helper omitted Tulpa and FLORA; the watcher already included them.
+Local message and graph write capabilities are evaluated against the same
+Moot authority view as the content projection. Displayed capability status
+does not bypass the existing per-action authority check. Local lane handles,
+completed sync rounds, and accepted-operation counts establish neither peer
+reachability nor delivery, confidentiality, or globally fresh membership.
+
+The focused done-conditions passed: `place_status` proves local refresh,
+filtering, observation consistency, stale-answer refusal, and failure display;
+`a_restarted_place_keeps_what_it_converged_on` distinguishes retained reopening
+from nine opened lane observations while delivering offline and live messages;
+`a_revoked_member_reaches_no_projected_place_state` checks effective and
+revoked capability displays plus continued write refusal; and
+`gate_management_resists_even_a_total_app_grant` covers the host-only action.
+Each filter ran one passing test using `cargo test --lib <filter> --offline
+--target-dir C:/t/turnstone-leave-target -j 1`. `git diff --check` passed.
+This uses local workspace dependency resolution, not a locked release build.
+The two-window headed gate below remains open.
+
 - Bind Roster, Comms, Canvas, Workbench, and Steward to `PlaceState`.
 - Extend observation with Personae roots, place ids, lane status, operation
   receipts, authority outcomes, and projection digests.

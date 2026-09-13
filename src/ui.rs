@@ -286,6 +286,8 @@ pub enum OmnibarMode {
     Address,
     /// Search only the currently projected captured-page cache for this place.
     CapturedPages,
+    /// Filter the active place's local status observations.
+    PlaceStatus,
     RenameSession(crate::panes::SessionId),
     SmolwebInput(SmolwebInputPrompt),
     SmolwebSubmission(SmolwebSubmissionPrompt),

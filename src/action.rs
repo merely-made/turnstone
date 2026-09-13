@@ -265,6 +265,8 @@ pub enum Action {
     LeavePlace,
     /// Dial saved contact hints for the currently admitted place.
     ReconnectPlace,
+    /// Inspect the current place and request fresh local sync observations.
+    ShowPlaceStatus,
     /// Send one message to a channel of the active place.
     SendPlaceMessage { channel: String, body: String },
     /// Share the focused node's address into the place's shared graph.
@@ -579,6 +581,7 @@ pub fn palette_actions() -> Vec<(String, Action)> {
         ("Close session", Action::CloseSession),
         ("Leave place", Action::LeavePlace),
         ("Reconnect place", Action::ReconnectPlace),
+        ("Place status", Action::ShowPlaceStatus),
     ]);
 
     let mut rows: Vec<(String, Action)> = actions
