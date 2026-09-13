@@ -27,6 +27,32 @@ The first implementation is deliberately portable and library-only:
 - Theme::css_custom_properties emits a deterministic :root stylesheet with the
   same palette as --tabard-color-* custom properties. Livery can consume it
   as an ordinary author sheet.
+- Theme::lagrange_palette_txt emits a deterministic `palette.txt` for
+  Lagrange's application UI. It writes the documented `# Dark` and `# Light`
+  sections in Lagrange's neutral, accent, and status-label order using
+  `#RRGGBB` values. The return value carries diagnostics for Tabard roles
+  which collapse into one Lagrange label or have no representation. This
+  exporter does not change Lagrange page themes, which are selected separately
+  from a site palette seed.
+
+  The emitted label list follows the [v1.21.1 help vocabulary](https://raw.githubusercontent.com/skyjake/lagrange/v1.21.1/res/about/help.gmi).
+  That release's stock [`loadPalette_Color` table](https://raw.githubusercontent.com/skyjake/lagrange/v1.21.1/src/color.c)
+  omits the documented `yellow` and `magenta` labels, so the artifact retains
+  those lines for documented-shape compatibility and reports a
+  `StockVersionIgnored` diagnostic for each mode. A headed load receipt for a
+  specific Lagrange build is required before claiming that all emitted labels
+  are applied.
+
+Its documented projection is explicit: dark neutrals are `bg`, `surface`,
+`surface-2`, `surface-hover`, `text`; light neutrals are `text`, `text-dim`,
+`surface-2`, `surface-hover`, `surface`. The remaining labels map as
+`brown`/`orange` dim/bright variants of `primary`, and `teal`/`cyan` as
+dim/bright variants of `secondary`. `red=danger` and `green=success` are used
+only when their authored hues pass the exporter’s red/green semantic checks;
+otherwise Lagrange’s documented defaults are emitted. Lagrange’s `yellow`,
+`magenta`, and `blue` reserved colors likewise use its documented defaults.
+The repeated accent mappings, defaults, omitted Tabard roles, and discarded
+alpha are returned as diagnostics rather than hidden in the artifact.
 - Pelt's optional `tabard-preview` receipt maps those generic properties onto
   Pelt-owned Chrome roles. It proves the shell recolors while the focused
   document, session history, tabs, and content aperture remain held. It is not
@@ -45,7 +71,7 @@ These receipts validate consumer seams, not persistence or a platform theme
 policy.
 
 This slice deliberately does not add host theme structs, syntax-color policy,
-icon policy, persistence, imports, or a DTCG resolver.
+icon policy, persistence, imports, a DTCG resolver, or a Geopard exporter.
 Those become consumer work after the shared artifact has a stable shape.
 
 ## License
