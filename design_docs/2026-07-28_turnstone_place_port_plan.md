@@ -11,8 +11,18 @@ in the live Gemot, Commons, Stickleback, transport, Knot, and Turnstone APIs.
 
 ## Decision
 
-A place is a Turnstone product composition over reusable Mere-side domains. It
-is not another application or authority layer.
+**Product composition correction, 2026-09-13:** Gemot is the community surface,
+with murmurs (secret conversations), moots (spaces of agreement), and coop
+(shared activities). This updates the former "not another application" ruling
+below: Turnstone hosts the reusable Gemot surface; the domain and worker
+authority split remains. The current cross-stack implementation lanes are in
+`mere/design_docs/2026-08-22_turnstone_suite_composition_and_capability_census.md`,
+section "Gemot, murmurs, moots, and coop (2026-09-13)". The T0-T5 receipts here
+retain their exact scope and are not restarted by that product correction.
+
+A place in Turnstone composes the reusable Gemot surface and Mere-side domains.
+The July application-only ruling is superseded; the authority boundaries below
+remain in force.
 
 - Gemot decides the Moot's governance and converged authority.
 - Commons owns the shared graph and channel grammars.
