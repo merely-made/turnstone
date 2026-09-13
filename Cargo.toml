@@ -158,7 +158,7 @@ mere-document-lanes = { git = "https://github.com/merely-made/mere.git", rev = "
 nematic = { git = "https://github.com/merely-made/mere.git", rev = "dce5cc973af5afbd5e57551ebb60454e5c0e49b6" }
 # Native Reticulum page transport.  The NomadNet adapter owns only the public
 # destination and opaque page bytes; Turnstone owns navigation and rendering.
-retinue = { git = "https://github.com/merely-made/retinue.git", rev = "ef1c47a602cb742293c109b0c443a9ceb8c1dce7" }
+retinue = { git = "https://github.com/merely-made/retinue.git", rev = "85e716c7f06dac0a5253effe5ef06d05b266f02f" }
 # An ephemeral Reticulum client identity is generated per NomadNet page fetch;
 # it is never persisted as a browsing preference or discovery record.
 getrandom = "0.2"
