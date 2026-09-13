@@ -942,6 +942,75 @@ the reframe. What T5 gates instead is showing shared place content on a
 product surface at all, and it is the gate the Commons calls plan's A1 waits
 on.
 
+### T5a. Founder path and two-window proof (planned 2026-09-13)
+
+Decided 2026-09-13: the founder path is a product surface, not a scenario-only
+or fixture-only lane. The palette gains the founding half of the vocabulary and
+the two-window proof drives the same labels a person would.
+
+**Palette vocabulary.** Each `Begin*` action opens an omnibar prompt in the
+same shape as `BeginRenameSession`; the commit action carries the typed text.
+
+| Label | Prompt | Commit |
+| --- | --- | --- |
+| `Found place` | place name | found Moot, group, root and chat ids, default channel `general`; persist `place.json` and an empty rendezvous descriptor; open live listen-only |
+| `Export place card` | output path | write the card JSON: binding, founder root, the founder's current dialable rendezvous |
+| `Offer place pre-key` | card path | prepare this profile's group identity for the card's Moot; write `<card>.prekey.json` beside the card |
+| `Invite to place` | pre-key path | add the pre-key's root to Moot membership with Write access, delegate both Commons domains to it, author the invitation carrying the founder's live rendezvous, write `<prekey>.invite.json` |
+| `Join place` | invite path | read and validate the file, then the existing `JoinPlace` |
+| `Send place message` | body | existing `SendPlaceMessage` on the binding's default channel |
+
+Files are JSON with base64 artifact bytes. A card or pre-key offer carries no
+authority; the invitation stays the only envelope admission reads, and it is
+already `serde`-shaped. Writing a file is a shell effect, never a worker
+side effect.
+
+**Worker.** Three commands beside the existing eight: `Found`, `OfferPrekey`,
+`Invite`, each answered under the session/generation guard with `PlaceFounded`,
+`PlacePrekeyOffered`, `PlaceInvited`. Founding promotes the lanes-test helper
+into product code: founder-only constitution rules with one root grant opened
+at the authority clock's now and no expiry, membership `Create` with the
+founder at Manage, a self-delegation so the founder's own writes read as
+effective, and `found_place_group`. Invitation expiry is now plus seven days.
+
+**Founder live.** `join_live` accepts an empty ticket list as a listen-only
+bind and turns on active mDNS so LAN peers resolve by node id after either side
+restarts on a fresh port. The bound transport's own ticket is recorded in
+`PlaceSyncSnapshot` as `local_rendezvous`, shown in status, and exported on the
+card. A founder's `Reconnect` therefore reopens listen-only through the same
+path as a joiner's.
+
+**Observation.** The snapshot gains the machine-readable facts the reframe's
+receipt lists: this profile's Personae root, the Moot, root container and chat
+space ids, the default channel, the local rendezvous, effective member count,
+and one digest each over the effective shared graph and chat projection.
+
+**Scenario.** New verbs `wait-row <frames> <substr>`, `wait-status <frames>
+<substr>` (place status lines) and `wait-file <frames> <path>`, each polling
+one frame at a time and failing with the same diagnostics as the assert of the
+same name. `record-place <name>` writes the place observation facts to
+`<name>.json` in the capture directory. A driver script launches two
+`turnstone.exe` processes with isolated `LOCALAPPDATA`, `TURNSTONE_ROOT` and
+`PERSONAE_PROFILE`, a shared exchange directory, and one scenario each.
+
+**Scope.** This slice proves reframe steps 1, 2, 3 and 6: admission through an
+invitation, the same shared root graph, one message each way, and a stop,
+absent authoring, restart and converge. Steps 4, 5 and 7 (live web surface,
+shared Knot revisions, refused unauthorized write) stay open and are not
+claimed by this receipt.
+
+Done when: focused tests cover found, offer, invite and admit through the
+product functions and every new action's refusal path; the two-process driver
+produces both captures, both `scenario.done` files reading `RESULT ok`, and
+two `record-place` files whose roots differ, whose ids match, and whose graph
+and chat digests are identical at the end; `git diff --check` and the existing
+place tests still pass.
+
+Stop rules: no fixture identity is ever installed as a default; the card and
+pre-key files never carry a welcome, a group key or governance evidence; a
+founder with no peers reports listen-only, never "connected".
+
+
 ## File seams
 
 | File | Change |
