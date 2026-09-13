@@ -1,7 +1,9 @@
 # Reticulum browsing — NomadNet nodes and capsules, idiomatically
 
 **Date:** 2026-08-03
-**Status:** scoped with Mark. Doctrine, stated by him for this lane and
+**Status (2026-09-13):** native NomadNet page fetching and shared Micron preview
+are implemented; full presentation and interaction remain scoped below. Doctrine,
+stated by Mark for this lane and
 matching the smolweb one: be honest about the content, optionally enrich the
 presentation, and never collapse anything into formats that are not idiomatic
 to the protocol.
@@ -26,8 +28,12 @@ are P5's other rows, not this plan.
 - **The gemtext lane end to end**: errand's gemini parse and the
   cambium-nematic views render gemtext today. For gemini-over-Reticulum,
   parse and render are already built; only the carrier differs.
-- **No micron anything.** No parser, no view, no node-page client, anywhere
-  in the workspace.
+- At the August 3 inventory there was no Micron parser, view or node-page
+  client. That gap is now partially closed: `src/nomadnet.rs` registers a
+  retained session over Nematic's source-preserving Micron engine;
+  `src/shell/nomadnet_fetch.rs` drives native page fetches through Retinue.
+  The [current receipt and limitations](2026-08-17_smolweb_browser_gap_analysis.md#micron-syntax-and-interoperability-2026-09-13)
+  supersede the original inventory for this lane.
 
 ## The two content families
 
@@ -53,29 +59,32 @@ protocol level). Micron is its own markup idiom: sections and depth,
 formatting and color codes, links to node pages and files, and input
 fields that submit values back to the node.
 
-Micron renders **as micron**. Its sectioning, alignment, and color model
-survive to the screen; links and input fields keep their submit-to-node
-semantics. Lowering it into gemtext or HTML first would be exactly the
-collapse the doctrine forbids. Enrichment (theming, focus affordances,
-history integration) rides on top, optional and visibly ours.
+The target is to render Micron idiomatically: preserve its sectioning,
+alignment, colors and submit-to-node semantics. Currently the syntax tree
+retains these facts, but the portable preview drops some styling and leaves
+inputs inert. Recover those facts through shared presentation without rewriting
+the author's source. Reader theming, focus and history remain host choices.
 
 **Clean-room note:** Nomad Network is GPL. The micron implementation is
-written from the published markup documentation (NomadNet ships a markup
-reference as user-facing docs), not from its source, per the sennet
-clean-room posture. The retinue workspace stays MPL-2.0.
+written from the version-pinned in-app Guide and controlled black-box outputs,
+not NomadNet implementation source. The current fixture set identifies
+NomadNet 1.4.2 and distinguishes documented syntax from candidate probes.
 
-## Homes (per the smolweb home rule, applied to this family)
+## Homes (reconciled with current code, 2026-09-13)
 
-The [smolweb home decision](../../mere/design_docs/nematic_docs/technical_architecture/2026-08-03_smolweb_home_decision.md)
-generalizes: spec-accurate implementations go to the protocol family's
-general-use workspace; enrichment and rendering stay ours.
+The original parser-in-Retinue proposal has been superseded by the
+implemented shared engine. The format model remains independent of fetching;
+moving it to another workspace is not a prerequisite for completing the view.
+The general protocol ownership rule is recorded in
+`smolweb/design_docs/technical_architecture/2026-08-03_smolweb_home_decision.md`.
 
-- **retinue workspace**: the micron parser (spec-accurate, general-use) and
-  the node-browsing client (page/file requests over links + Resources,
-  announce-based name resolution). These are Reticulum-family facts, so
-  they live with the trunk, usable by anyone without our stack.
-- **cambium**: the micron view, beside cambium-nematic's gemtext/gopher/feed
-  views. Rendering is implementation-specific by the rule.
+- **Retinue**: node requests, links, Resources and static page serving in
+  `crates/retinue/src/nomadnet.rs`. The current page API returns bytes; typed
+  form request values remain open in `request.rs`.
+- **Mere / Nematic**: source-preserving syntax and lowering in
+  `crates/nematic/nematic/src/micron/`. Inker/document-canvas own reusable
+  presentation and document-lanes own the retained viewport. Knot and
+  Turnstone share these implementations.
 - **turnstone**: the lane wiring, through the
   [engine adoption plan](2026-08-03_turnstone_engine_adoption_plan.md)'s
   seams: a session engine whose fetch runs over retinue, appearing in the
@@ -84,14 +93,13 @@ general-use workspace; enrichment and rendering stay ours.
 
 ## Steps
 
-### N0. Addressing and scheme decision
+### N0. Addressing (native form implemented)
 
-Decide how a Reticulum resource is written in the omnibar and stored in
-graph nodes: direct (`<scheme>://<dest-hash>/page/index.mu`) and named
-(announce-resolved) forms, and what the scheme string is for nomadnet nodes
-versus gemini capsules. Constraint: a stored address must survive restart
-and re-resolve, so the durable form carries the destination hash with the
-name as annotation, not the reverse. Small decision, gates everything.
+`destinationhex:/absolute/path` is the native form accepted by
+`nomadnet::parse_address`; it is not a private URL scheme. Same-node links
+resolve against the fetched destination. Ordinary files gain no implicit node
+authority. Name aliases and bare/relative target behavior remain separately
+qualified; they must not replace the durable destination identity.
 
 ### N1. Gemini over Reticulum, end to end
 
@@ -100,23 +108,30 @@ LinkStream behind the session-engine fetch seam, existing parse and views,
 trust posture surfaced. Headed receipt: a capsule served from a second
 process (or second machine) renders in a Turnstone tile.
 
-### N2. Micron parser (retinue workspace)
+### N2. Micron syntax (shared model implemented; qualification remains)
 
-Spec-accurate line-level parse to a micron AST: sections/depth, formatting
-and color spans, alignment, dividers, links, input fields. Unit-tested
-against the markup reference's own examples. No rendering, no transport.
+Nematic retains sections, styles, links, controls and directives from the
+stock Guide and original captured fixtures. Remaining malformed-input,
+escape and section-exit cases require further independent observations.
 
 ### N3. Node browsing client (retinue workspace)
 
-Page and file requests against a node destination over a link, Resource
-delivery, name resolution via announces. The client returns bytes plus
-provenance (destination hash, announced name, delivery completeness).
+Static page requests and Resource delivery are implemented. Turnstone retains
+the destination context and requests path discovery before opening the link.
+File transfer, named discovery UI, durable client identity and typed form
+requests are distinct further gates; the current bytes API does not establish
+that full contract.
 
-### N4. Micron view (cambium)
+### N4. Micron presentation and interaction (next shared scope)
 
-The micron AST rendered natively: sections as structure, colors and
-formatting honored, links navigable, input fields that build the submit
-request. Same element-tree testing pattern as the smolweb views.
+The canonical completion scope is
+`mere/design_docs/nematic_docs/implementation_strategy/2026-07-01_smolweb_fidelity_plan.md`,
+section "Micron completion scope (2026-09-13)". Reading fidelity and horizontal
+table navigation come first, then anchor/fold behavior; typed request evidence
+gates forms, and partials/media/directives each need their own lifecycle proof.
+Turnstone's done-condition is a headed native session using that shared behavior,
+with selection/focus, correct link hits after viewport changes, retained address
+authority and stale-result refusal. Knot supplies the second consumer receipt.
 
 ### N5. Turnstone lane + receipt
 
@@ -128,8 +143,9 @@ the retinue side) on the LAN.
 ## Not in scope
 
 - **LXMF messaging.** Outrider's lane, enters through Comms under P5.
-- **Serving our own pages** (the authoring/hosting side). Real, later; the
-  browsing lane comes first.
+- **Serving our own pages** is owned by Knot's authoring/publication plan and
+  Djinn's resident-services plan. In-process static serving already exists;
+  persistent hosting is independent of full Micron interaction.
 - **Propagation nodes and offline delivery.** Retinue roadmap, not browsing.
 - **Enrichment beyond presentation** (graph annotations, illume passes over
   micron prose): welcome once N4 stands, settings-gated per the
@@ -137,7 +153,8 @@ the retinue side) on the LAN.
 
 ## Ordering
 
-N0 then N1 gives a real Reticulum browsing receipt for the cost of a carrier
-swap, and exercises the trust posture early. N2 to N4 are parallelizable
-after N0; N5 closes. P5's one-at-a-time rule decides when this enters the
-build queue relative to the other protocol adapters.
+The initial N0/N1-first proposal is superseded by the landed native NomadNet
+lane. Continue N4's shared reading fidelity with a bounded reference-evidence
+lane, then promote qualified interactions. Gemini-over-Reticulum remains a
+separate adapter acceptance; the existing example does not prove a Turnstone
+browser lane. Persistent serving and foreign theme export keep their own scopes.

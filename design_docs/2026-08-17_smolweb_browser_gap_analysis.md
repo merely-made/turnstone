@@ -133,8 +133,9 @@ partial descriptors. CRLF lexing preserves the original document source.
 The portable preview renders text, bold/italic, headings, dividers, literal
 blocks, ordinary native links and tables. A same-node `:/page/...` link resolves
 against the actual native destination. Local files have no implicit node
-identity: Turnstone strips unresolved same-node aliases recursively, including
-every table cell, while preserving their labels and a diagnostic. Knot can
+identity: Turnstone strips every remaining unresolved same-node alias in any
+source context, recursively including every table cell, while preserving labels
+and a diagnostic. Knot can
 resolve those aliases through an active site's manifest.
 
 This is not full native Micron conformance. Colors, underline, alignment,
@@ -162,6 +163,13 @@ separate host work. Persistent NomadNet identities and resident/public hosting
 remain beyond this slice. No GPL/AGPL implementation source supplied these
 parser rules. The current automated checks do not constitute a new headed
 click or full visual-fidelity receipt.
+
+**Next scope:** shared reading fidelity, anchor/fold interaction and the
+evidence-gated form/refresh work are owned by
+`mere/design_docs/nematic_docs/implementation_strategy/2026-07-01_smolweb_fidelity_plan.md`,
+section "Micron completion scope (2026-09-13)". This browser consumes those
+semantics and supplies a headed acceptance alongside Knot. Djinn's static
+snapshot serving and Tabard's theme adapters have independent owner plans.
 
 The taxonomy of a typical browser, each element named in mere/genet terms,
 with its state in this tree. The recurring pattern is that the conventional
@@ -293,9 +301,10 @@ guppy, and titan, and normalizes status and MIME; `mere-fetch` routes any
 errand scheme through the fetch actor turnstone already runs. Lagrange's
 protocol list and ours differ by one entry in each direction: Lagrange speaks
 misfin as a mail lane; we have misfin's send path in errand but no mail
-surface. Nobody in this comparison speaks Reticulum; we have a plan for it
-(2026-08-03) and the gemini module is explicitly shaped so a Reticulum link
-can drive the same path without TLS.
+surface. The original August comparison predates Turnstone's native NomadNet
+page adapter: Reticulum page fetch and a shared Micron preview are now present.
+Gemini-over-Reticulum remains a separate carrier integration; the existing
+example is not a completed Turnstone browser lane.
 
 Rendering is not the gap either, in kind: cambium-nematic projects gemtext,
 gopher menus, feeds, and nex listings as Cambium views, and nematic lowers
