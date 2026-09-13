@@ -913,6 +913,21 @@ Each filter ran one passing test using `cargo test --lib <filter> --offline
 This uses local workspace dependency resolution, not a locked release build.
 The two-window headed gate below remains open.
 
+**Headed gate finding (2026-09-13):** the debug binary builds offline and two
+windows can hold distinct Personae roots with no code change: `PERSONAE_PROFILE`
+mints a profile on demand, and a scratch `LOCALAPPDATA` plus `TURNSTONE_ROOT`
+isolate both the vault and the data root from the real profile. What blocks
+the two-process proof is the founder side. The worker commands are Open,
+Join, Reconnect, Resync, SetCollection, Author, SendMessage and ShareNode:
+nothing founds a place, mints an invitation, or opens a founder live, and
+`join_live` refuses an empty ticket list, so a founder with no saved
+rendezvous cannot listen. `author_invitation` and `found_place_group` are
+library functions; founding a Moot with both roots and the joiner pre-key
+exchange exist only in the lanes tests. Tickets are minted at bind time, so
+the founder must be bound before its invitation is authored. The scenario
+grammar has no verb that waits for an asynchronous lane arrival. The shape of
+the founder path is an open decision, not a plan amendment.
+
 - Bind Roster, Comms, Canvas, Workbench, and Steward to `PlaceState`.
 - Extend observation with Personae roots, place ids, lane status, operation
   receipts, authority outcomes, and projection digests.
