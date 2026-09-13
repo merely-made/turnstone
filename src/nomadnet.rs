@@ -9,6 +9,7 @@
 //! Reticulum spelling, `destinationhex:/page/path`, and asks Retinue to learn
 //! the peer identity by a path request before opening the resource link.
 
+use std::collections::BTreeMap;
 use std::net::SocketAddr;
 use std::time::Duration;
 
@@ -20,6 +21,7 @@ use netrender::Scene;
 use retinue::endpoint::Endpoint;
 use retinue::hash::AddressHash;
 use retinue::identity::{IDENTITY_LEN, PrivateIdentity};
+use retinue::request::{Response, StringMapLimits, StringMapRequest};
 
 /// Stable engine id for Turnstone's retained Micron view.
 pub const ENGINE_ID: &str = nematic::ENGINE_MICRON;
@@ -302,10 +304,175 @@ pub async fn fetch_page(address: &str) -> Result<crate::action::FetchedPage, Str
     })
 }
 
+/// Submit one already-authorized map to a native Micron handler.  This is a
+/// separate operation from page fetching: it never follows a response as a
+/// navigation and accepts only the exact destination/path the form named.
+pub async fn submit_form(
+    address: &str,
+    values: BTreeMap<String, String>,
+) -> Result<crate::action::FetchedPage, String> {
+    let tcp = std::env::var("TURNSTONE_NOMADNET_TCP")
+        .map_err(|_| "NomadNet is not configured: set TURNSTONE_NOMADNET_TCP".to_string())?
+        .parse::<SocketAddr>()
+        .map_err(|error| format!("invalid TURNSTONE_NOMADNET_TCP: {error}"))?;
+    let timeout = std::env::var("TURNSTONE_NOMADNET_TIMEOUT_SECS")
+        .ok()
+        .and_then(|value| value.parse::<u64>().ok())
+        .unwrap_or(30)
+        .clamp(1, 120);
+    let max_response_bytes = std::env::var("TURNSTONE_NOMADNET_MAX_PAGE_BYTES")
+        .ok()
+        .and_then(|value| value.parse::<usize>().ok())
+        .unwrap_or(4 * 1024 * 1024)
+        .clamp(1, 64 * 1024 * 1024);
+    submit_form_on_interface(
+        address,
+        values,
+        tcp,
+        Duration::from_secs(timeout),
+        max_response_bytes,
+    )
+    .await
+}
+
+async fn submit_form_on_interface(
+    address: &str,
+    values: BTreeMap<String, String>,
+    tcp: SocketAddr,
+    timeout: Duration,
+    max_response_bytes: usize,
+) -> Result<crate::action::FetchedPage, String> {
+    let address = parse_address(address)
+        .ok_or_else(|| "Micron form target must be destinationhex:/absolute/path".to_string())?;
+    if timeout.is_zero() || max_response_bytes == 0 {
+        return Err("Micron request limits must be positive".into());
+    }
+    let time = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map_err(|error| format!("system clock is before the Unix epoch: {error}"))?
+        .as_secs_f64();
+    let packed = StringMapRequest::new(address.path().as_bytes(), values, time)
+        .pack(StringMapLimits::default())
+        .map_err(|_| "Micron form exceeds the native request limit".to_string())?;
+    let destination = address.destination();
+    let result = tokio::time::timeout(timeout, async {
+        let mut secret = [0_u8; IDENTITY_LEN];
+        getrandom::getrandom(&mut secret)
+            .map_err(|error| format!("could not create ephemeral Reticulum identity: {error}"))?;
+        let endpoint = Endpoint::new(PrivateIdentity::from_secret_bytes(&secret));
+        secret.fill(0);
+        endpoint
+            .attach_tcp_client(tcp)
+            .await
+            .map_err(|error| format!("could not connect NomadNet interface: {error}"))?;
+        endpoint.request_path(destination);
+        let peer = loop {
+            if let Some(peer) = endpoint.resolve(destination) {
+                break peer;
+            }
+            endpoint
+                .next_announcement()
+                .await
+                .map_err(|error| error.to_string())?;
+        };
+        let response = endpoint
+            .request_raw(destination, peer, &packed)
+            .await
+            .map_err(|error| format!("Micron form request failed: {error}"))?;
+        // request_raw releases its session before returning. Let its queued
+        // Resource proof and link close reach the peer before Endpoint::Drop
+        // aborts the interface writer. The outer request deadline still applies.
+        endpoint.shutdown(timeout).await;
+        // Resource reassembly has already happened. Bound the additional
+        // envelope decode allocation; this is not a wire allocation ceiling.
+        if response.packed.len() > max_response_bytes.saturating_add(64) {
+            return Err("Micron form response exceeds TURNSTONE_NOMADNET_MAX_PAGE_BYTES".into());
+        }
+        let response = Response::unpack(&response.packed)
+            .map_err(|_| "Micron form response was invalid".to_string())?;
+        Ok::<_, String>(response.data)
+    })
+    .await
+    .map_err(|_| {
+        format!(
+            "Micron form request timed out after {}s; remote outcome may be unknown",
+            timeout.as_secs()
+        )
+    })?;
+    let bytes = result?;
+    if bytes.len() > max_response_bytes {
+        return Err("Micron form response exceeds TURNSTONE_NOMADNET_MAX_PAGE_BYTES".to_string());
+    }
+    Ok(crate::action::FetchedPage {
+        content_type: None,
+        content_disposition: None,
+        body: String::from_utf8_lossy(&bytes).into_owned(),
+        bytes,
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use inker::session_engine::SessionEngine;
+
+    #[tokio::test]
+    async fn micron_form_explicit_interface_sends_map_and_bounds_resource_reply() {
+        use retinue::destination::DestinationName;
+        use std::sync::Arc;
+        for limit in [8192, 8] {
+            let server = Arc::new(Endpoint::new(PrivateIdentity::from_secret_bytes(
+                &[0x45; IDENTITY_LEN],
+            )));
+            let tcp = server.listen_tcp(([127, 0, 0, 1], 0).into()).await.unwrap();
+            let name = DestinationName::new("nomadnetwork", ["node"]);
+            let destination = name.destination_hash(server.identity());
+            server.register_resource(name, &[]);
+            let (done_tx, done_rx) = tokio::sync::oneshot::channel::<()>();
+            let handler_endpoint = Arc::clone(&server);
+            let handler = tokio::spawn(async move {
+                let mut accepted = handler_endpoint.accept_resource().await.unwrap();
+                let received = accepted.session.receive_raw_request().await.unwrap();
+                let request =
+                    StringMapRequest::unpack(&received.packed, StringMapLimits::default()).unwrap();
+                assert_eq!(
+                    request.path_hash,
+                    retinue::hash::AddressHash::of(b"/page/capture.mu")
+                );
+                assert_eq!(
+                    request.data,
+                    BTreeMap::from([("field_note".into(), "café 雪".into())])
+                );
+                accepted
+                    .session
+                    .respond_auto(received.request_id, vec![b'x'; 4096])
+                    .await
+                    .unwrap();
+                // Keep the response session live until the client has decoded
+                // its Resource, not merely until its proof was received.
+                let _ = done_rx.await;
+            });
+            let result = submit_form_on_interface(
+                &format!("{destination}:/page/capture.mu"),
+                BTreeMap::from([("field_note".into(), "café 雪".into())]),
+                tcp,
+                Duration::from_secs(10),
+                limit,
+            )
+            .await;
+            let _ = done_tx.send(());
+            if limit == 8192 {
+                assert_eq!(result.unwrap().bytes, vec![b'x'; 4096]);
+            } else {
+                assert!(result.unwrap_err().contains("MAX_PAGE_BYTES"));
+            }
+            tokio::time::timeout(Duration::from_secs(10), handler)
+                .await
+                .unwrap()
+                .unwrap();
+            server.close();
+        }
+    }
 
     #[test]
     fn native_address_keeps_destination_and_opaque_path() {

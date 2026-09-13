@@ -5,6 +5,17 @@ use std::sync::mpsc::Receiver;
 use armillary::{ActorHandle, Emitter, Wake};
 use fetch::{FetchCommand, FetchFailure, FetchOutcome, FetchUpdate};
 
+/// One already-confirmed native Micron form operation.  The request map stays
+/// in the actor command and is never converted into a URL or history entry.
+pub(super) enum MicronSubmissionCommand {
+    Submit {
+        request: u64,
+        source: Option<uuid::Uuid>,
+        submission: crate::action::MicronSubmission,
+    },
+    Cancel { request: u64 },
+}
+
 pub(super) fn spawn(wake: Wake) -> (ActorHandle<FetchCommand>, Receiver<FetchUpdate>) {
     armillary::spawn(wake, |commands, out: Emitter<FetchUpdate>| {
         let runtime = tokio::runtime::Builder::new_multi_thread()
@@ -49,6 +60,45 @@ pub(super) fn spawn(wake: Wake) -> (ActorHandle<FetchCommand>, Receiver<FetchUpd
                     }
                 },
                 _ => {},
+            }
+        }
+    })
+}
+
+pub(super) fn spawn_submissions(
+    wake: Wake,
+) -> (
+    ActorHandle<MicronSubmissionCommand>,
+    Receiver<crate::action::Update>,
+) {
+    armillary::spawn(wake, |commands, out: Emitter<crate::action::Update>| {
+        let runtime = tokio::runtime::Builder::new_multi_thread()
+            .enable_all()
+            .build()
+            .expect("NomadNet submission runtime");
+        let mut active: Option<(u64, tokio::task::JoinHandle<()>)> = None;
+        while let Ok(command) = commands.recv() {
+            match command {
+                MicronSubmissionCommand::Submit { request, source, submission } => {
+                    if let Some((_, task)) = active.take() {
+                        task.abort();
+                    }
+                    let out = out.clone();
+                    let task = runtime.spawn(async move {
+                        let target = submission.target.clone();
+                        let result = crate::nomadnet::submit_form(&target, submission.values)
+                            .await
+                            .map(crate::action::SmolwebSubmissionReceipt::Success);
+                        out.emit(crate::action::Update::SmolwebSubmitted { request, source, target, result });
+                    });
+                    active = Some((request, task));
+                }
+                MicronSubmissionCommand::Cancel { request } => {
+                    if active.as_ref().is_some_and(|(active_request, _)| *active_request == request) {
+                        let (_, task) = active.take().expect("checked active submission");
+                        task.abort();
+                    }
+                }
             }
         }
     })

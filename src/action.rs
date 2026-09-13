@@ -99,6 +99,8 @@ pub enum Action {
     OpenAddress(String),
     /// Open the submission composer for the focused Titan or Spartan address.
     ComposeFocusedSmolwebSubmission,
+    /// Open the focused Micron page's explicit form editor, if it has one.
+    ComposeFocusedMicronForm,
     /// Begin a submission from a typed document interaction or explicit target.
     BeginSmolwebSubmission {
         source: Option<uuid::Uuid>,
@@ -113,9 +115,15 @@ pub enum Action {
     /// A live navigable committed a new top-level resource in an existing
     /// graph member. This grows that member's own navigation lineage; it does
     /// not mint another member merely because its current URL changed.
-    ContentNavigationCommitted { member: uuid::Uuid, url: String },
+    ContentNavigationCommitted {
+        member: uuid::Uuid,
+        url: String,
+    },
     /// The active document supplied a title for its existing graph member.
-    ContentTitleChanged { member: uuid::Uuid, title: String },
+    ContentTitleChanged {
+        member: uuid::Uuid,
+        title: String,
+    },
     /// Capture the focused live document and open its retained find field.
     OpenDocumentFind,
     CloseDocumentFind,
@@ -127,17 +135,27 @@ pub enum Action {
     /// member rides along (the `KeepNode` shape) because the palette rows
     /// resolve the focused node while ctrl+wheel resolves the node under the
     /// pointer, and a workbench can tile several live documents at once.
-    PageZoomIn { member: uuid::Uuid },
+    PageZoomIn {
+        member: uuid::Uuid,
+    },
     /// Step one member's requested page zoom a rung down.
-    PageZoomOut { member: uuid::Uuid },
+    PageZoomOut {
+        member: uuid::Uuid,
+    },
     /// Return one member to the default page scale.
-    PageZoomReset { member: uuid::Uuid },
+    PageZoomReset {
+        member: uuid::Uuid,
+    },
     /// Capture this exact live page member. The target is resolved when the
     /// action is offered so a later focus change cannot redirect completion.
-    CapturePage { member: uuid::Uuid },
+    CapturePage {
+        member: uuid::Uuid,
+    },
     /// Explicitly preserve the current fetched HTML source and its Fleece
     /// annotation. This does not inspect a rendered surface or recall text.
-    CaptureSourceDocument { member: uuid::Uuid },
+    CaptureSourceDocument {
+        member: uuid::Uuid,
+    },
     ChoosePermission {
         request: crate::user_agent_decision::UserAgentRequestKey,
         choice: crate::user_agent_decision::PermissionChoice,
@@ -165,10 +183,14 @@ pub enum Action {
     /// Promote one exact graph member into durable kept state. The member is
     /// captured when the control is offered so a later focus change cannot
     /// redirect the gesture.
-    KeepNode { member: uuid::Uuid },
+    KeepNode {
+        member: uuid::Uuid,
+    },
     /// Keep the focused node as a feed source and refresh it on this cadence.
     /// The first refresh is immediate; later refreshes use the host clock.
-    SubscribeFocusedFeed { period: servitor::Period },
+    SubscribeFocusedFeed {
+        period: servitor::Period,
+    },
     /// Stop scheduled refreshes for the focused source. The node remains kept.
     UnsubscribeFocusedFeed,
     /// Refresh every subscribed source now, subject to the in-flight gate.
@@ -268,7 +290,10 @@ pub enum Action {
     /// Inspect the current place and request fresh local sync observations.
     ShowPlaceStatus,
     /// Send one message to a channel of the active place.
-    SendPlaceMessage { channel: String, body: String },
+    SendPlaceMessage {
+        channel: String,
+        body: String,
+    },
     /// Share the focused node's address into the place's shared graph.
     ShareFocusedNode,
     /// Re-fold the active place's projections from what its lanes have drained
@@ -284,7 +309,9 @@ pub enum Action {
     /// session-engines plan's phase-4 consumer intent).
     ToggleNodeContent,
     /// Summon the omnibar (`command` pre-seeds the `>` actions lane).
-    OmnibarOpen { command: bool },
+    OmnibarOpen {
+        command: bool,
+    },
     /// Dismiss the omnibar without committing.
     OmnibarClose,
     /// Insert one typed character at the caret.
@@ -317,7 +344,9 @@ pub enum Action {
     SummonPane(PaneKindId),
     /// Ask the platform shell to choose a local Knot document. The resulting
     /// path becomes a contributed source only after the user chooses it.
-    ChooseKnotDocumentFile { read_only: bool },
+    ChooseKnotDocumentFile {
+        read_only: bool,
+    },
     /// Summon a provider-owned pane beside the active pane. The source was
     /// minted by the caller; provider admission still occurs at the render
     /// boundary, while the app preserves this exact durable value.
@@ -365,14 +394,18 @@ pub enum Action {
     /// pane. The tile leaves platen's tiling and becomes a pinned
     /// `PaneContent::Tile` pane in a lens window: the tear-out trichotomy's
     /// BRANCH arm, gesture-first (the leaf arm is `TearOutActivePane`).
-    TearOutTile { member: uuid::Uuid },
+    TearOutTile {
+        member: uuid::Uuid,
+    },
     /// Fork the connected component containing this node into a freshly
     /// minted session (the tear-out trichotomy's FORK arm, tear-out brief
     /// §4.3): new SessionId + GraphId, `parent_session` back-reference,
     /// `CopiedFrom` provenance per node, per-node character carried by facets.
     /// Gesture-first (Ctrl+Shift at the tab drag-out); the palette arm is
     /// `ForkFocusedNode`.
-    ForkNode { member: uuid::Uuid },
+    ForkNode {
+        member: uuid::Uuid,
+    },
     /// Fork from the focused node — the palette / keyboard arm of `ForkNode`.
     ForkFocusedNode,
     /// Mint a fresh session (rung 6's second half): a new manifest under
@@ -410,7 +443,9 @@ pub enum Action {
     /// Stage a scenario pack (.lua) as a denizen install: read + derive the
     /// content subject, then surface the VISIBLE grant review in the palette
     /// (participant gate B1). Nothing is minted or granted here.
-    InstallDenizen { path: String },
+    InstallDenizen {
+        path: String,
+    },
     /// Commit the staged install after the visible review: mint the denizen
     /// node + binding facets, project the grant into its nested world through
     /// the servitor gate, and register the palette Run row.
@@ -421,15 +456,22 @@ pub enum Action {
     /// it (cascading to anything it delegated onward) and un-reside it — the
     /// binding facet goes, the runtime entry goes. Its node and world stay,
     /// un-resided, so nothing is destroyed by revoking authority.
-    UninstallDenizen { member: uuid::Uuid },
+    UninstallDenizen {
+        member: uuid::Uuid,
+    },
     /// Run a resident denizen's scenario body: piccolo evaluates it under a
     /// step budget, and its emitted Actions lower through this same spine
     /// with mere's GraphJournal scoped to the denizen's author (attribution).
-    RunDenizen { member: uuid::Uuid },
+    RunDenizen {
+        member: uuid::Uuid,
+    },
     /// Write `body` as the content of the node at `url`, minting the node if
     /// it is not there. The authoring lane a summarizing behavior needs; the
     /// `Author` ring gates it, and that ring is never preselected.
-    WriteNote { url: String, body: String },
+    WriteNote {
+        url: String,
+        body: String,
+    },
     /// Restore a trashed SESSION from the manifest trash and switch to it
     /// (overmap O3; a Trail Removed-sessions-row click). The whole session
     /// directory moved to `.trash/` intact at close, so restore is
@@ -727,7 +769,10 @@ pub enum Effect {
     /// The node already carries the reference and the canvas already has the
     /// decoded pixels, so this is durability only: dropping it costs a
     /// re-fetch, never correctness.
-    StoreImage { hex: String, bytes: Vec<u8> },
+    StoreImage {
+        hex: String,
+        bytes: Vec<u8>,
+    },
     /// Deposit a completed response in the session's representation store and
     /// write a user-visible file. The graph node remains identified by `url`;
     /// the destination returned by the shell is metadata only.
@@ -743,7 +788,9 @@ pub enum Effect {
     SaveSession,
     /// Ask the native shell for one Djot or Knot file. A cancelled picker has
     /// no effect; an accepted path is minted into a provider-owned source.
-    ChooseKnotDocumentFile { read_only: bool },
+    ChooseKnotDocumentFile {
+        read_only: bool,
+    },
     /// Open this session's retained place domains through the shell-owned
     /// worker. `generation` makes every later answer session-specific.
     OpenPlace {
@@ -759,6 +806,16 @@ pub enum Effect {
         session: crate::panes::SessionId,
         generation: u64,
         invite: Box<crate::place::invite::PlaceInviteV1>,
+    },
+    /// Send one confirmed native Micron form map.  The shell owns the
+    /// Reticulum link; app state only retains a redacted envelope.
+    SubmitMicron {
+        request: u64,
+        source: Option<uuid::Uuid>,
+        submission: MicronSubmission,
+    },
+    CancelMicronSubmission {
+        request: u64,
     },
     /// Release the place worker, then remove this session's local binding.
     LeavePlace {
@@ -797,11 +854,19 @@ pub enum Effect {
     /// Spawn a live document session for `node` at `url` through the
     /// content port (registry-dispatched once genet-documents lands;
     /// until then the port answers with an honest ContentFailed).
-    SpawnContent { node: uuid::Uuid, url: String },
+    SpawnContent {
+        node: uuid::Uuid,
+        url: String,
+    },
     /// Replace the body of an already-live incremental smolweb session.
-    UpdateContent { node: uuid::Uuid, url: String },
+    UpdateContent {
+        node: uuid::Uuid,
+        url: String,
+    },
     /// Close `node`'s live session; the port drops the handle.
-    CloseContent { node: uuid::Uuid },
+    CloseContent {
+        node: uuid::Uuid,
+    },
     /// Drive the optional web control plane of a live surface producer.
     ControlContent {
         node: uuid::Uuid,
@@ -810,12 +875,20 @@ pub enum Effect {
     /// Apply `scale` as one live surface's page zoom (`1.0` = 100%). The
     /// requested value is already persisted when this runs; a refusal from the
     /// engine changes what the document shows, never what the node stores.
-    ScaleContent { node: uuid::Uuid, scale: f32 },
+    ScaleContent {
+        node: uuid::Uuid,
+        scale: f32,
+    },
     /// Start one host-correlated viewport capture of this live web surface.
-    CaptureContent { node: uuid::Uuid },
+    CaptureContent {
+        node: uuid::Uuid,
+    },
     /// Preserve one exact, app-held fetched HTML response through the session
     /// Eidetic store. `url` is captured with the action for a stale-target gate.
-    CaptureSourceDocument { node: uuid::Uuid, url: String },
+    CaptureSourceDocument {
+        node: uuid::Uuid,
+        url: String,
+    },
     /// Ask one exact live content owner to replace or step its retained find.
     FindContent {
         node: uuid::Uuid,
@@ -844,27 +917,38 @@ pub enum Effect {
     },
     /// Open a lens window (platform work: window + surface creation) showing
     /// the pane space the app seeded at `App::lenses[ordinal]`.
-    OpenWindow { ordinal: usize },
+    OpenWindow {
+        ordinal: usize,
+    },
     /// Switch the live session (port work: the shell saves the departing
     /// session, tears down its live ports — content sessions, lens windows —
     /// then has the app adopt `id` and runs the adoption's own effects).
-    SwitchSession { id: crate::panes::SessionId },
+    SwitchSession {
+        id: crate::panes::SessionId,
+    },
     /// Stage a removed node's record into the recycle bin (the bin port's
     /// actor persists it in the session's eidetic store and answers with the
     /// refreshed list).
-    RecordDeleted { record: RemovedRecord },
+    RecordDeleted {
+        record: RemovedRecord,
+    },
     /// Permanently forget every staged node — the bin actor clears its store
     /// and answers with the empty list ("empty the recycle bin").
     EmptyRecycleBin,
     /// Ask the trail port for lexical recall over this session's browsing
     /// memory (the omnibar's recall lane). Answered by `Update::RecallHits`
     /// carrying the query back, so a late answer to superseded text drops.
-    RecallQuery { query: String },
+    RecallQuery {
+        query: String,
+    },
     /// Hand the trail port a fetched page's extracted main text, so recall
     /// reaches the body and not just the title and URL (wiring plan W6c).
     /// Best-effort like every other enrichment: dropping it costs recall
     /// reach, never correctness.
-    RecordPageText { url: String, text: String },
+    RecordPageText {
+        url: String,
+        text: String,
+    },
     /// Close a session (overmap O3): the shell releases the bin store (its
     /// open files block the rename on Windows), moves the closing session's
     /// whole directory to the manifest trash via `App::apply_trash`, and
@@ -876,6 +960,23 @@ pub enum Effect {
     },
     /// The projection is stale; present another frame.
     Redraw,
+}
+
+/// A bounded native Micron request.  Values are deliberately omitted from
+/// debug output so tracing an effect cannot disclose a masked form field.
+#[derive(Clone, PartialEq, Eq)]
+pub struct MicronSubmission {
+    pub target: String,
+    pub values: std::collections::BTreeMap<String, String>,
+}
+
+impl std::fmt::Debug for MicronSubmission {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("MicronSubmission")
+            .field("target", &self.target)
+            .field("field_count", &self.values.len())
+            .finish()
+    }
 }
 
 /// A typed service answer, drained by the shell on wake and folded back into

@@ -165,7 +165,7 @@ pub(crate) fn visible_row_limit_with_extra_height(
         ChromePlacement::Docked(ChromeEdge::Bottom) => (viewport_h - 52.0).max(8.0),
         ChromePlacement::Docked(ChromeEdge::Left | ChromeEdge::Right) => {
             (viewport_h * 0.5 - 18.0).max(8.0)
-        }
+        },
         ChromePlacement::Pane(_) | ChromePlacement::Hidden => return configured,
     };
     let room =
@@ -232,6 +232,40 @@ pub enum SmolwebSubmissionStage {
     Confirm,
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum MicronFormStage {
+    Action,
+    Field(usize),
+    Confirm,
+}
+
+/// Ephemeral form state for one exact fetched Micron page.  The source body
+/// is retained only to reject a stale form before the request is constructed.
+#[derive(Clone, PartialEq, Eq)]
+pub struct MicronFormPrompt {
+    pub source: Uuid,
+    pub source_url: String,
+    pub source_body: String,
+    pub form: nematic::micron::forms::FormState,
+    pub action: usize,
+    pub resolved_target: Option<String>,
+    pub stage: MicronFormStage,
+    pub error: Option<String>,
+}
+
+impl std::fmt::Debug for MicronFormPrompt {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("MicronFormPrompt")
+            .field("source", &self.source)
+            .field("source_url", &self.source_url)
+            .field("form", &self.form)
+            .field("action", &self.action)
+            .field("resolved_target", &self.resolved_target)
+            .field("stage", &self.stage)
+            .finish()
+    }
+}
+
 /// App-owned state for one explicit write conversation. Request bytes are
 /// retained separately from the visible line as the composer advances.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -291,13 +325,14 @@ pub enum OmnibarMode {
     RenameSession(crate::panes::SessionId),
     SmolwebInput(SmolwebInputPrompt),
     SmolwebSubmission(SmolwebSubmissionPrompt),
+    MicronForm(MicronFormPrompt),
     SmolwebSubmissionResult(SmolwebSubmissionResult),
     GeminiIdentity(GeminiIdentityPrompt),
     GeminiTrust(GeminiTrustPrompt),
 }
 
 /// The omnibar's state, owned by [`crate::app::App`].
-#[derive(Clone, Debug, Default, PartialEq)]
+#[derive(Clone, Default, PartialEq)]
 pub struct OmnibarState {
     pub open: bool,
     /// What this line captures (default: the address/action lanes).
@@ -315,6 +350,26 @@ pub struct OmnibarState {
     pub suggestions: Vec<Suggestion>,
 }
 
+impl std::fmt::Debug for OmnibarState {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("OmnibarState")
+            .field("open", &self.open)
+            .field("mode", &self.mode)
+            .field(
+                "text",
+                &if matches!(self.mode, OmnibarMode::MicronForm(_)) {
+                    "[redacted]".to_string()
+                } else {
+                    self.presented_text()
+                },
+            )
+            .field("cursor", &self.cursor)
+            .field("selected", &self.selected)
+            .field("suggestions", &self.suggestions)
+            .finish()
+    }
+}
+
 impl OmnibarState {
     /// The highlighted suggestion, if any commit-able row is present.
     pub fn selection(&self) -> Option<&Suggestion> {
@@ -324,16 +379,24 @@ impl OmnibarState {
     }
 
     pub fn sensitive(&self) -> bool {
-        matches!(
-            &self.mode,
+        match &self.mode {
             OmnibarMode::SmolwebInput(SmolwebInputPrompt {
-                sensitive: true,
-                ..
-            }) | OmnibarMode::SmolwebSubmission(SmolwebSubmissionPrompt {
+                sensitive: true, ..
+            })
+            | OmnibarMode::SmolwebSubmission(SmolwebSubmissionPrompt {
                 stage: SmolwebSubmissionStage::Token,
                 ..
-            })
-        )
+            }) => true,
+            OmnibarMode::MicronForm(MicronFormPrompt {
+                stage: MicronFormStage::Field(index),
+                form,
+                ..
+            }) => form
+                .fields()
+                .get(*index)
+                .is_some_and(|field| field.masked()),
+            _ => false,
+        }
     }
 
     /// The line as chrome, accessibility, and observation may expose it.
@@ -378,7 +441,7 @@ impl OmnibarState {
                 self.text.remove(i);
                 self.cursor = i;
                 true
-            }
+            },
             None => false,
         }
     }
@@ -459,10 +522,10 @@ pub fn recompute_suggestions_with_limit(
             },
             SmolwebSubmissionStage::Mime => {
                 "MIME type · edit the suggested value · Enter to continue".to_string()
-            }
+            },
             SmolwebSubmissionStage::Token => {
                 "Optional Titan token · input is hidden · Enter to continue".to_string()
-            }
+            },
             SmolwebSubmissionStage::Confirm => format!(
                 "Send {} bytes to {} · type send and press Enter",
                 submission.body.len(),
@@ -470,6 +533,72 @@ pub fn recompute_suggestions_with_limit(
             ),
         };
         state.suggestions.push(Suggestion::Prompt(prompt));
+        state.selected = 0;
+        return;
+    }
+
+    if let OmnibarMode::MicronForm(prompt) = &state.mode {
+        let message = match prompt.stage {
+            MicronFormStage::Action => {
+                let labels = prompt
+                    .form
+                    .actions()
+                    .iter()
+                    .enumerate()
+                    .map(|(index, action)| format!("{}: {}", index + 1, action.label))
+                    .collect::<Vec<_>>()
+                    .join(" · ");
+                format!("Choose submit action ({labels})")
+            },
+            MicronFormStage::Field(index) => match prompt.form.fields().get(index) {
+                Some(field) if field.masked() => {
+                    format!("{} · input is hidden · Enter to continue", field.name())
+                },
+                Some(field) => match &field.kind {
+                    nematic::micron::syntax::FieldKind::Checkbox { .. } => {
+                        format!(
+                            "{} = {} · use on or off · Enter to continue",
+                            field.name(),
+                            field.value()
+                        )
+                    },
+                    nematic::micron::syntax::FieldKind::Radio { .. } => {
+                        format!(
+                            "{} = {} · use on to select (clears its peer) or off · Enter to continue",
+                            field.name(),
+                            field.value()
+                        )
+                    },
+                    nematic::micron::syntax::FieldKind::Text {
+                        rows: Some(rows), ..
+                    } if *rows > 1 => {
+                        format!(
+                            "{} · paste multiline text if needed · Enter to continue",
+                            field.name()
+                        )
+                    },
+                    _ => format!("{} · Enter to continue", field.name()),
+                },
+                None => "Micron form is invalid".to_string(),
+            },
+            MicronFormStage::Confirm => {
+                let label = prompt
+                    .form
+                    .actions()
+                    .get(prompt.action)
+                    .map(|action| action.label.as_str())
+                    .unwrap_or("submit");
+                let target = prompt
+                    .resolved_target
+                    .as_deref()
+                    .unwrap_or("invalid target");
+                format!("{} · {target} · type send and press Enter", label)
+            },
+        };
+        state.suggestions.push(Suggestion::Prompt(message));
+        if let Some(error) = &prompt.error {
+            state.suggestions.push(Suggestion::Prompt(error.clone()));
+        }
         state.selected = 0;
         return;
     }
@@ -754,7 +883,7 @@ fn theme_accent(theme_id: Option<&str>, fallback: (u8, u8, u8)) -> (u8, u8, u8) 
                 90 + ((hash >> 8) & 0x5f) as u8,
                 110 + (hash & 0x5f) as u8,
             )
-        }
+        },
     }
 }
 

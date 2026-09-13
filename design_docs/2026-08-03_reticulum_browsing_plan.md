@@ -1,8 +1,9 @@
 # Reticulum browsing — NomadNet nodes and capsules, idiomatically
 
 **Date:** 2026-08-03
-**Status (2026-09-13):** native NomadNet page fetching and shared Micron preview
-are implemented; full presentation and interaction remain scoped below. Doctrine,
+**Status (2026-09-13):** native NomadNet page fetching, shared Micron preview,
+and a focused-page Micron form conversation are implemented; full presentation
+and interaction remain scoped below. Doctrine,
 stated by Mark for this lane and
 matching the smolweb one: be honest about the content, optionally enrich the
 presentation, and never collapse anything into formats that are not idiomatic
@@ -79,8 +80,8 @@ The general protocol ownership rule is recorded in
 `smolweb/design_docs/technical_architecture/2026-08-03_smolweb_home_decision.md`.
 
 - **Retinue**: node requests, links, Resources and static page serving in
-  `crates/retinue/src/nomadnet.rs`. The current page API returns bytes; typed
-  form request values remain open in `request.rs`.
+  `crates/retinue/src/nomadnet.rs`. `StringMapRequest` in `request.rs` carries
+  the bounded, observed Micron form map; it does not grant a handler authority.
 - **Mere / Nematic**: source-preserving syntax and lowering in
   `crates/nematic/nematic/src/micron/`. Inker/document-canvas own reusable
   presentation and document-lanes own the retained viewport. Knot and
@@ -118,9 +119,9 @@ escape and section-exit cases require further independent observations.
 
 Static page requests and Resource delivery are implemented. Turnstone retains
 the destination context and requests path discovery before opening the link.
-File transfer, named discovery UI, durable client identity and typed form
-requests are distinct further gates; the current bytes API does not establish
-that full contract.
+File transfer, named discovery UI and durable client identity remain distinct
+further gates. Turnstone's form actor opens a fresh ephemeral link and sends
+only an explicitly confirmed typed map to the named native target.
 
 ### N4. Micron presentation and interaction (reading implementation; qualification remains)
 
@@ -129,6 +130,32 @@ The canonical completion scope is
 section "Micron completion scope (2026-09-13)". Reading fidelity and horizontal
 table navigation come first, then anchor/fold behavior; typed request evidence
 gates forms, and partials/media/directives each need their own lifecycle proof.
+The first promoted form surface is intentionally separate from the inert page
+rendering: the command palette exposes **Fill Micron form** only for a focused
+native Micron page. It walks actions and fields in the omnibar, masks masked
+text, shows the resolved native target before a literal `send`, and retains no
+submitted values in an address or history entry. The editor binds source member,
+address and exact fetched body before preparing the map; a changed source or a
+late receipt is dropped. The response remains a submission receipt, not an
+implicit navigation.
+
+Six focused form tests pass with the isolated Cargo home, clean `C:/t` cwd,
+absolute manifest, Rust 1.97.1 and `--locked --offline --lib micron_form`.
+They cover action selection (including fixed-variable-only forms), visible
+validation errors, masked display, one confirmed effect, source/address
+staleness, navigation/reload/cancel followed by a late reply, and redacted
+debug output. An explicit-interface loopback test checks the actual typed map,
+a 4096-byte Resource reply, and refusal under a smaller response cap.
+The request deadline includes bounded graceful endpoint shutdown, so the
+Resource acknowledgement reaches the server before the interface closes.
+Response bounds remain after Resource reassembly, before further decoding;
+outgoing request Resources remain unsupported by Retinue.
+The two existing smolweb input tests also pass. The immutable dependency graph
+uses one Mere `91c6238d`, Genet `101d9e9a`, Knot `d100402` and Retinue `2563202`
+source identity each. The Retinue typed map receipt supplies the independent
+stock-client interoperability evidence. These are automated seams,
+not a headed desktop acceptance: that still needs a real node, a visibly edited
+form and an observed response in a Turnstone window.
 The shared reading implementation retains inline color/underline and block
 alignment/indent through Inker and document-canvas, with horizontal viewport
 navigation. Turnstone also descends through these retained wrappers when

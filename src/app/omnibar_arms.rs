@@ -74,18 +74,27 @@ impl App {
         if matches!(self.omnibar.mode, OmnibarMode::PlaceStatus) {
             let query = self.omnibar.text.trim().to_lowercase();
             let limit = row_limit.max(1);
-            self.omnibar.suggestions = self.place.status_lines().into_iter()
+            self.omnibar.suggestions = self
+                .place
+                .status_lines()
+                .into_iter()
                 .filter(|line| line.to_lowercase().contains(&query))
                 .take(if limit > 1 { limit - 1 } else { limit })
                 .map(Suggestion::Prompt)
                 .collect();
             if self.omnibar.suggestions.is_empty() {
-                self.omnibar.suggestions.push(Suggestion::Hint("No matching place status; clear the filter"));
+                self.omnibar.suggestions.push(Suggestion::Hint(
+                    "No matching place status; clear the filter",
+                ));
             }
             if limit > 1 {
-                self.omnibar.suggestions.insert(0, Suggestion::Hint("Place status: type to filter; reopen to refresh"));
+                self.omnibar.suggestions.insert(
+                    0,
+                    Suggestion::Hint("Place status: type to filter; reopen to refresh"),
+                );
             }
-            self.frame_timings.note_suggestions(started.elapsed(), false);
+            self.frame_timings
+                .note_suggestions(started.elapsed(), false);
             return;
         }
         let actions = self.available_actions();
@@ -273,7 +282,10 @@ impl App {
         self.focus = FocusTarget::Chrome;
         self.recompute_omnibar_suggestions();
         if let crate::place::PlaceState::Offline { generation, .. } = self.place {
-            effects.push(Effect::ResyncPlace { session: self.session_id, generation });
+            effects.push(Effect::ResyncPlace {
+                session: self.session_id,
+                generation,
+            });
         }
         self.events.push(AppEvent::OmnibarOpened);
         effects.push(Effect::Redraw);
@@ -322,8 +334,13 @@ impl App {
 
     fn cancel_smolweb_conversation(&mut self) -> Vec<Effect> {
         if matches!(self.omnibar.mode, OmnibarMode::SmolwebSubmissionResult(_)) {
-            self.active_smolweb_submission = None;
-            return Vec::new();
+            let effects = self
+                .active_smolweb_submission
+                .take()
+                .filter(|request| self.micron_submission_sources.remove(request).is_some())
+                .map(|request| vec![Effect::CancelMicronSubmission { request }])
+                .unwrap_or_default();
+            return effects;
         }
         let (node, awaiting, reason) = match self.omnibar.mode.clone() {
             OmnibarMode::SmolwebInput(input) => (
@@ -422,7 +439,7 @@ impl App {
                         },
                     },
                 )
-            }
+            },
             ShellIntent::Navigate { url } => {
                 let effects = self.update(Action::OpenAddress(url.clone()));
                 (
@@ -431,7 +448,7 @@ impl App {
                         summary: format!("opened {url}"),
                     },
                 )
-            }
+            },
             ShellIntent::Command { label, action } => {
                 let effects = self.update(action);
                 (
@@ -440,7 +457,7 @@ impl App {
                         summary: format!("ran {label}"),
                     },
                 )
-            }
+            },
         };
         self.shell.complete(entry, outcome);
         effects.push(Effect::Redraw);

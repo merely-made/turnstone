@@ -103,6 +103,7 @@ impl App {
             next_place_request: 0,
             next_smolweb_submission: 0,
             active_smolweb_submission: None,
+            micron_submission_sources: std::collections::HashMap::new(),
             focus: FocusTarget::Graph(crate::panes::PaneId(0)),
             link_preview: None,
             frisket: FrisketLayout::default(),

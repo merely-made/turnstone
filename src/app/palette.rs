@@ -146,6 +146,15 @@ impl App {
                 Action::ComposeFocusedSmolwebSubmission,
             ));
         }
+        if self
+            .focused_address()
+            .is_some_and(|address| crate::nomadnet::is_micron_address(&address))
+        {
+            rows.push((
+                "Fill Micron form".to_string(),
+                Action::ComposeFocusedMicronForm,
+            ));
+        }
         rows.extend(crate::action::palette_actions());
         rows
     }

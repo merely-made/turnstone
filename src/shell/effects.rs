@@ -1309,6 +1309,24 @@ impl Shell {
                     }
                 }
                 Effect::Redraw => self.request_redraw(),
+                Effect::SubmitMicron {
+                    request,
+                    source,
+                    submission,
+                } => {
+                    self.micron_submission_handle.command(
+                    super::nomadnet_fetch::MicronSubmissionCommand::Submit {
+                        request,
+                        source,
+                        submission,
+                    },
+                    );
+                }
+                Effect::CancelMicronSubmission { request } => {
+                    self
+                    .micron_submission_handle
+                    .command(super::nomadnet_fetch::MicronSubmissionCommand::Cancel { request });
+                }
                 // Window creation needs the ActiveEventLoop; note the request
                 // and let the event handler in scope drain it.
                 Effect::OpenWindow { ordinal } => self.pending_windows.push(ordinal),

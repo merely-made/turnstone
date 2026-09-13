@@ -60,13 +60,13 @@ impl App {
                 match state {
                     Some(crate::content::NodeContent::Live) => {
                         vec![Effect::UpdateContent { node, url }]
-                    }
+                    },
                     Some(crate::content::NodeContent::Requested) => {
                         vec![Effect::SpawnContent { node, url }]
-                    }
+                    },
                     _ => Vec::new(),
                 }
-            }
+            },
             Update::PageFetched {
                 request,
                 node,
@@ -100,10 +100,12 @@ impl App {
                 );
                 if let Ok(fetched) = &result {
                     let observed = self.content.fetched(node, &url);
-                    let effective_url = observed.and_then(|previous| previous.effective_url.clone());
-                    let content_type = fetched.content_type.clone().or_else(|| {
-                        observed.and_then(|previous| previous.content_type.clone())
-                    });
+                    let effective_url =
+                        observed.and_then(|previous| previous.effective_url.clone());
+                    let content_type = fetched
+                        .content_type
+                        .clone()
+                        .or_else(|| observed.and_then(|previous| previous.content_type.clone()));
                     let acquired_at_ms = observed
                         .map(|previous| previous.acquired_at_ms)
                         .filter(|observed_at| *observed_at != 0)
@@ -146,23 +148,35 @@ impl App {
                             if live_content {
                                 effects.push(Effect::CloseContent { node });
                             }
-                        }
+                        },
                         None if live_content => effects.push(Effect::UpdateContent { node, url }),
                         None => effects.push(Effect::SpawnContent { node, url }),
                     }
                 }
                 effects
-            }
+            },
             Update::SmolwebSubmitted {
                 request,
                 source: _,
                 target,
                 result,
             } => {
-                let current = self.active_smolweb_submission == Some(request);
-                if current {
+                let micron_source = self.micron_submission_sources.remove(&request);
+                let source_is_current = micron_source.is_none_or(|(source, url, body)| {
+                    self.graph_runtimes
+                        .graph()
+                        .get_node_by_id(source)
+                        .is_some_and(|(_, node)| node.url() == url)
+                        && self
+                            .content
+                            .fetched(source, &url)
+                            .is_some_and(|document| document.body == body)
+                });
+                let active = self.active_smolweb_submission == Some(request);
+                if active {
                     self.active_smolweb_submission = None;
                 }
+                let current = active && source_is_current;
                 match result {
                     Ok(crate::action::SmolwebSubmissionReceipt::Redirect(destination)) => {
                         self.events.push(AppEvent::SmolwebSubmissionSucceeded {
@@ -176,7 +190,7 @@ impl App {
                         self.shell.close_omnibar();
                         self.focus = crate::surface::FocusTarget::Graph(self.default_graph_pane());
                         self.update(crate::action::Action::OpenAddress(destination))
-                    }
+                    },
                     Ok(crate::action::SmolwebSubmissionReceipt::Success(page)) => {
                         self.events.push(AppEvent::SmolwebSubmissionSucceeded {
                             target: target.clone(),
@@ -204,7 +218,7 @@ impl App {
                         self.focus = crate::surface::FocusTarget::Chrome;
                         self.recompute_omnibar_suggestions();
                         vec![Effect::Redraw]
-                    }
+                    },
                     Err(error) => {
                         self.events.push(AppEvent::SmolwebSubmissionFailed {
                             target: target.clone(),
@@ -226,9 +240,9 @@ impl App {
                         self.focus = crate::surface::FocusTarget::Chrome;
                         self.recompute_omnibar_suggestions();
                         vec![Effect::Redraw]
-                    }
+                    },
                 }
-            }
+            },
             Update::SmolwebInputRequested {
                 request,
                 node,
@@ -287,7 +301,7 @@ impl App {
                 }
                 effects.push(Effect::Redraw);
                 effects
-            }
+            },
             Update::GeminiIdentityRequested {
                 request,
                 node,
@@ -346,7 +360,7 @@ impl App {
                 }
                 effects.push(Effect::Redraw);
                 effects
-            }
+            },
             Update::GeminiCertificateChanged {
                 request,
                 node,
@@ -408,7 +422,7 @@ impl App {
                 }
                 effects.push(Effect::Redraw);
                 effects
-            }
+            },
             Update::PageStopped { request, node, url } => {
                 if !self.content.stop_fetch(node, request) {
                     return Vec::new();
@@ -418,7 +432,7 @@ impl App {
                     state: format!("stopped: {url}"),
                 });
                 vec![Effect::Redraw]
-            }
+            },
             Update::FaviconFetched {
                 node,
                 owner_url,
@@ -448,7 +462,7 @@ impl App {
                     state: "live".to_string(),
                 });
                 vec![Effect::Redraw]
-            }
+            },
             Update::DocumentFindChanged {
                 node,
                 request,
@@ -478,7 +492,7 @@ impl App {
                 result,
             } => {
                 self.apply_permission_request_finished(request, answer, retention, terminal, result)
-            }
+            },
             Update::AuthenticationRequestFinished {
                 request,
                 supplied_credentials,
@@ -505,13 +519,13 @@ impl App {
                 });
                 self.content.note_failed(node, error);
                 vec![Effect::Redraw]
-            }
+            },
             Update::BinListed { records } => {
                 // The bin mirror replaces wholesale — the actor's answer IS
                 // the store's truth (never merged with a hand-kept copy).
                 self.removed = records;
                 vec![Effect::Redraw]
-            }
+            },
             Update::BinFailed { error } => {
                 // Loud and attributable: the Removed section going quiet
                 // because the store broke must be visible divergence, not an
@@ -519,7 +533,7 @@ impl App {
                 tracing::warn!(%error, "recycle bin failed");
                 self.events.push(AppEvent::BinFailed(error));
                 vec![Effect::Redraw]
-            }
+            },
             Update::RecallHits { query, hits } => {
                 // Superseded answers drop: the omnibar has moved on, and the
                 // lane must never show hits for text that is no longer there.
@@ -529,12 +543,12 @@ impl App {
                 self.recall = hits;
                 self.recompute_omnibar_suggestions();
                 vec![Effect::Redraw]
-            }
+            },
             Update::RecallFailed { error } => {
                 tracing::warn!(%error, "browsing recall failed");
                 self.events.push(AppEvent::RecallFailed(error));
                 vec![Effect::Redraw]
-            }
+            },
             Update::SourceDocumentCaptured { node, url, result } => match result {
                 Ok(stored) => {
                     let current = self
@@ -573,11 +587,12 @@ impl App {
                         annotation_manifest: stored.annotation_manifest,
                     });
                     vec![Effect::SaveSession, Effect::Redraw]
-                }
+                },
                 Err(error) => {
-                    self.events.push(AppEvent::SourceDocumentCaptureFailed { node, url, error });
+                    self.events
+                        .push(AppEvent::SourceDocumentCaptureFailed { node, url, error });
                     vec![Effect::Redraw]
-                }
+                },
             },
             Update::PlaceLanesAdvanced {
                 session,
@@ -590,7 +605,7 @@ impl App {
                     session,
                     generation,
                 }]
-            }
+            },
             Update::PlaceCommandDone {
                 session,
                 generation,
@@ -613,17 +628,17 @@ impl App {
                                 snapshot,
                             };
                         }
-                    }
+                    },
                     // A refusal changes no state. The place is still open and
                     // still whatever it was; the command simply did not happen.
                     Err(error) => {
                         tracing::warn!(%error, "place command refused");
                         self.events.push(AppEvent::PlaceRefused(error));
-                    }
+                    },
                 }
                 self.reflow_omnibar();
                 vec![Effect::Redraw]
-            }
+            },
             Update::PlaceCollectionSet {
                 session,
                 generation,
@@ -642,15 +657,15 @@ impl App {
                                 snapshot,
                             };
                         }
-                    }
+                    },
                     Err(error) => {
                         tracing::warn!(%error, "place collection selection refused");
                         self.events.push(AppEvent::PlaceRefused(error));
-                    }
+                    },
                 }
                 self.reflow_omnibar();
                 vec![Effect::Redraw]
-            }
+            },
             Update::PlaceJoined {
                 session,
                 generation,
@@ -667,18 +682,18 @@ impl App {
                             generation,
                             snapshot,
                         }
-                    }
+                    },
                     // A refused invitation is not a degraded place, it is no
                     // place. Landing in `Degraded` would leave app state
                     // holding a binding admission never granted.
                     Err(error) => {
                         tracing::warn!(%error, "invitation refused");
                         crate::place::PlaceState::Failed { error }
-                    }
+                    },
                 };
                 self.reflow_omnibar();
                 vec![Effect::Redraw]
-            }
+            },
             Update::PlaceOpened {
                 session,
                 generation,
@@ -698,7 +713,7 @@ impl App {
                             generation,
                             snapshot,
                         }
-                    }
+                    },
                     Err(error) => {
                         tracing::warn!(%error, "place cache failed to open");
                         crate::place::PlaceState::Degraded {
@@ -706,11 +721,11 @@ impl App {
                             generation,
                             error,
                         }
-                    }
+                    },
                 };
                 self.reflow_omnibar();
                 vec![Effect::Redraw]
-            }
+            },
         }
     }
 
@@ -860,7 +875,7 @@ impl App {
                         content_hash: hash,
                     });
                 }
-            }
+            },
             Err(error) => {
                 tracing::warn!(%node, %url, %error, "download storage failed");
                 if let Err(facet_error) = crate::content_classes::set_download_record(
@@ -881,7 +896,7 @@ impl App {
                     tracing::warn!(%node, %facet_error, "download failure metadata could not be recorded");
                 }
                 self.events.push(AppEvent::DownloadFailed { node, error });
-            }
+            },
         }
         vec![Effect::SaveSession, Effect::Redraw]
     }

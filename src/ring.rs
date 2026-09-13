@@ -219,6 +219,7 @@ pub fn ring_of(action: &Action) -> Ring {
         // A smolweb mutation always requires a local, literal confirmation.
         // Neither the composer nor its file/body handoff is grantable.
         | ComposeFocusedSmolwebSubmission
+        | ComposeFocusedMicronForm
         | BeginSmolwebSubmission { .. }
         | SmolwebSubmissionFile { .. }
         // Standing network schedules consume host resources and therefore

@@ -260,6 +260,8 @@ pub struct Shell {
     fetch_rx: Receiver<FetchUpdate>,
     nomadnet_handle: armillary::ActorHandle<FetchCommand>,
     nomadnet_rx: Receiver<FetchUpdate>,
+    micron_submission_handle: armillary::ActorHandle<nomadnet_fetch::MicronSubmissionCommand>,
+    micron_submission_rx: Receiver<Update>,
     /// Serialized download custody writes, kept off the event-loop thread.
     download_handle: armillary::ActorHandle<crate::download::DownloadCommand>,
     /// Completed custody writes, drained beside fetch answers.
@@ -511,6 +513,8 @@ impl Shell {
             let _ = fetch_proxy.send_event(());
         });
         let (nomadnet_handle, nomadnet_rx) = nomadnet_fetch::spawn(Arc::clone(&fetch_wake));
+        let (micron_submission_handle, micron_submission_rx) =
+            nomadnet_fetch::spawn_submissions(Arc::clone(&fetch_wake));
         let (fetch_handle, fetch_rx) = fetch::spawn_fetcher(fetch_wake);
 
         let download_proxy = proxy.clone();
@@ -622,6 +626,8 @@ impl Shell {
             fetch_rx,
             nomadnet_handle,
             nomadnet_rx,
+            micron_submission_handle,
+            micron_submission_rx,
             download_handle,
             download_rx,
             bin_handle,
