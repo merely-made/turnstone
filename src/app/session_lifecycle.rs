@@ -403,6 +403,57 @@ impl App {
         }]
     }
 
+    /// Request local departure. The shell releases the worker and removes the
+    /// binding before completing the transition to a personal session.
+    pub fn leave_place(&mut self) -> Vec<Effect> {
+        let Some(generation) = self.place.generation() else {
+            self.events.push(AppEvent::PlaceRefused(
+                "this session is not in a place".into(),
+            ));
+            return vec![Effect::Redraw];
+        };
+        vec![Effect::LeavePlace {
+            session: self.session_id,
+            generation,
+        }]
+    }
+
+    pub(crate) fn finish_leave_place(
+        &mut self,
+        session: SessionId,
+        generation: u64,
+        result: Result<bool, String>,
+    ) -> Vec<Effect> {
+        if self.session_id != session || self.place.generation() != Some(generation) {
+            return Vec::new();
+        }
+        match result {
+            Ok(_) => {
+                self.place = crate::place::PlaceState::Personal;
+                vec![Effect::Redraw]
+            }
+            Err(error) => {
+                let binding = self.place.binding().cloned();
+                self.next_place_generation = self.next_place_generation.wrapping_add(1);
+                let failed_generation = self.next_place_generation;
+                if let Some(binding) = binding {
+                    self.place = crate::place::PlaceState::Degraded {
+                        binding,
+                        generation: failed_generation,
+                        error: error.clone(),
+                    };
+                } else {
+                    self.place = crate::place::PlaceState::Failed {
+                        error: error.clone(),
+                    };
+                }
+                self.events
+                    .push(AppEvent::PlaceRefused(format!("leaving place: {error}")));
+                vec![Effect::Redraw]
+            }
+        }
+    }
+
     /// Bring the shared graph's addresses into this session's Canvas.
     ///
     /// Additive by construction. The place decides what the PLACE holds, never

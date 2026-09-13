@@ -437,6 +437,69 @@ fn place_collection_selection_lowers_the_exact_version_and_clear() {
 }
 
 #[test]
+fn leave_place_is_correlated_and_failure_keeps_a_retryable_degraded_binding() {
+    let mut app = App::test_stub();
+    let binding = crate::place::PlaceBindingV1::new(
+        crate::place::PlaceId([0x81; 32]),
+        crate::place::SharedContainerId([0x82; 32]),
+        crate::place::ChatSpaceId([0x83; 32]),
+        "hall",
+    )
+    .unwrap();
+    app.place = crate::place::PlaceState::Offline {
+        binding,
+        generation: 12,
+        snapshot: crate::place::OfflinePlaceSnapshot::default(),
+    };
+    assert_eq!(
+        app.update(Action::LeavePlace),
+        vec![Effect::LeavePlace {
+            session: app.session_id,
+            generation: 12,
+        }]
+    );
+    assert!(matches!(app.place, crate::place::PlaceState::Offline { .. }));
+
+    assert!(app.finish_leave_place(app.session_id, 11, Ok(true)).is_empty());
+    assert!(matches!(app.place, crate::place::PlaceState::Offline { .. }));
+
+    assert_eq!(
+        app.finish_leave_place(app.session_id, 12, Err("release timeout".into())),
+        vec![Effect::Redraw]
+    );
+    let retry_generation = match &app.place {
+        crate::place::PlaceState::Degraded { generation, .. } => *generation,
+        other => panic!("failed leave must remain retryable and visible: {other:?}"),
+    };
+    assert_ne!(retry_generation, 12);
+    assert!(app.finish_leave_place(app.session_id, 12, Ok(true)).is_empty());
+    assert_eq!(app.place.generation(), Some(retry_generation));
+
+    assert_eq!(
+        app.finish_leave_place(app.session_id, retry_generation, Ok(true)),
+        vec![Effect::Redraw]
+    );
+    assert_eq!(app.place, crate::place::PlaceState::Personal);
+}
+
+#[test]
+fn failed_leave_from_joining_cannot_adopt_a_late_join_answer() {
+    let mut app = App::test_stub();
+    app.place = crate::place::PlaceState::Joining { generation: 4 };
+    let effects = app.update(Action::LeavePlace);
+    assert_eq!(
+        effects,
+        vec![Effect::LeavePlace {
+            session: app.session_id,
+            generation: 4,
+        }]
+    );
+    app.finish_leave_place(app.session_id, 4, Err("release timeout".into()));
+    assert!(matches!(app.place, crate::place::PlaceState::Failed { .. }));
+    assert!(app.finish_leave_place(app.session_id, 4, Ok(true)).is_empty());
+}
+
+#[test]
 fn place_collection_completion_is_correlated_and_failure_keeps_the_snapshot() {
     let mut app = App::test_stub();
     let binding = crate::place::PlaceBindingV1::new(

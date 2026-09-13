@@ -265,6 +265,16 @@ pub fn update_place_binding(
     Ok(true)
 }
 
+/// Remove the local place binding after the worker has released its handles.
+/// Retained place stores and shared membership records are left untouched.
+pub fn remove_place_binding(session_dir: &Path) -> Result<bool, PlaceSidecarError> {
+    match std::fs::remove_file(place_binding_path(session_dir)) {
+        Ok(()) => Ok(true),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(false),
+        Err(error) => Err(error.into()),
+    }
+}
+
 /// Load and validate this session's public shared-place binding. Absence means
 /// a personal session; malformed or unsupported content is an explicit error.
 pub fn load_place_binding(session_dir: &Path) -> Result<Option<PlaceBindingV1>, PlaceSidecarError> {
@@ -1043,6 +1053,32 @@ mod tests {
         renamed.default_channel = "hall".into();
         assert_eq!(update_place_binding(&root, &renamed).unwrap(), true);
         assert_eq!(load_place_binding(&root).unwrap(), Some(renamed));
+    }
+
+    #[test]
+    fn removing_place_binding_preserves_retained_session_files() {
+        let root = temp_root("place-binding-remove");
+        let binding = PlaceBindingV1::new(
+            crate::place::PlaceId([0x91; 32]),
+            crate::place::SharedContainerId([0x92; 32]),
+            crate::place::ChatSpaceId([0x93; 32]),
+            "hall",
+        )
+        .unwrap();
+        save_place_binding(&root, &binding).unwrap();
+        std::fs::write(root.join("place-history.redb"), b"retained").unwrap();
+
+        assert_eq!(remove_place_binding(&root).unwrap(), true);
+        assert_eq!(load_place_binding(&root).unwrap(), None);
+        assert!(root.join("place-history.redb").exists());
+        assert_eq!(remove_place_binding(&root).unwrap(), false);
+
+        // A malformed path must report failure and preserve what it found.
+        let binding_path = place_binding_path(&root);
+        std::fs::create_dir(&binding_path).unwrap();
+        std::fs::write(binding_path.join("keep"), b"unexpected retained data").unwrap();
+        assert!(remove_place_binding(&root).is_err());
+        assert!(binding_path.join("keep").exists());
     }
 
     #[test]

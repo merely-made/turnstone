@@ -259,7 +259,10 @@ pub fn ring_of(action: &Action) -> Ring {
         // should be able to: this mirrors the calls plan's rule that accepting
         // always requires a local gesture. Every admission check still runs
         // afterwards; this only decides who may ask.
-        | JoinPlace(_) => Ring::HostOnly,
+        | JoinPlace(_)
+        // Leaving is still a host-owned session transition. A denizen may not
+        // detach the user's place binding or tear down their live lanes.
+        | LeavePlace => Ring::HostOnly,
     }
 }
 
@@ -279,6 +282,7 @@ pub fn emit_allowed(
         // would behave the same. Split the ring only if the policies diverge.
         let what = match action {
             Action::JoinPlace(_) => "joining a place",
+            Action::LeavePlace => "leaving a place",
             Action::SubscribeFocusedFeed { .. }
             | Action::UnsubscribeFocusedFeed
             | Action::RefreshFeeds
@@ -419,6 +423,7 @@ pub fn decode_envelope(name: &str, payload: &str) -> Result<Action, EnvelopeErro
             Action::SwitchSession(crate::panes::SessionId::from_uuid(id(payload, "id")?))
         }
         "close-session" => Action::CloseSession,
+        "leave-place" => Action::LeavePlace,
         "delete-focused-node" => Action::DeleteFocusedNode,
         "recover-deleted-node" => Action::RecoverDeletedNode(member(payload)?),
         "empty-recycle-bin" => Action::EmptyRecycleBin,
@@ -503,6 +508,7 @@ mod tests {
         // review must be impossible under ANY authority.
         let authority = full_app_authority();
         for action in [
+            Action::LeavePlace,
             Action::ConfirmInstallDenizen,
             Action::CancelInstallDenizen,
             Action::InstallDenizen {

@@ -551,6 +551,27 @@ impl Shell {
                             invite,
                         });
                 }
+                Effect::LeavePlace {
+                    session,
+                    generation,
+                } => {
+                    if self.app.session_id != session
+                        || self.app.place.generation() != Some(generation)
+                    {
+                        continue;
+                    }
+                    let released = self.release_place_worker_result();
+                    let result = released.and_then(|()| {
+                        session::remove_place_binding(&session::session_dir(
+                            &self.app.data_root,
+                            session,
+                        ))
+                        .map(|_| true)
+                        .map_err(|error| error.to_string())
+                    });
+                    let follow_up = self.app.finish_leave_place(session, generation, result);
+                    self.run_effects(follow_up);
+                }
                 Effect::RunPlaceCommand {
                     session,
                     generation,
@@ -1287,6 +1308,12 @@ impl Shell {
     /// Release retained place handles before a session directory is switched,
     /// moved, or left at shutdown.
     pub(super) fn release_place_worker(&mut self) {
+        if let Err(error) = self.release_place_worker_result() {
+            tracing::warn!(%error, "place worker release ack timed out");
+        }
+    }
+
+    fn release_place_worker_result(&mut self) -> Result<(), String> {
         let (ack_tx, ack_rx) = std::sync::mpsc::sync_channel(1);
         self.place_handle
             .command(crate::place::worker::PlaceWorkerCommand::Release(ack_tx));
@@ -1294,8 +1321,9 @@ impl Shell {
             .recv_timeout(std::time::Duration::from_millis(1500))
             .is_err()
         {
-            tracing::warn!("place worker release ack timed out");
+            return Err("place worker release acknowledgement timed out".into());
         }
+        Ok(())
     }
 
     /// Persist the live session's whole sidecar set under ITS directory

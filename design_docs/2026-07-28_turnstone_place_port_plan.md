@@ -743,6 +743,25 @@ relay the place agrees on, or an explicit reconnect gesture. Discovery is the
 lane already excluded from the first proof for the macOS reason, so this
 wants deciding rather than defaulting.
 
+**Local departure receipt (2026-09-13):** Turnstone now exposes an explicit
+`LeavePlace` command through the host command palette. The shell releases the
+place worker before removing the session's `place.json`; successful completion
+returns the session to `Personal`, while release or I/O failure remains visible
+as `Degraded` (or `Failed` while joining) and advances generation correlation.
+The retained graph/history stores, private overlay, and shared membership
+records remain untouched. Focused app and session tests cover success,
+retained-file preservation, failure/retry, and stale completion rejection.
+This is local detachment only and does not implement reconnect or membership
+revocation.
+
+Validation uses the local ignored `Cargo.lock` and `.cargo/config.toml` path
+patches, with `cargo test --lib <test-name> --offline --target-dir
+C:/t/turnstone-leave-target -j 1`. This is a local workspace receipt; the current
+resolution does not pass `--locked`. It does not claim a release build or a
+headed leave/reconnect run. Worker acknowledgement timeout prevents binding
+removal by the shell's ordered result handling; the focused app tests inject
+the failure outcome rather than exercising a physical worker timeout.
+
 ### T4. Knot through the existing content lane
 
 - ~~Publish a Knot document address/container through Commons~~ done

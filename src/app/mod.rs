@@ -1140,6 +1140,7 @@ impl App {
             Action::ToggleSizeByRecency => self.toggle_size_by_recency(),
             Action::SaveSession => vec![Effect::SaveSession],
             Action::JoinPlace(invite) => self.join_place(invite),
+            Action::LeavePlace => self.leave_place(),
             Action::SendPlaceMessage { channel, body } => {
                 self.run_place_command(crate::place::worker::PlaceCommand::SendMessage {
                     channel,

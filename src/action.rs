@@ -260,6 +260,9 @@ pub enum Action {
     /// until every admission check has answered, so this is a request to try,
     /// not a statement that the session now belongs to a place.
     JoinPlace(Box<crate::place::invite::PlaceInviteV1>),
+    /// Leave the active place locally, detaching its binding while preserving
+    /// retained stores and shared membership records.
+    LeavePlace,
     /// Send one message to a channel of the active place.
     SendPlaceMessage { channel: String, body: String },
     /// Share the focused node's address into the place's shared graph.
@@ -572,6 +575,7 @@ pub fn palette_actions() -> Vec<(String, Action)> {
         ("New session", Action::NewSession),
         ("Rename session", Action::BeginRenameSession),
         ("Close session", Action::CloseSession),
+        ("Leave place", Action::LeavePlace),
     ]);
 
     let mut rows: Vec<(String, Action)> = actions
@@ -749,6 +753,11 @@ pub enum Effect {
         session: crate::panes::SessionId,
         generation: u64,
         invite: Box<crate::place::invite::PlaceInviteV1>,
+    },
+    /// Release the place worker, then remove this session's local binding.
+    LeavePlace {
+        session: crate::panes::SessionId,
+        generation: u64,
     },
     /// Author one fact into the active place and publish it to live peers.
     RunPlaceCommand {
