@@ -122,13 +122,27 @@ File transfer, named discovery UI, durable client identity and typed form
 requests are distinct further gates; the current bytes API does not establish
 that full contract.
 
-### N4. Micron presentation and interaction (next shared scope)
+### N4. Micron presentation and interaction (reading implementation; qualification remains)
 
 The canonical completion scope is
 `mere/design_docs/nematic_docs/implementation_strategy/2026-07-01_smolweb_fidelity_plan.md`,
 section "Micron completion scope (2026-09-13)". Reading fidelity and horizontal
 table navigation come first, then anchor/fold behavior; typed request evidence
 gates forms, and partials/media/directives each need their own lifecycle proof.
+The shared reading implementation retains inline color/underline and block
+alignment/indent through Inker and document-canvas, with horizontal viewport
+navigation. Turnstone also descends through these retained wrappers when
+refusing unresolved aliases, so presentation cannot hide an unresolved target.
+Forms and further interactive behavior remain separate.
+
+The 2026-09-13 consumer check uses Mere `dce5cc97`, Knot `cf3afe8`, Genet
+`101d9e9` and Netrender `3961aca`, with one immutable Cargo source identity
+each. With Rust 1.97.1, `--locked --offline` and an absolute manifest outside
+the development override tree, all five NomadNet tests and both smolweb input
+tests pass. This includes nested presentation-wrapper alias refusal, preserved
+link labels, native destination/path identity and retained scene production.
+It is a focused automated receipt, not a full-library or headed acceptance run.
+
 Turnstone's done-condition is a headed native session using that shared behavior,
 with selection/focus, correct link hits after viewport changes, retained address
 authority and stale-result refusal. Knot supplies the second consumer receipt.

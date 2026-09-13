@@ -131,6 +131,7 @@ fn refuse_unresolved_aliases(document: &mut EngineDocument) {
 
 fn refuse_block_aliases(block: &mut Block) -> bool {
     match block {
+        Block::Presented { block, .. } => refuse_block_aliases(block),
         Block::Heading { spans, .. } | Block::Paragraph { spans } => refuse_spans(spans),
         Block::Quote { blocks } => {
             let mut refused = false;
@@ -175,7 +176,8 @@ fn refuse_spans(spans: &mut Vec<InlineSpan>) -> bool {
                 refused |= refuse_spans(&mut label);
                 retained.extend(label);
             },
-            InlineSpan::Emphasis(inner)
+            InlineSpan::Presented { spans: inner, .. }
+            | InlineSpan::Emphasis(inner)
             | InlineSpan::Strong(inner)
             | InlineSpan::Submit { spans: inner, .. } => {
                 refused |= refuse_spans(inner);
@@ -354,6 +356,15 @@ mod tests {
             trust: Default::default(),
             diagnostics: Vec::new(),
             blocks: vec![
+                Block::Presented {
+                    presentation: Default::default(),
+                    block: Box::new(Block::Paragraph {
+                        spans: vec![InlineSpan::Presented {
+                            presentation: Default::default(),
+                            spans: vec![alias("styled", ":/page/styled.mu")],
+                        }],
+                    }),
+                },
                 Block::Table {
                     alignments: Vec::new(),
                     header: vec![
@@ -381,6 +392,10 @@ mod tests {
 
         refuse_unresolved_aliases(&mut document);
         assert!(document.outgoing_links().is_empty());
+        assert!(
+            document.to_text().contains("styled"),
+            "refusing an unresolved target must preserve its styled label"
+        );
         assert!(
             document
                 .walk_inline_spans()
