@@ -52,6 +52,30 @@ wait-status 3000 Retained history: 0 shared nodes, 2 messages
 act Place status
 settle 10
 capture founder_status
-record-place founder
+record-place founder_phase1
+
+# Step 6 (T5a scope): stop one process, author while it is absent, restart,
+# converge. The driver kills the joiner and signals it here; the founder
+# keeps running the whole time (one long founder scenario spans both phases).
+wait-file 6000 ${EXCHANGE}\joiner.stopped
+
+act Send place message
+settle 5
+type while you were away
+key enter
+settle 10
+wait-status 3000 Retained history: 0 shared nodes, 3 messages
+
+record-place founder_absent_authored
+
+# The returning joiner reconnects offline, converges the absent-authored
+# message, then sends one more; wait for its marker before the final record.
+wait-file 6000 ${EXCHANGE}\joiner.returned
+wait-status 3000 Retained history: 0 shared nodes, 4 messages
+
+act Place status
+settle 10
+capture founder_final
+record-place founder_final
 
 log founder path complete

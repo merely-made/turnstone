@@ -38,6 +38,6 @@ wait-status 600 Retained history: 0 shared nodes, 2 messages
 act Place status
 settle 10
 capture joiner_status
-record-place joiner
+record-place joiner_phase1
 
 log joiner path complete

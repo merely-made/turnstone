@@ -86,6 +86,10 @@
 //!                            # through an exchange directory)
 //! record-place <name>        # write crate::observe::place_record(..), pretty
 //!                            # printed, to <name>.json in the capture dir
+//! touch <path>               # write a one-line marker file at <path> (any
+//!                            # absolute path, not just the capture dir) —
+//!                            # a cross-process signal a scenario can wait on
+//!                            # with wait-file from another process
 //! assert active-ratio ==|>=|<= <f> # the ACTIVE pane's parent-split ratio (any space)
 //! assert sessions ==|>=|<= <n>  # the manifest set holds n sessions
 //! assert session <substr>   # the live session's label contains substr
@@ -280,6 +284,9 @@ pub enum Step {
     /// Write the place observation facts (`crate::observe::place_record`),
     /// pretty-printed, to `<name>.json` in the capture directory.
     RecordPlace(String),
+    /// Write a one-line marker file at an arbitrary path — the cross-process
+    /// signal a scenario in another process waits on with `wait-file`.
+    TouchFile(String),
     Log(String),
 }
 
@@ -754,6 +761,7 @@ pub fn parse(body: &str) -> Result<Vec<Step>, String> {
                 }
             }
             "record-place" if !rest.is_empty() => Step::RecordPlace(rest.to_string()),
+            "touch" if !rest.is_empty() => Step::TouchFile(rest.to_string()),
             "log" => Step::Log(rest.to_string()),
             _ => return err("unknown verb"),
         });
@@ -847,6 +855,15 @@ drop-file 350 280 receipt.txt",
     fn record_place_is_a_typed_step() {
         let steps = parse("record-place founder").unwrap();
         assert!(matches!(steps.as_slice(), [Step::RecordPlace(name)] if name == "founder"));
+    }
+
+    #[test]
+    fn touch_is_a_typed_step() {
+        let steps = parse("touch C:\\t\\exchange\\joiner.stopped").unwrap();
+        assert!(matches!(
+            steps.as_slice(),
+            [Step::TouchFile(path)] if path == "C:\\t\\exchange\\joiner.stopped"
+        ));
     }
 
     #[test]

@@ -1170,6 +1170,12 @@ impl Shell {
                     format!("record-place '{name}': could not write {}: {error}", path.display())
                 })?;
             }
+            Step::TouchFile(path) => {
+                let p = std::path::Path::new(path.as_str());
+                std::fs::write(p, "touched\n").map_err(|error| {
+                    format!("touch '{path}': could not write: {error}")
+                })?;
+            }
         }
         self.request_redraw();
         Ok(())

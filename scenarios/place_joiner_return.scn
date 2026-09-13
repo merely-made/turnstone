@@ -1,0 +1,44 @@
+# T5a step 6: the joiner half of "stop, author while absent, restart,
+# converge" (design_docs/2026-07-28_turnstone_place_port_plan.md, "T5a",
+# Scope). Runs as a SECOND process against the SAME appdata/root/profile the
+# phase-1 joiner used (scenarios/place_joiner.scn), so the place binding,
+# rendezvous and stores the worker persisted are retained offline at startup.
+# Paired with the founder's phase-2 continuation in scenarios/place_founder.scn
+# through the shared ${EXCHANGE} directory and ${FOUNDER_DIR} (the founder's
+# capture dir, passed by scenarios/place_two_windows.ps1).
+settle 30
+key escape
+
+# Retained history is visible immediately at startup, before any reconnect:
+# the worker persisted place.json/place-rendezvous.json/place/ under
+# TURNSTONE_ROOT and current_session points at it, so this is an offline
+# reopen, not a fresh join.
+wait-status 600 Retained history: 0 shared nodes, 2 messages
+
+# A "Reconnect place" issued right after a live open in the SAME process is
+# refused (store still locked); this IS the real restart that makes it valid.
+act Reconnect place
+settle 5
+wait-status 600 Local rendezvous
+
+# Wait for the founder's absent-authored message (written while this joiner
+# was stopped) before expecting it to have converged.
+wait-file 6000 ${FOUNDER_DIR}\founder_absent_authored.json
+wait-status 3000 Retained history: 0 shared nodes, 3 messages
+
+act Send place message
+settle 5
+type back again
+key enter
+settle 10
+wait-status 600 Retained history: 0 shared nodes, 4 messages
+
+# Signal the founder that the return leg is complete.
+touch ${EXCHANGE}\joiner.returned
+
+act Place status
+settle 10
+capture joiner_return
+record-place joiner_return
+
+log joiner return path complete

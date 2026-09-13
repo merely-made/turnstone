@@ -1011,6 +1011,29 @@ pre-key files never carry a welcome, a group key or governance evidence; a
 founder with no peers reports listen-only, never "connected".
 
 
+**T5a receipt, 2026-09-13.** Implemented in commit `8f421fa` and the step-6
+driver that follows it. Run 6 under `C:/t/turnstone-place-two-windows-20260913-6`
+ran `scenarios/place_two_windows.ps1` against the offline debug build: a
+founder and a joiner under isolated vaults and data roots, then the joiner
+killed, the founder authoring while it was absent, and the joiner relaunched
+on the same root with `Reconnect place`. All three `scenario.done` files read
+`RESULT ok`. The `record-place` files show two Personae roots, one Moot, root
+and chat id, two members, four messages on both sides after the return, and
+identical graph and chat digests at the end; the founder's absent-authored
+record shows three messages with a different digest before the return, so the
+convergence is a change and not a constant. Captures: `founder_status.png`,
+`founder_final.png`, `joiner_status.png`, `joiner_return.png`.
+
+This proves reframe steps 1, 2, 3 and 6 on a local network with both
+processes on one machine. The shared root graph converged empty; no HTTPS
+address, Knot revision, or refused unauthorized write was exercised (steps 4,
+5, 7 remain open). Sync-lane facts stay observations; "Delivery" and "peer
+reachability" lines say so on both frames. Two notes for later: the rendezvous
+ticket overflows the status view's width, and a scenario run does not save the
+session, so the restarted joiner's canvas is empty while its place is intact.
+The run used local workspace dependency resolution, not a locked release build.
+
+
 ## File seams
 
 | File | Change |
