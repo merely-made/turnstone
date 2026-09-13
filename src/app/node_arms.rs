@@ -682,16 +682,26 @@ impl App {
                 };
             }
             Some(Suggestion::Act { label, action }) => {
-                // The actions lane: the committed registry entry is
-                // an ordinary Action; lower it through the same
-                // spine everything else uses.
+                // An action row normally records a command. A row that opens
+                // an address, including captured-page sources, remains
+                // navigation in the transcript so replay keeps its meaning.
                 let target = self.fallback_shell_context();
+                let (intent, summary) = match &action {
+                    Action::OpenAddress(url) => (
+                        ShellIntent::Navigate { url: url.clone() },
+                        format!("opened {url}"),
+                    ),
+                    _ => (
+                        ShellIntent::Command {
+                            label: label.clone(),
+                            action: action.clone(),
+                        },
+                        format!("ran {label}"),
+                    ),
+                };
                 let entry = self.shell.record_omnibar(
                     ShellInput::Omnibar(self.omnibar.text.clone()),
-                    ShellIntent::Command {
-                        label: label.clone(),
-                        action: action.clone(),
-                    },
+                    intent,
                     target,
                     EntryPrivacy::Ordinary,
                 );
@@ -701,7 +711,7 @@ impl App {
                     self.shell.complete(
                         entry,
                         ShellOutcome::Completed {
-                            summary: format!("ran {label}"),
+                            summary,
                         },
                     );
                     fx.push(Effect::Redraw);

@@ -21,6 +21,36 @@ use super::App;
 /// trail, which is noise rather than recall.
 const MIN_RECALL_CHARS: usize = 2;
 
+fn captured_page_scope(snapshot: &crate::place::OfflinePlaceSnapshot) -> (String, bool) {
+    match &snapshot.captured_selection {
+        crate::place::CapturedCollectionSelection::AllEffective => {
+            ("Captured pages: all shared captures".to_string(), true)
+        },
+        crate::place::CapturedCollectionSelection::Collection {
+            status: crate::place::CapturedCollectionSelectionStatus::Ready { name, .. },
+            ..
+        } => (format!("Captured pages: {name}"), true),
+        crate::place::CapturedCollectionSelection::Collection {
+            status: crate::place::CapturedCollectionSelectionStatus::Stale { .. },
+            ..
+        } => (
+            "Captured collection is stale; use its latest version".to_string(),
+            false,
+        ),
+        crate::place::CapturedCollectionSelection::Collection {
+            status: crate::place::CapturedCollectionSelectionStatus::Unavailable,
+            ..
+        } => ("Captured collection is unavailable".to_string(), false),
+        crate::place::CapturedCollectionSelection::Collection {
+            status: crate::place::CapturedCollectionSelectionStatus::ForeignMoot,
+            ..
+        } => (
+            "Captured collection is unavailable for this place".to_string(),
+            false,
+        ),
+    }
+}
+
 impl App {
     pub(super) fn recompute_omnibar_suggestions(&mut self) {
         // Stage 1 of the palette open-lag instrument. This runs on the input
@@ -28,7 +58,6 @@ impl App {
         // accumulator carries the cost forward to that frame.
         let started = std::time::Instant::now();
         let mut refit = false;
-        let actions = self.available_actions();
         let chrome = self.shell_chrome_config().clone();
         let row_limit = crate::ui::visible_row_limit(
             chrome.omnibar.row_limit,
@@ -36,6 +65,13 @@ impl App {
             self.viewport.1,
             chrome.appearance.ui_zoom,
         );
+        if matches!(self.omnibar.mode, OmnibarMode::CapturedPages) {
+            self.recompute_captured_page_suggestions(row_limit);
+            self.frame_timings
+                .note_suggestions(started.elapsed(), false);
+            return;
+        }
+        let actions = self.available_actions();
         recompute_suggestions_with_limit(
             &mut self.omnibar,
             &self.graph_runtimes,
@@ -77,6 +113,65 @@ impl App {
         }
         self.frame_timings
             .note_suggestions(started.elapsed(), refit);
+    }
+
+    fn recompute_captured_page_suggestions(&mut self, row_limit: usize) {
+        self.omnibar.suggestions.clear();
+        let row_limit = row_limit.max(1);
+        let query = self.omnibar.text.trim();
+        let (scope, searchable, hits) = match &self.place {
+            crate::place::PlaceState::Offline { snapshot, .. } => {
+                let (scope, searchable) = captured_page_scope(snapshot);
+                let hits = (searchable && !query.is_empty())
+                    .then(|| {
+                        snapshot
+                            .captured
+                            .search(query, row_limit.saturating_sub(1).max(1))
+                    })
+                    .unwrap_or_default();
+                (scope, searchable, hits)
+            },
+            _ => (
+                "Captured pages are unavailable".to_string(),
+                false,
+                Vec::new(),
+            ),
+        };
+        // A one-row setting must still offer a result. With more room, keep
+        // the selected scope visible above the results.
+        let show_scope = row_limit > 1 || query.is_empty() || !searchable;
+        if show_scope {
+            self.omnibar.suggestions.push(Suggestion::Prompt(scope));
+        }
+        let no_hits = hits.is_empty();
+        if query.is_empty() {
+            self.omnibar
+                .suggestions
+                .push(Suggestion::Hint("type to search captured pages"));
+        } else if searchable {
+            self.omnibar
+                .suggestions
+                .extend(hits.into_iter().map(|hit| Suggestion::Act {
+                    label: format!("Open source: {}", hit.title),
+                    action: Action::OpenAddress(hit.source),
+                }));
+            if no_hits {
+                self.omnibar
+                    .suggestions
+                    .push(Suggestion::Hint("no captured pages match"));
+            }
+        } else {
+            self.omnibar
+                .suggestions
+                .push(Suggestion::Hint("no captured pages available"));
+        }
+        self.omnibar.suggestions.truncate(row_limit.max(1));
+        self.omnibar.selected = self
+            .omnibar
+            .suggestions
+            .iter()
+            .position(|row| matches!(row, Suggestion::Act { .. }))
+            .unwrap_or(0);
     }
 
     /// Re-project an open omnibar after the window changed size: how many
@@ -140,6 +235,27 @@ impl App {
             ..OmnibarState::default()
         };
         self.omnibar.cursor = self.omnibar.text.len();
+        self.focus = FocusTarget::Chrome;
+        self.recompute_omnibar_suggestions();
+        self.events.push(AppEvent::OmnibarOpened);
+        effects.push(Effect::Redraw);
+        effects
+    }
+
+    pub(super) fn open_captured_pages(&mut self) -> Vec<Effect> {
+        if !matches!(self.place, crate::place::PlaceState::Offline { .. }) {
+            return vec![Effect::Redraw];
+        }
+        let mut effects = self.cancel_smolweb_conversation();
+        let target = self.fallback_shell_context();
+        self.shell.begin_omnibar(target);
+        self.recall.clear();
+        self.recall_query.clear();
+        self.omnibar = OmnibarState {
+            open: true,
+            mode: OmnibarMode::CapturedPages,
+            ..OmnibarState::default()
+        };
         self.focus = FocusTarget::Chrome;
         self.recompute_omnibar_suggestions();
         self.events.push(AppEvent::OmnibarOpened);
@@ -299,5 +415,185 @@ impl App {
     ) -> Vec<Effect> {
         self.shell.request_target(entry);
         vec![Effect::Redraw]
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn snapshot(body: &str, source: &str) -> crate::place::OfflinePlaceSnapshot {
+        crate::place::OfflinePlaceSnapshot {
+            captured: crate::place::CapturedCollectionCache {
+                groups: vec![crate::place::CapturedContentGroup {
+                    extraction_schema: "fleece/1".into(),
+                    normalization: "plain".into(),
+                    reader_profile: "reader".into(),
+                    canonical_text_hash: "a".repeat(64),
+                    canonical_text_iri: "urn:captured:test".into(),
+                    canonical_text: body.into(),
+                    contributions: vec![crate::place::CapturedContribution {
+                        share_operation: [1; 32],
+                        annotation_manifest: [2; 32],
+                        contributor: [3; 32],
+                        source: source.into(),
+                        title: "Field notes".into(),
+                        shared_at_ms: 1,
+                    }],
+                }],
+                ..Default::default()
+            },
+            ..Default::default()
+        }
+    }
+
+    fn offline(snapshot: crate::place::OfflinePlaceSnapshot) -> crate::place::PlaceState {
+        crate::place::PlaceState::Offline {
+            binding: crate::place::PlaceBindingV1::new(
+                crate::place::PlaceId([1; 32]),
+                crate::place::SharedContainerId([2; 32]),
+                crate::place::ChatSpaceId([3; 32]),
+                "hall",
+            )
+            .unwrap(),
+            generation: 1,
+            snapshot,
+        }
+    }
+
+    #[test]
+    fn captured_page_mode_finds_body_text_without_recall_rows() {
+        let source = "https://example.test/field-notes";
+        let mut app = App::test_stub();
+        app.place = offline(snapshot("a body-only phrase", source));
+        app.recall.push(crate::action::RecallHit {
+            url: "https://recall.test/unrelated".into(),
+            title: Some("a body-only phrase".into()),
+            at_ms: 1,
+        });
+
+        app.update(Action::SearchCapturedPages);
+        assert!(app.recall.is_empty() && app.recall_query.is_empty());
+        app.update(Action::OmnibarInsert("body-only phrase".into()));
+
+        assert!(app.omnibar.suggestions.iter().any(|row| {
+            matches!(
+                row,
+                Suggestion::Act { label, action }
+                    if label == "Open source: Field notes"
+                        && action == &Action::OpenAddress(source.into())
+            )
+        }));
+        assert!(
+            !app.omnibar
+                .suggestions
+                .iter()
+                .any(|row| matches!(row, Suggestion::Recall { .. })),
+            "captured-page search never blends browsing recall"
+        );
+    }
+
+    #[test]
+    fn captured_page_mode_drops_results_after_stale_or_empty_refresh() {
+        let source = "https://example.test/field-notes";
+        let mut app = App::test_stub();
+        app.place = offline(snapshot("a body-only phrase", source));
+        app.update(Action::SearchCapturedPages);
+        app.update(Action::OmnibarInsert("body-only phrase".into()));
+        assert!(
+            app.omnibar
+                .suggestions
+                .iter()
+                .any(|row| matches!(row, Suggestion::Act { .. }))
+        );
+
+        let requested = crate::place::PlaceCollectionVersion {
+            moot: crate::place::PlaceId([1; 32]),
+            collection: crate::place::PlaceCollectionId([4; 32]),
+            frontier: vec![[5; 32]],
+            membership_commitment: [6; 32],
+        };
+        let mut stale = snapshot("a body-only phrase", source);
+        stale.captured_selection = crate::place::CapturedCollectionSelection::Collection {
+            requested: requested.clone(),
+            status: crate::place::CapturedCollectionSelectionStatus::Stale { current: requested },
+        };
+        app.place = offline(stale);
+        app.recompute_omnibar_suggestions();
+        assert!(
+            !app.omnibar
+                .suggestions
+                .iter()
+                .any(|row| matches!(row, Suggestion::Act { .. })),
+            "a stale scope cannot retain prior hits"
+        );
+
+        app.place = offline(snapshot("a body-only phrase", source));
+        app.recompute_omnibar_suggestions();
+        assert!(
+            app.omnibar
+                .suggestions
+                .iter()
+                .any(|row| matches!(row, Suggestion::Act { .. })),
+            "the receipt starts with a visible captured result"
+        );
+        assert_eq!(
+            app.apply_update(crate::action::Update::PlaceOpened {
+                session: app.session_id,
+                generation: 1,
+                result: Ok(crate::place::OfflinePlaceSnapshot::default()),
+            }),
+            vec![Effect::Redraw]
+        );
+        assert!(
+            !app.omnibar
+                .suggestions
+                .iter()
+                .any(|row| matches!(row, Suggestion::Act { .. })),
+            "a PlaceOpened replacement reflows the open field without typing"
+        );
+    }
+
+    #[test]
+    fn captured_search_respects_a_single_row_setting() {
+        let source = "https://example.test/field-notes";
+        let mut app = App::test_stub();
+        app.place = offline(snapshot("a body-only phrase", source));
+        app.update(Action::SearchCapturedPages);
+        app.update(Action::OmnibarInsert("body-only phrase".into()));
+        app.recompute_captured_page_suggestions(1);
+        assert!(matches!(app.omnibar.suggestions.as_slice(),
+            [Suggestion::Act { action: Action::OpenAddress(url), .. }] if url == source));
+        app.omnibar.text = "no-matching-content".into();
+        app.recompute_captured_page_suggestions(1);
+        assert_eq!(
+            app.omnibar.suggestions,
+            vec![Suggestion::Hint("no captured pages match")]
+        );
+    }
+
+    #[test]
+    fn committing_a_captured_source_opens_its_source_address() {
+        let source = "https://example.test/field-notes";
+        let mut app = App::test_stub();
+        app.place = offline(snapshot("a body-only phrase", source));
+        app.update(Action::SearchCapturedPages);
+        app.update(Action::OmnibarInsert("body-only phrase".into()));
+
+        let effects = app.update(Action::OmnibarCommit);
+        assert!(effects.iter().any(|effect| matches!(
+            effect,
+            Effect::FetchPage { url, .. } if url == source
+        )));
+        assert_eq!(app.graph_runtimes.focused_url(), Some(source));
+        let entry = app
+            .shell_transcript()
+            .entries()
+            .last()
+            .expect("captured source navigation enters the shell transcript");
+        assert!(matches!(
+            &entry.resolved_intent,
+            crate::shell_services::ShellIntent::Navigate { url } if url == source
+        ));
     }
 }

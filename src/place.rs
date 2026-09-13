@@ -125,6 +125,13 @@ pub struct PlaceCollectionVersion {
     pub membership_commitment: [u8; 32],
 }
 
+/// A currently authorized collection offered by the local search picker.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct PlaceCollectionChoice {
+    pub name: String,
+    pub version: PlaceCollectionVersion,
+}
+
 /// The public, durable binding between one Turnstone session and one governed
 /// shared place.
 ///
@@ -223,6 +230,8 @@ pub struct OfflinePlaceSnapshot {
     /// The exact collection version used to scope `captured`, or the explicit
     /// reason that version could not currently be projected.
     pub captured_selection: CapturedCollectionSelection,
+    /// Current authorized choices, independently of the selected version.
+    pub collection_choices: Vec<PlaceCollectionChoice>,
     /// What the shared graph actually holds, as opposed to how much of it.
     /// Already authority-filtered: see [`projection::SharedGraph`].
     pub shared: projection::SharedGraph,

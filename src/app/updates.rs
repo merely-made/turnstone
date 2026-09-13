@@ -621,6 +621,7 @@ impl App {
                         self.events.push(AppEvent::PlaceRefused(error));
                     }
                 }
+                self.reflow_omnibar();
                 vec![Effect::Redraw]
             }
             Update::PlaceCollectionSet {
@@ -647,6 +648,7 @@ impl App {
                         self.events.push(AppEvent::PlaceRefused(error));
                     }
                 }
+                self.reflow_omnibar();
                 vec![Effect::Redraw]
             }
             Update::PlaceJoined {
@@ -674,6 +676,7 @@ impl App {
                         crate::place::PlaceState::Failed { error }
                     }
                 };
+                self.reflow_omnibar();
                 vec![Effect::Redraw]
             }
             Update::PlaceOpened {
@@ -705,6 +708,7 @@ impl App {
                         }
                     }
                 };
+                self.reflow_omnibar();
                 vec![Effect::Redraw]
             }
         }

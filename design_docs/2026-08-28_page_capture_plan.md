@@ -1,10 +1,12 @@
 # Page capture and provenance
 
-**Status:** in progress, 2026-09-09. D1-D6 were ruled before P1 began. P1's
+**Status:** in progress, 2026-09-13. D1-D6 were ruled before P1 began. P1's
 owner contracts and exact source pins are landed; its clean-source Turnstone
 compile gate closed 2026-09-09 (welding `65d057de`, grafting `403a30c2`, mere
 `2b1ce46e`; see Progress). P2 has begun only at the host correlation boundary;
-custody, envelopes and the hosted Weld capture hook itself remain unbuilt.
+the hosted Weld capture hook and its remaining custody work are still open.
+The separate source-document path now stores raw bytes and a Fleece annotation,
+and collection-scoped search consumes locally held authorized captures.
 Serves the capture half of E0 in the
 [browser surfaces implementation plan](2026-08-25_browser_surface_implementation_plan.md),
 which keeps E0's done-conditions. E0.2's first half, per-node page zoom, was
@@ -443,3 +445,43 @@ Recorded here so they are not lost, and because each is independently closable:
   captured collection, and source-capture regression filters. Cold-reopen
   persistence for this local choice and a headed collection-selection surface
   remain open.
+
+- **2026-09-12, persisted selection and search consumer:** The command palette
+  now offers `Use captured collection: ...` for each current authorized version
+  and `Search captured pages` for a separate omnibar mode. Body text is searched
+  only within the selected captured projection. Result actions say `Open source`
+  and record navigation to the source address. They do not replay the capture.
+  The local `place-collection.json` sidecar is atomically replaced before a
+  successful selection acknowledgement and restored before the first snapshot
+  after reopen. Clearing is persisted explicitly. Malformed, incomplete, and
+  unsupported sidecars return an error rather than broadening scope; a failed
+  write rolls back the worker choice. A stale version offers an explicit switch
+  to its current authorized version. Names shared by several collections have
+  distinct ID suffixes in the palette.
+  Place snapshot completions reflow an open search field, removing withdrawn or
+  stale results without further typing. A two-peer regression sends an actual
+  share withdrawal through the records lane and requires receiver ingress
+  before observing an empty selected collection. The selected version remains
+  unchanged while its effective contribution count falls to zero.
+  Headed acceptance and offline capture replay remain open. The existing search
+  method builds a transient BM25 index per query; corpus size and interactive
+  latency still need measurement before treating this as a scale receipt.
+
+  Validation on **2026-09-13**: the collection filter passed **15 tests**, including
+  cold-reopen restoration, save-failure rollback, stale selection, palette
+  dispatch, and real peer withdrawal. The test starts the receiver with local
+  Fleece artifacts only; collection history arrives through the normal peer
+  lanes. Its host serves Moot lanes, so unrelated pre-admission encrypted chat
+  does not contaminate this records-lane receipt.
+  Command: `cargo +1.97.1 test --manifest-path C:\Users\mark_\Code\repos\turnstone\Cargo.toml --lib collection --offline --locked -j 2`,
+  run from `C:\t\turnstone-clean-cwd` with target directory
+  `C:\t\turnstone-partition-fixed-target`, excluding checkout-local Cargo
+  overrides. Mere pins remain `1777b19840a6478a0faf3ab060a3ff71d5532321`;
+  the p2panda patch remains `85f88345a1d6677c32099d3d306efcb9dafeb12d`.
+
+  The same locked command with the `collection` filter removed passed the full
+  library suite: **471 passed, 0 failed, 9 ignored**, in 104.72 seconds. This
+  includes the captured-text field, source-navigation transcript, one-row
+  setting, live withdrawal, and existing partition-healing tests. Full log:
+  `C:\t\turnstone-collection-accepted-20260913.log`. `git diff --check` also passed.
+  These are automated app/worker/peer receipts; a headed interaction was not run.

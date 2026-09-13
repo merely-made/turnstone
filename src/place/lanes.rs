@@ -136,6 +136,9 @@ mod tests {
 
     use chartulary::{Author, Container};
     use commons::chat::{Channel, ChatEvent, Message};
+    use gemot::moot::{
+        MootAccessLevel, MootFile, MootId, MootMembershipAction, MootOutboundOperation,
+    };
     use identity::{IdentityProvider, InMemoryProvider};
     use muniment::RedbBackend;
     use stickleback::DataKeyring;
@@ -144,15 +147,17 @@ mod tests {
     use crate::action::Update;
     use crate::identity::RootIdentity;
     use crate::panes::SessionId;
-    use crate::place::PlaceBindingV1;
     use crate::place::invite::{P2PANDA_ENDPOINT_TICKET, RendezvousV1};
     use crate::place::worker::tests::{
         binding, found_place_for_authoring, founder_signing_key, place_delegation, place_rules,
-        settings,
+        seed_exact_collection, seed_exact_collection_captures, settings,
     };
     use crate::place::worker::{
         PlaceCommand, PlaceWorkerCommand, author_invitation, found_place_group, load_group_session,
         open_cached_place, place_store_dir, prepare_group_identity, spawn_place_worker,
+    };
+    use crate::place::{
+        CapturedCollectionSelection, CapturedCollectionSelectionStatus, PlaceBindingV1,
     };
     use commons::{Replica, chat::ChatReplica};
 
@@ -456,6 +461,241 @@ mod tests {
             }
         }
         panic!("request {request} never answered");
+    }
+
+    /// A selected exact collection remains selected after a remote fauna
+    /// withdrawal. The changed record must enter through the real objects
+    /// lane before the receiver re-folds; no local reopening can substitute
+    /// for that ingress.
+    #[test]
+    fn a_live_share_withdrawal_empties_the_receiver_selected_collection() {
+        let root = tempfile::tempdir().unwrap();
+        let host = root.path().join("host");
+        let guest = root.path().join("guest");
+        let b = binding(0x9c);
+        let founder_seed = [b.moot.0[0].wrapping_add(40); 32];
+        let founder = InMemoryProvider::from_seed(founder_seed);
+        let joiner = RootIdentity::Unsealed(InMemoryProvider::from_seed([0x9d; 32]));
+
+        // Both profiles retain the same captured text up front. That lets the
+        // receiver prove the selection filter, rather than merely showing
+        // that a peer without the local document has no search result.
+        let (host_settings, requested, selected_share) = seed_exact_collection(
+            &host,
+            &RootIdentity::Unsealed(InMemoryProvider::from_seed(founder_seed)),
+            &b,
+        );
+        let (guest_settings, _, _) = seed_exact_collection_captures(&guest);
+
+        // Invitation and group welcome require governed membership. The exact
+        // collection fixture already founded the Moot, so add only the new
+        // peer rather than founding a competing profile fixture.
+        let host_moot = pollster::block_on(MootFile::open_existing(
+            place_store_dir(&host).join("gemot"),
+            MootId(b.moot.0),
+            host_settings.retention.clone(),
+        ))
+        .unwrap();
+        pollster::block_on(host_moot.membership_store().author_for_identity(
+            &founder,
+            MootMembershipAction::Add {
+                member: joiner.master_public_key().to_bytes(),
+                access: MootAccessLevel::Write,
+            },
+        ))
+        .unwrap();
+        drop(host_moot);
+        let joiner_prekey = prepare_group_identity(&guest, &joiner, b.moot.0).unwrap();
+
+        let runtime = tokio::runtime::Builder::new_multi_thread()
+            .worker_threads(2)
+            .enable_all()
+            .build()
+            .unwrap();
+        let host_transport = runtime
+            .block_on(async {
+                P2pandaTransport::builder(&founder.master_keypair())
+                    .gossip()
+                    .bind()
+                    .await
+            })
+            .unwrap();
+        let ticket = runtime.block_on(host_transport.ticket()).unwrap();
+        let invite = author_invitation(
+            &host,
+            &b,
+            &founder,
+            &joiner_prekey,
+            u64::MAX,
+            vec![RendezvousV1 {
+                carrier: P2PANDA_ENDPOINT_TICKET.into(),
+                hint: ticket,
+            }],
+            &host_settings,
+        )
+        .unwrap();
+
+        let (host_open, _) = open_cached_place(&host, &b, &founder, &host_settings).unwrap();
+        let (endpoint, gossip) = host_transport.sync_parts().unwrap();
+        let host_lanes = runtime
+            .block_on(host_open.moot.join_lanes(endpoint, gossip))
+            .unwrap();
+
+        let wake: armillary::Wake = Arc::new(|| {});
+        let (worker, updates) = spawn_place_worker(wake, Arc::new(joiner), guest_settings);
+        let session = SessionId::new();
+        worker.command(PlaceWorkerCommand::Join {
+            session,
+            generation: 1,
+            directory: guest.clone(),
+            invite: Box::new(invite),
+        });
+        assert!(matches!(
+            updates.recv_timeout(Duration::from_secs(60)),
+            Ok(Update::PlaceJoined { result: Ok(_), .. })
+        ));
+        converge_until(&worker, &updates, session, "receive host collection", |snapshot| {
+            snapshot
+                .collection_choices
+                .iter()
+                .any(|choice| choice.version == requested)
+        });
+
+        worker.command(PlaceWorkerCommand::SetCollection {
+            session,
+            generation: 1,
+            selection: Some(requested.clone()),
+        });
+        let selection_deadline = Instant::now() + Duration::from_secs(30);
+        let mut selection_last = None;
+        let selected = loop {
+            assert!(
+                Instant::now() < selection_deadline,
+                "receiver did not select the exact collection version; last update: {selection_last:?}"
+            );
+            match updates.recv_timeout(Duration::from_secs(10)) {
+                Ok(Update::PlaceCollectionSet {
+                    session: got,
+                    generation: 1,
+                    result: Ok(snapshot),
+                }) if got == session => break snapshot,
+                Ok(Update::PlaceCollectionSet {
+                    result: Err(error), ..
+                }) => panic!("receiver exact collection selection refused: {error}"),
+                Ok(update) => {
+                    selection_last = Some(format!(
+                        "unrelated update: {:?}",
+                        std::mem::discriminant(&update)
+                    ))
+                },
+                Err(error) => selection_last = Some(format!("receive selection update: {error}")),
+            }
+        };
+        assert_eq!(selected.captured.groups.len(), 1);
+        assert!(matches!(
+            selected.captured_selection,
+            CapturedCollectionSelection::Collection {
+                requested: ref retained,
+                status: CapturedCollectionSelectionStatus::Ready {
+                    effective_contributions: 1,
+                    pending_facts: 0,
+                    ..
+                },
+            } if retained == &requested
+        ));
+
+        // This is the host's normal command split: author into the retained
+        // Moot, recover the signed operation, then publish it on its existing
+        // objects handle. A received lane nudge is required before resync.
+        let receipt = runtime
+            .block_on(
+                host_open
+                    .moot
+                    .withdraw_share_for_identity(&founder, selected_share, 30),
+            )
+            .unwrap();
+        let MootOutboundOperation::Object(withdrawal) =
+            runtime.block_on(host_open.moot.outbound(&receipt)).unwrap()
+        else {
+            panic!("share withdrawal did not recover an objects-lane operation");
+        };
+        host_lanes.records.publish(withdrawal).unwrap();
+
+        let deadline = Instant::now() + Duration::from_secs(45);
+        let mut saw_ingress_nudge = false;
+        let mut last = None;
+        let resynced = loop {
+            assert!(
+                Instant::now() < deadline,
+                "withdrawn selected collection never converged; ingress nudge: {saw_ingress_nudge}; last update: {last:?}"
+            );
+            match updates.recv_timeout(Duration::from_secs(10)) {
+                Ok(Update::PlaceLanesAdvanced {
+                    session: got,
+                    generation: 1,
+                }) if got == session => {
+                    saw_ingress_nudge = true;
+                    worker.command(PlaceWorkerCommand::Resync {
+                        session,
+                        generation: 1,
+                    });
+                },
+                Ok(Update::PlaceOpened {
+                    session: got,
+                    generation: 1,
+                    result: Ok(snapshot),
+                }) if got == session => {
+                    let withdrawn = matches!(
+                        &snapshot.captured_selection,
+                        CapturedCollectionSelection::Collection {
+                            requested: retained,
+                            status: CapturedCollectionSelectionStatus::Ready {
+                                effective_contributions: 0,
+                                pending_facts: 1,
+                                ..
+                            },
+                        } if retained == &requested
+                    ) && snapshot.captured.groups.is_empty()
+                        && snapshot.captured.rejected.is_empty();
+                    if saw_ingress_nudge && withdrawn {
+                        break snapshot;
+                    }
+                    last = Some(format!("snapshot: {snapshot:?}"));
+                },
+                Ok(Update::PlaceOpened {
+                    result: Err(error), ..
+                }) => {
+                    panic!("receiver resync refused after objects ingress: {error}")
+                },
+                Ok(update) => {
+                    last = Some(format!(
+                        "unrelated update: {:?}",
+                        std::mem::discriminant(&update)
+                    ))
+                },
+                Err(error) => last = Some(format!("receive resync update: {error}")),
+            }
+        };
+
+        assert!(resynced.captured.groups.is_empty());
+        assert!(resynced.captured.rejected.is_empty());
+        assert!(matches!(
+            resynced.captured_selection,
+            CapturedCollectionSelection::Collection {
+                requested: ref retained,
+                status: CapturedCollectionSelectionStatus::Ready {
+                    effective_contributions: 0,
+                    pending_facts: 1,
+                    ..
+                },
+            } if retained == &requested
+        ));
+
+        let (ack_tx, ack_rx) = std::sync::mpsc::sync_channel(1);
+        worker.command(PlaceWorkerCommand::Release(ack_tx));
+        ack_rx.recv_timeout(Duration::from_secs(5)).unwrap();
+        drop(host_lanes);
+        drop(host_open);
     }
 
     /// Drive the worker until its snapshot satisfies `done`, answering lane

@@ -270,6 +270,8 @@ pub enum Action {
     /// Scope captured-page search to one exact Gemot collection version.
     /// `None` clears the local choice and searches all effective contributions.
     SetPlaceCollection(Option<crate::place::PlaceCollectionVersion>),
+    /// Open the local captured-page search field for the active place.
+    SearchCapturedPages,
     /// Flip the focused node's live content: spawn a document session for it
     /// through the content port, or close the one it has (rung 4; the
     /// session-engines plan's phase-4 consumer intent).

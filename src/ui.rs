@@ -284,6 +284,8 @@ pub struct GeminiTrustPrompt {
 pub enum OmnibarMode {
     #[default]
     Address,
+    /// Search only the currently projected captured-page cache for this place.
+    CapturedPages,
     RenameSession(crate::panes::SessionId),
     SmolwebInput(SmolwebInputPrompt),
     SmolwebSubmission(SmolwebSubmissionPrompt),

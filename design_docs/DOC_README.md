@@ -46,12 +46,15 @@ set.
 - [Page lifecycle](2026-09-06_page_lifecycle_plan.md): one page across
   visiting, keeping, capturing, annotating, collecting, sharing, revision
   and deletion; rulings L1-L7 join the surfaces, capture and recycle bin
-  plans and add phases for the missing joins. Plan, no code yet.
+  plans and add phases for the missing joins. Source capture and persisted
+  collection-scoped search are implemented; the remaining joins retain their
+  individual gates.
 - [Trail recall evaluation](2026-09-02_trail_recall_evaluation_plan.md): private captured-corpus protocol for selecting or rejecting configurable phrase recall against BM25 with held-out ranking and resource budgets.
 - [Page capture and provenance](2026-08-28_page_capture_plan.md): ruled path
   for durable node-attached page captures; P1 owner contracts and exact pins
-  are landed, its clean-source Turnstone compile gate remains open, and P2 has
-  begun at target correlation while custody and envelopes remain unbuilt.
+  and its clean-source compile gate are landed. Source-document capture and
+  authorized collection search have app consumers; hosted Weld capture,
+  offline replay, and the remaining custody work are still open.
 - [Browser surfaces implementation plan](2026-08-25_browser_surface_implementation_plan.md): sequenced Keep, find, decision UI, engine parity, arrivals, shallows, and extension work.
 - [Pane registry, graph views, and shell composition](2026-08-08_pane_registry_and_graph_panes_plan.md): registry and multi-graph pane roadmap, with its remaining A-lane gates; A4 revised 2026-09-04 to adopt the shared Workbench tree (panes as tiles).
 - [Turnstone engine adoption](2026-08-03_turnstone_engine_adoption_plan.md): selectable engine routing and unavailable-engine behavior.

@@ -243,7 +243,7 @@ jiff = "0.2"
 # T5a is an acceptance consumer of this exact Turquet 0.13.0 source revision.
 turquet = { version = "=0.13.0", git = "https://github.com/merely-made/turquet.git", rev = "bc3c454f755d0bfd70ab48bd9556a1cda2213d41" }
 
-[dev-dependencies]
+# Atomic replacement of the local captured-search selection sidecar.
 tempfile = "3"
 
 [features]

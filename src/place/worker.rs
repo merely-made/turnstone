@@ -19,8 +19,9 @@ use armillary::{ActorHandle, Emitter, Wake, spawn_named};
 use commons::chat::ChatReplica;
 use commons::{GemotAuthorityView, Replica};
 use gemot::moot::{
-    AvailabilityPolicy, CollectionId, CollectionRef, CollectionVersion, ErasurePolicy, KeepBound,
-    MootAuthority, MootFile, MootId, MootRetentionSettings, PolicyRevision,
+    AvailabilityPolicy, CollectionEvent, CollectionId, CollectionRef, CollectionVersion,
+    ErasurePolicy, KeepBound, MootAuthority, MootFile, MootId, MootRetentionSettings,
+    PolicyRevision,
 };
 use identity::{IdentityProvider, SealedRecordStorage};
 use muniment::RedbBackend;
@@ -36,8 +37,8 @@ use crate::panes::SessionId;
 use crate::place::invite::PlaceInviteV1;
 use crate::place::{
     CapturedCollectionSelection, CapturedCollectionSelectionStatus, ChatCache, GraphCache,
-    GroupCache, MootCache, OfflinePlaceSnapshot, PlaceBindingV1, PlaceCollectionId,
-    PlaceCollectionVersion, PlaceId,
+    GroupCache, MootCache, OfflinePlaceSnapshot, PlaceBindingV1, PlaceCollectionChoice,
+    PlaceCollectionId, PlaceCollectionVersion, PlaceId,
 };
 
 const GROUP_SESSION_RECORD: &str = "group.session";
@@ -148,7 +149,9 @@ pub enum PlaceCommand {
 }
 
 pub(crate) struct OpenPlace {
-    /// Live lane handles, when this open dialed. First field on purpose: the
+    /// Session-owned view sidecars are written only by this worker.
+    pub(crate) directory: PathBuf,
+    /// Live lane handles, when this open dialed. First live field: the
     /// lane tasks must stop before the stores they drain into close.
     pub(crate) lanes: Option<crate::place::lanes::LiveLanes>,
     /// The binding this place was opened under, so a later command names the
@@ -158,7 +161,7 @@ pub(crate) struct OpenPlace {
     /// cross-actor session switch from briefly resolving against the departed
     /// session's in-memory records.
     pub(crate) capture_directory: PathBuf,
-    /// Local view state. It authors no Gemot operation and resets with this open.
+    /// Exact local view state restored before the first capture projection.
     pub(crate) collection_selection: Option<PlaceCollectionVersion>,
     pub(crate) moot: MootFile,
     pub(crate) graph: Replica<RedbBackend>,
@@ -696,10 +699,11 @@ pub(crate) fn open_cached_place(
         .map_err(|error| format!("bind Commons chat writer: {error}"))?;
 
     let open = OpenPlace {
+        directory: directory.to_path_buf(),
         lanes: None,
         binding: binding.clone(),
         capture_directory: crate::trail_memory::memory_dir(directory),
-        collection_selection: None,
+        collection_selection: crate::session::load_place_collection(directory)?,
         moot,
         graph,
         chat,
@@ -832,6 +836,38 @@ fn place_snapshot(
     // that set before any locally held capture text is grouped.
     let authorized_fauna = pollster::block_on(open.moot.authorized_fauna(at_ms))
         .map_err(|error| format!("materialize authorized Gemot fauna: {error}"))?;
+    // Raw history only supplies candidate ids. Names and selectable versions
+    // come from the service's current authorized projection.
+    let collection_ids: BTreeSet<_> = moot_snapshot
+        .roster
+        .collections
+        .iter()
+        .map(|fact| match &fact.event {
+            CollectionEvent::Declared { collection_id, .. } => *collection_id,
+            CollectionEvent::Changed { collection, .. } => collection.collection_id,
+        })
+        .collect();
+    let mut collection_choices = Vec::new();
+    for id in collection_ids {
+        if let Some(view) = pollster::block_on(open.moot.authorized_collection(id, at_ms))
+            .map_err(|error| format!("materialize collection choice: {error}"))?
+        {
+            collection_choices.push(PlaceCollectionChoice {
+                name: view.name,
+                version: PlaceCollectionVersion {
+                    moot: PlaceId(view.version.collection.moot_id),
+                    collection: PlaceCollectionId(view.version.collection.collection_id.0),
+                    frontier: view.version.frontier,
+                    membership_commitment: view.version.membership_commitment,
+                },
+            });
+        }
+    }
+    collection_choices.sort_by(|a, b| {
+        a.name
+            .cmp(&b.name)
+            .then_with(|| a.version.collection.0.cmp(&b.version.collection.0))
+    });
     let (captured_fauna, captured_selection) = match &open.collection_selection {
         None => (
             authorized_fauna.clone(),
@@ -957,6 +993,7 @@ fn place_snapshot(
         },
         captured,
         captured_selection,
+        collection_choices,
         shared: crate::place::projection::SharedGraph::from_projection(&graph_projection),
     })
 }
@@ -1093,7 +1130,14 @@ pub fn spawn_place_worker(
                             Some(open) => {
                                 let previous =
                                     std::mem::replace(&mut open.collection_selection, selection);
-                                let result = place_snapshot(open, open.binding.moot.0, &settings);
+                                let result = place_snapshot(open, open.binding.moot.0, &settings)
+                                    .and_then(|snapshot| {
+                                        crate::session::save_place_collection(
+                                            &open.directory,
+                                            open.collection_selection.as_ref(),
+                                        )?;
+                                        Ok(snapshot)
+                                    });
                                 if result.is_err() {
                                     open.collection_selection = previous;
                                 }
@@ -1345,9 +1389,9 @@ pub(crate) mod tests {
         .unwrap();
         drop(moot);
 
-        let (mut group, _) = GroupSession::new(GroupSessionId(binding.moot.0), identity).unwrap();
-        group.create(&[]).unwrap();
-        save_group_session(directory, identity, &group).unwrap();
+        prepare_group_identity(directory, identity, binding.moot.0).unwrap();
+        found_place_group(directory, identity, binding.moot.0).unwrap();
+        let group = load_group_session(directory, identity, binding.moot.0).unwrap();
         let keyring = DataKeyring::from_bytes(&group.data_keyring_state().unwrap()).unwrap();
 
         let graph_backend = RedbBackend::open(stores.join("commons-graph.redb")).unwrap();
@@ -1382,19 +1426,13 @@ pub(crate) mod tests {
         }
     }
 
-    fn seed_exact_collection(
+    /// Seed only the local Fleece records and their read-only projection.
+    /// This deliberately creates no Moot or group state, so a live receiver
+    /// can retain its own captures while its governed history arrives from a
+    /// peer over the normal admission and lane paths.
+    pub(crate) fn seed_exact_collection_captures(
         directory: &Path,
-        identity: &RootIdentity,
-        binding: &PlaceBindingV1,
-    ) -> (PlaceWorkerSettings, PlaceCollectionVersion, [u8; 32]) {
-        seed_profile(directory, identity, binding, 0);
-        let founder = founder_for(binding);
-        assert_eq!(
-            identity.master_public_key().to_bytes(),
-            founder.master_public_key().to_bytes(),
-            "the focused collection fixture uses the Moot founder"
-        );
-
+    ) -> (PlaceWorkerSettings, [u8; 32], [u8; 32]) {
         let capture_directory = crate::trail_memory::memory_dir(directory);
         let document = extract_document(&StaticDocument::parse(
             "<main><p>Exact collection selection keeps this field note.</p></main>",
@@ -1470,6 +1508,26 @@ pub(crate) mod tests {
             )
             .unwrap();
         }
+        (
+            settings,
+            *manifest.0.as_bytes(),
+            *other_manifest.0.as_bytes(),
+        )
+    }
+
+    pub(crate) fn seed_exact_collection(
+        directory: &Path,
+        identity: &RootIdentity,
+        binding: &PlaceBindingV1,
+    ) -> (PlaceWorkerSettings, PlaceCollectionVersion, [u8; 32]) {
+        seed_profile(directory, identity, binding, 0);
+        let founder = founder_for(binding);
+        assert_eq!(
+            identity.master_public_key().to_bytes(),
+            founder.master_public_key().to_bytes(),
+            "the focused collection fixture uses the Moot founder"
+        );
+        let (settings, manifest, other_manifest) = seed_exact_collection_captures(directory);
 
         let collection_id = CollectionId([0xc7; 32]);
         let collection = CollectionRef {
@@ -1508,7 +1566,7 @@ pub(crate) mod tests {
         .unwrap();
         let share = pollster::block_on(moot.share_for_identity(
             &founder,
-            *manifest.0.as_bytes(),
+            manifest,
             FLEECE_ANNOTATION_SCHEMA_ID.into(),
             "Field note".into(),
             20,
@@ -1516,7 +1574,7 @@ pub(crate) mod tests {
         .unwrap();
         pollster::block_on(moot.share_for_identity(
             &founder,
-            *other_manifest.0.as_bytes(),
+            other_manifest,
             FLEECE_ANNOTATION_SCHEMA_ID.into(),
             "Unselected note".into(),
             21,
@@ -2184,8 +2242,8 @@ pub(crate) mod tests {
         worker.command(PlaceWorkerCommand::Open {
             session,
             generation: 1,
-            directory,
-            binding,
+            directory: directory.clone(),
+            binding: binding.clone(),
         });
         assert!(matches!(
             updates
@@ -2217,7 +2275,7 @@ pub(crate) mod tests {
         assert_eq!(
             snapshot.captured_selection,
             CapturedCollectionSelection::Collection {
-                requested,
+                requested: requested.clone(),
                 status: CapturedCollectionSelectionStatus::Ready {
                     name: "Field notes".into(),
                     effective_contributions: 1,
@@ -2225,6 +2283,143 @@ pub(crate) mod tests {
                 },
             }
         );
+        assert_eq!(
+            snapshot.collection_choices,
+            vec![PlaceCollectionChoice {
+                name: "Field notes".into(),
+                version: requested,
+            }]
+        );
+        // Same-handle refresh and a complete release/reopen retain the exact
+        // chosen version before exposing the first snapshot.
+        worker.command(PlaceWorkerCommand::Resync {
+            session,
+            generation: 1,
+        });
+        let Update::PlaceOpened {
+            result: Ok(resynced),
+            ..
+        } = updates
+            .recv_timeout(std::time::Duration::from_secs(5))
+            .unwrap()
+        else {
+            panic!("selection did not resync");
+        };
+        assert_eq!(resynced.captured_selection, snapshot.captured_selection);
+        assert_eq!(resynced.captured, snapshot.captured);
+        let (ack_tx, ack_rx) = std::sync::mpsc::sync_channel(1);
+        worker.command(PlaceWorkerCommand::Release(ack_tx));
+        ack_rx
+            .recv_timeout(std::time::Duration::from_secs(5))
+            .unwrap();
+        worker.command(PlaceWorkerCommand::Open {
+            session,
+            generation: 2,
+            directory: directory.clone(),
+            binding: binding.clone(),
+        });
+        let Update::PlaceOpened {
+            result: Ok(reopened),
+            ..
+        } = updates
+            .recv_timeout(std::time::Duration::from_secs(5))
+            .unwrap()
+        else {
+            panic!("saved selection did not reopen");
+        };
+        assert_eq!(reopened.captured_selection, snapshot.captured_selection);
+        assert_eq!(reopened.captured, snapshot.captured);
+        worker.command(PlaceWorkerCommand::SetCollection {
+            session,
+            generation: 2,
+            selection: None,
+        });
+        assert!(matches!(
+            updates
+                .recv_timeout(std::time::Duration::from_secs(5))
+                .unwrap(),
+            Update::PlaceCollectionSet { result: Ok(_), .. }
+        ));
+        let (ack_tx, ack_rx) = std::sync::mpsc::sync_channel(1);
+        worker.command(PlaceWorkerCommand::Release(ack_tx));
+        ack_rx
+            .recv_timeout(std::time::Duration::from_secs(5))
+            .unwrap();
+        worker.command(PlaceWorkerCommand::Open {
+            session,
+            generation: 3,
+            directory,
+            binding,
+        });
+        let Update::PlaceOpened {
+            result: Ok(cleared),
+            ..
+        } = updates
+            .recv_timeout(std::time::Duration::from_secs(5))
+            .unwrap()
+        else {
+            panic!("cleared selection did not reopen");
+        };
+        assert_eq!(
+            cleared.captured_selection,
+            CapturedCollectionSelection::AllEffective
+        );
+        assert_eq!(cleared.captured.groups.len(), 2);
+    }
+
+    #[test]
+    fn worker_collection_save_failure_keeps_the_previous_scope() {
+        let root = tempfile::tempdir().unwrap();
+        let directory = root.path().join("profile");
+        let binding = binding(0x4b);
+        let identity = Arc::new(RootIdentity::Unsealed(founder_for(&binding)));
+        let (settings, requested, _) =
+            seed_exact_collection(&directory, identity.as_ref(), &binding);
+        let (worker, updates) = spawn_place_worker(Arc::new(|| {}), identity, settings);
+        let session = SessionId::new();
+        worker.command(PlaceWorkerCommand::Open {
+            session,
+            generation: 1,
+            directory: directory.clone(),
+            binding,
+        });
+        assert!(matches!(
+            updates
+                .recv_timeout(std::time::Duration::from_secs(5))
+                .unwrap(),
+            Update::PlaceOpened { result: Ok(_), .. }
+        ));
+        // Replacing a directory with a file must fail on every supported host.
+        std::fs::create_dir(directory.join(crate::session::PLACE_COLLECTION_FILE)).unwrap();
+        worker.command(PlaceWorkerCommand::SetCollection {
+            session,
+            generation: 1,
+            selection: Some(requested),
+        });
+        assert!(matches!(
+            updates
+                .recv_timeout(std::time::Duration::from_secs(5))
+                .unwrap(),
+            Update::PlaceCollectionSet { result: Err(_), .. }
+        ));
+        worker.command(PlaceWorkerCommand::Resync {
+            session,
+            generation: 1,
+        });
+        let Update::PlaceOpened {
+            result: Ok(snapshot),
+            ..
+        } = updates
+            .recv_timeout(std::time::Duration::from_secs(5))
+            .unwrap()
+        else {
+            panic!("prior scope did not survive a failed save");
+        };
+        assert_eq!(
+            snapshot.captured_selection,
+            CapturedCollectionSelection::AllEffective
+        );
+        assert_eq!(snapshot.captured.groups.len(), 2);
     }
 
     #[test]
@@ -2236,6 +2431,8 @@ pub(crate) mod tests {
         let identity = Arc::new(RootIdentity::Unsealed(founder_for(&binding)));
         let (settings, requested, selected_share) =
             seed_exact_collection(&directory, identity.as_ref(), &binding);
+
+        crate::session::save_place_collection(&directory, Some(&requested)).unwrap();
 
         let moot = pollster::block_on(MootFile::open_existing(
             place_store_dir(&directory).join("gemot"),
@@ -2282,11 +2479,14 @@ pub(crate) mod tests {
         else {
             panic!("place did not open");
         };
-        assert_eq!(
-            all_effective.captured.groups.len(),
-            2,
-            "the capture is available outside the stale collection selection"
-        );
+        assert!(all_effective.captured.groups.is_empty());
+        assert!(all_effective.captured.rejected.is_empty());
+        assert!(matches!(&all_effective.captured_selection,
+            CapturedCollectionSelection::Collection {
+                requested: retained, status: CapturedCollectionSelectionStatus::Stale { .. },
+            } if retained == &requested));
+        assert_eq!(all_effective.collection_choices.len(), 1);
+        assert_ne!(all_effective.collection_choices[0].version, requested);
 
         worker.command(PlaceWorkerCommand::SetCollection {
             session,
@@ -2403,9 +2603,12 @@ pub(crate) mod tests {
         };
         assert_eq!(
             all_effective.captured.groups.len(),
-            1,
-            "the unselected capture remains visible after authority shrinks"
+            0,
+            "the restored selection must not expose the other capture"
         );
+        assert!(matches!(&all_effective.captured_selection,
+            CapturedCollectionSelection::Collection { requested: retained, .. }
+                if retained == &requested));
         worker.command(PlaceWorkerCommand::SetCollection {
             session,
             generation: 2,

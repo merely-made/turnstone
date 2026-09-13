@@ -112,6 +112,7 @@ impl App {
     /// static label would have acted as the wrong one).
     pub fn available_actions(&self) -> Vec<(String, Action)> {
         let mut rows = self.session_actions();
+        rows.extend(self.place_collection_actions());
         if let Some(member) = self.graph_runtimes.focused_member()
             && !self.node_is_kept(member)
         {
@@ -146,6 +147,113 @@ impl App {
             ));
         }
         rows.extend(crate::action::palette_actions());
+        rows
+    }
+
+    /// Captured-page scope is a local reading choice. The worker supplies the
+    /// currently named exact versions; the palette carries those opaque values
+    /// back unchanged, rather than trying to reconstruct a collection from its
+    /// label. A stale selection names its current authorized replacement,
+    /// rather than suggesting that the unavailable historical version can be
+    /// searched.
+    fn place_collection_actions(&self) -> Vec<(String, Action)> {
+        let crate::place::PlaceState::Offline { snapshot, .. } = &self.place else {
+            return Vec::new();
+        };
+
+        let all_selected = matches!(
+            &snapshot.captured_selection,
+            crate::place::CapturedCollectionSelection::AllEffective
+        );
+        let mut rows = vec![
+            (
+                "Search captured pages".to_string(),
+                Action::SearchCapturedPages,
+            ),
+            (
+                format!(
+                    "Use captured collection: all shared captures{}",
+                    all_selected.then_some(" (selected)").unwrap_or_default()
+                ),
+                Action::SetPlaceCollection(None),
+            ),
+        ];
+        let (selected, stale_current) = match &snapshot.captured_selection {
+            crate::place::CapturedCollectionSelection::AllEffective => (None, None),
+            crate::place::CapturedCollectionSelection::Collection { requested, status } => (
+                Some(requested),
+                match status {
+                    crate::place::CapturedCollectionSelectionStatus::Stale { current } => {
+                        Some(current)
+                    },
+                    _ => None,
+                },
+            ),
+        };
+
+        for choice in &snapshot.collection_choices {
+            let same_name = snapshot
+                .collection_choices
+                .iter()
+                .filter(|other| other.name == choice.name)
+                .count()
+                > 1;
+            let suffix = if same_name {
+                format!(
+                    " ({})",
+                    collection_id_suffix(
+                        &choice.version,
+                        &snapshot.collection_choices,
+                        &choice.name
+                    )
+                )
+            } else {
+                String::new()
+            };
+            let state = if selected.is_some_and(|requested| requested == &choice.version) {
+                " (selected)"
+            } else if stale_current.is_some_and(|current| current == &choice.version) {
+                " (use latest version)"
+            } else {
+                ""
+            };
+            rows.push((
+                format!("Use captured collection: {}{suffix}{state}", choice.name),
+                Action::SetPlaceCollection(Some(choice.version.clone())),
+            ));
+        }
+
+        if let Some(current) = stale_current
+            && !snapshot
+                .collection_choices
+                .iter()
+                .any(|choice| &choice.version == current)
+        {
+            let name = snapshot
+                .collection_choices
+                .iter()
+                .find(|choice| choice.version.collection == current.collection)
+                .map(|choice| choice.name.as_str())
+                .unwrap_or("selected collection");
+            let has_named_choice = snapshot
+                .collection_choices
+                .iter()
+                .filter(|choice| choice.name == name)
+                .count()
+                > 0;
+            let suffix = has_named_choice
+                .then(|| {
+                    format!(
+                        " ({})",
+                        collection_id_suffix(current, &snapshot.collection_choices, name)
+                    )
+                })
+                .unwrap_or_default();
+            rows.push((
+                format!("Use captured collection: {name}{suffix} (use latest version)"),
+                Action::SetPlaceCollection(Some(current.clone())),
+            ));
+        }
         rows
     }
 
@@ -215,5 +323,199 @@ impl App {
             }
         }
         rows
+    }
+}
+
+fn collection_id_suffix(
+    version: &crate::place::PlaceCollectionVersion,
+    choices: &[crate::place::PlaceCollectionChoice],
+    name: &str,
+) -> String {
+    let hex = collection_id_hex(&version.collection);
+    for length in (8..=hex.len()).step_by(2) {
+        let prefix = &hex[..length];
+        if choices
+            .iter()
+            .filter(|choice| choice.name == name)
+            .all(|choice| {
+                choice.version.collection == version.collection
+                    || !collection_id_hex(&choice.version.collection).starts_with(prefix)
+            })
+        {
+            return prefix.to_string();
+        }
+    }
+    hex
+}
+
+fn collection_id_hex(collection: &crate::place::PlaceCollectionId) -> String {
+    collection
+        .0
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn version(seed: u8) -> crate::place::PlaceCollectionVersion {
+        crate::place::PlaceCollectionVersion {
+            moot: crate::place::PlaceId([1; 32]),
+            collection: crate::place::PlaceCollectionId([seed; 32]),
+            frontier: vec![[seed.wrapping_add(1); 32]],
+            membership_commitment: [seed.wrapping_add(2); 32],
+        }
+    }
+
+    fn offline(snapshot: crate::place::OfflinePlaceSnapshot) -> crate::place::PlaceState {
+        crate::place::PlaceState::Offline {
+            binding: crate::place::PlaceBindingV1::new(
+                crate::place::PlaceId([1; 32]),
+                crate::place::SharedContainerId([2; 32]),
+                crate::place::ChatSpaceId([3; 32]),
+                "hall",
+            )
+            .unwrap(),
+            generation: 1,
+            snapshot,
+        }
+    }
+
+    #[test]
+    fn captured_collection_rows_preserve_worker_versions_and_mark_selection() {
+        let first = version(10);
+        let second = version(20);
+        let mut app = App::test_stub();
+        app.place = offline(crate::place::OfflinePlaceSnapshot {
+            captured_selection: crate::place::CapturedCollectionSelection::Collection {
+                requested: first.clone(),
+                status: crate::place::CapturedCollectionSelectionStatus::Ready {
+                    name: "field notes".into(),
+                    effective_contributions: 1,
+                    pending_facts: 0,
+                },
+            },
+            collection_choices: vec![
+                crate::place::PlaceCollectionChoice {
+                    name: "field notes".into(),
+                    version: first.clone(),
+                },
+                crate::place::PlaceCollectionChoice {
+                    name: "research".into(),
+                    version: second.clone(),
+                },
+            ],
+            ..Default::default()
+        });
+
+        let rows = app.available_actions();
+        assert!(rows.contains(&("Search captured pages".into(), Action::SearchCapturedPages,)));
+        assert!(rows.contains(&(
+            "Use captured collection: all shared captures".into(),
+            Action::SetPlaceCollection(None),
+        )));
+        assert!(rows.contains(&(
+            "Use captured collection: field notes (selected)".into(),
+            Action::SetPlaceCollection(Some(first)),
+        )));
+        assert!(rows.contains(&(
+            "Use captured collection: research".into(),
+            Action::SetPlaceCollection(Some(second)),
+        )));
+    }
+
+    #[test]
+    fn stale_captured_collection_selection_offers_the_latest_version() {
+        let requested = version(30);
+        let mut current = requested.clone();
+        current.frontier = vec![[33; 32]];
+        current.membership_commitment = [34; 32];
+        let mut app = App::test_stub();
+        app.place = offline(crate::place::OfflinePlaceSnapshot {
+            captured_selection: crate::place::CapturedCollectionSelection::Collection {
+                requested: requested.clone(),
+                status: crate::place::CapturedCollectionSelectionStatus::Stale {
+                    current: current.clone(),
+                },
+            },
+            collection_choices: vec![crate::place::PlaceCollectionChoice {
+                name: "field notes".into(),
+                version: current.clone(),
+            }],
+            ..Default::default()
+        });
+
+        assert!(app.available_actions().contains(&(
+            "Use captured collection: field notes (use latest version)".into(),
+            Action::SetPlaceCollection(Some(current)),
+        )));
+    }
+
+    #[test]
+    fn duplicate_collection_names_have_stable_distinct_palette_labels() {
+        let first = version(10);
+        let mut second = version(10);
+        second.collection.0[4] = 11;
+        let mut app = App::test_stub();
+        app.place = offline(crate::place::OfflinePlaceSnapshot {
+            collection_choices: vec![
+                crate::place::PlaceCollectionChoice {
+                    name: "notes".into(),
+                    version: first.clone(),
+                },
+                crate::place::PlaceCollectionChoice {
+                    name: "notes".into(),
+                    version: second.clone(),
+                },
+            ],
+            ..Default::default()
+        });
+
+        assert!(app.available_actions().contains(&(
+            "Use captured collection: all shared captures (selected)".into(),
+            Action::SetPlaceCollection(None),
+        )));
+        assert!(app.available_actions().contains(&(
+            "Use captured collection: notes (0a0a0a0a0a)".into(),
+            Action::SetPlaceCollection(Some(first)),
+        )));
+        assert!(app.available_actions().contains(&(
+            "Use captured collection: notes (0a0a0a0a0b)".into(),
+            Action::SetPlaceCollection(Some(second)),
+        )));
+    }
+
+    #[test]
+    fn committing_a_captured_collection_row_emits_its_exact_version() {
+        let selected = version(10);
+        let mut app = App::test_stub();
+        app.place = offline(crate::place::OfflinePlaceSnapshot {
+            collection_choices: vec![crate::place::PlaceCollectionChoice {
+                name: "field notes".into(),
+                version: selected.clone(),
+            }],
+            ..Default::default()
+        });
+
+        app.update(Action::OmnibarOpen { command: true });
+        app.update(Action::OmnibarInsert("field notes".into()));
+        assert!(app.omnibar.suggestions.iter().any(|row| {
+            matches!(
+                row,
+                crate::ui::Suggestion::Act { label, action }
+                    if label == "Use captured collection: field notes"
+                        && action == &Action::SetPlaceCollection(Some(selected.clone()))
+            )
+        }));
+        let effects = app.update(Action::OmnibarCommit);
+
+        assert!(effects.contains(&Effect::SetPlaceCollection {
+            session: app.session_id,
+            generation: 1,
+            selection: Some(selected),
+        }));
+        assert!(!app.omnibar.open, "the palette closes on commit");
     }
 }

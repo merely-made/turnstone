@@ -99,8 +99,9 @@ pub fn load_manifests(data_root: &Path) -> ManifestStore {
 const PROJECTION_SCORE_FILE: &str = "projection-score.json";
 const VIEW_INTENT_FILE: &str = "view-intent.json";
 pub const PLACE_FILE: &str = "place.json";
+pub const PLACE_COLLECTION_FILE: &str = "place-collection.json";
 
-const SESSION_FILES: [&str; 8] = [
+const SESSION_FILES: [&str; 9] = [
     session_graph_store::GRAPH_FILE,
     frisket_store::FRAME_FILE,
     WORKBENCH_FILE,
@@ -109,7 +110,73 @@ const SESSION_FILES: [&str; 8] = [
     PROJECTION_SCORE_FILE,
     VIEW_INTENT_FILE,
     PLACE_FILE,
+    PLACE_COLLECTION_FILE,
 ];
+
+#[derive(serde::Serialize, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
+struct PlaceCollectionSidecar {
+    version: u32,
+    #[serde(deserialize_with = "required_collection_selection")]
+    selection: Option<crate::place::PlaceCollectionVersion>,
+}
+
+// An explicit null clears the choice; an omitted field is corrupt, not a
+// request to broaden the scope. Serde otherwise defaults missing Options.
+fn required_collection_selection<'de, D>(
+    deserializer: D,
+) -> Result<Option<crate::place::PlaceCollectionVersion>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    serde::Deserialize::deserialize(deserializer)
+}
+
+/// Missing means the original all-effective default. An unreadable saved
+/// choice must not silently broaden the search on restart.
+pub(crate) fn load_place_collection(
+    directory: &Path,
+) -> Result<Option<crate::place::PlaceCollectionVersion>, String> {
+    let bytes = match std::fs::read(directory.join(PLACE_COLLECTION_FILE)) {
+        Ok(bytes) => bytes,
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(None),
+        Err(error) => return Err(format!("read saved collection choice: {error}")),
+    };
+    let saved: PlaceCollectionSidecar = serde_json::from_slice(&bytes)
+        .map_err(|error| format!("decode saved collection choice: {error}"))?;
+    if saved.version != 1 {
+        return Err(format!(
+            "unsupported collection choice version {}",
+            saved.version
+        ));
+    }
+    Ok(saved.selection)
+}
+
+/// The place worker writes its local choice before acknowledging it. Atomic
+/// replacement keeps a failed write from losing the previously saved scope.
+pub(crate) fn save_place_collection(
+    directory: &Path,
+    selection: Option<&crate::place::PlaceCollectionVersion>,
+) -> Result<(), String> {
+    use std::io::Write;
+    let saved = PlaceCollectionSidecar {
+        version: 1,
+        selection: selection.cloned(),
+    };
+    let bytes = serde_json::to_vec_pretty(&saved)
+        .map_err(|error| format!("encode collection choice: {error}"))?;
+    let mut temporary = tempfile::NamedTempFile::new_in(directory)
+        .map_err(|error| format!("stage collection choice: {error}"))?;
+    temporary
+        .write_all(&bytes)
+        .and_then(|()| temporary.as_file().sync_all())
+        .map_err(|error| format!("write collection choice: {error}"))?;
+    temporary
+        .persist(directory.join(PLACE_COLLECTION_FILE))
+        .map_err(|error| format!("replace collection choice: {}", error.error))?;
+    Ok(())
+}
 
 /// A strict `place.json` read or write failure. Unlike optional view sidecars,
 /// an invalid binding must remain visible because silently treating it as a
@@ -733,6 +800,44 @@ pub fn load_workbench(
 mod tests {
     use super::*;
     use sceno::{Arrangement, Spiral};
+
+    #[test]
+    fn place_collection_sidecar_is_exact_and_refuses_corruption() {
+        let root = tempfile::tempdir().unwrap();
+        assert_eq!(load_place_collection(root.path()).unwrap(), None);
+        let selected = crate::place::PlaceCollectionVersion {
+            moot: crate::place::PlaceId([1; 32]),
+            collection: crate::place::PlaceCollectionId([2; 32]),
+            frontier: vec![[3; 32], [4; 32]],
+            membership_commitment: [5; 32],
+        };
+        save_place_collection(root.path(), Some(&selected)).unwrap();
+        assert_eq!(load_place_collection(root.path()).unwrap(), Some(selected));
+        save_place_collection(root.path(), None).unwrap();
+        assert_eq!(load_place_collection(root.path()).unwrap(), None);
+        std::fs::write(
+            root.path().join(PLACE_COLLECTION_FILE),
+            b"{\"version\":2,\"selection\":null}",
+        )
+        .unwrap();
+        assert!(
+            load_place_collection(root.path())
+                .unwrap_err()
+                .contains("unsupported")
+        );
+        std::fs::write(root.path().join(PLACE_COLLECTION_FILE), br#"{"version":1}"#).unwrap();
+        assert!(
+            load_place_collection(root.path())
+                .unwrap_err()
+                .contains("decode")
+        );
+        std::fs::write(root.path().join(PLACE_COLLECTION_FILE), b"{").unwrap();
+        assert!(
+            load_place_collection(root.path())
+                .unwrap_err()
+                .contains("decode")
+        );
+    }
 
     fn temp_root(label: &str) -> PathBuf {
         let dir = std::env::temp_dir().join(format!(

@@ -1,7 +1,9 @@
 # Page lifecycle plan
 
-**Status:** plan, 2026-09-06. Rulings L1-L7 were made with Mark on 2026-09-06
-from a working-tree assessment; no code written. This plan joins rules that
+**Status:** in progress, 2026-09-13. Rulings L1-L7 were made with Mark on
+2026-09-06. Source capture and collection-scoped search now have app consumers;
+the Keep, bin custody, and other lifecycle joins remain governed by their
+individual done-conditions. This plan joins rules that
 already exist in three documents into one experience and adds the rules that
 were missing between them. It consumes the
 [browser surfaces implementation plan](2026-08-25_browser_surface_implementation_plan.md)
@@ -294,7 +296,8 @@ Done-conditions:
 
 ## Findings
 
-Verified 2026-09-06 against the working tree.
+Verified 2026-09-06 against the working tree; capture and collection boundaries
+refreshed 2026-09-12.
 
 - Keep is a tag (`src/feed.rs` `KEEP_TAG`) applied by `keep_node`
   (`src/app/node_arms.rs:93`), idempotent, emitting `NodeKept` and requesting a
@@ -333,8 +336,11 @@ Verified 2026-09-06 against the working tree.
   `CollectionVersion`, not another collection or sharing fact. The worker
   admits only that version's current `effective_selected` contributions. A
   stale version exposes zero captured content; clearing the choice restores
-  `AllEffective`. This choice currently survives worker resync only. Durable
-  cold-reopen restoration and a headed selection surface remain open.
+  `AllEffective`. The exact choice now survives worker resync and cold reopen.
+  The command palette offers authorized versions and a separate captured-page
+  search mode. A stale selection requires an explicit switch to the latest
+  version; source links navigate to the original address. Headed acceptance
+  and offline snapshot replay remain open.
 - The engram export is `pandect::graph_codicil`, not `graph_engram` as the
   capture plan named it; that citation was corrected in this pass. Its
   `RedactionPolicy` (`graph_codicil.rs:105`) drops thumbnail, favicon and
@@ -393,3 +399,13 @@ Verified 2026-09-06 against the working tree.
   Nineteen focused tests pass across the app seam, worker, captured collection,
   and source-capture regression filters. Cold-reopen persistence and headed UI
   remain open.
+
+- **2026-09-12, persisted captured-search consumer:** An exact local collection
+  choice is restored before the first projection on reopen. The command palette
+  exposes current authorized versions and a separate captured-text search mode;
+  opening a result navigates to its source and records a navigation intent.
+  Snapshot completions refresh the open field, so live withdrawal removes its
+  results without typing. Corrupt selection sidecars fail closed. This does not
+  close Keep promotion, bin custody, offline replay, or headed acceptance. See
+  the [capture plan progress](2026-08-28_page_capture_plan.md#progress) for the
+  implementation and validation receipt.
