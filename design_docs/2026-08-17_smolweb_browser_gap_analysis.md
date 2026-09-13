@@ -77,7 +77,7 @@ sets.
 > receipt: Windows rejected UDP port 62166 with error 10013, and its exclusion
 > table includes 62084..62183. No OS settings were changed.
 >
-> **Reticulum and Micron consumer, 2026-09-11:** Turnstone now adopts Mere
+> **Reticulum and Micron consumer, 2026-09-11:** Turnstone adopted Mere
 > `1777b19840a6478a0faf3ab060a3ff71d5532321`, Knot
 > `0c8cdefb17ffa86a4e6b2a508d9a0aeb8fd2ccac`, and Retinue
 > `2a763c72ec7c7ff61b8cd7adb86d084a02d2c4d6`. Native destination/path input
@@ -120,28 +120,48 @@ sets.
 
 ## Part 1: the anatomy of a browser, in this design language
 
-### Micron qualification limits (2026-09-11)
+### Micron syntax and interoperability (2026-09-13)
 
-The shared preview qualifies LF-delimited plain lines, the captured level-one
-heading spelling, the exact three-dash rule, and balanced same-line bold and
-italic pairs. It preserves other source visibly and inertly with an explicit
-partial-preview notice. Unknown input is not silently interpreted as Markdown.
+The current cutover pins Mere `4ac591c9070b5624d9f58b6b511e3a5485e6c87b`,
+Knot `317593383a4bacb60600c5532812f7df4757bed9` and Retinue
+`ef1c47a602cb742293c109b0c443a9ceb8c1dce7`. Turnstone uses `nematic.micron`
+for native fetched pages and local `.mu`/`.micron` files. The shared source
+model retains combined and cross-line styles, colors, alignment, section and
+collapse markers, anchors, typed field kinds, directives, tables, images and
+partial descriptors. CRLF lexing preserves the original document source.
 
-The following remain unqualified: additional heading levels and whitespace
-variants; CRLF styling equivalence; nested, overlapping, or cross-line style
-controls; colour and alignment controls; link activation and relative-target
-resolution; forms, directives, and tables. Captured link-looking text alone
-does not establish clickable-link semantics. These need additional admissible
-specification or black-box captures and implementation, rather than a claim
-that clean-room implementation is impossible.
+The portable preview renders text, bold/italic, headings, dividers, literal
+blocks, ordinary native links and tables. A same-node `:/page/...` link resolves
+against the actual native destination. Local files have no implicit node
+identity: Turnstone strips unresolved same-node aliases recursively, including
+every table cell, while preserving their labels and a diagnostic. Knot can
+resolve those aliases through an active site's manifest.
+
+This is not full native Micron conformance. Colors, underline, alignment,
+section indentation, folding, anchor scrolling, input submission and partial
+refresh still need presentation or interaction work. Images show an alt-text
+placeholder. Wide table packets preserve their overflow geometry, but the
+Smolweb session only scrolls vertically. Malformed controls, escape spelling,
+bare/relative native targets and version differences retain qualification gaps.
+The [shared capture manifest](https://github.com/merely-made/mere/blob/4ac591c9070b5624d9f58b6b511e3a5485e6c87b/crates/nematic/nematic/tests/fixtures/micron/nomadnet-1.4.2/CAPTURE_MANIFEST.md)
+records stock NomadNet 1.4.2 Guide observations and original fixtures. Its
+activation receipt establishes selected stock-client callback fields and
+same-node navigation; it does not establish the raw request map for a new
+Retinue form implementation.
 
 Native Retinue and stock Python have independent small and 128 KiB transfer
-receipts. Stock Go `view-mu` accepts the small native response, but its large
-Resource transfer repeats requests and times out; that interoperability defect
-remains open. Knot's thin outer-canvas black margins after scrolling and
-clipboard-paste failure are separate reproduced host defects. Persistent
-NomadNet identities and resident/public hosting are beyond the local serving
-acceptance. No GPL/AGPL implementation source supplied these parser rules.
+receipts. Retinue now compresses a resource when bzip2 makes it smaller.
+Go `view-mu` v0.119.0 receives the tested compressible 128 KiB pages exactly.
+For the same deterministic incompressible 128 KiB body, Go emits zero bytes
+from both Retinue and stock NomadNet while Python succeeds against both.
+That plain multipart compatibility limit remains open; see the
+[Retinue receipt](https://github.com/merely-made/retinue/blob/ef1c47a602cb742293c109b0c443a9ceb8c1dce7/design_docs/2026-09-13_nomadnet_go_resource_compression_receipt.md).
+
+The earlier Knot outer-canvas margin and clipboard-paste receipts concern
+separate host work. Persistent NomadNet identities and resident/public hosting
+remain beyond this slice. No GPL/AGPL implementation source supplied these
+parser rules. The current automated checks do not constitute a new headed
+click or full visual-fidelity receipt.
 
 The taxonomy of a typical browser, each element named in mere/genet terms,
 with its state in this tree. The recurring pattern is that the conventional

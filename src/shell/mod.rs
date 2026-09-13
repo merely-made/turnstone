@@ -1631,10 +1631,10 @@ mod tests {
     }
 
     #[test]
-    fn micron_file_uses_shared_subset_and_preserves_unknown_source() {
+    fn micron_file_uses_native_projection_and_preserves_source() {
         let temp = tempfile::tempdir().unwrap();
         let path = temp.path().join("reading.mu");
-        let source = "> Heading\n---\nplain\n[Local page`:/page/probe.mu]\n";
+        let source = ">Heading\n---\nplain\n`[Local page`:/page/probe.mu]\n";
         std::fs::write(&path, source).unwrap();
         let address = url::Url::from_file_path(&path).unwrap().to_string();
         assert!(crate::nomadnet::is_micron_address(&address));
@@ -1659,7 +1659,7 @@ mod tests {
         let document = native.document_mut().document();
         assert_eq!(
             document.provenance.source_kind.as_deref(),
-            Some("nematic.micron-subset")
+            Some("nematic.micron")
         );
         assert!(document.content_type.is_empty());
         assert!(
@@ -1675,10 +1675,11 @@ mod tests {
                 .any(|block| matches!(block, inker::Block::Rule))
         );
         assert!(document.blocks.iter().any(
-            |block| matches!(block, inker::Block::Badge { text } if text.contains("Partial Micron"))
+            |block| matches!(block, inker::Block::Badge { text } if text.contains("Micron preview"))
         ));
-        assert!(document.blocks.iter().any(|block| matches!(block, inker::Block::Preformatted { text } if text == "[Local page`:/page/probe.mu]")));
+        assert!(document.blocks.iter().any(|block| matches!(block, inker::Block::Paragraph { spans } if inker::inline_text(spans) == "Local page")));
         assert!(document.outgoing_links().is_empty());
+        assert!(session.links().is_empty(), "file aliases remain inert without site authority");
         assert_eq!(std::fs::read(&path).unwrap(), source.as_bytes());
     }
 
