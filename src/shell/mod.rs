@@ -169,17 +169,17 @@ fn pane_display_label(content: &PaneContent) -> String {
 /// path). A parse error yields a stillborn scenario whose first `finish` reports
 /// the failure — the harness learns WHY instead of timing out. `None` when the
 /// env var is unset (the turnstone driver, or no driver, runs instead).
-fn shared_scenario_from_env() -> Option<genet_probe::Scenario> {
+fn shared_scenario_from_env() -> Option<taproot::Scenario> {
     let path = std::path::PathBuf::from(std::env::var_os("TURNSTONE_SCENARIO")?);
     let body = std::fs::read_to_string(&path).unwrap_or_default();
     // A parse error becomes a scenario that logs why and fails a step (an
     // assert on a field no snapshot has), so the run reports RESULT fail with the
     // reason rather than timing out — the same courtesy turnstone's own driver pays.
-    Some(match genet_probe::Scenario::parse(&body) {
+    Some(match taproot::Scenario::parse(&body) {
         Ok(sc) => sc,
         Err(err) => {
             let fallback = format!("log parse error: {err}\nassert snap __never__ == 1");
-            genet_probe::Scenario::parse(&fallback).expect("fallback scenario parses")
+            taproot::Scenario::parse(&fallback).expect("fallback scenario parses")
         }
     })
 }
@@ -297,14 +297,14 @@ pub struct Shell {
     alt: bool,
     /// Live Shift state, for the tear-out modifier arms (Ctrl+Shift = fork).
     shift: bool,
-    /// The genet-probe scenario driver (activated by `TURNSTONE_SCENARIO`): the
+    /// The taproot scenario driver (activated by `TURNSTONE_SCENARIO`): the
     /// generic one-step-per-frame loop every genet app shares, driving this
     /// Shell through its
     /// `Automatable`/`Driveable` impl — the one scenario loop turnstone runs.
     /// `shared_out_dir` stays
     /// on `self` (the scenario is taken out during a tick) so `capture` can reach
     /// it. `shared_done` guards writing the sentinel exactly once.
-    shared_scenario: Option<genet_probe::Scenario>,
+    shared_scenario: Option<taproot::Scenario>,
     /// A bounded copy of semantic events after their ordinary consumers have
     /// received them. Automation drains this copy, so its assertions do not
     /// compete with trail memory for the app's one event stream.
@@ -1486,7 +1486,7 @@ impl Shell {
     /// Write the shared driver's outcome in turnstone's `scenario.done` format
     /// (first line `RESULT ok`/`RESULT fail`, then the log), so the same headed
     /// harness that waits on the turnstone driver reads a shared run identically.
-    fn write_shared_done(&self, outcome: &genet_probe::Outcome) {
+    fn write_shared_done(&self, outcome: &taproot::Outcome) {
         let result = if outcome.ok { "ok" } else { "fail" };
         let mut body = format!("RESULT {result}\n");
         for line in &outcome.log {
@@ -1497,12 +1497,12 @@ impl Shell {
     }
 
     fn scenario_pump(&mut self, event_loop: &ActiveEventLoop) {
-        // The shared genet-probe driver, when active, takes the frame: take the
+        // The shared taproot driver, when active, takes the frame: take the
         // scenario out (so `tick(self)` can borrow the Shell mutably), tick it,
         // put it back — or, on Done, write the `scenario.done` sentinel in
         // turnstone's format and exit. Mutually exclusive with the turnstone driver.
         if let Some(mut shared) = self.shared_scenario.take() {
-            use genet_probe::Progress;
+            use taproot::Progress;
             match shared.tick(self) {
                 Progress::Done => {
                     let outcome = shared.finish();

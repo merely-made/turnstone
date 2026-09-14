@@ -232,7 +232,7 @@ mod tests {
     /// door the shell does not have.
     fn click_tab(grid: &mut RosterGrid, label: &str) {
         let (x, y) = grid
-            .resolve(&genet_probe::Selector::class("tab").containing(label), RECT)
+            .resolve(&taproot::Selector::class("tab").containing(label), RECT)
             .unwrap_or_else(|| panic!("the strip must draw a {label} tab"));
         grid.click(x, y, W, H);
     }

@@ -164,15 +164,15 @@ impl StewardPane {
     }
 
     #[cfg(test)]
-    fn resolve(&self, selector: &genet_probe::Selector) -> Option<(f32, f32)> {
+    fn resolve(&self, selector: &taproot::Selector) -> Option<(f32, f32)> {
         let dom = self.dom.borrow();
-        let surfaces = [genet_probe::ProbeSurface {
+        let surfaces = [taproot::ProbeSurface {
             name: "steward",
             dom: &dom,
             rect: [0.0, 0.0, 640.0, 480.0],
             sheet: crate::ui::CAMBIUM_SHEET,
         }];
-        genet_probe::resolve(&surfaces, selector).map(|hit| hit.point)
+        taproot::resolve(&surfaces, selector).map(|hit| hit.point)
     }
 }
 
@@ -208,7 +208,7 @@ mod tests {
         pane.sync(&app, 640.0, 480.0);
         assert!(
             pane.resolve(
-                &genet_probe::Selector::class("list-row")
+                &taproot::Selector::class("list-row")
                     .containing("archive.bin - completed - 12 bytes")
             )
             .is_some()

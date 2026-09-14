@@ -135,7 +135,7 @@ fn roster_grid(state: &RosterState) -> RosterView {
                 Some(r) => (r.url.clone(), r.url.clone()),
                 None => (String::new(), String::new()),
             };
-            // `roster-cell` is the genet-probe hit target: a stable class whose
+            // `roster-cell` is the taproot hit target: a stable class whose
             // direct child text is the cell's, so `click-row` resolves a grid
             // row the same way it resolves a Trail `list-row`. A block `div`
             // (not an inline `span`) so it has a box `absolute_rect` resolves AND
@@ -162,7 +162,7 @@ fn roster_grid(state: &RosterState) -> RosterView {
 
 /// The pane-local y at the centre of grid row `idx` — below the tab strip and
 /// the grid's sticky header. A test helper now that `click-row` resolves off the
-/// DOM through genet-probe (`grid_dom_is_hit_testable` uses it to aim a probe
+/// DOM through taproot (`grid_dom_is_hit_testable` uses it to aim a probe
 /// click at a known row); kept because it pins the grid's row math to the layout.
 pub fn grid_row_center_y(idx: usize) -> f32 {
     let spec = roster_spec();
@@ -232,20 +232,20 @@ impl RosterGrid {
     }
 
     /// Resolve a selector to a point within this pane's DOM at window rect
-    /// `rect` (`[x, y, w, h]`), via the shared genet-probe resolver — the strip's
+    /// `rect` (`[x, y, w, h]`), via the shared taproot resolver — the strip's
     /// bespoke `tab_center` collapsed onto the generic path. Returns the
     /// window-space centre of the first match, or `None` (not drawn). This is
     /// the "extraction simplifies the consumer" claim in the small: the pane no
     /// longer owns tab geometry, it forwards its DOM to the shared resolver.
-    pub fn resolve(&self, sel: &genet_probe::Selector, rect: [f32; 4]) -> Option<(f32, f32)> {
+    pub fn resolve(&self, sel: &taproot::Selector, rect: [f32; 4]) -> Option<(f32, f32)> {
         let dom = self.dom.borrow();
-        let surfaces = [genet_probe::ProbeSurface {
+        let surfaces = [taproot::ProbeSurface {
             name: "roster",
             dom: &dom,
             rect,
             sheet: crate::ui::CAMBIUM_SHEET,
         }];
-        genet_probe::resolve(&surfaces, sel).map(|h| h.point)
+        taproot::resolve(&surfaces, sel).map(|h| h.point)
     }
 
     /// Borrow this pane's DOM for the shared driver's `with_surfaces`. The Ref
@@ -356,12 +356,12 @@ mod tests {
     }
 
     /// Isolates the click-row path: a `roster-cell` must resolve through
-    /// genet-probe to a point, the way the shell's `click-row` drives it.
+    /// taproot to a point, the way the shell's `click-row` drives it.
     #[test]
     fn a_roster_cell_resolves_by_text() {
         let g = grid_with_rows();
         let hit = g.resolve(
-            &genet_probe::Selector::class("roster-cell").containing("alpha"),
+            &taproot::Selector::class("roster-cell").containing("alpha"),
             [0.0, 0.0, 512.0, 600.0],
         );
         // Diagnostic: how many roster-cell elements exist at all.
@@ -420,7 +420,7 @@ mod tests {
         assert_eq!(g.selected_tab(), (0, "Nodes"));
         let (x, y) = g
             .resolve(
-                &genet_probe::Selector::class("tab").containing("Links"),
+                &taproot::Selector::class("tab").containing("Links"),
                 [0.0, 0.0, 512.0, 600.0],
             )
             .expect("the strip must draw a Links tab");
@@ -450,7 +450,7 @@ mod tests {
         let second = grid_with_rows();
         let (x, y) = first
             .resolve(
-                &genet_probe::Selector::class("tab").containing("Links"),
+                &taproot::Selector::class("tab").containing("Links"),
                 [0.0, 0.0, 512.0, 600.0],
             )
             .expect("the first runner draws a Links tab");
@@ -472,7 +472,7 @@ mod tests {
         for label in ROSTER_TABS {
             let (x, y) = g
                 .resolve(
-                    &genet_probe::Selector::class("tab").containing(label),
+                    &taproot::Selector::class("tab").containing(label),
                     [0.0, 0.0, 512.0, 600.0],
                 )
                 .unwrap_or_else(|| panic!("the strip must draw a {label} tab"));

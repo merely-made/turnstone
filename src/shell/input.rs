@@ -17,7 +17,7 @@ use winit::keyboard::{Key as WinitKey, NamedKey as WinitNamedKey};
 use winit::window::CursorIcon;
 
 use crate::panes::PaneContent;
-use genet_probe::AutomatableExt as _;
+use taproot::AutomatableExt as _;
 use inker::{SessionClick, SessionScrollKey};
 use mere::canvas::PointerButton;
 
@@ -130,15 +130,15 @@ impl Shell {
         // `list-row` or a grid `roster-cell` whose text contains `substr`, over
         // all surfaces at once (no per-pane dispatch). Short-circuit `||` means a
         // hit presses once; only a total miss is attributable.
-        let hit = self.click(&genet_probe::Selector::class("roster-cell").containing(substr))
-            || self.click(&genet_probe::Selector::class("list-row").containing(substr))
+        let hit = self.click(&taproot::Selector::class("roster-cell").containing(substr))
+            || self.click(&taproot::Selector::class("list-row").containing(substr))
             // A settings option is a row for receipt purposes (the Apparatus
             // pane's radio options).
-            || self.click(&genet_probe::Selector::class("radio").containing(substr))
-            || self.click(&genet_probe::Selector::class("setting-apply").containing(substr))
+            || self.click(&taproot::Selector::class("radio").containing(substr))
+            || self.click(&taproot::Selector::class("setting-apply").containing(substr))
             // A composed list section's row (the gloss-composite): the same
             // verb addresses it, wherever the section was composed.
-            || self.click(&genet_probe::Selector::class("section-row").containing(substr));
+            || self.click(&taproot::Selector::class("section-row").containing(substr));
         if !hit {
             self.app.note(crate::observe::AppEvent::InteractionMissed {
                 what: "click-row",
@@ -153,7 +153,7 @@ impl Shell {
     /// strip's geometry is the layout's to know; the host names the target and
     /// the resolver finds it — the same substrate every genet app shares.
     pub(super) fn click_pane_tab(&mut self, label: &str) {
-        if !self.click(&genet_probe::Selector::class("tab").containing(label)) {
+        if !self.click(&taproot::Selector::class("tab").containing(label)) {
             self.app.note(crate::observe::AppEvent::InteractionMissed {
                 what: "click-tab",
                 target: label.to_string(),
@@ -168,7 +168,7 @@ impl Shell {
     /// label (two "Example Domain" pages) is not.
     pub(super) fn click_pane_node(&mut self, substr: &str) {
         let sel =
-            genet_probe::Selector::class("graph-canvas-swatch-node").with_attr("data-key", substr);
+            taproot::Selector::class("graph-canvas-swatch-node").with_attr("data-key", substr);
         if !self.click(&sel) {
             self.app.note(crate::observe::AppEvent::InteractionMissed {
                 what: "click-node",

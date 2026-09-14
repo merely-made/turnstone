@@ -248,15 +248,15 @@ impl TranscriptPane {
         }
     }
 
-    pub fn resolve(&self, sel: &genet_probe::Selector, rect: [f32; 4]) -> Option<(f32, f32)> {
+    pub fn resolve(&self, sel: &taproot::Selector, rect: [f32; 4]) -> Option<(f32, f32)> {
         let dom = self.dom.borrow();
-        let surfaces = [genet_probe::ProbeSurface {
+        let surfaces = [taproot::ProbeSurface {
             name: "transcript",
             dom: &dom,
             rect,
             sheet: crate::ui::CAMBIUM_SHEET,
         }];
-        genet_probe::resolve(&surfaces, sel).map(|h| h.point)
+        taproot::resolve(&surfaces, sel).map(|h| h.point)
     }
 
     pub fn dom_ref(&self) -> std::cell::Ref<'_, ScriptedDom> {
@@ -314,7 +314,7 @@ mod tests {
 
         let (x, y) = pane
             .resolve(
-                &genet_probe::Selector::class("list-row").containing("field-notes"),
+                &taproot::Selector::class("list-row").containing("field-notes"),
                 RECT,
             )
             .expect("the entry is drawn as a row");
@@ -344,7 +344,7 @@ mod tests {
 
         let (x, y) = pane
             .resolve(
-                &genet_probe::Selector::class("list-row").containing("slow"),
+                &taproot::Selector::class("list-row").containing("slow"),
                 RECT,
             )
             .expect("a pending entry is still shown");
@@ -382,7 +382,7 @@ mod tests {
         // miss here means the text is genuinely not on screen.
         assert!(
             pane.resolve(
-                &genet_probe::Selector::class("list-row").containing("hunter2"),
+                &taproot::Selector::class("list-row").containing("hunter2"),
                 RECT
             )
             .is_none(),
@@ -390,7 +390,7 @@ mod tests {
         );
         assert!(
             pane.resolve(
-                &genet_probe::Selector::class("list-row").containing("Unlock vault"),
+                &taproot::Selector::class("list-row").containing("Unlock vault"),
                 RECT
             )
             .is_some(),
@@ -408,13 +408,13 @@ mod tests {
 
         let first = pane
             .resolve(
-                &genet_probe::Selector::class("list-row").containing("first"),
+                &taproot::Selector::class("list-row").containing("first"),
                 RECT,
             )
             .expect("the older row is drawn");
         let second = pane
             .resolve(
-                &genet_probe::Selector::class("list-row").containing("second"),
+                &taproot::Selector::class("list-row").containing("second"),
                 RECT,
             )
             .expect("the newer row is drawn");
@@ -430,7 +430,7 @@ mod tests {
         let pane = synced(&ledger());
         assert!(
             pane.resolve(
-                &genet_probe::Selector::class("list-section-title").containing("No commands yet"),
+                &taproot::Selector::class("list-section-title").containing("No commands yet"),
                 RECT
             )
             .is_some()

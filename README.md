@@ -44,7 +44,7 @@ retargeting panes (Roster, Trail, Gloss, Inspector, Apparatus) and a
 platen-tiled Workbench; multi-window lenses with identity-preserving pane and
 tile tear-out; and multi-session (`sessions/<id>/` with a switcher and
 restart restore). Every capability carries a self-driving scenario receipt
-(the shared genet-probe driver) plus an accessibility projection.
+(the shared taproot driver) plus an accessibility projection.
 
 The peer-web product spine is not yet wired end to end. Personae identity,
 Murm, Gemot, shared graph/chat convergence, Knot communal sync, and Retinue

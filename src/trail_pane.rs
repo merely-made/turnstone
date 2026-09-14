@@ -14,7 +14,7 @@
 //! log.
 //!
 //! Row geometry moves from host arithmetic (`pane_rows`' fixed ROW_HEIGHT) to
-//! the shared genet-probe resolver: rows are normal-flow `list-row` blocks whose
+//! the shared taproot resolver: rows are normal-flow `list-row` blocks whose
 //! heights the host sheet decides, so `resolve` finds a row's rect from the
 //! laid-out DOM — the same path the Roster grid's rows and tabs take.
 
@@ -209,19 +209,19 @@ impl TrailPane {
     }
 
     /// Resolve a selector to a window point within this pane's DOM at window
-    /// rect `rect`, via the shared genet-probe resolver — the same delegation
+    /// rect `rect`, via the shared taproot resolver — the same delegation
     /// the Roster grid uses, so `click-row` finds a Trail `list-row` and a grid
     /// `roster-cell` through one path. `row_center`'s bespoke walk collapsed
     /// here.
-    pub fn resolve(&self, sel: &genet_probe::Selector, rect: [f32; 4]) -> Option<(f32, f32)> {
+    pub fn resolve(&self, sel: &taproot::Selector, rect: [f32; 4]) -> Option<(f32, f32)> {
         let dom = self.dom.borrow();
-        let surfaces = [genet_probe::ProbeSurface {
+        let surfaces = [taproot::ProbeSurface {
             name: "trail",
             dom: &dom,
             rect,
             sheet: crate::ui::CAMBIUM_SHEET,
         }];
-        genet_probe::resolve(&surfaces, sel).map(|h| h.point)
+        taproot::resolve(&surfaces, sel).map(|h| h.point)
     }
 
     /// Borrow this pane's DOM for the shared driver's `with_surfaces`.
@@ -272,7 +272,7 @@ mod tests {
         let mut pane = pane_with_rows();
         let (x, y) = pane
             .resolve(
-                &genet_probe::Selector::class("list-row").containing("example.com"),
+                &taproot::Selector::class("list-row").containing("example.com"),
                 [0.0, 0.0, 400.0, 600.0],
             )
             .expect("the Recent row must be drawn");
@@ -283,7 +283,7 @@ mod tests {
         );
         let (x, y) = pane
             .resolve(
-                &genet_probe::Selector::class("list-row").containing("Recover beta"),
+                &taproot::Selector::class("list-row").containing("Recover beta"),
                 [0.0, 0.0, 400.0, 600.0],
             )
             .expect("the Recover row must be drawn");
@@ -302,7 +302,7 @@ mod tests {
         let mut pane = pane_with_rows();
         let (x, y) = pane
             .resolve(
-                &genet_probe::Selector::class("list-row").containing("no more"),
+                &taproot::Selector::class("list-row").containing("no more"),
                 [0.0, 0.0, 400.0, 600.0],
             )
             .expect("the muted row is drawn");

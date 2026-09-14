@@ -105,8 +105,8 @@ impl Shell {
             }
             let rect = [s.rect.x, s.rect.y, s.rect.w, s.rect.h];
             let pane = self.renderers.workbench.get(&id)?;
-            let a = pane.resolve(&genet_probe::Selector::class("tab").containing(from), rect)?;
-            let b = pane.resolve(&genet_probe::Selector::class("tab").containing(onto), rect)?;
+            let a = pane.resolve(&taproot::Selector::class("tab").containing(from), rect)?;
+            let b = pane.resolve(&taproot::Selector::class("tab").containing(onto), rect)?;
             // An edge release aims 10% into that band of the TARGET CELL's
             // body rather than at the tab (the split-beside zones).
             let release = match edge {
@@ -155,7 +155,7 @@ impl Shell {
             }
             let rect = [s.rect.x, s.rect.y, s.rect.w, s.rect.h];
             let pane = self.renderers.workbench.get(&id)?;
-            pane.resolve(&genet_probe::Selector::class("tab").containing(from), rect)
+            pane.resolve(&taproot::Selector::class("tab").containing(from), rect)
         });
         let release = plan
             .iter()

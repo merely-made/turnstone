@@ -1,4 +1,4 @@
-# The SHARED genet-probe scenario driver, driving the real turnstone Shell through
+# The SHARED taproot scenario driver, driving the real turnstone Shell through
 # its Automatable/Driveable impl — proof that turnstone and the shared driver are
 # one loop, not two. Generic verbs only (act / click by selector / assert snap /
 # assert text / assert event / capture); turnstone's app-specific verbs are the

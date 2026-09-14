@@ -276,14 +276,14 @@ mod tests {
         });
         let (x, y) = {
             let dom = pane.dom.borrow();
-            genet_probe::resolve(
-                &[genet_probe::ProbeSurface {
+            taproot::resolve(
+                &[taproot::ProbeSurface {
                     name: "inspector",
                     dom: &dom,
                     rect: [0.0, 0.0, 509.0, 576.0],
                     sheet: crate::ui::CAMBIUM_SHEET,
                 }],
-                &genet_probe::Selector::role("button").containing("Clip document"),
+                &taproot::Selector::role("button").containing("Clip document"),
             )
             .expect("Probe must resolve the configured clip button")
             .point

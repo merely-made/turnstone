@@ -412,15 +412,15 @@ impl SwatchPane {
 
     /// Resolve a probe selector within this pane's DOM (nodes carry their
     /// stable identity as `data-key`).
-    pub fn resolve(&self, sel: &genet_probe::Selector, rect: [f32; 4]) -> Option<(f32, f32)> {
+    pub fn resolve(&self, sel: &taproot::Selector, rect: [f32; 4]) -> Option<(f32, f32)> {
         let dom = self.dom.borrow();
-        let surfaces = [genet_probe::ProbeSurface {
+        let surfaces = [taproot::ProbeSurface {
             name: self.preset.id,
             dom: &dom,
             rect,
             sheet: crate::ui::CAMBIUM_SHEET,
         }];
-        genet_probe::resolve(&surfaces, sel).map(|h| h.point)
+        taproot::resolve(&surfaces, sel).map(|h| h.point)
     }
 
     /// Borrow this pane's DOM for the shared driver's `with_surfaces`.
@@ -498,7 +498,7 @@ mod tests {
             .expect("every minimap node carries its url as a key");
         let (x, y) = pane
             .resolve(
-                &genet_probe::Selector::class("graph-canvas-swatch-node")
+                &taproot::Selector::class("graph-canvas-swatch-node")
                     .with_attr("data-key", &key),
                 [0.0, 0.0, 480.0, 400.0],
             )
@@ -531,7 +531,7 @@ mod tests {
         );
         let (x, y) = pane
             .resolve(
-                &genet_probe::Selector::class("graph-canvas-swatch-node")
+                &taproot::Selector::class("graph-canvas-swatch-node")
                     .with_attr("data-key", &donor.0.to_string()),
                 [0.0, 0.0, 480.0, 400.0],
             )
@@ -551,7 +551,7 @@ mod tests {
     #[test]
     fn hovering_sets_and_clears_emphasis() {
         let (mut pane, _app, donor) = overmap_pane_on_fork_pair();
-        let selector = genet_probe::Selector::class("graph-canvas-swatch-node")
+        let selector = taproot::Selector::class("graph-canvas-swatch-node")
             .with_attr("data-key", &donor.0.to_string());
         let (x, y) = pane
             .resolve(&selector, [0.0, 0.0, 480.0, 400.0])

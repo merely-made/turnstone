@@ -59,9 +59,9 @@ impl IdleDiagnosis {
 
 /// Re-check `condition` once per (simulated) frame for up to `frames`
 /// attempts, sleeping briefly between attempts. `wait-row`/`wait-status`/
-/// `wait-file` are "sticky" over the SHARED genet-probe scenario loop's own
+/// `wait-file` are "sticky" over the SHARED taproot scenario loop's own
 /// frame pump (`Scenario::tick` advances its step index unconditionally once
-/// per call — see `genet_probe::scenario`), so there is no hook to hold a
+/// per call — see `taproot::scenario`), so there is no hook to hold a
 /// single step across several of ITS frames. This polls within the one call
 /// turnstone's `app_step` gets instead: background work (file writes, network
 /// I/O) runs on other threads/tasks, so a short sleep between checks still
@@ -104,15 +104,15 @@ impl Shell {
     }
 }
 
-/// turnstone drives through the shared genet-probe harness: implementing this
+/// turnstone drives through the shared taproot harness: implementing this
 /// small surface grants the `resolve` / `click` verbs (used by the collapsed
 /// `click_pane_*` above) for free. `with_surfaces` hands the retained pane DOMs
 /// to a visitor — the borrow guards live only for the callback, which is why the
 /// trait takes a visitor rather than returning a `Vec` (turnstone's DOMs are behind
 /// `RefCell`). Inspector/Workbench panes join by adding their `dom_ref` here when
 /// they grow click verbs.
-impl genet_probe::Automatable for Shell {
-    fn with_surfaces<R>(&self, f: impl FnOnce(&[genet_probe::ProbeSurface<'_>]) -> R) -> R {
+impl taproot::Automatable for Shell {
+    fn with_surfaces<R>(&self, f: impl FnOnce(&[taproot::ProbeSurface<'_>]) -> R) -> R {
         let plan = self.surface_plan();
         let mut guards: Vec<(
             &'static str,
@@ -248,9 +248,9 @@ impl genet_probe::Automatable for Shell {
                 _ => {}
             }
         }
-        let mut surfaces: Vec<genet_probe::ProbeSurface> = guards
+        let mut surfaces: Vec<taproot::ProbeSurface> = guards
             .iter()
-            .map(|(name, rect, r)| genet_probe::ProbeSurface {
+            .map(|(name, rect, r)| taproot::ProbeSurface {
                 name,
                 dom: r,
                 rect: *rect,
@@ -262,7 +262,7 @@ impl genet_probe::Automatable for Shell {
             })
             .collect();
         surfaces.extend(contributed_guards.iter().map(|(name, rect, dom, sheet)| {
-            genet_probe::ProbeSurface {
+            taproot::ProbeSurface {
                 name,
                 dom,
                 rect: *rect,
@@ -272,7 +272,7 @@ impl genet_probe::Automatable for Shell {
         f(&surfaces)
     }
 
-    fn text_target(&self, text: &str) -> Result<Option<genet_probe::TextTarget>, String> {
+    fn text_target(&self, text: &str) -> Result<Option<taproot::TextTarget>, String> {
         let plan = self.surface_plan();
         let mut matches = plan.iter().filter_map(|surface| {
             let crate::surface::SurfaceKind::Content(node) = surface.kind else {
@@ -281,7 +281,7 @@ impl genet_probe::Automatable for Shell {
             self.content_sessions
                 .get(&node)
                 .and_then(|session| session.text_target(text))
-                .map(|target| genet_probe::TextTarget {
+                .map(|target| taproot::TextTarget {
                     anchor: (
                         surface.rect.x + target.anchor[0],
                         surface.rect.y + target.anchor[1],
@@ -299,10 +299,10 @@ impl genet_probe::Automatable for Shell {
         Ok(first)
     }
 
-    fn snapshot(&self) -> genet_probe::ProbeSnapshot {
+    fn snapshot(&self) -> taproot::ProbeSnapshot {
         let snap = crate::observe::snapshot(&self.app);
         let kept = snap.focused.as_ref().is_some_and(|node| node.kept);
-        let mut out = genet_probe::ProbeSnapshot::default()
+        let mut out = taproot::ProbeSnapshot::default()
             .with_field("focus", snap.focus)
             .with_field("node-count", snap.node_count.to_string())
             .with_field("roster-tab", snap.roster_tab)
@@ -461,14 +461,14 @@ impl genet_probe::Automatable for Shell {
     }
 }
 
-/// The `Driveable` half: the two things the shared genet-probe scenario loop
+/// The `Driveable` half: the two things the shared taproot scenario loop
 /// cannot do itself. `capture` queues a screenshot the next render fulfills (into
 /// the active shared run's dir); `app_step` is left at its default (unknown verb
 /// fails loudly) — turnstone's ~30 app-specific verbs are the coordinated
 /// follow-on, homed here when the harness fully retires `scenario.rs`. Until
 /// then the shared loop drives turnstone through its generic verbs, proving the
 /// two grammars are one loop.
-impl genet_probe::Driveable for Shell {
+impl taproot::Driveable for Shell {
     fn capture(&mut self, name: &str) -> bool {
         self.pending_capture = Some(self.shared_out_dir.join(format!("{name}.png")));
         self.request_redraw();
@@ -490,7 +490,7 @@ impl genet_probe::Driveable for Shell {
 
 impl Shell {
     /// Execute one turnstone scenario step against the Shell — the app-specific
-    /// verbs the shared genet-probe loop hands to `Driveable::app_step`. This is
+    /// verbs the shared taproot loop hands to `Driveable::app_step`. This is
     /// turnstone's former `scenario.rs` `tick()` (asserts) and `scenario_pump`'s
     /// `Tick` execution (interactions), unified into one pass: an assert reads
     /// the observation snapshot and returns `Err` on mismatch; an interaction
@@ -938,7 +938,7 @@ impl Shell {
 
             // ---- generic verbs the shared loop owns; never reached, defensive ----
             Step::Act(label) => {
-                if !genet_probe::Automatable::act(self, label) {
+                if !taproot::Automatable::act(self, label) {
                     return Err(format!("act: no palette action labelled '{label}'"));
                 }
             }

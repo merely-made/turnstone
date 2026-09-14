@@ -117,7 +117,7 @@
 //! without hardcoding it — see `wait-file` above and `scenarios/place_*.scn`.
 
 /// One parsed scenario step. `TURNSTONE_SCENARIO` runs on the shared
-/// `genet_probe::Scenario` loop; the generic verbs (act/settle/capture/log,
+/// `taproot::Scenario` loop; the generic verbs (act/settle/capture/log,
 /// assert text/event/snap) it owns, and these app-specific steps reach the Shell
 /// via `Driveable::app_step`, parsed here and run by `Shell::run_scenario_step`.
 #[derive(Debug)]

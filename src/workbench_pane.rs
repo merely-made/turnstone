@@ -279,17 +279,17 @@ impl WorkbenchPane {
     }
 
     /// Resolve a selector to a point within this pane's DOM at window rect
-    /// `rect`, via the shared genet-probe resolver (the scenario's
+    /// `rect`, via the shared taproot resolver (the scenario's
     /// `drag-tab` aims through this).
-    pub fn resolve(&self, sel: &genet_probe::Selector, rect: [f32; 4]) -> Option<(f32, f32)> {
+    pub fn resolve(&self, sel: &taproot::Selector, rect: [f32; 4]) -> Option<(f32, f32)> {
         let dom = self.dom.borrow();
-        let surfaces = [genet_probe::ProbeSurface {
+        let surfaces = [taproot::ProbeSurface {
             name: "workbench",
             dom: &dom,
             rect,
             sheet: crate::ui::CAMBIUM_SHEET,
         }];
-        genet_probe::resolve(&surfaces, sel).map(|hit| hit.point)
+        taproot::resolve(&surfaces, sel).map(|hit| hit.point)
     }
 }
 
@@ -323,11 +323,11 @@ mod tests {
         let pane = pane_over(&app, 800.0, 600.0);
         assert_eq!(pane.tiling().cells.len(), 2);
         let alpha = pane.resolve(
-            &genet_probe::Selector::class("tab").containing("alpha"),
+            &taproot::Selector::class("tab").containing("alpha"),
             [0.0, 0.0, 800.0, 600.0],
         );
         let beta = pane.resolve(
-            &genet_probe::Selector::class("tab").containing("beta"),
+            &taproot::Selector::class("tab").containing("beta"),
             [0.0, 0.0, 800.0, 600.0],
         );
         let (ax, _) = alpha.expect("alpha's tab is drawn");
@@ -343,14 +343,14 @@ mod tests {
         let pane = pane_over(&app, 800.0, 600.0);
         let (ax, ay) = pane
             .resolve(
-                &genet_probe::Selector::class("tab").containing("alpha"),
+                &taproot::Selector::class("tab").containing("alpha"),
                 [0.0, 0.0, 800.0, 600.0],
             )
             .unwrap();
         assert_eq!(pane.tab_at(ax, ay, 800, 600), Some(a));
         let (bx, by) = pane
             .resolve(
-                &genet_probe::Selector::class("tab").containing("beta"),
+                &taproot::Selector::class("tab").containing("beta"),
                 [0.0, 0.0, 800.0, 600.0],
             )
             .unwrap();
@@ -376,7 +376,7 @@ mod tests {
         assert_eq!(pane.tiling().cells.len(), 1);
         let (x, y) = pane
             .resolve(
-                &genet_probe::Selector::class("tab").containing("alpha"),
+                &taproot::Selector::class("tab").containing("alpha"),
                 [0.0, 0.0, 800.0, 600.0],
             )
             .expect("alpha's tab is drawn in the stack");

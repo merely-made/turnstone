@@ -344,21 +344,21 @@ fn admitted_pane_exposes_its_retained_dom_and_complete_probe_stylesheet() {
     assert!(pane.stylesheet().contains(".fake-surface"));
 
     let dom = pane.dom_ref();
-    let surface = genet_probe::ProbeSurface {
+    let surface = taproot::ProbeSurface {
         name: "contributed",
         dom: &dom,
         rect: [0.0, 0.0, 240.0, 120.0],
         sheet: pane.stylesheet(),
     };
-    assert!(genet_probe::text_present(&[surface], "count:0 width:240"));
+    assert!(taproot::text_present(&[surface], "count:0 width:240"));
 
-    let surface = genet_probe::ProbeSurface {
+    let surface = taproot::ProbeSurface {
         name: "contributed",
         dom: &dom,
         rect: [0.0, 0.0, 240.0, 120.0],
         sheet: pane.stylesheet(),
     };
-    let button = genet_probe::resolve(&[surface], &genet_probe::Selector::role("button"))
+    let button = taproot::resolve(&[surface], &taproot::Selector::role("button"))
         .expect("semantic controls resolve under the exact stylesheet the pane presents")
         .point;
     drop(dom);

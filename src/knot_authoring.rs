@@ -2468,23 +2468,23 @@ mod tests {
             },
         );
         let dom = dom.borrow();
-        let surfaces = [genet_probe::ProbeSurface {
+        let surfaces = [taproot::ProbeSurface {
             name: "knot-authoring",
             dom: &dom,
             rect: [0.0, 0.0, 900.0, 600.0],
             sheet: KNOT_SHEET,
         }];
 
-        let hit = genet_probe::resolve(
+        let hit = taproot::resolve(
             &surfaces,
-            &genet_probe::Selector::class("knot-resolve")
+            &taproot::Selector::class("knot-resolve")
                 .with_attr("data-projection-instance", "17"),
         );
         assert!(
             hit.is_some(),
             "the probe must resolve the action by InstanceId"
         );
-        assert!(genet_probe::text_present(
+        assert!(taproot::text_present(
             &surfaces,
             "Projection intent 17: knot.transclusion.resolve accepted"
         ));
