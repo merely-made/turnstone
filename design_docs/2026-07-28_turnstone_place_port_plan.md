@@ -1045,9 +1045,10 @@ runtime down releases the file lock. Reconnect now leaves all nine lanes and
 waits (`leave_and_wait`, about five seconds, apparently a fixed ceiling inside
 ractor's stop) before the bounded reopen retry; ordinary close and exit do not
 pay that wait. Run 7 under `C:/t/turnstone-place-two-windows-20260913-7`
-passed all three scenarios with the change. Open: the nine lane rows overflow
-the status view by roughly 15 px at the smallest counters, and the five-second
-leave is a mere/p2panda cost to plan against.
+passed all three scenarios with the change. The lane rows were then shortened
+so every status row fits the card. The five-second leave is a p2panda drain
+timeout that always runs to its ceiling; the fix is planned in the mere
+census as I3e.
 
 ## File seams
 
