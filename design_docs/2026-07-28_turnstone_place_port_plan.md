@@ -1046,9 +1046,14 @@ waits (`leave_and_wait`, about five seconds, apparently a fixed ceiling inside
 ractor's stop) before the bounded reopen retry; ordinary close and exit do not
 pay that wait. Run 7 under `C:/t/turnstone-place-two-windows-20260913-7`
 passed all three scenarios with the change. The lane rows were then shortened
-so every status row fits the card. The five-second leave is a p2panda drain
-timeout that always runs to its ceiling; the fix is planned in the mere
-census as I3e.
+so every status row fits the card. The five-second leave was a p2panda drain
+timeout that always ran to its ceiling; fork release `mere-p2panda-net-0.7.4`
+lets an idle poller finish, and the lanes test now measures the store lock
+released about half a second after the leave, which is the spawner-thread
+tail the reopen retry already covers. Turnstone pins the fork at that tag's
+commit with mere `0db9d10d` and knot-editor `30c85702` aligned on it; run 8
+under `C:/t/turnstone-place-two-windows-20260914-8` passed all three
+scenarios on that graph.
 
 ## File seams
 
