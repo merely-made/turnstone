@@ -285,6 +285,25 @@ pub fn hex32(bytes: &[u8; 32]) -> String {
     encode_hex(bytes)
 }
 
+/// How much of an elided value's head and tail survives. A rendezvous ticket
+/// is ~200 characters and a chrome row is one clipped line, so the status
+/// surface shows the ends and the palette's copy action carries the whole.
+const ELIDE_HEAD: usize = 12;
+const ELIDE_TAIL: usize = 8;
+
+/// `value` with its middle replaced by an ellipsis, or `value` unchanged when
+/// eliding would not shorten it. Char-based, so a multi-byte value is never
+/// cut mid-character.
+pub fn elide_middle(value: &str) -> String {
+    let chars: Vec<char> = value.chars().collect();
+    if chars.len() <= ELIDE_HEAD + ELIDE_TAIL + 1 {
+        return value.to_string();
+    }
+    let head: String = chars[..ELIDE_HEAD].iter().collect();
+    let tail: String = chars[chars.len() - ELIDE_TAIL..].iter().collect();
+    format!("{head}…{tail}")
+}
+
 /// Cached, app-owned summary of the retained place domains.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct OfflinePlaceSnapshot {
@@ -604,7 +623,12 @@ impl PlaceState {
                     rows.extend(
                         sync.local_rendezvous
                             .iter()
-                            .map(|ticket| format!("Local rendezvous: {ticket}")),
+                            // The full ticket stays in the snapshot, the
+                            // observation, and the exported card; only this
+                            // one-line row is elided.
+                            .map(|ticket| {
+                                format!("Local rendezvous: {}", elide_middle(ticket))
+                            }),
                     );
                     rows.extend(sync.lanes.iter().map(|lane| format!(
                         "{}: {}; {} completed rounds; {} accepted operations",
@@ -619,6 +643,19 @@ impl PlaceState {
             rows.push("Leave: detach this session and retain its history".into());
         }
         rows
+    }
+
+    /// This bind's own dialable tickets at the last refresh, whole. Empty
+    /// unless a place is open and its lanes reported one.
+    pub fn local_rendezvous(&self) -> &[String] {
+        match self {
+            Self::Offline { snapshot, .. } => snapshot
+                .sync
+                .as_ref()
+                .map(|sync| sync.local_rendezvous.as_slice())
+                .unwrap_or_default(),
+            _ => &[],
+        }
     }
 
     pub fn binding(&self) -> Option<&PlaceBindingV1> {
@@ -653,6 +690,101 @@ mod tests {
             "hall",
         )
         .unwrap()
+    }
+
+    /// A realistic p2panda endpoint ticket: ~200 base32 characters.
+    fn long_ticket() -> String {
+        "abcdefghijklmnopqrstuvwxyz234567"
+            .chars()
+            .cycle()
+            .take(200)
+            .collect()
+    }
+
+    #[test]
+    fn elide_middle_keeps_the_ends_and_leaves_short_values_alone() {
+        assert_eq!(elide_middle(""), "");
+        assert_eq!(elide_middle("short"), "short");
+        // Exactly the length eliding would produce: nothing is gained, so the
+        // value is left whole.
+        let same = "a".repeat(ELIDE_HEAD + ELIDE_TAIL + 1);
+        assert_eq!(elide_middle(&same), same);
+
+        let ticket = long_ticket();
+        let elided = elide_middle(&ticket);
+        assert_eq!(elided.chars().count(), ELIDE_HEAD + ELIDE_TAIL + 1);
+        assert!(elided.starts_with(&ticket[..ELIDE_HEAD]));
+        assert!(elided.ends_with(&ticket[ticket.len() - ELIDE_TAIL..]));
+        assert!(elided.contains('…'));
+
+        // Multi-byte input is cut on character boundaries, not bytes.
+        let wide = "é".repeat(40);
+        assert_eq!(
+            elide_middle(&wide).chars().count(),
+            ELIDE_HEAD + ELIDE_TAIL + 1
+        );
+    }
+
+    /// Every status row is one `nowrap; overflow: hidden` line in a 560px
+    /// card, so a row that does not fit is cut off mid-string rather than
+    /// wrapped. The ~200-character rendezvous ticket is what broke this.
+    ///
+    /// The lane rows are excluded, and not because they are safe: the longest
+    /// lane label overflows this budget at ANY counter value ("Shared graph:
+    /// syncing at last refresh; 12 completed rounds; 340 accepted operations"
+    /// measures 543px against 528px). That is a separate row, a separate
+    /// cause, and a separate decision about what to shorten; the guard says so
+    /// out loud rather than passing by pretending otherwise.
+    #[test]
+    fn every_status_row_fits_one_palette_row() {
+        let state = PlaceState::Offline {
+            binding: binding(),
+            generation: 1,
+            snapshot: OfflinePlaceSnapshot {
+                sync: Some(PlaceSyncSnapshot {
+                    lanes: vec![
+                        PlaceLaneSnapshot {
+                            name: "commons/graph/v1",
+                            syncing: true,
+                            sync_rounds: 12,
+                            ops_received: 340,
+                            last_activity_ms: Some(42),
+                        },
+                        PlaceLaneSnapshot {
+                            name: "gemot/constitution/v1",
+                            syncing: false,
+                            sync_rounds: 0,
+                            ops_received: 0,
+                            last_activity_ms: None,
+                        },
+                    ],
+                    local_rendezvous: vec![long_ticket()],
+                    dialed_rendezvous: 0,
+                }),
+                permissions: Some(PlacePermissionSnapshot {
+                    message_write: true,
+                    graph_write: false,
+                }),
+                ..Default::default()
+            },
+        };
+
+        let rows = state.status_lines();
+        assert!(
+            rows.iter().any(|row| row.starts_with("Local rendezvous:")),
+            "the rendezvous row is the one under test",
+        );
+        for row in rows
+            .iter()
+            .filter(|row| !row.ends_with("accepted operations"))
+        {
+            let width = crate::ui::chrome_row_width(row);
+            assert!(
+                width <= crate::ui::ROW_TEXT_BUDGET,
+                "status row must fit one palette row: {width}px > {}px: {row}",
+                crate::ui::ROW_TEXT_BUDGET,
+            );
+        }
     }
 
     #[test]

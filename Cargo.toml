@@ -188,6 +188,9 @@ genet-render = { git = "https://github.com/merely-made/genet.git", rev = "101d9e
 # canvas by the layered present).
 genet-scripted-dom = { git = "https://github.com/merely-made/genet.git", rev = "101d9e9ade8671564e723443d9f0498e899a33f1" }
 genet-probe = { git = "https://github.com/merely-made/genet.git", rev = "101d9e9ade8671564e723443d9f0498e899a33f1" }
+# The shared clipboard service. The system backend lives behind the shell so
+# neither the app nor the place worker ever holds a clipboard handle.
+genet-clipboard = { git = "https://github.com/merely-made/genet.git", rev = "101d9e9ade8671564e723443d9f0498e899a33f1" }
 layout-dom-api = { version = "=0.1.0", git = "https://github.com/merely-made/genet.git", rev = "101d9e9ade8671564e723443d9f0498e899a33f1" }
 paint_list_api = { git = "https://github.com/merely-made/netrender.git", rev = "3961aca919f707ab09a786379eb4ce8bb121258e" }
 paint_list_render = { git = "https://github.com/merely-made/netrender.git", rev = "3961aca919f707ab09a786379eb4ce8bb121258e" }

@@ -178,9 +178,20 @@ impl App {
                 ("Offer place pre-key", Action::BeginOfferPlacePrekey),
             ]
         };
-        rows.iter()
+        let mut rows: Vec<(String, Action)> = rows
+            .iter()
             .map(|(label, action)| (label.to_string(), action.clone()))
-            .collect()
+            .collect();
+        // The status row shows an elided ticket, so the copy row is the only
+        // route to the whole one. Offered only where there IS one: a row that
+        // could only refuse would teach the palette to lie.
+        if !self.place.local_rendezvous().is_empty() {
+            rows.push((
+                "Copy local rendezvous".to_string(),
+                Action::CopyLocalRendezvous,
+            ));
+        }
+        rows
     }
 
     /// Captured-page scope is a local reading choice. The worker supplies the

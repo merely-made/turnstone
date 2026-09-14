@@ -1005,6 +1005,37 @@ pub fn save_group_session(
         .map_err(|error| format!("seal group session: {error}"))
 }
 
+/// How long a same-process reopen waits out the store lock a closed bind
+/// still holds. p2panda runs each LogSync session's actor on its own
+/// `std::thread` (ractor `ThreadLocalActorSpawner`), so the store clone in
+/// that actor's state outlives both the awaited lane leave and the lane
+/// runtime's shutdown by a few hundred milliseconds.
+pub(crate) const RECONNECT_REOPEN_BUDGET: std::time::Duration =
+    std::time::Duration::from_secs(2);
+
+/// `open_cached_place`, retried while redb still reports the lock held.
+///
+/// Only the Reconnect path needs this: it is the one place that closes a live
+/// bind and reopens the same stores inside one process.
+fn reopen_cached_place(
+    directory: &Path,
+    binding: &PlaceBindingV1,
+    identity: &dyn IdentityProvider,
+    settings: &PlaceWorkerSettings,
+) -> Result<(OpenPlace, OfflinePlaceSnapshot), String> {
+    let deadline = std::time::Instant::now() + RECONNECT_REOPEN_BUDGET;
+    loop {
+        match open_cached_place(directory, binding, identity, settings) {
+            Err(error)
+                if error.contains("already open") && std::time::Instant::now() < deadline =>
+            {
+                std::thread::sleep(std::time::Duration::from_millis(25));
+            }
+            outcome => return outcome,
+        }
+    }
+}
+
 pub(crate) fn open_cached_place(
     directory: &Path,
     binding: &PlaceBindingV1,
@@ -1707,9 +1738,14 @@ pub fn spawn_place_worker(
                             continue;
                         }
                         lifecycle_generation = generation;
+                        // This is the one close followed by a reopen of the
+                        // same stores, so it is the one that pays for waiting.
+                        if let Some(lanes) = live.as_mut().and_then(|open| open.lanes.as_mut()) {
+                            lanes.leave_and_wait();
+                        }
                         live = None;
                         live_scope = None;
-                        let reconnected = open_cached_place(
+                        let reconnected = reopen_cached_place(
                             &directory,
                             &binding,
                             identity.as_ref(),
@@ -2943,6 +2979,68 @@ pub(crate) mod tests {
         let (_, cached) =
             open_cached_place(&directory, &binding, identity.as_ref(), &settings()).unwrap();
         assert_eq!((cached.graph.nodes, cached.chat.messages), (2, 2));
+    }
+
+    /// Reconnect pressed while the place is already live. The app bumps the
+    /// generation, so the worker closes the bind and reopens the same stores
+    /// inside one process: the reopen must not land in Degraded on a lock the
+    /// departed lanes are still letting go of.
+    #[test]
+    fn a_live_place_reconnects_into_a_new_generation_in_one_process() {
+        let root = tempfile::tempdir().unwrap();
+        let directory = root.path().join("host");
+        std::fs::create_dir_all(&directory).unwrap();
+        let identity = Arc::new(RootIdentity::Unsealed(InMemoryProvider::from_seed(
+            [0xc4; 32],
+        )));
+
+        let (worker, updates) =
+            spawn_place_worker(Arc::new(|| {}), identity, PlaceWorkerSettings::default());
+        let session = SessionId::new();
+        worker.command(PlaceWorkerCommand::Found {
+            session,
+            generation: 1,
+            directory: directory.clone(),
+            name: "Hearth".into(),
+        });
+        let binding = match updates.recv_timeout(std::time::Duration::from_secs(60)) {
+            Ok(Update::PlaceFounded {
+                result: Ok((binding, snapshot)),
+                ..
+            }) => {
+                assert!(snapshot.sync.is_some(), "founding binds lanes");
+                binding
+            },
+            Ok(Update::PlaceFounded {
+                result: Err(error), ..
+            }) => panic!("founding refused: {error}"),
+            _ => panic!("founding answered with an unrelated update"),
+        };
+
+        worker.command(PlaceWorkerCommand::Reconnect {
+            session,
+            generation: 2,
+            directory,
+            binding,
+        });
+        match updates.recv_timeout(std::time::Duration::from_secs(60)) {
+            Ok(Update::PlaceOpened {
+                result: Ok(snapshot),
+                generation: 2,
+                ..
+            }) => {
+                let sync = snapshot.sync.expect("the reconnected place binds lanes");
+                assert_eq!(sync.lanes.len(), 9);
+            },
+            Ok(Update::PlaceOpened {
+                result: Err(error), ..
+            }) => panic!("same-process reconnect refused: {error}"),
+            _ => panic!("reconnect answered with an unrelated update"),
+        }
+
+        let (ack_tx, ack_rx) = std::sync::mpsc::sync_channel(1);
+        worker.command(PlaceWorkerCommand::Release(ack_tx));
+        ack_rx.recv_timeout(std::time::Duration::from_secs(60)).unwrap();
     }
 
     #[test]

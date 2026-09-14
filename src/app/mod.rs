@@ -1186,6 +1186,7 @@ impl App {
             Action::LeavePlace => self.leave_place(),
             Action::ReconnectPlace => self.reconnect_place(),
             Action::ShowPlaceStatus => self.open_place_status(),
+            Action::CopyLocalRendezvous => self.copy_local_rendezvous(),
             Action::SendPlaceMessage { channel, body } => {
                 self.run_place_command(crate::place::worker::PlaceCommand::SendMessage {
                     channel,

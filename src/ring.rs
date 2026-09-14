@@ -281,7 +281,10 @@ pub fn ring_of(action: &Action) -> Ring {
         // detach the user's place binding or tear down their live lanes.
         | LeavePlace
         | ReconnectPlace
-        | ShowPlaceStatus => Ring::HostOnly,
+        | ShowPlaceStatus
+        // The whole ticket on the system clipboard is an exfiltration route
+        // out of the process. It stays beside the other place gestures.
+        | CopyLocalRendezvous => Ring::HostOnly,
     }
 }
 
@@ -317,6 +320,7 @@ pub fn emit_allowed(
             Action::LeavePlace => "leaving a place",
             Action::ReconnectPlace => "reconnecting a place",
             Action::ShowPlaceStatus => "inspecting place status",
+            Action::CopyLocalRendezvous => "copying the local rendezvous",
             Action::SubscribeFocusedFeed { .. }
             | Action::UnsubscribeFocusedFeed
             | Action::RefreshFeeds

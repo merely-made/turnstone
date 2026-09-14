@@ -401,6 +401,23 @@ impl App {
         vec![Effect::Redraw]
     }
 
+    /// Put this bind's FULL rendezvous ticket(s) on the system clipboard.
+    /// The status row elides the middle of a ~200-character ticket, so this is
+    /// the only way the whole of it leaves the app. Multiple tickets join with
+    /// newlines; the clipboard itself lives behind the shell.
+    pub(crate) fn copy_local_rendezvous(&mut self) -> Vec<Effect> {
+        let tickets = self.place.local_rendezvous().to_vec();
+        if tickets.is_empty() {
+            return self.refuse_place("no local rendezvous to copy");
+        }
+        self.events
+            .push(AppEvent::PlaceRendezvousCopied(tickets.len()));
+        vec![
+            Effect::CopyText(tickets.join("\n")),
+            Effect::Redraw,
+        ]
+    }
+
     /// Open one free-text place prompt, in the rename shape.
     ///
     /// The precondition is checked HERE rather than only at commit, so a

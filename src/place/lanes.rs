@@ -30,6 +30,9 @@ use crate::place::worker::OpenPlace;
 /// settles into a single re-fold instead of one per message.
 const WATCH_TICK: std::time::Duration = std::time::Duration::from_millis(250);
 
+/// How long a close waits for all nine lanes to let go of their store clones.
+const LEAVE_BUDGET: std::time::Duration = std::time::Duration::from_secs(10);
+
 /// One place's joined lanes, plus the transport and runtime that carry them.
 ///
 /// The runtime is retained so the synchronous owner can await watcher
@@ -40,11 +43,53 @@ pub(crate) struct LiveLanes {
     local_rendezvous: Vec<String>,
     /// How many peer tickets this bind dialed. Zero is a listen-only bind.
     dialed_rendezvous: usize,
+    /// Taken in `drop`: each lane is left and awaited by value, which is the
+    /// only thing that releases the store clone its sync actor captured.
+    joined: Option<JoinedNine>,
+    _transport: P2pandaTransport,
+    /// Taken in `drop` so the runtime can be shut down with a timeout: every
+    /// task holding a store clone must be gone before the caller reopens.
+    _runtime: Option<tokio::runtime::Runtime>,
+}
+
+/// The nine joined lanes, held together so `drop` can move them out.
+struct JoinedNine {
     moot: MootLanes,
     graph: JoinedSpace<CommonsExt>,
     chat: JoinedSpace<ChatExt>,
-    _transport: P2pandaTransport,
-    _runtime: tokio::runtime::Runtime,
+}
+
+impl JoinedNine {
+    /// Leave every lane and wait for its drain and sync actor to let go.
+    ///
+    /// Concurrently and under a bound: each lane's LogSync shutdown takes
+    /// seconds on its own, and the caller is a person who clicked reconnect.
+    async fn leave_and_wait(self) {
+        let moot = self.moot;
+        let left = [
+            tokio::spawn(moot.constitution.leave_and_wait()),
+            tokio::spawn(moot.delegation.leave_and_wait()),
+            tokio::spawn(moot.membership.leave_and_wait()),
+            tokio::spawn(moot.records.leave_and_wait()),
+            tokio::spawn(moot.standing.leave_and_wait()),
+            tokio::spawn(moot.tulpa.leave_and_wait()),
+            tokio::spawn(moot.flora.leave_and_wait()),
+        ];
+        let graph = tokio::spawn(self.graph.leave_and_wait());
+        let chat = tokio::spawn(self.chat.leave_and_wait());
+        let all = async move {
+            for lane in left {
+                if let Ok(Err(error)) = lane.await {
+                    tracing::warn!(%error, "place lane did not leave cleanly");
+                }
+            }
+            let _ = graph.await;
+            let _ = chat.await;
+        };
+        if tokio::time::timeout(LEAVE_BUDGET, all).await.is_err() {
+            tracing::warn!("place lanes did not all leave within the budget");
+        }
+    }
 }
 
 impl Drop for LiveLanes {
@@ -52,19 +97,24 @@ impl Drop for LiveLanes {
         // Explicit because the watcher outlives nothing else usefully: it
         // holds an Emitter, and a tick landing after the place closed would
         // ask the app to resync a place that is gone.
+        let runtime = self._runtime.take().expect("lane runtime is taken once");
         if let Some(watcher) = self.watcher.take() {
             watcher.abort();
-            self._runtime.block_on(async {
+            runtime.block_on(async {
                 let _ = watcher.await;
             });
         }
+        self.joined = None;
         // The transport owns an iroh endpoint whose Drop path aborts
         // ungracefully. The place worker is synchronous, but retains the
         // lane runtime precisely so this owner can await endpoint shutdown
         // before the runtime and transport are dropped.
-        if let Err(error) = self._runtime.block_on(self._transport.close()) {
+        if let Err(error) = runtime.block_on(self._transport.close()) {
             tracing::warn!(%error, "place transport did not close cleanly");
         }
+        // Dropping the runtime only detaches its tasks; each still holds a
+        // store clone, and redb's file lock with it. Shut down and wait.
+        runtime.shutdown_timeout(std::time::Duration::from_secs(2));
     }
 }
 
@@ -86,17 +136,35 @@ impl LaneCounters {
 }
 
 impl LiveLanes {
+    /// Leave every lane and wait for its sync actor to release the store
+    /// clone it captured, before this value is dropped.
+    ///
+    /// Only a caller about to REOPEN these stores in the same process needs
+    /// this: it costs seconds, and an ordinary close does not care who still
+    /// holds a handle. Nothing but drop may follow it.
+    pub(crate) fn leave_and_wait(&mut self) {
+        if let (Some(joined), Some(runtime)) = (self.joined.take(), self._runtime.as_ref()) {
+            runtime.block_on(joined.leave_and_wait());
+        }
+    }
+
+    fn joined(&self) -> &JoinedNine {
+        self.joined.as_ref().expect("lanes are taken only in drop")
+    }
+
     fn counter_handles(&self) -> LaneCounters {
-        let mut handles = self.moot.status_handles().to_vec();
-        handles.push(self.graph.status_handle());
-        handles.push(self.chat.status_handle());
+        let joined = self.joined();
+        let mut handles = joined.moot.status_handles().to_vec();
+        handles.push(joined.graph.status_handle());
+        handles.push(joined.chat.status_handle());
         LaneCounters { handles }
     }
 
     /// Per-lane accepted-operation counters, Gemot's seven then graph then chat.
     /// These counters do not establish whether a lane is caught up.
     pub(crate) fn ops_received(&self) -> [u64; 9] {
-        let gemot = self.moot.sync_status();
+        let joined = self.joined();
+        let gemot = joined.moot.sync_status();
         [
             gemot[0].ops_received,
             gemot[1].ops_received,
@@ -105,8 +173,8 @@ impl LiveLanes {
             gemot[4].ops_received,
             gemot[5].ops_received,
             gemot[6].ops_received,
-            self.graph.sync_status().ops_received,
-            self.chat.sync_status().ops_received,
+            joined.graph.sync_status().ops_received,
+            joined.chat.sync_status().ops_received,
         ]
     }
 
@@ -128,11 +196,12 @@ impl LiveLanes {
             "commons/graph/v1",
             "commons/chat/v1",
         ];
-        let statuses = self
+        let joined = self.joined();
+        let statuses = joined
             .moot
             .sync_status()
             .into_iter()
-            .chain([self.graph.sync_status(), self.chat.sync_status()]);
+            .chain([joined.graph.sync_status(), joined.chat.sync_status()]);
         NAMES
             .into_iter()
             .zip(statuses)
@@ -155,7 +224,8 @@ impl LiveLanes {
         &self,
         operation: stickleback::Operation<CommonsExt>,
     ) -> Result<(), String> {
-        self.graph
+        self.joined()
+            .graph
             .publish(operation)
             .map_err(|error| format!("publish graph operation: {error}"))
     }
@@ -165,7 +235,8 @@ impl LiveLanes {
         &self,
         operation: stickleback::Operation<ChatExt>,
     ) -> Result<(), String> {
-        self.chat
+        self.joined()
+            .chat
             .publish(operation)
             .map_err(|error| format!("publish chat operation: {error}"))
     }
@@ -1449,6 +1520,62 @@ mod tests {
         ack_rx.recv_timeout(Duration::from_secs(5)).unwrap();
         let _ = std::fs::remove_dir_all(&root);
     }
+
+    /// Reconnect-in-place: a live bind closed in a resident process must
+    /// leave redb's process-wide lock free for the very next reopen. The
+    /// generation bump in the worker's Reconnect path does exactly this, so
+    /// any lag here lands the place in Degraded for a person who clicked once.
+    #[test]
+    fn a_closed_live_bind_releases_the_store_lock_for_a_reopen() {
+        let root =
+            std::env::temp_dir().join(format!("turnstone-place-relock-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&root);
+        let host = root.join("host");
+        std::fs::create_dir_all(&host).unwrap();
+        let founder = RootIdentity::Unsealed(InMemoryProvider::from_seed([0xb7; 32]));
+        let settings = settings();
+
+        let b = crate::place::worker::found_place(&host, &founder, "Hearth", &settings).unwrap();
+        let (open, _) = open_cached_place(&host, &b, &founder, &settings).unwrap();
+        let mut lanes = super::join_live(&open, &b, &founder, &[], None).unwrap();
+        assert_eq!(lanes.ops_received().len(), 9);
+
+        lanes.leave_and_wait();
+        drop(lanes);
+        drop(open);
+        let dropped_at = Instant::now();
+
+        let deadline = dropped_at + Duration::from_secs(5);
+        let reopened = loop {
+            match open_cached_place(&host, &b, &founder, &settings) {
+                Ok(reopened) => break Some(reopened),
+                Err(error) => {
+                    assert!(
+                        error.contains("already open"),
+                        "reopen failed for an unrelated reason: {error}"
+                    );
+                    if Instant::now() >= deadline {
+                        break None;
+                    }
+                    std::thread::sleep(Duration::from_millis(25));
+                }
+            }
+        };
+        let waited = dropped_at.elapsed();
+        eprintln!("store lock released after {} ms", waited.as_millis());
+        let reopened = reopened.unwrap_or_else(|| {
+            panic!("the store lock was still held 5 s after the live bind was dropped")
+        });
+        drop(reopened);
+        // The residual is p2panda's, not ours (see RECONNECT_REOPEN_BUDGET):
+        // this holds the lanes to what the worker's retry window can absorb.
+        assert!(
+            waited < crate::place::worker::RECONNECT_REOPEN_BUDGET,
+            "reopen waited {} ms on the store lock",
+            waited.as_millis()
+        );
+        let _ = std::fs::remove_dir_all(&root);
+    }
 }
 
 /// Domain-separated salt for this place's transport identity. A derived key,
@@ -1547,11 +1674,13 @@ pub(crate) fn join_live(
         watcher: None,
         local_rendezvous,
         dialed_rendezvous: tickets.len(),
-        moot: moot_lanes,
-        graph,
-        chat,
+        joined: Some(JoinedNine {
+            moot: moot_lanes,
+            graph,
+            chat,
+        }),
         _transport: transport,
-        _runtime: runtime,
+        _runtime: Some(runtime),
     };
 
     // The watcher turns lane arrivals into ONE app-visible nudge per settled
@@ -1560,7 +1689,8 @@ pub(crate) fn join_live(
     // the stores, not on a sampling task.
     if let Some((out, session, generation)) = watch {
         let counters = lanes.counter_handles();
-        lanes.watcher = Some(lanes._runtime.spawn(async move {
+        let handle = lanes._runtime.as_ref().expect("lane runtime is present").handle().clone();
+        lanes.watcher = Some(handle.spawn(async move {
             let mut settled = counters.total();
             loop {
                 tokio::time::sleep(WATCH_TICK).await;

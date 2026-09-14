@@ -412,6 +412,10 @@ pub enum AppEvent {
     /// a message that never sends because authority was withdrawn must say so,
     /// not vanish.
     PlaceRefused(String),
+    /// This bind's full rendezvous ticket(s) went to the system clipboard,
+    /// by count. The ticket itself is never observed: the status row elides
+    /// it precisely so it does not ride along in a receipt.
+    PlaceRendezvousCopied(usize),
     /// The app adopted a session (a boot, a mint, or a switch), by label.
     SessionSwitched(String),
     /// The current session was closed (trashed).
@@ -674,6 +678,9 @@ impl AppEvent {
             AppEvent::PaneReturned(tag) => format!("pane-returned {tag}"),
             AppEvent::TileTornOut(url) => format!("tile-torn-out {url}"),
             AppEvent::PlaceRefused(reason) => format!("place-refused {reason}"),
+            AppEvent::PlaceRendezvousCopied(count) => {
+                format!("place-rendezvous-copied {count}")
+            }
             AppEvent::SessionSwitched(label) => format!("session-switched {label}"),
             AppEvent::SessionClosed => "session-closed".to_string(),
             AppEvent::SessionForked => "session-forked".to_string(),

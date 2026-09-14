@@ -347,6 +347,10 @@ pub enum Action {
     ReconnectPlace,
     /// Inspect the current place and request fresh local sync observations.
     ShowPlaceStatus,
+    /// Put this bind's full rendezvous ticket(s) on the system clipboard. The
+    /// status row elides the middle of a ~200-character ticket; this is how the
+    /// whole of it leaves the app.
+    CopyLocalRendezvous,
     /// Send one message to a channel of the active place.
     SendPlaceMessage {
         channel: String,
@@ -844,6 +848,9 @@ pub enum Effect {
     },
     /// Persist the session through the persistence port.
     SaveSession,
+    /// Put `text` on the system clipboard. The clipboard itself stays behind
+    /// the shell; neither the app nor the place worker holds one.
+    CopyText(String),
     /// Ask the native shell for one Djot or Knot file. A cancelled picker has
     /// no effect; an accepted path is minted into a provider-owned source.
     ChooseKnotDocumentFile {

@@ -504,6 +504,18 @@ impl Shell {
                     }
                 },
                 Effect::SaveSession => self.save_session(),
+                Effect::CopyText(text) => {
+                    use genet_clipboard::TextClipboard as _;
+                    let wrote = match &mut self.clipboard {
+                        Ok(clipboard) => clipboard.set_text(&text).map_err(|e| e.to_string()),
+                        Err(why) => Err(why.clone()),
+                    };
+                    if let Err(error) = wrote {
+                        tracing::warn!(%error, "the clipboard refused a copy");
+                        let follow_up = self.app.refuse_place(format!("clipboard: {error}"));
+                        self.run_effects(follow_up);
+                    }
+                }
                 Effect::ChooseKnotDocumentFile { read_only } => {
                     if let Some(path) = rfd::FileDialog::new()
                         .add_filter(

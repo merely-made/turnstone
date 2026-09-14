@@ -1028,11 +1028,26 @@ This proves reframe steps 1, 2, 3 and 6 on a local network with both
 processes on one machine. The shared root graph converged empty; no HTTPS
 address, Knot revision, or refused unauthorized write was exercised (steps 4,
 5, 7 remain open). Sync-lane facts stay observations; "Delivery" and "peer
-reachability" lines say so on both frames. Two notes for later: the rendezvous
-ticket overflows the status view's width, and a scenario run does not save the
-session, so the restarted joiner's canvas is empty while its place is intact.
+reachability" lines say so on both frames. One note for later: a scenario run does not save the
+session, so the restarted joiner's canvas is empty while its place is intact;
+scenarios keep that rule on purpose.
 The run used local workspace dependency resolution, not a locked release build.
 
+
+**Follow-up receipt, 2026-09-13.** The status row now elides the middle of the
+rendezvous ticket and `Copy local rendezvous` copies the whole ticket through
+genet-clipboard, the stack's clipboard seam at the pinned genet revision; the
+full ticket stays in observation and on the card. A same-process `Reconnect
+place` while live used to be refused with redb's "Database already open":
+each lane's p2panda `LogSync` actor runs on its own thread-local spawner and
+holds a store clone, so neither dropping the lanes nor shutting the lane
+runtime down releases the file lock. Reconnect now leaves all nine lanes and
+waits (`leave_and_wait`, about five seconds, apparently a fixed ceiling inside
+ractor's stop) before the bounded reopen retry; ordinary close and exit do not
+pay that wait. Run 7 under `C:/t/turnstone-place-two-windows-20260913-7`
+passed all three scenarios with the change. Open: the nine lane rows overflow
+the status view by roughly 15 px at the smallest counters, and the five-second
+leave is a mere/p2panda cost to plan against.
 
 ## File seams
 

@@ -4968,6 +4968,107 @@ fn place_artifacts_are_written_where_the_person_asked() {
     )));
 }
 
+/// The status row elides a ~200-character ticket; the copy action is the one
+/// route to the whole of it. Offered only where there IS a ticket, and
+/// refusing out loud where there is not.
+#[test]
+fn copying_the_local_rendezvous_carries_the_whole_ticket() {
+    let ticket: String = "abcdefghijklmnopqrstuvwxyz234567"
+        .chars()
+        .cycle()
+        .take(200)
+        .collect();
+
+    // Personal: no row, and the action refuses rather than copying nothing.
+    let mut app = App::test_stub();
+    assert!(
+        !app.available_actions()
+            .iter()
+            .any(|(label, _)| label == "Copy local rendezvous")
+    );
+    assert_eq!(
+        app.update(Action::CopyLocalRendezvous),
+        vec![Effect::Redraw]
+    );
+    assert!(app.take_events().iter().any(|event| matches!(
+        event,
+        crate::observe::AppEvent::PlaceRefused(reason) if reason.contains("no local rendezvous")
+    )));
+
+    let binding = crate::place::PlaceBindingV1::new(
+        crate::place::PlaceId([0xc1; 32]),
+        crate::place::SharedContainerId([0xc2; 32]),
+        crate::place::ChatSpaceId([0xc3; 32]),
+        "hall",
+    )
+    .unwrap();
+
+    // Open but ticketless: still no row, still a refusal.
+    app.place = crate::place::PlaceState::Offline {
+        binding: binding.clone(),
+        generation: 2,
+        snapshot: crate::place::OfflinePlaceSnapshot::default(),
+    };
+    assert!(
+        !app.available_actions()
+            .iter()
+            .any(|(label, _)| label == "Copy local rendezvous")
+    );
+    assert_eq!(
+        app.update(Action::CopyLocalRendezvous),
+        vec![Effect::Redraw]
+    );
+    assert!(app.take_events().iter().any(|event| matches!(
+        event,
+        crate::observe::AppEvent::PlaceRefused(reason) if reason.contains("no local rendezvous")
+    )));
+
+    // Live: the row is offered and the effect carries the FULL ticket, while
+    // the status row and the palette label stay one line.
+    app.place = crate::place::PlaceState::Offline {
+        binding,
+        generation: 2,
+        snapshot: crate::place::OfflinePlaceSnapshot {
+            sync: Some(crate::place::PlaceSyncSnapshot {
+                lanes: Vec::new(),
+                local_rendezvous: vec![ticket.clone(), format!("{ticket}-second")],
+                dialed_rendezvous: 0,
+            }),
+            ..Default::default()
+        },
+    };
+    assert!(app.available_actions().contains(&(
+        "Copy local rendezvous".to_string(),
+        Action::CopyLocalRendezvous,
+    )));
+
+    let effects = app.update(Action::CopyLocalRendezvous);
+    let copied = effects
+        .iter()
+        .find_map(|effect| match effect {
+            Effect::CopyText(text) => Some(text),
+            _ => None,
+        })
+        .expect("the copy lowers to a clipboard effect");
+    assert_eq!(*copied, format!("{ticket}\n{ticket}-second"));
+    assert!(app.take_events().iter().any(|event| matches!(
+        event,
+        crate::observe::AppEvent::PlaceRendezvousCopied(2)
+    )));
+
+    // The observation keeps the whole ticket; the row a person reads does not.
+    let facts = crate::observe::place_facts(&app).expect("a live place reports facts");
+    assert_eq!(facts.local_rendezvous[0], ticket);
+    let row = app
+        .place
+        .status_lines()
+        .into_iter()
+        .find(|line| line.starts_with("Local rendezvous:"))
+        .expect("the literal prefix scenarios wait on survives");
+    assert!(!row.contains(&ticket), "the row does not carry the whole ticket");
+    assert!(row.contains('…'));
+}
+
 /// A pre-key offer is composed from the worker's answer and this profile's
 /// own root, and lands beside the card it answers.
 #[test]

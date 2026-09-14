@@ -283,6 +283,11 @@ pub struct Shell {
     place_handle: armillary::ActorHandle<crate::place::worker::PlaceWorkerCommand>,
     /// Generation-tagged app-owned answers from the place worker.
     place_rx: Receiver<Update>,
+    /// The system clipboard, opened once at startup: the handle holds X11 and
+    /// Wayland selection ownership for its lifetime. `Err` carries why it is
+    /// unreachable, so a copy refuses out loud rather than panicking. It stays
+    /// here, behind the effect seam; App and the place worker never see one.
+    clipboard: Result<Box<dyn genet_clipboard::TextClipboard>, String>,
     /// Last cursor position in physical px. winit's `MouseInput` carries no
     /// position, so the shell tracks it from `CursorMoved`.
     cursor: (f32, f32),
@@ -605,6 +610,13 @@ impl Shell {
             Err(error) => tracing::warn!(%error, "Knot authoring is unavailable"),
         }
 
+        let clipboard = genet_clipboard::SystemClipboard::new()
+            .map(|clipboard| Box::new(clipboard) as Box<dyn genet_clipboard::TextClipboard>)
+            .map_err(|error| {
+                tracing::warn!(%error, "the system clipboard is unavailable");
+                error.to_string()
+            });
+
         let mut surface_providers = crate::contributed_surface::SurfaceProviderRegistry::new();
         surface_providers
             .register_provider(crate::knot_document_surface::KnotDocumentProvider::default())
@@ -636,6 +648,7 @@ impl Shell {
             trail_rx,
             place_handle,
             place_rx,
+            clipboard,
             cursor: (0.0, 0.0),
             ctrl: false,
             alt: false,
