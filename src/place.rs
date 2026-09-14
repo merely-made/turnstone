@@ -630,9 +630,13 @@ impl PlaceState {
                                 format!("Local rendezvous: {}", elide_middle(ticket))
                             }),
                     );
+                    // "at last refresh" is dropped here: the header row above
+                    // already states every fact on this card is from the last
+                    // refresh, so repeating it per lane only pushed the row
+                    // past the card's text budget. (Mark, 2026-09-13)
                     rows.extend(sync.lanes.iter().map(|lane| format!(
-                        "{}: {}; {} completed rounds; {} accepted operations",
-                        lane.label(), if lane.syncing { "syncing at last refresh" } else { "idle at last refresh" },
+                        "{}: {}; {} rounds; {} accepted ops",
+                        lane.label(), if lane.syncing { "syncing" } else { "idle" },
                         lane.sync_rounds, lane.ops_received)));
                 }
                 rows
@@ -727,14 +731,10 @@ mod tests {
 
     /// Every status row is one `nowrap; overflow: hidden` line in a 560px
     /// card, so a row that does not fit is cut off mid-string rather than
-    /// wrapped. The ~200-character rendezvous ticket is what broke this.
-    ///
-    /// The lane rows are excluded, and not because they are safe: the longest
-    /// lane label overflows this budget at ANY counter value ("Shared graph:
-    /// syncing at last refresh; 12 completed rounds; 340 accepted operations"
-    /// measures 543px against 528px). That is a separate row, a separate
-    /// cause, and a separate decision about what to shorten; the guard says so
-    /// out loud rather than passing by pretending otherwise.
+    /// wrapped. The ~200-character rendezvous ticket is what broke this, and
+    /// six-digit lane counters against the longest lane labels are the other
+    /// edge: both are exercised here so the guard covers every row, lane rows
+    /// included.
     #[test]
     fn every_status_row_fits_one_palette_row() {
         let state = PlaceState::Offline {
@@ -746,15 +746,15 @@ mod tests {
                         PlaceLaneSnapshot {
                             name: "commons/graph/v1",
                             syncing: true,
-                            sync_rounds: 12,
-                            ops_received: 340,
+                            sync_rounds: 123456,
+                            ops_received: 987654,
                             last_activity_ms: Some(42),
                         },
                         PlaceLaneSnapshot {
                             name: "gemot/constitution/v1",
                             syncing: false,
-                            sync_rounds: 0,
-                            ops_received: 0,
+                            sync_rounds: 123456,
+                            ops_received: 987654,
                             last_activity_ms: None,
                         },
                     ],
@@ -774,10 +774,7 @@ mod tests {
             rows.iter().any(|row| row.starts_with("Local rendezvous:")),
             "the rendezvous row is the one under test",
         );
-        for row in rows
-            .iter()
-            .filter(|row| !row.ends_with("accepted operations"))
-        {
+        for row in rows.iter() {
             let width = crate::ui::chrome_row_width(row);
             assert!(
                 width <= crate::ui::ROW_TEXT_BUDGET,

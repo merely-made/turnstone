@@ -4580,7 +4580,7 @@ fn place_status_refresh_is_local_filtered_and_generation_scoped() {
         result: Ok(current),
     });
     assert!(app.omnibar.suggestions.iter().any(|row| matches!(row,
-        crate::ui::Suggestion::Prompt(text) if text == "Flora: idle at last refresh; 2 completed rounds; 3 accepted operations")));
+        crate::ui::Suggestion::Prompt(text) if text == "Flora: idle; 2 rounds; 3 accepted ops")));
     let observed = crate::observe::snapshot(&app).place_status;
     assert!(observed[0].contains("peer reachability unknown"));
     assert!(
