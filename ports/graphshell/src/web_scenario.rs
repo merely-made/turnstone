@@ -9,7 +9,7 @@
 //! `?scenario=<path>` on the page URL names a script; `loader.js` fetches it
 //! and hands the text to [`run_scenario`] once the host reports ready. From
 //! then on the frame pump ticks one verb per rendered frame through
-//! `genet_probe`'s loop — the same parser, the same `act` / `settle` / `wait`
+//! `taproot`'s loop — the same parser, the same `act` / `settle` / `wait`
 //! / `assert snap` / `capture` / `log` verbs woodshed and turnstone run — and
 //! writes the result into the DOM: `<body data-scenario="ok|fail">`, the step
 //! log under `#scenario-log`, one JSON line under `#scenario-result`, and each
@@ -43,7 +43,7 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use genet_probe::{Automatable, Driveable, ProbeSnapshot, ProbeSurface, Progress, Scenario};
+use taproot::{Automatable, Driveable, ProbeSnapshot, ProbeSurface, Progress, Scenario};
 use wasm_bindgen::Clamped;
 use wasm_bindgen::prelude::*;
 use web_sys::{
