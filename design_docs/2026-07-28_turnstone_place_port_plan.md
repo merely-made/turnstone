@@ -1055,6 +1055,34 @@ commit with mere `0db9d10d` and knot-editor `30c85702` aligned on it; run 8
 under `C:/t/turnstone-place-two-windows-20260914-8` passed all three
 scenarios on that graph.
 
+### T5b. Shared address and refused write (planned 2026-09-14)
+
+Decided 2026-09-14: close reframe steps 4 and 7 on the existing vocabulary.
+
+**Vocabulary.** `Share focused node` becomes a palette row (the action exists;
+it had no label), shown when a place is open. `Invite to place as reader`
+opens the same prompt shape as `Invite to place` and commits with a reader
+access flag: the worker admits the pre-key's root to Moot membership at
+`Read` and issues no delegation, then authors the invitation as before. A
+reader's status shows both write permissions as not effective; its share
+attempt is refused by its own worker before anything is authored, and the
+refusal is the `place-refused` observation event.
+
+**Proof.** The driver gains a third role, `reader`, and writes two small HTML
+pages into the exchange directory. Step 4: the founder opens the shared page,
+shares the focused node; the returning joiner waits for one shared node, opens
+the same address (which selects the reconciled node rather than minting a
+second), and asserts its content is ready. Step 7: the reader offers a pre-key
+against a second card, is invited as reader, joins, sees not-effective
+permissions and the one shared node, opens the other page, attempts to share
+it, and asserts the refusal event.
+
+Done when: all four `scenario.done` files read `RESULT ok`; the founder,
+joiner-return and reader records show one shared graph node and one identical
+graph digest; the reader record shows both permissions false; the reader's
+capture shows the refusal; the founder's node count is unchanged by the
+refused write; `git diff --check` and the place tests pass. Step 5 stays open.
+
 ## File seams
 
 | File | Change |
