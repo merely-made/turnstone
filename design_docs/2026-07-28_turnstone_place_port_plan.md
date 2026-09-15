@@ -1110,6 +1110,28 @@ surface needs live content turned on and a workbench or content-surface
 assertion, which the scenarios now carry. Steps 1, 2, 3, 4, 6 and 7 are
 proven; step 5 stays open.
 
+**Membership lag finding, 2026-09-15.** It is not a lag but a missing
+publish. Graph and chat writes are pushed into every already-open live sync
+session (`publish_graph`, `publish_chat`, through stickleback's
+`JoinedSpace::publish` and p2panda's topic-manager live path). No Gemot lane
+is ever published: `admit_member` authors into the membership store and
+returns, so a membership change, and likewise a constitution, delegation,
+records, standing, Tulpa or FLORA fact, only travels in a new reconciliation
+session, and p2panda starts one only on a gossip neighbour event or a retry
+after a failed session. There is no resync interval in the fork. The
+render-free test `a_membership_admission_and_a_shared_node_race_to_a_connected_joiner`
+holds a founder and a connected joiner, admits a third root and shares one
+node: the node reached the joiner in about a third of a second over the open
+session with no new round; the membership change never arrived in the
+window, with the membership lane's counters unmoved. Run 14's three members
+everywhere came from a neighbour event that happened to fire, not from a
+bound. The `sync_rounds` and `ops_received` counters cannot tell live from
+reconciled delivery, and members imported from an invitation's Gemot drop
+never cross a lane at all, which is why a joiner shows two members with zero
+membership operations. The fix is a decision recorded as open: publish
+Gemot operations the way Commons does, either for membership alone in
+Turnstone or as a publish set on `MootLanes` in mere.
+
 ## File seams
 
 | File | Change |

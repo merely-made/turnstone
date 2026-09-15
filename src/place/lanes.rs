@@ -1576,6 +1576,249 @@ mod tests {
         );
         let _ = std::fs::remove_dir_all(&root);
     }
+
+    /// Take the next invitation off a worker's update channel, stepping past
+    /// the lane nudges that share it.
+    fn expect_invited(
+        updates: &std::sync::mpsc::Receiver<Update>,
+        what: &str,
+    ) -> Box<crate::place::invite::PlaceInviteV1> {
+        let deadline = Instant::now() + Duration::from_secs(60);
+        loop {
+            assert!(Instant::now() < deadline, "{what}: never answered");
+            match updates.recv_timeout(Duration::from_secs(5)) {
+                Ok(Update::PlaceInvited {
+                    result: Ok(invite), ..
+                }) => return invite,
+                Ok(Update::PlaceInvited {
+                    result: Err(error), ..
+                }) => panic!("{what}: refused: {error}"),
+                _ => continue,
+            }
+        }
+    }
+
+    /// DIAGNOSTIC, not a receipt. Two facts authored on the founder AFTER a
+    /// joiner is already connected — one Gemot membership admission, one
+    /// Commons graph node — race to that joiner, and this reports how long
+    /// each took and what the joiner's lane counters said.
+    ///
+    /// Both sides are the product path: the founder's `Found` binds nine
+    /// lanes listen-only, the joiner's `Join` dials the founder's own ticket
+    /// through `join_live`, and the third root is admitted by
+    /// `PlaceWorkerCommand::Invite`, which is the only caller of
+    /// `admit_member`. The graph node is the positive control: an absence on
+    /// the membership lane means nothing unless something else crossed in the
+    /// same run.
+    #[test]
+    fn a_membership_admission_and_a_shared_node_race_to_a_connected_joiner() {
+        let root = std::env::temp_dir()
+            .join(format!("turnstone-place-member-lag-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&root);
+        let host = root.join("host");
+        let guest = root.join("guest");
+        let reader = root.join("reader");
+        for directory in [&host, &guest, &reader] {
+            std::fs::create_dir_all(directory).unwrap();
+        }
+
+        let founder = RootIdentity::Unsealed(InMemoryProvider::from_seed([0xa1; 32]));
+        let joiner = RootIdentity::Unsealed(InMemoryProvider::from_seed([0xa2; 32]));
+        let third = RootIdentity::Unsealed(InMemoryProvider::from_seed([0xa3; 32]));
+
+        // The founder: `Found` opens the place and binds its nine lanes
+        // listen-only, minting the ticket its invitations carry.
+        let (host_worker, host_updates) =
+            spawn_place_worker(Arc::new(|| {}), Arc::new(founder), settings());
+        let host_session = SessionId::new();
+        host_worker.command(PlaceWorkerCommand::Found {
+            session: host_session,
+            generation: 1,
+            directory: host.clone(),
+            name: "Hearth".into(),
+        });
+        let binding = loop {
+            match host_updates.recv_timeout(Duration::from_secs(60)) {
+                Ok(Update::PlaceFounded {
+                    result: Ok((binding, snapshot)),
+                    ..
+                }) => {
+                    let sync = snapshot.sync.expect("a founded place binds lanes");
+                    assert_eq!(sync.dialed_rendezvous, 0, "a founder dials nobody");
+                    assert!(!sync.local_rendezvous.is_empty(), "the founder has a ticket");
+                    break binding;
+                },
+                Ok(Update::PlaceFounded {
+                    result: Err(error), ..
+                }) => panic!("founding refused: {error}"),
+                Ok(_) => continue,
+                Err(error) => panic!("founding never answered: {error}"),
+            }
+        };
+
+        // The joiner: offer a pre-key, get admitted as a writer, dial in.
+        let joiner_prekey = prepare_group_identity(&guest, &joiner, binding.moot.0).unwrap();
+        host_worker.command(PlaceWorkerCommand::Invite {
+            session: host_session,
+            generation: 1,
+            directory: host.clone(),
+            prekey: joiner_prekey,
+            access: crate::place::PlaceInviteAccess::Writer,
+        });
+        let invite = expect_invited(&host_updates, "the joiner's invitation");
+
+        let (guest_worker, guest_updates) =
+            spawn_place_worker(Arc::new(|| {}), Arc::new(joiner), settings());
+        let guest_session = SessionId::new();
+        guest_worker.command(PlaceWorkerCommand::Join {
+            session: guest_session,
+            generation: 1,
+            directory: guest.clone(),
+            invite,
+        });
+        match guest_updates.recv_timeout(Duration::from_secs(60)) {
+            Ok(Update::PlaceJoined { result: Ok(_), .. }) => {},
+            Ok(Update::PlaceJoined {
+                result: Err(error), ..
+            }) => panic!("join refused: {error}"),
+            _ => panic!("join answered with an unrelated update"),
+        }
+
+        // Converged BEFORE anything else is authored. The chat channel is the
+        // proof the lanes themselves carried something: the invitation's
+        // evidence drop covers Gemot only, so a channel can only have come
+        // over commons/chat.
+        let converged = converge_until(
+            &guest_worker,
+            &guest_updates,
+            guest_session,
+            "initial catch-up",
+            |s| s.moot.members == 2 && s.chat.channels == 1,
+        );
+        report_lanes("joiner at initial convergence", &converged);
+        assert_eq!(converged.graph.nodes, 0, "nothing is shared yet");
+
+        // Now, with the joiner still connected: admit a THIRD root at Read
+        // (membership only, no delegation) through the product Invite path.
+        let third_prekey = prepare_group_identity(&reader, &third, binding.moot.0).unwrap();
+        host_worker.command(PlaceWorkerCommand::Invite {
+            session: host_session,
+            generation: 1,
+            directory: host.clone(),
+            prekey: third_prekey,
+            access: crate::place::PlaceInviteAccess::Reader,
+        });
+        let _third_invite = expect_invited(&host_updates, "the reader's invitation");
+        let admitted_at = Instant::now();
+
+        // And author one graph node on the same open, as the comparison.
+        host_worker.command(PlaceWorkerCommand::Author {
+            session: host_session,
+            generation: 1,
+            request: 1,
+            command: PlaceCommand::ShareNode {
+                address: "https://shared.example/page".into(),
+            },
+        });
+        expect_authored(&host_updates, 1);
+        let shared_at = Instant::now();
+        eprintln!(
+            "founder: third member admitted at t+0 ms, shared node authored at t+{} ms",
+            shared_at.duration_since(admitted_at).as_millis()
+        );
+
+        // Poll the joiner exactly as the app does: a Resync re-folds whatever
+        // the lanes have drained into the stores.
+        const BUDGET: Duration = Duration::from_secs(15);
+        let deadline = admitted_at + BUDGET;
+        let mut members_at: Option<Duration> = None;
+        let mut node_at: Option<Duration> = None;
+        let mut last = converged;
+        while Instant::now() < deadline && (members_at.is_none() || node_at.is_none()) {
+            guest_worker.command(PlaceWorkerCommand::Resync {
+                session: guest_session,
+                generation: 1,
+            });
+            let inner = Instant::now() + Duration::from_secs(3);
+            while Instant::now() < inner {
+                match guest_updates.recv_timeout(Duration::from_millis(500)) {
+                    Ok(Update::PlaceOpened {
+                        result: Ok(snapshot),
+                        ..
+                    }) => {
+                        if members_at.is_none() && snapshot.moot.members >= 3 {
+                            members_at = Some(admitted_at.elapsed());
+                        }
+                        if node_at.is_none() && snapshot.graph.nodes >= 1 {
+                            node_at = Some(shared_at.elapsed());
+                        }
+                        last = snapshot;
+                        break;
+                    },
+                    Ok(_) => continue,
+                    Err(_) => break,
+                }
+            }
+            std::thread::sleep(Duration::from_millis(200));
+        }
+
+        match node_at {
+            Some(elapsed) => eprintln!(
+                "joiner: the founder's shared node arrived {} ms after it was authored",
+                elapsed.as_millis()
+            ),
+            None => eprintln!(
+                "joiner: the founder's shared node NEVER arrived within {} s",
+                BUDGET.as_secs()
+            ),
+        }
+        match members_at {
+            Some(elapsed) => eprintln!(
+                "joiner: the third member arrived {} ms after admission",
+                elapsed.as_millis()
+            ),
+            None => eprintln!(
+                "joiner: the third member NEVER arrived within {} s (still {} members)",
+                BUDGET.as_secs(),
+                last.moot.members
+            ),
+        }
+        report_lanes("joiner at the end of the window", &last);
+
+        // The control. Without it an absent membership change proves nothing
+        // about membership: it could simply be a dead connection.
+        assert!(
+            node_at.is_some(),
+            "the graph control never crossed, so this run says nothing about membership"
+        );
+
+        for (worker, updates) in [(&host_worker, &host_updates), (&guest_worker, &guest_updates)] {
+            let _ = updates;
+            let (ack_tx, ack_rx) = std::sync::mpsc::sync_channel(1);
+            worker.command(PlaceWorkerCommand::Release(ack_tx));
+            let _ = ack_rx.recv_timeout(Duration::from_secs(30));
+        }
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    /// Print one snapshot's nine lane counters, plus the two folds this
+    /// diagnostic is about.
+    fn report_lanes(what: &str, snapshot: &crate::place::OfflinePlaceSnapshot) {
+        eprintln!(
+            "{what}: members {} nodes {} channels {}",
+            snapshot.moot.members, snapshot.graph.nodes, snapshot.chat.channels
+        );
+        let Some(sync) = &snapshot.sync else {
+            eprintln!("{what}: no lanes");
+            return;
+        };
+        for lane in &sync.lanes {
+            eprintln!(
+                "{what}: {} rounds {} ops {} syncing {}",
+                lane.name, lane.sync_rounds, lane.ops_received, lane.syncing
+            );
+        }
+    }
 }
 
 /// Domain-separated salt for this place's transport identity. A derived key,
