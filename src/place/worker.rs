@@ -761,6 +761,10 @@ pub fn found_place(
 ///
 /// Takes the already-open Moot rather than opening its own, because the
 /// caller is the worker holding this place's only store handle.
+///
+/// Returns what it authored so the caller can publish it. Storing is what
+/// makes an admission survive; publishing is what makes it arrive at a peer
+/// that is already connected.
 fn admit_member(
     moot: &MootFile,
     binding: &PlaceBindingV1,
@@ -768,38 +772,51 @@ fn admit_member(
     joiner_root: [u8; 32],
     access: crate::place::PlaceInviteAccess,
     now_ms: u64,
-) -> Result<(), String> {
+) -> Result<AdmittedOps, String> {
     use crate::place::PlaceInviteAccess;
     let moot_id = binding.moot.0;
     let snapshot = pollster::block_on(moot.snapshot())
         .map_err(|error| format!("materialize Gemot: {error}"))?;
+    let mut authored = AdmittedOps::default();
     if !snapshot
         .membership
         .members
         .iter()
         .any(|member| member.member == joiner_root)
     {
-        pollster::block_on(moot.membership_store().author_for_identity(
-            identity,
-            MootMembershipAction::Add {
-                member: joiner_root,
-                access: match access {
-                    PlaceInviteAccess::Writer => MootAccessLevel::Write,
-                    PlaceInviteAccess::Reader => MootAccessLevel::Read,
+        authored.membership = Some(
+            pollster::block_on(moot.membership_store().author_for_identity(
+                identity,
+                MootMembershipAction::Add {
+                    member: joiner_root,
+                    access: match access {
+                        PlaceInviteAccess::Writer => MootAccessLevel::Write,
+                        PlaceInviteAccess::Reader => MootAccessLevel::Read,
+                    },
                 },
-            },
-        ))
-        .map_err(|error| format!("add the invited root to membership: {error}"))?;
+            ))
+            .map_err(|error| format!("add the invited root to membership: {error}"))?,
+        );
     }
     if matches!(access, PlaceInviteAccess::Writer) {
-        pollster::block_on(moot.delegation_store().author_issue(
-            &founder_signing_key(identity, moot_id)?,
-            &snapshot.governance.rules,
-            place_delegation(identity, moot_id, joiner_root, now_ms, now_ms, None)?,
-        ))
-        .map_err(|error| format!("delegate the Commons domains: {error}"))?;
+        authored.delegation = Some(
+            pollster::block_on(moot.delegation_store().author_issue(
+                &founder_signing_key(identity, moot_id)?,
+                &snapshot.governance.rules,
+                place_delegation(identity, moot_id, joiner_root, now_ms, now_ms, None)?,
+            ))
+            .map_err(|error| format!("delegate the Commons domains: {error}"))?,
+        );
     }
-    Ok(())
+    Ok(authored)
+}
+
+/// What one admission authored. Either may be absent: a root already admitted
+/// authors no membership fact, and a reader gets no delegation.
+#[derive(Default)]
+struct AdmittedOps {
+    membership: Option<stickleback::Operation<gemot::moot::MootGroupExt>>,
+    delegation: Option<stickleback::Operation<gemot::moot::delegation::MootDelegationExt>>,
 }
 
 /// Reopen the sealed group session established by [`prepare_group_identity`].
@@ -1702,7 +1719,20 @@ pub fn spawn_place_worker(
                                             now_ms,
                                         )
                                     })
-                                    .and_then(|()| {
+                                    .and_then(|authored| {
+                                        // Retention alone leaves the admission
+                                        // waiting on the next reconciliation
+                                        // round; a connected peer hears it only
+                                        // here. A founder with no lanes open
+                                        // just retains it, as before.
+                                        if let Some(lanes) = &open.lanes {
+                                            if let Some(operation) = authored.membership {
+                                                lanes.publish_membership(operation)?;
+                                            }
+                                            if let Some(operation) = authored.delegation {
+                                                lanes.publish_delegation(operation)?;
+                                            }
+                                        }
                                         author_invitation_with(
                                             &open.moot,
                                             &directory,

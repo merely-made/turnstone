@@ -1128,9 +1128,23 @@ everywhere came from a neighbour event that happened to fire, not from a
 bound. The `sync_rounds` and `ops_received` counters cannot tell live from
 reconciled delivery, and members imported from an invitation's Gemot drop
 never cross a lane at all, which is why a joiner shows two members with zero
-membership operations. The fix is a decision recorded as open: publish
-Gemot operations the way Commons does, either for membership alone in
-Turnstone or as a publish set on `MootLanes` in mere.
+membership operations. Decided 2026-09-15 and landed: mere `1a3dda4e`
+gives `MootLanes` a publish set for all seven Gemot lanes, and the worker's
+`Invite` path publishes the membership operation, and for a writer the
+delegation operation, that the stores already returned, exactly as
+`ShareNode` publishes its graph operation. The diagnostic test now asserts
+arrival: under test load the third member reached the connected joiner in
+0.9 to 1.9 s and a writer's delegation with it, with the membership and
+delegation lanes' `ops_received` moving to one while `sync_rounds` stayed
+put, which is live delivery and not a new round. Run 15 under
+`C:/t/turnstone-place-two-windows-20260915-15` passed all four scenarios
+with three members on every side and the returning joiner's membership
+lane reporting the admission as a received operation. Because every
+consumer pins mere by revision, knot-editor (`0eb684f7`), mere itself
+(`bce789e7`) and woodshed's redshank port (`a1c5772`) moved with it, and
+turnstone pins all three. Woodshed's untracked cargo config still carries
+path overrides to a Codex worktree and to mere crates that no longer
+exist; the port check ran in a clean worktree instead.
 
 ## File seams
 

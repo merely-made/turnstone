@@ -240,6 +240,30 @@ impl LiveLanes {
             .publish(operation)
             .map_err(|error| format!("publish chat operation: {error}"))
     }
+
+    /// Push one freshly authored membership operation onto the live lane, so
+    /// an admission reaches peers already connected rather than waiting for
+    /// whatever restarts reconciliation.
+    pub(crate) fn publish_membership(
+        &self,
+        operation: stickleback::Operation<gemot::moot::MootGroupExt>,
+    ) -> Result<(), String> {
+        self.joined()
+            .moot
+            .publish_membership(operation)
+            .map_err(|error| format!("publish membership operation: {error}"))
+    }
+
+    /// Push one freshly authored delegation operation onto the live lane.
+    pub(crate) fn publish_delegation(
+        &self,
+        operation: stickleback::Operation<gemot::moot::delegation::MootDelegationExt>,
+    ) -> Result<(), String> {
+        self.joined()
+            .moot
+            .publish_delegation(operation)
+            .map_err(|error| format!("publish delegation operation: {error}"))
+    }
 }
 
 #[cfg(test)]
@@ -1598,27 +1622,54 @@ mod tests {
         }
     }
 
-    /// DIAGNOSTIC, not a receipt. Two facts authored on the founder AFTER a
-    /// joiner is already connected — one Gemot membership admission, one
-    /// Commons graph node — race to that joiner, and this reports how long
-    /// each took and what the joiner's lane counters said.
+    /// One Gemot lane's counters out of a joiner's snapshot.
+    fn lane_counters(
+        snapshot: &crate::place::OfflinePlaceSnapshot,
+        name: &str,
+    ) -> (u64, u64) {
+        let sync = snapshot.sync.as_ref().expect("a live joiner has lanes");
+        let lane = sync
+            .lanes
+            .iter()
+            .find(|lane| lane.name == name)
+            .unwrap_or_else(|| panic!("{name} is one of the nine"));
+        (lane.sync_rounds, lane.ops_received)
+    }
+
+    /// A membership admission authored AFTER a joiner is connected reaches it
+    /// live, on the membership lane, without a new reconciliation round.
     ///
     /// Both sides are the product path: the founder's `Found` binds nine
     /// lanes listen-only, the joiner's `Join` dials the founder's own ticket
     /// through `join_live`, and the third root is admitted by
     /// `PlaceWorkerCommand::Invite`, which is the only caller of
-    /// `admit_member`. The graph node is the positive control: an absence on
-    /// the membership lane means nothing unless something else crossed in the
-    /// same run.
+    /// `admit_member`. The graph node stays as the positive control: an
+    /// absence on the membership lane would mean nothing unless something
+    /// else crossed in the same run.
     #[test]
     fn a_membership_admission_and_a_shared_node_race_to_a_connected_joiner() {
-        let root = std::env::temp_dir()
-            .join(format!("turnstone-place-member-lag-{}", std::process::id()));
+        an_admission_reaches_a_connected_joiner(crate::place::PlaceInviteAccess::Reader);
+    }
+
+    /// The Writer half: admitting at Write authors a delegation too, and it
+    /// has to travel the same way, on its own lane, to be usable.
+    #[test]
+    fn a_writer_admission_carries_its_delegation_to_a_connected_joiner() {
+        an_admission_reaches_a_connected_joiner(crate::place::PlaceInviteAccess::Writer);
+    }
+
+    fn an_admission_reaches_a_connected_joiner(access: crate::place::PlaceInviteAccess) {
+        let writer = matches!(access, crate::place::PlaceInviteAccess::Writer);
+        let root = std::env::temp_dir().join(format!(
+            "turnstone-place-admit-live-{}-{}",
+            if writer { "writer" } else { "reader" },
+            std::process::id()
+        ));
         let _ = std::fs::remove_dir_all(&root);
         let host = root.join("host");
         let guest = root.join("guest");
-        let reader = root.join("reader");
-        for directory in [&host, &guest, &reader] {
+        let newcomer = root.join("third");
+        for directory in [&host, &guest, &newcomer] {
             std::fs::create_dir_all(directory).unwrap();
         }
 
@@ -1697,18 +1748,24 @@ mod tests {
         );
         report_lanes("joiner at initial convergence", &converged);
         assert_eq!(converged.graph.nodes, 0, "nothing is shared yet");
+        // The baseline the live-delivery claim is measured against: rounds
+        // must not move, counters must.
+        let membership_before = lane_counters(&converged, "gemot/membership/v1");
+        let delegation_before = lane_counters(&converged, "gemot/delegation/v1");
+        let certificates_before = converged.moot.delegated_certificates;
 
-        // Now, with the joiner still connected: admit a THIRD root at Read
-        // (membership only, no delegation) through the product Invite path.
-        let third_prekey = prepare_group_identity(&reader, &third, binding.moot.0).unwrap();
+        // Now, with the joiner still connected: admit a THIRD root through the
+        // product Invite path. A Reader gets membership only; a Writer gets a
+        // delegation on its own lane as well.
+        let third_prekey = prepare_group_identity(&newcomer, &third, binding.moot.0).unwrap();
         host_worker.command(PlaceWorkerCommand::Invite {
             session: host_session,
             generation: 1,
             directory: host.clone(),
             prekey: third_prekey,
-            access: crate::place::PlaceInviteAccess::Reader,
+            access,
         });
-        let _third_invite = expect_invited(&host_updates, "the reader's invitation");
+        let _third_invite = expect_invited(&host_updates, "the third root's invitation");
         let admitted_at = Instant::now();
 
         // And author one graph node on the same open, as the comparison.
@@ -1729,12 +1786,15 @@ mod tests {
 
         // Poll the joiner exactly as the app does: a Resync re-folds whatever
         // the lanes have drained into the stores.
-        const BUDGET: Duration = Duration::from_secs(15);
+        const BUDGET: Duration = Duration::from_secs(10);
         let deadline = admitted_at + BUDGET;
         let mut members_at: Option<Duration> = None;
         let mut node_at: Option<Duration> = None;
+        let mut delegated_at: Option<Duration> = None;
         let mut last = converged;
-        while Instant::now() < deadline && (members_at.is_none() || node_at.is_none()) {
+        while Instant::now() < deadline
+            && (members_at.is_none() || node_at.is_none() || (writer && delegated_at.is_none()))
+        {
             guest_worker.command(PlaceWorkerCommand::Resync {
                 session: guest_session,
                 generation: 1,
@@ -1751,6 +1811,11 @@ mod tests {
                         }
                         if node_at.is_none() && snapshot.graph.nodes >= 1 {
                             node_at = Some(shared_at.elapsed());
+                        }
+                        if delegated_at.is_none()
+                            && snapshot.moot.delegated_certificates > certificates_before
+                        {
+                            delegated_at = Some(admitted_at.elapsed());
                         }
                         last = snapshot;
                         break;
@@ -1783,6 +1848,19 @@ mod tests {
                 last.moot.members
             ),
         }
+        if writer {
+            match delegated_at {
+                Some(elapsed) => eprintln!(
+                    "joiner: the new writer's delegation arrived {} ms after admission",
+                    elapsed.as_millis()
+                ),
+                None => eprintln!(
+                    "joiner: the delegation NEVER arrived within {} s (still {} certificates)",
+                    BUDGET.as_secs(),
+                    last.moot.delegated_certificates
+                ),
+            }
+        }
         report_lanes("joiner at the end of the window", &last);
 
         // The control. Without it an absent membership change proves nothing
@@ -1791,6 +1869,62 @@ mod tests {
             node_at.is_some(),
             "the graph control never crossed, so this run says nothing about membership"
         );
+        assert!(
+            members_at.is_some(),
+            "the third member never reached the connected joiner within {} s (still {} members)",
+            BUDGET.as_secs(),
+            last.moot.members
+        );
+
+        // Live delivery, not a fresh round: exactly one operation crossed the
+        // membership lane and the lane's round count never moved.
+        let membership_after = lane_counters(&last, "gemot/membership/v1");
+        assert_eq!(
+            membership_after.1,
+            membership_before.1 + 1,
+            "the membership lane carried {} operations, not the one published",
+            membership_after.1 - membership_before.1
+        );
+        assert_eq!(
+            membership_after.0, membership_before.0,
+            "the membership lane ran a new sync round, so this was reconciliation"
+        );
+
+        if writer {
+            assert!(
+                delegated_at.is_some(),
+                "the new writer's delegation never reached the joiner within {} s",
+                BUDGET.as_secs()
+            );
+            let delegation_after = lane_counters(&last, "gemot/delegation/v1");
+            assert_eq!(
+                delegation_after.1,
+                delegation_before.1 + 1,
+                "the delegation lane carried {} operations, not the one published",
+                delegation_after.1 - delegation_before.1
+            );
+            assert_eq!(
+                delegation_after.0, delegation_before.0,
+                "the delegation lane ran a new sync round, so this was reconciliation"
+            );
+            // The fold, not just the counter: the joiner now holds the new
+            // member's write capability.
+            assert_eq!(
+                last.moot.delegated_certificates,
+                certificates_before + 1,
+                "the joiner's delegation fold does not carry the new writer"
+            );
+        } else {
+            assert_eq!(
+                lane_counters(&last, "gemot/delegation/v1").1,
+                delegation_before.1,
+                "a reader admission published a delegation"
+            );
+            assert_eq!(
+                last.moot.delegated_certificates, certificates_before,
+                "a reader admission changed the joiner's delegation fold"
+            );
+        }
 
         for (worker, updates) in [(&host_worker, &host_updates), (&guest_worker, &guest_updates)] {
             let _ = updates;
