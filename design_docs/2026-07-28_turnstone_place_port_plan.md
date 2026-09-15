@@ -1151,6 +1151,73 @@ both live-publish tests pass and run 16 under
 `C:/t/turnstone-place-two-windows-20260915-16` passed all four scenarios
 with three members and one graph digest on every side.
 
+### T5c. Shared Knot document by projection (planned 2026-09-15)
+
+Reframe step 5 under the K1 decision (mere Knot-in-Graphshell plan, Option
+A): a document belongs to the mere that holds it, place members edit it live
+through projection, and a visitor without the holder is told the document is
+unavailable. The library half is proven: mere's `ResidentProjectionHost`
+serves a catalog over any `Transport`, `dial_projection_session` plus
+`NetworkCarrier` and `RetainedEndpointSession::over` mount it, and the K2
+test and physical receipt cover save, bell, readback and holder loss.
+Turnstone has neither the serving nor the visiting half.
+
+Decided 2026-09-15: the founder's Turnstone serves, on the place transport,
+over its directory-mode Knot vault; admission is a projection-connect grant
+issued to writers at invite time and carried in the invitation; readers are
+refused at the door.
+
+**Serving.** `join_live` registers the graphshell projection ALPN beside the
+sync lanes when it binds, and `LiveLanes` runs one `ResidentProjectionHost`
+accept loop on the lane runtime for as long as the place is live: policy from
+`projection_policy` with the place's Moot id as the `NetworkId`, this
+profile's Personae root as the trusted issuer, and the ordinary viewing
+profile; catalog route `knot` over `TURNSTONE_KNOT_ROOT` through
+`KnotEndpoint::open_writable`, one endpoint per admitted session as the K2
+test does. No vault root means no route and no serving. Live session count
+and refusals enter `PlaceSyncSnapshot` and the status view as observations.
+
+**Admission.** `admit_member` for a `Writer` also issues a graphshell
+connect delegation (domain `GRAPHSHELL_DOMAIN`, resource the Moot id, path
+`PROJECTION_SERVICE`, action `CONNECT_ACTION`) from this profile to the
+invited root, alongside the Commons delegations. `PlaceInviteV1` gains an
+optional `projection_grant` artifact; admission stores it beside the
+rendezvous descriptor, never as authority over anything else. A `Reader`
+invitation carries none.
+
+**Address.** A place-held document is shared as a graph node at
+`knot://<holder root hex>/<document path>`. Sharing a locally held
+`knot://vault/<path>` node rewrites it to this form with the sharer's root;
+opening it on the holder resolves to the local vault, and on anyone else
+dials the holder. For this proof the holder is the founder, whose ticket is
+the saved rendezvous; a holder whose ticket is unknown is reported as
+unreachable, not searched for.
+
+**Visiting.** `KnotHub` gains a constructor over a `NetworkCarrier`: dial
+the holder with the stored grant, mount, and hand the session to the existing
+Knot document surface, which edits it exactly as a local document. A carrier
+disconnection marks the surface unavailable with the last scene kept and no
+save offered, which `RetainedEndpointSession` already reports. Each visited
+holder is one hub, held by the shell for the session.
+
+**Proof.** The driver gives the founder a vault with one `.knot` document.
+Founder opens it, shares it; the joiner opens the shared node, both author
+one revision each and save; the observation records each side's derived
+document digest and they match; then the founder is stopped and the joiner's
+surface reports unavailable. The reader attempts to open the shared node and
+is refused at the door.
+
+Done when: focused tests cover grant issuance and carriage, host serving on
+the place transport, a refused reader, and the hub over a network carrier;
+the four-window driver produces both revisions on both sides with identical
+derived-document digests, an unavailable surface after holder loss, and a
+refused reader; the place tests pass; `git diff --check` passes.
+
+Stop rules: no replication of a place-held document, no offline authoring of
+one, and no membership check at the door beside the certificate handshake.
+The Djinn resident remains the personal-vault owner; nothing here moves
+personal documents.
+
 ## File seams
 
 | File | Change |
