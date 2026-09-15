@@ -107,25 +107,14 @@ node is session-graph truth and survives a restart on its own.
    keeps `voice_capture_available` false and the dock disables Voice honestly.
    A voice command that arrives anyway is refused in words rather than
    silently dropped.
-3. **The woodshed pin is provisional.** The manifest names woodshed
-   `c7f68dcd` — `origin/main` — because cargo loads a git source even when a
-   `[patch]` redirects every package in it, so the unpushed merge `882dc754`
-   this slice was written against cannot be named at all. The gitignored
-   `.cargo/config.toml` redirects the four packages to the sibling checkout,
-   so what compiles here is the 882dc754 source. Move the pin the moment that
-   merge is pushed.
-4. **The Mere pin needs knot-editor to move.** Turnstone is repinned to mere
-   `1009f02d` so it can agree with Redshank on
-   `mere_surface_api::SurfaceDescriptor` and
-   `cambium::RetainedSurfaceSession`. `knot-editor` `5c763e2e` still pins mere
-   `3675a352`, and cargo's SourceId includes the git ref, so a clean checkout
-   resolves two copies of every shared Mere package and fails with thirty-six
-   "expected `SurfaceDescriptor`, found a different `SurfaceDescriptor`"-shaped
-   errors. A machine-local `[patch."…/mere.git"]` table collapses both refs
-   onto the sibling checkout, which is how this tree builds today. The repair
-   is upstream: realign `knot-editor` to mere `1009f02d` and repin it here, in
-   one commit, the way `6ec391f` moved mere and knot-editor together.
-5. **No headed receipt.** Everything above is headless. A tile rendered in a
+3. **Pins, resolved 2026-09-15.** The manifest names woodshed `c31158bb`
+   (pushed), mere `1009f02d`, and knot-editor `cac6e823`, which realigned to
+   that Mere so both agree on `mere_surface_api::SurfaceDescriptor` and
+   `cambium::RetainedSurfaceSession`. A worktree of this commit with no local
+   `.cargo/config.toml` resolved every sibling from GitHub and passed the full
+   suite (525 tests), so the machine-local redirect tables used while the
+   pins were unpushed are no longer required.
+4. **No headed receipt.** Everything above is headless. A tile rendered in a
    real window, with audio, is not yet captured.
 
 ## Verification
