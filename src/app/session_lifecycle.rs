@@ -98,6 +98,8 @@ impl App {
             session_id,
             content: ContentStates::default(),
             feeds: crate::feed::FeedSubscriptions::default(),
+            redshank: crate::redshank_host::RedshankHost::default(),
+            redshank_members: std::collections::BTreeMap::new(),
             place: crate::place::PlaceState::default(),
             pending_place_artifact: None,
             next_place_generation: 0,
@@ -844,6 +846,12 @@ impl App {
         self.feeds = crate::feed::FeedSubscriptions::load(&sdir);
         self.feeds.reconcile(self.graph_runtimes.graph());
         self.reconcile_feed_tags();
+        // The listening model rides the session directory like the feeds do.
+        // A session with no audio output still reopens its library, progress
+        // and notes; only the runtime is absent.
+        self.redshank = crate::redshank_host::RedshankHost::open(&sdir, self.redshank.output());
+        self.redshank_members.clear();
+        self.reconcile_redshank_fields();
         if let Some(score) = session::load_projection_score(&sdir) {
             self.graph_runtimes.restore_projection_score(score);
         }

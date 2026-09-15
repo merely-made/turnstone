@@ -83,6 +83,38 @@ pub struct FeedMerge {
     pub diagnostics: Vec<String>,
 }
 
+/// The playable facts one subscribed episode carries, projected for a
+/// listening tile. Nothing here opens a feed, a cache, or a device.
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct FeedEpisodeProjection {
+    pub feed_url: String,
+    pub guid: String,
+    pub enclosure_url: String,
+    pub media_type: Option<String>,
+    pub title: String,
+    pub published: Option<String>,
+    pub artwork: Option<String>,
+    pub member: Option<Uuid>,
+}
+
+/// Whether an address names playable podcast audio, by declared media type
+/// first and by extension when a feed declared none.
+pub fn is_podcast_audio(url: &str, media_type: Option<&str>) -> bool {
+    if let Some(media_type) = media_type {
+        let media_type = media_type.split(';').next().unwrap_or("").trim();
+        if media_type.eq_ignore_ascii_case("audio/mpeg")
+            || media_type.eq_ignore_ascii_case("audio/mp4")
+            || media_type.eq_ignore_ascii_case("audio/aac")
+            || media_type.eq_ignore_ascii_case("audio/x-m4a")
+        {
+            return true;
+        }
+    }
+    let path = url.split(['?', '#']).next().unwrap_or(url);
+    let lowered = path.to_ascii_lowercase();
+    lowered.ends_with(".mp3") || lowered.ends_with(".m4a") || lowered.ends_with(".aac")
+}
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum FeedMemberInfo {
     Source {
@@ -407,6 +439,61 @@ impl FeedSubscriptions {
         {
             entry.member = Some(member);
         }
+    }
+
+    /// The subscribed episode an address names: its own page, its bound
+    /// graph member's page, or its enclosure. Only entries with playable
+    /// audio answer.
+    pub fn episode_for_address(&self, url: &str) -> Option<FeedEpisodeProjection> {
+        self.subscriptions.values().find_map(|subscription| {
+            subscription.entries.iter().find_map(|(identity, entry)| {
+                let enclosure = entry.enclosures.iter().find(|enclosure| {
+                    is_podcast_audio(&enclosure.url, enclosure.media_type.as_deref())
+                })?;
+                let named = entry.url == url || identity.as_str() == url || enclosure.url == url;
+                named.then(|| FeedEpisodeProjection {
+                    feed_url: subscription.url.clone(),
+                    guid: entry
+                        .guid
+                        .clone()
+                        .unwrap_or_else(|| identity.as_str().to_owned()),
+                    enclosure_url: enclosure.url.clone(),
+                    media_type: enclosure.media_type.clone(),
+                    title: entry.title.clone(),
+                    published: entry.date.clone(),
+                    artwork: entry.artwork.clone().or_else(|| subscription.artwork.clone()),
+                    member: entry.member,
+                })
+            })
+        })
+    }
+
+    /// The graph member bound to one subscribed episode. This is the durable
+    /// association between a listening item and its node: the feed store is
+    /// saved beside the session graph, while derived node fields are not.
+    pub fn episode_member(&self, feed_url: &str, guid: &str) -> Option<Uuid> {
+        self.subscriptions
+            .values()
+            .filter(|subscription| subscription.url == feed_url)
+            .find_map(|subscription| {
+                subscription.entries.iter().find_map(|(identity, entry)| {
+                    let entry_guid = entry.guid.as_deref().unwrap_or(identity.as_str());
+                    (entry_guid == guid).then_some(entry.member).flatten()
+                })
+            })
+    }
+
+    /// The subscribed episode one graph member projects, for the open verb on
+    /// a feed-entry node.
+    pub fn episode_for_member(&self, member: Uuid) -> Option<FeedEpisodeProjection> {
+        let url = self.subscriptions.values().find_map(|subscription| {
+            subscription
+                .entries
+                .values()
+                .find(|entry| entry.member == Some(member))
+                .map(|entry| entry.url.clone())
+        })?;
+        self.episode_for_address(&url)
     }
 
     pub fn mark_read(&mut self, member: Uuid) -> bool {

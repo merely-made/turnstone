@@ -183,6 +183,14 @@ pub struct App {
     /// Durable feed schedules and duplicate-suppression state for this
     /// session. Entry nodes and unread markers themselves remain graph truth.
     pub feeds: crate::feed::FeedSubscriptions,
+    /// The ONE Redshank authority: the listening model, its durable store
+    /// under this session's directory, and the single audio runtime every
+    /// episode tile shares. The tiles themselves are Redshank's own compact
+    /// dock, admitted through the contributed-surface registry.
+    pub redshank: crate::redshank_host::RedshankHost,
+    /// Which graph member each open episode projects onto. Derived state: a
+    /// restart rebuilds it from the members' own progress fields.
+    pub redshank_members: std::collections::BTreeMap<redshank_model::ItemId, uuid::Uuid>,
     /// This session's public shared-place binding and product-visible status.
     /// Domain stores, joined lanes, transport handles, and key state belong to
     /// the shell-owned place worker; this field remains data only.
@@ -1371,6 +1379,7 @@ impl App {
 
 mod denizen_arms;
 mod feed_arms;
+mod redshank_arms;
 mod fixtures;
 mod node_arms;
 mod omnibar_arms;

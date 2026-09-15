@@ -71,6 +71,12 @@ set.
 - [Browser gap analysis](2026-08-17_smolweb_browser_gap_analysis.md): historical browser and smolweb gap map, acceptance ledger, and research basis for the successor implementation plan.
 - [Platform families audit](2026-08-03_platform_families_audit.md): live reachability audit across physics, graph, inference, and personal-mesh families.
 - [Pane inventory](2026-08-09_pane_inventory.md): A0 inventory of pane kinds, sources, multiplicity, and registry targets.
+- [Redshank episode surface](2026-09-14_redshank_episode_surface_plan.md):
+  Turnstone as the listening port's second host — the contributed compact dock
+  as an episode tile, enclosure routing, one app-owned audio and model
+  authority, and the item/progress/note graph projection. Landed; the fetch
+  path, the microphone, the woodshed pin, the knot-editor Mere alignment and a
+  headed receipt remain open.
 - [Turnstone surfaces in Cambium](2026-07-15_turnstone_surfaces_in_cambium.md): mapping from product surfaces to Cambium components or non-Cambium lanes.
 - [Turnstone founding](2026-07-08_turnstone_founding.md): naming, role swap, and original sequencing, with later authority corrections called out in the document.
 - [Meerkat harvest](2026-07-18_meerkat_harvest.md): port, note, or leave audit made before retiring the donor application.

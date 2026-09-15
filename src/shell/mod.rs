@@ -436,6 +436,10 @@ pub struct Shell {
     /// Runtime product surface factories. Concrete product state never enters
     /// the shell; admission yields the erased sessions retained above.
     surface_providers: crate::contributed_surface::SurfaceProviderRegistry,
+    /// Every mounted Redshank dock, by library identity. `!Send` like the
+    /// other retained product state, so it lives here rather than in App;
+    /// the app owns the model, the store and the one audio runtime.
+    redshank_docks: crate::redshank_episode_surface::RedshankDocks,
     /// Which pane the pointer is hovering (pane pointer-move routing): lets a
     /// move off a pane deliver its Leave so hover emphasis clears.
     hovered_pane: Option<crate::panes::PaneId>,
@@ -629,6 +633,25 @@ impl Shell {
                 crate::distillery_installed_surface::DistilleryInstalledProvider::default(),
             )
             .expect("the built-in Distillery installed provider is unique");
+        // Redshank's own compact dock, admitted rather than copied. The shell
+        // holds the dock handles; the app holds the one listening authority,
+        // which is where the device is opened.
+        let redshank_docks = crate::redshank_episode_surface::RedshankDocks::new();
+        surface_providers
+            .register_provider(crate::redshank_episode_surface::RedshankEpisodeProvider::new(
+                redshank_docks.clone(),
+            ))
+            .expect("the Redshank episode provider is unique");
+        app.redshank = crate::redshank_host::RedshankHost::open(
+            &app.session_dir(),
+            crate::redshank_host::Output::Device,
+        );
+        if let Some(runtime) = app.redshank.runtime() {
+            let redshank_proxy = proxy.clone();
+            runtime.set_wake(Arc::new(move || {
+                let _ = redshank_proxy.send_event(());
+            }));
+        }
         let mut shell = Self {
             app,
             live_settings,
@@ -694,6 +717,7 @@ impl Shell {
             device_receipts_service,
             renderers: Default::default(),
             surface_providers,
+            redshank_docks,
             hovered_pane: None,
             chrome: crate::chrome_view::ChromeSurfaces::new(),
             wb_tab_drag: None,

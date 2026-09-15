@@ -1472,6 +1472,13 @@ impl App {
     pub(super) fn open_address(&mut self, url: String) -> Vec<Effect> {
         let mut effects = self.invalidate_micron_submission();
         self.events.push(AppEvent::AddressOpened(url.clone()));
+        // Podcast audio is a listening tile, not a reader page. One decision
+        // point: a subscribed feed entry answers with its show, GUID and
+        // artwork; a bare audio address answers with itself.
+        if let Some(episode) = self.redshank_episode_for_address(&url) {
+            effects.extend(self.open_redshank_episode(episode));
+            return effects;
+        }
         // A graph pane owns its selection. Visiting through the compatibility
         // canvas cursor selected the node only until the next render installed
         // that pane's saved selection, at which point an address opened from

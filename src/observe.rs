@@ -378,6 +378,8 @@ pub enum AppEvent {
     },
     /// The focused entry's unread marker was cleared.
     FeedEntryRead(Uuid),
+    /// A Redshank dock command was refused, in the listener's words.
+    RedshankRefused(String),
     /// One exact graph member entered durable kept state.
     NodeKept(Uuid),
     /// A dropped image textured this node's sprite face.
@@ -664,6 +666,7 @@ impl AppEvent {
                 format!("feed-refresh-failed {node} {error}")
             }
             AppEvent::FeedEntryRead(node) => format!("feed-entry-read {node}"),
+            AppEvent::RedshankRefused(message) => format!("redshank-refused {message}"),
             AppEvent::NodeKept(node) => format!("node-kept {node}"),
             AppEvent::NodeSpriteSet(node) => format!("sprite-set {node}"),
             AppEvent::ViewerChanged { node, viewer } => format!("viewer-changed {node} {viewer}"),

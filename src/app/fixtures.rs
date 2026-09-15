@@ -53,6 +53,8 @@ impl App {
             session_id,
             content: ContentStates::default(),
             feeds: crate::feed::FeedSubscriptions::default(),
+            redshank: crate::redshank_host::RedshankHost::default(),
+            redshank_members: std::collections::BTreeMap::new(),
             place: crate::place::PlaceState::default(),
             pending_place_artifact: None,
             next_place_generation: 0,

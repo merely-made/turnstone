@@ -33,6 +33,7 @@ impl ApplicationHandler for Shell {
     fn about_to_wait(&mut self, event_loop: &ActiveEventLoop) {
         let effects = self.app.tick(crate::denizen::now_ms());
         self.run_effects(effects);
+        self.pump_redshank();
         // Minute is the smallest supported schedule. A bounded wake also
         // supplies the production clock to W4 behaviors when the UI is idle.
         event_loop.set_control_flow(ControlFlow::WaitUntil(
@@ -358,5 +359,22 @@ impl ApplicationHandler for Shell {
             _ => {}
         }
         self.drain_pending_windows(event_loop);
+    }
+}
+
+impl Shell {
+    /// The Redshank command loop, one turn per event batch: take what the
+    /// mounted docks issued, apply it through the app's one listening
+    /// authority, then show every dock what the model and runtime now say.
+    fn pump_redshank(&mut self) {
+        let commands = self.redshank_docks.drain();
+        if !commands.is_empty() {
+            let effects = self.app.apply_redshank_commands(commands);
+            self.run_effects(effects);
+        }
+        for item in self.redshank_docks.items() {
+            let projection = self.app.redshank_projection(&item);
+            self.redshank_docks.project(&item, projection);
+        }
     }
 }

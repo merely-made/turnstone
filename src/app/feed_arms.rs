@@ -106,6 +106,7 @@ impl App {
         self.now_ms = Some(now_ms);
         let requests = self.feeds.start_due(now_ms);
         let mut effects = self.feed_fetch_effects(requests);
+        effects.extend(self.redshank_tick(now_ms));
         effects.extend(crate::behaviors::drain(self));
         effects
     }

@@ -20,6 +20,11 @@ pub(crate) const DOWNLOAD_CLASS: &str = "turnstone.download";
 pub(crate) const WEB_PAGE_FACET: &str = "web.page";
 pub(crate) const NOTE_DOCUMENT_FACET: &str = "note.document";
 pub(crate) const DOWNLOAD_FACET: &str = "download.response";
+/// Listening progress on an episode member, and one timed note's anchor.
+/// Both are profile facets only: the class of the node they ride stays
+/// whatever `reconcile` derives, so a note is still a note.
+pub(crate) const REDSHANK_PROGRESS_FACET: &str = "redshank.progress";
+pub(crate) const REDSHANK_NOTE_FACET: &str = "redshank.note";
 
 /// The class/schema set Turnstone ships. Nothing here is privileged in
 /// chartulary: a pack can construct and register the same data types.
@@ -62,6 +67,27 @@ impl BuiltinContentClasses {
                 .field("destination_path", MereNativeFieldSpec::String, false)
                 .field("content_hash", MereNativeFieldSpec::String, false)
                 .field("error", MereNativeFieldSpec::String, false)
+                .build(),
+        );
+        validator.register(
+            FacetId::new(REDSHANK_PROGRESS_FACET),
+            MereNativeSchemaBuilder::new("turnstone.redshank-progress/v1")
+                .description("Listening progress on one podcast episode")
+                .field("version", MereNativeFieldSpec::U64, true)
+                .field("item_id", MereNativeFieldSpec::String, true)
+                .field("position_ms", MereNativeFieldSpec::U64, true)
+                .field("completed", MereNativeFieldSpec::Bool, true)
+                .field("updated_at_ms", MereNativeFieldSpec::U64, true)
+                .build(),
+        );
+        validator.register(
+            FacetId::new(REDSHANK_NOTE_FACET),
+            MereNativeSchemaBuilder::new("turnstone.redshank-note/v1")
+                .description("One timed note's source anchor")
+                .field("version", MereNativeFieldSpec::U64, true)
+                .field("item_id", MereNativeFieldSpec::String, true)
+                .field("annotation_id", MereNativeFieldSpec::String, true)
+                .field("offset_ms", MereNativeFieldSpec::U64, true)
                 .build(),
         );
         validator.register(
