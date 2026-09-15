@@ -33,8 +33,34 @@ key enter
 settle 10
 wait-status 600 Retained history: 0 shared nodes, 4 messages
 
-# Signal the founder that the return leg is complete.
+# Signal the founder that the return leg is complete; T5b step 4 continues
+# from here (design_docs/2026-07-28_turnstone_place_port_plan.md, "T5b.
+# Shared address and refused write") — the founder invites the reader and
+# shares a node on the address below while this process waits for it.
 touch ${EXCHANGE}\joiner.returned
+
+# The founder's shared node arrives through ordinary graph sync, no local
+# action needed beyond waiting for the retained-history count to grow.
+wait-status 6000 Retained history: 1 shared nodes
+
+# Opening the same address selects the already-synced (reconciled) node
+# rather than minting a second local one: the node count must not grow
+# across the open.
+assert nodes == 1
+open ${EXCHANGE_URL}/shared.html
+settle 20
+assert nodes == 1
+# Live content is per node and off until asked for; the presented Reader in
+# the workbench is the shared address's live web surface (reframe step 4).
+act Toggle live content
+settle 30
+assert content-ready
+assert content-live
+act Open node in Workbench
+settle 30
+assert pane workbench
+assert surface content
+capture joiner_shared
 
 act Place status
 settle 10

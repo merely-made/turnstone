@@ -1,0 +1,72 @@
+# T5b step 7: refused unauthorized write (design_docs/2026-07-28_turnstone_
+# place_port_plan.md, "T5b. Shared address and refused write"). The
+# reader joins the place read-only (Invite to place as reader admits at Read
+# with no delegation), sees both write permissions read as not effective and
+# the founder's one shared node, then attempts to share a node of its own —
+# refused by its own worker before anything is authored. Runs as a THIRD
+# process launched alongside the relaunched joiner (scenarios/
+# place_joiner_return.scn), paired with the founder's continuation in
+# scenarios/place_founder.scn through the shared ${EXCHANGE} directory (see
+# scenarios/place_two_windows.ps1, which also exports ${EXCHANGE_URL}).
+settle 30
+key escape
+
+# Wait for the founder's second (reader) card before offering a pre-key
+# against it.
+wait-file 3000 ${EXCHANGE}\demo-reader.place-card.json
+
+act Offer place pre-key
+settle 5
+type ${EXCHANGE}\demo-reader.place-card.json
+key enter
+settle 10
+wait-file 600 ${EXCHANGE}\demo-reader.place-card.json.prekey.json
+
+# Wait for the founder's reader invitation (naming this pre-key) before
+# joining.
+wait-file 3000 ${EXCHANGE}\demo-reader.place-card.json.prekey.json.invite.json
+
+act Join place
+settle 5
+type ${EXCHANGE}\demo-reader.place-card.json.prekey.json.invite.json
+key enter
+settle 10
+wait-status 600 Local rendezvous
+
+# Admitted at Read with no delegation: the shared-graph write permission
+# reads as not effective, and the founder's one shared node has already
+# synced in through ordinary graph sync by the time this settles.
+wait-status 600 Shared graph permission: not effective
+wait-status 6000 Retained history: 1 shared nodes
+
+# Open the OTHER page (never the founder's shared address) and attempt to
+# share it; this profile's own worker must refuse before anything is
+# authored.
+open ${EXCHANGE_URL}/reader.html
+settle 20
+act Toggle live content
+settle 30
+assert content-ready
+assert content-live
+act Open node in Workbench
+settle 30
+assert pane workbench
+assert surface content
+capture reader_page
+
+act Share focused node
+settle 30
+assert event place-refused
+
+# Still one shared node: the refused write added nothing.
+wait-status 60 Retained history: 1 shared nodes
+
+act Place status
+settle 10
+capture reader_refused
+record-place reader
+
+# Signal the founder that this leg is complete.
+touch ${EXCHANGE}\reader.finished
+
+log place reader refused-write path complete

@@ -272,6 +272,7 @@ pub fn ring_of(action: &Action) -> Ring {
         | OfferPlacePrekey { .. }
         | OfferPlacePrekeyForCard { .. }
         | BeginInviteToPlace
+        | BeginInviteToPlaceAsReader
         | InviteToPlace { .. }
         | InviteToPlaceWithPrekey { .. }
         | BeginJoinPlaceFile
@@ -314,6 +315,7 @@ pub fn emit_allowed(
             | Action::OfferPlacePrekey { .. }
             | Action::OfferPlacePrekeyForCard { .. } => "offering a place pre-key",
             Action::BeginInviteToPlace
+            | Action::BeginInviteToPlaceAsReader
             | Action::InviteToPlace { .. }
             | Action::InviteToPlaceWithPrekey { .. } => "inviting to a place",
             Action::BeginSendPlaceMessage => "opening the place message prompt",

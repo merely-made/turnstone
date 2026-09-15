@@ -1173,10 +1173,15 @@ impl App {
                 self.offer_place_prekey_for_card(card, out)
             },
             Action::BeginInviteToPlace => self.begin_place_prompt(crate::ui::PlacePrompt::Invite),
-            Action::InviteToPlace { path } => self.invite_to_place(path),
-            Action::InviteToPlaceWithPrekey { prekey, out } => {
-                self.invite_to_place_with_prekey(prekey, out)
+            Action::BeginInviteToPlaceAsReader => {
+                self.begin_place_prompt(crate::ui::PlacePrompt::InviteReader)
             },
+            Action::InviteToPlace { path, access } => self.invite_to_place(path, access),
+            Action::InviteToPlaceWithPrekey {
+                prekey,
+                out,
+                access,
+            } => self.invite_to_place_with_prekey(prekey, out, access),
             Action::BeginJoinPlaceFile => self.begin_place_prompt(crate::ui::PlacePrompt::Join),
             Action::JoinPlaceFile { path } => self.join_place_file(path),
             Action::BeginSendPlaceMessage => {

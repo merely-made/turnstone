@@ -98,8 +98,12 @@ pub struct DocumentFindModel {
 pub enum PlaceArtifactKind {
     /// A place card, read to offer a pre-key against its Moot.
     Card,
-    /// A published pre-key offer, read to author an invitation for it.
-    Prekey,
+    /// A published pre-key offer, read to author an invitation for it. The
+    /// access it will admit at rides along: the prompt that asked for the
+    /// path is what decided it, not the file.
+    Prekey {
+        access: crate::place::PlaceInviteAccess,
+    },
     /// An invitation envelope, read to join through it.
     Invite,
 }
@@ -317,14 +321,18 @@ pub enum Action {
     },
     /// Prompt for the pre-key offer an invitation answers.
     BeginInviteToPlace,
+    /// The same prompt, for an invitation that admits a reader.
+    BeginInviteToPlaceAsReader,
     /// Admit one offered pre-key's root and author its invitation.
     InviteToPlace {
         path: String,
+        access: crate::place::PlaceInviteAccess,
     },
     /// The offer read back by the shell, with the invitation's output path.
     InviteToPlaceWithPrekey {
         prekey: Vec<u8>,
         out: String,
+        access: crate::place::PlaceInviteAccess,
     },
     /// Prompt for the invitation file to join through.
     BeginJoinPlaceFile,
@@ -880,6 +888,7 @@ pub enum Effect {
         session: crate::panes::SessionId,
         generation: u64,
         prekey: Vec<u8>,
+        access: crate::place::PlaceInviteAccess,
     },
     /// Write one place artifact where the person asked for it. Files are a
     /// shell concern; the worker never touches the filesystem outside the

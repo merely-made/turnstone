@@ -280,6 +280,19 @@ impl PlacePrekeyOfferV1 {
     }
 }
 
+/// What an invitation admits its recipient as.
+///
+/// Not carried on the wire: an invitation's envelope is unchanged, and the
+/// difference is realized in the Moot the recipient then folds. A reader is
+/// admitted to membership at `Read` and holds no delegation, so it reads the
+/// place and its own worker refuses everything it tries to author.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum PlaceInviteAccess {
+    #[default]
+    Writer,
+    Reader,
+}
+
 /// Hex for a 32-byte public identifier, the one spelling the card uses.
 pub fn hex32(bytes: &[u8; 32]) -> String {
     encode_hex(bytes)

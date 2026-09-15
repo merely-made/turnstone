@@ -570,7 +570,14 @@ impl App {
             PlacePrompt::FoundPlace => Action::FoundPlace { name: text.clone() },
             PlacePrompt::ExportCard => Action::ExportPlaceCard { path: text.clone() },
             PlacePrompt::OfferPrekey => Action::OfferPlacePrekey { path: text.clone() },
-            PlacePrompt::Invite => Action::InviteToPlace { path: text.clone() },
+            PlacePrompt::Invite => Action::InviteToPlace {
+                path: text.clone(),
+                access: crate::place::PlaceInviteAccess::Writer,
+            },
+            PlacePrompt::InviteReader => Action::InviteToPlace {
+                path: text.clone(),
+                access: crate::place::PlaceInviteAccess::Reader,
+            },
             PlacePrompt::Join => Action::JoinPlaceFile { path: text.clone() },
             PlacePrompt::SendMessage => match self.place.binding() {
                 Some(binding) => Action::SendPlaceMessage {
@@ -590,6 +597,7 @@ impl App {
             PlacePrompt::ExportCard => "Export place card",
             PlacePrompt::OfferPrekey => "Offer place pre-key",
             PlacePrompt::Invite => "Invite to place",
+            PlacePrompt::InviteReader => "Invite to place as reader",
             PlacePrompt::Join => "Join place",
             PlacePrompt::SendMessage => "Send place message",
         };

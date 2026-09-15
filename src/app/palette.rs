@@ -169,7 +169,14 @@ impl App {
             &[
                 ("Export place card", Action::BeginExportPlaceCard),
                 ("Invite to place", Action::BeginInviteToPlace),
+                (
+                    "Invite to place as reader",
+                    Action::BeginInviteToPlaceAsReader,
+                ),
                 ("Send place message", Action::BeginSendPlaceMessage),
+                // Offered whatever is focused: the row is about the place,
+                // and "no focused node to share" is the action's own answer.
+                ("Share focused node", Action::ShareFocusedNode),
             ]
         } else {
             &[

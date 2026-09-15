@@ -1083,6 +1083,33 @@ graph digest; the reader record shows both permissions false; the reader's
 capture shows the refusal; the founder's node count is unchanged by the
 refused write; `git diff --check` and the place tests pass. Step 5 stays open.
 
+**T5b receipt, 2026-09-14.** Run 14 under
+`C:/t/turnstone-place-two-windows-20260914-14` passed all four scenarios:
+founder, joiner, joiner-return and reader. The driver serves the exchange
+directory over loopback HTTP, because this build registers no live-content
+engine for `file://` pages; the shared address is therefore HTTP on
+127.0.0.1, not HTTPS, and the reframe's step 4 is proven at that strength.
+The founder opened the page, turned on live content, presented it in the
+workbench and shared the focused node; the returning joiner and the reader
+each waited for one shared node, opened the same address without minting a
+second node, and presented it (`founder_shared.png`, `joiner_shared.png`,
+`reader_page.png`). The reader, admitted at Read with no delegation, saw both
+permissions not effective, attempted to share its own page, and its own
+worker refused before authoring (`place-refused` event, `reader_refused.png`).
+All three final records carry one shared node and one identical graph
+digest, four messages, three members, and three distinct Personae roots.
+
+Two observations. In run 11 the returning joiner's record showed two
+members while founder and reader showed three: its membership lane had run
+no further sync round after the reconnect, although its graph, chat and
+delegation lanes had. Run 14, with more elapsed time before the record,
+shows three on every side, so the operation arrives, but membership can lag
+the content lanes on an already-connected peer. Second, `assert
+content-ready` passes vacuously when nothing was requested; a presented
+surface needs live content turned on and a workbench or content-surface
+assertion, which the scenarios now carry. Steps 1, 2, 3, 4, 6 and 7 are
+proven; step 5 stays open.
+
 ## File seams
 
 | File | Change |

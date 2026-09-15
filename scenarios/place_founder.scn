@@ -69,9 +69,57 @@ wait-status 3000 Retained history: 0 shared nodes, 3 messages
 record-place founder_absent_authored
 
 # The returning joiner reconnects offline, converges the absent-authored
-# message, then sends one more; wait for its marker before the final record.
+# message, then sends one more; wait for its marker before going on.
 wait-file 6000 ${EXCHANGE}\joiner.returned
 wait-status 3000 Retained history: 0 shared nodes, 4 messages
+
+# T5b step 7 setup: a second card for the reader (its pre-key offer lands
+# beside the card, so the joiner's files are never overwritten), then an
+# invitation that admits at Read with no delegation.
+act Export place card
+settle 5
+type ${EXCHANGE}\demo-reader.place-card.json
+key enter
+settle 10
+wait-file 600 ${EXCHANGE}\demo-reader.place-card.json
+wait-file 6000 ${EXCHANGE}\demo-reader.place-card.json.prekey.json
+
+act Invite to place as reader
+settle 5
+type ${EXCHANGE}\demo-reader.place-card.json.prekey.json
+key enter
+settle 10
+wait-file 600 ${EXCHANGE}\demo-reader.place-card.json.prekey.json.invite.json
+
+# T5b step 4: open one page written by the driver and share the focused node
+# into the shared graph. The returning joiner and the reader each wait for
+# "1 shared nodes" and open the same address.
+open ${EXCHANGE_URL}/shared.html
+settle 20
+# Live content is per node and off until asked for; a presented Reader in the
+# workbench is the "live web surface" the reframe's step 4 names.
+act Toggle live content
+settle 30
+assert content-ready
+assert content-live
+act Open node in Workbench
+settle 30
+assert pane workbench
+assert surface content
+capture founder_shared
+act Share focused node
+wait-status 600 Retained history: 1 shared nodes
+
+# T5b step 7: the reader attempts to share its own focused node and its own
+# worker refuses before anything is authored. The witness is the shared
+# graph, not the local canvas: after the reader reports finished, a fresh
+# status refresh still retains exactly one shared node, and that resync would
+# have folded any operation that had actually left the reader.
+wait-file 6000 ${EXCHANGE}\reader.finished
+act Place status
+settle 30
+key escape
+wait-status 60 Retained history: 1 shared nodes
 
 act Place status
 settle 10

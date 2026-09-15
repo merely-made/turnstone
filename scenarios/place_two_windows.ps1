@@ -1,4 +1,4 @@
-# T5a two-window proof driver (PowerShell 7).
+# T5a/T5b two-window (three-role) proof driver (PowerShell 7).
 #
 # Launches a founder and a joiner turnstone.exe, each against its own scratch
 # profile (LOCALAPPDATA / TURNSTONE_ROOT / PERSONAE_PROFILE isolated per role,
@@ -16,19 +16,30 @@
 # scenarios/place_joiner_return.scn, which reconnects, converges the
 # absent-authored message, and sends one more. The founder's scenario is one
 # long script spanning both phases and only writes its own scenario.done at
-# the very end.
+# the very end. A third role, reader, launches at the start of phase 2
+# alongside the relaunched joiner, running scenarios/place_reader.scn against
+# its own scratch profile: it joins the place read-only (T5b, reframe step 7)
+# and proves its own write is refused.
 #
-# Waits for the phase-1 sentinels, then the phase-2 sentinels, prints every
-# outcome, and exits nonzero unless founder, joiner (phase 1) and joiner-return
-# all read RESULT ok.
+# T5b (reframe steps 4 and 7) also needs two small static pages to open as
+# shared/private addresses; the driver writes shared.html and reader.html into
+# ${EXCHANGE} before launching anything, serves that directory over loopback
+# HTTP on -PagePort, and exports ${EXCHANGE_URL} (that origin) to every process
+# alongside ${EXCHANGE} and ${FOUNDER_DIR}.
+#
+# Waits for the phase-1 sentinels, then the phase-2 sentinels (founder,
+# joiner-return AND reader), prints every outcome, and exits nonzero unless
+# founder, joiner (phase 1), joiner-return and reader all read RESULT ok.
 #
 # See design_docs/2026-07-28_turnstone_place_port_plan.md, "T5a. Founder path
-# and two-window proof", for the scenario this proves.
+# and two-window proof" and "T5b. Shared address and refused write", for the
+# scenario this proves.
 
 param(
     [string]$Exe = "C:/t/turnstone-leave-target/debug/turnstone.exe",
     [string]$Out = "C:/t/turnstone-place-two-windows-$(Get-Date -Format 'yyyyMMdd-HHmmss')",
-    [int]$TimeoutSeconds = 600
+    [int]$TimeoutSeconds = 600,
+    [int]$PagePort = 43121
 )
 
 $ErrorActionPreference = "Stop"
@@ -43,7 +54,7 @@ New-Item -ItemType Directory -Force -Path $Out | Out-Null
 $exchange = Join-Path $Out "exchange"
 New-Item -ItemType Directory -Force -Path $exchange | Out-Null
 
-$roles = "founder", "joiner"
+$roles = "founder", "joiner", "reader"
 foreach ($role in $roles) {
     $roleDir = Join-Path $Out $role
     New-Item -ItemType Directory -Force -Path (Join-Path $roleDir "appdata") | Out-Null
@@ -52,6 +63,62 @@ foreach ($role in $roles) {
 New-Item -ItemType Directory -Force -Path (Join-Path $Out "joiner-return") | Out-Null
 
 $founderDir = Join-Path $Out "founder"
+
+# T5b (reframe steps 4 and 7): a shared address the founder opens and shares,
+# and a private one the reader opens before its refused write. Written before
+# any process launches so every role's wait-file finds them already in place.
+$sharedHtmlPath = Join-Path $exchange "shared.html"
+$readerHtmlPath = Join-Path $exchange "reader.html"
+Set-Content -Path $sharedHtmlPath -NoNewline -Value @"
+<!doctype html>
+<html>
+<head><title>Shared page</title></head>
+<body>
+<h1>Shared page</h1>
+<p>This node is shared by the founder into the place's shared graph.</p>
+</body>
+</html>
+"@
+Set-Content -Path $readerHtmlPath -NoNewline -Value @"
+<!doctype html>
+<html>
+<head><title>Reader page</title></head>
+<body>
+<h1>Reader page</h1>
+<p>The reader opens this node and attempts to share it; the write is refused.</p>
+</body>
+</html>
+"@
+
+# The pages are served over loopback HTTP rather than file://: this build
+# registers no live-content engine for local files, and the proof needs a
+# presented web surface. `${EXCHANGE_URL}/shared.html` is the same address in
+# every window, so the shared node reconciles by URL on each side.
+$exchangeUrl = "http://127.0.0.1:$PagePort"
+$exchangeServerLog = Join-Path $Out "exchange-server.log"
+$exchangeServer = Start-Process -FilePath "python" -ArgumentList @(
+    "-m", "http.server", "$PagePort", "--bind", "127.0.0.1", "--directory", $exchange
+) -PassThru -WindowStyle Hidden -RedirectStandardError $exchangeServerLog
+$exchangeReady = $false
+for ($attempt = 0; $attempt -lt 100 -and -not $exchangeReady; $attempt++) {
+    try {
+        Invoke-WebRequest -UseBasicParsing "$exchangeUrl/shared.html" -TimeoutSec 2 | Out-Null
+        $exchangeReady = $true
+    } catch {
+        if ($exchangeServer.HasExited) { break }
+        Start-Sleep -Milliseconds 100
+    }
+}
+function Stop-ExchangeServer {
+    if ($exchangeServer -and -not $exchangeServer.HasExited) {
+        Stop-Process -Id $exchangeServer.Id -Force -ErrorAction SilentlyContinue
+    }
+}
+if (-not $exchangeReady) {
+    Stop-ExchangeServer
+    Write-Error "exchange page server did not become ready on $exchangeUrl (see $exchangeServerLog)"
+    exit 1
+}
 
 # Never the user's own profile: every path below is under -Out. `$Role` names
 # the appdata/root/profile identity (which persists across a relaunch);
@@ -78,6 +145,7 @@ function Start-TurnstoneRole {
         TURNSTONE_SCENARIO    = $Scenario
         TURNSTONE_CAPTURE_DIR = $CaptureDir
         EXCHANGE              = $exchange
+        EXCHANGE_URL          = $exchangeUrl
         FOUNDER_DIR           = $founderDir
     }
     $saved = @{}
@@ -164,15 +232,18 @@ if (-not $phase1Ok) {
     foreach ($proc in @($founderProc, $joinerProc)) {
         if (-not $proc.HasExited) { Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue }
     }
+    Stop-ExchangeServer
     Write-Error "two-window proof failed: phase 1 did not complete"
     exit 1
 }
 
-# Phase 2 (step 6): stop the joiner, signal its absence, let the founder
-# author while it is gone, then restart the joiner against the SAME
-# appdata/root/profile running the return scenario.
+# Phase 2 (step 6, plus T5b steps 4 and 7): stop the joiner, signal its
+# absence, let the founder author while it is gone, then restart the joiner
+# against the SAME appdata/root/profile running the return scenario. The
+# reader launches here too, on its own scratch profile, running
+# scenarios/place_reader.scn.
 Write-Host ""
-Write-Host "Phase 2: stopping joiner, authoring while absent, restarting..."
+Write-Host "Phase 2: stopping joiner, authoring while absent, restarting, admitting reader..."
 if (-not $joinerProc.HasExited) {
     Stop-Process -Id $joinerProc.Id -Force -ErrorAction SilentlyContinue
 }
@@ -184,24 +255,31 @@ $joinerReturnProc = Start-TurnstoneRole -Role "joiner" `
     -Scenario (Join-Path $repoRoot "scenarios/place_joiner_return.scn") `
     -CaptureDir $joinerReturnDir
 
+Write-Host "Launching reader (out: $Out\reader)"
+$readerProc = Start-TurnstoneRole -Role "reader"
+
 $founderDone = Join-Path $Out "founder/scenario.done"
 $joinerReturnDone = Join-Path $joinerReturnDir "scenario.done"
+$readerDone = Join-Path $Out "reader/scenario.done"
 
 $remaining = [math]::Max(30, $TimeoutSeconds)
-$phase2Ok = Wait-ForFiles -Paths @($founderDone, $joinerReturnDone) -TimeoutSeconds $remaining -OnPoll {
+$phase2Ok = Wait-ForFiles -Paths @($founderDone, $joinerReturnDone, $readerDone) -TimeoutSeconds $remaining -OnPoll {
     if ($founderProc.HasExited -and -not (Test-Path $founderDone)) {
         Write-Warning "founder process exited without writing scenario.done (code $($founderProc.ExitCode))"
     }
     if ($joinerReturnProc.HasExited -and -not (Test-Path $joinerReturnDone)) {
         Write-Warning "joiner-return process exited without writing scenario.done (code $($joinerReturnProc.ExitCode))"
     }
+    if ($readerProc.HasExited -and -not (Test-Path $readerDone)) {
+        Write-Warning "reader process exited without writing scenario.done (code $($readerProc.ExitCode))"
+    }
 }
 
 if (-not $phase2Ok) {
-    Write-Warning "timed out after $remaining s waiting for phase 2 (founder scenario.done + joiner-return scenario.done)"
+    Write-Warning "timed out after $remaining s waiting for phase 2 (founder scenario.done + joiner-return scenario.done + reader scenario.done)"
 }
 
-foreach ($proc in @($founderProc, $joinerReturnProc)) {
+foreach ($proc in @($founderProc, $joinerReturnProc, $readerProc)) {
     if (-not $proc.HasExited) {
         Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
     }
@@ -209,8 +287,9 @@ foreach ($proc in @($founderProc, $joinerReturnProc)) {
 
 $founderOk = Report-Done -Role "founder" -Path $founderDone
 $joinerReturnOk = Report-Done -Role "joiner-return" -Path $joinerReturnDone
+$readerOk = Report-Done -Role "reader" -Path $readerDone
 
-foreach ($pair in @(@{Role = "founder"; Dir = $founderDir}, @{Role = "joiner"; Dir = (Join-Path $Out "joiner")}, @{Role = "joiner-return"; Dir = $joinerReturnDir})) {
+foreach ($pair in @(@{Role = "founder"; Dir = $founderDir}, @{Role = "joiner"; Dir = (Join-Path $Out "joiner")}, @{Role = "joiner-return"; Dir = $joinerReturnDir}, @{Role = "reader"; Dir = (Join-Path $Out "reader")})) {
     $roleDir = $pair.Dir
     Write-Host ""
     Write-Host "=== $($pair.Role) captures ==="
@@ -221,14 +300,15 @@ foreach ($pair in @(@{Role = "founder"; Dir = $founderDir}, @{Role = "joiner"; D
         ForEach-Object { Write-Host "  $($_.Name)" }
 }
 
-$ok = $phase1Ok -and $phase2Ok -and $founderOk -and $joinerOk -and $joinerReturnOk
+$ok = $phase1Ok -and $phase2Ok -and $founderOk -and $joinerOk -and $joinerReturnOk -and $readerOk
+Stop-ExchangeServer
 
 if (-not $ok) {
     Write-Host ""
-    Write-Error "two-window proof failed: not all of founder, joiner and joiner-return read RESULT ok"
+    Write-Error "two-window proof failed: not all of founder, joiner, joiner-return and reader read RESULT ok"
     exit 1
 }
 
 Write-Host ""
-Write-Host "two-window proof: founder, joiner and joiner-return all reported RESULT ok"
+Write-Host "two-window proof: founder, joiner, joiner-return and reader all reported RESULT ok"
 exit 0

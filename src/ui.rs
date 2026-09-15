@@ -318,6 +318,8 @@ pub enum PlacePrompt {
     ExportCard,
     OfferPrekey,
     Invite,
+    /// The same question as `Invite`, answered with a reader's admission.
+    InviteReader,
     Join,
     SendMessage,
 }
@@ -330,6 +332,9 @@ impl PlacePrompt {
             Self::ExportCard => "Enter a path and press Enter to write the place card",
             Self::OfferPrekey => "Enter a card path and press Enter to offer a pre-key",
             Self::Invite => "Enter a pre-key path and press Enter to invite",
+            Self::InviteReader => {
+                "Enter a pre-key path and press Enter to invite a reader"
+            },
             Self::Join => "Enter an invitation path and press Enter to join",
             Self::SendMessage => "Enter a message and press Enter to send it",
         }

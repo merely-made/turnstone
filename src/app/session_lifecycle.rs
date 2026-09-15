@@ -429,7 +429,10 @@ impl App {
             PlacePrompt::FoundPlace | PlacePrompt::OfferPrekey | PlacePrompt::Join if joined => {
                 return self.refuse_place("leave this place before joining or founding another");
             },
-            PlacePrompt::ExportCard | PlacePrompt::Invite | PlacePrompt::SendMessage
+            PlacePrompt::ExportCard
+            | PlacePrompt::Invite
+            | PlacePrompt::InviteReader
+            | PlacePrompt::SendMessage
                 if !joined =>
             {
                 return self.refuse_place("this session is not in a place");
@@ -534,14 +537,20 @@ impl App {
         }]
     }
 
-    /// Read a pre-key offer, so an invitation can be authored for it.
-    pub fn invite_to_place(&mut self, path: String) -> Vec<Effect> {
+    /// Read a pre-key offer, so an invitation can be authored for it. The
+    /// access travels with the read: the prompt that asked for the path is
+    /// what decided whether this admits a writer or a reader.
+    pub fn invite_to_place(
+        &mut self,
+        path: String,
+        access: crate::place::PlaceInviteAccess,
+    ) -> Vec<Effect> {
         if self.place.binding().is_none() {
             return self.refuse_place("open a place before inviting anyone");
         }
         vec![Effect::ReadPlaceArtifact {
             path,
-            kind: crate::action::PlaceArtifactKind::Prekey,
+            kind: crate::action::PlaceArtifactKind::Prekey { access },
         }]
     }
 
@@ -549,6 +558,7 @@ impl App {
         &mut self,
         prekey: Vec<u8>,
         out: String,
+        access: crate::place::PlaceInviteAccess,
     ) -> Vec<Effect> {
         let Some(binding) = self.place.binding().cloned() else {
             return self.refuse_place("open a place before inviting anyone");
@@ -565,6 +575,7 @@ impl App {
             session: self.session_id,
             generation,
             prekey,
+            access,
         }]
     }
 

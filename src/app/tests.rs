@@ -4861,7 +4861,8 @@ fn place_founding_prompts_commit_escape_and_refuse() {
     }
     assert_eq!(
         app.update(Action::InviteToPlace {
-            path: "offer.json".into()
+            path: "offer.json".into(),
+            access: crate::place::PlaceInviteAccess::Writer,
         }),
         vec![Effect::Redraw]
     );
@@ -4935,6 +4936,7 @@ fn place_artifacts_are_written_where_the_person_asked() {
     let effects = app.update(Action::InviteToPlaceWithPrekey {
         prekey: vec![1, 2, 3],
         out: "offer.json.invite.json".into(),
+        access: crate::place::PlaceInviteAccess::Writer,
     });
     assert_eq!(
         effects,
@@ -4942,6 +4944,7 @@ fn place_artifacts_are_written_where_the_person_asked() {
             session: app.session_id,
             generation: 4,
             prekey: vec![1, 2, 3],
+            access: crate::place::PlaceInviteAccess::Writer,
         }]
     );
     // A stale answer writes nothing and does not consume the pending path.
@@ -4966,6 +4969,118 @@ fn place_artifacts_are_written_where_the_person_asked() {
         event,
         crate::observe::AppEvent::PlaceRefused(reason) if reason.contains("no such member")
     )));
+}
+
+/// The reader invitation and the share row: both are place-shaped, so both
+/// are offered only inside a place, the reader prompt commits the access its
+/// label promises, and Escape leaves the session exactly as it was.
+#[test]
+fn place_reader_invitation_and_share_rows_act_only_inside_a_place() {
+    use crate::ui::{OmnibarMode, PlacePrompt};
+
+    let mut app = App::test_stub();
+    let labels = |app: &App| -> Vec<String> {
+        app.available_actions()
+            .into_iter()
+            .map(|(label, _)| label)
+            .collect()
+    };
+
+    // Personal: neither row is offered, and both actions refuse out loud
+    // rather than opening a prompt that could only fail.
+    for label in ["Invite to place as reader", "Share focused node"] {
+        assert!(
+            !labels(&app).iter().any(|row| row == label),
+            "{label} cannot act on a personal session"
+        );
+    }
+    for action in [Action::BeginInviteToPlaceAsReader, Action::ShareFocusedNode] {
+        assert_eq!(app.update(action), vec![Effect::Redraw]);
+        assert!(!app.omnibar.open);
+        assert!(matches!(
+            app.take_events().last(),
+            Some(crate::observe::AppEvent::PlaceRefused(_))
+        ));
+    }
+
+    let binding = crate::place::PlaceBindingV1::new(
+        crate::place::PlaceId([0xa1; 32]),
+        crate::place::SharedContainerId([0xa2; 32]),
+        crate::place::ChatSpaceId([0xa3; 32]),
+        "general",
+    )
+    .unwrap();
+    app.place = crate::place::PlaceState::Offline {
+        binding,
+        generation: 7,
+        snapshot: crate::place::OfflinePlaceSnapshot::default(),
+    };
+    for label in ["Invite to place as reader", "Share focused node"] {
+        assert!(
+            labels(&app).iter().any(|row| row == label),
+            "missing {label} inside a place"
+        );
+    }
+
+    // Each invite prompt carries its own access into the read.
+    for (action, prompt, access) in [
+        (
+            Action::BeginInviteToPlaceAsReader,
+            PlacePrompt::InviteReader,
+            crate::place::PlaceInviteAccess::Reader,
+        ),
+        (
+            Action::BeginInviteToPlace,
+            PlacePrompt::Invite,
+            crate::place::PlaceInviteAccess::Writer,
+        ),
+    ] {
+        app.update(action);
+        assert!(app.omnibar.open);
+        assert_eq!(app.omnibar.mode, OmnibarMode::Place(prompt));
+        app.omnibar.text = "offer.json".to_string();
+        let effects = app.update(Action::OmnibarCommit);
+        assert!(
+            effects.contains(&Effect::ReadPlaceArtifact {
+                path: "offer.json".into(),
+                kind: crate::action::PlaceArtifactKind::Prekey { access },
+            }),
+            "{prompt:?} lowered {effects:?}"
+        );
+        assert!(!app.omnibar.open, "commit closes the bar");
+    }
+
+    // Escape cancels without lowering anything.
+    app.update(Action::BeginInviteToPlaceAsReader);
+    assert_eq!(
+        app.omnibar.mode,
+        OmnibarMode::Place(PlacePrompt::InviteReader)
+    );
+    app.update(Action::OmnibarClose);
+    assert!(!app.omnibar.open);
+    assert_eq!(app.omnibar.mode, OmnibarMode::Address);
+
+    // Sharing: nothing focused is a refusal, not an empty address.
+    assert_eq!(app.update(Action::ShareFocusedNode), vec![Effect::Redraw]);
+    assert!(app.take_events().iter().any(|event| matches!(
+        event,
+        crate::observe::AppEvent::PlaceRefused(reason) if reason.contains("no focused node")
+    )));
+
+    // A focused node with an address lowers the place command unchanged.
+    app.update(Action::OpenAddress("https://example.com/page".to_string()));
+    let effects = app.update(Action::ShareFocusedNode);
+    assert!(
+        effects.iter().any(|effect| matches!(
+            effect,
+            Effect::RunPlaceCommand {
+                generation: 7,
+                command: crate::place::worker::PlaceCommand::ShareNode { address },
+                ..
+            } if address == "https://example.com/page"
+        )),
+        "{effects:?}"
+    );
 }
 
 /// The status row elides a ~200-character ticket; the copy action is the one

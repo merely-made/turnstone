@@ -153,6 +153,7 @@ pub enum PlaceWorkerCommand {
         generation: u64,
         directory: PathBuf,
         prekey: Vec<u8>,
+        access: crate::place::PlaceInviteAccess,
     },
     /// Re-fold the open place's projections without touching its lanes.
     ///
@@ -749,9 +750,14 @@ pub fn found_place(
     Ok(binding)
 }
 
-/// Add one invited root to this place's Moot membership and delegate both
-/// Commons domains to it. Idempotent in membership: a root already admitted
-/// is left at the access it holds.
+/// Add one invited root to this place's Moot membership at `access`, and for
+/// a writer delegate both Commons domains to it. Idempotent in membership: a
+/// root already admitted is left at the access it holds.
+///
+/// A reader gets membership and no delegation. That is the whole difference:
+/// reading a place is a membership question answered by the welcome, while
+/// authoring into it is a capability question, and a profile nobody delegated
+/// to fails its own worker's preflight before anything is authored.
 ///
 /// Takes the already-open Moot rather than opening its own, because the
 /// caller is the worker holding this place's only store handle.
@@ -760,8 +766,10 @@ fn admit_member(
     binding: &PlaceBindingV1,
     identity: &dyn IdentityProvider,
     joiner_root: [u8; 32],
+    access: crate::place::PlaceInviteAccess,
     now_ms: u64,
 ) -> Result<(), String> {
+    use crate::place::PlaceInviteAccess;
     let moot_id = binding.moot.0;
     let snapshot = pollster::block_on(moot.snapshot())
         .map_err(|error| format!("materialize Gemot: {error}"))?;
@@ -775,17 +783,22 @@ fn admit_member(
             identity,
             MootMembershipAction::Add {
                 member: joiner_root,
-                access: MootAccessLevel::Write,
+                access: match access {
+                    PlaceInviteAccess::Writer => MootAccessLevel::Write,
+                    PlaceInviteAccess::Reader => MootAccessLevel::Read,
+                },
             },
         ))
         .map_err(|error| format!("add the invited root to membership: {error}"))?;
     }
-    pollster::block_on(moot.delegation_store().author_issue(
-        &founder_signing_key(identity, moot_id)?,
-        &snapshot.governance.rules,
-        place_delegation(identity, moot_id, joiner_root, now_ms, now_ms, None)?,
-    ))
-    .map_err(|error| format!("delegate the Commons domains: {error}"))?;
+    if matches!(access, PlaceInviteAccess::Writer) {
+        pollster::block_on(moot.delegation_store().author_issue(
+            &founder_signing_key(identity, moot_id)?,
+            &snapshot.governance.rules,
+            place_delegation(identity, moot_id, joiner_root, now_ms, now_ms, None)?,
+        ))
+        .map_err(|error| format!("delegate the Commons domains: {error}"))?;
+    }
     Ok(())
 }
 
@@ -1647,6 +1660,7 @@ pub fn spawn_place_worker(
                         generation,
                         directory,
                         prekey,
+                        access,
                     } => {
                         let result = match &live {
                             Some(_) if live_scope != Some((session, generation)) => Err(
@@ -1684,6 +1698,7 @@ pub fn spawn_place_worker(
                                             &binding,
                                             identity.as_ref(),
                                             joiner_root,
+                                            access,
                                             now_ms,
                                         )
                                     })
@@ -1917,6 +1932,7 @@ pub(crate) mod tests {
         SignedDelegationCertificate, SignedDelegationRevocation, delegation_signing_salt,
     };
 
+    use crate::place::PlaceInviteAccess::{Reader, Writer};
     use crate::place::{ChatSpaceId, PlaceId, SharedContainerId};
 
     /// Pinned so a delegation window, and therefore an authority verdict, is
@@ -2733,9 +2749,9 @@ pub(crate) mod tests {
         ))
         .unwrap();
         let guest_root = guest_identity.master_public_key().to_bytes();
-        admit_member(&moot, &binding, &host_identity, guest_root, now_ms).unwrap();
+        admit_member(&moot, &binding, &host_identity, guest_root, Writer, now_ms).unwrap();
         // Idempotent: inviting the same root twice must not double the fold.
-        admit_member(&moot, &binding, &host_identity, guest_root, now_ms).unwrap();
+        admit_member(&moot, &binding, &host_identity, guest_root, Writer, now_ms).unwrap();
         let invite = author_invitation_with(
             &moot,
             &host,
@@ -2763,6 +2779,131 @@ pub(crate) mod tests {
         // digest of nothing; the point is that the digest is comparable.
         assert_eq!(guest_snapshot.graph_digest, snapshot.graph_digest);
         drop(guest_open);
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    /// A reader's invitation: membership without delegation.
+    ///
+    /// The two halves are separate questions and this proves they stay
+    /// separate. Reading is answered by the welcome and the Moot's fold, so
+    /// the founder's shared node reaches the reader's projection; authoring
+    /// is answered by a capability nobody issued, so the reader's own worker
+    /// refuses it before a store or a lane sees anything.
+    #[test]
+    fn a_reader_invitation_admits_a_member_that_cannot_author() {
+        let root = std::env::temp_dir()
+            .join(format!("turnstone-place-reader-{}", uuid::Uuid::new_v4()));
+        let host = root.join("host");
+        let guest = root.join("guest");
+        std::fs::create_dir_all(&host).unwrap();
+        std::fs::create_dir_all(&guest).unwrap();
+        let host_identity = RootIdentity::Unsealed(InMemoryProvider::from_seed([0xd3; 32]));
+        let reader_identity = RootIdentity::Unsealed(InMemoryProvider::from_seed([0xd4; 32]));
+        let settings = PlaceWorkerSettings::default();
+        let now_ms = settings.authority_clock.now_ms();
+
+        let binding = found_place(&host, &host_identity, "Hearth", &settings).unwrap();
+
+        // Authored BEFORE the invitation, so what the reader reads is content
+        // that existed before it was anybody here.
+        const SHARED: &str = "https://shared.example/page";
+        let (mut host_open, _) =
+            open_cached_place(&host, &binding, &host_identity, &settings).unwrap();
+        author_into_place(
+            &mut host_open,
+            &binding,
+            &host_identity,
+            &PlaceCommand::ShareNode { address: SHARED.into() },
+            &settings,
+        )
+        .unwrap();
+        let host_snapshot = place_snapshot(&host_open, binding.moot.0, &settings).unwrap();
+        assert_eq!(host_snapshot.graph.nodes, 1);
+        drop(host_open);
+
+        let prekey = prepare_group_identity(&guest, &reader_identity, binding.moot.0).unwrap();
+        let reader_root = reader_identity.master_public_key().to_bytes();
+        let moot = pollster::block_on(MootFile::open_existing(
+            place_store_dir(&host).join("gemot"),
+            MootId(binding.moot.0),
+            settings.retention.clone(),
+        ))
+        .unwrap();
+        admit_member(&moot, &binding, &host_identity, reader_root, Reader, now_ms).unwrap();
+        // Idempotent for a reader too: no second membership fact, no
+        // delegation sneaking in on the way through.
+        admit_member(&moot, &binding, &host_identity, reader_root, Reader, now_ms).unwrap();
+        let invite = author_invitation_with(
+            &moot,
+            &host,
+            &binding,
+            &host_identity,
+            &prekey,
+            now_ms + 7 * 24 * 60 * 60 * 1000,
+            Vec::new(),
+        )
+        .unwrap();
+        drop(moot);
+
+        let admitted = admit_invitation(&guest, &invite, &reader_identity, &settings).unwrap();
+        assert_eq!(admitted.moot.members, 2);
+        assert_eq!(admitted.group_members, 2);
+
+        // The graph lane's delivery, offline: the reader ends up holding the
+        // operations the founder authored, exactly as a sync round would
+        // leave it. Everything proved below is a verdict on those operations.
+        std::fs::copy(
+            place_store_dir(&host).join("commons-graph.redb"),
+            place_store_dir(&guest).join("commons-graph.redb"),
+        )
+        .unwrap();
+
+        let (mut reader_open, reader_snapshot) =
+            open_cached_place(&guest, &binding, &reader_identity, &settings).unwrap();
+        assert_eq!(
+            reader_snapshot.permissions,
+            Some(crate::place::PlacePermissionSnapshot {
+                message_write: false,
+                graph_write: false,
+            }),
+            "a reader holds neither write capability"
+        );
+        assert_eq!(reader_snapshot.personae_root, reader_root);
+        // Reading needs the welcome, not a delegation: the founder's node is
+        // here, and both peers digest it the same way.
+        assert_eq!(reader_snapshot.graph.nodes, 1);
+        assert_eq!(
+            reader_snapshot.shared.addresses().collect::<Vec<_>>(),
+            vec![SHARED]
+        );
+        assert_eq!(reader_snapshot.graph_digest, host_snapshot.graph_digest);
+        assert_eq!(reader_snapshot.graph.pending_authority, 0);
+
+        // Its own worker refuses both authoring paths, with the reason the
+        // product surfaces as a place refusal.
+        for command in [
+            PlaceCommand::ShareNode { address: "https://reader.example/page".into() },
+            PlaceCommand::SendMessage {
+                channel: binding.default_channel.clone(),
+                body: "refused".into(),
+            },
+        ] {
+            let refused = author_into_place(
+                &mut reader_open,
+                &binding,
+                &reader_identity,
+                &command,
+                &settings,
+            )
+            .unwrap_err();
+            assert!(refused.contains("no effective capability"), "{refused}");
+        }
+        // The refusal authored nothing: the shared graph is still the
+        // founder's one node.
+        let after = place_snapshot(&reader_open, binding.moot.0, &settings).unwrap();
+        assert_eq!(after.graph.nodes, 1);
+        assert_eq!(after.chat.messages, 0);
+        drop(reader_open);
         let _ = std::fs::remove_dir_all(&root);
     }
 
