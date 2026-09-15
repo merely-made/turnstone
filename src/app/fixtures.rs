@@ -91,6 +91,7 @@ impl App {
             },
             next_pane_id: 1,
             events: Vec::new(),
+            knot_documents: Vec::new(),
         }
     }
 

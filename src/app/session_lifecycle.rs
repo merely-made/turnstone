@@ -132,6 +132,7 @@ impl App {
             journal,
             next_pane_id: 1,
             events: Vec::new(),
+            knot_documents: Vec::new(),
         };
         let mut effects = app.adopt_session(session_id);
         if let Some(url) = address {

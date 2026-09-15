@@ -1250,6 +1250,20 @@ pub enum Update {
         generation: u64,
         result: Result<crate::place::OfflinePlaceSnapshot, String>,
     },
+    /// A dial to the mere holding a place-held Knot document is prepared, or
+    /// could not be. The shell opens it on a visiting thread of its own; the
+    /// app only learns that a visit is open or why it was refused.
+    // The dial is a crate-internal handle in a crate-internal module; this
+    // vocabulary is public only because everything in it is.
+    #[allow(private_interfaces)]
+    PlaceDocumentVisit {
+        session: crate::panes::SessionId,
+        generation: u64,
+        request: u64,
+        holder_root: [u8; 32],
+        path: String,
+        result: Result<Box<crate::place::lanes::HolderDial>, String>,
+    },
     /// The place's live lanes accepted operations and have settled.
     ///
     /// A nudge, not a projection: the watcher samples counters and cannot

@@ -1492,6 +1492,24 @@ impl App {
         };
         self.history.visit(url.clone());
         effects.push(Effect::Redraw);
+        // A place-held document names the mere that holds it. Outside a
+        // place there is nobody to ask, so this is refused at the door with
+        // a reason rather than left as a node that spins. The node stays:
+        // the person asked for it, and it opens the moment they are in the
+        // place that can reach it.
+        if let Some((holder_root, _)) = crate::knot_authoring::parse_place_held_address(&url) {
+            let mine = matches!(
+                &self.place,
+                crate::place::PlaceState::Offline { snapshot, .. }
+                    if snapshot.personae_root == holder_root
+            );
+            if !mine && self.place.generation().is_none() {
+                self.events.push(AppEvent::PlaceRefused(format!(
+                    "{url} is held by another mere; no place is open to reach it"
+                )));
+                return effects;
+            }
+        }
         if url::Url::parse(&url).is_ok_and(|parsed| parsed.scheme() == "titan")
             && let Some(node) = self.graph_runtimes.graph().get_node(key).map(|n| n.id)
         {

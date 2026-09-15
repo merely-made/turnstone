@@ -186,9 +186,22 @@ impl ApplicationHandler for Shell {
             self.run_effects(effects);
         }
         while let Ok(update) = self.place_rx.try_recv() {
+            // One place answer the app never sees: a prepared dial is a
+            // shell-owned thing. The app learns of a refusal as an event and
+            // of a visit only as the document that then opens.
+            if let crate::action::Update::PlaceDocumentVisit {
+                holder_root,
+                result,
+                ..
+            } = update
+            {
+                self.apply_document_visit(holder_root, result);
+                continue;
+            }
             let effects = self.app.apply_update(update);
             self.run_effects(effects);
         }
+        self.refresh_knot_documents();
         while let Ok(update) = self.micron_submission_rx.try_recv() {
             let effects = self.app.apply_update(update);
             self.run_effects(effects);

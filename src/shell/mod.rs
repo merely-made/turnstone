@@ -364,6 +364,19 @@ pub struct Shell {
     /// its device. Keep it requested until `resumed` instead of falsely
     /// reporting an unavailable engine.
     pending_surface_spawns: Vec<(uuid::Uuid, String)>,
+    /// One hub per visited holder, plus this profile's own root. Shared with
+    /// the Knot authoring engine, which was boxed into the content registry
+    /// long before any place was joined.
+    knot_visits: crate::knot_authoring::KnotVisits,
+    /// Content spawns waiting on a dial to the mere that holds them, by
+    /// holder root. Replayed through the ordinary spawn effect once the visit
+    /// is open, exactly as a Weld-pinned node waits for its device.
+    pending_visit_spawns: Vec<([u8; 32], uuid::Uuid, String)>,
+    /// Correlates a visit answer with the request that asked for it.
+    next_visit_request: u64,
+    /// Place-held documents this profile was refused, kept so observation can
+    /// say `refused` where there is no surface to ask.
+    knot_visit_refusals: Vec<crate::observe::KnotDocumentFacts>,
     /// Configured Knot destination for typed Inspector clips. The handle owns
     /// neither file authority nor vault keys; it only queues endpoint intents.
     knot_clip: Option<crate::knot_authoring::KnotClipHandle>,
@@ -596,7 +609,8 @@ impl Shell {
                     None
                 }
             };
-        match crate::knot_authoring::KnotAuthoringEngine::from_env(knot_wake) {
+        let knot_visits = crate::knot_authoring::KnotVisits::default();
+        match crate::knot_authoring::KnotAuthoringEngine::from_env(knot_wake, knot_visits.clone()) {
             Ok(Some(mut engine)) => {
                 knot_clip = engine.clip_handle();
                 if let Some(source) = engine.take_publish_source() {
@@ -700,6 +714,10 @@ impl Shell {
             #[cfg(all(feature = "weld", windows))]
             surface_frames: std::collections::HashMap::new(),
             pending_surface_spawns: Vec::new(),
+            knot_visits,
+            pending_visit_spawns: Vec::new(),
+            next_visit_request: 1,
+            knot_visit_refusals: Vec::new(),
             knot_clip,
             route_policy: standard_route_policy(),
             web_policy,

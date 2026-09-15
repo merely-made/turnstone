@@ -196,6 +196,10 @@ enum HubEvent {
     Stale,
     Rejected(String),
     Revoked(String),
+    /// The holder of a visited document is gone. Distinct from `Revoked`: the
+    /// document still exists, this profile just cannot reach the mere that
+    /// holds it, so the last scene stays and nothing is offered to save.
+    Unavailable(String),
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -229,7 +233,7 @@ struct Subscriber {
     events: Sender<HubEvent>,
 }
 
-struct KnotHub {
+pub(crate) struct KnotHub {
     commands: Sender<HubCommand>,
     next_registration: AtomicU64,
 }
@@ -533,7 +537,7 @@ impl KnotHub {
                 match retained {
                     Ok((retained, publish_source)) => {
                         let _ = ready_send.send(Ok(publish_source));
-                        run_hub(retained, receiver, wake);
+                        run_hub(retained, receiver, wake, false);
                     }
                     Err(error) => {
                         let _ = ready_send.send(Err(error));
@@ -551,6 +555,50 @@ impl KnotHub {
             }),
             publish_source,
         ))
+    }
+
+    /// Visit a document another mere holds, over an admitted place session.
+    ///
+    /// The same shape as [`Self::host`], with the carrier at the far end of a
+    /// dialed stream instead of an in-process endpoint, and the same
+    /// [`run_hub`] behind it: the document surface edits a visited document
+    /// with no knowledge that it is visiting.
+    ///
+    /// The dial runs ON this thread, not before it. The retained session and
+    /// its carrier never cross a thread boundary, so the thread that opens
+    /// the stream is the thread that reads it until the visit ends.
+    fn visit(dial: crate::place::lanes::HolderDial, wake: Wake) -> Result<Arc<Self>, String> {
+        let (commands, receiver) = mpsc::channel();
+        let (ready_send, ready_receive) = mpsc::sync_channel(1);
+        std::thread::Builder::new()
+            .name("turnstone-knot-visiting".into())
+            .spawn(move || {
+                let profile = CapabilityProfile::new([
+                    PresentationCapability::EditableText,
+                    PresentationCapability::PortableCard,
+                ]);
+                let retained = dial.open().and_then(|(carrier, holder)| {
+                    tracing::info!(holder = %crate::place::hex32(&holder.to_bytes()), "visiting a place-held document");
+                    RetainedEndpointSession::over(Box::new(carrier), profile)
+                });
+                match retained {
+                    Ok(retained) => {
+                        let _ = ready_send.send(Ok(()));
+                        run_hub(retained, receiver, wake, true);
+                    },
+                    Err(error) => {
+                        let _ = ready_send.send(Err(error));
+                    },
+                }
+            })
+            .map_err(|error| format!("could not start the Knot visiting worker: {error}"))?;
+        ready_receive
+            .recv()
+            .map_err(|_| "the Knot visiting worker stopped while dialing".to_string())??;
+        Ok(Arc::new(Self {
+            commands,
+            next_registration: AtomicU64::new(1),
+        }))
     }
 
     fn connect(program: PathBuf, args: Vec<OsString>, wake: Wake) -> Result<Arc<Self>, String> {
@@ -571,7 +619,7 @@ impl KnotHub {
                 match retained {
                     Ok(retained) => {
                         let _ = ready_send.send(Ok(()));
-                        run_hub(retained, receiver, wake);
+                        run_hub(retained, receiver, wake, false);
                     }
                     Err(error) => {
                         let _ = ready_send.send(Err(error));
@@ -614,7 +662,7 @@ impl KnotHub {
                 match retained {
                     Ok(retained) => {
                         let _ = ready_send.send(Ok(()));
-                        run_hub(retained, receiver, wake);
+                        run_hub(retained, receiver, wake, false);
                     }
                     Err(error) => {
                         let _ = ready_send.send(Err(error));
@@ -655,9 +703,53 @@ impl KnotHub {
     }
 }
 
+/// Which mere holds what, for the addresses this engine is asked to open.
+///
+/// Shared with the shell rather than owned, because the engine is boxed into
+/// the content registry when the window opens and a place is joined long
+/// afterwards. A mutex rather than a cell because a registered content engine
+/// must be `Send + Sync`, however single-threaded its use in fact is.
+pub(crate) type KnotVisits = Arc<Mutex<KnotVisitRegistry>>;
+
+#[derive(Default)]
+pub(crate) struct KnotVisitRegistry {
+    /// This profile's own Personae root while a place is open. A place-held
+    /// address naming it is this mere's own document and opens locally.
+    local_root: Option<[u8; 32]>,
+    /// One hub per holder being visited, each owning one dialed session.
+    holders: std::collections::HashMap<[u8; 32], Arc<KnotHub>>,
+}
+
+impl KnotVisitRegistry {
+    pub(crate) fn set_local_root(&mut self, root: Option<[u8; 32]>) {
+        self.local_root = root;
+    }
+
+    pub(crate) fn is_local(&self, root: &[u8; 32]) -> bool {
+        self.local_root.as_ref() == Some(root)
+    }
+
+    pub(crate) fn holder(&self, root: &[u8; 32]) -> Option<Arc<KnotHub>> {
+        self.holders.get(root).cloned()
+    }
+
+    pub(crate) fn insert_holder(&mut self, root: [u8; 32], hub: Arc<KnotHub>) {
+        self.holders.insert(root, hub);
+    }
+
+    /// Let go of every visit. Called when the place closes: a visiting thread
+    /// drives its carrier on the lane runtime, so it must stop before that
+    /// runtime does.
+    pub(crate) fn clear(&mut self) {
+        self.holders.clear();
+        self.local_root = None;
+    }
+}
+
 /// One configured endpoint shared by every open Knot document.
 pub struct KnotAuthoringEngine {
     hub: Arc<KnotHub>,
+    visits: KnotVisits,
     /// A separate read handle for an in-process source, when that source can
     /// safely grant one. Resident and spawned routes retain their boundary.
     publish_source: Option<knot::KnotPublishSource>,
@@ -667,7 +759,7 @@ pub struct KnotAuthoringEngine {
 }
 
 impl KnotAuthoringEngine {
-    pub fn from_env(wake: Wake) -> Result<Option<Self>, String> {
+    pub fn from_env(wake: Wake, visits: KnotVisits) -> Result<Option<Self>, String> {
         let mode =
             std::env::var("TURNSTONE_KNOT_MODE").unwrap_or_else(|_| "directory-write".into());
         if !matches!(mode.as_str(), "directory-write" | "persona-vault") {
@@ -739,6 +831,7 @@ impl KnotAuthoringEngine {
             }
             return Ok(Some(Self {
                 hub: KnotHub::resident(wake)?,
+                visits,
                 publish_source: None,
                 clip_target,
                 auto_resolve: false,
@@ -784,6 +877,7 @@ impl KnotAuthoringEngine {
             )?;
             return Ok(Some(Self {
                 hub,
+                visits,
                 publish_source,
                 clip_target,
                 auto_resolve: resolve_mode == "auto",
@@ -827,6 +921,7 @@ impl KnotAuthoringEngine {
         let hub = KnotHub::connect(endpoint, args, wake)?;
         Ok(Some(Self {
             hub,
+            visits,
             publish_source: None,
             clip_target,
             auto_resolve: resolve_mode == "auto",
@@ -856,6 +951,7 @@ impl KnotAuthoringEngine {
         max_source_bytes: u64,
     ) -> Result<Self, String> {
         Ok(Self {
+            visits: KnotVisits::default(),
             hub: KnotHub::connect(
                 program.into(),
                 vec![
@@ -881,6 +977,7 @@ impl KnotAuthoringEngine {
         max_evidence_bytes: u64,
     ) -> Result<Self, String> {
         Ok(Self {
+            visits: KnotVisits::default(),
             hub: KnotHub::connect(
                 program.into(),
                 vec![
@@ -908,6 +1005,7 @@ impl KnotAuthoringEngine {
         run: &str,
     ) -> Result<Self, String> {
         Ok(Self {
+            visits: KnotVisits::default(),
             hub: KnotHub::connect(
                 program.into(),
                 vec![
@@ -938,6 +1036,7 @@ impl KnotAuthoringEngine {
         run: &str,
     ) -> Result<Self, String> {
         Ok(Self {
+            visits: KnotVisits::default(),
             hub: KnotHub::connect(
                 program.into(),
                 vec![
@@ -976,16 +1075,37 @@ impl SessionEngine<Scene> for KnotAuthoringEngine {
                 request.address
             )));
         }
-        let opened = self
-            .hub
-            .open(&request.address)
-            .map_err(SessionError::SpawnFailed)?;
+        // A place-held address decides whose endpoint answers it. This
+        // profile's own root is the local vault, exactly as before; anyone
+        // else's is the hub the shell dialed for that holder, and no hub
+        // means the visit was never opened rather than an empty document.
+        let (hub, visiting) = match parse_place_held_address(&request.address) {
+            Some((root, _)) => {
+                let visits = self.visits.lock().map_err(|_| {
+                    SessionError::SpawnFailed("the Knot visit registry is poisoned".into())
+                })?;
+                if visits.is_local(&root) {
+                    (self.hub.clone(), false)
+                } else {
+                    let hub = visits.holder(&root).ok_or_else(|| {
+                        SessionError::SpawnFailed(format!(
+                            "no visit is open to the mere holding {}",
+                            request.address
+                        ))
+                    })?;
+                    (hub, true)
+                }
+            },
+            None => (self.hub.clone(), false),
+        };
+        let opened = hub.open(&request.address).map_err(SessionError::SpawnFailed)?;
         Ok(Box::new(KnotDocumentSession::new(
-            self.hub.clone(),
+            hub,
             opened,
             request.viewport,
             self.auto_resolve,
             self.auto_run,
+            visiting,
         )))
     }
 }
@@ -1072,6 +1192,94 @@ fn split_list(value: &str) -> Vec<String> {
         .collect()
 }
 
+/// Open one visiting hub over a prepared dial.
+///
+/// The shell's entry point to [`KnotHub::visit`]: the hub itself stays
+/// private, and what the shell holds is a handle the engine can be given.
+pub(crate) fn visit_holder(
+    dial: crate::place::lanes::HolderDial,
+    wake: Wake,
+) -> Result<Arc<KnotHub>, String> {
+    KnotHub::visit(dial, wake)
+}
+
+/// One open document on a hub, driven the way the surface drives it, with no
+/// editor and no frame.
+///
+/// The render-free half of [`KnotDocumentSession`]: the same `Open` and
+/// `Save` commands on the same channel, and the same event receiver. Tests
+/// that care about who holds a document and whether it can be reached use
+/// this; tests that care about typing and painting use the session.
+#[cfg(test)]
+pub(crate) struct HubProbe {
+    hub: Arc<KnotHub>,
+    opened: OpenedDocument,
+}
+
+#[cfg(test)]
+impl HubProbe {
+    pub(crate) fn open(hub: Arc<KnotHub>, address: &str) -> Result<Self, String> {
+        let opened = hub.open(address)?;
+        Ok(Self { hub, opened })
+    }
+
+    /// The source the endpoint last disclosed for this document.
+    pub(crate) fn source(&self) -> &str {
+        &self.opened.binding.editable.source
+    }
+
+    /// The address the endpoint discloses, which for a visited document is
+    /// the holder's own and not the one that was asked for.
+    pub(crate) fn disclosed_address(&self) -> &str {
+        &self.opened.binding.editable.address
+    }
+
+    /// Author one revision through the hub's ordinary save path.
+    pub(crate) fn save(&mut self, source: &str) -> Result<String, String> {
+        self.hub
+            .commands
+            .send(HubCommand::Save {
+                registration: self.opened.registration,
+                base_token: self.opened.binding.editable.base_token.clone(),
+                source: source.to_string(),
+            })
+            .map_err(|_| "the hub is gone".to_string())?;
+        let deadline = std::time::Instant::now() + Duration::from_secs(60);
+        loop {
+            let left = deadline.saturating_duration_since(std::time::Instant::now());
+            match self.opened.events.recv_timeout(left) {
+                Ok(HubEvent::Saved { source, binding }) => {
+                    self.opened.binding = binding;
+                    return Ok(source);
+                },
+                Ok(HubEvent::Stale) => return Err("stale".into()),
+                Ok(HubEvent::Rejected(reason) | HubEvent::Revoked(reason)) => return Err(reason),
+                Ok(HubEvent::Unavailable(reason)) => {
+                    return Err(format!("unavailable: {reason}"));
+                },
+                Ok(_) => continue,
+                Err(error) => return Err(error.to_string()),
+            }
+        }
+    }
+
+    /// Wait for the hub to report that the holder is gone.
+    pub(crate) fn wait_for_unavailable(&self, budget: Duration) -> Option<String> {
+        let deadline = std::time::Instant::now() + budget;
+        loop {
+            let left = deadline.saturating_duration_since(std::time::Instant::now());
+            if left.is_zero() {
+                return None;
+            }
+            match self.opened.events.recv_timeout(left) {
+                Ok(HubEvent::Unavailable(reason)) => return Some(reason),
+                Ok(_) => continue,
+                Err(_) => return None,
+            }
+        }
+    }
+}
+
 pub fn is_knot_address(address: &str) -> bool {
     address.split(['?', '#']).next().is_some_and(|base| {
         let base = base.to_ascii_lowercase();
@@ -1079,7 +1287,128 @@ pub fn is_knot_address(address: &str) -> bool {
     }) || address.to_ascii_lowercase().starts_with("knot:")
 }
 
-fn run_hub(mut retained: RetainedEndpointSession, commands: Receiver<HubCommand>, wake: Wake) {
+/// A place-held document's address: `knot://<holder root hex>/<path>`.
+///
+/// The host slot is what makes the form decidable without a lookup. A local
+/// vault discloses `knot://vault/<name>` and directory mode discloses
+/// `file:///<absolute path>`; both name a document only this profile can
+/// reach, so neither can be shared as-is. Sixty-four hex characters in the
+/// host say WHO holds it, and the rest is the path inside the vault that
+/// holder serves. `is_knot_address` matches it already, so the ordinary open
+/// route carries it without a second scheme.
+pub fn place_held_address(holder_root: &[u8; 32], path: &str) -> String {
+    format!(
+        "knot://{}/{}",
+        crate::place::hex32(holder_root),
+        path.trim_start_matches('/')
+    )
+}
+
+/// Split a place-held address into its holder and the path it names.
+///
+/// `None` for every other Knot address, including `knot://vault/...`: a host
+/// that is not 64 hex characters is not a Personae root and must not be
+/// guessed at.
+pub fn parse_place_held_address(address: &str) -> Option<([u8; 32], String)> {
+    let rest = address
+        .get(..7)
+        .filter(|scheme| scheme.eq_ignore_ascii_case("knot://"))
+        .and_then(|_| address.get(7..))?;
+    let (host, path) = rest.split_once('/')?;
+    if host.len() != 64 || !host.bytes().all(|byte| byte.is_ascii_hexdigit()) || path.is_empty() {
+        return None;
+    }
+    let mut root = [0u8; 32];
+    for (slot, pair) in root.iter_mut().zip(host.as_bytes().chunks(2)) {
+        *slot = u8::from_str_radix(std::str::from_utf8(pair).ok()?, 16).ok()?;
+    }
+    Some((root, path.to_string()))
+}
+
+/// Rewrite a locally held Knot address into the place-held form, or `None`
+/// when this address names no document inside `vault_root`.
+///
+/// Called where the sharer's Personae root and its vault root are both known,
+/// which is the place worker. An address already in the place-held form is
+/// left alone: re-sharing someone else's document must not re-attribute it.
+pub fn place_held_rewrite(
+    address: &str,
+    vault_root: &std::path::Path,
+    holder_root: &[u8; 32],
+) -> Option<String> {
+    if parse_place_held_address(address).is_some() {
+        return None;
+    }
+    if let Some(name) = address
+        .get(..13)
+        .filter(|prefix| prefix.eq_ignore_ascii_case("knot://vault/"))
+        .and(address.get(13..))
+        .map(|rest| rest.trim_start_matches('/'))
+        .filter(|rest| !rest.is_empty())
+    {
+        return Some(place_held_address(holder_root, name));
+    }
+    let path = url::Url::parse(address).ok()?.to_file_path().ok()?;
+    let relative = vault_relative(&path, vault_root)?;
+    Some(place_held_address(holder_root, &relative))
+}
+
+/// The document's path inside the vault, with `/` separators.
+///
+/// Both the plain root and its canonical form are tried: the disclosed
+/// address comes from a directory walk and the configured root comes from the
+/// environment, and on Windows those differ by a verbatim prefix often enough
+/// that one comparison is not enough.
+fn vault_relative(path: &std::path::Path, vault_root: &std::path::Path) -> Option<String> {
+    let canonical_path = std::fs::canonicalize(path);
+    let canonical_root = std::fs::canonicalize(vault_root);
+    let candidates = [
+        (Some(path), Some(vault_root)),
+        (canonical_path.as_deref().ok(), canonical_root.as_deref().ok()),
+        (canonical_path.as_deref().ok(), Some(vault_root)),
+        (Some(path), canonical_root.as_deref().ok()),
+    ];
+    candidates.into_iter().find_map(|(path, root)| {
+        let relative = path?.strip_prefix(root?).ok()?;
+        let relative = relative
+            .components()
+            .map(|component| component.as_os_str().to_string_lossy())
+            .collect::<Vec<_>>()
+            .join("/");
+        (!relative.is_empty()).then_some(relative)
+    })
+}
+
+/// Whether a presentation the endpoint disclosed answers the requested
+/// address.
+///
+/// A place-held address is the one case where the two strings differ on
+/// purpose: the holder discloses its own local address, which a visitor has
+/// no way to know and no business knowing. The path inside the vault is the
+/// part both ends agree on, so that is what is compared. Which hub the
+/// request reached has already decided whose vault this is.
+fn address_matches(requested: &str, disclosed: &str) -> bool {
+    if requested == disclosed {
+        return true;
+    }
+    let Some((_, path)) = parse_place_held_address(requested) else {
+        return false;
+    };
+    let tail = format!("/{path}");
+    disclosed.len() > tail.len() && disclosed.ends_with(&tail)
+}
+
+/// Drive one endpoint session for as long as anyone is reading it.
+///
+/// `visiting` changes exactly one thing: what a lost endpoint means. A local
+/// endpoint that stops is revoked and its document is gone; a holder that
+/// stops is unavailable and the last scene stays on screen.
+fn run_hub(
+    mut retained: RetainedEndpointSession,
+    commands: Receiver<HubCommand>,
+    wake: Wake,
+    visiting: bool,
+) {
     let mut mounted: Option<ProjectionSession> = None;
     let mut bindings = BTreeMap::<String, DocumentBinding>::new();
     let mut subscribers = BTreeMap::<u64, Subscriber>::new();
@@ -1112,6 +1441,7 @@ fn run_hub(mut retained: RetainedEndpointSession, commands: Receiver<HubCommand>
                     base_token,
                     source,
                     &wake,
+                    visiting,
                 );
             }
             Ok(HubCommand::InsertClip {
@@ -1128,6 +1458,7 @@ fn run_hub(mut retained: RetainedEndpointSession, commands: Receiver<HubCommand>
                     clip,
                     &status,
                     &wake,
+                    visiting,
                 );
             }
             Ok(HubCommand::Effect {
@@ -1144,6 +1475,7 @@ fn run_hub(mut retained: RetainedEndpointSession, commands: Receiver<HubCommand>
                     kind,
                     confirmed,
                     &wake,
+                    visiting,
                 );
             }
             Ok(HubCommand::Reload { registration }) => {
@@ -1174,10 +1506,11 @@ fn run_hub(mut retained: RetainedEndpointSession, commands: Receiver<HubCommand>
                             &mut bindings,
                             &subscribers,
                             &wake,
+                            visiting,
                         ),
                         Ok(false) => {}
                         Err(error) => {
-                            broadcast(&subscribers, HubEvent::Revoked(error), &wake);
+                            broadcast(&subscribers, lost(visiting, error), &wake);
                             break;
                         }
                     }
@@ -1231,7 +1564,7 @@ fn binding_from_presentation(
     let ResolvedContent::EditableText(editable) = presentation.content else {
         return None;
     };
-    if editable.address != address {
+    if !address_matches(address, &editable.address) {
         return None;
     }
     let save_action = presentation
@@ -1269,6 +1602,7 @@ fn binding_from_presentation(
 }
 
 #[allow(clippy::too_many_arguments)]
+#[allow(clippy::too_many_arguments)]
 fn save_from_subscriber(
     retained: &mut RetainedEndpointSession,
     session: Option<&ProjectionSession>,
@@ -1278,6 +1612,7 @@ fn save_from_subscriber(
     base_token: Vec<u8>,
     source: String,
     wake: &Wake,
+    visiting: bool,
 ) {
     let Some(subscriber) = subscribers.get(&registration) else {
         return;
@@ -1316,7 +1651,7 @@ fn save_from_subscriber(
                 Ok(binding) => {
                     bindings.insert(subscriber.address.clone(), binding.clone());
                     send_event(subscriber, HubEvent::Saved { source, binding }, wake);
-                    refresh_subscribers(retained, session, bindings, subscribers, wake);
+                    refresh_subscribers(retained, session, bindings, subscribers, wake, visiting);
                 }
                 Err(error) => send_event(subscriber, HubEvent::Rejected(error), wake),
             }
@@ -1339,6 +1674,7 @@ fn insert_clip(
     clip: PendingClip,
     status: &Arc<Mutex<KnotClipStatus>>,
     wake: &Wake,
+    visiting: bool,
 ) {
     let result = ensure_binding(retained, mounted, bindings, address).and_then(|binding| {
         let session = mounted
@@ -1405,7 +1741,7 @@ fn insert_clip(
     if matches!(status.lock().as_deref(), Ok(KnotClipStatus::Saved))
         && let Some(session) = mounted.as_ref()
     {
-        refresh_subscribers(retained, session, bindings, subscribers, wake);
+        refresh_subscribers(retained, session, bindings, subscribers, wake, visiting);
     }
     wake();
 }
@@ -1420,6 +1756,7 @@ fn invoke_effect(
     kind: KnotEffectKind,
     confirmed: bool,
     wake: &Wake,
+    visiting: bool,
 ) {
     let Some(subscriber) = subscribers.get(&registration) else {
         return;
@@ -1480,7 +1817,9 @@ fn invoke_effect(
             );
             match result {
                 IntentResult::Accepted => match retained.wait_for_change() {
-                    Ok(_) => refresh_subscribers(retained, session, bindings, subscribers, wake),
+                    Ok(_) => {
+                        refresh_subscribers(retained, session, bindings, subscribers, wake, visiting)
+                    },
                     Err(error) => send_event(subscriber, HubEvent::Rejected(error), wake),
                 },
                 IntentResult::Stale { .. } => send_event(subscriber, HubEvent::Stale, wake),
@@ -1527,6 +1866,7 @@ fn refresh_subscribers(
     bindings: &mut BTreeMap<String, DocumentBinding>,
     subscribers: &BTreeMap<u64, Subscriber>,
     wake: &Wake,
+    visiting: bool,
 ) {
     let addresses = subscribers
         .values()
@@ -1549,7 +1889,7 @@ fn refresh_subscribers(
                     .values()
                     .filter(|subscriber| subscriber.address == address)
                 {
-                    send_event(subscriber, HubEvent::Revoked(error.clone()), wake);
+                    send_event(subscriber, lost(visiting, error.clone()), wake);
                 }
             }
         }
@@ -1559,6 +1899,15 @@ fn refresh_subscribers(
 fn broadcast(subscribers: &BTreeMap<u64, Subscriber>, event: HubEvent, wake: &Wake) {
     for subscriber in subscribers.values() {
         send_event(subscriber, event.clone(), wake);
+    }
+}
+
+/// What a lost endpoint is called, which depends on whose it was.
+fn lost(visiting: bool, reason: String) -> HubEvent {
+    if visiting {
+        HubEvent::Unavailable(reason)
+    } else {
+        HubEvent::Revoked(reason)
     }
 }
 
@@ -1578,6 +1927,10 @@ enum AuthoringStatus {
     Stale,
     Rejected,
     Revoked,
+    /// A visited document whose holder is gone. The scene is the last one the
+    /// holder disclosed and no save is offered, because there is nobody to
+    /// save to; a person keeps reading what they had.
+    Unavailable,
 }
 
 /// One thing the toolbar asks the pane to do, once.
@@ -1629,6 +1982,7 @@ fn authoring_view(state: &AuthoringState) -> AuthoringView {
         |state: &mut AuthoringState| state.editor.input_mut(),
     );
     let status = match state.status {
+        AuthoringStatus::Unavailable => "unavailable".to_string(),
         AuthoringStatus::Revoked => "closed".to_string(),
         AuthoringStatus::Stale => "stale; reload or resolve".to_string(),
         AuthoringStatus::Saving => "saving".to_string(),
@@ -1687,7 +2041,17 @@ fn authoring_view(state: &AuthoringState) -> AuthoringView {
                 "data-projection-instance",
                 state.projection_target.0.to_string(),
             )
-            .attr("data-projection-intent", EDITABLE_TEXT_SAVE_INTENT),
+            .attr("data-projection-intent", EDITABLE_TEXT_SAVE_INTENT)
+            // Not merely disabled: an unreachable holder has no save to
+            // offer, and a button that cannot work is worse than none.
+            .attr(
+                "style",
+                if matches!(state.status, AuthoringStatus::Unavailable) {
+                    "display: none;"
+                } else {
+                    ""
+                },
+            ),
             button(
                 "Resolve",
                 |state: &mut AuthoringState, _click: PointerClick| {
@@ -1814,6 +2178,9 @@ pub struct KnotDocumentSession {
     hub: Arc<KnotHub>,
     registration: u64,
     address: String,
+    /// Whether this document is held by another mere. Only observation and
+    /// the unavailable path read it; editing does not care.
+    visiting: bool,
     base_token: Vec<u8>,
     projection_input: Option<ProjectionInputBinding>,
     events: Receiver<HubEvent>,
@@ -1833,6 +2200,7 @@ impl KnotDocumentSession {
         viewport: (u32, u32),
         auto_resolve: bool,
         auto_run: bool,
+        visiting: bool,
     ) -> Self {
         let address = opened.binding.editable.address.clone();
         let base_token = opened.binding.editable.base_token.clone();
@@ -1862,6 +2230,7 @@ impl KnotDocumentSession {
             hub,
             registration: opened.registration,
             address,
+            visiting,
             base_token,
             projection_input: Some(projection_input),
             events: opened.events,
@@ -1907,6 +2276,43 @@ impl KnotDocumentSession {
 
     /// The retained document surface exposed to Genet Probe. The borrow stays
     /// inside `Automatable::with_surfaces`, matching Turnstone's pane DOMs.
+    pub fn address(&self) -> &str {
+        &self.address
+    }
+
+    /// The holder's Personae root, when this document is place-held.
+    pub fn holder(&self) -> Option<String> {
+        parse_place_held_address(&self.address).map(|(root, _)| crate::place::hex32(&root))
+    }
+
+    /// Where this document is held and whether it can be reached: `local`,
+    /// `visiting`, or `unavailable`. A refusal never reaches a session, so it
+    /// is not one of these.
+    pub fn hold_status(&self) -> &'static str {
+        if matches!(self.runner.state().status, AuthoringStatus::Unavailable) {
+            "unavailable"
+        } else if self.visiting {
+            "visiting"
+        } else {
+            "local"
+        }
+    }
+
+    /// Blake3 hex over the derived source text this surface currently holds.
+    ///
+    /// The derived text when the endpoint disclosed one, the editor's own
+    /// source otherwise; a local and a visited window that agree on the
+    /// document agree on this string.
+    pub fn derived_digest(&self) -> String {
+        let state = self.runner.state();
+        let source = state
+            .derived
+            .as_ref()
+            .map(|derived| derived.source.as_str())
+            .unwrap_or_else(|| state.editor.source());
+        blake3::hash(source.as_bytes()).to_hex().to_string()
+    }
+
     pub fn dom_ref(&self) -> std::cell::Ref<'_, ScriptedDom> {
         self.dom.borrow()
     }
@@ -1923,6 +2329,7 @@ impl KnotDocumentSession {
             AuthoringStatus::Stale => "stale",
             AuthoringStatus::Rejected => "rejected",
             AuthoringStatus::Revoked => "revoked",
+            AuthoringStatus::Unavailable => "unavailable",
         }
     }
 
@@ -1934,6 +2341,7 @@ impl KnotDocumentSession {
                 | AuthoringStatus::Running
                 | AuthoringStatus::Reloading
                 | AuthoringStatus::Revoked
+                | AuthoringStatus::Unavailable
         ) || !self.runner.state().editor.is_dirty()
         {
             return;
@@ -1965,6 +2373,7 @@ impl KnotDocumentSession {
                 | AuthoringStatus::Running
                 | AuthoringStatus::Reloading
                 | AuthoringStatus::Revoked
+                | AuthoringStatus::Unavailable
         ) {
             return;
         }
@@ -2026,6 +2435,7 @@ impl KnotDocumentSession {
                     | AuthoringStatus::Running
                     | AuthoringStatus::Reloading
                     | AuthoringStatus::Revoked
+                    | AuthoringStatus::Unavailable
             )
             || self.runner.state().editor.is_dirty()
         {
@@ -2157,6 +2567,19 @@ impl KnotDocumentSession {
                     state.status = AuthoringStatus::Rejected;
                     state.detail = reason;
                 }),
+                HubEvent::Unavailable(reason) => {
+                    // The editor is left exactly as it stands. Clearing it
+                    // would erase the last thing the holder actually said,
+                    // which is the only copy a visitor has any claim to.
+                    self.base_token.clear();
+                    self.projection_input = None;
+                    self.runner.update(|state| {
+                        state.resolve_available = false;
+                        state.run_available = false;
+                        state.status = AuthoringStatus::Unavailable;
+                        state.detail = reason;
+                    });
+                }
                 HubEvent::Revoked(reason) => {
                     self.base_token.clear();
                     self.projection_input = None;
@@ -2624,6 +3047,92 @@ mod tests {
         assert!(is_knot_address("file:///tmp/one.KNOT#heading"));
         assert!(!is_knot_address("file:///tmp/one.md"));
         assert!(!is_knot_address("https://example.test/"));
+    }
+
+    #[test]
+    fn a_place_held_address_names_its_holder_and_stays_a_knot_address() {
+        let root = [0xab; 32];
+        let address = place_held_address(&root, "notes/field.knot");
+        assert_eq!(
+            address,
+            format!("knot://{}/notes/field.knot", "ab".repeat(32))
+        );
+        assert!(
+            is_knot_address(&address),
+            "the ordinary open route must still recognize it"
+        );
+        assert_eq!(
+            parse_place_held_address(&address),
+            Some((root, "notes/field.knot".to_string()))
+        );
+    }
+
+    #[test]
+    fn only_a_personae_root_is_read_as_a_holder() {
+        // A local vault, a short host, a non-hex host, and a document with no
+        // path are all Knot addresses and none of them names a holder.
+        for address in [
+            "knot://vault/field",
+            "knot://abcd/field.knot",
+            &format!("knot://{}/field.knot", "zz".repeat(32)),
+            &format!("knot://{}", "ab".repeat(32)),
+            &format!("knot://{}/", "ab".repeat(32)),
+            "file:///C:/vault/field.knot",
+        ] {
+            assert_eq!(
+                parse_place_held_address(address),
+                None,
+                "{address} must not be read as place-held"
+            );
+        }
+    }
+
+    #[test]
+    fn sharing_rewrites_a_locally_held_document_to_its_holder() {
+        let temp = tempfile::tempdir().unwrap();
+        let vault = temp.path().join("vault");
+        std::fs::create_dir_all(vault.join("notes")).unwrap();
+        let document = vault.join("notes").join("field.knot");
+        std::fs::write(&document, "# Field\n").unwrap();
+        let root = [0x11; 32];
+
+        let rewritten = place_held_rewrite(&file_address(&document), &vault, &root)
+            .expect("a document inside the vault rewrites");
+        assert_eq!(
+            parse_place_held_address(&rewritten),
+            Some((root, "notes/field.knot".to_string()))
+        );
+        // The resident vault form rewrites by the same rule.
+        assert_eq!(
+            place_held_rewrite("knot://vault/field-note", &vault, &root),
+            Some(place_held_address(&root, "field-note"))
+        );
+        // Already place-held: left alone, so re-sharing cannot re-attribute
+        // somebody else's document to whoever passed it along.
+        assert_eq!(place_held_rewrite(&rewritten, &vault, &root), None);
+        // Outside the vault: not this mere's to offer.
+        let outside = temp.path().join("elsewhere.knot");
+        std::fs::write(&outside, "# Elsewhere\n").unwrap();
+        assert_eq!(place_held_rewrite(&file_address(&outside), &vault, &root), None);
+    }
+
+    #[test]
+    fn a_place_held_address_matches_the_holder_own_disclosed_address() {
+        let requested = place_held_address(&[0x22; 32], "notes/field.knot");
+        // The holder discloses its own local path, which the visitor has no
+        // way to know; the path inside the vault is what both ends agree on.
+        assert!(address_matches(
+            &requested,
+            "file:///C:/someone-else/vault/notes/field.knot"
+        ));
+        assert!(!address_matches(
+            &requested,
+            "file:///C:/vault/other/field.knot"
+        ));
+        assert!(!address_matches(&requested, "notes/field.knot"));
+        // An ordinary address is still matched exactly and nothing else.
+        assert!(address_matches("knot://vault/one", "knot://vault/one"));
+        assert!(!address_matches("knot://vault/one", "knot://vault/one-two"));
     }
 
     #[test]

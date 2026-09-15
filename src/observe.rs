@@ -756,6 +756,24 @@ pub struct PlaceLaneFacts {
     pub ops_received: u64,
 }
 
+/// One Knot document this session has open, and where it is held.
+///
+/// The comparison two windows are made on: the same `address` and the same
+/// `derived_digest` on both sides is the whole claim that a place-held
+/// document is one document and not two copies.
+#[derive(Clone, Debug, PartialEq, serde::Serialize)]
+pub struct KnotDocumentFacts {
+    pub address: String,
+    /// The holder's Personae root, for a place-held address. `None` for a
+    /// document this profile holds under its own local address.
+    pub holder: Option<String>,
+    /// `local`, `visiting`, `unavailable`, or `refused`.
+    pub status: String,
+    /// Blake3 hex over the derived source text the surface currently holds.
+    /// Absent for a refusal: there is no surface, so there is no text.
+    pub derived_digest: Option<String>,
+}
+
 /// The place facts, when this session holds an opened place.
 pub fn place_facts(app: &App) -> Option<PlaceFacts> {
     let crate::place::PlaceState::Offline {
@@ -804,6 +822,7 @@ pub fn place_record(app: &App) -> serde_json::Value {
     serde_json::json!({
         "status": app.place.status_lines(),
         "place": place_facts(app),
+        "knot_documents": app.knot_documents(),
     })
 }
 

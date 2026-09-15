@@ -747,6 +747,40 @@ fn shared_nodes_arrive_without_disturbing_the_local_canvas() {
 }
 
 #[test]
+fn a_held_document_is_refused_outside_a_place_and_its_node_stays() {
+    // T5c's address half. A place-held address names the mere that holds it,
+    // and a personal session has nobody to ask. The refusal is loud and the
+    // node is kept: the person asked for this document, and it opens the
+    // moment they are in the place that can reach it.
+    let mut app = App::test_stub();
+    let address = crate::knot_authoring::place_held_address(&[0x7c; 32], "field.knot");
+    assert!(crate::knot_authoring::is_knot_address(&address));
+
+    let before = app.graph_runtimes.graph().nodes().count();
+    app.update(Action::OpenAddress(address.clone()));
+
+    assert!(
+        app.take_events().iter().any(|event| matches!(
+            event,
+            crate::observe::AppEvent::PlaceRefused(reason)
+                if reason.contains("held by another mere")
+        )),
+        "a foreign holder in a personal session is refused with a reason"
+    );
+    assert_eq!(
+        app.graph_runtimes.graph().nodes().count(),
+        before + 1,
+        "and the node the person asked for stays"
+    );
+    assert!(
+        app.graph_runtimes
+            .graph()
+            .get_node_by_url(&address)
+            .is_some()
+    );
+}
+
+#[test]
 fn a_shared_knot_address_needs_no_path_of_its_own() {
     // T4's Commons half. A Knot document is an addressed node in the shared
     // graph, so it rides the ordinary share path and arrives through the

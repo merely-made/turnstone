@@ -357,6 +357,10 @@ pub struct App {
     /// Semantic events since the last drain (the observation pair's stream
     /// half; the shell drains each frame). Data, like everything else here.
     events: Vec<AppEvent>,
+    /// What the shell's live Knot document surfaces currently hold, mirrored
+    /// here so observation reads one place. The shell owns the sessions and
+    /// refreshes this on every drain; the app never derives it.
+    knot_documents: Vec<crate::observe::KnotDocumentFacts>,
 }
 
 impl App {
@@ -765,6 +769,24 @@ impl App {
     ) -> bool {
         self.with_graph_pane(pane, |canvas| canvas.pointer_up(button, x, y))
             .unwrap_or(false)
+    }
+
+    /// Record that a place refused something, in the one event stream a
+    /// scenario reads. The shell calls this for a refused visit, which never
+    /// reaches a surface and so cannot report itself.
+    pub fn note_place_refusal(&mut self, reason: String) {
+        self.events.push(AppEvent::PlaceRefused(reason));
+    }
+
+    /// What this session has open as Knot documents, for observation.
+    pub fn knot_documents(&self) -> &[crate::observe::KnotDocumentFacts] {
+        &self.knot_documents
+    }
+
+    /// Replace the mirror. The shell calls this after every update drain with
+    /// the facts its own live surfaces report, plus whatever was refused.
+    pub fn set_knot_documents(&mut self, facts: Vec<crate::observe::KnotDocumentFacts>) {
+        self.knot_documents = facts;
     }
 
     /// Drain the semantic events emitted since the last call (the shell

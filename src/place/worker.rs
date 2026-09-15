@@ -217,6 +217,22 @@ pub enum PlaceWorkerCommand {
         request: u64,
         command: PlaceCommand,
     },
+    /// Prepare a dial to the mere holding a place-held Knot document.
+    ///
+    /// Answered with [`Update::PlaceDocumentVisit`]. The worker only prepares
+    /// the dial: it spends the stored grant's delegation hop and signs the
+    /// hello, because that is where the identity provider is, and hands back
+    /// something Send. Opening the stream and reading it belong to one
+    /// visiting thread, because the retained session over that carrier is not
+    /// `Send`.
+    VisitDocument {
+        session: SessionId,
+        generation: u64,
+        directory: PathBuf,
+        holder_root: [u8; 32],
+        path: String,
+        request: u64,
+    },
     Release(std::sync::mpsc::SyncSender<()>),
 }
 
@@ -1282,7 +1298,22 @@ fn author_into_place(
             }
             // Address as identity, so sharing the same page twice converges on
             // one node instead of accumulating duplicates of the same thing.
-            let address = address.clone();
+            //
+            // A Knot document held in this profile's vault is the one address
+            // that cannot be shared as it stands: `file:///...` and
+            // `knot://vault/...` both name a document only this mere can
+            // reach. Rewritten here rather than at the app because this is
+            // where the sharer's Personae root and its vault root are both
+            // known, and because a rewrite that depended on app state would
+            // be one more thing that could be stale when the node is authored.
+            let address = settings
+                .knot_root
+                .as_deref()
+                .filter(|_| crate::knot_authoring::is_knot_address(address))
+                .and_then(|root| {
+                    crate::knot_authoring::place_held_rewrite(address, root, &subject)
+                })
+                .unwrap_or_else(|| address.clone());
             let operation = pollster::block_on(open.graph.edit(move |log| {
                 log.insert_node(
                     &chartulary::Author::new("turnstone"),
@@ -1296,6 +1327,55 @@ fn author_into_place(
         },
     }
     Ok(())
+}
+
+/// Prepare the dial to one holder, or say why this profile cannot.
+///
+/// Three things have to be true and each failure reads differently: the place
+/// is live (there is a transport at all), admission stored a projection grant
+/// (this profile was admitted as a writer), and the holder's ticket is known.
+/// For this slice the only ticket a member has is the founder's saved
+/// rendezvous, so a holder who is not the founder is unreachable rather than
+/// searched for.
+fn visit_dial(
+    open: &OpenPlace,
+    directory: &Path,
+    identity: &dyn IdentityProvider,
+    holder_root: [u8; 32],
+    settings: &PlaceWorkerSettings,
+) -> Result<crate::place::lanes::HolderDial, String> {
+    let lanes = open
+        .lanes
+        .as_ref()
+        .ok_or_else(|| "this place is not live, so no holder can be reached".to_string())?;
+    let grant = crate::place::rendezvous::load_projection_grant(directory).ok_or_else(|| {
+        "this profile holds no projection grant for this place; a reader is not admitted \
+         to a held document"
+            .to_string()
+    })?;
+    let ticket = crate::place::rendezvous::load_rendezvous(
+        directory,
+        &open.binding,
+        settings.authority_clock.now_ms(),
+    )?
+    .into_iter()
+    .next()
+    .ok_or_else(|| "no rendezvous for the mere holding this document".to_string())?;
+    // Domain-separated per holder and per open, so two visits in one session
+    // never present the same handshake nonce.
+    let nonce = place_tag(
+        b"turnstone.place.visit-nonce.v1/",
+        *blake3::hash(
+            &[
+                &holder_root[..],
+                &open.binding.moot.0[..],
+                &settings.authority_clock.now_ms().to_le_bytes()[..],
+            ]
+            .concat(),
+        )
+        .as_bytes(),
+    );
+    crate::place::lanes::holder_dial(lanes, &ticket, &grant, identity, nonce)
 }
 
 /// One message as both converged peers see it. Sorted by the operation id,
@@ -1928,6 +2008,39 @@ pub fn spawn_place_worker(
                                 result: Err(error),
                             }),
                         }
+                    },
+                    PlaceWorkerCommand::VisitDocument {
+                        session,
+                        generation,
+                        directory,
+                        holder_root,
+                        path,
+                        request,
+                    } => {
+                        let result = match &live {
+                            _ if live_scope != Some((session, generation)) => {
+                                Err("a visit belongs to a departed place generation".to_string())
+                            },
+                            Some(open) => visit_dial(
+                                open,
+                                &directory,
+                                identity.as_ref(),
+                                holder_root,
+                                &settings,
+                            ),
+                            None => Err(
+                                "a place-held document can only be visited from an open place"
+                                    .to_string(),
+                            ),
+                        };
+                        out.emit(Update::PlaceDocumentVisit {
+                            session,
+                            generation,
+                            request,
+                            holder_root,
+                            path,
+                            result: result.map(Box::new),
+                        });
                     },
                     PlaceWorkerCommand::Resync {
                         session,

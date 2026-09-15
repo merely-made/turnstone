@@ -594,6 +594,10 @@ impl App {
                     vec![Effect::Redraw]
                 },
             },
+            // Shell-owned: a prepared dial is not an app fact, and the
+            // shell drains this one before `apply_update` ever sees it. The
+            // arm exists so the vocabulary stays exhaustive here.
+            Update::PlaceDocumentVisit { .. } => Vec::new(),
             Update::PlaceLanesAdvanced {
                 session,
                 generation,

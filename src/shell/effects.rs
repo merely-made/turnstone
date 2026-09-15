@@ -840,6 +840,13 @@ impl Shell {
                 // failure — unroutable id, spawn error — surfaces as
                 // ContentFailed; a Requested node never silently spins.
                 Effect::SpawnContent { node, url } => {
+                    // A document another mere holds is dialed before it is
+                    // opened. The visit is one place-worker round trip; the
+                    // spawn waits for it and then runs unchanged, so the
+                    // authoring engine never learns that anything was dialed.
+                    if self.request_visit_if_held_elsewhere(node, &url) {
+                        continue;
+                    }
                     let fetched = self.app.content.fetched(node, &url).cloned();
                     let pinned = self
                         .app
@@ -1412,6 +1419,138 @@ impl Shell {
 
     /// Release retained place handles before a session directory is switched,
     /// moved, or left at shutdown.
+    /// Ask the place worker to dial the holder of a place-held address, if
+    /// this is one and no visit to that holder is open yet.
+    ///
+    /// Answers whether the spawn was deferred. A place-held address naming
+    /// this profile's own root is not deferred: it is this mere's document
+    /// and the local vault answers it.
+    fn request_visit_if_held_elsewhere(&mut self, node: uuid::Uuid, url: &str) -> bool {
+        let Some((holder_root, path)) = crate::knot_authoring::parse_place_held_address(url) else {
+            return false;
+        };
+        if let Ok(visits) = self.knot_visits.lock()
+            && (visits.is_local(&holder_root) || visits.holder(&holder_root).is_some())
+        {
+            return false;
+        }
+        let session = self.app.session_id;
+        let Some(generation) = self.app.place.generation() else {
+            // No place, no holder to reach. Refused at the door rather than
+            // left spinning; the node stays where the person put it.
+            self.refuse_visit(node, url, "no place is open, so no mere can be asked for it");
+            return true;
+        };
+        let request = self.next_visit_request;
+        self.next_visit_request += 1;
+        self.pending_visit_spawns
+            .push((holder_root, node, url.to_string()));
+        self.place_handle
+            .command(crate::place::worker::PlaceWorkerCommand::VisitDocument {
+                session,
+                generation,
+                directory: session::session_dir(&self.app.data_root, session),
+                holder_root,
+                path,
+                request,
+            });
+        true
+    }
+
+    /// Record a refusal and tell the app, without disturbing the node.
+    fn refuse_visit(&mut self, node: uuid::Uuid, url: &str, reason: &str) {
+        self.app.note_place_refusal(format!("{url}: {reason}"));
+        let effects = self.app.apply_update(Update::ContentFailed {
+            node,
+            error: format!("this mere cannot reach the document at {url}: {reason}"),
+        });
+        self.run_effects(effects);
+        self.knot_visit_refusals
+            .retain(|facts| facts.address != url);
+        self.knot_visit_refusals
+            .push(crate::observe::KnotDocumentFacts {
+                address: url.to_string(),
+                holder: crate::knot_authoring::parse_place_held_address(url)
+                    .map(|(root, _)| crate::place::hex32(&root)),
+                status: "refused".into(),
+                derived_digest: None,
+            });
+    }
+
+    /// Fold one prepared dial: open the visiting hub, then replay every spawn
+    /// that was waiting on this holder.
+    pub(super) fn apply_document_visit(
+        &mut self,
+        holder_root: [u8; 32],
+        result: Result<Box<crate::place::lanes::HolderDial>, String>,
+    ) {
+        let waiting: Vec<(uuid::Uuid, String)> = {
+            let (mine, rest): (Vec<_>, Vec<_>) = std::mem::take(&mut self.pending_visit_spawns)
+                .into_iter()
+                .partition(|(root, _, _)| *root == holder_root);
+            self.pending_visit_spawns = rest;
+            mine.into_iter().map(|(_, node, url)| (node, url)).collect()
+        };
+        let proxy = self.proxy.clone();
+        let wake: std::sync::Arc<dyn Fn() + Send + Sync> = std::sync::Arc::new(move || {
+            let _ = proxy.send_event(());
+        });
+        let opened = result.and_then(|dial| crate::knot_authoring::visit_holder(*dial, wake));
+        match opened {
+            Ok(hub) => {
+                if let Ok(mut visits) = self.knot_visits.lock() {
+                    visits.insert_holder(holder_root, hub);
+                }
+                for (node, url) in waiting {
+                    self.run_effects(vec![crate::action::Effect::SpawnContent { node, url }]);
+                }
+            },
+            Err(error) => {
+                for (node, url) in waiting {
+                    self.refuse_visit(node, &url, &error);
+                }
+            },
+        }
+    }
+
+    /// Re-mirror what the live Knot surfaces hold, plus what was refused.
+    ///
+    /// Also carries this profile's own root into the visit registry, which is
+    /// what makes a place-held address naming this mere resolve locally.
+    pub(super) fn refresh_knot_documents(&mut self) {
+        let local_root = match &self.app.place {
+            crate::place::PlaceState::Offline { snapshot, .. } => Some(snapshot.personae_root),
+            _ => None,
+        };
+        if let Ok(mut visits) = self.knot_visits.lock() {
+            visits.set_local_root(local_root);
+        }
+        let mut facts: Vec<crate::observe::KnotDocumentFacts> = self
+            .content_sessions
+            .values()
+            .filter_map(|session| {
+                let knot = session
+                    .as_any_ref()
+                    .downcast_ref::<crate::knot_authoring::KnotDocumentSession>()?;
+                Some(crate::observe::KnotDocumentFacts {
+                    address: knot.address().to_string(),
+                    holder: knot.holder(),
+                    status: knot.hold_status().to_string(),
+                    derived_digest: Some(knot.derived_digest()),
+                })
+            })
+            .collect();
+        let refused: Vec<crate::observe::KnotDocumentFacts> = self
+            .knot_visit_refusals
+            .iter()
+            .filter(|refusal| !facts.iter().any(|open| open.address == refusal.address))
+            .cloned()
+            .collect();
+        facts.extend(refused);
+        facts.sort_by(|left, right| left.address.cmp(&right.address));
+        self.app.set_knot_documents(facts);
+    }
+
     pub(super) fn release_place_worker(&mut self) {
         if let Err(error) = self.release_place_worker_result() {
             tracing::warn!(%error, "place worker release ack timed out");
@@ -1419,6 +1558,14 @@ impl Shell {
     }
 
     fn release_place_worker_result(&mut self) -> Result<(), String> {
+        // Every visiting hub drives its carrier on the lane runtime the
+        // worker is about to drop. Letting go first is what keeps a visit
+        // from reading a runtime that is shutting down under it.
+        if let Ok(mut visits) = self.knot_visits.lock() {
+            visits.clear();
+        }
+        self.pending_visit_spawns.clear();
+        self.knot_visit_refusals.clear();
         let (ack_tx, ack_rx) = std::sync::mpsc::sync_channel(1);
         self.place_handle
             .command(crate::place::worker::PlaceWorkerCommand::Release(ack_tx));

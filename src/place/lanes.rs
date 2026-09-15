@@ -1924,6 +1924,85 @@ mod tests {
         let _ = std::fs::remove_dir_all(&founder.root);
     }
 
+    /// T5c, the visiting half: the writer opens the founder's document by its
+    /// place-held address through the ordinary Knot hub, authors a revision by
+    /// the hub's ordinary save path, and the founder's file is what changed.
+    /// Then the holder goes away and the hub says unavailable, not gone.
+    ///
+    /// Everything the shell would do, minus the window: `holder_dial` prepares
+    /// the dial on the identity's own thread, `visit_holder` opens it on the
+    /// visiting thread and runs the same `run_hub` a local vault runs, and the
+    /// address the visitor asked for is resolved against what the holder
+    /// disclosed, which is the holder's own local path.
+    #[test]
+    fn a_writer_visits_a_held_document_and_is_told_when_the_holder_goes() {
+        let joiner = InMemoryProvider::from_seed([0xe2; 32]);
+        let founder = found_and_invite(
+            "visit",
+            0xe1,
+            &joiner,
+            crate::place::PlaceInviteAccess::Writer,
+        );
+        let holder_root = InMemoryProvider::from_seed([0xe1; 32])
+            .master_public_key()
+            .to_bytes();
+        let address = crate::knot_authoring::place_held_address(&holder_root, "field.knot");
+
+        let lanes = joiner_lanes(&founder, &joiner);
+        let grant = crate::place::rendezvous::load_projection_grant(&founder.guest)
+            .expect("admission stored the grant beside the rendezvous");
+        let dialed = Instant::now();
+        let dial = super::holder_dial(&lanes, &founder.ticket, &grant, &joiner, [23; 32])
+            .expect("the grant is spent on a leaf to this place-transport key");
+        let wake: Arc<dyn Fn() + Send + Sync> = Arc::new(|| {});
+        let hub = crate::knot_authoring::visit_holder(dial, wake)
+            .expect("the founder admits this writer at the projection door");
+
+        let mut probe = crate::knot_authoring::HubProbe::open(hub, &address)
+            .expect("the visited document resolves by its place-held address");
+        eprintln!(
+            "visit: mounted {address} in {} ms, disclosed as {}",
+            dialed.elapsed().as_millis(),
+            probe.disclosed_address()
+        );
+        assert!(
+            probe.disclosed_address().ends_with("field.knot")
+                && probe.disclosed_address() != address,
+            "the holder discloses its own local address, not the shared one"
+        );
+        assert_eq!(probe.source(), "# Field\n");
+
+        let authored = "# Field\n\nThe visitor was here.\n";
+        assert_eq!(
+            probe.save(authored).expect("the holder took the visited edit"),
+            authored
+        );
+        assert_eq!(
+            std::fs::read_to_string(&founder.document).unwrap(),
+            authored,
+            "the holder's own file is what changed; the visitor holds no replica"
+        );
+
+        // The holder goes: its worker releases the lanes the projection host
+        // was serving on. The visited document is unavailable, which is not
+        // the same as revoked — nothing was taken away, it is out of reach.
+        let (ack_tx, ack_rx) = std::sync::mpsc::sync_channel(1);
+        founder.worker.command(PlaceWorkerCommand::Release(ack_tx));
+        let _ = ack_rx.recv_timeout(Duration::from_secs(30));
+        let lost = Instant::now();
+        let reason = probe
+            .wait_for_unavailable(Duration::from_secs(60))
+            .expect("the visited surface is told its holder is gone");
+        eprintln!(
+            "visit: unavailable after {} ms with {reason}",
+            lost.elapsed().as_millis()
+        );
+
+        drop(probe);
+        drop(lanes);
+        let _ = std::fs::remove_dir_all(&founder.root);
+    }
+
     /// The same place, a reader: no grant in the envelope, nothing stored, and
     /// a dial with no certificate is refused at the door rather than served a
     /// read-only view of somebody's vault.
@@ -2400,6 +2479,69 @@ pub(crate) fn dial_holder(
     identity: &dyn IdentityProvider,
     nonce: [u8; 32],
 ) -> Result<(PlaceProjectionCarrier, PeerID), String> {
+    holder_dial(lanes, holder_ticket, grant, identity, nonce)?.open()
+}
+
+/// A dial that has been prepared but not yet opened.
+///
+/// Everything a stream needs, with no borrow of [`LiveLanes`] left in it, so
+/// the worker can prepare a dial on its own thread and a visiting thread can
+/// open it on its. The carrier is produced by [`Self::open`] and stays on
+/// whichever thread called it, which is the whole reason this split exists:
+/// the retained session over that carrier is not `Send`, so the thread that
+/// opens the stream must be the thread that reads it.
+///
+/// The runtime handle is a clone of the lane runtime's, and that runtime
+/// lives in the worker's `LiveLanes`. It outlives every visit by ordering,
+/// not by ownership: the shell drops its visiting hubs before the place is
+/// released. If a runtime does go first, the carrier's next request fails and
+/// the visited surface reports unavailable, which is the same thing a lost
+/// holder looks like and the correct thing to show either way.
+pub(crate) struct HolderDial {
+    transport: Arc<P2pandaTransport>,
+    handle: tokio::runtime::Handle,
+    hello: notochord::SessionHello,
+    ticket: String,
+}
+
+impl HolderDial {
+    /// Open the stream and wrap it in the carrier. Blocking, on the lane
+    /// runtime, from whatever thread calls it.
+    pub(crate) fn open(self) -> Result<(PlaceProjectionCarrier, PeerID), String> {
+        let limits = HandshakeLimits::default();
+        let transport = Arc::clone(&self.transport);
+        let hello = self.hello;
+        let ticket = self.ticket;
+        let (stream, peer) = self.handle.block_on(async move {
+            // Idempotent for a ticket already in the address book, and the
+            // only way to learn the peer id a bare ticket names.
+            let peer = transport
+                .add_peer_ticket(&ticket)
+                .await
+                .map_err(|error| format!("import holder ticket: {error}"))?;
+            let stream = dial_projection_session(&*transport, peer, &hello, &limits)
+                .await
+                .map_err(|error| format!("dial the holder: {error}"))?
+                .map_err(|reason| format!("the holder refused this session: {reason:?}"))?;
+            Ok::<_, String>((stream, peer))
+        })?;
+        let carrier = NetworkCarrier::over(stream, CarrierRuntime::borrowed(self.handle));
+        Ok((carrier, peer))
+    }
+}
+
+/// Prepare a dial to a holder: spend the grant's hop and sign the hello.
+///
+/// Everything authority-bearing happens here, on the caller's thread, where
+/// the identity provider is. What crosses to a visiting thread afterwards is
+/// a signed hello and a transport handle, never a key.
+pub(crate) fn holder_dial(
+    lanes: &LiveLanes,
+    holder_ticket: &str,
+    grant: &[u8],
+    identity: &dyn IdentityProvider,
+    nonce: [u8; 32],
+) -> Result<HolderDial, String> {
     let moot = lanes.moot;
     let grant = crate::place::projection_host::decode_grant(grant)?;
     let parent = &grant.certificate;
@@ -2446,23 +2588,12 @@ pub(crate) fn dial_holder(
     )
     .map_err(|error| format!("sign the projection hello: {error}"))?;
 
-    let limits = HandshakeLimits::default();
-    let (stream, peer) = runtime.block_on(async {
-        // Idempotent for a ticket already in the address book, and the only
-        // way to learn the peer id a bare ticket names.
-        let peer = transport
-            .add_peer_ticket(holder_ticket)
-            .await
-            .map_err(|error| format!("import holder ticket: {error}"))?;
-        let stream = dial_projection_session(&*transport, peer, &hello, &limits)
-            .await
-            .map_err(|error| format!("dial the holder: {error}"))?
-            .map_err(|reason| format!("the holder refused this session: {reason:?}"))?;
-        Ok::<_, String>((stream, peer))
-    })?;
-
-    let carrier = NetworkCarrier::over(stream, CarrierRuntime::borrowed(runtime.handle().clone()));
-    Ok((carrier, peer))
+    Ok(HolderDial {
+        transport,
+        handle: runtime.handle().clone(),
+        hello,
+        ticket: holder_ticket.to_string(),
+    })
 }
 
 fn transport_salt(moot: [u8; 32]) -> Vec<u8> {
