@@ -14,16 +14,27 @@
 //! runs the owning domain's admission, and projections stay
 //! authority-filtered exactly as they are offline.
 
+use std::sync::Arc;
+
 use commons::CommonsExt;
 use commons::chat::ChatExt;
 use gemot::moot::MootLanes;
+use graphshell::admission::open_session;
+use graphshell::network_carrier::{
+    CarrierRuntime, NetworkCarrier, dial_projection_session, projection_binding,
+};
 use identity::IdentityProvider;
+use identity::delegation::{DelegationCertificate, DelegationParent, SignedDelegationCertificate};
+use notochord::{HandshakeLimits, NetworkId, TrafficClass};
 use stickleback::JoinedSpace;
 use transport::p2panda_transport::MdnsDiscoveryMode;
-use transport::{P2pandaTransport, sync_overlay_topic};
+use transport::{P2pandaStream, P2pandaTransport, PeerID, Transport, sync_overlay_topic};
 
 use crate::place::PlaceBindingV1;
-use crate::place::worker::OpenPlace;
+use crate::place::projection_host::{
+    ProjectionServing, ProjectionSetup, projection_profile, projection_scope,
+};
+use crate::place::worker::{OpenPlace, ProviderRef};
 
 /// How often the watcher samples lane counters, and how long they must hold
 /// steady before it reports. A burst of operations from one sync round then
@@ -46,7 +57,15 @@ pub(crate) struct LiveLanes {
     /// Taken in `drop`: each lane is left and awaited by value, which is the
     /// only thing that releases the store clone its sync actor captured.
     joined: Option<JoinedNine>,
-    _transport: P2pandaTransport,
+    /// This place's Moot id, so a visitor's dial can name the same network the
+    /// holder's policy does without carrying the whole binding.
+    moot: [u8; 32],
+    /// The vault host, when this profile has a vault to serve. Held here
+    /// because its accept loop borrows the transport and must stop first.
+    projection: Option<ProjectionServing>,
+    /// Shared because the projection accept loop outlives any one call and
+    /// `accept_one` borrows its transport; `drop` aborts that loop first.
+    _transport: Arc<P2pandaTransport>,
     /// Taken in `drop` so the runtime can be shut down with a timeout: every
     /// task holding a store clone must be gone before the caller reopens.
     _runtime: Option<tokio::runtime::Runtime>,
@@ -98,6 +117,15 @@ impl Drop for LiveLanes {
         // holds an Emitter, and a tick landing after the place closed would
         // ask the app to resync a place that is gone.
         let runtime = self._runtime.take().expect("lane runtime is taken once");
+        // Before the transport closes: the accept loop holds a clone of it,
+        // and a session already served releases its own slot when its stream
+        // ends, exactly as it would have anyway.
+        if let Some(accept) = self.projection.as_mut().and_then(ProjectionServing::abort) {
+            runtime.block_on(async {
+                let _ = accept.await;
+            });
+        }
+        self.projection = None;
         if let Some(watcher) = self.watcher.take() {
             watcher.abort();
             runtime.block_on(async {
@@ -176,6 +204,12 @@ impl LiveLanes {
             joined.graph.sync_status().ops_received,
             joined.chat.sync_status().ops_received,
         ]
+    }
+
+    /// What this bind is serving by projection, or `None` when it serves
+    /// nothing because this profile has no Knot vault.
+    pub(crate) fn projection_snapshot(&self) -> Option<crate::place::PlaceProjectionSnapshot> {
+        self.projection.as_ref().map(ProjectionServing::snapshot)
     }
 
     /// This bind's own tickets, and how many peers it dialed. Neither says a
@@ -281,6 +315,9 @@ mod tests {
     use muniment::RedbBackend;
     use stickleback::DataKeyring;
     use transport::P2pandaTransport;
+
+    use graphshell::client::{ResolvedContent, RetainedEndpointSession};
+    use transport::Transport;
 
     use crate::action::Update;
     use crate::identity::RootIdentity;
@@ -560,6 +597,7 @@ mod tests {
                 carrier: P2PANDA_ENDPOINT_TICKET.into(),
                 hint: ticket,
             }],
+            None,
             &settings(),
         )
         .unwrap();
@@ -805,6 +843,7 @@ mod tests {
                 carrier: P2PANDA_ENDPOINT_TICKET.into(),
                 hint: ticket,
             }],
+            None,
             &host_settings,
         )
         .unwrap();
@@ -1078,6 +1117,7 @@ mod tests {
                 carrier: P2PANDA_ENDPOINT_TICKET.into(),
                 hint: ticket,
             }],
+            None,
             &settings(),
         )
         .unwrap();
@@ -1248,6 +1288,7 @@ mod tests {
                 carrier: P2PANDA_ENDPOINT_TICKET.into(),
                 hint: ticket,
             }],
+            None,
             &settings(),
         )
         .unwrap();
@@ -1502,6 +1543,7 @@ mod tests {
             &joiner_prekey,
             u64::MAX,
             Vec::new(),
+            None,
             &settings(),
         )
         .unwrap();
@@ -1561,7 +1603,7 @@ mod tests {
 
         let b = crate::place::worker::found_place(&host, &founder, "Hearth", &settings).unwrap();
         let (open, _) = open_cached_place(&host, &b, &founder, &settings).unwrap();
-        let mut lanes = super::join_live(&open, &b, &founder, &[], None).unwrap();
+        let mut lanes = super::join_live(&open, &b, &founder, &[], None, None).unwrap();
         assert_eq!(lanes.ops_received().len(), 9);
 
         lanes.leave_and_wait();
@@ -1599,6 +1641,379 @@ mod tests {
             waited.as_millis()
         );
         let _ = std::fs::remove_dir_all(&root);
+    }
+
+    /// One founder, live and serving a vault, plus the envelope a joiner was
+    /// admitted with. The founder half of both projection tests.
+    struct ServedFounder {
+        root: std::path::PathBuf,
+        vault: std::path::PathBuf,
+        document: std::path::PathBuf,
+        worker: armillary::ActorHandle<PlaceWorkerCommand>,
+        updates: std::sync::mpsc::Receiver<Update>,
+        session: SessionId,
+        binding: PlaceBindingV1,
+        ticket: String,
+        invite: Box<crate::place::invite::PlaceInviteV1>,
+        guest: std::path::PathBuf,
+    }
+
+    /// Found a place whose worker serves a one-document vault, then admit one
+    /// root at `access` through the product `Invite`.
+    fn found_and_invite(
+        tag: &str,
+        seed: u8,
+        joiner: &InMemoryProvider,
+        access: crate::place::PlaceInviteAccess,
+    ) -> ServedFounder {
+        let root = std::env::temp_dir().join(format!(
+            "turnstone-place-projection-{tag}-{}",
+            std::process::id()
+        ));
+        let _ = std::fs::remove_dir_all(&root);
+        let host = root.join("host");
+        let guest = root.join("guest");
+        let vault = root.join("vault");
+        for directory in [&host, &guest, &vault] {
+            std::fs::create_dir_all(directory).unwrap();
+        }
+        let document = vault.join("field.knot");
+        std::fs::write(&document, "# Field\n").unwrap();
+
+        let founder = RootIdentity::Unsealed(InMemoryProvider::from_seed([seed; 32]));
+        let host_settings = crate::place::worker::PlaceWorkerSettings {
+            knot_root: Some(vault.clone()),
+            ..settings()
+        };
+        let (worker, updates) = spawn_place_worker(Arc::new(|| {}), Arc::new(founder), host_settings);
+        let session = SessionId::new();
+        worker.command(PlaceWorkerCommand::Found {
+            session,
+            generation: 1,
+            directory: host.clone(),
+            name: "Hearth".into(),
+        });
+        let (binding, ticket) = loop {
+            match updates.recv_timeout(Duration::from_secs(60)) {
+                Ok(Update::PlaceFounded {
+                    result: Ok((binding, snapshot)),
+                    ..
+                }) => {
+                    let sync = snapshot.sync.expect("a founded place binds lanes");
+                    let projection = sync
+                        .projection
+                        .as_ref()
+                        .expect("a founder with a vault serves it");
+                    assert_eq!(projection.route, "knot");
+                    assert_eq!(projection.live_sessions, 0, "nobody has dialed yet");
+                    let ticket = sync.local_rendezvous[0].clone();
+                    break (binding, ticket);
+                },
+                Ok(Update::PlaceFounded {
+                    result: Err(error), ..
+                }) => panic!("founding refused: {error}"),
+                Ok(_) => continue,
+                Err(error) => panic!("founding never answered: {error}"),
+            }
+        };
+
+        let prekey = prepare_group_identity(&guest, joiner, binding.moot.0).unwrap();
+        worker.command(PlaceWorkerCommand::Invite {
+            session,
+            generation: 1,
+            directory: host.clone(),
+            prekey,
+            access,
+        });
+        let invite = expect_invited(&updates, "the joiner invitation");
+        ServedFounder {
+            root,
+            vault,
+            document,
+            worker,
+            updates,
+            session,
+            binding,
+            ticket,
+            invite,
+            guest,
+        }
+    }
+
+    /// The founder's current projection observation, through a product Resync.
+    fn founder_projection(founder: &ServedFounder) -> Option<crate::place::PlaceProjectionSnapshot> {
+        founder.worker.command(PlaceWorkerCommand::Resync {
+            session: founder.session,
+            generation: 1,
+        });
+        let deadline = Instant::now() + Duration::from_secs(30);
+        loop {
+            assert!(Instant::now() < deadline, "the founder never re-folded");
+            match founder.updates.recv_timeout(Duration::from_secs(5)) {
+                Ok(Update::PlaceOpened {
+                    result: Ok(snapshot),
+                    ..
+                }) => return snapshot.sync.and_then(|sync| sync.projection),
+                Ok(_) => continue,
+                Err(error) => panic!("the founder never answered a resync: {error}"),
+            }
+        }
+    }
+
+    /// The joiner's own live bind: admitted by the product path, then bound
+    /// exactly as the worker binds it, so the test can hold the lanes.
+    fn joiner_lanes(founder: &ServedFounder, joiner: &InMemoryProvider) -> super::LiveLanes {
+        crate::place::worker::admit_invitation(&founder.guest, &founder.invite, joiner, &settings())
+            .expect("the joiner is admitted");
+        let (open, _) =
+            open_cached_place(&founder.guest, &founder.binding, joiner, &settings()).unwrap();
+        super::join_live(
+            &open,
+            &founder.binding,
+            joiner,
+            std::slice::from_ref(&founder.ticket),
+            // A joiner holds no vault of its own in this proof, so it serves
+            // nothing and its own status says so.
+            None,
+            None,
+        )
+        .expect("the joiner binds its lanes")
+    }
+
+    fn viewing_profile() -> chirograph::CapabilityProfile {
+        chirograph::CapabilityProfile::new([
+            chirograph::PresentationCapability::EditableText,
+            chirograph::PresentationCapability::PortableCard,
+        ])
+    }
+
+    fn hex_head(bytes: &[u8]) -> String {
+        bytes[..4].iter().map(|byte| format!("{byte:02x}")).collect()
+    }
+
+    /// T5c: a writer admitted to a place edits the document its founder holds,
+    /// over the place's own transport, and the founder's file is the truth.
+    ///
+    /// Every seam is the product one: the grant is issued by `admit_member`
+    /// and carried by the invitation `PlaceWorkerCommand::Invite` authored,
+    /// stored by `admit_invitation` beside the rendezvous, spent by
+    /// `dial_holder` on a leaf to the joiner's own place-transport key, and
+    /// admitted by the host `join_live` started. Nothing is stubbed and no
+    /// replica exists anywhere: the save is an intent the holder runs.
+    #[test]
+    fn a_writer_edits_the_document_its_founder_holds() {
+        let joiner = InMemoryProvider::from_seed([0xc2; 32]);
+        let founder = found_and_invite(
+            "writer",
+            0xc1,
+            &joiner,
+            crate::place::PlaceInviteAccess::Writer,
+        );
+        assert!(
+            founder.invite.projection_grant.is_some(),
+            "a writer invitation carries the projection grant"
+        );
+        founder.invite.validate().expect("and still validates");
+
+        let lanes = joiner_lanes(&founder, &joiner);
+        assert!(
+            lanes.projection_snapshot().is_none(),
+            "the joiner holds no vault, so it serves nothing"
+        );
+        let grant = crate::place::rendezvous::load_projection_grant(&founder.guest)
+            .expect("admission stored the grant beside the rendezvous");
+
+        let dialed = Instant::now();
+        let (carrier, holder) =
+            super::dial_holder(&lanes, &founder.ticket, &grant, &joiner, [21; 32])
+                .expect("the founder admits this writer");
+        let mut retained = RetainedEndpointSession::over(Box::new(carrier), viewing_profile())
+            .expect("discover the holder endpoint");
+        let session = retained.mount(0).expect("mount the projected vault");
+        eprintln!(
+            "writer: dialed holder {} and mounted in {} ms",
+            hex_head(&holder.to_bytes()),
+            dialed.elapsed().as_millis()
+        );
+
+        let (target, source, token, action) = retained
+            .resolve_all(&session)
+            .expect("resolve the projection")
+            .into_iter()
+            .find_map(|(target, presentation)| match presentation.content {
+                ResolvedContent::EditableText(editable)
+                    if editable.address.ends_with("field.knot") =>
+                {
+                    Some((
+                        target,
+                        editable.source,
+                        editable.base_token,
+                        presentation.semantics.actions[0].clone(),
+                    ))
+                },
+                _ => None,
+            })
+            .expect("the holder disclosed its document as editable source");
+        assert_eq!(source, "# Field\n", "the writer opened the holder document");
+
+        // The founder is serving exactly one session, and says so.
+        let serving = founder_projection(&founder).expect("the founder still serves");
+        assert_eq!(serving.live_sessions, 1, "one visitor is being served");
+        assert_eq!(serving.refused, 0, "and nobody was turned away");
+
+        let saved = retained
+            .invoke(
+                &session,
+                target,
+                &action,
+                &chirograph::SaveTextV1 {
+                    base_token: token,
+                    source: "# Field\n\nThe writer was here.\n".into(),
+                },
+            )
+            .expect("submit the save");
+        assert_eq!(
+            saved,
+            chirograph::IntentResult::Accepted,
+            "the holder took the writer edit"
+        );
+        // The holder still has this session open right up to the close: the
+        // save was an intent it ran, not a reconnect.
+        assert_eq!(
+            founder_projection(&founder)
+                .expect("the founder still serves")
+                .live_sessions,
+            1,
+            "the writer session survived its own save"
+        );
+        // Close is the visitor letting go. On a QUIC stream the holder's
+        // serving loop can finish first, which the carrier reports as a lost
+        // connection rather than a clean stop; the session is over either way
+        // and the slot below is what proves it.
+        if let Err(error) = retained.close() {
+            eprintln!("writer: close reported {error}");
+        }
+
+        let deadline = Instant::now() + Duration::from_secs(30);
+        loop {
+            let serving = founder_projection(&founder).expect("the founder still serves");
+            if serving.live_sessions == 0 {
+                break;
+            }
+            assert!(
+                Instant::now() < deadline,
+                "the served session never released its slot"
+            );
+            std::thread::sleep(Duration::from_millis(200));
+        }
+
+        assert_eq!(
+            std::fs::read_to_string(&founder.document).unwrap(),
+            "# Field\n\nThe writer was here.\n",
+            "the holder own file is what changed; the writer holds no replica"
+        );
+        assert!(
+            founder.vault.join("field.knot").exists(),
+            "and it is still the same vault"
+        );
+
+        drop(lanes);
+        let (ack_tx, ack_rx) = std::sync::mpsc::sync_channel(1);
+        founder.worker.command(PlaceWorkerCommand::Release(ack_tx));
+        let _ = ack_rx.recv_timeout(Duration::from_secs(30));
+        let _ = std::fs::remove_dir_all(&founder.root);
+    }
+
+    /// The same place, a reader: no grant in the envelope, nothing stored, and
+    /// a dial with no certificate is refused at the door rather than served a
+    /// read-only view of somebody's vault.
+    #[test]
+    fn a_reader_is_refused_at_the_projection_door() {
+        let joiner = InMemoryProvider::from_seed([0xd2; 32]);
+        let founder = found_and_invite(
+            "reader",
+            0xd1,
+            &joiner,
+            crate::place::PlaceInviteAccess::Reader,
+        );
+        assert!(
+            founder.invite.projection_grant.is_none(),
+            "a reader invitation carries no projection grant"
+        );
+        founder.invite.validate().expect("and still validates");
+
+        let lanes = joiner_lanes(&founder, &joiner);
+        assert!(
+            crate::place::rendezvous::load_projection_grant(&founder.guest).is_none(),
+            "nothing was stored beside the rendezvous"
+        );
+
+        let refused = dial_without_a_grant(&lanes, &founder.ticket, &joiner)
+            .expect_err("a reader must not be served the holder vault");
+        eprintln!("reader: refused at the door with {refused}");
+
+        // The refusal is the host's, not a dropped connection: its own
+        // observation counts the peer it turned away.
+        let deadline = Instant::now() + Duration::from_secs(30);
+        let counted = loop {
+            let serving = founder_projection(&founder).expect("the founder still serves");
+            if serving.refused > 0 || Instant::now() > deadline {
+                break serving;
+            }
+            std::thread::sleep(Duration::from_millis(200));
+        };
+        assert_eq!(counted.refused, 1, "the host counted exactly one refusal");
+        assert_eq!(counted.live_sessions, 0, "and served nobody");
+
+        drop(lanes);
+        let (ack_tx, ack_rx) = std::sync::mpsc::sync_channel(1);
+        founder.worker.command(PlaceWorkerCommand::Release(ack_tx));
+        let _ = ack_rx.recv_timeout(Duration::from_secs(30));
+        let _ = std::fs::remove_dir_all(&founder.root);
+    }
+
+    /// `dial_holder` without the certificate: the same hello on the same
+    /// transport, presenting no delegation at all.
+    fn dial_without_a_grant(
+        lanes: &super::LiveLanes,
+        ticket: &str,
+        identity: &dyn IdentityProvider,
+    ) -> Result<(), String> {
+        let moot = lanes.moot;
+        let derived = identity
+            .derive_keypair(&super::transport_salt(moot))
+            .unwrap();
+        let visitor = InMemoryProvider::from_seed(derived.to_seed());
+        let transport = Arc::clone(&lanes._transport);
+        let hello = graphshell::admission::open_session(
+            &visitor,
+            notochord::NetworkId(moot),
+            crate::place::projection_host::projection_profile(),
+            notochord::TrafficClass::Interactive,
+            [31; 32],
+            &graphshell::network_carrier::projection_binding(transport.local_peer_id()),
+            Vec::new(),
+        )
+        .unwrap();
+        let runtime = lanes._runtime.as_ref().expect("lane runtime is present");
+        runtime.block_on(async {
+            let peer = transport
+                .add_peer_ticket(ticket)
+                .await
+                .map_err(|error| error.to_string())?;
+            match graphshell::network_carrier::dial_projection_session(
+                &*transport,
+                peer,
+                &hello,
+                &notochord::HandshakeLimits::default(),
+            )
+            .await
+            {
+                Ok(Ok(_)) => Ok(()),
+                Ok(Err(reason)) => Err(format!("{reason:?}")),
+                Err(error) => Err(error.to_string()),
+            }
+        })
     }
 
     /// Take the next invitation off a worker's update channel, stepping past
@@ -1958,6 +2373,98 @@ mod tests {
 /// Domain-separated salt for this place's transport identity. A derived key,
 /// never the master: the transport peer id is session machinery, and the
 /// worker's projections must stay exactly as valid if it changes.
+/// The carrier a visitor mounts a holder's document over: mere's network
+/// carrier on this place's own p2panda stream.
+pub(crate) type PlaceProjectionCarrier = NetworkCarrier<P2pandaStream>;
+
+/// Dial a place member who holds a document, over this place's own transport.
+///
+/// The visiting half's one entry point. The returned carrier is what
+/// `RetainedEndpointSession::over` mounts; the peer id is returned with it so
+/// a caller can name the holder it reached without re-importing the ticket.
+///
+/// Two things happen here that are not obvious from the call. The ticket is
+/// imported first, because a ticket is an address and the address book is
+/// what `connect` reads. And the stored grant is not the leaf: the handshake
+/// binds the claimed subject to the peer the carrier authenticated, and this
+/// place's transport key is derived per place, so the grant's one remaining
+/// delegation hop is spent here on a leaf from the member's Personae root to
+/// its own place-transport key. That key is then what the hello claims.
+///
+/// The carrier is not `Send` by mere's deliberate choice, so it belongs to
+/// the thread that opened it.
+pub(crate) fn dial_holder(
+    lanes: &LiveLanes,
+    holder_ticket: &str,
+    grant: &[u8],
+    identity: &dyn IdentityProvider,
+    nonce: [u8; 32],
+) -> Result<(PlaceProjectionCarrier, PeerID), String> {
+    let moot = lanes.moot;
+    let grant = crate::place::projection_host::decode_grant(grant)?;
+    let parent = &grant.certificate;
+    if parent.subject != identity.master_public_key().to_bytes() {
+        return Err("projection grant names another subject".to_string());
+    }
+
+    // The place-transport key this dial will actually arrive as. A provider
+    // over the derived seed, because `open_session` takes the subject from
+    // whatever provider signs the hello.
+    let derived = identity
+        .derive_keypair(&transport_salt(moot))
+        .map_err(|error| format!("derive place transport identity: {error}"))?;
+    let visitor = identity::InMemoryProvider::from_seed(derived.to_seed());
+    let subject = visitor.master_public_key().to_bytes();
+
+    let leaf = SignedDelegationCertificate::issue(
+        &ProviderRef(identity),
+        DelegationCertificate::new(
+            DelegationParent::Certificate(parent.id()),
+            parent.subject,
+            subject,
+            projection_scope(moot),
+            parent.not_before_ms,
+            parent.not_before_ms,
+            parent.expires_at_ms,
+            0,
+            *blake3::hash(&[&parent.nonce[..], &subject[..]].concat()).as_bytes(),
+        ),
+    )
+    .map_err(|error| format!("issue the place-transport leaf: {error}"))?;
+
+    let runtime = lanes._runtime.as_ref().expect("lane runtime is present");
+    let transport = Arc::clone(&lanes._transport);
+    let local_peer = transport.local_peer_id();
+    let hello = open_session(
+        &visitor,
+        NetworkId(moot),
+        projection_profile(),
+        TrafficClass::Interactive,
+        nonce,
+        &projection_binding(local_peer),
+        vec![grant, leaf],
+    )
+    .map_err(|error| format!("sign the projection hello: {error}"))?;
+
+    let limits = HandshakeLimits::default();
+    let (stream, peer) = runtime.block_on(async {
+        // Idempotent for a ticket already in the address book, and the only
+        // way to learn the peer id a bare ticket names.
+        let peer = transport
+            .add_peer_ticket(holder_ticket)
+            .await
+            .map_err(|error| format!("import holder ticket: {error}"))?;
+        let stream = dial_projection_session(&*transport, peer, &hello, &limits)
+            .await
+            .map_err(|error| format!("dial the holder: {error}"))?
+            .map_err(|reason| format!("the holder refused this session: {reason:?}"))?;
+        Ok::<_, String>((stream, peer))
+    })?;
+
+    let carrier = NetworkCarrier::over(stream, CarrierRuntime::borrowed(runtime.handle().clone()));
+    Ok((carrier, peer))
+}
+
 fn transport_salt(moot: [u8; 32]) -> Vec<u8> {
     let mut salt = Vec::with_capacity(61);
     salt.extend_from_slice(b"turnstone.place.transport.v1/");
@@ -1980,6 +2487,7 @@ pub(crate) fn join_live(
     binding: &PlaceBindingV1,
     identity: &dyn IdentityProvider,
     tickets: &[String],
+    projection: Option<ProjectionSetup>,
     watch: Option<(
         armillary::Emitter<crate::action::Update>,
         crate::panes::SessionId,
@@ -2008,6 +2516,10 @@ pub(crate) fn join_live(
         let transport = P2pandaTransport::builder(&keypair)
             .gossip()
             .mdns(MdnsDiscoveryMode::Active)
+            // Beside the sync lanes, on the same endpoint: a place member
+            // reaching the document's holder is the same peer relationship,
+            // and giving it a second bind would give it a second address.
+            .alpns(vec![graphshell::carrier::projection_alpn()])
             .bind()
             .await
             .map_err(|error| format!("bind place transport: {error}"))?;
@@ -2056,9 +2568,27 @@ pub(crate) fn join_live(
             graph,
             chat,
         }),
-        _transport: transport,
+        moot: binding.moot.0,
+        projection: None,
+        _transport: Arc::new(transport),
         _runtime: Some(runtime),
     };
+
+    // No vault root means no route and no serving, and the snapshot says so
+    // rather than reporting an idle host nobody could have reached.
+    if let Some(setup) = projection {
+        let handle = lanes
+            ._runtime
+            .as_ref()
+            .expect("lane runtime is present")
+            .handle()
+            .clone();
+        lanes.projection = Some(ProjectionServing::start(
+            Arc::clone(&lanes._transport),
+            &handle,
+            &setup,
+        )?);
+    }
 
     // The watcher turns lane arrivals into ONE app-visible nudge per settled
     // burst. It reports that something arrived; it never folds a projection

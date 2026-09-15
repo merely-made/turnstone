@@ -16,6 +16,7 @@ pub(crate) mod captured_collection;
 pub mod invite;
 pub(crate) mod lanes;
 pub mod projection;
+pub(crate) mod projection_host;
 pub(crate) mod rendezvous;
 pub mod worker;
 
@@ -353,11 +354,26 @@ pub struct OfflinePlaceSnapshot {
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct PlaceSyncSnapshot {
     pub lanes: Vec<PlaceLaneSnapshot>,
+    /// What this bind is serving by projection, or `None` when this profile
+    /// has no Knot vault and the place holds no document for anyone.
+    ///
+    /// An observation like every other field here. A live session count says
+    /// somebody is being served right now; it does not say a member can reach
+    /// this host, and `refused` names peers turned away, not attackers.
+    pub projection: Option<PlaceProjectionSnapshot>,
     /// This bind's own dialable ticket(s). What a peer needs to reach here;
     /// holding one says nothing about whether anyone did.
     pub local_rendezvous: Vec<String>,
     /// How many peer tickets this bind dialed. Zero is listen-only.
     pub dialed_rendezvous: usize,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct PlaceProjectionSnapshot {
+    pub live_sessions: u32,
+    pub refused: u64,
+    /// The catalog route being served, `knot` today.
+    pub route: String,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -647,6 +663,16 @@ impl PlaceState {
                     // already states every fact on this card is from the last
                     // refresh, so repeating it per lane only pushed the row
                     // past the card's text budget. (Mark, 2026-09-13)
+                    rows.push(match &sync.projection {
+                        Some(projection) => format!(
+                            "Projection: serving {} to {} live session{}; {} refused",
+                            projection.route,
+                            projection.live_sessions,
+                            if projection.live_sessions == 1 { "" } else { "s" },
+                            projection.refused
+                        ),
+                        None => "Projection: not serving (no Knot vault)".into(),
+                    });
                     rows.extend(sync.lanes.iter().map(|lane| format!(
                         "{}: {}; {} rounds; {} accepted ops",
                         lane.label(), if lane.syncing { "syncing" } else { "idle" },
@@ -771,6 +797,7 @@ mod tests {
                             last_activity_ms: None,
                         },
                     ],
+                    projection: None,
                     local_rendezvous: vec![long_ticket()],
                     dialed_rendezvous: 0,
                 }),
@@ -787,6 +814,11 @@ mod tests {
             rows.iter().any(|row| row.starts_with("Local rendezvous:")),
             "the rendezvous row is the one under test",
         );
+        assert!(
+            rows.iter()
+                .any(|row| row == "Projection: not serving (no Knot vault)"),
+            "a place with no vault says so rather than omitting the row: {rows:?}"
+        );
         for row in rows.iter() {
             let width = crate::ui::chrome_row_width(row);
             assert!(
@@ -795,6 +827,47 @@ mod tests {
                 crate::ui::ROW_TEXT_BUDGET,
             );
         }
+    }
+
+    /// The serving wording, singular and plural, and both fit one row.
+    #[test]
+    fn the_projection_row_names_what_is_served_and_what_was_refused() {
+        let serving = |live, refused| {
+            let state = PlaceState::Offline {
+                binding: binding(),
+                generation: 1,
+                snapshot: OfflinePlaceSnapshot {
+                    sync: Some(PlaceSyncSnapshot {
+                        projection: Some(PlaceProjectionSnapshot {
+                            live_sessions: live,
+                            refused,
+                            route: "knot".into(),
+                        }),
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                },
+            };
+            let rows = state.status_lines();
+            let row = rows
+                .iter()
+                .find(|row| row.starts_with("Projection:"))
+                .expect("the projection row is always present when lanes are")
+                .clone();
+            assert!(
+                crate::ui::chrome_row_width(&row) <= crate::ui::ROW_TEXT_BUDGET,
+                "the projection row must fit one palette row: {row}"
+            );
+            row
+        };
+        assert_eq!(
+            serving(1, 1),
+            "Projection: serving knot to 1 live session; 1 refused"
+        );
+        assert_eq!(
+            serving(2, 0),
+            "Projection: serving knot to 2 live sessions; 0 refused"
+        );
     }
 
     #[test]

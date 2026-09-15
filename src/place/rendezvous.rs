@@ -144,6 +144,39 @@ pub(crate) fn load_rendezvous(
     saved.tickets(binding, now_ms)
 }
 
+/// The projection grant a writer's admission stored, beside the descriptor.
+///
+/// A certificate, not contact metadata, so it lives in its own file: the
+/// descriptor is replaced wholesale on every renewed offer and a grant must
+/// not ride along with an address. It is authority over exactly one door and
+/// over nothing in Commons or Gemot.
+pub(crate) const PROJECTION_GRANT_FILE: &str = "place-projection-grant.json";
+
+/// Called by the worker only after admission has verified the digest, the
+/// signature, and that the certificate names this profile's root.
+pub(crate) fn save_projection_grant(directory: &Path, bytes: &[u8]) -> Result<(), String> {
+    if bytes.len() as u64 > MAX_BYTES {
+        return Err("projection grant exceeds the byte limit".into());
+    }
+    let target = directory.join(PROJECTION_GRANT_FILE);
+    let temporary = directory.join("place-projection-grant.json.tmp");
+    let result =
+        std::fs::write(&temporary, bytes).and_then(|()| std::fs::rename(&temporary, &target));
+    if result.is_err() {
+        let _ = std::fs::remove_file(&temporary);
+    }
+    result.map_err(|error| format!("save projection grant: {error}"))
+}
+
+/// The stored grant, or `None`. Absent is the ordinary case for a reader and
+/// for anyone admitted before this field existed, so it is not an error.
+pub(crate) fn load_projection_grant(directory: &Path) -> Option<Vec<u8>> {
+    let file = std::fs::File::open(directory.join(PROJECTION_GRANT_FILE)).ok()?;
+    let mut bytes = Vec::new();
+    file.take(MAX_BYTES + 1).read_to_end(&mut bytes).ok()?;
+    (bytes.len() as u64 <= MAX_BYTES).then_some(bytes)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

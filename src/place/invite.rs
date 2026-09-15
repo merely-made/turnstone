@@ -216,6 +216,18 @@ pub struct PlaceInviteV1 {
     /// time-dependent place decision.
     pub not_after_ms: u64,
     pub rendezvous: Vec<RendezvousV1>,
+    /// The Graphshell projection-connect grant a writer is admitted with.
+    ///
+    /// Present for a `Writer` invitation and absent for a `Reader`, which is
+    /// the whole of the difference at the holder's projection door. Like every
+    /// other field here it is an artifact and not a decision: admission checks
+    /// the digest, the signature, and that the certificate names the local
+    /// root, and the holder checks the chain again at the door.
+    ///
+    /// `default` so an envelope authored before this field existed still
+    /// decodes; absent is exactly what a reader's envelope says.
+    #[serde(default)]
+    pub projection_grant: Option<ArtifactRefV1>,
 }
 
 impl PlaceInviteV1 {
@@ -272,7 +284,13 @@ impl PlaceInviteV1 {
             (&self.key_welcome, "key welcome artifact"),
             (&self.key_direct, "recipient welcome artifact"),
             (&self.inviter_prekey, "inviter pre-key artifact"),
-        ] {
+        ]
+        .into_iter()
+        .chain(
+            self.projection_grant
+                .as_ref()
+                .map(|artifact| (artifact, "projection grant artifact")),
+        ) {
             match artifact.verified_bytes(field) {
                 Ok(_) | Err(InviteError::UnfetchedArtifact { .. }) => {}
                 Err(error) => return Err(error),
@@ -394,6 +412,7 @@ mod tests {
             expected_epoch: [4; 32],
             membership_heads: vec![[5; 32]],
             not_after_ms: 1_000,
+            projection_grant: None,
             rendezvous: vec![RendezvousV1 {
                 carrier: P2PANDA_ENDPOINT_TICKET.into(),
                 hint: "ticket".into(),
@@ -409,6 +428,52 @@ mod tests {
         let restored: PlaceInviteV1 = serde_json::from_str(&json).unwrap();
         assert_eq!(restored, invite);
         assert_eq!(restored.dialable().count(), 1);
+    }
+
+    /// A writer's envelope carries the projection grant and a reader's does
+    /// not, and neither shape is a validation failure: the grant is an
+    /// artifact like every other one, checked by its digest and by nobody
+    /// here. An envelope authored before the field existed decodes as a
+    /// reader's, which is the safe reading of silence.
+    #[test]
+    fn a_projection_grant_is_optional_and_digest_checked_like_the_rest() {
+        let reader = invite();
+        assert!(reader.projection_grant.is_none());
+        reader.validate().unwrap();
+
+        let mut writer = invite();
+        writer.projection_grant = Some(inline(b"a signed projection grant"));
+        writer.validate().unwrap();
+        let json = serde_json::to_string(&writer).unwrap();
+        let restored: PlaceInviteV1 = serde_json::from_str(&json).unwrap();
+        assert_eq!(restored, writer);
+        assert!(restored.projection_grant.is_some());
+
+        // An older envelope has no such field at all.
+        let mut fields: serde_json::Value = serde_json::from_str(&json).unwrap();
+        fields.as_object_mut().unwrap().remove("projection_grant");
+        let older: PlaceInviteV1 = serde_json::from_value(fields).unwrap();
+        assert_eq!(older, reader_shaped(&writer));
+        older.validate().unwrap();
+
+        let mut tampered = writer.clone();
+        let Some(ArtifactRefV1::Inline { bytes, .. }) = &mut tampered.projection_grant else {
+            unreachable!("fixture is inline")
+        };
+        bytes.push(0);
+        assert_eq!(
+            tampered.validate(),
+            Err(InviteError::ArtifactDigestMismatch {
+                field: "projection grant artifact"
+            })
+        );
+    }
+
+    /// The same envelope with its grant removed, for the older-decode check.
+    fn reader_shaped(invite: &PlaceInviteV1) -> PlaceInviteV1 {
+        let mut without = invite.clone();
+        without.projection_grant = None;
+        without
     }
 
     #[test]

@@ -55,6 +55,11 @@ const GROUP_PREKEY_RECORD: &str = "group.prekey";
 /// hand over out of band, short enough that a forwarded envelope dies.
 const INVITE_LIFETIME_MS: u64 = 7 * 24 * 60 * 60 * 1000;
 
+/// The same ceiling `knot_authoring`'s directory mode uses. Restated rather
+/// than shared because that module reads the whole `TURNSTONE_KNOT_*` set for
+/// the authoring surface, and the place serves the vault, not the surface.
+const DEFAULT_KNOT_MAX_SOURCE_BYTES: u64 = 8 * 1024 * 1024;
+
 /// Host-set evaluation time for converged authority.
 ///
 /// Delegation grants and revocations carry absolute windows, so this value is
@@ -68,7 +73,7 @@ pub enum AuthorityClock {
 }
 
 impl AuthorityClock {
-    fn now_ms(self) -> u64 {
+    pub(crate) fn now_ms(self) -> u64 {
         match self {
             // A clock behind the epoch yields 0, under which no grant has
             // opened yet, so every retained fact reads as pending rather than
@@ -88,12 +93,46 @@ pub struct PlaceWorkerSettings {
     pub retention: MootRetentionSettings,
     pub authority_clock: AuthorityClock,
     pub(crate) capture_library: crate::place::captured_collection::LocalCaptureLibrary,
+    /// The Knot vault a live place serves by projection, or `None` when this
+    /// profile has no vault and the place serves no document.
+    ///
+    /// Read from the environment here, beside the clock and the retention
+    /// policy, because a vault root is a host input. The lanes module never
+    /// reads it: it receives a [`crate::place::projection_host::ProjectionSetup`]
+    /// or nothing at all.
+    pub knot_root: Option<PathBuf>,
+    /// The write grant's ceiling for that vault, matching directory mode.
+    pub knot_max_source_bytes: u64,
+}
+
+impl PlaceWorkerSettings {
+    /// What a live place needs to serve its vault, or `None` when it has none.
+    pub(crate) fn projection_setup(
+        &self,
+        binding: &PlaceBindingV1,
+        identity: &dyn IdentityProvider,
+    ) -> Option<crate::place::projection_host::ProjectionSetup> {
+        let root = self.knot_root.clone()?;
+        Some(crate::place::projection_host::ProjectionSetup {
+            root,
+            max_source_bytes: self.knot_max_source_bytes,
+            moot: binding.moot.0,
+            authority: root_grant_id(binding.moot.0),
+            issuer: identity.master_public_key().to_bytes(),
+            clock: self.authority_clock,
+        })
+    }
 }
 
 impl Default for PlaceWorkerSettings {
     fn default() -> Self {
         Self {
             authority_clock: AuthorityClock::SystemTime,
+            knot_root: std::env::var_os("TURNSTONE_KNOT_ROOT").map(PathBuf::from),
+            knot_max_source_bytes: std::env::var("TURNSTONE_KNOT_MAX_BYTES")
+                .ok()
+                .and_then(|value| value.parse().ok())
+                .unwrap_or(DEFAULT_KNOT_MAX_SOURCE_BYTES),
             capture_library: crate::place::captured_collection::LocalCaptureLibrary::default(),
             retention: MootRetentionSettings {
                 revision: PolicyRevision(Digest::blake3(b"turnstone.place.offline-retention.v1")),
@@ -343,6 +382,7 @@ pub fn author_invitation(
     joiner_prekey: &[u8],
     not_after_ms: u64,
     rendezvous: Vec<crate::place::invite::RendezvousV1>,
+    projection_grant: Option<SignedDelegationCertificate>,
     settings: &PlaceWorkerSettings,
 ) -> Result<PlaceInviteV1, String> {
     let moot = pollster::block_on(MootFile::open_existing(
@@ -359,6 +399,7 @@ pub fn author_invitation(
         joiner_prekey,
         not_after_ms,
         rendezvous,
+        projection_grant,
     )
 }
 
@@ -373,6 +414,7 @@ pub(crate) fn author_invitation_with(
     joiner_prekey: &[u8],
     not_after_ms: u64,
     rendezvous: Vec<crate::place::invite::RendezvousV1>,
+    projection_grant: Option<SignedDelegationCertificate>,
 ) -> Result<PlaceInviteV1, String> {
     binding
         .validate()
@@ -448,6 +490,14 @@ pub(crate) fn author_invitation_with(
         membership_heads: snapshot.membership.auth_heads,
         not_after_ms,
         rendezvous,
+        // A reader's envelope carries none, which is the whole of the
+        // difference at the projection door.
+        projection_grant: projection_grant
+            .as_ref()
+            .map(crate::place::projection_host::encode_grant)
+            .transpose()?
+            .as_deref()
+            .map(inline_artifact),
     })
 }
 
@@ -510,7 +560,7 @@ pub fn found_place_group(
 pub const DEFAULT_CHANNEL: &str = "general";
 
 /// Domain-separated 32 bytes for one place-scoped derivation.
-fn place_tag(domain: &[u8], moot: [u8; 32]) -> [u8; 32] {
+pub(crate) fn place_tag(domain: &[u8], moot: [u8; 32]) -> [u8; 32] {
     let mut input = Vec::with_capacity(domain.len() + 32);
     input.extend_from_slice(domain);
     input.extend_from_slice(&moot);
@@ -532,7 +582,7 @@ fn founding_salt(moot: [u8; 32]) -> Vec<u8> {
 
 /// The constitutional root grant's id, derived from the Moot it governs.
 /// Deterministic so a later revocation or audit can recompute it.
-fn root_grant_id(moot: [u8; 32]) -> [u8; 32] {
+pub(crate) fn root_grant_id(moot: [u8; 32]) -> [u8; 32] {
     place_tag(b"turnstone.place.root-grant.v1/", moot)
 }
 
@@ -630,7 +680,7 @@ pub fn place_delegation(
 /// `SignedDelegationCertificate::issue` takes a sized provider and the worker
 /// holds a trait object. Borrowing through this bridges the two without
 /// copying key material or widening any public signature.
-struct ProviderRef<'a>(&'a dyn IdentityProvider);
+pub(crate) struct ProviderRef<'a>(pub(crate) &'a dyn IdentityProvider);
 
 impl IdentityProvider for ProviderRef<'_> {
     fn master_public_key(&self) -> identity::Ed25519PublicKey {
@@ -807,16 +857,29 @@ fn admit_member(
             ))
             .map_err(|error| format!("delegate the Commons domains: {error}"))?,
         );
+        // A separate grant, in a separate domain, under the same root
+        // authority. It admits the holder to this host's projection door and
+        // is authority over nothing in Commons or Gemot.
+        authored.projection = Some(crate::place::projection_host::issue_projection_grant(
+            identity,
+            moot_id,
+            joiner_root,
+            now_ms,
+        )?);
     }
     Ok(authored)
 }
 
-/// What one admission authored. Either may be absent: a root already admitted
-/// authors no membership fact, and a reader gets no delegation.
+/// What one admission authored. Any may be absent: a root already admitted
+/// authors no membership fact, and a reader gets neither delegation nor grant.
 #[derive(Default)]
 struct AdmittedOps {
     membership: Option<stickleback::Operation<gemot::moot::MootGroupExt>>,
     delegation: Option<stickleback::Operation<gemot::moot::delegation::MootDelegationExt>>,
+    /// The projection-connect grant a writer's invitation carries. Not a
+    /// Gemot operation and never published on a lane: it travels in the
+    /// envelope, because the door it opens is this host's, not the Moot's.
+    projection: Option<SignedDelegationCertificate>,
 }
 
 /// Reopen the sealed group session established by [`prepare_group_identity`].
@@ -1001,6 +1064,22 @@ fn admit_inner(
     // binding is written last so the presence of `place.json` implies the whole
     // check list ran, not merely that an envelope parsed.
     save_group_session(directory, identity, &group)?;
+    // 6. The projection grant, when the envelope carries one. A reader's does
+    //    not, and its absence is not a refusal: it is the reader being refused
+    //    at the holder's door later, which is where that decision belongs.
+    if let Some(artifact) = &invite.projection_grant {
+        let bytes = artifact
+            .verified_bytes("projection grant artifact")
+            .map_err(|error| format!("place invitation: {error}"))?;
+        let grant = crate::place::projection_host::decode_grant(bytes)?;
+        if !grant.verify() {
+            return Err("projection grant does not verify".to_string());
+        }
+        if grant.certificate.subject != local_root {
+            return Err("projection grant names another subject".to_string());
+        }
+        crate::place::rendezvous::save_projection_grant(directory, bytes)?;
+    }
     crate::session::save_place_binding(directory, binding)
         .map_err(|error| format!("persist place binding: {error}"))?;
     Ok(AdmittedPlace {
@@ -1476,6 +1555,7 @@ fn place_snapshot(
             let (local_rendezvous, dialed_rendezvous) = lanes.rendezvous();
             crate::place::PlaceSyncSnapshot {
                 lanes: lanes.sync_snapshot(),
+                projection: lanes.projection_snapshot(),
                 local_rendezvous,
                 dialed_rendezvous,
             }
@@ -1571,6 +1651,8 @@ pub fn spawn_place_worker(
                                             &binding,
                                             identity.as_ref(),
                                             &tickets,
+                                            settings
+                                                .projection_setup(&binding, identity.as_ref()),
                                             // The watcher reports arrivals under THIS
                                             // open's generation, so a nudge from a
                                             // departed place is dropped by the same
@@ -1634,6 +1716,7 @@ pub fn spawn_place_worker(
                                 &binding,
                                 identity.as_ref(),
                                 &[],
+                                settings.projection_setup(&binding, identity.as_ref()),
                                 Some((out.clone(), session, generation)),
                             )?);
                             // Re-fold AFTER binding, so the answer already
@@ -1720,6 +1803,7 @@ pub fn spawn_place_worker(
                                         )
                                     })
                                     .and_then(|authored| {
+                                        let projection = authored.projection;
                                         // Retention alone leaves the admission
                                         // waiting on the next reconciliation
                                         // round; a connected peer hears it only
@@ -1741,6 +1825,7 @@ pub fn spawn_place_worker(
                                             &prekey,
                                             now_ms.saturating_add(INVITE_LIFETIME_MS),
                                             rendezvous,
+                                            projection,
                                         )
                                     })
                                     .map(Box::new)
@@ -1821,6 +1906,7 @@ pub fn spawn_place_worker(
                                 &binding,
                                 identity.as_ref(),
                                 &tickets,
+                                settings.projection_setup(&binding, identity.as_ref()),
                                 Some((out.clone(), session, generation)),
                             )?);
                             place_snapshot(&opened, binding.moot.0, &settings)
@@ -2442,6 +2528,7 @@ pub(crate) mod tests {
             // that moves the clock forward sees an expiry.
             not_after_ms: AUTHORITY_AT_MS + 1_000,
             rendezvous: Vec::new(),
+            projection_grant: None,
         }
     }
 
@@ -2637,6 +2724,7 @@ pub(crate) mod tests {
             &outsider_prekey,
             AUTHORITY_AT_MS + 1_000,
             Vec::new(),
+            None,
             &settings(),
         )
         .unwrap_err();
@@ -2652,6 +2740,7 @@ pub(crate) mod tests {
             &joiner_prekey,
             AUTHORITY_AT_MS + 1_000,
             Vec::new(),
+            None,
             &settings(),
         )
         .unwrap();
@@ -2764,6 +2853,7 @@ pub(crate) mod tests {
             &prekey,
             now_ms + 60_000,
             Vec::new(),
+            None,
             &settings,
         )
         .unwrap_err();
@@ -2781,7 +2871,14 @@ pub(crate) mod tests {
         let guest_root = guest_identity.master_public_key().to_bytes();
         admit_member(&moot, &binding, &host_identity, guest_root, Writer, now_ms).unwrap();
         // Idempotent: inviting the same root twice must not double the fold.
-        admit_member(&moot, &binding, &host_identity, guest_root, Writer, now_ms).unwrap();
+        let projection_grant =
+            admit_member(&moot, &binding, &host_identity, guest_root, Writer, now_ms)
+                .unwrap()
+                .projection;
+        assert!(
+            projection_grant.is_some(),
+            "a writer is admitted at the projection door as well as the Moot"
+        );
         let invite = author_invitation_with(
             &moot,
             &host,
@@ -2790,6 +2887,7 @@ pub(crate) mod tests {
             &prekey,
             now_ms + 7 * 24 * 60 * 60 * 1000,
             Vec::new(),
+            projection_grant,
         )
         .unwrap();
         drop(moot);
@@ -2862,7 +2960,14 @@ pub(crate) mod tests {
         admit_member(&moot, &binding, &host_identity, reader_root, Reader, now_ms).unwrap();
         // Idempotent for a reader too: no second membership fact, no
         // delegation sneaking in on the way through.
-        admit_member(&moot, &binding, &host_identity, reader_root, Reader, now_ms).unwrap();
+        let projection_grant =
+            admit_member(&moot, &binding, &host_identity, reader_root, Reader, now_ms)
+                .unwrap()
+                .projection;
+        assert!(
+            projection_grant.is_none(),
+            "a reader is admitted to the Moot and to no projection door"
+        );
         let invite = author_invitation_with(
             &moot,
             &host,
@@ -2871,6 +2976,7 @@ pub(crate) mod tests {
             &prekey,
             now_ms + 7 * 24 * 60 * 60 * 1000,
             Vec::new(),
+            projection_grant,
         )
         .unwrap();
         drop(moot);

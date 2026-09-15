@@ -635,6 +635,7 @@ fn a_refused_invitation_leaves_no_binding_in_app_state() {
         membership_heads: vec![[0x77; 32]],
         not_after_ms: u64::MAX,
         rendezvous: Vec::new(),
+        projection_grant: None,
     });
 
     let effects = app.join_place(invite);
@@ -4565,6 +4566,7 @@ fn place_status_refresh_is_local_filtered_and_generation_scoped() {
                 ops_received: 3,
                 last_activity_ms: Some(42),
             }],
+            projection: None,
             local_rendezvous: vec!["ticket".into()],
             dialed_rendezvous: 1,
         }),
@@ -4890,6 +4892,7 @@ fn place_artifacts_are_written_where_the_person_asked() {
         snapshot: crate::place::OfflinePlaceSnapshot {
             sync: Some(crate::place::PlaceSyncSnapshot {
                 lanes: Vec::new(),
+                projection: None,
                 local_rendezvous: vec!["ticket-one".into()],
                 dialed_rendezvous: 0,
             }),
@@ -5146,6 +5149,7 @@ fn copying_the_local_rendezvous_carries_the_whole_ticket() {
         snapshot: crate::place::OfflinePlaceSnapshot {
             sync: Some(crate::place::PlaceSyncSnapshot {
                 lanes: Vec::new(),
+                projection: None,
                 local_rendezvous: vec![ticket.clone(), format!("{ticket}-second")],
                 dialed_rendezvous: 0,
             }),
