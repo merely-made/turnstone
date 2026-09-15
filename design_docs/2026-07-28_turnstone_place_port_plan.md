@@ -1145,6 +1145,11 @@ consumer pins mere by revision, knot-editor (`0eb684f7`), mere itself
 turnstone pins all three. Woodshed's untracked cargo config still carries
 path overrides to a Codex worktree and to mere crates that no longer
 exist; the port check ran in a clean worktree instead.
+Re-verified after the Paredros session's wing-wide bump (`eba711c`: genet
+`5ae30cad`, mere `876320fd`, knot-editor `e0c0135`, woodshed `f7262bb`):
+both live-publish tests pass and run 16 under
+`C:/t/turnstone-place-two-windows-20260915-16` passed all four scenarios
+with three members and one graph digest on every side.
 
 ## File seams
 
