@@ -1185,6 +1185,18 @@ optional `projection_grant` artifact; admission stores it beside the
 rendezvous descriptor, never as authority over anything else. A `Reader`
 invitation carries none.
 
+Amended 2026-09-15 before any code: the handshake denies a session whose
+claimed subject is not the authenticated transport peer, and the place
+transport is keyed per place on purpose. So the founder's grant names the
+member's Personae root with one delegation hop left, and at dial time the
+member self-issues a leaf certificate from that grant to its own
+place-transport key and opens the session as that key. Chain validation
+accepts the link, the subject equals the peer, and per-place unlinkability
+is kept. Turnstone takes `notochord` as a direct dependency to name the
+policy types; it was already in the lock at the pinned mere revision. The
+trusted root the host names is the place's root grant id with this profile
+as issuer, which is why only a founder-served place admits this way today.
+
 **Address.** A place-held document is shared as a graph node at
 `knot://<holder root hex>/<document path>`. Sharing a locally held
 `knot://vault/<path>` node rewrites it to this form with the sharer's root;
