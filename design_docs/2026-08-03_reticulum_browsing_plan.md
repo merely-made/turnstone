@@ -174,6 +174,14 @@ itself through `TURNSTONE_SCENARIO` scenarios with no OS input; because
 `assert text` does not see omnibar text, outcome assertions use
 `assert event smolweb-submission-succeeded|failed`.
 
+As of 2026-09-16 that artifact tree is gone: `C:\t\micron-headed-20260913` was
+deleted on or before that date along with the rest of the `C:/t` Micron scratch
+family, so the paths named above are dead references, kept as the record of where
+the work was done rather than as somewhere to look. Nothing committed was lost
+and the acceptance stands on the scenarios, tests and fixtures named in this
+section, which still run and pass. Receipt artifacts now live under
+`Code/testing/turnstone/`, not `C:/t`.
+
 Opening the page, opening the form and editing fields produced no request beyond
 the ordinary page fetch — Turnstone sends empty bytes there where stock NomadNet
 sends `nil`. Scenario s1 edited every field and sent once: exactly one observed
