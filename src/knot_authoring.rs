@@ -16,10 +16,10 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::ffi::OsString;
 use std::path::PathBuf;
 use std::rc::Rc;
-use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::mpsc::{self, Receiver, RecvTimeoutError, Sender, SyncSender};
 use std::sync::{Arc, Mutex};
-use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use cambium::{
     AnyView, DomHandle, GenetAppRunner, GenetCtx, GenetElement, Key, KeyEvent, PointerClick,
@@ -54,6 +54,18 @@ const DEFAULT_MAX_SOURCE_BYTES: u64 = 8 * 1024 * 1024;
 const DEFAULT_EFFECT_MAX_DEPTH: u8 = 1;
 const DEFAULT_EFFECT_MAX_OPS: u64 = 100_000;
 const POLL_INTERVAL: Duration = Duration::from_millis(100);
+/// How long a VISITED document may go without an answer from its holder before
+/// the surface is told the holder is out of reach.
+///
+/// A holder that closes says so, and the carrier read fails at once. A holder
+/// whose process dies says nothing: the carrier read stays blocked until QUIC
+/// abandons the connection on its own, which is the transport's idle timeout
+/// (tens of seconds) and not a bound this product chose. This is that bound,
+/// measured from the hub's last completed round trip.
+pub(crate) const VISIT_LIVENESS_BUDGET: Duration = Duration::from_secs(6);
+/// How often the liveness watch checks the budget. It is a separate thread
+/// because the one it watches is blocked inside the carrier read.
+const LIVENESS_TICK: Duration = Duration::from_millis(250);
 const KNOT_PROJECTION_AUTHORITY: &str = "knot";
 const KNOT_PROJECTION_DOMAIN: &str = "knot.document.v1";
 
@@ -748,7 +760,11 @@ impl KnotVisitRegistry {
 
 /// One configured endpoint shared by every open Knot document.
 pub struct KnotAuthoringEngine {
-    hub: Arc<KnotHub>,
+    /// This profile's own vault, when it has one. `None` is a visit-only
+    /// engine: a member with no vault of its own still has to be able to open
+    /// a document someone else holds, so the engine registers either way and
+    /// only the local half is missing.
+    hub: Option<Arc<KnotHub>>,
     visits: KnotVisits,
     /// A separate read handle for an in-process source, when that source can
     /// safely grant one. Resident and spawned routes retain their boundary.
@@ -776,7 +792,7 @@ impl KnotAuthoringEngine {
             })
             .transpose()?
             .unwrap_or(DEFAULT_MAX_SOURCE_BYTES);
-        let evidence_root = std::env::var_os("TURNSTONE_KNOT_EVIDENCE_ROOT").map(PathBuf::from);
+        let evidence_root = env_path("TURNSTONE_KNOT_EVIDENCE_ROOT");
         let max_evidence_bytes = env_integer(
             "TURNSTONE_KNOT_EVIDENCE_MAX_BYTES",
             DEFAULT_MAX_SOURCE_BYTES,
@@ -805,7 +821,7 @@ impl KnotAuthoringEngine {
             .filter(|target| !target.trim().is_empty());
 
         if mode == "persona-vault" {
-            if std::env::var_os("TURNSTONE_KNOT_ENDPOINT").is_some() {
+            if env_path("TURNSTONE_KNOT_ENDPOINT").is_some() {
                 return Err(
                     "persona-vault mode uses Graphshell's resident Knot route; TURNSTONE_KNOT_ENDPOINT is only valid for isolated directory fixtures"
                         .into(),
@@ -830,7 +846,7 @@ impl KnotAuthoringEngine {
                 );
             }
             return Ok(Some(Self {
-                hub: KnotHub::resident(wake)?,
+                hub: Some(KnotHub::resident(wake)?),
                 visits,
                 publish_source: None,
                 clip_target,
@@ -839,8 +855,13 @@ impl KnotAuthoringEngine {
             }));
         }
 
-        let Some(root) = std::env::var_os("TURNSTONE_KNOT_ROOT").map(PathBuf::from) else {
-            return Ok(None);
+        let Some(root) = env_path("TURNSTONE_KNOT_ROOT") else {
+            // No vault of this profile's own. The engine still registers, so a
+            // place-held `knot://<holder>/<path>` address routes to the hub the
+            // shell dialed for that holder instead of falling off the end of
+            // the content registry into the external-protocol route. Only a
+            // LOCAL address has nowhere to go, and that is refused by name.
+            return Ok(Some(Self::visit_only(visits, clip_target)));
         };
 
         // Host in-process where the endpoint's constructor is a plain
@@ -851,7 +872,7 @@ impl KnotAuthoringEngine {
         //
         // `TURNSTONE_KNOT_ENDPOINT` is an explicit opt-out, for the case where
         // the endpoint genuinely is a separate program. Everything else hosts.
-        let explicit_program = std::env::var_os("TURNSTONE_KNOT_ENDPOINT").is_some();
+        let explicit_program = env_path("TURNSTONE_KNOT_ENDPOINT").is_some();
         if !explicit_program {
             let effects = effects_enabled.then(|| HostedEffects {
                 policy: knot::KnotEffectPolicy {
@@ -868,15 +889,25 @@ impl KnotAuthoringEngine {
                 max_artifact_bytes: max_evidence_bytes,
             });
             reject_nested_evidence_root(&root, evidence_root.as_deref())?;
-            let (hub, publish_source) = KnotHub::host(
+            let (hub, publish_source) = match KnotHub::host(
                 HostedKnot::Directory { root: root.clone() },
                 effects,
                 evidence,
                 max_source_bytes,
                 wake,
-            )?;
+            ) {
+                Ok(hosted) => hosted,
+                // A configured vault that will not open is a misconfiguration
+                // worth saying out loud, but it is not a reason to strand the
+                // place-held addresses this process can still reach. Say it,
+                // then carry on as a visitor.
+                Err(error) => {
+                    tracing::warn!(%error, root = %root.display(), "the configured Knot vault could not be opened; visiting only");
+                    return Ok(Some(Self::visit_only(visits, clip_target)));
+                },
+            };
             return Ok(Some(Self {
-                hub,
+                hub: Some(hub),
                 visits,
                 publish_source,
                 clip_target,
@@ -886,8 +917,7 @@ impl KnotAuthoringEngine {
         }
 
         reject_nested_evidence_root(&root, evidence_root.as_deref())?;
-        let endpoint = std::env::var_os("TURNSTONE_KNOT_ENDPOINT")
-            .map(PathBuf::from)
+        let endpoint = env_path("TURNSTONE_KNOT_ENDPOINT")
             .ok_or_else(|| {
                 "TURNSTONE_KNOT_ENDPOINT disappeared while opening directory mode".to_string()
             })?;
@@ -920,7 +950,7 @@ impl KnotAuthoringEngine {
         }
         let hub = KnotHub::connect(endpoint, args, wake)?;
         Ok(Some(Self {
-            hub,
+            hub: Some(hub),
             visits,
             publish_source: None,
             clip_target,
@@ -929,9 +959,30 @@ impl KnotAuthoringEngine {
         }))
     }
 
+    /// An engine with no vault of its own: visits only.
+    fn visit_only(visits: KnotVisits, clip_target: Option<String>) -> Self {
+        Self {
+            hub: None,
+            visits,
+            publish_source: None,
+            clip_target,
+            auto_resolve: false,
+            auto_run: false,
+        }
+    }
+
+    /// The refusal a local Knot address earns on a visit-only engine. One
+    /// sentence, naming the missing thing rather than the failed route.
+    fn no_local_vault(address: &str) -> String {
+        format!("no Knot vault is configured, so {address} cannot be opened here")
+    }
+
     pub fn clip_handle(&self) -> Option<KnotClipHandle> {
+        // A clip lands in the local vault. Without one there is nothing to
+        // clip into, whatever `TURNSTONE_KNOT_CLIP_TARGET` names.
+        let hub = self.hub.clone()?;
         self.clip_target.as_ref().map(|target| KnotClipHandle {
-            hub: self.hub.clone(),
+            hub,
             target: target.clone(),
             status: Arc::new(Mutex::new(KnotClipStatus::Ready)),
         })
@@ -952,7 +1003,7 @@ impl KnotAuthoringEngine {
     ) -> Result<Self, String> {
         Ok(Self {
             visits: KnotVisits::default(),
-            hub: KnotHub::connect(
+            hub: Some(KnotHub::connect(
                 program.into(),
                 vec![
                     "directory-write".into(),
@@ -960,7 +1011,7 @@ impl KnotAuthoringEngine {
                     max_source_bytes.to_string().into(),
                 ],
                 Arc::new(|| {}),
-            )?,
+            )?),
             publish_source: None,
             clip_target: None,
             auto_resolve: false,
@@ -978,7 +1029,7 @@ impl KnotAuthoringEngine {
     ) -> Result<Self, String> {
         Ok(Self {
             visits: KnotVisits::default(),
-            hub: KnotHub::connect(
+            hub: Some(KnotHub::connect(
                 program.into(),
                 vec![
                     "directory-write-evidence".into(),
@@ -988,7 +1039,7 @@ impl KnotAuthoringEngine {
                     max_evidence_bytes.to_string().into(),
                 ],
                 Arc::new(|| {}),
-            )?,
+            )?),
             publish_source: None,
             clip_target: None,
             auto_resolve: false,
@@ -1006,7 +1057,7 @@ impl KnotAuthoringEngine {
     ) -> Result<Self, String> {
         Ok(Self {
             visits: KnotVisits::default(),
-            hub: KnotHub::connect(
+            hub: Some(KnotHub::connect(
                 program.into(),
                 vec![
                     "directory-write-effects".into(),
@@ -1020,7 +1071,7 @@ impl KnotAuthoringEngine {
                     "10000".into(),
                 ],
                 Arc::new(|| {}),
-            )?,
+            )?),
             publish_source: None,
             clip_target: None,
             auto_resolve: resolve == "auto",
@@ -1037,7 +1088,7 @@ impl KnotAuthoringEngine {
     ) -> Result<Self, String> {
         Ok(Self {
             visits: KnotVisits::default(),
-            hub: KnotHub::connect(
+            hub: Some(KnotHub::connect(
                 program.into(),
                 vec![
                     "communal-fixture-effects".into(),
@@ -1051,7 +1102,7 @@ impl KnotAuthoringEngine {
                     "10000".into(),
                 ],
                 Arc::new(|| {}),
-            )?,
+            )?),
             publish_source: None,
             clip_target: None,
             auto_resolve: false,
@@ -1085,7 +1136,10 @@ impl SessionEngine<Scene> for KnotAuthoringEngine {
                     SessionError::SpawnFailed("the Knot visit registry is poisoned".into())
                 })?;
                 if visits.is_local(&root) {
-                    (self.hub.clone(), false)
+                    let hub = self.hub.clone().ok_or_else(|| {
+                        SessionError::SpawnFailed(Self::no_local_vault(&request.address))
+                    })?;
+                    (hub, false)
                 } else {
                     let hub = visits.holder(&root).ok_or_else(|| {
                         SessionError::SpawnFailed(format!(
@@ -1096,7 +1150,14 @@ impl SessionEngine<Scene> for KnotAuthoringEngine {
                     (hub, true)
                 }
             },
-            None => (self.hub.clone(), false),
+            // A plain `file://` or `knot://vault/` address is this profile's
+            // own document, and without a vault there is no such thing.
+            None => {
+                let hub = self.hub.clone().ok_or_else(|| {
+                    SessionError::SpawnFailed(Self::no_local_vault(&request.address))
+                })?;
+                (hub, false)
+            },
         };
         let opened = hub.open(&request.address).map_err(SessionError::SpawnFailed)?;
         Ok(Box::new(KnotDocumentSession::new(
@@ -1150,6 +1211,20 @@ fn normalized_absolute(path: &std::path::Path) -> Result<PathBuf, String> {
         }
     }
     Ok(normalized)
+}
+
+/// A path setting, with an empty or blank value read as unset.
+///
+/// A child process inherits every name its parent exported, including the ones
+/// the parent left blank, and `var_os` answers `Some("")` for those. Treating
+/// that as a path sends the vault open at the current directory and fails, so a
+/// profile that was never given a vault is told it has none.
+pub(crate) fn env_path(name: &str) -> Option<PathBuf> {
+    let value = std::env::var_os(name)?;
+    if value.to_string_lossy().trim().is_empty() {
+        return None;
+    }
+    Some(PathBuf::from(value))
 }
 
 fn env_integer<T>(name: &str, default: T) -> Result<T, String>
@@ -1412,7 +1487,13 @@ fn run_hub(
     let mut mounted: Option<ProjectionSession> = None;
     let mut bindings = BTreeMap::<String, DocumentBinding>::new();
     let mut subscribers = BTreeMap::<u64, Subscriber>::new();
+    // Only a visited hub has a holder that can vanish. A local endpoint that
+    // stops has already answered the last request it will ever answer.
+    let liveness = visiting.then(|| LivenessWatch::start(wake.clone()));
     loop {
+        if let Some(watch) = &liveness {
+            watch.heard();
+        }
         match commands.recv_timeout(POLL_INTERVAL) {
             Ok(HubCommand::Open {
                 registration,
@@ -1422,6 +1503,9 @@ fn run_hub(
             }) => {
                 let result = ensure_binding(&mut retained, &mut mounted, &mut bindings, &address)
                     .map(|binding| {
+                        if let Some(watch) = &liveness {
+                            watch.listen(events.clone());
+                        }
                         subscribers.insert(registration, Subscriber { address, events });
                         (registration, binding)
                     });
@@ -1519,7 +1603,120 @@ fn run_hub(
             Err(RecvTimeoutError::Disconnected) => break,
         }
     }
+    drop(liveness);
     let _ = retained.close();
+}
+
+/// The liveness watch a visiting hub keeps on its holder.
+///
+/// It exists because the hub thread cannot watch itself: the round trip it is
+/// waiting on is a blocking carrier read with no deadline of its own, so the
+/// thread that would notice the silence is the thread that is inside it. This
+/// one holds nothing but clones of the subscribers' event senders and the
+/// instant of the hub's last completed round trip.
+///
+/// It reports once and stops. The hub thread it left behind is still blocked
+/// in the carrier, and stays there until the transport gives up; that costs one
+/// parked thread and no correctness, because a surface already told its holder
+/// is unavailable offers nothing further to save.
+struct LivenessWatch {
+    heard: Arc<Mutex<Instant>>,
+    listeners: Arc<Mutex<Vec<Sender<HubEvent>>>>,
+    stop: Arc<AtomicBool>,
+}
+
+/// The visited-document liveness budget in force, default or overridden.
+///
+/// The right number depends on the link, not on this code: a LAN holder answers
+/// in milliseconds, one behind a relay on a bad connection may not. Exposed so
+/// a deployment that knows its link can say so.
+fn visit_liveness_budget() -> Duration {
+    env_integer("TURNSTONE_KNOT_VISIT_LIVENESS_MS", 0u64)
+        .ok()
+        .filter(|ms| *ms > 0)
+        .map(Duration::from_millis)
+        .unwrap_or(VISIT_LIVENESS_BUDGET)
+}
+
+impl LivenessWatch {
+    fn start(wake: Wake) -> Self {
+        let watch = Self {
+            heard: Arc::new(Mutex::new(Instant::now())),
+            listeners: Arc::new(Mutex::new(Vec::new())),
+            stop: Arc::new(AtomicBool::new(false)),
+        };
+        let heard = Arc::clone(&watch.heard);
+        let listeners = Arc::clone(&watch.listeners);
+        let stop = Arc::clone(&watch.stop);
+        let budget = visit_liveness_budget();
+        std::thread::Builder::new()
+            .name("knot-visit-liveness".into())
+            .spawn(move || {
+                loop {
+                    std::thread::sleep(LIVENESS_TICK);
+                    if stop.load(Ordering::SeqCst) {
+                        return;
+                    }
+                    let silent = heard
+                        .lock()
+                        .map(|last| last.elapsed())
+                        .unwrap_or_default();
+                    if silent < budget {
+                        continue;
+                    }
+                    let sent = listeners
+                        .lock()
+                        .map(|listeners| {
+                            let mut sent = 0usize;
+                            for events in listeners.iter() {
+                                if events
+                                    .send(HubEvent::Unavailable(format!(
+                                        "the holder has not answered for {} s",
+                                        silent.as_secs()
+                                    )))
+                                    .is_ok()
+                                {
+                                    sent += 1;
+                                }
+                            }
+                            sent
+                        })
+                        .unwrap_or(0);
+                    // Nobody is reading this document yet, so there is nothing
+                    // to tell; keep watching rather than declaring to no one.
+                    if sent == 0 {
+                        continue;
+                    }
+                    tracing::info!(
+                        silent_ms = silent.as_millis() as u64,
+                        "a visited document's holder went silent; reporting unavailable"
+                    );
+                    wake();
+                    return;
+                }
+            })
+            .expect("spawn the visited-document liveness watch");
+        watch
+    }
+
+    /// The hub completed a round trip, or is about to start one.
+    fn heard(&self) {
+        if let Ok(mut last) = self.heard.lock() {
+            *last = Instant::now();
+        }
+    }
+
+    fn listen(&self, events: Sender<HubEvent>) {
+        if let Ok(mut listeners) = self.listeners.lock() {
+            listeners.push(events);
+        }
+    }
+}
+
+impl Drop for LivenessWatch {
+    fn drop(&mut self) {
+        self.stop.store(true, Ordering::SeqCst);
+    }
 }
 
 fn ensure_binding(
@@ -2713,13 +2910,47 @@ mod tests {
     use std::collections::BTreeMap;
     use std::fs;
     use std::path::Path;
-    use std::time::{Duration, Instant};
+    use std::time::Duration;
 
     use cambium::{CompositionEvent, Modifiers};
     use genet_scripted_dom::NodeId;
     use layout_dom_api::{LayoutDom, NodeKind};
 
     use super::*;
+
+    /// A non-founder process inherits every name its parent exported, blank
+    /// ones included: `TURNSTONE_KNOT_ROOT=` must read as "no vault of my own",
+    /// not as a path at the current directory.
+    #[test]
+    fn a_blank_path_setting_reads_as_unset() {
+        let name = "TURNSTONE_KNOT_ROOT_ENV_PATH_PROBE";
+        // SAFETY: a name used by this test alone, set and read on one thread.
+        unsafe {
+            std::env::remove_var(name);
+        }
+        assert_eq!(env_path(name), None, "an absent name is unset");
+        for blank in ["", " ", "\t  \n"] {
+            unsafe {
+                std::env::set_var(name, blank);
+            }
+            assert_eq!(
+                env_path(name),
+                None,
+                "a blank value is unset, not a path at the current directory"
+            );
+        }
+        unsafe {
+            std::env::set_var(name, " C:/vault ");
+        }
+        assert_eq!(
+            env_path(name),
+            Some(PathBuf::from(" C:/vault ")),
+            "a value with content is passed through verbatim, spaces and all"
+        );
+        unsafe {
+            std::env::remove_var(name);
+        }
+    }
 
     fn editable_projection_fixture(
         address: &str,
@@ -3067,6 +3298,63 @@ mod tests {
         );
     }
 
+    /// T5c's rootless half. A member with no vault of its own still has to be
+    /// able to visit someone else's document: the engine registers either way,
+    /// so a place-held address reaches the visiting path (and fails there,
+    /// about the visit) instead of falling off the content registry into the
+    /// external-protocol route. Only a LOCAL address is refused, by name.
+    #[test]
+    fn a_member_with_no_vault_visits_but_holds_nothing() {
+        let engine = KnotAuthoringEngine::visit_only(KnotVisits::default(), None);
+
+        let local = "file:///C:/vault/field.knot";
+        assert!(is_knot_address(local));
+        let refusal = engine
+            .spawn(&SessionSpawnRequest::new(local))
+            .err()
+            .expect("a local address has no vault to open it");
+        assert!(
+            matches!(&refusal, SessionError::SpawnFailed(reason)
+                if reason.contains("no Knot vault is configured")),
+            "a local address is refused by the missing vault, not the route: {refusal:?}"
+        );
+
+        // The place-held address takes the VISITING branch. No visit is open in
+        // this test, so it fails there — and that failure, naming the visit, is
+        // the proof it never reached the local-vault branch.
+        let held = place_held_address(&[0x5b; 32], "field.knot");
+        let visiting = engine
+            .spawn(&SessionSpawnRequest::new(held.clone()))
+            .err()
+            .expect("no visit is open yet");
+        assert!(
+            matches!(&visiting, SessionError::SpawnFailed(reason)
+                if reason.contains("no visit is open to the mere holding")),
+            "a place-held address routes to the visiting path: {visiting:?}"
+        );
+        assert!(
+            !format!("{visiting:?}").contains("no Knot vault is configured"),
+            "visiting must not need a vault of one's own"
+        );
+
+        // And the engine claims the address, which is what keeps the shell from
+        // handing it to host.external-protocol.
+        assert_eq!(engine.engine_id(), ENGINE_ID);
+        assert!(matches!(
+            engine.spawn(&SessionSpawnRequest::new("https://example.test/page")),
+            Err(SessionError::Unsupported(_))
+        ));
+    }
+
+    /// A visit-only engine has nowhere to put a clip, whatever the environment
+    /// names as the target.
+    #[test]
+    fn a_visit_only_engine_offers_no_clip_target() {
+        let engine =
+            KnotAuthoringEngine::visit_only(KnotVisits::default(), Some("field.knot".into()));
+        assert!(engine.clip_handle().is_none());
+    }
+
     #[test]
     fn only_a_personae_root_is_read_as_a_holder() {
         // A local vault, a short host, a non-hex host, and a document with no
@@ -3295,7 +3583,7 @@ mod tests {
 
         let engine = KnotAuthoringEngine::connect_directory(program, &root, 4096).unwrap();
         let handle = KnotClipHandle {
-            hub: engine.hub.clone(),
+            hub: engine.hub.clone().expect("a connected fixture has a local hub"),
             target: address,
             status: Arc::new(Mutex::new(KnotClipStatus::Ready)),
         };
@@ -3353,7 +3641,7 @@ mod tests {
             KnotAuthoringEngine::connect_directory_evidence(program, &root, 4096, &evidence, 4096)
                 .unwrap();
         let handle = KnotClipHandle {
-            hub: engine.hub.clone(),
+            hub: engine.hub.clone().expect("a connected fixture has a local hub"),
             target: address,
             status: Arc::new(Mutex::new(KnotClipStatus::Ready)),
         };

@@ -31,9 +31,23 @@
 # joiner-return AND reader), prints every outcome, and exits nonzero unless
 # founder, joiner (phase 1), joiner-return and reader all read RESULT ok.
 #
+# T5c (reframe step 5, shared Knot document by projection): the founder is
+# given a one-document Knot vault (${Out}\founder\vault\field.knot) and
+# TURNSTONE_KNOT_ROOT pointed at it FOR THE FOUNDER PROCESS ONLY, so only the
+# founder serves it on the place transport. ${FOUNDER_VAULT_URL} (a
+# file:///C:/... address with forward slashes, naming the vault DIRECTORY,
+# not the file) is exported to every process so a scenario can
+# `open ${FOUNDER_VAULT_URL}/field.knot`. This leg runs after the T5b
+# refused-write leg in scenarios/place_founder.scn (see the comment there for
+# why), so the founder's scenario.done now depends on both the returning
+# joiner's and the reader's Knot-leg markers, not just phase-1 completion:
+# the wait below is staged in two steps, first the founder alone (its own
+# process exiting is what makes the document holder go away), then the
+# returning joiner and the reader together.
+#
 # See design_docs/2026-07-28_turnstone_place_port_plan.md, "T5a. Founder path
-# and two-window proof" and "T5b. Shared address and refused write", for the
-# scenario this proves.
+# and two-window proof", "T5b. Shared address and refused write", and "T5c.
+# Shared Knot document by projection", for the scenario this proves.
 
 param(
     [string]$Exe = "C:/t/turnstone-leave-target/debug/turnstone.exe",
@@ -63,6 +77,18 @@ foreach ($role in $roles) {
 New-Item -ItemType Directory -Force -Path (Join-Path $Out "joiner-return") | Out-Null
 
 $founderDir = Join-Path $Out "founder"
+
+# T5c: the founder's own Knot vault, a single small Djot document. Created
+# before any process launches, same as the exchange pages below.
+$founderVaultDir = Join-Path $founderDir "vault"
+New-Item -ItemType Directory -Force -Path $founderVaultDir | Out-Null
+$founderVaultDocPath = Join-Path $founderVaultDir "field.knot"
+Set-Content -Path $founderVaultDocPath -NoNewline -Value @"
+# Shared field notes
+
+Nothing written yet.
+"@
+$founderVaultUrl = "file:///" + ($founderVaultDir -replace '\\', '/')
 
 # T5b (reframe steps 4 and 7): a shared address the founder opens and shares,
 # and a private one the reader opens before its refused write. Written before
@@ -147,12 +173,28 @@ function Start-TurnstoneRole {
         EXCHANGE              = $exchange
         EXCHANGE_URL          = $exchangeUrl
         FOUNDER_DIR           = $founderDir
+        # T5c: every process can name the founder's vault by address, but
+        # only the founder itself is given TURNSTONE_KNOT_ROOT, so only the
+        # founder's worker serves it on the place transport.
+        FOUNDER_VAULT_URL     = $founderVaultUrl
+    }
+    if ($Role -eq "founder") {
+        $roleEnv["TURNSTONE_KNOT_ROOT"] = $founderVaultDir
+    } else {
+        # Run 24 showed non-founder children inheriting the variable as an
+        # empty string; remove it outright so no vault-less role reads a path.
+        Remove-Item Env:TURNSTONE_KNOT_ROOT -ErrorAction SilentlyContinue
     }
     $saved = @{}
     foreach ($key in $roleEnv.Keys) {
         $saved[$key] = [Environment]::GetEnvironmentVariable($key, "Process")
         [Environment]::SetEnvironmentVariable($key, $roleEnv[$key], "Process")
     }
+    # Record what this child actually inherits, so a stray TURNSTONE_* value
+    # in a run is attributable from the run directory alone.
+    Get-ChildItem Env: | Where-Object Name -like "TURNSTONE_*" |
+        ForEach-Object { "$($_.Name)=$($_.Value)" } |
+        Set-Content -Path (Join-Path $CaptureDir "launch-env.txt")
     try {
         Start-Process -FilePath $Exe -PassThru `
             -RedirectStandardOutput (Join-Path $CaptureDir "turnstone.log") `
@@ -263,10 +305,26 @@ $joinerReturnDone = Join-Path $joinerReturnDir "scenario.done"
 $readerDone = Join-Path $Out "reader/scenario.done"
 
 $remaining = [math]::Max(30, $TimeoutSeconds)
-$phase2Ok = Wait-ForFiles -Paths @($founderDone, $joinerReturnDone, $readerDone) -TimeoutSeconds $remaining -OnPoll {
+
+# T5c: the founder's own scenario.done comes FIRST and on its own. The
+# founder's process exiting (right after its scenario ends) is what makes it
+# stop serving its Knot vault, and the returning joiner's remaining steps
+# (observing that unavailability) only make sense once that has happened, so
+# staging the wait this way (founder alone, THEN joiner-return and reader
+# together) matches the real dependency instead of merely waiting on all
+# three files with no ordering meaning between them.
+Write-Host "Waiting for the founder to finish (its own exit is the Knot holder going away)..."
+$founderStageOk = Wait-ForFiles -Paths @($founderDone) -TimeoutSeconds $remaining -OnPoll {
     if ($founderProc.HasExited -and -not (Test-Path $founderDone)) {
         Write-Warning "founder process exited without writing scenario.done (code $($founderProc.ExitCode))"
     }
+}
+if (-not $founderStageOk) {
+    Write-Warning "timed out after $remaining s waiting for founder scenario.done"
+}
+
+Write-Host "Waiting for joiner-return and reader to finish..."
+$restStageOk = Wait-ForFiles -Paths @($joinerReturnDone, $readerDone) -TimeoutSeconds $remaining -OnPoll {
     if ($joinerReturnProc.HasExited -and -not (Test-Path $joinerReturnDone)) {
         Write-Warning "joiner-return process exited without writing scenario.done (code $($joinerReturnProc.ExitCode))"
     }
@@ -274,10 +332,11 @@ $phase2Ok = Wait-ForFiles -Paths @($founderDone, $joinerReturnDone, $readerDone)
         Write-Warning "reader process exited without writing scenario.done (code $($readerProc.ExitCode))"
     }
 }
-
-if (-not $phase2Ok) {
-    Write-Warning "timed out after $remaining s waiting for phase 2 (founder scenario.done + joiner-return scenario.done + reader scenario.done)"
+if (-not $restStageOk) {
+    Write-Warning "timed out after $remaining s waiting for joiner-return and reader scenario.done"
 }
+
+$phase2Ok = $founderStageOk -and $restStageOk
 
 foreach ($proc in @($founderProc, $joinerReturnProc, $readerProc)) {
     if (-not $proc.HasExited) {

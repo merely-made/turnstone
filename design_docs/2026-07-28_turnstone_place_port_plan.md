@@ -1230,6 +1230,40 @@ one, and no membership check at the door beside the certificate handshake.
 The Djinn resident remains the personal-vault owner; nothing here moves
 personal documents.
 
+**T5c receipt, 2026-09-15.** Run 26 under
+`C:/t/turnstone-place-two-windows-20260915-26` passed all four scenarios. The
+founder opened its own vault document, presented it and shared it; the
+returning joiner found the shared node in the Roster, opened it through the
+founder's projection, authored and saved a revision; the founder then
+authored and saved its own; the joiner's visited document showed both; the
+founder's file on disk reads `Nothing written yet. joiner revision founder
+revision`; the founder's and joiner's records carry one identical derived
+digest, the founder's as `local` and the joiner's as `visiting`; after the
+founder exited, the joiner's record reads `unavailable` with the same digest,
+the last scene kept and no save offered (`joiner_unavailable.png`); the
+reader, holding no grant, was refused at the door and its record reads
+`refused`. Reframe steps 1 through 7 are now each receipted; step 5 at the
+strength of a founder-held document on a loopback place.
+
+What the headed runs found on the way, all fixed in the same commit. Mere's
+`accept_projection_session` samples the admission clock and revocation
+ledger before awaiting the connection, so a grant issued after the founder
+went live was refused as not yet valid; Turnstone now accepts, then samples,
+then admits through mere's public pieces, with a test that fails on the old
+order (the mere-side fix is owed). A member with no vault of its own had no
+Knot engine and so could not visit; the engine now registers visit-only, and
+a blank or unopenable configured root degrades to visiting rather than
+failing. Nothing nudged the app when a projection session came or went; the
+lane watcher now samples the projection counters. An abruptly lost holder
+was noticed only through iroh's idle timeout; a visiting hub now carries a
+liveness watch with a six-second budget (`TURNSTONE_KNOT_VISIT_LIVENESS_MS`)
+measured from its last completed round trip, so a slow remote operation
+past that budget also reads as unavailable, which is the trade recorded
+here. The status view left open by `Place status` swallows the next press,
+and content focus is set only by a real pointer press, both of which the
+scenarios now respect; a scenario wait that holds the frame loop now polls
+content sessions so a hub's bell or loss is visible to it.
+
 ## File seams
 
 | File | Change |

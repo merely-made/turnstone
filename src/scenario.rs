@@ -84,6 +84,11 @@
 //! wait-file <frames> <path>  # like wait-row, satisfied once <path> exists
 //!                            # and is non-empty (cross-process sequencing
 //!                            # through an exchange directory)
+//! wait-knot <frames> <substr> # like wait-row, over this session's
+//!                            # `crate::observe::KnotDocumentFacts` (from
+//!                            # `App::knot_documents()`), each entry read as
+//!                            # "<status> <address>" (e.g. "visiting
+//!                            # knot://<root>/field.knot")
 //! record-place <name>        # write crate::observe::place_record(..), pretty
 //!                            # printed, to <name>.json in the capture dir
 //! touch <path>               # write a one-line marker file at <path> (any
@@ -281,6 +286,10 @@ pub enum Step {
     /// Like [`Step::WaitRow`], satisfied once the named path exists and is
     /// non-empty — cross-process sequencing through a shared exchange dir.
     WaitFile(u32, String),
+    /// Like [`Step::WaitRow`], over this session's
+    /// `crate::observe::KnotDocumentFacts` entries, each formatted as
+    /// "<status> <address>".
+    WaitKnot(u32, String),
     /// Write the place observation facts (`crate::observe::place_record`),
     /// pretty-printed, to `<name>.json` in the capture directory.
     RecordPlace(String),
@@ -743,7 +752,7 @@ pub fn parse(body: &str) -> Result<Vec<Step>, String> {
                     _ => return err("unknown assert"),
                 }
             }
-            "wait-row" | "wait-status" | "wait-file" => {
+            "wait-row" | "wait-status" | "wait-file" | "wait-knot" => {
                 let (frames, arg) = rest.split_once(char::is_whitespace).ok_or_else(|| {
                     format!("line {}: {verb} wants '<frames> <substr>'", i + 1)
                 })?;
@@ -757,7 +766,8 @@ pub fn parse(body: &str) -> Result<Vec<Step>, String> {
                 match verb {
                     "wait-row" => Step::WaitRow(frames, arg.to_string()),
                     "wait-status" => Step::WaitStatus(frames, arg.to_string()),
-                    _ => Step::WaitFile(frames, arg.to_string()),
+                    "wait-file" => Step::WaitFile(frames, arg.to_string()),
+                    _ => Step::WaitKnot(frames, arg.to_string()),
                 }
             }
             "record-place" if !rest.is_empty() => Step::RecordPlace(rest.to_string()),
@@ -848,6 +858,15 @@ drop-file 350 280 receipt.txt",
                 if row == "hello"
                 && status == "Local rendezvous"
                 && path == "C:\\t\\exchange\\demo.place-card.json"
+        ));
+    }
+
+    #[test]
+    fn wait_knot_is_a_typed_step() {
+        let steps = parse("wait-knot 600 visiting knot://abcd/field.knot").unwrap();
+        assert!(matches!(
+            steps.as_slice(),
+            [Step::WaitKnot(600, substr)] if substr == "visiting knot://abcd/field.knot"
         ));
     }
 

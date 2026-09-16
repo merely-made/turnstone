@@ -121,6 +121,59 @@ settle 30
 key escape
 wait-status 60 Retained history: 1 shared nodes
 
+# T5c: shared Knot document by projection (design_docs/2026-07-28_turnstone_
+# place_port_plan.md, "T5c. Shared Knot document by projection"). Placed
+# AFTER the reader's refused-write receipt above (not before wait-file
+# reader.finished) so the reader's own "exactly 1 shared node" checks are
+# never disturbed by sharing a second (Knot) node. ${FOUNDER_VAULT_URL} names
+# this founder's own Knot vault directory (set by scenarios/
+# place_two_windows.ps1, which also points TURNSTONE_KNOT_ROOT at it for
+# this process only).
+open ${FOUNDER_VAULT_URL}/field.knot
+settle 20
+act Toggle live content
+wait
+assert content-live
+# Present it in the Workbench, the same as the T5b HTML page above: opening
+# an address alone does not make it an addressable, click-routable content
+# surface (run 17 found this the hard way — `insert` failed with "no focused
+# text editor" even though `assert content-live` had already passed).
+act Open node in Workbench
+settle 20
+assert pane workbench
+assert surface content
+act Share focused node
+wait-status 600 Retained history: 2 shared nodes
+# The joiner mounts through the projection host once it opens the shared
+# knot:// node below.
+wait-status 6000 Projection: serving knot to 1 live session
+
+# Wait for the joiner's own revision before authoring this one, so the
+# derived digests compared afterward (founder_knot vs joiner_knot) reflect
+# both edits on both sides.
+wait-file 6000 ${EXCHANGE}\joiner.edited
+# Content focus is set only by a real pointer press on the surface, so the
+# editor is pressed at its tile: the Knot tile is the right half of the
+# workbench beside the shared page (see founder_knot_page.png).
+capture founder_knot_page
+click-at 890 110
+settle 10
+key end
+key space
+insert founder revision
+key ctrl+s
+wait
+assert text saved
+record-place founder_knot
+touch ${EXCHANGE}\founder.edited
+
+# The returning joiner can only observe the holder going away once this
+# process actually exits; wait for its own record of that before ending.
+# Also wait for the reader's own refused-dial leg (which needs this process
+# alive to be refused by) before exiting.
+wait-file 6000 ${EXCHANGE}\knot.done
+wait-file 6000 ${EXCHANGE}\reader_knot.finished
+
 act Place status
 settle 10
 capture founder_final

@@ -5286,3 +5286,54 @@ fn place_prekey_offer_is_written_beside_its_card() {
         .is_empty()
     );
 }
+
+/// T5c's rootless half, at the route the shell keys on: with no vault
+/// configured, `from_env` must still hand the shell an engine to register.
+/// `Ok(None)` is what left a returning joiner's `knot://<holder>/...` address
+/// falling through to `host.external-protocol` in run 23.
+#[test]
+fn a_profile_with_no_vault_still_registers_a_knot_engine() {
+    if std::env::var_os("TURNSTONE_KNOT_ROOT").is_some()
+        || std::env::var_os("TURNSTONE_KNOT_MODE").is_some()
+    {
+        return;
+    }
+    let engine = crate::knot_authoring::KnotAuthoringEngine::from_env(
+        std::sync::Arc::new(|| {}),
+        Default::default(),
+    )
+    .expect("no root is not an error");
+    assert!(
+        engine.is_some(),
+        "a rootless profile registers a visit-only engine, never nothing"
+    );
+}
+
+/// Why run 23's reader could not click a Roster row (`click-row field.knot`
+/// and a coordinate click on the same pixels both left focus on reader.html).
+/// `Place status` opens the omnibar and leaves it open; `Shell::deliver_press`
+/// (src/shell/input.rs) consumes the next press to dismiss it, so the row
+/// never sees a click. The row path itself is sound — see
+/// `cambium_pane::tests::a_row_in_a_long_narrow_roster_navigates_to_its_own_url`.
+/// A scenario that has run `act Place status` must `key escape` before any
+/// click verb.
+#[test]
+fn place_status_leaves_the_omnibar_open_over_a_pane_open() {
+    let mut app = App::test_stub();
+    app.update(Action::ShowPlaceStatus);
+    assert!(app.omnibar.open, "Place status shows in the omnibar");
+
+    // Opening a pane afterwards does not put it away, so the omnibar is still
+    // standing when the next pointer press arrives.
+    let open_roster = app
+        .available_actions()
+        .into_iter()
+        .find(|(label, _)| label == "Open Roster pane")
+        .map(|(_, action)| action)
+        .expect("the Roster pane is in the palette");
+    app.update(open_roster);
+    assert!(
+        app.omnibar.open,
+        "opening a pane does not dismiss the omnibar; the next press does"
+    );
+}

@@ -36,7 +36,7 @@ use std::sync::atomic::{AtomicU32, AtomicU64, Ordering};
 use std::time::Duration;
 
 use graphshell::admission::{CONNECT_ACTION, GRAPHSHELL_DOMAIN, PROJECTION_SERVICE};
-use graphshell::carrier::projection_policy;
+use graphshell::carrier::{admit_accepted_session, projection_alpn, projection_policy};
 use graphshell::native::endpoint_catalog::{ResidentEndpointCatalog, ResidentEndpointRoute};
 use graphshell::native::projection_host::ResidentProjectionHost;
 use identity::IdentityProvider;
@@ -44,7 +44,7 @@ use identity::delegation::{
     CapabilityScope, DelegationCertificate, DelegationParent, SignedDelegationCertificate,
 };
 use notochord::{NetworkId, ProfileRef, TrustedRoot};
-use transport::P2pandaTransport;
+use transport::{P2pandaTransport, Transport};
 
 use crate::place::PlaceProjectionSnapshot;
 use crate::place::worker::{AuthorityClock, ProviderRef, place_tag, root_grant_id};
@@ -179,6 +179,10 @@ pub(crate) fn decode_grant(bytes: &[u8]) -> Result<SignedDelegationCertificate, 
 pub(crate) struct ProjectionServing {
     live: Arc<AtomicU32>,
     refused: Arc<AtomicU64>,
+    /// Every session ever admitted. Not reported to anybody: it exists so a
+    /// sampler can tell "one visitor came and went" from "nothing happened",
+    /// which `live` alone cannot say once it is back where it started.
+    admitted: Arc<AtomicU64>,
     accept: Option<tokio::task::JoinHandle<()>>,
 }
 
@@ -210,27 +214,69 @@ impl ProjectionServing {
             .map_err(|error| format!("register the place vault route: {error}"))?;
         let route = ResidentEndpointRoute::new(PROJECTION_ROUTE, NOTICE_POLL)
             .map_err(|error| format!("configure the place vault route: {error}"))?;
-        let mut host = ResidentProjectionHost::new(setup.policy(), route, catalog);
+        let policy = setup.policy();
+        let mut host = ResidentProjectionHost::new(policy.clone(), route, catalog);
 
         let live = Arc::new(AtomicU32::new(0));
         let refused = Arc::new(AtomicU64::new(0));
+        let admitted = Arc::new(AtomicU64::new(0));
         let clock = setup.clock;
         let task_live = Arc::clone(&live);
         let task_refused = Arc::clone(&refused);
+        let task_admitted = Arc::clone(&admitted);
         let accept = handle.spawn(async move {
             loop {
-                match host.accept_one(&*transport, move || clock.now_ms()).await {
-                    Ok(Ok(served)) => {
-                        task_live.fetch_add(1, Ordering::SeqCst);
-                        let slot = Arc::clone(&task_live);
-                        // The host already spawned the serving future; this
-                        // only holds the slot until that future is finished.
-                        tokio::spawn(async move {
-                            if let Err(error) = served.finished().await {
-                                tracing::warn!(%error, "a served projection did not finish");
-                            }
-                            slot.fetch_sub(1, Ordering::SeqCst);
-                        });
+                // Accept first, THEN sample the clock and the revocation
+                // ledger: a grant issued after this loop started waiting must
+                // still be judged as of when the visitor actually connected,
+                // not the moment the loop began its wait.
+                let accepted = match transport.accept(projection_alpn()).await {
+                    Ok(accepted) => accepted,
+                    Err(error) => {
+                        tracing::debug!(%error, "place projection accept loop ended");
+                        break;
+                    },
+                };
+                let now_ms = clock.now_ms();
+                let ledger_snapshot = host
+                    .revocations()
+                    .read()
+                    .expect("the revocation ledger lock is never poisoned by this host")
+                    .clone();
+                let live_sessions = host.live_sessions();
+                let outcome = admit_accepted_session(
+                    accepted,
+                    &policy,
+                    &ledger_snapshot,
+                    now_ms,
+                    live_sessions,
+                )
+                .await;
+                match outcome {
+                    Ok(Ok(admitted)) => {
+                        match host.serve_admitted(admitted, move || clock.now_ms()) {
+                            Ok(served) => {
+                                task_admitted.fetch_add(1, Ordering::SeqCst);
+                                task_live.fetch_add(1, Ordering::SeqCst);
+                                let slot = Arc::clone(&task_live);
+                                // The host already spawned the serving future;
+                                // this only holds the slot until that future
+                                // is finished.
+                                tokio::spawn(async move {
+                                    if let Err(error) = served.finished().await {
+                                        tracing::warn!(
+                                            %error,
+                                            "a served projection did not finish"
+                                        );
+                                    }
+                                    slot.fetch_sub(1, Ordering::SeqCst);
+                                });
+                            },
+                            Err(error) => {
+                                tracing::debug!(%error, "place projection accept loop ended");
+                                break;
+                            },
+                        }
                     },
                     Ok(Err(refusal)) => {
                         task_refused.fetch_add(1, Ordering::SeqCst);
@@ -238,11 +284,8 @@ impl ProjectionServing {
                     },
                     // A handshake that never reached a decision is not a
                     // refusal anyone was told about, but it is a peer turned
-                    // away, so it counts and the loop keeps listening. A
-                    // carrier error means the endpoint is going away.
-                    Err(graphshell::native::projection_host::ResidentProjectionError::Accept(
-                        graphshell::carrier::ProjectionAcceptError::Handshake(error),
-                    )) => {
+                    // away, so it counts and the loop keeps listening.
+                    Err(graphshell::carrier::ProjectionAcceptError::Handshake(error)) => {
                         task_refused.fetch_add(1, Ordering::SeqCst);
                         tracing::info!(%error, "projection handshake did not complete");
                     },
@@ -257,8 +300,21 @@ impl ProjectionServing {
         Ok(Self {
             live,
             refused,
+            admitted,
             accept: Some(accept),
         })
+    }
+
+    /// What the lane watcher samples: a number that changes whenever a session
+    /// is admitted, refused, or ends. `admitted` rises with `live` on a start
+    /// and stands still on an end, so a visit that opens and closes inside one
+    /// watch tick still moves the sum.
+    pub(crate) fn watch_counters(&self) -> ProjectionWatchCounters {
+        ProjectionWatchCounters {
+            live: Arc::clone(&self.live),
+            refused: Arc::clone(&self.refused),
+            admitted: Arc::clone(&self.admitted),
+        }
     }
 
     pub(crate) fn snapshot(&self) -> PlaceProjectionSnapshot {
@@ -277,5 +333,21 @@ impl ProjectionServing {
             handle.abort();
         }
         accept
+    }
+}
+
+/// The projection counters the lane watcher samples, held apart from the host
+/// so the watcher task outlives nothing it does not own.
+pub(crate) struct ProjectionWatchCounters {
+    live: Arc<AtomicU32>,
+    refused: Arc<AtomicU64>,
+    admitted: Arc<AtomicU64>,
+}
+
+impl ProjectionWatchCounters {
+    pub(crate) fn total(&self) -> u64 {
+        u64::from(self.live.load(Ordering::SeqCst))
+            + self.refused.load(Ordering::SeqCst)
+            + self.admitted.load(Ordering::SeqCst)
     }
 }

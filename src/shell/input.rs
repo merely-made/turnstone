@@ -125,6 +125,24 @@ fn surface_cursor_label(shape: inker::CursorShape) -> &'static str {
 }
 
 impl Shell {
+    /// One aim that resolved to nothing, and why.
+    ///
+    /// The open omnibar is the cause worth naming: it takes the press before
+    /// any pane sees it, so a scenario reads "no row matched" and looks for a
+    /// missing row that is right there behind the chrome.
+    fn note_miss(&mut self, what: &'static str, target: &str, missed: &str) {
+        let swallowed = self.app.omnibar.open;
+        self.app.note(crate::observe::AppEvent::InteractionMissed {
+            what,
+            target: target.to_string(),
+        });
+        if swallowed {
+            tracing::warn!(%target, "{what}: the open omnibar swallowed the press");
+        } else {
+            tracing::warn!(%target, "{what}: {missed}");
+        }
+    }
+
     pub(super) fn click_pane_row(&mut self, substr: &str) {
         // Both list panes resolve through the shared driver's `click`: a Trail
         // `list-row` or a grid `roster-cell` whose text contains `substr`, over
@@ -140,11 +158,7 @@ impl Shell {
             // verb addresses it, wherever the section was composed.
             || self.click(&taproot::Selector::class("section-row").containing(substr));
         if !hit {
-            self.app.note(crate::observe::AppEvent::InteractionMissed {
-                what: "click-row",
-                target: substr.to_string(),
-            });
-            tracing::warn!(%substr, "click-row: no list-pane row matched");
+            self.note_miss("click-row", substr, "no list-pane row matched");
         }
     }
 
@@ -154,11 +168,7 @@ impl Shell {
     /// the resolver finds it — the same substrate every genet app shares.
     pub(super) fn click_pane_tab(&mut self, label: &str) {
         if !self.click(&taproot::Selector::class("tab").containing(label)) {
-            self.app.note(crate::observe::AppEvent::InteractionMissed {
-                what: "click-tab",
-                target: label.to_string(),
-            });
-            tracing::warn!(%label, "click-tab: no Roster tab matched");
+            self.note_miss("click-tab", label, "no Roster tab matched");
         }
     }
 
@@ -170,11 +180,7 @@ impl Shell {
         let sel =
             taproot::Selector::class("graph-canvas-swatch-node").with_attr("data-key", substr);
         if !self.click(&sel) {
-            self.app.note(crate::observe::AppEvent::InteractionMissed {
-                what: "click-node",
-                target: substr.to_string(),
-            });
-            tracing::warn!(%substr, "click-node: no pane node matched");
+            self.note_miss("click-node", substr, "no pane node matched");
         }
     }
 

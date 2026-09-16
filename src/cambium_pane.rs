@@ -51,6 +51,7 @@ struct RosterState {
 /// What a Roster grid interaction produces. The shell lowers `Navigate` as
 /// `Action::OpenAddress`, so a grid click reaches the graph through the same
 /// spine as a keypress.
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum RosterAction {
     Navigate(String),
 }
@@ -371,6 +372,56 @@ mod tests {
             hit.is_some(),
             "roster-cell 'alpha' must resolve; {} roster-cell elements in the DOM",
             cells.len()
+        );
+    }
+
+    /// A Roster as long and as narrow as a real one: the row-click path must
+    /// resolve the named row through taproot and, at exactly the point that
+    /// resolves to, dispatch `Navigate` carrying THAT row's url. Run 23's
+    /// reader had fifteen rows in a ~254px-wide pane (the grid's own width is
+    /// 600px, so the Address column hangs off the right edge) and the click
+    /// did nothing; this pins that neither the length, the virtual window, nor
+    /// the overhanging second column is what broke it — the press never
+    /// arrived, because the omnibar was open and swallowed it
+    /// (`Shell::deliver_press`, src/shell/input.rs).
+    #[test]
+    fn a_row_in_a_long_narrow_roster_navigates_to_its_own_url() {
+        const PANE_W: f32 = 254.0;
+        const PANE_H: f32 = 600.0;
+        let mut g = RosterGrid::new();
+        let mut rows = vec![row("Reader page"), row("shared.html")];
+        rows.push(RosterGridRow {
+            title: "field.knot".into(),
+            kind: "text/djot".into(),
+            url: "knot://ff23f774bd2cb1adfe0887e3f8701ab195e925c0e9082573fb3f1d2e60070fb6/field.knot"
+                .into(),
+            selected: false,
+        });
+        rows.extend((0..12).map(|i| row(&format!("node{i}"))));
+        let want = rows[2].url.clone();
+        g.runner.update(|state| {
+            state.rows = rows;
+            state.viewport_w = PANE_W;
+            state.viewport_h = PANE_H;
+        });
+
+        let point = g
+            .resolve(
+                &taproot::Selector::class("roster-cell").containing("field.knot"),
+                [0.0, 0.0, PANE_W, PANE_H],
+            )
+            .expect("the row resolves through taproot");
+        assert!(
+            point.0 < PANE_W,
+            "the resolved point must fall inside the pane, not on the overhanging              Address column: x={} pane width {PANE_W}",
+            point.0
+        );
+
+        let actions = g.click(point.0, point.1, PANE_W as u32, PANE_H as u32);
+        assert_eq!(
+            actions,
+            vec![RosterAction::Navigate(want)],
+            "clicking where the row resolved must navigate to that row's url"
         );
     }
 

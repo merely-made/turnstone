@@ -62,6 +62,64 @@ assert pane workbench
 assert surface content
 capture joiner_shared
 
+# T5c: visit the founder's shared Knot document by projection (design_docs/
+# 2026-07-28_turnstone_place_port_plan.md, "T5c"). The founder shares it
+# after the reader's leg completes, so this profile's shared-node count goes
+# from 1 to 2; the exact knot:// address (holder root hex) is never known to
+# this scenario in advance, so the node is found and opened by its Roster
+# row rather than by address. The Roster (not Trail) is the pane that lists
+# every graph node regardless of local navigation history: a node that
+# arrived purely through sync (never separately visited/opened here) shows
+# up there but not in Trail's recent/history rows (run 17 found trail/roster/
+# inspector/arrange all reporting empty because no list pane was open yet).
+wait-status 6000 Retained history: 2 shared nodes
+act Open Roster pane
+settle 5
+wait-row 600 field.knot
+click-row field.knot
+settle 20
+act Toggle live content
+wait
+assert content-live
+# Present it in the Workbench, same as the shared HTML page above and as the
+# founder's own leg: `insert` needs an addressable content surface, which
+# opening/toggling alone does not provide (run 17).
+act Open node in Workbench
+settle 20
+assert pane workbench
+assert surface content
+wait-knot 600 visiting
+
+# Content focus is set only by a real pointer press on the surface, so the
+# editor is pressed at its tile: with the Roster open on the right, the Knot
+# tile sits between the shared page and the Roster (see joiner_knot_page.png).
+capture joiner_knot_page
+click-at 700 110
+settle 10
+key end
+key space
+insert joiner revision
+key ctrl+s
+wait
+assert text saved
+touch ${EXCHANGE}\joiner.edited
+
+# The founder authors its own revision only after seeing this edit; wait for
+# its marker, then wait for the projection to actually deliver that edit to
+# this visiting session before comparing text.
+wait-file 6000 ${EXCHANGE}\founder.edited
+wait
+settle 300
+assert text founder revision
+record-place joiner_knot
+capture joiner_knot
+touch ${EXCHANGE}\knot.done
+
+# The founder process exits once it sees knot.done above, which is what
+# takes the holder away; wait for this session's own view of that.
+wait-knot 6000 unavailable
+capture joiner_unavailable
+
 act Place status
 settle 10
 capture joiner_return

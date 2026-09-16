@@ -128,7 +128,7 @@ impl Default for PlaceWorkerSettings {
     fn default() -> Self {
         Self {
             authority_clock: AuthorityClock::SystemTime,
-            knot_root: std::env::var_os("TURNSTONE_KNOT_ROOT").map(PathBuf::from),
+            knot_root: crate::knot_authoring::env_path("TURNSTONE_KNOT_ROOT"),
             knot_max_source_bytes: std::env::var("TURNSTONE_KNOT_MAX_BYTES")
                 .ok()
                 .and_then(|value| value.parse().ok())
@@ -234,6 +234,14 @@ pub enum PlaceWorkerCommand {
         request: u64,
     },
     Release(std::sync::mpsc::SyncSender<()>),
+    /// Stop serving the way a killed process stops: no close on the wire.
+    /// Test-only, because nothing a person does to this app produces it.
+    #[cfg(test)]
+    Abandon(std::sync::mpsc::SyncSender<()>),
+    /// Stop answering without closing anything, the way a frozen machine
+    /// stops. Test-only.
+    #[cfg(test)]
+    Freeze(std::time::Duration, std::sync::mpsc::SyncSender<()>),
 }
 
 /// One authored change to the shared place.
@@ -2125,6 +2133,24 @@ pub fn spawn_place_worker(
                     PlaceWorkerCommand::Release(ack) => {
                         live = None;
                         live_scope = None;
+                        let _ = ack.send(());
+                    },
+                    #[cfg(test)]
+                    PlaceWorkerCommand::Abandon(ack) => {
+                        if let Some(opened) = live.as_mut()
+                            && let Some(lanes) = opened.lanes.take()
+                        {
+                            lanes.abandon();
+                        }
+                        let _ = ack.send(());
+                    },
+                    #[cfg(test)]
+                    PlaceWorkerCommand::Freeze(hold, ack) => {
+                        if let Some(opened) = live.as_ref()
+                            && let Some(lanes) = opened.lanes.as_ref()
+                        {
+                            lanes.freeze(hold);
+                        }
                         let _ = ack.send(());
                     },
                 }

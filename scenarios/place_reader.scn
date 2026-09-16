@@ -65,8 +65,59 @@ act Place status
 settle 10
 capture reader_refused
 record-place reader
+# The status view stays open after its capture, and the next press only
+# dismisses it; close it before any row click below.
+key escape
+settle 5
 
-# Signal the founder that this leg is complete.
+# Signal the founder that this leg is complete; the founder is waiting on
+# this marker before it opens and shares its Knot document (T5c) below, so
+# this leg must run BEFORE that, not after.
 touch ${EXCHANGE}\reader.finished
+
+# T5c (design_docs/2026-07-28_turnstone_place_port_plan.md, "T5c. Shared
+# Knot document by projection"): attempt to visit the founder's Knot
+# document once it is shared. A reader carries no projection-connect grant
+# (Invite to place as reader issues no delegation), so the dial is refused
+# at the door and the node is kept, refused, exactly as the graph write
+# above. The founder shares this node only after seeing reader.finished
+# above, so wait for the shared-node count to grow before looking for the
+# row; the exact knot:// address (the founder's root hex) is never known to
+# this scenario in advance.
+wait-status 6000 Retained history: 2 shared nodes
+# The Roster (not Trail) lists every graph node regardless of local
+# navigation history; this node arrived purely through sync (run 17 found
+# trail/roster/inspector/arrange all reporting empty with no list pane open).
+act Open Roster pane
+settle 20
+wait-row 600 field.knot
+# Both `click-row field.knot` (DOM class-selector) and a coordinate `click-at`
+# read off an actual capture of this exact state (run 20's `reader_knot_debug`,
+# which shows the row rendered at this position) missed identically: focus
+# stayed on "Reader page" either way, while the identical click-row verb
+# worked for the returning joiner against a shorter Roster. Give the newly
+# inserted row extra settle time between wait-row's success and the click, in
+# case the DOM has not caught up with the observation the same frame.
+settle 20
+click-row field.knot
+settle 20
+assert focused field.knot
+capture reader_knot_debug
+# Merely opening/selecting the node does not by itself attempt the dial
+# (run 18 found this: no toggle meant no dial, so `knot_documents` stayed
+# empty and the refusal was never recorded). Toggling live content is what
+# makes the app actually try to mount the document, which is refused at the
+# door for a reader; do not assert content-live here, unlike the founder and
+# the returning joiner, since a refusal is exactly what this leg expects.
+act Toggle live content
+settle 30
+assert event place-refused
+wait-knot 600 refused
+record-place reader_knot
+
+# Let the founder know this leg is done too. This must complete while the
+# founder is still alive to refuse the dial, so the founder waits on this
+# marker (beside knot.done) before it exits.
+touch ${EXCHANGE}\reader_knot.finished
 
 log place reader refused-write path complete

@@ -76,6 +76,13 @@ impl Shell {
                 let effects = self.app.apply_update(update);
                 self.run_effects(effects);
             }
+            // Content sessions fold their own events (a Knot hub's bell or
+            // loss) only when polled, which the frame loop does per frame;
+            // a wait that holds the loop must poll them itself.
+            for session in self.content_sessions.values_mut() {
+                let _ = session.settled();
+            }
+            self.refresh_knot_documents();
             if condition(self) {
                 return true;
             }
@@ -1146,6 +1153,23 @@ impl Shell {
                     let status = crate::observe::snapshot(&self.app).place_status;
                     return Err(format!(
                         "wait-status '{substr}' after {frames} frames: place status is {status:?}"
+                    ));
+                }
+            }
+            Step::WaitKnot(frames, substr) => {
+                fn knot_lines(app: &crate::app::App) -> Vec<String> {
+                    app.knot_documents()
+                        .iter()
+                        .map(|doc| format!("{} {}", doc.status, doc.address))
+                        .collect()
+                }
+                let ok = self.wait_frames(*frames, |shell| {
+                    knot_lines(&shell.app).iter().any(|line| line.contains(substr.as_str()))
+                });
+                if !ok {
+                    let lines = knot_lines(&self.app);
+                    return Err(format!(
+                        "wait-knot '{substr}' after {frames} frames: knot documents are {lines:?}"
                     ));
                 }
             }
