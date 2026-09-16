@@ -15,7 +15,20 @@ from pathlib import Path
 import subprocess
 import threading
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+from urllib.error import HTTPError
 from urllib.request import Request, urlopen
+
+# Proof-only: one past the fixture grant's expires_at_ms.
+PROOF_EXPIRED_MS = 1001
+# Reopen still shows a left or never-joined store offline; these are refused.
+REFUSED_ON_REOPEN = ("expired", "revoked")
+
+
+def refusal_reason(error):
+    try:
+        return json.loads(error.read()).get("error", str(error))
+    except Exception:
+        return str(error)
 
 
 class Peer:
@@ -26,6 +39,7 @@ class Peer:
         self.online = True
         self.generation = 0
         self.last_sync_error = None
+        self.last_recheck = None
         self.last = {}
         self.traffic = []
         self.comparison = json.loads(Path(args.comparison).read_text(encoding="utf-8"))
@@ -79,30 +93,61 @@ class Peer:
                 "process_id": self.process.pid if self.process else None,
                 "process_generation": self.generation,
                 "last_sync_error": self.last_sync_error,
+                "lifecycle": self.last.get("lifecycle"), "now_ms": self.last.get("now_ms"),
+                "last_recheck": self.last_recheck,
                 "comparison": self.comparison, "service": self.last,
                 "records": records, "retained_count": self.last.get("retained_count", 0),
                 "traffic": self.traffic,
             }
 
+    def log(self, direction, method, path, body):
+        """Traffic is logged when attempted, so a refusal can prove nothing was sent."""
+        entry = {"direction": direction, "method": method, "path": path, "bytes": len(body),
+                 "sha256": hashlib.sha256(body).hexdigest(), "result": "pending"}
+        self.traffic.append(entry)
+        return entry
+
     def network(self, path, data=None):
         if not self.online:
             raise RuntimeError("Peer connection disabled")
         body = None if data is None else json.dumps(data).encode()
+        entry = self.log("outgoing", "GET" if body is None else "POST", path, body or b"")
         request = Request(f"http://127.0.0.1:{self.args.peer_port}{path}", data=body,
                           headers={"content-type": "application/json"})
-        with urlopen(request, timeout=15) as response:
-            result = json.load(response)
-        self.traffic.append({"direction": "outgoing", "path": path,
-                             "bytes": len(body or b""),
-                             "sha256": hashlib.sha256(body or b"").hexdigest()})
+        try:
+            with urlopen(request, timeout=15) as response:
+                result = json.load(response)
+        except HTTPError as error:
+            reason = refusal_reason(error)
+            entry["result"] = f"refused: {reason}"
+            raise RuntimeError(f"Peer refused {path}: {reason}") from error
+        except Exception as error:
+            entry["result"] = f"error: {error}"
+            raise
+        entry["result"] = "ok"
         return result
 
     def import_operations(self, operations):
         for operation in operations:
             self.rpc("import", operation_record_hex=operation)
 
-    def sync(self):
+    def recheck(self, action):
+        """Evaluate installed authority at the store clock before any exchange."""
         try:
+            verdict = self.rpc("recheck")
+            self.last_recheck = {"action": action, "admitted": True,
+                                 "lifecycle": verdict["lifecycle"], "reason": None}
+        except RuntimeError as error:
+            lifecycle = self.rpc("status")["lifecycle"]
+            self.last_recheck = {"action": action, "admitted": False,
+                                 "lifecycle": lifecycle, "reason": str(error)}
+            if action != "reopen" or lifecycle in REFUSED_ON_REOPEN:
+                raise
+
+    def sync(self, check=True):
+        try:
+            if check:
+                self.recheck("sync")
             own = self.rpc("export")["operations"]
             self.network("/wire", {"operations": own})
             other = self.network("/wire")["operations"]
@@ -111,6 +156,15 @@ class Peer:
         except Exception as error:
             self.last_sync_error = str(error)
             raise
+
+    def try_sync(self):
+        if not self.online:
+            return ""
+        try:
+            self.sync()
+            return " Synced with the other peer."
+        except Exception as error:
+            return f" Peer sync unavailable: {error}"
 
     def action(self, action):
         if action == "found":
@@ -127,16 +181,23 @@ class Peer:
         elif action == "contribute":
             payload = json.dumps(self.comparison, sort_keys=True, separators=(",", ":")).encode()
             self.rpc("contribute", comparison_utf8_hex=payload.hex())
-            message = "Comparison retained in this peer's signed log."
-            if self.online:
-                try:
-                    self.sync()
-                    message += " Synced with the other peer."
-                except Exception as error:
-                    message += f" Peer sync unavailable: {error}"
+            message = "Comparison retained in this peer's signed log." + self.try_sync()
         elif action == "sync":
             self.sync()
             message = "Signed operations exchanged; effective projection refreshed."
+        elif action == "leave":
+            left = self.rpc("leave")
+            message = (f"Left the space. {left['retained_count']} retained operation(s) kept; "
+                       "join again with a new invitation.")
+        elif action == "advance_clock":
+            clock = self.rpc("advance_clock", now_ms=PROOF_EXPIRED_MS)
+            message = (f"Proof only: store clock set to {clock['now_ms']} ms, past the grant expiry. "
+                       f"Lifecycle: {clock['lifecycle']}.")
+        elif action == "revoke":
+            if self.args.role != "founder":
+                raise ValueError("Only the founder may revoke a member")
+            self.rpc("revoke_member")
+            message = "Revoked Bea's delegation with a signed Gemot revocation." + self.try_sync()
         elif action == "disconnect":
             self.online = False
             self.close()
@@ -145,13 +206,15 @@ class Peer:
             self.online = False
             self.close()
             self.start()
-            self.rpc("status")
+            self.recheck("reopen")
             message = "Fresh Rust process reopened its retained work from disk, offline."
         elif action == "connect":
             self.start()
+            self.online = False
+            self.recheck("connect")  # a refused grant never reaches the wire
             self.online = True
-            self.sync()
-            message = "Reconnected and reconciled retained operations."
+            self.sync(check=False)
+            message = "Admission rechecked; reconnected and reconciled retained operations."
         else:
             raise ValueError("Unknown action")
         return {"message": message, "state": self.state()}
@@ -183,20 +246,30 @@ def main():
             self.end_headers()
             self.wfile.write(body)
 
+        def carried(self, method, body, work):
+            entry = peer.log("incoming", method, "/wire", body)
+            try:
+                if not peer.online:
+                    raise RuntimeError("Peer disconnected")
+                result = work()
+            except Exception as error:
+                entry["result"] = f"refused: {error}"
+                raise
+            entry["result"] = "ok"
+            return result
+
         def do_GET(self):
             try:
                 if self.path == "/api/state":
                     self.json_response(peer.state())
-                elif self.path in ("/wire", "/invitation"):
+                elif self.path == "/wire":
+                    self.json_response(self.carried("GET", b"", lambda: peer.rpc("export")))
+                elif self.path == "/invitation":
                     if not peer.online:
                         raise RuntimeError("Peer disconnected")
-                    if self.path == "/wire":
-                        result = peer.rpc("export")
-                    else:
-                        if peer.invitation is None:
-                            raise RuntimeError("Founder has not created an invitation")
-                        result = {"invitation": peer.invitation}
-                    self.json_response(result)
+                    if peer.invitation is None:
+                        raise RuntimeError("Founder has not created an invitation")
+                    self.json_response({"invitation": peer.invitation})
                 else:
                     super().do_GET()
             except Exception as error:
@@ -217,11 +290,7 @@ def main():
                 if self.path == "/api/action":
                     self.json_response(peer.action(data["action"]))
                 elif self.path == "/wire":
-                    if not peer.online:
-                        raise RuntimeError("Peer disconnected")
-                    peer.import_operations(data["operations"])
-                    peer.traffic.append({"direction": "incoming", "path": "/wire",
-                                         "bytes": length, "sha256": hashlib.sha256(payload).hexdigest()})
+                    self.carried("POST", payload, lambda: peer.import_operations(data["operations"]))
                     self.json_response({"ok": True})
                 elif self.path == "/scenario-receipt":
                     destination = Path(args.receipts)
@@ -241,7 +310,13 @@ def main():
                 else:
                     self.send_error(404)
             except Exception as error:
-                self.json_response({"error": str(error)}, 409)
+                body = {"error": str(error)}
+                if self.path == "/api/action":
+                    try:
+                        body["state"] = peer.state()  # refusals still show the verdict
+                    except Exception:
+                        pass
+                self.json_response(body, 409)
 
     server = ThreadingHTTPServer(("127.0.0.1", args.port), Handler)
     try:
