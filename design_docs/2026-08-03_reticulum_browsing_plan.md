@@ -183,8 +183,11 @@ section, which still run and pass. Receipt artifacts now live under
 `Code/testing/turnstone/`, not `C:/t`.
 
 Opening the page, opening the form and editing fields produced no request beyond
-the ordinary page fetch — Turnstone sends empty bytes there where stock NomadNet
-sends `nil`. Scenario s1 edited every field and sent once: exactly one observed
+the ordinary page fetch. At the time of that run Turnstone sent empty bytes on
+that fetch where stock NomadNet sends `nil`; since Retinue `5db362e` the page
+fetch packs the data slot as msgpack `nil` too, so the wire form now matches
+what a stock node receives for an ordinary navigation. Scenario s1 edited every
+field and sent once: exactly one observed
 map with `field_hd_text="edited café 雪"`, `field_hd_empty="filled"`,
 `field_hd_mask="secret"`, `field_hd_checks="red,blue"`,
 `field_hd_radio="blue"`, and the reply visible in the omnibar. The three
