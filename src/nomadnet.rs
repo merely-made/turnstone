@@ -522,6 +522,7 @@ mod tests {
             provenance: Default::default(),
             trust: Default::default(),
             diagnostics: Vec::new(),
+            navigation: Default::default(),
             blocks: vec![
                 Block::Presented {
                     presentation: Default::default(),
