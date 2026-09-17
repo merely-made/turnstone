@@ -4,20 +4,20 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // SPDX-License-Identifier: MPL-2.0
 
-//! Turnstone's live-lane composition: dial a ticket, hold nine handles.
+//! Turnstone's live-lane composition: dial a ticket, hold ten handles.
 //!
 //! The shell-owned counterpart to the domain join helpers. Everything here is
 //! composition: the transport crate owns dialing and overlay tagging, Gemot
-//! owns its seven lanes, Commons owns graph and chat, and this module only
-//! decides what a *place* joins and in what order it lets go. Session and
-//! transport identity never become content authority; every accept closure
-//! runs the owning domain's admission, and projections stay
-//! authority-filtered exactly as they are offline.
+//! owns its seven lanes, Commons owns graph and chat, Stickleback owns the
+//! group-key lane, and this module only decides what a *place* joins and in
+//! what order it lets go. Session and transport identity never become content
+//! authority; every accept closure runs the owning domain's admission, and
+//! projections stay authority-filtered exactly as they are offline.
 
 use std::sync::Arc;
 
-use commons::CommonsExt;
 use commons::chat::ChatExt;
+use commons::encrypted::{COMMONS_ENCRYPTED_GRAPH_LANE, EncryptedCommonsExt};
 use gemot::moot::MootLanes;
 use graphshell::admission::open_session;
 use graphshell::network_carrier::{
@@ -26,7 +26,7 @@ use graphshell::network_carrier::{
 use identity::IdentityProvider;
 use identity::delegation::{DelegationCertificate, DelegationParent, SignedDelegationCertificate};
 use notochord::{HandshakeLimits, NetworkId, TrafficClass};
-use stickleback::JoinedSpace;
+use stickleback::{GroupKeyExt, JoinedSpace};
 use transport::p2panda_transport::MdnsDiscoveryMode;
 use transport::{P2pandaStream, P2pandaTransport, PeerID, Transport, sync_overlay_topic};
 
@@ -42,7 +42,7 @@ use crate::place::worker::{OpenPlace, ProviderRef};
 /// settles into a single re-fold instead of one per message.
 const WATCH_TICK: std::time::Duration = std::time::Duration::from_millis(250);
 
-/// How long a close waits for all nine lanes to let go of their store clones.
+/// How long a close waits for all ten lanes to let go of their store clones.
 const LEAVE_BUDGET: std::time::Duration = std::time::Duration::from_secs(10);
 
 /// One place's joined lanes, plus the transport and runtime that carry them.
@@ -57,7 +57,7 @@ pub(crate) struct LiveLanes {
     dialed_rendezvous: usize,
     /// Taken in `drop`: each lane is left and awaited by value, which is the
     /// only thing that releases the store clone its sync actor captured.
-    joined: Option<JoinedNine>,
+    joined: Option<JoinedLanes>,
     /// This place's Moot id, so a visitor's dial can name the same network the
     /// holder's policy does without carrying the whole binding.
     moot: [u8; 32],
@@ -72,14 +72,15 @@ pub(crate) struct LiveLanes {
     _runtime: Option<tokio::runtime::Runtime>,
 }
 
-/// The nine joined lanes, held together so `drop` can move them out.
-struct JoinedNine {
+/// The ten joined lanes, held together so `drop` can move them out.
+struct JoinedLanes {
     moot: MootLanes,
-    graph: JoinedSpace<CommonsExt>,
+    graph: JoinedSpace<EncryptedCommonsExt>,
     chat: JoinedSpace<ChatExt>,
+    group_keys: JoinedSpace<GroupKeyExt>,
 }
 
-impl JoinedNine {
+impl JoinedLanes {
     /// Leave every lane and wait for its drain and sync actor to let go.
     ///
     /// Concurrently and under a bound: each lane's LogSync shutdown takes
@@ -97,6 +98,7 @@ impl JoinedNine {
         ];
         let graph = tokio::spawn(self.graph.leave_and_wait());
         let chat = tokio::spawn(self.chat.leave_and_wait());
+        let group_keys = tokio::spawn(self.group_keys.leave_and_wait());
         let all = async move {
             for lane in left {
                 if let Ok(Err(error)) = lane.await {
@@ -105,6 +107,7 @@ impl JoinedNine {
             }
             let _ = graph.await;
             let _ = chat.await;
+            let _ = group_keys.await;
         };
         if tokio::time::timeout(LEAVE_BUDGET, all).await.is_err() {
             tracing::warn!("place lanes did not all leave within the budget");
@@ -147,7 +150,7 @@ impl Drop for LiveLanes {
     }
 }
 
-/// Shared counter handles across all nine lanes plus the projection host,
+/// Shared counter handles across all ten lanes plus the projection host,
 /// sampled by the watcher.
 struct LaneCounters {
     handles: Vec<std::sync::Arc<std::sync::Mutex<stickleback::SyncStatus>>>,
@@ -223,7 +226,7 @@ impl LiveLanes {
         }
     }
 
-    fn joined(&self) -> &JoinedNine {
+    fn joined(&self) -> &JoinedLanes {
         self.joined.as_ref().expect("lanes are taken only in drop")
     }
 
@@ -232,15 +235,16 @@ impl LiveLanes {
         let mut handles = joined.moot.status_handles().to_vec();
         handles.push(joined.graph.status_handle());
         handles.push(joined.chat.status_handle());
+        handles.push(joined.group_keys.status_handle());
         LaneCounters {
             handles,
             projection: self.projection.as_ref().map(ProjectionServing::watch_counters),
         }
     }
 
-    /// Per-lane accepted-operation counters, Gemot's seven then graph then chat.
-    /// These counters do not establish whether a lane is caught up.
-    pub(crate) fn ops_received(&self) -> [u64; 9] {
+    /// Per-lane accepted-operation counters: Gemot's seven, graph, chat, then
+    /// group keys. These counters do not establish whether a lane is caught up.
+    pub(crate) fn ops_received(&self) -> [u64; 10] {
         let joined = self.joined();
         let gemot = joined.moot.sync_status();
         [
@@ -253,6 +257,7 @@ impl LiveLanes {
             gemot[6].ops_received,
             joined.graph.sync_status().ops_received,
             joined.chat.sync_status().ops_received,
+            joined.group_keys.sync_status().ops_received,
         ]
     }
 
@@ -269,7 +274,7 @@ impl LiveLanes {
     }
 
     pub(crate) fn sync_snapshot(&self) -> Vec<crate::place::PlaceLaneSnapshot> {
-        const NAMES: [&str; 9] = [
+        const NAMES: [&str; 10] = [
             "gemot/constitution/v1",
             "gemot/delegation/v1",
             "gemot/membership/v1",
@@ -277,15 +282,16 @@ impl LiveLanes {
             "gemot/standing/v1",
             "gemot/tulpa/v1",
             "gemot/flora/v1",
-            "commons/graph/v1",
+            COMMONS_ENCRYPTED_GRAPH_LANE,
             "commons/chat/v1",
+            stickleback::GROUP_KEY_LANE,
         ];
         let joined = self.joined();
-        let statuses = joined
-            .moot
-            .sync_status()
-            .into_iter()
-            .chain([joined.graph.sync_status(), joined.chat.sync_status()]);
+        let statuses = joined.moot.sync_status().into_iter().chain([
+            joined.graph.sync_status(),
+            joined.chat.sync_status(),
+            joined.group_keys.sync_status(),
+        ]);
         NAMES
             .into_iter()
             .zip(statuses)
@@ -306,7 +312,7 @@ impl LiveLanes {
     /// it is what makes it survive, publishing is what makes it arrive.
     pub(crate) fn publish_graph(
         &self,
-        operation: stickleback::Operation<CommonsExt>,
+        operation: stickleback::Operation<EncryptedCommonsExt>,
     ) -> Result<(), String> {
         self.joined()
             .graph
@@ -323,6 +329,18 @@ impl LiveLanes {
             .chat
             .publish(operation)
             .map_err(|error| format!("publish chat operation: {error}"))
+    }
+
+    /// Push one freshly authored group-key frame onto the live lane, so members
+    /// already connected apply an add or a rotation without a new round.
+    pub(crate) fn publish_group_key(
+        &self,
+        operation: stickleback::Operation<GroupKeyExt>,
+    ) -> Result<(), String> {
+        self.joined()
+            .group_keys
+            .publish(operation)
+            .map_err(|error| format!("publish group-key frame: {error}"))
     }
 
     /// Push one freshly authored membership operation onto the live lane, so
@@ -398,7 +416,10 @@ mod tests {
     use crate::place::{
         CapturedCollectionSelection, CapturedCollectionSelectionStatus, PlaceBindingV1,
     };
-    use commons::{Replica, chat::ChatReplica};
+    use commons::GroupKeys;
+    use commons::chat::ChatReplica;
+    use commons::encrypted::{COMMONS_ENCRYPTED_GRAPH_LANE, EncryptedReplica};
+    use crate::place::worker::GRAPH_STORE;
 
     /// Issue a capability delegation on the host's retained delegation lane.
     fn delegate_to(host: &Path, founder: &InMemoryProvider, moot: [u8; 32], subject: [u8; 32]) {
@@ -441,9 +462,12 @@ mod tests {
 
         let group = load_group_session(host, founder, moot).unwrap();
         let keyring = DataKeyring::from_bytes(&group.data_keyring_state().unwrap()).unwrap();
+        let keys = GroupKeys::new(keyring);
 
-        let graph_backend = RedbBackend::open(stores.join("commons-graph.redb")).unwrap();
-        let mut graph = Replica::for_identity(graph_backend, b.root.0, founder).unwrap();
+        let graph_backend = RedbBackend::open(stores.join(GRAPH_STORE)).unwrap();
+        let mut graph =
+            EncryptedReplica::for_identity(graph_backend, b.root.0, founder, keys.clone())
+                .unwrap();
         for index in 0..2 {
             // Address as identity, matching what ShareNode authors: the
             // fixture must produce what the product path produces, or the
@@ -460,7 +484,7 @@ mod tests {
         drop(graph);
 
         let chat_backend = RedbBackend::open(stores.join("commons-chat.redb")).unwrap();
-        let mut chat = ChatReplica::for_identity(chat_backend, b.chat.0, founder, keyring).unwrap();
+        let mut chat = ChatReplica::for_identity(chat_backend, b.chat.0, founder, keys).unwrap();
         pollster::block_on(chat.author(ChatEvent::Channel(Channel {
             id: "hall".into(),
             title: "Hall".into(),
@@ -510,7 +534,7 @@ mod tests {
                 ..
             }) => {
                 let sync = snapshot.sync.clone().expect("a founded place binds lanes");
-                assert_eq!(sync.lanes.len(), 9);
+                assert_eq!(sync.lanes.len(), 10);
                 assert_eq!(sync.dialed_rendezvous, 0, "a founder dials nobody");
                 assert!(
                     !sync.local_rendezvous.is_empty(),
@@ -593,7 +617,7 @@ mod tests {
                 ..
             }) => {
                 let sync = snapshot.sync.expect("a founder reconnect binds lanes");
-                assert_eq!(sync.lanes.len(), 9);
+                assert_eq!(sync.lanes.len(), 10);
                 assert_eq!(sync.dialed_rendezvous, 0, "there was nothing to dial");
                 assert!(!sync.local_rendezvous.is_empty());
             },
@@ -1496,8 +1520,8 @@ mod tests {
         assert_eq!(reconnected.chat.messages, reopened.chat.messages + 1);
         assert_eq!(
             reconnected.sync.as_ref().map(|status| status.lanes.len()),
-            Some(9),
-            "Reconnect reports all seven Gemot plus graph and chat lanes"
+            Some(10),
+            "Reconnect reports all seven Gemot lanes plus graph, chat and group keys"
         );
         // Repeating the same lifecycle generation is idempotent and does not
         // tear down or duplicate the already-live lanes.
@@ -1668,7 +1692,7 @@ mod tests {
         let b = crate::place::worker::found_place(&host, &founder, "Hearth", &settings).unwrap();
         let (open, _) = open_cached_place(&host, &b, &founder, &settings).unwrap();
         let mut lanes = super::join_live(&open, &b, &founder, &[], None, None).unwrap();
-        assert_eq!(lanes.ops_received().len(), 9);
+        assert_eq!(lanes.ops_received().len(), 10);
 
         lanes.leave_and_wait();
         drop(lanes);
@@ -2552,7 +2576,7 @@ mod tests {
             .lanes
             .iter()
             .find(|lane| lane.name == name)
-            .unwrap_or_else(|| panic!("{name} is one of the nine"));
+            .unwrap_or_else(|| panic!("{name} is one of the ten"));
         (lane.sync_rounds, lane.ops_received)
     }
 
@@ -2597,7 +2621,7 @@ mod tests {
         let joiner = RootIdentity::Unsealed(InMemoryProvider::from_seed([0xa2; 32]));
         let third = RootIdentity::Unsealed(InMemoryProvider::from_seed([0xa3; 32]));
 
-        // The founder: `Found` opens the place and binds its nine lanes
+        // The founder: `Found` opens the place and binds its ten lanes
         // listen-only, minting the ticket its invitations carry.
         let (host_worker, host_updates) =
             spawn_place_worker(Arc::new(|| {}), Arc::new(founder), settings());
@@ -3473,7 +3497,7 @@ mod tests {
         );
         let first_elapsed = first_sent.elapsed();
         let chat_before = lane_counters(&after_first, "commons/chat/v1");
-        let graph_before = lane_counters(&after_first, "commons/graph/v1");
+        let graph_before = lane_counters(&after_first, COMMONS_ENCRYPTED_GRAPH_LANE);
 
         // B: a third root invited through the product path. B never joins.
         let third_prekey = prepare_group_identity(&newcomer, &third, moot).unwrap();
@@ -3543,7 +3567,7 @@ mod tests {
             std::thread::sleep(Duration::from_millis(200));
         }
         let chat_after = lane_counters(&last, "commons/chat/v1");
-        let graph_after = lane_counters(&last, "commons/graph/v1");
+        let graph_after = lane_counters(&last, COMMONS_ENCRYPTED_GRAPH_LANE);
 
         // Key agreement with no lane involved: the founder's sealed session
         // seals, A's opens.
@@ -3625,7 +3649,803 @@ mod tests {
         );
     }
 
-    /// Print one snapshot's nine lane counters, plus the two folds this
+    /// Turnstone no longer derives the topic: the overlay it tags is
+    /// stickleback's export, and that export is the key the lane files a
+    /// frame under. If either drifts, members stop exchanging frames silently.
+    #[test]
+    fn the_group_key_overlay_names_the_topic_stickleback_stores_under() {
+        use muniment::Backend;
+        let identity = InMemoryProvider::from_seed([0x5a; 32]);
+        let group = stickleback::GroupSessionId([0x5b; 32]);
+        let lane =
+            stickleback::GroupKeyLane::for_identity(muniment::MemoryBackend::new(), group, &identity)
+                .unwrap();
+        let (mut session, _) = stickleback::GroupSession::new(group, &identity).unwrap();
+        let founded = session.create(&[]).unwrap();
+        pollster::block_on(lane.author_dispatch(&founded)).unwrap();
+        let exported = stickleback::group_key_sync_topic(group);
+        let keys = pollster::block_on(lane.sync_store().backend().list("topic/")).unwrap();
+        let expected = format!("topic/{}/", crate::place::hex32(&exported));
+        assert!(!keys.is_empty() && keys.iter().all(|key| key.starts_with(&expected)), "{keys:?}");
+        assert_eq!(
+            super::group_key_overlay(group.0),
+            transport::sync_overlay_topic(exported),
+            "the dialed overlay is the exported topic's",
+        );
+    }
+
+    /// A founder's worker, live on a place its product `Found` opened.
+    fn found_live(
+        host: &Path,
+        seed: u8,
+    ) -> (
+        (armillary::ActorHandle<PlaceWorkerCommand>, std::sync::mpsc::Receiver<Update>),
+        SessionId,
+        PlaceBindingV1,
+    ) {
+        let identity = RootIdentity::Unsealed(InMemoryProvider::from_seed([seed; 32]));
+        let founder = spawn_place_worker(Arc::new(|| {}), Arc::new(identity), settings());
+        let session = SessionId::new();
+        founder.0.command(PlaceWorkerCommand::Found {
+            session,
+            generation: 1,
+            directory: host.to_path_buf(),
+            name: "Hearth".into(),
+        });
+        loop {
+            match founder.1.recv_timeout(Duration::from_secs(60)) {
+                Ok(Update::PlaceFounded {
+                    result: Ok((binding, _)),
+                    ..
+                }) => return (founder, session, binding),
+                Ok(Update::PlaceFounded {
+                    result: Err(error), ..
+                }) => panic!("founding refused: {error}"),
+                Ok(_) => continue,
+                Err(error) => panic!("founding never answered: {error}"),
+            }
+        }
+    }
+
+    /// Offer a pre-key for `seed` and have the founder's product `Invite`
+    /// admit it as a writer.
+    fn invite_writer(
+        founder: &(armillary::ActorHandle<PlaceWorkerCommand>, std::sync::mpsc::Receiver<Update>),
+        founder_session: SessionId,
+        host: &Path,
+        directory: &Path,
+        seed: u8,
+        moot: [u8; 32],
+    ) -> Box<crate::place::invite::PlaceInviteV1> {
+        let prekey =
+            prepare_group_identity(directory, &InMemoryProvider::from_seed([seed; 32]), moot)
+                .unwrap();
+        founder.0.command(PlaceWorkerCommand::Invite {
+            session: founder_session,
+            generation: 1,
+            directory: host.to_path_buf(),
+            prekey,
+            access: crate::place::PlaceInviteAccess::Writer,
+            lifetime_ms: None,
+        });
+        expect_invited(&founder.1, "a writer invitation")
+    }
+
+    /// A member's own worker, joined through the product `Join`.
+    fn join_member(
+        directory: &Path,
+        seed: u8,
+        invite: Box<crate::place::invite::PlaceInviteV1>,
+    ) -> (armillary::ActorHandle<PlaceWorkerCommand>, std::sync::mpsc::Receiver<Update>, SessionId) {
+        let identity = RootIdentity::Unsealed(InMemoryProvider::from_seed([seed; 32]));
+        let (worker, updates) = spawn_place_worker(Arc::new(|| {}), Arc::new(identity), settings());
+        let session = SessionId::new();
+        worker.command(PlaceWorkerCommand::Join {
+            session,
+            generation: 1,
+            directory: directory.to_path_buf(),
+            invite,
+        });
+        joined_snapshot(&updates);
+        (worker, updates, session)
+    }
+
+    fn send_message(
+        worker: &armillary::ActorHandle<PlaceWorkerCommand>,
+        updates: &std::sync::mpsc::Receiver<Update>,
+        session: SessionId,
+        request: u64,
+        channel: &str,
+        body: &str,
+    ) -> crate::place::OfflinePlaceSnapshot {
+        worker.command(PlaceWorkerCommand::Author {
+            session,
+            generation: 1,
+            request,
+            command: PlaceCommand::SendMessage {
+                channel: channel.into(),
+                body: body.into(),
+            },
+        });
+        authored(updates, request).unwrap_or_else(|error| panic!("{body}: {error}"))
+    }
+
+    /// Answer only the lane watcher's nudges until `done`: no polling, so the
+    /// wait measured is the product path's. Returns the snapshot and the
+    /// nudges it took.
+    fn until_nudged(
+        worker: &armillary::ActorHandle<PlaceWorkerCommand>,
+        updates: &std::sync::mpsc::Receiver<Update>,
+        session: SessionId,
+        budget: Duration,
+        done: impl Fn(&crate::place::OfflinePlaceSnapshot) -> bool,
+    ) -> Option<(crate::place::OfflinePlaceSnapshot, usize)> {
+        let deadline = Instant::now() + budget;
+        let mut nudges = 0;
+        while let Some(left) = deadline.checked_duration_since(Instant::now()) {
+            match updates.recv_timeout(left) {
+                Ok(Update::PlaceLanesAdvanced { .. }) => {
+                    nudges += 1;
+                    worker.command(PlaceWorkerCommand::Resync {
+                        session,
+                        generation: 1,
+                    });
+                },
+                Ok(Update::PlaceOpened {
+                    result: Ok(snapshot),
+                    ..
+                }) if done(&snapshot) => return Some((snapshot, nudges)),
+                Ok(_) => continue,
+                Err(_) => break,
+            }
+        }
+        None
+    }
+
+    /// A worker's stores, reopened by hand once its worker has let go.
+    fn reopen_by_hand(
+        directory: &Path,
+        binding: &PlaceBindingV1,
+        identity: &InMemoryProvider,
+    ) -> crate::place::worker::OpenPlace {
+        let deadline = Instant::now() + Duration::from_secs(30);
+        loop {
+            match open_cached_place(directory, binding, identity, &settings()) {
+                Ok((open, _)) => return open,
+                Err(error) if error.contains("already open") && Instant::now() < deadline => {
+                    std::thread::sleep(Duration::from_millis(25));
+                },
+                Err(error) => panic!("reopen {}: {error}", directory.display()),
+            }
+        }
+    }
+
+    fn chat_bodies(open: &crate::place::worker::OpenPlace) -> Vec<String> {
+        pollster::block_on(open.chat.projection())
+            .unwrap()
+            .messages
+            .into_iter()
+            .map(|message| message.message.body)
+            .collect()
+    }
+
+    /// R2 of the co-op lifecycle parity plan: the founder revokes B while A and
+    /// B are live. A applies the removal and rotation from the group-key lane
+    /// on a nudge; the founder's running worker and A both author to the new
+    /// epoch and read each other; B, which read chat before the revocation,
+    /// cannot read anything after it. Then C, invited after the rotation,
+    /// reads chat authored after its admission, and A reads new chat after a
+    /// restart.
+    #[test]
+    fn a_revoked_member_stops_reading_while_the_others_follow_the_rotation() {
+        use crate::place::PlaceStanding;
+        let root =
+            std::env::temp_dir().join(format!("turnstone-place-r2-rekey-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&root);
+        let [host, a_dir, b_dir, c_dir] =
+            ["host", "a", "b", "c"].map(|name| root.join(name));
+        for directory in [&host, &a_dir, &b_dir, &c_dir] {
+            std::fs::create_dir_all(directory).unwrap();
+        }
+        const F: u8 = 0xc4;
+        const A: u8 = 0xc5;
+        const B: u8 = 0xc6;
+        const C: u8 = 0xc7;
+        let root_of = |seed: u8| InMemoryProvider::from_seed([seed; 32]).master_public_key().to_bytes();
+
+        let (founder, f_session, binding) = found_live(&host, F);
+        let moot = binding.moot.0;
+        let channel = binding.default_channel.clone();
+
+        let invite = invite_writer(&founder, f_session, &host, &a_dir, A, moot);
+        let (a_worker, a_updates, a_session) = join_member(&a_dir, A, invite);
+        let invite = invite_writer(&founder, f_session, &host, &b_dir, B, moot);
+        let (b_worker, b_updates, b_session) = join_member(&b_dir, B, invite);
+        // A was joined before B's add: three group members means A applied
+        // that add from the group-key lane, not from any invitation.
+        let a_caught_up = converge_until(&a_worker, &a_updates, a_session, "A sees B's add", |s| {
+            s.moot.members == 3 && s.group.members == 3 && s.chat.channels == 1
+        });
+        report_lanes("R2 A before revocation", &a_caught_up);
+
+        // Positive control: B reads chat before the revocation.
+        send_message(&founder.0, &founder.1, f_session, 1, &channel, "before revocation");
+        converge_until(&a_worker, &a_updates, a_session, "A reads message 0", |s| s.chat.messages == 1);
+        let b_before = converge_until(&b_worker, &b_updates, b_session, "B reads message 0", |s| {
+            s.chat.messages == 1
+        });
+        let b_epochs = b_before.group.epochs;
+
+        founder.0.command(PlaceWorkerCommand::Author {
+            session: f_session,
+            generation: 1,
+            request: 2,
+            command: PlaceCommand::RevokeMember { member: root_of(B) },
+        });
+        let revoked = authored(&founder.1, 2).expect("the founder revokes B");
+        let revoked_at = Instant::now();
+        assert_eq!(revoked.group.members, 2, "B's recipient left the founder's group");
+
+        // A drains the removal and rotation on a watcher nudge alone.
+        let (a_rotated, nudges) = until_nudged(
+            &a_worker,
+            &a_updates,
+            a_session,
+            Duration::from_secs(10),
+            |s| s.group.members == 2 && s.group.epochs == revoked.group.epochs,
+        )
+        .unwrap_or_else(|| panic!("A never applied the rotation within 10 s"));
+        let drain_latency = revoked_at.elapsed();
+        eprintln!(
+            "R2 drain: A applied removal and rotation {} ms after the revoke answered, over {nudges} nudge(s); founder epochs {}, A epochs {}, A pending {} refused {}",
+            drain_latency.as_millis(),
+            revoked.group.epochs,
+            a_rotated.group.epochs,
+            a_rotated.group.pending_frames,
+            a_rotated.group.refused_frames,
+        );
+        assert!(nudges > 0);
+        assert_eq!((a_rotated.group.pending_frames, a_rotated.group.refused_frames), (0, 0));
+
+        // The founder's running worker and A both author after the rotation.
+        send_message(&founder.0, &founder.1, f_session, 3, &channel, "rotated: founder");
+        send_message(&a_worker, &a_updates, a_session, 1, &channel, "rotated: A");
+        converge_until(&founder.0, &founder.1, f_session, "the founder reads A", |s| {
+            s.chat.messages == 3
+        });
+        converge_until(&a_worker, &a_updates, a_session, "A reads the founder", |s| {
+            s.chat.messages == 3
+        });
+
+        // C, invited after the rotation. Its admission is also B's connection
+        // control: a plaintext Gemot fact authored after both messages.
+        let invite = invite_writer(&founder, f_session, &host, &c_dir, C, moot);
+        let (c_worker, c_updates, c_session) = join_member(&c_dir, C, invite);
+        let b_control = converge_until(&b_worker, &b_updates, b_session, "B sees C admitted", |s| {
+            s.members.iter().any(|member| member.root == root_of(C))
+        });
+        eprintln!(
+            "R2 B after C's admission: standing {:?}, messages {}, group epochs {} (before {b_epochs}), pending {} refused {}",
+            b_control.standing,
+            b_control.chat.messages,
+            b_control.group.epochs,
+            b_control.group.pending_frames,
+            b_control.group.refused_frames,
+        );
+        assert_eq!(b_control.standing, PlaceStanding::MembershipRevoked);
+        let b_status = crate::place::PlaceState::Offline {
+            binding: binding.clone(),
+            generation: 1,
+            snapshot: b_control.clone(),
+        }
+        .status_lines();
+        assert!(b_status.iter().any(|row| row == "Membership: revoked"), "{b_status:?}");
+        assert!(!b_status.iter().any(|row| row.starts_with("Reading:")), "{b_status:?}");
+        assert_eq!(b_control.chat.messages, 1, "B counted post-rotation chat");
+        assert_eq!(b_control.group.epochs, b_epochs, "B installed a post-removal epoch");
+
+        send_message(&founder.0, &founder.1, f_session, 4, &channel, "after C joined");
+        let c_read = converge_until(&c_worker, &c_updates, c_session, "C reads new chat", |s| {
+            s.chat.messages == 4
+        });
+        assert_eq!(c_read.group.epochs, revoked.group.epochs, "C holds every retained epoch");
+        converge_until(&a_worker, &a_updates, a_session, "A reads the message after C", |s| {
+            s.group.members == 3 && s.chat.messages == 4
+        });
+
+        // A restarts after the rotation and still reads new chat.
+        release(&a_worker);
+        drop(reopen_by_hand(&a_dir, &binding, &InMemoryProvider::from_seed([A; 32])));
+        let (a_worker, a_updates) = spawn_place_worker(
+            Arc::new(|| {}),
+            Arc::new(RootIdentity::Unsealed(InMemoryProvider::from_seed([A; 32]))),
+            settings(),
+        );
+        a_worker.command(PlaceWorkerCommand::Reconnect {
+            session: a_session,
+            generation: 1,
+            directory: a_dir.clone(),
+            binding: binding.clone(),
+        });
+        converge_until(&a_worker, &a_updates, a_session, "A reconnects", |s| s.sync.is_some());
+        send_message(&founder.0, &founder.1, f_session, 5, &channel, "after A restarted");
+        converge_until(&a_worker, &a_updates, a_session, "restarted A reads new chat", |s| {
+            s.chat.messages == 5
+        });
+
+        for worker in [&founder.0, &a_worker, &b_worker, &c_worker] {
+            release(worker);
+        }
+        let a_open = reopen_by_hand(&a_dir, &binding, &InMemoryProvider::from_seed([A; 32]));
+        let b_open = reopen_by_hand(&b_dir, &binding, &InMemoryProvider::from_seed([B; 32]));
+        let a_bodies = chat_bodies(&a_open);
+        let b_bodies = chat_bodies(&b_open);
+        eprintln!("R2 retained bodies: A {a_bodies:?}; B {b_bodies:?}");
+        const AFTER: [&str; 4] = ["rotated: founder", "rotated: A", "after C joined", "after A restarted"];
+        assert!(b_bodies.iter().any(|body| body == "before revocation"), "positive control");
+        for body in AFTER {
+            assert!(a_bodies.iter().any(|held| held == body), "A lacks {body}");
+            assert!(!b_bodies.iter().any(|held| held == body), "B read {body}");
+        }
+        // The founder's post-rotation message, offered to B directly.
+        let sealed = pollster::block_on(a_open.chat.projection())
+            .unwrap()
+            .messages
+            .into_iter()
+            .find(|message| message.message.body == "rotated: founder")
+            .unwrap()
+            .operation;
+        let operation = pollster::block_on(a_open.chat.sync_store().get_operation(&sealed.into()))
+            .unwrap()
+            .expect("A retains the founder's message");
+        // Parked, not refused: the record is kept whole against the epoch
+        // arriving later. B never receives that epoch, so re-admission on B's
+        // own handle admits nothing and the projection never shows it.
+        assert!(
+            !pollster::block_on(b_open.chat.accept(&operation)).unwrap(),
+            "a parked record is not accepted",
+        );
+        // B's live lanes already parked every post-rotation message, this one
+        // among them, so the hand-offered copy lands in the slot it holds.
+        let parked = pollster::block_on(b_open.chat.parking_status()).unwrap();
+        eprintln!("R2 B parks the founder's post-rotation messages: {parked:?}");
+        assert_eq!(parked.parked, AFTER.len() as u64);
+        let report = pollster::block_on(b_open.chat.readmit_parked()).unwrap();
+        assert_eq!((report.admitted, report.still_parked), (0, parked.parked), "{report:?}");
+        assert!(!chat_bodies(&b_open).iter().any(|body| body == "rotated: founder"));
+
+        // The other half of the same mechanism, on the same parked records:
+        // hand B the epoch A holds -- which no revoked member can obtain, so
+        // this is the test reaching in -- and they become readable at the next
+        // re-admission, not before.
+        b_open
+            .group
+            .keys
+            .replace_from_bytes(&a_open.group.session.data_keyring_state().unwrap())
+            .unwrap();
+        assert!(!chat_bodies(&b_open).iter().any(|body| body == "rotated: founder"));
+        let report = pollster::block_on(b_open.chat.readmit_parked()).unwrap();
+        assert_eq!((report.admitted, report.still_parked), (parked.parked, 0), "{report:?}");
+        let readmitted = chat_bodies(&b_open);
+        for body in AFTER {
+            assert!(readmitted.iter().any(|held| held == body), "{body} stayed parked");
+        }
+        drop((a_open, b_open));
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    /// Classifies every operation revoked, so a projection names each by id.
+    struct EveryOperation;
+
+    impl commons::CommonsAuthority for EveryOperation {
+        fn classify(
+            &self,
+            _: servitor::Subject,
+            _: &servitor::Cap,
+            _: servitor::Mode,
+        ) -> commons::AuthorityState {
+            commons::AuthorityState::Revoked
+        }
+    }
+
+    fn share_node(
+        founder: &(armillary::ActorHandle<PlaceWorkerCommand>, std::sync::mpsc::Receiver<Update>),
+        session: SessionId,
+        request: u64,
+        address: &str,
+    ) {
+        founder.0.command(PlaceWorkerCommand::Author {
+            session,
+            generation: 1,
+            request,
+            command: PlaceCommand::ShareNode {
+                address: address.into(),
+            },
+        });
+        authored(&founder.1, request).unwrap_or_else(|error| panic!("share {address}: {error}"));
+    }
+
+    /// Sorted: the shared graph is a set, not an insertion order.
+    fn addresses(snapshot: &crate::place::OfflinePlaceSnapshot) -> Vec<String> {
+        let mut addresses: Vec<String> =
+            snapshot.shared.addresses().map(str::to_string).collect();
+        addresses.sort();
+        addresses
+    }
+
+    /// E2 of the co-op lifecycle parity plan: after the founder revokes B, a
+    /// node the founder shares is admitted and projected by A and refused by
+    /// B, which projected the node shared before the revocation. C, invited
+    /// once both nodes exist, reads the graph history, the pre-rotation node
+    /// included, through the epochs its welcome carried.
+    #[test]
+    fn a_revoked_member_cannot_read_shared_nodes_authored_after_the_rotation() {
+        let root =
+            std::env::temp_dir().join(format!("turnstone-place-e2-graph-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&root);
+        let [host, a_dir, b_dir, c_dir] = ["host", "a", "b", "c"].map(|name| root.join(name));
+        for directory in [&host, &a_dir, &b_dir, &c_dir] {
+            std::fs::create_dir_all(directory).unwrap();
+        }
+        const F: u8 = 0xd4;
+        const A: u8 = 0xd5;
+        const B: u8 = 0xd6;
+        const C: u8 = 0xd7;
+        const BEFORE: &str = "https://before.example/node";
+        const AFTER: &str = "https://after.example/node";
+        let root_of =
+            |seed: u8| InMemoryProvider::from_seed([seed; 32]).master_public_key().to_bytes();
+
+        let (founder, f_session, binding) = found_live(&host, F);
+        let moot = binding.moot.0;
+        let invite = invite_writer(&founder, f_session, &host, &a_dir, A, moot);
+        let (a_worker, a_updates, a_session) = join_member(&a_dir, A, invite);
+        let invite = invite_writer(&founder, f_session, &host, &b_dir, B, moot);
+        let (b_worker, b_updates, b_session) = join_member(&b_dir, B, invite);
+
+        share_node(&founder, f_session, 1, BEFORE);
+        converge_until(&a_worker, &a_updates, a_session, "A projects the first node", |s| {
+            s.graph.nodes == 1
+        });
+        // Positive control: B projects a node shared before its revocation.
+        let b_before =
+            converge_until(&b_worker, &b_updates, b_session, "B projects the first node", |s| {
+                s.graph.nodes == 1
+            });
+        assert_eq!(addresses(&b_before), [BEFORE]);
+
+        founder.0.command(PlaceWorkerCommand::Author {
+            session: f_session,
+            generation: 1,
+            request: 2,
+            command: PlaceCommand::RevokeMember { member: root_of(B) },
+        });
+        let revoked = authored(&founder.1, 2).expect("the founder revokes B");
+        converge_until(&a_worker, &a_updates, a_session, "A applies the rotation", |s| {
+            s.group.members == 2 && s.group.epochs == revoked.group.epochs
+        });
+
+        let shared_at = Instant::now();
+        share_node(&founder, f_session, 3, AFTER);
+        let a_after =
+            converge_until(&a_worker, &a_updates, a_session, "A projects the second node", |s| {
+                s.graph.nodes == 2
+            });
+        eprintln!(
+            "E2 A projected the post-rotation node {} ms after it was shared: {:?}",
+            shared_at.elapsed().as_millis(),
+            addresses(&a_after)
+        );
+
+        // C arrives after both nodes exist. Its admission is B's connection
+        // control, authored after the second node.
+        let invite = invite_writer(&founder, f_session, &host, &c_dir, C, moot);
+        let (c_worker, c_updates, c_session) = join_member(&c_dir, C, invite);
+        let c_read =
+            converge_until(&c_worker, &c_updates, c_session, "C reads the graph history", |s| {
+                s.graph.nodes == 2
+            });
+        eprintln!(
+            "E2 C's graph after joining: {:?}, group epochs {}",
+            addresses(&c_read),
+            c_read.group.epochs
+        );
+        assert_eq!(addresses(&c_read), addresses(&a_after));
+        assert!(addresses(&c_read).iter().any(|address| address == BEFORE));
+        let b_control = converge_until(&b_worker, &b_updates, b_session, "B sees C admitted", |s| {
+            s.members.iter().any(|member| member.root == root_of(C))
+        });
+        eprintln!("E2 B after C's admission: {:?}", addresses(&b_control));
+        assert_eq!(addresses(&b_control), [BEFORE], "B projected a post-rotation node");
+
+        for worker in [&founder.0, &a_worker, &b_worker, &c_worker] {
+            release(worker);
+        }
+        let a_open = reopen_by_hand(&a_dir, &binding, &InMemoryProvider::from_seed([A; 32]));
+        let b_open = reopen_by_hand(&b_dir, &binding, &InMemoryProvider::from_seed([B; 32]));
+        let b_projection = pollster::block_on(b_open.graph.projection()).unwrap();
+        let b_shared = crate::place::projection::SharedGraph::from_projection(&b_projection);
+        assert_eq!(b_shared.addresses().collect::<Vec<_>>(), [BEFORE]);
+        // The node B never stored, offered to it directly.
+        let unseen: Vec<[u8; 32]> =
+            pollster::block_on(a_open.graph.projection_with_authority(&EveryOperation))
+                .unwrap()
+                .revoked
+                .into_iter()
+                .map(|operation| operation.operation)
+                .filter(|id| {
+                    !pollster::block_on(b_open.graph.sync_store().has_operation(&(*id).into()))
+                        .unwrap()
+                })
+                .collect();
+        assert_eq!(unseen.len(), 1, "A holds exactly one node operation B lacks");
+        let operation =
+            pollster::block_on(a_open.graph.sync_store().get_operation(&unseen[0].into()))
+                .unwrap()
+                .expect("A retains the post-rotation node");
+        // Parked, not refused, and B never gets the epoch that would release
+        // it: re-admission admits nothing and the projection stays at BEFORE.
+        // Sorted: the shared graph is a set, not an insertion order.
+        let shared_addresses = |open: &crate::place::worker::OpenPlace| {
+            let projection = pollster::block_on(open.graph.projection()).unwrap();
+            let mut addresses: Vec<String> =
+                crate::place::projection::SharedGraph::from_projection(&projection)
+                    .addresses()
+                    .map(str::to_string)
+                    .collect();
+            addresses.sort();
+            addresses
+        };
+        assert!(
+            !pollster::block_on(b_open.graph.accept(&operation)).unwrap(),
+            "a parked record is not accepted",
+        );
+        let parked = pollster::block_on(b_open.graph.parking_status()).unwrap();
+        eprintln!("E2 B parks the post-rotation node: {parked:?}");
+        assert_eq!(parked.parked, 1);
+        let report = pollster::block_on(b_open.graph.readmit_parked()).unwrap();
+        assert_eq!((report.admitted, report.still_parked), (0, 1), "{report:?}");
+        assert_eq!(shared_addresses(&b_open), [BEFORE]);
+
+        // Hand B the epoch A holds -- which no revoked member can obtain, so
+        // this is the test reaching in -- and the same parked record projects
+        // at the next re-admission, not before.
+        b_open
+            .group
+            .keys
+            .replace_from_bytes(&a_open.group.session.data_keyring_state().unwrap())
+            .unwrap();
+        assert_eq!(shared_addresses(&b_open), [BEFORE]);
+        let report = pollster::block_on(b_open.graph.readmit_parked()).unwrap();
+        assert_eq!((report.admitted, report.still_parked), (1, 0), "{report:?}");
+        assert_eq!(shared_addresses(&b_open), [AFTER, BEFORE]);
+        drop((a_open, b_open));
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    /// R2b: a Gemot member the group session cannot resolve to a recipient is
+    /// refused by name. Revoking it in Gemot alone would leave it reading,
+    /// which is the silent half-revoke this refusal replaces.
+    #[test]
+    fn a_revoke_with_no_group_recipient_is_refused_and_changes_nothing() {
+        let root = std::env::temp_dir()
+            .join(format!("turnstone-place-r2b-norecipient-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&root);
+        let host = root.join("host");
+        std::fs::create_dir_all(&host).unwrap();
+        const F: u8 = 0xe4;
+        let stranger = InMemoryProvider::from_seed([0xe5; 32]).master_public_key().to_bytes();
+
+        let (founder, f_session, binding) = found_live(&host, F);
+        release(&founder.0);
+
+        // A Gemot member the group never welcomed: admitted straight on the
+        // membership lane, with no pre-key registered and so no recipient.
+        let founder_identity = InMemoryProvider::from_seed([F; 32]);
+        // The released worker's store lock outlives its ack under load.
+        let deadline = Instant::now() + Duration::from_secs(30);
+        let moot_file = loop {
+            match pollster::block_on(MootFile::open_existing(
+                place_store_dir(&host).join("gemot"),
+                MootId(binding.moot.0),
+                settings().retention,
+            )) {
+                Ok(moot_file) => break moot_file,
+                Err(error) if Instant::now() < deadline => {
+                    eprintln!("R2b waiting for the Gemot store: {error}");
+                    std::thread::sleep(Duration::from_millis(50));
+                },
+                Err(error) => panic!("open the founder's Gemot: {error}"),
+            }
+        };
+        pollster::block_on(moot_file.membership_store().author_for_identity(
+            &founder_identity,
+            MootMembershipAction::Add {
+                member: stranger,
+                access: MootAccessLevel::Write,
+            },
+        ))
+        .unwrap();
+        drop(moot_file);
+
+        let (founder, updates) = spawn_place_worker(
+            Arc::new(|| {}),
+            Arc::new(RootIdentity::Unsealed(InMemoryProvider::from_seed([F; 32]))),
+            settings(),
+        );
+        founder.command(PlaceWorkerCommand::Reconnect {
+            session: f_session,
+            generation: 1,
+            directory: host.clone(),
+            binding: binding.clone(),
+        });
+        let before = converge_until(&founder, &updates, f_session, "the stranger is a member", |s| {
+            s.members.iter().any(|member| member.root == stranger)
+        });
+
+        founder.command(PlaceWorkerCommand::Author {
+            session: f_session,
+            generation: 1,
+            request: 1,
+            command: PlaceCommand::RevokeMember { member: stranger },
+        });
+        let refusal = authored(&updates, 1).expect_err("a revoke with no recipient must refuse");
+        eprintln!("R2b revoke refusal: {refusal}");
+        assert_eq!(refusal, crate::place::worker::NO_GROUP_RECIPIENT);
+
+        // Nothing moved: Gemot still holds the member and the group still
+        // holds its epoch, so no half-revoke was left behind.
+        let after = converge_until(&founder, &updates, f_session, "nothing changed", |s| {
+            s.moot.membership_epoch == before.moot.membership_epoch
+        });
+        assert!(after.members.iter().any(|member| member.root == stranger));
+        assert_eq!(after.group.epochs, before.group.epochs);
+        release(&founder);
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    /// R2b's race: the founder revokes B and authors immediately, before A can
+    /// have drained the rotation. What A receives ahead of the epoch it is
+    /// sealed to parks rather than being refused, and A's next drain re-admits
+    /// it, so A reads both the message and the shared node without
+    /// reconnecting -- and F's LATER message, whose predecessor was the parked
+    /// one, arrives too. B, which read the pre-revocation pair, reads neither.
+    #[test]
+    fn content_authored_the_instant_after_a_revoke_still_reaches_the_remaining_member() {
+        use crate::place::PlaceStanding;
+        let root =
+            std::env::temp_dir().join(format!("turnstone-place-r2b-race-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&root);
+        let [host, a_dir, b_dir] = ["host", "a", "b"].map(|name| root.join(name));
+        for directory in [&host, &a_dir, &b_dir] {
+            std::fs::create_dir_all(directory).unwrap();
+        }
+        const F: u8 = 0xe8;
+        const A: u8 = 0xe9;
+        const B: u8 = 0xea;
+        const BEFORE: &str = "https://before.example/race";
+        const AFTER: &str = "https://after.example/race";
+        let root_of =
+            |seed: u8| InMemoryProvider::from_seed([seed; 32]).master_public_key().to_bytes();
+
+        let (founder, f_session, binding) = found_live(&host, F);
+        let moot = binding.moot.0;
+        let channel = binding.default_channel.clone();
+        let invite = invite_writer(&founder, f_session, &host, &a_dir, A, moot);
+        let (a_worker, a_updates, a_session) = join_member(&a_dir, A, invite);
+        let invite = invite_writer(&founder, f_session, &host, &b_dir, B, moot);
+        let (b_worker, b_updates, b_session) = join_member(&b_dir, B, invite);
+
+        // Positive control: both members read a message and a node authored
+        // before the revocation.
+        send_message(&founder.0, &founder.1, f_session, 1, &channel, "before revocation");
+        share_node(&founder, f_session, 2, BEFORE);
+        let pair = |s: &crate::place::OfflinePlaceSnapshot| s.chat.messages == 1 && s.graph.nodes == 1;
+        converge_until(&a_worker, &a_updates, a_session, "A reads the first pair", pair);
+        let b_before =
+            converge_until(&b_worker, &b_updates, b_session, "B reads the first pair", pair);
+        assert_eq!(addresses(&b_before), [BEFORE]);
+
+        // The race. Nothing waits for A's drain between these three commands.
+        founder.0.command(PlaceWorkerCommand::Author {
+            session: f_session,
+            generation: 1,
+            request: 3,
+            command: PlaceCommand::RevokeMember { member: root_of(B) },
+        });
+        let revoked = authored(&founder.1, 3).expect("the founder revokes B");
+        let revoked_at = Instant::now();
+        send_message(&founder.0, &founder.1, f_session, 4, &channel, "after revocation");
+        share_node(&founder, f_session, 5, AFTER);
+        assert_eq!(revoked.group.members, 2);
+
+        let message_at = std::cell::Cell::new(None);
+        let node_at = std::cell::Cell::new(None);
+        let (a_read, nudges) = until_nudged(
+            &a_worker,
+            &a_updates,
+            a_session,
+            Duration::from_secs(60),
+            |s| {
+                if message_at.get().is_none() && s.chat.messages == 2 {
+                    message_at.set(Some(revoked_at.elapsed()));
+                }
+                if node_at.get().is_none() && s.graph.nodes == 2 {
+                    node_at.set(Some(revoked_at.elapsed()));
+                }
+                message_at.get().is_some() && node_at.get().is_some()
+            },
+        )
+        .unwrap_or_else(|| panic!("A never read the post-revoke pair within 60 s"));
+        eprintln!(
+            "R2b race: A read the message {} ms and the node {} ms after the revoke answered, over {nudges} nudge(s); re-admitted {}, parked {}, evicted {}, frames pending {} refused {}",
+            message_at.get().unwrap().as_millis(),
+            node_at.get().unwrap().as_millis(),
+            a_read.group.readmitted_records,
+            a_read.group.parked_records,
+            a_read.group.evicted_records,
+            a_read.group.pending_frames,
+            a_read.group.refused_frames,
+        );
+        assert_eq!(addresses(&a_read), [AFTER, BEFORE]);
+        assert_eq!(a_read.group.parked_records, 0, "A left a record parked");
+        assert_eq!(a_read.group.refused_frames, 0);
+
+        // The successor case: F's next message backlinks the one that may have
+        // parked. Before parking landed, that predecessor was dropped and this
+        // message could never be admitted.
+        send_message(&founder.0, &founder.1, f_session, 6, &channel, "successor");
+        let successor_at = Instant::now();
+        let (a_successor, _) = until_nudged(
+            &a_worker,
+            &a_updates,
+            a_session,
+            Duration::from_secs(60),
+            |s| s.chat.messages == 3,
+        )
+        .unwrap_or_else(|| panic!("A never read F's successor message within 60 s"));
+        eprintln!(
+            "R2b race: A read the successor {} ms after it was authored",
+            successor_at.elapsed().as_millis()
+        );
+        assert_eq!(a_successor.group.parked_records, 0);
+
+        // B stayed connected across the whole window -- it saw its own
+        // revocation, a plaintext Gemot fact -- and read none of the three
+        // encrypted records authored after it.
+        let b_after = converge_until(&b_worker, &b_updates, b_session, "B sees its revocation", |s| {
+            s.standing == PlaceStanding::MembershipRevoked
+        });
+        eprintln!(
+            "R2b race: B after the revoke: messages {}, nodes {}, parked {}, epochs {} (before {})",
+            b_after.chat.messages,
+            b_after.graph.nodes,
+            b_after.group.parked_records,
+            b_after.group.epochs,
+            b_before.group.epochs,
+        );
+        assert_eq!(b_after.chat.messages, 1, "B read post-revocation chat");
+        assert_eq!(addresses(&b_after), [BEFORE], "B read a post-revocation node");
+        assert_eq!(b_after.group.epochs, b_before.group.epochs);
+
+        for worker in [&founder.0, &a_worker, &b_worker] {
+            release(worker);
+        }
+        let a_open = reopen_by_hand(&a_dir, &binding, &InMemoryProvider::from_seed([A; 32]));
+        let b_open = reopen_by_hand(&b_dir, &binding, &InMemoryProvider::from_seed([B; 32]));
+        let a_bodies = chat_bodies(&a_open);
+        let b_bodies = chat_bodies(&b_open);
+        eprintln!("R2b race retained bodies: A {a_bodies:?}; B {b_bodies:?}");
+        assert!(b_bodies.iter().any(|body| body == "before revocation"), "positive control");
+        for body in ["after revocation", "successor"] {
+            assert!(a_bodies.iter().any(|held| held == body), "A lacks {body}");
+            assert!(!b_bodies.iter().any(|held| held == body), "B read {body}");
+        }
+        drop((a_open, b_open));
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    /// Print one snapshot's ten lane counters, plus the two folds this
     /// diagnostic is about.
     fn report_lanes(what: &str, snapshot: &crate::place::OfflinePlaceSnapshot) {
         eprintln!(
@@ -3793,6 +4613,14 @@ pub(crate) fn holder_dial(
     })
 }
 
+/// The group-key lane's sync overlay, from stickleback's exported topic. A
+/// dialer must tag it or the lane never forms.
+fn group_key_overlay(moot: [u8; 32]) -> [u8; 32] {
+    sync_overlay_topic(stickleback::group_key_sync_topic(
+        stickleback::GroupSessionId(moot),
+    ))
+}
+
 fn transport_salt(moot: [u8; 32]) -> Vec<u8> {
     let mut salt = Vec::with_capacity(61);
     salt.extend_from_slice(b"turnstone.place.transport.v1/");
@@ -3800,7 +4628,7 @@ fn transport_salt(moot: [u8; 32]) -> Vec<u8> {
     salt
 }
 
-/// Dial the given tickets and join all nine of the place's lanes.
+/// Dial the given tickets and join all ten of the place's lanes.
 ///
 /// An EMPTY ticket list is a listen-only bind, not a refusal: a founder who
 /// has invited nobody yet still needs an endpoint before it can mint the
@@ -3829,6 +4657,7 @@ pub(crate) fn join_live(
         sync_overlay_topic(binding.moot.0),
         sync_overlay_topic(binding.root.0),
         sync_overlay_topic(binding.chat.0),
+        group_key_overlay(binding.moot.0),
     ];
 
     let runtime = tokio::runtime::Builder::new_multi_thread()
@@ -3837,7 +4666,7 @@ pub(crate) fn join_live(
         .build()
         .map_err(|error| format!("build lane runtime: {error}"))?;
 
-    let (transport, local_rendezvous, moot_lanes, graph, chat) = runtime.block_on(async {
+    let (transport, local_rendezvous, moot_lanes, graph, chat, group_keys) = runtime.block_on(async {
         // Active mDNS so two peers on one LAN re-find each other by node id
         // after either restarts on a fresh port; a ticket fixes an address,
         // not an identity.
@@ -3881,20 +4710,27 @@ pub(crate) fn join_live(
             .map_err(|error| format!("join graph lane: {error}"))?;
         let chat = open
             .chat
-            .join(endpoint, gossip)
+            .join(endpoint.clone(), gossip.clone())
             .await
             .map_err(|error| format!("join chat lane: {error}"))?;
-        Ok::<_, String>((transport, local_rendezvous, moot_lanes, graph, chat))
+        let group_keys = open
+            .group
+            .lane
+            .join(endpoint, gossip)
+            .await
+            .map_err(|error| format!("join group-key lane: {error}"))?;
+        Ok::<_, String>((transport, local_rendezvous, moot_lanes, graph, chat, group_keys))
     })?;
 
     let mut lanes = LiveLanes {
         watcher: None,
         local_rendezvous,
         dialed_rendezvous: tickets.len(),
-        joined: Some(JoinedNine {
+        joined: Some(JoinedLanes {
             moot: moot_lanes,
             graph,
             chat,
+            group_keys,
         }),
         moot: binding.moot.0,
         projection: None,

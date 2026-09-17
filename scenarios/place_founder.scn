@@ -121,6 +121,17 @@ settle 30
 key escape
 wait-status 60 Retained history: 1 shared nodes
 
+# Reading (mere design_docs/mere_docs/implementation_strategy/2026-09-16_
+# coop_lifecycle_parity_plan.md, R2): one message sent after the reader
+# joined, so its add frame travelled the group-key lane first. The returning
+# joiner waits for it below as its fifth retained message.
+act Send place message
+settle 5
+type after the reader joined
+key enter
+settle 10
+wait-status 3000 Retained history: 1 shared nodes, 5 messages
+
 # T5c: shared Knot document by projection (design_docs/2026-07-28_turnstone_
 # place_port_plan.md, "T5c. Shared Knot document by projection"). Placed
 # AFTER the reader's refused-write receipt above (not before wait-file

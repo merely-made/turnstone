@@ -17,7 +17,8 @@ use std::sync::mpsc::Receiver;
 
 use armillary::{ActorHandle, Emitter, Wake, spawn_named};
 use commons::chat::ChatReplica;
-use commons::{GemotAuthorityView, Replica};
+use commons::encrypted::EncryptedReplica;
+use commons::{GemotAuthorityView, GroupKeys};
 use gemot::moot::constitution::{CapabilityGrant, ConstitutionRules};
 use gemot::moot::{
     AvailabilityPolicy, CollectionEvent, CollectionId, CollectionRef, CollectionVersion,
@@ -34,8 +35,8 @@ use servitor::{Cap, cap_path};
 use muniment::RedbBackend;
 use proofs::Digest;
 use stickleback::{
-    DataKeyring, DropExportProfile, DropLimits, GroupControlFrame, GroupDirectFrame,
-    GroupPrekeyBundle, GroupSession, GroupSessionId,
+    DataKeyring, DropExportProfile, DropLimits, GroupControlFrame, GroupDirectFrame, GroupKeyExt,
+    GroupKeyLane, GroupPrekeyBundle, GroupSession, GroupSessionDispatch, GroupSessionId,
 };
 
 use crate::action::Update;
@@ -49,7 +50,26 @@ use crate::place::{
 };
 
 const GROUP_SESSION_RECORD: &str = "group.session";
+/// This profile's OWN published pre-key bundle, which every invitation it
+/// authors carries as `inviter_prekey`. Kept sealed on the side because it is
+/// the publishable half of a secret the session never exports; the per-root
+/// copies this once kept beside it are gone, the group session's own
+/// `recipient_for_root` having replaced them.
 const GROUP_PREKEY_RECORD: &str = "group.prekey";
+
+/// Why a revoke stops before it touches Gemot: without a recipient there is
+/// nothing to remove from the group, and revoking membership alone would
+/// leave that member still reading.
+pub(crate) const NO_GROUP_RECIPIENT: &str = "that member has no group recipient to remove";
+
+/// The group-key lane's store.
+pub(crate) const GROUP_KEY_STORE: &str = "group-keys.redb";
+/// The encrypted shared graph's store. A name of its own, so a plaintext
+/// store from before encryption is never read as an encrypted one.
+pub(crate) const GRAPH_STORE: &str = "commons-graph-encrypted.redb";
+/// The plaintext graph store places kept before encryption.
+pub(crate) const LEGACY_GRAPH_STORE: &str = "commons-graph.redb";
+pub(crate) const LEGACY_GRAPH_REFUSAL: &str = "this place predates encrypted shared graphs";
 
 /// How long an authored invitation stays usable: seven days. Long enough to
 /// hand over out of band, short enough that a forwarded envelope dies.
@@ -279,9 +299,167 @@ pub(crate) struct OpenPlace {
     /// Exact local view state restored before the first capture projection.
     pub(crate) collection_selection: Option<PlaceCollectionVersion>,
     pub(crate) moot: MootFile,
-    pub(crate) graph: Replica<RedbBackend>,
+    pub(crate) graph: EncryptedReplica<RedbBackend>,
     pub(crate) chat: ChatReplica<RedbBackend>,
-    pub(crate) group: GroupSession,
+    pub(crate) group: PlaceGroup,
+    /// Records re-admitted since this open, both encrypted lanes together.
+    pub(crate) readmitted: u64,
+}
+
+impl OpenPlace {
+    /// Drain the group-key lane, then re-admit what the old key handle could
+    /// not read. Every drain goes through here: a rotation that arrives with
+    /// the content sealed to it is the race this closes.
+    pub(crate) fn follow_group_keys(
+        &mut self,
+        identity: &dyn IdentityProvider,
+    ) -> Result<(), String> {
+        self.group.drain(&self.directory, identity)?;
+        self.readmit_parked()
+    }
+
+    /// Offer both encrypted lanes their parked records again, chat first.
+    /// Called after every key-handle refresh, drains and local rotations
+    /// alike; a record whose epoch is still unheld simply stays parked.
+    pub(crate) fn readmit_parked(&mut self) -> Result<(), String> {
+        let chat = pollster::block_on(self.chat.readmit_parked())
+            .map_err(|error| format!("re-admit parked messages: {error}"))?;
+        let graph = pollster::block_on(self.graph.readmit_parked())
+            .map_err(|error| format!("re-admit parked shared nodes: {error}"))?;
+        self.readmitted += chat.admitted + graph.admitted;
+        if chat.admitted + graph.admitted + chat.refused + graph.refused > 0 {
+            tracing::info!(
+                chat_admitted = chat.admitted,
+                graph_admitted = graph.admitted,
+                chat_refused = chat.refused,
+                graph_refused = graph.refused,
+                still_parked = chat.still_parked + graph.still_parked,
+                "re-admitted parked records after a key-handle refresh"
+            );
+        }
+        Ok(())
+    }
+
+    /// What both encrypted lanes hold parked right now, and how many records
+    /// they have evicted for good. Read at snapshot time rather than carried
+    /// from the last re-admission, because a live lane arrival parks between
+    /// passes.
+    pub(crate) fn parking(&self) -> Result<(u64, u64), String> {
+        let chat = pollster::block_on(self.chat.parking_status())
+            .map_err(|error| format!("read parked messages: {error}"))?;
+        let graph = pollster::block_on(self.graph.parking_status())
+            .map_err(|error| format!("read parked shared nodes: {error}"))?;
+        Ok((
+            chat.parked + graph.parked,
+            chat.evicted_total + graph.evicted_total,
+        ))
+    }
+}
+
+/// The place's one live group: the session, the key handle chat and the graph
+/// read at every admission, and the lane carrying every member's frames.
+///
+/// Invites and revocations change `session` only through [`Self::commit`],
+/// and received frames only through [`Self::drain`]; both refresh `keys`, so
+/// a joined lane follows a rotation without rejoining.
+pub(crate) struct PlaceGroup {
+    pub(crate) session: GroupSession,
+    pub(crate) keys: GroupKeys,
+    pub(crate) lane: GroupKeyLane<RedbBackend>,
+    /// Frames the last drain could not apply yet.
+    pub(crate) pending: usize,
+    /// Frames refused since this open; refused frames are settled, not retried.
+    pub(crate) refused: usize,
+}
+
+impl PlaceGroup {
+    fn open(
+        directory: &Path,
+        identity: &dyn IdentityProvider,
+        moot: [u8; 32],
+    ) -> Result<Self, String> {
+        let session = load_group_session(directory, identity, moot)?;
+        if session.group() != GroupSessionId(moot) {
+            return Err("sealed group session addresses another Moot".to_string());
+        }
+        if session.personae_root() != identity.master_public_key().to_bytes() {
+            return Err("sealed group session belongs to another Personae root".to_string());
+        }
+        let keys = GroupKeys::from_bytes(&keyring_state(&session)?)
+            .map_err(|error| format!("decode group data epochs: {error}"))?;
+        let backend = RedbBackend::open(place_store_dir(directory).join(GROUP_KEY_STORE))
+            .map_err(|error| format!("open group-key lane: {error}"))?;
+        let lane = GroupKeyLane::for_identity(backend, GroupSessionId(moot), identity)
+            .map_err(|error| format!("bind group-key writer: {error}"))?;
+        Ok(Self {
+            session,
+            keys,
+            lane,
+            pending: 0,
+            refused: 0,
+        })
+    }
+
+    /// A copy to change, so a failed change leaves the live session as it was.
+    fn copy(&self) -> Result<GroupSession, String> {
+        self.session
+            .to_bytes()
+            .and_then(|bytes| GroupSession::from_bytes(&bytes))
+            .map_err(|error| format!("copy group session: {error}"))
+    }
+
+    fn refresh(&self) -> Result<(), String> {
+        self.keys
+            .replace_from_bytes(&keyring_state(&self.session)?)
+            .map_err(|error| format!("refresh group keys: {error}"))
+    }
+
+    /// Adopt a locally changed session: persist it, refresh the handle, then
+    /// author its dispatches on the lane. Persisting first is the lane's rule:
+    /// a frame whose transition the author lost would fork its sequence.
+    fn commit(
+        &mut self,
+        directory: &Path,
+        identity: &dyn IdentityProvider,
+        next: GroupSession,
+        dispatches: &[GroupSessionDispatch],
+    ) -> Result<Vec<stickleback::Operation<GroupKeyExt>>, String> {
+        save_group_session(directory, identity, &next)?;
+        self.session = next;
+        self.refresh()?;
+        dispatches
+            .iter()
+            .map(|dispatch| {
+                pollster::block_on(self.lane.author_dispatch(dispatch))
+                    .map_err(|error| format!("author group-key frame: {error}"))
+            })
+            .collect()
+    }
+
+    /// Apply every ready frame the lane holds, persisting the sealed session
+    /// before frames settle, then refresh the handle.
+    pub(crate) fn drain(
+        &mut self,
+        directory: &Path,
+        identity: &dyn IdentityProvider,
+    ) -> Result<(), String> {
+        let drain = pollster::block_on(self.lane.drain_ready(&mut self.session, |session| {
+            save_group_session(directory, identity, session)
+        }))
+        .map_err(|error| format!("drain group-key lane: {error}"))?;
+        for frame in &drain.refused {
+            tracing::warn!(reason = %frame.reason, "group-key frame refused");
+        }
+        self.pending = drain.pending.len();
+        self.refused += drain.refused.len();
+        self.refresh()
+    }
+}
+
+fn keyring_state(session: &GroupSession) -> Result<Vec<u8>, String> {
+    session
+        .data_keyring_state()
+        .map_err(|error| format!("read group data epochs: {error}"))
 }
 
 pub fn place_store_dir(session_dir: &Path) -> PathBuf {
@@ -419,8 +597,11 @@ pub fn author_invitation(
         settings.retention.clone(),
     ))
     .map_err(|error| format!("open Gemot store: {error}"))?;
+    let mut group = PlaceGroup::open(directory, identity, binding.moot.0)?;
+    // Nothing is live here, so the add stays on the lane store until a sync.
     author_invitation_with(
         &moot,
+        &mut group,
         directory,
         binding,
         identity,
@@ -429,13 +610,16 @@ pub fn author_invitation(
         rendezvous,
         projection_grant,
     )
+    .map(|(invite, _)| invite)
 }
 
-/// [`author_invitation`] against an already-open Moot, for the worker that
-/// holds this place's only store handle.
+/// [`author_invitation`] against an already-open Moot and group, for the
+/// worker that holds this place's only store handles. Also returns the add
+/// frame authored on the group-key lane, for publishing.
 #[allow(clippy::too_many_arguments)]
 pub(crate) fn author_invitation_with(
     moot: &MootFile,
+    group: &mut PlaceGroup,
     directory: &Path,
     binding: &PlaceBindingV1,
     identity: &dyn IdentityProvider,
@@ -443,7 +627,7 @@ pub(crate) fn author_invitation_with(
     not_after_ms: u64,
     rendezvous: Vec<crate::place::invite::RendezvousV1>,
     projection_grant: Option<SignedDelegationCertificate>,
-) -> Result<PlaceInviteV1, String> {
+) -> Result<(PlaceInviteV1, stickleback::Operation<GroupKeyExt>), String> {
     binding
         .validate()
         .map_err(|error| format!("place binding: {error}"))?;
@@ -480,23 +664,26 @@ pub(crate) fn author_invitation_with(
 
     // Welcome the recipient into the crypto group, then persist: the epoch this
     // mints is the one the envelope names, so losing it would strand a welcome
-    // this profile can no longer follow.
-    let mut group = load_group_session(directory, identity, binding.moot.0)?;
-    group
-        .register_prekey(&prekey)
+    // this profile can no longer follow. Members already joined process the
+    // same add from the group-key lane.
+    let mut next = group.copy()?;
+    next.register_prekey(&prekey)
         .map_err(|error| format!("register joiner pre-key: {error}"))?;
-    let dispatch = group
+    let dispatch = next
         .add(prekey.recipient)
         .map_err(|error| format!("welcome the joiner: {error}"))?;
     let direct = dispatch
         .direct_for(prekey.recipient)
         .ok_or_else(|| "welcome carries no frame for the invited recipient".to_string())?;
-    let expected_epoch = group
+    let expected_epoch = next
         .current_epoch()
         .ok_or_else(|| "welcoming a member installed no epoch".to_string())?;
-    save_group_session(directory, identity, &group)?;
+    let added = group
+        .commit(directory, identity, next, std::slice::from_ref(&dispatch))?
+        .pop()
+        .expect("one dispatch authors one frame");
 
-    Ok(PlaceInviteV1 {
+    let invite = PlaceInviteV1 {
         version: crate::place::invite::PLACE_INVITE_VERSION,
         binding: binding.clone(),
         founder: snapshot.governance.founder,
@@ -526,7 +713,8 @@ pub(crate) fn author_invitation_with(
             .transpose()?
             .as_deref()
             .map(inline_artifact),
-    })
+    };
+    Ok((invite, added))
 }
 
 /// This profile's own published pre-key bundle for one Moot.
@@ -1185,28 +1373,14 @@ pub(crate) fn open_cached_place(
     binding
         .validate()
         .map_err(|error| format!("place binding: {error}"))?;
-    let storage = sealed_group_store(directory, identity, binding.moot.0)?;
-    let bytes: Vec<u8> = storage
-        .load_record(GROUP_SESSION_RECORD)
-        .map_err(|error| format!("load sealed group session: {error}"))?
-        .ok_or_else(|| "sealed group session is absent".to_string())?;
-    let group = GroupSession::from_bytes(&bytes)
-        .map_err(|error| format!("decode sealed group session: {error}"))?;
-    if group.group() != GroupSessionId(binding.moot.0) {
-        return Err("sealed group session addresses another Moot".to_string());
-    }
-    let root = identity.master_public_key().to_bytes();
-    if group.personae_root() != root {
-        return Err("sealed group session belongs to another Personae root".to_string());
-    }
-    let keyring = DataKeyring::from_bytes(
-        &group
-            .data_keyring_state()
-            .map_err(|error| format!("read group data epochs: {error}"))?,
-    )
-    .map_err(|error| format!("decode group data epochs: {error}"))?;
-
     let stores = place_store_dir(directory);
+    // Not migrated: an old place's peers still speak the plaintext graph lane,
+    // so opening it encrypted would show an empty graph that never fills.
+    if stores.join(LEGACY_GRAPH_STORE).exists() && !stores.join(GRAPH_STORE).exists() {
+        return Err(LEGACY_GRAPH_REFUSAL.to_string());
+    }
+    let group = PlaceGroup::open(directory, identity, binding.moot.0)?;
+
     let moot = pollster::block_on(MootFile::open_existing(
         stores.join("gemot"),
         MootId(binding.moot.0),
@@ -1214,17 +1388,18 @@ pub(crate) fn open_cached_place(
     ))
     .map_err(|error| format!("open Gemot cache: {error}"))?;
 
-    let graph_backend = RedbBackend::open(stores.join("commons-graph.redb"))
+    let graph_backend = RedbBackend::open(stores.join(GRAPH_STORE))
         .map_err(|error| format!("open Commons graph cache: {error}"))?;
-    let graph = Replica::for_identity(graph_backend, binding.root.0, identity)
-        .map_err(|error| format!("bind Commons graph writer: {error}"))?;
+    let graph =
+        EncryptedReplica::for_identity(graph_backend, binding.root.0, identity, group.keys.clone())
+            .map_err(|error| format!("bind Commons graph writer: {error}"))?;
 
     let chat_backend = RedbBackend::open(stores.join("commons-chat.redb"))
         .map_err(|error| format!("open Commons chat cache: {error}"))?;
-    let chat = ChatReplica::for_identity(chat_backend, binding.chat.0, identity, keyring)
+    let chat = ChatReplica::for_identity(chat_backend, binding.chat.0, identity, group.keys.clone())
         .map_err(|error| format!("bind Commons chat writer: {error}"))?;
 
-    let open = OpenPlace {
+    let mut open = OpenPlace {
         directory: directory.to_path_buf(),
         lanes: None,
         binding: binding.clone(),
@@ -1235,7 +1410,9 @@ pub(crate) fn open_cached_place(
         graph,
         chat,
         group,
+        readmitted: 0,
     };
+    open.follow_group_keys(identity)?;
     let snapshot = place_snapshot(&open, binding.moot.0, settings)?;
     Ok((open, snapshot))
 }
@@ -1304,6 +1481,8 @@ fn author_into_place(
             None => REFUSED.to_string(),
         });
     }
+    // Seal to the newest epoch the lane already holds, not the last nudge's.
+    open.follow_group_keys(identity)?;
 
     match command {
         PlaceCommand::SendMessage { channel, body } => {
@@ -1397,13 +1576,15 @@ fn local_standing(
         .map_or(PlaceStanding::Member, |at_ms| PlaceStanding::GrantExpired { at_ms })
 }
 
-/// Remove one member: revoke every delegation this profile issued to it,
-/// then its membership, then refuse its projection grants at this door.
+/// Remove one member: rotate the group away from it, revoke every delegation
+/// this profile issued to it, then its membership, then refuse its projection
+/// grants at this door.
 ///
-/// Revocations first, so a failure part way leaves the member removable on
-/// a retry. Stored before published, as every other authored fact.
+/// The rekey and the revocations come before the removal, so a failure part
+/// way leaves the member removable on a retry. Stored before published, as
+/// every other authored fact.
 fn revoke_member(
-    open: &OpenPlace,
+    open: &mut OpenPlace,
     identity: &dyn IdentityProvider,
     member: [u8; 32],
     at_ms: u64,
@@ -1425,6 +1606,7 @@ fn revoke_member(
     if !members.iter().any(|entry| entry.member == member) {
         return Err("that root is not a member of this place".to_string());
     }
+    let rekeyed = rekey_without(open, identity, member)?;
     let rules = &snapshot.governance.rules;
     let delegations = pollster::block_on(open.moot.delegations())
         .map_err(|error| format!("materialize Gemot delegations: {error}"))?;
@@ -1473,6 +1655,9 @@ fn revoke_member(
     )
     .map_err(|error| format!("remove the member: {error}"))?;
     if let Some(lanes) = &open.lanes {
+        for operation in rekeyed {
+            lanes.publish_group_key(operation)?;
+        }
         for operation in revoked {
             lanes.publish_delegation(operation)?;
         }
@@ -1480,6 +1665,48 @@ fn revoke_member(
         lanes.withdraw_projection_grants(&withdrawn)?;
     }
     Ok(())
+}
+
+/// Remove `member`'s recipient from the group and rotate, so what is authored
+/// next is sealed to an epoch it never receives.
+///
+/// The recipient comes from the group session's own pre-key bindings, not
+/// from a record beside them: this profile resolves whoever it registered,
+/// which is every root it welcomed. A root it cannot resolve is REFUSED
+/// rather than skipped, because revoking in Gemot without rotating would
+/// leave the member reading. One already removed has been rotated away from,
+/// so it authors nothing.
+fn rekey_without(
+    open: &mut OpenPlace,
+    identity: &dyn IdentityProvider,
+    member: [u8; 32],
+) -> Result<Vec<stickleback::Operation<GroupKeyExt>>, String> {
+    let Some(recipient) = open.group.session.recipient_for_root(member) else {
+        return Err(NO_GROUP_RECIPIENT.to_string());
+    };
+    let present = open
+        .group
+        .session
+        .members()
+        .map_err(|error| format!("read group membership: {error}"))?
+        .contains(&recipient);
+    if !present {
+        return Ok(Vec::new());
+    }
+    let mut next = open.group.copy()?;
+    let removal = next
+        .remove(recipient)
+        .map_err(|error| format!("remove the member from the group: {error}"))?;
+    let rotation = next
+        .update()
+        .map_err(|error| format!("rotate the group: {error}"))?;
+    let authored = open
+        .group
+        .commit(&open.directory, identity, next, &[removal, rotation])?;
+    // A key-handle refresh: what the rotation makes readable is re-admitted
+    // before the caller's snapshot folds.
+    open.readmit_parked()?;
+    Ok(authored)
 }
 
 /// Revocations of every projection grant this profile issued and has since
@@ -1793,9 +2020,11 @@ fn place_snapshot(
 
     let group_members = open
         .group
+        .session
         .members()
         .map_err(|error| format!("materialize group membership: {error}"))?
         .len();
+    let (parked, evicted) = open.parking()?;
     let shared = crate::place::projection::SharedGraph::from_projection(&graph_projection);
     Ok(OfflinePlaceSnapshot {
         personae_root: open.subject,
@@ -1828,8 +2057,13 @@ fn place_snapshot(
         },
         group: GroupCache {
             members: group_members,
-            epochs: open.group.epoch_count(),
-            has_current_epoch: open.group.current_epoch().is_some(),
+            epochs: open.group.session.epoch_count(),
+            has_current_epoch: open.group.session.current_epoch().is_some(),
+            pending_frames: open.group.pending,
+            refused_frames: open.group.refused,
+            parked_records: parked,
+            readmitted_records: open.readmitted,
+            evicted_records: evicted,
         },
         captured,
         captured_selection,
@@ -2069,7 +2303,7 @@ pub fn spawn_place_worker(
                         access,
                         lifetime_ms,
                     } => {
-                        let result = match &live {
+                        let result = match &mut live {
                             Some(_) if live_scope != Some((session, generation)) => Err(
                                 "invitation belongs to a departed place generation".to_string(),
                             ),
@@ -2133,8 +2367,9 @@ pub fn spawn_place_worker(
                                                 lanes.publish_delegation(operation)?;
                                             }
                                         }
-                                        author_invitation_with(
+                                        let (invite, added) = author_invitation_with(
                                             &open.moot,
+                                            &mut open.group,
                                             &directory,
                                             &binding,
                                             identity.as_ref(),
@@ -2142,7 +2377,17 @@ pub fn spawn_place_worker(
                                             now_ms.saturating_add(INVITE_LIFETIME_MS),
                                             rendezvous,
                                             projection,
-                                        )
+                                        )?;
+                                        if let Some(lanes) = &open.lanes {
+                                            lanes.publish_group_key(added)?;
+                                        }
+                                        // An add hands the invitee the keys in
+                                        // hand and installs no epoch here, so
+                                        // this releases nothing today. It is
+                                        // the rule that every refresh is
+                                        // followed by a re-admission.
+                                        open.readmit_parked()?;
+                                        Ok(invite)
                                     })
                                     .map(Box::new)
                             },
@@ -2284,11 +2529,16 @@ pub fn spawn_place_worker(
                     } => {
                         // Only meaningful with an open place; a resync of
                         // nothing answers with the error rather than silence.
-                        let result = match &live {
+                        let result = match &mut live {
                             Some(_) if live_scope != Some((session, generation)) => {
                                 Err("resync belongs to a departed place generation".to_string())
                             }
-                            Some(open) => place_snapshot(open, open.binding.moot.0, &settings),
+                            // A nudge may carry group-key frames: apply them
+                            // and re-admit what they unlock before re-folding,
+                            // so chat reads the new epochs.
+                            Some(open) => open
+                                .follow_group_keys(identity.as_ref())
+                                .and_then(|()| place_snapshot(open, open.binding.moot.0, &settings)),
                             None => Err("no open place to resync".to_string()),
                         };
                         out.emit(Update::PlaceOpened {
@@ -2548,9 +2798,12 @@ pub(crate) mod tests {
         found_place_group(directory, identity, binding.moot.0).unwrap();
         let group = load_group_session(directory, identity, binding.moot.0).unwrap();
         let keyring = DataKeyring::from_bytes(&group.data_keyring_state().unwrap()).unwrap();
+        let keys = GroupKeys::new(keyring);
 
-        let graph_backend = RedbBackend::open(stores.join("commons-graph.redb")).unwrap();
-        let mut graph = Replica::for_identity(graph_backend, binding.root.0, identity).unwrap();
+        let graph_backend = RedbBackend::open(stores.join(GRAPH_STORE)).unwrap();
+        let mut graph =
+            EncryptedReplica::for_identity(graph_backend, binding.root.0, identity, keys.clone())
+                .unwrap();
         for index in 0..facts {
             pollster::block_on(graph.edit(|log| {
                 log.insert_node(
@@ -2564,7 +2817,7 @@ pub(crate) mod tests {
 
         let chat_backend = RedbBackend::open(stores.join("commons-chat.redb")).unwrap();
         let mut chat =
-            ChatReplica::for_identity(chat_backend, binding.chat.0, identity, keyring).unwrap();
+            ChatReplica::for_identity(chat_backend, binding.chat.0, identity, keys).unwrap();
         pollster::block_on(chat.author(ChatEvent::Channel(Channel {
             id: "hall".into(),
             title: "Hall".into(),
@@ -2777,6 +3030,43 @@ pub(crate) mod tests {
             },
             share.operation,
         )
+    }
+
+    /// E2: a place whose shared graph is a plaintext store from before
+    /// encryption is refused by name, not opened with an empty graph, and its
+    /// plaintext records are never read as encrypted.
+    #[test]
+    fn a_place_with_only_a_plaintext_graph_is_refused_by_name() {
+        let root = tempfile::tempdir().unwrap();
+        let directory = root.path().join("profile");
+        let identity = RootIdentity::Unsealed(InMemoryProvider::from_seed([0x84; 32]));
+        let binding = binding(0x35);
+        seed_profile(&directory, &identity, &binding, 1);
+        // Positive control: the same profile opens while its store is encrypted.
+        let (open, snapshot) = open_cached_place(&directory, &binding, &identity, &settings()).unwrap();
+        assert_eq!(snapshot.graph.nodes, 1);
+        drop(open);
+
+        let stores = place_store_dir(&directory);
+        std::fs::remove_file(stores.join(GRAPH_STORE)).unwrap();
+        let backend = RedbBackend::open(stores.join(LEGACY_GRAPH_STORE)).unwrap();
+        let mut plaintext = commons::Replica::for_identity(backend, binding.root.0, &identity).unwrap();
+        pollster::block_on(plaintext.edit(|log| {
+            log.insert_node(&Author::new("turnstone"), Container::new("plaintext"));
+        }))
+        .unwrap();
+        drop(plaintext);
+
+        let Err(error) = open_cached_place(&directory, &binding, &identity, &settings()) else {
+            panic!("a plaintext-only place opened");
+        };
+        assert_eq!(error, LEGACY_GRAPH_REFUSAL);
+        assert!(!stores.join(GRAPH_STORE).exists(), "the refusal created nothing");
+        let lines = crate::place::PlaceState::Degraded { binding, generation: 1, error }.status_lines();
+        assert!(
+            lines.iter().any(|row| row == "Place unavailable: this place predates encrypted shared graphs"),
+            "{lines:?}"
+        );
     }
 
     #[test]
@@ -3246,8 +3536,10 @@ pub(crate) mod tests {
             projection_grant.is_some(),
             "a writer is admitted at the projection door as well as the Moot"
         );
-        let invite = author_invitation_with(
+        let mut group = PlaceGroup::open(&host, &host_identity, binding.moot.0).unwrap();
+        let (invite, _) = author_invitation_with(
             &moot,
+            &mut group,
             &host,
             &binding,
             &host_identity,
@@ -3257,7 +3549,7 @@ pub(crate) mod tests {
             projection_grant,
         )
         .unwrap();
-        drop(moot);
+        drop((moot, group));
 
         let admitted = admit_invitation(&guest, &invite, &guest_identity, &settings).unwrap();
         assert_eq!(admitted.binding, binding);
@@ -3335,8 +3627,10 @@ pub(crate) mod tests {
             projection_grant.is_none(),
             "a reader is admitted to the Moot and to no projection door"
         );
-        let invite = author_invitation_with(
+        let mut group = PlaceGroup::open(&host, &host_identity, binding.moot.0).unwrap();
+        let (invite, _) = author_invitation_with(
             &moot,
+            &mut group,
             &host,
             &binding,
             &host_identity,
@@ -3346,7 +3640,7 @@ pub(crate) mod tests {
             projection_grant,
         )
         .unwrap();
-        drop(moot);
+        drop((moot, group));
 
         let admitted = admit_invitation(&guest, &invite, &reader_identity, &settings).unwrap();
         assert_eq!(admitted.moot.members, 2);
@@ -3356,8 +3650,8 @@ pub(crate) mod tests {
         // operations the founder authored, exactly as a sync round would
         // leave it. Everything proved below is a verdict on those operations.
         std::fs::copy(
-            place_store_dir(&host).join("commons-graph.redb"),
-            place_store_dir(&guest).join("commons-graph.redb"),
+            place_store_dir(&host).join(GRAPH_STORE),
+            place_store_dir(&guest).join(GRAPH_STORE),
         )
         .unwrap();
 
@@ -3439,6 +3733,33 @@ pub(crate) mod tests {
         assert_eq!(grant.certificate.expires_at_ms, expires, "the lifetime bounds the grant");
         admit_member(&open.moot, &binding, &host_identity, reader_root, Reader, AUTHORITY_AT_MS, None)
             .unwrap();
+        // The group half of each admission. Gemot membership alone leaves the
+        // group session unable to resolve the root, and a revoke it cannot
+        // resolve is now refused rather than half-applied.
+        let mut welcome = |open: &mut OpenPlace, seed: u8| {
+            let directory = root.path().join(format!("member-{seed:02x}"));
+            std::fs::create_dir_all(&directory).unwrap();
+            let prekey = prepare_group_identity(
+                &directory,
+                &InMemoryProvider::from_seed([seed; 32]),
+                binding.moot.0,
+            )
+            .unwrap();
+            author_invitation_with(
+                &open.moot,
+                &mut open.group,
+                &host,
+                &binding,
+                &host_identity,
+                &prekey,
+                AUTHORITY_AT_MS + 60_000,
+                Vec::new(),
+                None,
+            )
+            .unwrap();
+        };
+        welcome(&mut open, 0xd8);
+        welcome(&mut open, 0xd9);
         let before = place_snapshot(&open, binding.moot.0, &settings).unwrap();
         assert_eq!(before.members.len(), 3);
         let rules = pollster::block_on(open.moot.snapshot()).unwrap().governance.rules;
@@ -3454,7 +3775,7 @@ pub(crate) mod tests {
         assert_eq!(issued(&open)[0].expires_at_ms, expires, "and the delegation");
 
         // Refusals name their reason and author nothing.
-        let refused = revoke_member(&open, &writer, reader_root, AUTHORITY_AT_MS).unwrap_err();
+        let refused = revoke_member(&mut open, &writer, reader_root, AUTHORITY_AT_MS).unwrap_err();
         assert_eq!(refused, "only a profile that manages this place can revoke a member");
         for (member, reason) in [
             (host_root, "a manager cannot revoke itself"),
@@ -3762,7 +4083,7 @@ pub(crate) mod tests {
                 ..
             }) => {
                 let sync = snapshot.sync.expect("the reconnected place binds lanes");
-                assert_eq!(sync.lanes.len(), 9);
+                assert_eq!(sync.lanes.len(), 10);
             },
             Ok(Update::PlaceOpened {
                 result: Err(error), ..

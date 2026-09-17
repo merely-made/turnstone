@@ -394,13 +394,6 @@ impl PlaceStanding {
         }
     }
 
-    /// Revocation stops writes but not yet reads: until group rekeying and an
-    /// encrypted graph lane land, a removed member still receives new content.
-    pub fn reading_line(self) -> Option<String> {
-        matches!(self, Self::MembershipRevoked)
-            .then(|| "Reading: not yet revoked; new chat and shared nodes still arrive".into())
-    }
-
     /// Why a write or dial is refused, as a clause.
     pub fn refusal(self) -> Option<String> {
         match self {
@@ -518,8 +511,9 @@ impl PlaceLaneSnapshot {
             "gemot/standing/v1" => "Standing",
             "gemot/tulpa/v1" => "Tulpa",
             "gemot/flora/v1" => "Flora",
-            "commons/graph/v1" => "Shared graph",
+            commons::encrypted::COMMONS_ENCRYPTED_GRAPH_LANE => "Shared graph",
             "commons/chat/v1" => "Chat",
+            stickleback::GROUP_KEY_LANE => "Group keys",
             other => other,
         }
     }
@@ -688,6 +682,18 @@ pub struct GroupCache {
     pub members: usize,
     pub epochs: usize,
     pub has_current_epoch: bool,
+    /// Group-key frames the last drain could not apply yet.
+    pub pending_frames: usize,
+    /// Group-key frames refused since this open.
+    pub refused_frames: usize,
+    /// Chat and shared-node records held for an epoch this profile does not
+    /// hold yet, read at this refresh.
+    pub parked_records: u64,
+    /// Parked records admitted since this open, once their epoch arrived.
+    pub readmitted_records: u64,
+    /// Parked records dropped for good at the parking bound. Durable, so it
+    /// counts every open, not just this one.
+    pub evicted_records: u64,
 }
 
 /// Current product-visible state of the session's shared place.
@@ -749,6 +755,15 @@ impl PlaceState {
                 }];
                 rows.push(format!("Retained history: {} shared nodes, {} messages",
                     snapshot.graph.nodes, snapshot.chat.messages));
+                rows.push(format!("Group key frames: {} pending; {} refused",
+                    snapshot.group.pending_frames, snapshot.group.refused_frames));
+                // Parked records are held, not lost: they are offered again
+                // after every key refresh. Eviction is the one loss, so it
+                // says so on the same row rather than only in a log.
+                rows.push(format!("Awaiting keys: {} parked; {} re-admitted; {} evicted",
+                    snapshot.group.parked_records,
+                    snapshot.group.readmitted_records,
+                    snapshot.group.evicted_records));
                 match &snapshot.permissions {
                     Some(permissions) => {
                         let permission = |effective| if effective { "effective" } else { "not effective" };
@@ -758,7 +773,6 @@ impl PlaceState {
                     None => rows.push("Writing permissions: not evaluated".into()),
                 }
                 rows.extend(snapshot.standing.status_line());
-                rows.extend(snapshot.standing.reading_line());
                 rows.push("Writing: permissions are checked again for each action".into());
                 rows.push("Delivery: these sync observations do not confirm message delivery".into());
                 if let Some(sync) = &snapshot.sync {
@@ -902,7 +916,7 @@ mod tests {
                 sync: Some(PlaceSyncSnapshot {
                     lanes: vec![
                         PlaceLaneSnapshot {
-                            name: "commons/graph/v1",
+                            name: commons::encrypted::COMMONS_ENCRYPTED_GRAPH_LANE,
                             syncing: true,
                             sync_rounds: 123456,
                             ops_received: 987654,
@@ -911,6 +925,13 @@ mod tests {
                         PlaceLaneSnapshot {
                             name: "gemot/constitution/v1",
                             syncing: false,
+                            sync_rounds: 123456,
+                            ops_received: 987654,
+                            last_activity_ms: None,
+                        },
+                        PlaceLaneSnapshot {
+                            name: stickleback::GROUP_KEY_LANE,
+                            syncing: true,
                             sync_rounds: 123456,
                             ops_received: 987654,
                             last_activity_ms: None,
@@ -924,6 +945,14 @@ mod tests {
                     message_write: true,
                     graph_write: false,
                 }),
+                group: GroupCache {
+                    pending_frames: 123456,
+                    refused_frames: 987654,
+                    parked_records: 123456,
+                    readmitted_records: 987654,
+                    evicted_records: 123456,
+                    ..Default::default()
+                },
                 ..Default::default()
             },
         };
@@ -933,6 +962,13 @@ mod tests {
             rows.iter().any(|row| row.starts_with("Local rendezvous:")),
             "the rendezvous row is the one under test",
         );
+        for row in [
+            "Group keys: syncing; 123456 rounds; 987654 accepted ops",
+            "Group key frames: 123456 pending; 987654 refused",
+            "Awaiting keys: 123456 parked; 987654 re-admitted; 123456 evicted",
+        ] {
+            assert!(rows.iter().any(|line| line == row), "{row} missing: {rows:?}");
+        }
         assert!(
             rows.iter()
                 .any(|row| row == "Projection: not serving (no Knot vault)"),
@@ -975,14 +1011,9 @@ mod tests {
             ),
         ] {
             let withdrawn = rows(standing);
-            let caveat = standing.reading_line();
-            assert_eq!(withdrawn.len(), member.len() + 1 + usize::from(caveat.is_some()));
+            assert_eq!(withdrawn.len(), member.len() + 1);
             assert!(withdrawn.iter().any(|row| row == line), "{withdrawn:?}");
             assert!(crate::ui::chrome_row_width(line) <= crate::ui::ROW_TEXT_BUDGET);
-            if let Some(caveat) = caveat {
-                assert!(withdrawn.iter().any(|row| *row == caveat), "{withdrawn:?}");
-                assert!(crate::ui::chrome_row_width(&caveat) <= crate::ui::ROW_TEXT_BUDGET);
-            }
         }
     }
 

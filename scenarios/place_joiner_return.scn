@@ -73,6 +73,9 @@ capture joiner_shared
 # up there but not in Trail's recent/history rows (run 17 found trail/roster/
 # inspector/arrange all reporting empty because no list pane was open yet).
 wait-status 6000 Retained history: 2 shared nodes
+# The founder's message sent after the reader joined, before it shared the
+# Knot node, read here as the fifth retained message.
+wait-status 6000 Retained history: 2 shared nodes, 5 messages
 act Open Roster pane
 settle 5
 wait-row 600 field.knot

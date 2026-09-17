@@ -742,6 +742,14 @@ pub struct PlaceFacts {
     pub members: usize,
     pub graph_nodes: usize,
     pub chat_messages: usize,
+    /// Group-key frames not yet applicable, and refused since this open.
+    pub group_frames_pending: usize,
+    pub group_frames_refused: usize,
+    /// Records held for an epoch not yet installed, admitted once it arrived,
+    /// and dropped for good at the parking bound.
+    pub parked_records: u64,
+    pub readmitted_records: u64,
+    pub evicted_records: u64,
     pub graph_digest: String,
     pub chat_digest: String,
     pub lanes: Vec<PlaceLaneFacts>,
@@ -796,6 +804,11 @@ pub fn place_facts(app: &App) -> Option<PlaceFacts> {
         members: snapshot.moot.members,
         graph_nodes: snapshot.graph.nodes,
         chat_messages: snapshot.chat.messages,
+        group_frames_pending: snapshot.group.pending_frames,
+        group_frames_refused: snapshot.group.refused_frames,
+        parked_records: snapshot.group.parked_records,
+        readmitted_records: snapshot.group.readmitted_records,
+        evicted_records: snapshot.group.evicted_records,
         graph_digest: snapshot.graph_digest.clone(),
         chat_digest: snapshot.chat_digest.clone(),
         lanes: snapshot
