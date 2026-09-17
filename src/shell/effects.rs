@@ -595,6 +595,7 @@ impl Shell {
                     generation,
                     prekey,
                     access,
+                    lifetime_ms,
                 } => {
                     self.place_handle
                         .command(crate::place::worker::PlaceWorkerCommand::Invite {
@@ -603,6 +604,7 @@ impl Shell {
                             directory: session::session_dir(&self.app.data_root, session),
                             prekey,
                             access,
+                            lifetime_ms,
                         });
                 }
                 Effect::WritePlaceArtifact { path, bytes } => {
@@ -1714,13 +1716,17 @@ fn read_place_artifact(
                 out: format!("{path}.prekey.json"),
             })
         }
-        PlaceArtifactKind::Prekey { access } => {
+        PlaceArtifactKind::Prekey {
+            access,
+            lifetime_ms,
+        } => {
             let offer: crate::place::PlacePrekeyOfferV1 = serde_json::from_slice(&bytes)
                 .map_err(|error| format!("{path} is not a pre-key offer: {error}"))?;
             Ok(Action::InviteToPlaceWithPrekey {
                 prekey: offer.prekey_bytes()?,
                 out: format!("{path}.invite.json"),
                 access,
+                lifetime_ms,
             })
         }
         PlaceArtifactKind::Invite => {

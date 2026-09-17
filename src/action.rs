@@ -103,6 +103,8 @@ pub enum PlaceArtifactKind {
     /// path is what decided it, not the file.
     Prekey {
         access: crate::place::PlaceInviteAccess,
+        /// A writer's grant lifetime, or `None` for grants without expiry.
+        lifetime_ms: Option<u64>,
     },
     /// An invitation envelope, read to join through it.
     Invite,
@@ -327,12 +329,18 @@ pub enum Action {
     InviteToPlace {
         path: String,
         access: crate::place::PlaceInviteAccess,
+        lifetime_ms: Option<u64>,
     },
     /// The offer read back by the shell, with the invitation's output path.
     InviteToPlaceWithPrekey {
         prekey: Vec<u8>,
         out: String,
         access: crate::place::PlaceInviteAccess,
+        lifetime_ms: Option<u64>,
+    },
+    /// Remove one member from the open place and revoke its grants.
+    RevokePlaceMember {
+        member: [u8; 32],
     },
     /// Prompt for the invitation file to join through.
     BeginJoinPlaceFile,
@@ -889,6 +897,7 @@ pub enum Effect {
         generation: u64,
         prekey: Vec<u8>,
         access: crate::place::PlaceInviteAccess,
+        lifetime_ms: Option<u64>,
     },
     /// Write one place artifact where the person asked for it. Files are a
     /// shell concern; the worker never touches the filesystem outside the

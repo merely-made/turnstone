@@ -299,6 +299,119 @@ pub fn hex32(bytes: &[u8; 32]) -> String {
     encode_hex(bytes)
 }
 
+/// Milliseconds since the epoch as ISO 8601 UTC, to the second.
+pub fn utc_ms(at_ms: u64) -> String {
+    i64::try_from(at_ms)
+        .ok()
+        .and_then(|ms| jiff::Timestamp::from_millisecond(ms).ok())
+        .map_or_else(
+            || format!("{at_ms} ms"),
+            |at| at.strftime("%Y-%m-%dT%H:%M:%SZ").to_string(),
+        )
+}
+
+/// Split an invite prompt line into its pre-key path and optional grant
+/// lifetime, `<path> for <n><s|m|h|d>`. Read from the right, so a path with
+/// spaces survives; a tail that is not a lifetime is part of the path.
+pub fn split_invite_lifetime(line: &str) -> Result<(&str, Option<u64>), String> {
+    let Some((path, tail)) = line.rsplit_once(" for ") else {
+        return Ok((line, None));
+    };
+    let Some(unit) = tail.chars().last() else {
+        return Ok((line, None));
+    };
+    let digits = &tail[..tail.len() - unit.len_utf8()];
+    let scale: u64 = match unit {
+        's' => 1_000,
+        'm' => 60_000,
+        'h' => 3_600_000,
+        'd' => 86_400_000,
+        _ => return Ok((line, None)),
+    };
+    if digits.is_empty() || !digits.bytes().all(|byte| byte.is_ascii_digit()) {
+        return Ok((line, None));
+    }
+    let lifetime = digits
+        .parse::<u64>()
+        .ok()
+        .and_then(|count| count.checked_mul(scale))
+        .ok_or_else(|| format!("grant lifetime {tail} is too long"))?;
+    if lifetime == 0 {
+        return Err("a grant lifetime must be longer than zero".into());
+    }
+    Ok((path.trim_end(), Some(lifetime)))
+}
+
+/// One member of the place's Gemot membership fold, app-owned.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct PlaceMember {
+    pub root: [u8; 32],
+    pub access: PlaceMemberAccess,
+}
+
+/// Gemot's membership access levels, without the domain type.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum PlaceMemberAccess {
+    Pull,
+    Read,
+    Write,
+    Manage,
+}
+
+impl PlaceMemberAccess {
+    pub fn label(self) -> &'static str {
+        match self {
+            Self::Pull => "pull only",
+            Self::Read => "reader",
+            Self::Write => "writer",
+            Self::Manage => "manager",
+        }
+    }
+}
+
+/// This profile's own standing in the place at the last refresh.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum PlaceStanding {
+    /// Nothing withdrawn: a member, with an active grant or none issued.
+    #[default]
+    Member,
+    /// The membership fold no longer names this profile.
+    MembershipRevoked,
+    /// A grant to this profile was revoked and none is active.
+    GrantRevoked,
+    /// Every grant to this profile has expired, the latest at `at_ms`.
+    GrantExpired { at_ms: u64 },
+}
+
+impl PlaceStanding {
+    /// The status row naming a withdrawal, if there is one.
+    pub fn status_line(self) -> Option<String> {
+        match self {
+            Self::Member => None,
+            Self::MembershipRevoked => Some("Membership: revoked".into()),
+            Self::GrantRevoked => Some("Grant: revoked".into()),
+            Self::GrantExpired { at_ms } => Some(format!("Grant: expired at {}", utc_ms(at_ms))),
+        }
+    }
+
+    /// Revocation stops writes but not yet reads: until group rekeying and an
+    /// encrypted graph lane land, a removed member still receives new content.
+    pub fn reading_line(self) -> Option<String> {
+        matches!(self, Self::MembershipRevoked)
+            .then(|| "Reading: not yet revoked; new chat and shared nodes still arrive".into())
+    }
+
+    /// Why a write or dial is refused, as a clause.
+    pub fn refusal(self) -> Option<String> {
+        match self {
+            Self::Member => None,
+            Self::MembershipRevoked => Some("its place membership was revoked".into()),
+            Self::GrantRevoked => Some("its grant was revoked".into()),
+            Self::GrantExpired { at_ms } => Some(format!("its grant expired at {}", utc_ms(at_ms))),
+        }
+    }
+}
+
 /// How much of an elided value's head and tail survives. A rendezvous ticket
 /// is ~200 characters and a chrome row is one clipped line, so the status
 /// surface shows the ends and the palette's copy action carries the whole.
@@ -334,6 +447,10 @@ pub struct OfflinePlaceSnapshot {
     pub sync: Option<PlaceSyncSnapshot>,
     /// Local authority evaluation at refresh. Every write checks again.
     pub permissions: Option<PlacePermissionSnapshot>,
+    /// What, if anything, has been withdrawn from this profile.
+    pub standing: PlaceStanding,
+    /// Gemot's membership fold, roots and access.
+    pub members: Vec<PlaceMember>,
     pub moot: MootCache,
     pub graph: GraphCache,
     pub chat: ChatCache,
@@ -640,6 +757,8 @@ impl PlaceState {
                     },
                     None => rows.push("Writing permissions: not evaluated".into()),
                 }
+                rows.extend(snapshot.standing.status_line());
+                rows.extend(snapshot.standing.reading_line());
                 rows.push("Writing: permissions are checked again for each action".into());
                 rows.push("Delivery: these sync observations do not confirm message delivery".into());
                 if let Some(sync) = &snapshot.sync {
@@ -826,6 +945,44 @@ mod tests {
                 "status row must fit one palette row: {width}px > {}px: {row}",
                 crate::ui::ROW_TEXT_BUDGET,
             );
+        }
+    }
+
+    /// Each withdrawal names itself in one row that fits; nothing withdrawn
+    /// adds no row.
+    #[test]
+    fn a_withdrawn_standing_names_itself_in_one_row() {
+        let rows = |standing| {
+            PlaceState::Offline {
+                binding: binding(),
+                generation: 1,
+                snapshot: OfflinePlaceSnapshot {
+                    standing,
+                    ..Default::default()
+                },
+            }
+            .status_lines()
+        };
+        let member = rows(PlaceStanding::Member);
+        for (standing, line) in [
+            (PlaceStanding::MembershipRevoked, "Membership: revoked"),
+            (PlaceStanding::GrantRevoked, "Grant: revoked"),
+            (
+                PlaceStanding::GrantExpired {
+                    at_ms: 1_789_000_000_000,
+                },
+                "Grant: expired at 2026-09-10T00:26:40Z",
+            ),
+        ] {
+            let withdrawn = rows(standing);
+            let caveat = standing.reading_line();
+            assert_eq!(withdrawn.len(), member.len() + 1 + usize::from(caveat.is_some()));
+            assert!(withdrawn.iter().any(|row| row == line), "{withdrawn:?}");
+            assert!(crate::ui::chrome_row_width(line) <= crate::ui::ROW_TEXT_BUDGET);
+            if let Some(caveat) = caveat {
+                assert!(withdrawn.iter().any(|row| *row == caveat), "{withdrawn:?}");
+                assert!(crate::ui::chrome_row_width(&caveat) <= crate::ui::ROW_TEXT_BUDGET);
+            }
         }
     }
 

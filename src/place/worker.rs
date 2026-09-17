@@ -26,8 +26,8 @@ use gemot::moot::{
     PolicyRevision,
 };
 use identity::delegation::{
-    CapabilityScope, DelegationCertificate, DelegationParent, SignedDelegationCertificate,
-    delegation_signing_salt,
+    CapabilityScope, DelegationCertificate, DelegationParent, DelegationRevocation,
+    SignedDelegationCertificate, SignedDelegationRevocation, delegation_signing_salt,
 };
 use identity::{IdentityProvider, SealedRecordStorage};
 use servitor::{Cap, cap_path};
@@ -186,13 +186,15 @@ pub enum PlaceWorkerCommand {
         moot: [u8; 32],
     },
     /// Admit one offered pre-key's root and author its invitation, carrying
-    /// this open's own live rendezvous.
+    /// this open's own live rendezvous. `lifetime_ms` bounds a writer's
+    /// grants; `None` issues them without expiry.
     Invite {
         session: SessionId,
         generation: u64,
         directory: PathBuf,
         prekey: Vec<u8>,
         access: crate::place::PlaceInviteAccess,
+        lifetime_ms: Option<u64>,
     },
     /// Re-fold the open place's projections without touching its lanes.
     ///
@@ -246,13 +248,15 @@ pub enum PlaceWorkerCommand {
 
 /// One authored change to the shared place.
 ///
-/// Deliberately small and concrete. Both variants are things a person does in
-/// a place; neither is a generic "write this operation", because a host that
+/// Deliberately small and concrete. Every variant is something a person does
+/// in a place; none is a generic "write this operation", because a host that
 /// can post arbitrary operations has taken over authorship from the domain.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum PlaceCommand {
     SendMessage { channel: String, body: String },
     ShareNode { address: String },
+    /// Remove one member and revoke every grant this profile issued to it.
+    RevokeMember { member: [u8; 32] },
 }
 
 pub(crate) struct OpenPlace {
@@ -846,6 +850,7 @@ fn admit_member(
     joiner_root: [u8; 32],
     access: crate::place::PlaceInviteAccess,
     now_ms: u64,
+    expires_at_ms: Option<u64>,
 ) -> Result<AdmittedOps, String> {
     use crate::place::PlaceInviteAccess;
     let moot_id = binding.moot.0;
@@ -877,18 +882,20 @@ fn admit_member(
             pollster::block_on(moot.delegation_store().author_issue(
                 &founder_signing_key(identity, moot_id)?,
                 &snapshot.governance.rules,
-                place_delegation(identity, moot_id, joiner_root, now_ms, now_ms, None)?,
+                place_delegation(identity, moot_id, joiner_root, now_ms, now_ms, expires_at_ms)?,
             ))
             .map_err(|error| format!("delegate the Commons domains: {error}"))?,
         );
         // A separate grant, in a separate domain, under the same root
         // authority. It admits the holder to this host's projection door and
-        // is authority over nothing in Commons or Gemot.
+        // is authority over nothing in Commons or Gemot. Same window as the
+        // delegation, which is what lets revocation recompute its id.
         authored.projection = Some(crate::place::projection_host::issue_projection_grant(
             identity,
             moot_id,
             joiner_root,
             now_ms,
+            expires_at_ms,
         )?);
     }
     Ok(authored)
@@ -957,8 +964,8 @@ fn admit_inner(
     let now_ms = settings.authority_clock.now_ms();
     if now_ms > invite.not_after_ms {
         return Err(format!(
-            "invitation expired at {} and it is now {now_ms}",
-            invite.not_after_ms
+            "invitation expired at {}",
+            crate::place::utc_ms(invite.not_after_ms)
         ));
     }
 
@@ -1257,6 +1264,10 @@ fn author_into_place(
     let needed = match command {
         PlaceCommand::SendMessage { .. } => commons::chat::chat_write_capability(binding.chat.0),
         PlaceCommand::ShareNode { .. } => commons::commons_write_capability(binding.root.0),
+        // Governance, not content: its own preflight is holding Manage.
+        PlaceCommand::RevokeMember { member } => {
+            return revoke_member(open, identity, *member, at_ms);
+        },
     };
     let moot_snapshot = pollster::block_on(open.moot.snapshot())
         .map_err(|error| format!("materialize Gemot: {error}"))?;
@@ -1279,7 +1290,19 @@ fn author_into_place(
         ),
         commons::AuthorityState::Effective
     ) {
-        return Err("this profile holds no effective capability to author here".to_string());
+        const REFUSED: &str = "this profile holds no effective capability to author here";
+        let standing = local_standing(
+            &moot_snapshot.membership.members,
+            &delegations,
+            &moot_snapshot.governance.rules,
+            binding.moot.0,
+            subject,
+            at_ms,
+        );
+        return Err(match standing.refusal() {
+            Some(reason) => format!("{REFUSED}: {reason}"),
+            None => REFUSED.to_string(),
+        });
     }
 
     match command {
@@ -1333,8 +1356,162 @@ fn author_into_place(
                 lanes.publish_graph(operation)?;
             }
         },
+        PlaceCommand::RevokeMember { .. } => unreachable!("returned above"),
     }
     Ok(())
+}
+
+/// This profile's standing at `at_ms`, from the retained membership and
+/// delegation folds.
+///
+/// An empty membership fold names nobody, so it withdraws nothing: only a
+/// fold that has members and lacks this root reads as a removal.
+fn local_standing(
+    members: &[MootMember],
+    delegations: &gemot::moot::MootDelegations,
+    rules: &ConstitutionRules,
+    moot_id: [u8; 32],
+    subject: [u8; 32],
+    at_ms: u64,
+) -> crate::place::PlaceStanding {
+    use crate::place::PlaceStanding;
+    if !members.is_empty() && !members.iter().any(|member| member.member == subject) {
+        return PlaceStanding::MembershipRevoked;
+    }
+    let grants: Vec<_> = delegations
+        .projections(moot_id, rules, at_ms)
+        .into_iter()
+        .filter(|grant| grant.subject == subject)
+        .collect();
+    if grants.iter().any(|grant| grant.active) {
+        return PlaceStanding::Member;
+    }
+    if grants.iter().any(|grant| grant.directly_revoked) {
+        return PlaceStanding::GrantRevoked;
+    }
+    grants
+        .iter()
+        .filter_map(|grant| grant.expires_at_ms)
+        .filter(|expires| *expires < at_ms)
+        .max()
+        .map_or(PlaceStanding::Member, |at_ms| PlaceStanding::GrantExpired { at_ms })
+}
+
+/// Remove one member: revoke every delegation this profile issued to it,
+/// then its membership, then refuse its projection grants at this door.
+///
+/// Revocations first, so a failure part way leaves the member removable on
+/// a retry. Stored before published, as every other authored fact.
+fn revoke_member(
+    open: &OpenPlace,
+    identity: &dyn IdentityProvider,
+    member: [u8; 32],
+    at_ms: u64,
+) -> Result<(), String> {
+    let moot_id = open.binding.moot.0;
+    let local = identity.master_public_key().to_bytes();
+    let snapshot = pollster::block_on(open.moot.snapshot())
+        .map_err(|error| format!("materialize Gemot: {error}"))?;
+    let members = &snapshot.membership.members;
+    if !members
+        .iter()
+        .any(|entry| entry.member == local && entry.access == MootAccessLevel::Manage)
+    {
+        return Err("only a profile that manages this place can revoke a member".to_string());
+    }
+    if member == local {
+        return Err("a manager cannot revoke itself".to_string());
+    }
+    if !members.iter().any(|entry| entry.member == member) {
+        return Err("that root is not a member of this place".to_string());
+    }
+    let rules = &snapshot.governance.rules;
+    let delegations = pollster::block_on(open.moot.delegations())
+        .map_err(|error| format!("materialize Gemot delegations: {error}"))?;
+    let key = founder_signing_key(identity, moot_id)?;
+    let mut revoked = Vec::new();
+    let mut withdrawn = Vec::new();
+    for grant in delegations
+        .projections(moot_id, rules, at_ms)
+        .into_iter()
+        .filter(|grant| grant.issuer == local && grant.subject == member && !grant.directly_revoked)
+    {
+        let scope = CapabilityScope {
+            domain: MOOT_DELEGATION_DOMAIN.into(),
+            resource: moot_id.to_vec(),
+            path_prefix: grant.path_prefix.clone(),
+            actions: grant.actions.clone(),
+        };
+        let statement = SignedDelegationRevocation::issue(
+            &ProviderRef(identity),
+            DelegationRevocation::new(
+                grant.certificate,
+                local,
+                scope,
+                at_ms,
+                place_tag(b"turnstone.place.revocation.v1/", grant.certificate.0),
+            ),
+        )
+        .map_err(|error| format!("sign the revocation: {error}"))?;
+        revoked.push(
+            pollster::block_on(open.moot.delegation_store().author_revoke(&key, rules, statement))
+                .map_err(|error| format!("revoke the Commons delegation: {error}"))?,
+        );
+        withdrawn.push(crate::place::projection_host::projection_grant_revocation(
+            identity,
+            moot_id,
+            member,
+            grant.not_before_ms,
+            grant.expires_at_ms,
+            at_ms,
+        )?);
+    }
+    let removal = pollster::block_on(
+        open.moot
+            .membership_store()
+            .author_for_identity(identity, MootMembershipAction::Remove { member }),
+    )
+    .map_err(|error| format!("remove the member: {error}"))?;
+    if let Some(lanes) = &open.lanes {
+        for operation in revoked {
+            lanes.publish_delegation(operation)?;
+        }
+        lanes.publish_membership(removal)?;
+        lanes.withdraw_projection_grants(&withdrawn)?;
+    }
+    Ok(())
+}
+
+/// Revocations of every projection grant this profile issued and has since
+/// withdrawn, for a door that binds after the withdrawal. Rebuilt from the
+/// Gemot fold rather than kept on the side, so the door follows Gemot.
+pub(crate) fn withdrawn_projection_grants(
+    open: &OpenPlace,
+    identity: &dyn IdentityProvider,
+) -> Result<Vec<SignedDelegationRevocation>, String> {
+    let moot_id = open.binding.moot.0;
+    let local = identity.master_public_key().to_bytes();
+    let snapshot = pollster::block_on(open.moot.snapshot())
+        .map_err(|error| format!("materialize Gemot: {error}"))?;
+    let delegations = pollster::block_on(open.moot.delegations())
+        .map_err(|error| format!("materialize Gemot delegations: {error}"))?;
+    delegations
+        .projections(moot_id, &snapshot.governance.rules, 0)
+        .into_iter()
+        .filter(|grant| grant.issuer == local && grant.directly_revoked)
+        // The statement's time is not retained in the fold; the ledger
+        // records only which certificate is withdrawn and by whom.
+        .map(|grant| {
+            crate::place::projection_host::projection_grant_revocation(
+                identity,
+                moot_id,
+                grant.subject,
+                grant.not_before_ms,
+                grant.expires_at_ms,
+                grant.not_before_ms,
+            )
+        })
+        .collect()
 }
 
 /// Prepare the dial to one holder, or say why this profile cannot.
@@ -1352,6 +1529,25 @@ fn visit_dial(
     holder_root: [u8; 32],
     settings: &PlaceWorkerSettings,
 ) -> Result<crate::place::lanes::HolderDial, String> {
+    // A withdrawn profile is refused here with the reason, not at the door
+    // with a handshake fault.
+    let at_ms = settings.authority_clock.now_ms();
+    let snapshot = pollster::block_on(open.moot.snapshot())
+        .map_err(|error| format!("materialize Gemot: {error}"))?;
+    let delegations = pollster::block_on(open.moot.delegations())
+        .map_err(|error| format!("materialize Gemot delegations: {error}"))?;
+    if let Some(reason) = local_standing(
+        &snapshot.membership.members,
+        &delegations,
+        &snapshot.governance.rules,
+        open.binding.moot.0,
+        open.subject,
+        at_ms,
+    )
+    .refusal()
+    {
+        return Err(format!("this profile cannot visit a held document: {reason}"));
+    }
     let lanes = open
         .lanes
         .as_ref()
@@ -1652,6 +1848,28 @@ fn place_snapshot(
             message_write,
             graph_write,
         }),
+        standing: local_standing(
+            &moot_snapshot.membership.members,
+            &delegations,
+            &moot_snapshot.governance.rules,
+            moot_id,
+            open.subject,
+            at_ms,
+        ),
+        members: moot_snapshot
+            .membership
+            .members
+            .iter()
+            .map(|member| crate::place::PlaceMember {
+                root: member.member,
+                access: match member.access {
+                    MootAccessLevel::Pull => crate::place::PlaceMemberAccess::Pull,
+                    MootAccessLevel::Read => crate::place::PlaceMemberAccess::Read,
+                    MootAccessLevel::Write => crate::place::PlaceMemberAccess::Write,
+                    MootAccessLevel::Manage => crate::place::PlaceMemberAccess::Manage,
+                },
+            })
+            .collect(),
     })
 }
 
@@ -1849,15 +2067,24 @@ pub fn spawn_place_worker(
                         directory,
                         prekey,
                         access,
+                        lifetime_ms,
                     } => {
                         let result = match &live {
                             Some(_) if live_scope != Some((session, generation)) => Err(
                                 "invitation belongs to a departed place generation".to_string(),
                             ),
                             None => Err("open a place before inviting anyone".to_string()),
+                            Some(_)
+                                if lifetime_ms.is_some()
+                                    && access == crate::place::PlaceInviteAccess::Reader =>
+                            {
+                                Err("a reader invitation carries no grant to bound".to_string())
+                            },
                             Some(open) => {
                                 let binding = open.binding.clone();
                                 let now_ms = settings.authority_clock.now_ms();
+                                let expires_at_ms =
+                                    lifetime_ms.map(|lifetime| now_ms.saturating_add(lifetime));
                                 // The rendezvous an invitation carries is THIS
                                 // bind's ticket, minted when the endpoint came
                                 // up. A founder must be live before it invites.
@@ -1888,6 +2115,7 @@ pub fn spawn_place_worker(
                                             joiner_root,
                                             access,
                                             now_ms,
+                                            expires_at_ms,
                                         )
                                     })
                                     .and_then(|authored| {
@@ -2808,7 +3036,7 @@ pub(crate) mod tests {
             ..PlaceWorkerSettings::default()
         };
         let error = admit_invitation(&expired_dir, &invite, &joiner, &expired_clock).unwrap_err();
-        assert!(error.contains("expired"), "{error}");
+        assert_eq!(error, "invitation expired at 1970-01-01T00:00:01Z");
         assert_eq!(residue(&expired_dir), (false, false, false));
 
         // Aliased Commons scopes are refused before any store is created.
@@ -3008,10 +3236,10 @@ pub(crate) mod tests {
         ))
         .unwrap();
         let guest_root = guest_identity.master_public_key().to_bytes();
-        admit_member(&moot, &binding, &host_identity, guest_root, Writer, now_ms).unwrap();
+        admit_member(&moot, &binding, &host_identity, guest_root, Writer, now_ms, None).unwrap();
         // Idempotent: inviting the same root twice must not double the fold.
         let projection_grant =
-            admit_member(&moot, &binding, &host_identity, guest_root, Writer, now_ms)
+            admit_member(&moot, &binding, &host_identity, guest_root, Writer, now_ms, None)
                 .unwrap()
                 .projection;
         assert!(
@@ -3096,11 +3324,11 @@ pub(crate) mod tests {
             settings.retention.clone(),
         ))
         .unwrap();
-        admit_member(&moot, &binding, &host_identity, reader_root, Reader, now_ms).unwrap();
+        admit_member(&moot, &binding, &host_identity, reader_root, Reader, now_ms, None).unwrap();
         // Idempotent for a reader too: no second membership fact, no
         // delegation sneaking in on the way through.
         let projection_grant =
-            admit_member(&moot, &binding, &host_identity, reader_root, Reader, now_ms)
+            admit_member(&moot, &binding, &host_identity, reader_root, Reader, now_ms, None)
                 .unwrap()
                 .projection;
         assert!(
@@ -3182,6 +3410,93 @@ pub(crate) mod tests {
         let _ = std::fs::remove_dir_all(&root);
     }
 
+    /// T1 without lanes: revocation removes the member, revokes the
+    /// delegation admission issued, and the door ledger rebuilt from the Gemot
+    /// fold withdraws exactly the projection grant that admission issued.
+    #[test]
+    fn revoking_a_writer_withdraws_every_grant_its_admission_issued() {
+        let root = tempfile::tempdir().unwrap();
+        let host = root.path().join("host");
+        std::fs::create_dir_all(&host).unwrap();
+        let host_identity = RootIdentity::Unsealed(InMemoryProvider::from_seed([0xd7; 32]));
+        let writer = InMemoryProvider::from_seed([0xd8; 32]);
+        let host_root = host_identity.master_public_key().to_bytes();
+        let writer_root = writer.master_public_key().to_bytes();
+        let reader_root = InMemoryProvider::from_seed([0xd9; 32])
+            .master_public_key()
+            .to_bytes();
+        let settings = settings();
+        let binding = found_place(&host, &host_identity, "Hearth", &settings).unwrap();
+        let (mut open, _) = open_cached_place(&host, &binding, &host_identity, &settings).unwrap();
+
+        let expires = Some(AUTHORITY_AT_MS + 60_000);
+        let grant = admit_member(
+            &open.moot, &binding, &host_identity, writer_root, Writer, AUTHORITY_AT_MS, expires,
+        )
+        .unwrap()
+        .projection
+        .expect("a writer is issued a projection grant");
+        assert_eq!(grant.certificate.expires_at_ms, expires, "the lifetime bounds the grant");
+        admit_member(&open.moot, &binding, &host_identity, reader_root, Reader, AUTHORITY_AT_MS, None)
+            .unwrap();
+        let before = place_snapshot(&open, binding.moot.0, &settings).unwrap();
+        assert_eq!(before.members.len(), 3);
+        let rules = pollster::block_on(open.moot.snapshot()).unwrap().governance.rules;
+        let issued = |open: &OpenPlace| {
+            pollster::block_on(open.moot.delegations())
+                .unwrap()
+                .projections(binding.moot.0, &rules, AUTHORITY_AT_MS)
+                .into_iter()
+                .filter(|grant| grant.subject == writer_root)
+                .collect::<Vec<_>>()
+        };
+        assert_eq!(issued(&open).len(), 1);
+        assert_eq!(issued(&open)[0].expires_at_ms, expires, "and the delegation");
+
+        // Refusals name their reason and author nothing.
+        let refused = revoke_member(&open, &writer, reader_root, AUTHORITY_AT_MS).unwrap_err();
+        assert_eq!(refused, "only a profile that manages this place can revoke a member");
+        for (member, reason) in [
+            (host_root, "a manager cannot revoke itself"),
+            ([0x77; 32], "that root is not a member of this place"),
+        ] {
+            let command = PlaceCommand::RevokeMember { member };
+            let refused =
+                author_into_place(&mut open, &binding, &host_identity, &command, &settings)
+                    .unwrap_err();
+            assert_eq!(refused, reason);
+        }
+        assert!(withdrawn_projection_grants(&open, &host_identity).unwrap().is_empty());
+
+        let command = PlaceCommand::RevokeMember { member: writer_root };
+        author_into_place(&mut open, &binding, &host_identity, &command, &settings).unwrap();
+        let after = place_snapshot(&open, binding.moot.0, &settings).unwrap();
+        assert!(!after.members.iter().any(|member| member.root == writer_root));
+        assert!(issued(&open).iter().all(|grant| grant.directly_revoked && !grant.active));
+        let withdrawn = withdrawn_projection_grants(&open, &host_identity).unwrap();
+        assert_eq!(withdrawn.len(), 1);
+        assert_eq!(withdrawn[0].revocation.certificate, grant.certificate.id());
+        let mut ledger = notochord::RevocationLedger::new();
+        assert!(ledger.fold(&withdrawn[0]));
+        assert!(ledger.revokes(&grant.certificate), "the door refuses the issued grant");
+
+        // A reader was issued no grant: its revocation is membership alone.
+        let command = PlaceCommand::RevokeMember { member: reader_root };
+        author_into_place(&mut open, &binding, &host_identity, &command, &settings).unwrap();
+        let last = place_snapshot(&open, binding.moot.0, &settings).unwrap();
+        assert_eq!(last.members.len(), 1);
+        assert_eq!(withdrawn_projection_grants(&open, &host_identity).unwrap().len(), 1);
+        // The founder's own standing is untouched.
+        assert_eq!(last.standing, crate::place::PlaceStanding::Member);
+        assert_eq!(
+            last.permissions,
+            Some(crate::place::PlacePermissionSnapshot {
+                message_write: true,
+                graph_write: true,
+            })
+        );
+    }
+
     #[test]
     fn a_revoked_member_reaches_no_projected_place_state() {
         let root =
@@ -3224,7 +3539,8 @@ pub(crate) mod tests {
             &mut withdrawn_open, &binding, &identity,
             &PlaceCommand::SendMessage { channel: "hall".into(), body: "refused after revocation".into() },
             &settings(),
-        ).unwrap_err().contains("no effective capability"));
+        ).unwrap_err().contains("no effective capability to author here: its grant was revoked"));
+        assert_eq!(withdrawn.standing, crate::place::PlaceStanding::GrantRevoked);
         drop(withdrawn_open);
         assert_eq!(
             (withdrawn.graph.nodes, withdrawn.graph.edges),

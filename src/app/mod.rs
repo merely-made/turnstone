@@ -1206,12 +1206,18 @@ impl App {
             Action::BeginInviteToPlaceAsReader => {
                 self.begin_place_prompt(crate::ui::PlacePrompt::InviteReader)
             },
-            Action::InviteToPlace { path, access } => self.invite_to_place(path, access),
+            Action::InviteToPlace {
+                path,
+                access,
+                lifetime_ms,
+            } => self.invite_to_place(path, access, lifetime_ms),
             Action::InviteToPlaceWithPrekey {
                 prekey,
                 out,
                 access,
-            } => self.invite_to_place_with_prekey(prekey, out, access),
+                lifetime_ms,
+            } => self.invite_to_place_with_prekey(prekey, out, access, lifetime_ms),
+            Action::RevokePlaceMember { member } => self.revoke_place_member(member),
             Action::BeginJoinPlaceFile => self.begin_place_prompt(crate::ui::PlacePrompt::Join),
             Action::JoinPlaceFile { path } => self.join_place_file(path),
             Action::BeginSendPlaceMessage => {

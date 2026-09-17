@@ -780,6 +780,7 @@ impl App {
                     // holding a binding admission never granted.
                     Err(error) => {
                         tracing::warn!(%error, "invitation refused");
+                        self.events.push(AppEvent::PlaceRefused(error.clone()));
                         crate::place::PlaceState::Failed { error }
                     },
                 };

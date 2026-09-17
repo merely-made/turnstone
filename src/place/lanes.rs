@@ -338,6 +338,20 @@ impl LiveLanes {
             .map_err(|error| format!("publish membership operation: {error}"))
     }
 
+    /// Refuse withdrawn projection grants at this bind's door. A bind that
+    /// serves no vault has no door, so there is nothing to refuse.
+    pub(crate) fn withdraw_projection_grants(
+        &self,
+        statements: &[identity::delegation::SignedDelegationRevocation],
+    ) -> Result<(), String> {
+        let Some(serving) = &self.projection else {
+            return Ok(());
+        };
+        statements
+            .iter()
+            .try_for_each(|statement| serving.withdraw(statement))
+    }
+
     /// Push one freshly authored delegation operation onto the live lane.
     pub(crate) fn publish_delegation(
         &self,
@@ -1716,6 +1730,18 @@ mod tests {
         joiner: &InMemoryProvider,
         access: crate::place::PlaceInviteAccess,
     ) -> ServedFounder {
+        found_and_invite_with(tag, seed, joiner, access, settings(), None)
+    }
+
+    /// [`found_and_invite`] on a chosen clock, with an optional grant lifetime.
+    fn found_and_invite_with(
+        tag: &str,
+        seed: u8,
+        joiner: &InMemoryProvider,
+        access: crate::place::PlaceInviteAccess,
+        clock: crate::place::worker::PlaceWorkerSettings,
+        lifetime_ms: Option<u64>,
+    ) -> ServedFounder {
         let root = std::env::temp_dir().join(format!(
             "turnstone-place-projection-{tag}-{}",
             std::process::id()
@@ -1733,7 +1759,7 @@ mod tests {
         let founder = RootIdentity::Unsealed(InMemoryProvider::from_seed([seed; 32]));
         let host_settings = crate::place::worker::PlaceWorkerSettings {
             knot_root: Some(vault.clone()),
-            ..settings()
+            ..clock
         };
         let (worker, updates) = spawn_place_worker(Arc::new(|| {}), Arc::new(founder), host_settings);
         let session = SessionId::new();
@@ -1774,6 +1800,7 @@ mod tests {
             directory: host.clone(),
             prekey,
             access,
+            lifetime_ms,
         });
         let invite = expect_invited(&updates, "the joiner invitation");
         ServedFounder {
@@ -2284,6 +2311,7 @@ mod tests {
             directory: host.clone(),
             prekey,
             access: crate::place::PlaceInviteAccess::Writer,
+            lifetime_ms: None,
         });
         let invite = expect_invited(&updates, "the late writer invitation");
         assert!(
@@ -2607,6 +2635,7 @@ mod tests {
             directory: host.clone(),
             prekey: joiner_prekey,
             access: crate::place::PlaceInviteAccess::Writer,
+            lifetime_ms: None,
         });
         let invite = expect_invited(&host_updates, "the joiner's invitation");
 
@@ -2656,6 +2685,7 @@ mod tests {
             directory: host.clone(),
             prekey: third_prekey,
             access,
+            lifetime_ms: None,
         });
         let _third_invite = expect_invited(&host_updates, "the third root's invitation");
         let admitted_at = Instant::now();
@@ -2827,6 +2857,510 @@ mod tests {
         let _ = std::fs::remove_dir_all(&root);
     }
 
+    /// One authored command's answer, stepping past lane nudges.
+    fn authored(
+        updates: &std::sync::mpsc::Receiver<Update>,
+        request: u64,
+    ) -> Result<crate::place::OfflinePlaceSnapshot, String> {
+        let deadline = Instant::now() + Duration::from_secs(30);
+        while Instant::now() < deadline {
+            if let Ok(Update::PlaceCommandDone {
+                request: got,
+                result,
+                ..
+            }) = updates.recv_timeout(Duration::from_secs(10))
+                && got == request
+            {
+                return result;
+            }
+        }
+        panic!("request {request} never answered");
+    }
+
+    /// Ask a member's worker to prepare a visit to the founder's document.
+    /// The prepared dial is dropped unopened: only the answer matters here.
+    fn visit(
+        worker: &armillary::ActorHandle<PlaceWorkerCommand>,
+        updates: &std::sync::mpsc::Receiver<Update>,
+        session: SessionId,
+        directory: &Path,
+        holder_root: [u8; 32],
+        request: u64,
+    ) -> Result<(), String> {
+        worker.command(PlaceWorkerCommand::VisitDocument {
+            session,
+            generation: 1,
+            directory: directory.to_path_buf(),
+            holder_root,
+            path: "field.knot".into(),
+            request,
+        });
+        let deadline = Instant::now() + Duration::from_secs(30);
+        while Instant::now() < deadline {
+            if let Ok(Update::PlaceDocumentVisit {
+                request: got,
+                result,
+                ..
+            }) = updates.recv_timeout(Duration::from_secs(10))
+                && got == request
+            {
+                return result.map(|_| ());
+            }
+        }
+        panic!("visit {request} never answered");
+    }
+
+    fn release(worker: &armillary::ActorHandle<PlaceWorkerCommand>) {
+        let (ack_tx, ack_rx) = std::sync::mpsc::sync_channel(1);
+        worker.command(PlaceWorkerCommand::Release(ack_tx));
+        let _ = ack_rx.recv_timeout(Duration::from_secs(30));
+    }
+
+    /// Stop a member's worker the way a restart does, then act as a member
+    /// that bypasses its own worker: reopen its stores by hand, optionally
+    /// author a node its worker would refuse, and dial the founder's door with
+    /// the grant it still holds. Returns the bind, held so the node can cross,
+    /// and the door's refusal.
+    fn bypass_after_restart(
+        founder: &ServedFounder,
+        worker: &armillary::ActorHandle<PlaceWorkerCommand>,
+        member: &InMemoryProvider,
+        clock: &crate::place::worker::PlaceWorkerSettings,
+        forge: Option<&str>,
+        nonce: [u8; 32],
+    ) -> (crate::place::worker::OpenPlace, super::LiveLanes, String) {
+        release(worker);
+        // Release does not wait for the sync actors' store clones the way a
+        // process exit would release them, so the reopen waits instead.
+        let released = Instant::now();
+        let deadline = released + Duration::from_secs(30);
+        let (mut open, _) = loop {
+            match open_cached_place(&founder.guest, &founder.binding, member, clock) {
+                Ok(opened) => {
+                    eprintln!("restart: stores reopened {} ms after release", released.elapsed().as_millis());
+                    break opened;
+                },
+                Err(error) if error.contains("already open") && Instant::now() < deadline => {
+                    std::thread::sleep(Duration::from_millis(25));
+                },
+                Err(error) => panic!("reopen the member's stores: {error}"),
+            }
+        };
+        let lanes = super::join_live(
+            &open,
+            &founder.binding,
+            member,
+            std::slice::from_ref(&founder.ticket),
+            None,
+            None,
+        )
+        .expect("the member binds its lanes");
+        if let Some(address) = forge {
+            let address = address.to_string();
+            let operation = pollster::block_on(open.graph.edit(move |log| {
+                log.insert_node(
+                    &Author::new("turnstone"),
+                    Container::new(address.clone()).with_address(address),
+                );
+            }))
+            .unwrap();
+            lanes.publish_graph(operation).unwrap();
+        }
+        let grant = crate::place::rendezvous::load_projection_grant(&founder.guest)
+            .expect("the member still holds its grant");
+        let refusal = match super::dial_holder(&lanes, &founder.ticket, &grant, member, nonce) {
+            Ok(_) => panic!("the door admitted a withdrawn grant"),
+            Err(error) => error,
+        };
+        (open, lanes, refusal)
+    }
+
+    fn drop_bind(open: crate::place::worker::OpenPlace, mut lanes: super::LiveLanes) {
+        lanes.leave_and_wait();
+        drop(lanes);
+        drop(open);
+    }
+
+    fn both_permissions(effective: bool) -> Option<crate::place::PlacePermissionSnapshot> {
+        Some(crate::place::PlacePermissionSnapshot {
+            message_write: effective,
+            graph_write: effective,
+        })
+    }
+
+    fn status_of(
+        founder: &ServedFounder,
+        snapshot: crate::place::OfflinePlaceSnapshot,
+    ) -> Vec<String> {
+        crate::place::PlaceState::Offline {
+            binding: founder.binding.clone(),
+            generation: 1,
+            snapshot,
+        }
+        .status_lines()
+    }
+
+    fn joined_snapshot(
+        updates: &std::sync::mpsc::Receiver<Update>,
+    ) -> crate::place::OfflinePlaceSnapshot {
+        match updates.recv_timeout(Duration::from_secs(60)) {
+            Ok(Update::PlaceJoined {
+                result: Ok((_, snapshot)),
+                ..
+            }) => snapshot,
+            Ok(Update::PlaceJoined {
+                result: Err(error), ..
+            }) => panic!("join refused: {error}"),
+            _ => panic!("join answered with an unrelated update"),
+        }
+    }
+
+    /// Share one node and send one message; both answers are returned.
+    fn try_both_writes(
+        worker: &armillary::ActorHandle<PlaceWorkerCommand>,
+        updates: &std::sync::mpsc::Receiver<Update>,
+        session: SessionId,
+        channel: &str,
+        first_request: u64,
+    ) -> [Result<crate::place::OfflinePlaceSnapshot, String>; 2] {
+        let commands = [
+            PlaceCommand::ShareNode {
+                address: "https://refused.example/page".into(),
+            },
+            PlaceCommand::SendMessage {
+                channel: channel.into(),
+                body: "refused".into(),
+            },
+        ];
+        let mut request = first_request;
+        commands.map(|command| {
+            worker.command(PlaceWorkerCommand::Author {
+                session,
+                generation: 1,
+                request,
+                command,
+            });
+            let answer = authored(updates, request);
+            request += 1;
+            answer
+        })
+    }
+
+    /// T1 live: a founder revokes a connected writer. The writer's own status
+    /// reads the revocation; its writes and its dial are refused with the
+    /// reason; after a restart the founder's door refuses the grant it still
+    /// holds, a node it forges is retained and not effective, and Reconnect
+    /// is refused by the membership recheck.
+    #[test]
+    fn a_revoked_writer_sees_it_live_and_cannot_write_dial_or_reconnect() {
+        use crate::place::{PlaceMemberAccess, PlaceStanding};
+        let joiner = InMemoryProvider::from_seed([0x3b; 32]);
+        let joiner_root = joiner.master_public_key().to_bytes();
+        let founder_root = InMemoryProvider::from_seed([0x3a; 32])
+            .master_public_key()
+            .to_bytes();
+        let founder = found_and_invite(
+            "revoke",
+            0x3a,
+            &joiner,
+            crate::place::PlaceInviteAccess::Writer,
+        );
+
+        let member = || Arc::new(RootIdentity::Unsealed(InMemoryProvider::from_seed([0x3b; 32])));
+        let (guest_worker, guest_updates) =
+            spawn_place_worker(Arc::new(|| {}), member(), settings());
+        let session = SessionId::new();
+        guest_worker.command(PlaceWorkerCommand::Join {
+            session,
+            generation: 1,
+            directory: founder.guest.clone(),
+            invite: founder.invite.clone(),
+        });
+        joined_snapshot(&guest_updates);
+        let joined = converge_until(&guest_worker, &guest_updates, session, "writer catch-up", |s| {
+            s.moot.members == 2 && s.chat.channels == 1
+        });
+        assert_eq!(joined.standing, PlaceStanding::Member);
+        assert_eq!(joined.permissions, both_permissions(true));
+
+        // The controls: while admitted, the writer shares and may dial.
+        const BEFORE: &str = "https://before.example/page";
+        guest_worker.command(PlaceWorkerCommand::Author {
+            session,
+            generation: 1,
+            request: 1,
+            command: PlaceCommand::ShareNode {
+                address: BEFORE.into(),
+            },
+        });
+        authored(&guest_updates, 1).expect("an admitted writer shares");
+        visit(&guest_worker, &guest_updates, session, &founder.guest, founder_root, 1)
+            .expect("an admitted writer's dial is prepared");
+        let seen = converge_until(
+            &founder.worker,
+            &founder.updates,
+            founder.session,
+            "the founder holds the writer's node",
+            |s| s.graph.nodes == 1 && s.members.len() == 2,
+        );
+        assert!(seen.members.iter().any(|entry| {
+            entry.root == joiner_root && entry.access == PlaceMemberAccess::Write
+        }));
+
+        founder.worker.command(PlaceWorkerCommand::Author {
+            session: founder.session,
+            generation: 1,
+            request: 9,
+            command: PlaceCommand::RevokeMember {
+                member: joiner_root,
+            },
+        });
+        let revoked = authored(&founder.updates, 9).expect("the founder revokes its writer");
+        let revoked_at = Instant::now();
+        assert_eq!(revoked.members.len(), 1);
+        // Authority is classified by subject at evaluation time, so the node
+        // shared while admitted leaves the effective graph too, retained.
+        eprintln!(
+            "revoke: the founder's pre-revocation writer node reads {} effective, {} revoked",
+            revoked.graph.nodes, revoked.graph.revoked_authority
+        );
+        assert_eq!(
+            (revoked.graph.nodes, revoked.graph.revoked_authority),
+            (0, 1)
+        );
+
+        let withdrawn = converge_until(
+            &guest_worker,
+            &guest_updates,
+            session,
+            "the revocation reaches the connected writer",
+            |s| {
+                s.standing == PlaceStanding::MembershipRevoked
+                    && s.permissions == both_permissions(false)
+            },
+        );
+        let arrived = revoked_at.elapsed();
+        eprintln!(
+            "revoke: the writer read its revocation {} ms after it was authored",
+            arrived.as_millis()
+        );
+        assert!(arrived < Duration::from_secs(10), "took {} ms", arrived.as_millis());
+        assert!(withdrawn.sync.is_some(), "still on its live lanes");
+        let lines = status_of(&founder, withdrawn);
+        for line in [
+            "Membership: revoked",
+            "Message permission: not effective locally at last refresh",
+            "Shared graph permission: not effective locally at last refresh",
+        ] {
+            assert!(lines.iter().any(|row| row == line), "{line} missing: {lines:?}");
+        }
+
+        let refused = "this profile holds no effective capability to author here: its place \
+                       membership was revoked";
+        for answer in try_both_writes(
+            &guest_worker,
+            &guest_updates,
+            session,
+            &founder.binding.default_channel,
+            2,
+        ) {
+            assert_eq!(answer.unwrap_err(), refused);
+        }
+        assert_eq!(
+            visit(&guest_worker, &guest_updates, session, &founder.guest, founder_root, 2)
+                .unwrap_err(),
+            "this profile cannot visit a held document: its place membership was revoked"
+        );
+
+        const FORGED: &str = "https://after.example/page";
+        let (open, lanes, door) = bypass_after_restart(
+            &founder,
+            &guest_worker,
+            &joiner,
+            &settings(),
+            Some(FORGED),
+            [41; 32],
+        );
+        eprintln!("revoke: the founder's door refused the held grant with {door}");
+        assert!(door.contains("Revoked"), "{door}");
+        let forged_at = Instant::now();
+        let retained = converge_until(
+            &founder.worker,
+            &founder.updates,
+            founder.session,
+            "the founder retains the forged node",
+            |s| s.graph.revoked_authority == 2,
+        );
+        eprintln!(
+            "revoke: the forged node was retained {} ms after it was published",
+            forged_at.elapsed().as_millis()
+        );
+        assert_eq!(retained.graph.nodes, 0, "retained, not effective");
+        assert!(!retained.shared.addresses().any(|address| address == FORGED));
+        drop_bind(open, lanes);
+
+        let (worker, updates) = spawn_place_worker(Arc::new(|| {}), member(), settings());
+        worker.command(PlaceWorkerCommand::Reconnect {
+            session,
+            generation: 1,
+            directory: founder.guest.clone(),
+            binding: founder.binding.clone(),
+        });
+        match updates.recv_timeout(Duration::from_secs(30)) {
+            Ok(Update::PlaceOpened {
+                result: Err(error), ..
+            }) => assert_eq!(error, "this identity is no longer a member in retained place state"),
+            Ok(Update::PlaceOpened { result: Ok(_), .. }) => panic!("a revoked member reconnected"),
+            _ => panic!("reconnect answered with an unrelated update"),
+        }
+        release(&worker);
+        release(&founder.worker);
+        let _ = std::fs::remove_dir_all(&founder.root);
+    }
+
+    /// T3 live: a writer invited with a short lifetime, on the system clock,
+    /// sees its grant expire while connected. Writes and the dial are refused
+    /// as expired, the door refuses the grant, and Reconnect still admits it,
+    /// because membership is intact and reading needs no grant.
+    #[test]
+    fn a_bounded_writer_grant_expires_while_connected_and_reconnect_still_admits() {
+        use crate::place::PlaceStanding;
+        use crate::place::worker::{AuthorityClock, PlaceWorkerSettings};
+        // A fixed clock cannot move inside a running worker, so this runs on
+        // the system clock with a lifetime admission fits inside under load.
+        const LIFETIME: Duration = Duration::from_secs(6);
+        let clocked = PlaceWorkerSettings {
+            authority_clock: AuthorityClock::SystemTime,
+            ..settings()
+        };
+        let joiner = InMemoryProvider::from_seed([0x3d; 32]);
+        let founder_root = InMemoryProvider::from_seed([0x3c; 32])
+            .master_public_key()
+            .to_bytes();
+        let founder = found_and_invite_with(
+            "expire",
+            0x3c,
+            &joiner,
+            crate::place::PlaceInviteAccess::Writer,
+            clocked.clone(),
+            Some(LIFETIME.as_millis() as u64),
+        );
+        let grant = crate::place::projection_host::decode_grant(
+            founder
+                .invite
+                .projection_grant
+                .as_ref()
+                .expect("a writer invitation carries its grant")
+                .verified_bytes("projection grant")
+                .unwrap(),
+        )
+        .unwrap();
+        let expires_at = grant
+            .certificate
+            .expires_at_ms
+            .expect("the lifetime bounds the grant");
+        assert_eq!(
+            expires_at - grant.certificate.not_before_ms,
+            LIFETIME.as_millis() as u64
+        );
+
+        let member = || Arc::new(RootIdentity::Unsealed(InMemoryProvider::from_seed([0x3d; 32])));
+        let (guest_worker, guest_updates) =
+            spawn_place_worker(Arc::new(|| {}), member(), clocked.clone());
+        let session = SessionId::new();
+        guest_worker.command(PlaceWorkerCommand::Join {
+            session,
+            generation: 1,
+            directory: founder.guest.clone(),
+            invite: founder.invite.clone(),
+        });
+        let joined = joined_snapshot(&guest_updates);
+        eprintln!(
+            "expire: the join answered with {} ms of grant left",
+            expires_at.saturating_sub(clocked.authority_clock.now_ms())
+        );
+        // The control: admission folds its snapshot before binding lanes, so
+        // this reads the grant before it expired even when the bind is slow.
+        assert_eq!(joined.standing, PlaceStanding::Member);
+        assert_eq!(joined.permissions, both_permissions(true));
+
+        let expired = converge_until(
+            &guest_worker,
+            &guest_updates,
+            session,
+            "the grant expires on the connected writer",
+            |s| matches!(s.standing, PlaceStanding::GrantExpired { .. }),
+        );
+        let late = clocked.authority_clock.now_ms().saturating_sub(expires_at);
+        eprintln!("expire: the writer read its expiry {late} ms after the grant expired");
+        assert_eq!(expired.standing, PlaceStanding::GrantExpired { at_ms: expires_at });
+        assert_eq!(expired.permissions, both_permissions(false));
+        assert!(expired.sync.is_some(), "still on its live lanes");
+        let expired_line = format!("Grant: expired at {}", crate::place::utc_ms(expires_at));
+        let lines = status_of(&founder, expired);
+        for line in [
+            expired_line.as_str(),
+            "Message permission: not effective locally at last refresh",
+            "Shared graph permission: not effective locally at last refresh",
+        ] {
+            assert!(lines.iter().any(|row| row == line), "{line} missing: {lines:?}");
+        }
+
+        let reason = format!("its grant expired at {}", crate::place::utc_ms(expires_at));
+        for answer in try_both_writes(
+            &guest_worker,
+            &guest_updates,
+            session,
+            &founder.binding.default_channel,
+            2,
+        ) {
+            assert_eq!(
+                answer.unwrap_err(),
+                format!("this profile holds no effective capability to author here: {reason}")
+            );
+        }
+        assert_eq!(
+            visit(&guest_worker, &guest_updates, session, &founder.guest, founder_root, 2)
+                .unwrap_err(),
+            format!("this profile cannot visit a held document: {reason}")
+        );
+
+        let (open, lanes, door) =
+            bypass_after_restart(&founder, &guest_worker, &joiner, &clocked, None, [42; 32]);
+        eprintln!("expire: the founder's door refused the held grant with {door}");
+        assert!(door.contains("Expired"), "{door}");
+        drop_bind(open, lanes);
+
+        let (worker, updates) = spawn_place_worker(Arc::new(|| {}), member(), clocked.clone());
+        worker.command(PlaceWorkerCommand::Reconnect {
+            session,
+            generation: 1,
+            directory: founder.guest.clone(),
+            binding: founder.binding.clone(),
+        });
+        let reconnected = loop {
+            match updates.recv_timeout(Duration::from_secs(30)) {
+                Ok(Update::PlaceOpened {
+                    result: Ok(snapshot),
+                    ..
+                }) => break snapshot,
+                Ok(Update::PlaceOpened {
+                    result: Err(error), ..
+                }) => panic!("an expired writer's reconnect was refused: {error}"),
+                Ok(_) => continue,
+                Err(error) => panic!("reconnect never answered: {error}"),
+            }
+        };
+        assert!(reconnected.sync.is_some(), "reconnect bound live lanes");
+        assert_eq!(
+            reconnected.standing,
+            PlaceStanding::GrantExpired { at_ms: expires_at }
+        );
+        release(&worker);
+        release(&founder.worker);
+        let _ = std::fs::remove_dir_all(&founder.root);
+    }
+
     /// Print one snapshot's nine lane counters, plus the two folds this
     /// diagnostic is about.
     fn report_lanes(what: &str, snapshot: &crate::place::OfflinePlaceSnapshot) {
@@ -2956,6 +3490,7 @@ pub(crate) fn holder_dial(
     let visitor = identity::InMemoryProvider::from_seed(derived.to_seed());
     let subject = visitor.master_public_key().to_bytes();
 
+    // The leaf copies the grant's window, so a bounded grant bounds the leaf.
     let leaf = SignedDelegationCertificate::issue(
         &ProviderRef(identity),
         DelegationCertificate::new(
@@ -3112,10 +3647,13 @@ pub(crate) fn join_live(
             .expect("lane runtime is present")
             .handle()
             .clone();
+        // Grants revoked before this bind are refused from its first accept.
+        let withdrawn = crate::place::worker::withdrawn_projection_grants(open, identity)?;
         lanes.projection = Some(ProjectionServing::start(
             Arc::clone(&lanes._transport),
             &handle,
             &setup,
+            &withdrawn,
         )?);
     }
 

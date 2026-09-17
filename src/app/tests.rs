@@ -4899,6 +4899,7 @@ fn place_founding_prompts_commit_escape_and_refuse() {
         app.update(Action::InviteToPlace {
             path: "offer.json".into(),
             access: crate::place::PlaceInviteAccess::Writer,
+            lifetime_ms: None,
         }),
         vec![Effect::Redraw]
     );
@@ -4974,6 +4975,7 @@ fn place_artifacts_are_written_where_the_person_asked() {
         prekey: vec![1, 2, 3],
         out: "offer.json.invite.json".into(),
         access: crate::place::PlaceInviteAccess::Writer,
+        lifetime_ms: None,
     });
     assert_eq!(
         effects,
@@ -4982,6 +4984,7 @@ fn place_artifacts_are_written_where_the_person_asked() {
             generation: 4,
             prekey: vec![1, 2, 3],
             access: crate::place::PlaceInviteAccess::Writer,
+            lifetime_ms: None,
         }]
     );
     // A stale answer writes nothing and does not consume the pending path.
@@ -5080,7 +5083,10 @@ fn place_reader_invitation_and_share_rows_act_only_inside_a_place() {
         assert!(
             effects.contains(&Effect::ReadPlaceArtifact {
                 path: "offer.json".into(),
-                kind: crate::action::PlaceArtifactKind::Prekey { access },
+                kind: crate::action::PlaceArtifactKind::Prekey {
+                    access,
+                    lifetime_ms: None,
+                },
             }),
             "{prompt:?} lowered {effects:?}"
         );
@@ -5335,5 +5341,289 @@ fn place_status_leaves_the_omnibar_open_over_a_pane_open() {
     assert!(
         app.omnibar.open,
         "opening a pane does not dismiss the omnibar; the next press does"
+    );
+}
+
+fn open_place(
+    local: [u8; 32],
+    members: Vec<crate::place::PlaceMember>,
+) -> crate::place::PlaceState {
+    crate::place::PlaceState::Offline {
+        binding: crate::place::PlaceBindingV1::new(
+            crate::place::PlaceId([0xe1; 32]),
+            crate::place::SharedContainerId([0xe2; 32]),
+            crate::place::ChatSpaceId([0xe3; 32]),
+            "general",
+        )
+        .unwrap(),
+        generation: 5,
+        snapshot: crate::place::OfflinePlaceSnapshot {
+            personae_root: local,
+            members,
+            ..Default::default()
+        },
+    }
+}
+
+/// T1: a founder is offered one revoke row per other member while its place
+/// is open, a row lowers the worker's revoke command, and everywhere else the
+/// rows are absent and the action refuses out loud.
+#[test]
+fn place_revoke_rows_are_a_founders_one_per_other_member() {
+    use crate::place::PlaceMember;
+    use crate::place::PlaceMemberAccess::{Manage, Read, Write};
+
+    let revoke_rows = |app: &App| -> Vec<(String, Action)> {
+        app.available_actions()
+            .into_iter()
+            .filter(|(label, _)| label.starts_with("Revoke place member"))
+            .collect()
+    };
+    let mut app = App::test_stub();
+    let local = app.personae_root();
+    let with_local = |access| {
+        vec![
+            PlaceMember {
+                root: local,
+                access,
+            },
+            PlaceMember {
+                root: [0x22; 32],
+                access: Write,
+            },
+            PlaceMember {
+                root: [0x33; 32],
+                access: Read,
+            },
+        ]
+    };
+
+    // Personal: no rows, and the action refuses.
+    assert!(revoke_rows(&app).is_empty());
+    assert_eq!(
+        app.update(Action::RevokePlaceMember { member: [0x22; 32] }),
+        vec![Effect::Redraw]
+    );
+    assert!(app.take_events().iter().any(|event| matches!(
+        event,
+        crate::observe::AppEvent::PlaceRefused(reason)
+            if reason == "open a place before revoking a member"
+    )));
+
+    // A founder: one row per other member, never itself.
+    app.place = open_place(local, with_local(Manage));
+    let rows = revoke_rows(&app);
+    assert_eq!(
+        rows,
+        vec![
+            (
+                "Revoke place member 22222222 (writer)".to_string(),
+                Action::RevokePlaceMember { member: [0x22; 32] },
+            ),
+            (
+                "Revoke place member 33333333 (reader)".to_string(),
+                Action::RevokePlaceMember { member: [0x33; 32] },
+            ),
+        ]
+    );
+    for (label, _) in &rows {
+        assert!(crate::ui::chrome_row_width(label) <= crate::ui::ROW_TEXT_BUDGET, "{label}");
+    }
+
+    // A writer in the same place, or a founder alone, is offered none.
+    app.place = open_place(local, with_local(Write));
+    assert!(revoke_rows(&app).is_empty());
+    app.place = open_place(
+        local,
+        vec![PlaceMember {
+            root: local,
+            access: Manage,
+        }],
+    );
+    assert!(revoke_rows(&app).is_empty());
+
+    // A place that is not open offers none and refuses.
+    app.place = crate::place::PlaceState::Degraded {
+        binding: open_place(local, Vec::new()).binding().unwrap().clone(),
+        generation: 5,
+        error: "offline".into(),
+    };
+    assert!(revoke_rows(&app).is_empty());
+    assert_eq!(
+        app.update(Action::RevokePlaceMember { member: [0x22; 32] }),
+        vec![Effect::Redraw]
+    );
+    assert!(matches!(
+        app.take_events().last(),
+        Some(crate::observe::AppEvent::PlaceRefused(_))
+    ));
+
+    // The row lowers the worker command; the worker's refusal is a place
+    // refusal and changes nothing.
+    app.place = open_place(local, with_local(Manage));
+    let effects = app.update(Action::RevokePlaceMember { member: [0x22; 32] });
+    let request = match effects.as_slice() {
+        [
+            Effect::RunPlaceCommand {
+                generation: 5,
+                request,
+                command: crate::place::worker::PlaceCommand::RevokeMember { member },
+                ..
+            },
+        ] if *member == [0x22; 32] => *request,
+        other => panic!("revoking lowers one worker command: {other:?}"),
+    };
+    app.apply_update(Update::PlaceCommandDone {
+        session: app.session_id,
+        generation: 5,
+        request,
+        result: Err("only a profile that manages this place can revoke a member".into()),
+    });
+    assert!(app.take_events().iter().any(|event| matches!(
+        event,
+        crate::observe::AppEvent::PlaceRefused(reason) if reason.contains("manages this place")
+    )));
+    assert_eq!(revoke_rows(&app).len(), 2);
+    assert_eq!(
+        crate::ring::ring_of(&Action::RevokePlaceMember { member: [0x22; 32] }),
+        crate::ring::Ring::HostOnly
+    );
+}
+
+/// T3: the writer invitation prompt reads an optional ` for <n><s|m|h|d>`
+/// from the right, so a path with spaces survives and no suffix means no
+/// expiry; a reader invitation with a suffix, or a zero lifetime, is refused.
+#[test]
+fn place_invite_lifetime_suffix_is_read_from_the_right() {
+    use crate::action::PlaceArtifactKind;
+    use crate::place::PlaceInviteAccess::{Reader, Writer};
+
+    let mut app = App::test_stub();
+    let local = app.personae_root();
+    app.place = open_place(local, Vec::new());
+    let commit = |app: &mut App, begin: Action, line: &str| -> Vec<Effect> {
+        app.update(begin);
+        app.omnibar.text = line.to_string();
+        app.update(Action::OmnibarCommit)
+    };
+    let reads = |effects: &[Effect]| -> Vec<(String, PlaceArtifactKind)> {
+        effects
+            .iter()
+            .filter_map(|effect| match effect {
+                Effect::ReadPlaceArtifact { path, kind } => Some((path.clone(), *kind)),
+                _ => None,
+            })
+            .collect()
+    };
+
+    for (line, path, lifetime_ms) in [
+        ("offer.json for 90s", "offer.json", Some(90_000)),
+        ("offer.json for 10m", "offer.json", Some(600_000)),
+        ("offer.json for 2h", "offer.json", Some(7_200_000)),
+        ("offer.json for 7d", "offer.json", Some(604_800_000)),
+        (
+            "C:/my offers/for you.json for 10m",
+            "C:/my offers/for you.json",
+            Some(600_000),
+        ),
+        (
+            "C:/my offers/offer for you.json",
+            "C:/my offers/offer for you.json",
+            None,
+        ),
+        ("offer.json", "offer.json", None),
+    ] {
+        assert_eq!(
+            reads(&commit(&mut app, Action::BeginInviteToPlace, line)),
+            vec![(
+                path.to_string(),
+                PlaceArtifactKind::Prekey {
+                    access: Writer,
+                    lifetime_ms,
+                },
+            )],
+            "{line}"
+        );
+    }
+
+    // The read hands the lifetime on to the worker unchanged.
+    let effects = app.update(Action::InviteToPlaceWithPrekey {
+        prekey: vec![4, 5, 6],
+        out: "offer.json.invite.json".into(),
+        access: Writer,
+        lifetime_ms: Some(600_000),
+    });
+    assert!(matches!(
+        effects.as_slice(),
+        [Effect::InvitePlace {
+            access: Writer,
+            lifetime_ms: Some(600_000),
+            ..
+        }]
+    ));
+
+    // A reader invitation carries no grant, so a lifetime on it is refused.
+    app.take_events();
+    let effects = commit(&mut app, Action::BeginInviteToPlaceAsReader, "offer.json for 10m");
+    assert!(reads(&effects).is_empty(), "{effects:?}");
+    assert!(app.take_events().iter().any(|event| matches!(
+        event,
+        crate::observe::AppEvent::PlaceRefused(reason)
+            if reason == "a reader invitation carries no grant to bound"
+    )));
+    assert_eq!(
+        reads(&commit(&mut app, Action::BeginInviteToPlaceAsReader, "offer.json")),
+        vec![(
+            "offer.json".to_string(),
+            PlaceArtifactKind::Prekey {
+                access: Reader,
+                lifetime_ms: None,
+            },
+        )]
+    );
+
+    // A zero lifetime would issue a grant already expired.
+    let effects = commit(&mut app, Action::BeginInviteToPlace, "offer.json for 0s");
+    assert!(reads(&effects).is_empty(), "{effects:?}");
+    assert!(app.take_events().iter().any(|event| matches!(
+        event,
+        crate::observe::AppEvent::PlaceRefused(reason)
+            if reason == "a grant lifetime must be longer than zero"
+    )));
+
+    let hint = crate::ui::PlacePrompt::Invite.hint();
+    assert!(hint.contains(" for "), "the hint names the suffix: {hint}");
+    assert!(crate::ui::chrome_row_width(hint) <= crate::ui::ROW_TEXT_BUDGET, "{hint}");
+}
+
+/// T2: an invitation refused as expired is reported with its expiry time, in
+/// the status line and in the place-refused event.
+#[test]
+fn an_expired_invitation_is_reported_with_its_time() {
+    let mut app = App::test_stub();
+    app.place = crate::place::PlaceState::Joining { generation: 3 };
+    // The worker's wording for an invitation whose bound was 1050 ms.
+    let refusal = format!("invitation expired at {}", crate::place::utc_ms(1_050));
+    assert_eq!(refusal, "invitation expired at 1970-01-01T00:00:01Z");
+
+    app.apply_update(Update::PlaceJoined {
+        session: app.session_id,
+        generation: 3,
+        result: Err(refusal.clone()),
+    });
+    let lines = app.place.status_lines();
+    assert_eq!(
+        lines,
+        vec!["Place not joined: invitation expired at 1970-01-01T00:00:01Z".to_string()]
+    );
+    assert!(crate::ui::chrome_row_width(&lines[0]) <= crate::ui::ROW_TEXT_BUDGET);
+    let events: Vec<String> = app
+        .take_events()
+        .iter()
+        .map(crate::observe::AppEvent::describe)
+        .collect();
+    assert!(
+        events.contains(&"place-refused invitation expired at 1970-01-01T00:00:01Z".to_string()),
+        "{events:?}"
     );
 }

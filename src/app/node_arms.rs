@@ -570,13 +570,22 @@ impl App {
             PlacePrompt::FoundPlace => Action::FoundPlace { name: text.clone() },
             PlacePrompt::ExportCard => Action::ExportPlaceCard { path: text.clone() },
             PlacePrompt::OfferPrekey => Action::OfferPlacePrekey { path: text.clone() },
-            PlacePrompt::Invite => Action::InviteToPlace {
-                path: text.clone(),
-                access: crate::place::PlaceInviteAccess::Writer,
-            },
-            PlacePrompt::InviteReader => Action::InviteToPlace {
-                path: text.clone(),
-                access: crate::place::PlaceInviteAccess::Reader,
+            PlacePrompt::Invite | PlacePrompt::InviteReader => {
+                match crate::place::split_invite_lifetime(&text) {
+                    Ok((path, lifetime_ms)) => Action::InviteToPlace {
+                        path: path.to_string(),
+                        access: if prompt == PlacePrompt::Invite {
+                            crate::place::PlaceInviteAccess::Writer
+                        } else {
+                            crate::place::PlaceInviteAccess::Reader
+                        },
+                        lifetime_ms,
+                    },
+                    Err(reason) => {
+                        self.omnibar = OmnibarState::default();
+                        return self.refuse_place(reason);
+                    },
+                }
             },
             PlacePrompt::Join => Action::JoinPlaceFile { path: text.clone() },
             PlacePrompt::SendMessage => match self.place.binding() {

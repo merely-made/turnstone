@@ -41,9 +41,10 @@ use graphshell::native::endpoint_catalog::{ResidentEndpointCatalog, ResidentEndp
 use graphshell::native::projection_host::ResidentProjectionHost;
 use identity::IdentityProvider;
 use identity::delegation::{
-    CapabilityScope, DelegationCertificate, DelegationParent, SignedDelegationCertificate,
+    CapabilityScope, DelegationCertificate, DelegationParent, DelegationRevocation,
+    SignedDelegationCertificate, SignedDelegationRevocation,
 };
-use notochord::{NetworkId, ProfileRef, TrustedRoot};
+use notochord::{NetworkId, ProfileRef, RevocationLedger, TrustedRoot};
 use transport::{P2pandaTransport, Transport};
 
 use crate::place::PlaceProjectionSnapshot;
@@ -134,7 +135,29 @@ pub(crate) fn issue_projection_grant(
     moot: [u8; 32],
     subject: [u8; 32],
     now_ms: u64,
+    expires_at_ms: Option<u64>,
 ) -> Result<SignedDelegationCertificate, String> {
+    SignedDelegationCertificate::issue(
+        &ProviderRef(issuer),
+        projection_grant_certificate(
+            issuer.master_public_key().to_bytes(),
+            moot,
+            subject,
+            now_ms,
+            expires_at_ms,
+        ),
+    )
+    .map_err(|error| format!("issue projection grant: {error}"))
+}
+
+/// The unsigned grant, reproducible from its issuer, subject and window.
+fn projection_grant_certificate(
+    issuer: [u8; 32],
+    moot: [u8; 32],
+    subject: [u8; 32],
+    now_ms: u64,
+    expires_at_ms: Option<u64>,
+) -> DelegationCertificate {
     let mut nonce_input = Vec::with_capacity(64);
     nonce_input.extend_from_slice(&moot);
     nonce_input.extend_from_slice(&subject);
@@ -142,21 +165,52 @@ pub(crate) fn issue_projection_grant(
         b"turnstone.place.projection-grant.v1/",
         *blake3::hash(&nonce_input).as_bytes(),
     );
-    SignedDelegationCertificate::issue(
+    DelegationCertificate::new(
+        DelegationParent::Root(root_grant_id(moot)),
+        issuer,
+        subject,
+        projection_scope(moot),
+        now_ms,
+        now_ms,
+        expires_at_ms,
+        1,
+        nonce,
+    )
+}
+
+/// Revoke the projection grant issued beside one Commons delegation.
+///
+/// Gemot's delegation lane admits only Moot-scoped statements, so this
+/// revocation never travels there: it is folded into this host's own door
+/// ledger. The grant is recomputed from the delegation's subject and window,
+/// which `admit_member` issues identically for both.
+pub(crate) fn projection_grant_revocation(
+    issuer: &dyn IdentityProvider,
+    moot: [u8; 32],
+    subject: [u8; 32],
+    not_before_ms: u64,
+    expires_at_ms: Option<u64>,
+    at_ms: u64,
+) -> Result<SignedDelegationRevocation, String> {
+    let grant = projection_grant_certificate(
+        issuer.master_public_key().to_bytes(),
+        moot,
+        subject,
+        not_before_ms,
+        expires_at_ms,
+    );
+    let id = grant.id();
+    SignedDelegationRevocation::issue(
         &ProviderRef(issuer),
-        DelegationCertificate::new(
-            DelegationParent::Root(root_grant_id(moot)),
-            issuer.master_public_key().to_bytes(),
-            subject,
-            projection_scope(moot),
-            now_ms,
-            now_ms,
-            None,
-            1,
-            nonce,
+        DelegationRevocation::new(
+            id,
+            grant.issuer,
+            grant.scope,
+            at_ms,
+            place_tag(b"turnstone.place.projection-revocation.v1/", id.0),
         ),
     )
-    .map_err(|error| format!("issue projection grant: {error}"))
+    .map_err(|error| format!("revoke projection grant: {error}"))
 }
 
 /// The certificate as an invitation artifact carries it.
@@ -183,6 +237,9 @@ pub(crate) struct ProjectionServing {
     /// sampler can tell "one visitor came and went" from "nothing happened",
     /// which `live` alone cannot say once it is back where it started.
     admitted: Arc<AtomicU64>,
+    /// The host's door ledger, shared so a revocation reaches live sessions
+    /// at their next request.
+    revocations: Arc<std::sync::RwLock<RevocationLedger>>,
     accept: Option<tokio::task::JoinHandle<()>>,
 }
 
@@ -191,11 +248,13 @@ impl ProjectionServing {
     ///
     /// The transport is shared rather than borrowed because the accept loop
     /// outlives this call and `accept_one` takes `&T`; the lane owner aborts
-    /// this task before it closes the endpoint.
+    /// this task before it closes the endpoint. `withdrawn` seeds the door
+    /// ledger with grants already revoked before this bind.
     pub(crate) fn start(
         transport: Arc<P2pandaTransport>,
         handle: &tokio::runtime::Handle,
         setup: &ProjectionSetup,
+        withdrawn: &[SignedDelegationRevocation],
     ) -> Result<Self, String> {
         let root = setup.root.clone();
         let max_source_bytes = setup.max_source_bytes;
@@ -216,6 +275,10 @@ impl ProjectionServing {
             .map_err(|error| format!("configure the place vault route: {error}"))?;
         let policy = setup.policy();
         let mut host = ResidentProjectionHost::new(policy.clone(), route, catalog);
+        let revocations = Arc::clone(host.revocations());
+        for statement in withdrawn {
+            fold_revocation(&revocations, statement)?;
+        }
 
         let live = Arc::new(AtomicU32::new(0));
         let refused = Arc::new(AtomicU64::new(0));
@@ -301,8 +364,14 @@ impl ProjectionServing {
             live,
             refused,
             admitted,
+            revocations,
             accept: Some(accept),
         })
+    }
+
+    /// Refuse one withdrawn grant at the door from now on.
+    pub(crate) fn withdraw(&self, statement: &SignedDelegationRevocation) -> Result<(), String> {
+        fold_revocation(&self.revocations, statement)
     }
 
     /// What the lane watcher samples: a number that changes whenever a session
@@ -333,6 +402,20 @@ impl ProjectionServing {
             handle.abort();
         }
         accept
+    }
+}
+
+fn fold_revocation(
+    ledger: &std::sync::RwLock<RevocationLedger>,
+    statement: &SignedDelegationRevocation,
+) -> Result<(), String> {
+    let mut ledger = ledger
+        .write()
+        .map_err(|_| "the projection revocation ledger is poisoned".to_string())?;
+    if ledger.fold(statement) {
+        Ok(())
+    } else {
+        Err("a projection grant revocation does not verify".to_string())
     }
 }
 

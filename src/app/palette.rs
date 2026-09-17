@@ -113,6 +113,7 @@ impl App {
     pub fn available_actions(&self) -> Vec<(String, Action)> {
         let mut rows = self.session_actions();
         rows.extend(self.place_founding_actions());
+        rows.extend(self.place_member_actions());
         rows.extend(self.place_collection_actions());
         if let Some(member) = self.graph_runtimes.focused_member()
             && !self.node_is_kept(member)
@@ -199,6 +200,40 @@ impl App {
             ));
         }
         rows
+    }
+
+    /// One revoke row per other member, offered only to a profile that
+    /// manages the open place.
+    pub(super) fn place_member_actions(&self) -> Vec<(String, Action)> {
+        use crate::place::{PlaceMemberAccess, PlaceState};
+        let PlaceState::Offline { snapshot, .. } = &self.place else {
+            return Vec::new();
+        };
+        let local = snapshot.personae_root;
+        if !snapshot
+            .members
+            .iter()
+            .any(|member| member.root == local && member.access == PlaceMemberAccess::Manage)
+        {
+            return Vec::new();
+        }
+        snapshot
+            .members
+            .iter()
+            .filter(|member| member.root != local)
+            .map(|member| {
+                (
+                    format!(
+                        "Revoke place member {} ({})",
+                        &crate::place::hex32(&member.root)[..8],
+                        member.access.label()
+                    ),
+                    Action::RevokePlaceMember {
+                        member: member.root,
+                    },
+                )
+            })
+            .collect()
     }
 
     /// Captured-page scope is a local reading choice. The worker supplies the

@@ -278,6 +278,8 @@ pub fn ring_of(action: &Action) -> Ring {
         | BeginJoinPlaceFile
         | JoinPlaceFile { .. }
         | BeginSendPlaceMessage
+        // Revoking decides who stays in the community, the same trust act.
+        | RevokePlaceMember { .. }
         // Leaving is still a host-owned session transition. A denizen may not
         // detach the user's place binding or tear down their live lanes.
         | LeavePlace
@@ -319,6 +321,7 @@ pub fn emit_allowed(
             | Action::InviteToPlace { .. }
             | Action::InviteToPlaceWithPrekey { .. } => "inviting to a place",
             Action::BeginSendPlaceMessage => "opening the place message prompt",
+            Action::RevokePlaceMember { .. } => "revoking a place member",
             Action::LeavePlace => "leaving a place",
             Action::ReconnectPlace => "reconnecting a place",
             Action::ShowPlaceStatus => "inspecting place status",
@@ -550,6 +553,7 @@ mod tests {
         // review must be impossible under ANY authority.
         let authority = full_app_authority();
         for action in [
+            Action::RevokePlaceMember { member: [7; 32] },
             Action::LeavePlace,
             Action::ReconnectPlace,
             Action::ShowPlaceStatus,

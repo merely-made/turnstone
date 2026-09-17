@@ -547,13 +547,21 @@ impl App {
         &mut self,
         path: String,
         access: crate::place::PlaceInviteAccess,
+        lifetime_ms: Option<u64>,
     ) -> Vec<Effect> {
         if self.place.binding().is_none() {
             return self.refuse_place("open a place before inviting anyone");
         }
+        // Refused, not ignored: a lifetime the grant cannot carry is a mistake.
+        if lifetime_ms.is_some() && access == crate::place::PlaceInviteAccess::Reader {
+            return self.refuse_place("a reader invitation carries no grant to bound");
+        }
         vec![Effect::ReadPlaceArtifact {
             path,
-            kind: crate::action::PlaceArtifactKind::Prekey { access },
+            kind: crate::action::PlaceArtifactKind::Prekey {
+                access,
+                lifetime_ms,
+            },
         }]
     }
 
@@ -562,6 +570,7 @@ impl App {
         prekey: Vec<u8>,
         out: String,
         access: crate::place::PlaceInviteAccess,
+        lifetime_ms: Option<u64>,
     ) -> Vec<Effect> {
         let Some(binding) = self.place.binding().cloned() else {
             return self.refuse_place("open a place before inviting anyone");
@@ -579,7 +588,17 @@ impl App {
             generation,
             prekey,
             access,
+            lifetime_ms,
         }]
+    }
+
+    /// Revoke one member of the open place. The worker decides whether this
+    /// profile may; the app only refuses when there is no place to ask.
+    pub fn revoke_place_member(&mut self, member: [u8; 32]) -> Vec<Effect> {
+        if !matches!(self.place, crate::place::PlaceState::Offline { .. }) {
+            return self.refuse_place("open a place before revoking a member");
+        }
+        self.run_place_command(crate::place::worker::PlaceCommand::RevokeMember { member })
     }
 
     /// Read an invitation file, so the existing join path can admit it.
