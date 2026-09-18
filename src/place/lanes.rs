@@ -4445,6 +4445,238 @@ mod tests {
         let _ = std::fs::remove_dir_all(&root);
     }
 
+    /// K4 of the co-op lifecycle parity plan: Turnstone's duplicate-replay
+    /// behaviour is true by construction (LogSync's own accept path
+    /// deduplicates) but was never receipted directly. A founder and one
+    /// live writer converge on one chat message, one shared node, and (via
+    /// the product `Invite` of a third root that never joins) one
+    /// membership add and one group-key add frame. The writer's converged
+    /// counts and lane counters are recorded, then each fact is handed back
+    /// to the writer's own store a second time -- offline, the way R2/E2
+    /// hand a replica an operation directly -- and once more through a
+    /// fresh reconnect. Nothing should move.
+    #[test]
+    fn a_replayed_operation_adds_no_place_state() {
+        let root = std::env::temp_dir()
+            .join(format!("turnstone-place-replay-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&root);
+        let [host, w_dir, third_dir] = ["host", "writer", "third"].map(|name| root.join(name));
+        for directory in [&host, &w_dir, &third_dir] {
+            std::fs::create_dir_all(directory).unwrap();
+        }
+        const F: u8 = 0xf1;
+        const W: u8 = 0xf2;
+        const T: u8 = 0xf3;
+        const BODY: &str = "replay probe";
+        const ADDRESS: &str = "https://replay.example/node";
+
+        let (founder, f_session, binding) = found_live(&host, F);
+        let moot = binding.moot.0;
+        let channel = binding.default_channel.clone();
+        let invite = invite_writer(&founder, f_session, &host, &w_dir, W, moot);
+        let (w_worker, w_updates, w_session) = join_member(&w_dir, W, invite);
+        converge_until(&w_worker, &w_updates, w_session, "the writer's initial catch-up", |s| {
+            s.moot.members == 2
+        });
+
+        // One chat message, one shared node, and -- through the product
+        // `Invite` of a third root, which need not join -- one membership
+        // add and one group-key add frame (every invite authors one,
+        // whatever the access level).
+        send_message(&founder.0, &founder.1, f_session, 1, &channel, BODY);
+        share_node(&founder, f_session, 2, ADDRESS);
+        let third_prekey =
+            prepare_group_identity(&third_dir, &InMemoryProvider::from_seed([T; 32]), moot)
+                .unwrap();
+        founder.0.command(PlaceWorkerCommand::Invite {
+            session: f_session,
+            generation: 1,
+            directory: host.clone(),
+            prekey: third_prekey,
+            access: crate::place::PlaceInviteAccess::Reader,
+            lifetime_ms: None,
+        });
+        expect_invited(&founder.1, "the third root's invitation");
+
+        let converged = converge_until(
+            &w_worker,
+            &w_updates,
+            w_session,
+            "the writer converges on every fact",
+            |s| s.chat.messages == 1 && s.graph.nodes == 1 && s.moot.members == 3,
+        );
+        report_lanes("writer converged, before any replay", &converged);
+        let before_counters = lane_ops(&converged);
+        let group_epochs_before = converged.group.epochs;
+        eprintln!(
+            "K4 before replay: messages {} nodes {} members {} group epochs {}; lanes {before_counters:?}",
+            converged.chat.messages, converged.graph.nodes, converged.moot.members, group_epochs_before,
+        );
+
+        // Release the writer's own worker and reopen its stores by hand --
+        // the same bypass R2/E2 use to hand a replica an operation
+        // directly -- then feed each fact straight back into its own
+        // accept.
+        release(&w_worker);
+        let identity = InMemoryProvider::from_seed([W; 32]);
+        let open = reopen_by_hand(&w_dir, &binding, &identity);
+
+        let chat_hit = pollster::block_on(open.chat.projection())
+            .unwrap()
+            .messages
+            .into_iter()
+            .find(|message| message.message.body == BODY)
+            .expect("the writer holds its own converged message");
+        let chat_op =
+            pollster::block_on(open.chat.sync_store().get_operation(&chat_hit.operation.into()))
+                .unwrap()
+                .expect("the writer retains the message operation");
+        let chat_accepted = pollster::block_on(open.chat.accept(&chat_op)).unwrap();
+        let chat_parked = pollster::block_on(open.chat.parking_status()).unwrap();
+        eprintln!(
+            "K4 chat replay: accept() -> inserted {chat_accepted}, parked afterwards {}",
+            chat_parked.parked
+        );
+        assert!(!chat_accepted, "a replayed chat message was accepted as new");
+        assert_eq!(chat_parked.parked, 0, "the replayed message was parked, not recognized as stored");
+
+        // Every retained graph operation, via the same authority override
+        // R2/E2 use to name operations without already knowing their ids.
+        let graph_ops = pollster::block_on(open.graph.projection_with_authority(&EveryOperation))
+            .unwrap()
+            .revoked;
+        assert_eq!(graph_ops.len(), 1, "expected exactly the one shared node authored above");
+        let graph_op =
+            pollster::block_on(open.graph.sync_store().get_operation(&graph_ops[0].operation.into()))
+                .unwrap()
+                .expect("the writer retains the node operation");
+        let graph_accepted = pollster::block_on(open.graph.accept(&graph_op)).unwrap();
+        let graph_parked = pollster::block_on(open.graph.parking_status()).unwrap();
+        eprintln!(
+            "K4 graph replay: accept() -> inserted {graph_accepted}, parked afterwards {}",
+            graph_parked.parked
+        );
+        assert!(!graph_accepted, "a replayed shared node was accepted as new");
+        assert_eq!(graph_parked.parked, 0, "the replayed node was parked, not recognized as stored");
+
+        // Membership: nothing here raced (one founder, serialized), so the
+        // auth DAG is linear and its single head is exactly the third
+        // root's admission operation.
+        let membership = pollster::block_on(open.moot.snapshot()).unwrap().membership;
+        assert_eq!(
+            membership.auth_heads.len(),
+            1,
+            "membership auth DAG forked; the head-is-the-op shortcut does not hold here"
+        );
+        let membership_op = pollster::block_on(
+            open.moot.membership_store().get(&membership.auth_heads[0].into()),
+        )
+        .unwrap()
+        .expect("the writer retains the third root's admission operation");
+        let membership_accepted =
+            pollster::block_on(open.moot.membership_store().accept(&membership_op)).unwrap();
+        eprintln!("K4 membership replay: accept() -> inserted {membership_accepted}");
+        assert!(!membership_accepted, "a replayed membership admission was accepted as new");
+
+        // Group-key: NOT exercised here. Reaching the applied add frame's
+        // own Operation<GroupKeyExt> needs p2panda-core's Topic/VerifyingKey
+        // and p2panda-store's TopicStore to enumerate the lane by author --
+        // neither crate is a direct dependency of turnstone, and no product
+        // accessor surfaces an applied frame's operation id. Its
+        // duplicate-safety is instead covered below, through a fresh
+        // reconnect that re-runs the same LogSync accept path this lane
+        // shares with the other three.
+        eprintln!(
+            "K4 group-key replay: direct accept() not reachable without p2panda-core/-store as \
+             turnstone dependencies; covered by the reconnect leg below instead"
+        );
+
+        drop(open);
+
+        // Once more via a fresh sync round: a whole new LiveLanes, dialing
+        // in and reconciling from scratch rather than being nudged.
+        let (w_worker2, w_updates2) = spawn_place_worker(
+            Arc::new(|| {}),
+            Arc::new(RootIdentity::Unsealed(InMemoryProvider::from_seed([W; 32]))),
+            settings(),
+        );
+        w_worker2.command(PlaceWorkerCommand::Reconnect {
+            session: w_session,
+            generation: 1,
+            directory: w_dir.clone(),
+            binding: binding.clone(),
+        });
+        let caught_up = converge_until(
+            &w_worker2,
+            &w_updates2,
+            w_session,
+            "the writer's post-reconnect fold",
+            |s| s.chat.messages == 1 && s.graph.nodes == 1 && s.moot.members == 3,
+        );
+        report_lanes("writer just after reconnecting", &caught_up);
+        assert_eq!(caught_up.chat.messages, converged.chat.messages, "reconnect changed the message count");
+        assert_eq!(caught_up.graph.nodes, converged.graph.nodes, "reconnect changed the node count");
+        assert_eq!(caught_up.moot.members, converged.moot.members, "reconnect changed the member count");
+        assert_eq!(caught_up.group.epochs, group_epochs_before, "reconnect changed the group epoch count");
+        let caught_up_counters = lane_ops(&caught_up);
+
+        // A second, deliberately redundant round on the SAME connection:
+        // everything it could receive, it already holds.
+        std::thread::sleep(Duration::from_millis(500));
+        w_worker2.command(PlaceWorkerCommand::Resync {
+            session: w_session,
+            generation: 1,
+        });
+        let after_extra = loop {
+            match w_updates2.recv_timeout(Duration::from_secs(10)) {
+                Ok(Update::PlaceOpened {
+                    result: Ok(snapshot),
+                    ..
+                }) => break snapshot,
+                Ok(_) => continue,
+                Err(error) => panic!("the redundant resync never answered: {error}"),
+            }
+        };
+        report_lanes("writer after one redundant round", &after_extra);
+        let after_extra_counters = lane_ops(&after_extra);
+        eprintln!(
+            "K4 after replay: messages {} nodes {} members {} group epochs {}; lanes {after_extra_counters:?}",
+            after_extra.chat.messages, after_extra.graph.nodes, after_extra.moot.members, after_extra.group.epochs,
+        );
+        assert_eq!(after_extra.chat.messages, converged.chat.messages, "the redundant round changed the message count");
+        assert_eq!(after_extra.graph.nodes, converged.graph.nodes, "the redundant round changed the node count");
+        assert_eq!(after_extra.moot.members, converged.moot.members, "the redundant round changed the member count");
+        assert_eq!(after_extra.group.epochs, group_epochs_before, "the redundant round changed the group epoch count");
+        for (name, before_count) in &caught_up_counters {
+            let after_count = after_extra_counters
+                .iter()
+                .find(|(other, _)| other == name)
+                .map(|(_, count)| *count)
+                .unwrap_or_else(|| panic!("{name} is one of the ten"));
+            assert!(
+                after_count <= *before_count,
+                "{name}: ops_received grew from {before_count} to {after_count} on a redundant round"
+            );
+        }
+
+        release(&founder.0);
+        release(&w_worker2);
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    /// Every lane's name paired with its `ops_received`, for a before/after
+    /// diff across a replay.
+    fn lane_ops(snapshot: &crate::place::OfflinePlaceSnapshot) -> Vec<(String, u64)> {
+        snapshot
+            .sync
+            .as_ref()
+            .expect("a live writer has lanes")
+            .lanes
+            .iter()
+            .map(|lane| (lane.name.to_string(), lane.ops_received))
+            .collect()
+    }
+
     /// Print one snapshot's ten lane counters, plus the two folds this
     /// diagnostic is about.
     fn report_lanes(what: &str, snapshot: &crate::place::OfflinePlaceSnapshot) {
