@@ -419,6 +419,8 @@ mod tests {
     use commons::GroupKeys;
     use commons::chat::ChatReplica;
     use commons::encrypted::{COMMONS_ENCRYPTED_GRAPH_LANE, EncryptedReplica};
+    use moot_port::coop;
+
     use crate::place::worker::GRAPH_STORE;
 
     /// Issue a capability delegation on the host's retained delegation lane.
@@ -4694,6 +4696,522 @@ mod tests {
                 lane.name, lane.sync_rounds, lane.ops_received, lane.syncing
             );
         }
+    }
+
+    /// K3 of the coop lifecycle parity plan: the place worker driving
+    /// `moot_port::coop`'s shared conformance harness over its own founder
+    /// and member workers, render-free. Both run the system clock rather
+    /// than the fixed clock most of this file's tests use, so a short-lived
+    /// grant expires for real -- matching Turnstone's declared
+    /// [`coop::Clock::System`], where the fixture instead drives a clock it
+    /// owns.
+    struct ConformanceDriver {
+        founder: (armillary::ActorHandle<PlaceWorkerCommand>, std::sync::mpsc::Receiver<Update>),
+        founder_session: SessionId,
+        binding: PlaceBindingV1,
+        host: std::path::PathBuf,
+        guest: std::path::PathBuf,
+        member_prekey: Vec<u8>,
+        clock: crate::place::worker::PlaceWorkerSettings,
+        member: Option<(
+            armillary::ActorHandle<PlaceWorkerCommand>,
+            std::sync::mpsc::Receiver<Update>,
+            SessionId,
+        )>,
+        invite: Option<Box<crate::place::invite::PlaceInviteV1>>,
+        grant_expires_at_ms: Option<u64>,
+        /// This profile's last-refreshed retained view, `None` before join
+        /// and after leave. Standing in for `PlaceState::Offline`'s
+        /// snapshot the way the app itself holds it.
+        snapshot: Option<crate::place::OfflinePlaceSnapshot>,
+        /// Set by `leave`, cleared by `join`/`rejoin`. Standing in for
+        /// `PlaceState::Left`'s retained summary the way the app builds it
+        /// in `finish_leave_place`.
+        left: Option<crate::place::PlaceLeftSummary>,
+        /// The clock reading `report()` carries. Refreshed only by a step
+        /// that actually re-reads standing, so a duplicate delivery that
+        /// changes no retained state also reports no clock tick -- the same
+        /// "as of last refresh" story every other snapshot field already
+        /// tells.
+        now_ms: u64,
+        next_request: u64,
+    }
+
+    impl ConformanceDriver {
+        const FOUNDER_SEED: u8 = 0xd0;
+        const MEMBER_SEED: u8 = 0xd1;
+        /// Long enough to survive join, leave, rejoin, restart and reconnect
+        /// before the walk reaches `expire`, with real margin under `-j 4`
+        /// contention from the rest of `place::`'s suite (a bare 15 s was
+        /// observed to expire mid-walk, at `rejoin`, under full-suite load);
+        /// short enough that waiting it out stays under a minute.
+        const GRANT_LIFETIME_MS: u64 = 45_000;
+
+        fn open(root: &Path) -> Self {
+            let host = root.join("host");
+            let guest = root.join("guest");
+            std::fs::create_dir_all(&host).unwrap();
+            std::fs::create_dir_all(&guest).unwrap();
+            let clock = crate::place::worker::PlaceWorkerSettings {
+                authority_clock: crate::place::worker::AuthorityClock::SystemTime,
+                ..settings()
+            };
+            let identity = RootIdentity::Unsealed(InMemoryProvider::from_seed([Self::FOUNDER_SEED; 32]));
+            let founder = spawn_place_worker(Arc::new(|| {}), Arc::new(identity), clock.clone());
+            let founder_session = SessionId::new();
+            founder.0.command(PlaceWorkerCommand::Found {
+                session: founder_session,
+                generation: 1,
+                directory: host.clone(),
+                name: "Coop contract".into(),
+            });
+            let binding = loop {
+                match founder.1.recv_timeout(Duration::from_secs(60)) {
+                    Ok(Update::PlaceFounded { result: Ok((binding, _)), .. }) => break binding,
+                    Ok(Update::PlaceFounded { result: Err(error), .. }) => {
+                        panic!("founding refused: {error}")
+                    },
+                    Ok(_) => continue,
+                    Err(error) => panic!("founding never answered: {error}"),
+                }
+            };
+            let member_identity = InMemoryProvider::from_seed([Self::MEMBER_SEED; 32]);
+            let member_prekey =
+                prepare_group_identity(&guest, &member_identity, binding.moot.0).unwrap();
+            Self {
+                founder,
+                founder_session,
+                binding,
+                host,
+                guest,
+                member_prekey,
+                clock,
+                member: None,
+                invite: None,
+                grant_expires_at_ms: None,
+                snapshot: None,
+                left: None,
+                now_ms: crate::denizen::now_ms(),
+                next_request: 1,
+            }
+        }
+
+        fn take_request(&mut self) -> u64 {
+            let request = self.next_request;
+            self.next_request += 1;
+            request
+        }
+
+        /// Wait for one `Invite` answer, without the panic `expect_invited`
+        /// uses: `invite_wrong_target` needs the refusal, not a crash.
+        fn await_invited(&self) -> Result<Box<crate::place::invite::PlaceInviteV1>, String> {
+            let deadline = Instant::now() + Duration::from_secs(30);
+            loop {
+                if Instant::now() > deadline {
+                    return Err("invite never answered".into());
+                }
+                match self.founder.1.recv_timeout(Duration::from_secs(5)) {
+                    Ok(Update::PlaceInvited { result, .. }) => return result,
+                    Ok(_) => continue,
+                    Err(_) => continue,
+                }
+            }
+        }
+
+        /// Release any live member worker, keeping its retained stores.
+        fn release_member(&mut self) {
+            if let Some((worker, _, _)) = self.member.take() {
+                release(&worker);
+            }
+        }
+
+        fn member_identity() -> InMemoryProvider {
+            InMemoryProvider::from_seed([Self::MEMBER_SEED; 32])
+        }
+    }
+
+    impl coop::LifecycleDriver for ConformanceDriver {
+        fn invite_wrong_target(&mut self) -> Result<(), String> {
+            // Unauthorized grant, refused by name before anything is
+            // authored: a reader invitation carrying a lifetime. Reuses the
+            // same offered pre-key the real invite uses below, since the
+            // refusal here is about the requested grant, not the offer.
+            self.founder.0.command(PlaceWorkerCommand::Invite {
+                session: self.founder_session,
+                generation: 1,
+                directory: self.host.clone(),
+                prekey: self.member_prekey.clone(),
+                access: crate::place::PlaceInviteAccess::Reader,
+                lifetime_ms: Some(1),
+            });
+            match self.await_invited() {
+                // Admitted: the driver reports success, and `conform` is the
+                // one that flags an admission it expected refused.
+                Ok(_) => Ok(()),
+                Err(reason) => Err(reason),
+            }
+        }
+
+        fn invite(&mut self) -> Result<(), String> {
+            self.founder.0.command(PlaceWorkerCommand::Invite {
+                session: self.founder_session,
+                generation: 1,
+                directory: self.host.clone(),
+                prekey: self.member_prekey.clone(),
+                access: crate::place::PlaceInviteAccess::Writer,
+                lifetime_ms: Some(Self::GRANT_LIFETIME_MS),
+            });
+            let invite = self.await_invited()?;
+            let grant = crate::place::projection_host::decode_grant(
+                invite
+                    .projection_grant
+                    .as_ref()
+                    .ok_or_else(|| "a writer invitation carries its grant".to_string())?
+                    .verified_bytes("projection grant")
+                    .map_err(|error| error.to_string())?,
+            )
+            .map_err(|error| error.to_string())?;
+            self.grant_expires_at_ms = grant.certificate.expires_at_ms;
+            self.invite = Some(invite);
+            Ok(())
+        }
+
+        fn join(&mut self) -> Result<(), String> {
+            let invite = self
+                .invite
+                .clone()
+                .ok_or_else(|| "invite must run before join".to_string())?;
+            self.release_member();
+            let identity = Arc::new(RootIdentity::Unsealed(Self::member_identity()));
+            let (worker, updates) = spawn_place_worker(Arc::new(|| {}), identity, self.clock.clone());
+            let session = SessionId::new();
+            worker.command(PlaceWorkerCommand::Join {
+                session,
+                generation: 1,
+                directory: self.guest.clone(),
+                invite,
+            });
+            let deadline = Instant::now() + Duration::from_secs(60);
+            let outcome = loop {
+                if Instant::now() > deadline {
+                    break Err("join never answered".to_string());
+                }
+                match updates.recv_timeout(Duration::from_secs(5)) {
+                    Ok(Update::PlaceJoined { result, .. }) => break result.map(|(_, snapshot)| snapshot),
+                    Ok(_) => continue,
+                    Err(_) => continue,
+                }
+            };
+            match outcome {
+                Ok(snapshot) => {
+                    self.now_ms = crate::denizen::now_ms();
+                    self.snapshot = Some(snapshot);
+                    self.left = None;
+                    self.member = Some((worker, updates, session));
+                    Ok(())
+                },
+                Err(error) => {
+                    release(&worker);
+                    Err(error)
+                },
+            }
+        }
+
+        fn report(&mut self) -> coop::LifecycleReport {
+            if let Some(retained) = self.left {
+                return crate::place::contract::lifecycle_report(
+                    &crate::place::PlaceState::Left { binding: self.binding.clone(), retained },
+                    self.now_ms,
+                );
+            }
+            match &self.snapshot {
+                Some(snapshot) => {
+                    crate::place::contract::lifecycle_report_from_snapshot(snapshot, self.now_ms)
+                },
+                None => crate::place::contract::lifecycle_report(
+                    &crate::place::PlaceState::Personal,
+                    self.now_ms,
+                ),
+            }
+        }
+
+        /// Detach: release the live worker and forget the retained view,
+        /// leaving the binding, the rendezvous hints and the retained stores
+        /// under `guest` all untouched -- `mark_place_left` records the
+        /// retained summary beside `place.json` rather than deleting
+        /// anything, the same split `finish_leave_place` and
+        /// `Effect::LeavePlace`'s shell handler now draw. The retained
+        /// summary is read from the snapshot in hand, exactly as
+        /// `finish_leave_place` reads it from `PlaceState::Offline`.
+        fn leave(&mut self) -> Result<(), String> {
+            let Some(snapshot) = self.snapshot.take() else {
+                return Err("not joined".into());
+            };
+            self.release_member();
+            let retained = crate::place::PlaceLeftSummary {
+                graph_nodes: snapshot.graph.nodes,
+                chat_messages: snapshot.chat.messages,
+                members: snapshot.moot.members,
+            };
+            crate::session::mark_place_left(&self.guest, &retained).map_err(|error| error.to_string())?;
+            self.left = Some(retained);
+            self.now_ms = crate::denizen::now_ms();
+            Ok(())
+        }
+
+        /// Clear the left mark -- `rejoin_place`'s first step -- then
+        /// reconnect the same way a still-live place does: `leave` kept the
+        /// binding, the rendezvous hints and every retained store in place,
+        /// so there is nothing left to rebuild.
+        fn rejoin(&mut self) -> Result<(), String> {
+            crate::session::clear_place_left(&self.guest).map_err(|error| error.to_string())?;
+            coop::LifecycleDriver::reconnect(self)
+        }
+
+        fn restart(&mut self) -> Result<(), String> {
+            self.release_member();
+            Ok(())
+        }
+
+        fn reconnect(&mut self) -> Result<(), String> {
+            self.release_member();
+            // `release` acks once the actor stops taking commands, not once
+            // its lane tasks have dropped their store clones (see
+            // `bypass_after_restart`'s own note on this), so the reopen just
+            // below can briefly race a redb handle still closing. Retried
+            // the same way `reopen_by_hand` retries a raw `open_cached_place`.
+            let deadline = Instant::now() + Duration::from_secs(30);
+            loop {
+                let identity = Arc::new(RootIdentity::Unsealed(Self::member_identity()));
+                let (worker, updates) =
+                    spawn_place_worker(Arc::new(|| {}), identity, self.clock.clone());
+                let session = SessionId::new();
+                worker.command(PlaceWorkerCommand::Reconnect {
+                    session,
+                    generation: 1,
+                    directory: self.guest.clone(),
+                    binding: self.binding.clone(),
+                });
+                let answer_deadline = Instant::now() + Duration::from_secs(60);
+                let outcome = loop {
+                    if Instant::now() > answer_deadline {
+                        break Err("reconnect never answered".to_string());
+                    }
+                    match updates.recv_timeout(Duration::from_secs(5)) {
+                        Ok(Update::PlaceOpened { result, .. }) => break result,
+                        Ok(_) => continue,
+                        Err(_) => continue,
+                    }
+                };
+                match outcome {
+                    Ok(snapshot) => {
+                        self.now_ms = crate::denizen::now_ms();
+                        self.snapshot = Some(snapshot);
+                        self.left = None;
+                        self.member = Some((worker, updates, session));
+                        return Ok(());
+                    },
+                    Err(error) => {
+                        release(&worker);
+                        let contended = error.contains("already open")
+                            || error.contains("Cannot acquire lock");
+                        if contended && Instant::now() < deadline {
+                            std::thread::sleep(Duration::from_millis(25));
+                            continue;
+                        }
+                        return Err(error);
+                    },
+                }
+            }
+        }
+
+        fn expire(&mut self) -> Result<(), String> {
+            let expires_at = self
+                .grant_expires_at_ms
+                .ok_or_else(|| "no grant lifetime recorded".to_string())?;
+            let now = crate::denizen::now_ms();
+            if now < expires_at {
+                std::thread::sleep(Duration::from_millis(expires_at - now + 250));
+            }
+            let (worker, updates, session) = self
+                .member
+                .as_ref()
+                .ok_or_else(|| "member not live".to_string())?;
+            let snapshot = converge_until(
+                worker,
+                updates,
+                *session,
+                "K3 conformance: the grant expires",
+                |s| matches!(s.standing, crate::place::PlaceStanding::GrantExpired { .. }),
+            );
+            self.now_ms = crate::denizen::now_ms();
+            self.snapshot = Some(snapshot);
+            Ok(())
+        }
+
+        fn revoke(&mut self) -> Result<(), String> {
+            let member_root = Self::member_identity().master_public_key().to_bytes();
+            let request = self.take_request();
+            self.founder.0.command(PlaceWorkerCommand::Author {
+                session: self.founder_session,
+                generation: 1,
+                request,
+                command: PlaceCommand::RevokeMember { member: member_root },
+            });
+            authored(&self.founder.1, request)?;
+            let (worker, updates, session) = self
+                .member
+                .as_ref()
+                .ok_or_else(|| "member not live".to_string())?;
+            let snapshot = converge_until(
+                worker,
+                updates,
+                *session,
+                "K3 conformance: the revocation reaches the member",
+                |s| {
+                    matches!(
+                        s.standing,
+                        crate::place::PlaceStanding::MembershipRevoked
+                            | crate::place::PlaceStanding::GrantRevoked
+                    )
+                },
+            );
+            self.now_ms = crate::denizen::now_ms();
+            self.snapshot = Some(snapshot);
+            Ok(())
+        }
+
+        /// Deliver an operation this member already holds: release its
+        /// worker, reopen its stores by hand -- K4's own bypass -- and
+        /// re-`accept` the retained membership removal `revoke` just
+        /// converged on. `now_ms` and the retained snapshot are left
+        /// exactly as `revoke` left them, so a report taken before and
+        /// after compares equal precisely when nothing changed.
+        fn replay_duplicate(&mut self) -> Result<(), String> {
+            self.release_member();
+            let identity = Self::member_identity();
+            let open = reopen_by_hand(&self.guest, &self.binding, &identity);
+            let membership = pollster::block_on(open.moot.snapshot())
+                .map_err(|error| error.to_string())?
+                .membership;
+            let head = *membership
+                .auth_heads
+                .first()
+                .ok_or_else(|| "no retained membership operation to replay".to_string())?;
+            let operation = pollster::block_on(open.moot.membership_store().get(&head.into()))
+                .map_err(|error| error.to_string())?
+                .ok_or_else(|| "the retained membership operation is missing".to_string())?;
+            let accepted = pollster::block_on(open.moot.membership_store().accept(&operation))
+                .map_err(|error| error.to_string())?;
+            drop(open);
+            if accepted {
+                return Err("a replayed membership operation was accepted as new".into());
+            }
+            // No live worker to restore: `conform` walks nothing after
+            // `replay_duplicate`, `report` reads `self.snapshot`/`self.left`
+            // rather than a live session, and this member is revoked, so a
+            // trailing `Reconnect` here would only be refused -- correctly,
+            // since a revoked member cannot reconnect.
+            Ok(())
+        }
+    }
+
+    impl Drop for ConformanceDriver {
+        fn drop(&mut self) {
+            self.release_member();
+            release(&self.founder.0);
+        }
+    }
+
+    /// K3: the place worker walks `moot_port::coop`'s shared conformance
+    /// harness, declaring membership and grant as separate facts and
+    /// reading cut after a revoke's rotation. `receipts_duplicate_replay`
+    /// is `true` because K4 (`a_replayed_operation_adds_no_place_state`)
+    /// landed; the store-free reference profile coop.rs's own tests use for
+    /// illustration declares `false`, which is not Turnstone's declaration.
+    /// The clock is `System`: Turnstone's own is the wall clock in
+    /// product, and driving it for real (a short-lived grant, `expire`
+    /// waiting it out) is simpler here than hand-advancing a fixed one
+    /// through a worker with no such command.
+    ///
+    /// Two gaps were found and closed on the way to a full walk. `leave`
+    /// used to stop the walk: `conform`'s `leave` step requires
+    /// `Verdict::Left`, and `PlaceState` had no case for "this session left
+    /// a place, retaining its history" distinct from "never joined one".
+    /// Mark's call was to add `PlaceState::Left` (Turnstone-only;
+    /// `coop::conform` is unchanged). `rejoin` then stopped it one step
+    /// later: a local leave used to delete the local place-binding sidecar,
+    /// which both `Reconnect` and a fresh invitation need (the founder's own
+    /// `group.add` also refuses a recipient "already present", so re-invite
+    /// was never going to work either). Mark's second call was to keep the
+    /// binding, the rendezvous hints and every retained store in place on
+    /// leave, marking "left" beside them instead of deleting anything, and
+    /// to add `Rejoin place` as the real way back in. This driver's `leave`
+    /// and `rejoin` now do the same.
+    #[test]
+    fn the_place_worker_conforms_to_the_coop_lifecycle_contract() {
+        let root = std::env::temp_dir()
+            .join(format!("turnstone-place-coop-contract-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&root);
+        std::fs::create_dir_all(&root).unwrap();
+        let mut driver = ConformanceDriver::open(&root);
+        let capabilities = coop::Capabilities {
+            grant_is_all_authority: false,
+            cuts_reading_on_revoke: true,
+            receipts_duplicate_replay: true,
+            clock: coop::Clock::System,
+        };
+        let outcome = coop::conform(&mut driver, &capabilities);
+        drop(driver);
+        let _ = std::fs::remove_dir_all(&root);
+        let conformance = outcome.unwrap_or_else(|failure| panic!("{failure}"));
+
+        if std::env::var("TURNSTONE_WRITE_RECEIPTS").as_deref() == Ok("1") {
+            let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("design_docs/receipts/coop_contract_conformance.json");
+            std::fs::write(&path, serde_json::to_vec_pretty(&conformance).unwrap())
+                .unwrap_or_else(|error| panic!("write {}: {error}", path.display()));
+        }
+
+        for step in [
+            coop::Step::Fresh,
+            coop::Step::InviteWrongTarget,
+            coop::Step::Join,
+            coop::Step::Leave,
+            coop::Step::Rejoin,
+            coop::Step::Reconnect,
+            coop::Step::Expire,
+            coop::Step::ReconnectAfterExpiry,
+            coop::Step::Revoke,
+            coop::Step::ReplayDuplicate,
+        ] {
+            assert!(
+                conformance.at(step).is_some(),
+                "{}: the walk did not reach this step",
+                step.name()
+            );
+        }
+        assert_eq!(
+            conformance.at(coop::Step::Leave).map(|report| report.verdict),
+            Some(coop::Verdict::Left)
+        );
+        assert_eq!(
+            conformance.at(coop::Step::Rejoin).map(|report| report.verdict),
+            Some(coop::Verdict::Joined)
+        );
+        assert!(
+            conformance
+                .at(coop::Step::Expire)
+                .and_then(|report| report.grant)
+                .and_then(|grant| grant.expired_at_ms)
+                .is_some(),
+            "expired must carry when the grant ended"
+        );
+        assert_eq!(
+            conformance.at(coop::Step::Revoke).map(|report| report.reading),
+            Some(coop::Reading::Cut),
+            "revocation must cut reading, per Turnstone's declared capability"
+        );
     }
 }
 

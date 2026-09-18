@@ -100,6 +100,12 @@ const PROJECTION_SCORE_FILE: &str = "projection-score.json";
 const VIEW_INTENT_FILE: &str = "view-intent.json";
 pub const PLACE_FILE: &str = "place.json";
 pub const PLACE_COLLECTION_FILE: &str = "place-collection.json";
+/// A local "this session left" mark, beside `place.json` rather than a field
+/// on it: `PlaceBindingV1` is the wire shape invitations and cards also
+/// serialize, and "left" is a fact local to this sidecar, never something to
+/// carry onto the wire. Its presence, not the binding's absence, is what
+/// `Left` reads on.
+pub const PLACE_LEFT_FILE: &str = "place-left.json";
 
 const SESSION_FILES: [&str; 9] = [
     session_graph_store::GRAPH_FILE,
@@ -186,6 +192,7 @@ pub enum PlaceSidecarError {
     Io(std::io::Error),
     Json(serde_json::Error),
     Binding(PlaceBindingError),
+    UnsupportedVersion(u16),
 }
 
 impl std::fmt::Display for PlaceSidecarError {
@@ -194,6 +201,9 @@ impl std::fmt::Display for PlaceSidecarError {
             Self::Io(error) => write!(formatter, "place sidecar I/O: {error}"),
             Self::Json(error) => write!(formatter, "place sidecar JSON: {error}"),
             Self::Binding(error) => write!(formatter, "place sidecar binding: {error}"),
+            Self::UnsupportedVersion(version) => {
+                write!(formatter, "unsupported place-left marker version {version}")
+            },
         }
     }
 }
@@ -294,6 +304,80 @@ pub fn load_place_binding(session_dir: &Path) -> Result<Option<PlaceBindingV1>, 
     let binding: PlaceBindingV1 = serde_json::from_slice(&bytes)?;
     binding.validate()?;
     Ok(Some(binding))
+}
+
+#[derive(serde::Serialize, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
+struct PlaceLeftMarkerV1 {
+    version: u16,
+    graph_nodes: usize,
+    chat_messages: usize,
+    members: usize,
+}
+
+const PLACE_LEFT_MARKER_VERSION: u16 = 1;
+
+/// Mark this session as having locally left its place: write a small marker
+/// beside `place.json` recording the retained counts at the moment of
+/// leaving. The binding, the rendezvous hints, and every retained store are
+/// left exactly as they were -- `Rejoin` needs all three, and the marker's
+/// presence alone is what `Left` reads on, not the binding's absence.
+pub fn mark_place_left(
+    session_dir: &Path,
+    retained: &crate::place::PlaceLeftSummary,
+) -> Result<(), PlaceSidecarError> {
+    std::fs::create_dir_all(session_dir)?;
+    let target = session_dir.join(PLACE_LEFT_FILE);
+    let temporary = target.with_extension("json.tmp");
+    let bytes = serde_json::to_vec_pretty(&PlaceLeftMarkerV1 {
+        version: PLACE_LEFT_MARKER_VERSION,
+        graph_nodes: retained.graph_nodes,
+        chat_messages: retained.chat_messages,
+        members: retained.members,
+    })?;
+    if let Err(error) = (|| -> std::io::Result<()> {
+        std::fs::write(&temporary, bytes)?;
+        if target.exists() {
+            std::fs::remove_file(&target)?;
+        }
+        std::fs::rename(&temporary, &target)
+    })() {
+        let _ = std::fs::remove_file(&temporary);
+        return Err(error.into());
+    }
+    Ok(())
+}
+
+/// The retained counts a local leave recorded, or `None` when this session
+/// was not left (the ordinary case, and what a fresh reconnect leaves it as
+/// once `Rejoin` clears the mark).
+pub fn load_place_left(
+    session_dir: &Path,
+) -> Result<Option<crate::place::PlaceLeftSummary>, PlaceSidecarError> {
+    let bytes = match std::fs::read(session_dir.join(PLACE_LEFT_FILE)) {
+        Ok(bytes) => bytes,
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(None),
+        Err(error) => return Err(error.into()),
+    };
+    let marker: PlaceLeftMarkerV1 = serde_json::from_slice(&bytes)?;
+    if marker.version != PLACE_LEFT_MARKER_VERSION {
+        return Err(PlaceSidecarError::UnsupportedVersion(marker.version));
+    }
+    Ok(Some(crate::place::PlaceLeftSummary {
+        graph_nodes: marker.graph_nodes,
+        chat_messages: marker.chat_messages,
+        members: marker.members,
+    }))
+}
+
+/// Clear the left mark, so this session reads as ordinarily joined again.
+/// Returns `false` when there was none to clear.
+pub fn clear_place_left(session_dir: &Path) -> Result<bool, PlaceSidecarError> {
+    match std::fs::remove_file(session_dir.join(PLACE_LEFT_FILE)) {
+        Ok(()) => Ok(true),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(false),
+        Err(error) => Err(error.into()),
+    }
 }
 
 /// The persisted product-free score for this session's active analytic view.
@@ -1086,6 +1170,45 @@ mod tests {
         std::fs::write(binding_path.join("keep"), b"unexpected retained data").unwrap();
         assert!(remove_place_binding(&root).is_err());
         assert!(binding_path.join("keep").exists());
+    }
+
+    #[test]
+    fn marking_a_place_left_preserves_the_binding_and_retained_session_files() {
+        let root = temp_root("place-left-mark");
+        let binding = PlaceBindingV1::new(
+            crate::place::PlaceId([0x94; 32]),
+            crate::place::SharedContainerId([0x95; 32]),
+            crate::place::ChatSpaceId([0x96; 32]),
+            "hall",
+        )
+        .unwrap();
+        save_place_binding(&root, &binding).unwrap();
+        std::fs::write(root.join("place-history.redb"), b"retained").unwrap();
+        let retained =
+            crate::place::PlaceLeftSummary { graph_nodes: 3, chat_messages: 5, members: 2 };
+
+        assert_eq!(load_place_left(&root).unwrap(), None);
+        mark_place_left(&root, &retained).unwrap();
+        assert_eq!(load_place_left(&root).unwrap(), Some(retained));
+        // Unlike `remove_place_binding`, the binding and every retained
+        // store stay exactly as they were: Rejoin needs both.
+        assert_eq!(load_place_binding(&root).unwrap(), Some(binding));
+        assert!(root.join("place-history.redb").exists());
+
+        assert_eq!(clear_place_left(&root).unwrap(), true);
+        assert_eq!(load_place_left(&root).unwrap(), None);
+        assert_eq!(clear_place_left(&root).unwrap(), false);
+
+        // A malformed marker must report failure rather than silently
+        // reading as joined or as left.
+        let marker_path = root.join(PLACE_LEFT_FILE);
+        std::fs::write(&marker_path, b"not json").unwrap();
+        assert!(load_place_left(&root).is_err());
+        std::fs::write(&marker_path, br#"{"version":2,"graph_nodes":0,"chat_messages":0,"members":0}"#).unwrap();
+        assert!(matches!(
+            load_place_left(&root),
+            Err(PlaceSidecarError::UnsupportedVersion(2))
+        ));
     }
 
     #[test]

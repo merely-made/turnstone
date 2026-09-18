@@ -284,6 +284,7 @@ pub fn ring_of(action: &Action) -> Ring {
         // detach the user's place binding or tear down their live lanes.
         | LeavePlace
         | ReconnectPlace
+        | RejoinPlace
         | ShowPlaceStatus
         // The whole ticket on the system clipboard is an exfiltration route
         // out of the process. It stays beside the other place gestures.
@@ -324,6 +325,7 @@ pub fn emit_allowed(
             Action::RevokePlaceMember { .. } => "revoking a place member",
             Action::LeavePlace => "leaving a place",
             Action::ReconnectPlace => "reconnecting a place",
+            Action::RejoinPlace => "rejoining a left place",
             Action::ShowPlaceStatus => "inspecting place status",
             Action::CopyLocalRendezvous => "copying the local rendezvous",
             Action::SubscribeFocusedFeed { .. }
@@ -468,6 +470,7 @@ pub fn decode_envelope(name: &str, payload: &str) -> Result<Action, EnvelopeErro
         "close-session" => Action::CloseSession,
         "leave-place" => Action::LeavePlace,
         "reconnect-place" => Action::ReconnectPlace,
+        "rejoin-place" => Action::RejoinPlace,
         "place-status" => Action::ShowPlaceStatus,
         "delete-focused-node" => Action::DeleteFocusedNode,
         "recover-deleted-node" => Action::RecoverDeletedNode(member(payload)?),
@@ -556,6 +559,7 @@ mod tests {
             Action::RevokePlaceMember { member: [7; 32] },
             Action::LeavePlace,
             Action::ReconnectPlace,
+            Action::RejoinPlace,
             Action::ShowPlaceStatus,
             Action::ConfirmInstallDenizen,
             Action::CancelInstallDenizen,

@@ -13,6 +13,7 @@
 use serde::{Deserialize, Serialize};
 
 pub(crate) mod captured_collection;
+pub(crate) mod contract;
 pub mod invite;
 pub(crate) mod lanes;
 pub mod projection;
@@ -730,6 +731,28 @@ pub enum PlaceState {
     Failed {
         error: String,
     },
+    /// This session left a place: the worker released, the binding, contact
+    /// hints and every retained store kept on disk under a left mark
+    /// (`session::PLACE_LEFT_FILE`), so a restart reads `Left` again and
+    /// `Rejoin` has what it needs. Otherwise behaves like `Personal`
+    /// everywhere (founding, joining and opening a card are all valid from
+    /// here) except its own status wording and the coop contract's
+    /// `Verdict::Left`.
+    Left {
+        binding: PlaceBindingV1,
+        retained: PlaceLeftSummary,
+    },
+}
+
+/// What a departed session's stores held, read once from the `Offline`
+/// snapshot in hand at the moment of leaving. Never re-read afterward:
+/// `Left` does not reopen the stores itself, so this can go stale the way
+/// every other "last refresh" fact here can.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct PlaceLeftSummary {
+    pub graph_nodes: usize,
+    pub chat_messages: usize,
+    pub members: usize,
 }
 
 impl Default for PlaceState {
@@ -748,6 +771,10 @@ impl PlaceState {
             Self::Opening { .. } => vec!["Place: opening retained state or reconnecting".into()],
             Self::Degraded { error, .. } => vec![format!("Place unavailable: {error}")],
             Self::Failed { error } => vec![format!("Place not joined: {error}")],
+            Self::Left { retained, .. } => vec![format!(
+                "Place left: history retained; {} shared nodes, {} messages",
+                retained.graph_nodes, retained.chat_messages
+            )],
             Self::Offline { snapshot, .. } => {
                 let mut rows = vec![match &snapshot.sync {
                     None => "Last refresh: retained data only; no local sync lanes opened".into(),
@@ -818,6 +845,9 @@ impl PlaceState {
             rows.push("Reconnect: saved contacts must still be valid".into());
             rows.push("Leave: detach this session and retain its history".into());
         }
+        if matches!(self, Self::Left { .. }) {
+            rows.push("Rejoin: reconnect with the retained history".into());
+        }
         rows
     }
 
@@ -834,12 +864,27 @@ impl PlaceState {
         }
     }
 
+    /// `None` for every state including `Left`: every "not joined" guard
+    /// (found, join, offer a pre-key) reads this the same way for a left
+    /// session as for a personal one. `Rejoin` alone needs the binding a
+    /// left session still remembers, so it reads [`Self::left_binding`]
+    /// instead.
     pub fn binding(&self) -> Option<&PlaceBindingV1> {
         match self {
             Self::Opening { binding, .. }
             | Self::Offline { binding, .. }
             | Self::Degraded { binding, .. } => Some(binding),
-            Self::Personal | Self::Joining { .. } | Self::Failed { .. } => None,
+            Self::Personal | Self::Joining { .. } | Self::Failed { .. } | Self::Left { .. } => None,
+        }
+    }
+
+    /// The binding a locally left session still remembers, for `Rejoin`
+    /// alone. Every other guard uses [`Self::binding`], which reads `Left`
+    /// as not joined.
+    pub fn left_binding(&self) -> Option<&PlaceBindingV1> {
+        match self {
+            Self::Left { binding, .. } => Some(binding),
+            _ => None,
         }
     }
 
@@ -849,7 +894,7 @@ impl PlaceState {
             | Self::Opening { generation, .. }
             | Self::Offline { generation, .. }
             | Self::Degraded { generation, .. } => Some(*generation),
-            Self::Personal | Self::Failed { .. } => None,
+            Self::Personal | Self::Failed { .. } | Self::Left { .. } => None,
         }
     }
 }

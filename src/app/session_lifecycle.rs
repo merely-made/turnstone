@@ -631,6 +631,8 @@ impl App {
 
     /// Reopen admitted state and dial its saved contact hints on an explicit gesture.
     pub fn reconnect_place(&mut self) -> Vec<Effect> {
+        // `binding()` reads `Left` as not joined, so a left session cannot
+        // reconnect around its own mark; `rejoin_place` is its route back.
         let Some(binding) = self.place.binding().cloned() else {
             self.events.push(AppEvent::PlaceRefused(
                 "join a place before reconnecting".into(),
@@ -646,8 +648,30 @@ impl App {
         vec![Effect::ReconnectPlace { session: self.session_id, generation, binding }]
     }
 
-    /// Request local departure. The shell releases the worker and removes the
-    /// binding before completing the transition to a personal session.
+    /// Reconnect a locally left place: clear its left mark, then dial saved
+    /// contact hints the same way `reconnect_place` does for a still-live
+    /// one. Valid only from `PlaceState::Left`, and the only route out of
+    /// it: `reconnect_place` reads `Left` as not joined.
+    pub fn rejoin_place(&mut self) -> Vec<Effect> {
+        let Some(binding) = self.place.left_binding().cloned() else {
+            self.events.push(AppEvent::PlaceRefused(
+                "this session did not leave a place to rejoin".into(),
+            ));
+            return vec![Effect::Redraw];
+        };
+        self.next_place_generation = self.next_place_generation.wrapping_add(1);
+        let generation = self.next_place_generation;
+        self.place = crate::place::PlaceState::Opening { binding: binding.clone(), generation };
+        vec![
+            Effect::ClearPlaceLeftMark { session: self.session_id },
+            Effect::ReconnectPlace { session: self.session_id, generation, binding },
+        ]
+    }
+
+    /// Request local departure. The shell releases the worker and marks this
+    /// place locally left -- binding, rendezvous hints and every retained
+    /// store stay in place, so `Rejoin` has what it needs -- before
+    /// completing the transition.
     pub fn leave_place(&mut self) -> Vec<Effect> {
         let Some(generation) = self.place.generation() else {
             self.events.push(AppEvent::PlaceRefused(
@@ -655,9 +679,25 @@ impl App {
             ));
             return vec![Effect::Redraw];
         };
+        // Retained counts come from the Offline snapshot in hand right now;
+        // any other prior state (Degraded, a retried leave) has no snapshot
+        // to read, so the summary reads zero rather than guessing at what
+        // the stores hold. Computed here, once, rather than recomputed in
+        // `finish_leave_place`: the shell needs the same counts to write the
+        // left mark, and `self.place` does not change while the effect is
+        // in flight.
+        let retained = match &self.place {
+            crate::place::PlaceState::Offline { snapshot, .. } => crate::place::PlaceLeftSummary {
+                graph_nodes: snapshot.graph.nodes,
+                chat_messages: snapshot.chat.messages,
+                members: snapshot.moot.members,
+            },
+            _ => crate::place::PlaceLeftSummary::default(),
+        };
         vec![Effect::LeavePlace {
             session: self.session_id,
             generation,
+            retained,
         }]
     }
 
@@ -665,6 +705,7 @@ impl App {
         &mut self,
         session: SessionId,
         generation: u64,
+        retained: crate::place::PlaceLeftSummary,
         result: Result<bool, String>,
     ) -> Vec<Effect> {
         if self.session_id != session || self.place.generation() != Some(generation) {
@@ -672,7 +713,14 @@ impl App {
         }
         match result {
             Ok(_) => {
-                self.place = crate::place::PlaceState::Personal;
+                // A binding is what makes Left rejoinable; a leave from
+                // Joining (admission never finished, so there was never one)
+                // has nothing to remember and reads as Personal, as it
+                // always has.
+                self.place = match self.place.binding().cloned() {
+                    Some(binding) => crate::place::PlaceState::Left { binding, retained },
+                    None => crate::place::PlaceState::Personal,
+                };
                 vec![Effect::Redraw]
             }
             Err(error) => {
@@ -827,7 +875,30 @@ impl App {
         // A shared session opens its private graph cache immediately while the
         // worker materializes the retained Gemot, Commons, chat, and group
         // state. The worker answer is accepted only for this generation.
+        // A left mark beside the binding means this session must not open
+        // lanes or reconnect on its own: the retained counts come from the
+        // marker `leave` wrote, cheap to read and exactly what `Left`'s own
+        // status row already shows, rather than opening the retained stores
+        // here just to recompute them before the person has even asked to
+        // rejoin. Read once, ahead of the binding match below, so a marker
+        // read failure and a marker hit share one branch instead of reading
+        // the file twice.
+        let left_mark = session::load_place_left(&sdir);
         self.place = match session::load_place_binding(&sdir) {
+            Ok(Some(binding)) if !matches!(left_mark, Ok(None)) => {
+                effects.push(Effect::ClosePlace {
+                    session: id,
+                    generation: place_generation,
+                });
+                match left_mark {
+                    Ok(Some(retained)) => crate::place::PlaceState::Left { binding, retained },
+                    Err(error) => {
+                        tracing::warn!(%error, "place-left mark failed to load");
+                        crate::place::PlaceState::Failed { error: error.to_string() }
+                    },
+                    Ok(None) => unreachable!("guarded above"),
+                }
+            }
             Ok(Some(binding)) => {
                 effects.push(Effect::OpenPlace {
                     session: id,

@@ -1,0 +1,182 @@
+{
+  "capabilities": {
+    "grant_is_all_authority": false,
+    "cuts_reading_on_revoke": true,
+    "receipts_duplicate_replay": true,
+    "clock": "system"
+  },
+  "steps": [
+    [
+      "fresh",
+      {
+        "version": 1,
+        "verdict": "not_joined",
+        "reason": "no shared place is joined",
+        "membership": null,
+        "grant": null,
+        "revocation": null,
+        "reading": "unknown",
+        "now_ms": 1789729810814
+      }
+    ],
+    [
+      "invite_wrong_target",
+      {
+        "version": 1,
+        "verdict": "not_joined",
+        "reason": "no shared place is joined",
+        "membership": null,
+        "grant": null,
+        "revocation": null,
+        "reading": "unknown",
+        "now_ms": 1789729810814
+      }
+    ],
+    [
+      "join",
+      {
+        "version": 1,
+        "verdict": "joined",
+        "reason": null,
+        "membership": {
+          "members": 2,
+          "access": "write"
+        },
+        "grant": {
+          "expires_at_ms": null,
+          "expired_at_ms": null
+        },
+        "revocation": null,
+        "reading": "continues",
+        "now_ms": 1789729812884
+      }
+    ],
+    [
+      "leave",
+      {
+        "version": 1,
+        "verdict": "left",
+        "reason": "this session left the place; history retained",
+        "membership": null,
+        "grant": null,
+        "revocation": null,
+        "reading": "unknown",
+        "now_ms": 1789729813386
+      }
+    ],
+    [
+      "rejoin",
+      {
+        "version": 1,
+        "verdict": "joined",
+        "reason": null,
+        "membership": {
+          "members": 2,
+          "access": "write"
+        },
+        "grant": {
+          "expires_at_ms": null,
+          "expired_at_ms": null
+        },
+        "revocation": null,
+        "reading": "continues",
+        "now_ms": 1789729814206
+      }
+    ],
+    [
+      "reconnect",
+      {
+        "version": 1,
+        "verdict": "joined",
+        "reason": null,
+        "membership": {
+          "members": 2,
+          "access": "write"
+        },
+        "grant": {
+          "expires_at_ms": null,
+          "expired_at_ms": null
+        },
+        "revocation": null,
+        "reading": "continues",
+        "now_ms": 1789729820101
+      }
+    ],
+    [
+      "expire",
+      {
+        "version": 1,
+        "verdict": "expired",
+        "reason": "its grant expired at 2026-09-18T11:10:55Z",
+        "membership": {
+          "members": 2,
+          "access": "write"
+        },
+        "grant": {
+          "expires_at_ms": null,
+          "expired_at_ms": 1789729855814
+        },
+        "revocation": null,
+        "reading": "unknown",
+        "now_ms": 1789729856350
+      }
+    ],
+    [
+      "reconnect_after_expiry",
+      {
+        "version": 1,
+        "verdict": "expired",
+        "reason": "its grant expired at 2026-09-18T11:10:55Z",
+        "membership": {
+          "members": 2,
+          "access": "write"
+        },
+        "grant": {
+          "expires_at_ms": null,
+          "expired_at_ms": 1789729855814
+        },
+        "revocation": null,
+        "reading": "unknown",
+        "now_ms": 1789729862603
+      }
+    ],
+    [
+      "revoke",
+      {
+        "version": 1,
+        "verdict": "revoked",
+        "reason": "its place membership was revoked",
+        "membership": null,
+        "grant": {
+          "expires_at_ms": null,
+          "expired_at_ms": null
+        },
+        "revocation": {
+          "by": null,
+          "at_ms": null
+        },
+        "reading": "cut",
+        "now_ms": 1789729863882
+      }
+    ],
+    [
+      "replay_duplicate",
+      {
+        "version": 1,
+        "verdict": "revoked",
+        "reason": "its place membership was revoked",
+        "membership": null,
+        "grant": {
+          "expires_at_ms": null,
+          "expired_at_ms": null
+        },
+        "revocation": {
+          "by": null,
+          "at_ms": null
+        },
+        "reading": "cut",
+        "now_ms": 1789729863882
+      }
+    ]
+  ]
+}

@@ -361,6 +361,9 @@ pub enum Action {
     LeavePlace,
     /// Dial saved contact hints for the currently admitted place.
     ReconnectPlace,
+    /// Reconnect a locally left place, clearing its left mark. Valid only
+    /// from `PlaceState::Left`.
+    RejoinPlace,
     /// Inspect the current place and request fresh local sync observations.
     ShowPlaceStatus,
     /// Put this bind's full rendezvous ticket(s) on the system clipboard. The
@@ -701,6 +704,7 @@ pub fn palette_actions() -> Vec<(String, Action)> {
         ("Close session", Action::CloseSession),
         ("Leave place", Action::LeavePlace),
         ("Reconnect place", Action::ReconnectPlace),
+        ("Rejoin place", Action::RejoinPlace),
         ("Place status", Action::ShowPlaceStatus),
     ]);
 
@@ -930,15 +934,23 @@ pub enum Effect {
     CancelMicronSubmission {
         request: u64,
     },
-    /// Release the place worker, then remove this session's local binding.
+    /// Release the place worker, then mark this session's binding locally
+    /// left: the binding, rendezvous hints and retained stores all stay in
+    /// place, so `Rejoin` has what it needs.
     LeavePlace {
         session: crate::panes::SessionId,
         generation: u64,
+        retained: crate::place::PlaceLeftSummary,
     },
     ReconnectPlace {
         session: crate::panes::SessionId,
         generation: u64,
         binding: crate::place::PlaceBindingV1,
+    },
+    /// Clear a local left mark. Fired alongside `ReconnectPlace` by
+    /// `rejoin_place`, never on its own.
+    ClearPlaceLeftMark {
+        session: crate::panes::SessionId,
     },
     /// Author one fact into the active place and publish it to live peers.
     RunPlaceCommand {

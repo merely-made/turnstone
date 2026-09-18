@@ -626,6 +626,7 @@ impl Shell {
                 Effect::LeavePlace {
                     session,
                     generation,
+                    retained,
                 } => {
                     if self.app.session_id != session
                         || self.app.place.generation() != Some(generation)
@@ -634,14 +635,15 @@ impl Shell {
                     }
                     let released = self.release_place_worker_result();
                     let result = released.and_then(|()| {
-                        session::remove_place_binding(&session::session_dir(
-                            &self.app.data_root,
-                            session,
-                        ))
-                        .map(|_| true)
+                        session::mark_place_left(
+                            &session::session_dir(&self.app.data_root, session),
+                            &retained,
+                        )
+                        .map(|()| true)
                         .map_err(|error| error.to_string())
                     });
-                    let follow_up = self.app.finish_leave_place(session, generation, result);
+                    let follow_up =
+                        self.app.finish_leave_place(session, generation, retained, result);
                     self.run_effects(follow_up);
                 }
                 Effect::ReconnectPlace {
@@ -660,6 +662,14 @@ impl Shell {
                         directory: session::session_dir(&self.app.data_root, session),
                         binding,
                     });
+                }
+                Effect::ClearPlaceLeftMark { session } => {
+                    if let Err(error) = session::clear_place_left(&session::session_dir(
+                        &self.app.data_root,
+                        session,
+                    )) {
+                        tracing::warn!(%error, "failed to clear the place-left mark on rejoin");
+                    }
                 }
                 Effect::RunPlaceCommand {
                     session,

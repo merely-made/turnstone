@@ -459,6 +459,7 @@ fn leave_place_is_correlated_and_failure_keeps_a_retryable_degraded_binding() {
         vec![Effect::LeavePlace {
             session: app.session_id,
             generation: 12,
+            retained: crate::place::PlaceLeftSummary::default(),
         }]
     );
     assert!(matches!(
@@ -466,8 +467,9 @@ fn leave_place_is_correlated_and_failure_keeps_a_retryable_degraded_binding() {
         crate::place::PlaceState::Offline { .. }
     ));
 
+    let retained = crate::place::PlaceLeftSummary::default();
     assert!(
-        app.finish_leave_place(app.session_id, 11, Ok(true))
+        app.finish_leave_place(app.session_id, 11, retained, Ok(true))
             .is_empty()
     );
     assert!(matches!(
@@ -476,7 +478,12 @@ fn leave_place_is_correlated_and_failure_keeps_a_retryable_degraded_binding() {
     ));
 
     assert_eq!(
-        app.finish_leave_place(app.session_id, 12, Err("release timeout".into())),
+        app.finish_leave_place(
+            app.session_id,
+            12,
+            retained,
+            Err("release timeout".into())
+        ),
         vec![Effect::Redraw]
     );
     let retry_generation = match &app.place {
@@ -485,16 +492,25 @@ fn leave_place_is_correlated_and_failure_keeps_a_retryable_degraded_binding() {
     };
     assert_ne!(retry_generation, 12);
     assert!(
-        app.finish_leave_place(app.session_id, 12, Ok(true))
+        app.finish_leave_place(app.session_id, 12, retained, Ok(true))
             .is_empty()
     );
     assert_eq!(app.place.generation(), Some(retry_generation));
 
+    let retryable_binding = app.place.binding().expect("Degraded still names it").clone();
     assert_eq!(
-        app.finish_leave_place(app.session_id, retry_generation, Ok(true)),
+        app.finish_leave_place(app.session_id, retry_generation, retained, Ok(true)),
         vec![Effect::Redraw]
     );
-    assert_eq!(app.place, crate::place::PlaceState::Personal);
+    // The retry's leave completed from Degraded, which carries no snapshot,
+    // so the retained summary reads zero rather than a guess.
+    assert_eq!(
+        app.place,
+        crate::place::PlaceState::Left {
+            binding: retryable_binding,
+            retained: crate::place::PlaceLeftSummary::default(),
+        }
+    );
 }
 
 #[test]
@@ -502,17 +518,19 @@ fn failed_leave_from_joining_cannot_adopt_a_late_join_answer() {
     let mut app = App::test_stub();
     app.place = crate::place::PlaceState::Joining { generation: 4 };
     let effects = app.update(Action::LeavePlace);
+    let retained = crate::place::PlaceLeftSummary::default();
     assert_eq!(
         effects,
         vec![Effect::LeavePlace {
             session: app.session_id,
             generation: 4,
+            retained,
         }]
     );
-    app.finish_leave_place(app.session_id, 4, Err("release timeout".into()));
+    app.finish_leave_place(app.session_id, 4, retained, Err("release timeout".into()));
     assert!(matches!(app.place, crate::place::PlaceState::Failed { .. }));
     assert!(
-        app.finish_leave_place(app.session_id, 4, Ok(true))
+        app.finish_leave_place(app.session_id, 4, retained, Ok(true))
             .is_empty()
     );
 }
@@ -4383,6 +4401,43 @@ fn spartan_prompt_target_resolves_against_its_source_member() {
         prompt.protocol,
         crate::ui::SmolwebSubmissionProtocol::Spartan
     );
+}
+
+#[test]
+fn a_left_place_refuses_reconnect_and_rejoins_by_clearing_its_mark() {
+    let mut app = App::test_stub();
+    assert_eq!(app.update(Action::RejoinPlace), vec![Effect::Redraw]);
+    assert_eq!(app.place, crate::place::PlaceState::Personal);
+    let binding = crate::place::PlaceBindingV1::new(
+        crate::place::PlaceId([0xb1; 32]),
+        crate::place::SharedContainerId([0xb2; 32]),
+        crate::place::ChatSpaceId([0xb3; 32]),
+        "hall",
+    )
+    .unwrap();
+    let retained =
+        crate::place::PlaceLeftSummary { graph_nodes: 1, chat_messages: 4, members: 2 };
+    app.next_place_generation = 8;
+    app.place = crate::place::PlaceState::Left { binding: binding.clone(), retained };
+    // Reconnect reads Left as not joined: the mark would otherwise survive a
+    // live reconnect and read Left again at the next start.
+    assert_eq!(app.update(Action::ReconnectPlace), vec![Effect::Redraw]);
+    assert!(matches!(app.place, crate::place::PlaceState::Left { .. }));
+    assert_eq!(
+        app.update(Action::RejoinPlace),
+        vec![
+            Effect::ClearPlaceLeftMark { session: app.session_id },
+            Effect::ReconnectPlace {
+                session: app.session_id,
+                generation: 9,
+                binding: binding.clone(),
+            },
+        ]
+    );
+    assert!(matches!(
+        app.place,
+        crate::place::PlaceState::Opening { generation: 9, .. }
+    ));
 }
 
 #[test]
