@@ -161,10 +161,12 @@ def main():
         member_incoming = [t for t in left_pair[1]["traffic"] if t["direction"] == "incoming"][-1]
         assert member_incoming["result"].startswith("refused: not joined"), member_incoming
         assert left_pair[1]["lifecycle"] == "left" and left_pair[0]["lifecycle"] == "joined"
+        assert left["contract"]["verdict"] == "left"
         action(member, "join")
         rejoined = snapshot("rejoined")
         assert all(s["lifecycle"] == "joined" and s["retained_count"] == 2 for s in rejoined)
         assert rejoined[0]["records"] == rejoined[1]["records"] and len(rejoined[0]["records"]) == 1
+        assert all(s["contract"]["verdict"] == "joined" for s in rejoined)
         steps.append({
             "step": "leave_and_rejoin",
             "left_lifecycle": left["lifecycle"], "left_retained_count": left["retained_count"],
@@ -175,6 +177,8 @@ def main():
             "member_import_result": member_incoming["result"],
             "rejoined_lifecycles": [s["lifecycle"] for s in rejoined],
             "rejoined_retained_counts": [s["retained_count"] for s in rejoined],
+            "left_contract": left["contract"],
+            "rejoined_contracts": [s["contract"] for s in rejoined],
         })
 
         # Revocation: the founder revokes while the member is offline. The unaware member's
@@ -205,6 +209,9 @@ def main():
         assert synced[0]["retained_count"] == synced[1]["retained_count"] == 4
         assert synced[0]["service"]["operations"] == synced[1]["service"]["operations"]
         assert synced[1]["lifecycle"] == "revoked" and synced[0]["lifecycle"] == "joined"
+        assert synced[1]["contract"]["verdict"] == "revoked" and synced[0]["contract"]["verdict"] == "joined"
+        assert synced[1]["contract"]["revocation"]["by"] is not None
+        assert synced[1]["contract"]["reading"] == "continues", "the fixture's records stay plaintext on revoke"
         revoked_contribute = refused(member, "contribute", "revoked")
         action(member, "disconnect")
         revoked_reopen = refused(member, "reopen", "revoked")
@@ -233,6 +240,8 @@ def main():
             "reconnect_refused": revoked_connect,
             "wire_entries_during_refused_reconnect": [a - b for a, b in zip(after, before)],
             "refused_reconnect_recheck": refused_state["last_recheck"],
+            "contracts": [s["contract"] for s in synced],
+            "refused_reconnect_contract": refused_state["contract"],
         })
 
         # Expiry: past the grant's expires_at_ms the founder's contribution and reconnect are refused.
@@ -247,6 +256,8 @@ def main():
         assert after == before, "an expired reconnect reached the wire"
         expired = snapshot("expired_reconnect_refused")[0]
         assert expired["lifecycle"] == "expired" and not expired["online"] and expired["now_ms"] == 1001
+        assert expired["contract"]["verdict"] == "expired"
+        assert expired["contract"]["grant"]["expired_at_ms"] == 1000
         assert expired["last_recheck"]["action"] == "connect" and not expired["last_recheck"]["admitted"]
         assert expired["retained_count"] == 4 and expired["records"] == []
         steps.append({
@@ -259,11 +270,21 @@ def main():
             "retained_count": expired["retained_count"],
             "effective_records": len(expired["records"]),
             "pending_authority_count": expired["service"]["pending_authority_count"],
+            "contract": expired["contract"],
         })
 
         checks = subprocess.run([binary, "--role", "founder", "--store", str(output / "negative-checks"), "--self-check"], capture_output=True, text=True, check=True)
         negative = json.loads(checks.stdout)
-        assert negative["ok"] and len(negative) == 10
+        # Nine boolean checks plus "contract_conformance" (the tenth, K2's
+        # conformance harness) plus "ok" and the non-boolean
+        # "contract_conformance_detail" the harness records beside it.
+        assert negative["ok"] and len(negative) == 12
+        assert negative["contract_conformance"] is True
+        conformance = negative["contract_conformance_detail"]["conformance"]
+        assert [step for step, _ in conformance["steps"]] == [
+            "fresh", "invite_wrong_target", "join", "leave", "rejoin", "reconnect",
+            "expire", "reconnect_after_expiry", "revoke", "replay_duplicate",
+        ]
         receipt = {"result": "ok", "kind": "two Rust peers in two HTTP gateway processes; no browser automation", "binary_sha256": hashlib.sha256(Path(binary).read_bytes()).hexdigest(), "comparison_sha256": hashlib.sha256(Path(args.comparison).read_bytes()).hexdigest(), "negative_checks": negative, "lifecycle_steps": steps, "states": states}
         (output / "receipt.json").write_text(json.dumps(receipt, indent=2), encoding="utf-8")
         print(json.dumps({"result": "ok", "receipt": str(output / "receipt.json"), "negative_checks": negative, "lifecycle_steps": steps}, indent=2))

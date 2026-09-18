@@ -94,6 +94,7 @@ class Peer:
                 "process_generation": self.generation,
                 "last_sync_error": self.last_sync_error,
                 "lifecycle": self.last.get("lifecycle"), "now_ms": self.last.get("now_ms"),
+                "contract": self.last.get("contract"),
                 "last_recheck": self.last_recheck,
                 "comparison": self.comparison, "service": self.last,
                 "records": records, "retained_count": self.last.get("retained_count", 0),
