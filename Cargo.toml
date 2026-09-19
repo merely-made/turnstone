@@ -263,14 +263,14 @@ tempfile = "3"
 # these four packages to the sibling checkout for the cross-repo edit loop, as
 # it does for netrender and the wgpu family; a clean checkout resolves them
 # from GitHub at this rev.
-redshank-surfaces = { git = "https://github.com/merely-made/woodshed.git", rev = "9df474817fd2ca522f6d2f28fc4e8bec00ccf8fc" }
-redshank-model = { git = "https://github.com/merely-made/woodshed.git", rev = "9df474817fd2ca522f6d2f28fc4e8bec00ccf8fc" }
+redshank-surfaces = { git = "https://github.com/merely-made/woodshed.git", rev = "205dfa4d9f886446cf607340b5b4339e6800af19" }
+redshank-model = { git = "https://github.com/merely-made/woodshed.git", rev = "205dfa4d9f886446cf607340b5b4339e6800af19" }
 # The one audio-device authority: Symphonia decode, a WSOLA retiming stage, and
 # a Firewheel graph over CPAL. Owned by the app, shared by every episode tile.
-redshank-playback = { git = "https://github.com/merely-made/woodshed.git", rev = "9df474817fd2ca522f6d2f28fc4e8bec00ccf8fc" }
+redshank-playback = { git = "https://github.com/merely-made/woodshed.git", rev = "205dfa4d9f886446cf607340b5b4339e6800af19" }
 # The listening model's crash-tolerant generation store, rooted under
 # Turnstone's own session directory.
-redshank-storage = { git = "https://github.com/merely-made/woodshed.git", rev = "9df474817fd2ca522f6d2f28fc4e8bec00ccf8fc" }
+redshank-storage = { git = "https://github.com/merely-made/woodshed.git", rev = "205dfa4d9f886446cf607340b5b4339e6800af19" }
 
 [features]
 default = []
