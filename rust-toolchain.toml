@@ -1,5 +1,5 @@
 # Match Mere and Genet's workspace toolchain (the dependency graph floors at
-# rustc >= 1.95; they pin 1.97.1 rather than the bare minimum, and Turnstone
+# rustc >= 1.95; the supported integration toolchain is 1.98.1, and Turnstone
 # consumes those same subtrees through the facade).
 [toolchain]
-channel = "1.97.1"
+channel = "1.98.1"

@@ -18,6 +18,11 @@ Be disclaimed: I use AI to develop this entire stack, as a tool, carefully, and 
 
 ## Build and run
 
+Windows native builds need the MSVC C++ build tools, Windows SDK, CMake and
+Ninja. The CEF dependency downloads its matching binary distribution when needed;
+set `CEF_PATH` to an existing matching distribution to reuse it. This is a native
+SDK input, separate from Cargo's source redirects.
+
 ```sh
 cargo run     # the turnstone window
 cargo test    # unit tests
@@ -25,9 +30,28 @@ cargo test    # unit tests
 
 Turnstone pulls `mere` and the genet engine family as git dependencies; a plain
 `cargo build` fetches them. Headed self-drive receipts live under `scenarios/`.
-`Cargo.lock` remains untracked while local sibling path overrides are active.
-For a reproducible locked receipt, generate the lock in a clean worktree without
-the ignored `.cargo/config.toml` override.
+The committed `Cargo.lock` records the portable graph on Rust 1.98.1. Run
+`cargo check --workspace --locked`, or use Python 3.11+ to check configuration,
+package provenance and lock preservation with `python scripts/cargo_mode.py verify`.
+
+For sibling development, copy `.cargo/config.toml.example` to
+`.cargo/config.local.toml` and adjust the paths. Existing users run
+`python scripts/cargo_mode.py setup` once: current locks are preserved and ignored
+automatic configs become opt-in local configs. Run
+`python scripts/cargo_mode.py local check --workspace` for sibling resolution;
+it requires Cargo 1.97+ and uses `.cargo/local/Cargo.lock`. Bare Cargo and editor
+metadata use the portable graph; configure editor checks to use the launcher
+when working across repositories. Local config and locks are never committed.
+
+Advance Git pins as tested integration sets, rather than chasing every sibling
+commit. A local build and a redirect-free locked build are separate checks.
+
+The September 20 portable set retains Mere `ca798151` and Genet `5ae30cad`.
+The attempted Mere `68f78873` / Genet `99769450` update fails at Knot's
+publishing/projection interfaces and Redshank's Cambium surface interface because
+their older Mere types cross into Turnstone. Its failed integration is not the
+committed graph. Sibling mode uses current local Mere/Genet with a separate lock.
+The portable pins must advance as a tested set covering those interfaces.
 
 ## Status
 

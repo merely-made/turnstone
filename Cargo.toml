@@ -180,7 +180,8 @@ fleece = { version = "0.5.0", git = "https://github.com/merely-made/genet.git", 
 genet-static-dom = { git = "https://github.com/merely-made/genet.git", rev = "5ae30cad0ea421085a52dc9f86ead53028f0592d" }
 # Turnstone owns pane retention and composition; Genet supplies the clean-room
 # Livery cascade/Buckram layout state.
-genet-livery = { version = "=0.0.3", git = "https://github.com/merely-made/genet.git", rev = "5ae30cad0ea421085a52dc9f86ead53028f0592d" }
+# Portable Git/lock retain 0.0.3; explicit sibling mode also accepts tested 0.0.4.
+genet-livery = { version = ">=0.0.3, <0.0.5", git = "https://github.com/merely-made/genet.git", rev = "5ae30cad0ea421085a52dc9f86ead53028f0592d" }
 # The retained pane accessibility projection is owned beside Livery's
 # fragments in Genet; Turnstone only namespaces and places the returned tree.
 genet-render = { git = "https://github.com/merely-made/genet.git", rev = "5ae30cad0ea421085a52dc9f86ead53028f0592d" }
@@ -308,7 +309,7 @@ gemini-protocol = { git = "https://github.com/merely-made/smolweb.git", rev = "8
 # paint/observable chain.
 engine-observables-api = { git = "https://github.com/merely-made/genet.git", rev = "5ae30cad0ea421085a52dc9f86ead53028f0592d" }
 genet-paint-types = { git = "https://github.com/merely-made/genet.git", rev = "5ae30cad0ea421085a52dc9f86ead53028f0592d" }
-genet-livery = { version = "=0.0.3", git = "https://github.com/merely-made/genet.git", rev = "5ae30cad0ea421085a52dc9f86ead53028f0592d" }
+genet-livery = { version = ">=0.0.3, <0.0.5", git = "https://github.com/merely-made/genet.git", rev = "5ae30cad0ea421085a52dc9f86ead53028f0592d" }
 genet-scripted-dom = { git = "https://github.com/merely-made/genet.git", rev = "5ae30cad0ea421085a52dc9f86ead53028f0592d" }
 genet-static-dom = { git = "https://github.com/merely-made/genet.git", rev = "5ae30cad0ea421085a52dc9f86ead53028f0592d" }
 layout-dom-api = { version = "=0.1.1", git = "https://github.com/merely-made/genet.git", rev = "5ae30cad0ea421085a52dc9f86ead53028f0592d" }

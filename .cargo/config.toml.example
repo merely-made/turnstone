@@ -1,0 +1,178 @@
+# Copy to .cargo/config.local.toml; adjust sibling paths for your layout.
+# Run python scripts/cargo_mode.py local check --workspace (Python 3.11+, Cargo 1.97+).
+# The launcher keeps the portable Cargo.lock unchanged and selects a local lock.
+# Local Cargo config (gitignored, local-dev only) — mirrors mere's.
+#
+# Turnstone's committed manifest resolves owned sibling repos from GitHub so a
+# clean checkout builds anywhere. This local file redirects those git sources
+# to sibling working copies beside this checkout for the
+# cross-repo edit loop.
+
+[patch."https://github.com/merely-made/netrender.git"]
+netrender = { path = "../netrender/netrender" }
+netrender_device = { path = "../netrender/netrender_device" }
+paint_list_api = { path = "../netrender/paint_list_api" }
+paint_list_render = { path = "../netrender/paint_list_render" }
+
+[patch."https://github.com/merely-made/wgpu-scry.git"]
+scrying = { path = "../wgpu-scry/scrying" }
+
+[patch."https://github.com/merely-made/wgpu-graft.git"]
+grafting = { path = "../wgpu-graft/grafting" }
+
+[patch."https://github.com/merely-made/wgpu-weld.git"]
+welding = { path = "../wgpu-weld/welding" }
+
+[patch.crates-io]
+# Keep the crates.io-facing half of Turnstone's committed Netrender family
+# patch on the same local source as the git-facing half above. Cargo does not
+# recursively apply a crates.io -> git patch through a git -> path patch.
+netrender = { path = "../netrender/netrender" }
+netrender_device = { path = "../netrender/netrender_device" }
+paint_list_api = { path = "../netrender/paint_list_api" }
+paint_list_render = { path = "../netrender/paint_list_render" }
+# p2panda fork, local working copy — mirrors mere's config; the committed
+# manifest repoints these at mark-ik/p2panda and this redirects to the clone.
+# The family patches together or not at all: local p2panda-net path-deps its
+# siblings, so patching one alone yields two p2panda-core copies.
+# Corrected 2026-08-01: these read `repos/p2panda` (empty since the 2026-07-23
+# consolidation moved forks to `crates/`), so turnstone would not resolve at
+# all. Forks live in `Code/crates/`; own projects live in `Code/repos/`.
+p2panda-auth = { path = "../../crates/p2panda/p2panda-auth" }
+p2panda-core = { path = "../../crates/p2panda/p2panda-core" }
+p2panda-discovery = { path = "../../crates/p2panda/p2panda-discovery" }
+p2panda-encryption = { path = "../../crates/p2panda/p2panda-encryption" }
+mere-p2panda-net = { path = "../../crates/p2panda/p2panda-net" }
+p2panda-store = { path = "../../crates/p2panda/p2panda-store" }
+p2panda-stream = { path = "../../crates/p2panda/p2panda-stream" }
+p2panda-sync = { path = "../../crates/p2panda/p2panda-sync" }
+# The physics + field siblings live in conatus; mere patches these too, and
+# merecat must agree or it silently builds against the published crates and
+# cannot see local seiche work (e.g. AnchorSpring). The family patches
+# together or not at all: local seiche path-deps local numen/quint, so
+# patching one alone yields two copies of the same types
+# ("expected numen::coupling::CouplingResponse, found CouplingResponse").
+# Mirrors mere's set exactly.
+# Genet's vendored Taffy fork is published and locally named `genet-taffy`.
+# Keep local Livery on the same source and package identity as the committed
+# manifest while developing against the Genet checkout.
+
+# LNK1140: the test binary's program database hit MSVC's page cap the day the
+# livery cutover landed (the graph gained genet-winit-host and friends).
+# Raising the page size is Microsoft's documented remedy and keeps debug info;
+# it pairs with the workspace's line-tables-only profile.
+[target.x86_64-pc-windows-msvc]
+
+# Local mere packages selected by the portable root graph.
+[patch."https://github.com/merely-made/mere.git"]
+"armillary" = { path = "../mere/crates/armillary" }
+"cambium" = { path = "../mere/crates/cambium/cambium" }
+"cambium-winit" = { path = "../mere/crates/cambium/cambium-winit" }
+"castellan" = { path = "../mere/ports/castellan" }
+"chartulary" = { path = "../mere/crates/eidetic/chartulary" }
+"chirograph" = { path = "../mere/crates/chirograph" }
+"commons-spine" = { path = "../mere/crates/moot/commons" }
+"distillery" = { path = "../mere/ports/distillery" }
+"document-canvas" = { path = "../mere/crates/inker/document-canvas" }
+"eidetic" = { path = "../mere/crates/eidetic/eidetic-core" }
+"eidetic-fjall" = { path = "../mere/crates/eidetic/eidetic-fjall" }
+"eidetic-search" = { path = "../mere/crates/intel/eidetic-search" }
+"errand" = { path = "../mere/crates/system/errand" }
+"esp" = { path = "../mere/crates/intel/esp" }
+"gemot" = { path = "../mere/crates/moot/gemot" }
+"graphshell" = { path = "../mere/ports/graphshell" }
+"graphshell-client" = { path = "../mere/crates/graphshell/graphshell-client" }
+"graphshell-endpoint" = { path = "../mere/crates/graphshell/graphshell-endpoint" }
+"graphshell-local" = { path = "../mere/crates/graphshell/graphshell-local" }
+"graphshell-network" = { path = "../mere/crates/graphshell/graphshell-network" }
+"graphshell-stdio" = { path = "../mere/crates/graphshell/graphshell-stdio" }
+"illume" = { path = "../mere/crates/nematic/illume" }
+"import" = { path = "../mere/crates/import" }
+"incipit" = { path = "../mere/crates/incipit" }
+"inker" = { path = "../mere/crates/inker/inker" }
+"knot-editor-host" = { path = "../mere/crates/inker/knot-editor-host" }
+"luggage" = { path = "../mere/crates/system/luggage" }
+"mere" = { path = "../mere/crates/mere" }
+"mere-apparatus" = { path = "../mere/crates/domain/apparatus" }
+"mere-canvas" = { path = "../mere/crates/canvas/canvas" }
+"mere-capability" = { path = "../mere/crates/capability" }
+"mere-cartography" = { path = "../mere/crates/canvas/cartography" }
+"mere-chrome" = { path = "../mere/crates/shell/chrome" }
+"mere-document-lanes" = { path = "../mere/crates/system/document-lanes" }
+"mere-fetch" = { path = "../mere/crates/system/fetch" }
+"mere-forme" = { path = "../mere/crates/forme/forme" }
+"mere-gloss" = { path = "../mere/crates/domain/gloss" }
+"mere-glossary" = { path = "../mere/crates/graph/glossary" }
+"mere-kernel" = { path = "../mere/crates/graph/graph-kernel" }
+"mere-linked-data" = { path = "../mere/crates/graph/linked-data" }
+"mere-mesh" = { path = "../mere/crates/mesh/mesh" }
+"mere-mesh-host" = { path = "../mere/crates/mesh/host" }
+"mere-moot" = { path = "../mere/ports/moot" }
+"mere-proofs" = { path = "../mere/crates/system/proofs" }
+"mere-resident" = { path = "../mere/crates/system/resident" }
+"mere-roster" = { path = "../mere/crates/domain/roster" }
+"mere-signals" = { path = "../mere/crates/intel/signals" }
+"mere-subgraph" = { path = "../mere/crates/graph/subgraph" }
+"mere-surface-api" = { path = "../mere/crates/system/surface-api" }
+"mere-trail" = { path = "../mere/crates/domain/trail" }
+"mere-transport" = { path = "../mere/crates/murm/transport" }
+"mere-webrtc-carrier" = { path = "../mere/crates/murm/webrtc-carrier" }
+"meristem" = { path = "../mere/crates/cambium/meristem" }
+"mooting" = { path = "../mere/crates/moot/mooting" }
+"mora-cmudict" = { path = "../mere/crates/intel/mora-cmudict" }
+"muniment" = { path = "../mere/crates/eidetic/muniment" }
+"nematic" = { path = "../mere/crates/nematic/nematic" }
+"notochord" = { path = "../mere/crates/system/notochord" }
+"numen" = { path = "../mere/crates/conatus/numen" }
+"pandect" = { path = "../mere/crates/system/pandect" }
+"personae" = { path = "../mere/crates/dramatis/personae" }
+"pictograph" = { path = "../mere/crates/canvas/pictograph" }
+"platen" = { path = "../mere/crates/platen/platen" }
+"register-lens" = { path = "../mere/crates/system/registry/register-lens" }
+"register-theme" = { path = "../mere/crates/system/registry/register-theme" }
+"sceno" = { path = "../mere/crates/cambium/scenes/sceno" }
+"scenograph" = { path = "../mere/crates/cambium/scenes/scenograph" }
+"scenomise" = { path = "../mere/crates/cambium/scenes/scenomise" }
+"scenotime" = { path = "../mere/crates/cambium/scenes/scenotime" }
+"script-rhai" = { path = "../mere/crates/script/rhai" }
+"seiche" = { path = "../mere/crates/conatus/seiche" }
+"servitor" = { path = "../mere/crates/servitor" }
+"sprigging" = { path = "../mere/crates/cambium/sprigging" }
+"stickleback" = { path = "../mere/crates/stickleback" }
+"tinct" = { path = "../mere/crates/cambium/tinct" }
+"titulus" = { path = "../mere/crates/titulus" }
+"uxtree" = { path = "../mere/crates/forme/uxtree" }
+"weld-engine" = { path = "../mere/crates/inker/engines/weld-engine" }
+"workbench" = { path = "../mere/crates/cambium/workbench" }
+
+# Local genet packages selected by the portable root graph.
+[patch."https://github.com/merely-made/genet.git"]
+"browsing-context-api" = { path = "../genet/components/shared/browsing-context" }
+"buckram" = { path = "../genet/components/buckram" }
+"document-session-api" = { path = "../genet/components/shared/document-session-api" }
+"engine-observables-api" = { path = "../genet/components/shared/engine-observables-api" }
+"fleece" = { path = "../genet/components/fleece" }
+"genet-clipboard" = { path = "../genet/components/genet-clipboard" }
+"genet-document-resources" = { path = "../genet/components/genet-document-resources" }
+"genet-documents" = { path = "../genet/components/genet-documents" }
+"genet-host-api" = { path = "../genet/components/genet-host-api" }
+"genet-livery" = { path = "../genet/components/genet-livery" }
+"genet-paint-types" = { path = "../genet/components/shared/paint-types" }
+"genet-render" = { path = "../genet/components/genet-render" }
+"genet-render-host" = { path = "../genet/components/genet-render-host" }
+"genet-scripted-dom" = { path = "../genet/components/genet-scripted-dom" }
+"genet-static-dom" = { path = "../genet/components/genet-static-dom" }
+"genet-winit-host" = { path = "../genet/components/genet-winit-host" }
+"layout-dom-api" = { path = "../genet/components/shared/layout-dom" }
+"livery" = { path = "../genet/components/livery" }
+"netfetcher" = { path = "../genet/components/netfetcher" }
+"servo-allocator" = { path = "../genet/components/allocator" }
+"servo-malloc-size-of" = { path = "../genet/components/malloc_size_of" }
+"servo-media-player" = { path = "../genet/components/media/player" }
+"servo-media-streams" = { path = "../genet/components/media/streams" }
+"servo-media-traits" = { path = "../genet/components/media/traits" }
+"taproot" = { path = "../genet/components/taproot" }
+genet-fontique = { path = "../genet/support/patches/fontique" }
+genet-parley = { path = "../genet/support/patches/parley" }
+genet-taffy = { path = "../genet/support/patches/taffy" }
+ipc-channel = { path = "../genet/support/patches/ipc-channel" }
