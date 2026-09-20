@@ -1,4 +1,4 @@
-# Copy to .cargo/config.toml (gitignored) — or merge into yours.
+# Copy to .cargo/config.local.toml (gitignored) — or merge into yours.
 #
 # The wasm32 identity stack (personae -> getrandom 0.3) needs this cfg; the
 # `wasm_js` feature alone is inert. Without it the `webrtc-browser` feature
@@ -16,7 +16,7 @@ rustflags = ['--cfg', 'getrandom_backend="wasm_js"']
 #     another lane edits in place:
 #       git -C <worktree> checkout --detach <rev>
 #
-#  2. It must name EVERY genet package the root mere .cargo/config.toml names,
+#  2. It must name EVERY genet package the root mere .cargo/config.local.toml names,
 #     not just the ones this crate's graph mentions. Cargo config files merge
 #     up the directory tree, so any name this table omits is supplied by the
 #     root table from the working copy — and one package reached by two
