@@ -103,6 +103,16 @@ node is session-graph truth and survives a restart on its own.
    starts before the file completes, and a cache budget that agrees with
    Redshank's own. Not built; the honest report is that a Redshank tile makes
    its own outbound requests.
+
+   *Researched 2026-09-20, still open.* Lane R3 of
+   `mere/design_docs/2026-08-12_family_composition_thesis_brief.md` probed this.
+   The host-blob alternative above does not work for a download in flight: a
+   blob in the stack's content store has no address until its last byte, so
+   streaming stays HTTP ranges and held playback is a separate source. Real
+   netfetcher serves Redshank's ranged reads from a blocking thread with this
+   persona's cookies, provided the request is sent no-store. Ruled the same
+   day: the ranged contract becomes a trait in Mere, Redshank its first consumer,
+   and Turnstone fills it from its netfetcher context. Its plan is Mere's.
 2. **No microphone.** Turnstone supplies no capture adapter, so the projection
    keeps `voice_capture_available` false and the dock disables Voice honestly.
    A voice command that arrives anyway is refused in words rather than
