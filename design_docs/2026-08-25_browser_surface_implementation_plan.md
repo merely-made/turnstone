@@ -72,10 +72,12 @@ is not a compilation or crash-durability receipt.
 **Progress, 2026-09-22:** the portable-pin gate is closed. The set is Mere
 `0e031fa5`, Genet `99769450`, Knot `8610058b` and Woodshed `f5a66493`, with
 Knot and Redshank moved first so the graph holds one Mere. `cargo check
---workspace` and `scripts/cargo_mode.py verify` pass on 1.98.1. Under
-`cargo test --workspace --locked` all nine R1a regressions pass
-(`resident_admission::tests`, six; `app::resident_admission_tests`, three).
-The focused scenario receipt is still pending.
+--workspace` and `scripts/cargo_mode.py verify` pass on 1.98.1. All ten R1a
+regressions pass (`resident_admission::tests`, six;
+`app::resident_admission_tests`, four). One of those, the watch-scope
+revocation test, is gated on `piccolo`, so the default `cargo test` skips it;
+run `cargo test --features piccolo --lib resident` for the full set. The
+focused scenario receipt is still pending.
 
 ### Resident run outcomes R1b, 2026-09-20
 
@@ -102,11 +104,21 @@ locks. Correlated port completion and a fallible graph-persistence receipt are
 required before claiming end-to-end durable effects. R2/R3 remain later slices.
 
 **Progress, 2026-09-22:** compiled at the portable set recorded under R1a.
-Four of five R1b regressions pass (`resident_runs_tests`, three;
-`app::resident_run_tests::adopting_foreign_run_records_clears_the_live_table_without_rewriting_them`).
-`app::resident_run_tests::malformed_run_store_refuses_before_manual_body_mutation`
-fails: no `DenizenRefused` event naming the resident run store reaches the
-app's event queue. It was committed failing and is fixed forward.
+All nine R1b regressions pass with `--features piccolo`
+(`resident_runs_tests`, three; `app::resident_run_tests`, six, four of them
+piccolo-gated). `malformed_run_store_refuses_before_manual_body_mutation`
+first failed because its setup saved `graph.json` but not the node facets.
+Adoption rebuilds residents from the binding facets, so the resident
+vanished and `RunDenizen` returned before the store check without emitting
+any event. The test now persists the facets as `SaveSession` does. The
+product path was correct.
+
+**Finding, 2026-09-22:** `RunDenizen` for a member that is not resident
+returns with no event at all (`src/app/denizen_arms.rs`, the
+`residents.get(&member)` early return), so a vanished resident is
+indistinguishable from a no-op. That is why this failure read as a missing
+refusal rather than a missing resident. Left as-is; surfacing it is a
+product decision.
 
 ### Product authority
 

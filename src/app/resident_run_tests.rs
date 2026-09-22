@@ -33,7 +33,10 @@ fn malformed_run_store_refuses_before_manual_body_mutation() {
     let (mut app, member) = installed_app("corrupt", "mere.open('mere://corrupt')");
     let session = app.session_id;
     let seed = app.graph_runtimes.visit("mere://seed");
+    // Adoption rebuilds residents from the binding facets, so persist them
+    // beside the graph as SaveSession does, or the resident vanishes.
     crate::session::save_session_graph(&app.session_dir(), app.graph_runtimes.graph());
+    crate::session::save_node_facets(&app.session_dir(), app.graph_runtimes.facets());
     let run_path = crate::resident_runs::path(&app.session_dir());
     std::fs::create_dir_all(run_path.parent().unwrap()).unwrap();
     std::fs::write(&run_path, b"{ malformed resident run state").unwrap();
@@ -43,9 +46,10 @@ fn malformed_run_store_refuses_before_manual_body_mutation() {
     app.update(Action::RunDenizen { member });
 
     assert_eq!(app.graph_runtimes.graph().node_count(), before);
-    assert!(app.take_events().into_iter().any(|event| {
+    let events = app.take_events();
+    assert!(events.iter().any(|event| {
         matches!(event, AppEvent::DenizenRefused(reason) if reason.contains("resident run store"))
-    }));
+    }), "expected a resident run store refusal, got {events:?}");
     assert!(app.graph_runtimes.graph().get_node(seed).is_some());
     let _ = std::fs::remove_dir_all(&app.data_root);
 }
