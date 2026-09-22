@@ -65,6 +65,7 @@ p2panda-sync = { path = "../../crates/p2panda/p2panda-sync" }
 
 # Local mere packages selected by the portable root graph.
 [patch."https://github.com/merely-made/mere.git"]
+"app-host" = { path = "../mere/crates/script/app-host" }
 "armillary" = { path = "../mere/crates/armillary" }
 "cambium" = { path = "../mere/crates/cambium/cambium" }
 "cambium-winit" = { path = "../mere/crates/cambium/cambium-winit" }

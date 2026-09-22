@@ -6,6 +6,12 @@ set.
 
 ## Working principles for AI assistants
 
+- Terminology (2026-09-20): use **participant** for platform admission and
+  **servitor** for resident helpers. **Denizen** belongs to Isometry's simulation
+  vocabulary, per `mere/design_docs/TERMINOLOGY.md`. Existing `Denizen*` APIs,
+  saved paths, signed scopes, facet names, action IDs, and event IDs keep their
+  compatibility spellings.
+
 - Read this index and [the documentation policy](DOC_POLICY.md) before changing
   code or plans.
 - Verify the live tree, current branch, dependencies, and dirty paths before

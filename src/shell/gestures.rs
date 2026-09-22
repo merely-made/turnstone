@@ -255,7 +255,7 @@ impl Shell {
             return;
         }
         // A dropped .lua (a control script) or .wasm (an `app-core` component)
-        // is a pack: stage the denizen install and surface the VISIBLE grant
+        // is a pack: stage the participant install and surface the VISIBLE grant
         // review with its ring profile (participant gate B1/B3). Nothing is
         // minted, and no grant exists, until the palette's Confirm commits.
         if path

@@ -4,19 +4,19 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // SPDX-License-Identifier: MPL-2.0
 
-//! The wasm denizen lane: an `app-core` component acting on turnstone through
+//! The wasm participant lane: an `app-core` component acting on turnstone through
 //! the action ENVELOPE, ring-gated at every emission.
 //!
 //! This is the second face of the ONE grant (participant gate B2/B3): the
-//! piccolo lane derives `ScriptCapabilities` from the denizen's authority,
+//! piccolo lane derives `ScriptCapabilities` from the participant's authority,
 //! and this lane checks the same authority per emission via [`crate::ring`].
-//! Neither lane carries a feature flag that decides what a denizen may do —
+//! Neither lane carries a feature flag that decides what a participant may do —
 //! the grant decides, and the review is where a grant comes from.
 //!
 //! The sink COLLECTS rather than applying: a host function cannot hold
 //! `&mut App` while the app sits inside a wasm call. So an allowed emission
 //! is queued, and the caller lowers the queue through the ordinary Action
-//! spine after the turn, with the journal scoped to the denizen's subject —
+//! spine after the turn, with the journal scoped to the participant's subject —
 //! exactly the shape `RunDenizen` already uses for piccolo.
 
 use std::path::Path;
@@ -105,15 +105,29 @@ pub fn run(
     kind: &str,
     payload: &str,
 ) -> Result<ComponentRun, String> {
+    let bytes = std::fs::read(path).map_err(|err| format!("component bytes: {err}"))?;
+    run_bytes(&bytes, authority, subject, kind, payload)
+}
+
+/// Run a resident component from the exact bytes supplied by the caller.
+/// Hosts can verify a body revision and execute those same bytes without a
+/// second read from a mutable path.
+pub fn run_bytes(
+    bytes: &[u8],
+    authority: &DelegationTable,
+    subject: Subject,
+    kind: &str,
+    payload: &str,
+) -> Result<ComponentRun, String> {
     let engine = app_host::guarded_engine().map_err(|err| format!("engine: {err}"))?;
     let _watchdog = Watchdog::start(engine.clone(), Duration::from_millis(5));
     // What the guest is TOLD it holds (`caps.granted()`): the rings its
     // authority actually covers, so a well-written component skips a feature
     // instead of emitting into a denial.
     let granted = ring::granted_ring_names(authority, subject);
-    let mut script = AppScript::attach_blocking(
+    let mut script = AppScript::attach_blocking_bytes(
         &engine,
-        path,
+        bytes,
         RingSink::new(authority.clone(), subject),
         granted,
         StoreLimitsBuilder::new()

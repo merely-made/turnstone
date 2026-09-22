@@ -521,28 +521,28 @@ pub enum Action {
     /// Permanently forget every staged node ("empty the recycle bin") —
     /// athanor's oven, on command. Irreversible; the records leave the store.
     EmptyRecycleBin,
-    /// Stage a scenario pack (.lua) as a denizen install: read + derive the
+    /// Stage a scenario pack (.lua) as a participant install: read + derive the
     /// content subject, then surface the VISIBLE grant review in the palette
     /// (participant gate B1). Nothing is minted or granted here.
     InstallDenizen {
         path: String,
     },
-    /// Commit the staged install after the visible review: mint the denizen
+    /// Commit the staged install after the visible review: mint the participant
     /// node + binding facets, project the grant into its nested world through
     /// the servitor gate, and register the palette Run row.
     ConfirmInstallDenizen,
     /// Discard the staged install; nothing was minted.
     CancelInstallDenizen,
-    /// Uninstall a resident denizen: REVOKE the delegations the user granted
+    /// Uninstall a resident participant: REVOKE the delegations the user granted
     /// it (cascading to anything it delegated onward) and un-reside it — the
     /// binding facet goes, the runtime entry goes. Its node and world stay,
     /// un-resided, so nothing is destroyed by revoking authority.
     UninstallDenizen {
         member: uuid::Uuid,
     },
-    /// Run a resident denizen's scenario body: piccolo evaluates it under a
+    /// Run a resident participant's scenario body: piccolo evaluates it under a
     /// step budget, and its emitted Actions lower through this same spine
-    /// with mere's GraphJournal scoped to the denizen's author (attribution).
+    /// with mere's GraphJournal scoped to the participant's author (attribution).
     RunDenizen {
         member: uuid::Uuid,
     },

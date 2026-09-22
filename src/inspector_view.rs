@@ -188,7 +188,7 @@ fn feed_rows(app: &App, member: uuid::Uuid) -> Option<Vec<(String, String)>> {
 
 /// The attributed edit spine's tail, newest first (participant gate B1: WHO
 /// changed the graph, readable). The author renders as the resident's label
-/// when the subject hex matches a denizen, `you` for the UI author.
+/// when the subject hex matches a participant, `you` for the UI author.
 fn journal_rows(app: &App) -> Vec<(String, String)> {
     let Ok(journal) = app.journal.lock() else {
         return Vec::new();

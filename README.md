@@ -46,11 +46,12 @@ when working across repositories. Local config and locks are never committed.
 Advance Git pins as tested integration sets, rather than chasing every sibling
 commit. A local build and a redirect-free locked build are separate checks.
 
-The September 20 portable set retains Mere `ca798151` and Genet `5ae30cad`.
-The attempted Mere `68f78873` / Genet `99769450` update fails at Knot's
-publishing/projection interfaces and Redshank's Cambium surface interface because
-their older Mere types cross into Turnstone. Its failed integration is not the
-committed graph. Sibling mode uses current local Mere/Genet with a separate lock.
+The September 22 portable set is Mere `0e031fa5`, Genet `99769450`, Knot
+`8610058b` and Woodshed `f5a66493`. Knot and Redshank moved to that Mere and
+Genet first, so Knot's publishing/projection interfaces and Redshank's Cambium
+surface interface cross into Turnstone as one copy of each Mere type; the
+September 20 attempt failed because they still carried Mere `ca798151`.
+Sibling mode uses current local Mere/Genet with a separate lock.
 The portable pins must advance as a tested set covering those interfaces.
 
 ## Status

@@ -314,10 +314,10 @@ fn pane_kind(pane: &str) -> Option<PaneKindId> {
     }
 }
 
-/// Derive a run's capabilities from a denizen's structural caps (participant
+/// Derive a run's capabilities from a participant's structural caps (participant
 /// gate B2): each script capability class maps to the same servitor
 /// capability [`crate::ring`] gates emissions by, and the bit is set only when
-/// the provider covers it. A denizen granted no rings evaluates read-less and
+/// the provider covers it. A participant granted no rings evaluates read-less and
 /// dispatch-less, and the denial surfaces in the run.
 ///
 /// One authority, two lane faces: this is the piccolo face, `emit_allowed` is
@@ -557,7 +557,7 @@ mod tests {
     }
     use super::*;
 
-    /// B2: capabilities derive from the denizen's grant. A subject granted
+    /// B2: capabilities derive from the participant's grant. A subject granted
     /// only its own world evaluates without the app classes (the denial is
     /// the capability system's, by name); a subject granted `app/` runs.
     #[test]

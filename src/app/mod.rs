@@ -27,6 +27,10 @@ use crate::{browse, session};
 
 mod contributed_pane_arms;
 mod document_find_arms;
+#[cfg(test)]
+mod resident_admission_tests;
+#[cfg(test)]
+mod resident_run_tests;
 mod runtime_pool;
 mod user_agent_decision_arms;
 
@@ -287,11 +291,24 @@ pub struct App {
     /// a late answer whose query no longer matches is dropped, so the lane
     /// can never show hits for text the user has already typed past.
     pub recall_query: String,
-    /// A staged denizen install awaiting its visible grant review (B1).
+    /// A staged participant install awaiting its visible grant review (B1).
     pub pending_install: Option<crate::denizen::PendingInstall>,
-    /// The session's denizen runtime: residents, derived authority, the gate.
+    /// The session's participant runtime: residents, derived authority, the gate.
     pub denizens: crate::denizen::Denizens,
-    /// The profile's root identity: whose authority every denizen grant
+    /// Host-owned run receipts for the adopted session. This stays live across
+    /// nested lowering; reopening/recovery happens only in `adopt_session`.
+    pub resident_runs: crate::resident_runs::ResidentRuns,
+    /// A malformed or uncommitted run sidecar is authority-relevant: starting
+    /// another run could duplicate an unresolved operation, so refuse it.
+    pub resident_run_error: Option<String>,
+    /// Default keeps existing shell handoffs usable while recording only a
+    /// handoff disposition. Strict mode holds a resident for reconciliation.
+    pub resident_run_effect_policy: crate::resident_runs::ExternalEffectPolicy,
+    /// Host-configurable limits for one synchronous resident invocation.
+    pub resident_run_limits: servitor::RunLimits,
+    /// Host storage policy, retained across session adoption and applied to reads.
+    pub resident_run_storage_limits: crate::resident_runs::StorageLimits,
+    /// The profile's root identity: whose authority every participant grant
     /// descends from (capability-model OQ2). Vault-sealed when a personae
     /// backend exists (the SHARED vault, so this is the user's actual
     /// identity); the loud unsealed fallback otherwise. Install signs a
@@ -301,10 +318,10 @@ pub struct App {
     /// origin mappings only; client certificate keys are derived on demand.
     pub gemini_identities: crate::gemini_identity::GeminiIdentityBindings,
     /// The attributed edit journal (mere's spine): every graph mutation
-    /// captured under its author — `user` for the UI, a denizen's subject hex
+    /// captured under its author — `user` for the UI, a participant's subject hex
     /// during a run. Shared with the capture hook installed at boot.
     pub journal: std::sync::Arc<std::sync::Mutex<mere::kernel::graph::GraphJournal>>,
-    /// Standing subscriptions: which denizen wakes on what (graph behaviors
+    /// Standing subscriptions: which participant wakes on what (graph behaviors
     /// W0/W1). Empty until a behavior is installed, which is why the drain
     /// costs nothing on a session that has none.
     pub watches: servitor::WatchTable,
@@ -1261,7 +1278,7 @@ impl App {
                 }
                 vec![Effect::SwitchSession { id }]
             }
-            // ---- Denizen residency (participant gate B1) ----
+            // ---- Participant residency (participant gate B1) ----
             Action::InstallDenizen { path } => self.install_denizen(path),
             Action::ConfirmInstallDenizen => self.confirm_install_denizen(),
             Action::CancelInstallDenizen => {

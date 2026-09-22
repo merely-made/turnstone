@@ -4,7 +4,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // SPDX-License-Identifier: MPL-2.0
 
-//! The profile's root identity: whose authority every denizen grant descends
+//! The profile's root identity: whose authority every participant grant descends
 //! from.
 //!
 //! The capability-model round ruled (OQ2, 2026-07-24) that the user is a **root
@@ -113,7 +113,7 @@ impl IdentityProvider for RootIdentity {
 /// the legacy unsealed seed as a loud fallback.
 ///
 /// Never fails the caller: a browser that refuses to start over a key store
-/// is worse than one whose denizens need re-rooting. A changed root is not
+/// is worse than one whose participants need re-rooting. A changed root is not
 /// silent breakage either — `denizen::rebuild` re-issues from the reviewed
 /// projections under the current root (the re-root heal). That heal is also
 /// what makes a live persona switch an invocation rather than new machinery.
@@ -150,7 +150,7 @@ fn open_vault(vault_dir: &Path) -> Result<RootIdentity, IdentityError> {
 
 /// Delete the legacy unsealed seed once the vault holds the identity: leaving
 /// a plaintext key on disk after the sealed one exists is the exact exposure
-/// the swap removes. Any denizen certificates rooted on the old key re-root
+/// the swap removes. Any participant certificates rooted on the old key re-root
 /// through the adopt heal, so nothing depends on the file.
 fn retire_unsealed_seed(data_root: &Path) {
     let path = master_key_path(data_root);
@@ -197,13 +197,13 @@ fn unsealed_fallback(data_root: &Path) -> InMemoryProvider {
         tracing::warn!(
             %err,
             path = ?path,
-            "could not persist the profile master key; denizen grants will not survive a restart"
+            "could not persist the profile master key; participant grants will not survive a restart"
         );
     }
     provider
 }
 
-/// The root subject: the master public key every denizen grant descends from.
+/// The root subject: the master public key every participant grant descends from.
 pub fn root_subject(provider: &impl IdentityProvider) -> servitor::Subject {
     servitor::Subject::new(provider.master_public_key().to_bytes())
 }
@@ -286,7 +286,7 @@ mod tests {
         // The migration: a profile that ran on the unsealed fallback, once the
         // vault opens (DPAPI on Windows), stops keeping a plaintext key. The
         // root CHANGES here — the vault identity supersedes the stopgap — and
-        // the denizen adopt path re-roots certificates from the reviewed
+        // the participant adopt path re-roots certificates from the reviewed
         // projections, which is tested in denizen/app.
         let dir = scratch("retire");
         let seeded = load_or_create_root(&dir, &broken_vault_dir(&dir));

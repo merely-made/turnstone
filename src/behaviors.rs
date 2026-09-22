@@ -42,12 +42,12 @@
 //!   because "delete stopped waking the folder's watcher" is otherwise a
 //!   mystery.
 
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use mere::kernel::graph::Graph;
 use mere::kernel::graph::capture::CapturedDelta;
 use servitor::cascade::{Cascade, CascadeBudget, CascadeOutcome, CommittedEntry, run_cascade};
-use servitor::{ScopePath, Subject};
+use servitor::{AuthorityProvider, Mode, ScopePath, Subject};
 
 use crate::action::Effect;
 use crate::app::App;
@@ -308,6 +308,7 @@ pub fn drain(app: &mut App) -> Vec<Effect> {
         // cascade, outside its rounds and its budget.
         return Vec::new();
     }
+    app.denizens.authority.set_now(crate::denizen::now_ms());
     app.draining = true;
     let mut effects = drain_time_tier(app);
     effects.extend(drain_app_tier(app));
@@ -349,14 +350,18 @@ fn drain_time_tier(app: &mut App) -> Vec<Effect> {
     let due = app.time_watches.due(now_ms);
     let mut effects = Vec::new();
     for subject in due {
-        let Some(member) = member_of(app, subject) else {
+        app.denizens.authority.set_now(crate::denizen::now_ms());
+        let Some(member) = member_of(app, subject, &[]) else {
+            app.record_event(AppEvent::DenizenRefused(
+                "clock behavior wake refused by current subject routing or read authority".into(),
+            ));
+            effects.push(Effect::Redraw);
             continue;
         };
         // Nothing woke it but the clock, so its context is empty: a scheduled
         // body has no matched entries to read, and saying so is truer than
         // handing it the last thing that happened to change.
-        let context = TriggerContext::default();
-        effects.extend(app.run_denizen_for_cascade(member, &context));
+        effects.extend(app.run_denizen_for_clock(member, now_ms));
     }
     effects
 }
@@ -377,17 +382,25 @@ fn drain_app_tier(app: &mut App) -> Vec<Effect> {
     let budget = CascadeBudget::new(app.cascade_budget);
     let mut effects: Vec<Effect> = Vec::new();
     let mut watches = std::mem::take(&mut app.app_watches);
+    let scoped_reads = scoped_reads(&watches);
     let mut round_entries = entries.clone();
     let cascade = run_cascade(&mut watches, budget, entries, |wakes| {
         let mut produced = Vec::new();
         for wake in wakes {
-            let Some(member) = member_of(app, wake.subject) else {
+            let required = scoped_reads
+                .get(&wake.subject)
+                .map(Vec::as_slice)
+                .unwrap_or(&[]);
+            app.denizens.authority.set_now(crate::denizen::now_ms());
+            let Some(member) = member_of(app, wake.subject, required) else {
+                app.record_event(AppEvent::DenizenRefused("behavior wake refused by current subject routing or read authority".into()));
+                effects.push(Effect::Redraw);
                 continue;
             };
             let context = context_for(&round_entries, wake);
             let hex = wake.subject.to_hex();
             let before = app.events_len();
-            effects.extend(app.run_denizen_for_cascade(member, &context));
+            effects.extend(app.run_denizen_for_cascade(member, &context, required));
             // Whatever the body just caused is attributed to it, so it cannot
             // be woken by its own noise.
             produced.extend(app_entries(app, Some((before, &hex))));
@@ -415,16 +428,24 @@ fn drain_graph_tier(app: &mut App) -> Vec<Effect> {
     let budget = CascadeBudget::new(app.cascade_budget);
     let mut effects: Vec<Effect> = Vec::new();
     let mut watches = std::mem::take(&mut app.watches);
+    let scoped_reads = scoped_reads(&watches);
     let mut round_entries: Vec<CommittedEntry> = entries.clone();
     let cascade = run_cascade(&mut watches, budget, entries, |wakes| {
         let mut produced = Vec::new();
         for wake in wakes {
-            let Some(member) = member_of(app, wake.subject) else {
+            let required = scoped_reads
+                .get(&wake.subject)
+                .map(Vec::as_slice)
+                .unwrap_or(&[]);
+            app.denizens.authority.set_now(crate::denizen::now_ms());
+            let Some(member) = member_of(app, wake.subject, required) else {
+                app.record_event(AppEvent::DenizenRefused("behavior wake refused by current subject routing or read authority".into()));
+                effects.push(Effect::Redraw);
                 continue;
             };
             let context = context_for(&round_entries, wake);
             let before = journal_len(app);
-            effects.extend(app.run_denizen_for_cascade(member, &context));
+            effects.extend(app.run_denizen_for_cascade(member, &context, required));
             produced.extend(entries_since(app, before));
         }
         // What the round's bodies committed becomes the next round's input,
@@ -463,12 +484,50 @@ pub fn context_for(entries: &[CommittedEntry], wake: &servitor::Wake) -> Trigger
 }
 
 /// Which resident node holds `subject`.
-fn member_of(app: &App, subject: Subject) -> Option<uuid::Uuid> {
-    app.denizens
+///
+/// The mapping is deliberately unique. A duplicate subject is malformed
+/// session state, not an invitation to let hash iteration choose which body
+/// receives a journal payload. Read authority is checked before that payload
+/// is constructed, then the run lane adds world-write admission.
+fn member_of(
+    app: &App,
+    subject: Subject,
+    scoped_reads: &[(servitor::Cap, Mode)],
+) -> Option<uuid::Uuid> {
+    let members: Vec<_> = app
+        .denizens
         .residents
         .iter()
-        .find(|(_, resident)| resident.subject == subject)
+        .filter(|(_, resident)| resident.subject == subject)
         .map(|(member, _)| *member)
+        .collect();
+    let readable = app
+        .denizens
+        .authority
+        .covers(subject, &crate::denizen::read_cap(), Mode::Read)
+        && scoped_reads
+            .iter()
+            .all(|(cap, mode)| app.denizens.authority.covers(subject, cap, *mode));
+    if members.len() != 1 || !readable {
+        tracing::warn!(
+            subject = %subject.to_hex(),
+            count = members.len(),
+            "behavior subject routing or live read authority refused"
+        );
+        return None;
+    }
+    members.into_iter().next()
+}
+
+fn scoped_reads(table: &servitor::WatchTable) -> HashMap<Subject, Vec<(servitor::Cap, Mode)>> {
+    let mut reads = HashMap::new();
+    for watch in table.watches() {
+        reads
+            .entry(watch.subject)
+            .or_insert_with(Vec::new)
+            .push((servitor::Cap::Scope(watch.scope.clone()), Mode::Read));
+    }
+    reads
 }
 
 fn journal_len(app: &App) -> u64 {
@@ -480,10 +539,11 @@ fn journal_len(app: &App) -> u64 {
 
 /// Say what the cascade did, loudly when it hit the budget.
 fn report(app: &mut App, cascade: &Cascade) {
+    app.denizens.authority.set_now(crate::denizen::now_ms());
     if let CascadeOutcome::BudgetExhausted { still_waking } = &cascade.outcome {
         let names: Vec<String> = still_waking
             .iter()
-            .filter_map(|subject| member_of(app, *subject))
+            .filter_map(|subject| member_of(app, *subject, &[]))
             .filter_map(|member| {
                 app.denizens
                     .residents

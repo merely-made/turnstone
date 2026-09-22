@@ -13,6 +13,103 @@ remains useful as research and acceptance evidence.
 
 ## Authority and order
 
+### Terminology amendment, 2026-09-20
+
+**Status:** terminology and display-text edits applied; Cargo checks held at
+the user's request. Mere's `design_docs/TERMINOLOGY.md` assigns **denizen** to
+the Isometry simulation family and restores **participant** for platform
+admission. **Servitor** remains the resident helper.
+
+**Findings:** `src/denizen.rs` uses existing names in session directories,
+participant URLs and certificate scope bytes; `src/ring.rs` consumes existing
+action IDs; `src/observe.rs` emits existing event IDs. These are compatibility
+identifiers, not display terminology.
+
+**Done-conditions:** update current prose, the fallback install label, and
+human-readable diagnostics; retain Rust symbols, saved paths, signed bytes,
+action IDs and event IDs. Verification is a static diff and terminology audit;
+this amendment claims no compiled or headed receipt.
+
+**Progress, 2026-09-20:** applied the participant vocabulary and documented the
+retained compatibility spellings. No dependency or behavior migration is part
+of the amendment.
+
+### Resident admission R1a, 2026-09-20
+
+**Status:** source implementation with static review. Cargo, runtime and
+headed validation remain held at the user's request. This is a separate
+behavior change from the terminology amendment above. Mere's canonical
+`design_docs/mere_docs/implementation_strategy/2026-08-13_graph_behaviors_plan.md`,
+sections 8.5 and 8.6, owns the redesign and subsequent slices.
+
+Turnstone consumes Servitor's portable binding and admission contract, using
+the member UUID as the instance identity while preserving legacy subjects,
+signed scope bytes, directories and action IDs. The host owns the versioned
+`denizens/resident-admission.json` lifecycle record. Paused triggers are skipped
+and counted; resuming does not replay them. Revocation is persisted before
+uninstall, and an ordinary resume cannot clear it. Missing or invalid signed
+certificates are no longer reconstructed from graph projections.
+
+Manual, watch and clock runs pass through admission. The adapter checks live
+read authority before exposing trigger context, rejects ambiguous subject
+routing and changed bodies, and revalidates before lowering actions through
+the existing gate. Component hosting receives the exact checked bytes. Forks
+remap instance records and preserve lifecycle state; they currently do not
+copy delegation certificates, so a copied resident needs reviewed installation
+in the child before it can run.
+Reversible node archival preserves lifecycle through recovery; uninstall instead
+records revocation. Installation records denial, writes the reviewed certificates,
+then publishes active state, preserving denial if a step fails.
+
+**Pending acceptance:** execute the new lifecycle, authority, body-change,
+fork and component-byte regressions once the hold is lifted, followed by the
+focused scenario receipt. Turnstone's existing local Cargo configuration can
+resolve the sibling Mere sources. Portable manifest pins and lockfiles remain
+unchanged and do not yet include the new APIs; aligning the Mere dependency
+family and regenerating locks is a distinct required gate. Static inspection
+is not a compilation or crash-durability receipt.
+
+**Progress, 2026-09-22:** the portable-pin gate is closed. The set is Mere
+`0e031fa5`, Genet `99769450`, Knot `8610058b` and Woodshed `f5a66493`, with
+Knot and Redshank moved first so the graph holds one Mere. `cargo check
+--workspace` and `scripts/cargo_mode.py verify` pass on 1.98.1. Under
+`cargo test --workspace --locked` all nine R1a regressions pass
+(`resident_admission::tests`, six; `app::resident_admission_tests`, three).
+The focused scenario receipt is still pending.
+
+### Resident run outcomes R1b, 2026-09-20
+
+**Status:** source implementation with static review; execution remains held. Mere's
+`design_docs/mere_docs/implementation_strategy/2026-08-13_graph_behaviors_plan.md`,
+section 8.7, owns the run contract and acceptance boundaries.
+
+The host records the admitted ticket and ordered run events in
+`denizens/resident-runs.json`, replayed through Servitor's pure reducer.
+Intent precedes evaluation or local dispatch; replay only reconstructs state.
+The live store spans nested cascades, and session adoption is the interruption
+recovery boundary. Forks start a fresh run namespace.
+
+Local application results, returned effect batches and actual port completion
+remain separate observations. Default policy records release for untracked handoff;
+strict policy retains consequential batches for explicit reconciliation and
+blocks overlapping invocations of that resident. Cancellation preserves that
+uncertainty. Configurable storage bounds refuse new work without evicting
+receipts. Neither policy treats `SaveSession` as a durable graph acknowledgement.
+
+**Pending acceptance:** compile and execute the reducer, sidecar recovery and
+host integration regressions after the Cargo hold; align portable pins and
+locks. Correlated port completion and a fallible graph-persistence receipt are
+required before claiming end-to-end durable effects. R2/R3 remain later slices.
+
+**Progress, 2026-09-22:** compiled at the portable set recorded under R1a.
+Four of five R1b regressions pass (`resident_runs_tests`, three;
+`app::resident_run_tests::adopting_foreign_run_records_clears_the_live_table_without_rewriting_them`).
+`app::resident_run_tests::malformed_run_store_refuses_before_manual_body_mutation`
+fails: no `DenizenRefused` event naming the resident run store reaches the
+app's event queue. It was committed failing and is fixed forward.
+
+### Product authority
+
 Turnstone owns user-agent actions, durable graph truth, shell policy, and the
 composition of surfaces. Genet engines own document behavior. Mere owns shared
 graph and projection primitives. A browser feature crosses those boundaries
@@ -312,7 +409,7 @@ Done-conditions:
 - Save/print cannot reuse graph `FrozenScene` by name. Graph projection and
   observed page capture have different sources, replay properties, and privacy
   consequences.
-- Web permissions and denizen or participant grants may share visual grammar,
+- Web permissions and participant or participant grants may share visual grammar,
   but their authorities and revocation rules must remain separate.
 - A typed request event and answer method do not prove that an engine emits the
   callback. Capability status requires a live server or proxy receipt; CEF
@@ -333,7 +430,7 @@ Done-conditions:
   arrivals, and extension views without adding pane-specific shell branches.
 - F0's match model can serve accessibility and automation directly, avoiding a
   separate test-only search API.
-- D0's decision component can share layout and interaction code with denizen
+- D0's decision component can share layout and interaction code with participant
   grant review while keeping different typed actions beneath it.
 - A0 can fold Steward custody, feed unread state, and place provenance into one
   arrivals view because all three already end in durable records.

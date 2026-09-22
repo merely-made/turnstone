@@ -21,34 +21,86 @@ impl App {
     /// The dynamic switcher entries for the omnibar's `>` lane: a switch per
     /// OTHER session, most recently updated first ("New session" is a static
     /// palette entry).
-    /// The denizen rows for the palette's actions lane: the pending
+    /// The participant rows for the palette's actions lane: the pending
     /// install's visible review (the Confirm row IS the ask), then one Run
-    /// row per resident (B1: the palette populated from denizen residency).
-    /// Lower a denizen's emitted Actions through this same spine with the
+    /// row per resident (B1: the palette populated from participant residency).
+    /// Lower a participant's emitted Actions through this same spine with the
     /// journal scoped to its subject, so every captured graph edit reads back
     /// attributed. Shared by both runnable lanes: piccolo returns Actions
     /// after evaluation, the component lane returns the ring-gate's accepted
-    /// queue — by here, both are authorized.
+    /// queue. Every action is revalidated against the live binding and grants.
     pub(super) fn lower_denizen_actions(
         &mut self,
+        run_id: servitor::RunId,
         subject: servitor::Subject,
         label: String,
         actions: Vec<Action>,
-    ) -> Vec<Effect> {
-        if let Ok(mut journal) = self.journal.lock() {
-            journal.set_author(subject.to_hex());
-        }
+    ) -> (Vec<Effect>, bool) {
+        let session = self.session_id;
+        let ticket = match self.resident_runs.reducer(run_id) {
+            Ok(run) if run.ticket().binding.subject == subject => run.ticket().clone(),
+            _ => {
+                self.events.push(AppEvent::DenizenRefused(format!("{label}: missing or mismatched run ticket")));
+                return (vec![Effect::Redraw], true);
+            }
+        };
+        let member = uuid::Uuid::from_bytes(ticket.binding.id.0);
+        // `update` can synchronously drain another resident.  Preserve the
+        // author that was in force when this lowering began so that the inner
+        // run restores this run, rather than unconditionally restoring `user`.
+        // The guard deliberately releases the journal lock before `update`:
+        // graph capture takes that lock itself.
+        let previous_author = match self.journal.lock() {
+            Ok(mut journal) => {
+                let previous = journal.author().to_owned();
+                journal.set_author(subject.to_hex());
+                previous
+            }
+            Err(poisoned) => {
+                let mut journal = poisoned.into_inner();
+                let previous = journal.author().to_owned();
+                journal.set_author(subject.to_hex());
+                previous
+            }
+        };
+        let _restore_author = JournalAuthorRestore {
+            journal: self.journal.clone(),
+            previous_author,
+        };
         let mut effects = Vec::new();
+        let mut refused = false;
         for action in actions {
+            // Evaluation's capability view is advisory. Authority is checked
+            // once more at every actual emission, because a cascade may have
+            // changed live grants since the body was evaluated.
+            if self.session_id != session {
+                self.events.push(AppEvent::DenizenRefused(format!("{label}: session changed during run")));
+                refused = true;
+                break;
+            }
+            self.denizens.authority.set_now(crate::denizen::now_ms());
+            let current = self.denizens.residents.get(&member).map(|resident| &resident.binding);
+            let validation = current.ok_or_else(|| "resident disappeared".to_string())
+                .and_then(|binding| servitor::revalidate(&ticket, binding, &self.denizens.authority, &[])
+                    .map_err(|reason| format!("run invalidated: {reason:?}")));
+            if let Err(reason) = validation {
+                self.events.push(AppEvent::DenizenRefused(format!("{label}: {reason}")));
+                refused = true;
+                break;
+            }
+            if let Err(reason) = crate::ring::emit_allowed(&self.denizens.authority, subject, &action) {
+                self.events.push(AppEvent::DenizenRefused(format!("{label}: action refused: {reason}")));
+                refused = true;
+                break;
+            }
             effects.extend(self.update(action));
         }
-        if let Ok(mut journal) = self.journal.lock() {
-            journal.set_author(mere::kernel::graph::USER_AUTHOR);
+        if !refused {
+            self.events.push(AppEvent::DenizenRan(label));
         }
-        self.events.push(AppEvent::DenizenRan(label));
         effects.push(Effect::SaveSession);
         effects.push(Effect::Redraw);
-        effects
+        (effects, refused)
     }
 
     pub fn denizen_actions(&self) -> Vec<(String, Action)> {
@@ -79,7 +131,7 @@ impl App {
     }
 
     pub fn session_actions(&self) -> Vec<(String, Action)> {
-        // Denizen rows lead: a pending install's review must be the first
+        // Participant rows lead: a pending install's review must be the first
         // thing the opened palette shows (B1's visible grant review).
         let mut rows = self.denizen_actions();
         let mut others: Vec<_> = self
@@ -99,7 +151,7 @@ impl App {
     }
 
     /// **The** action catalog offered right now: the contextual rows LEAD the
-    /// static registry, because a pending denizen install's grant review must be
+    /// static registry, because a pending participant install's grant review must be
     /// the first thing an opened palette shows (participant gate B1) and the
     /// contextual rows outrank the fixed verbs generally.
     ///
@@ -409,6 +461,22 @@ impl App {
             }
         }
         rows
+    }
+}
+
+/// Restores the graph journal's exact prior attribution after a synchronous
+/// nested lowering or an early return. It never crosses an asynchronous wait.
+struct JournalAuthorRestore {
+    journal: std::sync::Arc<std::sync::Mutex<mere::kernel::graph::GraphJournal>>,
+    previous_author: String,
+}
+
+impl Drop for JournalAuthorRestore {
+    fn drop(&mut self) {
+        match self.journal.lock() {
+            Ok(mut journal) => journal.set_author(self.previous_author.clone()),
+            Err(poisoned) => poisoned.into_inner().set_author(self.previous_author.clone()),
+        }
     }
 }
 

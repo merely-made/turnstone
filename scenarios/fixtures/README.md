@@ -1,6 +1,6 @@
 # Scenario fixtures
 
-Packs the scenarios and tests install as denizens.
+Packs the scenarios and tests install as participants.
 
 - `trail_keeper.lua` — a rung-1 control script (the piccolo lane).
 - `app_core_guest.wasm` — an `app-core` component (the envelope lane), built

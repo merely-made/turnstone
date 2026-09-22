@@ -6,12 +6,12 @@
 
 //! The action-ring classifier: the envelope lane's permission model.
 //!
-//! A wasm (or any future) denizen emits actions through ONE stable envelope
+//! A wasm (or any future) participant emits actions through ONE stable envelope
 //! (`mere:script`'s `actions` interface — `{name, payload}`), and the whole
 //! `Action` surface is potentially emittable: no curated interface, no second
 //! compile-time authority. What decides is the action's **ring** — a
 //! capability-path family the emission classifies into — checked against the
-//! denizen's grant at the moment of emission, exactly where the piccolo lane
+//! participant's grant at the moment of emission, exactly where the piccolo lane
 //! already denies (B2: capability from the grant, not a feature flag).
 //!
 //! Rings, mapped to grantable capabilities. Each is a servitor
@@ -210,11 +210,11 @@ pub fn ring_of(action: &Action) -> Ring {
         InstallDenizen { .. } | ConfirmInstallDenizen | CancelInstallDenizen
         | UninstallDenizen { .. } | RunDenizen { .. }
         // Replaying a local shell transcript and opening its captured target
-        // are host gestures. A denizen must not gain a route to another
+        // are host gestures. A participant must not gain a route to another
         // pane's frozen context through an otherwise grantable dispatch ring.
         | RepeatShellEntry(_) | OpenShellEntryTarget(_)
         // These are reports from a live engine callback, not intents a
-        // denizen may synthesize to rewrite another member's address/title.
+        // participant may synthesize to rewrite another member's address/title.
         | ContentNavigationCommitted { .. } | ContentTitleChanged { .. }
         // A smolweb mutation always requires a local, literal confirmation.
         // Neither the composer nor its file/body handoff is grantable.
@@ -235,7 +235,7 @@ pub fn ring_of(action: &Action) -> Ring {
         | SummonContributedPane { .. }
         // A web page may ask, but only a literal local interaction may grant,
         // deny, or supply credentials to its exact pending callback. Keeping
-        // these controls host-only also prevents a denizen from typing into a
+        // these controls host-only also prevents a participant from typing into a
         // credential draft that happens to be visible.
         | ChoosePermission { .. }
         | FocusAuthenticationField(_)
@@ -255,7 +255,7 @@ pub fn ring_of(action: &Action) -> Ring {
         //
         // Admission publishes this profile's Personae root into a foreign
         // membership fold and seals durable group key material under it. A
-        // denizen holding an ordinary `session` grant must not be able to
+        // participant holding an ordinary `session` grant must not be able to
         // federate the user with a community of its choosing, and no grant
         // should be able to: this mirrors the calls plan's rule that accepting
         // always requires a local gesture. Every admission check still runs
@@ -280,7 +280,7 @@ pub fn ring_of(action: &Action) -> Ring {
         | BeginSendPlaceMessage
         // Revoking decides who stays in the community, the same trust act.
         | RevokePlaceMember { .. }
-        // Leaving is still a host-owned session transition. A denizen may not
+        // Leaving is still a host-owned session transition. A participant may not
         // detach the user's place binding or tear down their live lanes.
         | LeavePlace
         | ReconnectPlace
@@ -346,7 +346,7 @@ pub fn emit_allowed(
         Ok(())
     } else {
         Err(format!(
-            "{}: not covered by this denizen's grant",
+            "{}: not covered by this participant's grant",
             ring.name()
         ))
     }

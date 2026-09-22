@@ -82,6 +82,11 @@ impl App {
             trash: Vec::new(),
             pending_install: None,
             denizens: crate::denizen::Denizens::new(root),
+            resident_runs: crate::resident_runs::ResidentRuns::default(),
+            resident_run_error: None,
+            resident_run_effect_policy: crate::resident_runs::ExternalEffectPolicy::default(),
+            resident_run_limits: servitor::RunLimits { decisions: crate::denizen::RUN_BUDGET as u64, tool_calls: 0, tokens: 0, elapsed_ms: 30_000, consecutive_failures: 1 },
+            resident_run_storage_limits: crate::resident_runs::StorageLimits::default(),
             gemini_identities: crate::gemini_identity::GeminiIdentityBindings::default(),
             identity,
             journal: {

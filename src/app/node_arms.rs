@@ -193,7 +193,7 @@ impl App {
             }
         }
         // The record is the archive now: the live facets go, and a
-        // denizen's runtime entry goes with its node.
+        // participant's runtime entry goes with its node.
         if self.denizens.residents.remove(&member).is_some() {
             let sdir = self.session_dir();
             self.denizens = crate::denizen::rebuild(
@@ -243,7 +243,7 @@ impl App {
         ) = crate::denizen::load_watches(&self.session_dir());
         // Restore the node's character from the tombstone: the facet
         // bundle whole, then the borne world (file back to the live
-        // slot, pointer re-borne through the spine), then the denizen
+        // slot, pointer re-borne through the spine), then the participant
         // runtime so a recovered resident resides again.
         if let Some(serde_json::Value::Object(map)) = &record.facets {
             for (facet_id, value) in map {

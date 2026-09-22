@@ -1031,7 +1031,7 @@ fn boot_launch_fetch_precedes_the_restored_content_spawn() {
 }
 
 /// The B1 residency arc, headless: a staged install shows its ask, the
-/// confirm mints the denizen (node + binding facet + gate-projected grant
+/// confirm mints the participant (node + binding facet + gate-projected grant
 /// in a persisted nested world), and the runtime rebuilds from durable
 /// truth alone.
 #[test]
@@ -1120,7 +1120,7 @@ fn denizen_installs_after_visible_review() {
     let _ = std::fs::remove_dir_all(&app.data_root);
 }
 
-/// The gate refuses a denizen's petition outside its granted scope, and
+/// The gate refuses a participant's petition outside its granted scope, and
 /// commits an in-scope one attributed — the servitor pipeline live over a
 /// resident's actual nested world.
 #[test]
@@ -1420,7 +1420,7 @@ fn a_declared_deadband_refuses_actuation_and_survives_reload() {
             nodes: vec!["first".into()],
         }],
     };
-    app.run_denizen_for_cascade(member, &first);
+    app.run_denizen_for_cascade(member, &first, &[]);
     let after_first = app.journal.lock().unwrap().entries().len();
     assert!(after_first > 0, "the baseline actuation landed");
     let (_, _, _, restored) = crate::denizen::load_watches(&app.session_dir());
@@ -1440,7 +1440,7 @@ fn a_declared_deadband_refuses_actuation_and_survives_reload() {
             nodes: vec!["second".into()],
         }],
     };
-    app.run_denizen_for_cascade(member, &second);
+    app.run_denizen_for_cascade(member, &second, &[]);
     assert_eq!(
         app.journal.lock().unwrap().entries().len(),
         after_first,
@@ -1806,7 +1806,7 @@ fn the_cascade_budget_arrives_from_settings_and_changes_live() {
 /// The whole chain in one test: containment derived at mint (so the folder
 /// owns the new node live), ancestry read as a scope, the watch matched, the
 /// cascade run at the drain, the body's Action lowered through the ordinary
-/// spine, and the journal recording it under the denizen rather than the user.
+/// spine, and the journal recording it under the participant rather than the user.
 ///
 /// This failed on its first writing, and the cause was neither the wake
 /// machinery nor either of the joins I suspected: the folder was addressed as
@@ -2044,10 +2044,10 @@ fn fork_session_snapshots_the_component_with_its_facets() {
     let _ = std::fs::remove_dir_all(&app.data_root);
 }
 
-/// The world-carry: forking from a denizen node re-bears its nested graph
+/// The world-carry: forking from a participant node re-bears its nested graph
 /// on the fork's copy AND copies the world file into the fork's session
 /// dir — donor and fork hold independent worlds thereafter (the kernel
-/// copy alone would leave the fork's denizen un-resided).
+/// copy alone would leave the fork's participant un-resided).
 #[test]
 fn fork_carries_denizen_worlds_as_real_copies() {
     let mut app = App::test_stub();
@@ -2104,6 +2104,21 @@ fn fork_carries_denizen_worlds_as_real_copies() {
         crate::denizen::rebuild(&fork_facets, &fork_graph, &fork_dir, app.identity.as_ref());
     assert_eq!(rebuilt.residents.len(), 1, "the fork's denizen resides");
     assert!(rebuilt.legacy_heals.is_empty());
+    let fork_member = rebuilt.residents.keys().next().copied().unwrap();
+    assert_eq!(
+        rebuilt.admissions.get(fork_member).unwrap().binding.id,
+        crate::resident_admission::resident_id(fork_member),
+        "the fork remaps the host instance identity with its new graph node"
+    );
+    assert!(
+        !servitor::AuthorityProvider::covers(
+            &rebuilt.authority,
+            rebuilt.residents.values().next().unwrap().subject,
+            &crate::denizen::read_cap(),
+            servitor::Mode::Read,
+        ),
+        "copying graph state does not silently copy or mint delegated authority"
+    );
     assert_eq!(
         rebuilt.residents.values().next().unwrap().nested.revision(),
         donor_revision,
@@ -2468,7 +2483,7 @@ fn delete_stages_into_the_bin_and_recover_restores_identity() {
 }
 
 /// The envelope lane end to end (participant gate B3): a dropped `.wasm`
-/// installs as a component denizen after the same VISIBLE review — whose
+/// installs as a component participant after the same VISIBLE review — whose
 /// row now names its ring profile — and running it lowers exactly the
 /// emissions its grant covers, attributed, while the ungranted ring and
 /// gate management are refused inside the run.
@@ -2569,13 +2584,11 @@ fn a_component_denizen_acts_only_within_its_reviewed_rings() {
     let _ = std::fs::remove_dir_all(&app.data_root);
 }
 
-/// The re-root heal: when the profile's root identity changes (the vault
-/// superseding the unsealed stopgap key), stored certificates fail as
-/// WrongRoot — and the adopt path re-issues from the grant projections
-/// under the NEW root, preserving exactly the reviewed grant. No denizen
-/// silently loses authority to a key migration.
+/// A changed profile root cannot use a grant projection to mint replacement
+/// authority. The resident remains visible, but its old chain is refused until
+/// an owner explicitly reviews and installs again.
 #[test]
-fn a_rerooted_profile_reissues_delegations_from_the_reviewed_projections() {
+fn a_rerooted_profile_refuses_automatic_certificate_reissue() {
     use servitor::AuthorityProvider;
 
     let mut app = App::test_stub();
@@ -2604,37 +2617,61 @@ fn a_rerooted_profile_reissues_delegations_from_the_reviewed_projections() {
     assert_eq!(
         rebuilt.residents.len(),
         1,
-        "the resident survives the migration"
+        "the resident remains inspectable after the migration"
     );
-    assert!(
-        rebuilt
-            .authority
-            .covers(subject, &navigate, servitor::Mode::Write),
-        "the reviewed ring re-rooted under the new identity"
-    );
+    assert!(!rebuilt.authority.covers(subject, &navigate, servitor::Mode::Write),
+        "a mismatched chain cannot be silently replaced from projections");
     assert!(
         !rebuilt
             .authority
             .covers(subject, &session_ring, servitor::Mode::Write),
         "and the heal preserves the review exactly: nothing widens"
     );
-    // Durable: the certificate file was rewritten under the new root, so
-    // the NEXT adopt verifies without healing.
+    // Durable: the original chain remains evidence, not material for an
+    // automatic authority repair.
     let stored = crate::denizen::load_certs(&app.session_dir(), &subject.to_hex());
     assert!(!stored.is_empty());
-    assert!(
-        stored.iter().all(|signed| {
-            signed.certificate.issuer
-                == identity::IdentityProvider::master_public_key(&new_root).to_bytes()
-        }),
-        "the stored chain now roots at the new identity"
-    );
+    assert!(stored.iter().all(|signed| signed.certificate.issuer != identity::IdentityProvider::master_public_key(&new_root).to_bytes()),
+        "the old chain is retained intact rather than reissued");
+    let _ = std::fs::remove_dir_all(&app.data_root);
+}
+
+#[test]
+fn corrupt_admission_state_refuses_install_without_replacing_tombstones() {
+    let mut app = App::test_stub();
+    app.data_root = std::env::temp_dir().join(format!("turnstone-corrupt-admission-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&app.data_root);
+    std::fs::create_dir_all(app.session_dir().join("denizens")).unwrap();
+    std::fs::write(crate::resident_admission::path(&app.session_dir()), "{ malformed").unwrap();
+    let pack = app.data_root.join("keeper.lua");
+    std::fs::write(&pack, "mere.open('mere://kept/note')").unwrap();
+    app.update(Action::InstallDenizen { path: pack.display().to_string() });
+    app.update(Action::ConfirmInstallDenizen);
+    assert!(app.denizens.residents.is_empty());
+    assert!(crate::resident_admission::load(&app.session_dir()).is_err());
+    let _ = std::fs::remove_dir_all(&app.data_root);
+}
+
+#[test]
+fn swapped_script_body_is_refused_before_runtime_execution() {
+    let mut app = App::test_stub();
+    app.data_root = std::env::temp_dir().join(format!("turnstone-swapped-body-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&app.data_root);
+    std::fs::create_dir_all(app.session_dir()).unwrap();
+    let pack = app.data_root.join("keeper.lua");
+    std::fs::write(&pack, "mere.open('mere://kept/note')").unwrap();
+    app.update(Action::InstallDenizen { path: pack.display().to_string() });
+    app.update(Action::ConfirmInstallDenizen);
+    let member = *app.denizens.residents.keys().next().unwrap();
+    app.graph_runtimes.facets_mut().set(member, chartulary::FacetId::new(crate::denizen::SCENARIO_SOURCE_FACET), serde_json::json!("mere.open('mere://swapped')"), &chartulary::AcceptAll).unwrap();
+    app.update(Action::RunDenizen { member });
+    assert!(app.take_events().iter().any(|event| matches!(event, AppEvent::DenizenRefused(reason) if reason.contains("body changed"))));
     let _ = std::fs::remove_dir_all(&app.data_root);
 }
 
 /// Install is a signed delegation from the profile identity, and uninstall
 /// REVOKES it (capability-model C4). The arc: install grants exactly the
-/// reviewed rings, uninstall revokes them and un-resides the denizen, and
+/// reviewed rings, uninstall revokes them and un-resides the participant, and
 /// what it was authorized to do stops being authorized — without
 /// destroying its node or its world.
 #[test]
@@ -2722,7 +2759,7 @@ fn install_delegates_from_the_profile_identity_and_uninstall_revokes_it() {
     let _ = std::fs::remove_dir_all(&app.data_root);
 }
 
-/// Archive-never-orphan at the node tier: deleting a denizen node moves
+/// Archive-never-orphan at the node tier: deleting a participant node moves
 /// its world file to the archive slot (nothing orphaned in the live dir,
 /// nothing destroyed), the tombstone carries the world id + facet bundle,
 /// and recovery restores full residency — world back live, binding facet
@@ -2753,7 +2790,7 @@ fn deleting_a_denizen_archives_its_world_and_recovery_restores_residency() {
         "the world is live before the delete"
     );
 
-    // Delete: the install left the denizen node selected.
+    // Delete: the install left the participant node selected.
     let fx = app.update(Action::DeleteFocusedNode);
     let record = fx
         .iter()

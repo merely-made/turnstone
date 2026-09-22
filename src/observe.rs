@@ -426,20 +426,20 @@ pub enum AppEvent {
     SessionForked,
     /// A trashed session was restored (overmap O3), by its label.
     SessionRecovered(String),
-    /// A denizen install was staged for review, by label (B1).
+    /// A participant install was staged for review, by label (B1).
     DenizenStaged(String),
-    /// A denizen was installed after visible review, by label.
+    /// A participant was installed after visible review, by label.
     DenizenInstalled(String),
-    /// A resident denizen ran its body, by label.
+    /// A resident participant ran its body, by label.
     DenizenRan(String),
-    /// A denizen was uninstalled: its delegations revoked, its residency gone.
+    /// A participant was uninstalled: its delegations revoked, its residency gone.
     DenizenUninstalled(String),
     /// A behavior cascade hit its round budget with work still pending, naming
     /// the behaviors still answering each other. Loud rather than a silent
     /// truncation: the deferred work is still queued, and the user is owed the
     /// reason their helpers are looping.
     CascadeExhausted(String),
-    /// A denizen install or run was refused, with the reason.
+    /// A participant install or run was refused, with the reason.
     DenizenRefused(String),
     /// A session's display name was set, by its new label.
     SessionRenamed(String),

@@ -8,7 +8,7 @@
 //!
 //! Adopting is the load half of boot AND the whole of a switch, so both go
 //! through one path: swap the graph in place, re-dress it from the facet
-//! store, rebuild the denizen runtime, and reopen the session's own windows.
+//! store, rebuild the participant runtime, and reopen the session's own windows.
 //! A session owns its arrangement, so its lens spaces travel with it.
 
 use std::path::PathBuf;
@@ -127,6 +127,11 @@ impl App {
             recall_query: String::new(),
             pending_install: None,
             denizens: crate::denizen::Denizens::new(root),
+            resident_runs: crate::resident_runs::ResidentRuns::default(),
+            resident_run_error: None,
+            resident_run_effect_policy: crate::resident_runs::ExternalEffectPolicy::default(),
+            resident_run_limits: servitor::RunLimits { decisions: crate::denizen::RUN_BUDGET as u64, tool_calls: 0, tokens: 0, elapsed_ms: 30_000, consecutive_failures: 1 },
+            resident_run_storage_limits: crate::resident_runs::StorageLimits::default(),
             gemini_identities,
             identity,
             journal,
@@ -246,6 +251,25 @@ impl App {
         if self.graph_runtimes.graph().get_node_by_id(seed).is_none() {
             return Vec::new();
         }
+        // Admission state is session-owned. A malformed existing sidecar must
+        // stop the fork before any new session is minted; treating it as an
+        // empty/default state would silently turn paused or revoked residents
+        // into fresh active bindings in the child.
+        let admission_path = crate::resident_admission::path(&self.session_dir());
+        let donor_admissions = match admission_path.try_exists() {
+            Ok(false) => None,
+            Ok(true) => match crate::resident_admission::load(&self.session_dir()) {
+                Ok(state) => Some(state),
+                Err(error) => {
+                    tracing::warn!(%error, "refusing to fork with malformed resident admission state");
+                    return Vec::new();
+                }
+            },
+            Err(error) => {
+                tracing::warn!(%error, "refusing to fork because resident admission state cannot be inspected");
+                return Vec::new();
+            }
+        };
         // The carry must read the moment, not the last save.
         self.refresh_browser_states();
         self.refresh_facets();
@@ -330,9 +354,31 @@ impl App {
                 .expect("AcceptAll cannot reject copied derivation");
         }
 
+        // Carry only admission records for members that actually crossed the
+        // component boundary. The member UUID and ResidentId both change;
+        // subject, body revision, lifecycle, generation, and skipped-wake
+        // count remain the resident's durable state.
+        let fork_admissions = donor_admissions.as_ref().map(|donor| {
+            let mut fork = crate::resident_admission::ResidentAdmissions::default();
+            for (donor_id, minted_id) in &copy.id_remap {
+                if let Some(mut record) = donor.get(*donor_id).cloned() {
+                    record.binding.id = crate::resident_admission::resident_id(*minted_id);
+                    fork.insert(*minted_id, record);
+                }
+            }
+            fork
+        });
+
         // Mint the fork's session: manifest with the parent back-reference,
         // then its on-disk state, so the switch below adopts a real session.
         let fork_id = crate::panes::SessionId::new();
+        let fork_dir = session::session_dir(&self.data_root, fork_id);
+        if let Some(admissions) = &fork_admissions
+            && let Err(error) = crate::resident_admission::save(&fork_dir, admissions)
+        {
+            tracing::warn!(%error, "refusing to fork because resident admission state could not be preserved");
+            return Vec::new();
+        }
         let mut manifest = pandect::GraphSessionManifest::new(fork_id, fork_graph_id);
         manifest.storage_path = Some(session::session_dir(&self.data_root, fork_id));
         manifest.parent_session = Some(self.session_id);
@@ -340,7 +386,6 @@ impl App {
         if let Err(err) = self.sessions.flush_dirty() {
             tracing::warn!(%err, "failed to write the fork session's manifest");
         }
-        let fork_dir = session::session_dir(&self.data_root, fork_id);
         session::save_session_graph(&fork_dir, &fork_graph);
         session::save_node_facets(&fork_dir, fork_graph.facets());
         // Each carried world becomes the fork's own file: donor and fork
@@ -360,7 +405,7 @@ impl App {
                 std::fs::copy(&from, &to).map(|_| ())
             })();
             if let Err(err) = result {
-                tracing::warn!(%err, log_id, "failed to carry a denizen world into the fork");
+                tracing::warn!(%err, log_id, "failed to carry a participant world into the fork");
             }
         }
         self.events.push(AppEvent::SessionForked);
@@ -869,6 +914,26 @@ impl App {
             }
         }
         let sdir = self.session_dir();
+        // This is the sole recovery boundary. Do not reload this store around
+        // nested `update` calls: the live table is what prevents overlap.
+        self.resident_runs = crate::resident_runs::ResidentRuns::with_limits(self.resident_run_storage_limits);
+        self.resident_run_error = None;
+        match crate::resident_runs::load_or_empty_with_limits(&sdir, self.resident_run_storage_limits) {
+            Ok(mut runs) => {
+                let recovered = runs.validate_session(*id.as_uuid())
+                    .and_then(|()| runs.mark_interrupted(crate::denizen::now_ms()))
+                    .and_then(|()| crate::resident_runs::save(&sdir, &runs));
+                match recovered {
+                    Ok(()) => self.resident_runs = runs,
+                    Err(error) => {
+                        self.resident_run_error = Some(format!("cannot recover resident run state: {error}"));
+                    }
+                }
+            }
+            Err(error) => {
+                self.resident_run_error = Some(error);
+            }
+        }
         let mut effects = Vec::new();
         self.next_place_generation = self.next_place_generation.wrapping_add(1);
         let place_generation = self.next_place_generation;
@@ -1050,7 +1115,7 @@ impl App {
         }
         let positions = pandect::read_arrangement_positions(self.graph_runtimes.facets());
         self.graph_runtimes.seed_cartography(positions);
-        // The denizen runtime derives from the binding facets (agency) + the
+        // The participant runtime derives from the binding facets (agency) + the
         // graph's `Node.nested` pointers (structure) + the nested logs.
         self.pending_install = None;
         self.denizens = crate::denizen::rebuild(
