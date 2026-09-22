@@ -16,13 +16,16 @@
 //! and its notes into Turnstone's graph is `app::redshank_arms`, because the
 //! graph belongs to `App`.
 //!
-//! One honest gap, recorded because the port plan asks for it: the runtime
-//! streams HTTP(S) ranges itself (ureq + rustls inside `redshank-playback`)
-//! rather than through Turnstone's `mere-fetch` authority. See
-//! `design_docs/2026-09-14_redshank_episode_surface_plan.md`.
+//! The runtime streams HTTP(S) ranges through the fetch handle the shell
+//! hands in, built over Turnstone's session stores, so an episode's requests
+//! carry the same cookies as the pages (ranged fetch plan, lane T1). The
+//! host holds that handle so a session reopen keeps it.
 
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
+use std::sync::Arc;
+
+use fetch::Fetch;
 
 use redshank_model::{
     Annotation, AnnotationId, CaptureAnchor, ItemId, LibraryItem, MediaSource, NoteBody, Progress,
@@ -84,6 +87,9 @@ pub struct RedshankHost {
     model: RedshankModel,
     store: Option<JsonDirectoryStore>,
     runtime: Option<PlaybackRuntime>,
+    /// The shell's fetch handle, kept so a reopened session starts its runtime
+    /// over the same stores. None only for a host that never had one.
+    fetch: Option<Arc<dyn Fetch>>,
     output: Output,
     /// The playback identity of the current selection. A snapshot belongs to
     /// the selection only when its load token matches.
@@ -102,6 +108,7 @@ impl Default for RedshankHost {
             model: RedshankModel::default(),
             store: None,
             runtime: None,
+            fetch: None,
             output: Output::Silent,
             token: 0,
             selected: None,
@@ -115,8 +122,20 @@ impl Default for RedshankHost {
 impl RedshankHost {
     /// Open the model under `<session_dir>/redshank/`, creating nothing until
     /// the first save. A store that cannot be read leaves an empty model
-    /// rather than refusing to run.
-    pub fn open(session_dir: &Path, output: Output) -> Self {
+    /// rather than refusing to run. `fetch` is the shell's handle; playback
+    /// streams through it and nothing else.
+    pub fn open(session_dir: &Path, output: Output, fetch: Arc<dyn Fetch>) -> Self {
+        Self::open_with(session_dir, output, Some(fetch))
+    }
+
+    /// Reopen under another session directory with this host's output and
+    /// handle. A host that never had a handle reopens its model and notes but
+    /// starts no runtime, rather than minting a handle of its own.
+    pub fn reopen(&self, session_dir: &Path) -> Self {
+        Self::open_with(session_dir, self.output, self.fetch.clone())
+    }
+
+    fn open_with(session_dir: &Path, output: Output, fetch: Option<Arc<dyn Fetch>>) -> Self {
         let root = Self::model_root(session_dir);
         let store = JsonDirectoryStore::new(root);
         let model = match store.load() {
@@ -137,7 +156,11 @@ impl RedshankHost {
         Self {
             model,
             store: Some(store),
-            runtime: (output == Output::Device).then(PlaybackRuntime::start),
+            runtime: match (&fetch, output) {
+                (Some(fetch), Output::Device) => Some(PlaybackRuntime::start_with(fetch.clone())),
+                _ => None,
+            },
+            fetch,
             output,
             next_note,
             ..Self::default()
@@ -158,6 +181,12 @@ impl RedshankHost {
 
     pub fn runtime(&self) -> Option<&PlaybackRuntime> {
         self.runtime.as_ref()
+    }
+
+    /// The fetch handle this host streams through, for the session that
+    /// replaces it.
+    pub fn fetch(&self) -> Option<Arc<dyn Fetch>> {
+        self.fetch.clone()
     }
 
     pub fn output(&self) -> Output {
@@ -587,4 +616,59 @@ fn format_tag(item: &LibraryItem) -> String {
         .map(|(_, extension)| extension.to_ascii_lowercase())
         .filter(|extension| extension.len() <= 4 && extension.chars().all(char::is_alphanumeric))
         .unwrap_or_else(|| "audio".to_owned())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// A handle that is never called: what the test needs is its identity.
+    struct Inert;
+
+    impl Fetch for Inert {
+        fn read_range(
+            &self,
+            _: &str,
+            _: fetch::Range,
+            _: Option<&str>,
+        ) -> Result<fetch::RangeReply, fetch::FetchError> {
+            unreachable!("nothing fetches in this test")
+        }
+        fn read_all(
+            &self,
+            _: &str,
+            _: Option<&str>,
+            _: u64,
+        ) -> Result<fetch::Body, fetch::FetchError> {
+            unreachable!("nothing fetches in this test")
+        }
+        fn read_into(
+            &self,
+            _: &str,
+            _: &mut dyn std::io::Write,
+            _: Option<u64>,
+        ) -> Result<fetch::Facts, fetch::FetchError> {
+            unreachable!("nothing fetches in this test")
+        }
+    }
+
+    #[test]
+    fn the_shells_fetch_handle_survives_a_session_reopen() {
+        let first = tempfile::tempdir().unwrap();
+        let second = tempfile::tempdir().unwrap();
+        let handle: Arc<dyn Fetch> = Arc::new(Inert);
+
+        let host = RedshankHost::open(first.path(), Output::Silent, handle.clone());
+        assert!(Arc::ptr_eq(&host.fetch().unwrap(), &handle));
+        let reopened = host.reopen(second.path());
+        assert!(
+            Arc::ptr_eq(&reopened.fetch().unwrap(), &handle),
+            "a reopened session must stream through the same handle, not a new one"
+        );
+
+        // A host that never had a handle reopens its model and starts nothing.
+        let bare = RedshankHost::default().reopen(second.path());
+        assert!(bare.fetch().is_none());
+        assert!(bare.runtime().is_none());
+    }
 }

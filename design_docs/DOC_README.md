@@ -81,8 +81,8 @@ set.
   Turnstone as the listening port's second host — the contributed compact dock
   as an episode tile, enclosure routing, one app-owned audio and model
   authority, and the item/progress/note graph projection. Landed; the fetch
-  path, the microphone, the woodshed pin, the knot-editor Mere alignment and a
-  headed receipt remain open.
+  path closed 2026-09-22 through Mere's fetch handle and the pins are
+  aligned; the microphone and a headed receipt remain open.
 - [Turnstone surfaces in Cambium](2026-07-15_turnstone_surfaces_in_cambium.md): mapping from product surfaces to Cambium components or non-Cambium lanes.
 - [Turnstone founding](2026-07-08_turnstone_founding.md): naming, role swap, and original sequencing, with later authority corrections called out in the document.
 - [Meerkat harvest](2026-07-18_meerkat_harvest.md): port, note, or leave audit made before retiring the donor application.

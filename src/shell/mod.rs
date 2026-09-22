@@ -537,7 +537,15 @@ impl Shell {
         let (nomadnet_handle, nomadnet_rx) = nomadnet_fetch::spawn(Arc::clone(&fetch_wake));
         let (micron_submission_handle, micron_submission_rx) =
             nomadnet_fetch::spawn_submissions(Arc::clone(&fetch_wake));
-        let (fetch_handle, fetch_rx) = fetch::spawn_fetcher(fetch_wake);
+        // The process session's stores: the page actor and every other fetch
+        // in this shell share them, so an episode's ranged reads carry the
+        // same cookies as the pages (ranged fetch plan, lane T1). Keying the
+        // set by persona is lane T2.
+        let stores = fetch::session_stores().clone();
+        let (fetch_handle, fetch_rx) = fetch::spawn_fetcher_with(fetch_wake, stores.clone());
+        let blocking_fetch: Arc<dyn fetch::Fetch> = Arc::new(
+            fetch::NetFetch::new(&stores).expect("Turnstone could not build its fetch handle"),
+        );
 
         let download_proxy = proxy.clone();
         let download_wake: armillary::Wake = Arc::new(move || {
@@ -659,6 +667,7 @@ impl Shell {
         app.redshank = crate::redshank_host::RedshankHost::open(
             &app.session_dir(),
             crate::redshank_host::Output::Device,
+            blocking_fetch,
         );
         if let Some(runtime) = app.redshank.runtime() {
             let redshank_proxy = proxy.clone();

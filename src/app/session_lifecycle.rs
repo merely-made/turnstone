@@ -1005,7 +1005,8 @@ impl App {
         // The listening model rides the session directory like the feeds do.
         // A session with no audio output still reopens its library, progress
         // and notes; only the runtime is absent.
-        self.redshank = crate::redshank_host::RedshankHost::open(&sdir, self.redshank.output());
+        // The new session keeps the shell's output and fetch handle.
+        self.redshank = self.redshank.reopen(&sdir);
         self.redshank_members.clear();
         self.reconcile_redshank_fields();
         if let Some(score) = session::load_projection_score(&sdir) {

@@ -87,12 +87,13 @@ node is session-graph truth and survives a restart on its own.
 | Turnstone opens a podcast enclosure through handler routing | **Met.** `opening_an_enclosure_yields_a_redshank_episode_pane`. |
 | The port's compact surface appears without a copied Turnstone implementation | **Met.** The descriptor, stylesheet and session are `redshank-surfaces`'; the provider is an adapter. |
 | One library item, progress update, and timed note project into the graph and reopen after restart | **Met.** `a_note_and_progress_project_into_the_graph_and_reopen_after_a_restart`, a two-`App` test over one session directory. |
-| The embedded path uses Turnstone's existing device and network authorities | **Device met, network NOT met.** See the fetch gate below. |
+| The embedded path uses Turnstone's existing device and network authorities | **Met 2026-09-22.** The shell hands `RedshankHost::open` a `fetch::Fetch` handle built over the same session stores the page actor uses, and playback streams through it; `ureq` is out of the port. Gate 1 below records how it closed. |
 | Standalone and embedded conformance tests run against the same action and snapshot contract | **Met.** `the_dock_emits_the_same_commands_through_turnstones_registry` re-runs `surfaces/src/dock.rs`'s own assertions against a session admitted through `SurfaceProviderRegistry`. |
 
 ## Open gates
 
-1. **The fetch path.** `redshank-playback` streams HTTP(S) ranges itself, with
+1. **The fetch path, closed 2026-09-22.** Kept as written for the record; the
+   resolution is at the end of the item. `redshank-playback` streamed HTTP(S) ranges itself, with
    `ureq` over `rustls`, inside its own worker thread. Turnstone's network
    authority is `mere-fetch`. This is the one place the embedded path does not
    reuse a Turnstone authority, and the port plan already lists it. The
@@ -113,6 +114,17 @@ node is session-graph truth and survives a restart on its own.
    persona's cookies, provided the request is sent no-store. Ruled the same
    day: the ranged contract becomes a trait in Mere, Redshank its first consumer,
    and Turnstone fills it from its netfetcher context. Its plan is Mere's.
+
+   *Closed 2026-09-22 (lane T1 of `mere/design_docs/mere_docs/implementation_strategy/2026-09-20_ranged_fetch_plan.md`).*
+   Woodshed `bf5923d` put the port's streaming, downloads and feeds on
+   `fetch::Fetch`. `Shell::new` builds the page actor with
+   `spawn_fetcher_with` over the process session stores and a blocking
+   `NetFetch` over the same stores, and hands that to `RedshankHost::open`;
+   the host keeps it so a session reopen streams through the same handle
+   (`the_shells_fetch_handle_survives_a_session_reopen`). Episode requests
+   now carry the session's cookies and go through its transport seam. What
+   remains is not this gate: keying the store set by persona and sharing it
+   with the page-image fetcher are that plan's lanes T2 and T3.
 2. **No microphone.** Turnstone supplies no capture adapter, so the projection
    keeps `voice_capture_available` false and the dock disables Voice honestly.
    A voice command that arrives anyway is refused in words rather than
