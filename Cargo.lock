@@ -13156,6 +13156,7 @@ dependencies = [
  "mere-transport",
  "muniment",
  "nematic",
+ "netfetcher",
  "netrender",
  "notochord",
  "paint_list_api",

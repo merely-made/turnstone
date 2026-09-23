@@ -258,6 +258,8 @@ pub struct Shell {
     gemini_trust: Arc<crate::gemini_trust::GeminiTrustStore>,
     /// Completed fetches, drained in `user_event` on each wake.
     fetch_rx: Receiver<FetchUpdate>,
+    /// The session jar's durable home, flushed after each drain.
+    cookie_custody: crate::cookie_custody::CookieCustody,
     nomadnet_handle: armillary::ActorHandle<FetchCommand>,
     nomadnet_rx: Receiver<FetchUpdate>,
     micron_submission_handle: armillary::ActorHandle<nomadnet_fetch::MicronSubmissionCommand>,
@@ -537,6 +539,9 @@ impl Shell {
         let (nomadnet_handle, nomadnet_rx) = nomadnet_fetch::spawn(Arc::clone(&fetch_wake));
         let (micron_submission_handle, micron_submission_rx) =
             nomadnet_fetch::spawn_submissions(Arc::clone(&fetch_wake));
+        // The session jar is durable again: loaded here, flushed on each drain.
+        let cookie_custody = crate::cookie_custody::CookieCustody::open(&app.data_root)
+            .expect("Turnstone could not open its cookie store");
         // The process session's stores: the page actor and every other fetch
         // in this shell share them, so an episode's ranged reads carry the
         // same cookies as the pages (ranged fetch plan, lane T1). Keying the
@@ -682,6 +687,7 @@ impl Shell {
             fetch_handle,
             gemini_trust,
             fetch_rx,
+            cookie_custody,
             nomadnet_handle,
             nomadnet_rx,
             micron_submission_handle,

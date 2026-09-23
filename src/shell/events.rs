@@ -206,6 +206,9 @@ impl ApplicationHandler for Shell {
             let effects = self.app.apply_update(update);
             self.run_effects(effects);
         }
+        // Any cookie a fetch or a script set since the last drain goes to disk
+        // now; the flush is dirty-gated, so a quiet drain writes nothing.
+        self.cookie_custody.flush();
         self.drain_a11y_actions();
         self.drain_pending_windows(event_loop);
         self.request_redraw();

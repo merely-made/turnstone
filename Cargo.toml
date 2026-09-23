@@ -273,6 +273,11 @@ redshank-playback = { git = "https://github.com/merely-made/woodshed.git", rev =
 # Turnstone's own session directory.
 redshank-storage = { git = "https://github.com/merely-made/woodshed.git", rev = "bf5923d7e4d6a4f9312ce1feba51e211a3046c13" }
 
+[dev-dependencies]
+# The cookie custody test speaks the jar's own types. Same Genet revision as
+# every other genet.git row here, so it adds no package to the graph.
+netfetcher = { git = "https://github.com/merely-made/genet.git", rev = "9976945058b921437ea59cd95b112bd1da910013" }
+
 [features]
 default = []
 # The wasm participant lane (participant gate B3): an `app-core` component acts

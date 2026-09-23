@@ -55,6 +55,7 @@ pub mod redshank_episode_surface;
 pub mod redshank_host;
 pub mod remote_projection;
 mod ring;
+pub mod cookie_custody;
 pub mod resident_admission;
 pub mod resident_runs;
 #[cfg(test)]
