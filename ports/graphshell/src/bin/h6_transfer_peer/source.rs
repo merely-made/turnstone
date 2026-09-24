@@ -6,6 +6,7 @@
 
 //! H6 source: prepare one transfer and keep it alive across three admissions.
 
+use personae::delegation::Issue;
 use std::path::Path;
 use std::sync::RwLock;
 

@@ -96,6 +96,7 @@ mod tests {
         AdmittedPrincipal, CarrierKind, NetworkId, ProfileRef, RequestedAction, SessionClaims,
         SessionFacts, TrafficClass,
     };
+    use personae::delegation::Issue;
     use personae::delegation::{
         CapabilityScope, DelegationCertificate, DelegationParent, SignedDelegationCertificate,
     };

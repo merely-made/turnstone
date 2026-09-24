@@ -200,6 +200,7 @@ where
 
 #[cfg(test)]
 mod tests {
+    use personae::delegation::Issue;
     use std::sync::OnceLock;
 
     use super::*;

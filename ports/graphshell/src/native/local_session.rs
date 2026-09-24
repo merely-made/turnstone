@@ -14,6 +14,7 @@
 //! two doors cannot drift into two answers about what an admitted local client
 //! holds.
 
+use personae::delegation::Issue;
 use std::sync::Arc;
 
 use notochord::{

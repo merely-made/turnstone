@@ -6,6 +6,7 @@
 
 //! Distillery W1 through the real admitted resident-host path.
 
+use personae::delegation::Issue;
 use std::collections::HashMap;
 use std::sync::mpsc;
 use std::time::Duration;

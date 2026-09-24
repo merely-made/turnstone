@@ -10,6 +10,7 @@
 //! supplies the shared causal authoring helpers, policy-before-insert storage,
 //! and LogSync join/drain used by Commons and Knot.
 
+use personae::AttestationKeys;
 use std::collections::{BTreeMap, BTreeSet};
 use std::sync::Arc;
 

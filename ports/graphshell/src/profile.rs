@@ -33,6 +33,7 @@
 //! genuinely should speak as someone else (a receipt run, a second resident on
 //! one machine).
 
+use personae::AttestationKeys;
 use std::path::{Path, PathBuf};
 
 use personae::bootstrap::{self, Unlock};

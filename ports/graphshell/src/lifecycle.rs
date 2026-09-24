@@ -322,6 +322,7 @@ mod tests {
     };
     use personae::IdentityProvider;
     use personae::InMemoryProvider;
+    use personae::delegation::Issue;
     use personae::delegation::{
         CapabilityScope, DelegationCertificate, DelegationParent, SignedDelegationRevocation,
     };

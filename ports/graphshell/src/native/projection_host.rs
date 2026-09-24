@@ -413,6 +413,7 @@ mod tests {
         IntentSink, PresentationSource, ProjectionCatalog, ProjectionNoticeSource, ProjectionSource,
     };
     use notochord::{NetworkId, ProfileRef, TrafficClass, TrustedRoot};
+    use personae::delegation::Issue;
     use personae::delegation::{
         CapabilityScope, DelegationCertificate, DelegationParent, SignedDelegationCertificate,
     };

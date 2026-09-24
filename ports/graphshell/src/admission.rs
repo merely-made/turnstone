@@ -135,6 +135,7 @@ mod tests {
     use super::*;
     use notochord::{CarrierKind, ServiceAccess, ServiceRule, TrustedRoot};
     use personae::InMemoryProvider;
+    use personae::delegation::Issue;
     use personae::delegation::{
         CapabilityScope, DelegationCertificate, DelegationParent, SignedDelegationCertificate,
     };

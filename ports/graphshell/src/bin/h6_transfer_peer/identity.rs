@@ -9,6 +9,7 @@
 //! The connecting side derives the owner key so it can issue its own short
 //! grant. This proves carrier admission and revocation, not grant delivery.
 
+use personae::delegation::Issue;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use graphshell::admission::{CONNECT_ACTION, GRAPHSHELL_DOMAIN, PROJECTION_SERVICE};

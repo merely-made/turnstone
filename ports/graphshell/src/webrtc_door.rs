@@ -71,6 +71,8 @@ use notochord::{
 use notochord::{
     HandshakeError, NetworkId, ProfileRef, RequestedAction, SessionHello, TrafficClass,
 };
+use personae::AttestationKeys;
+use personae::delegation::Issue;
 use personae::delegation::{
     CapabilityScope, DelegationCertificate, DelegationError, DelegationParent,
     SignedDelegationCertificate,

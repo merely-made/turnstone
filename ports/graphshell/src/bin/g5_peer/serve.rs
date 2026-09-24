@@ -13,6 +13,7 @@
 //! a shared ledger the loop can re-read. The refusal path itself is identical
 //! either way, because the check is per request rather than per connection.
 
+use personae::delegation::Issue;
 use std::sync::RwLock;
 
 use graphshell::carrier::{accept_projection_session, projection_alpn, projection_policy};

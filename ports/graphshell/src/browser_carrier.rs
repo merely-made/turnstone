@@ -711,6 +711,7 @@ mod tests {
     use notochord::TrustedRoot;
     use notochord::{HandshakeLimits, ServiceAccess, ServiceRule};
     use personae::InMemoryProvider;
+    use personae::delegation::Issue;
     use personae::delegation::{
         CapabilityScope, DelegationCertificate, DelegationParent, SignedDelegationCertificate,
     };

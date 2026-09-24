@@ -16,6 +16,7 @@
 //! honest either way: revocation is by certificate id, so the server's refusal
 //! is the same one a real owner would cause.
 
+use personae::delegation::Issue;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use graphshell::admission::{CONNECT_ACTION, GRAPHSHELL_DOMAIN, PROJECTION_SERVICE};

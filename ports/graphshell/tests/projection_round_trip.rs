@@ -15,6 +15,7 @@
 //! the carrier was designed for and the reason its surface blocks: `run_hub`
 //! is already a dedicated thread doing a blocking receive.
 
+use personae::delegation::Issue;
 use std::fmt::Display;
 use std::sync::RwLock;
 use std::sync::atomic::{AtomicUsize, Ordering};
