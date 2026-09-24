@@ -7,7 +7,7 @@
 //! C3: the dialling half of the projection carrier.
 //!
 //! [`crate::carrier`] accepts a projection session; this dials one. What
-//! happens after either is [`graphshell_network::NetworkCarrier`], which
+//! happens after either is [`graphshell_endpoint::network::NetworkCarrier`], which
 //! carries the protocol over any stream and is deliberately ignorant of how
 //! the stream was obtained.
 //!
@@ -33,7 +33,7 @@ use transport::{PeerID, Transport, TransportError, initiator_binding};
 
 use crate::carrier::projection_alpn;
 
-pub use graphshell_network::{CarrierRuntime, NetworkCarrier};
+pub use graphshell_endpoint::network::{CarrierRuntime, NetworkCarrier};
 
 /// Errors that stop a dial before it reaches a decision.
 #[derive(Debug, thiserror::Error)]

@@ -72,7 +72,7 @@ Under `personal-sync`:
 
 | Feature | Scope | Key dependencies |
 |---|---|---|
-| `native` (default) | Admitted sessions, native transports, Personae composition, the binaries | `graphshell-network`, `graphshell-stdio`, `notochord`, `transport`, `personae`, `session-runtime`, `ssh-agent-lib`, `ssh-key`, `light-file-dialog`, Tokio |
+| `native` (default) | Admitted sessions, native transports, Personae composition, the binaries | `graphshell-endpoint` (`network`, `stdio`), `notochord`, `transport`, `personae`, `session-runtime`, `ssh-agent-lib`, `ssh-key`, `light-file-dialog`, Tokio |
 | `web` | The portable graph and canvas cone | `mere` (`graph`, `canvas`), `chartulary`, `eidetic`, `muniment`, `url`, `sha2` |
 | `personal-sync` | `native` + `web` + device synchronization | `muniment/redb`, `p2panda-core`, `p2panda-store`, `stickleback` |
 

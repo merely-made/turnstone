@@ -29,7 +29,7 @@ use chirograph::{
 #[cfg(all(feature = "native", not(target_arch = "wasm32")))]
 use graphshell_client::{ClientState, ResolvedPresentation, RetainedEndpointSession, unexpected};
 #[cfg(all(feature = "native", not(target_arch = "wasm32")))]
-use graphshell_stdio::StdioCarrier;
+use graphshell_endpoint::stdio::StdioCarrier;
 
 #[cfg(all(feature = "native", not(target_arch = "wasm32")))]
 use crate::view::{IntentReceiptView, ProjectionLayoutView};

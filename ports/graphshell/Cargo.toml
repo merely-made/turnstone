@@ -14,8 +14,8 @@ default = ["native"]
 native = [
     "webrtc-join",
     "dep:blake3",
-    "dep:graphshell-network",
-    "dep:graphshell-stdio",
+    "graphshell-endpoint/network",
+    "graphshell-endpoint/stdio",
     "dep:light-file-dialog",
     "dep:notochord",
     "dep:castellan",
@@ -146,8 +146,6 @@ webrtc-carrier = { workspace = true, optional = true }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 blake3 = { workspace = true, optional = true }
-graphshell-network = { version = "0.0.1", path = "../../crates/graphshell/graphshell-network", optional = true }
-graphshell-stdio = { version = "0.0.2", path = "../../crates/graphshell/graphshell-stdio", optional = true }
 light-file-dialog = { version = "3.21.3", optional = true }
 # The application composes Personae: the profile Graphshell speaks as. The
 # protocol and client crates deliberately do not depend on it.
