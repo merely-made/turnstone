@@ -88,6 +88,7 @@ web = [
     "dep:eidetic",
     "dep:mere",
     "dep:muniment",
+    "dep:pandect",
     "dep:serde",
     "dep:sha2",
     "dep:uuid",
@@ -116,6 +117,10 @@ chirograph.workspace = true
 mere = { path = "../../crates/mere", default-features = false, features = ["graph", "canvas"], optional = true }
 mesh = { workspace = true, optional = true }
 muniment = { workspace = true, optional = true }
+# The session core. MereHost's truth is a pandect GraphSession in the browser
+# too, so it sits here rather than in the native-only table (reservoir plan
+# §7 item 26).
+pandect = { workspace = true, optional = true }
 scenograph.workspace = true
 sceno.workspace = true
 scenomise.workspace = true
@@ -156,7 +161,6 @@ castellan = { workspace = true, features = ["keeper"], optional = true }
 p2panda-core = { version = "0.7.0", optional = true }
 p2panda-store = { version = "0.7.0", default-features = false, optional = true }
 rand_core = { version = "0.6", features = ["getrandom"], optional = true }
-pandect = { workspace = true, optional = true }
 signature = { version = "2", optional = true }
 ssh-agent-lib = { version = "0.6", optional = true }
 ssh-key = { version = "0.6", features = ["ed25519", "encryption"], optional = true }

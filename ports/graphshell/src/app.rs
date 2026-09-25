@@ -13,6 +13,7 @@ use chirograph::{
 use graphshell_client::{ClientState, PresentationResolution, ResolvedContent};
 use graphshell_endpoint::{IntentSink, PresentationSource, ProjectionSource};
 use muniment::Backend;
+use pandect::MereSessions;
 use sceno::InstanceId;
 
 use crate::access::AccessContext;
@@ -59,14 +60,7 @@ pub struct GraphshellApp<B> {
     pub client: ClientState,
 }
 
-impl<B: Backend> GraphshellApp<B> {
-    pub fn new(host: MereHost<B>) -> Self {
-        Self {
-            host,
-            client: ClientState::default(),
-        }
-    }
-
+impl<B: Backend + Clone> GraphshellApp<B> {
     pub fn fixture(backend: B, selected_persona: SelectedPersonaRef) -> Result<Self, AppError> {
         Ok(Self::new(MereHost::fixture(
             backend,
@@ -75,18 +69,18 @@ impl<B: Backend> GraphshellApp<B> {
         )?))
     }
 
-    /// Reopen Graphshell's durable browser document, seeding the reference
-    /// fixture only when this backend has never stored one.
+    /// Reopen Graphshell's durable truth, seeding the reference fixture only
+    /// when this backend holds neither a session nor the old single slot.
     pub async fn open_or_fixture(
         backend: B,
         selected_persona: SelectedPersonaRef,
     ) -> Result<Self, AppError> {
-        if backend
-            .get(HOST_SLOT)
+        let sessions = MereSessions::new(backend.clone())
+            .list()
             .await
-            .map_err(MereHostError::from)?
-            .is_none()
-        {
+            .map_err(MereHostError::from)?;
+        let old_slot = backend.get(HOST_SLOT).await.map_err(MereHostError::from)?;
+        if sessions.is_empty() && old_slot.is_none() {
             return Self::fixture(backend, selected_persona);
         }
         let host = MereHost::open(
@@ -101,6 +95,15 @@ impl<B: Backend> GraphshellApp<B> {
         )
         .await?;
         Ok(Self::new(host))
+    }
+}
+
+impl<B: Backend> GraphshellApp<B> {
+    pub fn new(host: MereHost<B>) -> Self {
+        Self {
+            host,
+            client: ClientState::default(),
+        }
     }
 
     /// Mount the local Mere endpoint through the same Graphshell client path as
@@ -279,16 +282,15 @@ mod tests {
 
     use chirograph::IntentResult;
     use mere::kernel::address::AddressKind;
-    use mere::kernel::graph::{EdgeFamily, RelationKind};
-    use muniment::{Backend, MemoryBackend};
+    use mere::kernel::graph::{EdgeFamily, Graph, RelationKind};
+    use muniment::MemoryBackend;
     use serde_json::json;
 
     use super::*;
     use crate::mere_host::{
         FIXTURE_FILE_ADDRESS, FIXTURE_GRANT_ADDRESS, FIXTURE_KEY_ADDRESS, FIXTURE_NON_WEB_ADDRESS,
         FIXTURE_PERSONA_ADDRESS, FIXTURE_RECEIPT_ADDRESS, FIXTURE_REMOTE_ADDRESS,
-        FIXTURE_SCENE_ADDRESS, FIXTURE_WEB_ADDRESS, HOST_SLOT, UNKNOWN_FIXTURE_FACET,
-        fixture_handlers,
+        FIXTURE_SCENE_ADDRESS, FIXTURE_WEB_ADDRESS, UNKNOWN_FIXTURE_FACET, fixture_handlers,
     };
     use crate::product::{
         PINNED_PROJECTION_FACET, PinnedProjectionAuthorityV1, PinnedProjectionCardV1, SavedSceneV1,
@@ -434,11 +436,6 @@ mod tests {
             assert_eq!(accesses.records.last().unwrap().handler, "system.default");
 
             app.host.persist(SAVED_AT_SECS).await.expect("persist");
-            let first_bytes = backend
-                .get(HOST_SLOT)
-                .await
-                .expect("backend read")
-                .expect("host document");
 
             let host = MereHost::open(
                 backend.clone(),
@@ -468,19 +465,27 @@ mod tests {
                     .facet_value(FIXTURE_FILE_ADDRESS, UNKNOWN_FIXTURE_FACET)
             );
 
-            reopened
-                .host
-                .persist(SAVED_AT_SECS)
-                .await
-                .expect("re-persist");
-            let reopened_bytes = backend
-                .get(HOST_SLOT)
-                .await
-                .expect("backend read")
-                .expect("host document");
+            let encoded = |graph: &Graph| {
+                let mut snapshot = graph.to_snapshot();
+                snapshot.timestamp_secs = 0;
+                (
+                    serde_json::to_vec(&snapshot).expect("snapshot encodes"),
+                    serde_json::to_vec(graph.facets()).expect("facets encode"),
+                )
+            };
             assert_eq!(
-                reopened_bytes, first_bytes,
+                encoded(reopened.host.graph()),
+                encoded(app.host.graph()),
                 "graph and facet truth re-encode byte-equivalently after reopen"
+            );
+            assert!(
+                reopened
+                    .host
+                    .graph_session()
+                    .pending(std::time::SystemTime::UNIX_EPOCH)
+                    .expect("pending")
+                    .is_empty(),
+                "reopening changes nothing a persist would write"
             );
         });
     }

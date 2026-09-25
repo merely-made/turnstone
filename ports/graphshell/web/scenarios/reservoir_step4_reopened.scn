@@ -1,0 +1,5 @@
+# Reservoir plan step 4, the load after: the host reopens the session it
+# stored, rather than seeding again.
+assert snap ready == true
+assert snap storage ~ IndexedDB reopened
+assert snap node-count == 11

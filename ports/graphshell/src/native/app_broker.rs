@@ -40,7 +40,8 @@ use crate::browser_carrier::{
 use crate::identity_endpoint::IdentityEndpoint;
 use crate::lifecycle::SessionAuthority;
 use crate::native::app_admission::{
-    APP_IDENTITY_ROUTE, AllowedAppRoutes, AppAdmissionError, AppHello, AppId, AppRouteId,
+    APP_IDENTITY_ROUTE, AllowedAppRoutes, AppAdmissionError, AppHello, AppId, AppRouteGrants,
+    AppRouteId,
 };
 use crate::native::browser_host::BrowserHostError;
 use crate::native::device_broker::{DeviceSurface, DeviceSurfaceHandle};
@@ -129,6 +130,12 @@ impl AppEndpointCatalog {
     ) -> Result<ResidentEndpointSession, ResidentEndpointCatalogError> {
         self.inner.lock().await.open(id, context)
     }
+
+    /// Change the registrations while the door serves: a route registered
+    /// here opens for the next session that selects it.
+    pub async fn update<R>(&self, change: impl FnOnce(&mut ResidentEndpointCatalog) -> R) -> R {
+        change(&mut *self.inner.lock().await)
+    }
 }
 
 /// Open a connection to the resident host as `app`.
@@ -159,7 +166,7 @@ pub async fn connect_as_app_route(
 pub async fn serve_app_broker<S>(
     endpoint: &str,
     personae: Arc<PersonaeHost<S>>,
-    allowed: AllowedAppRoutes,
+    grants: AppRouteGrants,
     session_duration_ms: u64,
     surface: Option<DeviceSurfaceHandle>,
     catalog: AppEndpointCatalog,
@@ -172,7 +179,7 @@ where
         "first-party",
         move |stream: Box<dyn LocalStream>| {
             let personae = Arc::clone(&personae);
-            let allowed = allowed.clone();
+            let allowed = grants.current();
             let surface = surface.clone();
             let catalog = catalog.clone();
             async move {
@@ -289,7 +296,7 @@ where
     } = admit_local_client(identity.as_ref(), &link, session_duration_ms).await?;
 
     let authority = SessionAuthority::retain_admitted(&admitted);
-    let endpoint_context = authority.endpoint_context();
+    let endpoint_context = authority.endpoint_context().with_application(app.as_str());
     let session = endpoint_context.session().0.clone();
     let server = if route.id() == APP_IDENTITY_ROUTE {
         let mut endpoint = identity_endpoint_for(Arc::clone(&personae), &authority, surface);

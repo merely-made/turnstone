@@ -15,7 +15,7 @@ use mere::kernel::geometry::PortablePoint;
 use mere::kernel::graph::apply::{GraphDelta, add_node, apply_graph_delta, assert_relation};
 use mere::kernel::graph::{
     ArrangementSubKind, ContainmentSubKind, EdgeAssertion, EdgeFamily, Graph, NodeFacetStore,
-    RelationKind, SemanticSubKind,
+    RelationKind, SemanticSubKind, import_edits,
 };
 use mere::kernel::persistence::GraphSnapshot;
 use muniment::Backend;
@@ -581,37 +581,35 @@ impl<B: Backend> MereHost<B> {
         .map_err(|error| ProductError::InvalidCodicil(error.to_string()))
     }
 
+    /// Import a codicil into the graph as one journaled change: its new nodes
+    /// arrive whole, its relations join the graph's, and its facets overwrite
+    /// (reservoir plan §7 item 27).
     pub fn import_product_codicil(&mut self, bytes: &[u8]) -> Result<ImportReceipt, ProductError> {
         let codicil = decode_codicil(bytes)?;
-        let current_facets = self.graph().facets().clone();
-        let mut merged = self.graph().to_snapshot();
-        let mut known: HashSet<_> = merged
-            .nodes
-            .iter()
-            .map(|node| node.node_id.clone())
+        let mut known: HashSet<String> = self
+            .graph()
+            .nodes()
+            .map(|(_, node)| node.id.to_string())
             .collect();
-        let mut imported_nodes = 0;
-        for node in codicil.graph.nodes {
-            if known.insert(node.node_id.clone()) {
-                merged.nodes.push(node);
-                imported_nodes += 1;
-            }
-        }
-        let imported_relations = codicil.graph.edges.len();
-        merged.edges.extend(codicil.graph.edges);
-        merged.timestamp_secs = codicil.exported_at_ms / 1_000;
-        let mut graph = Graph::from_snapshot(&merged);
-        graph.overlay_facets(current_facets);
-        let imported_facets = codicil.facets.iter().map(|(_, facets)| facets.len()).sum();
-        graph.overlay_facets(codicil.facets);
-        self.replace_product_graph(graph);
-        Ok(ImportReceipt {
-            nodes: imported_nodes,
-            relations: imported_relations,
-            facets: imported_facets,
-        })
+        let receipt = ImportReceipt {
+            nodes: codicil
+                .graph
+                .nodes
+                .iter()
+                .filter(|node| known.insert(node.node_id.clone()))
+                .count(),
+            relations: codicil.graph.edges.len(),
+            facets: codicil.facets.iter().map(|(_, facets)| facets.len()).sum(),
+        };
+        let edits = import_edits(self.graph(), &codicil_graph(codicil.graph, codicil.facets));
+        self.apply_edits(edits)?;
+        Ok(receipt)
     }
+}
 
+impl<B: Backend + Clone> MereHost<B> {
+    /// Open a codicil as a new session begun from its graph, leaving the
+    /// current session in the mere (reservoir plan §7 item 27).
     pub fn replace_with_product_codicil(
         &mut self,
         bytes: &[u8],
@@ -622,11 +620,17 @@ impl<B: Backend> MereHost<B> {
             relations: codicil.graph.edges.len(),
             facets: codicil.facets.iter().map(|(_, facets)| facets.len()).sum(),
         };
-        let mut graph = Graph::from_snapshot(&codicil.graph);
-        graph.overlay_facets(codicil.facets);
-        self.replace_product_graph(graph);
+        self.begin_session(codicil_graph(codicil.graph, codicil.facets));
         Ok((receipt, codicil.scene))
     }
+}
+
+/// A codicil's graph with its facet store laid in whole: no codicil carries
+/// legacy column data, so nothing the snapshot's columns import is kept.
+fn codicil_graph(snapshot: GraphSnapshot, facets: NodeFacetStore) -> Graph {
+    let mut graph = Graph::from_snapshot(&snapshot);
+    *graph.facets_mut() = facets;
+    graph
 }
 
 fn family_of(kind: RelationKind) -> EdgeFamily {
@@ -791,14 +795,15 @@ pub(crate) fn decode_codicil(bytes: &[u8]) -> Result<ProductCodicilV2, ProductEr
 
 #[cfg(test)]
 mod tests {
-    use mere::kernel::graph::{ProvenanceSubKind, RelationKind};
+    use mere::kernel::graph::{Author, ProvenanceSubKind, RelationKind};
     use muniment::MemoryBackend;
 
     use super::*;
     use crate::access::AccessContext;
     use crate::mere_host::{
         FIXTURE_DEVICE_TWO_ADDRESS, FIXTURE_GRANT_ADDRESS, FIXTURE_PERSONA_ADDRESS,
-        FIXTURE_RECEIPT_ADDRESS, FIXTURE_WEB_ADDRESS, SelectedPersonaRef, fixture_handlers,
+        FIXTURE_RECEIPT_ADDRESS, FIXTURE_WEB_ADDRESS, GRAPHSHELL, SelectedPersonaRef,
+        fixture_handlers,
     };
 
     fn selected_persona() -> SelectedPersonaRef {
@@ -999,6 +1004,20 @@ mod tests {
         let imported = reopened.import_product_codicil(&bytes).expect("import");
         assert_eq!(imported.nodes, 4);
         assert_eq!(reopened.graph().node_count(), 4);
+        let change = reopened
+            .graph_session()
+            .changes()
+            .last()
+            .expect("the import's change");
+        assert_eq!(
+            change.author,
+            Author::person(FIXTURE_PERSONA_ADDRESS).via(GRAPHSHELL),
+            "an import is Graphshell's edit, by the selected persona"
+        );
+        assert!(
+            change.end > change.first,
+            "the import is one journaled change"
+        );
         for id in selected {
             assert!(
                 reopened.graph().get_node_by_id(id).is_some(),
@@ -1028,9 +1047,16 @@ mod tests {
             relation.kind == RelationKind::Provenance(ProvenanceSubKind::GeneratedFrom)
         }));
 
+        let replaced = reopened.graph_session().id();
         let (_, imported_scene) = reopened
             .replace_with_product_codicil(&bytes)
             .expect("open as graph");
+        assert_ne!(
+            reopened.graph_session().id(),
+            replaced,
+            "opening a codicil begins a new session"
+        );
+        assert_eq!(reopened.graph().node_count(), 4);
         let imported_scene = imported_scene.expect("scene");
         assert_eq!(imported_scene.selected.len(), 4);
         assert_eq!(imported_scene.cartography.sprite_iter().count(), 1);
