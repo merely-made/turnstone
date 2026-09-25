@@ -1,0 +1,6 @@
+# Reservoir plan step 4, a store from before sessions: the origin holds only
+# the old graphshell/mere-host/v1 slot, and the host reads it once into a new
+# session's baseline (reservoir plan §7 item 25).
+assert snap ready == true
+assert snap storage ~ IndexedDB reopened
+assert snap node-count == 11

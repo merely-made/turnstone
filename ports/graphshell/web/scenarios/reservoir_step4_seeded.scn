@@ -1,0 +1,5 @@
+# Reservoir plan step 4, first load on a fresh origin: the host begins a
+# session from the reference fixture and stores it in IndexedDB.
+assert snap ready == true
+assert snap storage ~ IndexedDB seeded
+assert snap node-count == 11
