@@ -81,9 +81,12 @@ beside a `genet.livery` neighbor and retained the Reader inspector's lineage.
 These receipts validate consumer seams, not persistence or a platform theme
 policy.
 
-Syntax-color policy, icon policy, imports, a DTCG resolver and a Geopard
-exporter are not here yet; the host theme model and its persistence arrived with
-the theme module.
+Theme::design_tokens carries Tinct's syntax palette as a color.syntax group,
+one token per syntax role, and Theme::css_custom_properties emits the same
+roles as --tabard-syntax-* properties.
+
+Icon policy, imports, a DTCG resolver and a Geopard exporter are not here yet;
+the host theme model and its persistence arrived with the theme module.
 
 ## License
 
