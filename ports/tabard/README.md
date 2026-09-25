@@ -19,8 +19,10 @@ syntax spans rather than decide their appearance.
 
 The first implementation is deliberately portable and library-only:
 
-- Theme owns a name and tinct::Seeds, then derives Tinct's normal-contrast
-  base palette.
+- Theme owns an id, a name and tinct::Seeds, plus the registry's derivation
+  settings (source, high contrast, harmony, per-mode sheets), then derives
+  Tinct's normal-contrast base palette. It is also the registry's authored
+  theme, which was a separate ThemeDef until 2026-09-24.
 - The theme module holds the host theme model, moved from Mere's registry on
   2026-09-24: ThemeTokenSet and its ThemeRegistry, seed derivation, custom
   modes, chrome colours, edge-style tokens, and the theme a lens carries.
