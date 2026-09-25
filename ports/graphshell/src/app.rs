@@ -384,14 +384,7 @@ mod tests {
                 .host
                 .graph()
                 .relations()
-                .map(|relation| match relation.kind {
-                    RelationKind::Semantic(_) => EdgeFamily::Semantic,
-                    RelationKind::Traversal => EdgeFamily::Traversal,
-                    RelationKind::Containment(_) => EdgeFamily::Containment,
-                    RelationKind::Arrangement(_) => EdgeFamily::Arrangement,
-                    RelationKind::Imported(_) => EdgeFamily::Imported,
-                    RelationKind::Provenance(_) => EdgeFamily::Provenance,
-                })
+                .map(|relation| relation.kind.family())
                 .collect();
             assert!(families.contains(&EdgeFamily::Semantic));
             assert!(families.contains(&EdgeFamily::Containment));
