@@ -26,6 +26,9 @@ The first implementation is deliberately portable and library-only:
 - The theme module holds the host theme model, moved from Mere's registry on
   2026-09-24: ThemeTokenSet and its ThemeRegistry, seed derivation, custom
   modes, chrome colours, edge-style tokens, and the theme a lens carries.
+- theme::choice holds the user's theme choice (a theme id and an optional
+  mode) and where it is kept: the store seam, an in-memory store, and an
+  atomic JSON file store that still reads Pelt's one-line appearance files.
 - The smolweb module holds the smolweb document palettes, which Nematic's views
   and Mere's document lanes each defined until 2026-09-24: SmolwebTheme,
   SmolwebPalette, and the palette choice, including the per-site tint.
@@ -78,9 +81,9 @@ beside a `genet.livery` neighbor and retained the Reader inspector's lineage.
 These receipts validate consumer seams, not persistence or a platform theme
 policy.
 
-Syntax-color policy, icon policy, persistence, imports, a DTCG resolver and a
-Geopard exporter are not here yet; the host theme model arrived with the theme
-module.
+Syntax-color policy, icon policy, imports, a DTCG resolver and a Geopard
+exporter are not here yet; the host theme model and its persistence arrived with
+the theme module.
 
 ## License
 
