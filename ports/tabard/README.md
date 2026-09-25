@@ -26,6 +26,9 @@ The first implementation is deliberately portable and library-only:
 - The theme module holds the host theme model, moved from Mere's registry on
   2026-09-24: ThemeTokenSet and its ThemeRegistry, seed derivation, custom
   modes, chrome colours, edge-style tokens, and the theme a lens carries.
+- The smolweb module holds the smolweb document palettes, which Nematic's views
+  and Mere's document lanes each defined until 2026-09-24: SmolwebTheme,
+  SmolwebPalette, and the palette choice, including the per-site tint.
 - Theme::design_tokens emits a typed DTCG 2025.10 color document. Every token
   has an explicit color type and a structured sRGB value, while the name,
   seeds, and derivation choice live under org.merely.tabard in $extensions.
