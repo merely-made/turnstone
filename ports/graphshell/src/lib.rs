@@ -58,6 +58,8 @@ pub mod policy_projection;
 pub mod product;
 #[cfg(all(feature = "native", not(target_arch = "wasm32")))]
 pub mod profile;
+#[cfg(feature = "web")]
+pub mod session_item;
 
 #[cfg(any(feature = "native", feature = "web"))]
 pub mod practice_disclosure;

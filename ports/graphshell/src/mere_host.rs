@@ -38,6 +38,7 @@ use crate::access::{AccessContext, AccessError, AccessHistory, access_history, r
 use crate::handlers::{
     HandlerOffer, HandlerRegistry, OpenAddressV1, handler_from_intent, intent_id,
 };
+use crate::session_item;
 
 /// The footprint every served item is measured at, in scene units.
 const SERVED_FOOTPRINT: (f32, f32) = (240.0, 112.0);
@@ -163,6 +164,9 @@ pub struct MereHost<B> {
     instance_targets: Vec<NodeKey>,
     reopened: bool,
     projection_session: ProjectionSession,
+    /// Whether the graph projection shows the session item (§7 item 31).
+    session_item: bool,
+    session_instance: Option<InstanceId>,
 }
 
 /// What [`MereHost::stage`] put in a batch, to mark stored once it commits.
@@ -205,6 +209,8 @@ impl<B: Backend + Clone> MereHost<B> {
             instance_targets: Vec::new(),
             reopened,
             projection_session: ProjectionSession(LOCAL_SESSION.to_string()),
+            session_item: false,
+            session_instance: None,
         }
     }
 
@@ -393,6 +399,18 @@ impl<B: Backend> MereHost<B> {
     pub fn with_projection_session(mut self, session: ProjectionSession) -> Self {
         self.projection_session = session;
         self
+    }
+
+    /// This host, showing the session item in its graph projection: the
+    /// resident mode an attached application edits through (§7 item 31).
+    pub fn with_session_item(mut self) -> Self {
+        self.session_item = true;
+        self
+    }
+
+    /// The session item's instance in the last snapshot served, if shown.
+    pub fn session_instance(&self) -> Option<InstanceId> {
+        self.session_instance
     }
 
     pub fn projection_revision(&self) -> Revision {
@@ -689,8 +707,66 @@ impl<B: Backend> MereHost<B> {
             });
         }
 
+        let mut session_instance = None;
+        if self.session_item {
+            let instance = InstanceId(instance_targets.len() as u32);
+            // Above the graph, or at the origin when the graph is empty.
+            let position = if instance_targets.is_empty() {
+                Vec2::new(0.0, 0.0)
+            } else {
+                min_y -= 2.0 * SERVED_FOOTPRINT.1;
+                Vec2::new(min_x, min_y)
+            };
+            let id = self.graph_session.id().as_uuid().to_string();
+            let source =
+                scene.intern_source(SourceRef::new(session_item::SESSION_ITEM_SOURCE, &id));
+            scene.items.push(ProjectedItem {
+                source,
+                space: Scene::WORLD,
+                transform: Transform2::translation(position.x, position.y),
+                footprint: Footprint::Rect {
+                    size: Size2::new(SERVED_FOOTPRINT.0, SERVED_FOOTPRINT.1),
+                },
+                representation: Representation::Card,
+                layer: 0,
+                visible: true,
+                hit: None,
+                channels: Vec::new(),
+            });
+            let card = session_item::card(&self.graph_session);
+            let bytes = serde_json::to_vec(&card).expect("PortableCardV1 always serializes");
+            let resource = ContentHash::of(&bytes);
+            let key = PresentationKey(format!("{}:{id}", session_item::SESSION_ITEM_SOURCE));
+            presentation.bindings.push(PresentationBinding {
+                instance,
+                key: key.clone(),
+            });
+            presentation.offers.insert(
+                key,
+                vec![PresentationOffer {
+                    codec: PresentationCodec::PortableCardV1,
+                    resource,
+                    byte_size: bytes.len() as u64,
+                    requires: PresentationCapability::PortableCard,
+                    semantics: PresentationSemantics {
+                        label: card.title.clone(),
+                        role: SemanticRole::Article,
+                        bounds: BoundsRelationship::FillFootprint,
+                        actions: session_item::actions(),
+                    },
+                }],
+            );
+            resources.insert(resource, bytes);
+            session_instance = Some(instance);
+        }
+
         scene.bounds = if layout.positions.is_empty() {
-            Rect::new(Vec2::new(0.0, 0.0), Size2::new(0.0, 0.0))
+            let size = if session_instance.is_some() {
+                Size2::new(SERVED_FOOTPRINT.0, SERVED_FOOTPRINT.1)
+            } else {
+                Size2::new(0.0, 0.0)
+            };
+            Rect::new(Vec2::new(0.0, 0.0), size)
         } else {
             Rect::new(
                 Vec2::new(min_x - 120.0, min_y - 56.0),
@@ -710,6 +786,7 @@ impl<B: Backend> MereHost<B> {
 
         self.resources = resources;
         self.instance_targets = instance_targets;
+        self.session_instance = session_instance;
         Ok(ProjectionSnapshot {
             version: ProtocolVersion::V1,
             session: self.session(),
@@ -1149,5 +1226,50 @@ mod tests {
             let key = ViewKey::new("turnstone", "main").unwrap();
             assert!(host.graph_session().view(&key).is_some());
         });
+    }
+
+    #[test]
+    fn a_resident_graph_shows_the_session_item_and_graphshell_s_does_not() {
+        let mut own =
+            MereHost::fixture(MemoryBackend::new(), selected_persona(), fixture_handlers())
+                .expect("fixture");
+        let request = own.local_request();
+        let plain = own.snapshot(request).expect("snapshot");
+        assert_eq!(
+            plain.scene.active_items_in_order().len(),
+            own.graph().node_count()
+        );
+        assert_eq!(own.session_instance(), None);
+
+        let mut resident =
+            MereHost::fixture(MemoryBackend::new(), selected_persona(), fixture_handlers())
+                .expect("fixture")
+                .with_session_item();
+        let request = resident.local_request();
+        let snapshot = resident.snapshot(request).expect("snapshot");
+        let items = snapshot.scene.active_items_in_order();
+        assert_eq!(items.len(), resident.graph().node_count() + 1);
+        let instance = resident.session_instance().expect("the item is shown");
+        let binding = snapshot
+            .presentation
+            .bindings
+            .iter()
+            .find(|binding| binding.instance == instance)
+            .expect("the item is bound");
+        let intents: Vec<String> = snapshot.presentation.offers[&binding.key][0]
+            .semantics
+            .actions
+            .iter()
+            .map(|action| action.intent.0.clone())
+            .collect();
+        assert_eq!(
+            intents,
+            [
+                session_item::APPLY_EDITS_INTENT,
+                session_item::UNDO_INTENT,
+                session_item::REDO_INTENT,
+                session_item::SET_VIEW_INTENT,
+            ]
+        );
     }
 }
