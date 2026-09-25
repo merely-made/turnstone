@@ -512,11 +512,11 @@ impl BrowserHistoryCapture {
                 .apply_quota(&mut batch, self.policy.retention_traces)
                 .await
                 .map_err(|error| CaptureError::Store(error.to_string()))?;
-            host.persist_through(&batch, saved_at_secs).await?;
-            Ok::<_, CaptureError>((outcomes, pending_seen, pending_last))
+            let written = host.stage(&batch, saved_at_secs).await?;
+            Ok::<_, CaptureError>((outcomes, pending_seen, pending_last, written))
         }
         .await;
-        let (outcomes, pending_seen, pending_last) = match staged {
+        let (outcomes, pending_seen, pending_last, written) = match staged {
             Ok(staged) => staged,
             Err(error) => {
                 self.memory = memory_before;
@@ -527,6 +527,7 @@ impl BrowserHistoryCapture {
             self.memory = memory_before;
             return Err(CaptureError::Store(error.to_string()));
         }
+        host.staged(written);
         self.seen_visit_ids.extend(pending_seen);
         self.last_accepted = pending_last;
         Ok(outcomes)
@@ -580,11 +581,11 @@ impl BrowserHistoryCapture {
                     .map_err(|error| CaptureError::Store(error.to_string()))?;
             }
             host.forget_browser_history(&canonical, mode)?;
-            host.persist_through(&batch, saved_at_secs).await?;
-            Ok::<_, CaptureError>((forgotten, forgotten_source_events))
+            let written = host.stage(&batch, saved_at_secs).await?;
+            Ok::<_, CaptureError>((forgotten, forgotten_source_events, written))
         }
         .await;
-        let (forgotten, forgotten_source_events) = match staged {
+        let (forgotten, forgotten_source_events, written) = match staged {
             Ok(staged) => staged,
             Err(error) => {
                 self.memory = memory_before;
@@ -595,6 +596,7 @@ impl BrowserHistoryCapture {
             self.memory = memory_before;
             return Err(CaptureError::Store(error.to_string()));
         }
+        host.staged(written);
         self.seen_visit_ids
             .retain(|key| !forgotten_source_events.contains(key));
         Ok(forgotten)
@@ -676,7 +678,20 @@ fn clean_optional(value: Option<String>) -> Option<String> {
 }
 
 impl<B: Backend> MereHost<B> {
+    /// Project one visit, its edits authored via the extension that captured
+    /// it (reservoir plan §7 item 23).
     fn project_browser_visit(
+        &mut self,
+        visit: &NormalizedVisit,
+        persona: &str,
+        device: &str,
+    ) -> Result<ProjectedVisit, CaptureError> {
+        self.through(format!("browser.extension.{}", visit.source), |host| {
+            host.project_visit(visit, persona, device)
+        })
+    }
+
+    fn project_visit(
         &mut self,
         visit: &NormalizedVisit,
         persona: &str,
@@ -876,12 +891,11 @@ mod tests {
 
     use crate::access::AccessContext;
     use crate::access::{AccessRecordFilter, query_access_records};
+    use mere::kernel::graph::Author;
     use muniment::MemoryBackend;
 
     use super::*;
-    use crate::mere_host::{
-        FIXTURE_PERSONA_ADDRESS, FIXTURE_WEB_ADDRESS, HOST_SLOT, SelectedPersonaRef,
-    };
+    use crate::mere_host::{FIXTURE_PERSONA_ADDRESS, FIXTURE_WEB_ADDRESS, SelectedPersonaRef};
 
     const PERSONA: &str = "personae://persona/capture";
     const DEVICE: &str = "personae://device/browser";
@@ -1073,6 +1087,18 @@ mod tests {
                     && host.graph().get_node(relation.to).unwrap().url() == to
             }));
             assert_eq!(capture.memory().recent_corridor(8).len(), 2);
+            let authors: Vec<Author> = host
+                .graph_session()
+                .changes()
+                .iter()
+                .map(|change| change.author.clone())
+                .collect();
+            assert!(
+                authors.contains(
+                    &Author::person(FIXTURE_PERSONA_ADDRESS).via("browser.extension.firefox")
+                ),
+                "a captured visit comes through the extension that captured it: {authors:?}"
+            );
 
             let reopened = MereHost::open(
                 backend.clone(),
@@ -1231,7 +1257,14 @@ mod tests {
                     .await
                     .is_err()
             );
-            assert!(backend.get(HOST_SLOT).await.unwrap().is_none());
+            assert!(
+                pandect::MereSessions::new(backend.clone())
+                    .list()
+                    .await
+                    .unwrap()
+                    .is_empty(),
+                "a rejected batch stores no session"
+            );
             assert!(
                 list_typed::<AccessRecord>(&mut store)
                     .await

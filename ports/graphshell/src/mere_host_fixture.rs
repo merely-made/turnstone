@@ -29,8 +29,9 @@ use crate::mere_host::{
     MereHost, MereHostError, SelectedPersonaRef, UNKNOWN_FIXTURE_FACET,
 };
 
-impl<B: Backend> MereHost<B> {
-    /// Deterministic H1 source truth with synthetic public identity material.
+impl<B: Backend + Clone> MereHost<B> {
+    /// Deterministic H1 source truth with synthetic public identity material,
+    /// journaled as Graphshell's own edits.
     pub fn fixture(
         backend: B,
         selected_persona: SelectedPersonaRef,
@@ -47,174 +48,191 @@ impl<B: Backend> MereHost<B> {
             },
         );
 
-        let web = add_fixture_node(
-            &mut host.graph,
-            FIXTURE_WEB_ADDRESS,
-            "I2P port notes",
-            &["research", "transport"],
-            10,
-        );
-        let non_web = add_fixture_node(
-            &mut host.graph,
-            FIXTURE_NON_WEB_ADDRESS,
-            "I2P service",
-            &["address", "transport"],
-            20,
-        );
-        let file = add_fixture_node(
-            &mut host.graph,
-            FIXTURE_FILE_ADDRESS,
-            "Reference notes",
-            &["local", "reference"],
-            30,
-        );
-        let scene = add_fixture_node(
-            &mut host.graph,
-            FIXTURE_SCENE_ADDRESS,
-            "Reference-host scene",
-            &["scene"],
-            40,
-        );
-        let remote = add_fixture_node(
-            &mut host.graph,
-            FIXTURE_REMOTE_ADDRESS,
-            "Mounted remote projection",
-            &["remote", "projection"],
-            50,
-        );
-        let persona = add_fixture_node(
-            &mut host.graph,
-            FIXTURE_PERSONA_ADDRESS,
-            "Alice",
-            &["identity", "public"],
-            60,
-        );
-        let device_one = add_fixture_node(
-            &mut host.graph,
-            FIXTURE_DEVICE_ONE_ADDRESS,
-            "Alice's laptop",
-            &["device", "public"],
-            70,
-        );
-        let device_two = add_fixture_node(
-            &mut host.graph,
-            FIXTURE_DEVICE_TWO_ADDRESS,
-            "Alice's phone",
-            &["device", "public"],
-            80,
-        );
-        let key = add_fixture_node(
-            &mut host.graph,
-            FIXTURE_KEY_ADDRESS,
-            "SSH signing key reference",
-            &["key-reference", "public"],
-            90,
-        );
-        let grant = add_fixture_node(
-            &mut host.graph,
-            FIXTURE_GRANT_ADDRESS,
-            "Open-address grant",
-            &["grant", "public"],
-            100,
-        );
-        let receipt = add_fixture_node(
-            &mut host.graph,
-            FIXTURE_RECEIPT_ADDRESS,
-            "Synthetic signing receipt",
-            &["receipt", "public", "synthetic"],
-            110,
-        );
-
-        assert_relation(
-            &mut host.graph,
-            web,
-            non_web,
-            EdgeAssertion::Semantic {
-                sub_kind: SemanticSubKind::Hyperlink,
-                label: Some("I2P endpoint".to_string()),
-                decay_progress: None,
-            },
-        );
-        assert_relation(
-            &mut host.graph,
+        let [
             web,
             file,
-            EdgeAssertion::Semantic {
-                sub_kind: SemanticSubKind::Cites,
-                label: Some("working notes".to_string()),
-                decay_progress: None,
-            },
-        );
-        assert_relation(
-            &mut host.graph,
             scene,
-            web,
-            EdgeAssertion::Arrangement {
-                sub_kind: ArrangementSubKind::FrameMember,
-            },
-        );
-        assert_relation(
-            &mut host.graph,
-            scene,
-            file,
-            EdgeAssertion::Containment {
-                sub_kind: ContainmentSubKind::CollectionMember,
-            },
-        );
-        assert_relation(
-            &mut host.graph,
             remote,
-            scene,
-            EdgeAssertion::Semantic {
-                sub_kind: SemanticSubKind::Elaborates,
-                label: Some("mounted beside local graph".to_string()),
-                decay_progress: None,
-            },
-        );
-        assert_relation(
-            &mut host.graph,
             persona,
             device_one,
-            EdgeAssertion::Containment {
-                sub_kind: ContainmentSubKind::CollectionMember,
-            },
-        );
-        assert_relation(
-            &mut host.graph,
-            persona,
             device_two,
-            EdgeAssertion::Containment {
-                sub_kind: ContainmentSubKind::CollectionMember,
-            },
-        );
-        assert_relation(
-            &mut host.graph,
-            device_one,
             key,
-            EdgeAssertion::Semantic {
-                sub_kind: SemanticSubKind::DependsOn,
-                label: Some("public key reference".to_string()),
-                decay_progress: None,
-            },
-        );
-        assert_relation(
-            &mut host.graph,
             grant,
-            persona,
-            EdgeAssertion::Semantic {
-                sub_kind: SemanticSubKind::Supports,
-                label: Some("subject".to_string()),
-                decay_progress: None,
-            },
-        );
-        assert_relation(
-            &mut host.graph,
             receipt,
-            grant,
-            EdgeAssertion::Provenance {
-                sub_kind: ProvenanceSubKind::GeneratedFrom,
-            },
-        );
+        ] = host.mutate_product_graph(|graph| {
+            let web = add_fixture_node(
+                graph,
+                FIXTURE_WEB_ADDRESS,
+                "I2P port notes",
+                &["research", "transport"],
+                10,
+            );
+            let non_web = add_fixture_node(
+                graph,
+                FIXTURE_NON_WEB_ADDRESS,
+                "I2P service",
+                &["address", "transport"],
+                20,
+            );
+            let file = add_fixture_node(
+                graph,
+                FIXTURE_FILE_ADDRESS,
+                "Reference notes",
+                &["local", "reference"],
+                30,
+            );
+            let scene = add_fixture_node(
+                graph,
+                FIXTURE_SCENE_ADDRESS,
+                "Reference-host scene",
+                &["scene"],
+                40,
+            );
+            let remote = add_fixture_node(
+                graph,
+                FIXTURE_REMOTE_ADDRESS,
+                "Mounted remote projection",
+                &["remote", "projection"],
+                50,
+            );
+            let persona = add_fixture_node(
+                graph,
+                FIXTURE_PERSONA_ADDRESS,
+                "Alice",
+                &["identity", "public"],
+                60,
+            );
+            let device_one = add_fixture_node(
+                graph,
+                FIXTURE_DEVICE_ONE_ADDRESS,
+                "Alice's laptop",
+                &["device", "public"],
+                70,
+            );
+            let device_two = add_fixture_node(
+                graph,
+                FIXTURE_DEVICE_TWO_ADDRESS,
+                "Alice's phone",
+                &["device", "public"],
+                80,
+            );
+            let key = add_fixture_node(
+                graph,
+                FIXTURE_KEY_ADDRESS,
+                "SSH signing key reference",
+                &["key-reference", "public"],
+                90,
+            );
+            let grant = add_fixture_node(
+                graph,
+                FIXTURE_GRANT_ADDRESS,
+                "Open-address grant",
+                &["grant", "public"],
+                100,
+            );
+            let receipt = add_fixture_node(
+                graph,
+                FIXTURE_RECEIPT_ADDRESS,
+                "Synthetic signing receipt",
+                &["receipt", "public", "synthetic"],
+                110,
+            );
+
+            assert_relation(
+                graph,
+                web,
+                non_web,
+                EdgeAssertion::Semantic {
+                    sub_kind: SemanticSubKind::Hyperlink,
+                    label: Some("I2P endpoint".to_string()),
+                    decay_progress: None,
+                },
+            );
+            assert_relation(
+                graph,
+                web,
+                file,
+                EdgeAssertion::Semantic {
+                    sub_kind: SemanticSubKind::Cites,
+                    label: Some("working notes".to_string()),
+                    decay_progress: None,
+                },
+            );
+            assert_relation(
+                graph,
+                scene,
+                web,
+                EdgeAssertion::Arrangement {
+                    sub_kind: ArrangementSubKind::FrameMember,
+                },
+            );
+            assert_relation(
+                graph,
+                scene,
+                file,
+                EdgeAssertion::Containment {
+                    sub_kind: ContainmentSubKind::CollectionMember,
+                },
+            );
+            assert_relation(
+                graph,
+                remote,
+                scene,
+                EdgeAssertion::Semantic {
+                    sub_kind: SemanticSubKind::Elaborates,
+                    label: Some("mounted beside local graph".to_string()),
+                    decay_progress: None,
+                },
+            );
+            assert_relation(
+                graph,
+                persona,
+                device_one,
+                EdgeAssertion::Containment {
+                    sub_kind: ContainmentSubKind::CollectionMember,
+                },
+            );
+            assert_relation(
+                graph,
+                persona,
+                device_two,
+                EdgeAssertion::Containment {
+                    sub_kind: ContainmentSubKind::CollectionMember,
+                },
+            );
+            assert_relation(
+                graph,
+                device_one,
+                key,
+                EdgeAssertion::Semantic {
+                    sub_kind: SemanticSubKind::DependsOn,
+                    label: Some("public key reference".to_string()),
+                    decay_progress: None,
+                },
+            );
+            assert_relation(
+                graph,
+                grant,
+                persona,
+                EdgeAssertion::Semantic {
+                    sub_kind: SemanticSubKind::Supports,
+                    label: Some("subject".to_string()),
+                    decay_progress: None,
+                },
+            );
+            assert_relation(
+                graph,
+                receipt,
+                grant,
+                EdgeAssertion::Provenance {
+                    sub_kind: ProvenanceSubKind::GeneratedFrom,
+                },
+            );
+
+            [
+                web, file, scene, remote, persona, device_one, device_two, key, grant, receipt,
+            ]
+        });
 
         host.set_facet(
             remote,
@@ -291,26 +309,28 @@ impl<B: Backend> MereHost<B> {
             }),
         )?;
 
-        record_access(
-            &mut host.graph,
-            web,
-            &AccessContext {
-                persona: selected_persona.persona.clone(),
-                device: FIXTURE_DEVICE_ONE_ADDRESS.to_string(),
-                at_ms: 1_000,
-            },
-            "graphshell.inspect",
-        )?;
-        record_access(
-            &mut host.graph,
-            web,
-            &AccessContext {
-                persona: selected_persona.persona,
-                device: FIXTURE_DEVICE_TWO_ADDRESS.to_string(),
-                at_ms: 2_000,
-            },
-            "system.default",
-        )?;
+        host.mutate_product_graph(|graph| {
+            record_access(
+                graph,
+                web,
+                &AccessContext {
+                    persona: selected_persona.persona.clone(),
+                    device: FIXTURE_DEVICE_ONE_ADDRESS.to_string(),
+                    at_ms: 1_000,
+                },
+                "graphshell.inspect",
+            )?;
+            record_access(
+                graph,
+                web,
+                &AccessContext {
+                    persona: selected_persona.persona,
+                    device: FIXTURE_DEVICE_TWO_ADDRESS.to_string(),
+                    at_ms: 2_000,
+                },
+                "system.default",
+            )
+        })?;
 
         let score = host.score();
         host.set_facet(

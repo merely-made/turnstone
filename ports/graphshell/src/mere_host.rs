@@ -7,6 +7,7 @@
 //! Mere graph truth adapted to Graphshell's portable endpoint vocabulary.
 
 use std::collections::{BTreeMap, HashMap};
+use std::time::{Duration, SystemTime};
 
 use chartulary::{FacetError, FacetId};
 use chirograph::{
@@ -18,9 +19,11 @@ use chirograph::{
 };
 use graphshell_endpoint::{IntentSink, PresentationSource, ProjectionCatalog, ProjectionSource};
 use mere::kernel::graph::apply::{GraphDelta, apply_graph_delta};
-use mere::kernel::graph::{Graph, NodeFacetStore, NodeKey, RelationKind};
+use mere::kernel::graph::{Author, CapturedDelta, Graph, NodeFacetStore, NodeKey, RelationKind};
 use mere::kernel::persistence::GraphSnapshot;
+use mere::kernel::time::wall_clock_now;
 use muniment::{Backend, JsonSlots, StoreError};
+use pandect::{GraphSession, MereSessions, Pending, SessionError};
 use sceno::{
     Arrangement, Footprint, InstanceId, ProjectedItem, Rect, Representation, RoutedRelation, Scene,
     Score, Size2, SourceRef, Transform2, Vec2,
@@ -43,7 +46,14 @@ const SERVED_VIEWPORT: (u32, u32) = (1280, 720);
 /// viewer scales it; see the projection grammar adoption plan, A3.
 const SERVED_ZOOM: f32 = 1.0;
 
+/// The one document Graphshell stored before sessions. It is read once into
+/// the first session's baseline and never deleted (reservoir plan §7 item 25).
 pub const HOST_SLOT: &str = "graphshell/mere-host/v1";
+/// The projection epoch, advanced at every open so that an intent observed
+/// before a restart reads as stale.
+pub const EPOCH_SLOT: &str = "graphshell/projection-epoch/v1";
+/// The channel Graphshell's own edits come through, in their author.
+pub const GRAPHSHELL: &str = "graphshell";
 pub const LOCAL_SESSION: &str = "local:mere";
 
 pub const FIXTURE_WEB_ADDRESS: &str = "https://example.test/i2p-port";
@@ -72,6 +82,7 @@ pub struct SelectedPersonaRef {
 #[derive(Debug)]
 pub enum MereHostError {
     Store(StoreError),
+    Session(SessionError),
     Access(AccessError),
     Facet(FacetError),
     InvalidSnapshot(String),
@@ -83,6 +94,7 @@ impl std::fmt::Display for MereHostError {
     fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Store(error) => write!(formatter, "Mere host storage: {error}"),
+            Self::Session(error) => write!(formatter, "Mere session: {error}"),
             Self::Access(error) => write!(formatter, "{error}"),
             Self::Facet(error) => write!(formatter, "{error}"),
             Self::InvalidSnapshot(error) => write!(formatter, "Mere projection: {error}"),
@@ -102,6 +114,12 @@ impl From<StoreError> for MereHostError {
     }
 }
 
+impl From<SessionError> for MereHostError {
+    fn from(value: SessionError) -> Self {
+        Self::Session(value)
+    }
+}
+
 impl From<AccessError> for MereHostError {
     fn from(value: AccessError) -> Self {
         Self::Access(value)
@@ -114,150 +132,235 @@ impl From<FacetError> for MereHostError {
     }
 }
 
+/// What [`HOST_SLOT`] held, as far as reading it once needs.
 #[derive(Clone, Serialize, Deserialize)]
 struct PersistedMereHost {
     graph: GraphSnapshot,
     facets: NodeFacetStore,
     projection_epoch: u64,
-    projection_revision: u64,
 }
 
 /// The H1 local host: Mere owns truth, Muniment owns bytes, and Graphshell
-/// projects scenes and typed intents over both.
+/// projects scenes and typed intents over both. Truth is a pandect
+/// [`GraphSession`]: every edit is journaled under the selected persona, via
+/// the channel it came through (reservoir plan §7 item 23).
 pub struct MereHost<B> {
+    sessions: MereSessions<B>,
     slots: JsonSlots<B>,
-    // Reachable from `mere_host_fixture`, which builds the reference graph
-    // node by node; nothing outside this crate touches either field.
-    pub(crate) graph: Graph,
+    graph_session: GraphSession<B>,
+    /// Sessions switched away from, kept until their last changes are stored.
+    retired: Vec<GraphSession<B>>,
+    via: String,
     selected_persona: SelectedPersonaRef,
     handlers: HandlerRegistry,
     access_context: AccessContext,
     projection_epoch: u64,
+    epoch_stored: u64,
     pub(crate) projection_revision: u64,
     resources: BTreeMap<ContentHash, Vec<u8>>,
     instance_targets: Vec<NodeKey>,
-    persisted_document: Option<PersistedMereHost>,
-    dirty: bool,
+    reopened: bool,
 }
 
-impl<B: Backend> MereHost<B> {
-    fn persistence_document(&self, saved_at_secs: u64) -> PersistedMereHost {
-        match &self.persisted_document {
-            Some(document) if !self.dirty && document.graph.timestamp_secs == saved_at_secs => {
-                document.clone()
-            },
-            _ => {
-                let mut graph = self.graph.to_snapshot();
-                graph.timestamp_secs = saved_at_secs;
-                PersistedMereHost {
-                    graph,
-                    facets: self.graph.facets().clone(),
-                    projection_epoch: self.projection_epoch,
-                    projection_revision: self.projection_revision,
-                }
-            },
+/// What [`MereHost::stage`] put in a batch, to mark stored once it commits.
+pub(crate) struct Staged {
+    current: Pending,
+    retired: Vec<Pending>,
+}
+
+fn saved_at(saved_at_secs: u64) -> SystemTime {
+    SystemTime::UNIX_EPOCH + Duration::from_secs(saved_at_secs)
+}
+
+fn author_of(persona: &SelectedPersonaRef, via: &str) -> Author {
+    Author::person(persona.persona.clone()).via(via)
+}
+
+impl<B: Backend + Clone> MereHost<B> {
+    fn assemble(
+        backend: B,
+        graph_session: GraphSession<B>,
+        selected_persona: SelectedPersonaRef,
+        handlers: HandlerRegistry,
+        access_context: AccessContext,
+        epoch: (u64, u64),
+        reopened: bool,
+    ) -> Self {
+        Self {
+            sessions: MereSessions::new(backend.clone()),
+            slots: JsonSlots::new(backend),
+            graph_session,
+            retired: Vec::new(),
+            via: GRAPHSHELL.to_string(),
+            selected_persona,
+            handlers,
+            access_context,
+            projection_epoch: epoch.0,
+            epoch_stored: epoch.1,
+            projection_revision: 1,
+            resources: BTreeMap::new(),
+            instance_targets: Vec::new(),
+            reopened,
         }
     }
 
+    /// A host on a new, empty session, stored at its first persist.
     pub fn empty(
         backend: B,
         selected_persona: SelectedPersonaRef,
         handlers: HandlerRegistry,
         access_context: AccessContext,
     ) -> Self {
-        Self {
-            slots: JsonSlots::new(backend),
-            graph: Graph::new(),
+        let graph_session = MereSessions::new(backend.clone())
+            .begin(author_of(&selected_persona, GRAPHSHELL), None);
+        Self::assemble(
+            backend,
+            graph_session,
             selected_persona,
             handlers,
             access_context,
-            projection_epoch: 1,
-            projection_revision: 1,
-            resources: BTreeMap::new(),
-            instance_targets: Vec::new(),
-            persisted_document: None,
-            dirty: true,
-        }
+            (1, 0),
+            false,
+        )
     }
 
-    /// Reopen graph and facet truth from an injected Muniment backend.
+    /// Reopen the live session changed last (§7 item 24). A store from before
+    /// sessions has its old slot read once into a new session's baseline and
+    /// left where it is (§7 item 25). A store with no live session begins an
+    /// empty one; the old slot is read only while no session exists at all.
     pub async fn open(
         backend: B,
         selected_persona: SelectedPersonaRef,
         handlers: HandlerRegistry,
         access_context: AccessContext,
     ) -> Result<Self, MereHostError> {
-        let slots = JsonSlots::new(backend);
-        let Some(saved): Option<PersistedMereHost> = slots.load(HOST_SLOT).await? else {
-            return Ok(Self {
-                slots,
-                graph: Graph::new(),
-                selected_persona,
-                handlers,
-                access_context,
-                projection_epoch: 1,
-                projection_revision: 1,
-                resources: BTreeMap::new(),
-                instance_targets: Vec::new(),
-                persisted_document: None,
-                dirty: true,
-            });
+        let sessions = MereSessions::new(backend.clone());
+        let slots = JsonSlots::new(backend.clone());
+        let stored_epoch: Option<u64> = slots.load(EPOCH_SLOT).await?;
+        let author = author_of(&selected_persona, GRAPHSHELL);
+        let (graph_session, epoch, reopened) = match sessions.latest_live().await? {
+            Some(latest) => (
+                sessions.open(latest.session_id).await?,
+                stored_epoch.unwrap_or(0),
+                true,
+            ),
+            None if !sessions.list().await?.is_empty() => (
+                sessions.begin(author, None),
+                stored_epoch.unwrap_or(0),
+                false,
+            ),
+            None => match slots.load::<PersistedMereHost>(HOST_SLOT).await? {
+                Some(saved) => {
+                    // The old host's own load, so the first baseline is the
+                    // graph it would have opened.
+                    let mut graph = Graph::from_snapshot(&saved.graph);
+                    graph.overlay_facets(saved.facets);
+                    let mut migrated = sessions.begin(author, Some(graph));
+                    migrated.flush(wall_clock_now()).await?;
+                    (
+                        migrated,
+                        stored_epoch.unwrap_or(saved.projection_epoch),
+                        true,
+                    )
+                },
+                None => (
+                    sessions.begin(author, None),
+                    stored_epoch.unwrap_or(0),
+                    false,
+                ),
+            },
         };
-        let persisted_document = saved.clone();
-        let mut graph = Graph::from_snapshot(&saved.graph);
-        graph.overlay_facets(saved.facets);
-        Ok(Self {
-            slots,
-            graph,
+        let epoch = epoch.wrapping_add(1);
+        slots.save(EPOCH_SLOT, &epoch).await?;
+        Ok(Self::assemble(
+            backend,
+            graph_session,
             selected_persona,
             handlers,
             access_context,
-            projection_epoch: saved.projection_epoch,
-            projection_revision: saved.projection_revision,
-            resources: BTreeMap::new(),
-            instance_targets: Vec::new(),
-            persisted_document: Some(persisted_document),
-            dirty: false,
-        })
+            (epoch, epoch),
+            reopened,
+        ))
     }
 
-    /// Persist graph and facets as one typed Muniment slot.
+    /// Switch to a new session begun from `graph`, keeping the one it replaces
+    /// until its last changes are stored. A new session is a new epoch.
+    pub(crate) fn begin_session(&mut self, graph: Graph) {
+        let next = self.sessions.begin(self.author(), Some(graph));
+        self.retired
+            .push(std::mem::replace(&mut self.graph_session, next));
+        self.projection_epoch = self.projection_epoch.wrapping_add(1);
+        self.projection_revision = 1;
+        self.resources.clear();
+        self.instance_targets.clear();
+    }
+}
+
+impl<B: Backend> MereHost<B> {
+    /// Store every change not yet stored.
     ///
-    /// The clock is injected so tests and importing hosts can produce stable
-    /// bytes. Equal graph/facet truth plus an equal clock yields equal bytes.
+    /// The clock is injected so tests and importing hosts stamp stable times.
     pub async fn persist(&mut self, saved_at_secs: u64) -> Result<(), MereHostError> {
-        let document = self.persistence_document(saved_at_secs);
-        self.slots.save(HOST_SLOT, &document).await?;
-        self.persisted_document = Some(document);
-        self.dirty = false;
+        let at = saved_at(saved_at_secs);
+        for session in &mut self.retired {
+            session.flush(at).await?;
+        }
+        self.retired.clear();
+        self.graph_session.flush(at).await?;
+        if self.epoch_stored != self.projection_epoch {
+            self.slots.save(EPOCH_SLOT, &self.projection_epoch).await?;
+            self.epoch_stored = self.projection_epoch;
+        }
         Ok(())
     }
 
-    /// Stage the host document through another backend. Capture uses this with
-    /// a write-buffer backend so the graph, facets, access records, and
-    /// browsing traces land in one outer `Backend::apply`.
-    pub(crate) async fn persist_through<T: Backend>(
-        &mut self,
-        backend: &T,
+    /// Put every change not yet stored into `batch`: capture's write buffer,
+    /// so the graph, access records and browsing traces land in one outer
+    /// `Backend::apply`. Hand the result to [`staged`](Self::staged) once the
+    /// batch commits; until then the changes stay pending.
+    pub(crate) async fn stage<T: Backend>(
+        &self,
+        batch: &T,
         saved_at_secs: u64,
-    ) -> Result<(), MereHostError> {
-        let document = self.persistence_document(saved_at_secs);
-        let bytes =
-            serde_json::to_vec(&document).map_err(|error| StoreError::Codec(error.to_string()))?;
-        backend.put(HOST_SLOT, &bytes).await?;
-        self.persisted_document = Some(document);
-        self.dirty = false;
-        Ok(())
+    ) -> Result<Staged, MereHostError> {
+        let at = saved_at(saved_at_secs);
+        let retired = self
+            .retired
+            .iter()
+            .map(|session| session.pending(at))
+            .collect::<Result<Vec<_>, _>>()?;
+        let current = self.graph_session.pending(at)?;
+        for pending in retired.iter().chain([&current]) {
+            if !pending.is_empty() {
+                batch.apply(pending.ops()).await?;
+            }
+        }
+        Ok(Staged { current, retired })
+    }
+
+    /// Mark what [`stage`](Self::stage) put in a batch as stored.
+    pub(crate) fn staged(&mut self, staged: Staged) {
+        let count = staged.retired.len();
+        for (session, pending) in self.retired.iter_mut().zip(staged.retired) {
+            session.stored(pending);
+        }
+        self.retired.drain(..count);
+        self.graph_session.stored(staged.current);
     }
 
     pub fn graph(&self) -> &Graph {
-        &self.graph
+        self.graph_session.graph()
     }
 
-    /// Whether this host was reconstructed from a stored document rather than
-    /// created empty or from the reference fixture in this process.
+    /// Whether this host opened stored truth, a session or the old slot,
+    /// rather than beginning empty or from the reference fixture.
     pub fn was_reopened(&self) -> bool {
-        self.persisted_document.is_some()
+        self.reopened
+    }
+
+    /// The session truth lives in: its journal, changes and authors.
+    pub fn graph_session(&self) -> &GraphSession<B> {
+        &self.graph_session
     }
 
     pub fn selected_persona(&self) -> &SelectedPersonaRef {
@@ -278,22 +381,22 @@ impl<B: Backend> MereHost<B> {
 
     pub fn access_history_for(&self, address: &str) -> Result<AccessHistory, MereHostError> {
         let (key, _) = self
-            .graph
+            .graph()
             .get_node_by_url(address)
             .ok_or(AccessError::UnknownNode)?;
-        Ok(access_history(&self.graph, key)?)
+        Ok(access_history(self.graph(), key)?)
     }
 
     pub fn facet_value(&self, address: &str, facet: &str) -> Option<&Value> {
-        let (_, node) = self.graph.get_node_by_url(address)?;
-        self.graph.facets().get(&node.id, &FacetId::new(facet))
+        let (_, node) = self.graph().get_node_by_url(address)?;
+        self.graph().facets().get(&node.id, &FacetId::new(facet))
     }
 
     pub fn instance_for_address(&self, address: &str) -> Option<InstanceId> {
         self.instance_targets
             .iter()
             .position(|key| {
-                self.graph
+                self.graph()
                     .get_node(*key)
                     .is_some_and(|node| node.url() == address)
             })
@@ -323,13 +426,13 @@ impl<B: Backend> MereHost<B> {
     /// keeps them from disagreeing about a rung.
     fn served_layout(&self) -> mere::canvas::CanvasStrategyProjection {
         let extents: HashMap<NodeKey, (f32, f32)> = self
-            .graph
+            .graph()
             .nodes()
             .map(|(key, _)| (key, SERVED_FOOTPRINT))
             .collect();
         mere::canvas::project_canvas_strategy_with_score_for_view(
             "phyllotaxis.default",
-            &self.graph,
+            self.graph(),
             None,
             SERVED_VIEWPORT.0,
             SERVED_VIEWPORT.1,
@@ -341,46 +444,64 @@ impl<B: Backend> MereHost<B> {
         )
     }
 
+    fn author(&self) -> Author {
+        author_of(&self.selected_persona, &self.via)
+    }
+
+    /// Run `edit` on the graph as one journaled change by the selected
+    /// persona, via the current channel.
+    fn edit_graph<R>(&mut self, edit: impl FnOnce(&mut Graph) -> R) -> R {
+        let author = self.author();
+        self.graph_session.edit_now(author, edit).0
+    }
+
+    /// Run `work` with its edits coming through `via`, such as a browser
+    /// extension's captures, rather than through Graphshell (§7 item 23).
+    pub(crate) fn through<R>(&mut self, via: String, work: impl FnOnce(&mut Self) -> R) -> R {
+        let outer = std::mem::replace(&mut self.via, via);
+        let result = work(self);
+        self.via = outer;
+        result
+    }
+
     pub(crate) fn set_facet(
         &mut self,
         key: NodeKey,
         facet: &str,
         value: Value,
     ) -> Result<(), MereHostError> {
-        self.graph.get_node(key).ok_or(AccessError::UnknownNode)?;
-        let updated = matches!(
+        self.graph().get_node(key).ok_or(AccessError::UnknownNode)?;
+        let result = self.edit_graph(|graph| {
             apply_graph_delta(
-                &mut self.graph,
+                graph,
                 GraphDelta::SetNodeFacet {
                     key,
                     facet: facet.to_string(),
                     value,
                 },
-            ),
+            )
+        });
+        if matches!(
+            result,
             mere::kernel::graph::apply::GraphDeltaResult::NodeMetadataUpdated(true)
-        );
-        if updated {
+        ) {
             self.projection_revision = self.projection_revision.wrapping_add(1);
-            self.dirty = true;
         }
         Ok(())
     }
 
     pub(crate) fn mutate_product_graph<R>(&mut self, mutate: impl FnOnce(&mut Graph) -> R) -> R {
-        let result = mutate(&mut self.graph);
+        let result = self.edit_graph(mutate);
         self.projection_revision = self.projection_revision.wrapping_add(1);
-        self.dirty = true;
         result
     }
 
-    pub(crate) fn replace_product_graph(&mut self, graph: Graph) {
-        self.graph = graph;
-        self.projection_epoch = self.projection_epoch.wrapping_add(1);
-        self.projection_revision = 1;
-        self.resources.clear();
-        self.instance_targets.clear();
-        self.persisted_document = None;
-        self.dirty = true;
+    /// Apply edits in stable-id form as one change: an import's.
+    pub(crate) fn apply_edits(&mut self, edits: Vec<CapturedDelta>) -> Result<(), MereHostError> {
+        let author = self.author();
+        self.graph_session.apply_now(author, edits)?;
+        self.projection_revision = self.projection_revision.wrapping_add(1);
+        Ok(())
     }
 
     fn build_snapshot(&mut self) -> Result<ProjectionSnapshot, MereHostError> {
@@ -406,7 +527,7 @@ impl<B: Backend> MereHost<B> {
 
         for (index, (key, position)) in layout.positions.iter().copied().enumerate() {
             let node = self
-                .graph
+                .graph()
                 .get_node(key)
                 .expect("Mere canvas returned a key from this graph");
             let instance = InstanceId(index as u32);
@@ -451,7 +572,7 @@ impl<B: Backend> MereHost<B> {
                     },
                     CardValueV1 {
                         label: "Accesses".to_string(),
-                        value: access_history(&self.graph, key)?.records.len().to_string(),
+                        value: access_history(self.graph(), key)?.records.len().to_string(),
                     },
                 ],
                 badges: tags,
@@ -485,7 +606,7 @@ impl<B: Backend> MereHost<B> {
             resources.insert(resource, bytes);
         }
 
-        for relation in self.graph.relations() {
+        for relation in self.graph().relations() {
             let (Some(&from), Some(&to)) = (
                 instance_of.get(&relation.from),
                 instance_of.get(&relation.to),
@@ -620,7 +741,7 @@ impl<B: Backend> IntentSink for MereHost<B> {
             },
         };
         let node = self
-            .graph
+            .graph()
             .get_node(target)
             .expect("disclosed target remains in the graph");
         if payload.handler != handler.id
@@ -632,14 +753,9 @@ impl<B: Backend> IntentSink for MereHost<B> {
                 reason: "open payload does not match the advertised target".to_string(),
             });
         }
-        record_access(
-            &mut self.graph,
-            target,
-            &self.access_context,
-            &payload.handler,
-        )?;
+        let context = self.access_context.clone();
+        self.edit_graph(|graph| record_access(graph, target, &context, &payload.handler))?;
         self.projection_revision = self.projection_revision.wrapping_add(1);
-        self.dirty = true;
         Ok(IntentResult::Accepted)
     }
 }
@@ -790,5 +906,108 @@ mod tests {
             score.items.len(),
             "the score names exactly the served items"
         );
+    }
+
+    fn access_context() -> AccessContext {
+        AccessContext {
+            persona: FIXTURE_PERSONA_ADDRESS.to_string(),
+            device: FIXTURE_DEVICE_TWO_ADDRESS.to_string(),
+            at_ms: 3_000,
+        }
+    }
+
+    async fn opened(backend: &MemoryBackend) -> MereHost<MemoryBackend> {
+        MereHost::open(
+            backend.clone(),
+            selected_persona(),
+            fixture_handlers(),
+            access_context(),
+        )
+        .await
+        .expect("open")
+    }
+
+    /// A graph's snapshot, undated, and its facets, encoded.
+    fn encoded(graph: &Graph) -> (Vec<u8>, Vec<u8>) {
+        let mut snapshot = graph.to_snapshot();
+        snapshot.timestamp_secs = 0;
+        (
+            serde_json::to_vec(&snapshot).unwrap(),
+            serde_json::to_vec(graph.facets()).unwrap(),
+        )
+    }
+
+    #[test]
+    fn a_store_from_before_sessions_is_read_once_and_left_in_place() {
+        pollster::block_on(async {
+            let backend = MemoryBackend::new();
+            let old =
+                MereHost::fixture(MemoryBackend::new(), selected_persona(), fixture_handlers())
+                    .expect("fixture");
+            let document = PersistedMereHost {
+                graph: old.graph().to_snapshot(),
+                facets: old.graph().facets().clone(),
+                projection_epoch: 7,
+            };
+            let slots = JsonSlots::new(backend.clone());
+            slots.save(HOST_SLOT, &document).await.expect("old slot");
+            let slot_bytes = backend.get(HOST_SLOT).await.unwrap();
+
+            let migrated = opened(&backend).await;
+            assert!(migrated.was_reopened());
+            let mut expected = Graph::from_snapshot(&document.graph);
+            expected.overlay_facets(document.facets.clone());
+            assert_eq!(
+                encoded(migrated.graph()),
+                encoded(&expected),
+                "the first baseline is the graph the old host would have opened"
+            );
+            assert_eq!(
+                migrated.projection_epoch, 8,
+                "the epoch continues from the slot"
+            );
+            let sessions = MereSessions::new(backend.clone());
+            assert_eq!(sessions.list().await.unwrap().len(), 1, "stored at once");
+            assert_eq!(
+                backend.get(HOST_SLOT).await.unwrap(),
+                slot_bytes,
+                "the old slot stays where it is"
+            );
+
+            // Once a session exists the slot is never read again: rewriting it
+            // changes nothing the next open sees.
+            let mut rewritten = document.clone();
+            rewritten.graph = Graph::new().to_snapshot();
+            rewritten.facets = NodeFacetStore::new();
+            slots
+                .save(HOST_SLOT, &rewritten)
+                .await
+                .expect("rewrite slot");
+            let mut reopened = opened(&backend).await;
+            assert_eq!(encoded(reopened.graph()), encoded(migrated.graph()));
+            assert_eq!(sessions.list().await.unwrap().len(), 1);
+            assert_eq!(reopened.projection_epoch, 9, "every open is a new epoch");
+
+            // Nor with every session in the trash: the next open begins empty.
+            let at = std::time::SystemTime::UNIX_EPOCH + Duration::from_secs(1_800_000_000);
+            reopened
+                .graph_session
+                .trash(author_of(&selected_persona(), GRAPHSHELL), at)
+                .await
+                .unwrap();
+            let after_trash = opened(&backend).await;
+            assert_eq!(after_trash.graph().node_count(), 0);
+            assert!(!after_trash.was_reopened());
+        });
+    }
+
+    #[test]
+    fn graphshell_s_own_edits_are_the_selected_persona_s_via_graphshell() {
+        let host = MereHost::fixture(MemoryBackend::new(), selected_persona(), fixture_handlers())
+            .expect("fixture");
+        let author = Author::person(FIXTURE_PERSONA_ADDRESS).via(GRAPHSHELL);
+        let journal = host.graph_session().journal();
+        assert!(!journal.entries().is_empty());
+        assert!(journal.entries().iter().all(|entry| entry.author == author));
     }
 }
