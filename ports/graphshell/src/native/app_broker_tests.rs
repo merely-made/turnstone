@@ -24,7 +24,7 @@ use crate::identity::VaultProtectionView;
 
 use crate::browser_carrier::{read_native_message_async, write_native_message_async};
 use crate::identity_endpoint::SupplementalCard;
-use crate::native::app_admission::{AllowedAppRoutes, AppHello, AppId, AppRouteId};
+use crate::native::app_admission::{AllowedAppRoutes, AppHello, AppId, AppRouteGrants, AppRouteId};
 use crate::native::app_broker::{
     APP_CONNECT_SCHEMA, AppEndpointCatalog, AppHostMessage, AppMessage, serve_app_broker,
     serve_app_connection_for_tests,
@@ -389,7 +389,7 @@ async fn the_client_reads_cards_over_the_served_endpoint() {
         let _ = serve_app_broker(
             &server_endpoint,
             personae,
-            AllowedAppRoutes::default(),
+            AppRouteGrants::default(),
             60_000,
             Some(Arc::new(RwLock::new(surface))),
             AppEndpointCatalog::default(),
@@ -433,6 +433,75 @@ async fn the_client_reads_cards_over_the_served_endpoint() {
     let bytes = client.resource(session, hash).await.unwrap();
     assert_eq!(bytes, capture, "the capture arrives byte for byte");
 
+    client.close().await.unwrap();
+    server.abort();
+}
+
+/// A route the door did not know when it opened: the host grants it and
+/// registers its endpoint while serving, and the next connection on it opens,
+/// the endpoint told which application the door admitted (reservoir plan §7
+/// item 20).
+#[tokio::test(flavor = "multi_thread")]
+async fn a_route_granted_while_serving_opens_for_the_next_connection() {
+    use crate::canary::FixtureEndpoint;
+    use crate::native::endpoint_catalog::ResidentEndpointRoute;
+
+    let personae = resident_host();
+    #[cfg(windows)]
+    let endpoint = format!(r"\\.\pipe\graphshell-app-late-{}", uuid::Uuid::new_v4());
+    #[cfg(not(windows))]
+    let endpoint = std::env::temp_dir()
+        .join(format!("graphshell-app-late-{}.sock", uuid::Uuid::new_v4()))
+        .display()
+        .to_string();
+    let grants = AppRouteGrants::default();
+    let catalog = AppEndpointCatalog::default();
+    let server = {
+        let (endpoint, grants, catalog) = (endpoint.clone(), grants.clone(), catalog.clone());
+        tokio::spawn(async move {
+            let _ = serve_app_broker(&endpoint, personae, grants, 60_000, None, catalog).await;
+        })
+    };
+    let late = || AppRouteId::new("late").unwrap();
+
+    // Wait for the door on the route it opened with.
+    let mut ready = false;
+    for _ in 0..50 {
+        if let Ok(client) = AppBrokerClient::open_at(&endpoint, AppId::new("turnstone")).await {
+            client.close().await.unwrap();
+            ready = true;
+            break;
+        }
+        tokio::time::sleep(std::time::Duration::from_millis(20)).await;
+    }
+    assert!(ready, "the door never opened");
+    assert!(
+        AppBrokerClient::open_route_at(&endpoint, AppId::new("turnstone"), late())
+            .await
+            .is_err(),
+        "a route not yet granted is refused"
+    );
+
+    let seen = Arc::new(std::sync::Mutex::new(None));
+    let factory_seen = Arc::clone(&seen);
+    catalog
+        .update(|catalog| {
+            catalog.register("late", "Late", move |context| {
+                *factory_seen.lock().unwrap() = context.application().map(str::to_string);
+                Ok(FixtureEndpoint::new())
+            })
+        })
+        .await
+        .unwrap();
+    grants.grant(
+        AppId::new("turnstone"),
+        ResidentEndpointRoute::new("late", std::time::Duration::from_millis(50)).unwrap(),
+    );
+
+    let client = AppBrokerClient::open_route_at(&endpoint, AppId::new("turnstone"), late())
+        .await
+        .expect("the route granted while serving opens");
+    assert_eq!(seen.lock().unwrap().as_deref(), Some("turnstone"));
     client.close().await.unwrap();
     server.abort();
 }

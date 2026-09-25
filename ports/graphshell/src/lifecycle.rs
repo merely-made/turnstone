@@ -121,13 +121,26 @@ pub struct SessionAuthority {
 pub struct AdmittedEndpointContext {
     session: ProjectionSession,
     subject: [u8; 32],
+    application: Option<String>,
 }
 
 impl AdmittedEndpointContext {
     /// Construct one in-process composition handoff from already-verified
     /// facts. This constructor performs no authentication.
     pub fn new(session: ProjectionSession, subject: [u8; 32]) -> Self {
-        Self { session, subject }
+        Self {
+            session,
+            subject,
+            application: None,
+        }
+    }
+
+    /// This context, naming the first-party application the door admitted:
+    /// the name its hello gave and the link transcript binds, never a later
+    /// claim of the client's.
+    pub fn with_application(mut self, application: impl Into<String>) -> Self {
+        self.application = Some(application.into());
+        self
     }
 
     /// The transcript-derived projection session the endpoint must serve.
@@ -138,6 +151,12 @@ impl AdmittedEndpointContext {
     /// The already-admitted public-key subject for product-scoped work.
     pub fn subject(&self) -> [u8; 32] {
         self.subject
+    }
+
+    /// The application the door admitted, for attributing its work. `None`
+    /// where no door names one, such as the browser's.
+    pub fn application(&self) -> Option<&str> {
+        self.application.as_deref()
     }
 }
 
@@ -474,6 +493,7 @@ mod tests {
 
         assert_eq!(context.session(), authority.session());
         assert_eq!(context.subject(), authority.principal().subject);
+        assert_eq!(context.application(), None, "only a door names one");
         assert_eq!(
             context,
             AdmittedEndpointContext::new(

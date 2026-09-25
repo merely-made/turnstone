@@ -28,6 +28,7 @@
 //! is not treated as such.
 
 use std::collections::BTreeMap;
+use std::sync::{Arc, RwLock};
 use std::time::Duration;
 
 use serde::{Deserialize, Serialize};
@@ -258,13 +259,18 @@ impl AllowedAppRoutes {
     /// Admit exactly these application-to-route pairs. Repeating an
     /// application grants it more than one route.
     pub fn new(grants: impl IntoIterator<Item = (AppId, ResidentEndpointRoute)>) -> Self {
-        let mut routes = BTreeMap::<AppId, BTreeMap<AppRouteId, ResidentEndpointRoute>>::new();
+        let mut allowed = Self::none();
         for (app, route) in grants {
-            let id = AppRouteId::new(route.id())
-                .expect("ResidentEndpointRoute has already validated its id");
-            routes.entry(app).or_default().insert(id, route);
+            allowed.grant(app, route);
         }
-        Self { routes }
+        allowed
+    }
+
+    /// Grant `app` one more route, replacing a grant of the same id.
+    pub fn grant(&mut self, app: AppId, route: ResidentEndpointRoute) {
+        let id = AppRouteId::new(route.id())
+            .expect("ResidentEndpointRoute has already validated its id");
+        self.routes.entry(app).or_default().insert(id, route);
     }
 
     /// Admit none. A device that wants no first-party clients says so rather
@@ -294,6 +300,39 @@ impl AllowedAppRoutes {
         self.routes
             .iter()
             .flat_map(|(app, routes)| routes.keys().map(move |route| (app, route)))
+    }
+}
+
+/// The routes a door admits, shared with its host so the host can grant more
+/// while the door serves: a mere ensured after the door opened gets its route
+/// then (reservoir plan §7 item 20). Each connection is admitted against the
+/// grants as they stand when its hello arrives.
+#[derive(Clone, Debug, Default)]
+pub struct AppRouteGrants {
+    routes: Arc<RwLock<AllowedAppRoutes>>,
+}
+
+impl AppRouteGrants {
+    pub fn new(routes: AllowedAppRoutes) -> Self {
+        Self {
+            routes: Arc::new(RwLock::new(routes)),
+        }
+    }
+
+    /// Grant `app` one more route, for connections from now on.
+    pub fn grant(&self, app: AppId, route: ResidentEndpointRoute) {
+        self.routes
+            .write()
+            .expect("app grants are never poisoned")
+            .grant(app, route);
+    }
+
+    /// The grants as they stand.
+    pub fn current(&self) -> AllowedAppRoutes {
+        self.routes
+            .read()
+            .expect("app grants are never poisoned")
+            .clone()
     }
 }
 
@@ -452,6 +491,28 @@ mod tests {
             default,
             crate::native::device_broker::configured_device_endpoint(),
             "a first-party app must not land on the browser endpoint",
+        );
+    }
+
+    #[test]
+    fn a_grant_added_later_admits_the_next_request() {
+        let grants = AppRouteGrants::new(AllowedAppRoutes::none());
+        let request = AppHello::for_route(
+            AppId::new("turnstone"),
+            AppRouteId::new("mere/divination").unwrap(),
+        )
+        .accept()
+        .unwrap();
+        let before = grants.current();
+        assert!(before.admit(&request).is_err());
+        grants.grant(
+            AppId::new("turnstone"),
+            ResidentEndpointRoute::new("mere/divination", Duration::from_millis(50)).unwrap(),
+        );
+        assert!(grants.current().admit(&request).is_ok());
+        assert!(
+            before.admit(&request).is_err(),
+            "a connection admitted earlier kept the grants it had"
         );
     }
 }
