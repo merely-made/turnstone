@@ -23,7 +23,9 @@ use mere::kernel::graph::{Author, CapturedDelta, Graph, NodeFacetStore, NodeKey,
 use mere::kernel::persistence::GraphSnapshot;
 use mere::kernel::time::wall_clock_now;
 use muniment::{Backend, JsonSlots, StoreError};
-use pandect::{GraphSession, MereSessions, Pending, SessionError};
+use pandect::{
+    GraphSession, MereSessions, Pending, Reverted, SessionError, SessionId, ViewIntent, ViewKey,
+};
 use sceno::{
     Arrangement, Footprint, InstanceId, ProjectedItem, Rect, Representation, RoutedRelation, Scene,
     Score, Size2, SourceRef, Transform2, Vec2,
@@ -160,6 +162,7 @@ pub struct MereHost<B> {
     resources: BTreeMap<ContentHash, Vec<u8>>,
     instance_targets: Vec<NodeKey>,
     reopened: bool,
+    projection_session: ProjectionSession,
 }
 
 /// What [`MereHost::stage`] put in a batch, to mark stored once it commits.
@@ -201,7 +204,17 @@ impl<B: Backend + Clone> MereHost<B> {
             resources: BTreeMap::new(),
             instance_targets: Vec::new(),
             reopened,
+            projection_session: ProjectionSession(LOCAL_SESSION.to_string()),
         }
+    }
+
+    /// Advance the store's projection epoch from what it holds, or from
+    /// `fallback` when it holds none.
+    async fn advance_epoch(slots: &JsonSlots<B>, fallback: u64) -> Result<u64, MereHostError> {
+        let stored: Option<u64> = slots.load(EPOCH_SLOT).await?;
+        let epoch = stored.unwrap_or(fallback).wrapping_add(1);
+        slots.save(EPOCH_SLOT, &epoch).await?;
+        Ok(epoch)
     }
 
     /// A host on a new, empty session, stored at its first persist.
@@ -236,19 +249,10 @@ impl<B: Backend + Clone> MereHost<B> {
     ) -> Result<Self, MereHostError> {
         let sessions = MereSessions::new(backend.clone());
         let slots = JsonSlots::new(backend.clone());
-        let stored_epoch: Option<u64> = slots.load(EPOCH_SLOT).await?;
         let author = author_of(&selected_persona, GRAPHSHELL);
-        let (graph_session, epoch, reopened) = match sessions.latest_live().await? {
-            Some(latest) => (
-                sessions.open(latest.session_id).await?,
-                stored_epoch.unwrap_or(0),
-                true,
-            ),
-            None if !sessions.list().await?.is_empty() => (
-                sessions.begin(author, None),
-                stored_epoch.unwrap_or(0),
-                false,
-            ),
+        let (graph_session, fallback, reopened) = match sessions.latest_live().await? {
+            Some(latest) => (sessions.open(latest.session_id).await?, 0, true),
+            None if !sessions.list().await?.is_empty() => (sessions.begin(author, None), 0, false),
             None => match slots.load::<PersistedMereHost>(HOST_SLOT).await? {
                 Some(saved) => {
                     // The old host's own load, so the first baseline is the
@@ -257,21 +261,12 @@ impl<B: Backend + Clone> MereHost<B> {
                     graph.overlay_facets(saved.facets);
                     let mut migrated = sessions.begin(author, Some(graph));
                     migrated.flush(wall_clock_now()).await?;
-                    (
-                        migrated,
-                        stored_epoch.unwrap_or(saved.projection_epoch),
-                        true,
-                    )
+                    (migrated, saved.projection_epoch, true)
                 },
-                None => (
-                    sessions.begin(author, None),
-                    stored_epoch.unwrap_or(0),
-                    false,
-                ),
+                None => (sessions.begin(author, None), 0, false),
             },
         };
-        let epoch = epoch.wrapping_add(1);
-        slots.save(EPOCH_SLOT, &epoch).await?;
+        let epoch = Self::advance_epoch(&slots, fallback).await?;
         Ok(Self::assemble(
             backend,
             graph_session,
@@ -280,6 +275,28 @@ impl<B: Backend + Clone> MereHost<B> {
             access_context,
             (epoch, epoch),
             reopened,
+        ))
+    }
+
+    /// Open session `id` of this store, as a resident does to serve one
+    /// session to every application attached to it.
+    pub async fn open_session(
+        backend: B,
+        id: SessionId,
+        selected_persona: SelectedPersonaRef,
+        handlers: HandlerRegistry,
+        access_context: AccessContext,
+    ) -> Result<Self, MereHostError> {
+        let graph_session = MereSessions::new(backend.clone()).open(id).await?;
+        let epoch = Self::advance_epoch(&JsonSlots::new(backend.clone()), 0).await?;
+        Ok(Self::assemble(
+            backend,
+            graph_session,
+            selected_persona,
+            handlers,
+            access_context,
+            (epoch, epoch),
+            true,
         ))
     }
 
@@ -368,7 +385,14 @@ impl<B: Backend> MereHost<B> {
     }
 
     pub fn session(&self) -> ProjectionSession {
-        ProjectionSession(LOCAL_SESSION.to_string())
+        self.projection_session.clone()
+    }
+
+    /// This host, serving its graph under `session` rather than
+    /// [`LOCAL_SESSION`]: a resident names the projections it serves.
+    pub fn with_projection_session(mut self, session: ProjectionSession) -> Self {
+        self.projection_session = session;
+        self
     }
 
     pub fn projection_revision(&self) -> Revision {
@@ -457,7 +481,7 @@ impl<B: Backend> MereHost<B> {
 
     /// Run `work` with its edits coming through `via`, such as a browser
     /// extension's captures, rather than through Graphshell (§7 item 23).
-    pub(crate) fn through<R>(&mut self, via: String, work: impl FnOnce(&mut Self) -> R) -> R {
+    pub fn through<R>(&mut self, via: String, work: impl FnOnce(&mut Self) -> R) -> R {
         let outer = std::mem::replace(&mut self.via, via);
         let result = work(self);
         self.via = outer;
@@ -496,12 +520,49 @@ impl<B: Backend> MereHost<B> {
         result
     }
 
-    /// Apply edits in stable-id form as one change: an import's.
-    pub(crate) fn apply_edits(&mut self, edits: Vec<CapturedDelta>) -> Result<(), MereHostError> {
+    /// Apply edits in stable-id form as one change, such as an import's or an
+    /// attached application's.
+    pub fn apply_edits(&mut self, edits: Vec<CapturedDelta>) -> Result<(), MereHostError> {
         let author = self.author();
         self.graph_session.apply_now(author, edits)?;
         self.projection_revision = self.projection_revision.wrapping_add(1);
         Ok(())
+    }
+
+    /// Undo `via`'s own latest change still in effect, and store the undo
+    /// (reservoir plan §7 items 17 and 18).
+    pub async fn undo(&mut self, via: &str) -> Result<Option<Reverted>, MereHostError> {
+        let author = author_of(&self.selected_persona, via);
+        let reverted = self.graph_session.undo(author).await?;
+        self.bump_if(reverted.is_some());
+        Ok(reverted)
+    }
+
+    /// Redo `via`'s most recent undo, and store it.
+    pub async fn redo(&mut self, via: &str) -> Result<Option<Reverted>, MereHostError> {
+        let author = author_of(&self.selected_persona, via);
+        let reverted = self.graph_session.redo(author).await?;
+        self.bump_if(reverted.is_some());
+        Ok(reverted)
+    }
+
+    /// Change one of `via`'s views, and store it.
+    pub async fn set_view(
+        &mut self,
+        via: &str,
+        view: &str,
+        state: ViewIntent,
+    ) -> Result<(), MereHostError> {
+        let key = ViewKey::new(via, view)?;
+        let author = author_of(&self.selected_persona, via);
+        self.graph_session.set_view(author, key, state).await?;
+        Ok(())
+    }
+
+    fn bump_if(&mut self, changed: bool) {
+        if changed {
+            self.projection_revision = self.projection_revision.wrapping_add(1);
+        }
     }
 
     fn build_snapshot(&mut self) -> Result<ProjectionSnapshot, MereHostError> {
@@ -1009,5 +1070,84 @@ mod tests {
         let journal = host.graph_session().journal();
         assert!(!journal.entries().is_empty());
         assert!(journal.entries().iter().all(|entry| entry.author == author));
+    }
+
+    fn node(n: u128, url: &str) -> CapturedDelta {
+        CapturedDelta::ReplayAddNodeWithIdIfMissing {
+            id: uuid::Uuid::from_u128(n).to_string(),
+            url: url.to_string(),
+            position: [0.0, 0.0],
+        }
+    }
+
+    #[test]
+    fn a_resident_opens_the_session_it_names_under_its_own_projection() {
+        pollster::block_on(async {
+            let backend = MemoryBackend::new();
+            let sessions = MereSessions::new(backend.clone());
+            let author = author_of(&selected_persona(), GRAPHSHELL);
+            let at = |seconds| std::time::SystemTime::UNIX_EPOCH + Duration::from_secs(seconds);
+            let mut older = sessions.begin(author.clone(), None);
+            older
+                .apply_now(author.clone(), vec![node(1, "https://older.test/")])
+                .unwrap();
+            older.flush(at(1_800_000_000)).await.unwrap();
+            let mut newer = sessions.begin(author, None);
+            newer.flush(at(1_800_000_001)).await.unwrap();
+
+            let session = ProjectionSession("djinn.mere/v1/graph".into());
+            let host = MereHost::open_session(
+                backend,
+                older.id(),
+                selected_persona(),
+                fixture_handlers(),
+                access_context(),
+            )
+            .await
+            .expect("open the named session")
+            .with_projection_session(session.clone());
+            assert_eq!(
+                host.graph().node_count(),
+                1,
+                "the named session, not the latest"
+            );
+            assert_eq!(host.local_request().session, session);
+        });
+    }
+
+    #[test]
+    fn an_attached_application_edits_undoes_and_keeps_views_under_its_own_name() {
+        pollster::block_on(async {
+            let mut host =
+                MereHost::fixture(MemoryBackend::new(), selected_persona(), fixture_handlers())
+                    .expect("fixture");
+            let before = host.graph().node_count();
+            host.through("turnstone".into(), |host| {
+                host.apply_edits(vec![node(7, "https://turnstone.test/")])
+            })
+            .expect("edit");
+            assert_eq!(host.graph().node_count(), before + 1);
+            assert_eq!(
+                host.graph_session().changes().last().unwrap().author,
+                Author::person(FIXTURE_PERSONA_ADDRESS).via("turnstone")
+            );
+
+            assert!(
+                host.undo("knot-editor").await.unwrap().is_none(),
+                "knot-editor has nothing of its own to undo"
+            );
+            assert!(host.undo("turnstone").await.unwrap().is_some());
+            assert_eq!(
+                host.graph().node_count(),
+                before,
+                "the undo takes the node back"
+            );
+
+            host.set_view("turnstone", "main", ViewIntent::default())
+                .await
+                .unwrap();
+            let key = ViewKey::new("turnstone", "main").unwrap();
+            assert!(host.graph_session().view(&key).is_some());
+        });
     }
 }
