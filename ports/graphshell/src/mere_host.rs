@@ -40,6 +40,9 @@ use crate::handlers::{
 };
 use crate::session_item;
 
+/// The session item's instance in resident mode (§7 item 31).
+const SESSION_ITEM_INSTANCE: InstanceId = InstanceId(0);
+
 /// The footprint every served item is measured at, in scene units.
 const SERVED_FOOTPRINT: (f32, f32) = (240.0, 112.0);
 /// The viewport the served arrangement is solved for.
@@ -166,7 +169,6 @@ pub struct MereHost<B> {
     projection_session: ProjectionSession,
     /// Whether the graph projection shows the session item (§7 item 31).
     session_item: bool,
-    session_instance: Option<InstanceId>,
 }
 
 /// What [`MereHost::stage`] put in a batch, to mark stored once it commits.
@@ -210,7 +212,6 @@ impl<B: Backend + Clone> MereHost<B> {
             reopened,
             projection_session: ProjectionSession(LOCAL_SESSION.to_string()),
             session_item: false,
-            session_instance: None,
         }
     }
 
@@ -408,13 +409,22 @@ impl<B: Backend> MereHost<B> {
         self
     }
 
-    /// The session item's instance in the last snapshot served, if shown.
+    /// The session item's instance, when shown: always the first.
     pub fn session_instance(&self) -> Option<InstanceId> {
-        self.session_instance
+        self.session_item.then_some(SESSION_ITEM_INSTANCE)
+    }
+
+    /// Where node instances start: after the session item, when shown.
+    fn node_offset(&self) -> u32 {
+        u32::from(self.session_item)
     }
 
     pub fn projection_revision(&self) -> Revision {
         Revision(self.projection_revision)
+    }
+
+    pub fn projection_epoch(&self) -> SceneEpoch {
+        SceneEpoch(self.projection_epoch)
     }
 
     pub fn set_access_context(&mut self, context: AccessContext) {
@@ -442,7 +452,7 @@ impl<B: Backend> MereHost<B> {
                     .get_node(*key)
                     .is_some_and(|node| node.url() == address)
             })
-            .map(|index| InstanceId(index as u32))
+            .map(|index| InstanceId(index as u32 + self.node_offset()))
     }
 
     pub fn local_request(&self) -> ProjectionRequest {
@@ -577,6 +587,20 @@ impl<B: Backend> MereHost<B> {
         Ok(())
     }
 
+    /// Put this session in the trash for `via`, and store it.
+    pub async fn trash(&mut self, via: &str) -> Result<(), MereHostError> {
+        let author = author_of(&self.selected_persona, via);
+        self.graph_session.trash(author, wall_clock_now()).await?;
+        Ok(())
+    }
+
+    /// Take this session back out of the trash for `via`, and store it.
+    pub async fn restore(&mut self, via: &str) -> Result<(), MereHostError> {
+        let author = author_of(&self.selected_persona, via);
+        self.graph_session.restore(author, wall_clock_now()).await?;
+        Ok(())
+    }
+
     fn bump_if(&mut self, changed: bool) {
         if changed {
             self.projection_revision = self.projection_revision.wrapping_add(1);
@@ -604,12 +628,75 @@ impl<B: Backend> MereHost<B> {
         let mut max_x = f32::NEG_INFINITY;
         let mut max_y = f32::NEG_INFINITY;
 
+        // In resident mode the session item comes first, so it keeps instance
+        // 0 however the graph grows, and an edit made from an older snapshot
+        // still names it (§7 items 31 and 32).
+        let offset = self.node_offset();
+        if self.session_item {
+            // Above the graph, or at the origin when the graph is empty.
+            let (left, top) = layout
+                .positions
+                .iter()
+                .fold((f32::INFINITY, f32::INFINITY), |(x, y), (_, at)| {
+                    (x.min(at.x), y.min(at.y))
+                });
+            let position = if layout.positions.is_empty() {
+                Vec2::new(0.0, 0.0)
+            } else {
+                Vec2::new(left, top - 2.0 * SERVED_FOOTPRINT.1)
+            };
+            min_x = min_x.min(position.x);
+            min_y = min_y.min(position.y);
+            max_x = max_x.max(position.x);
+            max_y = max_y.max(position.y);
+            let id = self.graph_session.id().as_uuid().to_string();
+            let source =
+                scene.intern_source(SourceRef::new(session_item::SESSION_ITEM_SOURCE, &id));
+            scene.items.push(ProjectedItem {
+                source,
+                space: Scene::WORLD,
+                transform: Transform2::translation(position.x, position.y),
+                footprint: Footprint::Rect {
+                    size: Size2::new(SERVED_FOOTPRINT.0, SERVED_FOOTPRINT.1),
+                },
+                representation: Representation::Card,
+                layer: 0,
+                visible: true,
+                hit: None,
+                channels: Vec::new(),
+            });
+            let card = session_item::card(&self.graph_session);
+            let bytes = serde_json::to_vec(&card).expect("PortableCardV1 always serializes");
+            let resource = ContentHash::of(&bytes);
+            let key = PresentationKey(format!("{}:{id}", session_item::SESSION_ITEM_SOURCE));
+            presentation.bindings.push(PresentationBinding {
+                instance: SESSION_ITEM_INSTANCE,
+                key: key.clone(),
+            });
+            presentation.offers.insert(
+                key,
+                vec![PresentationOffer {
+                    codec: PresentationCodec::PortableCardV1,
+                    resource,
+                    byte_size: bytes.len() as u64,
+                    requires: PresentationCapability::PortableCard,
+                    semantics: PresentationSemantics {
+                        label: card.title.clone(),
+                        role: SemanticRole::Article,
+                        bounds: BoundsRelationship::FillFootprint,
+                        actions: session_item::actions(),
+                    },
+                }],
+            );
+            resources.insert(resource, bytes);
+        }
+
         for (index, (key, position)) in layout.positions.iter().copied().enumerate() {
             let node = self
                 .graph()
                 .get_node(key)
                 .expect("Mere canvas returned a key from this graph");
-            let instance = InstanceId(index as u32);
+            let instance = InstanceId(index as u32 + offset);
             instance_targets.push(key);
             instance_of.insert(key, instance);
             min_x = min_x.min(position.x);
@@ -692,8 +779,8 @@ impl<B: Backend> MereHost<B> {
             ) else {
                 continue;
             };
-            let from_position = layout.positions[from.0 as usize].1;
-            let to_position = layout.positions[to.0 as usize].1;
+            let from_position = layout.positions[(from.0 - offset) as usize].1;
+            let to_position = layout.positions[(to.0 - offset) as usize].1;
             scene.relations.push(RoutedRelation {
                 from,
                 to,
@@ -707,61 +794,8 @@ impl<B: Backend> MereHost<B> {
             });
         }
 
-        let mut session_instance = None;
-        if self.session_item {
-            let instance = InstanceId(instance_targets.len() as u32);
-            // Above the graph, or at the origin when the graph is empty.
-            let position = if instance_targets.is_empty() {
-                Vec2::new(0.0, 0.0)
-            } else {
-                min_y -= 2.0 * SERVED_FOOTPRINT.1;
-                Vec2::new(min_x, min_y)
-            };
-            let id = self.graph_session.id().as_uuid().to_string();
-            let source =
-                scene.intern_source(SourceRef::new(session_item::SESSION_ITEM_SOURCE, &id));
-            scene.items.push(ProjectedItem {
-                source,
-                space: Scene::WORLD,
-                transform: Transform2::translation(position.x, position.y),
-                footprint: Footprint::Rect {
-                    size: Size2::new(SERVED_FOOTPRINT.0, SERVED_FOOTPRINT.1),
-                },
-                representation: Representation::Card,
-                layer: 0,
-                visible: true,
-                hit: None,
-                channels: Vec::new(),
-            });
-            let card = session_item::card(&self.graph_session);
-            let bytes = serde_json::to_vec(&card).expect("PortableCardV1 always serializes");
-            let resource = ContentHash::of(&bytes);
-            let key = PresentationKey(format!("{}:{id}", session_item::SESSION_ITEM_SOURCE));
-            presentation.bindings.push(PresentationBinding {
-                instance,
-                key: key.clone(),
-            });
-            presentation.offers.insert(
-                key,
-                vec![PresentationOffer {
-                    codec: PresentationCodec::PortableCardV1,
-                    resource,
-                    byte_size: bytes.len() as u64,
-                    requires: PresentationCapability::PortableCard,
-                    semantics: PresentationSemantics {
-                        label: card.title.clone(),
-                        role: SemanticRole::Article,
-                        bounds: BoundsRelationship::FillFootprint,
-                        actions: session_item::actions(),
-                    },
-                }],
-            );
-            resources.insert(resource, bytes);
-            session_instance = Some(instance);
-        }
-
         scene.bounds = if layout.positions.is_empty() {
-            let size = if session_instance.is_some() {
+            let size = if self.session_item {
                 Size2::new(SERVED_FOOTPRINT.0, SERVED_FOOTPRINT.1)
             } else {
                 Size2::new(0.0, 0.0)
@@ -786,7 +820,6 @@ impl<B: Backend> MereHost<B> {
 
         self.resources = resources;
         self.instance_targets = instance_targets;
-        self.session_instance = session_instance;
         Ok(ProjectionSnapshot {
             version: ProtocolVersion::V1,
             session: self.session(),
@@ -855,7 +888,12 @@ impl<B: Backend> IntentSink for MereHost<B> {
                 current_revision: Revision(self.projection_revision),
             });
         }
-        let Some(&target) = self.instance_targets.get(intent.target.0 as usize) else {
+        let Some(&target) = intent
+            .target
+            .0
+            .checked_sub(self.node_offset())
+            .and_then(|index| self.instance_targets.get(index as usize))
+        else {
             return Ok(IntentResult::Rejected {
                 reason: "intent target is not in the disclosed scene".to_string(),
             });
