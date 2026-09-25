@@ -1054,7 +1054,7 @@ fn run_workspace_profile(
     let mut config =
         pelt_desktop::WorkspaceViewerConfig::new(urls, pelt_desktop::WindowingMode::Headed);
     if let Some(path) = appearance_store {
-        let store = match pelt_desktop::FileAppearanceStore::load(&path) {
+        let store = match pelt_desktop::FileThemeChoiceStore::load(&path) {
             Ok(store) => store,
             Err(error) => {
                 eprintln!(
