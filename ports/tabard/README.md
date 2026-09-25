@@ -21,6 +21,9 @@ The first implementation is deliberately portable and library-only:
 
 - Theme owns a name and tinct::Seeds, then derives Tinct's normal-contrast
   base palette.
+- The theme module holds the host theme model, moved from Mere's registry on
+  2026-09-24: ThemeTokenSet and its ThemeRegistry, seed derivation, custom
+  modes, chrome colours, edge-style tokens, and the theme a lens carries.
 - Theme::design_tokens emits a typed DTCG 2025.10 color document. Every token
   has an explicit color type and a structured sRGB value, while the name,
   seeds, and derivation choice live under org.merely.tabard in $extensions.
@@ -70,9 +73,9 @@ beside a `genet.livery` neighbor and retained the Reader inspector's lineage.
 These receipts validate consumer seams, not persistence or a platform theme
 policy.
 
-This slice deliberately does not add host theme structs, syntax-color policy,
-icon policy, persistence, imports, a DTCG resolver, or a Geopard exporter.
-Those become consumer work after the shared artifact has a stable shape.
+Syntax-color policy, icon policy, persistence, imports, a DTCG resolver and a
+Geopard exporter are not here yet; the host theme model arrived with the theme
+module.
 
 ## License
 
