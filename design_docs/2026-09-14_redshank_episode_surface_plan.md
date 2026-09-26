@@ -138,6 +138,15 @@ node is session-graph truth and survives a restart on its own.
    pins were unpushed are no longer required.
 4. **No headed receipt.** Everything above is headless. A tile rendered in a
    real window, with audio, is not yet captured.
+5. **Capture ignores the listener's settings** (found 2026-09-26). The
+   standalone host honours `ListenerSettings::capture_playback` on every
+   capture: Pause pauses, Duck lowers the one output gain to
+   `duck_volume_percent` for the length of the capture, Continue leaves it.
+   `RedshankHost`'s `BeginTextNote` freezes the anchor and does nothing to
+   playback, so Pause and Duck are silently Continue in the tile. The
+   playback commands (`Pause`, `Duck`, `Unduck`) exist on the runtime the host
+   already owns; what is missing is the host applying the setting on begin
+   and lifting the duck once no capture is open, as the desktop does.
 
 ## Verification
 
