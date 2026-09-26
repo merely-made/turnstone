@@ -38,18 +38,18 @@ serde = { version = "1", features = ["derive"] }
 # A mere workspace member since 2026-09-03 (platform boundary plan, P2), so a
 # relative path like the other mere crates above, not a git pin.
 cambium = { path = "../../../crates/cambium/cambium" }
-genet-render = { git = "https://github.com/merely-made/genet.git", rev = "18e41e44c369426b1566c45a91850e54f11f277a" }
+genet-render = { git = "https://github.com/merely-made/genet.git", rev = "1b62fd0b21893d87c864c735aed7e0bfc1c9942e" }
 # The present core, shared with every winit host. Booting wgpu, picking a
 # non-sRGB surface format, and rasterizing a Scene are not browser-specific, so
 # this crate no longer hand-rolls them; only the canvas target and the
 # content-over-chrome composition below are ours.
-genet-render-host = { git = "https://github.com/merely-made/genet.git", rev = "18e41e44c369426b1566c45a91850e54f11f277a" }
-genet-scripted-dom = { git = "https://github.com/merely-made/genet.git", rev = "18e41e44c369426b1566c45a91850e54f11f277a", version = "=0.1.2" }
+genet-render-host = { git = "https://github.com/merely-made/genet.git", rev = "1b62fd0b21893d87c864c735aed7e0bfc1c9942e" }
+genet-scripted-dom = { git = "https://github.com/merely-made/genet.git", rev = "1b62fd0b21893d87c864c735aed7e0bfc1c9942e", version = "=0.1.2" }
 # The shared scenario driver every genet app runs its receipts through; the
 # page implements its `Automatable`/`Driveable` over the browser DOM
 # (`src/web_scenario.rs`). Pure: its three deps are already in this graph.
 # Named genet-probe until genet 7baa554c (2026-09-14).
-taproot = { git = "https://github.com/merely-made/genet.git", rev = "18e41e44c369426b1566c45a91850e54f11f277a" }
+taproot = { git = "https://github.com/merely-made/genet.git", rev = "1b62fd0b21893d87c864c735aed7e0bfc1c9942e" }
 js-sys = "0.3"
 netrender = { git = "https://github.com/merely-made/netrender.git", rev = "aba7d837bb7e9bde35374cb8b7d4ecfc35547743" }
 netrender_device = { git = "https://github.com/merely-made/netrender.git", rev = "aba7d837bb7e9bde35374cb8b7d4ecfc35547743" }
@@ -134,7 +134,7 @@ opt-level = 3
 opt-level = 3
 
 [patch.crates-io]
-taffy = { package = "genet-taffy", version = "=0.14.0", git = "https://github.com/merely-made/genet.git", rev = "18e41e44c369426b1566c45a91850e54f11f277a" }
-layout-dom-api = { git = "https://github.com/merely-made/genet.git", rev = "18e41e44c369426b1566c45a91850e54f11f277a", version = "=0.1.1" }
-genet-scripted-dom = { git = "https://github.com/merely-made/genet.git", rev = "18e41e44c369426b1566c45a91850e54f11f277a", version = "=0.1.2" }
+taffy = { package = "genet-taffy", version = "=0.14.0", git = "https://github.com/merely-made/genet.git", rev = "1b62fd0b21893d87c864c735aed7e0bfc1c9942e" }
+layout-dom-api = { git = "https://github.com/merely-made/genet.git", rev = "1b62fd0b21893d87c864c735aed7e0bfc1c9942e", version = "=0.1.1" }
+genet-scripted-dom = { git = "https://github.com/merely-made/genet.git", rev = "1b62fd0b21893d87c864c735aed7e0bfc1c9942e", version = "=0.1.2" }
 vello = { git = "https://github.com/mark-ik/vello.git", tag = "vello-0.10.0" }
