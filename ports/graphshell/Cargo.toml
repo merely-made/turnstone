@@ -94,6 +94,10 @@ web = [
     "dep:uuid",
     "dep:url",
 ]
+# `mere_route`: a mere route's two projections as the mere view's model, and
+# the view's requests as the route's intents (reservoir plan V2b step 3, §7
+# item 42). It brings in `mere-view`, and with it Cambium, so it is opt-in.
+mere-route = ["web", "dep:mere-view"]
 # Native device-agent composition for H7 personal graph synchronization. The
 # browser/PWA reaches this authority through its admitted device session.
 personal-sync = [
@@ -115,6 +119,8 @@ graphshell-client = { version = "0.0.2", path = "../../crates/graphshell/graphsh
 graphshell-endpoint = { version = "0.0.2", path = "../../crates/graphshell/graphshell-endpoint" }
 chirograph.workspace = true
 mere = { path = "../../crates/mere", default-features = false, features = ["graph", "canvas"], optional = true }
+# The mere view's model and requests, for `mere-route`.
+mere-view = { workspace = true, optional = true }
 mesh = { workspace = true, optional = true }
 muniment = { workspace = true, optional = true }
 # The session core. MereHost's truth is a pandect GraphSession in the browser

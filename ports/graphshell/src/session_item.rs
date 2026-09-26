@@ -11,12 +11,37 @@
 //! Each is accepted by id at any revision of the graph (§7 item 32), though
 //! not across an epoch, which names another session. Graphshell's own view
 //! never shows it.
+//!
+//! The route's other projection, the mere's sessions, speaks the vocabulary
+//! here too: the lifecycle intents, which name their session by id (§7 item
+//! 33). djinn serves it and every application reads it from here (§7 item
+//! 37).
 
 use chirograph::{AdvertisedAction, CardValueV1, IntentEffect, IntentReference, PortableCardV1};
 use mere::kernel::graph::CapturedDelta;
 use muniment::Backend;
-use pandect::{GraphSession, ViewIntent};
+use pandect::{GraphSession, SessionId, ViewIntent};
 use serde::{Deserialize, Serialize};
+
+/// A mere route's projection of its sessions: the mere's card, then one card
+/// per session, oldest first.
+pub const MERE_SESSIONS: &str = "djinn.mere/v1/sessions";
+/// A mere route's projection of the attached session's graph.
+pub const MERE_GRAPH: &str = "djinn.mere/v1/graph";
+/// The scene source kind of the sessions projection's cards.
+pub const SESSIONS_SOURCE: &str = "mere.sessions";
+/// Mint a new, empty session.
+pub const MINT_SESSION_INTENT: &str = "mere.sessions.mint";
+/// Attach this connection to another session.
+pub const ATTACH_SESSION_INTENT: &str = "mere.sessions.attach";
+/// Fork a session at its live cursor.
+pub const FORK_SESSION_INTENT: &str = "mere.sessions.fork";
+/// Put a session in the trash.
+pub const TRASH_SESSION_INTENT: &str = "mere.sessions.trash";
+/// Take a session back out of the trash.
+pub const RESTORE_SESSION_INTENT: &str = "mere.sessions.restore";
+/// Schema of [`SessionsActionV1`].
+pub const SESSIONS_SCHEMA: &str = "mere.sessions/v1";
 
 /// The scene source kind of the session item.
 pub const SESSION_ITEM_SOURCE: &str = "mere.session";
@@ -83,6 +108,39 @@ impl SetViewV1 {
             schema: SET_VIEW_SCHEMA.to_string(),
             view: view.into(),
             state,
+        }
+    }
+}
+
+/// Payload of the sessions projection's intents. A step on a session names
+/// it by id, so it lands however the list has moved since the application
+/// looked (§7 item 33); minting names none, and only minting reads the name.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct SessionsActionV1 {
+    pub schema: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub session: Option<SessionId>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub display_name: Option<String>,
+}
+
+impl SessionsActionV1 {
+    /// A step on session `id`: attach, fork, trash or restore.
+    pub fn on(id: SessionId) -> Self {
+        Self {
+            schema: SESSIONS_SCHEMA.to_string(),
+            session: Some(id),
+            display_name: None,
+        }
+    }
+
+    /// Mint a session, named or not.
+    pub fn mint(display_name: Option<String>) -> Self {
+        Self {
+            schema: SESSIONS_SCHEMA.to_string(),
+            session: None,
+            display_name,
         }
     }
 }
