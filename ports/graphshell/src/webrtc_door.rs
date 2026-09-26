@@ -1226,7 +1226,7 @@ mod tests {
         .expect("issue the revocation");
 
         let mut ledger = RevocationLedger::new();
-        assert!(ledger.fold(&revocation), "the statement must verify");
+        ledger.fold(revocation.check().expect("the statement must check"));
 
         let hello = join.hello(vec![minted], join.challenge.shared_link());
         let (_, outcome) = admit_webrtc_session(

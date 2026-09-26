@@ -127,10 +127,10 @@ pub(crate) async fn serve(
                 ),
             )
             .expect("issue revocation");
-            assert!(
-                revocations.write().expect("ledger lock").fold(&statement),
-                "the owner's own revocation verifies"
-            );
+            let checked = statement
+                .check()
+                .expect("the owner's own revocation checks");
+            revocations.write().expect("ledger lock").fold(checked);
             println!("  grant revoked");
         }
 

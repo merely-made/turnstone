@@ -224,9 +224,10 @@ pub(crate) async fn serve(
                 ),
             )
             .expect("issue revocation");
-            if !revocations.write().expect("ledger lock").fold(&statement) {
-                return Err("the owner's transfer revocation did not verify".to_string());
-            }
+            let checked = statement.check().map_err(|fault| {
+                format!("the owner's transfer revocation did not check: {fault}")
+            })?;
+            revocations.write().expect("ledger lock").fold(checked);
             println!("  grant revoked before the transfer intent");
         }
 
