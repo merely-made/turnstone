@@ -632,7 +632,7 @@ pub fn open_webrtc_session<P: IdentityProvider>(
 ///
 /// Attestation valid for this salt, attested master equal to the key the
 /// caller expected, and the derived public key verifying the signature. All
-/// three, or false — this is the shape [`SignedDelegationCertificate::verify`]
+/// three, or false — this is the shape [`SignedDelegationCertificate::check`]
 /// establishes and the door does not get to simplify it.
 fn verify_derived(
     signer: &DerivedKeyAttestation,
@@ -640,16 +640,13 @@ fn verify_derived(
     signature: &[u8],
     message: &[u8],
 ) -> bool {
-    if !signer.verify(WEBRTC_HOST_SIGNING_SALT) {
-        return false;
-    }
-    let Ok(master) = signer.master_public_key() else {
+    let Ok(checked) = signer.check(WEBRTC_HOST_SIGNING_SALT) else {
         return false;
     };
-    if &master.to_bytes() != expected_master {
+    if checked.master() != expected_master {
         return false;
     }
-    let Ok(derived) = signer.derived_public_key() else {
+    let Ok(derived) = Ed25519PublicKey::from_bytes(checked.derived()) else {
         return false;
     };
     let Ok(signature) = <[u8; 64]>::try_from(signature) else {

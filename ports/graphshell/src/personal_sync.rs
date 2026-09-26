@@ -10,6 +10,7 @@
 //! supplies the shared causal authoring helpers, policy-before-insert storage,
 //! and LogSync join/drain used by Commons and Knot.
 
+use insigne::CheckFault;
 use personae::AttestationKeys;
 use std::collections::{BTreeMap, BTreeSet};
 use std::sync::Arc;
@@ -493,8 +494,8 @@ pub enum PersonalGraphError {
 pub enum PersonalGraphIdentityError {
     #[error(transparent)]
     Identity(#[from] IdentityError),
-    #[error("identity provider returned an invalid personal-graph writer attestation")]
-    InvalidAttestation,
+    #[error("identity provider returned an invalid personal-graph writer attestation: {0}")]
+    InvalidAttestation(CheckFault),
     #[error("identity provider attested a different personal-graph writer")]
     WriterMismatch,
 }
@@ -993,15 +994,10 @@ impl<B: Backend + Clone + Send + Sync + 'static> PersonalGraphReplica<B> {
         let salt = personal_graph_identity_salt(graph);
         let keypair = identity.derive_keypair(&salt)?;
         let attestation = identity.attest_derived_key(&salt)?;
-        if !attestation.verify(&salt) {
-            return Err(PersonalGraphIdentityError::InvalidAttestation);
-        }
-        if attestation
-            .derived_public_key()
-            .map_err(|_| PersonalGraphIdentityError::InvalidAttestation)?
-            .to_bytes()
-            != keypair.public_key().to_bytes()
-        {
+        let checked = attestation
+            .check(&salt)
+            .map_err(PersonalGraphIdentityError::InvalidAttestation)?;
+        if *checked.derived() != keypair.public_key().to_bytes() {
             return Err(PersonalGraphIdentityError::WriterMismatch);
         }
         Ok(Self {
