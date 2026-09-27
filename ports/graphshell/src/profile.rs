@@ -225,14 +225,13 @@ pub fn verify_session_key(
     expected_master: Ed25519PublicKey,
     session: &str,
 ) -> Option<Ed25519PublicKey> {
-    if !attestation.verify(&GraphshellIdentity::session_salt(session)) {
+    let checked = attestation
+        .check(&GraphshellIdentity::session_salt(session))
+        .ok()?;
+    if checked.master() != &expected_master.to_bytes() {
         return None;
     }
-    let master = attestation.master_public_key().ok()?;
-    if master.to_bytes() != expected_master.to_bytes() {
-        return None;
-    }
-    attestation.derived_public_key().ok()
+    Ed25519PublicKey::from_bytes(checked.derived()).ok()
 }
 
 #[cfg(test)]
