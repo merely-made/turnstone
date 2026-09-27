@@ -38,6 +38,10 @@ serde = { version = "1", features = ["derive"] }
 # A mere workspace member since 2026-09-03 (platform boundary plan, P2), so a
 # relative path like the other mere crates above, not a git pin.
 cambium = { path = "../../../crates/cambium/cambium" }
+# The one-tree page (`src/web_tree.rs`): Cambium's web host mounts the tree,
+# and rootstock carries the host types and the canvas's texture producer.
+cambium-genet-web-host = { path = "../../../crates/cambium/cambium-genet-web-host" }
+cambium-rootstock = { path = "../../../crates/cambium/cambium-rootstock" }
 genet-render = { git = "https://github.com/merely-made/genet.git", rev = "0cf4f30ba0fe7d5ac7b5eac6c204c81b9087773c" }
 # The present core, shared with every winit host. Booting wgpu, picking a
 # non-sRGB surface format, and rasterizing a Scene are not browser-specific, so
@@ -60,7 +64,7 @@ futures-channel = "0.3"
 futures-util = { version = "0.3", default-features = false }
 sha2 = "0.11"
 uuid = { version = "1", features = ["serde", "v4"] }
-wasm-bindgen = "=0.2.126"
+wasm-bindgen = "=0.2.127"
 wasm-bindgen-futures = "0.4"
 wgpu = { version = "30", default-features = false, features = ["std", "wgsl", "webgpu"] }
 console_error_panic_hook = "0.1"
