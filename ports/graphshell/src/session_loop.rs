@@ -498,7 +498,7 @@ mod tests {
             ),
         )
         .expect("issue revocation");
-        assert!(ledger.fold(&statement));
+        ledger.fold(statement.check().expect("an issued revocation checks"));
         ledger
     }
 
