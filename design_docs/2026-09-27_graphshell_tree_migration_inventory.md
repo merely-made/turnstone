@@ -122,3 +122,27 @@ the old DOM adapter. Porting them must retain settling laws versus deliberately
 restless laws, drag return/hold semantics, pause/resume and the remote-board
 boundary. Their existence is not a current passing tree receipt or a performance
 acceptance result.
+
+## Next physics slice (proposal, not a new ruling)
+
+Rendering currently advances inline physics once per Canvas frame. Reuse the
+bounded elapsed-time accumulator in `web_practice.rs::PracticeHost::frame`
+(50 ms contribution cap, fixed 60 Hz steps), rather than adding a scheduler.
+Seiche should own configurable maximum elapsed contribution and steps per
+frame; Canvas should compose once after those steps. Keep `advance_frame` as
+the deterministic receipt/test path. The actor branch must remain a snapshot
+drain because its simulation already runs independently.
+
+Reset accumulated time on pause, reseed, restore and suspension. The web host
+currently discards the animation-frame timestamp and does not wire document
+visibility to host hidden state; use the existing producer suspension path
+when making that connection. Record executed steps and discarded elapsed time
+beside physics cost. The current practice cap is a starting configuration,
+not a latency guarantee: one expensive step can still block input.
+
+Done means equivalent visible elapsed time produces equivalent fixed-step
+motion at different render rates; stalls have bounded work; pause and hidden
+time never trigger catch-up; restore and dragging still pass; actor progress
+remains independent of rendering; and a headed moving-graph receipt records
+step counts, dropped time and input response. This is separate from the
+rendering optimizations measured in the current slice.
