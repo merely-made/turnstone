@@ -787,6 +787,7 @@ impl BrowserHost {
             "submit-action-draft" => self.submit_action_draft(),
             "zoom-in" => self.zoom(40.0),
             "zoom-out" => self.zoom(-40.0),
+            "fit-content" => self.fit_content(),
             "pan-left" => self.pan(-42.0, 0.0),
             "pan-right" => self.pan(42.0, 0.0),
             "pan-up" => self.pan(0.0, -42.0),
@@ -1006,16 +1007,21 @@ impl BrowserHost {
         if self.active != ActiveSession::Local {
             return;
         }
-        self.canvas
-            .cursor_moved(self.width as f32 * 0.5, self.height as f32 * 0.5);
-        self.canvas.set_ctrl(true);
-        self.canvas.wheel(0.0, delta);
-        self.canvas.set_ctrl(false);
+        graphshell::canvas_controls::CanvasCommand::Zoom { delta }
+            .apply(&mut self.canvas, (self.width, self.height));
     }
 
     fn pan(&mut self, dx: f32, dy: f32) {
         if self.active == ActiveSession::Local {
-            self.canvas.wheel(dx, dy);
+            graphshell::canvas_controls::CanvasCommand::Pan { dx, dy }
+                .apply(&mut self.canvas, (self.width, self.height));
+        }
+    }
+
+    fn fit_content(&mut self) {
+        if self.active == ActiveSession::Local {
+            graphshell::canvas_controls::CanvasCommand::Fit
+                .apply(&mut self.canvas, (self.width, self.height));
         }
     }
 

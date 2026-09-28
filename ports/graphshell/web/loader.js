@@ -32,7 +32,7 @@ function semanticNode(element) {
     ] ?? null);
   const label =
     element.getAttribute("aria-label") ||
-    (element.matches("button, h1, h2, dd") ? element.textContent.trim() : null);
+    (element.matches('button, h1, h2, dd, [role="button"], [role="heading"], [role="status"]') ? element.textContent.trim() : null);
   const children = [...element.children]
     .filter((child) => child.getAttribute("aria-hidden") !== "true")
     .map(semanticNode)
@@ -53,7 +53,10 @@ function semanticNode(element) {
 const graphshellRoot = () => document.querySelector("graphshell-view, graphshell-tree");
 const part = (name) => graphshellRoot()?.querySelector(`#gs-${name}`);
 
-window.graphshellSemanticTree = () => semanticNode(part("semantic-host"));
+window.graphshellSemanticTree = () => {
+  const semantic = part("semantic-host") || graphshellRoot()?.querySelector("[data-cambium-mirror]");
+  return semantic ? semanticNode(semantic) : null;
+};
 
 window.graphshellScenario = () => ({
   state: document.body.dataset.scenario ?? null,
@@ -72,6 +75,7 @@ window.graphshellScenario = () => ({
 // which page ran and how it was shown.
 const treeReceipt = () => ({
   page: "tree",
+  semanticTree: window.graphshellSemanticTree(),
   title: document.title,
   visibility: document.visibilityState,
   viewport: { width: window.innerWidth, height: window.innerHeight },

@@ -522,8 +522,9 @@ impl BrowserHost {
         // The canvas is the authority: picking an arrangement pauses it on
         // its own (`set_layout_strategy`), so the host's remembered flag can
         // lag it, and a toggle read from the flag would "pause" a paused sim.
-        self.physics_paused = !self.canvas.physics_paused();
-        self.canvas.set_physics_paused(self.physics_paused);
+        graphshell::canvas_controls::CanvasCommand::TogglePhysics
+            .apply(&mut self.canvas, (self.width, self.height));
+        self.physics_paused = self.canvas.physics_paused();
         Ok(if self.physics_paused {
             "Physics paused".to_string()
         } else {

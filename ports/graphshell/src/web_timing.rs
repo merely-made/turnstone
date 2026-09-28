@@ -20,6 +20,7 @@
 //! hidden is marked, and a scenario fails on it.
 
 use std::cell::Cell;
+use std::collections::BTreeMap;
 use std::rc::Rc;
 
 use serde_json::{Value, json};
@@ -60,6 +61,8 @@ struct Window {
     cpu_ms: Vec<f64>,
     producer_render_us: Vec<f64>,
     producer_stage_us: Vec<f64>,
+    stages_ms: BTreeMap<&'static str, Vec<f64>>,
+    counts: BTreeMap<&'static str, [usize; 2]>,
     last_start: Option<f64>,
     frame_start: Option<f64>,
     hidden: bool,
@@ -83,6 +86,8 @@ struct Report {
     gpu_ms: Option<Summary>,
     producer_render_us: Option<Summary>,
     producer_stage_us: Option<Summary>,
+    stages_ms: BTreeMap<&'static str, Summary>,
+    counts: BTreeMap<&'static str, [usize; 2]>,
     hidden: bool,
 }
 
@@ -217,6 +222,8 @@ impl FrameTiming {
             cpu_ms: Vec::new(),
             producer_render_us: Vec::new(),
             producer_stage_us: Vec::new(),
+            stages_ms: BTreeMap::new(),
+            counts: BTreeMap::new(),
             last_start: None,
             frame_start: None,
             hidden: page_hidden(),
@@ -268,6 +275,31 @@ impl FrameTiming {
         if let Some(window) = self.window.as_mut() {
             window.producer_render_us.push(render_us as f64);
             window.producer_stage_us.push(stage_us as f64);
+        }
+    }
+
+    /// Whether detailed timings should be sampled for this frame.
+    pub(crate) fn active(&self) -> bool {
+        self.window.is_some()
+    }
+
+    /// Nonoverlapping CPU stages from the scene producer, in milliseconds.
+    pub(crate) fn stages(&mut self, stages: impl IntoIterator<Item = (&'static str, f64)>) {
+        if let Some(window) = self.window.as_mut() {
+            for (name, ms) in stages {
+                window.stages_ms.entry(name).or_default().push(ms);
+            }
+        }
+    }
+
+    /// Workload bounds keep timing comparisons honest when nodes leave view.
+    pub(crate) fn counts(&mut self, counts: impl IntoIterator<Item = (&'static str, usize)>) {
+        if let Some(window) = self.window.as_mut() {
+            for (name, count) in counts {
+                let range = window.counts.entry(name).or_insert([count, count]);
+                range[0] = range[0].min(count);
+                range[1] = range[1].max(count);
+            }
         }
     }
 
@@ -338,6 +370,12 @@ impl FrameTiming {
             gpu_ms,
             producer_render_us: Summary::of(&window.producer_render_us),
             producer_stage_us: Summary::of(&window.producer_stage_us),
+            stages_ms: window
+                .stages_ms
+                .into_iter()
+                .filter_map(|(name, values)| Summary::of(&values).map(|summary| (name, summary)))
+                .collect(),
+            counts: window.counts,
             hidden: window.hidden,
         });
         false
@@ -373,6 +411,9 @@ impl FrameTiming {
                 if let Some(stage) = report.producer_stage_us {
                     parts.push(stage.line("producer_stage_us"));
                 }
+                for (name, summary) in &report.stages_ms {
+                    parts.push(summary.line(name));
+                }
                 if report.hidden {
                     parts.push("HIDDEN".to_string());
                 }
@@ -395,6 +436,8 @@ impl FrameTiming {
                         "gpu_ms": report.gpu_ms.map(|gpu| gpu.json()),
                         "producer_render_us": report.producer_render_us.map(|s| s.json()),
                         "producer_stage_us": report.producer_stage_us.map(|s| s.json()),
+                        "stages_ms": report.stages_ms.iter().map(|(name, s)| (*name, s.json())).collect::<BTreeMap<_, _>>(),
+                        "counts": report.counts.iter().map(|(name, [min,max])| (*name, json!({"min":min,"max":max}))).collect::<BTreeMap<_, _>>(),
                         "hidden": report.hidden,
                     })
                 })

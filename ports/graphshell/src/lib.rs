@@ -24,6 +24,8 @@ pub mod browser_carrier;
 pub mod browser_storage;
 pub mod canary;
 #[cfg(feature = "web")]
+pub mod canvas_controls;
+#[cfg(feature = "web")]
 pub mod capture;
 #[cfg(all(feature = "personal-sync", not(target_arch = "wasm32")))]
 pub mod carriage;

@@ -22,15 +22,16 @@ use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
 use cambium::{
-    AnyView, GenetCtx, GenetElement, PointerClick, WheelEvent, custom_leaf, el, on_click, on_wheel,
+    AnyView, GenetCtx, GenetElement, Key, NamedKey, WheelEvent, custom_leaf, el, on_key,
+    on_pointer, on_wheel,
 };
 use cambium_genet_web_host::{WebCapture, WebWindow, mount};
 use cambium_rootstock::{
     AppCtx, CloseDisposition, Frame, HostFont, HostHooks, HostOptions, HostPointer, HostWindow,
-    Init, Key, KeyPress, NamedKey, ProducedTexture, ProducerContext, SourceAlpha, SourceEncoding,
-    TextureProducer,
+    Init, ProducedTexture, ProducerContext, SourceAlpha, SourceEncoding, TextureProducer,
 };
 use graphshell::app::GraphshellApp;
+use graphshell::canvas_controls::CanvasCommand;
 use graphshell::mere_host::{FIXTURE_PERSONA_ADDRESS, SelectedPersonaRef};
 use mere::canvas::Canvas;
 use mere::kernel::graph::Graph;
@@ -46,7 +47,7 @@ use web_sys::{Element, Event, HtmlCanvasElement};
 use super::web_gpu::SHELL_CLEAR;
 use super::web_graphs;
 use super::web_scenario;
-use super::web_timing::FrameTiming;
+use super::web_timing::{FrameTiming, now_ms};
 
 /// The canvas's custom-leaf key, shared by the view and its producer.
 const CANVAS_KEY: u64 = 1;
@@ -62,6 +63,8 @@ const SHEET: &str = "\
     main { display: flex; flex-direction: column; } \
     h1 { font-size: 16px; margin: 8px 12px 0; } \
     .tree-status { margin: 4px 12px 8px; } \
+    .tree-controls { display:flex; gap:6px; padding:6px 12px; flex-wrap:wrap; } \
+    .tree-controls button { background:#263640; color:#dce3e8; padding:5px 10px; border:1px solid #637581; } \
     .tree-canvas { display: block; flex: 1 1 auto; min-height: 0; }";
 
 /// What the page, its producer and its hooks share.
@@ -111,7 +114,24 @@ impl TextureProducer for CanvasProducer {
             canvas.resize(size.0, size.1);
             shared.size.set(size);
         }
-        let (scene, moving) = canvas.frame(size.0, size.1);
+        let profile = shared.timing.borrow().active();
+        let (scene, moving) = if profile {
+            let (scene, moving, sample) = canvas.frame_profiled(size.0, size.1, now_ms);
+            shared.timing.borrow_mut().stages(
+                mere::canvas::CanvasFrameProfile::STAGES
+                    .into_iter()
+                    .zip(sample.stage_ms),
+            );
+            shared.timing.borrow_mut().counts([
+                ("total_nodes", sample.total_nodes),
+                ("visible_nodes", sample.visible_nodes),
+                ("paint_before_cull", sample.paint_commands_before_cull),
+                ("paint_after_cull", sample.paint_commands_after_cull),
+            ]);
+            (scene, moving)
+        } else {
+            canvas.frame(size.0, size.1)
+        };
         shared.moving.set(moving);
         shared.dirty.set(false);
         // Rasterize every requested frame, as the presenter does. A settled
@@ -119,6 +139,7 @@ impl TextureProducer for CanvasProducer {
         // a later frame after its asynchronous buffer-size readback.
         let [physical_width, physical_height] = cx.frame.physical_size;
         shared.physical_size.set(cx.frame.physical_size);
+        let raster_start = profile.then(now_ms);
         let (texture, view) = cx.core.rasterize_scaled_for(
             CANVAS_RASTER,
             &scene,
@@ -127,6 +148,12 @@ impl TextureProducer for CanvasProducer {
             ColorLoad::Clear(SHELL_CLEAR),
             cx.frame.layout_scale,
         );
+        if let Some(start) = raster_start {
+            shared
+                .timing
+                .borrow_mut()
+                .stages([("rasterize", now_ms() - start)]);
+        }
         self.texture = Some(texture);
         self.generation += 1;
         Some(ProducedTexture {
@@ -163,22 +190,8 @@ impl TreePage {
         )
     }
 
-    fn pick(&mut self, local: (f32, f32)) {
-        let mut canvas = self.shared.canvas.borrow_mut();
-        let hit = canvas.node_at_screen(local.0, local.1);
-        self.picked = hit.and_then(|id| {
-            canvas
-                .graph()
-                .get_node_by_id(id)
-                .map(|(_, node)| node.url().to_string())
-        });
-        if let Some(id) = hit {
-            canvas.select_member(id);
-        }
-        self.shared.dirty.set(true);
-    }
-
     fn wheel(&mut self, wheel: WheelEvent) {
+        wheel.prevent_default();
         let mut canvas = self.shared.canvas.borrow_mut();
         canvas.cursor_moved(wheel.local.0, wheel.local.1);
         canvas.wheel(wheel.delta.0, wheel.delta.1);
@@ -199,13 +212,21 @@ fn view(page: &TreePage) -> Child {
                 el("p", page.status())
                     .attr("class", "tree-status")
                     .attr("role", "status"),
+                controls::toolbar(page),
                 on_wheel(
-                    on_click(
-                        custom_leaf::<TreePage, ()>(CANVAS_KEY, width, 1)
-                            .attr("class", "tree-canvas")
-                            .attr("role", "img")
-                            .attr("aria-label", "Graph"),
-                        |page: &mut TreePage, click: PointerClick| page.pick(click.local),
+                    on_key(
+                        on_pointer(
+                            custom_leaf::<TreePage, ()>(CANVAS_KEY, width, 1)
+                                .attr("class", "tree-canvas")
+                                .attr("role", "img")
+                                .attr("aria-label", "Graph"),
+                            |page: &mut TreePage, event: cambium::PointerEvent| page.pointer(event),
+                        ),
+                        |page: &mut TreePage, event: cambium::KeyEvent| {
+                            if keys(&page.shared, &event.key) {
+                                event.prevent_default();
+                            }
+                        },
                     ),
                     |page: &mut TreePage, wheel: WheelEvent| page.wheel(wheel),
                 ),
@@ -216,28 +237,33 @@ fn view(page: &TreePage) -> Child {
 }
 
 /// Arrows pan and plus or minus zoom, as on the main page.
-fn keys(shared: &Shared, press: &KeyPress) -> bool {
-    let mut canvas = shared.canvas.borrow_mut();
-    match &press.key {
-        Key::Named(NamedKey::ArrowLeft) => canvas.wheel(-PAN_STEP, 0.0),
-        Key::Named(NamedKey::ArrowRight) => canvas.wheel(PAN_STEP, 0.0),
-        Key::Named(NamedKey::ArrowUp) => canvas.wheel(0.0, -PAN_STEP),
-        Key::Named(NamedKey::ArrowDown) => canvas.wheel(0.0, PAN_STEP),
-        Key::Character(text) if text == "+" || text == "=" => zoom(&mut canvas, shared, ZOOM_STEP),
-        Key::Character(text) if text == "-" => zoom(&mut canvas, shared, -ZOOM_STEP),
+fn keys(shared: &Shared, key: &Key) -> bool {
+    let command = match key {
+        Key::Named(NamedKey::ArrowLeft) => CanvasCommand::Pan {
+            dx: -PAN_STEP,
+            dy: 0.0,
+        },
+        Key::Named(NamedKey::ArrowRight) => CanvasCommand::Pan {
+            dx: PAN_STEP,
+            dy: 0.0,
+        },
+        Key::Named(NamedKey::ArrowUp) => CanvasCommand::Pan {
+            dx: 0.0,
+            dy: -PAN_STEP,
+        },
+        Key::Named(NamedKey::ArrowDown) => CanvasCommand::Pan {
+            dx: 0.0,
+            dy: PAN_STEP,
+        },
+        Key::Character(text) if text == "+" || text == "=" => {
+            CanvasCommand::Zoom { delta: ZOOM_STEP }
+        },
+        Key::Character(text) if text == "-" => CanvasCommand::Zoom { delta: -ZOOM_STEP },
         _ => return false,
     };
+    command.apply(&mut shared.canvas.borrow_mut(), shared.size.get());
     shared.dirty.set(true);
     true
-}
-
-fn zoom(canvas: &mut Canvas, shared: &Shared, delta: f32) -> bool {
-    let (width, height) = shared.size.get();
-    canvas.cursor_moved(width as f32 * 0.5, height as f32 * 0.5);
-    canvas.set_ctrl(true);
-    let zoomed = canvas.wheel(0.0, delta);
-    canvas.set_ctrl(false);
-    zoomed
 }
 
 /// The mounted page, for the scenario entry that reaches it from JavaScript.
@@ -421,7 +447,7 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
         after_wake: Box::new(|_ctx| {}),
         close_request: Box::new(|_ctx, _request| CloseDisposition::KeepVisible),
         focused_text: Box::new(|_runner| None),
-        key_intercept: Box::new(move |_runner, press| keys(&shared, press)),
+        key_intercept: Box::new(|_runner, _press| false),
     }
 }
 
@@ -434,6 +460,7 @@ pub(crate) fn run(text: &str) -> Result<(), String> {
         TreeLane {
             shared,
             errors: Vec::new(),
+            pointer: None,
         },
         Some(taproot::Scenario::parse(text).map_err(|e| e.to_string())?),
         None,
@@ -480,5 +507,6 @@ fn publish(ok: bool, text: &str, shared: &Shared) {
     }
 }
 
+mod controls;
 mod lane;
 use lane::TreeLane;
