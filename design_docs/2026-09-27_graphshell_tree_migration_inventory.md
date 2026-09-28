@@ -125,6 +125,25 @@ acceptance result.
 
 ## Next physics slice (proposal, not a new ruling)
 
+**Core implemented; host adoption pending.** Following approval to continue,
+Seiche now exposes opt-in `Physics::advance_elapsed`, `ElapsedStepConfig` and
+`ElapsedStepReport`. It accepts caller-supplied elapsed time, runs bounded
+fixed steps, publishes one snapshot, reports discarded time, and carries only
+a substep fraction. Defaults are a configurable 50 ms contribution cap and
+three-step cap. `reset_elapsed`, seed, halt and deterministic advancement clear
+fractional debt; the actor path only drains accepted snapshots and sends no
+stepping commands. `TICK_DURATION` rounds nominal 60 Hz to 16,666,667 ns,
+explicitly documented and tested alongside the unchanged solver `TICK_DT`.
+
+The focused runtime gate passes 12 tests with default features and eight with
+`--no-default-features`, both offline and locked. These cover render-rate
+equivalence, long stalls, zero limits, rounding boundaries, idle/pause/reseed/
+suspension resets, deterministic one-step compatibility, and actor isolation.
+The full native gate also passes all 88 Seiche tests. Canvas and browser
+callers remain on the existing deterministic path so this core addition does
+not change the current rendering measurements. The host work below remains
+pending, including visibility wiring, host timestamp reset and headed evidence.
+
 Rendering currently advances inline physics once per Canvas frame. Reuse the
 bounded elapsed-time accumulator in `web_practice.rs::PracticeHost::frame`
 (50 ms contribution cap, fixed 60 Hz steps), rather than adding a scheduler.
