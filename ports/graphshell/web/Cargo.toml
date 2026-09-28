@@ -42,6 +42,7 @@ cambium = { path = "../../../crates/cambium/cambium" }
 # and rootstock carries the host types and the canvas's texture producer.
 cambium-genet-web-host = { path = "../../../crates/cambium/cambium-genet-web-host" }
 cambium-rootstock = { path = "../../../crates/cambium/cambium-rootstock" }
+mesquite = { path = "../../../crates/cambium/mesquite" }
 genet-render = { git = "https://github.com/merely-made/genet.git", rev = "92b249af5b200f78d036d8e9b0cb4fe025610740" }
 # The present core, shared with every winit host. Booting wgpu, picking a
 # non-sRGB surface format, and rasterizing a Scene are not browser-specific, so

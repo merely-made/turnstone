@@ -14,8 +14,8 @@
 //! minus zoom. `tree.html` mounts it with [`mount_tree`]; `nodes` and `seed`
 //! in the URL swap the fixture graph for a generated one.
 //!
-//! The page drives itself through rootstock's scenario lane with the web
-//! host's [`WebLane`], and times its frames with the same
+//! The page drives itself through Mesquite's scenario lane with the web
+//! host's [`WebCapture`], and times its frames with the same
 //! [`FrameTiming`] as the main page, so the two are measured alike.
 
 use std::cell::{Cell, RefCell};
@@ -24,8 +24,7 @@ use std::rc::Rc;
 use cambium::{
     AnyView, GenetCtx, GenetElement, PointerClick, WheelEvent, custom_leaf, el, on_click, on_wheel,
 };
-use cambium_genet_web_host::{WebLane, WebWindow, mount};
-use cambium_rootstock::scenario::{CaptureRecord, LaneApp, ProbeSnapshot, ScenarioLane};
+use cambium_genet_web_host::{WebCapture, WebWindow, mount};
 use cambium_rootstock::{
     AppCtx, CloseDisposition, Frame, HostFont, HostHooks, HostOptions, HostPointer, HostWindow,
     Init, Key, KeyPress, NamedKey, ProducedTexture, ProducerContext, SourceAlpha, SourceEncoding,
@@ -35,9 +34,11 @@ use graphshell::app::GraphshellApp;
 use graphshell::mere_host::{FIXTURE_PERSONA_ADDRESS, SelectedPersonaRef};
 use mere::canvas::Canvas;
 use mere::kernel::graph::Graph;
+use mesquite::{CaptureRecord, Lane, Product};
 use muniment::MemoryBackend;
 use netrender::{ColorLoad, NetrenderOptions};
 use serde_json::json;
+use taproot::ProbeSnapshot;
 use taproot::Selector;
 use wasm_bindgen::prelude::*;
 use web_sys::{Element, Event, HtmlCanvasElement};
@@ -243,7 +244,7 @@ fn zoom(canvas: &mut Canvas, shared: &Shared, delta: f32) -> bool {
 struct Tree {
     shared: Rc<Shared>,
     window: WebWindow,
-    lane: Option<ScenarioLane<TreeLane, WebLane>>,
+    lane: Option<Lane<TreeLane>>,
 }
 
 thread_local! {
@@ -413,7 +414,7 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
                 if let Some(tree) = tree.borrow_mut().as_mut()
                     && let Some(lane) = tree.lane.as_mut()
                 {
-                    lane.drive(ctx);
+                    lane.after_frame(ctx);
                 }
             });
         }),
@@ -429,18 +430,17 @@ pub(crate) fn run(text: &str) -> Result<(), String> {
     let shared = TREE
         .with(|tree| tree.borrow().as_ref().map(|tree| tree.shared.clone()))
         .ok_or("the tree has not booted")?;
-    let publish_shared = shared.clone();
-    let host = WebLane::new(
-        |name: &str, frame: &Frame| {
-            if let Err(error) =
-                web_scenario::publish_capture(name, frame.width, frame.height, &frame.rgba)
-            {
-                web_sys::console::error_1(&error.into());
-            }
+    let lane = Lane::new(
+        TreeLane {
+            shared,
+            errors: Vec::new(),
         },
-        move |ok: bool, text: &str| publish(ok, text, &publish_shared),
-    );
-    let lane = ScenarioLane::new(text, TreeLane { shared }, host)?;
+        Some(taproot::Scenario::parse(text).map_err(|e| e.to_string())?),
+        None,
+        None,
+        Rc::new(Cell::new(0)),
+    )
+    .with_capture_backend(WebCapture);
     web_scenario::mark(&super::document()?, "running", None)?;
     TREE.with(|tree| {
         if let Some(tree) = tree.borrow_mut().as_mut() {
@@ -480,115 +480,5 @@ fn publish(ok: bool, text: &str, shared: &Shared) {
     }
 }
 
-/// The tree page's half of the scenario lane.
-struct TreeLane {
-    shared: Rc<Shared>,
-}
-
-impl TreeLane {
-    /// `click-node <url>`: press and release over a node, through the host's
-    /// pointer path, so the pick runs as a real click's would.
-    fn click_node(
-        &self,
-        ctx: &mut AppCtx<'_, TreePage, Logic, Child>,
-        url: &str,
-    ) -> Result<(), String> {
-        let (x, y) = {
-            let canvas = self.shared.canvas.borrow();
-            let (key, _) = canvas
-                .graph()
-                .get_node_by_url(url)
-                .ok_or_else(|| format!("click-node {url}: no such node"))?;
-            canvas
-                .screen_position_of(key)
-                .ok_or_else(|| format!("click-node {url}: not on screen"))?
-        };
-        let leaf = {
-            let dom = ctx.runner.dom();
-            let dom = dom.borrow();
-            taproot::matching(&dom, &Selector::class("tree-canvas"))
-                .into_iter()
-                .next()
-        }
-        .ok_or("the canvas leaf is not in the tree")?;
-        let (left, top, width, height) = ctx
-            .painted_rect(leaf)
-            .ok_or("the canvas leaf is not painted")?;
-        if x < 0.0 || y < 0.0 || x >= width || y >= height {
-            return Err(format!(
-                "click-node {url}: ({x}, {y}) is outside canvas ({left}, {top}, {width}, {height})"
-            ));
-        }
-        ctx.pointer.push(HostPointer::Press(left + x, top + y));
-        ctx.pointer.push(HostPointer::Release(left + x, top + y));
-        Ok(())
-    }
-}
-
-impl LaneApp<TreePage, Logic, Child> for TreeLane {
-    fn sheet(&self) -> &str {
-        SHEET
-    }
-
-    fn snapshot(&self, ctx: &AppCtx<'_, TreePage, Logic, Child>) -> ProbeSnapshot {
-        let page = ctx.runner.state();
-        ProbeSnapshot::default()
-            .with_field("picked", page.picked.clone().unwrap_or_default())
-            .with_field("nodes", page.nodes.to_string())
-            .with_field("source", page.source.clone())
-            .with_field("moving", self.shared.moving.get().to_string())
-            .with_field(
-                "gpu-timed",
-                self.shared.timing.borrow().gpu_timed().to_string(),
-            )
-    }
-
-    /// `timing start <label>` and `timing stop`, and `click-node <url>`.
-    fn app_step(
-        &mut self,
-        ctx: &mut AppCtx<'_, TreePage, Logic, Child>,
-        line: &str,
-    ) -> Result<(), String> {
-        let (verb, rest) = line.split_once(' ').unwrap_or((line, ""));
-        match verb {
-            "timing" => {
-                let (what, label) = rest.split_once(' ').unwrap_or((rest, ""));
-                self.shared.with_gpu(|gpu| {
-                    let mut timing = self.shared.timing.borrow_mut();
-                    match what {
-                        "start" => timing.start(label.trim(), gpu),
-                        "stop" => timing.stop(gpu),
-                        _ => Err(format!("timing wants start <label> or stop, got '{rest}'")),
-                    }
-                })
-            },
-            "click-node" => self.click_node(ctx, rest.trim()),
-            _ => Err(format!("unknown verb: {line}")),
-        }
-    }
-
-    /// Busy while the layout moves or a timing window's GPU times are out, so
-    /// `wait` holds for a settled frame and a finished report.
-    fn busy(&mut self, _ctx: &mut AppCtx<'_, TreePage, Logic, Child>) -> Option<bool> {
-        let pending = self.shared.timing.borrow_mut().poll();
-        Some(pending || self.shared.moving.get())
-    }
-
-    fn receipt_lines(&self) -> Vec<String> {
-        let timing = self.shared.timing.borrow();
-        let mut lines = timing.receipt_lines();
-        lines.push(format!(
-            "gpu timestamps: {}",
-            if timing.gpu_timed() { "yes" } else { "no" }
-        ));
-        lines
-    }
-
-    fn receipt_checks(&self, _captures: &[CaptureRecord]) -> Vec<String> {
-        if self.shared.timing.borrow().any_hidden() {
-            vec!["the page was hidden while a timing window was open".to_string()]
-        } else {
-            Vec::new()
-        }
-    }
-}
+mod lane;
+use lane::TreeLane;
