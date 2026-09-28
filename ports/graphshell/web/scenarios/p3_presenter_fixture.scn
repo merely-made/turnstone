@@ -1,0 +1,20 @@
+# One-tree plan, phase 3: GpuPresenter's frames on the fixture (index.html),
+# beside p3_tree_fixture's.
+#
+# The same windows: from load in the first window, then after 600 frames
+# to settle.
+log phase 3: GpuPresenter on the fixture
+timing start fixture-startup
+settle 240
+timing stop
+wait 600
+capture p3_presenter_fixture_startup
+settle 600
+timing start fixture-steady
+settle 240
+timing stop
+wait 600
+capture p3_presenter_fixture_steady
+# The page lane ends as soon as its last step runs, so the final capture
+# needs a wait to land before the report is written.
+wait 30

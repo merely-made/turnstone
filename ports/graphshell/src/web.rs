@@ -22,11 +22,14 @@
 
 mod web_events;
 mod web_gpu;
+mod web_graphs;
 mod web_product;
 mod web_projection;
 mod web_practice;
 mod web_remote;
 mod web_scenario;
+mod web_timing;
+mod web_tree;
 mod web_view;
 
 use std::cell::RefCell;
@@ -38,7 +41,7 @@ use graphshell::browser_storage::{StoragePersistence, decide, status_line};
 use graphshell::client::{ActionDraft, ActionDraftSemantics, ActionDraftTarget};
 use graphshell::endpoint::{IntentSink, ProjectionSource};
 use graphshell::protocol::{IntentResult, ProjectionSession};
-use mere::canvas::{Canvas, PhysicsBoard, PointerButton, project_canvas_strategy};
+use mere::canvas::{Canvas, PhysicsBoard, PointerButton};
 use mere::kernel::geometry::PortablePoint;
 use mere::kernel::graph::NodeKey;
 use netrender::Scene;
@@ -354,6 +357,9 @@ struct BrowserHost {
     capture_request: Option<String>,
     capture_pending: Option<(String, PendingCapture)>,
     capture_count: u32,
+    /// Frame times for a scenario's `timing` windows, measured as the tree
+    /// page measures its own (the one-tree plan's phase 3).
+    timing: web_timing::FrameTiming,
 }
 
 struct BrowserProjectionSink;
@@ -524,7 +530,17 @@ impl BrowserHost {
         self.chrome_dirty = true;
     }
 
+    /// One frame, bracketed for a scenario's timing window: the marks go on
+    /// either side of everything the frame submits.
     fn render(&mut self, host_ms: f64) -> Result<(), String> {
+        self.timing.frame_begin(Some(self.gpu.gpu()));
+        let rendered = self.render_frame(host_ms);
+        self.timing.frame_end(Some(self.gpu.gpu()));
+        self.timing.poll();
+        rendered
+    }
+
+    fn render_frame(&mut self, host_ms: f64) -> Result<(), String> {
         self.scenario_frames = self.scenario_frames.wrapping_add(1);
         self.finish_capture()?;
         self.resize_if_needed();
@@ -2090,21 +2106,15 @@ async fn run(root_element: Element) -> Result<(), String> {
         .mount_remote(remote_snapshot)
         .map_err(|error| error.to_string())?;
 
-    let mut graph_canvas = Canvas::with_graph(app.host.graph().clone());
-    graph_canvas.resize(width, height);
-    graph_canvas.set_layout_strategy(Some("phyllotaxis.default".to_string()));
-    let positions = project_canvas_strategy(
-        "phyllotaxis.default",
-        graph_canvas.graph(),
-        None,
-        width,
-        height,
-        None,
-        None,
-        true,
-    );
-    graph_canvas.apply_strategy_positions(&positions);
-    graph_canvas.fit_to_content();
+    // `?nodes=<n>&seed=<s>` draws a generated graph instead, the same one the
+    // tree page draws for those parameters, so the two can be timed side by
+    // side (the one-tree plan's phase 3).
+    let canvas_graph = match web_graphs::requested() {
+        Some((nodes, seed)) => web_graphs::generated(nodes, seed),
+        None => app.host.graph().clone(),
+    };
+    let mut graph_canvas = web_graphs::prepared_canvas(canvas_graph, width, height);
+    let physics_paused = graph_canvas.physics_paused();
     graph_canvas.select_by_url(FIXTURE_WEB_ADDRESS);
     let primary_member = graph_canvas.focused_member();
     let initial_face = graph_canvas
@@ -2136,7 +2146,7 @@ async fn run(root_element: Element) -> Result<(), String> {
         satisfaction: String::new(),
         arrangement: "phyllotaxis.default".to_string(),
         physics_law: mere::canvas::PhysicsLaw::Springs.label().to_string(),
-        physics_paused: false,
+        physics_paused,
         remote_cards: Vec::new(),
         action_draft: None,
     };
@@ -2181,7 +2191,7 @@ async fn run(root_element: Element) -> Result<(), String> {
         storage_status,
         storage_persistence,
         layout_id: "phyllotaxis.default".to_string(),
-        physics_paused: false,
+        physics_paused,
         physics_damping: 0.82,
         handler_id: "graphshell.inspect".to_string(),
         relation_family: RelationFamilyFilter::All,
@@ -2210,6 +2220,7 @@ async fn run(root_element: Element) -> Result<(), String> {
         capture_request: None,
         capture_pending: None,
         capture_count: 0,
+        timing: web_timing::FrameTiming::default(),
     }));
     web_scenario::install(&state);
     install_events(&state)?;

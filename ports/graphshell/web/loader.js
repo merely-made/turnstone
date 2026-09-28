@@ -50,7 +50,7 @@ function semanticNode(element) {
 
 // The component's root and its parts. Everything the receipt reads comes
 // from under the root; the page's own ids are not consulted.
-const graphshellRoot = () => document.querySelector("graphshell-view");
+const graphshellRoot = () => document.querySelector("graphshell-view, graphshell-tree");
 const part = (name) => graphshellRoot()?.querySelector(`#gs-${name}`);
 
 window.graphshellSemanticTree = () => semanticNode(part("semantic-host"));
@@ -67,7 +67,16 @@ window.graphshellScenario = () => ({
   })),
 });
 
-window.graphshellReceipt = () => ({
+// The one-tree page (tree.html) has none of the component's parts below; its
+// state is in the scenario result and its timings, so its receipt says only
+// which page ran and how it was shown.
+const treeReceipt = () => ({
+  page: "tree",
+  title: document.title,
+  visibility: document.visibilityState,
+  viewport: { width: window.innerWidth, height: window.innerHeight },
+});
+window.graphshellReceipt = () => document.querySelector("graphshell-tree") ? treeReceipt() : ({
   practice: graphshellRoot()?.hasAttribute('data-practice-workspace') ? {
     view: graphshellRoot().dataset.practiceView,
     selection: graphshellRoot().dataset.practiceSelection,
@@ -373,6 +382,21 @@ try {
           if (!this.dataset.mounted) {
             this.dataset.mounted = "true";
             module.mount(this);
+          }
+        }
+      },
+    );
+  }
+  // The one-tree page (tree.html, the one-tree plan's phase 3) mounts the same
+  // bundle's Cambium tree instead; the scenario lane below serves both.
+  if (!customElements.get("graphshell-tree")) {
+    customElements.define(
+      "graphshell-tree",
+      class extends HTMLElement {
+        connectedCallback() {
+          if (!this.dataset.mounted) {
+            this.dataset.mounted = "true";
+            module.mount_tree(this);
           }
         }
       },

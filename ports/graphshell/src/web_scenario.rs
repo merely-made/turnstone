@@ -78,6 +78,10 @@ pub(super) fn host() -> Option<Rc<RefCell<BrowserHost>>> {
 /// Parse and arm a scenario. The frame pump runs it from the next frame.
 #[wasm_bindgen]
 pub fn run_scenario(text: &str) -> Result<(), JsValue> {
+    // The one-tree page runs rootstock's lane instead of this page's own.
+    if super::web_tree::mounted() {
+        return super::web_tree::run(text).map_err(js);
+    }
     let host = HOST
         .with(|slot| slot.borrow().clone())
         .ok_or_else(|| JsValue::from_str("the host has not booted"))?;
@@ -128,17 +132,26 @@ pub(super) fn tick(host: &mut BrowserHost) {
         Progress::Running => host.scenario = Some(run),
         Progress::Done => {
             let outcome = run.scenario.finish();
-            let result = if outcome.ok { "ok" } else { "fail" };
+            // A hidden page draws no frames, so a timing window it spent
+            // hidden measured nothing.
+            let hidden = host.timing.any_hidden();
+            let mut log = outcome.log;
+            log.extend(host.timing.receipt_lines());
+            if hidden {
+                log.push("FAIL: the page was hidden while a timing window was open".to_string());
+            }
+            let result = if outcome.ok && !hidden { "ok" } else { "fail" };
             let report = serde_json::json!({
                 "result": result,
                 "steps": run.steps,
                 "frames": run.frames,
                 "captures": host.capture_count,
-                "log": outcome.log,
+                "log": log,
+                "timings": host.timing.json(),
             });
             if let Ok(document) = document() {
-                if let Ok(log) = page_element(&document, "scenario-log") {
-                    log.set_text_content(Some(&outcome.log.join("\n")));
+                if let Ok(element) = page_element(&document, "scenario-log") {
+                    element.set_text_content(Some(&log.join("\n")));
                 }
                 let _ = mark(&document, result, Some(&report.to_string()));
                 if let Ok(event) = Event::new("graphshell-scenario-complete") {
@@ -150,7 +163,11 @@ pub(super) fn tick(host: &mut BrowserHost) {
 }
 
 /// Write `data-scenario` on the body and, when given, the result line.
-fn mark(document: &web_sys::Document, state: &str, result: Option<&str>) -> Result<(), String> {
+pub(super) fn mark(
+    document: &web_sys::Document,
+    state: &str,
+    result: Option<&str>,
+) -> Result<(), String> {
     let body = document.body().ok_or("document has no body")?;
     body.set_attribute("data-scenario", state)
         .map_err(|_| "could not mark the scenario state")?;
@@ -165,7 +182,7 @@ fn js(error: String) -> JsValue {
 }
 
 /// A page-level element (the lane's own output lives outside the component).
-fn page_element(document: &web_sys::Document, id: &str) -> Result<Element, String> {
+pub(super) fn page_element(document: &web_sys::Document, id: &str) -> Result<Element, String> {
     document
         .get_element_by_id(id)
         .ok_or_else(|| format!("missing #{id}"))
@@ -365,6 +382,18 @@ impl Probe<'_> {
                 Ok(())
             },
             "assert" => self.app_assert(rest, line),
+            // `timing start <label>` and `timing stop`: a window of frame
+            // times, measured as the tree page measures its own.
+            "timing" => {
+                let (what, label) = split_first(rest);
+                let host = &mut *self.host;
+                let gpu = Some(host.gpu.gpu());
+                match what {
+                    "start" => host.timing.start(label, gpu),
+                    "stop" => host.timing.stop(gpu),
+                    _ => Err(format!("timing wants start <label> or stop, got '{rest}'")),
+                }
+            },
             _ => Err(format!("unknown verb: {line}")),
         }
     }
@@ -512,9 +541,11 @@ impl Automatable for Probe<'_> {
         self.pointer("pointerup", x, y);
     }
 
-    /// A capture in flight, or a remote answer still to come.
+    /// A capture in flight, a remote answer still to come, or a timing
+    /// window's GPU times still out.
     fn busy(&mut self) -> Option<bool> {
-        Some(self.host.capture_pending.is_some() || self.host.remote_in_flight())
+        let timing = self.host.timing.poll();
+        Some(self.host.capture_pending.is_some() || self.host.remote_in_flight() || timing)
     }
 }
 

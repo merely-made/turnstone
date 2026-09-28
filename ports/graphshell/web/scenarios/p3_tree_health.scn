@@ -1,0 +1,10 @@
+# A short rendering and picking check before the timing scenarios.
+# Run on tree.html?nodes=2000&seed=7.
+log phase 3: generated tree rendering and picking
+assert snap nodes == 2000
+settle 8
+capture p3_tree_health
+click-node https://node-0.generated.test/
+settle 2
+assert snap picked ~ generated.test
+capture p3_tree_health_picked
