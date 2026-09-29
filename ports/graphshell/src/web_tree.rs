@@ -526,7 +526,7 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
         }),
         after_wake: Box::new(|_ctx| {}),
         close_request: Box::new(|_ctx, _request| CloseDisposition::KeepVisible),
-        focused_text: Box::new(|_runner| None),
+        focused_text: Box::new(product::focused_text),
         key_intercept: Box::new(|_runner, _press| false),
     }
 }

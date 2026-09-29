@@ -89,6 +89,41 @@ fn now_secs() -> u64 {
     (js_sys::Date::now() / 1_000.0) as u64
 }
 
+/// Map the retained detail field to the host's caret, IME and selection path.
+pub(super) fn focused_text(
+    runner: &cambium_rootstock::Runner<TreePage, Logic, Child>,
+) -> Option<cambium_rootstock::FocusedTextSlot<TreePage>> {
+    let product = runner.state().product.as_ref()?;
+    if !product.detail_open || product.saving {
+        return None;
+    }
+    let node = runner.focus()?;
+    let dom = runner.dom();
+    let dom = dom.borrow();
+    let title =
+        taproot::matching(&dom, &Selector::role("textbox").containing("Title")).contains(&node);
+    if !title
+        && !taproot::matching(&dom, &Selector::role("textbox").containing("Tags")).contains(&node)
+    {
+        return None;
+    }
+    Some(cambium_rootstock::FocusedTextSlot {
+        node,
+        get: Box::new(move |page: &TreePage| {
+            let product = page.product.as_ref().expect("focused local detail");
+            if title { &product.title } else { &product.tags }
+        }),
+        get_mut: Box::new(move |page: &mut TreePage| {
+            let product = page.product.as_mut().expect("focused local detail");
+            if title {
+                &mut product.title
+            } else {
+                &mut product.tags
+            }
+        }),
+    })
+}
+
 impl SavedProduct {
     pub(super) fn ready(&self) -> bool {
         self.completed.borrow().is_some()
