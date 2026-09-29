@@ -28,13 +28,13 @@
 //! Murm's service does not admit a Graphshell session, because the scope's
 //! `domain` and `path_prefix` are part of what the chain has to cover.
 
+use insigne::delegation::SignedDelegationCertificate;
 use notochord::{
     AdmittedPrincipal, DenyReason, HandshakeError, LocalNetworkPolicy, NetworkId, ProfileRef,
     ProofBinding, RequestedAction, RevocationLedger, SessionFacts, SessionHello, TrafficClass,
     admit,
 };
 use personae::IdentityProvider;
-use personae::delegation::SignedDelegationCertificate;
 
 /// The application domain owning Graphshell's action vocabulary.
 pub const GRAPHSHELL_DOMAIN: &str = "mere.graphshell";
@@ -133,12 +133,12 @@ pub fn admit_session(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use insigne::delegation::{
+        CapabilityScope, DelegationCertificate, DelegationParent, SignedDelegationCertificate,
+    };
     use notochord::{CarrierKind, ServiceAccess, ServiceRule, TrustedRoot};
     use personae::InMemoryProvider;
     use personae::delegation::Issue;
-    use personae::delegation::{
-        CapabilityScope, DelegationCertificate, DelegationParent, SignedDelegationCertificate,
-    };
     use std::collections::BTreeMap;
 
     const NETWORK: NetworkId = NetworkId([3; 32]);

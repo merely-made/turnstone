@@ -205,12 +205,12 @@ mod tests {
 
     use super::*;
     use crate::admission::{CONNECT_ACTION, GRAPHSHELL_DOMAIN, connect_action, open_session};
+    use insigne::delegation::{
+        CapabilityScope, DelegationCertificate, DelegationParent, SignedDelegationCertificate,
+    };
     use notochord::{CarrierKind, RequestedAction, SessionHello, TrafficClass, initiate_session};
     use personae::IdentityProvider;
     use personae::InMemoryProvider;
-    use personae::delegation::{
-        CapabilityScope, DelegationCertificate, DelegationParent, SignedDelegationCertificate,
-    };
     use tokio::io::AsyncReadExt;
     use transport::memory::MemoryTransport;
     use transport::{

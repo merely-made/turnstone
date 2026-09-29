@@ -22,7 +22,7 @@ mod lane {
     }
 
     fn slot() -> BlindedSlotId {
-        pandect::blinded_slot_id(personae::delegation::DelegationId([0x83; 32]), [0x84; 32])
+        pandect::blinded_slot_id(insigne::delegation::DelegationId([0x83; 32]), [0x84; 32])
     }
 
     fn config(path: PathBuf, tickets: Vec<String>) -> CarriageHostConfig {
@@ -502,7 +502,7 @@ mod attached {
     }
 
     fn slot() -> BlindedSlotId {
-        pandect::blinded_slot_id(personae::delegation::DelegationId([0xB3; 32]), [0xB4; 32])
+        pandect::blinded_slot_id(insigne::delegation::DelegationId([0xB3; 32]), [0xB4; 32])
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 2)]

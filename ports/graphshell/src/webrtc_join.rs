@@ -28,9 +28,9 @@
 //! One more major is one more way for the browser build to fail at link time
 //! with a message about a crate nobody named.
 
+use insigne::delegation::SignedDelegationCertificate;
 use notochord::{DenyReason, HandshakeError, HandshakeLimits, NetworkId, ProfileRef, SessionReply};
 use personae::IdentityProvider;
-use personae::delegation::SignedDelegationCertificate;
 use serde::{Deserialize, Serialize};
 use webrtc_carrier::{DtlsFingerprint, InviteV1, LinkChallenge};
 

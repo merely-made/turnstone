@@ -64,6 +64,10 @@
 //! those bytes is `webrtc_carrier::native` on this side and
 //! `webrtc_carrier::browser` on the other, and neither is named here.
 
+use insigne::DerivedKeyAttestation;
+use insigne::delegation::{
+    CapabilityScope, DelegationCertificate, DelegationParent, SignedDelegationCertificate,
+};
 #[cfg(all(feature = "native", not(target_arch = "wasm32")))]
 use notochord::{
     AdmittedPrincipal, DenyReason, LocalNetworkPolicy, RevocationLedger, SessionFacts,
@@ -72,12 +76,9 @@ use notochord::{
     HandshakeError, NetworkId, ProfileRef, RequestedAction, SessionHello, TrafficClass,
 };
 use personae::AttestationKeys;
+use personae::delegation::DelegationError;
 use personae::delegation::Issue;
-use personae::delegation::{
-    CapabilityScope, DelegationCertificate, DelegationError, DelegationParent,
-    SignedDelegationCertificate,
-};
-use personae::{DerivedKeyAttestation, Ed25519Keypair, Ed25519PublicKey, Ed25519Signature};
+use personae::{Ed25519Keypair, Ed25519PublicKey, Ed25519Signature};
 use personae::{IdentityError, IdentityProvider};
 #[cfg(all(feature = "native", not(target_arch = "wasm32")))]
 use rand_core::{OsRng, RngCore};
@@ -682,9 +683,9 @@ mod tests {
         );
     }
     use crate::carrier::projection_policy;
+    use insigne::delegation::{DelegationRevocation, SignedDelegationRevocation};
     use notochord::{ChainFault, SessionReply, TrustedRoot};
     use personae::InMemoryProvider;
-    use personae::delegation::{DelegationRevocation, SignedDelegationRevocation};
     use webrtc_carrier::{
         DTLS_FINGERPRINT_BYTES, DtlsFingerprint, FingerprintRole, INVITE_FRAGMENT_PREFIX,
         MAX_INVITE_BYTES,
