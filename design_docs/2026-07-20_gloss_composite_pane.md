@@ -5,27 +5,56 @@
 **Accepted by Mark:** Gloss becomes the configurable operational overview as well
 as the navigation overview. Compose downloads, background work, sync and items
 needing attention alongside the minimap and optional history summaries. Trail
-retains browsing history, recall and recovery. Move Steward's useful content into
-Gloss, then retire the separate Steward pane.
+retains browsing history, recall and recovery. Steward's implemented download
+readouts now compose in Gloss; the separate pane is retired in source. Background
+work, sync and actionable operation controls remain later product-owned work.
 
 Shared diagnostic observations belong in `mere-apparatus`; the canonical contract
 and ownership ruling live at
 `mere/design_docs/mere_docs/implementation_strategy/2026-06-08_system_diagnostics_and_accessibility_plan.md`.
 Turnstone still owns operations, permissions, completion and actionable controls.
-Inspector takes the existing Apparatus pane's object analysis alongside document
-and within-document inspection, metadata and clipping. It shows subject-appropriate
-fields and controls while preserving graph facets, provenance, handling controls
-and their product-owned write paths. Retire the object-analysis Apparatus pane
-after those capabilities migrate; this migration is also pending.
+Inspector takes the former Apparatus pane's object analysis alongside document
+inspection, metadata and clipping. Its existing graph facets, provenance and
+handling controls retain their product-owned write paths. The migration is written
+and the redundant pane is retired; the bounded migration is qualified below.
+Inspection of a selection within a document is an accepted later capability,
+separate from the document-level facts and handling controls migrated here.
 
-**Implementation pending:** `sections.rs` currently provides Recent, Removed and
-Nodes, with Open/Recover activation. Steward currently projects download records.
-Add operational providers and the required typed product actions through the
-existing composition path; retain per-pane configuration and persistence.
-Done when Gloss exposes the migrated content and controls, saved arrangements
-retain access to that content, and scenario coverage verifies the affected
-sections before Steward's pane is removed. This document records the direction;
-it does not claim the migration has landed.
+**Implementation, 2026-09-29:** Downloads is a registered read-only section,
+projected from the same durable graph facets Steward used. A newly summoned Gloss
+starts with the minimap and Downloads, per Mark's default ruling; remove, add,
+reorder and persistence use the existing per-leaf composition path. Older Gloss
+configurations retain their chosen sections.
+
+Inspector now hosts the viewer radio and live document capability/zoom readouts
+alongside its existing document, classification and provenance sections. Viewer
+writes carry the member resolved by that Inspector's followed context rather than
+the runtime pool's cursor. Turnstone retains the existing `SetViewerOverride`
+write and respawn path.
+
+The independent Steward and object-analysis Apparatus panes are retired from
+runtime variants, registration, commands and renderer caches. Real saved
+`frame.json` / `windows.json` leaves deserialize in place: Steward becomes Gloss
+with Downloads, Apparatus becomes Inspector. Pane ids, graph bindings, splits,
+ratios and closed lens slots are retained; the next save emits current names.
+`src/panes/saved_content.rs` contains only this read-boundary conversion.
+
+**Qualified, 2026-09-29:** the [September 29 qualification receipt](2026-09-29_shared_diagnostics_gloss_inspector_receipt.md)
+records the locked, offline workspace gate (612 passed, 9 ignored), five exact
+Piccolo/Wasm author/watch/admitted-ring tests, 33 UI/Inspector regressions and the
+normal default-feature native build. Fresh and restarted
+`gloss_inspector_migration.scn` and `gloss_inspector_migration_restore.scn`
+scenarios both returned `RESULT ok`; three nonblank
+1024×600 captures were reviewed. Gloss's configured Downloads/Recent order,
+Inspector and the requested `genet.reader` viewer survived restart. Deliberately
+small diagnostic limits exposed eviction and a gap on the initial run; the
+restored run stayed within bounds without loss.
+`smolweb_download.scn` now observes Gloss; its TLS/download fixture remains a
+separate acceptance gate. Background jobs, sync controls and within-document
+selection inspection retain their existing later implementation scope. Downloads
+rows are inert; extend section actions only when real product controls require it.
+Custom-leaf semantic parity, full built-in pane owner selectors, document
+selection semantics, exact presented-frame correlation and human AT remain open.
 
 ## Original design and implementation history
 

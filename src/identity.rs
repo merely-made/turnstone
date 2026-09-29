@@ -43,9 +43,9 @@ use identity::bootstrap::{self, Unlock};
 use identity::roster;
 use identity::vault::{IdentityStorage, IdentityVault};
 use identity::{
-    DerivedKeyAttestation, Ed25519Keypair, Ed25519PublicKey, IdentityError, IdentityProvider,
-    InMemoryProvider,
+    Ed25519Keypair, Ed25519PublicKey, IdentityError, IdentityProvider, InMemoryProvider,
 };
+use insigne::DerivedKeyAttestation;
 
 /// The shared personae vault directory (`%LOCALAPPDATA%\personae\vault`).
 pub fn default_vault_dir() -> PathBuf {

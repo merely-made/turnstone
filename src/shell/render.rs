@@ -130,9 +130,13 @@ impl Shell {
                             bytes = match &output.image { inker::PageCaptureImageArtifact::Png(bytes) => bytes.len() },
                             "page capture correlated; durable deposit is not implemented"
                         ),
-                        Err(error) => tracing::warn!(%node, request_id = id.get(), %error, "page capture failed"),
+                        Err(error) => {
+                            tracing::warn!(%node, request_id = id.get(), %error, "page capture failed")
+                        },
                     },
-                    Err(refusal) => tracing::warn!(%node, request_id = id.get(), ?refusal, "page capture completion refused"),
+                    Err(refusal) => {
+                        tracing::warn!(%node, request_id = id.get(), ?refusal, "page capture completion refused")
+                    },
                 }
             }
             inker::WebSurfaceEvent::DocumentFindChanged(state) => {
@@ -565,27 +569,7 @@ impl Shell {
                     .or_insert_with(crate::workbench_pane::WorkbenchPane::new);
                 pane.sync(&self.app, pane_id, rw as f32, rh as f32);
                 pane.scene(rw, rh)
-            }
-            Some(PaneContent::Apparatus) => {
-                // The graph-object facet analyzer's first rows: the viewer
-                // control (radio over the registered lanes).
-                let pane = self
-                    .renderers
-                    .apparatus
-                    .entry(pane_id)
-                    .or_insert_with(crate::apparatus_pane::ApparatusPane::new);
-                pane.sync(&self.app, rw as f32, rh as f32);
-                pane.scene(rw, rh)
-            }
-            Some(PaneContent::Steward) => {
-                let pane = self
-                    .renderers
-                    .steward
-                    .entry(pane_id)
-                    .or_insert_with(crate::steward_pane::StewardPane::new);
-                pane.sync(&self.app, rw as f32, rh as f32);
-                pane.scene(rw, rh)
-            }
+            },
             Some(PaneContent::Registered(kind))
                 if kind.as_str() == crate::panes::kind::TRANSCRIPT =>
             {

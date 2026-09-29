@@ -20,6 +20,8 @@ assert event node-removed
 
 # Open Gloss. At base it is a bare minimap — nothing composed yet.
 act Open Gloss pane
+settle 5
+act Gloss: remove section — Downloads
 settle 10
 assert pane gloss
 capture 01_base_minimap

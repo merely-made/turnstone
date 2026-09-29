@@ -40,7 +40,8 @@ use graphshell::carrier::{admit_accepted_session, projection_alpn, projection_po
 use graphshell::native::endpoint_catalog::{ResidentEndpointCatalog, ResidentEndpointRoute};
 use graphshell::native::projection_host::ResidentProjectionHost;
 use identity::IdentityProvider;
-use identity::delegation::{
+use identity::delegation::Issue;
+use insigne::delegation::{
     CapabilityScope, DelegationCertificate, DelegationParent, DelegationRevocation,
     SignedDelegationCertificate, SignedDelegationRevocation,
 };
@@ -412,11 +413,11 @@ fn fold_revocation(
     let mut ledger = ledger
         .write()
         .map_err(|_| "the projection revocation ledger is poisoned".to_string())?;
-    if ledger.fold(statement) {
-        Ok(())
-    } else {
-        Err("a projection grant revocation does not verify".to_string())
-    }
+    let checked = statement
+        .check()
+        .map_err(|_| "a projection grant revocation does not verify".to_string())?;
+    ledger.fold(checked);
+    Ok(())
 }
 
 /// The projection counters the lane watcher samples, held apart from the host
@@ -432,5 +433,50 @@ impl ProjectionWatchCounters {
         u64::from(self.live.load(Ordering::SeqCst))
             + self.refused.load(Ordering::SeqCst)
             + self.admitted.load(Ordering::SeqCst)
+    }
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use identity::InMemoryProvider;
+
+    #[test]
+    fn projection_revocation_checks_before_folding_and_keeps_the_issuer_boundary() {
+        let issuer = InMemoryProvider::from_seed([0xa7; 32]);
+        let stranger = InMemoryProvider::from_seed([0xa8; 32]);
+        let moot = [0x51; 32];
+        let subject = [0x61; 32];
+        let grant = issue_projection_grant(&issuer, moot, subject, 50, Some(900)).unwrap();
+        let revocation =
+            projection_grant_revocation(&issuer, moot, subject, 50, Some(900), 60).unwrap();
+        let ledger = std::sync::RwLock::new(RevocationLedger::new());
+
+        let mut tampered = revocation.clone();
+        tampered.revocation.at_ms += 1;
+        assert_eq!(
+            fold_revocation(&ledger, &tampered).unwrap_err(),
+            "a projection grant revocation does not verify"
+        );
+        assert!(ledger.read().unwrap().is_empty());
+
+        // An authentic statement from another issuer cannot withdraw this grant.
+        let other_issuer = SignedDelegationRevocation::issue(
+            &stranger,
+            DelegationRevocation::new(
+                grant.certificate.id(),
+                stranger.master_public_key().to_bytes(),
+                grant.certificate.scope.clone(),
+                60,
+                [0x71; 32],
+            ),
+        )
+        .unwrap();
+        fold_revocation(&ledger, &other_issuer).unwrap();
+        assert!(!ledger.read().unwrap().revokes(&grant.certificate));
+
+        fold_revocation(&ledger, &revocation).unwrap();
+        assert!(ledger.read().unwrap().revokes(&grant.certificate));
     }
 }

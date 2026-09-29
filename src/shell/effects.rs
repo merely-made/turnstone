@@ -449,6 +449,7 @@ impl Shell {
             .map(|d| d.as_millis() as u64)
             .unwrap_or(0);
         for event in events {
+            self.diagnostic_observations.record(&event);
             if self.observed_events.len() == 128 {
                 self.observed_events.pop_front();
             }

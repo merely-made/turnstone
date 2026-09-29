@@ -1,5 +1,24 @@
 # Turnstone rung 5: panes
 
+**September 29 consolidation:** the historical pane taxonomy below has been
+revised. Gloss receives operational readouts, beginning with configurable
+Downloads beside its minimap; new instances default to both and old compositions
+keep their chosen sections. Inspector includes graph-object analysis and
+handling controls alongside document inspection. Steward and object-analysis
+Apparatus are retired from runtime pane registration; real saved leaves restore
+to their replacements in place. Shared diagnostics now belong to
+`mere-apparatus`. The [current Gloss plan](2026-07-20_gloss_composite_pane.md#current-direction-2026-09-29)
+and [pane registry plan](2026-08-08_pane_registry_and_graph_panes_plan.md) track
+implementation and final acceptance gates. Within-document selection inspection,
+background/sync operation controls and semantic automation qualification are later
+work; these source changes do not establish new human accessibility acceptance.
+The bounded migration passed the automated and native gates in the
+[September 29 qualification receipt](2026-09-29_shared_diagnostics_gloss_inspector_receipt.md): 612 workspace tests passed with 9 ignored, the default-feature native
+build passed, and fresh/restart scenarios retained Gloss configuration, Inspector
+and the requested viewer. Custom-leaf semantic parity, full built-in selectors,
+document selection and exact frame correlation remain open alongside human AT.
+
+
 2026-07-14. Scopes rung 5 of the obviation ladder in
 [2026-07-10_turnstone_architecture_plan.md](./2026-07-10_turnstone_architecture_plan.md).
 The ladder's one-line gate for this rung ("platen's pane model") is wrong in

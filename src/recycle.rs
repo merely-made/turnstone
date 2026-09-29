@@ -8,7 +8,7 @@
 //! actor (design_docs/2026-07-20_recycle_bin_athanor.md, slice 1).
 //!
 //! The bin IS `eidetic::deleted` — `DeletedNode` records staged into a
-//! session-scoped `eidetic_fjall::FjallStore` at `sessions/<id>/bin`. This
+//! session-scoped `eidetic::fjall::FjallStore` at `sessions/<id>/bin`. This
 //! module is the port adapter on turnstone's spine: the app lowers
 //! [`Effect::RecordDeleted`](crate::action::Effect), the shell forwards a
 //! [`BinCommand`] to the actor, and the actor answers with app-owned
@@ -28,7 +28,7 @@
 //! permanently forget only the tombstones past the retention window. The
 //! remaining halves are the continuous background timer (this runs at session
 //! open, not on a clock), the engram bake (distill before forget), and the
-//! Apparatus retention knob.
+//! application retention setting.
 
 use std::path::{Path, PathBuf};
 
@@ -37,13 +37,12 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use armillary::{ActorHandle, Emitter, Wake, spawn_named};
 use eidetic::{DeletedNode, Store, clear_deleted, list_deleted, record_deleted};
-use eidetic_fjall::FjallStore;
-use pandect::athanor;
+use eidetic::fjall::FjallStore;
 
 use crate::action::{RemovedRecord, Update};
 
 /// How long a deleted node sits in the recycle bin before athanor's steady-heat
-/// pass permanently forgets it. A generous default; the Apparatus knob (per the
+/// pass permanently forgets it. A generous default; the application setting (per the
 /// Alembic plan's §8 config home) is the follow-on that makes it a real setting.
 const RETENTION_DAYS: u64 = 30;
 const DAY_MS: u64 = 86_400_000;
@@ -113,7 +112,7 @@ fn open(dir: &Path) -> Result<FjallStore, String> {
 
 /// The steady-heat trigger: on each session open, retire (permanently forget)
 /// the tombstones past the retention window, then list the survivors. Athanor's
-/// retirement pass (pandect) decides which; a failed retire logs and
+/// retirement pass (Athanor) decides which; a failed retire logs and
 /// still lists (forgetting is best-effort, never blocks the bin from showing).
 /// This runs at session open, not on a background timer — the continuous actor
 /// is the remaining half.

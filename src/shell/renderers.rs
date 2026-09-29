@@ -52,8 +52,6 @@ pub(crate) struct PaneRenderers {
     pub(crate) inspector: HashMap<PaneId, crate::inspector_pane::InspectorPane>,
     /// The Workbench pane (rung 5 slice E): platen's tiling in cambium strips.
     pub(crate) workbench: HashMap<PaneId, crate::workbench_pane::WorkbenchPane>,
-    /// The Apparatus pane: the focused node's viewer override.
-    pub(crate) apparatus: HashMap<PaneId, crate::apparatus_pane::ApparatusPane>,
     /// The application-settings projection over the host provider.
     pub(crate) settings: HashMap<PaneId, crate::settings_pane::SettingsPane>,
     /// The Arrange pane: the active canvas's arrangement and physics, as controls.
@@ -69,8 +67,6 @@ pub(crate) struct PaneRenderers {
         HashMap<PaneId, crate::frozen_projection_pane::FrozenProjectionPane>,
     /// The Shell Transcript pane: the ledger's visible projection.
     pub(crate) transcript: HashMap<PaneId, crate::transcript_pane::TranscriptPane>,
-    /// The Steward pane: durable download custody and destination status.
-    pub(crate) steward: HashMap<PaneId, crate::steward_pane::StewardPane>,
     /// The Overmap pane (O1): the switcher as a graph view.
     pub(crate) overmap: HashMap<PaneId, crate::swatch_pane::SwatchPane>,
 }
@@ -90,7 +86,6 @@ impl PaneRenderers {
             trail,
             inspector,
             workbench,
-            apparatus,
             settings,
             arrange,
             publish,
@@ -99,7 +94,6 @@ impl PaneRenderers {
             frozen_projection,
             overmap,
             transcript,
-            steward,
         } = self;
         // Destructured on purpose: adding an eleventh map makes this fail to
         // compile until it is named here, which a list of `self.x.remove(..)`
@@ -110,7 +104,6 @@ impl PaneRenderers {
         trail.remove(&pane);
         inspector.remove(&pane);
         workbench.remove(&pane);
-        apparatus.remove(&pane);
         settings.remove(&pane);
         arrange.remove(&pane);
         publish.remove(&pane);
@@ -119,7 +112,6 @@ impl PaneRenderers {
         frozen_projection.remove(&pane);
         overmap.remove(&pane);
         transcript.remove(&pane);
-        steward.remove(&pane);
     }
 
     /// Deliver a wheel delta to whichever renderer holds `pane`.
@@ -146,13 +138,11 @@ impl PaneRenderers {
             trail,
             inspector,
             workbench,
-            apparatus,
             settings,
             arrange,
             publish,
             shared_knot,
             transcript,
-            steward,
         );
         false
     }
@@ -178,13 +168,11 @@ impl PaneRenderers {
             trail,
             inspector,
             workbench,
-            apparatus,
             settings,
             arrange,
             publish,
             shared_knot,
             transcript,
-            steward,
         );
         false
     }
@@ -199,7 +187,6 @@ impl PaneRenderers {
             + self.trail.len()
             + self.inspector.len()
             + self.workbench.len()
-            + self.apparatus.len()
             + self.settings.len()
             + self.publish.len()
             + self.shared_knot.len()
@@ -207,7 +194,6 @@ impl PaneRenderers {
             + self.frozen_projection.len()
             + self.overmap.len()
             + self.transcript.len()
-            + self.steward.len()
     }
 }
 

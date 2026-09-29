@@ -145,6 +145,7 @@ pub fn touched_ids(delta: &CapturedDelta) -> Vec<&str> {
         D::ReplayAssertRelationByIds { from_id, to_id, .. }
         | D::ReplayRetractRelationsByIds { from_id, to_id, .. }
         | D::ReplayAppendTraversalByIds { from_id, to_id, .. }
+        | D::ReplaySetEdgesByIds { from_id, to_id, .. }
         | D::ReplaySetEdgeSemanticPredicateByIds { from_id, to_id, .. }
         | D::ReplayAssertSemanticPredicateByIds { from_id, to_id, .. } => {
             vec![from_id.as_str(), to_id.as_str()]
@@ -162,6 +163,7 @@ pub fn touched_ids(delta: &CapturedDelta) -> Vec<&str> {
         D::ReplaySetImportRecords { .. }
         | D::ReplayAddField { .. }
         | D::ReplayRetireFieldById { .. }
+        | D::ReplayRemoveFieldById { .. }
         | D::ReplayAddCoupling { .. }
         | D::ReplaySetFieldCouplingStrengthByFieldId { .. }
         | D::ReplayActivateFieldById { .. }
@@ -291,7 +293,10 @@ pub fn entries_since(app: &App, cursor: u64) -> Vec<CommittedEntry> {
                 .into_iter()
                 .flat_map(|id| ancestry_scopes(graph, id))
                 .collect();
-            CommittedEntry::new(seq, entry.author.clone(), scopes)
+            // Servitor's watch wire format matches the admitted subject id,
+            // including its no-self-wake guard. The journal keeps kind,
+            // version and via; Display would change this identity protocol.
+            CommittedEntry::new(seq, entry.author.id.clone(), scopes)
         })
         .collect()
 }
@@ -572,6 +577,35 @@ mod tests {
     use super::*;
 
     #[test]
+    fn typed_journal_authors_preserve_no_self_wake_subject_matching() {
+        use mere::kernel::graph::Author;
+        let app = App::test_stub();
+        let subject = Subject::new([0x31; 32]);
+        let node = uuid::Uuid::new_v4().to_string();
+        let body_author = Author::script(subject.to_hex(), "body-1").via("turnstone");
+        {
+            let mut journal = app.journal.lock().unwrap();
+            for author in [Author::user(), body_author.clone()] {
+                journal.record_as(author, CapturedDelta::ReplaySetNodeTitleById {
+                    node_id: node.clone(), title: "changed".into(),
+                });
+            }
+        }
+        let entries = entries_since(&app, 0);
+        let watch = servitor::Watch {
+            subject,
+            scope: ScopePath::parse(&node).unwrap(),
+            self_author: subject.to_hex(),
+            cursor: 0,
+        };
+        assert!(watch.matches(&entries[0].as_event()), "the human edit wakes the body");
+        assert!(!watch.matches(&entries[1].as_event()), "the body's own edit never wakes itself");
+        assert_eq!(entries[1].author, subject.to_hex());
+        assert_eq!(app.journal.lock().unwrap().entries()[1].author, body_author,
+            "the string matcher projection leaves full attribution in the journal");
+    }
+
+    #[test]
     fn a_delta_naming_one_node_yields_that_node() {
         let delta = CapturedDelta::ReplaySetNodeTitleById {
             node_id: "n1".into(),
@@ -587,6 +621,10 @@ mod tests {
             parent_id: "parent".into(),
         };
         assert_eq!(touched_ids(&delta), vec!["child", "parent"]);
+        let undo = CapturedDelta::ReplaySetEdgesByIds {
+            from_id: "child".into(), to_id: "parent".into(), edges: Vec::new(),
+        };
+        assert_eq!(touched_ids(&undo), vec!["child", "parent"]);
     }
 
     #[test]
@@ -596,6 +634,9 @@ mod tests {
             import_records: Vec::new(),
         };
         assert!(touched_ids(&delta).is_empty());
+        assert!(touched_ids(&CapturedDelta::ReplayRemoveFieldById {
+            field_id: "field".into(),
+        }).is_empty());
     }
 
     #[test]

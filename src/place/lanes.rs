@@ -24,7 +24,8 @@ use graphshell::network_carrier::{
     CarrierRuntime, NetworkCarrier, dial_projection_session, projection_binding,
 };
 use identity::IdentityProvider;
-use identity::delegation::{DelegationCertificate, DelegationParent, SignedDelegationCertificate};
+use identity::delegation::Issue;
+use insigne::delegation::{DelegationCertificate, DelegationParent, SignedDelegationCertificate};
 use notochord::{HandshakeLimits, NetworkId, TrafficClass};
 use stickleback::{GroupKeyExt, JoinedSpace};
 use transport::p2panda_transport::MdnsDiscoveryMode;
@@ -360,7 +361,7 @@ impl LiveLanes {
     /// serves no vault has no door, so there is nothing to refuse.
     pub(crate) fn withdraw_projection_grants(
         &self,
-        statements: &[identity::delegation::SignedDelegationRevocation],
+        statements: &[insigne::delegation::SignedDelegationRevocation],
     ) -> Result<(), String> {
         let Some(serving) = &self.projection else {
             return Ok(());

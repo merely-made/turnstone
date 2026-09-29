@@ -174,4 +174,52 @@ mod tests {
         }
         fs::remove_dir_all(&dir).ok();
     }
+    #[test]
+    fn retired_panes_restore_their_content_and_arrangement_in_frame_and_lenses() {
+        let dir = temp_session_dir("retired-pane-content");
+        let old = serde_json::to_string(&sample_layout())
+            .unwrap()
+            .replace("\"Workbench\"", "\"Apparatus\"")
+            .replace("\"Roster\"", "\"Steward\"");
+        fs::write(frame_layout_path(&dir), &old).unwrap();
+        fs::write(dir.join(WINDOWS_FILE), format!("[{old},null]")).unwrap();
+        let restored = load_frisket_layout(&dir).unwrap().unwrap();
+        let panes: Vec<_> = restored.iter_leaves().collect();
+        assert_eq!(panes[0].0, PaneId(0));
+        assert_eq!(panes[0].1, &PaneContent::Inspector);
+        assert_eq!(panes[1].0, PaneId(1));
+        assert_eq!(
+            panes[1].1.composition().unwrap().sections,
+            vec!["downloads"]
+        );
+        assert_eq!(panes[0].2, GraphId::from_uuid(uuid::Uuid::from_u128(1)));
+        let PaneNode::Split { ratio, .. } = restored.root else {
+            panic!("split retained")
+        };
+        assert_eq!(ratio, 0.66);
+        let lenses = load_lens_spaces(&dir).unwrap().unwrap();
+        assert_eq!(lenses, vec![Some(restored.clone()), None]);
+        save_frisket_layout(&dir, &restored).unwrap();
+        save_lens_spaces(&dir, &lenses).unwrap();
+        for filename in [FRAME_FILE, WINDOWS_FILE] {
+            let saved = fs::read_to_string(dir.join(filename)).unwrap();
+            assert!(!saved.contains("Apparatus") && !saved.contains("Steward"));
+            assert!(saved.contains("Inspector") && saved.contains("downloads"));
+        }
+        assert_eq!(load_frisket_layout(&dir).unwrap(), Some(restored));
+        fs::remove_dir_all(dir).unwrap();
+    }
+    #[test]
+    fn configured_gloss_section_order_survives_frame_and_lens_save() {
+        let dir = temp_session_dir("gloss-order");
+        let mut layout = sample_layout();
+        *layout.content_mut(PaneId(1)).unwrap() = PaneContent::Gloss(super::super::PaneComposition {
+            sections: vec!["recent".into(), "downloads".into(), "removed".into()],
+        });
+        save_frisket_layout(&dir, &layout).unwrap();
+        save_lens_spaces(&dir, &[Some(layout.clone())]).unwrap();
+        assert_eq!(load_frisket_layout(&dir).unwrap(), Some(layout.clone()));
+        assert_eq!(load_lens_spaces(&dir).unwrap(), Some(vec![Some(layout)]));
+        fs::remove_dir_all(dir).unwrap();
+    }
 }

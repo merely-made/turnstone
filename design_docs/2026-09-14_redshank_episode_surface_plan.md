@@ -1,5 +1,29 @@
 # Redshank episode surface: Turnstone as the port's second host
 
+## Current adoption, 2026-09-29
+
+Turnstone adopts Mere `ca2351b3`, Genet `19c20687`, Knot `c92ad044` and Woodshed
+`752c920e` on one typed surface graph. Its reviewed host changes pass all nine
+guarded-host tests within the final 612-test workspace gate, with nine existing
+ignores. The locked graph and normal native build pass. The
+[adoption receipt](2026-09-29_shared_diagnostics_gloss_inspector_receipt.md)
+records the sealed pins and evidence; it does not qualify embedded audio or
+warning reachability in a short tile.
+
+The host now guards saved-note opens against the current loaded representation.
+Changed or unavailable fingerprints produce a visible warning and an explicit
+approximate-seek choice. Cancellation invalidates pending opens and cannot
+deliver a later worker reply to a replacement request. Existing seek controls
+retain their behavior. Listener Pause/Duck capture settings are also applied
+at capture begin, with the duck released when that capture ends.
+
+Standalone Redshank native receipts qualify its own host. A compact tile,
+warning reachability in a short viewport, and audio in a real Turnstone window
+remain separate native gates. Turnstone's diagnostic event copy does not yet
+observe Redshank worker execution, host acceptance or persistence acknowledgment.
+
+## Original implementation and receipts
+
 **Status (2026-09-14): LANDED, with five named gates.** Turnstone mounts
 Redshank's own compact Player/Capture dock as an episode tile, routes podcast
 enclosures to it, and projects one library item, its progress, and its timed
@@ -138,7 +162,8 @@ node is session-graph truth and survives a restart on its own.
    pins were unpushed are no longer required.
 4. **No headed receipt.** Everything above is headless. A tile rendered in a
    real window, with audio, is not yet captured.
-5. **Capture ignores the listener's settings** (found 2026-09-26). The
+5. **Capture ignores the listener's settings** (found 2026-09-26;
+   implementation qualified by nine host tests 2026-09-29). The
    standalone host honours `ListenerSettings::capture_playback` on every
    capture: Pause pauses, Duck lowers the one output gain to
    `duck_volume_percent` for the length of the capture, Continue leaves it.

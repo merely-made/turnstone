@@ -9,6 +9,17 @@
 
 use super::*;
 
+#[cfg(any(feature = "piccolo", feature = "wasm"))]
+fn participant_author(resident: &crate::denizen::Resident) -> mere::kernel::graph::Author {
+    mere::kernel::graph::Author::script(
+        resident.subject.to_hex(),
+        blake3::Hash::from(resident.binding.revision.0)
+            .to_hex()
+            .to_string(),
+    )
+    .via("turnstone")
+}
+
 #[test]
 fn capture_action_preserves_explicit_member_for_the_host() {
     let mut app = App::test_stub();
@@ -1502,7 +1513,7 @@ fn a_summarizer_writes_a_note_when_its_neighborhood_changes() {
     app.update(Action::ConfirmInstallDenizen);
     let (_, resident) = app.denizens.residents.iter().next().unwrap();
     let subject = resident.subject;
-    let subject_hex = subject.to_hex();
+    let expected_author = participant_author(resident);
 
     app.update(Action::ReseedLayout);
     let before = app.journal.lock().unwrap().entries().len();
@@ -1525,7 +1536,7 @@ fn a_summarizer_writes_a_note_when_its_neighborhood_changes() {
             .entries()
             .iter()
             .skip(before)
-            .filter(|entry| entry.author == subject_hex)
+            .filter(|entry| entry.author == expected_author)
             .map(|entry| entry.delta.clone())
             .collect()
     };
@@ -1551,7 +1562,7 @@ fn a_summarizer_writes_a_note_when_its_neighborhood_changes() {
             .entries()
             .iter()
             .skip(after_revoke)
-            .any(|entry| entry.author == subject_hex)
+            .any(|entry| entry.author == expected_author)
     };
     assert!(
         !still_writing,
@@ -1841,7 +1852,7 @@ mere.open('mere://filed')",
     });
     app.update(Action::ConfirmInstallDenizen);
     let (_, resident) = app.denizens.residents.iter().next().unwrap();
-    let subject_hex = resident.subject.to_hex();
+    let expected_author = participant_author(resident);
     assert_eq!(app.watches.watches().len(), 1, "the watch is standing");
 
     // Everything the install itself stirred up is behind us.
@@ -1858,7 +1869,7 @@ mere.open('mere://filed')",
         .entries()
         .iter()
         .skip(before)
-        .filter(|entry| entry.author == subject_hex)
+        .filter(|entry| entry.author == expected_author)
         .collect();
     assert!(
         !mine.is_empty(),
@@ -1928,7 +1939,7 @@ fn denizen_runs_attributed() {
     });
     app.update(Action::ConfirmInstallDenizen);
     let (&member, resident) = app.denizens.residents.iter().next().unwrap();
-    let hex = resident.subject.to_hex();
+    let expected_author = participant_author(resident);
 
     app.update(Action::RunDenizen { member });
     assert!(
@@ -1940,12 +1951,12 @@ fn denizen_runs_attributed() {
     );
     let journal = app.journal.lock().unwrap();
     assert!(
-        journal.entries().iter().any(|e| e.author == hex),
+        journal.entries().iter().any(|e| e.author == expected_author),
         "the captured edit reads back attributed to the subject"
     );
     assert_eq!(
         journal.author(),
-        mere::kernel::graph::USER_AUTHOR,
+        &mere::kernel::graph::Author::user(),
         "the author scope restored after the run"
     );
     let _ = std::fs::remove_dir_all(&app.data_root);
@@ -2523,6 +2534,7 @@ fn a_component_denizen_acts_only_within_its_reviewed_rings() {
     };
     let binding = pandect::read_denizen_binding(app.graph_runtimes.facets(), member).unwrap();
     assert_eq!(binding.kind, pandect::DenizenKind::Pack);
+    let expected_author = participant_author(&app.denizens.residents[&member]);
     let file = app
         .graph_runtimes
         .facets()
@@ -2577,7 +2589,7 @@ fn a_component_denizen_acts_only_within_its_reviewed_rings() {
         journal
             .entries()
             .iter()
-            .any(|entry| entry.author == subject.to_hex()),
+            .any(|entry| entry.author == expected_author),
         "the component's graph edit is attributed to its subject"
     );
     drop(journal);
@@ -2919,12 +2931,12 @@ fn composing_a_gloss_pane_toggles_sections_on_its_own_leaf() {
     )));
     let pane = app.active_pane.expect("the summoned gloss is active");
 
-    // At base it is a minimap: no composed sections.
+    // New Gloss panes compose Downloads beside their minimap.
     let sections = |app: &App| match app.pane_content(pane) {
         Some(PaneContent::Gloss(cfg)) => cfg.sections.clone(),
         _ => panic!("the active pane is a Gloss"),
     };
-    assert!(sections(&app).is_empty(), "base is a bare minimap");
+    assert_eq!(sections(&app), vec!["downloads"]);
 
     // The palette offers an ADD row per provider while it is active.
     let offered = app.session_actions();
@@ -2940,7 +2952,10 @@ fn composing_a_gloss_pane_toggles_sections_on_its_own_leaf() {
         pane,
         section: "removed".to_string(),
     });
-    assert_eq!(sections(&app), vec!["removed".to_string()]);
+    assert_eq!(
+        sections(&app),
+        vec!["downloads".to_string(), "removed".to_string()]
+    );
     assert!(
         fx.iter().any(|e| matches!(e, Effect::SaveSession)),
         "the composition persists with the layout: {fx:?}"
@@ -2952,12 +2967,21 @@ fn composing_a_gloss_pane_toggles_sections_on_its_own_leaf() {
             .any(|(label, _)| label == "Gloss: remove section — Removed")
     );
 
-    // Toggling again removes it, back to the bare minimap.
+    // Removing one section retains the initial Downloads configuration.
     app.update(Action::TogglePaneSection {
         pane,
         section: "removed".to_string(),
     });
-    assert!(sections(&app).is_empty(), "toggled back off");
+    assert_eq!(sections(&app), vec!["downloads"]);
+    let fx = app.update(Action::TogglePaneSection {
+        pane,
+        section: "downloads".into(),
+    });
+    assert!(sections(&app).is_empty(), "Downloads can be removed too");
+    assert!(
+        fx.iter()
+            .any(|effect| matches!(effect, Effect::SaveSession))
+    );
 }
 
 /// One catalog, offered in one order: the contextual rows LEAD the static
@@ -3113,6 +3137,11 @@ fn moving_a_composed_section_reorders_that_leaf_and_clamps() {
         })
     };
 
+    // Start with a configured bare minimap for the one/two-section checks.
+    app.update(Action::TogglePaneSection {
+        pane,
+        section: "downloads".into(),
+    });
     // With ONE section there is nothing to reorder, so no move row.
     app.update(Action::TogglePaneSection {
         pane,
@@ -3897,8 +3926,9 @@ fn configured_row_limit_applies_to_the_live_omnibar_projection() {
 #[test]
 fn live_settings_snapshot_reconfigures_the_running_chrome_value_once() {
     let settings = pandect::ApplicationSettings {
-        theme_id: Some("theme:night".into()),
-        theme_mode: Some("light".into()),
+        theme: Some(tabard::theme::choice::ThemeChoice::new(
+            "theme:night", Some(tabard::theme::registry::Mode::Light),
+        )),
         ui_zoom: 1.5,
         shellbar_edge: pandect::ShellbarEdge::Top,
         shellbar_hidden: true,

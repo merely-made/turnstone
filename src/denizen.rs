@@ -35,7 +35,8 @@ use std::path::{Path, PathBuf};
 
 use chartulary::{Container, GraphLog, Relation};
 use identity::IdentityProvider;
-use identity::delegation::SignedDelegationCertificate;
+use identity::delegation::Issue;
+use insigne::delegation::SignedDelegationCertificate;
 use muniment::{Journal, LogId};
 use servitor::delegation::{DelegationTable, root_certificate};
 use servitor::{Cap, Gate, Grant, Mode, Subject};

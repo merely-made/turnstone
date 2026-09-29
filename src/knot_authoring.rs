@@ -534,7 +534,7 @@ impl KnotHub {
                     .and_then(|(endpoint, publish_source)| {
                         // Resume is the endpoint's own answer; the carrier has
                         // no business inventing one.
-                        let carrier = graphshell_local::LocalCarrier::new(
+                        let carrier = graphshell_endpoint::local::LocalCarrier::new(
                             endpoint,
                             |endpoint: &mut knot::KnotEndpoint, request| {
                                 graphshell_endpoint::ResumableProjectionSource::resume(

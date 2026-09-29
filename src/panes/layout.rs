@@ -213,7 +213,7 @@ impl FrisketLayout {
     /// multi-graph "re-source the graph-bound panes" operation: the
     /// host calls it on a session switch so the orrery / roster /
     /// gloss / inspector / workbench panes follow the new active
-    /// graph while the Steward / Comms / Apparatus panes stay put.
+    /// graph while the Comms / application-settings panes stay put.
     /// (Multi-graph MG5; the model-B switch.)
     pub fn retag_graph_bound(&mut self, graph: GraphId) {
         fn walk(node: &mut PaneNode, graph: GraphId) {

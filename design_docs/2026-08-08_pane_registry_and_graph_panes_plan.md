@@ -6,6 +6,17 @@
 **A7**; **A3** is gated on A2; **A4** and **A5** are held until A2/A3 report
 what the tree must carry.
 
+**2026-09-29 pane consolidation: qualified.** Mark accepted operational status
+in Gloss, document and graph-object analysis in Inspector, and `mere-apparatus`
+for shared diagnostics. The current migration retires Turnstone's redundant
+Steward and Apparatus pane kinds after preserving their implemented capabilities.
+The [Gloss plan](2026-07-20_gloss_composite_pane.md#current-direction-2026-09-29)
+records the new default (minimap plus Downloads), scope and saved-layout behavior.
+Facet-backed Downloads render in configurable Gloss, Inspector writes the
+followed member's viewer through the product spine, and frame/lens restore plus
+native routing passed, as recorded in the [September 29 qualification receipt](2026-09-29_shared_diagnostics_gloss_inspector_receipt.md). Shared observations and any new operation
+controls have separate ownership; this pane migration adds no job runtime.
+
 The Shared Knot seam that blocked A1's verification cleared on its own; the
 concurrent lane landed the five reader exports. A second, unrelated blocker
 appeared and is worth recording because Git cannot see it: a machine-local
@@ -29,7 +40,7 @@ The short ruling:
   **Chrome** is the configurable projection of those services into a space.
 - Tiled containers are recursive. Floating panes are a sibling layer above the tiled
   root. Tear-out moves the same pane instance into another space.
-- Roster, Inspector, Apparatus, Trail, Alembic, Steward, Comms, Gloss, Overmap,
+- Roster, Inspector, Trail, Alembic, Comms, Gloss, Overmap,
   Publishing, and Settings keep their separate meanings.
 
 ---
@@ -65,6 +76,10 @@ They are donors, not replacement ontologies:
 | Zellij | Named nested layouts; tiled/stacked/floating stations; [pane identity and pin/show/hide operations](https://zellij.dev/documentation/plugin-api-commands) | Treating a terminal scrollback buffer as the semantic shell transcript; allowing floats to become a second copy of a tiled pane |
 
 ## 2. Live contradictions
+
+This is the initial A0 source audit, retained as implementation history. Its
+singleton renderer and old pane-name findings are superseded where later progress
+records per-instance retention and the September 29 Gloss/Inspector migration.
 
 ### 2.1 Graph identity exists in the model and is dropped by the host
 
@@ -410,7 +425,14 @@ for its pane kind. `PaneConfig` is not a universal untyped property bag.
 `PaneSource` names content authority rather than repeating pane kind; the
 definition's `source_shape` validates which source forms that kind accepts.
 
-Initial rulings:
+Initial rulings (2026-08-08, retained history):
+
+The September 29 ruling supersedes the pane jobs below for Gloss, Inspector,
+Apparatus and Steward: Gloss is the configurable navigation/operational overview,
+new instances default to minimap plus Downloads, and Inspector owns document and
+graph-object analysis. Steward and object-analysis Apparatus are retired in source;
+old saved leaves restore as Gloss with Downloads and Inspector respectively.
+The other source/multiplicity rulings retain their own implementation gates.
 
 | Pane | Plain job | Source/context | Uniqueness |
 | --- | --- | --- | --- |
@@ -485,8 +507,9 @@ struct ShellEntry {
 ```
 
 `AppEvent` and asynchronous updates enrich entries through correlation ids. They are
-also usable independently by diagnostics and automation. Steward keeps operational
-status; Comms keeps conversation; the Shell Transcript keeps the user's command,
+also usable independently by diagnostics and automation. Gloss composes operational
+status through product-owned section providers; Comms keeps conversation; the Shell
+Transcript keeps the user's command,
 navigation, and result history.
 
 The transcript can project as recent omnibar history, a docked Command Log, a
@@ -512,8 +535,10 @@ theme mode, and zoom, and marks them `Live` without updating the running shell
 [src/settings_pane.rs](../src/settings_pane.rs)). The first completion slice corrects
 the namespace and makes every advertised `Live` value observable immediately.
 
-Apparatus remains object-facing. Diagnostics remain outside settings. Presentation
-as tab, pane, float, or modal is a chrome/layout preference over one Settings source.
+Inspector owns object-facing analysis and handling controls. Shared diagnostic
+observations belong to `mere-apparatus` beneath product-owned views; diagnostic
+observations remain distinct from settings. Presentation as tab, pane, float, or
+modal is a chrome/layout preference over one Settings source.
 
 ## 9. Persistence ownership
 
@@ -856,3 +881,129 @@ layout can be shared or reset without changing graph/session truth.
   There is no control on the pane itself, no keybinding, and nothing marks
   which pane is active, so with several panes open there is no way to tell
   which one is about to close.
+
+
+## 2026-09-29 findings and progress: operational overview and Inspector
+
+- Verified `steward_pane.rs` had only inert download custody rows. The Downloads
+  section now gathers those graph facets in `sections.rs`; no authority or
+  operation control moved into a diagnostic store.
+- Verified object facets, classifications and import provenance already lived
+  in `inspector_view.rs`. The useful `apparatus_pane.rs` capability was the viewer
+  radio and document capability/zoom readouts. Those now live in Inspector;
+  `inspector_controls.rs` gathers facts from its followed member.
+- Retired renderer and command paths after migration. `saved_content.rs` lowers
+  old leaf tags immediately to current pane content, preserving actual user
+  frame/lens arrangements; new saves contain current names only.
+- Qualified by the [September 29 qualification receipt](2026-09-29_shared_diagnostics_gloss_inspector_receipt.md):
+  the locked, offline workspace gate passed 612 tests with 9 ignored; five exact
+  Piccolo/Wasm tests and 33 UI/Inspector regressions passed. The default-feature
+  native build and fresh/restart scenarios passed, with three reviewed nonblank
+  captures and persisted section order, Inspector and requested viewer.
+- This bounded receipt leaves custom-leaf semantic parity, full built-in pane
+  selectors, document selection, exact frame correlation and human AT open.
+
+## Next bounded slice: semantic automation for contributed panes, 2026-09-29
+
+**Status: future work.** The starting assumption is contributed panes first,
+following the coordinator's recommended scope while the optional scope question
+remains unanswered. The coherent Knot/Woodshed dependency and pane acceptance
+prerequisite is now qualified; source implementation of this semantic slice is
+still future work. This entry does not report semantic adoption.
+All built-in panes remain a later qualification slice. The shared
+[Mere semantic and diagnostics plan](../../mere/design_docs/mere_docs/implementation_strategy/2026-06-08_system_diagnostics_and_accessibility_plan.md)
+owns projection matching and evidence boundaries.
+
+### Existing owner seams
+
+`shell/drive.rs::with_surfaces` currently exposes contributed sessions with
+`ProbeSurface.name = "contributed"`, their provider-owned DOM and complete
+stylesheet. Shell inherits Taproot's raw role/name matching and a fresh layout
+for resolution. Shipping paint and hit testing instead use `ui.rs::RetainedLayout`.
+That distinction can place an automation click incorrectly after pane scrolling.
+
+Contributed panes already expose their same provider DOM and retained fragments
+through `ContributedSurfacePane::accessibility_tree`. `contributed_a11y.rs`
+namespaces DOM nodes by `PaneId`, translates bounds and records action routes
+into the actual platform tree. This is the qualification seam. Built-in panes
+currently use separate app/frozen projections, while live content exposes a
+partial structural outline; neither is covered by this contributed-pane proof.
+
+### Minimal explicit scope
+
+Propose one optional, generic surface-name filter in Taproot's `Selector`, with
+a builder and a leading `surface:<name>` selector token. For example:
+
+```text
+click surface:contributed role:button Reset all controls
+click surface:contributed .reset-control
+```
+
+The name is the existing `ProbeSurface.name`, a machine-facing host attribution,
+not a new pane label or product UI. The remaining selector grammar keeps its
+existing role/class, text and attribute meanings. Existing unscoped scenarios
+and constructors remain compatible; no scope means their present behavior.
+Implementation must inventory direct `Selector` construction before changing
+its shared type, and preserve other hosts through optional defaults.
+
+The scope selects a surface family, not a unique pane instance: every contributed
+pane currently has that same name. Scoped semantic resolution must therefore
+reject multiple matching contributed targets rather than choose a different
+product by iteration order. Existing DOM attributes may narrow a selector where
+the product already supplies stable identity; never infer scope from its label.
+An unknown scoped name or an authoritative semantic miss is a final
+`SelectorTarget::Miss`. It must not reopen raw matching in unrelated surfaces.
+Unscoped legacy selectors and explicit class/text behavior remain separate from
+the new qualification claim.
+
+### Ownership and retained delivery
+
+1. **Genet/Taproot:** add the optional generic scope parsing/filtering seam.
+   Use `matching_with_projection` for scoped role/name requests, preserving
+   explicit DOM class/text and attribute compatibility. It does not compute
+   product labels or decide pane routing.
+2. **Turnstone retained layout:** expose the renderer-neutral Genet document
+   projection and painted/visible rectangles from the existing retained
+   fragments and scroll state. Accessibility and automation consume the same
+   computed semantic source. Do not lay out a second tree to resolve a click.
+   Visibility must respect the viewport and applicable ancestor clipping.
+3. **Turnstone contributed sessions:** retain target identity as pane, admission
+   generation and DOM node. Assign a new bounded monotonic generation on session
+   replacement, including removal/recreation of the same source; a reused local
+   `NodeId` alone cannot authorize a held click. Preserve actual provider state,
+   event handling and action refusal.
+4. **Turnstone Shell:** implement scoped `selector_target`/`click_target` against
+   those readings. For an offscreen match, scroll the owning pane, request a
+   frame and hold `scenario_pump` until the new layout exists. Then revalidate
+   generation, DOM identity, selector, visibility and action availability before
+   delivering the pointer through the existing surface route. Hidden, renamed,
+   removed, repinned or still-invisible targets fail explicitly. Report the
+   failure in the requested scenario receipt, with a bounded wait.
+
+Apparatus may retain product-redacted observations of these checks. That does
+not invent operation IDs, computed revisions or pixel-frame correlation. Human
+screen-reader evidence remains a separate gate.
+
+### Required controls and done condition
+
+- A contributed provider fixture has visual child text `Restore`, a conflicting
+  `aria-label`, and a referenced accessible name `Reset all controls`. The scoped
+  selector and AccessKit Click route identify the same DOM node and each exercise
+  the shipping provider action exactly once. A missing first-layout projection
+  is an honest miss. Substituting raw matching must fail this named-label test.
+- A short scrolling pane places `Far` below the fold. The scoped click scrolls,
+  waits for layout, then increments once; the following scenario step cannot
+  race delivery. Explicit class/text selection keeps its original meaning.
+- Rename, hide, remove and repin while a click waits. Each fails without
+  activating a replacement. Two panes deliberately reuse local DOM IDs and
+  labels to prove identity scoping and ambiguous-match refusal. Bypassing the
+  admission-generation check must fail the repin control.
+- A disabled control never increments. A nonexistent scoped role/name cannot
+  fall through to an identically named raw control elsewhere in the window.
+
+Done requires passing the generic scope compatibility tests, retained semantic/
+scroll/stale fixtures and a native contributed-pane scenario receipt against
+the coherent dependency pins. Record the negative-control failures, restore the
+source and rerun the focused gate. This closes only contributed-pane automation
+qualification; built-in pane migration, full document semantics, exact presented
+frame correlation and human AT remain open.

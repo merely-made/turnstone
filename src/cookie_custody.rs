@@ -23,7 +23,7 @@
 use std::path::Path;
 
 use eidetic::Store;
-use eidetic_fjall::FjallStore;
+use eidetic::fjall::FjallStore;
 use pandect::PersonaId;
 
 /// Where the jar lives under the profile's data root.

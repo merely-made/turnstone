@@ -29,17 +29,26 @@ use fetch::Fetch;
 
 use redshank_model::{
     Annotation, AnnotationId, CaptureAnchor, ItemId, LibraryItem, MediaSource, NoteBody, Progress,
-    RedshankModel, RepresentationReceipt,
+    RedshankModel, RepresentationIdentity, RepresentationReceipt,
 };
 use redshank_playback::{PlaybackCommand, PlaybackRuntime, PlaybackSnapshot, PlaybackState};
 use redshank_storage::{JsonDirectoryStore, ModelStore};
 use redshank_surfaces::{
-    CompactCommand, CompactPlayerState, Face, NoteKind, NoteMarker, NowPlaying, SourceKind,
-    TransportState,
+    CompactCommand, CompactPlayerState, Face, NoteKind, NoteMarker, NoteOpenWarning, NowPlaying,
+    SourceKind, TransportState,
 };
 
 /// Where the listening model lives inside a Turnstone session directory.
 pub const MODEL_DIR: &str = "redshank";
+
+#[derive(Clone)]
+struct PendingNoteOpen {
+    token: u64,
+    id: AnnotationId,
+    approximate: bool,
+    aligned: bool,
+    span: bool,
+}
 
 /// Whether this host may open the machine's audio device.
 ///
@@ -100,6 +109,12 @@ pub struct RedshankHost {
     /// A frozen capture target per item, taken when a note begins.
     anchors: BTreeMap<ItemId, CaptureAnchor>,
     next_note: u64,
+    pending_note_open: Option<PendingNoteOpen>,
+    pending_note_seek: Option<u64>,
+    next_note_seek: u64,
+    hold_progress: bool,
+    span_stop_ms: Option<u64>,
+    note_warning: Option<NoteOpenWarning>,
 }
 
 impl Default for RedshankHost {
@@ -115,6 +130,12 @@ impl Default for RedshankHost {
             resumed_from_ms: None,
             anchors: BTreeMap::new(),
             next_note: 0,
+            pending_note_open: None,
+            pending_note_seek: None,
+            next_note_seek: 0,
+            hold_progress: false,
+            span_stop_ms: None,
+            note_warning: None,
         }
     }
 }
@@ -142,7 +163,10 @@ impl RedshankHost {
             Ok(Some(model)) => model,
             Ok(None) => RedshankModel::default(),
             Err(error) => {
-                tracing::warn!(?error, "the Redshank model could not be read; starting empty");
+                tracing::warn!(
+                    ?error,
+                    "the Redshank model could not be read; starting empty"
+                );
                 RedshankModel::default()
             },
         };
@@ -222,32 +246,50 @@ impl RedshankHost {
     }
 
     fn select(&mut self, id: &ItemId) {
+        if let Some(command) = self.load_selection(id, None) {
+            self.send(command);
+        }
+    }
+
+    fn load_selection(
+        &mut self,
+        id: &ItemId,
+        resume_override: Option<u64>,
+    ) -> Option<PlaybackCommand> {
         let Some(source) = self.model.library.get(id).map(|item| item.source().clone()) else {
-            return;
+            return None;
         };
+        self.pending_note_open = None;
+        self.pending_note_seek = None;
+        self.span_stop_ms = None;
+        self.note_warning = None;
+        self.hold_progress = false;
         self.token = self.token.wrapping_add(1);
         self.selected = Some(id.clone());
         self.model.selected_item = Some(id.clone());
-        let resume = self
-            .model
-            .progress
-            .get(id)
-            .map_or(0, |progress| progress.position_ms);
+        let resume = resume_override.unwrap_or_else(|| {
+            self.model
+                .progress
+                .get(id)
+                .map_or(0, |progress| progress.position_ms)
+        });
         self.resumed_from_ms = (resume > 0).then_some(resume);
-        self.send(PlaybackCommand::Load {
+        Some(PlaybackCommand::Load {
             token: self.token,
             source,
             resume_ms: resume,
-        });
+        })
     }
 
-    fn send(&self, command: PlaybackCommand) {
+    fn send(&self, command: PlaybackCommand) -> bool {
         let Some(runtime) = &self.runtime else {
-            return;
+            return false;
         };
         if let Err(error) = runtime.command(command) {
             tracing::warn!(%error, "the Redshank playback runtime refused a command");
+            return false;
         }
+        true
     }
 
     fn snapshot(&self) -> PlaybackSnapshot {
@@ -257,6 +299,29 @@ impl RedshankHost {
             .unwrap_or_default()
     }
 
+    fn send_transport(&mut self, command: PlaybackCommand) -> bool {
+        let sent = self.send(command);
+        if sent && self.pending_note_seek.is_none() {
+            self.hold_progress = false;
+        }
+        sent
+    }
+
+    fn acknowledge_note_seek(&mut self, snapshot: &PlaybackSnapshot) {
+        if self.matches(snapshot)
+            && matches!(
+                snapshot.state,
+                PlaybackState::Playing | PlaybackState::Paused | PlaybackState::Ended
+            )
+            && self
+                .pending_note_seek
+                .is_some_and(|request| snapshot.completed_note_seek == Some(request))
+        {
+            self.pending_note_seek = None;
+            self.hold_progress = false;
+        }
+    }
+
     fn matches(&self, snapshot: &PlaybackSnapshot) -> bool {
         self.selected.is_some() && snapshot.load_token == Some(self.token)
     }
@@ -264,7 +329,35 @@ impl RedshankHost {
     /// Record where playback reached. Called each frame by the host loop.
     pub fn record_progress(&mut self, now_ms: u64) -> bool {
         let snapshot = self.snapshot();
-        if !self.matches(&snapshot)
+        self.acknowledge_note_seek(&snapshot);
+        if self.matches(&snapshot) {
+            if snapshot.state != PlaybackState::Loading
+                && let Some(request) = self.pending_note_open.take()
+            {
+                let id = request.id.clone();
+                match self.finish_note_open(request, &snapshot) {
+                    Ok(commands) => {
+                        self.send_note_commands(&id, commands);
+                    },
+                    Err(message) => self.note_warning = Some(NoteOpenWarning { id, message }),
+                }
+            }
+            if self.pending_note_seek.is_none()
+                && snapshot.state == PlaybackState::Playing
+                && self
+                    .span_stop_ms
+                    .is_some_and(|stop| snapshot.position_ms >= stop)
+            {
+                self.span_stop_ms = None;
+                self.send(PlaybackCommand::Pause);
+            }
+        }
+        self.record_snapshot_progress(&snapshot, now_ms)
+    }
+
+    fn record_snapshot_progress(&mut self, snapshot: &PlaybackSnapshot, now_ms: u64) -> bool {
+        if self.hold_progress
+            || !self.matches(snapshot)
             || !matches!(
                 snapshot.state,
                 PlaybackState::Playing | PlaybackState::Paused | PlaybackState::Ended
@@ -274,12 +367,9 @@ impl RedshankHost {
         }
         let completed = snapshot.state == PlaybackState::Ended;
         let id = self.selected.clone().expect("a matched selection");
-        if self
-            .model
-            .progress
-            .get(&id)
-            .is_some_and(|saved| saved.position_ms == snapshot.position_ms && saved.completed == completed)
-        {
+        if self.model.progress.get(&id).is_some_and(|saved| {
+            saved.position_ms == snapshot.position_ms && saved.completed == completed
+        }) {
             return false;
         }
         self.model.progress.insert(
@@ -299,7 +389,13 @@ impl RedshankHost {
     /// audio may annotate the position the model remembers.
     fn anchor(&self, item: &ItemId) -> CaptureAnchor {
         let snapshot = self.snapshot();
-        let live = self.matches(&snapshot) && self.selected.as_ref() == Some(item);
+        let live = self.matches(&snapshot)
+            && self.selected.as_ref() == Some(item)
+            && !self.hold_progress
+            && matches!(
+                snapshot.state,
+                PlaybackState::Playing | PlaybackState::Paused | PlaybackState::Ended
+            );
         let pressed = if live {
             snapshot.position_ms
         } else {
@@ -310,6 +406,14 @@ impl RedshankHost {
         };
         let offset = pressed.saturating_sub(self.model.settings.reaction_offset_ms);
         CaptureAnchor {
+            fingerprint: if live && !self.hold_progress {
+                snapshot
+                    .fingerprint_context
+                    .as_ref()
+                    .and_then(|context| context.at(offset, self.model.settings.alignment_window_ms))
+            } else {
+                None
+            },
             item_id: item.clone(),
             offset_ms: offset,
             end_offset_ms: None,
@@ -351,6 +455,32 @@ impl RedshankHost {
     /// microphone adapter, the projection keeps `voice_capture_available`
     /// false, and a voice command that arrives anyway is refused in words.
     pub fn command(&mut self, item: &ItemId, command: CompactCommand, now_ms: u64) -> HostOutcome {
+        if matches!(
+            &command,
+            CompactCommand::Play
+                | CompactCommand::Pause
+                | CompactCommand::Replay
+                | CompactCommand::Seek(_)
+                | CompactCommand::SkipBackward(_)
+                | CompactCommand::SkipForward(_)
+        ) {
+            self.pending_note_open = None;
+            // A new explicit transport action supersedes an unacknowledged
+            // note seek. Delivery failure still leaves progress held.
+            self.pending_note_seek = None;
+            self.span_stop_ms = None;
+            self.note_warning = None;
+        }
+        if matches!(
+            &command,
+            CompactCommand::BeginTextNote
+                | CompactCommand::AddTextNote
+                | CompactCommand::DeleteNote(_)
+                | CompactCommand::BeginEditNote(_)
+                | CompactCommand::EditNote { .. }
+        ) {
+            self.pending_note_open = None;
+        }
         match command {
             CompactCommand::SelectItem(id) | CompactCommand::RetryItem(id) => {
                 self.select(&id);
@@ -361,18 +491,22 @@ impl RedshankHost {
                     self.select(item);
                 }
                 if self.snapshot().state == PlaybackState::Ended {
-                    self.send(PlaybackCommand::Seek(0));
+                    self.send_transport(PlaybackCommand::Seek(0));
                 }
-                self.send(PlaybackCommand::Play);
+                self.send_transport(PlaybackCommand::Play);
                 HostOutcome::default()
             },
             CompactCommand::Pause => {
-                self.send(PlaybackCommand::Pause);
+                self.send_transport(PlaybackCommand::Pause);
                 HostOutcome::default()
             },
             CompactCommand::Replay => {
-                self.send(PlaybackCommand::Seek(0));
-                self.send(PlaybackCommand::Play);
+                if !self.send_transport(PlaybackCommand::Seek(0)) {
+                    return HostOutcome::notice(
+                        "The audio runtime could not replay this recording",
+                    );
+                }
+                self.send_transport(PlaybackCommand::Play);
                 let _ = self.model.set_progress(
                     item,
                     Progress {
@@ -384,17 +518,17 @@ impl RedshankHost {
                 HostOutcome::changed()
             },
             CompactCommand::Seek(position) => {
-                self.send(PlaybackCommand::Seek(position));
+                self.send_transport(PlaybackCommand::Seek(position));
                 HostOutcome::default()
             },
             CompactCommand::SkipBackward(ms) => {
                 let position = self.snapshot().position_ms.saturating_sub(ms);
-                self.send(PlaybackCommand::Seek(position));
+                self.send_transport(PlaybackCommand::Seek(position));
                 HostOutcome::default()
             },
             CompactCommand::SkipForward(ms) => {
                 let position = self.snapshot().position_ms.saturating_add(ms);
-                self.send(PlaybackCommand::Seek(position));
+                self.send_transport(PlaybackCommand::Seek(position));
                 HostOutcome::default()
             },
             CompactCommand::SetRate(percent) => {
@@ -431,19 +565,13 @@ impl RedshankHost {
                     },
                 }
             },
-            CompactCommand::OpenNote(id) | CompactCommand::PlaySpan(id) => {
-                let Some(note) = self.model.annotations.get(&id) else {
-                    return HostOutcome::notice("That note no longer exists");
-                };
-                let offset = note.target.offset_ms;
-                let target = note.target.item_id.clone();
-                if self.selected.as_ref() != Some(&target) {
-                    self.select(&target);
-                }
-                self.send(PlaybackCommand::Seek(offset));
-                self.send(PlaybackCommand::Play);
-                HostOutcome::default()
-            },
+            CompactCommand::OpenNote(id) => self.open_note(id, false, false, false),
+            CompactCommand::PlaySpan(id) => self.open_note(id, false, false, true),
+            CompactCommand::OpenNoteApproximately(id) => self.open_note(id, true, false, false),
+            CompactCommand::OpenAlignedNote(id) => self.open_note(id, false, true, false),
+            CompactCommand::RealignNote(_) => HostOutcome::notice(
+                "Realign downloaded notes in Redshank; this tile can open a saved aligned estimate",
+            ),
             CompactCommand::BeginVoiceNote
             | CompactCommand::FinishVoiceNote
             | CompactCommand::CancelVoiceNote
@@ -453,10 +581,198 @@ impl RedshankHost {
                 HostOutcome::notice("Voice notes need a microphone Turnstone does not supply yet")
             },
             other => {
-                tracing::debug!(?other, "a dock command outside the episode tile's vocabulary");
+                tracing::debug!(
+                    ?other,
+                    "a dock command outside the episode tile's vocabulary"
+                );
                 HostOutcome::default()
             },
         }
+    }
+
+    fn open_note(
+        &mut self,
+        id: AnnotationId,
+        approximate: bool,
+        aligned: bool,
+        span: bool,
+    ) -> HostOutcome {
+        if self.runtime.is_none() {
+            return HostOutcome::notice("No audio output in this session");
+        }
+        let snapshot = self.snapshot();
+        match self.note_commands(id.clone(), approximate, aligned, span, &snapshot) {
+            Ok(commands) => {
+                if self.send_note_commands(&id, commands) {
+                    HostOutcome::default()
+                } else {
+                    HostOutcome::notice("The audio runtime could not open this note")
+                }
+            },
+            Err(message) => {
+                self.note_warning = Some(NoteOpenWarning {
+                    id,
+                    message: message.clone(),
+                });
+                HostOutcome::notice(message)
+            },
+        }
+    }
+
+    fn send_note_commands(&mut self, id: &AnnotationId, commands: Vec<PlaybackCommand>) -> bool {
+        for command in commands {
+            if !self.send(command) {
+                self.note_warning = Some(NoteOpenWarning {
+                    id: id.clone(),
+                    message: "The audio runtime could not open this note".into(),
+                });
+                return false;
+            }
+        }
+        true
+    }
+
+    fn note_commands(
+        &mut self,
+        id: AnnotationId,
+        approximate: bool,
+        aligned: bool,
+        span: bool,
+        snapshot: &PlaybackSnapshot,
+    ) -> Result<Vec<PlaybackCommand>, String> {
+        // Even a missing replacement note cancels the previously deferred
+        // action. A late Ready must not open the superseded note.
+        self.pending_note_open = None;
+        self.span_stop_ms = None;
+        let target = self
+            .model
+            .annotations
+            .get(&id)
+            .ok_or("That note no longer exists")?
+            .target
+            .item_id
+            .clone();
+        let mut commands = Vec::new();
+        if self.selected.as_ref() != Some(&target) {
+            // A receipt must precede any saved-position or annotation seek.
+            commands.push(
+                self.load_selection(&target, Some(0))
+                    .ok_or("The note's recording is no longer in the library")?,
+            );
+            self.hold_progress = true;
+        }
+        let request = PendingNoteOpen {
+            token: self.token,
+            id,
+            approximate,
+            aligned,
+            span,
+        };
+        if !self.matches(snapshot)
+            || matches!(
+                snapshot.state,
+                PlaybackState::Empty | PlaybackState::Loading
+            )
+        {
+            self.pending_note_open = Some(request);
+            self.hold_progress = true;
+        } else {
+            commands.extend(self.finish_note_open(request, snapshot)?);
+        }
+        Ok(commands)
+    }
+
+    fn aligned_offset(
+        &self,
+        id: &AnnotationId,
+        snapshot: &PlaybackSnapshot,
+    ) -> Result<u64, String> {
+        let derived = self
+            .model
+            .derived_positions
+            .get(id)
+            .ok_or("Realign this note first")?;
+        self.model
+            .validate_derived_position(id, derived)
+            .map_err(|error| format!("Saved alignment evidence is invalid: {error:?}"))?;
+        let actual = snapshot
+            .representation
+            .as_ref()
+            .and_then(|receipt| receipt.complete_digest.as_ref());
+        if derived.destination.complete_digest.is_none()
+            || actual != derived.destination.complete_digest.as_ref()
+        {
+            return Err(
+                "The loaded copy has not verified the alignment's destination digest".into(),
+            );
+        }
+        Ok(derived.offset_ms)
+    }
+
+    fn finish_note_open(
+        &mut self,
+        request: PendingNoteOpen,
+        snapshot: &PlaybackSnapshot,
+    ) -> Result<Vec<PlaybackCommand>, String> {
+        let note = self
+            .model
+            .annotations
+            .get(&request.id)
+            .ok_or("That note no longer exists")?;
+        if request.token != self.token
+            || !self.matches(snapshot)
+            || self.selected.as_ref() != Some(&note.target.item_id)
+            || !matches!(
+                snapshot.state,
+                PlaybackState::Playing | PlaybackState::Paused | PlaybackState::Ended
+            )
+        {
+            return Err("Wait until the note's recording has loaded".into());
+        }
+        let identity = snapshot
+            .representation
+            .as_ref()
+            .map_or(RepresentationIdentity::Unproven, |receipt| {
+                note.target.representation.compare(receipt)
+            });
+        let aligned_offset = if request.aligned {
+            Some(self.aligned_offset(&request.id, snapshot)?)
+        } else {
+            None
+        };
+        if !request.approximate && aligned_offset.is_none() {
+            match identity {
+                RepresentationIdentity::Same => {},
+                RepresentationIdentity::Different => return Err("This copy differs.".into()),
+                RepresentationIdentity::Unproven => return Err("Couldn't verify this copy.".into()),
+            }
+        }
+        let position_ms = aligned_offset.unwrap_or(note.target.offset_ms);
+        let stop = if request.span {
+            Some(
+                note.target
+                    .end_offset_ms
+                    .ok_or("That note covers a moment, not a span")?,
+            )
+        } else {
+            None
+        };
+        self.next_note_seek = self
+            .next_note_seek
+            .checked_add(1)
+            .ok_or("Note seek identity exhausted")?;
+        self.pending_note_seek = Some(self.next_note_seek);
+        self.hold_progress = true;
+        self.span_stop_ms = stop;
+        self.note_warning = None;
+        Ok(vec![
+            PlaybackCommand::SeekNote {
+                token: request.token,
+                request_id: self.next_note_seek,
+                position_ms,
+            },
+            PlaybackCommand::Play,
+        ])
     }
 
     fn save_text_note(
@@ -538,6 +854,16 @@ impl RedshankHost {
         // Built by assignment rather than functional update: the command
         // queue is the surface crate's own private field.
         let mut state = CompactPlayerState::default();
+        state.note_warning = self
+            .note_warning
+            .as_ref()
+            .filter(|warning| {
+                self.model
+                    .annotations
+                    .get(&warning.id)
+                    .is_some_and(|note| &note.target.item_id == item)
+            })
+            .cloned();
         state.transport = transport;
         state.skip_backward_ms = self.model.settings.skip_backward_ms;
         state.skip_forward_ms = self.model.settings.skip_forward_ms;
@@ -574,7 +900,11 @@ impl RedshankHost {
             } else {
                 None
             },
-            buffered_percent: if matched { snapshot.buffered_percent } else { 0 },
+            buffered_percent: if matched {
+                snapshot.buffered_percent
+            } else {
+                0
+            },
             markers,
         });
         state
@@ -621,6 +951,329 @@ fn format_tag(item: &LibraryItem) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn receipt(byte: char) -> RepresentationReceipt {
+        RepresentationReceipt {
+            byte_length: Some(1_000),
+            complete_digest: Some(format!("blake3:{}", byte.to_string().repeat(64))),
+            ..Default::default()
+        }
+    }
+
+    fn note_host() -> (RedshankHost, PlaybackSnapshot, AnnotationId) {
+        let mut host = RedshankHost::default();
+        let item = ItemId("episode".into());
+        host.model
+            .add_item(LibraryItem::DirectAudio {
+                id: item.clone(),
+                title: "Episode".into(),
+                source: MediaSource::Enclosure {
+                    url: "https://example.invalid/audio.mp3".into(),
+                },
+            })
+            .unwrap();
+        host.selected = Some(item.clone());
+        host.token = 7;
+        host.model.progress.insert(
+            item.clone(),
+            Progress {
+                position_ms: 8_000,
+                completed: false,
+                updated_at_ms: 1,
+            },
+        );
+        let id = AnnotationId("note".into());
+        host.model
+            .add_text_annotation(
+                id.clone(),
+                CaptureAnchor {
+                    item_id: item,
+                    offset_ms: 16_000,
+                    end_offset_ms: Some(19_000),
+                    pressed_offset_ms: None,
+                    representation: receipt('a'),
+                    fingerprint: Some(redshank_model::AudioFingerprint {
+                        version: 1,
+                        frame_ms: 100,
+                        anchor_offset_ms: 5_000,
+                        frames: vec![[1; 16]; 50],
+                    }),
+                },
+                "original note".into(),
+                0,
+            )
+            .unwrap();
+        let snapshot = PlaybackSnapshot {
+            load_token: Some(7),
+            state: PlaybackState::Paused,
+            representation: Some(receipt('a')),
+            position_ms: 8_000,
+            duration_ms: Some(60_000),
+            ..Default::default()
+        };
+        (host, snapshot, id)
+    }
+
+    fn request(
+        host: &RedshankHost,
+        id: &AnnotationId,
+        approximate: bool,
+        aligned: bool,
+        span: bool,
+    ) -> PendingNoteOpen {
+        PendingNoteOpen {
+            token: host.token,
+            id: id.clone(),
+            approximate,
+            aligned,
+            span,
+        }
+    }
+
+    #[test]
+    fn note_opens_require_ready_matching_receipts_or_explicit_approximation() {
+        let (mut host, snapshot, id) = note_host();
+        for representation in [
+            None,
+            Some(RepresentationReceipt::default()),
+            Some(receipt('b')),
+        ] {
+            let changed = PlaybackSnapshot {
+                representation,
+                ..snapshot.clone()
+            };
+            assert!(
+                host.finish_note_open(request(&host, &id, false, false, false), &changed)
+                    .is_err()
+            );
+            assert!(host.pending_note_seek.is_none());
+            let commands = host
+                .finish_note_open(request(&host, &id, true, false, false), &changed)
+                .unwrap();
+            assert!(matches!(
+                &commands[0],
+                PlaybackCommand::SeekNote {
+                    token: 7,
+                    position_ms: 16_000,
+                    ..
+                }
+            ));
+            host.pending_note_seek = None;
+        }
+        for state in [
+            PlaybackState::Loading,
+            PlaybackState::Unavailable("failed".into()),
+        ] {
+            let loading = PlaybackSnapshot {
+                state,
+                ..snapshot.clone()
+            };
+            assert!(
+                host.finish_note_open(request(&host, &id, true, false, false), &loading)
+                    .is_err()
+            );
+        }
+        let stale = PlaybackSnapshot {
+            load_token: Some(6),
+            ..snapshot
+        };
+        assert!(
+            host.finish_note_open(request(&host, &id, true, false, false), &stale)
+                .is_err()
+        );
+    }
+
+    #[test]
+    fn another_items_note_loads_paused_at_zero_and_holds_saved_progress() {
+        let (mut host, snapshot, id) = note_host();
+        host.selected = None;
+        let commands = host
+            .note_commands(id, false, false, false, &snapshot)
+            .unwrap();
+        assert_eq!(commands.len(), 1);
+        assert!(matches!(
+            &commands[0],
+            PlaybackCommand::Load {
+                token: 8,
+                resume_ms: 0,
+                ..
+            }
+        ));
+        assert!(host.pending_note_open.is_some());
+        let ready = PlaybackSnapshot {
+            load_token: Some(8),
+            position_ms: 0,
+            representation: None,
+            ..snapshot
+        };
+        let pending = host.pending_note_open.take().unwrap();
+        assert!(host.finish_note_open(pending, &ready).is_err());
+        assert!(!host.record_snapshot_progress(&ready, 9));
+        assert_eq!(
+            host.model.progress[&ItemId("episode".into())].position_ms,
+            8_000
+        );
+    }
+
+    #[test]
+    fn only_the_latest_seek_acknowledgement_releases_saved_progress() {
+        let (mut host, mut snapshot, id) = note_host();
+        host.finish_note_open(request(&host, &id, false, false, false), &snapshot)
+            .unwrap();
+        let earlier = host.pending_note_seek.unwrap();
+        host.finish_note_open(request(&host, &id, false, false, false), &snapshot)
+            .unwrap();
+        let latest = host.pending_note_seek.unwrap();
+        snapshot.completed_note_seek = Some(earlier);
+        host.acknowledge_note_seek(&snapshot);
+        assert!(!host.record_snapshot_progress(&snapshot, 10));
+        snapshot.completed_note_seek = Some(latest);
+        snapshot.load_token = Some(6);
+        host.acknowledge_note_seek(&snapshot);
+        assert!(host.hold_progress);
+        snapshot.load_token = Some(7);
+        snapshot.state = PlaybackState::Unavailable("seek failed".into());
+        host.acknowledge_note_seek(&snapshot);
+        assert!(host.hold_progress);
+        snapshot.state = PlaybackState::Paused;
+        snapshot.position_ms = 16_000;
+        host.acknowledge_note_seek(&snapshot);
+        assert!(host.record_snapshot_progress(&snapshot, 11));
+        assert_eq!(
+            host.model.progress[&ItemId("episode".into())].position_ms,
+            16_000
+        );
+    }
+
+    #[test]
+    fn refused_replacement_and_failed_runtime_dispatch_keep_the_progress_hold() {
+        let (mut host, snapshot, id) = note_host();
+        let commands = host
+            .finish_note_open(request(&host, &id, false, false, false), &snapshot)
+            .unwrap();
+        let accepted = host.pending_note_seek;
+        let changed = PlaybackSnapshot {
+            representation: Some(receipt('b')),
+            ..snapshot.clone()
+        };
+        assert!(
+            host.finish_note_open(request(&host, &id, false, false, false), &changed)
+                .is_err()
+        );
+        assert_eq!(host.pending_note_seek, accepted);
+        assert!(
+            !host.send_note_commands(&id, commands),
+            "silent host has no runtime to accept the seek"
+        );
+        host.command(&ItemId("episode".into()), CompactCommand::Pause, 12);
+        assert!(host.pending_note_seek.is_none());
+        assert!(host.hold_progress);
+        assert!(!host.record_snapshot_progress(&snapshot, 12));
+    }
+
+    #[test]
+    fn new_transport_supersedes_an_unacknowledged_note_seek_when_delivery_succeeds() {
+        let (mut host, snapshot, id) = note_host();
+        host.finish_note_open(request(&host, &id, false, false, false), &snapshot)
+            .unwrap();
+        assert!(host.pending_note_seek.is_some());
+        assert!(host.hold_progress);
+        // An empty runtime accepts Pause without opening a decoder or device.
+        host.runtime = Some(PlaybackRuntime::start_with(Arc::new(Inert)));
+        host.command(&ItemId("episode".into()), CompactCommand::Pause, 13);
+        assert!(host.pending_note_seek.is_none());
+        assert!(!host.hold_progress);
+    }
+
+    #[test]
+    fn missing_replacement_note_cancels_the_old_deferred_open_and_span() {
+        let (mut host, mut snapshot, id) = note_host();
+        snapshot.state = PlaybackState::Loading;
+        host.note_commands(id, false, false, true, &snapshot)
+            .unwrap();
+        assert!(host.pending_note_open.is_some());
+        host.span_stop_ms = Some(19_000);
+        assert!(
+            host.note_commands(
+                AnnotationId("deleted-note".into()),
+                false,
+                false,
+                false,
+                &snapshot
+            )
+            .is_err()
+        );
+        assert!(host.pending_note_open.is_none());
+        assert!(host.span_stop_ms.is_none());
+        assert!(host.hold_progress);
+    }
+
+    #[test]
+    fn capturing_cancels_a_pending_open_and_compact_projection_keeps_its_warning() {
+        let (mut host, mut snapshot, id) = note_host();
+        snapshot.state = PlaybackState::Loading;
+        host.note_commands(id.clone(), false, false, false, &snapshot)
+            .unwrap();
+        assert!(host.pending_note_open.is_some());
+        let item = ItemId("episode".into());
+        host.command(&item, CompactCommand::BeginTextNote, 1);
+        assert!(host.pending_note_open.is_none());
+        host.note_warning = Some(NoteOpenWarning {
+            id: id.clone(),
+            message: "Couldn't verify this copy.".into(),
+        });
+        assert_eq!(host.project(&item).note_warning.unwrap().id, id);
+        assert!(host.project(&ItemId("other".into())).note_warning.is_none());
+    }
+
+    #[test]
+    fn aligned_points_require_the_loaded_digest_and_never_remap_span_ends() {
+        let (mut host, mut snapshot, id) = note_host();
+        let original = host.model.annotations[&id].target.clone();
+        let derived = redshank_model::DerivedPosition {
+            original_target: original.clone(),
+            destination: receipt('b'),
+            offset_ms: 46_000,
+            algorithm_version: 1,
+            confidence_per_mille: 990,
+            runner_up_per_mille: 500,
+            reference_duration_ms: 5_000,
+        };
+        host.model.store_derived_position(&id, derived).unwrap();
+        snapshot.representation = Some(receipt('b'));
+        // A saved estimate never changes the meaning of plain Open at.
+        assert_eq!(
+            host.finish_note_open(request(&host, &id, false, false, false), &snapshot)
+                .unwrap_err(),
+            "This copy differs."
+        );
+        assert!(host.pending_note_seek.is_none());
+        let commands = host
+            .finish_note_open(request(&host, &id, false, true, false), &snapshot)
+            .unwrap();
+        assert!(matches!(
+            &commands[0],
+            PlaybackCommand::SeekNote {
+                position_ms: 46_000,
+                ..
+            }
+        ));
+        assert_eq!(host.model.annotations[&id].target, original);
+        assert!(
+            host.finish_note_open(request(&host, &id, false, false, true), &snapshot)
+                .is_err()
+        );
+        snapshot.representation = Some(receipt('c'));
+        assert!(
+            host.finish_note_open(request(&host, &id, false, true, false), &snapshot)
+                .is_err()
+        );
+        snapshot.representation = None;
+        assert!(
+            host.finish_note_open(request(&host, &id, false, true, false), &snapshot)
+                .is_err()
+        );
+    }
 
     /// A handle that is never called: what the test needs is its identity.
     struct Inert;

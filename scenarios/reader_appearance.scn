@@ -14,9 +14,9 @@ assert content-sessions-idle
 assert content-ready
 assert content-live
 
-# Select the real Reader engine through the Apparatus UI, then add the same
+# Select the real Reader engine through the Inspector UI, then add the same
 # focused node to the Workbench. Reader is deliberately allowed both surfaces.
-act Open Apparatus pane
+act Open Inspector pane
 settle 20
 click-row genet.reader
 wait 240

@@ -358,7 +358,7 @@ mod tests {
         assert_eq!(dom.all_with_class(dom.document(), "setting-apply").len(), 5);
         // `text` answers for text and comment nodes, never for the element
         // holding them, so a section title is read through its children (the
-        // idiom the apparatus and inspector panes already use).
+        // idiom the Inspector pane already use).
         assert!(
             dom.all_with_class(dom.document(), "list-section-title")
                 .into_iter()

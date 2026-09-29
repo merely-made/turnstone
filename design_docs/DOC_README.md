@@ -62,7 +62,7 @@ set.
   authorized collection search have app consumers; hosted Weld capture,
   offline replay, and the remaining custody work are still open.
 - [Browser surfaces implementation plan](2026-08-25_browser_surface_implementation_plan.md): sequenced Keep, find, decision UI, engine parity, arrivals, shallows, and extension work.
-- [Pane registry, graph views, and shell composition](2026-08-08_pane_registry_and_graph_panes_plan.md): registry and multi-graph pane roadmap, with its remaining A-lane gates; A4 revised 2026-09-04 to adopt the shared Workbench tree (panes as tiles).
+- [Pane registry, graph views, and shell composition](2026-08-08_pane_registry_and_graph_panes_plan.md): registry and multi-graph pane roadmap, with remaining A-lane gates; A4 adopts the shared Workbench tree. September 29 next slice proposes explicitly scoped semantic automation for contributed panes using the same provider DOM/layout as AccessKit; future work after the coherent dependency gate, with scroll/stale controls and existing-selector compatibility.
 - [Turnstone engine adoption](2026-08-03_turnstone_engine_adoption_plan.md): selectable engine routing and unavailable-engine behavior.
 - [Reticulum browsing](2026-08-03_reticulum_browsing_plan.md): native NomadNet page routing and Micron preview implemented; current shared presentation, typed interaction and independent carrier acceptance scopes.
 - [User-agent taxonomy](2026-08-03_user_agent_taxonomy_plan.md): browser obligations assigned to graph-native Turnstone homes.
@@ -86,10 +86,12 @@ set.
 - [Turnstone surfaces in Cambium](2026-07-15_turnstone_surfaces_in_cambium.md): mapping from product surfaces to Cambium components or non-Cambium lanes.
 - [Turnstone founding](2026-07-08_turnstone_founding.md): naming, role swap, and original sequencing, with later authority corrections called out in the document.
 - [Meerkat harvest](2026-07-18_meerkat_harvest.md): port, note, or leave audit made before retiring the donor application.
-- [Gloss composite pane](2026-07-20_gloss_composite_pane.md): configurable section composition; September 29 accepts Gloss as the operational overview, with Steward retiring after content migration. Migration pending; shared diagnostics live in `mere-apparatus`.
+- [Gloss composite pane](2026-07-20_gloss_composite_pane.md): configurable navigation and operational overview; September 29 implementation adds Downloads by default, moves object handling into Inspector, and preserves saved arrangements while retiring Steward/Apparatus panes. Automated and native restart gates pass; shared diagnostics live in `mere-apparatus`.
 - [Recycle bin and Athanor](2026-07-20_recycle_bin_athanor.md): recoverable deletion, identity-preserving restore, and eventual permanent forgetting.
 
 ## Completed plans and receipts
+
+- [Shared diagnostics and Gloss/Inspector adoption receipt](2026-09-29_shared_diagnostics_gloss_inspector_receipt.md): fourteen single-source seams, 612 workspace tests with nine ignores, five participant and 33 UI checks, plus final native migration/restart and bounded loss receipts. Human AT and exact presented-frame correlation remain open.
 
 - [Sky home daily timeline](archive_docs/2026-08-26/2026-08-26_sky_home_timeline_plan.md): landed T5a astronomy consumer with an exact-source retained pane and [headed receipt](../docs/receipts/sky_home_20260826/README.md).
 - [Livery and Buckram dependency cutover](2026-08-21_livery_buckram_dependency_cutover.md): completed removal of retired layout edges with clean-source acceptance evidence.

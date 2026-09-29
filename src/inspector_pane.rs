@@ -10,31 +10,39 @@
 //!
 //! `inspector_view` is the data half (app truth -> sections); this is the
 //! view half: sections handed to the panel, composited at the pane's rect
-//! like every other cambium pane. Purely informational — a press on the pane
-//! activates it (the shell's generic pane path); the Knot clip button lowers a
-//! typed intent through the configured endpoint handle.
+//! like every other Cambium pane. Viewer controls write the followed graph
+//! member through the product action spine; the Knot clip button uses its
+//! configured endpoint handle.
 
 use std::cell::RefCell;
 use std::rc::Rc;
 
 use cambium::{
-    AnyView, DetailRow, DetailSection, DomHandle, GenetCtx, GenetElement, PointerClick, button,
-    detail_panel, el,
+    AnyView, DetailRow, DetailSection, DomHandle, GenetCtx, GenetElement, PointerClick, RadioGroup,
+    button, detail_panel, el, lens, map_message_result, radio_group,
 };
 use genet_scripted_dom::ScriptedDom;
 
 use crate::app::App;
-use crate::inspector_view::{InspectorSection, inspector_sections_for_pane};
+use crate::inspector_view::{InspectorSection, inspector_member, inspector_sections_for_pane};
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum InspectorIntent {
     ClipToKnot,
+    SetViewer {
+        member: uuid::Uuid,
+        viewer: Option<String>,
+    },
 }
 
 impl cambium::Action for InspectorIntent {}
 
 struct InspectorState {
     sections: Vec<InspectorSection>,
+    member: Option<uuid::Uuid>,
+    radio: RadioGroup,
+    synced_viewer: usize,
+    capabilities: Vec<String>,
     clip_target: Option<String>,
     clip_source_available: bool,
     clip_status: String,
@@ -66,8 +74,8 @@ fn inspector_pane_view(state: &InspectorState) -> InspectorView {
         .collect();
     let clip_label = match (&state.clip_target, state.clip_source_available) {
         (Some(target), true) => format!("Clip document to {target}"),
-        (None, _) => "Set TURNSTONE_KNOT_CLIP_TARGET to enable clips".into(),
-        (Some(_), false) => "Focused document cannot supply a clip".into(),
+        (None, _) => "Knot clipping is not configured".into(),
+        (Some(_), false) => "This document cannot supply a clip".into(),
     };
     let clip_status = el::<_, InspectorState, InspectorIntent>(
         "div",
@@ -80,11 +88,57 @@ fn inspector_pane_view(state: &InspectorState) -> InspectorView {
             (state.clip_target.is_some() && state.clip_source_available)
                 .then_some(InspectorIntent::ClipToKnot)
         },
+    )
+    .attr(
+        "class",
+        if state.clip_target.is_some() && state.clip_source_available {
+            "list-row action"
+        } else {
+            "list-row muted"
+        },
+    )
+    .attr(
+        "aria-disabled",
+        if state.clip_target.is_some() && state.clip_source_available {
+            "false"
+        } else {
+            "true"
+        },
+    )
+    .attr("style", "white-space: normal; overflow-wrap: anywhere;");
+    let viewer = map_message_result(
+        lens(
+            |radio: &mut RadioGroup| radio_group(radio, &crate::inspector_controls::VIEWER_OPTIONS),
+            |state: &mut InspectorState| &mut state.radio,
+        ),
+        |_state, message| match message {
+            cambium::MessageResult::Action(()) | cambium::MessageResult::Nop => {
+                cambium::MessageResult::<InspectorIntent>::Nop
+            },
+            cambium::MessageResult::RequestRebuild => cambium::MessageResult::RequestRebuild,
+            cambium::MessageResult::Stale => cambium::MessageResult::Stale,
+        },
     );
+    let capabilities = state
+        .capabilities
+        .iter()
+        .cloned()
+        .map(|line| el::<_, InspectorState, InspectorIntent>("div", line).attr("class", "list-row"))
+        .collect::<Vec<_>>();
     Box::new(
         el::<_, InspectorState, InspectorIntent>(
             "div",
-            (clip_status, clip_button, detail_panel(&sections)),
+            (
+                el::<_, InspectorState, InspectorIntent>("div", "Viewer")
+                    .attr("class", "list-section-title"),
+                viewer,
+                el::<_, InspectorState, InspectorIntent>("div", "Document controls")
+                    .attr("class", "list-section-title"),
+                capabilities,
+                clip_status,
+                clip_button,
+                detail_panel(&sections),
+            ),
         )
         .attr("class", "pane")
         .attr(
@@ -114,6 +168,10 @@ impl InspectorPane {
         let dom: DomHandle = Rc::new(RefCell::new(ScriptedDom::new()));
         let state = InspectorState {
             sections: Vec::new(),
+            member: None,
+            radio: RadioGroup::new(0).with_label("Viewer"),
+            synced_viewer: 0,
+            capabilities: Vec::new(),
             clip_target: None,
             clip_source_available: false,
             clip_status: "unconfigured".into(),
@@ -145,7 +203,18 @@ impl InspectorPane {
         clip_status: &str,
     ) {
         let sections = inspector_sections_for_pane(app, pane_id);
+        let member = inspector_member(app, pane_id);
+        let synced_viewer = crate::inspector_controls::index_for_viewer(
+            member
+                .and_then(|member| app.browser.get(member))
+                .and_then(|browser| browser.viewer_override.as_deref()),
+        );
+        let capabilities = crate::inspector_controls::capabilities(app, member);
         self.runner.update(|state| {
+            state.member = member;
+            state.radio.selected = synced_viewer;
+            state.synced_viewer = synced_viewer;
+            state.capabilities = capabilities;
             state.sections = sections;
             state.clip_target = clip_target.map(str::to_string);
             state.clip_source_available = clip_source_available;
@@ -191,110 +260,21 @@ impl InspectorPane {
             y,
             &self.scroll,
         );
-        hit.map(|node| self.runner.dispatch_click(node, PointerClick::at((x, y))))
-            .unwrap_or_default()
+        let mut intents = hit
+            .map(|node| self.runner.dispatch_click(node, PointerClick::at((x, y))))
+            .unwrap_or_default();
+        let state = self.runner.state();
+        if state.radio.selected != state.synced_viewer
+            && let Some(member) = state.member
+        {
+            intents.push(InspectorIntent::SetViewer {
+                member,
+                viewer: crate::inspector_controls::viewer_for_index(state.radio.selected),
+            });
+        }
+        intents
     }
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-    use layout_dom_api::LayoutDom;
-
-    /// The pane draws the sections it was synced with: headers and key/value
-    /// rows land in the DOM under the panel's classes.
-    #[test]
-    fn synced_sections_reach_the_dom() {
-        let mut pane = InspectorPane::new();
-        pane.runner.update(|state| {
-            state.sections = vec![InspectorSection {
-                title: "Node".to_string(),
-                rows: vec![("URL".to_string(), "https://example.test/".to_string())],
-            }];
-            state.clip_target = Some("file:///notes/field.knot".into());
-            state.clip_source_available = true;
-            state.clip_status = "ready".into();
-            state.viewport_w = 400.0;
-            state.viewport_h = 600.0;
-        });
-        let dom = pane.dom.borrow();
-        let rows = dom.all_with_class(dom.document(), "detail-row");
-        assert_eq!(rows.len(), 1);
-        let values = dom.all_with_class(dom.document(), "detail-value");
-        let text: String = values
-            .iter()
-            .flat_map(|&n| dom.dom_children(n))
-            .filter_map(|c| dom.text(c).map(str::to_string))
-            .collect();
-        assert!(text.contains("https://example.test/"));
-        assert!(text.contains("Knot clip: ready"));
-    }
-
-    #[test]
-    fn clip_button_bubbles_a_typed_inspector_intent() {
-        let mut pane = InspectorPane::new();
-        pane.runner.update(|state| {
-            state.clip_target = Some("file:///notes/field.knot".into());
-            state.clip_source_available = true;
-            state.viewport_w = 400.0;
-            state.viewport_h = 600.0;
-        });
-        let (x, y) = {
-            let dom = pane.dom.borrow();
-            let button = dom
-                .dom_children(pane.runner.root())
-                .find(|&node| {
-                    dom.element_name(node)
-                        .is_some_and(|name| name.local.as_ref() == "button")
-                })
-                .expect("the inspector action is a real button");
-            let (x, y, w, h) =
-                crate::ui::node_rect(&dom, button, crate::ui::CAMBIUM_SHEET, 400, 600).unwrap();
-            (x + w / 2.0, y + h / 2.0)
-        };
-        assert_eq!(
-            pane.click(x, y, 400, 600),
-            vec![InspectorIntent::ClipToKnot]
-        );
-    }
-
-    #[test]
-    fn probe_resolved_clip_button_reaches_the_pane_at_receipt_size() {
-        let mut pane = InspectorPane::new();
-        pane.runner.update(|state| {
-            state.sections = vec![InspectorSection {
-                title: "Node".to_string(),
-                rows: (0..14)
-                    .map(|index| (format!("Field {index}"), format!("Value {index}")))
-                    .collect(),
-            }];
-            state.clip_target = Some("clip_target_receipt.knot".into());
-            state.clip_source_available = true;
-            state.clip_status = "ready".into();
-            state.viewport_w = 509.0;
-            state.viewport_h = 576.0;
-        });
-        let (x, y) = {
-            let dom = pane.dom.borrow();
-            taproot::resolve(
-                &[taproot::ProbeSurface {
-                    name: "inspector",
-                    dom: &dom,
-                    rect: [0.0, 0.0, 509.0, 576.0],
-                    sheet: crate::ui::CAMBIUM_SHEET,
-                }],
-                &taproot::Selector::role("button").containing("Clip document"),
-            )
-            .expect("Probe must resolve the configured clip button")
-            .point
-        };
-        assert!(
-            (0.0..509.0).contains(&x) && (0.0..576.0).contains(&y),
-            "Probe resolved the clip button outside its pane: ({x}, {y})"
-        );
-        assert_eq!(
-            pane.click(x, y, 509, 576),
-            vec![InspectorIntent::ClipToKnot]
-        );
-    }
-}
+mod tests;

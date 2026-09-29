@@ -181,6 +181,12 @@ fn revoking_only_the_watch_scope_refuses_the_wake_but_keeps_base_authority() {
     app.update(Action::ConfirmInstallDenizen);
     let member = *app.denizens.residents.keys().next().unwrap();
     let subject = app.denizens.residents[&member].subject;
+    let participant_author = mere::kernel::graph::Author::script(
+        subject.to_hex(),
+        blake3::Hash::from(app.denizens.residents[&member].binding.revision.0)
+            .to_hex().to_string(),
+    )
+    .via("turnstone");
     app.update(Action::ReseedLayout);
     let _ = app.take_events();
     let watch_scope = app
@@ -223,7 +229,7 @@ fn revoking_only_the_watch_scope_refuses_the_wake_but_keeps_base_authority() {
         .entries()
         .iter()
         .skip(before_positive)
-        .filter(|entry| entry.author == subject.to_hex())
+        .filter(|entry| entry.author == participant_author)
         .count();
     assert!(
         positive_writes > 0,
@@ -258,7 +264,7 @@ fn revoking_only_the_watch_scope_refuses_the_wake_but_keeps_base_authority() {
         .entries()
         .iter()
         .skip(before_revoked)
-        .filter(|entry| entry.author == subject.to_hex())
+        .filter(|entry| entry.author == participant_author)
         .count();
     assert_eq!(revoked_writes, 0, "the revoked wake produced no participant work");
     assert!(app.take_events().iter().any(|event| {

@@ -387,7 +387,17 @@ async fn run(
                         let ticket = issued_share.ticket.clone();
                         match revoke_share(identity.as_ref(), &ticket, now_ms()) {
                             Ok(revocation) => {
-                                if host.revocations().write().await.fold(&revocation) {
+                                let retained = {
+                                    let revocations = host.revocations();
+                                    let mut ledger = revocations.write().await;
+                                    if let Ok(checked) = revocation.check() {
+                                        ledger.fold(checked);
+                                        true
+                                    } else {
+                                        false
+                                    }
+                                };
+                                if retained {
                                     if let Some(issued_share) = issued.get_mut(&share) {
                                         issued_share.revoked = true;
                                     }

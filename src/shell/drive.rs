@@ -175,17 +175,7 @@ impl taproot::Automatable for Shell {
                         if let Some(pane) = self.renderers.gloss.get(&id) {
                             guards.push(("gloss", rect, pane.dom_ref()));
                         }
-                    }
-                    Some(PaneContent::Apparatus) => {
-                        if let Some(pane) = self.renderers.apparatus.get(&id) {
-                            guards.push(("apparatus", rect, pane.dom_ref()));
-                        }
-                    }
-                    Some(PaneContent::Steward) => {
-                        if let Some(pane) = self.renderers.steward.get(&id) {
-                            guards.push(("steward", rect, pane.dom_ref()));
-                        }
-                    }
+                    },
                     Some(PaneContent::Registered(kind))
                         if kind.as_str() == crate::panes::kind::TRANSCRIPT =>
                     {

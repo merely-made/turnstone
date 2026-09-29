@@ -26,14 +26,15 @@ use gemot::moot::{
     MootAuthority, MootFile, MootId, MootMember, MootMembershipAction, MootRetentionSettings,
     PolicyRevision,
 };
-use identity::delegation::{
+use identity::delegation::Issue;
+use identity::{IdentityProvider, SealedRecordStorage};
+use insigne::delegation::{
     CapabilityScope, DelegationCertificate, DelegationParent, DelegationRevocation,
     SignedDelegationCertificate, SignedDelegationRevocation, delegation_signing_salt,
 };
-use identity::{IdentityProvider, SealedRecordStorage};
-use servitor::{Cap, cap_path};
 use muniment::RedbBackend;
 use proofs::Digest;
+use servitor::{Cap, cap_path};
 use stickleback::{
     DataKeyring, DropExportProfile, DropLimits, GroupControlFrame, GroupDirectFrame, GroupKeyExt,
     GroupKeyLane, GroupPrekeyBundle, GroupSession, GroupSessionDispatch, GroupSessionId,
@@ -273,10 +274,17 @@ pub enum PlaceWorkerCommand {
 /// can post arbitrary operations has taken over authorship from the domain.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum PlaceCommand {
-    SendMessage { channel: String, body: String },
-    ShareNode { address: String },
+    SendMessage {
+        channel: String,
+        body: String,
+    },
+    ShareNode {
+        address: String,
+    },
     /// Remove one member and revoke every grant this profile issued to it.
-    RevokeMember { member: [u8; 32] },
+    RevokeMember {
+        member: [u8; 32],
+    },
 }
 
 pub(crate) struct OpenPlace {
@@ -913,7 +921,7 @@ impl IdentityProvider for ProviderRef<'_> {
     fn attest_derived_key(
         &self,
         salt: &[u8],
-    ) -> Result<identity::DerivedKeyAttestation, identity::IdentityError> {
+    ) -> Result<insigne::DerivedKeyAttestation, identity::IdentityError> {
         self.0.attest_derived_key(salt)
     }
 }
@@ -1005,12 +1013,12 @@ pub fn found_place(
         .map_err(|error| format!("bind Commons chat writer: {error}"))?;
     // The place's name lives where peers converge on it, as the default
     // channel's title, rather than in a local sidecar only the founder reads.
-    pollster::block_on(chat.author(commons::chat::ChatEvent::Channel(
-        commons::chat::Channel {
+    pollster::block_on(
+        chat.author(commons::chat::ChatEvent::Channel(commons::chat::Channel {
             id: binding.default_channel.clone(),
             title: name.to_string(),
-        },
-    )))
+        })),
+    )
     .map_err(|error| format!("open the default channel: {error}"))?;
     drop(chat);
     Ok(binding)
@@ -1070,7 +1078,14 @@ fn admit_member(
             pollster::block_on(moot.delegation_store().author_issue(
                 &founder_signing_key(identity, moot_id)?,
                 &snapshot.governance.rules,
-                place_delegation(identity, moot_id, joiner_root, now_ms, now_ms, expires_at_ms)?,
+                place_delegation(
+                    identity,
+                    moot_id,
+                    joiner_root,
+                    now_ms,
+                    now_ms,
+                    expires_at_ms,
+                )?,
             ))
             .map_err(|error| format!("delegate the Commons domains: {error}"))?,
         );
@@ -1291,7 +1306,7 @@ fn admit_inner(
             .verified_bytes("projection grant artifact")
             .map_err(|error| format!("place invitation: {error}"))?;
         let grant = crate::place::projection_host::decode_grant(bytes)?;
-        if !grant.verify() {
+        if grant.check().is_err() {
             return Err("projection grant does not verify".to_string());
         }
         if grant.certificate.subject != local_root {
@@ -1338,8 +1353,7 @@ pub fn save_group_session(
 /// `std::thread` (ractor `ThreadLocalActorSpawner`), so the store clone in
 /// that actor's state outlives both the awaited lane leave and the lane
 /// runtime's shutdown by a few hundred milliseconds.
-pub(crate) const RECONNECT_REOPEN_BUDGET: std::time::Duration =
-    std::time::Duration::from_secs(2);
+pub(crate) const RECONNECT_REOPEN_BUDGET: std::time::Duration = std::time::Duration::from_secs(2);
 
 /// `open_cached_place`, retried while redb still reports the lock held.
 ///
@@ -1358,7 +1372,7 @@ fn reopen_cached_place(
                 if error.contains("already open") && std::time::Instant::now() < deadline =>
             {
                 std::thread::sleep(std::time::Duration::from_millis(25));
-            }
+            },
             outcome => return outcome,
         }
     }
@@ -1396,8 +1410,9 @@ pub(crate) fn open_cached_place(
 
     let chat_backend = RedbBackend::open(stores.join("commons-chat.redb"))
         .map_err(|error| format!("open Commons chat cache: {error}"))?;
-    let chat = ChatReplica::for_identity(chat_backend, binding.chat.0, identity, group.keys.clone())
-        .map_err(|error| format!("bind Commons chat writer: {error}"))?;
+    let chat =
+        ChatReplica::for_identity(chat_backend, binding.chat.0, identity, group.keys.clone())
+            .map_err(|error| format!("bind Commons chat writer: {error}"))?;
 
     let mut open = OpenPlace {
         directory: directory.to_path_buf(),
@@ -1520,9 +1535,7 @@ fn author_into_place(
                 .knot_root
                 .as_deref()
                 .filter(|_| crate::knot_authoring::is_knot_address(address))
-                .and_then(|root| {
-                    crate::knot_authoring::place_held_rewrite(address, root, &subject)
-                })
+                .and_then(|root| crate::knot_authoring::place_held_rewrite(address, root, &subject))
                 .unwrap_or_else(|| address.clone());
             let operation = pollster::block_on(open.graph.edit(move |log| {
                 log.insert_node(
@@ -1573,7 +1586,9 @@ fn local_standing(
         .filter_map(|grant| grant.expires_at_ms)
         .filter(|expires| *expires < at_ms)
         .max()
-        .map_or(PlaceStanding::Member, |at_ms| PlaceStanding::GrantExpired { at_ms })
+        .map_or(PlaceStanding::Member, |at_ms| PlaceStanding::GrantExpired {
+            at_ms,
+        })
 }
 
 /// Remove one member: rotate the group away from it, revoke every delegation
@@ -1636,8 +1651,12 @@ fn revoke_member(
         )
         .map_err(|error| format!("sign the revocation: {error}"))?;
         revoked.push(
-            pollster::block_on(open.moot.delegation_store().author_revoke(&key, rules, statement))
-                .map_err(|error| format!("revoke the Commons delegation: {error}"))?,
+            pollster::block_on(
+                open.moot
+                    .delegation_store()
+                    .author_revoke(&key, rules, statement),
+            )
+            .map_err(|error| format!("revoke the Commons delegation: {error}"))?,
         );
         withdrawn.push(crate::place::projection_host::projection_grant_revocation(
             identity,
@@ -1773,7 +1792,9 @@ fn visit_dial(
     )
     .refusal()
     {
-        return Err(format!("this profile cannot visit a held document: {reason}"));
+        return Err(format!(
+            "this profile cannot visit a held document: {reason}"
+        ));
     }
     let lanes = open
         .lanes
@@ -2168,8 +2189,7 @@ pub fn spawn_place_worker(
                             admit_invitation(&directory, &invite, identity.as_ref(), &settings)
                                 .and_then(|admitted| {
                                     crate::place::rendezvous::save_admitted_rendezvous(
-                                        &directory,
-                                        &invite,
+                                        &directory, &invite,
                                     )?;
                                     open_cached_place(
                                         &directory,
@@ -2191,8 +2211,7 @@ pub fn spawn_place_worker(
                                             &binding,
                                             identity.as_ref(),
                                             &tickets,
-                                            settings
-                                                .projection_setup(&binding, identity.as_ref()),
+                                            settings.projection_setup(&binding, identity.as_ref()),
                                             // The watcher reports arrivals under THIS
                                             // open's generation, so a nudge from a
                                             // departed place is dropped by the same
@@ -2228,42 +2247,37 @@ pub fn spawn_place_worker(
                         lifecycle_generation = lifecycle_generation.max(generation);
                         live = None;
                         live_scope = None;
-                        let founded = found_place(
-                            &directory,
-                            identity.as_ref(),
-                            &name,
-                            &settings,
-                        )
-                        .and_then(|binding| {
-                            crate::session::save_place_binding(&directory, &binding)
-                                .map_err(|error| format!("persist place binding: {error}"))?;
-                            // An EMPTY descriptor, saved on purpose: reconnect
-                            // must reach the same listen-only bind as this open.
-                            crate::place::rendezvous::save_founder_rendezvous(
-                                &directory, &binding,
-                            )?;
-                            open_cached_place(
-                                &directory,
-                                &binding,
-                                identity.as_ref(),
-                                &settings,
-                            )
-                            .map(|(opened, snapshot)| (binding, opened, snapshot))
-                        })
-                        .and_then(|(binding, mut opened, _stale)| {
-                            opened.lanes = Some(crate::place::lanes::join_live(
-                                &opened,
-                                &binding,
-                                identity.as_ref(),
-                                &[],
-                                settings.projection_setup(&binding, identity.as_ref()),
-                                Some((out.clone(), session, generation)),
-                            )?);
-                            // Re-fold AFTER binding, so the answer already
-                            // carries this bind's own rendezvous.
-                            place_snapshot(&opened, binding.moot.0, &settings)
-                                .map(|snapshot| (binding, opened, snapshot))
-                        });
+                        let founded = found_place(&directory, identity.as_ref(), &name, &settings)
+                            .and_then(|binding| {
+                                crate::session::save_place_binding(&directory, &binding)
+                                    .map_err(|error| format!("persist place binding: {error}"))?;
+                                // An EMPTY descriptor, saved on purpose: reconnect
+                                // must reach the same listen-only bind as this open.
+                                crate::place::rendezvous::save_founder_rendezvous(
+                                    &directory, &binding,
+                                )?;
+                                open_cached_place(
+                                    &directory,
+                                    &binding,
+                                    identity.as_ref(),
+                                    &settings,
+                                )
+                                .map(|(opened, snapshot)| (binding, opened, snapshot))
+                            })
+                            .and_then(|(binding, mut opened, _stale)| {
+                                opened.lanes = Some(crate::place::lanes::join_live(
+                                    &opened,
+                                    &binding,
+                                    identity.as_ref(),
+                                    &[],
+                                    settings.projection_setup(&binding, identity.as_ref()),
+                                    Some((out.clone(), session, generation)),
+                                )?);
+                                // Re-fold AFTER binding, so the answer already
+                                // carries this bind's own rendezvous.
+                                place_snapshot(&opened, binding.moot.0, &settings)
+                                    .map(|snapshot| (binding, opened, snapshot))
+                            });
                         match founded {
                             Ok((binding, opened, snapshot)) => {
                                 live_scope = Some((session, generation));
@@ -2287,8 +2301,7 @@ pub fn spawn_place_worker(
                         directory,
                         moot,
                     } => {
-                        let result =
-                            prepare_group_identity(&directory, identity.as_ref(), moot);
+                        let result = prepare_group_identity(&directory, identity.as_ref(), moot);
                         out.emit(Update::PlacePrekeyOffered {
                             session,
                             generation,
@@ -2304,9 +2317,9 @@ pub fn spawn_place_worker(
                         lifetime_ms,
                     } => {
                         let result = match &mut live {
-                            Some(_) if live_scope != Some((session, generation)) => Err(
-                                "invitation belongs to a departed place generation".to_string(),
-                            ),
+                            Some(_) if live_scope != Some((session, generation)) => {
+                                Err("invitation belongs to a departed place generation".to_string())
+                            },
                             None => Err("open a place before inviting anyone".to_string()),
                             Some(_)
                                 if lifetime_ms.is_some()
@@ -2436,43 +2449,41 @@ pub fn spawn_place_worker(
                         }
                         live = None;
                         live_scope = None;
-                        let reconnected = reopen_cached_place(
-                            &directory,
-                            &binding,
-                            identity.as_ref(),
-                            &settings,
-                        )
-                        .and_then(|(mut opened, _cached)| {
-                            let local_root = identity.master_public_key().to_bytes();
-                            let membership = pollster::block_on(opened.moot.snapshot())
-                                .map_err(|error| format!("materialize retained Moot: {error}"))?;
-                            if !membership
-                                .membership
-                                .members
-                                .iter()
-                                .any(|member| member.member == local_root)
-                            {
-                                return Err(
+                        let reconnected =
+                            reopen_cached_place(&directory, &binding, identity.as_ref(), &settings)
+                                .and_then(|(mut opened, _cached)| {
+                                    let local_root = identity.master_public_key().to_bytes();
+                                    let membership = pollster::block_on(opened.moot.snapshot())
+                                        .map_err(|error| {
+                                            format!("materialize retained Moot: {error}")
+                                        })?;
+                                    if !membership
+                                        .membership
+                                        .members
+                                        .iter()
+                                        .any(|member| member.member == local_root)
+                                    {
+                                        return Err(
                                     "this identity is no longer a member in retained place state"
                                         .into(),
                                 );
-                            }
-                            let tickets = crate::place::rendezvous::load_rendezvous(
-                                &directory,
-                                &binding,
-                                settings.authority_clock.now_ms(),
-                            )?;
-                            opened.lanes = Some(crate::place::lanes::join_live(
-                                &opened,
-                                &binding,
-                                identity.as_ref(),
-                                &tickets,
-                                settings.projection_setup(&binding, identity.as_ref()),
-                                Some((out.clone(), session, generation)),
-                            )?);
-                            place_snapshot(&opened, binding.moot.0, &settings)
-                                .map(|snapshot| (opened, snapshot))
-                        });
+                                    }
+                                    let tickets = crate::place::rendezvous::load_rendezvous(
+                                        &directory,
+                                        &binding,
+                                        settings.authority_clock.now_ms(),
+                                    )?;
+                                    opened.lanes = Some(crate::place::lanes::join_live(
+                                        &opened,
+                                        &binding,
+                                        identity.as_ref(),
+                                        &tickets,
+                                        settings.projection_setup(&binding, identity.as_ref()),
+                                        Some((out.clone(), session, generation)),
+                                    )?);
+                                    place_snapshot(&opened, binding.moot.0, &settings)
+                                        .map(|snapshot| (opened, snapshot))
+                                });
                         match reconnected {
                             Ok((opened, snapshot)) => {
                                 live_scope = Some((session, generation));
@@ -2482,7 +2493,7 @@ pub fn spawn_place_worker(
                                     generation,
                                     result: Ok(snapshot),
                                 });
-                            }
+                            },
                             Err(error) => out.emit(Update::PlaceOpened {
                                 session,
                                 generation,
@@ -2532,13 +2543,15 @@ pub fn spawn_place_worker(
                         let result = match &mut live {
                             Some(_) if live_scope != Some((session, generation)) => {
                                 Err("resync belongs to a departed place generation".to_string())
-                            }
+                            },
                             // A nudge may carry group-key frames: apply them
                             // and re-admit what they unlock before re-folding,
                             // so chat reads the new epochs.
-                            Some(open) => open
-                                .follow_group_keys(identity.as_ref())
-                                .and_then(|()| place_snapshot(open, open.binding.moot.0, &settings)),
+                            Some(open) => {
+                                open.follow_group_keys(identity.as_ref()).and_then(|()| {
+                                    place_snapshot(open, open.binding.moot.0, &settings)
+                                })
+                            },
                             None => Err("no open place to resync".to_string()),
                         };
                         out.emit(Update::PlaceOpened {
@@ -2643,10 +2656,9 @@ pub(crate) mod tests {
     use super::*;
     use chartulary::{Author, Container};
     use commons::chat::{Channel, ChatEvent, Message};
-    use eidetic_fjall::FjallStore;
+    use eidetic::fjall::FjallStore;
     use fleece::{TextPositionSelector, anchor_for_range, extract_document};
     use gemot::moot::constitution::{CapabilityGrant, ConstitutionRules};
-    use gemot::moot::standing::Policy;
     use gemot::moot::{
         CollectionChange, ContributionRef, MOOT_ACT_ACTION, MOOT_DELEGATION_DOMAIN,
         MootAccessLevel, MootMember, MootMembershipAction,
@@ -2654,13 +2666,14 @@ pub(crate) mod tests {
     use genet_static_dom::StaticDocument;
     use mere_document_lanes::FleeceAnnotationRecord;
     use mere_document_lanes::eidetic_bridge::{CaptureIdentity, FLEECE_ANNOTATION_SCHEMA_ID};
+    use mien::Policy;
     use stickleback::DropExportProfile;
 
     use crate::place::invite::{ArtifactRefV1, PLACE_INVITE_VERSION};
     use identity::InMemoryProvider;
     use servitor::{Cap, cap_path};
 
-    use identity::delegation::{
+    use insigne::delegation::{
         CapabilityScope, DelegationCertificate, DelegationParent, DelegationRevocation,
         SignedDelegationCertificate, SignedDelegationRevocation, delegation_signing_salt,
     };
@@ -3043,14 +3056,16 @@ pub(crate) mod tests {
         let binding = binding(0x35);
         seed_profile(&directory, &identity, &binding, 1);
         // Positive control: the same profile opens while its store is encrypted.
-        let (open, snapshot) = open_cached_place(&directory, &binding, &identity, &settings()).unwrap();
+        let (open, snapshot) =
+            open_cached_place(&directory, &binding, &identity, &settings()).unwrap();
         assert_eq!(snapshot.graph.nodes, 1);
         drop(open);
 
         let stores = place_store_dir(&directory);
         std::fs::remove_file(stores.join(GRAPH_STORE)).unwrap();
         let backend = RedbBackend::open(stores.join(LEGACY_GRAPH_STORE)).unwrap();
-        let mut plaintext = commons::Replica::for_identity(backend, binding.root.0, &identity).unwrap();
+        let mut plaintext =
+            commons::Replica::for_identity(backend, binding.root.0, &identity).unwrap();
         pollster::block_on(plaintext.edit(|log| {
             log.insert_node(&Author::new("turnstone"), Container::new("plaintext"));
         }))
@@ -3061,10 +3076,20 @@ pub(crate) mod tests {
             panic!("a plaintext-only place opened");
         };
         assert_eq!(error, LEGACY_GRAPH_REFUSAL);
-        assert!(!stores.join(GRAPH_STORE).exists(), "the refusal created nothing");
-        let lines = crate::place::PlaceState::Degraded { binding, generation: 1, error }.status_lines();
         assert!(
-            lines.iter().any(|row| row == "Place unavailable: this place predates encrypted shared graphs"),
+            !stores.join(GRAPH_STORE).exists(),
+            "the refusal created nothing"
+        );
+        let lines = crate::place::PlaceState::Degraded {
+            binding,
+            generation: 1,
+            error,
+        }
+        .status_lines();
+        assert!(
+            lines
+                .iter()
+                .any(|row| row == "Place unavailable: this place predates encrypted shared graphs"),
             "{lines:?}"
         );
     }
@@ -3459,7 +3484,6 @@ pub(crate) mod tests {
         .unwrap();
     }
 
-
     /// Found, offer, invite, admit — through the product functions only, with
     /// no fixture standing between the two profiles.
     ///
@@ -3468,8 +3492,8 @@ pub(crate) mod tests {
     /// only ever minted for someone governance already knows.
     #[test]
     fn a_founded_place_invites_an_offered_prekey_and_admits_it() {
-        let root = std::env::temp_dir()
-            .join(format!("turnstone-place-found-{}", uuid::Uuid::new_v4()));
+        let root =
+            std::env::temp_dir().join(format!("turnstone-place-found-{}", uuid::Uuid::new_v4()));
         let host = root.join("host");
         let guest = root.join("guest");
         std::fs::create_dir_all(&host).unwrap();
@@ -3479,9 +3503,11 @@ pub(crate) mod tests {
         // The product clock, not a fixture's: the windows under test are the
         // ones a real founding opens.
         let settings = PlaceWorkerSettings::default();
-        let now_ms = settings.authority_clock.now_ms();
 
         let binding = found_place(&host, &host_identity, "Hearth", &settings).unwrap();
+        // Founding samples the parent's not-before bound. A later admission
+        // must start after that bound, rather than reuse a pre-founding time.
+        let now_ms = settings.authority_clock.now_ms();
         assert_eq!(binding.default_channel, DEFAULT_CHANNEL);
         assert_ne!(binding.moot.0, binding.root.0);
         assert_ne!(binding.moot.0, binding.chat.0);
@@ -3496,7 +3522,10 @@ pub(crate) mod tests {
         assert!(permissions.graph_write, "the founder may share here");
         assert_eq!(snapshot.moot.members, 1);
         assert_eq!(snapshot.chat.channels, 1);
-        assert_eq!(snapshot.personae_root, host_identity.master_public_key().to_bytes());
+        assert_eq!(
+            snapshot.personae_root,
+            host_identity.master_public_key().to_bytes()
+        );
         assert!(!snapshot.graph_digest.is_empty() && !snapshot.chat_digest.is_empty());
         drop(opened);
 
@@ -3526,12 +3555,28 @@ pub(crate) mod tests {
         ))
         .unwrap();
         let guest_root = guest_identity.master_public_key().to_bytes();
-        admit_member(&moot, &binding, &host_identity, guest_root, Writer, now_ms, None).unwrap();
+        admit_member(
+            &moot,
+            &binding,
+            &host_identity,
+            guest_root,
+            Writer,
+            now_ms,
+            None,
+        )
+        .unwrap();
         // Idempotent: inviting the same root twice must not double the fold.
-        let projection_grant =
-            admit_member(&moot, &binding, &host_identity, guest_root, Writer, now_ms, None)
-                .unwrap()
-                .projection;
+        let projection_grant = admit_member(
+            &moot,
+            &binding,
+            &host_identity,
+            guest_root,
+            Writer,
+            now_ms,
+            None,
+        )
+        .unwrap()
+        .projection;
         assert!(
             projection_grant.is_some(),
             "a writer is admitted at the projection door as well as the Moot"
@@ -3578,8 +3623,8 @@ pub(crate) mod tests {
     /// refuses it before a store or a lane sees anything.
     #[test]
     fn a_reader_invitation_admits_a_member_that_cannot_author() {
-        let root = std::env::temp_dir()
-            .join(format!("turnstone-place-reader-{}", uuid::Uuid::new_v4()));
+        let root =
+            std::env::temp_dir().join(format!("turnstone-place-reader-{}", uuid::Uuid::new_v4()));
         let host = root.join("host");
         let guest = root.join("guest");
         std::fs::create_dir_all(&host).unwrap();
@@ -3600,7 +3645,9 @@ pub(crate) mod tests {
             &mut host_open,
             &binding,
             &host_identity,
-            &PlaceCommand::ShareNode { address: SHARED.into() },
+            &PlaceCommand::ShareNode {
+                address: SHARED.into(),
+            },
             &settings,
         )
         .unwrap();
@@ -3616,13 +3663,29 @@ pub(crate) mod tests {
             settings.retention.clone(),
         ))
         .unwrap();
-        admit_member(&moot, &binding, &host_identity, reader_root, Reader, now_ms, None).unwrap();
+        admit_member(
+            &moot,
+            &binding,
+            &host_identity,
+            reader_root,
+            Reader,
+            now_ms,
+            None,
+        )
+        .unwrap();
         // Idempotent for a reader too: no second membership fact, no
         // delegation sneaking in on the way through.
-        let projection_grant =
-            admit_member(&moot, &binding, &host_identity, reader_root, Reader, now_ms, None)
-                .unwrap()
-                .projection;
+        let projection_grant = admit_member(
+            &moot,
+            &binding,
+            &host_identity,
+            reader_root,
+            Reader,
+            now_ms,
+            None,
+        )
+        .unwrap()
+        .projection;
         assert!(
             projection_grant.is_none(),
             "a reader is admitted to the Moot and to no projection door"
@@ -3679,7 +3742,9 @@ pub(crate) mod tests {
         // Its own worker refuses both authoring paths, with the reason the
         // product surfaces as a place refusal.
         for command in [
-            PlaceCommand::ShareNode { address: "https://reader.example/page".into() },
+            PlaceCommand::ShareNode {
+                address: "https://reader.example/page".into(),
+            },
             PlaceCommand::SendMessage {
                 channel: binding.default_channel.clone(),
                 body: "refused".into(),
@@ -3725,14 +3790,31 @@ pub(crate) mod tests {
 
         let expires = Some(AUTHORITY_AT_MS + 60_000);
         let grant = admit_member(
-            &open.moot, &binding, &host_identity, writer_root, Writer, AUTHORITY_AT_MS, expires,
+            &open.moot,
+            &binding,
+            &host_identity,
+            writer_root,
+            Writer,
+            AUTHORITY_AT_MS,
+            expires,
         )
         .unwrap()
         .projection
         .expect("a writer is issued a projection grant");
-        assert_eq!(grant.certificate.expires_at_ms, expires, "the lifetime bounds the grant");
-        admit_member(&open.moot, &binding, &host_identity, reader_root, Reader, AUTHORITY_AT_MS, None)
-            .unwrap();
+        assert_eq!(
+            grant.certificate.expires_at_ms, expires,
+            "the lifetime bounds the grant"
+        );
+        admit_member(
+            &open.moot,
+            &binding,
+            &host_identity,
+            reader_root,
+            Reader,
+            AUTHORITY_AT_MS,
+            None,
+        )
+        .unwrap();
         // The group half of each admission. Gemot membership alone leaves the
         // group session unable to resolve the root, and a revoke it cannot
         // resolve is now refused rather than half-applied.
@@ -3762,7 +3844,10 @@ pub(crate) mod tests {
         welcome(&mut open, 0xd9);
         let before = place_snapshot(&open, binding.moot.0, &settings).unwrap();
         assert_eq!(before.members.len(), 3);
-        let rules = pollster::block_on(open.moot.snapshot()).unwrap().governance.rules;
+        let rules = pollster::block_on(open.moot.snapshot())
+            .unwrap()
+            .governance
+            .rules;
         let issued = |open: &OpenPlace| {
             pollster::block_on(open.moot.delegations())
                 .unwrap()
@@ -3772,11 +3857,18 @@ pub(crate) mod tests {
                 .collect::<Vec<_>>()
         };
         assert_eq!(issued(&open).len(), 1);
-        assert_eq!(issued(&open)[0].expires_at_ms, expires, "and the delegation");
+        assert_eq!(
+            issued(&open)[0].expires_at_ms,
+            expires,
+            "and the delegation"
+        );
 
         // Refusals name their reason and author nothing.
         let refused = revoke_member(&mut open, &writer, reader_root, AUTHORITY_AT_MS).unwrap_err();
-        assert_eq!(refused, "only a profile that manages this place can revoke a member");
+        assert_eq!(
+            refused,
+            "only a profile that manages this place can revoke a member"
+        );
         for (member, reason) in [
             (host_root, "a manager cannot revoke itself"),
             ([0x77; 32], "that root is not a member of this place"),
@@ -3787,26 +3879,51 @@ pub(crate) mod tests {
                     .unwrap_err();
             assert_eq!(refused, reason);
         }
-        assert!(withdrawn_projection_grants(&open, &host_identity).unwrap().is_empty());
+        assert!(
+            withdrawn_projection_grants(&open, &host_identity)
+                .unwrap()
+                .is_empty()
+        );
 
-        let command = PlaceCommand::RevokeMember { member: writer_root };
+        let command = PlaceCommand::RevokeMember {
+            member: writer_root,
+        };
         author_into_place(&mut open, &binding, &host_identity, &command, &settings).unwrap();
         let after = place_snapshot(&open, binding.moot.0, &settings).unwrap();
-        assert!(!after.members.iter().any(|member| member.root == writer_root));
-        assert!(issued(&open).iter().all(|grant| grant.directly_revoked && !grant.active));
+        assert!(
+            !after
+                .members
+                .iter()
+                .any(|member| member.root == writer_root)
+        );
+        assert!(
+            issued(&open)
+                .iter()
+                .all(|grant| grant.directly_revoked && !grant.active)
+        );
         let withdrawn = withdrawn_projection_grants(&open, &host_identity).unwrap();
         assert_eq!(withdrawn.len(), 1);
         assert_eq!(withdrawn[0].revocation.certificate, grant.certificate.id());
         let mut ledger = notochord::RevocationLedger::new();
-        assert!(ledger.fold(&withdrawn[0]));
-        assert!(ledger.revokes(&grant.certificate), "the door refuses the issued grant");
+        ledger.fold(withdrawn[0].check().expect("the issued revocation checks"));
+        assert!(
+            ledger.revokes(&grant.certificate),
+            "the door refuses the issued grant"
+        );
 
         // A reader was issued no grant: its revocation is membership alone.
-        let command = PlaceCommand::RevokeMember { member: reader_root };
+        let command = PlaceCommand::RevokeMember {
+            member: reader_root,
+        };
         author_into_place(&mut open, &binding, &host_identity, &command, &settings).unwrap();
         let last = place_snapshot(&open, binding.moot.0, &settings).unwrap();
         assert_eq!(last.members.len(), 1);
-        assert_eq!(withdrawn_projection_grants(&open, &host_identity).unwrap().len(), 1);
+        assert_eq!(
+            withdrawn_projection_grants(&open, &host_identity)
+                .unwrap()
+                .len(),
+            1
+        );
         // The founder's own standing is untouched.
         assert_eq!(last.standing, crate::place::PlaceStanding::Member);
         assert_eq!(
@@ -3831,9 +3948,13 @@ pub(crate) mod tests {
         let (_, admitted) =
             open_cached_place(&directory, &binding, &identity, &settings()).unwrap();
         assert_eq!((admitted.graph.nodes, admitted.chat.messages), (2, 2));
-        assert_eq!(admitted.permissions, Some(crate::place::PlacePermissionSnapshot {
-            message_write: true, graph_write: true,
-        }));
+        assert_eq!(
+            admitted.permissions,
+            Some(crate::place::PlacePermissionSnapshot {
+                message_write: true,
+                graph_write: true,
+            })
+        );
         assert_eq!(admitted.chat.channels, 1);
         assert_eq!(
             (
@@ -3853,15 +3974,31 @@ pub(crate) mod tests {
 
         let (mut withdrawn_open, withdrawn) =
             open_cached_place(&directory, &binding, &identity, &settings()).unwrap();
-        assert_eq!(withdrawn.permissions, Some(crate::place::PlacePermissionSnapshot {
-            message_write: false, graph_write: false,
-        }));
-        assert!(author_into_place(
-            &mut withdrawn_open, &binding, &identity,
-            &PlaceCommand::SendMessage { channel: "hall".into(), body: "refused after revocation".into() },
-            &settings(),
-        ).unwrap_err().contains("no effective capability to author here: its grant was revoked"));
-        assert_eq!(withdrawn.standing, crate::place::PlaceStanding::GrantRevoked);
+        assert_eq!(
+            withdrawn.permissions,
+            Some(crate::place::PlacePermissionSnapshot {
+                message_write: false,
+                graph_write: false,
+            })
+        );
+        assert!(
+            author_into_place(
+                &mut withdrawn_open,
+                &binding,
+                &identity,
+                &PlaceCommand::SendMessage {
+                    channel: "hall".into(),
+                    body: "refused after revocation".into()
+                },
+                &settings(),
+            )
+            .unwrap_err()
+            .contains("no effective capability to author here: its grant was revoked")
+        );
+        assert_eq!(
+            withdrawn.standing,
+            crate::place::PlaceStanding::GrantRevoked
+        );
         drop(withdrawn_open);
         assert_eq!(
             (withdrawn.graph.nodes, withdrawn.graph.edges),
@@ -4093,7 +4230,9 @@ pub(crate) mod tests {
 
         let (ack_tx, ack_rx) = std::sync::mpsc::sync_channel(1);
         worker.command(PlaceWorkerCommand::Release(ack_tx));
-        ack_rx.recv_timeout(std::time::Duration::from_secs(60)).unwrap();
+        ack_rx
+            .recv_timeout(std::time::Duration::from_secs(60))
+            .unwrap();
     }
 
     #[test]

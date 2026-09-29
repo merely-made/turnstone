@@ -9,7 +9,7 @@
 //!
 //! Capture IS `eidetic::browsing` — the shell drains the app's semantic
 //! events each frame and forwards the navigation ones here; the actor owns a
-//! session-scoped `eidetic_fjall::FjallStore` at `sessions/<id>/memory`,
+//! session-scoped `eidetic::fjall::FjallStore` at `sessions/<id>/memory`,
 //! buffers traversals into per-owner `BrowsingTrace` segments through
 //! [`eidetic::BrowsingMemory`], and flushes a segment when it fills and on
 //! every lifecycle edge (switch, close, release). `from` chains inside the
@@ -50,7 +50,7 @@ use eidetic::{
     PageTextStore, PageTexts, TraceEvent, TraceTransition, bootstrap_browsing_schema,
     frecency_by_page, page_table,
 };
-use eidetic_fjall::FjallStore;
+use eidetic::fjall::FjallStore;
 use eidetic_search::{CandidateIndex, FusedHit, IndexConfig, Ranking, TrailIndex, fuse_many};
 
 use crate::action::{RecallHit, StoredSourceDocument, Update};

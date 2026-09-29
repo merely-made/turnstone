@@ -17,8 +17,9 @@ use mere_surface_api::settings::{
     SettingSecurity, SettingSpec, SettingValue, SettingsError, SettingsProvider,
 };
 use pandect::{
-    ApplicationSettings, ShellbarEdge, load_application_settings, save_application_settings,
+    ApplicationSettings, ShellbarEdge, application_settings_path, save_application_settings,
 };
+use tabard::theme::{choice::ThemeChoice, registry::Mode};
 use workbench::SettingsRef;
 
 /// Turnstone's application-owned settings page.
@@ -79,7 +80,30 @@ impl ApplicationSettingsProvider {
     /// the application has not written its settings file yet.
     pub fn load(data_root: impl Into<PathBuf>) -> io::Result<Self> {
         let data_root = data_root.into();
-        let settings = load_application_settings(&data_root)?.unwrap_or_default();
+        let settings = match std::fs::read_to_string(application_settings_path(&data_root)) {
+            Ok(json) => {
+                let mut settings: ApplicationSettings = serde_json::from_str(&json)
+                    .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))?;
+                // The earlier two optional strings could hold a mode without
+                // an id. The flattened typed choice needs an id to deserialize.
+                // Preserve those real records at this product read boundary;
+                // an empty typed id still projects to an unset chrome id.
+                if settings.theme.is_none() {
+                    #[derive(serde::Deserialize)]
+                    struct LegacyMode {
+                        theme_mode: Option<String>,
+                    }
+                    let legacy: LegacyMode = serde_json::from_str(&json)
+                        .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))?;
+                    if let Some(mode) = legacy.theme_mode.as_deref().and_then(Mode::from_key) {
+                        settings.theme = Some(ThemeChoice::new("", Some(mode)));
+                    }
+                }
+                settings
+            },
+            Err(error) if error.kind() == io::ErrorKind::NotFound => ApplicationSettings::default(),
+            Err(error) => return Err(error),
+        };
         Ok(Self {
             data_root,
             settings,
@@ -170,13 +194,18 @@ impl SettingsProvider for ApplicationSettingsProvider {
             Self::application_text_spec(
                 "theme.id",
                 "Theme",
-                self.settings.theme_id.as_ref(),
+                self.settings.theme.as_ref().map(|theme| &theme.theme_id),
                 SettingMovement::PersonaSynced,
             ),
             Self::application_choice_spec(
                 "theme.mode",
                 "Theme mode",
-                self.settings.theme_mode.as_deref().unwrap_or("system"),
+                self.settings
+                    .theme
+                    .as_ref()
+                    .and_then(|theme| theme.theme_mode.as_ref())
+                    .map(Mode::as_key)
+                    .unwrap_or_else(|| "system".into()),
                 &THEME_MODE_OPTIONS,
                 SettingMovement::PersonaSynced,
             ),
@@ -241,8 +270,14 @@ impl SettingsProvider for ApplicationSettingsProvider {
 
         match (setting_id, value) {
             ("theme.id", SettingValue::Text(value)) => {
-                self.settings.theme_id = (!value.is_empty()).then_some(value);
-            }
+                let mode = self
+                    .settings
+                    .theme
+                    .as_ref()
+                    .and_then(|theme| theme.theme_mode.clone());
+                self.settings.theme =
+                    (!value.is_empty() || mode.is_some()).then(|| ThemeChoice::new(value, mode));
+            },
             ("theme.mode", SettingValue::Text(value)) => {
                 if !THEME_MODE_OPTIONS
                     .iter()
@@ -250,57 +285,65 @@ impl SettingsProvider for ApplicationSettingsProvider {
                 {
                     return Err(invalid_choice("theme.mode", &value, &THEME_MODE_OPTIONS));
                 }
-                self.settings.theme_mode = (value != "system").then_some(value);
-            }
+                let id = self
+                    .settings
+                    .theme
+                    .as_ref()
+                    .map(|theme| theme.theme_id.clone())
+                    .unwrap_or_default();
+                let mode = Mode::from_key(&value);
+                self.settings.theme =
+                    (!id.is_empty() || mode.is_some()).then(|| ThemeChoice::new(id, mode));
+            },
             ("ui.zoom", SettingValue::Number(value))
                 if value.is_finite() && (0.5..=3.0).contains(&value) =>
             {
                 self.settings.ui_zoom = value as f32;
-            }
+            },
             ("chrome.shellbar.edge", SettingValue::Text(value)) => {
                 self.settings.shellbar_edge =
                     shellbar_edge_from_value(&value).ok_or_else(|| {
                         invalid_choice("chrome.shellbar.edge", &value, &SHELLBAR_EDGE_OPTIONS)
                     })?;
-            }
+            },
             ("chrome.shellbar.visible", SettingValue::Boolean(value)) => {
                 self.settings.shellbar_hidden = !value;
-            }
+            },
             ("behaviors.cascade_budget", SettingValue::Number(value))
                 if value.is_finite() && (1.0..=16.0).contains(&value) =>
             {
                 self.settings.cascade_budget = value as u32;
-            }
+            },
             ("behaviors.cascade_budget", other) => {
                 return Err(SettingsError::InvalidValue {
                     setting_id: "behaviors.cascade_budget".into(),
                     message: format!("expected Number in 1..=16, got {other:?}"),
                 });
-            }
+            },
             ("theme.id" | "theme.mode", other) => {
                 return Err(SettingsError::InvalidValue {
                     setting_id: setting_id.into(),
                     message: format!("expected Text, got {other:?}"),
                 });
-            }
+            },
             ("ui.zoom", other) => {
                 return Err(SettingsError::InvalidValue {
                     setting_id: setting_id.into(),
                     message: format!("expected Number in 0.5..=3.0, got {other:?}"),
                 });
-            }
+            },
             ("chrome.shellbar.edge", other) => {
                 return Err(SettingsError::InvalidValue {
                     setting_id: "chrome.shellbar.edge".into(),
                     message: format!("expected Text, got {other:?}"),
                 });
-            }
+            },
             ("chrome.shellbar.visible", other) => {
                 return Err(SettingsError::InvalidValue {
                     setting_id: "chrome.shellbar.visible".into(),
                     message: format!("expected Boolean, got {other:?}"),
                 });
-            }
+            },
             (other, _) => return Err(SettingsError::UnknownSetting(other.into())),
         }
 
@@ -397,15 +440,128 @@ mod tests {
             )
             .unwrap();
 
-        assert_eq!(provider.settings().theme_id.as_deref(), Some("theme:night"));
+        assert_eq!(
+            provider.settings().theme.as_ref().unwrap().theme_id,
+            "theme:night"
+        );
         assert_eq!(provider.settings().ui_zoom, 1.25);
         assert_eq!(provider.settings().shellbar_edge, ShellbarEdge::Bottom);
         assert!(provider.settings().shellbar_hidden);
-        let loaded = load_application_settings(&root).unwrap().unwrap();
-        assert_eq!(loaded.theme_id.as_deref(), Some("theme:night"));
+        let loaded = pandect::load_application_settings(&root).unwrap().unwrap();
+        assert_eq!(loaded.theme.as_ref().unwrap().theme_id, "theme:night");
         assert_eq!(loaded.ui_zoom, 1.25);
         assert_eq!(loaded.shellbar_edge, ShellbarEdge::Bottom);
         assert!(loaded.shellbar_hidden);
+        let _ = std::fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn legacy_mode_without_id_survives_load_and_an_unrelated_write() {
+        let root = scratch_root("legacy-mode");
+        let path = application_settings_path(&root);
+        std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+        std::fs::write(
+            &path,
+            r#"{"theme_id":null,"theme_mode":"light","ui_zoom":1.25}"#,
+        )
+        .unwrap();
+        let mut provider = ApplicationSettingsProvider::load(&root).unwrap();
+        assert_eq!(
+            provider.settings().theme,
+            Some(ThemeChoice::new("", Some(Mode::Light)))
+        );
+        let snapshot = crate::settings_pane::ChromeSettings::from(provider.settings());
+        assert_eq!(snapshot.theme_id(), None);
+        assert_eq!(snapshot.theme_mode(), Some("light"));
+        let specs = provider
+            .describe(&SettingsRef(APPLICATION_REFERENCE.into()))
+            .unwrap();
+        assert_eq!(specs[0].value, SettingValue::Text(String::new()));
+        assert_eq!(specs[1].value, SettingValue::Text("light".into()));
+        provider
+            .apply(
+                &SettingsRef(APPLICATION_REFERENCE.into()),
+                "ui.zoom",
+                SettingValue::Number(1.5),
+            )
+            .unwrap();
+        let restored = ApplicationSettingsProvider::load(&root).unwrap();
+        assert_eq!(restored.settings().theme, provider.settings().theme);
+        assert_eq!(restored.settings().ui_zoom, 1.5);
+        let encoded: serde_json::Value =
+            serde_json::from_str(&std::fs::read_to_string(path).unwrap()).unwrap();
+        assert_eq!(encoded["theme_id"], "");
+        assert_eq!(encoded["theme_mode"], "light");
+        let _ = std::fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn theme_id_and_mode_edits_preserve_the_other_value() {
+        let root = scratch_root("independent-theme-fields");
+        let reference = SettingsRef(APPLICATION_REFERENCE.into());
+        let mut provider = ApplicationSettingsProvider::load(&root).unwrap();
+        provider
+            .apply(&reference, "theme.mode", SettingValue::Text("light".into()))
+            .unwrap();
+        assert_eq!(
+            provider.settings().theme,
+            Some(ThemeChoice::new("", Some(Mode::Light)))
+        );
+        provider
+            .apply(
+                &reference,
+                "theme.id",
+                SettingValue::Text("theme:night".into()),
+            )
+            .unwrap();
+        assert_eq!(
+            provider.settings().theme,
+            Some(ThemeChoice::new("theme:night", Some(Mode::Light)))
+        );
+        provider
+            .apply(&reference, "theme.mode", SettingValue::Text("dark".into()))
+            .unwrap();
+        provider
+            .apply(&reference, "theme.id", SettingValue::Text(String::new()))
+            .unwrap();
+        assert_eq!(
+            provider.settings().theme,
+            Some(ThemeChoice::new("", Some(Mode::Dark)))
+        );
+        let restored = ApplicationSettingsProvider::load(&root).unwrap();
+        assert_eq!(restored.settings().theme, provider.settings().theme);
+        let snapshot = crate::settings_pane::ChromeSettings::from(restored.settings());
+        assert_eq!(snapshot.theme_id(), None);
+        assert_eq!(snapshot.theme_mode(), Some("dark"));
+        provider
+            .apply(
+                &reference,
+                "theme.mode",
+                SettingValue::Text("system".into()),
+            )
+            .unwrap();
+        assert_eq!(provider.settings().theme, None);
+        provider
+            .apply(
+                &reference,
+                "theme.id",
+                SettingValue::Text("theme:night".into()),
+            )
+            .unwrap();
+        provider
+            .apply(&reference, "theme.mode", SettingValue::Text("light".into()))
+            .unwrap();
+        provider
+            .apply(
+                &reference,
+                "theme.mode",
+                SettingValue::Text("system".into()),
+            )
+            .unwrap();
+        assert_eq!(
+            provider.settings().theme,
+            Some(ThemeChoice::new("theme:night", None))
+        );
         let _ = std::fs::remove_dir_all(root);
     }
 

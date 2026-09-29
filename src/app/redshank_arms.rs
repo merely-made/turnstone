@@ -400,6 +400,7 @@ mod tests {
             end_offset_ms: None,
             pressed_offset_ms: None,
             representation: RepresentationReceipt::default(),
+            fingerprint: None,
         };
         // Begin freezes a capture target; cancelling releases it, so the
         // editor's own anchor is the one that reaches the model.

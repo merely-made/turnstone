@@ -40,7 +40,8 @@ log` archaeology on mere's history still reaches them.
   (2026-07-18, Mark: `settings://` nodes bred "node settings of a settings
   node type" soup — do not resurrect it), and with it the PELT settings
   tiles it rendered through. The surviving shape is the retargeting PANE
-  (turnstone's Apparatus already works this way: sync to the selected node).
+  (at the July harvest, Apparatus synchronized to the selected node; its
+  handling controls moved to Inspector in September).
   With the reclaimable inventory absorbed pane-side, **nothing of the pelt
   settings machinery needs porting — it dies with meerkat entirely.** The
   harvestable remainder is only the PAGE CATALOG — the inventory of what was
@@ -60,8 +61,9 @@ log` archaeology on mere's history still reaches them.
   the comms rung (murm/moot posture) — UI to re-derive over personae, not
   copy.
 - **Constellation actor pool** (`constellation/`, ~1.5k): per-node actor
-  supervision + drain — Steward's data source. Home: read when turnstone's
-  Steward grows real rows (its status-port shape is the honest reference).
+  supervision + drain, originally assigned to Steward. That pane assignment
+  is superseded: reread this technique when Gloss gains real actor/status controls.
+  The status-port shape remains the reference; the migrated Downloads rows are inert.
 - **Graph delta log** (`graph_delta_log.rs`, 857): attributable graph-change
   diagnostics. Home: mere-side (chartulary's journal is the successor
   substrate; this file is the UX read on it).
@@ -103,10 +105,17 @@ log` archaeology on mere's history still reaches them.
 
 **September 29 amendment:** the operational-status assignment below is superseded
 by [Gloss's accepted operational overview](2026-07-20_gloss_composite_pane.md#current-direction-2026-09-29).
-Steward retires after its content migrates. `mere-apparatus` is the shared
-diagnostics crate; Inspector takes object analysis alongside document and
-within-document inspection. The object-analysis Apparatus pane retires after
-its capabilities migrate. Preserve the July ruling below as implementation history.
+Steward's download content now composes in Gloss; the separate pane is retired.
+`mere-apparatus` is the shared diagnostics crate. Inspector takes object analysis
+alongside document inspection and now carries the viewer and capability controls.
+Within-document selection inspection remains later work. New Gloss instances
+start with minimap plus Downloads; existing configured compositions are preserved.
+The object-analysis Apparatus pane is retired. The bounded migration passed
+its automated and native gates in the [September 29 qualification receipt](2026-09-29_shared_diagnostics_gloss_inspector_receipt.md), including fresh/restart
+configuration and viewer persistence. Custom-leaf semantic parity, full built-in
+selectors, document selection, exact frame correlation and human AT remain open.
+Preserve the July ruling below as superseded implementation history, not current
+pane assignments.
 
 Atomic facets landing (chartulary's `facet.rs`/`content_class.rs`, same day)
 re-charters three panes. This supersedes the 2026-07-10 taxonomy's

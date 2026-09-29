@@ -15,8 +15,8 @@ use std::path::PathBuf;
 use std::rc::Rc;
 
 use cambium::{AnyView, DomHandle, GenetAppRunner, GenetCtx, GenetElement, el, setting_row};
-use mere_surface_api::settings::{SettingSpec, SettingValue, SettingsProjection, SettingsProvider};
 use genet_scripted_dom::ScriptedDom;
+use mere_surface_api::settings::{SettingSpec, SettingValue, SettingsProjection, SettingsProvider};
 use pandect::{ApplicationSettings, ShellbarEdge};
 use workbench::SettingsRef;
 
@@ -42,8 +42,16 @@ pub struct ChromeSettings {
 impl From<&ApplicationSettings> for ChromeSettings {
     fn from(settings: &ApplicationSettings) -> Self {
         Self {
-            theme_id: settings.theme_id.clone(),
-            theme_mode: settings.theme_mode.clone(),
+            theme_id: settings
+                .theme
+                .as_ref()
+                .map(|theme| theme.theme_id.clone())
+                .filter(|id| !id.is_empty()),
+            theme_mode: settings
+                .theme
+                .as_ref()
+                .and_then(|theme| theme.theme_mode.as_ref())
+                .map(|mode| mode.as_key()),
             ui_zoom: settings.ui_zoom,
             shellbar_edge: settings.shellbar_edge,
             shellbar_hidden: settings.shellbar_hidden,
@@ -136,7 +144,7 @@ fn apply_value(state: &mut SettingsState, setting_id: &str, value: SettingValue)
         Ok(()) => {
             state.live_settings.publish(state.provider.settings());
             format!("Saved {setting_id}")
-        }
+        },
         Err(error) => format!("Could not save {setting_id}: {error:?}"),
     };
 }
@@ -174,7 +182,7 @@ fn settings_view(state: &SettingsState) -> SettingsView {
                 .map(pane_setting_row)
                 .collect::<Vec<_>>();
             Box::new(el::<_, SettingsState, ()>("div", rows))
-        }
+        },
         Err(error) => Box::new(
             el::<_, SettingsState, ()>("div", format!("Settings are unavailable: {error:?}"))
                 .attr("class", "setting-error")
@@ -349,7 +357,7 @@ mod tests {
     fn provider_owner_is_available_to_host_after_projection_construction() {
         let pane = SettingsPane::new(root("owner"));
         assert_eq!(pane.settings().ui_zoom, 1.1);
-        assert_eq!(pane.settings().theme_id, None);
+        assert_eq!(pane.settings().theme, None);
     }
 
     #[test]
@@ -377,8 +385,10 @@ mod tests {
     #[test]
     fn snapshot_projects_every_live_application_axis_to_chrome() {
         let settings = ApplicationSettings {
-            theme_id: Some("theme:night".into()),
-            theme_mode: Some("light".into()),
+            theme: Some(tabard::theme::choice::ThemeChoice::new(
+                "theme:night",
+                Some(tabard::theme::registry::Mode::Light),
+            )),
             ui_zoom: 1.75,
             shellbar_edge: ShellbarEdge::Bottom,
             shellbar_hidden: true,

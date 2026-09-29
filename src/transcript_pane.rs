@@ -15,7 +15,7 @@
 //! -- has something to be repeated *from*.
 //!
 //! Two things it deliberately is not. It is not a tracing console: the
-//! transcript is a typed record of what a person asked for, so Steward keeps
+//! transcript is a typed record of what a person asked for, so the shell keeps
 //! operational status and Comms keeps conversation. And it does not re-derive
 //! outcomes; it reads the ledger the shell already wrote, so what a row claims
 //! happened is what the shell recorded, not a second opinion.

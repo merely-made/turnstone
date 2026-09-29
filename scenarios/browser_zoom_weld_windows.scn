@@ -13,7 +13,7 @@
 # Two hosting rules this receipt keeps, both learned the hard way on
 # 2026-08-27:
 #   * The viewer override is PER NODE, so every fixture page is pinned to
-#     weld.chromium through the Apparatus pane, and the pane is closed again
+#     weld.chromium through the Inspector pane, and the pane is closed again
 #     so the click points land on the same one-Orrery-leaf geometry the
 #     retained receipt uses.
 #   * Each block turns the previous node's content OFF before opening the
@@ -26,7 +26,7 @@ key escape
 # ---- 1. The ladder, driven through the real command surface -------------
 open http://127.0.0.1:43117/zoom
 settle 40
-act Open Apparatus pane
+act Open Inspector pane
 settle 10
 click-row weld.chromium
 settle 10
@@ -72,7 +72,7 @@ settle 40
 # counts below read the layout the CSS viewport actually produced.
 open http://127.0.0.1:43117/reflow
 settle 40
-act Open Apparatus pane
+act Open Inspector pane
 settle 10
 click-row weld.chromium
 settle 10
@@ -119,7 +119,7 @@ settle 40
 # ---- 3. Input geometry ---------------------------------------------------
 open http://127.0.0.1:43117/hit
 settle 40
-act Open Apparatus pane
+act Open Inspector pane
 settle 10
 click-row weld.chromium
 settle 10
@@ -139,7 +139,7 @@ settle 40
 # rather than re-opening one that has already navigated away.
 open http://127.0.0.1:43117/hit2
 settle 40
-act Open Apparatus pane
+act Open Inspector pane
 settle 10
 click-row weld.chromium
 settle 10
@@ -167,7 +167,7 @@ settle 40
 # that same point.
 open http://127.0.0.1:43117/reveal
 settle 40
-act Open Apparatus pane
+act Open Inspector pane
 settle 10
 click-row weld.chromium
 settle 10

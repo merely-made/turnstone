@@ -17,7 +17,7 @@ fn fixture_three_pane_frame() -> FrisketLayout {
     //   ┌──────────┬─────────┐
     //   │          │ orrery  │
     //   │ workbench├─────────┤
-    //   │          │apparatus│
+    //   │          │settings│
     //   └──────────┴─────────┘
     let g = GraphId::from_uuid(uuid::Uuid::from_u128(0xc01));
     FrisketLayout {
@@ -41,7 +41,7 @@ fn fixture_three_pane_frame() -> FrisketLayout {
                 }),
                 second: Box::new(PaneNode::Leaf {
                     pane_id: PaneId(3),
-                    content: PaneContent::Apparatus,
+                    content: PaneContent::Registered(PaneKindId::new(kind::SETTINGS)),
                     graph_id: g,
                 }),
             }),
@@ -69,7 +69,7 @@ fn each_leaf_emits_a_pane_node_with_content_tag_label() {
         .collect();
     assert!(labels.contains(&"workbench".to_string()));
     assert!(labels.contains(&"orrery".to_string()));
-    assert!(labels.contains(&"apparatus".to_string()));
+    assert!(labels.contains(&kind::SETTINGS.to_string()));
 }
 
 #[test]
@@ -173,15 +173,15 @@ fn frame_layout_round_trips_through_serde() {
 fn reparent_leaf_moves_leaf_without_losing_pane_id() {
     let mut layout = fixture_three_pane_frame();
     // Fixture has 3 leaves: workbench (pane 1), orrery (pane 2),
-    // apparatus (pane 3). Move pane 3 to be on the left of pane 1.
-    // Paths: workbench at [First]; apparatus at [Second, Second].
-    let apparatus_path = vec![SplitChoice::Second, SplitChoice::Second];
+    // settings (pane 3). Move pane 3 to be on the left of pane 1.
+    // Paths: workbench at [First]; settings at [Second, Second].
+    let settings_path = vec![SplitChoice::Second, SplitChoice::Second];
     let workbench_path = vec![SplitChoice::First];
-    assert!(layout.reparent_leaf(&apparatus_path, &workbench_path, InsertSide::Left));
+    assert!(layout.reparent_leaf(&settings_path, &workbench_path, InsertSide::Left));
 
-    // After: apparatus should be present somewhere in the tree.
-    let apparatus_after = crate::panes::layout::path_for_pane_id(&layout.root, PaneId(3))
-        .expect("apparatus still present");
+    // After: settings should be present somewhere in the tree.
+    let settings_after = crate::panes::layout::path_for_pane_id(&layout.root, PaneId(3))
+        .expect("settings still present");
     let workbench_after = crate::panes::layout::path_for_pane_id(&layout.root, PaneId(1))
         .expect("workbench still present");
     let orrery_after = crate::panes::layout::path_for_pane_id(&layout.root, PaneId(2))
@@ -189,13 +189,13 @@ fn reparent_leaf_moves_leaf_without_losing_pane_id() {
     // All three leaves present, no duplication.
     let leaves: Vec<_> = layout.iter_leaves().collect();
     assert_eq!(leaves.len(), 3);
-    // Apparatus + workbench now share a parent (the new split
+    // Settings + workbench now share a parent (the new split
     // wraps them), distinct from the orrery's parent.
-    assert_ne!(apparatus_after, workbench_after);
+    assert_ne!(settings_after, workbench_after);
     // Both should have one shared prefix step less than their
     // depths (siblings under a common split).
-    assert_eq!(apparatus_after.len(), workbench_after.len());
-    assert!(orrery_after != apparatus_after && orrery_after != workbench_after);
+    assert_eq!(settings_after.len(), workbench_after.len());
+    assert!(orrery_after != settings_after && orrery_after != workbench_after);
 }
 
 #[test]
@@ -232,9 +232,7 @@ fn graph_bound_panes_are_classified_apart_from_window_chrome() {
     }
     // Window-chrome: about the window / system, not any one graph.
     for c in [
-        PaneContent::Steward,
         PaneContent::Comms,
-        PaneContent::Apparatus,
         PaneContent::Registered(PaneKindId::new(kind::SETTINGS)),
         PaneContent::Registered(PaneKindId::new(kind::PUBLISHING)),
         PaneContent::Registered(PaneKindId::new(kind::SHARED_KNOT)),
@@ -250,7 +248,7 @@ fn graph_bound_panes_are_classified_apart_from_window_chrome() {
 #[test]
 fn retag_graph_bound_repoints_only_graph_bound_leaves() {
     // Fixture: workbench (pane 1) + orrery (pane 2) are graph-bound;
-    // apparatus (pane 3) is window-chrome.
+    // settings (pane 3) is window-chrome.
     let mut layout = fixture_three_pane_frame();
     let old = GraphId::from_uuid(uuid::Uuid::from_u128(0xc01));
     let new = GraphId::from_uuid(uuid::Uuid::from_u128(0xbeef));
@@ -273,7 +271,7 @@ fn retag_graph_bound_repoints_only_graph_bound_leaves() {
         new,
         "orrery (graph-bound) follows the new graph"
     );
-    assert_eq!(by_pane(3), old, "apparatus (window-chrome) stays put");
+    assert_eq!(by_pane(3), old, "settings (window-chrome) stays put");
 }
 
 #[test]

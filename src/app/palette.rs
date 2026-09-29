@@ -45,6 +45,13 @@ impl App {
             }
         };
         let member = uuid::Uuid::from_bytes(ticket.binding.id.0);
+        // The admitted body supplies the version; the host supplies the route.
+        // Both interpreted and component bodies are participant scripts.
+        let author = mere::kernel::graph::Author::script(
+            subject.to_hex(),
+            blake3::Hash::from(ticket.binding.revision.0).to_hex().to_string(),
+        )
+        .via("turnstone");
         // `update` can synchronously drain another resident.  Preserve the
         // author that was in force when this lowering began so that the inner
         // run restores this run, rather than unconditionally restoring `user`.
@@ -53,13 +60,13 @@ impl App {
         let previous_author = match self.journal.lock() {
             Ok(mut journal) => {
                 let previous = journal.author().to_owned();
-                journal.set_author(subject.to_hex());
+                journal.set_author(author.clone());
                 previous
             }
             Err(poisoned) => {
                 let mut journal = poisoned.into_inner();
                 let previous = journal.author().to_owned();
-                journal.set_author(subject.to_hex());
+                journal.set_author(author);
                 previous
             }
         };
@@ -468,7 +475,7 @@ impl App {
 /// nested lowering or an early return. It never crosses an asynchronous wait.
 struct JournalAuthorRestore {
     journal: std::sync::Arc<std::sync::Mutex<mere::kernel::graph::GraphJournal>>,
-    previous_author: String,
+    previous_author: mere::kernel::graph::Author,
 }
 
 impl Drop for JournalAuthorRestore {

@@ -27,8 +27,9 @@ use graphshell_client::{
 };
 use graphshell_endpoint::{IntentSink, PresentationSource, ProjectionCatalog, ProjectionSource};
 use identity::IdentityProvider;
-use identity::delegation::SignedDelegationCertificate;
-use mere::kernel::graph::NodeKey;
+use identity::delegation::Issue;
+use insigne::delegation::SignedDelegationCertificate;
+use mere::kernel::graph::{Author, GraphJournal, NodeKey};
 use sceno::{Arrangement, Score, Spiral};
 use scenotime::{Revision, SceneEpoch, SceneSnapshot};
 use servitor::delegation::{DelegationTable, root_certificate};
@@ -51,6 +52,31 @@ fn layout_scope() -> ScopePath {
 fn graph_scope() -> ScopePath {
     ScopePath::parse(GRAPH_SCOPE).expect("a valid scope")
 }
+// A nested dispatch must restore all attribution fields, even on an early exit.
+struct EndpointAuthorRestore {
+    journal: std::sync::Arc<std::sync::Mutex<GraphJournal>>,
+    previous: Author,
+}
+
+impl EndpointAuthorRestore {
+    fn enter(journal: std::sync::Arc<std::sync::Mutex<GraphJournal>>, author: Author) -> Self {
+        let previous = {
+            let mut current = journal.lock().unwrap_or_else(|poisoned| poisoned.into_inner());
+            let previous = current.author().clone();
+            current.set_author(author);
+            previous
+        };
+        Self { journal, previous }
+    }
+}
+
+impl Drop for EndpointAuthorRestore {
+    fn drop(&mut self) {
+        self.journal.lock().unwrap_or_else(|poisoned| poisoned.into_inner())
+            .set_author(self.previous.clone());
+    }
+}
+
 const FIT_INTENT: &str = "turnstone.fit-view";
 const OPEN_INTENT: &str = "turnstone.open-address";
 
@@ -479,13 +505,12 @@ impl IntentSink for TurnstoneEndpoint {
                     .with_title(format!("Open {address}"));
                 match self.petition(&graph_scope(), audit) {
                     Ok(()) => {
-                        if let Ok(mut journal) = self.app.journal.lock() {
-                            journal.set_author(self.subject.to_hex());
-                        }
+                        let _restore_author = EndpointAuthorRestore::enter(
+                            self.app.journal.clone(),
+                            Author::engine(self.subject.to_hex(), env!("CARGO_PKG_VERSION"))
+                                .via("turnstone"),
+                        );
                         self.app.update(Action::OpenAddress(address));
-                        if let Ok(mut journal) = self.app.journal.lock() {
-                            journal.set_author(mere::kernel::graph::USER_AUTHOR);
-                        }
                         Ok(IntentResult::Accepted)
                     }
                     Err(error) => Ok(IntentResult::Rejected {

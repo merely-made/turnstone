@@ -10,7 +10,10 @@
 //! source, multiplicity, capability, and renderer tables. Call sites still use
 //! the legacy enum during the migration; new pane facts belong here first.
 
-use super::{PaneContent, PaneKindId, PaneMultiplicity, PaneSource, SourceRef, SourceSelector};
+use super::{
+    PaneComposition, PaneContent, PaneKindId, PaneMultiplicity, PaneSource, SourceRef,
+    SourceSelector,
+};
 
 pub mod kind {
     pub const GRAPH: &str = "turnstone.graph";
@@ -19,10 +22,8 @@ pub mod kind {
     pub const GLOSS: &str = "turnstone.gloss";
     pub const ROSTER: &str = "turnstone.roster";
     pub const INSPECTOR: &str = "turnstone.inspector";
-    pub const APPARATUS: &str = "turnstone.apparatus";
     pub const TRAIL: &str = "turnstone.trail";
     pub const ALEMBIC: &str = "turnstone.alembic";
-    pub const STEWARD: &str = "turnstone.steward";
     pub const COMMS: &str = "turnstone.comms";
     pub const OVERMAP: &str = "turnstone.overmap";
     pub const PUBLISHING: &str = "turnstone.publishing";
@@ -135,10 +136,8 @@ pub enum PaneRenderer {
     Gloss,
     Roster,
     Inspector,
-    Apparatus,
     Trail,
     Alembic,
-    Steward,
     Comms,
     Overmap,
     Publishing,
@@ -300,7 +299,9 @@ pub static BUILTIN_PANES: &[PaneDefinition] = &[
             order: 30,
             label: "Open Gloss pane"
         }),
-        Some(|| PaneContent::Gloss(Default::default()))
+        Some(|| PaneContent::Gloss(PaneComposition {
+            sections: vec!["downloads".into()]
+        }))
     ),
     pane!(
         kind::ROSTER,
@@ -331,21 +332,6 @@ pub static BUILTIN_PANES: &[PaneDefinition] = &[
             label: "Open Inspector pane"
         }),
         Some(|| PaneContent::Inspector)
-    ),
-    pane!(
-        kind::APPARATUS,
-        "Apparatus",
-        PaneSourceShape::contextual(&[FixedSourceKind::Member], MEMBER_CONTEXT),
-        PaneMultiplicity::PerSpaceAndContext,
-        capabilities(false, false, MEMBER),
-        "turnstone.apparatus.config",
-        "turnstone.apparatus.view",
-        PaneRenderer::Apparatus,
-        Some(PanePaletteEntry {
-            order: 60,
-            label: "Open Apparatus pane"
-        }),
-        Some(|| PaneContent::Apparatus)
     ),
     pane!(
         kind::TRAIL,
@@ -379,21 +365,6 @@ pub static BUILTIN_PANES: &[PaneDefinition] = &[
         PaneRenderer::Alembic,
         None,
         Some(|| PaneContent::Alembic)
-    ),
-    pane!(
-        kind::STEWARD,
-        "Steward",
-        PaneSourceShape::fixed(&[FixedSourceKind::Application]),
-        PaneMultiplicity::PerSpace,
-        capabilities(false, false, NONE),
-        "turnstone.steward.config",
-        "turnstone.steward.view",
-        PaneRenderer::Steward,
-        Some(PanePaletteEntry {
-            order: 35,
-            label: "Open Steward pane"
-        }),
-        Some(|| PaneContent::Steward)
     ),
     pane!(
         kind::COMMS,
@@ -462,8 +433,8 @@ pub static BUILTIN_PANES: &[PaneDefinition] = &[
         // One device, one receipts view: `Many` let every summon split the
         // active pane and add another copy of identical content, because the
         // dedupe in `summon_pane` deliberately skips `Many` kinds. Seven of
-        // them were reachable in one window. `PerSpace` matches Steward, the
-        // only other `Application`-sourced pane, for the same reason.
+        // them were reachable in one window. `PerSpace` matches this singleton
+        // application source; pane multiplicity follows its authority.
         PaneMultiplicity::PerSpace,
         capabilities(false, false, NONE),
         "turnstone.device-receipts.config",

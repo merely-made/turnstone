@@ -311,6 +311,7 @@ pub struct Shell {
     /// received them. Automation drains this copy, so its assertions do not
     /// compete with trail memory for the app's one event stream.
     observed_events: VecDeque<String>,
+    diagnostic_observations: crate::diagnostic_observations::DiagnosticObservations,
     shared_out_dir: std::path::PathBuf,
     /// A capture the next `render` fulfills from the very views it presents
     /// (never a re-rasterization — the receipt must be the presented frame).
@@ -431,8 +432,7 @@ pub struct Shell {
     /// the detail_panel's own contract). Retained like the others.
     /// The Workbench pane (rung 5 slice E): platen's tiling walked into cells
     /// wearing cambium tab strips. Retained like the others.
-    /// The Apparatus pane (the settings row): the focused node's viewer
-    /// override on a cambium radio_group. Retained like the others.
+    /// Inspector also retains the followed object's viewer controls.
     /// The application-settings projection over the host provider. Retained
     /// like the other Cambium panes.
     /// Owner controls for the active retained Knot publishing service.
@@ -707,6 +707,7 @@ impl Shell {
             shift: false,
             shared_scenario: shared_scenario_from_env(),
             observed_events: VecDeque::with_capacity(128),
+            diagnostic_observations: crate::diagnostic_observations::DiagnosticObservations::from_env(),
             shared_out_dir: shared_out_dir_from_env(),
             pending_capture: None,
             pending_lens_capture: None,
@@ -1284,20 +1285,7 @@ impl Shell {
                         }
                     }
                 }
-            }
-            PaneContent::Apparatus => {
-                if let Some(pane) = self.renderers.apparatus.get_mut(&pane_id) {
-                    for intent in pane.click(lx, ly, rw, rh) {
-                        match intent {
-                            crate::apparatus_pane::ApparatusIntent::SetViewer(viewer) => {
-                                if let Some(member) = self.app.graph_runtimes.focused_member() {
-                                    out.push(Action::SetViewerOverride { member, viewer });
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            },
             PaneContent::Registered(kind) if kind.as_str() == crate::panes::kind::ARRANGE => {
                 if let Some(pane) = self.renderers.arrange.get_mut(&pane_id) {
                     for intent in pane.click(lx, ly, rw, rh) {
@@ -1337,12 +1325,21 @@ impl Shell {
                 }
             }
             PaneContent::Inspector => {
-                if let Some(pane) = self.renderers.inspector.get_mut(&pane_id)
-                    && pane.click(lx, ly, rw, rh).into_iter().any(|intent| {
-                        matches!(intent, crate::inspector_pane::InspectorIntent::ClipToKnot)
-                    })
-                {
-                    self.clip_focused_document_to_knot();
+                let intents = self
+                    .renderers
+                    .inspector
+                    .get_mut(&pane_id)
+                    .map(|pane| pane.click(lx, ly, rw, rh))
+                    .unwrap_or_default();
+                for intent in intents {
+                    match intent {
+                        crate::inspector_pane::InspectorIntent::ClipToKnot => {
+                            self.clip_focused_document_to_knot()
+                        },
+                        crate::inspector_pane::InspectorIntent::SetViewer { member, viewer } => {
+                            out.push(Action::SetViewerOverride { member, viewer })
+                        },
+                    }
                 }
             }
             _ => {}
@@ -1543,14 +1540,10 @@ impl Shell {
     /// Write the shared driver's outcome in turnstone's `scenario.done` format
     /// (first line `RESULT ok`/`RESULT fail`, then the log), so the same headed
     /// harness that waits on the turnstone driver reads a shared run identically.
-    fn write_shared_done(&self, outcome: &taproot::Outcome) {
-        let result = if outcome.ok { "ok" } else { "fail" };
-        let mut body = format!("RESULT {result}\n");
-        for line in &outcome.log {
-            body.push_str(line);
-            body.push('\n');
+    fn write_shared_done(&mut self, outcome: &taproot::Outcome) {
+        if let Err(error) = self.diagnostic_observations.write_scenario_receipt(&self.shared_out_dir, outcome) {
+            eprintln!("turnstone: scenario receipt write failed: {error}");
         }
-        let _ = std::fs::write(self.shared_out_dir.join("scenario.done"), body);
     }
 
     fn scenario_pump(&mut self, event_loop: &ActiveEventLoop) {

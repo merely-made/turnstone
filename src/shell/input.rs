@@ -17,9 +17,9 @@ use winit::keyboard::{Key as WinitKey, NamedKey as WinitNamedKey};
 use winit::window::CursorIcon;
 
 use crate::panes::PaneContent;
-use taproot::AutomatableExt as _;
 use inker::{SessionClick, SessionScrollKey};
 use mere::canvas::PointerButton;
+use taproot::AutomatableExt as _;
 
 use crate::action::{Action, CaretMove};
 use crate::surface::Rect;
@@ -150,7 +150,7 @@ impl Shell {
         // hit presses once; only a total miss is attributable.
         let hit = self.click(&taproot::Selector::class("roster-cell").containing(substr))
             || self.click(&taproot::Selector::class("list-row").containing(substr))
-            // A settings option is a row for receipt purposes (the Apparatus
+            // A settings option is a row for receipt purposes (the Inspector
             // pane's radio options).
             || self.click(&taproot::Selector::class("radio").containing(substr))
             || self.click(&taproot::Selector::class("setting-apply").containing(substr))
@@ -541,33 +541,7 @@ impl Shell {
                                         s.rect.h.round().max(1.0) as u32,
                                     )
                                 });
-                                let clip = match (dims, self.renderers.inspector.get_mut(&id)) {
-                                    (Some((rw, rh)), Some(pane)) => pane
-                                        .click(hit.local.0, hit.local.1, rw, rh)
-                                        .into_iter()
-                                        .any(|intent| {
-                                            matches!(
-                                                intent,
-                                                crate::inspector_pane::InspectorIntent::ClipToKnot
-                                            )
-                                        }),
-                                    _ => false,
-                                };
-                                if clip {
-                                    self.clip_focused_document_to_knot();
-                                }
-                            }
-                            Some(PaneContent::Apparatus) => {
-                                // The same cambium round trip: the radio's own
-                                // selection moves, and the diff lowers as the
-                                // typed viewer Action for the FOCUSED node.
-                                let dims = plan.iter().find(|s| s.id == hit.id).map(|s| {
-                                    (
-                                        s.rect.w.round().max(1.0) as u32,
-                                        s.rect.h.round().max(1.0) as u32,
-                                    )
-                                });
-                                let intents = match (dims, self.renderers.apparatus.get_mut(&id)) {
+                                let intents = match (dims, self.renderers.inspector.get_mut(&id)) {
                                     (Some((rw, rh)), Some(pane)) => {
                                         pane.click(hit.local.0, hit.local.1, rw, rh)
                                     }
@@ -575,18 +549,13 @@ impl Shell {
                                 };
                                 for intent in intents {
                                     match intent {
-                                        crate::apparatus_pane::ApparatusIntent::SetViewer(
+                                        crate::inspector_pane::InspectorIntent::ClipToKnot => {
+                                            self.clip_focused_document_to_knot()
+                                        },
+                                        crate::inspector_pane::InspectorIntent::SetViewer {
+                                            member,
                                             viewer,
-                                        ) => {
-                                            if let Some(member) =
-                                                self.app.graph_runtimes.focused_member()
-                                            {
-                                                self.act(Action::SetViewerOverride {
-                                                    member,
-                                                    viewer,
-                                                });
-                                            }
-                                        }
+                                        } => self.act(Action::SetViewerOverride { member, viewer }),
                                     }
                                 }
                             }

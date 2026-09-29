@@ -46,6 +46,7 @@ mod layout;
 mod legacy_bridge;
 mod projection;
 mod registry;
+mod saved_content;
 
 /// The frame-sidecar persistence (`frame.json` beside `graph.json`), moved
 /// here from `pandect::frisket_store` at meerkat's deletion. Native
@@ -131,7 +132,7 @@ pub struct PaneComposition {
 /// What a leaf pane shows. Extension point: `Custom` carries a
 /// host-defined content kind for content not yet promoted to a
 /// dedicated mere-domain module.
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub enum PaneContent {
     Workbench,
     Orrery,
@@ -151,16 +152,12 @@ pub enum PaneContent {
     /// Navigation trail + memory: the focused node's url history, the graph-wide
     /// recently-visited nodes, and the eidetic deleted-nodes log.
     Trail,
-    /// Live async operations: fetch/sync/content actors, retries, background work,
-    /// and user-facing controls over running jobs.
-    Steward,
     /// Misfin / murm messaging (the `comms` domain).
     Comms,
     /// Memory: short-term (Recent), long-term (Saved), and distilled graph
     /// engrams. The Alembic pane (memory + engrams architecture); window-chrome
     /// (its default scope is all memory, not the active graph).
     Alembic,
-    Apparatus,
     /// The session set as a graph — container nodes with fork lineage; the
     /// switcher's graph view (overmap O1). Window-chrome: it is ABOUT the
     /// session set, not any one graph.
@@ -196,10 +193,8 @@ impl PaneContent {
             PaneContent::Roster => kind::ROSTER,
             PaneContent::Inspector => kind::INSPECTOR,
             PaneContent::Trail => kind::TRAIL,
-            PaneContent::Steward => kind::STEWARD,
             PaneContent::Comms => kind::COMMS,
             PaneContent::Alembic => kind::ALEMBIC,
-            PaneContent::Apparatus => kind::APPARATUS,
             PaneContent::Overmap(_) => kind::OVERMAP,
             PaneContent::Registered(kind) => return kind.clone(),
             PaneContent::Tile(_) => kind::TILE,
@@ -216,10 +211,8 @@ impl PaneContent {
             PaneContent::Roster => "roster",
             PaneContent::Inspector => "inspector",
             PaneContent::Trail => "trail",
-            PaneContent::Steward => "steward",
             PaneContent::Comms => "comms",
             PaneContent::Alembic => "alembic",
-            PaneContent::Apparatus => "apparatus",
             PaneContent::Overmap(_) => "overmap",
             PaneContent::Registered(kind) => kind.as_str(),
             PaneContent::Tile(_) => "tile",
@@ -251,8 +244,7 @@ impl PaneContent {
     /// Graph-bound panes show the graph or its objects — the orrery's space-view,
     /// the roster's data-view, the gloss minimap, a node Inspector, the workbench's
     /// node tiles. Window-chrome panes are about the *window / system*, not any one
-    /// graph: the Steward's running jobs, Comms messaging, the Apparatus / System
-    /// diagnostics. On a multi-graph switch the host re-points graph-bound leaves to
+    /// graph: Comms messaging and application settings. On a multi-graph switch the host re-points graph-bound leaves to
     /// the new active graph (see [`FrisketLayout::retag_graph_bound`]) and leaves
     /// window-chrome untouched. (Multi-graph MG5; the model-B re-sourcing policy.)
     pub fn follows_active_graph(&self) -> bool {
@@ -264,10 +256,8 @@ impl PaneContent {
             | PaneContent::Inspector
             | PaneContent::Trail
             | PaneContent::Tile(_) => true,
-            PaneContent::Steward
-            | PaneContent::Comms
+            PaneContent::Comms
             | PaneContent::Alembic
-            | PaneContent::Apparatus
             | PaneContent::Overmap(_)
             | PaneContent::Registered(_) => false,
         }

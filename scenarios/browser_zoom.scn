@@ -177,7 +177,7 @@ key escape
 settle 10
 
 # Pin the same node to the reader lane, which reports no page zoom.
-act Open Apparatus pane
+act Open Inspector pane
 settle 20
 click-row genet.reader
 settle 150

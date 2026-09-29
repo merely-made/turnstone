@@ -10,9 +10,9 @@ settle 40
 assert visible
 assert focused example.com
 
-act Open Apparatus pane
+act Open Inspector pane
 settle 5
-assert pane apparatus
+assert pane inspector
 click-row weld.chromium
 settle 5
 assert event viewer-changed

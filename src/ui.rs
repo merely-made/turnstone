@@ -43,8 +43,8 @@ pub(crate) const CARD_TOP: f32 = 96.0;
 
 /// How much horizontal room one suggestion row's TEXT actually has, in px at
 /// zoom 1: the card's fixed width less `.omni`'s 8px padding and the row's
-/// own 8px padding, both twice. Mirrors the chrome sheet the way [`ROW_H`]
-/// does, because a guard on the ask has to be checkable before a card exists.
+/// own 8px padding, both twice. This conservative width guard is checkable
+/// before a card exists; the height budget measures the actual card below.
 pub(crate) const ROW_TEXT_BUDGET: f32 = CARD_W - 16.0 - 16.0;
 
 /// What `text` measures when the chrome sheet lays it out as a suggestion
@@ -85,48 +85,99 @@ pub(crate) fn chrome_row_width(text: &str) -> f32 {
     (right - start + 14.0).max(0.0)
 }
 
-/// How much taller the install-review row becomes when its full text wraps at
-/// the real row-text budget. This uses the live chrome sheet, including zoom,
-/// so the suggestion budget and retained card agree about the space consumed.
+/// Lay out the same padded, bordered card the retained chrome renders. A
+/// detached row has a different containing width and misses the input's size.
+fn chrome_card_row_metrics(
+    text: &str,
+    review: bool,
+    appearance: &crate::shell_services::AppearanceConfig,
+) -> (f32, f32) {
+    use cambium::View;
+    let dom: cambium::DomHandle = std::rc::Rc::new(std::cell::RefCell::new(ScriptedDom::new()));
+    let mut ctx = cambium::GenetCtx::new(dom.clone());
+    let input = cambium::el::<_, (), ()>(
+        "div",
+        cambium::caret_field_children::<(), ()>(&cambium::TextInput::new("x"), &[]),
+    )
+    .attr("class", "omni-input");
+    let row_view = cambium::el::<_, (), ()>("div", text.to_owned()).attr(
+        "class",
+        if review {
+            "omni-row omni-row-review"
+        } else {
+            "omni-row"
+        },
+    );
+    let view = cambium::el::<_, (), ()>("div", (input, row_view))
+        .attr("class", "omni")
+        .attr("style", format!("width: {CARD_W}px;"));
+    let (card, _state) = view.build(&mut ctx, &mut ());
+    let mut dom = dom.borrow_mut();
+    let root = dom.document();
+    dom.append_child(root, card.node);
+    let row = dom.all_with_class(root, "omni-row")[0];
+    // The caret is an inline span with its own glyph/font metrics. A plain
+    // text stand-in underestimates the live input line and the entire card.
+    let snapshot = build_livery_snapshot(
+        &*dom,
+        &chrome_sheet(appearance),
+        CARD_W as u32,
+        16_384,
+        TextSystem::new(),
+    );
+    let row_height = snapshot
+        .fragments
+        .get(row)
+        .expect("chrome row is laid out")
+        .height;
+    let card_height = snapshot
+        .fragments
+        .get(card.node)
+        .expect("chrome card is laid out")
+        .height;
+    (row_height, card_height - row_height)
+}
+
+// Keep only the current zoom's baseline on each UI thread. Palette queries
+// reuse it instead of paying another text/layout pass for every keystroke.
+thread_local! {
+    static CHROME_ROW_METRICS: std::cell::RefCell<Option<(f32, (f32, f32))>> =
+        const { std::cell::RefCell::new(None) };
+}
+
+fn ordinary_chrome_row_metrics(ui_zoom: f32) -> (f32, f32) {
+    let appearance = crate::shell_services::AppearanceConfig {
+        ui_zoom,
+        ..Default::default()
+    };
+    let zoom = appearance.zoom();
+    CHROME_ROW_METRICS.with(|cached| {
+        if let Some((previous_zoom, metrics)) = *cached.borrow() {
+            if previous_zoom == zoom {
+                return metrics;
+            }
+        }
+        let metrics = chrome_card_row_metrics("x", false, &appearance);
+        *cached.borrow_mut() = Some((zoom, metrics));
+        metrics
+    })
+}
+
+/// How much taller the intact install review is than an ordinary row. Both
+/// use the real card's containing width and live sheet, including zoom.
 pub(crate) fn chrome_review_row_extra_height(
     text: &str,
     appearance: &crate::shell_services::AppearanceConfig,
 ) -> f32 {
-    fn row_height(text: &str, appearance: &crate::shell_services::AppearanceConfig) -> f32 {
-        let mut dom = ScriptedDom::new();
-        let root = dom.document();
-        let row = dom.create_element(qual("div"));
-        dom.set_attribute(row, qual("class"), "omni-row omni-row-review");
-        dom.set_attribute(
-            row,
-            qual("style"),
-            &format!("position: absolute; width: {ROW_TEXT_BUDGET}px;"),
-        );
-        let t = dom.create_text(text);
-        dom.append_child(row, t);
-        dom.append_child(root, row);
-
-        let sheet = chrome_sheet(appearance);
-        node_rect(&dom, row, &sheet, CARD_W as u32, 16_384)
-            .map(|(_, _, _, height)| height)
-            .unwrap_or(ROW_H * appearance.zoom())
-    }
-
-    (row_height(text, appearance) - row_height("x", appearance)).max(0.0)
+    let (review_height, _) = chrome_card_row_metrics(text, true, appearance);
+    let (ordinary_height, _) = ordinary_chrome_row_metrics(appearance.ui_zoom);
+    (review_height - ordinary_height).max(0.0)
 }
 
-/// One suggestion row's height at zoom 1, in px: `.omni-row`'s 14px text at
-/// the default line height plus its 5px vertical padding, twice. Mirrors the
-/// chrome sheet below rather than measuring the laid-out card — the row count
-/// has to be decided before the rows exist.
-const ROW_H: f32 = 27.0;
-/// The card's own vertical furniture at zoom 1: 8px padding twice plus the
-/// `.omni-input` row (14px text, 6px padding twice).
-const CARD_CHROME_H: f32 = 45.0;
 /// Breathing room kept between the last row and the window edge (device px).
 const CARD_BOTTOM_MARGIN: f32 = 16.0;
-/// Never offer fewer rows than this, however cramped the window: an omnibar
-/// showing one row is worse than one that slightly overhangs.
+/// The floor for ordinary suggestions in a cramped window. An expanded
+/// install review may use fewer rows so its complete grant request fits.
 const MIN_VISIBLE_ROWS: usize = 3;
 
 /// How many suggestion rows to offer: the configured maximum, clamped to what
@@ -134,8 +185,8 @@ const MIN_VISIBLE_ROWS: usize = 3;
 ///
 /// The configured value stays the ceiling — a deliberate setting is never
 /// raised by geometry — while a short window lowers it so the list does not
-/// run off the bottom. Sizes are estimated from the chrome sheet's own
-/// constants and scale with `ui_zoom`, which scales the same text.
+/// run off the bottom. Sizes are measured from the same card and sheet
+/// as the retained renderer, including its live `ui_zoom`.
 pub fn visible_row_limit(
     configured: usize,
     placement: &crate::panes::ChromePlacement,
@@ -168,10 +219,18 @@ pub(crate) fn visible_row_limit_with_extra_height(
         },
         ChromePlacement::Pane(_) | ChromePlacement::Hidden => return configured,
     };
+    let (row_height, card_chrome_height) = ordinary_chrome_row_metrics(zoom);
     let room =
-        viewport_h - card_top - CARD_CHROME_H * zoom - CARD_BOTTOM_MARGIN - extra_height.max(0.0);
-    let fits = (room / (ROW_H * zoom)).floor().max(0.0) as usize;
-    configured.min(fits.max(MIN_VISIBLE_ROWS))
+        viewport_h - card_top - card_chrome_height - CARD_BOTTOM_MARGIN - extra_height.max(0.0);
+    let fits = (room / row_height).floor().max(0.0) as usize;
+    // One complete review takes priority over three ordinary rows. Do not
+    // force extra suggestions into room that its wrapped text already needs.
+    let floor = if extra_height > 0.0 {
+        1
+    } else {
+        MIN_VISIBLE_ROWS
+    };
+    configured.min(fits.max(floor))
 }
 
 /// One suggestion row.
@@ -332,9 +391,7 @@ impl PlacePrompt {
             Self::ExportCard => "Enter a path and press Enter to write the place card",
             Self::OfferPrekey => "Enter a card path and press Enter to offer a pre-key",
             Self::Invite => "Enter a pre-key path, optionally \" for 10m\" (s|m|h|d), then Enter",
-            Self::InviteReader => {
-                "Enter a pre-key path and press Enter to invite a reader"
-            },
+            Self::InviteReader => "Enter a pre-key path and press Enter to invite a reader",
             Self::Join => "Enter an invitation path and press Enter to join",
             Self::SendMessage => "Enter a message and press Enter to send it",
         }
@@ -2210,9 +2267,6 @@ pub const CAMBIUM_SHEET: &str = "\
                                   border-radius: 4px; padding: 2px 5px; } \
     .radio { color: rgb(220, 226, 238); font-size: 14px; } \
     .toggle { color: rgb(220, 226, 238); font-size: 14px; } \
-    .apparatus-header { color: rgb(210, 218, 234); font-size: 14px; } \
-    .apparatus-note { color: rgb(174, 185, 205); font-size: 13px; \
-                      padding: 7px 14px; white-space: normal; } \
     .radio.selected { color: rgb(232, 150, 40); }";
 
 /// The divider band's clear colour: the chrome border tone (rgb(52, 62, 86)),

@@ -248,7 +248,7 @@ pub(crate) fn effective_roster(
 mod tests {
     use super::*;
     use eidetic::{ManifestId, TypedPayload};
-    use eidetic_fjall::FjallStore;
+    use eidetic::fjall::FjallStore;
     use fleece::{TextPositionSelector, anchor_for_range, extract_document};
     use genet_static_dom::StaticDocument;
     use mere_document_lanes::eidetic_bridge::{CaptureIdentity, FLEECE_ANNOTATION_SCHEMA_ID};

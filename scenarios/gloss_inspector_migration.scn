@@ -1,0 +1,35 @@
+# Configurable operations beside navigation; object handling lives in Inspector.
+# Fresh profile, local mere URL, no network fixture. Restore with the twin scenario.
+settle 30
+key escape
+open mere://pane-migration
+settle 10
+act Open Gloss pane
+settle 10
+assert pane gloss
+assert text Downloads
+capture 01_gloss_downloads_default
+act Gloss: remove section — Downloads
+settle 5
+assert event pane-section-removed downloads
+act Gloss: add section — Recent
+settle 5
+act Gloss: add section — Downloads
+settle 5
+act Gloss: move section up — Downloads
+settle 5
+assert event pane-section-moved downloads
+assert text Recent
+act Open Inspector pane
+settle 10
+assert pane inspector
+assert row URL: mere://pane-migration
+click-row genet.reader
+settle 10
+assert event viewer-changed
+assert row Viewer: genet.reader
+assert text Document controls
+capture 02_inspector_handling
+act Save session
+settle 10
+log Gloss and Inspector migration complete

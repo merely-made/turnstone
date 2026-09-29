@@ -375,7 +375,7 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
                             .attr("class", "decision-actions"),
                     ) as ChromeView],
                 )
-            }
+            },
             DecisionCard::Authentication {
                 request,
                 prompt,
@@ -472,7 +472,7 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
                         ) as ChromeView,
                     ],
                 )
-            }
+            },
         };
         card_children.insert(
             0,
@@ -599,7 +599,7 @@ pub(crate) fn row_text(s: &Suggestion) -> String {
         Suggestion::Recall { url, title, .. } => match title {
             Some(title) if !title.trim().is_empty() => {
                 format!("\u{1f552} {title}  \u{00b7}  {url}")
-            }
+            },
             _ => format!("\u{1f552} {url}"),
         },
         Suggestion::Act { label, .. } => format!("\u{203a} {label}"),
@@ -729,7 +729,7 @@ impl ChromeSurfaces {
                     Suggestion::Hint(_) | Suggestion::Prompt(_) => "omni-row-muted",
                     _ if is_install_review(s) && i == omnibar.selected => {
                         "omni-row-sel omni-row-review"
-                    }
+                    },
                     _ if is_install_review(s) => "omni-row omni-row-review",
                     _ if i == omnibar.selected => "omni-row-sel",
                     _ => "omni-row",
@@ -750,16 +750,16 @@ impl ChromeSurfaces {
             Some(crate::content::PageFetchPhase::Requested) => Some("Requested".to_string()),
             Some(crate::content::PageFetchPhase::Streaming { received_bytes, .. }) => {
                 Some(format!("Streaming  {received_bytes} bytes"))
-            }
+            },
             Some(crate::content::PageFetchPhase::Loading { progress_millis }) => {
                 Some(match progress_millis {
                     Some(value) => format!("Loading  {}%", value / 10),
                     None => "Loading".to_string(),
                 })
-            }
+            },
             Some(crate::content::PageFetchPhase::Stopped { received_bytes }) => {
                 Some(format!("Stopped  {received_bytes} bytes"))
-            }
+            },
             Some(crate::content::PageFetchPhase::Settled { .. }) | None => None,
         });
         let focused_url = app.graph_runtimes.focused_url().map(str::to_string);
@@ -783,7 +783,7 @@ impl ChromeSurfaces {
                         submitting,
                         error,
                     }
-                }
+                },
                 crate::user_agent_decision::PendingUserAgentDecision::Authentication { .. } => {
                     let mut username = TextInput::new(
                         app.user_agent_decision
@@ -817,7 +817,7 @@ impl ChromeSurfaces {
                         submitting,
                         error,
                     }
-                }
+                },
             }
         });
         self.runner.update(|state| {
@@ -1354,7 +1354,9 @@ mod tests {
                 .expect("card has a rect");
             assert!(
                 cy + ch <= 320.0 - 16.0,
-                "the row budget leaves the expanded card inside the viewport"
+                "the row budget leaves the expanded card inside the viewport: top={cy}px card={ch}px review={rh}px rows={} extra={}px",
+                app.omnibar.suggestions.len(),
+                crate::ui::chrome_review_row_extra_height(&expected, &chrome.appearance)
             );
             (rx + rw / 2.0, ry + rh / 2.0)
         };

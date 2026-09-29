@@ -6,7 +6,7 @@ settle 30
 key escape
 open https://example.com/
 settle 40
-act Open Apparatus pane
+act Open Inspector pane
 settle 5
 click-row weld.chromium
 settle 5

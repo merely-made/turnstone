@@ -1,0 +1,10 @@
+# Run against the same profile as gloss_inspector_migration.scn.
+settle 30
+assert pane gloss
+assert pane inspector
+assert text Downloads
+assert text Recent
+assert row URL: mere://pane-migration
+assert row Viewer: genet.reader
+capture 03_restored_gloss_inspector
+log Gloss and Inspector restart restore complete

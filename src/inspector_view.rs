@@ -52,10 +52,15 @@ pub fn inspector_sections_for_pane(app: &App, pane: crate::panes::PaneId) -> Vec
         .and_then(|context| context.graph)
         .or_else(|| app.graph_for_pane(pane));
     let canvas = graph_id.and_then(|graph| app.graph_runtimes.canvas(graph));
-    let member = context
-        .and_then(|context| context.member)
-        .or_else(|| app.graph_pane_focused_member(pane));
+    let member = inspector_member(app, pane);
     inspector_sections_for_context(app, canvas, member)
+}
+
+/// The member this Inspector follows, shared by readouts and editable controls.
+pub(crate) fn inspector_member(app: &App, pane: crate::panes::PaneId) -> Option<uuid::Uuid> {
+    app.follower_context(pane)
+        .and_then(|context| context.member)
+        .or_else(|| app.graph_pane_focused_member(pane))
 }
 
 fn inspector_sections_for_context(
@@ -187,8 +192,9 @@ fn feed_rows(app: &App, member: uuid::Uuid) -> Option<Vec<(String, String)>> {
 }
 
 /// The attributed edit spine's tail, newest first (participant gate B1: WHO
-/// changed the graph, readable). The author renders as the resident's label
-/// when the subject hex matches a participant, `you` for the UI author.
+/// changed the graph, readable). A script's id renders as its resident's
+/// label while kind/version/route remain visible; only the trusted UI person
+/// renders as `you`. An engine or script named `user` is still a machine.
 fn journal_rows(app: &App) -> Vec<(String, String)> {
     let Ok(journal) = app.journal.lock() else {
         return Vec::new();
@@ -199,16 +205,7 @@ fn journal_rows(app: &App) -> Vec<(String, String)> {
         .rev()
         .take(5)
         .map(|entry| {
-            let author = if entry.author == mere::kernel::graph::USER_AUTHOR {
-                "you".to_string()
-            } else {
-                app.denizens
-                    .residents
-                    .values()
-                    .find(|r| r.subject.to_hex() == entry.author)
-                    .map(|r| r.label.clone())
-                    .unwrap_or_else(|| entry.author[..8.min(entry.author.len())].to_string())
-            };
+            let author = journal_author_label(app, &entry.author);
             let debug = format!("{:?}", entry.delta);
             let kind = debug
                 .split(|c: char| c == ' ' || c == '{' || c == '(')
@@ -218,6 +215,22 @@ fn journal_rows(app: &App) -> Vec<(String, String)> {
             (author, kind)
         })
         .collect()
+}
+
+fn journal_author_label(app: &App, author: &mere::kernel::graph::Author) -> String {
+    use mere::kernel::graph::{AuthorKind, USER_AUTHOR};
+    if author.kind == AuthorKind::Person && author.id == USER_AUTHOR {
+        return "you".to_string();
+    }
+    let mut display = author.clone();
+    if author.kind == AuthorKind::Script {
+        if let Some(resident) = app.denizens.residents.values()
+            .find(|resident| resident.subject.to_hex() == author.id)
+        {
+            display.id = resident.label.clone();
+        }
+    }
+    display.to_string()
 }
 
 /// The sections flattened to "Key: value" lines (the observation snapshot's
@@ -402,6 +415,21 @@ mod tests {
     /// imported: that lane is behind the `weld` feature and these tests run
     /// without it, so the copy is the thing to re-check when the lane changes.
     const WELD_PAGE_ZOOM_DETAIL: &str = "the requested scale is applied as a CEF zoom level, but Windows runs CEF's UI thread separately so the effective level cannot be read back";
+
+    #[test]
+    fn only_a_person_with_the_ui_id_renders_as_you() {
+        use mere::kernel::graph::Author;
+        let app = App::test_stub();
+        assert_eq!(journal_author_label(&app, &Author::user()), "you");
+        for author in [
+            Author::script("user", "body-1").via("turnstone"),
+            Author::engine("user", "host-1").via("turnstone"),
+            Author::rule("user", "rule-1").via("turnstone"),
+        ] {
+            assert_eq!(journal_author_label(&app, &author), author.to_string());
+            assert_ne!(journal_author_label(&app, &author), "you");
+        }
+    }
 
     #[test]
     fn no_focus_reports_none_honestly() {

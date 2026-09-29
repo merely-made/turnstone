@@ -75,8 +75,20 @@ pub const NODES_SECTION: SectionProvider = SectionProvider {
     gather: gather_nodes,
 };
 
+/// Durable downloads, composable beside navigation in Gloss.
+pub const DOWNLOADS_SECTION: SectionProvider = SectionProvider {
+    id: "downloads",
+    title: "Downloads",
+    gather: gather_downloads,
+};
+
 /// Every provider, for id lookup (the config resolves an id to its provider).
-pub const ALL: &[SectionProvider] = &[RECENT_SECTION, REMOVED_SECTION, NODES_SECTION];
+pub const ALL: &[SectionProvider] = &[
+    RECENT_SECTION,
+    REMOVED_SECTION,
+    NODES_SECTION,
+    DOWNLOADS_SECTION,
+];
 
 /// The provider with this id, if any.
 pub fn by_id(id: &str) -> Option<&'static SectionProvider> {
@@ -89,6 +101,48 @@ pub fn by_id(id: &str) -> Option<&'static SectionProvider> {
 /// sections that still exist rather than failing the pane.
 pub fn resolve(ids: &[String]) -> Vec<SectionProvider> {
     ids.iter().filter_map(|id| by_id(id).copied()).collect()
+}
+
+/// Durable download custody from graph facets, formerly Steward's projection.
+/// Rows remain read-only; custody and completion stay on the product spine.
+fn gather_downloads(app: &App) -> Vec<SectionRow> {
+    let facet = chartulary::FacetId::new(crate::content_classes::DOWNLOAD_FACET);
+    let mut rows = app
+        .graph_runtimes
+        .graph()
+        .nodes()
+        .filter_map(|(_, node)| {
+            let record = app.graph_runtimes.facets().get(&node.id, &facet)?;
+            let status = record.get("status")?.as_str().unwrap_or("unknown");
+            let received_at_ms = record
+                .get("received_at_ms")
+                .and_then(serde_json::Value::as_u64)
+                .unwrap_or(0);
+            let bytes = record
+                .get("byte_size")
+                .and_then(serde_json::Value::as_u64)
+                .unwrap_or(0);
+            let detail = record
+                .get("destination_path")
+                .or_else(|| record.get("error"))
+                .and_then(serde_json::Value::as_str)
+                .unwrap_or_else(|| node.url());
+            let title = if node.title.trim().is_empty() {
+                node.url()
+            } else {
+                node.title.trim()
+            };
+            Some((
+                received_at_ms,
+                SectionRow {
+                    text: format!("{title} - {status} - {bytes} bytes - {detail}"),
+                    activate: None,
+                },
+            ))
+        })
+        .collect::<Vec<_>>();
+    rows.sort_by_key(|(received_at_ms, _)| std::cmp::Reverse(*received_at_ms));
+    rows.into_iter().map(|(_, row)| row).collect()
 }
 
 fn gather_recent(app: &App) -> Vec<SectionRow> {
@@ -150,6 +204,7 @@ mod tests {
     fn by_id_resolves_the_registered_providers() {
         assert_eq!(by_id("removed").map(|p| p.title), Some("Removed"));
         assert_eq!(by_id("recent").map(|p| p.title), Some("Recent"));
+        assert_eq!(by_id("downloads").map(|p| p.title), Some("Downloads"));
         assert!(by_id("nope").is_none());
     }
 
@@ -178,5 +233,69 @@ mod tests {
         // would NOT, since it mints a new id and the tombstoned one stays.
         app.update(crate::action::Action::RecoverDeletedNode(id));
         assert!((REMOVED_SECTION.gather)(&app).is_empty());
+    }
+    #[test]
+    fn completed_download_projects_from_durable_graph_facets() {
+        let mut app = crate::app::App::test_stub();
+        let key = app
+            .graph_runtimes
+            .visit("gemini://capsule.test/archive.bin");
+        let node = app.graph_runtimes.graph().get_node(key).unwrap().id;
+        crate::content_classes::set_download_record(
+            &mut app.graph_runtimes,
+            node,
+            crate::content_classes::DownloadFacetRecord {
+                source_url: "gemini://capsule.test/archive.bin",
+                received_at_ms: 42,
+                byte_size: 12,
+                status: "completed",
+                media_type: Some("application/octet-stream"),
+                content_disposition: None,
+                destination_path: Some("C:\\Downloads\\archive.bin"),
+                content_hash: Some(&"22".repeat(32)),
+                error: None,
+            },
+        )
+        .unwrap();
+
+        let rows = (DOWNLOADS_SECTION.gather)(&app);
+        assert_eq!(rows.len(), 1);
+        assert_eq!(rows[0].activate, None, "custody rows remain read-only");
+        assert!(rows[0].text.contains("C:\\Downloads\\archive.bin"));
+        let mut pane = crate::swatch_pane::SwatchPane::new(crate::swatch_pane::GLOSS_MINIMAP);
+        pane.set_sections(vec![DOWNLOADS_SECTION]);
+        pane.sync(&app, 640.0, 480.0);
+        assert!(
+            pane.resolve(
+                &taproot::Selector::class("section-row")
+                    .containing("archive.bin - completed - 12 bytes"),
+                [0.0, 0.0, 640.0, 480.0]
+            )
+            .is_some()
+        );
+    }
+    #[test]
+    fn download_status_and_error_rows_keep_custody_order_and_inert_activation() {
+        let mut app = App::test_stub();
+        for (name, timestamp, status, error) in [
+            ("older.bin", 1, "failed", Some("permission denied")),
+            ("pending.bin", 2, "storing", None),
+        ] {
+            let url = format!("gemini://capsule.test/{name}");
+            let key = app.graph_runtimes.visit(&url);
+            let node = app.graph_runtimes.graph().get_node(key).unwrap().id;
+            crate::content_classes::set_download_record(&mut app.graph_runtimes, node,
+                crate::content_classes::DownloadFacetRecord {
+                    source_url: &url, received_at_ms: timestamp, byte_size: 12,
+                    status, media_type: None, content_disposition: None,
+                    destination_path: None, content_hash: None, error,
+                }).unwrap();
+        }
+        let rows = (DOWNLOADS_SECTION.gather)(&app);
+        assert_eq!(rows.len(), 2);
+        assert!(rows[0].text.contains("pending.bin - storing"));
+        assert!(rows[1].text.contains("older.bin - failed"));
+        assert!(rows[1].text.contains("permission denied"));
+        assert!(rows.iter().all(|row| row.activate.is_none()));
     }
 }
