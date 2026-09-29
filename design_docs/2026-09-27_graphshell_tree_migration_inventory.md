@@ -168,3 +168,29 @@ time never trigger catch-up; restore and dragging still pass; actor progress
 remains independent of rendering; and a headed moving-graph receipt records
 step counts, dropped time and input response. This is separate from the
 rendering optimizations measured in the current slice.
+
+## Local saved-graph slice (2026-09-29)
+
+`tree.html?app=local` mounts the portable `GraphshellApp` over the existing
+`graphshell-reference-host-h5` / `muniment` IndexedDB store and the same
+`profile:graphshell-h3` selection. It reopens the saved graph instead of
+constructing a separate comparison fixture. Generated-graph parameters cannot
+be combined with this route.
+
+Selecting an object exposes Open details; Enter on the focused graph also
+opens the selected object's panel. Cambium's named Title and Tags fields edit
+a draft, with host caret and IME routing. Save changes validates the member,
+normalizes metadata and awaits persistence. A refused write reports failure
+and keeps edits available for retry. The asynchronous task owns the app, and
+selection and draft editing are held while the save is in flight.
+
+Successful saves update canvas metadata through its existing title/tag seams.
+They preserve geometry, camera, selection and physics state. A projection
+refresh error after persistence is described as a refresh failure after a
+successful save, rather than a failed storage write.
+
+The paired `p4_tree_saved_edit` and `p4_tree_saved_reopen` scenarios exercise
+the rendered fields and a separate load of the same browser profile. Their
+receipts export session and member IDs for comparison across loads. This
+bounded route does not complete phase 4: remote sessions, saved-scene
+restoration, other product panels and the five public wrappers remain open.
