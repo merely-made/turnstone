@@ -1,0 +1,36 @@
+# Edit through Cambium text fields and persist into the existing local store.
+assert snap source == saved graph
+click role:button Fit graph
+settle 3
+click-node https://example.test/i2p-port
+settle 2
+assert snap focus-kind == graph
+key Enter
+settle 2
+assert snap detail-open == true
+remember selected
+click role:textbox Title
+input-text TreeSavedTitle
+settle 2
+click role:textbox Tags
+input-text alpha,beta
+settle 2
+click role:button Save changes
+wait 120
+assert snap save-state == saved
+assert snap detail-title == TreeSavedTitle
+assert snap detail-tags == alpha, beta
+same selected detail-member
+same selected graph-session
+same selected geometry
+same selected camera
+same selected physics-paused
+capture p4_tree_saved_edit
+click role:button Close details
+settle 2
+assert snap detail-open == false
+click role:button Open details
+settle 2
+assert snap detail-open == true
+assert snap detail-title == TreeSavedTitle
+wait 120

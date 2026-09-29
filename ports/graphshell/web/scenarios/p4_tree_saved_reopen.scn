@@ -1,0 +1,14 @@
+# The runner retains its dedicated Chrome profile between independent loads.
+assert snap source == saved graph
+assert snap storage-reopened == true
+click role:button Fit graph
+settle 3
+click-node https://example.test/i2p-port
+settle 2
+key Enter
+settle 2
+assert snap detail-open == true
+assert snap detail-title == TreeSavedTitle
+assert snap detail-tags == alpha, beta
+capture p4_tree_saved_reopen
+wait 120

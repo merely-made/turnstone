@@ -24,6 +24,39 @@ use std::collections::BTreeMap;
 use std::rc::Rc;
 
 use serde_json::{Value, json};
+use wasm_bindgen::{JsCast, closure::Closure};
+
+thread_local! {
+    // Frames stop while hidden. Keep transitions independently of the frame
+    // loop so a hidden/shown interval cannot disappear from a timing window.
+    static HIDDEN_EPOCH: Cell<u64> = const { Cell::new(0) };
+    static VISIBILITY_INSTALLED: Cell<bool> = const { Cell::new(false) };
+}
+
+fn hidden_epoch() -> u64 {
+    HIDDEN_EPOCH.with(Cell::get)
+}
+
+fn observe_visibility() -> Result<(), String> {
+    if VISIBILITY_INSTALLED.with(Cell::get) {
+        return Ok(());
+    }
+    let document = web_sys::window()
+        .and_then(|window| window.document())
+        .ok_or("no document")?;
+    let observed_document = document.clone();
+    let listener = Closure::<dyn FnMut(web_sys::Event)>::new(move |_| {
+        if observed_document.hidden() {
+            HIDDEN_EPOCH.with(|epoch| epoch.set(epoch.get().wrapping_add(1)));
+        }
+    });
+    document
+        .add_event_listener_with_callback("visibilitychange", listener.as_ref().unchecked_ref())
+        .map_err(|_| "could not observe timing visibility")?;
+    listener.forget();
+    VISIBILITY_INSTALLED.with(|installed| installed.set(true));
+    Ok(())
+}
 
 /// The most frames a window records GPU time for: two timestamps each, within
 /// WebGPU's 4096-query limit on a query set.
@@ -66,6 +99,7 @@ struct Window {
     last_start: Option<f64>,
     frame_start: Option<f64>,
     hidden: bool,
+    hidden_epoch: u64,
     /// Frames whose two markers were both written.
     gpu_frames: u32,
     gpu_open: bool,
@@ -211,6 +245,7 @@ impl FrameTiming {
         if self.window.is_some() || self.closing.is_some() {
             return Err(format!("timing start {label}: a window is still open"));
         }
+        observe_visibility()?;
         if self.marks.is_none()
             && let Some((device, queue)) = gpu
         {
@@ -227,6 +262,7 @@ impl FrameTiming {
             last_start: None,
             frame_start: None,
             hidden: page_hidden(),
+            hidden_epoch: hidden_epoch(),
             gpu_frames: 0,
             gpu_open: false,
         });
@@ -244,7 +280,7 @@ impl FrameTiming {
         }
         window.last_start = Some(now);
         window.frame_start = Some(now);
-        window.hidden |= page_hidden();
+        window.hidden |= page_hidden() || window.hidden_epoch != hidden_epoch();
         if let (Some(marks), Some((device, queue))) = (&self.marks, gpu)
             && window.gpu_frames < GPU_FRAMES
         {
@@ -305,10 +341,11 @@ impl FrameTiming {
 
     /// Close the window; its report lands once the GPU times are read.
     pub(crate) fn stop(&mut self, gpu: Gpu<'_>) -> Result<(), String> {
-        let window = self
+        let mut window = self
             .window
             .take()
             .ok_or_else(|| "timing stop: no window is open".to_string())?;
+        window.hidden |= page_hidden() || window.hidden_epoch != hidden_epoch();
         let readback = match (&self.marks, gpu) {
             (Some(marks), Some((device, queue))) => {
                 Some(marks.read(device, queue, window.gpu_frames))

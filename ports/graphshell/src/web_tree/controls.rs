@@ -67,6 +67,9 @@ pub(super) fn toolbar(page: &TreePage) -> Child {
 
 impl TreePage {
     pub(super) fn pointer(&mut self, event: PointerEvent) {
+        if self.product.as_ref().is_some_and(|product| product.saving) {
+            return;
+        }
         if event.button != PointerButton::Primary {
             return;
         }
@@ -82,6 +85,9 @@ impl TreePage {
             PointerPhase::Up => {
                 canvas.pointer_up(mere::canvas::PointerButton::Left, x, y);
                 self.picked = canvas.focused_url().map(str::to_owned);
+                if let Some(product) = &mut self.product {
+                    product.select(canvas.selected_members().first().copied());
+                }
             },
         }
         self.shared.dirty.set(true);

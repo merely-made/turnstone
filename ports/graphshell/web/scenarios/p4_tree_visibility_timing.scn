@@ -1,0 +1,8 @@
+# Intentionally fail the timing receipt when an operator hides this real tab.
+click role:button Play physics
+settle 4
+timing start visibility-gap
+settle 1200
+timing stop
+click role:button Pause physics
+wait 120
