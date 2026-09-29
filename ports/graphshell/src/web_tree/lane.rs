@@ -133,7 +133,17 @@ impl Product for TreeLane {
                 let (left, top, _, _) = ctx.painted_rect(leaf)?;
                 Some((left + x - px).hypot(top + y - py))
             });
+        let step = canvas.elapsed_step_report().unwrap_or_default();
         ProbeSnapshot::default()
+            .with_field("physics-steps", step.steps.to_string())
+            .with_field(
+                "physics-dropped-us",
+                step.discarded_elapsed.as_micros().to_string(),
+            )
+            .with_field(
+                "physics-step-cap",
+                self.shared.physics_config.max_steps.to_string(),
+            )
             .with_field("focus", format!("{focus:?}"))
             .with_field("focus-kind", focus_kind)
             .with_field("physics-paused", canvas.physics_paused().to_string())

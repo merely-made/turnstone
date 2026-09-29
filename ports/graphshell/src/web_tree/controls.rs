@@ -87,3 +87,26 @@ impl TreePage {
         self.shared.dirty.set(true);
     }
 }
+
+/// Probe-page configuration; the Canvas API accepts the same settings directly.
+pub(super) fn physics_config() -> Result<mere::canvas::ElapsedStepConfig, String> {
+    let mut config = mere::canvas::ElapsedStepConfig::default();
+    let search = web_sys::window()
+        .ok_or("no window")?
+        .location()
+        .search()
+        .map_err(|_| "cannot read page options")?;
+    let params =
+        web_sys::UrlSearchParams::new_with_str(&search).map_err(|_| "invalid page options")?;
+    if let Some(value) = params.get("physics_max_steps") {
+        config.max_steps = value.parse().map_err(|_| "invalid physics_max_steps")?;
+    }
+    if let Some(value) = params.get("physics_max_elapsed_ms") {
+        config.max_elapsed = std::time::Duration::from_millis(
+            value
+                .parse()
+                .map_err(|_| "invalid physics_max_elapsed_ms")?,
+        );
+    }
+    Ok(config)
+}

@@ -81,6 +81,7 @@ struct Shared {
     /// timing marks are written on them.
     gpu: RefCell<Option<(wgpu::Device, wgpu::Queue)>>,
     timing: RefCell<FrameTiming>,
+    physics_config: mere::canvas::ElapsedStepConfig,
 }
 
 impl Shared {
@@ -116,7 +117,16 @@ impl TextureProducer for CanvasProducer {
         }
         let profile = shared.timing.borrow().active();
         let (scene, moving) = if profile {
-            let (scene, moving, sample) = canvas.frame_profiled(size.0, size.1, now_ms);
+            let (scene, moving, sample) = match cx.frame.timestamp {
+                Some(timestamp) => canvas.frame_profiled_at(
+                    size.0,
+                    size.1,
+                    timestamp,
+                    shared.physics_config,
+                    now_ms,
+                ),
+                None => canvas.frame_profiled(size.0, size.1, now_ms),
+            };
             shared.timing.borrow_mut().stages(
                 mere::canvas::CanvasFrameProfile::STAGES
                     .into_iter()
@@ -130,8 +140,26 @@ impl TextureProducer for CanvasProducer {
             ]);
             (scene, moving)
         } else {
-            canvas.frame(size.0, size.1)
+            match cx.frame.timestamp {
+                Some(timestamp) => {
+                    canvas.frame_at(size.0, size.1, timestamp, shared.physics_config)
+                },
+                None => canvas.frame(size.0, size.1),
+            }
         };
+        if profile && let Some(report) = canvas.elapsed_step_report() {
+            shared.timing.borrow_mut().counts([
+                ("physics_steps", report.steps as usize),
+                (
+                    "physics_discarded_us",
+                    report.discarded_elapsed.as_micros().min(usize::MAX as u128) as usize,
+                ),
+                (
+                    "physics_carried_us",
+                    report.carried_elapsed.as_micros() as usize,
+                ),
+            ]);
+        }
         shared.moving.set(moving);
         shared.dirty.set(false);
         // Rasterize every requested frame, as the presenter does. A settled
@@ -162,6 +190,10 @@ impl TextureProducer for CanvasProducer {
             alpha: SourceAlpha::Straight,
             encoding: SourceEncoding::Srgb,
         })
+    }
+    fn suspend(&mut self) {
+        self.shared.canvas.borrow_mut().reset_frame_time();
+        self.texture = None;
     }
 }
 
@@ -333,6 +365,7 @@ async fn boot(root: Element) -> Result<(), String> {
         physical_size: Cell::new([0, 0]),
         gpu: RefCell::new(None),
         timing: RefCell::new(FrameTiming::default()),
+        physics_config: controls::physics_config()?,
     });
     let options = HostOptions {
         title: "Graphshell, one tree".into(),

@@ -1,0 +1,25 @@
+# Run with nodes=128&seed=7&physics_max_steps=1.
+assert snap nodes == 128
+assert snap physics-step-cap == 1
+click role:button Fit graph
+settle 4
+remember initial
+click role:button Play physics
+settle 8
+timing start elapsed-physics
+settle 12
+timing stop
+assert snap physics-paused == false
+assert snap physics-steps <= 1
+assert snap finite == true
+differs initial geometry
+click role:button Pause physics
+settle 2
+remember paused
+settle 8
+same paused geometry
+assert snap physics-steps == 0
+click role:button Restore arrangement
+settle 2
+same initial geometry
+capture p4_tree_elapsed
