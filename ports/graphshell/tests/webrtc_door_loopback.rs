@@ -37,12 +37,12 @@ use graphshell::webrtc_door::{
     build_redemption_proof, issue_invite, mint_delegation, open_webrtc_session, redeem,
     sign_challenge, verify_host_challenge,
 };
+use insigne::delegation::SignedDelegationCertificate;
 use notochord::{
     LocalNetworkPolicy, NetworkId, ProfileRef, RevocationLedger, SessionReply, TrustedRoot,
 };
 use personae::IdentityProvider;
 use personae::InMemoryProvider;
-use personae::delegation::SignedDelegationCertificate;
 use tokio::net::UdpSocket;
 use webrtc_carrier::native::str0m::change::{SdpAnswer, SdpPendingOffer};
 use webrtc_carrier::native::str0m::channel::{ChannelConfig, Reliability};

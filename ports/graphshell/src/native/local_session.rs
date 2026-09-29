@@ -17,14 +17,14 @@
 use personae::delegation::Issue;
 use std::sync::Arc;
 
+use insigne::delegation::{
+    CapabilityScope, DelegationCertificate, DelegationParent, SignedDelegationCertificate,
+};
 use notochord::{
     AdmittedSession, LocalNetworkPolicy, NetworkId, ProfileRef, RevocationLedger, ServiceAccess,
     ServiceRule, TrustedRoot,
 };
-use personae::delegation::{
-    CapabilityScope, DelegationCertificate, DelegationError, DelegationParent,
-    SignedDelegationCertificate,
-};
+use personae::delegation::DelegationError;
 use personae::{IdentityProvider, IdentityStorage};
 use tokio::io::DuplexStream;
 

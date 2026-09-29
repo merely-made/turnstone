@@ -13,10 +13,10 @@ use personae::delegation::Issue;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use graphshell::admission::{CONNECT_ACTION, GRAPHSHELL_DOMAIN, PROJECTION_SERVICE};
-use notochord::{NetworkId, ProfileRef};
-use personae::delegation::{
+use insigne::delegation::{
     CapabilityScope, DelegationCertificate, DelegationParent, SignedDelegationCertificate,
 };
+use notochord::{NetworkId, ProfileRef};
 use personae::{IdentityProvider, InMemoryProvider};
 use transport::Transport;
 use transport::p2panda_transport::P2pandaTransport;
