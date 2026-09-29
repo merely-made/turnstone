@@ -194,3 +194,9 @@ the rendered fields and a separate load of the same browser profile. Their
 receipts export session and member IDs for comparison across loads. This
 bounded route does not complete phase 4: remote sessions, saved-scene
 restoration, other product panels and the five public wrappers remain open.
+
+Four focused native tests pass for durable identity/metadata reopening,
+stale-selection rejection without writes, refused-write retry and Canvas
+state preservation. The current headed proof is blocked by a hidden Chrome
+window and Computer Use's URL policy check; the controls receipt distinguishes
+that mounted mirror from a completed save/reopen or visibility-resume proof.
