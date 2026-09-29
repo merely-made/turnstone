@@ -7,6 +7,7 @@
 const originalError = console.error.bind(console);
 
 console.error = (...args) => {
+  (window.graphshellErrors ??= []).push(args.map(String).join(" "));
   if (!document.title.startsWith("GRAPHSHELL H3 FAIL")) {
     document.title = `GRAPHSHELL H3 FAIL: ${args.map(String).join(" ").slice(0, 240)}`;
   }
@@ -461,6 +462,9 @@ try {
             headers: { "content-type": "application/json" },
             body: JSON.stringify({
               scenario: window.graphshellScenario(),
+              title: document.title,
+              hidden: document.hidden,
+              semantic: window.graphshellSemanticTree(),
               frames: document.body.dataset.scenarioFrames,
               log: document.getElementById("scenario-log")?.textContent,
               remote: window.graphshellReceipt().remote,
