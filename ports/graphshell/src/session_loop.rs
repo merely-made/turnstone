@@ -345,15 +345,15 @@ mod tests {
         ResourceRequest, ResourceResponse, Revision, SceneEpoch, SessionOpen,
     };
     use graphshell_client::{ClientState, PresentationResolution, ResolvedContent};
+    use insigne::delegation::{
+        CapabilityScope, DelegationCertificate, DelegationParent, DelegationRevocation,
+        SignedDelegationCertificate, SignedDelegationRevocation,
+    };
     use notochord::{
         AdmittedPrincipal, CarrierKind, LocalNetworkPolicy, NetworkId, ProfileRef, RequestedAction,
         ServiceAccess, ServiceRule, SessionClaims, SessionFacts, TrafficClass, TrustedRoot,
     };
     use personae::delegation::Issue;
-    use personae::delegation::{
-        CapabilityScope, DelegationCertificate, DelegationParent, DelegationRevocation,
-        SignedDelegationCertificate, SignedDelegationRevocation,
-    };
     use personae::{
         Ed25519Keypair, IdentityProvider, IdentityVault, InMemoryProvider, InMemoryStorage,
         Profile, ProfileId,

@@ -92,14 +92,14 @@ mod tests {
     use graphshell_endpoint::{
         IntentSink, PresentationSource, ProjectionCatalog, ProjectionSource,
     };
+    use insigne::delegation::{
+        CapabilityScope, DelegationCertificate, DelegationParent, SignedDelegationCertificate,
+    };
     use notochord::{
         AdmittedPrincipal, AdmittedSession, CarrierKind, NetworkId, ProfileRef, RequestedAction,
         RevocationLedger, SessionClaims, SessionFacts, TrafficClass,
     };
     use personae::delegation::Issue;
-    use personae::delegation::{
-        CapabilityScope, DelegationCertificate, DelegationParent, SignedDelegationCertificate,
-    };
     use personae::{IdentityProvider, InMemoryProvider};
     use std::fmt::Display;
     use std::sync::RwLock;

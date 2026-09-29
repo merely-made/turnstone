@@ -26,11 +26,11 @@ use graphshell::network_carrier::{
 };
 use graphshell_client::ClientState;
 use graphshell_client::frozen::FrozenScene;
-use mesh::{Job, JobBoard, JobBoardSnapshot};
-use notochord::{LocalNetworkPolicy, NetworkId, ProfileRef, TrafficClass, TrustedRoot};
-use personae::delegation::{
+use insigne::delegation::{
     CapabilityScope, DelegationCertificate, DelegationParent, SignedDelegationCertificate,
 };
+use mesh::{Job, JobBoard, JobBoardSnapshot};
+use notochord::{LocalNetworkPolicy, NetworkId, ProfileRef, TrafficClass, TrustedRoot};
 use personae::{IdentityProvider, InMemoryProvider};
 use serde::Deserialize;
 use transport::PeerID;

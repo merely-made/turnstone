@@ -267,7 +267,7 @@ impl CarriageHost {
                 continue;
             };
             let shell =
-                WrappedEpochRecord::new(personae::delegation::DelegationId(target.certificate));
+                WrappedEpochRecord::new(insigne::delegation::DelegationId(target.certificate));
             let bytes = encode_epoch_record(&shell)
                 .map_err(|error| CarriageHostError::Refused(error.to_string()))?;
             let issuer = provider

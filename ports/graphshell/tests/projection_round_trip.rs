@@ -36,11 +36,11 @@ use graphshell::network_carrier::{
 use graphshell::session_notices::serve_admitted_session_notifying;
 use graphshell_endpoint::ProjectionNoticeSource;
 use graphshell_endpoint::{IntentSink, PresentationSource, ProjectionCatalog, ProjectionSource};
+use insigne::delegation::{
+    CapabilityScope, DelegationCertificate, DelegationParent, SignedDelegationCertificate,
+};
 use notochord::{
     LocalNetworkPolicy, NetworkId, ProfileRef, RevocationLedger, TrafficClass, TrustedRoot,
-};
-use personae::delegation::{
-    CapabilityScope, DelegationCertificate, DelegationParent, SignedDelegationCertificate,
 };
 use personae::{IdentityProvider, InMemoryProvider};
 use transport::PeerID;

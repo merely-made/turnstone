@@ -395,7 +395,7 @@ impl<P: IdentityProvider + ?Sized> IdentityProvider for BorrowedProvider<'_, P> 
     fn attest_derived_key(
         &self,
         salt: &[u8],
-    ) -> Result<personae::DerivedKeyAttestation, personae::IdentityError> {
+    ) -> Result<insigne::DerivedKeyAttestation, personae::IdentityError> {
         self.0.attest_derived_key(salt)
     }
 }

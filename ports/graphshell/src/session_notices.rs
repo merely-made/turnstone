@@ -92,14 +92,14 @@ mod tests {
         ProjectionSnapshot, ProtocolVersion, ResourceRequest, ResourceResponse, Revision,
         SceneEpoch, SessionOpen,
     };
+    use insigne::delegation::{
+        CapabilityScope, DelegationCertificate, DelegationParent, SignedDelegationCertificate,
+    };
     use notochord::{
         AdmittedPrincipal, CarrierKind, NetworkId, ProfileRef, RequestedAction, SessionClaims,
         SessionFacts, TrafficClass,
     };
     use personae::delegation::Issue;
-    use personae::delegation::{
-        CapabilityScope, DelegationCertificate, DelegationParent, SignedDelegationCertificate,
-    };
     use personae::{IdentityProvider, InMemoryProvider};
     use std::sync::Arc;
     use std::sync::atomic::{AtomicUsize, Ordering};

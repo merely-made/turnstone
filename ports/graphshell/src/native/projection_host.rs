@@ -412,11 +412,11 @@ mod tests {
     use graphshell_endpoint::{
         IntentSink, PresentationSource, ProjectionCatalog, ProjectionNoticeSource, ProjectionSource,
     };
-    use notochord::{NetworkId, ProfileRef, TrafficClass, TrustedRoot};
-    use personae::delegation::Issue;
-    use personae::delegation::{
+    use insigne::delegation::{
         CapabilityScope, DelegationCertificate, DelegationParent, SignedDelegationCertificate,
     };
+    use notochord::{NetworkId, ProfileRef, TrafficClass, TrustedRoot};
+    use personae::delegation::Issue;
     use personae::{IdentityProvider, InMemoryProvider};
     use std::fmt::Display;
     use std::sync::mpsc;

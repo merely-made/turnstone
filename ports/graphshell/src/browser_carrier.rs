@@ -21,13 +21,13 @@ use std::io::{Read, Write};
 
 use base64::Engine;
 use chirograph::{CarrierNotice, CarrierOutput, CarrierRequest, CarrierResponse};
+use insigne::delegation::SignedDelegationCertificate;
 use notochord::{
     AdmittedSession, CarrierKind, DenyReason, IoHandshakeError, LocalNetworkPolicy, NetworkId,
     ProfileRef, ProofBinding, RevocationLedger, SessionFacts, SessionReply, TrafficClass,
     initiate_session,
 };
 use personae::IdentityProvider;
-use personae::delegation::SignedDelegationCertificate;
 use rand_core::{OsRng, RngCore};
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
@@ -708,13 +708,13 @@ fn decode_nonce(value: &str) -> Result<[u8; 32], BrowserCarrierError> {
 mod tests {
     use super::*;
     use crate::admission::{CONNECT_ACTION, GRAPHSHELL_DOMAIN, PROJECTION_SERVICE};
+    use insigne::delegation::{
+        CapabilityScope, DelegationCertificate, DelegationParent, SignedDelegationCertificate,
+    };
     use notochord::TrustedRoot;
     use notochord::{HandshakeLimits, ServiceAccess, ServiceRule};
     use personae::InMemoryProvider;
     use personae::delegation::Issue;
-    use personae::delegation::{
-        CapabilityScope, DelegationCertificate, DelegationParent, SignedDelegationCertificate,
-    };
     use std::io::Cursor;
 
     #[tokio::test]

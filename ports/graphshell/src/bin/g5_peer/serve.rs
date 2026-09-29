@@ -21,8 +21,8 @@ use graphshell::lifecycle::SessionAuthority;
 use graphshell::resume::ResumeFixtureEndpoint;
 use graphshell::session_loop::serve_admitted_session;
 use graphshell_endpoint::ResumableProjectionSource;
+use insigne::delegation::{DelegationRevocation, SignedDelegationRevocation};
 use notochord::{NetworkId, RevocationLedger, TrustedRoot};
-use personae::delegation::{DelegationRevocation, SignedDelegationRevocation};
 use personae::{IdentityProvider, InMemoryProvider};
 use transport::p2panda_transport::{MdnsDiscoveryMode, P2pandaTransport};
 

@@ -23,9 +23,9 @@ use graphshell::transfer::{
 };
 use graphshell::transfer_endpoint::TransferSourceEndpoint;
 use graphshell_endpoint::ResumableProjectionSource;
+use insigne::delegation::{DelegationRevocation, SignedDelegationRevocation};
 use muniment::{BlobStore, MemoryBackend};
 use notochord::{NetworkId, RevocationLedger, TrustedRoot};
-use personae::delegation::{DelegationRevocation, SignedDelegationRevocation};
 use personae::{IdentityProvider, InMemoryProvider};
 use sha2::{Digest, Sha256};
 use transport::p2panda_transport::{MdnsDiscoveryMode, P2pandaTransport};

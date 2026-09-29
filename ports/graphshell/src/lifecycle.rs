@@ -41,10 +41,10 @@ use chirograph::{
     SessionStatus,
 };
 use graphshell_client::ClientState;
+use insigne::delegation::SignedDelegationCertificate;
 use notochord::{
     AdmittedPrincipal, AdmittedSession, AuthorityLapse, RetainedAuthority, RevocationLedger,
 };
-use personae::delegation::SignedDelegationCertificate;
 
 use crate::admission::{CONNECT_ACTION, PROJECTION_SERVICE};
 
@@ -335,6 +335,9 @@ mod tests {
     use super::*;
     use crate::admission::GRAPHSHELL_DOMAIN;
     use chirograph::{PresentationManifest, ProjectionSnapshot, ProtocolVersion, SceneSnapshot};
+    use insigne::delegation::{
+        CapabilityScope, DelegationCertificate, DelegationParent, SignedDelegationRevocation,
+    };
     use notochord::{
         CarrierKind, HandshakeLimits, NetworkId, ProfileRef, RequestedAction, SessionClaims,
         SessionFacts, TrafficClass,
@@ -342,9 +345,6 @@ mod tests {
     use personae::IdentityProvider;
     use personae::InMemoryProvider;
     use personae::delegation::Issue;
-    use personae::delegation::{
-        CapabilityScope, DelegationCertificate, DelegationParent, SignedDelegationRevocation,
-    };
     use sceno::{InstanceId, Scene};
 
     const ROOT_AUTHORITY: [u8; 32] = [7; 32];
@@ -439,7 +439,7 @@ mod tests {
         let mut ledger = RevocationLedger::new();
         let statement = SignedDelegationRevocation::issue(
             &owner(),
-            personae::delegation::DelegationRevocation::new(
+            insigne::delegation::DelegationRevocation::new(
                 chain[0].certificate.id(),
                 owner().master_public_key().to_bytes(),
                 chain[0].certificate.scope.clone(),

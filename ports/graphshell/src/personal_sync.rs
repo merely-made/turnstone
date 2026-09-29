@@ -16,6 +16,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::sync::Arc;
 
 use eidetic::PrivacyClass;
+use insigne::DerivedKeyAttestation;
 use mere::kernel::geometry::PortablePoint;
 use mere::kernel::graph::apply::{GraphDelta, add_node, apply_graph_delta};
 use mere::kernel::graph::{EdgeAssertion, Graph, RelationSelector};
@@ -23,7 +24,7 @@ use muniment::Backend;
 use p2panda_core::cbor::{decode_cbor, encode_cbor};
 use p2panda_core::{Body, Hash, Header, Operation, SigningKey, Topic, VerifyingKey};
 use p2panda_store::topics::TopicStore;
-use personae::{DerivedKeyAttestation, IdentityError, IdentityProvider};
+use personae::{IdentityError, IdentityProvider};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use stickleback::{

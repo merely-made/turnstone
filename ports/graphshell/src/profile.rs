@@ -36,12 +36,11 @@
 use personae::AttestationKeys;
 use std::path::{Path, PathBuf};
 
+use insigne::DerivedKeyAttestation;
 use personae::bootstrap::{self, Unlock};
 use personae::roster;
 use personae::vault::{IdentityStorage, IdentityVault, ProfileId};
-use personae::{
-    DerivedKeyAttestation, Ed25519Keypair, Ed25519PublicKey, IdentityError, IdentityProvider,
-};
+use personae::{Ed25519Keypair, Ed25519PublicKey, IdentityError, IdentityProvider};
 
 /// Environment override for the profile Graphshell speaks as, above the
 /// family-wide [`personae::roster::PROFILE_ENV`].

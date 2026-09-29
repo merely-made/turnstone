@@ -40,9 +40,9 @@ use webrtc_carrier::{BrowserInitiator, DtlsFingerprint, FingerprintRole, MAX_FRA
 
 // What a page needs to name to drive a join, re-exported so the page
 // depends on this module alone.
+pub use insigne::delegation::SignedDelegationCertificate;
 pub use notochord::HandshakeLimits;
 pub use personae::InMemoryProvider;
-pub use personae::delegation::SignedDelegationCertificate;
 pub use webrtc_carrier::{BrowserInitiatorConfig, InviteV1};
 
 use crate::admission::PROJECTION_PROTOCOL;
@@ -263,7 +263,7 @@ impl BrowserJoin {
         answer_sdp: &str,
         invite: &InviteV1,
         ephemeral: InMemoryProvider,
-        delegation: personae::delegation::SignedDelegationCertificate,
+        delegation: insigne::delegation::SignedDelegationCertificate,
         limits: &HandshakeLimits,
     ) -> Result<BrowserSession, JoinError> {
         let own_fingerprint = self.own_fingerprint.ok_or_else(|| {
