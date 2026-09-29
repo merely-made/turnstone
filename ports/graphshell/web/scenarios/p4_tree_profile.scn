@@ -1,0 +1,11 @@
+# Diagnostic only: paused 2000-node CPU attribution in the ruled dev profile.
+assert snap nodes == 2000
+click role:button Fit graph
+settle 8
+timing start paused-profile
+settle 20
+timing stop
+wait 120
+assert snap physics-paused == true
+assert snap finite == true
+capture p4_tree_profile

@@ -1,0 +1,26 @@
+# One-tree plan, phase 3: a generated 2,000-node graph inside a Cambium tree
+# (tree.html?nodes=2000&seed=7).
+#
+# The same graph and windows p3_presenter_2000 times on index.html with the
+# same parameters, shorter than p3_tree_fixture's (see below). The click lands on node 0;
+# with 2,000 nodes another may lie over it, so the pick is asserted to be a
+# generated node rather than that one.
+# Mark ruled the runner's debug build with short windows (2026-09-27): at
+# 2,000 nodes it draws a frame every few seconds, so 30-frame windows and 60
+# frames to settle, the same on both pages.
+log phase 3: 2,000 generated nodes inside a Cambium tree
+assert snap nodes == 2000
+timing start generated-startup
+settle 30
+timing stop
+wait 30
+capture p3_tree_2000_startup
+settle 60
+timing start generated-steady
+settle 30
+timing stop
+wait 30
+click-node https://node-0.generated.test/
+settle 2
+assert snap picked ~ generated.test
+capture p3_tree_2000_picked

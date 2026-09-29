@@ -1,0 +1,15 @@
+# Separate live 2000-node diagnostic. Explicit play cannot wait for idle.
+assert snap nodes >= 1
+click role:button Fit graph
+settle 8
+click role:button Play physics
+settle 4
+timing start live-profile
+settle 12
+timing stop
+assert snap physics-paused == false
+assert snap finite == true
+click role:button Pause physics
+settle 2
+wait 120
+capture p4_tree_live_profile

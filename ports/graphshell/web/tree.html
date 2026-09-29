@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en" class="full-page">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Graphshell, one tree</title>
+    <link rel="stylesheet" href="./styles.css?h3=1">
+  </head>
+  <body class="full-page">
+    <!-- The one-tree page (the one-tree plan's phase 3): the graph canvas
+         inside a Cambium tree, mounted by `mount_tree` from the same bundle
+         as index.html. `?nodes=` and `?seed=` draw a generated graph instead
+         of the fixture. -->
+    <graphshell-tree id="graphshell" data-owns-title data-ready="false"></graphshell-tree>
+
+    <!-- The scenario lane's output, as on index.html: page-level and hidden
+         from the accessibility tree. -->
+    <section id="scenario-host" aria-hidden="true" hidden>
+      <pre id="scenario-log"></pre>
+      <pre id="scenario-result"></pre>
+      <div id="scenario-captures"></div>
+    </section>
+
+    <script type="module" src="./loader.js"></script>
+  </body>
+</html>

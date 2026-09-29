@@ -1,0 +1,20 @@
+# One-tree plan, phase 3: GpuPresenter's frames on the generated 2,000-node
+# graph (index.html?nodes=2000&seed=7), beside p3_tree_2000's.
+# Mark ruled the runner's debug build with short windows (2026-09-27): at
+# 2,000 nodes it draws a frame every few seconds, so 30-frame windows and 60
+# frames to settle, the same on both pages.
+log phase 3: GpuPresenter on 2,000 generated nodes
+timing start generated-startup
+settle 30
+timing stop
+wait 30
+capture p3_presenter_2000_startup
+settle 60
+timing start generated-steady
+settle 30
+timing stop
+wait 30
+capture p3_presenter_2000_steady
+# The page lane ends as soon as its last step runs, so the final capture
+# needs a wait to land before the report is written.
+wait 30

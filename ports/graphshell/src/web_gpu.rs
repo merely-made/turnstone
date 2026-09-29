@@ -27,8 +27,9 @@ const CHROME_KEY: u64 = 2;
 const CAPTURE_CONTENT_KEY: u64 = 3;
 const CAPTURE_CHROME_KEY: u64 = 4;
 
-/// The shell colour content clears to, under the chrome.
-const SHELL_CLEAR: wgpu::Color = wgpu::Color {
+/// The shell colour content clears to, under the chrome. The tree page's
+/// canvas clears to it too.
+pub(crate) const SHELL_CLEAR: wgpu::Color = wgpu::Color {
     r: 0.027,
     g: 0.047,
     b: 0.059,
@@ -110,6 +111,8 @@ impl GpuPresenter {
         let core = RenderCore::boot_async(NetrenderOptions {
             tile_cache_size: Some(1024),
             enable_vello: true,
+            // Frame timing's GPU marks, when the adapter offers them.
+            optional_features: wgpu::Features::TIMESTAMP_QUERY,
             ..Default::default()
         })
         .await?;
@@ -239,6 +242,11 @@ impl GpuPresenter {
 
     pub(crate) fn resize(&mut self, width: u32, height: u32) {
         self.surface.resize(&self.core, width, height);
+    }
+
+    /// The device and queue every frame submits on, for its timing marks.
+    pub(crate) fn gpu(&self) -> (&wgpu::Device, &wgpu::Queue) {
+        (self.core.device(), self.core.queue())
     }
 
     /// Content underneath, chrome over it. Content clears to the shell colour
