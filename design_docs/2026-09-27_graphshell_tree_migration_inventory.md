@@ -123,9 +123,9 @@ restless laws, drag return/hold semantics, pause/resume and the remote-board
 boundary. Their existence is not a current passing tree receipt or a performance
 acceptance result.
 
-## Next physics slice (proposal, not a new ruling)
+## Elapsed-time physics slice
 
-**Core implemented; host adoption pending.** Following approval to continue,
+**Core implemented; host adoption added 2026-09-29.** Following approval to continue,
 Seiche now exposes opt-in `Physics::advance_elapsed`, `ElapsedStepConfig` and
 `ElapsedStepReport`. It accepts caller-supplied elapsed time, runs bounded
 fixed steps, publishes one snapshot, reports discarded time, and carries only
@@ -139,25 +139,28 @@ The focused runtime gate passes 12 tests with default features and eight with
 `--no-default-features`, both offline and locked. These cover render-rate
 equivalence, long stalls, zero limits, rounding boundaries, idle/pause/reseed/
 suspension resets, deterministic one-step compatibility, and actor isolation.
-The full native gate also passes all 88 Seiche tests. Canvas and browser
-callers remain on the existing deterministic path so this core addition does
-not change the current rendering measurements. The host work below remains
-pending, including visibility wiring, host timestamp reset and headed evidence.
+The original full native gate also passed all 88 Seiche tests. Those earlier
+rendering measurements used deterministic advancement and remain historical.
+Pictograph now offers `frame_at` and `frame_profiled_at`: they accept monotonic
+host timestamps, compose once after the bounded steps, and expose the last
+`ElapsedStepReport`. The first call after reset establishes a baseline.
+Backwards/repeated timestamps do not accrue time. Pause/resume, explicit seeds,
+restore and producer suspension clear the timestamp and fractional debt.
 
-Rendering currently advances inline physics once per Canvas frame. Reuse the
-bounded elapsed-time accumulator in `web_practice.rs::PracticeHost::frame`
-(50 ms contribution cap, fixed 60 Hz steps), rather than adding a scheduler.
-Seiche should own configurable maximum elapsed contribution and steps per
-frame; Canvas should compose once after those steps. Keep `advance_frame` as
-the deterministic receipt/test path. The actor branch must remain a snapshot
-drain because its simulation already runs independently.
+Rootstock's `Host::redraw_at` scopes the supplied timestamp to one draw and
+passes it in `ProducerFrameInfo`. Untimed redraw remains available. The web
+host forwards animation timestamps, uses the same performance clock for
+immediate input draws, and routes document visibility through `set_hidden`.
+Hidden pages stop drawing; suspension resets the Canvas clock and visibility
+requests a fresh frame. Actor simulation retains its independent pacing.
 
-Reset accumulated time on pause, reseed, restore and suspension. The web host
-currently discards the animation-frame timestamp and does not wire document
-visibility to host hidden state; use the existing producer suspension path
-when making that connection. Record executed steps and discarded elapsed time
-beside physics cost. The current practice cap is a starting configuration,
-not a latency guarantee: one expensive step can still block input.
+The Graphshell tree opts into timed advancement, with configurable caps from
+`physics_max_steps` and `physics_max_elapsed_ms` page parameters. Defaults are
+three steps and 50 ms. Timing receipts include executed steps, discarded
+microseconds and carried microseconds beside physics cost. Existing native
+Canvas callers, the old presenter, camera inertia and backdrop pacing are
+unchanged. One expensive physics step can still block input; the caps are not
+a latency guarantee.
 
 Done means equivalent visible elapsed time produces equivalent fixed-step
 motion at different render rates; stalls have bounded work; pause and hidden
