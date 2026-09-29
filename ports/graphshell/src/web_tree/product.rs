@@ -188,14 +188,15 @@ impl SavedProduct {
         };
         self.app = Some(app);
         self.saving = false;
-        match result.and_then(|saved| {
-            sync_canvas_metadata(canvas, &saved)?;
-            Ok(saved)
-        }) {
+        match result {
             Ok(saved) => {
+                let refresh = sync_canvas_metadata(canvas, &saved);
                 self.title = TextInput::new(saved.title);
                 self.tags = TextInput::new(saved.tags.join(", "));
-                self.status = "Changes saved".into();
+                self.status = match refresh {
+                    Ok(()) => "Changes saved".into(),
+                    Err(error) => format!("Changes saved · canvas refresh failed: {error}"),
+                };
                 self.save_state = "saved";
             },
             Err(error) => {
