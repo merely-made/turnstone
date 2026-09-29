@@ -86,7 +86,7 @@ set.
 - [Turnstone surfaces in Cambium](2026-07-15_turnstone_surfaces_in_cambium.md): mapping from product surfaces to Cambium components or non-Cambium lanes.
 - [Turnstone founding](2026-07-08_turnstone_founding.md): naming, role swap, and original sequencing, with later authority corrections called out in the document.
 - [Meerkat harvest](2026-07-18_meerkat_harvest.md): port, note, or leave audit made before retiring the donor application.
-- [Gloss composite pane](2026-07-20_gloss_composite_pane.md): design for configurable section composition in Gloss and Swatch projections.
+- [Gloss composite pane](2026-07-20_gloss_composite_pane.md): configurable section composition; September 29 accepts Gloss as the operational overview, with Steward retiring after content migration. Migration pending; shared diagnostics live in `mere-apparatus`.
 - [Recycle bin and Athanor](2026-07-20_recycle_bin_athanor.md): recoverable deletion, identity-preserving restore, and eventual permanent forgetting.
 
 ## Completed plans and receipts

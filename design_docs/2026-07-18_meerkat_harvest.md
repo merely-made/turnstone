@@ -101,6 +101,13 @@ log` archaeology on mere's history still reaches them.
 
 ## Pane taxonomy REVISED at the harvest (2026-07-18, with Mark)
 
+**September 29 amendment:** the operational-status assignment below is superseded
+by [Gloss's accepted operational overview](2026-07-20_gloss_composite_pane.md#current-direction-2026-09-29).
+Steward retires after its content migrates. `mere-apparatus` is the shared
+diagnostics crate; Inspector takes object analysis alongside document and
+within-document inspection. The object-analysis Apparatus pane retires after
+its capabilities migrate. Preserve the July ruling below as implementation history.
+
 Atomic facets landing (chartulary's `facet.rs`/`content_class.rs`, same day)
 re-charters three panes. This supersedes the 2026-07-10 taxonomy's
 apparatus/steward split ("apparatus splits its natures"):

@@ -1,5 +1,34 @@
 # Gloss as a composite pane; the swatch as a customizable projection
 
+## Current direction, 2026-09-29
+
+**Accepted by Mark:** Gloss becomes the configurable operational overview as well
+as the navigation overview. Compose downloads, background work, sync and items
+needing attention alongside the minimap and optional history summaries. Trail
+retains browsing history, recall and recovery. Move Steward's useful content into
+Gloss, then retire the separate Steward pane.
+
+Shared diagnostic observations belong in `mere-apparatus`; the canonical contract
+and ownership ruling live at
+`mere/design_docs/mere_docs/implementation_strategy/2026-06-08_system_diagnostics_and_accessibility_plan.md`.
+Turnstone still owns operations, permissions, completion and actionable controls.
+Inspector takes the existing Apparatus pane's object analysis alongside document
+and within-document inspection, metadata and clipping. It shows subject-appropriate
+fields and controls while preserving graph facets, provenance, handling controls
+and their product-owned write paths. Retire the object-analysis Apparatus pane
+after those capabilities migrate; this migration is also pending.
+
+**Implementation pending:** `sections.rs` currently provides Recent, Removed and
+Nodes, with Open/Recover activation. Steward currently projects download records.
+Add operational providers and the required typed product actions through the
+existing composition path; retain per-pane configuration and persistence.
+Done when Gloss exposes the migrated content and controls, saved arrangements
+retain access to that content, and scenario coverage verifies the affected
+sections before Steward's pane is removed. This document records the direction;
+it does not claim the migration has landed.
+
+## Original design and implementation history
+
 2026-07-20, Mark's ask (during the recycle-bin work): "at base it's a
 minimap, but if you wanted to you could put sections from other panes in
 there too (like recent nodes, or deleted)" — and the swatch itself "can and
