@@ -1,9 +1,11 @@
 # Shared diagnostics adoption and Gloss / Inspector receipt
 
-Date: 2026-09-29.
+Date: 2026-09-29; continuation 2026-09-30 below.
 Status: sealed dependency graph resolves; focused diagnostics, UI and participant
 tests, the normal native build and final initial/restarted pane scenarios pass.
-The full workspace gate passes. Assistive-technology acceptance is open.
+The September 30 full workspace gate passes 635 tests with nine existing ignores. Assistive-technology acceptance
+is open. The September 30 cohort below records its own source graph and gates;
+earlier hashes and captures remain historical evidence.
 
 This records the consumer graph and evidence boundaries for the
 [current Gloss / Inspector direction](2026-07-20_gloss_composite_pane.md#current-direction-2026-09-29).
@@ -11,7 +13,7 @@ The shared observation contract remains in
 `mere/design_docs/mere_docs/implementation_strategy/2026-06-08_system_diagnostics_and_accessibility_plan.md`;
 this document records Turnstone's application and acceptance evidence.
 
-## Published dependency graph
+## September 29 published dependency graph
 
 | Owner | Sealed revision |
 | --- | --- |
@@ -137,3 +139,112 @@ serial logs remain preserved separately from the final gate.
 Background work and sync controls, real worker causality, within-document
 selection inspection, the separate TLS/download fixture, and broader contributed
 pane semantic automation retain their own implementation and acceptance gates.
+
+## September 30 continuation
+
+The current diagnostics plan is being executed in owner-specific slices. The
+optional Gloss Diagnostics section reads the shared Apparatus inspection data
+through an independent cursor. Its display settings (`TURNSTONE_DIAGNOSTIC_VIEW_RECORDS`,
+`TURNSTONE_DIAGNOSTIC_VIEW_GAPS`, `TURNSTONE_DIAGNOSTIC_VIEW_CHARS`) default to
+16 records, four gaps and 256 Unicode scalars per row. Display limits do not
+change retention; zero hides that display dimension. The default Gloss remains
+minimap plus Downloads. The qualified consumer cohort is recorded below.
+
+### September 30 qualified consumer cohort
+
+The containing consumer uses Mere `bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3`,
+Genet `69a2383b2ad777b884a72f31f8f8fb7ece275c0b`, Knot
+`3dfb70b01e79dadfcbd1e615ded43b34f01802da` and Woodshed
+`cefc903dcd7f506803acfe2ee52cad7693787188`. Netrender remains
+`9607d16f1907f6c2085648ae96abcaa30d7c3d41`. The lock changes intended Git
+identities and the direct document-session-api edge; existing registry package
+name/version sets remain unchanged. An initial cold-checkout offline stop and
+an online lock attempt that selected unrelated updates remain archived; the
+final lock preserves the preceding registry versions.
+
+The locked/offline workspace all-target gate passes **635 tests, zero failures,
+nine existing ignores**, with four additional zero-test harnesses. Five exact
+Piccolo/Wasm participant tests pass independently with no ignores; these are
+optional native runtime tests, not a Turnstone Wasm-target/browser-run receipt.
+Focused diagnostics, section, swatch, accessibility, contributed-surface,
+automation and retained-clipping groups pass and overlap the full gate. The
+default-feature native build passes. Turnstone strict Clippy is not claimed;
+existing warnings remain outside this slice.
+
+Contributed automation and platform actions use the same provider-owned computed
+projection and retained geometry. Targets carry pane, admission generation and
+DOM identity. Scoped role/name matching respects referenced names, ambiguity,
+hidden/disabled controls and stale replacement; it does not fall through to raw
+matching in another surface. A held offscreen click waits for a rendered reading,
+then revalidates before delivery. The actual Sky native scenario passes: Next day
+and observer editing precede Calculate request 3, whose visible rectangle changes
+from unavailable at painted y=839 to the full 30-pixel rectangle at y=570. The
+following observation verifies the applied date/observer and calculated receipt.
+All three 1024×600 PNGs were reviewed. The final image visibly contains Calculate;
+its scrolled lower background is black and field values are not readable there.
+Applied field values are established by the scenario observation, not screenshot
+text. This is behavioral/visual evidence, not exact diagnostic-state/pixel pairing.
+
+Final review repaired a separate admission defect: the surface could refuse
+hidden, disabled or unsupported actions while the platform helper returned true.
+`accessibility_action` now returns `Option<SurfaceRequest>`; refusal is `None`,
+while an admitted action may legitimately return `Some(SurfaceRequest::None)`.
+The helper uses admission, so rejected Focus cannot alter Shell focus/stacking.
+The real-runner refusal regression fails before repair (exit 101), then all eight
+contributed AT tests pass. A test-provider wrapper qualifies admitted actions
+without host effects; the real Runner itself requests redraw, so production
+no-redraw behavior is not inferred. Bypassing the final generation guard fails
+101; exact restored source SHA-256 is
+`6E4DCB660590EB17BAE88BF6668363134319E73AFDBDDDC7C6787273FA3FB3AE`.
+Removing the Gloss platform arm also fails its control, with exact restoration.
+
+Fresh and restored optional Diagnostics scenarios both pass, with two additional
+reviewed 1024×600 images. Fresh retention is two records/266 accounted bytes,
+four evictions and gap `[1,5)`; the restart has one record/133 bytes with no loss
+or gaps. Saved Diagnostics, Downloads order survives restart. Launches explicitly
+record display limits 16/4/256; read-only rows expose loss, unknown coverage and
+unavailable correlation without action authority or fallback window bounds.
+Default Gloss remains minimap plus Downloads; diagnostics collection and display
+limits retain separate product settings.
+
+Evidence lives in `Code/testing/turnstone/contributed-semantics/` and
+`Code/testing/turnstone/diagnostic-inspection/final/`. The final cohort records
+254 source/scenario/manifest/wrapper hashes, plus per-launch source and capture
+hashes. All native processes exited. Binary SHA-256:
+`DFBE44B79470C2C32EF0A2EDD0BBCCF78EAE4D3861B876D8E91B29AAAFD7A09F`.
+Manifest SHA-256:
+`375959150687B81315DBE8BB7D185308A994976D58C81C57BDC2ABD28DBD5462`.
+Lock SHA-256:
+`7C45B1754D9C3A9557A1BB56882F5CB481F514F1228F2EFD3E3E2CC0D94BBD94`.
+
+Inspector source/endpoint binding repairs, broader built-in/custom/live-document
+semantics, Turnstone's immutable custom-compositor capture seal, additional
+worker families and human assistive-technology observations remain explicit
+owner gates. The prepared Windows/Narrator baseline is platform preparation only.
+
+### Human accessibility acceptance, still open
+
+Turnstone is the prepared first consumer. Record the Windows and Narrator
+versions, binary hash, pinned source graph and configured scale before testing.
+Use a fresh owned profile; use the published `contributed_semantics.scn` receipt
+as the automated comparison, not as a substitute for hearing the interface.
+
+1. Navigate chrome, Downloads and Inspector with Narrator and keyboard alone.
+   Record the spoken role/name, focus movement and whether controls activate
+   only when requested. Inspect both the default Gloss and its optional
+   Diagnostics section, including disabled retention and explicit unavailable
+   correlation. Read-only diagnostic rows must not promise an action.
+2. Open the actual Sky contributed pane. Navigate its labelled controls,
+   activate Calculate and Next day, edit the observer field, and compare the
+   resulting product facts with the automated scenario. Include a clipped
+   control at a narrow size and a changed accessible name.
+3. Remove and recreate the pane while a request is pending. Confirm the old
+   request cannot activate its replacement. Record any lost focus, misleading
+   announcement or inaccessible control as a failure with the exact steps.
+4. Repeat at another supported scale and after restoring the profile. Retain
+   observations and failures separately from automated tree/capture evidence.
+
+A pass requires the human's actual observations for these cases. Screen-reader
+startup, AccessKit tree tests and screenshots alone do not close this gate.
+Built-in semantic matching, custom paint leaves and the full live document
+projection retain separate implementation gates.

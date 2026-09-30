@@ -18,13 +18,35 @@ use genet_scripted_dom::NodeId as DomNodeId;
 use uxtree::{UxTree, node_id_for_path};
 
 use crate::contributed_surface::ContributedSurfaceSessions;
-use crate::panes::PaneId;
+use crate::panes::{PaneId, PaneSpec};
 use crate::surface::Rect;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) struct ContributedA11yRoute {
     pub pane: PaneId,
+    pub generation: u64,
     pub node: DomNodeId,
+}
+
+/// Admit a queued platform route against the current source and session before
+/// the provider can receive it. Shell's drain and regression controls share this
+/// delivery seam; a reused pane/local control cannot revive an old admission.
+pub(crate) fn apply_route(
+    sessions: &mut ContributedSurfaceSessions,
+    current_spec: Option<&PaneSpec>,
+    route: ContributedA11yRoute,
+    action: accesskit::Action,
+) -> bool {
+    let Some(spec) = current_spec.filter(|spec| spec.id == route.pane) else {
+        return false;
+    };
+    let Some(surface) = sessions.get_mut(route.pane) else {
+        return false;
+    };
+    if surface.generation() != route.generation || !surface.matches(&spec.kind, &spec.source) {
+        return false;
+    }
+    surface.accessibility_action(action, route.node).is_some()
 }
 
 pub(crate) struct ContributedA11yProjection {
@@ -58,6 +80,7 @@ pub(crate) fn project(
         let label = session.descriptor().label.as_str();
         let (tree, pane_routes, pane_focus) = namespace_tree(
             pane,
+            session.generation(),
             label,
             rect,
             update,
@@ -78,6 +101,7 @@ pub(crate) fn project(
 
 fn namespace_tree(
     pane: PaneId,
+    generation: u64,
     label: &str,
     rect: Rect,
     update: TreeUpdate,
@@ -99,7 +123,10 @@ fn namespace_tree(
         .map(|(local, _)| {
             (
                 *local,
-                node_id_for_path(&format!("turnstone/contributed/{}/dom/{local:?}", pane.0)),
+                node_id_for_path(&format!(
+                    "turnstone/contributed/{}/admission/{generation}/dom/{local:?}",
+                    pane.0
+                )),
             )
         })
         .collect();
@@ -140,6 +167,7 @@ fn namespace_tree(
                 global,
                 ContributedA11yRoute {
                     pane,
+                    generation,
                     node: dom_node,
                 },
             );
@@ -184,6 +212,7 @@ mod tests {
     fn namespacing_places_bounds_and_preserves_distinct_actions() {
         let (tree, routes, focus) = namespace_tree(
             PaneId(9),
+            1,
             "Knot document",
             Rect::new(100.0, 40.0, 300.0, 200.0),
             local_tree().0,
@@ -209,6 +238,7 @@ mod tests {
     fn equal_dom_ids_in_two_panes_never_collide() {
         let (left, _, _) = namespace_tree(
             PaneId(1),
+            1,
             "left",
             Rect::new(0.0, 0.0, 100.0, 100.0),
             local_tree().0,
@@ -217,6 +247,7 @@ mod tests {
         );
         let (right, _, _) = namespace_tree(
             PaneId(2),
+            1,
             "right",
             Rect::new(100.0, 0.0, 100.0, 100.0),
             local_tree().0,
@@ -231,9 +262,233 @@ mod tests {
     }
 
     #[test]
+    fn a_new_admission_never_reuses_the_old_platform_action_id() {
+        let (_, first, _) = namespace_tree(
+            PaneId(7),
+            1,
+            "provider",
+            Rect::new(0.0, 0.0, 100.0, 100.0),
+            local_tree().0,
+            local_tree().1,
+            false,
+        );
+        let (_, second, _) = namespace_tree(
+            PaneId(7),
+            2,
+            "provider",
+            Rect::new(0.0, 0.0, 100.0, 100.0),
+            local_tree().0,
+            local_tree().1,
+            false,
+        );
+        assert!(first.keys().all(|id| !second.contains_key(id)));
+        assert!(first.values().all(|route| route.generation == 1));
+        assert!(second.values().all(|route| route.generation == 2));
+    }
+
+    #[test]
+    fn queued_old_admission_cannot_activate_a_current_runner_control() {
+        use crate::contributed_surface::SurfaceProviderRegistry;
+        use crate::contributed_surface::tests::{provider, root_text, source};
+        use crate::panes::{ContextBinding, PaneConfig, PaneKindId};
+        let spec = PaneSpec {
+            id: PaneId(7),
+            kind: PaneKindId::new("fake"),
+            source: source("fake.v1"),
+            context: ContextBinding::Own,
+            config: PaneConfig::empty("test.empty"),
+        };
+        let mut registry = SurfaceProviderRegistry::new();
+        registry
+            .register_provider(provider("fake", "fake.v1", "fake.surface"))
+            .unwrap();
+        let mut sessions = ContributedSurfaceSessions::default();
+        let old_generation = sessions.resolve(&spec, &registry).unwrap().generation();
+        sessions.remove(spec.id);
+        let pane = sessions.resolve(&spec, &registry).unwrap();
+        pane.scene(320, 180, 1.0);
+        let node = pane.session().root();
+        let generation = pane.generation();
+        assert_ne!(old_generation, generation);
+        // Resolve the old local control to the current arena deliberately:
+        // generation, rather than differing NodeId arenas, must reject it.
+        let queued = ContributedA11yRoute {
+            pane: spec.id,
+            generation: old_generation,
+            node,
+        };
+        assert!(!apply_route(
+            &mut sessions,
+            Some(&spec),
+            queued,
+            Action::Click
+        ));
+        let pane = sessions.get(spec.id).unwrap();
+        assert!(root_text(&pane.session().dom(), node).contains("count:0"));
+        let current = ContributedA11yRoute {
+            generation,
+            ..queued
+        };
+        let repinned = PaneSpec {
+            source: source("fake.v2"),
+            ..spec.clone()
+        };
+        assert!(!apply_route(
+            &mut sessions,
+            Some(&repinned),
+            current,
+            Action::Click
+        ));
+        assert!(!apply_route(&mut sessions, None, current, Action::Click));
+        assert!(apply_route(
+            &mut sessions,
+            Some(&spec),
+            current,
+            Action::Click
+        ));
+        let pane = sessions.get(spec.id).unwrap();
+        assert!(root_text(&pane.session().dom(), node).contains("count:1"));
+    }
+
+    #[test]
+    fn helper_refuses_hidden_disabled_and_unsupported_runner_actions() {
+        use crate::contributed_surface::SurfaceProviderRegistry;
+        use crate::contributed_surface::tests::{provider, root_text, source};
+        use crate::panes::{ContextBinding, PaneConfig, PaneKindId};
+        use layout_dom_api::{LayoutDomMut, QualName};
+        for attribute in ["aria-hidden", "disabled"] {
+            let mut registry = SurfaceProviderRegistry::new();
+            registry
+                .register_provider(provider("fake", "fake.v1", "fake.surface"))
+                .unwrap();
+            let spec = PaneSpec {
+                id: PaneId(7),
+                kind: PaneKindId::new("fake"),
+                source: source("fake.v1"),
+                context: ContextBinding::Own,
+                config: PaneConfig::empty("test.empty"),
+            };
+            let mut sessions = ContributedSurfaceSessions::default();
+            let pane = sessions.resolve(&spec, &registry).unwrap();
+            pane.scene(320, 180, 1.0);
+            let node = pane.session().root();
+            pane.session().dom().borrow_mut().set_attribute(
+                node,
+                QualName::new(None, "".into(), attribute.into()),
+                if attribute == "aria-hidden" {
+                    "true"
+                } else {
+                    ""
+                },
+            );
+            pane.scene(320, 180, 1.0);
+            let route = ContributedA11yRoute {
+                pane: spec.id,
+                generation: pane.generation(),
+                node,
+            };
+            for action in [Action::Click, Action::Focus, Action::Increment] {
+                assert!(
+                    !apply_route(&mut sessions, Some(&spec), route, action),
+                    "{attribute}: {action:?} must be refused by the delivery helper"
+                );
+            }
+            let pane = sessions.get(spec.id).unwrap();
+            assert_eq!(pane.session().focus(), None, "{attribute}");
+            assert!(
+                root_text(&pane.session().dom(), node).contains("count:0"),
+                "{attribute}"
+            );
+        }
+    }
+
+    fn focus_admission_fixture(
+        suppress_host_effects: bool,
+    ) -> (ContributedSurfaceSessions, PaneSpec, ContributedA11yRoute) {
+        use crate::contributed_surface::SurfaceProviderRegistry;
+        use crate::contributed_surface::tests::{provider, source};
+        use crate::panes::{ContextBinding, PaneConfig, PaneKindId};
+        let spec = PaneSpec {
+            id: PaneId(7),
+            kind: PaneKindId::new("fake"),
+            source: source("fake.v1"),
+            context: ContextBinding::Own,
+            config: PaneConfig::empty("test.empty"),
+        };
+        let mut registry = SurfaceProviderRegistry::new();
+        let mut provider = provider("fake", "fake.v1", "fake.surface");
+        provider.suppress_host_effects = suppress_host_effects;
+        registry.register_provider(provider).unwrap();
+        let mut sessions = ContributedSurfaceSessions::default();
+        let pane = sessions.resolve(&spec, &registry).unwrap();
+        pane.scene(320, 180, 1.0);
+        let route = ContributedA11yRoute {
+            pane: spec.id,
+            generation: pane.generation(),
+            node: pane.session().root(),
+        };
+        (sessions, spec, route)
+    }
+
+    #[test]
+    fn current_runner_focus_is_admitted_repeatedly_without_activation() {
+        use crate::contributed_surface::tests::root_text;
+        let (mut sessions, spec, route) = focus_admission_fixture(false);
+        assert!(!apply_route(
+            &mut sessions,
+            Some(&spec),
+            route,
+            Action::Increment
+        ));
+        assert_eq!(sessions.get(spec.id).unwrap().session().focus(), None);
+        for _ in 0..2 {
+            assert!(apply_route(
+                &mut sessions,
+                Some(&spec),
+                route,
+                Action::Focus
+            ));
+            let pane = sessions.get(spec.id).unwrap();
+            assert_eq!(pane.session().focus(), Some(route.node));
+            assert!(root_text(&pane.session().dom(), route.node).contains("count:0"));
+        }
+    }
+
+    #[test]
+    fn test_provider_without_host_effects_still_admits_current_actions() {
+        use crate::contributed_surface::SurfaceRequest;
+        use crate::contributed_surface::tests::root_text;
+        let (mut sessions, spec, route) = focus_admission_fixture(true);
+        let pane = sessions.get_mut(spec.id).unwrap();
+        assert_eq!(
+            pane.accessibility_action(Action::Focus, route.node),
+            Some(SurfaceRequest::None)
+        );
+        assert!(apply_route(
+            &mut sessions,
+            Some(&spec),
+            route,
+            Action::Focus
+        ));
+        assert_eq!(
+            sessions.get(spec.id).unwrap().session().focus(),
+            Some(route.node)
+        );
+        assert!(apply_route(
+            &mut sessions,
+            Some(&spec),
+            route,
+            Action::Click
+        ));
+        let pane = sessions.get(spec.id).unwrap();
+        assert!(root_text(&pane.session().dom(), route.node).contains("count:1"));
+    }
+
+    #[test]
     fn an_unfocused_dom_does_not_invent_focus_and_its_root_uses_the_pane_rect() {
         let (tree, _, focus) = namespace_tree(
             PaneId(3),
+            1,
             "Knot document",
             Rect::new(30.0, 50.0, 400.0, 250.0),
             local_tree().0,

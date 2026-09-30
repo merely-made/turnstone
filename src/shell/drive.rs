@@ -269,6 +269,32 @@ impl taproot::Automatable for Shell {
         f(&surfaces)
     }
 
+    fn selector_target(&self, selector: &taproot::Selector) -> taproot::SelectorTarget {
+        match selector.surface.as_deref() {
+            None => taproot::SelectorTarget::Unsupported,
+            Some("contributed") => match self.contributed_selector(selector) {
+                Ok(target) => target
+                    .point()
+                    .map_or(taproot::SelectorTarget::Miss, |point| {
+                        taproot::SelectorTarget::Hit(taproot::Hit {
+                            surface: "contributed",
+                            point,
+                        })
+                    }),
+                Err(_) => taproot::SelectorTarget::Miss,
+            },
+            Some(_) => taproot::SelectorTarget::Miss,
+        }
+    }
+
+    fn click_target(&mut self, selector: &taproot::Selector) -> Option<bool> {
+        match selector.surface.as_deref() {
+            None => None,
+            Some("contributed") => Some(self.click_contributed(selector)),
+            Some(_) => Some(false),
+        }
+    }
+
     fn text_target(&self, text: &str) -> Result<Option<taproot::TextTarget>, String> {
         let plan = self.surface_plan();
         let mut matches = plan.iter().filter_map(|surface| {
@@ -613,9 +639,8 @@ impl Shell {
             Step::DropFile(x, y, path) => self.drop_file(*x, *y, std::path::Path::new(path)),
             Step::Scroll(x, y, dx, dy) => self.deliver_wheel(*x, *y, *dx, *dy),
             Step::ScrollReader(role, dy) => {
-                let role = super::reader_observe::ReaderAppearanceRole::parse(role).ok_or_else(|| {
-                    format!("scroll-reader: unknown Reader role '{role}'")
-                })?;
+                let role = super::reader_observe::ReaderAppearanceRole::parse(role)
+                    .ok_or_else(|| format!("scroll-reader: unknown Reader role '{role}'"))?;
                 self.scroll_reader_appearance(role, *dy)?;
             }
             Step::Divider(ratio) => self.act(Action::SetActivePaneDivider(*ratio)),
@@ -1046,9 +1071,8 @@ impl Shell {
                 }
             }
             Step::AssertReaderRole(role) => {
-                let role = super::reader_observe::ReaderAppearanceRole::parse(role).ok_or_else(|| {
-                    format!("assert reader-role: unknown Reader role '{role}'")
-                })?;
+                let role = super::reader_observe::ReaderAppearanceRole::parse(role)
+                    .ok_or_else(|| format!("assert reader-role: unknown Reader role '{role}'"))?;
                 let appearances = self.reader_appearance_observations();
                 let count = appearances.iter().filter(|appearance| appearance.role == role).count();
                 if count != 1 {
@@ -1080,9 +1104,8 @@ impl Shell {
                 }
             }
             Step::AssertReaderScroll(role, op, want) => {
-                let role = super::reader_observe::ReaderAppearanceRole::parse(role).ok_or_else(|| {
-                    format!("assert reader-scroll: unknown Reader role '{role}'")
-                })?;
+                let role = super::reader_observe::ReaderAppearanceRole::parse(role)
+                    .ok_or_else(|| format!("assert reader-scroll: unknown Reader role '{role}'"))?;
                 let appearances = self.reader_appearance_observations();
                 let matching = appearances.iter().filter(|appearance| appearance.role == role).collect::<Vec<_>>();
                 let [appearance] = matching.as_slice() else {
@@ -1186,10 +1209,9 @@ impl Shell {
             }
             Step::TouchFile(path) => {
                 let p = std::path::Path::new(path.as_str());
-                std::fs::write(p, "touched\n").map_err(|error| {
-                    format!("touch '{path}': could not write: {error}")
-                })?;
-            }
+                std::fs::write(p, "touched\n")
+                    .map_err(|error| format!("touch '{path}': could not write: {error}"))?;
+            },
         }
         self.request_redraw();
         Ok(())

@@ -429,6 +429,18 @@ mod retained_page_zoom_tests {
 }
 
 impl Shell {
+    /// Refresh only the value-facing projection; diagnostics authority remains
+    /// here, and Gloss reads its own independent immutable batch.
+    pub(super) fn refresh_diagnostic_inspection(&mut self) {
+        let requested = self.app.frisket.iter_leaves().any(|(_, content, _)| {
+            content.composition().is_some_and(|config| {
+                config.sections.iter().any(|id| id == "diagnostics")
+            })
+        });
+        self.app.diagnostic_inspection =
+            requested.then(|| self.diagnostic_observations.inspection());
+    }
+
     /// Hand the app's drained semantic events to their consumers. Navigation
     /// events become trail-memory records for the root persona (owner = the
     /// master public key's hex, the stable key-rooted tag). A bounded described

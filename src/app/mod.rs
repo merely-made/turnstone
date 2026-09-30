@@ -167,6 +167,9 @@ pub struct App {
     /// because suggestion recomputation — the first stage the palette open-lag
     /// note names — happens on App's input edge, outside any frame.
     pub frame_timings: crate::frame_timing::FrameTimings,
+    /// Read-only diagnostic view, refreshed by its Shell owner. This is neither
+    /// the observation store nor durable graph/session data.
+    pub diagnostic_inspection: Option<Result<apparatus::Inspection, String>>,
     /// Shell-owned services projected by chrome: provider registration,
     /// interaction transcript, and configurable chrome policy. It carries no
     /// `Canvas` or platform handle. A2 replaces the fallback context supplied

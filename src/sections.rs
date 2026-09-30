@@ -34,6 +34,9 @@ pub enum SectionActivate {
 /// One row of a composed section: its display text plus what a click does.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct SectionRow {
+    /// Optional producer-scoped identity for read-only inspection semantics.
+    /// The display label and row position are not identities.
+    pub id: Option<String>,
     pub text: String,
     /// `None` renders an inert row (an empty-state hint).
     pub activate: Option<SectionActivate>,
@@ -82,12 +85,45 @@ pub const DOWNLOADS_SECTION: SectionProvider = SectionProvider {
     gather: gather_downloads,
 };
 
+/// Optional read-only diagnostics beside the operational overview. It is not
+/// added to fresh Gloss defaults; section configuration already persists IDs.
+pub const DIAGNOSTICS_SECTION: SectionProvider = SectionProvider {
+    id: "diagnostics",
+    title: "Diagnostics",
+    gather: gather_diagnostics,
+};
+
+fn gather_diagnostics(app: &App) -> Vec<SectionRow> {
+    match &app.diagnostic_inspection {
+        Some(Ok(inspection)) => inspection
+            .lines
+            .iter()
+            .map(|line| SectionRow {
+                id: Some(line.id.clone()),
+                text: line.text.clone(),
+                activate: None,
+            })
+            .collect(),
+        Some(Err(error)) => vec![SectionRow {
+            id: Some("diagnostics/unavailable".into()),
+            text: format!("Diagnostics unavailable: {error}"),
+            activate: None,
+        }],
+        None => vec![SectionRow {
+            id: Some("diagnostics/not-sampled".into()),
+            text: "Diagnostics not sampled yet".into(),
+            activate: None,
+        }],
+    }
+}
+
 /// Every provider, for id lookup (the config resolves an id to its provider).
 pub const ALL: &[SectionProvider] = &[
     RECENT_SECTION,
     REMOVED_SECTION,
     NODES_SECTION,
     DOWNLOADS_SECTION,
+    DIAGNOSTICS_SECTION,
 ];
 
 /// The provider with this id, if any.
@@ -135,6 +171,7 @@ fn gather_downloads(app: &App) -> Vec<SectionRow> {
             Some((
                 received_at_ms,
                 SectionRow {
+                    id: None,
                     text: format!("{title} - {status} - {bytes} bytes - {detail}"),
                     activate: None,
                 },
@@ -151,6 +188,7 @@ fn gather_recent(app: &App) -> Vec<SectionRow> {
         .recent_visited(8)
         .into_iter()
         .map(|rv| SectionRow {
+            id: None,
             text: mere::trail::short_url(&rv.url),
             activate: Some(SectionActivate::Open(rv.url)),
         })
@@ -168,6 +206,7 @@ fn gather_nodes(app: &App) -> Vec<SectionRow> {
                     .node_last_visited(key)
                     .unwrap_or(std::time::SystemTime::UNIX_EPOCH),
                 SectionRow {
+                    id: None,
                     text: graph.node_display_label(key),
                     activate: Some(SectionActivate::Open(url)),
                 },
@@ -186,6 +225,7 @@ fn gather_removed(app: &App) -> Vec<SectionRow> {
         .filter(|r| graph.get_node_key_by_id(r.node_id).is_none())
         .filter(|r| seen.insert(r.node_id))
         .map(|r| SectionRow {
+            id: None,
             // The affordance IS the label, as in the Trail: a Removed row must
             // not read identically to the same url's Recent row, or a
             // text-addressed click cannot tell recover from navigate.
@@ -199,6 +239,31 @@ fn gather_removed(app: &App) -> Vec<SectionRow> {
 mod tests {
     use super::*;
     use crate::action::{RemovedRecord, Update};
+
+    #[test]
+    fn diagnostic_rows_are_optional_read_only_and_preserve_explicit_unavailable_state() {
+        let mut app = App::test_stub();
+        assert_eq!(
+            (DIAGNOSTICS_SECTION.gather)(&app)[0].text,
+            "Diagnostics not sampled yet"
+        );
+        app.diagnostic_inspection = Some(Ok(apparatus::Inspection {
+            lines: vec![apparatus::InspectionLine {
+                id: "record/1".into(),
+                text: "Operation: unavailable; cause: unavailable".into(),
+            }],
+        }));
+        let rows = (DIAGNOSTICS_SECTION.gather)(&app);
+        assert_eq!(rows[0].text, "Operation: unavailable; cause: unavailable");
+        assert!(rows.iter().all(|row| row.activate.is_none()));
+        assert_eq!(resolve(&["downloads".into()])[0].id, "downloads");
+        assert_eq!(resolve(&["diagnostics".into()])[0].id, "diagnostics");
+        app.diagnostic_inspection = Some(Err("invalid diagnostic inspection setting".into()));
+        assert_eq!(
+            (DIAGNOSTICS_SECTION.gather)(&app)[0].text,
+            "Diagnostics unavailable: invalid diagnostic inspection setting"
+        );
+    }
 
     #[test]
     fn by_id_resolves_the_registered_providers() {

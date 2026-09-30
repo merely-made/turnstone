@@ -47,6 +47,7 @@ impl App {
             document_find: crate::document_find::DocumentFindState::default(),
             user_agent_decision: crate::user_agent_decision::UserAgentDecisionState::default(),
             frame_timings: crate::frame_timing::FrameTimings::default(),
+            diagnostic_inspection: None,
             shell: crate::shell_services::ShellServices::default(),
             data_root,
             sessions: pandect::ManifestStore::new(),

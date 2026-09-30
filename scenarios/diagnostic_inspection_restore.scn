@@ -1,0 +1,11 @@
+# Same profile as diagnostic_inspection.scn; fresh observation run.
+settle 30
+assert pane gloss
+assert text Downloads
+assert text Diagnostics
+assert text Retained:
+assert text Coverage: producer-supplied observations
+assert a11y label: Retained:
+assert a11y label: Loss evicted:
+capture 02_diagnostic_inspection_restored
+log Diagnostic section restored with a fresh observation run

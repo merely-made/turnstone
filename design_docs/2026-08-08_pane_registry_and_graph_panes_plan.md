@@ -903,23 +903,27 @@ layout can be shared or reset without changing graph/session truth.
 - This bounded receipt leaves custom-leaf semantic parity, full built-in pane
   selectors, document selection, exact frame correlation and human AT open.
 
-## Next bounded slice: semantic automation for contributed panes, 2026-09-29
+## Qualified bounded slice: semantic automation for contributed panes, 2026-09-30
 
-**Status: future work.** The starting assumption is contributed panes first,
-following the coordinator's recommended scope while the optional scope question
-remains unanswered. The coherent Knot/Woodshed dependency and pane acceptance
-prerequisite is now qualified; source implementation of this semantic slice is
-still future work. This entry does not report semantic adoption.
+**Status: implemented and machine/native qualified.** The coherent combined
+Knot/Woodshed dependency gate and this contributed slice pass. The final workspace
+gate passes 635 tests with nine existing ignores; five exact optional participant
+tests pass separately. Three reviewed native Sky captures prove real scoped
+delivery, including Calculate request 3 held while clipped and delivered after
+scrolling. The helper-level admission refusal regression fails before repair;
+the stale-generation and missing Gloss platform-arm controls fail deliberately
+and exact source restoration passes. See the
+[September 30 consumer receipt](2026-09-29_shared_diagnostics_gloss_inspector_receipt.md#september-30-qualified-consumer-cohort).
 All built-in panes remain a later qualification slice. The shared
 [Mere semantic and diagnostics plan](../../mere/design_docs/mere_docs/implementation_strategy/2026-06-08_system_diagnostics_and_accessibility_plan.md)
 owns projection matching and evidence boundaries.
 
 ### Existing owner seams
 
-`shell/drive.rs::with_surfaces` currently exposes contributed sessions with
+The pre-slice `shell/drive.rs::with_surfaces` exposed contributed sessions with
 `ProbeSurface.name = "contributed"`, their provider-owned DOM and complete
-stylesheet. Shell inherits Taproot's raw role/name matching and a fresh layout
-for resolution. Shipping paint and hit testing instead use `ui.rs::RetainedLayout`.
+stylesheet. Shell inherited Taproot's raw role/name matching and a fresh layout
+for resolution. Shipping paint and hit testing use `ui.rs::RetainedLayout`.
 That distinction can place an automation click incorrectly after pane scrolling.
 
 Contributed panes already expose their same provider DOM and retained fragments
@@ -931,8 +935,8 @@ partial structural outline; neither is covered by this contributed-pane proof.
 
 ### Minimal explicit scope
 
-Propose one optional, generic surface-name filter in Taproot's `Selector`, with
-a builder and a leading `surface:<name>` selector token. For example:
+Taproot's `Selector` now has an optional generic surface-name filter, with
+`.on_surface(...)` and a leading `surface:<name>` selector token. For example:
 
 ```text
 click surface:contributed role:button Reset all controls
@@ -1007,3 +1011,43 @@ the coherent dependency pins. Record the negative-control failures, restore the
 source and rerun the focused gate. This closes only contributed-pane automation
 qualification; built-in pane migration, full document semantics, exact presented
 frame correlation and human AT remain open.
+
+## Next Inspector surface: ownership before semantic routes, 2026-09-30
+
+This is a researched next slice, separate from the contributed/Diagnostics
+qualification cohort. The working recommendation is to bind Clip to the
+displayed document before exposing it through shared semantics; Mark's optional
+scope prompt is pending. It is not a completed implementation or a new ruling.
+
+Inspector already derives its followed graph/member in `inspector_view.rs` and
+owns retained DOM/layout in `inspector_pane.rs`. Viewer radios expose real
+radio roles, names and checked state through Cambium. Reuse that retained
+projection for platform lowering and scoped Taproot selection, with actual
+visible bounds. Read-only handling facts remain non-actionable; missing members,
+sources or endpoints must produce disabled/no-action control state.
+
+Two existing authority gaps precede the route:
+
+- Clip availability uses the followed member, while unit `ClipToKnot` reaches
+  `clip_focused_document_to_knot` and the global cursor. Bind the intent to the
+  displayed member, current content-session admission and exact Knot endpoint
+  admission; revalidate them before reading that member's current clip. Preserve
+  ordinary `DocumentClip`, retained source artifacts and `KnotClipHandle.insert`
+  custody. Matching a URL or endpoint label cannot establish an unchanged source.
+- Viewer sidecars are written against the requested member, but live respawn
+  finds its URL through the active legacy graph. Resolve the owning runtime and
+  reject retired/nonmembers before sidecar or content mutation. Preserve domain
+  `SetViewerOverride` and `SaveSession` authority.
+
+Action tokens need pane, followed context, changed-binding generation, member
+and DOM identity. Removing/recreating the pane, switching A/B/A, replacing a
+source/session or replacing a same-label endpoint must retire old tokens.
+Inspector focus/key delivery is currently absent; advertise keyboard behavior
+only after actual runner focus/key dispatch and intent collection are wired.
+
+Done requires followed A versus cursor B in the same and different graphs,
+pointer/queued AT parity, hidden/disabled/stale controls, deliberately bypassed
+binding guards that fail, and native persisted viewer plus source-bound Clip
+receipts. The displayed A's body/provenance must reach the actual endpoint while
+B and unrelated destination authority remain untouched. Human AT and immutable
+presented-frame observations retain separate gates.

@@ -677,7 +677,7 @@ impl Shell {
         }
     }
 
-    fn contributed_pane_spec(
+    pub(super) fn contributed_pane_spec(
         &self,
         pane_id: crate::panes::PaneId,
         content: Option<&PaneContent>,
@@ -710,6 +710,7 @@ impl Shell {
         if self.host.is_none() {
             return;
         }
+        self.refresh_diagnostic_inspection();
         // Frame cost, off by default (the shell's own filter is `info`). Turn
         // it on with `RUST_LOG=turnstone::shell::render=debug` when a window
         // feels heavy: a frame is the unit that lags, and the surface count

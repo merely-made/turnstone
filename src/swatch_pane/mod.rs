@@ -27,6 +27,7 @@ use cambium::{
     GraphCanvasNode, GraphCanvasSubgraph, GraphCanvasSwatch, graph_canvas,
 };
 use genet_scripted_dom::{NodeId, ScriptedDom};
+use layout_dom_api::LayoutDom;
 use mere::canvas::NodeState;
 use mere::canvas::palette;
 use sprigging::{ColorF, LeafRegistry, RenderedLeaves};
@@ -97,7 +98,7 @@ struct SwatchState {
     viewport_h: f32,
     /// The composed sections (title + rows) rendered below the swatch, gathered
     /// from the preset's providers. Empty for a fill-the-pane swatch.
-    sections: Vec<(&'static str, Vec<crate::sections::SectionRow>)>,
+    sections: Vec<(&'static str, &'static str, Vec<crate::sections::SectionRow>)>,
     /// The swatch area's height (px): the whole pane when there are no
     /// sections, the top fraction when there are. The sections stack below it.
     swatch_h: f32,
@@ -137,7 +138,7 @@ fn swatch_view(state: &SwatchState) -> SwatchView {
     // gloss-composite: the minimap plus, say, the recycle bin's Removed rows).
     if !state.sections.is_empty() {
         let mut section_kids: Vec<SwatchView> = Vec::new();
-        for (title, rows) in &state.sections {
+        for (_id, title, rows) in &state.sections {
             section_kids.push(Box::new(
                 cambium::el::<_, SwatchState, ()>("div", title.to_string()).attr(
                     "style",
@@ -157,27 +158,33 @@ fn swatch_view(state: &SwatchState) -> SwatchView {
                     // rule): the click handler pushes the intent the provider
                     // declared, so a new provider needs no handler code here.
                     // `section-row` is the probe class a receipt addresses.
-                    let activate = row.activate.clone();
+                    let row_view = cambium::el::<_, SwatchState, ()>("div", row.text.clone())
+                        .attr("class", "section-row")
+                        .attr("data-diagnostic-id", row.id.clone().unwrap_or_default())
+                        .attr(
+                            "style",
+                            "color: #c9d1d9; padding: 2px 12px; font-size: 12px;",
+                        );
+                    let Some(activate) = row.activate.clone() else {
+                        // Inspection and other read-only sections install no
+                        // activation handler. Actions remain provider data.
+                        section_kids.push(Box::new(row_view));
+                        continue;
+                    };
                     section_kids.push(Box::new(cambium::on_click(
-                        cambium::el::<_, SwatchState, ()>("div", row.text.clone())
-                            .attr("class", "section-row")
-                            .attr(
-                                "style",
-                                "color: #c9d1d9; padding: 2px 12px; font-size: 12px;",
-                            ),
+                        row_view,
                         move |state: &mut SwatchState, _click: cambium::PointerClick| {
                             match &activate {
-                                Some(crate::sections::SectionActivate::Open(url)) => {
+                                crate::sections::SectionActivate::Open(url) => {
                                     state.pending.push(SwatchIntent::Activate(
                                         SwatchActivate::Open(url.clone()),
                                     ));
-                                }
-                                Some(crate::sections::SectionActivate::Recover(id)) => {
+                                },
+                                crate::sections::SectionActivate::Recover(id) => {
                                     state
                                         .pending
                                         .push(SwatchIntent::Activate(SwatchActivate::Recover(*id)));
-                                }
-                                None => {}
+                                },
                             }
                         },
                     )));
@@ -185,7 +192,9 @@ fn swatch_view(state: &SwatchState) -> SwatchView {
             }
         }
         children.push(Box::new(
-            cambium::el::<_, SwatchState, ()>("div", section_kids).attr(
+            cambium::el::<_, SwatchState, ()>("div", section_kids)
+                .attr("data-diagnostics-region", if state.sections.iter().any(|(id, _, _)| *id == "diagnostics") { "true" } else { "" })
+                .attr(
                 "style",
                 format!(
                     "position: absolute; left: 0px; top: {}px; width: {}px; height: {}px; overflow-y: auto;",
@@ -306,10 +315,10 @@ impl SwatchPane {
 
         // Composed sections shrink the swatch to the top fraction; without
         // them it fills the pane (the Overmap's shape, unchanged).
-        let sections: Vec<(&'static str, Vec<crate::sections::SectionRow>)> = self
+        let sections: Vec<(&'static str, &'static str, Vec<crate::sections::SectionRow>)> = self
             .sections
             .iter()
-            .map(|p| (p.title, (p.gather)(app)))
+            .map(|p| (p.id, p.title, (p.gather)(app)))
             .collect();
         let swatch_h = if sections.is_empty() {
             pane_h
@@ -423,6 +432,91 @@ impl SwatchPane {
         taproot::resolve(&surfaces, sel).map(|h| h.point)
     }
 
+    /// The promoted read-only Diagnostics section, from its producer identities
+    /// and the actual retained visible DOM geometry. Active rows and swatch
+    /// leaves remain outside this subtree and gain no invented actions/focus.
+    pub(crate) fn diagnostic_tree(
+        &self,
+        pane: crate::panes::PaneId,
+        placement: crate::surface::Rect,
+    ) -> Option<uxtree::UxTree> {
+        let rows = self
+            .runner
+            .state()
+            .sections
+            .iter()
+            .find(|(id, _, _)| *id == "diagnostics")?
+            .2
+            .as_slice();
+        let trusted: HashMap<_, _> = rows
+            .iter()
+            .filter_map(|row| Some((row.id.as_deref()?, row.text.as_str())))
+            .collect();
+        let dom = self.dom.borrow();
+        let projection = self.layout.document_projection(&dom, None)?;
+        let namespace = layout_dom_api::Namespace::default();
+        let mut pending = vec![dom.document()];
+        let mut region = None;
+        let mut lines = Vec::new();
+        let mut bounds = HashMap::new();
+        while let Some(node) = pending.pop() {
+            pending.extend(dom.dom_children(node));
+            let Some(visible) = self.layout.visible_rect(&dom, node) else {
+                continue;
+            };
+            let shown = projection
+                .nodes()
+                .iter()
+                .any(|semantic| semantic.id.get() == dom.opaque_id(node) && !semantic.state.hidden);
+            if !shown {
+                continue;
+            }
+            let window_rect = accesskit::Rect::new(
+                f64::from(placement.x + visible.0),
+                f64::from(placement.y + visible.1),
+                f64::from(placement.x + visible.0 + visible.2),
+                f64::from(placement.y + visible.1 + visible.3),
+            );
+            if dom.attribute(node, &namespace, &"data-diagnostics-region".into()) == Some("true") {
+                region = Some(window_rect);
+            }
+            let Some(identity) = dom.attribute(node, &namespace, &"data-diagnostic-id".into())
+            else {
+                continue;
+            };
+            let Some(text) = trusted.get(identity) else {
+                continue;
+            };
+            let id = format!("turnstone/gloss/{}/{}", pane.0, identity);
+            bounds.insert(uxtree::node_id_for_path(&id), window_rect);
+            lines.push(apparatus::InspectionLine {
+                id,
+                text: (*text).to_owned(),
+            });
+        }
+        let region = region?;
+        // DOM traversal uses a stack; restore the producer's stable display order.
+        lines.sort_by_key(|line| {
+            rows.iter().position(|row| {
+                row.id
+                    .as_ref()
+                    .is_some_and(|id| line.id == format!("turnstone/gloss/{}/{}", pane.0, id))
+            })
+        });
+        let mut tree = apparatus::project_inspection(&apparatus::Inspection { lines });
+        let previous_root = tree.root;
+        tree.root = uxtree::node_id_for_path(&format!("turnstone/gloss/{}/diagnostics", pane.0));
+        for (id, semantic) in &mut tree.nodes {
+            if *id == previous_root {
+                *id = tree.root;
+                semantic.set_bounds(region);
+            } else if let Some(rect) = bounds.get(id) {
+                semantic.set_bounds(*rect);
+            }
+        }
+        Some(tree)
+    }
+
     /// Borrow this pane's DOM for the shared driver's `with_surfaces`.
     pub fn dom_ref(&self) -> std::cell::Ref<'_, ScriptedDom> {
         self.dom.borrow()
@@ -507,6 +601,188 @@ mod tests {
         assert!(
             matches!(&intents[..], [SwatchIntent::Activate(SwatchActivate::Open(url))] if *url == key),
             "a node click drains Open for that node's url, got {intents:?}"
+        );
+    }
+
+    fn diagnostic_fixture() -> (SwatchPane, App) {
+        let mut app = App::test_stub();
+        app.diagnostic_inspection = Some(Ok(apparatus::Inspection {
+            lines: (0..30)
+                .map(|index| apparatus::InspectionLine {
+                    id: format!("apparatus/fixture/record/{index}"),
+                    text: format!("Diagnostic record {index}"),
+                })
+                .collect(),
+        }));
+        let mut pane = SwatchPane::new(GLOSS_MINIMAP);
+        pane.set_sections(vec![crate::sections::DIAGNOSTICS_SECTION]);
+        pane.sync(&app, 480.0, 400.0);
+        pane.scene(480, 400);
+        (pane, app)
+    }
+
+    fn diagnostic_dom_node(pane: &SwatchPane, identity: &str) -> NodeId {
+        let dom = pane.dom.borrow();
+        let mut pending = vec![dom.document()];
+        while let Some(node) = pending.pop() {
+            pending.extend(dom.dom_children(node));
+            if dom.attribute(node, &Default::default(), &"data-diagnostic-id".into())
+                == Some(identity)
+            {
+                return node;
+            }
+        }
+        panic!("missing diagnostic DOM row {identity}");
+    }
+
+    #[test]
+    fn diagnostic_rows_keep_producer_identity_and_retained_bounds_without_activation() {
+        let (mut pane, mut app) = diagnostic_fixture();
+        let placement = crate::surface::Rect::new(100.0, 40.0, 480.0, 400.0);
+        let id = uxtree::node_id_for_path("turnstone/gloss/7/apparatus/fixture/record/0");
+        let tree = pane
+            .diagnostic_tree(crate::panes::PaneId(7), placement)
+            .unwrap();
+        let (_, row) = tree
+            .nodes
+            .iter()
+            .find(|(candidate, _)| *candidate == id)
+            .unwrap();
+        assert_eq!(row.label(), Some("Diagnostic record 0"));
+        assert!(tree.nodes.iter().all(|(_, node)| {
+            !node.supports_action(accesskit::Action::Click)
+                && !node.supports_action(accesskit::Action::Focus)
+        }));
+        let dom_node = diagnostic_dom_node(&pane, "apparatus/fixture/record/0");
+        let visible = pane
+            .layout
+            .visible_rect(&pane.dom.borrow(), dom_node)
+            .unwrap();
+        assert_eq!(
+            row.bounds(),
+            Some(accesskit::Rect::new(
+                f64::from(placement.x + visible.0),
+                f64::from(placement.y + visible.1),
+                f64::from(placement.x + visible.0 + visible.2),
+                f64::from(placement.y + visible.1 + visible.3),
+            ))
+        );
+        assert!(
+            pane.click(
+                visible.0 + visible.2 / 2.0,
+                visible.1 + visible.3 / 2.0,
+                480,
+                400
+            )
+            .is_empty()
+        );
+        let Some(Ok(inspection)) = app.diagnostic_inspection.as_mut() else {
+            unreachable!()
+        };
+        inspection.lines[0].text = "Diagnostic record updated".into();
+        inspection.lines.insert(
+            0,
+            apparatus::InspectionLine {
+                id: "apparatus/fixture/new".into(),
+                text: "New earlier row".into(),
+            },
+        );
+        pane.sync(&app, 480.0, 400.0);
+        pane.scene(480, 400);
+        let updated = pane
+            .diagnostic_tree(crate::panes::PaneId(7), placement)
+            .unwrap();
+        assert_eq!(
+            updated
+                .nodes
+                .iter()
+                .find(|(candidate, _)| *candidate == id)
+                .unwrap()
+                .1
+                .label(),
+            Some("Diagnostic record updated")
+        );
+        let another = pane
+            .diagnostic_tree(crate::panes::PaneId(8), placement)
+            .unwrap();
+        assert!(
+            !another.nodes.iter().any(|(candidate, _)| *candidate == id),
+            "pane identity scopes shared inspection rows"
+        );
+    }
+
+    #[test]
+    fn diagnostic_subtree_omits_clipped_hidden_and_removed_rows() {
+        use layout_dom_api::{LayoutDomMut, QualName};
+        let (mut pane, _app) = diagnostic_fixture();
+        let placement = crate::surface::Rect::new(0.0, 0.0, 480.0, 400.0);
+        let id = uxtree::node_id_for_path("turnstone/gloss/7/apparatus/fixture/record/0");
+        let tree = pane
+            .diagnostic_tree(crate::panes::PaneId(7), placement)
+            .unwrap();
+        let clipped = uxtree::node_id_for_path("turnstone/gloss/7/apparatus/fixture/record/29");
+        assert!(
+            !tree
+                .nodes
+                .iter()
+                .any(|(candidate, _)| *candidate == clipped),
+            "the below-container row is absent, not assigned invented bounds"
+        );
+        let root_bounds = tree
+            .nodes
+            .iter()
+            .find(|(candidate, _)| *candidate == tree.root)
+            .unwrap()
+            .1
+            .bounds()
+            .unwrap();
+        let dom_node = diagnostic_dom_node(&pane, "apparatus/fixture/record/0");
+        pane.dom.borrow_mut().set_attribute(
+            dom_node,
+            QualName::new(None, "".into(), "style".into()),
+            &format!(
+                "position:absolute;left:0;top:{}px;width:150px;height:20px;padding:0",
+                root_bounds.height() - 5.0
+            ),
+        );
+        pane.scene(480, 400);
+        let partial = pane
+            .diagnostic_tree(crate::panes::PaneId(7), placement)
+            .unwrap();
+        let bounds = partial
+            .nodes
+            .iter()
+            .find(|(candidate, _)| *candidate == id)
+            .unwrap()
+            .1
+            .bounds()
+            .unwrap();
+        assert!(
+            bounds.height() > 0.0 && bounds.height() < 20.0,
+            "ancestor clipping supplies the actual visible part: {bounds:?}"
+        );
+        pane.dom.borrow_mut().set_attribute(
+            dom_node,
+            QualName::new(None, "".into(), "aria-hidden".into()),
+            "true",
+        );
+        pane.scene(480, 400);
+        assert!(
+            !pane
+                .diagnostic_tree(crate::panes::PaneId(7), placement)
+                .unwrap()
+                .nodes
+                .iter()
+                .any(|(candidate, _)| *candidate == id)
+        );
+        pane.set_sections(Vec::new());
+        let app = App::test_stub();
+        pane.sync(&app, 480.0, 400.0);
+        pane.scene(480, 400);
+        assert!(
+            pane.diagnostic_tree(crate::panes::PaneId(7), placement)
+                .is_none(),
+            "removing the section retires the whole subtree"
         );
     }
 

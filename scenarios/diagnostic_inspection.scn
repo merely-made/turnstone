@@ -1,0 +1,23 @@
+# Fresh profile. Shared inspection is optional and read-only.
+settle 30
+key escape
+open mere://diagnostic-inspection
+settle 10
+act Open Gloss pane
+settle 10
+assert pane gloss
+assert text Downloads
+act Gloss: add section — Diagnostics
+settle 5
+act Gloss: move section up — Diagnostics
+settle 5
+assert text Diagnostics
+assert text Retained:
+assert text Loss evicted:
+assert text Coverage: producer-supplied observations
+assert a11y label: Retained:
+assert a11y label: Loss evicted:
+capture 01_diagnostic_inspection
+act Save session
+settle 10
+log Shared diagnostic inspection configured and saved

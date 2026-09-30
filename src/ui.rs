@@ -1447,6 +1447,76 @@ where
     ))
 }
 
+type NodeRect = (f32, f32, f32, f32);
+
+fn intersect_rect(a: NodeRect, b: NodeRect) -> Option<NodeRect> {
+    let left = a.0.max(b.0);
+    let top = a.1.max(b.1);
+    let right = (a.0 + a.2).min(b.0 + b.2);
+    let bottom = (a.1 + a.3).min(b.1 + b.3);
+    (right > left && bottom > top).then_some((left, top, right - left, bottom - top))
+}
+
+/// Same inner-border clip used by the owned Cambium paint geometry. Turnstone
+/// retains its own fragments, so this reads those fragments rather than creating
+/// another OwnedLayout with a separate cascade or font ledger.
+fn snapshot_visible_rect<D>(
+    dom: &D,
+    snapshot: &LiverySnapshot<D::NodeId>,
+    node: D::NodeId,
+    element_scroll: &HashMap<D::NodeId, (f32, f32)>,
+    viewport_scroll: (f32, f32),
+    viewport: (u32, u32),
+) -> Option<NodeRect>
+where
+    D: LayoutDom,
+    D::NodeId: Copy + Eq + Hash,
+{
+    if snapshot
+        .styles
+        .computed_style(node, "visibility")
+        .is_some_and(|value| matches!(value.as_str(), "hidden" | "collapse"))
+    {
+        return None;
+    }
+    let mut rect = snapshot_node_rect(dom, snapshot, node, element_scroll, viewport_scroll)?;
+    let mut ancestor = dom.parent(node);
+    while let Some(parent) = ancestor {
+        // Genet's paint policy clips the inner border box on both axes when either
+        // overflow axis clips. Keep semantic visibility aligned with that policy.
+        let clips = |property| {
+            snapshot
+                .styles
+                .computed_style(parent, property)
+                .is_some_and(|value| value != "visible")
+        };
+        if clips("overflow-x") || clips("overflow-y") {
+            let (x, y, width, height) =
+                snapshot_node_rect(dom, snapshot, parent, element_scroll, viewport_scroll)?;
+            let px = |property| {
+                snapshot
+                    .styles
+                    .computed_style(parent, property)
+                    .and_then(|value| value.strip_suffix("px").and_then(|v| v.parse::<f32>().ok()))
+                    .unwrap_or_default()
+            };
+            let (left, right) = (px("border-left-width"), px("border-right-width"));
+            let (top, bottom) = (px("border-top-width"), px("border-bottom-width"));
+            rect = intersect_rect(
+                rect,
+                (
+                    x + left,
+                    y + top,
+                    (width - left - right).max(0.0),
+                    (height - top - bottom).max(0.0),
+                ),
+            )?;
+        }
+        ancestor = dom.parent(parent);
+    }
+    intersect_rect(rect, (0.0, 0.0, viewport.0 as f32, viewport.1 as f32))
+}
+
 fn snapshot_hit_test<D>(
     dom: &D,
     snapshot: &LiverySnapshot<D::NodeId>,
@@ -1454,6 +1524,7 @@ fn snapshot_hit_test<D>(
     y: f32,
     element_scroll: &HashMap<D::NodeId, (f32, f32)>,
     viewport_scroll: (f32, f32),
+    viewport: (u32, u32),
 ) -> Option<D::NodeId>
 where
     D: LayoutDom,
@@ -1464,9 +1535,14 @@ where
         if dom.kind(node) != NodeKind::Element {
             return;
         }
-        let Some((left, top, width, height)) =
-            snapshot_node_rect(dom, snapshot, node, element_scroll, viewport_scroll)
-        else {
+        let Some((left, top, width, height)) = snapshot_visible_rect(
+            dom,
+            snapshot,
+            node,
+            element_scroll,
+            viewport_scroll,
+            viewport,
+        ) else {
             return;
         };
         if x >= left && x <= left + width && y >= top && y <= top + height {
@@ -1574,44 +1650,111 @@ impl RetainedLayout {
         self.rebuilds
     }
 
-    /// Project the exact retained DOM and fragment snapshot last painted by
-    /// this pane into AccessKit. The returned action map keeps DOM identity
-    /// outside the platform tree, where the host can namespace node ids
-    /// without losing the session target an assistive action names.
+    /// Owner-computed semantics from the retained fragments used by paint.
+    /// Revision zero deliberately makes no immutable presented-frame claim.
+    pub fn document_projection(
+        &self,
+        dom: &ScriptedDom,
+        focus: Option<DomNodeId>,
+    ) -> Option<document_session_api::DocumentA11yProjection> {
+        use document_session_api::{DocumentA11yBounds, DocumentA11yProjection};
+        let snapshot = self.snapshot.as_ref()?;
+        let projected = genet_render::document_a11y_projection(dom, &snapshot.fragments, focus, 0);
+        let mut nodes = projected.nodes().to_vec();
+        walk_dom(dom, dom.document(), &mut |node| {
+            let Some(semantic) = nodes
+                .iter_mut()
+                .find(|candidate| candidate.id.get() == dom.opaque_id(node))
+            else {
+                return;
+            };
+            semantic.state.hidden |= snapshot
+                .styles
+                .computed_style(node, "visibility")
+                .is_some_and(|value| matches!(value.as_str(), "hidden" | "collapse"));
+            semantic.bounds =
+                self.painted_rect(dom, node)
+                    .map(|(x, y, width, height)| DocumentA11yBounds {
+                        x,
+                        y,
+                        width,
+                        height,
+                    });
+        });
+        Some(DocumentA11yProjection::new(
+            projected.revision(),
+            projected.support().clone(),
+            projected.root(),
+            nodes,
+        ))
+    }
+
+    /// AccessKit lowers this same neutral observation, including corrected
+    /// retained bounds. Local DOM identity remains outside the platform tree.
     pub fn accessibility_tree(
         &self,
         dom: &ScriptedDom,
         focus: Option<DomNodeId>,
     ) -> Option<(accesskit::TreeUpdate, HashMap<accesskit::NodeId, DomNodeId>)> {
-        let snapshot = self.snapshot.as_ref()?;
-        let mut tree = genet_render::accesskit_tree(dom, &snapshot.fragments, focus);
+        let projected = self.document_projection(dom, focus)?;
         let mut action_map = HashMap::new();
         walk_dom(dom, dom.document(), &mut |node| {
-            let id = accesskit::NodeId(dom.opaque_id(node));
-            action_map.insert(id, node);
-            let Some((x, y, width, height)) = snapshot_node_rect(
-                dom,
-                snapshot,
-                node,
-                &self.element_scroll,
-                self.viewport_scroll,
-            ) else {
-                return;
-            };
-            if let Some((_, projected)) = tree
-                .nodes
-                .iter_mut()
-                .find(|(candidate, _)| *candidate == id)
+            let id = dom.opaque_id(node);
+            if projected
+                .nodes()
+                .iter()
+                .any(|semantic| semantic.id.get() == id)
             {
-                projected.set_bounds(accesskit::Rect::new(
-                    x as f64,
-                    y as f64,
-                    (x + width) as f64,
-                    (y + height) as f64,
-                ));
+                action_map.insert(accesskit::NodeId(id), node);
             }
         });
-        Some((tree, action_map))
+        Some((
+            genet_render::accesskit_tree_from_projection(projected),
+            action_map,
+        ))
+    }
+
+    pub fn painted_rect(&self, dom: &ScriptedDom, node: DomNodeId) -> Option<NodeRect> {
+        snapshot_node_rect(
+            dom,
+            self.snapshot.as_ref()?,
+            node,
+            &self.element_scroll,
+            self.viewport_scroll,
+        )
+    }
+
+    pub fn visible_rect(&self, dom: &ScriptedDom, node: DomNodeId) -> Option<NodeRect> {
+        snapshot_visible_rect(
+            dom,
+            self.snapshot.as_ref()?,
+            node,
+            &self.element_scroll,
+            self.viewport_scroll,
+            self.size,
+        )
+    }
+
+    /// Request the nearest viewport movement; the next paint clamps it and
+    /// supplies a new visible rectangle. Ancestor clips remain authoritative:
+    /// moving the viewport cannot make a hidden nested target clickable.
+    pub fn reveal(&self, dom: &ScriptedDom, node: DomNodeId, scroll: &mut PaneScroll) -> bool {
+        let Some((x, y, width, height)) = self.painted_rect(dom, node) else {
+            return false;
+        };
+        let nearest = |start: f32, length: f32, extent: f32| {
+            if start < 0.0 {
+                start
+            } else if start + length > extent {
+                (start + length - extent).min(start)
+            } else {
+                0.0
+            }
+        };
+        let dx = nearest(x, width, self.size.0 as f32);
+        let dy = nearest(y, height, self.size.1 as f32);
+        scroll.nudge(dx, dy);
+        true
     }
 
     /// Bring the retained layout up to date for this frame.
@@ -1790,6 +1933,7 @@ impl RetainedLayout {
             y,
             &self.element_scroll,
             self.viewport_scroll,
+            (w, h),
         )
     }
 
@@ -1820,6 +1964,7 @@ impl RetainedLayout {
             y,
             &self.element_scroll,
             self.viewport_scroll,
+            (w, h),
         )
     }
 }
@@ -1885,7 +2030,7 @@ pub fn hit_test_scrolled(
 ) -> Option<DomNodeId> {
     let snapshot = build_livery_snapshot(dom, sheet, w, h, TextSystem::new());
     let offset = clamp_scroll(scroll.offset, snapshot.content_extent, (w, h));
-    snapshot_hit_test(dom, &snapshot, x, y, &HashMap::new(), offset)
+    snapshot_hit_test(dom, &snapshot, x, y, &HashMap::new(), offset, (w, h))
 }
 
 /// **One-shot.** This builds a layout, uses it once and drops it, which is
@@ -1925,7 +2070,7 @@ pub(crate) fn hit_test(
     y: f32,
 ) -> Option<DomNodeId> {
     let snapshot = build_livery_snapshot(dom, sheet, w, h, TextSystem::new());
-    snapshot_hit_test(dom, &snapshot, x, y, &HashMap::new(), (0.0, 0.0))
+    snapshot_hit_test(dom, &snapshot, x, y, &HashMap::new(), (0.0, 0.0), (w, h))
 }
 
 /// A borrowed DOM view re-rooted at one window root. This remains a host
@@ -2133,6 +2278,7 @@ impl RetainedSubtreeLayout {
             y,
             &HashMap::new(),
             (0.0, 0.0),
+            (w, h),
         )
     }
 }
@@ -2757,6 +2903,95 @@ mod retained_layout_tests {
             scroll.offset(),
             settled,
             "and the rebuild carried the offset across"
+        );
+    }
+}
+
+#[cfg(test)]
+mod contributed_projection_tests {
+    use super::*;
+
+    #[test]
+    fn retained_semantics_bounds_and_pointer_visibility_share_ancestor_clips() {
+        let mut dom = ScriptedDom::new();
+        let document = dom.document();
+        dom.set_inner_html(
+            document,
+            r#"<div class="clip"><button>Clipped control</button></div>"#,
+        );
+        let sheet = ".clip { position:absolute; left:20px; top:20px; width:80px; height:40px; border:4px solid red; overflow:hidden; transform:translate(10px,5px); } button { position:absolute; left:30px; top:30px; width:80px; height:30px; padding:0; border:0; }";
+        let mut layout = RetainedLayout::new();
+        let _ = layout.scene(&mut dom, sheet, 200, 120);
+        let button = taproot::matching(&dom, &taproot::Selector::role("button"))[0];
+        let painted = layout.painted_rect(&dom, button).unwrap();
+        let visible = layout.visible_rect(&dom, button).unwrap();
+        assert!(
+            visible.2 < painted.2 && visible.3 < painted.3,
+            "ancestor clips the control"
+        );
+        let projection = layout.document_projection(&dom, None).unwrap();
+        let node = projection
+            .nodes()
+            .iter()
+            .find(|node| node.id.get() == dom.opaque_id(button))
+            .unwrap();
+        let bounds = node.bounds.unwrap();
+        assert_eq!((bounds.x, bounds.y, bounds.width, bounds.height), painted);
+        let (tree, _) = layout.accessibility_tree(&dom, None).unwrap();
+        let access = tree
+            .nodes
+            .iter()
+            .find(|(id, _)| id.0 == dom.opaque_id(button))
+            .unwrap();
+        assert_eq!(
+            access.1.bounds().unwrap(),
+            accesskit::Rect::new(
+                painted.0 as f64,
+                painted.1 as f64,
+                (painted.0 + painted.2) as f64,
+                (painted.1 + painted.3) as f64
+            )
+        );
+        let outside = (painted.0 + painted.2 - 1.0, painted.1 + painted.3 - 1.0);
+        assert_ne!(
+            layout.hit_test(&mut dom, sheet, 200, 120, outside.0, outside.1),
+            Some(button)
+        );
+        assert_eq!(
+            layout.hit_test(
+                &mut dom,
+                sheet,
+                200,
+                120,
+                visible.0 + visible.2 / 2.0,
+                visible.1 + visible.3 / 2.0
+            ),
+            Some(button)
+        );
+    }
+
+    #[test]
+    fn css_hidden_control_is_an_authoritative_semantic_and_visible_miss() {
+        let mut dom = ScriptedDom::new();
+        let document = dom.document();
+        dom.set_inner_html(document, "<button>Hidden control</button>");
+        let mut layout = RetainedLayout::new();
+        let _ = layout.scene(
+            &mut dom,
+            "button { visibility:hidden; width:80px; height:30px; }",
+            200,
+            120,
+        );
+        let button = taproot::matching(&dom, &taproot::Selector::role("button"))[0];
+        assert!(layout.visible_rect(&dom, button).is_none());
+        let projection = layout.document_projection(&dom, None).unwrap();
+        assert!(
+            taproot::matching_with_projection(
+                &dom,
+                &taproot::Selector::role("button").containing("Hidden control"),
+                &projection
+            )
+            .is_empty()
         );
     }
 }

@@ -6,8 +6,8 @@
 
 use crate::observe::AppEvent;
 use apparatus::{
-    Batch, Cursor, ObservationMetadata, ObservationStore, RetentionLimits, RunId, SourceId,
-    StoreStats,
+    Batch, Cursor, Inspection, InspectionLimits, ObservationMetadata, ObservationStore,
+    RetentionLimits, RunId, SourceId, StoreStats, inspect_batch,
 };
 use std::{
     path::Path,
@@ -80,6 +80,27 @@ pub struct DiagnosticObservations {
     store: ObservationStore<EventCategory>,
     started: Instant,
     failure: Option<&'static str>,
+    inspection_limits: Result<InspectionLimits, &'static str>,
+}
+
+pub fn inspection_limits_from(
+    mut lookup: impl FnMut(&str) -> Option<String>,
+) -> Result<InspectionLimits, &'static str> {
+    fn value(
+        lookup: &mut impl FnMut(&str) -> Option<String>,
+        key: &str,
+        fallback: usize,
+    ) -> Result<usize, &'static str> {
+        lookup(key).map_or(Ok(fallback), |text| {
+            text.parse()
+                .map_err(|_| "invalid diagnostic inspection setting")
+        })
+    }
+    Ok(InspectionLimits {
+        max_records: value(&mut lookup, "TURNSTONE_DIAGNOSTIC_VIEW_RECORDS", 16)?,
+        max_gaps: value(&mut lookup, "TURNSTONE_DIAGNOSTIC_VIEW_GAPS", 4)?,
+        max_text_chars: value(&mut lookup, "TURNSTONE_DIAGNOSTIC_VIEW_CHARS", 256)?,
+    })
 }
 
 impl DiagnosticObservations {
@@ -88,6 +109,7 @@ impl DiagnosticObservations {
             store: ObservationStore::new(run, SourceId::from("turnstone.app-event-fanout"), limits),
             started: Instant::now(),
             failure: None,
+            inspection_limits: inspection_limits_from(|_| None),
         }
     }
 
@@ -102,7 +124,25 @@ impl DiagnosticObservations {
             }),
         );
         observations.failure = limits.err();
+        observations.inspection_limits = inspection_limits_from(|key| std::env::var(key).ok());
         observations
+    }
+
+    /// Independent read for the optional Gloss section. It neither consumes the
+    /// receipt cursor nor formats raw AppEvent fields, and enforces age on reads.
+    pub fn inspection(&mut self) -> Result<Inspection, String> {
+        if let Some(failure) = self.failure {
+            return Err(failure.to_owned());
+        }
+        let display = self.inspection_limits.map_err(str::to_owned)?;
+        let retention = self.store.limits();
+        let mut cursor = self.cursor();
+        let batch = self
+            .read(&mut cursor, retention.max_records.max(1))
+            .map_err(|_| "diagnostic inspection read failed".to_owned())?;
+        Ok(inspect_batch(&batch, retention, display, |payload| {
+            payload.kind
+        }))
     }
 
     pub fn record(&mut self, event: &AppEvent) {
@@ -183,6 +223,86 @@ impl DiagnosticObservations {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn inspection_keeps_loss_redaction_and_receipt_reader_independent() {
+        let mut observed = DiagnosticObservations::new(RunId::from("inspection"), limits(1));
+        let mut receipt = observed.cursor();
+        observed.record(&AppEvent::AddressOpened(
+            "https://secret.test/?token=secret".into(),
+        ));
+        observed.record(&AppEvent::WindowClosed);
+        let inspection = observed.inspection().unwrap();
+        let texts = inspection
+            .lines
+            .iter()
+            .map(|row| row.text.as_str())
+            .collect::<Vec<_>>()
+            .join("\n");
+        assert!(texts.contains("Loss evicted: 1"));
+        assert!(texts.contains("Unavailable records: [1, 2)"));
+        assert!(texts.contains("#2: window-closed"));
+        assert!(texts.contains("Operation: unavailable"));
+        assert!(!texts.contains("secret"));
+        let batch = observed.read(&mut receipt, 1).unwrap();
+        assert_eq!(batch.records[0].envelope.reference.sequence, 2);
+        assert_eq!(batch.gaps[0].first_sequence, 1);
+    }
+    #[test]
+    fn inspection_age_and_disabled_status_are_actual_store_readings() {
+        let mut expired = DiagnosticObservations::new(
+            RunId::from("age"),
+            RetentionLimits {
+                max_age: Duration::from_secs(1),
+                ..limits(1)
+            },
+        );
+        expired.record(&AppEvent::WindowOpened);
+        expired.started = Instant::now() - Duration::from_secs(2);
+        let inspection = expired.inspection().unwrap();
+        assert!(
+            inspection
+                .lines
+                .iter()
+                .any(|row| row.text == "Loss expired: 1")
+        );
+        assert!(
+            inspection
+                .lines
+                .iter()
+                .any(|row| row.text == "Retained: 0 records, 0 accounted bytes")
+        );
+        let mut disabled = DiagnosticObservations::new(RunId::from("disabled-view"), limits(0));
+        disabled.record(&AppEvent::WindowOpened);
+        assert!(
+            disabled
+                .inspection()
+                .unwrap()
+                .lines
+                .iter()
+                .any(|row| row.text == "Retention disabled")
+        );
+    }
+    #[test]
+    fn inspection_settings_are_independent_of_retention() {
+        let display = inspection_limits_from(|key| {
+            (key == "TURNSTONE_DIAGNOSTIC_VIEW_RECORDS").then(|| "0".into())
+        })
+        .unwrap();
+        assert_eq!(display.max_records, 0);
+        assert!(inspection_limits_from(|_| Some("invalid".into())).is_err());
+        let mut observed = DiagnosticObservations::new(RunId::from("view-budget"), limits(1));
+        observed.inspection_limits = Ok(display);
+        observed.record(&AppEvent::WindowOpened);
+        assert!(
+            !observed
+                .inspection()
+                .unwrap()
+                .lines
+                .iter()
+                .any(|row| row.text.starts_with('#'))
+        );
+        assert_eq!(observed.stats().unwrap().retained_records, 1);
+    }
     fn limits(count: usize) -> RetentionLimits {
         RetentionLimits {
             max_records: count,

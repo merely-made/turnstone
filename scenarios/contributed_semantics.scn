@@ -1,0 +1,23 @@
+# Real Sky provider: scoped role/name matching, native wrapping-label field,
+# held below-fold Calculate click and following-step observation of its result.
+settle 30
+key escape
+act Open Sky reference
+settle 30
+act Maximize pane
+settle 10
+assert snap panes ~ turnstone.sky
+assert text Applied: 2024-04-08 in America/New_York at Boston reference observer
+capture 01_sky_before_scoped_click
+click surface:contributed role:button Next day
+assert text Applied: 2024-04-09 in America/New_York at Boston reference observer
+assert text Receipt 74883b5db9fa959cccdeb69744da4a99baec5bfd55bade77426cfe6b0d9c450f
+click surface:contributed role:textbox Observer label
+key end
+insert -scoped
+capture 02_sky_observer_draft
+click surface:contributed role:button Calculate
+assert text Applied: 2024-04-09 in America/New_York at Boston reference observer-scoped
+assert text Calculated receipt
+capture 03_sky_calculated
+log Scoped contributed selectors applied the real Sky draft after retained scrolling

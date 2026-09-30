@@ -10,6 +10,7 @@
 //! effect runner. The only module that touches a platform API; everything it
 //! learns flows back through the spine.
 
+mod contributed_automation;
 mod drive;
 mod effects;
 mod events;
@@ -307,6 +308,8 @@ pub struct Shell {
     /// on `self` (the scenario is taken out during a tick) so `capture` can reach
     /// it. `shared_done` guards writing the sentinel exactly once.
     shared_scenario: Option<taproot::Scenario>,
+    held_contributed_click: Option<contributed_automation::HeldClick>,
+    contributed_click_request: u64,
     /// A bounded copy of semantic events after their ordinary consumers have
     /// received them. Automation drains this copy, so its assertions do not
     /// compete with trail memory for the app's one event stream.
@@ -706,6 +709,8 @@ impl Shell {
             alt: false,
             shift: false,
             shared_scenario: shared_scenario_from_env(),
+            held_contributed_click: None,
+            contributed_click_request: 0,
             observed_events: VecDeque::with_capacity(128),
             diagnostic_observations: crate::diagnostic_observations::DiagnosticObservations::from_env(),
             shared_out_dir: shared_out_dir_from_env(),
@@ -1372,13 +1377,24 @@ impl Shell {
             focused_pane,
         );
         let contributed_focus = contributed.focus;
+        let mut trees = contributed.trees;
+        for (&pane, &rect) in &pane_rects {
+            if matches!(self.pane_content(pane), Some(PaneContent::Gloss(config))
+                if config.sections.iter().any(|id| id == "diagnostics"))
+                && let Some(tree) = self.renderers.gloss.get(&pane)
+                    .and_then(|surface| surface.diagnostic_tree(pane, rect))
+            {
+                trees.insert(pane, tree);
+            }
+        }
         let (tree, mut routes) =
-            crate::a11y::project_app_with_routes_and_contributions(&self.app, contributed.trees);
+            crate::a11y::project_app_with_routes_and_contributions(&self.app, trees);
         routes.extend(contributed.routes.into_iter().map(|(id, route)| {
             (
                 id,
                 crate::a11y::A11yRoute::Contributed {
                     pane: route.pane,
+                    generation: route.generation,
                     node: route.node,
                 },
             )
@@ -1449,14 +1465,21 @@ impl Shell {
                 continue;
             }
             let route = self.a11y_routes.get(&request.target_node).cloned();
-            if let Some(crate::a11y::A11yRoute::Contributed { pane, node }) = route.as_ref() {
-                let (pane, node) = (*pane, *node);
-                let landed = if let Some(surface) = self.renderers.contributed.get_mut(pane) {
-                    surface.accessibility_action(request.action, node);
-                    true
-                } else {
-                    false
-                };
+            if let Some(crate::a11y::A11yRoute::Contributed {
+                pane,
+                generation,
+                node,
+            }) = route.as_ref()
+            {
+                let (pane, generation, node) = (*pane, *generation, *node);
+                let current_spec =
+                    self.contributed_pane_spec(pane, self.pane_content(pane).as_ref());
+                let landed = crate::contributed_a11y::apply_route(
+                    &mut self.renderers.contributed,
+                    current_spec.as_ref(),
+                    crate::contributed_a11y::ContributedA11yRoute { pane, generation, node },
+                    request.action,
+                );
                 if !landed {
                     self.app.note(crate::observe::AppEvent::InteractionMissed {
                         what: "a11y-action",
@@ -1552,6 +1575,22 @@ impl Shell {
         // put it back — or, on Done, write the `scenario.done` sentinel in
         // turnstone's format and exit. Mutually exclusive with the turnstone driver.
         if let Some(mut shared) = self.shared_scenario.take() {
+            match self.finish_contributed_click() {
+                Ok(true) => {
+                    self.shared_scenario = Some(shared);
+                    self.request_redraw();
+                    return;
+                },
+                Err(error) => {
+                    let mut outcome = shared.finish();
+                    outcome.ok = false;
+                    outcome.log.push(format!("scoped click failed: {error}"));
+                    self.write_shared_done(&outcome);
+                    event_loop.exit();
+                    return;
+                },
+                Ok(false) => {},
+            }
             use taproot::Progress;
             match shared.tick(self) {
                 Progress::Done => {

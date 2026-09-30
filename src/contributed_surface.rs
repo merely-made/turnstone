@@ -19,10 +19,10 @@ use cambium::{
     PointerClick, PointerEvent, PointerPhase, ResolvedSurfaceEvent, RetainedSurfaceSession,
     RunnerSurfaceSession, SurfaceEffect, SurfaceViewport, View, WheelEvent, el,
 };
+use genet_scripted_dom::{NodeId, ScriptedDom};
 use mere_surface_api::{
     SurfaceAvailability, SurfaceDescriptor, SurfaceId, SurfaceSourceShape, SurfaceUnavailableReason,
 };
-use genet_scripted_dom::{NodeId, ScriptedDom};
 
 use crate::panes::{PaneId, PaneKindId, PaneSource, PaneSpec, SourceRef, SourceSchemaId};
 use crate::ui::{PaneScroll, RetainedLayout};
@@ -43,6 +43,9 @@ pub enum SurfaceRequest {
 /// Why a provider could not be admitted for a pane/source pair.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum SurfaceAdmissionError {
+    /// The process-local admission identity space is exhausted. Never wrap and
+    /// accidentally authorize a target from an older retained session.
+    GenerationExhausted,
     /// No registered provider accepts the requested pane kind and source.
     ProviderNotFound {
         pane_kind: PaneKindId,
@@ -66,6 +69,7 @@ pub enum SurfaceAdmissionError {
 impl fmt::Display for SurfaceAdmissionError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
+            Self::GenerationExhausted => write!(f, "contributed admission generation exhausted"),
             Self::ProviderNotFound {
                 pane_kind,
                 source_schema,
@@ -329,6 +333,7 @@ fn unavailable_surface_session(
 
 /// A single admitted retained surface projected into a Turnstone pane.
 pub struct ContributedSurfacePane {
+    generation: u64,
     pane_kind: PaneKindId,
     source: PaneSource,
     /// The admitted session's retained DOM, kept beside the erased session so
@@ -352,6 +357,7 @@ impl ContributedSurfacePane {
     ) -> Self {
         let dom = session.dom();
         Self {
+            generation: 0,
             pane_kind,
             source,
             dom,
@@ -367,6 +373,30 @@ impl ContributedSurfacePane {
             viewport: (0, 0, 1.0),
             hover: None,
         }
+    }
+
+    pub(crate) fn generation(&self) -> u64 {
+        self.generation
+    }
+
+    pub(crate) fn document_projection(
+        &self,
+    ) -> Option<document_session_api::DocumentA11yProjection> {
+        self.layout
+            .document_projection(&self.dom.borrow(), self.session.focus())
+    }
+
+    pub(crate) fn painted_rect(&self, node: NodeId) -> Option<(f32, f32, f32, f32)> {
+        self.layout.painted_rect(&self.dom.borrow(), node)
+    }
+
+    pub(crate) fn visible_rect(&self, node: NodeId) -> Option<(f32, f32, f32, f32)> {
+        self.layout.visible_rect(&self.dom.borrow(), node)
+    }
+
+    pub(crate) fn reveal(&mut self, node: NodeId) -> bool {
+        self.layout
+            .reveal(&self.dom.borrow(), node, &mut self.scroll)
     }
 
     pub fn descriptor(&self) -> &SurfaceDescriptor {
@@ -581,18 +611,44 @@ impl ContributedSurfacePane {
     /// Route one platform accessibility action through the same semantic
     /// session paths used by the Cambium reference host. Focus only moves the
     /// cursor; Click performs activation without inventing a pointer hit.
+    /// `None` refuses admission; `Some(None)` admits without a host effect.
     pub(crate) fn accessibility_action(
         &mut self,
         action: accesskit::Action,
         node: NodeId,
-    ) -> SurfaceRequest {
+    ) -> Option<SurfaceRequest> {
+        let Some(projected) = self.document_projection() else {
+            return None;
+        };
+        let dom = self.dom.borrow();
+        let Some(semantic) = projected.nodes().iter().find(|candidate| {
+            candidate.id.get() == layout_dom_api::LayoutDom::opaque_id(&*dom, node)
+        }) else {
+            return None;
+        };
+        if semantic.state.hidden || semantic.state.disabled {
+            return None;
+        }
+        let allowed = match action {
+            accesskit::Action::Click => semantic
+                .actions
+                .contains(&document_session_api::DocumentA11yAction::Click),
+            accesskit::Action::Focus => semantic
+                .actions
+                .contains(&document_session_api::DocumentA11yAction::Focus),
+            _ => false,
+        };
+        drop(dom);
+        if !allowed {
+            return None;
+        }
         match action {
-            accesskit::Action::Click => self.dispatch(ResolvedSurfaceEvent::Click {
+            accesskit::Action::Click => Some(self.dispatch(ResolvedSurfaceEvent::Click {
                 target: node,
                 event: PointerClick::at((0.0, 0.0)),
-            }),
-            accesskit::Action::Focus => self.focus(Some(node)),
-            _ => SurfaceRequest::None,
+            })),
+            accesskit::Action::Focus => Some(self.focus(Some(node))),
+            _ => None,
         }
     }
 
@@ -620,6 +676,7 @@ impl ContributedSurfacePane {
 /// cannot silently keep authority over its previous source.
 #[derive(Default)]
 pub struct ContributedSurfaceSessions {
+    next_generation: u64,
     panes: HashMap<PaneId, ContributedSurfacePane>,
 }
 
@@ -634,7 +691,13 @@ impl ContributedSurfaceSessions {
             .get(&spec.id)
             .is_none_or(|pane| !pane.matches(&spec.kind, &spec.source));
         if replace {
-            let admitted = registry.admit(&spec.kind, &spec.source)?;
+            let generation = self
+                .next_generation
+                .checked_add(1)
+                .ok_or(SurfaceAdmissionError::GenerationExhausted)?;
+            let mut admitted = registry.admit(&spec.kind, &spec.source)?;
+            admitted.generation = generation;
+            self.next_generation = generation;
             self.panes.insert(spec.id, admitted);
         }
         Ok(self
@@ -676,4 +739,4 @@ impl ContributedSurfaceSessions {
 
 #[cfg(test)]
 #[path = "contributed_surface/tests.rs"]
-mod tests;
+pub(crate) mod tests;

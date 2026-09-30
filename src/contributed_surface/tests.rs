@@ -10,8 +10,8 @@ use std::rc::Rc;
 
 use accesskit::{Action as A11yAction, Role};
 use cambium::{GenetAppRunner, GenetCtx, GenetElement, RunnerSurfaceSession, View, el, on_click};
-use mere_surface_api::{ProviderId, SourceKindId};
 use layout_dom_api::{LayoutDom, NodeKind};
+use mere_surface_api::{ProviderId, SourceKindId};
 
 use super::*;
 
@@ -41,11 +41,12 @@ fn descriptor(surface: &str, schema: &str) -> SurfaceDescriptor {
     }
 }
 
-struct FakeProvider {
+pub(crate) struct FakeProvider {
     pane: PaneKindId,
     schema: SourceSchemaId,
     descriptor: SurfaceDescriptor,
-    css: String,
+    pub(crate) css: String,
+    pub(crate) suppress_host_effects: bool,
     unavailable: Option<SurfaceUnavailableReason>,
 }
 
@@ -84,17 +85,22 @@ impl SurfaceProvider for FakeProvider {
                 width: 0.0,
             },
         );
-        Ok(Box::new(RunnerSurfaceSession::new(
+        let session: Box<dyn RetainedSurfaceSession> = Box::new(RunnerSurfaceSession::new(
             self.descriptor.clone(),
             runner,
             |_state: &FakeState| SurfaceAvailability::Available,
             |state: &mut FakeState, viewport| state.width = viewport.width,
             |_action: ()| Vec::new(),
-        )))
+        ));
+        Ok(if self.suppress_host_effects {
+            Box::new(NoHostEffectsSession(session))
+        } else {
+            session
+        })
     }
 }
 
-fn source(schema: &str) -> PaneSource {
+pub(crate) fn source(schema: &str) -> PaneSource {
     PaneSource::Fixed(SourceRef::External {
         schema: SourceSchemaId::new(schema),
         payload: crate::panes::SerializedSource {
@@ -104,13 +110,67 @@ fn source(schema: &str) -> PaneSource {
     })
 }
 
-fn provider(pane: &str, schema: &str, surface: &str) -> FakeProvider {
+pub(crate) fn provider(pane: &str, schema: &str, surface: &str) -> FakeProvider {
     FakeProvider {
         pane: PaneKindId::new(pane),
         schema: SourceSchemaId::new(schema),
         descriptor: descriptor(surface, schema),
         css: String::new(),
+        suppress_host_effects: false,
         unavailable: None,
+    }
+}
+
+/// Contract fixture only: retain the real runner's mutations and focus, but
+/// request no host redraw. Shipping RunnerSurfaceSession always requests redraw.
+struct NoHostEffectsSession(Box<dyn RetainedSurfaceSession>);
+
+impl RetainedSurfaceSession for NoHostEffectsSession {
+    fn descriptor(&self) -> &SurfaceDescriptor {
+        self.0.descriptor()
+    }
+    fn availability(&self) -> SurfaceAvailability {
+        self.0.availability()
+    }
+    fn dom(&self) -> DomHandle {
+        self.0.dom()
+    }
+    fn root(&self) -> NodeId {
+        self.0.root()
+    }
+    fn focus(&self) -> Option<NodeId> {
+        self.0.focus()
+    }
+    fn set_focus(&mut self, node: Option<NodeId>) -> Vec<SurfaceEffect> {
+        self.0.set_focus(node);
+        Vec::new()
+    }
+    fn focus_traverse(&mut self, forward: bool) -> Vec<SurfaceEffect> {
+        self.0.focus_traverse(forward);
+        Vec::new()
+    }
+    fn focusables(&self) -> Vec<NodeId> {
+        self.0.focusables()
+    }
+    fn pointer_capture(&self) -> Option<NodeId> {
+        self.0.pointer_capture()
+    }
+    fn pointer_target(&self, hit: NodeId) -> Option<NodeId> {
+        self.0.pointer_target(hit)
+    }
+    fn hover_target(&self, hit: NodeId) -> Option<NodeId> {
+        self.0.hover_target(hit)
+    }
+    fn wheel_target(&self, hit: NodeId) -> Option<NodeId> {
+        self.0.wheel_target(hit)
+    }
+    fn sync_viewport(&mut self, viewport: SurfaceViewport) -> Vec<SurfaceEffect> {
+        self.0.sync_viewport(viewport);
+        Vec::new()
+    }
+    fn dispatch(&mut self, event: ResolvedSurfaceEvent) -> Vec<SurfaceEffect> {
+        self.0.dispatch(event);
+        Vec::new()
     }
 }
 
@@ -121,7 +181,7 @@ fn unavailable_provider(pane: &str, schema: &str, surface: &str) -> FakeProvider
     }
 }
 
-fn root_text(dom: &DomHandle, root: NodeId) -> String {
+pub(crate) fn root_text(dom: &DomHandle, root: NodeId) -> String {
     let dom = dom.borrow();
     let text = dom
         .dom_children(root)
@@ -148,6 +208,7 @@ fn registration_asserts_the_descriptor_source_kind_matches_the_schema() {
         schema: SourceSchemaId::new("fake.v1"),
         descriptor: descriptor("fake.surface", "fake.other"),
         css: String::new(),
+        suppress_host_effects: false,
         unavailable: None,
     };
     assert!(matches!(
@@ -389,8 +450,45 @@ fn retained_projection_and_actions_share_the_live_dom_session() {
     assert!(button.bounds().is_some());
     let dom_node = routes[access_id];
 
-    pane.accessibility_action(A11yAction::Focus, dom_node);
+    assert!(
+        pane.accessibility_action(A11yAction::Focus, dom_node)
+            .is_some()
+    );
     assert_eq!(pane.session().focus(), Some(dom_node));
-    pane.accessibility_action(A11yAction::Click, dom_node);
+    assert!(
+        pane.accessibility_action(A11yAction::Click, dom_node)
+            .is_some()
+    );
     assert!(root_text(&pane.session().dom(), pane.session().root()).contains("count:1"));
+}
+
+#[test]
+fn admission_generations_never_wrap_or_reuse_removed_identity() {
+    let mut registry = SurfaceProviderRegistry::new();
+    registry
+        .register_provider(provider("fake", "fake.v1", "fake.surface"))
+        .unwrap();
+    let spec = PaneSpec {
+        id: PaneId(17),
+        kind: PaneKindId::new("fake"),
+        source: source("fake.v1"),
+        context: crate::panes::ContextBinding::Own,
+        config: crate::panes::PaneConfig::empty("test.empty"),
+    };
+    let mut sessions = ContributedSurfaceSessions::default();
+    let first = sessions.resolve(&spec, &registry).unwrap().generation();
+    assert_eq!(
+        sessions.resolve(&spec, &registry).unwrap().generation(),
+        first
+    );
+    sessions.remove(spec.id);
+    let second = sessions.resolve(&spec, &registry).unwrap().generation();
+    assert!(second > first);
+    sessions.remove(spec.id);
+    sessions.next_generation = u64::MAX;
+    assert!(matches!(
+        sessions.resolve(&spec, &registry),
+        Err(SurfaceAdmissionError::GenerationExhausted)
+    ));
+    assert!(sessions.is_empty());
 }
