@@ -1,0 +1,14 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Graphshell visibility test</title>
+<h1>Graphshell visibility test</h1>
+<p>Middle-click the link to load the graph in a background tab. Once loaded,
+switch to that tab. The graph posts its first-resume receipt to the local sink.</p>
+<a id="graph" href="../tree.html">Open graph in background</a>
+<script>
+  const graph = new URL("../tree.html", location.href);
+  graph.search = new URLSearchParams({
+    nodes: "128", seed: "7", visibility_sink: `${location.origin}/scenario-receipt`,
+  });
+  document.getElementById("graph").href = graph;
+</script>

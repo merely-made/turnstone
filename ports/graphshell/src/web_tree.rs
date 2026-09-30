@@ -70,6 +70,8 @@ const SHEET: &str = "\
     .tree-product p { margin:4px 0; } \
     .tree-detail { background:#17232b;border:1px solid #637581;padding:12px; } \
     .tree-detail label { display:block;margin:8px 0; } \
+    .tree-detail .detail-key { display:block; } \
+    .tree-detail .detail-value { display:block;margin:2px 0 8px;overflow-wrap:anywhere; } \
     .tree-detail input { display:block;width:280px;height:26px;color:#dce3e8;background:#263640;border:1px solid #637581; } \
     .tree-product button { background:#263640;color:#dce3e8;padding:5px 10px;border:1px solid #637581; }";
 
