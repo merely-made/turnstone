@@ -1,7 +1,9 @@
 # Graphshell tree migration inventory
 
 **Date:** 2026-09-27
-**Status:** implementation inventory for phase 4, not a completion receipt.
+**Status (2026-09-30):** phase 4 in progress; saved-graph Title/Tags migration
+has native and headed reopening receipts. Remaining product migration and
+large-graph responsiveness are open.
 **Parent:** [Graphshell on one Cambium tree](2026-09-25_graphshell_one_tree_plan.md).
 
 Mark approved proceeding to Cambium while treating rendering performance and
@@ -29,12 +31,12 @@ arrangement slots remain separate; Restore arrangement explicitly reapplies
 them and pauses. Resume seeds from the frozen positions and currently clears
 velocity. This establishes position continuity, not momentum continuity.
 
-This remains the first migration slice. `TreePage` currently opens a fixture
-with `GraphshellApp<MemoryBackend>` and retains only its graph. The main browser
-page retains `GraphshellApp<IndexedDbBackend>`, product state and integrations.
-Adding controls to the fixture does not migrate that application's persistence,
-remote sessions, editors, or practice workspace. Keep existing pages available
-until those behaviors have crossed the boundary and passed their receipts.
+The default `TreePage` opens a fixture with `GraphshellApp<MemoryBackend>` and
+retains only its graph. The opt-in `app=local` route now retains the existing
+IndexedDB application and its Title/Tags editor, as recorded below. The main
+browser page still owns the broader product state and integrations. Keep
+existing pages available until each remaining behavior has crossed the
+boundary and passed its receipt.
 
 ## Owners and seams
 
@@ -197,6 +199,18 @@ restoration, other product panels and the five public wrappers remain open.
 
 Four focused native tests pass for durable identity/metadata reopening,
 stale-selection rejection without writes, refused-write retry and Canvas
-state preservation. The current headed proof is blocked by a hidden Chrome
-window and Computer Use's URL policy check; the controls receipt distinguishes
-that mounted mirror from a completed save/reopen or visibility-resume proof.
+state preservation. On 2026-09-30, the paired headed edit/reopen scenarios pass
+on the merged current-main bundle. The independent load retains the same
+session and member UUIDs, `TreeSavedTitle` and normalized `alpha, beta` tags.
+Controls and elapsed-physics scenarios also pass. A real background-tab mount
+passes its first visible resume after about 32 seconds hidden, with a
+preexisting accessibility mirror and no hidden producer calls. Moving-graph
+hide/show and intentional hidden-timing rejection remain pending. The
+[controls receipt](../testing/2026-09-27_graphshell_controls_physics_receipt.md)
+records the exact baseline, hashes and qualified diagnostic timings.
+
+Mark describes current physics as slightly laggy but acceptable, while leaving
+room for different layouts and physics laws to behave differently at different
+scales. This is a user observation and a comparison hypothesis. Current
+generated-graph timing receipts do not establish the performance of other
+layouts, laws, graph densities or hardware.
