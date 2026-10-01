@@ -91,6 +91,11 @@ profile synchronization. Do not copy the form handler into the tree.
    has moved. Remove the old scenario pump when its product semantics and
    observations have migrated to Mesquite.
 
+**Annotation (2026-10-01):** Mark ruled the physics panel next, ahead of the
+rest of step 3, together with the remote session from step 2 that two of its
+scenarios need. The rulings (base, done-condition, routes, execution) are in
+the parent plan's §1, "Phase 4 physics-panel rulings".
+
 Each panel is done when its existing product effect, keyboard operation,
 accessibility projection and relevant scenario pass on the tree. Full phase 4
 also requires the parent plan's entire receipt and five-page gates.
