@@ -548,7 +548,7 @@ impl BrowserHost {
                 focused,
                 selected: self.canvas.selected_members(),
                 scope,
-                exported_at_ms: 1_700_000_000_000 + self.action_count as u64,
+                exported_at_ms: 1_700_000_000_000 + self.form().count as u64,
                 include_local_file_locations: checkbox("include-local-file")?,
                 scene,
             })
