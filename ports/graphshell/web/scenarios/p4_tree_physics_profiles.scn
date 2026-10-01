@@ -1,0 +1,141 @@
+# Tree version of physics_profiles.scn: the same receipt through the docked Graph tools
+# panel's Cambium controls and the tree lane's observations.
+# The donor's ten profiles through the profile picker, each naming itself
+# back with its law and overlays, and the panel's controls following it.
+assert snap ready == true
+# The boot arrangement pauses the canvas; the receipt wants the law running.
+click role:button Play physics
+settle 1
+assert snap physics-paused == false
+# No arrangement: the boot Spiral's anchor springs would pull under every law.
+click role:combobox Arrangement
+settle 1
+click role:option Free (physics alone)
+settle 1
+click role:button Apply arrangement
+settle 1
+assert snap layout == free
+click role:combobox Profile
+settle 1
+click role:option Liquid
+settle 1
+click role:button Apply profile
+settle 1
+assert snap physics-profile == liquid
+assert snap panel-profile == liquid
+assert snap physics-law == spring.rapier
+assert snap panel-law == spring.rapier
+assert snap physics-overlays == gravity-locus
+assert snap checked-overlays == gravity-locus
+assert snap panel-overlays == gravity-locus
+click role:combobox Profile
+settle 1
+click role:option Gas
+settle 1
+click role:button Apply profile
+settle 1
+assert snap physics-profile == gas
+assert snap panel-profile == gas
+assert snap physics-law == charge.barnes-hut
+assert snap panel-law == charge.barnes-hut
+click role:combobox Profile
+settle 1
+click role:option Solid
+settle 1
+click role:button Apply profile
+settle 1
+assert snap physics-profile == solid
+assert snap panel-profile == solid
+assert snap physics-overlays == domain-cluster,degree-repulsion
+click role:combobox Profile
+settle 1
+click role:option Archipelago
+settle 1
+click role:button Apply profile
+settle 1
+assert snap physics-profile == archipelago
+assert snap panel-profile == archipelago
+assert snap physics-law == energy.linlog
+assert snap panel-law == energy.linlog
+assert snap physics-overlays == domain-cluster,degree-repulsion
+click role:combobox Profile
+settle 1
+click role:option Constellation
+settle 1
+click role:button Apply profile
+settle 1
+assert snap physics-profile == constellation
+assert snap panel-profile == constellation
+assert snap physics-overlays == degree-repulsion,hub-gravity
+click role:combobox Profile
+settle 1
+click role:option Crystal
+settle 1
+click role:button Apply profile
+settle 1
+assert snap physics-profile == crystal
+assert snap panel-profile == crystal
+assert snap physics-law == stress.kamada-kawai
+assert snap panel-law == stress.kamada-kawai
+assert snap physics-overlays == grid-snap
+capture physics_profiles_crystal
+settle 2
+click role:combobox Profile
+settle 1
+click role:option Tide
+settle 1
+click role:button Apply profile
+settle 1
+assert snap physics-profile == tide
+assert snap panel-profile == tide
+assert snap physics-overlays == tide
+settle 60
+assert snap physics-energy >= 0.1
+click role:combobox Profile
+settle 1
+click role:option Sediment
+settle 1
+click role:button Apply profile
+settle 1
+assert snap physics-profile == sediment
+assert snap panel-profile == sediment
+assert snap physics-overlays == depth-gravity
+capture physics_profiles_sediment
+settle 2
+click role:combobox Profile
+settle 1
+click role:option Magnet
+settle 1
+click role:button Apply profile
+settle 1
+assert snap physics-profile == magnet
+assert snap panel-profile == magnet
+assert snap physics-law == flow.magnetic
+assert snap panel-law == flow.magnetic
+click role:combobox Profile
+settle 1
+click role:option Void
+settle 1
+click role:button Apply profile
+settle 1
+assert snap physics-profile == void
+assert snap panel-profile == void
+assert snap physics-law == still.default
+assert snap panel-law == still.default
+# And a custom pair names no profile: Still plus the skeleton, then the
+# checkbox off again.
+click role:checkbox Skeleton
+settle 1
+click role:button Apply physics
+settle 1
+assert snap physics-overlays == skeleton
+assert snap physics-profile == custom
+assert snap panel-profile == custom
+assert snap checked-overlays == skeleton
+click role:checkbox Skeleton
+settle 1
+click role:button Apply physics
+settle 1
+assert snap physics-profile == void
+assert snap panel-profile == void
+log physics profiles receipt complete

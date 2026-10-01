@@ -1,0 +1,33 @@
+# Tree version of physics_charge.scn: the same receipt through the docked Graph tools
+# panel's Cambium controls and the tree lane's observations.
+# Charge, Barnes-Hut repulsion plus edge springs: no two bodies overlap.
+assert snap ready == true
+# The boot arrangement pauses the canvas; the receipt wants the law running.
+click role:button Play physics
+settle 1
+assert snap physics-paused == false
+# No arrangement: the boot Spiral's anchor springs would pull under every law.
+click role:combobox Arrangement
+settle 1
+click role:option Free (physics alone)
+settle 1
+click role:button Apply arrangement
+settle 1
+assert snap layout == free
+click role:combobox Physics law
+settle 1
+click role:option Charge
+settle 1
+click role:button Apply physics
+settle 1
+assert snap physics-law == charge.barnes-hut
+assert snap physics-profile == gas
+assert snap panel-profile == gas
+capture physics_charge_start
+settle 2
+settle 60
+capture physics_charge_settled
+settle 2
+settle 300
+assert snap layout-overlaps == 0
+log physics charge receipt complete

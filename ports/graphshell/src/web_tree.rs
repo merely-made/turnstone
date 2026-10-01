@@ -57,6 +57,9 @@ const CANVAS_RASTER: u64 = 0x7472_6565;
 /// How far an arrow key pans and plus or minus zooms, as the main page does.
 const PAN_STEP: f32 = 42.0;
 const ZOOM_STEP: f32 = 40.0;
+/// The docked "Graph tools" region's width, logical px. The canvas takes the
+/// rest of the row.
+const TOOLS_WIDTH: u32 = 300;
 
 const SHEET: &str = "\
     :root { font-family: Roboto, sans-serif; font-size: 14px; color: #dce3e8; background: #070c0f; } \
@@ -65,7 +68,20 @@ const SHEET: &str = "\
     .tree-status { margin: 4px 12px 8px; } \
     .tree-controls { display:flex; gap:6px; padding:6px 12px; flex-wrap:wrap; } \
     .tree-controls button { background:#263640; color:#dce3e8; padding:5px 10px; border:1px solid #637581; } \
+    .tree-body { display:flex; flex-direction:row; flex:1 1 auto; min-height:0; } \
+    .tree-graph { display:flex; flex-direction:column; flex:1 1 auto; min-width:0; } \
     .tree-canvas { display: block; flex: 1 1 auto; min-height: 0; } \
+    .tree-tools { flex:0 0 auto; width:279px; padding:4px 10px; background:#0d161b; border-left:1px solid #2c3b44; } \
+    .tree-tools h2 { font-size:14px; margin:2px 0 4px; } \
+    .tree-tools label { display:block; margin:3px 0; } \
+    .tree-tools .tools-caption { display:block; color:#9fb0bb; font-size:12px; } \
+    .tree-tools button { background:#263640; color:#dce3e8; padding:3px 10px; margin:2px 0 4px; border:1px solid #637581; } \
+    .tools-overlays { display:flex; flex-wrap:wrap; margin:2px 0; } \
+    .tools-overlays label { width:136px; margin:1px 0; } \
+    .tools-status { margin:4px 0; color:#9fb0bb; font-size:12px; } \
+    .select-box { background:#263640; border:1px solid #637581; padding:2px 8px; } \
+    .select-list { background:#17232b; border:1px solid #637581; z-index:20; width:262px; } \
+    .select-option { padding:1px 8px; } \
     .tree-product { position:absolute;top:112px;left:12px;max-width:360px;z-index:5; } \
     .tree-product p { margin:4px 0; } \
     .tree-detail { background:#17232b;border:1px solid #637581;padding:12px; } \
@@ -217,6 +233,8 @@ pub(crate) struct TreePage {
     /// The address of the node the last click picked.
     picked: Option<String>,
     product: Option<product::SavedProduct>,
+    /// The "Graph tools" arrangement and physics section.
+    physics: physics::PhysicsPanel,
     /// The tree's logical size, followed from the host each frame. Genet sizes
     /// a custom leaf's cross axis from its intrinsic size and does not stretch
     /// an absolutely placed box between its insets, so the view is told its
@@ -248,6 +266,26 @@ type Logic = fn(&TreePage) -> Child;
 
 fn view(page: &TreePage) -> Child {
     let (width, height) = page.size;
+    // Genet does not stretch a custom leaf across its cross axis, so the
+    // canvas column is told the width the tools region leaves it.
+    let canvas_width = width.saturating_sub(TOOLS_WIDTH).max(1);
+    let graph = on_wheel(
+        on_key(
+            on_pointer(
+                custom_leaf::<TreePage, ()>(CANVAS_KEY, canvas_width, 1)
+                    .attr("class", "tree-canvas")
+                    .attr("role", "img")
+                    .attr("aria-label", "Graph"),
+                |page: &mut TreePage, event: cambium::PointerEvent| page.pointer(event),
+            ),
+            |page: &mut TreePage, event: cambium::KeyEvent| {
+                if keys(page, &event.key) {
+                    event.prevent_default();
+                }
+            },
+        ),
+        |page: &mut TreePage, wheel: WheelEvent| page.wheel(wheel),
+    );
     Box::new(
         el(
             "main",
@@ -258,23 +296,14 @@ fn view(page: &TreePage) -> Child {
                     .attr("role", "status"),
                 controls::toolbar(page),
                 product::controls(page),
-                on_wheel(
-                    on_key(
-                        on_pointer(
-                            custom_leaf::<TreePage, ()>(CANVAS_KEY, width, 1)
-                                .attr("class", "tree-canvas")
-                                .attr("role", "img")
-                                .attr("aria-label", "Graph"),
-                            |page: &mut TreePage, event: cambium::PointerEvent| page.pointer(event),
-                        ),
-                        |page: &mut TreePage, event: cambium::KeyEvent| {
-                            if keys(page, &event.key) {
-                                event.prevent_default();
-                            }
-                        },
+                el(
+                    "div",
+                    (
+                        el("div", graph).attr("class", "tree-graph"),
+                        physics::tools(page),
                     ),
-                    |page: &mut TreePage, wheel: WheelEvent| page.wheel(wheel),
-                ),
+                )
+                .attr("class", "tree-body"),
             ),
         )
         .attr("style", format!("width:{width}px;height:{height}px;")),
@@ -412,6 +441,7 @@ async fn boot(root: Element) -> Result<(), String> {
         ..Default::default()
     };
     let page_shared = shared.clone();
+    let physics = physics::PhysicsPanel::new(&shared.canvas.borrow(), web_graphs::LAYOUT);
     let mounted = mount(
         canvas,
         options,
@@ -422,6 +452,7 @@ async fn boot(root: Element) -> Result<(), String> {
                 nodes,
                 picked: None,
                 product,
+                physics,
                 size: (width, height),
             },
             logic: view as Logic,
@@ -481,6 +512,9 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
                     }
                 });
                 frame_shared.dirty.set(true);
+            }
+            if ctx.runner.state().physics.transition.is_some() {
+                ctx.runner.update(|page| page.advance_arrangement(now_ms()));
             }
             let size = (
                 ctx.logical_size.0.round().max(1.0) as u32,
@@ -543,6 +577,7 @@ pub(crate) fn run(text: &str) -> Result<(), String> {
             shared,
             errors: Vec::new(),
             pointer: None,
+            drop: None,
         },
         Some(taproot::Scenario::parse(text).map_err(|e| e.to_string())?),
         None,
@@ -592,6 +627,7 @@ fn publish(ok: bool, text: &str, shared: &Shared, saved: Option<serde_json::Valu
 
 mod controls;
 mod lane;
+mod physics;
 mod product;
 mod visibility;
 use lane::TreeLane;

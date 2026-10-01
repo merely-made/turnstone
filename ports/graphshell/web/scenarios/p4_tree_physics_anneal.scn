@@ -1,0 +1,33 @@
+# Tree version of physics_anneal.scn: the same receipt through the docked Graph tools
+# panel's Cambium controls and the tree lane's observations.
+# Anneal, Davidson-Harel: a cooled picture with no velocity left.
+assert snap ready == true
+# The boot arrangement pauses the canvas; the receipt wants the law running.
+click role:button Play physics
+settle 1
+assert snap physics-paused == false
+# No arrangement: the boot Spiral's anchor springs would pull under every law.
+click role:combobox Arrangement
+settle 1
+click role:option Free (physics alone)
+settle 1
+click role:button Apply arrangement
+settle 1
+assert snap layout == free
+click role:combobox Physics law
+settle 1
+click role:option Anneal
+settle 1
+click role:button Apply physics
+settle 1
+assert snap physics-law == anneal.davidson-harel
+assert snap physics-profile == law.anneal
+assert snap panel-profile == law.anneal
+capture physics_anneal_start
+settle 2
+settle 60
+capture physics_anneal_cooling
+settle 2
+settle 300
+assert snap physics-energy <= 5
+log physics anneal receipt complete

@@ -33,7 +33,6 @@ mod web_tree;
 mod web_view;
 
 use std::cell::RefCell;
-use std::collections::HashMap;
 use std::rc::Rc;
 
 use genet_render::TextSystem;
@@ -42,8 +41,6 @@ use graphshell::client::{ActionDraft, ActionDraftSemantics, ActionDraftTarget};
 use graphshell::endpoint::{IntentSink, ProjectionSource};
 use graphshell::protocol::{IntentResult, ProjectionSession};
 use mere::canvas::{Canvas, PhysicsBoard, PointerButton};
-use mere::kernel::geometry::PortablePoint;
-use mere::kernel::graph::NodeKey;
 use netrender::Scene;
 use serde::Deserialize;
 use wasm_bindgen::JsCast;
@@ -63,7 +60,7 @@ use graphshell::capture::{
 use graphshell::mere_host::{
     FIXTURE_DEVICE_TWO_ADDRESS, FIXTURE_PERSONA_ADDRESS, FIXTURE_WEB_ADDRESS, SelectedPersonaRef,
 };
-use graphshell::product::{ProjectionClock, RelationFamilyFilter, SavedSceneV1};
+use graphshell::product::{RelationFamilyFilter, SavedSceneV1};
 use graphshell::projection_editor::{
     Appearance, Channel, EditorAction, Encoding, Interaction, ProjectionDefinition,
     ProjectionDefinitionSink, ProjectionDraft, ProjectionEditor, ProjectionPanel, Provenance,
@@ -154,137 +151,6 @@ enum ActiveSession {
     Remote,
 }
 
-/// One opt-in playback of an analytic arrangement change. Scenotime owns the
-/// schedule; this browser host owns the frame clock and the NodeKey binding.
-struct CanvasTransition {
-    schedule: scenotime::TransitionSchedule,
-    clock: ProjectionClock,
-    node_of: HashMap<sceno::InstanceId, NodeKey>,
-    start_positions: Vec<(NodeKey, PortablePoint)>,
-    final_positions: Vec<(NodeKey, PortablePoint)>,
-}
-
-impl CanvasTransition {
-    fn between(
-        canvas: &Canvas,
-        final_positions: &[(NodeKey, PortablePoint)],
-    ) -> Result<Option<Self>, String> {
-        let final_of = final_positions.iter().copied().collect::<HashMap<_, _>>();
-        let old_geometry = canvas.cartography_geometry();
-        let old_of = old_geometry.iter().collect::<HashMap<_, _>>();
-        let extents = canvas.strategy_extents();
-        let mut nodes = canvas.graph().nodes().collect::<Vec<_>>();
-        nodes.sort_by_key(|(_, node)| node.id);
-
-        let mut scene = sceno::Scene::new();
-        scene.generation = canvas.graph().revision();
-        let mut node_of = HashMap::new();
-        let mut start_positions = Vec::with_capacity(nodes.len());
-        let mut operations = Vec::new();
-        for (key, node) in nodes {
-            let Some(target) = final_of.get(&key).copied() else {
-                continue;
-            };
-            let current = old_of
-                .get(&node.id)
-                .map(|(x, y)| PortablePoint::new(*x, *y))
-                .unwrap_or(target);
-            let source = scene.intern_source(sceno::SourceRef::new(
-                mere::canvas::MERE_GRAPH_ADAPTER,
-                node.id.to_string(),
-            ));
-            let (width, height) = extents.get(&key).copied().unwrap_or((36.0, 36.0));
-            let item = sceno::ProjectedItem {
-                source,
-                space: sceno::Scene::WORLD,
-                transform: sceno::Transform2::translation(current.x, current.y),
-                footprint: sceno::Footprint::Rect {
-                    size: sceno::Size2::new(width, height),
-                },
-                representation: canvas
-                    .projection_representation(key)
-                    .cloned()
-                    .unwrap_or(sceno::Representation::Card),
-                layer: 0,
-                visible: true,
-                hit: None,
-                channels: Vec::new(),
-            };
-            let instance = sceno::InstanceId(scene.items.len() as u32);
-            node_of.insert(instance, key);
-            start_positions.push((key, current));
-            scene.items.push(item.clone());
-            if current != target {
-                let mut target_item = item;
-                target_item.transform = sceno::Transform2::translation(target.x, target.y);
-                operations.push(scenotime::SceneOp::UpdateItem {
-                    index: instance,
-                    value: target_item,
-                });
-            }
-        }
-
-        if operations.is_empty() {
-            return Ok(None);
-        }
-        let before = scenotime::SceneSnapshot::from_dense(
-            scenotime::SceneEpoch(1),
-            scenotime::Revision(1),
-            scene,
-        )
-        .map_err(|error| format!("could not build transition start: {error:?}"))?;
-        let diff = scenotime::SceneDiff {
-            epoch: before.epoch,
-            base: before.revision,
-            revision: scenotime::Revision(before.revision.0 + 1),
-            operations,
-        };
-        let schedule = scenotime::TransitionSchedule::from_diff(
-            &before,
-            &diff,
-            &scenotime::TransitionSpec::default(),
-        )
-        .map_err(|error| format!("could not schedule arrangement transition: {error:?}"))?;
-        Ok(Some(Self {
-            schedule,
-            clock: ProjectionClock::default(),
-            node_of,
-            start_positions,
-            final_positions: final_positions.to_vec(),
-        }))
-    }
-
-    fn advance(&mut self, host_ms: f64) -> (Vec<(NodeKey, PortablePoint)>, bool) {
-        let frame = self.schedule.sample_at(self.clock.observe(host_ms));
-        if frame.complete {
-            return (self.final_positions.clone(), true);
-        }
-        let mut positions = self
-            .start_positions
-            .iter()
-            .copied()
-            .collect::<HashMap<_, _>>();
-        for sample in frame.items {
-            let Some(key) = self.node_of.get(&sample.instance).copied() else {
-                continue;
-            };
-            positions.insert(
-                key,
-                PortablePoint::new(
-                    sample.value.transform.translate.x,
-                    sample.value.transform.translate.y,
-                ),
-            );
-        }
-        let positions = self
-            .start_positions
-            .iter()
-            .filter_map(|(key, _)| positions.get(key).copied().map(|position| (*key, position)))
-            .collect();
-        (positions, false)
-    }
-}
-
 struct BrowserHost {
     app: GraphshellApp<IndexedDbBackend>,
     /// Where the remote projection lives (`web_remote`).
@@ -336,7 +202,7 @@ struct BrowserHost {
     export_bytes: usize,
     imported_nodes: usize,
     saved_scene: Option<SavedSceneV1>,
-    arrangement_transition: Option<CanvasTransition>,
+    arrangement_transition: Option<graphshell::canvas_physics::ArrangementTransition>,
     primary_member: Option<Uuid>,
     last_detail_member: Option<Uuid>,
     projection_editor: ProjectionEditor,
@@ -619,29 +485,15 @@ impl BrowserHost {
         Ok(())
     }
 
-    fn begin_arrangement_transition(
-        &mut self,
-        final_positions: &[(NodeKey, PortablePoint)],
-    ) -> Result<bool, String> {
-        self.arrangement_transition = CanvasTransition::between(&self.canvas, final_positions)?;
-        Ok(self.arrangement_transition.is_some())
-    }
-
     fn advance_arrangement_transition(&mut self, host_ms: f64) {
-        let Some((positions, complete)) = self
-            .arrangement_transition
-            .as_mut()
-            .map(|transition| transition.advance(host_ms))
-        else {
-            return;
-        };
-        if complete {
-            self.canvas.apply_strategy_positions(&positions);
-            self.arrangement_transition = None;
-            self.product_status = format!("Arrangement set to {}", self.layout_id);
+        if let Some(status) = graphshell::canvas_physics::advance_arrangement(
+            &mut self.canvas,
+            &mut self.arrangement_transition,
+            &self.layout_id,
+            host_ms,
+        ) {
+            self.product_status = status;
             self.chrome_dirty = true;
-        } else {
-            self.canvas.preview_strategy_positions(&positions);
         }
     }
 

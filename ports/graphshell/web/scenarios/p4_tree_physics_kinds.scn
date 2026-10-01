@@ -1,0 +1,37 @@
+# Tree version of physics_kinds.scn: the same receipt through the docked Graph tools
+# panel's Cambium controls and the tree lane's observations.
+# Kinds, particle life by site: a living sort, energy above a floor.
+assert snap ready == true
+# The boot arrangement pauses the canvas; the receipt wants the law running.
+click role:button Play physics
+settle 1
+assert snap physics-paused == false
+# No arrangement: the boot Spiral's anchor springs would pull under every law.
+click role:combobox Arrangement
+settle 1
+click role:option Free (physics alone)
+settle 1
+click role:button Apply arrangement
+settle 1
+assert snap layout == free
+click role:combobox Physics law
+settle 1
+click role:option Kinds
+settle 1
+click role:combobox Kinds
+settle 1
+click role:option By site
+settle 1
+click role:button Apply physics
+settle 1
+assert snap physics-law == kinds.particle-life
+assert snap physics-profile == law.kinds
+assert snap panel-profile == law.kinds
+assert snap physics-kind-source == site
+capture physics_kinds_start
+settle 2
+settle 60
+capture physics_kinds_moving
+settle 2
+assert snap physics-energy >= 1
+log physics kinds receipt complete

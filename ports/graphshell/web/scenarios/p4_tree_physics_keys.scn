@@ -1,0 +1,39 @@
+# Keyboard operation of the Graph tools panel: a picker by arrow keys, Tab
+# through the overlays and sources, Space on a checkbox, Enter on Apply.
+assert snap ready == true
+click role:combobox Physics law
+settle 1
+key Escape
+settle 1
+key ArrowDown
+settle 1
+key Enter
+settle 1
+assert snap panel-law == charge.barnes-hut
+assert snap physics-law == spring.rapier
+key Tab
+settle 1
+key Space
+settle 1
+assert snap panel-overlays == degree-repulsion
+assert snap checked-overlays == degree-repulsion
+key Tab
+key Tab
+key Tab
+key Tab
+key Tab
+key Tab
+key Tab
+key Tab
+key Tab
+key Tab
+key Tab
+settle 1
+assert snap focus-kind == button
+key Enter
+settle 1
+assert snap physics-law == charge.barnes-hut
+assert snap physics-overlays == degree-repulsion
+assert snap physics-profile == custom
+assert text Physics set to Charge with Hub room
+log physics keys receipt complete

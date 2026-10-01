@@ -1,0 +1,193 @@
+# Tree version of physics_add.scn: the same receipt through the docked Graph tools
+# panel's Cambium controls and the tree lane's observations.
+# Adding a node under every law. A structural change reheats the layout
+# (the new body is not left frozen where it landed), and the graph never
+# ends up with bodies on top of each other. Under Still the reheat holds
+# everything, the newcomer included.
+assert snap ready == true
+# The boot arrangement pauses the canvas; the receipt wants the law running.
+click role:button Play physics
+settle 1
+assert snap physics-paused == false
+# No arrangement: the boot Spiral's anchor springs would pull under every law.
+click role:combobox Arrangement
+settle 1
+click role:option Free (physics alone)
+settle 1
+click role:button Apply arrangement
+settle 1
+assert snap layout == free
+assert snap canvas-nodes == 11
+
+# --- Springs ---
+log add Springs
+click role:combobox Physics law
+settle 1
+click role:option Springs
+settle 1
+click role:button Apply physics
+settle 120
+assert snap physics-law == spring.rapier
+add-node 300 260 mere://p4/add/springs
+settle 1
+assert snap canvas-nodes == 12
+settle 300
+assert snap layout-overlaps == 0
+assert snap physics-energy <= 500
+capture physics_add_springs
+settle 2
+
+# --- Charge ---
+log add Charge
+click role:combobox Physics law
+settle 1
+click role:option Charge
+settle 1
+click role:button Apply physics
+settle 120
+assert snap physics-law == charge.barnes-hut
+add-node 320 272 mere://p4/add/charge
+settle 1
+assert snap canvas-nodes == 13
+settle 300
+assert snap layout-overlaps == 0
+
+# --- Stress ---
+log add Stress
+click role:combobox Physics law
+settle 1
+click role:option Stress
+settle 1
+click role:button Apply physics
+settle 120
+assert snap physics-law == stress.kamada-kawai
+add-node 340 284 mere://p4/add/stress
+settle 1
+assert snap canvas-nodes == 14
+settle 300
+assert snap layout-overlaps == 0
+
+# --- Energy ---
+log add Energy
+click role:combobox Physics law
+settle 1
+click role:option Energy
+settle 1
+click role:button Apply physics
+settle 120
+assert snap physics-law == energy.linlog
+add-node 360 296 mere://p4/add/energy
+settle 1
+assert snap canvas-nodes == 15
+settle 300
+assert snap layout-overlaps == 0
+
+# --- Orbit ---
+log add Orbit
+click role:combobox Physics law
+settle 1
+click role:option Orbit
+settle 1
+click role:button Apply physics
+settle 120
+assert snap physics-law == orbit.gravity
+add-node 380 308 mere://p4/add/orbit
+settle 1
+assert snap canvas-nodes == 16
+settle 120
+assert snap physics-energy >= 1
+
+# --- Kinds ---
+log add Kinds
+click role:combobox Physics law
+settle 1
+click role:option Kinds
+settle 1
+click role:button Apply physics
+settle 120
+assert snap physics-law == kinds.particle-life
+add-node 400 320 mere://p4/add/kinds
+settle 1
+assert snap canvas-nodes == 17
+settle 120
+assert snap physics-energy >= 1
+
+# --- Flock ---
+log add Flock
+click role:combobox Physics law
+settle 1
+click role:option Flock
+settle 1
+click role:button Apply physics
+settle 120
+assert snap physics-law == flock.boids
+add-node 420 332 mere://p4/add/flock
+settle 1
+assert snap canvas-nodes == 18
+settle 120
+assert snap physics-energy >= 1
+
+# --- Sync ---
+log add Sync
+click role:combobox Physics law
+settle 1
+click role:option Sync
+settle 1
+click role:button Apply physics
+settle 120
+assert snap physics-law == sync.kuramoto
+add-node 440 344 mere://p4/add/sync
+settle 1
+assert snap canvas-nodes == 19
+settle 120
+assert snap physics-energy >= 1
+
+# --- Flow ---
+log add Flow
+click role:combobox Physics law
+settle 1
+click role:option Flow
+settle 1
+click role:button Apply physics
+settle 120
+assert snap physics-law == flow.magnetic
+add-node 460 356 mere://p4/add/flow
+settle 1
+assert snap canvas-nodes == 20
+settle 120
+assert snap physics-energy >= 1
+
+# --- Anneal ---
+log add Anneal
+click role:combobox Physics law
+settle 1
+click role:option Anneal
+settle 1
+click role:button Apply physics
+settle 120
+assert snap physics-law == anneal.davidson-harel
+add-node 480 368 mere://p4/add/anneal
+settle 1
+assert snap canvas-nodes == 21
+settle 300
+assert snap layout-overlaps == 0
+assert snap physics-energy <= 5
+
+# --- Still ---
+log add Still
+click role:combobox Physics law
+settle 1
+click role:option Still
+settle 1
+click role:button Apply physics
+settle 120
+assert snap physics-law == still.default
+add-node 500 380 mere://p4/add/still
+settle 1
+assert snap canvas-nodes == 22
+settle 120
+assert snap physics-energy <= 1
+assert snap layout-overlaps == 0
+capture physics_add_still
+settle 2
+log physics add receipt complete

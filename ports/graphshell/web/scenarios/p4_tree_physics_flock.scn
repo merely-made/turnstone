@@ -1,0 +1,34 @@
+# Tree version of physics_flock.scn: the same receipt through the docked Graph tools
+# panel's Cambium controls and the tree lane's observations.
+# Flock, boids: a moving flock, energy above a floor now and later.
+assert snap ready == true
+# The boot arrangement pauses the canvas; the receipt wants the law running.
+click role:button Play physics
+settle 1
+assert snap physics-paused == false
+# No arrangement: the boot Spiral's anchor springs would pull under every law.
+click role:combobox Arrangement
+settle 1
+click role:option Free (physics alone)
+settle 1
+click role:button Apply arrangement
+settle 1
+assert snap layout == free
+click role:combobox Physics law
+settle 1
+click role:option Flock
+settle 1
+click role:button Apply physics
+settle 1
+assert snap physics-law == flock.boids
+assert snap physics-profile == law.flock
+assert snap panel-profile == law.flock
+capture physics_flock_start
+settle 2
+settle 60
+capture physics_flock_moving
+settle 2
+assert snap physics-energy >= 1
+settle 300
+assert snap physics-energy >= 1
+log physics flock receipt complete

@@ -9,9 +9,123 @@ pub(super) struct TreeLane {
     pub(super) shared: Rc<Shared>,
     pub(super) errors: Vec<String>,
     pub(super) pointer: Option<(f32, f32)>,
+    /// Page px where the last `release-at` let go, for `drag-return`.
+    pub(super) drop: Option<(f32, f32)>,
+}
+
+/// `layout-*` fields are a pairwise pass plus all-pairs hop distances, so a
+/// snapshot computes them only for graphs up to this size.
+const LAYOUT_STATS_LIMIT: usize = 512;
+
+/// The canvas leaf's painted rect in page px.
+fn leaf_rect(ctx: &AppCtx<'_, TreePage, Logic, Child>) -> Option<(f32, f32, f32, f32)> {
+    let leaf = {
+        let dom = ctx.runner.dom();
+        let dom = dom.borrow();
+        taproot::matching(&dom, &Selector::class("tree-canvas"))
+            .into_iter()
+            .next()
+    }?;
+    ctx.painted_rect(leaf)
 }
 
 impl TreeLane {
+    /// The focused node's page point, for `press-focused`.
+    fn focused_point(
+        &self,
+        ctx: &AppCtx<'_, TreePage, Logic, Child>,
+    ) -> Result<(f32, f32), String> {
+        let (x, y) = self
+            .shared
+            .canvas
+            .borrow()
+            .focused_screen_position()
+            .ok_or("wants exactly one focused node")?;
+        let (left, top, _, _) = leaf_rect(ctx).ok_or("the canvas leaf is not painted")?;
+        Ok((left + x, top + y))
+    }
+
+    /// The physics panel's and canvas's observations.
+    fn physics_fields(
+        &self,
+        ctx: &AppCtx<'_, TreePage, Logic, Child>,
+        snapshot: ProbeSnapshot,
+    ) -> ProbeSnapshot {
+        let page = ctx.runner.state();
+        let canvas = self.shared.canvas.borrow();
+        let choice = canvas.physics_choice();
+        let checked = {
+            let dom = ctx.runner.dom();
+            let dom = dom.borrow();
+            mere::canvas::CANVAS_PHYSICS_OVERLAYS
+                .iter()
+                .filter(|(_, label)| {
+                    !taproot::matching(
+                        &dom,
+                        &Selector::role("checkbox")
+                            .containing(*label)
+                            .with_attr("aria-checked", "true"),
+                    )
+                    .is_empty()
+                })
+                .map(|(id, _)| *id)
+                .collect::<Vec<_>>()
+                .join(",")
+        };
+        let drag_return = self.drop.and_then(|(dx, dy)| {
+            let (x, y) = canvas.focused_screen_position()?;
+            let (left, top, _, _) = leaf_rect(ctx)?;
+            Some((left + x - dx).hypot(top + y - dy))
+        });
+        let mut snapshot = snapshot
+            .with_field("ready", "true")
+            .with_field("layout", page.physics.layout_id.clone())
+            .with_field("physics-law", choice.law.id())
+            .with_field(
+                "physics-overlays",
+                choice
+                    .overlays
+                    .iter()
+                    .map(|overlay| overlay.id())
+                    .collect::<Vec<_>>()
+                    .join(","),
+            )
+            .with_field(
+                "physics-profile",
+                graphshell::canvas_physics::profile_id(&canvas),
+            )
+            .with_field("physics-kind-source", choice.kind.id())
+            .with_field("physics-mass-source", choice.mass.id())
+            .with_field("physics-depth-source", choice.depth.id())
+            .with_field("panel-law", page.physics.choice().law.id())
+            .with_field("panel-overlays", page.physics.ticked())
+            .with_field("panel-profile", page.physics.profile_id())
+            .with_field("panel-status", page.physics.status.clone())
+            .with_field("checked-overlays", checked)
+            .with_field("canvas-nodes", canvas.graph().node_count().to_string())
+            .with_field(
+                "dragging-node",
+                canvas
+                    .dragging_node()
+                    .map(|id| id.to_string())
+                    .unwrap_or_default(),
+            )
+            .with_field(
+                "drag-return",
+                drag_return
+                    .map(|distance| format!("{distance:.0}"))
+                    .unwrap_or_default(),
+            );
+        if canvas.graph().node_count() <= LAYOUT_STATS_LIMIT {
+            let stats = canvas.layout_stats();
+            snapshot = snapshot
+                .with_field("layout-spread", format!("{:.0}", stats.spread))
+                .with_field("layout-overlaps", stats.overlaps.to_string())
+                .with_field("layout-stretch", format!("{:.2}", stats.stretch));
+        }
+        snapshot
+    }
+
     /// `click-node <url>`: press and release over a node, through the host's
     /// pointer path, so the pick runs as a real click's would.
     fn node_point(
@@ -141,7 +255,8 @@ impl Product for TreeLane {
                 Some((left + x - px).hypot(top + y - py))
             });
         let step = canvas.elapsed_step_report().unwrap_or_default();
-        let snapshot = ProbeSnapshot::default()
+        let snapshot = self.physics_fields(ctx, ProbeSnapshot::default());
+        let snapshot = snapshot
             .with_field("physics-steps", step.steps.to_string())
             .with_field(
                 "physics-dropped-us",
@@ -246,7 +361,53 @@ impl Product for TreeLane {
             },
             "release-at" => {
                 let point = self.pointer.take().ok_or("release-at without a press")?;
+                self.drop = Some(point);
                 ctx.pointer.push(HostPointer::Release(point.0, point.1));
+                Ok(())
+            },
+            // `center-node <url>`: bring a node into view by panning the camera
+            // so it sits at the canvas centre. Zoom is kept, so screen-px
+            // distances keep their meaning; the layout is untouched.
+            "center-node" => {
+                let url = rest.trim();
+                let mut canvas = self.shared.canvas.borrow_mut();
+                let (key, _) = canvas
+                    .graph()
+                    .get_node_by_url(url)
+                    .ok_or_else(|| format!("center-node {url}: no such node"))?;
+                let (x, y) = canvas
+                    .screen_position_of(key)
+                    .ok_or_else(|| format!("center-node {url}: no position"))?;
+                let (width, height) = self.shared.size.get();
+                let mut camera = canvas.camera();
+                camera.offset.0 += width as f32 / 2.0 - x;
+                camera.offset.1 += height as f32 / 2.0 - y;
+                canvas.set_camera(camera);
+                self.shared.dirty.set(true);
+                Ok(())
+            },
+            // The drag gesture from the selected node: press where it is drawn.
+            "press-focused" => {
+                let point = self.focused_point(ctx)?;
+                self.pointer = Some(point);
+                ctx.pointer.push(HostPointer::Press(point.0, point.1));
+                Ok(())
+            },
+            // `add-node <x> <y> <url>`: the empty-space add gesture at a
+            // canvas-local point the receipt picks.
+            "add-node" => {
+                let mut words = rest.split_whitespace();
+                let (Some(x), Some(y), Some(url), None) =
+                    (words.next(), words.next(), words.next(), words.next())
+                else {
+                    return Err("add-node wants '<x> <y> <url>'".into());
+                };
+                let point = (
+                    x.parse().map_err(|_| "add-node wants numeric x")?,
+                    y.parse().map_err(|_| "add-node wants numeric y")?,
+                );
+                self.shared.canvas.borrow_mut().add_node_at(point, url);
+                self.shared.dirty.set(true);
                 Ok(())
             },
             _ => Err(format!("unknown verb: {line}")),
