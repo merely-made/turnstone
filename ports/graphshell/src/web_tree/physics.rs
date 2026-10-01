@@ -191,8 +191,8 @@ fn apply(label: &'static str, action: fn(&mut TreePage)) -> Child {
     Box::new(button(label, move |page: &mut TreePage, _| action(page)))
 }
 
-/// The docked "Graph tools" region; arrangement and physics is its first section.
-pub(super) fn tools(page: &TreePage) -> Child {
+/// The "Graph tools" region's arrangement and physics section.
+pub(super) fn section(page: &TreePage) -> Child {
     let overlays: Vec<Child> = CANVAS_PHYSICS_OVERLAYS
         .iter()
         .enumerate()
@@ -248,13 +248,8 @@ pub(super) fn tools(page: &TreePage) -> Child {
         ),
     ];
     Box::new(
-        el(
-            "aside",
-            el("section", section)
-                .attr("class", "tools-section")
-                .attr("aria-label", "Arrangement and physics"),
-        )
-        .attr("class", "tree-tools")
-        .attr("aria-label", "Graph tools"),
+        el("section", section)
+            .attr("class", "tools-section")
+            .attr("aria-label", "Arrangement and physics"),
     )
 }
