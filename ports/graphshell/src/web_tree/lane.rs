@@ -115,6 +115,25 @@ impl TreeLane {
                 drag_return
                     .map(|distance| format!("{distance:.0}"))
                     .unwrap_or_default(),
+            )
+            // The drop distance on the first frame after a release that
+            // executed physics steps, and how many it executed: keyed to
+            // steps, not render frames.
+            .with_field(
+                "drag-return-step",
+                self.shared
+                    .release_step
+                    .get()
+                    .map(|(distance, _)| format!("{distance:.1}"))
+                    .unwrap_or_default(),
+            )
+            .with_field(
+                "drag-return-steps",
+                self.shared
+                    .release_step
+                    .get()
+                    .map(|(_, steps)| steps.to_string())
+                    .unwrap_or_default(),
             );
         if canvas.graph().node_count() <= LAYOUT_STATS_LIMIT {
             let stats = canvas.layout_stats();
@@ -362,6 +381,12 @@ impl Product for TreeLane {
             "release-at" => {
                 let point = self.pointer.take().ok_or("release-at without a press")?;
                 self.drop = Some(point);
+                // Watch for the first stepped frame after the release.
+                let (left, top, _, _) = leaf_rect(ctx).ok_or("the canvas leaf is not painted")?;
+                self.shared
+                    .release_watch
+                    .set(Some((point.0 - left, point.1 - top)));
+                self.shared.release_step.set(None);
                 ctx.pointer.push(HostPointer::Release(point.0, point.1));
                 Ok(())
             },
@@ -390,6 +415,11 @@ impl Product for TreeLane {
             "press-focused" => {
                 let point = self.focused_point(ctx)?;
                 self.pointer = Some(point);
+                if let Some((left, top, _, _)) = leaf_rect(ctx) {
+                    self.shared
+                        .press_point
+                        .set(Some((point.0 - left, point.1 - top)));
+                }
                 ctx.pointer.push(HostPointer::Press(point.0, point.1));
                 Ok(())
             },
@@ -438,6 +468,7 @@ impl Product for TreeLane {
     fn receipt_lines(&self) -> Vec<String> {
         let timing = self.shared.timing.borrow();
         let mut lines = timing.receipt_lines();
+        lines.extend(self.shared.release_log.borrow().iter().cloned());
         lines.push(format!(
             "gpu timestamps: {}",
             if timing.gpu_timed() { "yes" } else { "no" }

@@ -107,6 +107,16 @@ struct Shared {
     timing: RefCell<FrameTiming>,
     physics_config: mere::canvas::ElapsedStepConfig,
     visibility: Option<RefCell<visibility::Visibility>>,
+    /// A released drag's drop point, canvas-local px, until the first frame
+    /// that executes a physics step after the release.
+    release_watch: Cell<Option<(f32, f32)>>,
+    /// The focused node's distance from that drop point on that frame, and
+    /// how many physics steps the frame executed.
+    release_step: Cell<Option<(f32, u32)>>,
+    /// Where the last scripted press landed, canvas-local px, for the receipt.
+    press_point: Cell<Option<(f32, f32)>>,
+    /// Every recorded release, for the receipt.
+    release_log: RefCell<Vec<String>>,
 }
 
 impl Shared {
@@ -187,6 +197,26 @@ impl TextureProducer for CanvasProducer {
             ]);
         }
         shared.moving.set(moving);
+        if let Some((x, y)) = shared.release_watch.get()
+            && cx.frame.timestamp.is_some()
+            && canvas.dragging_node().is_none()
+            && let Some(report) = canvas.elapsed_step_report()
+            && report.steps > 0
+        {
+            let focused = canvas.focused_screen_position();
+            let distance = focused.map_or(f32::NAN, |(fx, fy)| (fx - x).hypot(fy - y));
+            let from_press = focused
+                .zip(shared.press_point.get())
+                .map_or(f32::NAN, |((fx, fy), (px, py))| (fx - px).hypot(fy - py));
+            shared.release_step.set(Some((distance, report.steps)));
+            shared.release_log.borrow_mut().push(format!(
+                "release-step {} {distance:.1} px after {} steps ({from_press:.1} px from the press point, zoom {:.2})",
+                canvas.physics_law().id(),
+                report.steps,
+                canvas.camera().zoom
+            ));
+            shared.release_watch.set(None);
+        }
         visibility::after(shared, &canvas, visibility_before, cx.frame.timestamp);
         shared.dirty.set(false);
         // Rasterize every requested frame, as the presenter does. A settled
@@ -428,6 +458,10 @@ async fn boot(root: Element) -> Result<(), String> {
         timing: RefCell::new(FrameTiming::default()),
         physics_config: controls::physics_config()?,
         visibility: visibility::requested()?,
+        release_watch: Cell::new(None),
+        release_step: Cell::new(None),
+        press_point: Cell::new(None),
+        release_log: RefCell::new(Vec::new()),
     });
     visibility::install(&shared, &document)?;
     let options = HostOptions {

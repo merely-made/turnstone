@@ -39,8 +39,10 @@ assert snap dragging-node ~ -
 move-by 220 0
 settle 1
 release-at
-settle 1
-assert snap drag-return <= 20
+settle 3
+# The release window is read on the first frame after the release that
+# executed physics steps, not a render frame count.
+assert snap drag-return-step <= 20
 settle 300
 assert snap drag-return >= 40
 assert snap layout-overlaps == 0
@@ -68,8 +70,10 @@ assert snap dragging-node ~ -
 move-by 220 0
 settle 1
 release-at
-settle 1
-assert snap drag-return <= 20
+settle 3
+# The release window is read on the first frame after the release that
+# executed physics steps, not a render frame count.
+assert snap drag-return-step <= 20
 settle 300
 assert snap drag-return >= 40
 assert snap layout-overlaps == 0
@@ -95,8 +99,10 @@ assert snap dragging-node ~ -
 move-by 220 0
 settle 1
 release-at
-settle 1
-assert snap drag-return <= 20
+settle 3
+# The release window is read on the first frame after the release that
+# executed physics steps, not a render frame count.
+assert snap drag-return-step <= 20
 settle 300
 assert snap drag-return >= 40
 assert snap layout-overlaps == 0
@@ -122,8 +128,10 @@ assert snap dragging-node ~ -
 move-by 220 0
 settle 1
 release-at
-settle 1
-assert snap drag-return <= 20
+settle 3
+# The release window is read on the first frame after the release that
+# executed physics steps, not a render frame count.
+assert snap drag-return-step <= 20
 settle 300
 assert snap drag-return >= 40
 assert snap layout-overlaps == 0
@@ -149,9 +157,11 @@ assert snap dragging-node ~ -
 move-by 220 0
 settle 1
 release-at
-settle 1
-# A moving law carries the node within the release frame itself.
-assert snap drag-return <= 60
+settle 3
+# The release window is read on the first frame after the release that
+# executed physics steps, not a render frame count.
+# A moving law carries the node within its first stepped frame.
+assert snap drag-return-step <= 60
 settle 120
 assert snap physics-energy >= 1
 
@@ -176,9 +186,11 @@ assert snap dragging-node ~ -
 move-by 220 0
 settle 1
 release-at
-settle 1
-# A moving law carries the node within the release frame itself.
-assert snap drag-return <= 60
+settle 3
+# The release window is read on the first frame after the release that
+# executed physics steps, not a render frame count.
+# A moving law carries the node within its first stepped frame.
+assert snap drag-return-step <= 60
 settle 120
 assert snap physics-energy >= 1
 
@@ -203,9 +215,11 @@ assert snap dragging-node ~ -
 move-by 220 0
 settle 1
 release-at
-settle 1
-# A moving law carries the node within the release frame itself.
-assert snap drag-return <= 60
+settle 3
+# The release window is read on the first frame after the release that
+# executed physics steps, not a render frame count.
+# A moving law carries the node within its first stepped frame.
+assert snap drag-return-step <= 60
 settle 120
 assert snap physics-energy >= 1
 
@@ -230,9 +244,11 @@ assert snap dragging-node ~ -
 move-by 220 0
 settle 1
 release-at
-settle 1
-# A moving law carries the node within the release frame itself.
-assert snap drag-return <= 60
+settle 3
+# The release window is read on the first frame after the release that
+# executed physics steps, not a render frame count.
+# A moving law carries the node within its first stepped frame.
+assert snap drag-return-step <= 60
 settle 120
 assert snap physics-energy >= 1
 
@@ -257,9 +273,11 @@ assert snap dragging-node ~ -
 move-by 220 0
 settle 1
 release-at
-settle 1
-# A moving law carries the node within the release frame itself.
-assert snap drag-return <= 60
+settle 3
+# The release window is read on the first frame after the release that
+# executed physics steps, not a render frame count.
+# A moving law carries the node within its first stepped frame.
+assert snap drag-return-step <= 60
 settle 120
 assert snap physics-energy >= 1
 
@@ -284,9 +302,11 @@ assert snap dragging-node ~ -
 move-by 220 0
 settle 1
 release-at
-settle 1
-# A moving law carries the node within the release frame itself.
-assert snap drag-return <= 60
+settle 3
+# The release window is read on the first frame after the release that
+# executed physics steps, not a render frame count.
+# A moving law carries the node within its first stepped frame.
+assert snap drag-return-step <= 60
 # Anneal cools rather than holding an energy: what it owes is displacement.
 settle 300
 assert snap drag-return >= 40
@@ -313,8 +333,10 @@ assert snap dragging-node ~ -
 move-by 220 0
 settle 1
 release-at
-settle 1
-assert snap drag-return <= 20
+settle 3
+# The release window is read on the first frame after the release that
+# executed physics steps, not a render frame count.
+assert snap drag-return-step <= 20
 settle 300
 assert snap drag-return <= 5
 assert snap physics-energy <= 1
