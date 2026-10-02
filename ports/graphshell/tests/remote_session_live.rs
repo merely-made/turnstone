@@ -10,7 +10,7 @@
 //! (`c4b1_live_board`, `c4b3_reconnect`) with the WebRTC link taken out.
 
 use chirograph::{CapabilityProfile, CarrierOutput, CarrierRequest, PresentationCapability};
-use graphshell::live_endpoint::{ADMITTED_INTENT, LiveEndpoint, REFUSED_INTENT};
+use graphshell::live_endpoint::{ADMITTED_INTENT, COLOURED_INTENT, LiveEndpoint, REFUSED_INTENT};
 use graphshell_client::RemoteSession;
 use graphshell_endpoint::{ProjectionNoticeSource, ResumableProjectionSource, dispatch_common};
 
@@ -141,4 +141,50 @@ fn the_live_board_receipts_hold_without_a_browser() {
     assert!(events.contains(&"remote-rejoined".to_string()), "{events:?}");
     assert!(events.contains(&"remote-bell revision 3".to_string()), "{events:?}");
     assert!(!remote.in_flight());
+}
+
+#[test]
+fn the_coloured_intent_proves_the_draft_form() {
+    let mut host = Host {
+        endpoint: LiveEndpoint::new(),
+        verbs: Vec::new(),
+    };
+    let mut remote = RemoteSession::new(profile());
+    remote.joined();
+    pump(&mut remote, &mut host);
+    let labels: Vec<String> = remote
+        .actions()
+        .into_iter()
+        .map(|(_, action)| action.label)
+        .collect();
+    assert_eq!(
+        labels,
+        ["Append a card", "Forbidden action", "Append a coloured card"],
+        "the bounded intent comes last"
+    );
+
+    // Opening it asks for a value and sends nothing.
+    remote.invoke_action(intent(&remote, COLOURED_INTENT));
+    assert!(remote.take_outgoing().is_empty());
+    assert_eq!(remote.form.status, "Choose values · Append a coloured card");
+
+    // Unset, it is refused here, before the endpoint is asked.
+    remote.submit_draft();
+    assert!(remote.take_outgoing().is_empty());
+    assert!(remote.form.status.starts_with("Choose required values"), "{}", remote.form.status);
+    assert_eq!(remote.status(), "open");
+
+    // Chosen, the endpoint accepts and the card carries the colour.
+    remote.form.choose("colour", "blue");
+    remote.submit_draft();
+    pump(&mut remote, &mut host);
+    assert!(remote.form.status.starts_with("Accepted"), "{}", remote.form.status);
+    assert_eq!(remote.revision(), Some(2));
+    assert_eq!(cards(&remote), 2);
+    assert_eq!(
+        remote.card_labels(),
+        vec!["Card 1 · Blue".to_string(), "Card 0".to_string()],
+        "an appended card leads, as the fixture orders it"
+    );
+    assert!(remote.form.draft.is_none());
 }

@@ -20,6 +20,9 @@
 //!   returns [`IntentResult::Accepted`];
 //! - the **refused** intent is advertised exactly as visibly and always
 //!   returns [`IntentResult::Rejected`], changing nothing;
+//! - the **coloured** intent carries a bounded form (one required choice of
+//!   colour) and, accepted, appends a card titled with that colour; it is how
+//!   a host's draft form is proved against a real endpoint;
 //! - either intent raised against a stale revision returns
 //!   [`IntentResult::Stale`] with the current position, changing nothing.
 //!
@@ -39,7 +42,7 @@
 use std::collections::BTreeMap;
 
 use chirograph::{
-    AdvertisedAction, BoundsRelationship, CachePolicy, CarrierNotice, ContentHash,
+    ActionFormChoiceV1, ActionFormFieldV1, ActionFormV1, AdvertisedAction, BoundsRelationship, CachePolicy, CarrierNotice, ContentHash,
     EndpointDescriptor, IntentEffect, IntentInvocation, IntentReference, IntentResult,
     PresentationBinding, PresentationCapability, PresentationChange, PresentationCodec,
     PresentationKey, PresentationManifest, PresentationOffer, PresentationSemantics, ProjectionAck,
@@ -61,6 +64,11 @@ use scenotime::{Revision, SceneDiff, SceneEpoch, SceneOp, SceneSnapshot};
 pub const ADMITTED_INTENT: &str = "mere.graphshell/live-fixture/append";
 /// The intent this endpoint advertises and always refuses.
 pub const REFUSED_INTENT: &str = "mere.graphshell/live-fixture/forbidden";
+
+/// The intent this endpoint performs with a chosen colour: a bounded form.
+pub const COLOURED_INTENT: &str = "mere.graphshell/live-fixture/append-coloured";
+/// The colours the coloured intent offers, as (value, label).
+pub const COLOURS: [(&str, &str); 3] = [("red", "Red"), ("blue", "Blue"), ("gold", "Gold")];
 
 /// The session this endpoint projects.
 pub const SESSION: &str = "live.graphshell/board";
@@ -94,6 +102,8 @@ pub struct LiveEndpoint {
     /// than re-snapshotted.
     history: Vec<ProjectionDiff>,
     resources: BTreeMap<ContentHash, Vec<u8>>,
+    /// Each card's title, by instance.
+    labels: Vec<String>,
     /// Set when a revision is issued, taken by the next notice poll.
     pending_notice: Option<CarrierNotice>,
 }
@@ -105,7 +115,8 @@ impl LiveEndpoint {
         let source = scene.intern_source(SourceRef::new("live.graphshell", "card:0"));
         scene.items.push(card(source, 0.0));
         let mut resources = BTreeMap::new();
-        let bytes = label_bytes(0);
+        let label = card_label(0, None);
+        let bytes = label.clone().into_bytes();
         resources.insert(ContentHash::of(&bytes), bytes);
         Self {
             session,
@@ -113,6 +124,7 @@ impl LiveEndpoint {
             revision: Revision(1),
             history: Vec::new(),
             resources,
+            labels: vec![label],
             pending_notice: None,
         }
     }
@@ -155,6 +167,23 @@ impl LiveEndpoint {
                 input_form: None,
                 effect: IntentEffect::Curation,
             },
+            AdvertisedAction {
+                intent: IntentReference(COLOURED_INTENT.into()),
+                label: "Append a coloured card".into(),
+                explanation: "Adds one card in the colour you choose.".into(),
+                payload_schema: "mere.graphshell/live-fixture/append-coloured/v1".into(),
+                input_form: Some(
+                    ActionFormV1::new("mere.graphshell/live-fixture/append-coloured/v1")
+                        .with_field(ActionFormFieldV1::choice(
+                            "colour",
+                            "Colour",
+                            COLOURS
+                                .iter()
+                                .map(|(value, label)| ActionFormChoiceV1::new(*value, *label)),
+                        )),
+                ),
+                effect: IntentEffect::Curation,
+            },
         ]
     }
 
@@ -167,7 +196,9 @@ impl LiveEndpoint {
                 instance: InstanceId(index),
                 key: key.clone(),
             });
-            manifest.offers.insert(key, vec![offer(index)]);
+            manifest
+                .offers
+                .insert(key, vec![offer(&self.labels[index as usize])]);
         }
         manifest
     }
@@ -194,19 +225,23 @@ fn card(source: SourceIx, x: f32) -> ProjectedItem {
     }
 }
 
-fn label_bytes(index: u32) -> Vec<u8> {
-    format!("card {index}").into_bytes()
+/// A card's title: its index, and its colour when one was chosen.
+fn card_label(index: u32, colour: Option<&str>) -> String {
+    match colour {
+        Some(colour) => format!("Card {index} · {colour}"),
+        None => format!("Card {index}"),
+    }
 }
 
-fn offer(index: u32) -> PresentationOffer {
-    let bytes = label_bytes(index);
+fn offer(label: &str) -> PresentationOffer {
+    let bytes = label.as_bytes().to_vec();
     PresentationOffer {
         codec: PresentationCodec::NativeGlyphV1,
         resource: ContentHash::of(&bytes),
         byte_size: bytes.len() as u64,
         requires: PresentationCapability::NativeGlyph,
         semantics: PresentationSemantics {
-            label: format!("Card {index}"),
+            label: label.to_string(),
             role: SemanticRole::Graphic,
             bounds: BoundsRelationship::FitWithinFootprint,
             actions: LiveEndpoint::actions(),
@@ -341,6 +376,23 @@ impl IntentSink for LiveEndpoint {
                 reason: "this endpoint advertises the action and refuses it".into(),
             });
         }
+        if intent.intent == COLOURED_INTENT {
+            let colour = serde_json::from_slice::<serde_json::Value>(&intent.payload)
+                .ok()
+                .and_then(|payload| payload.get("colour")?.as_str().map(str::to_string));
+            let Some(label) = colour.as_deref().and_then(|colour| {
+                COLOURS
+                    .iter()
+                    .find(|(value, _)| *value == colour)
+                    .map(|(_, label)| *label)
+            }) else {
+                return Ok(IntentResult::Rejected {
+                    reason: "the coloured card needs one of the offered colours".into(),
+                });
+            };
+            self.append_titled(Some(label));
+            return Ok(IntentResult::Accepted);
+        }
         if intent.intent != ADMITTED_INTENT {
             return Ok(IntentResult::Rejected {
                 reason: format!("unknown intent {}", intent.intent),
@@ -357,6 +409,11 @@ impl LiveEndpoint {
     /// reached it or the host changed the board while a peer was away (the
     /// resume-on-reconnect receipt needs exactly that).
     pub fn append(&mut self) -> Revision {
+        self.append_titled(None)
+    }
+
+    /// Append a card, titled with `colour` when one was chosen.
+    fn append_titled(&mut self, colour: Option<&str>) -> Revision {
         let index = self.card_count();
         let source = self
             .scene
@@ -366,8 +423,10 @@ impl LiveEndpoint {
 
         let base = self.revision;
         self.revision = Revision(self.revision.0 + 1);
-        let bytes = label_bytes(index);
+        let label = card_label(index, colour);
+        let bytes = label.clone().into_bytes();
         self.resources.insert(ContentHash::of(&bytes), bytes);
+        self.labels.push(label.clone());
 
         let key = PresentationKey(format!("live:{index}"));
         self.history.push(ProjectionDiff {
@@ -390,7 +449,7 @@ impl LiveEndpoint {
                 }),
                 PresentationChange::ReplaceOffers {
                     key,
-                    offers: vec![offer(index)],
+                    offers: vec![offer(&label)],
                 },
             ],
             status: Some(SessionStatus::Live),
