@@ -107,6 +107,47 @@ impl TreePage {
 }
 
 /// Probe-page configuration; the Canvas API accepts the same settings directly.
+/// The web host's GPU repulsion threshold: the node count at or above
+/// which the canvas stages `NodeExclusion` on the page's device. Measured on
+/// this host (physics catalog plan, P5 findings); `gpu_threshold` overrides.
+pub(super) const WEB_GPU_THRESHOLD: usize = 1_000;
+/// How many steps old a device answer may be on this host: its frames run up
+/// to three physics steps and a readback lands only between frames (ruled
+/// 2026-10-02, "1 native, 3 web"). `gpu_max_stale_steps` overrides.
+pub(super) const WEB_GPU_MAX_STALE_STEPS: u32 = 3;
+
+/// The page's GPU repulsion options: `gpu=off` keeps the CPU law (the
+/// baseline a receipt compares against), `gpu_threshold` and
+/// `gpu_max_stale_steps` override the host defaults above.
+#[derive(Clone, Copy, Debug)]
+pub(super) struct GpuOptions {
+    pub(super) enabled: bool,
+    pub(super) threshold: usize,
+    pub(super) max_stale_steps: u32,
+}
+
+pub(super) fn gpu_options() -> Result<GpuOptions, String> {
+    let search = web_sys::window()
+        .ok_or("no window")?
+        .location()
+        .search()
+        .map_err(|_| "cannot read page options")?;
+    let params =
+        web_sys::UrlSearchParams::new_with_str(&search).map_err(|_| "invalid page options")?;
+    let mut options = GpuOptions {
+        enabled: params.get("gpu").as_deref() != Some("off"),
+        threshold: WEB_GPU_THRESHOLD,
+        max_stale_steps: WEB_GPU_MAX_STALE_STEPS,
+    };
+    if let Some(value) = params.get("gpu_threshold") {
+        options.threshold = value.parse().map_err(|_| "invalid gpu_threshold")?;
+    }
+    if let Some(value) = params.get("gpu_max_stale_steps") {
+        options.max_stale_steps = value.parse().map_err(|_| "invalid gpu_max_stale_steps")?;
+    }
+    Ok(options)
+}
+
 pub(super) fn physics_config() -> Result<mere::canvas::ElapsedStepConfig, String> {
     let mut config = mere::canvas::ElapsedStepConfig::default();
     let search = web_sys::window()

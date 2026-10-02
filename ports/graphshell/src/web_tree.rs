@@ -117,6 +117,10 @@ struct Shared {
     gpu: RefCell<Option<(wgpu::Device, wgpu::Queue)>>,
     timing: RefCell<FrameTiming>,
     physics_config: mere::canvas::ElapsedStepConfig,
+    gpu_options: controls::GpuOptions,
+    /// The page's device for the canvas's and the board's repulsion, built
+    /// once from the host's render core on the producer's first frame.
+    physics_device: RefCell<Option<mere::canvas::PhysicsDevice>>,
     visibility: Option<RefCell<visibility::Visibility>>,
     /// A released drag's drop point, canvas-local px, until the first frame
     /// that executes a physics step after the release.
@@ -128,6 +132,8 @@ struct Shared {
     press_point: Cell<Option<(f32, f32)>>,
     /// Every recorded release, for the receipt.
     release_log: RefCell<Vec<String>>,
+    /// Lines `log-physics` recorded, for the receipt.
+    physics_log: RefCell<Vec<String>>,
     /// The remote session (`remote::TreeRemote`); its channel's pumps reach
     /// it from outside the runner.
     remote: Rc<RefCell<remote::TreeRemote>>,
@@ -156,6 +162,24 @@ impl TextureProducer for CanvasProducer {
         let visibility_before = visibility::before(shared);
         if shared.gpu.borrow().is_none() {
             *shared.gpu.borrow_mut() = Some((cx.device.clone(), cx.queue.clone()));
+            let options = shared.gpu_options;
+            if options.enabled {
+                // The host's own device, never one of ours: the render core's
+                // handles are the ones every producer on this page draws with.
+                let device = mere::canvas::physics_device_for(&cx.core.renderer().wgpu_device.core)
+                    .with_threshold(options.threshold)
+                    .with_max_stale_steps(options.max_stale_steps);
+                shared
+                    .canvas
+                    .borrow_mut()
+                    .set_physics_device(Some(device.clone()));
+                shared
+                    .remote
+                    .borrow_mut()
+                    .board
+                    .set_physics_device(Some(device.clone()));
+                *shared.physics_device.borrow_mut() = Some(device);
+            }
         }
         let (width, height) = cx.frame.logical_size;
         let size = (
@@ -565,7 +589,7 @@ async fn boot(root: Element) -> Result<(), String> {
     } else {
         match web_graphs::requested() {
             Some((nodes, seed)) => (
-                web_graphs::generated(nodes, seed),
+                web_graphs::generated(nodes, seed, web_graphs::links()),
                 format!("generated, seed {seed}"),
             ),
             None => (fixture_graph()?, "fixture".to_string()),
@@ -581,11 +605,14 @@ async fn boot(root: Element) -> Result<(), String> {
         gpu: RefCell::new(None),
         timing: RefCell::new(FrameTiming::default()),
         physics_config: controls::physics_config()?,
+        gpu_options: controls::gpu_options()?,
+        physics_device: RefCell::new(None),
         visibility: visibility::requested()?,
         release_watch: Cell::new(None),
         release_step: Cell::new(None),
         press_point: Cell::new(None),
         release_log: RefCell::new(Vec::new()),
+        physics_log: RefCell::new(Vec::new()),
         remote: Rc::new(RefCell::new(remote::TreeRemote::new())),
         remote_shown: Cell::new(false),
     });

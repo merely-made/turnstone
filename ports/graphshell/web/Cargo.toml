@@ -25,8 +25,10 @@ path = "../src/web.rs"
 # and needs `--cfg getrandom_backend="wasm_js"` in this target's rustflags:
 # personae's wasm32 identity stack sits on getrandom 0.3, whose `wasm_js`
 # feature is inert without the cfg. See .cargo/config.toml.example.
-graphshell = { path = "..", default-features = false, features = ["web", "webrtc-browser"] }
-mere = { path = "../../../crates/mere", default-features = false, features = ["graph", "canvas"] }
+graphshell = { path = "..", default-features = false, features = ["web", "webrtc-browser", "canvas-gpu"] }
+# `canvas-gpu`: the canvas's repulsion on the page's own WebGPU device
+# (physics catalog plan, P5c).
+mere = { path = "../../../crates/mere", default-features = false, features = ["graph", "canvas", "canvas-gpu"] }
 # `indexeddb` supplies the browser realization of muniment's byte-store seam,
 # which this crate hands to `GraphshellApp` as its backend. It lived here until
 # the duplicate showed up; muniment owns the backend family, so it owns this.
@@ -146,3 +148,9 @@ taffy = { package = "genet-taffy", version = "=0.14.0", git = "https://github.co
 layout-dom-api = { git = "https://github.com/merely-made/genet.git", rev = "b1eb3af197111ecde34421bbe1bad2e6024ca564", version = "=0.1.1" }
 genet-scripted-dom = { git = "https://github.com/merely-made/genet.git", rev = "b1eb3af197111ecde34421bbe1bad2e6024ca564", version = "=0.1.2" }
 vello = { git = "https://github.com/mark-ik/vello.git", tag = "vello-0.10.0" }
+# The resident lane's CubeCL stack (mere `canvas-gpu`, physics catalog P5c),
+# restated from the root manifest: cubecl-runtime 0.11.0-pre.2's published
+# manifest lacks the wasm-bindgen-futures edge its wasm tuner uses, and
+# burn-cubecl carries the same-allocation binding fix. Delete with the root's.
+cubecl-runtime = { path = "../../../support/patches/cubecl-runtime" }
+burn-cubecl = { path = "../../../support/patches/burn-cubecl" }

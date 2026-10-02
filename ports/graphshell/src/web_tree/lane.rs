@@ -151,7 +151,41 @@ impl TreeLane {
                 .with_field("layout-spread", format!("{:.0}", stats.spread))
                 .with_field("layout-overlaps", stats.overlaps.to_string())
                 .with_field("layout-stretch", format!("{:.2}", stats.stretch));
+        } else {
+            // Past the all-pairs limit, spread and overlaps (same
+            // definition, a grid) still report; stretch does not.
+            let stats = canvas.layout_stats_without_stretch();
+            snapshot = snapshot
+                .with_field("layout-spread", format!("{:.0}", stats.spread))
+                .with_field("layout-overlaps", stats.overlaps.to_string());
         }
+        // The GPU repulsion lane (P5c): whether the page has a device, and
+        // the lane's counts, the receipt's proof the device ran.
+        let device = self.shared.physics_device.borrow();
+        let lane = canvas.repulsion_stats().unwrap_or_default();
+        snapshot = snapshot
+            .with_field(
+                "physics-device",
+                if device.is_some() { "on" } else { "off" },
+            )
+            .with_field(
+                "gpu-threshold",
+                device
+                    .as_ref()
+                    .map(|device| device.threshold().to_string())
+                    .unwrap_or_default(),
+            )
+            .with_field("gpu-device-steps", lane.device_steps.to_string())
+            .with_field("gpu-cpu-steps", lane.cpu_steps.to_string())
+            .with_field("gpu-submissions", lane.submissions.to_string())
+            .with_field("gpu-failures", lane.failures.to_string())
+            .with_field(
+                "gpu-answers",
+                device
+                    .as_ref()
+                    .map(|device| device.answers().to_string())
+                    .unwrap_or_default(),
+            );
         snapshot
     }
 
@@ -459,6 +493,46 @@ impl Product for TreeLane {
                     }
                 })
             },
+            // `log-physics <label>`: the layout's signature and the GPU
+            // lane's counts into the receipt, so a run can be read without
+            // a failing assert to show the values.
+            "log-physics" => {
+                let canvas = self.shared.canvas.borrow();
+                let stats = canvas.layout_stats_without_stretch();
+                let lane = canvas.repulsion_stats().unwrap_or_default();
+                let answers = self
+                    .shared
+                    .physics_device
+                    .borrow()
+                    .as_ref()
+                    .map_or(0, |device| device.answers());
+                self.shared.physics_log.borrow_mut().push(format!(
+                    "physics {}: law {} nodes {} energy {:.1} spread {:.0} overlaps {} \
+                     device {} device-steps {} cpu-steps {} submissions {} answers {} failures {} \
+                     waiting {} stale {} mismatched {} last-age {}",
+                    rest.trim(),
+                    canvas.physics_law().id(),
+                    canvas.graph().node_count(),
+                    stats.energy,
+                    stats.spread,
+                    stats.overlaps,
+                    if self.shared.physics_device.borrow().is_some() {
+                        "on"
+                    } else {
+                        "off"
+                    },
+                    lane.device_steps,
+                    lane.cpu_steps,
+                    lane.submissions,
+                    answers,
+                    lane.failures,
+                    lane.waiting,
+                    lane.stale,
+                    lane.mismatched,
+                    lane.last_age,
+                ));
+                Ok(())
+            },
             "click-node" => {
                 let (x, y) = self.node_point(ctx, rest.trim())?;
                 ctx.pointer.push(HostPointer::Press(x, y));
@@ -609,6 +683,7 @@ impl Product for TreeLane {
         let timing = self.shared.timing.borrow();
         let mut lines = timing.receipt_lines();
         lines.extend(self.shared.release_log.borrow().iter().cloned());
+        lines.extend(self.shared.physics_log.borrow().iter().cloned());
         lines.push(format!(
             "gpu timestamps: {}",
             if timing.gpu_timed() { "yes" } else { "no" }
