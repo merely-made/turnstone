@@ -33,7 +33,7 @@ function semanticNode(element) {
     ] ?? null);
   const label =
     element.getAttribute("aria-label") ||
-    (element.matches('button, h1, h2, dd, [role="button"], [role="heading"], [role="status"]') ? element.textContent.trim() : null);
+    (element.matches('button, h1, h2, dd, li, [role="button"], [role="heading"], [role="status"], [role="listitem"]') ? element.textContent.trim() : null);
   const children = [...element.children]
     .filter((child) => child.getAttribute("aria-hidden") !== "true")
     .map(semanticNode)
@@ -44,6 +44,9 @@ function semanticNode(element) {
     ...(element.id ? { id: element.id } : {}),
     ...(element.getAttribute("aria-description")
       ? { description: element.getAttribute("aria-description") }
+      : {}),
+    ...(element.hasAttribute("aria-expanded")
+      ? { expanded: element.getAttribute("aria-expanded") === "true" }
       : {}),
     ...(element.hasAttribute("aria-pressed")
       ? { pressed: element.getAttribute("aria-pressed") === "true" }

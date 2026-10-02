@@ -6,7 +6,7 @@
 //! Cambium controls hold the form; Apply reads them into the typed inputs of
 //! `graphshell::canvas_physics`, which the old page's form also calls.
 use super::*;
-use cambium::{SelectState, button, checkbox, lens, select};
+use cambium::{SelectState, button, checkbox, disclosure, lens, select};
 use graphshell::canvas_physics::{
     self, ArrangementTransition, CUSTOM_PROFILE, arrangement_choices,
 };
@@ -213,7 +213,6 @@ pub(super) fn section(page: &TreePage) -> Child {
         .chain(CANVAS_PHYSICS_PROFILES.iter().map(|profile| profile.label))
         .collect();
     let section: Vec<Child> = vec![
-        Box::new(el("h2", "Arrangement and physics")),
         picker(
             "Arrangement",
             arrangement_choices().map(|(_, label)| label).collect(),
@@ -248,8 +247,13 @@ pub(super) fn section(page: &TreePage) -> Child {
         ),
     ];
     Box::new(
-        el("section", section)
-            .attr("class", "tools-section")
-            .attr("aria-label", "Arrangement and physics"),
+        el(
+            "section",
+            disclosure(&page.sections.physics, section, |page: &mut TreePage| {
+                page.sections.physics.toggle()
+            }),
+        )
+        .attr("class", "tools-section")
+        .attr("aria-label", "Arrangement and physics"),
     )
 }

@@ -35,12 +35,14 @@ use super::web_rtc_link::{self, LiveRemote, RemoteHost, remote_profile};
 use super::{BrowserHost, element, root, update_semantics, web_scenario};
 
 /// The old page's chrome over the board: 50 px each side, the toolbar and
-/// session row above, the detail strip below.
+/// session row above, the detail strip below. It frames the scene's bounds,
+/// as it always has, so its board sits where its chrome expects it.
 const BOARD_FIT: BoardFit = BoardFit {
     left: 50.0,
     right: 50.0,
     top: 116.0,
     bottom: 64.0,
+    frame_edges: false,
 };
 
 /// Where the remote projection lives.

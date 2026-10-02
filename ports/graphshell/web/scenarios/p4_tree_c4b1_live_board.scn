@@ -12,6 +12,9 @@ click role:button Remote mount
 settle 1
 assert snap session == remote
 assert text Remote projection · 1 objects · revision 1
+# The region scrolls: bring the action status into view for the capture.
+reveal role:status Ready
+settle 2
 capture c4b1_mounted
 wait
 # The endpoint advertises both intents; the section offers one button each.
@@ -33,6 +36,9 @@ assert snap remote-revision == 2
 assert snap remote-cards == 2
 assert snap remote-resume ~ diff
 assert event remote-bell revision 2
+# The region scrolls: bring the action status into view for the capture.
+reveal role:status Accepted
+settle 2
 capture c4b1_appended
 wait
 log c4b1 live board receipt complete

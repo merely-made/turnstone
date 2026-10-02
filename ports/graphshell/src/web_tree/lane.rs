@@ -174,6 +174,14 @@ impl TreeLane {
                 },
             )
             .with_field("active-session", remote::active_line(page))
+            .with_field(
+                "tools-sections",
+                format!(
+                    "physics:{},remote:{}",
+                    if page.sections.physics.expanded { "open" } else { "closed" },
+                    if page.sections.remote.expanded { "open" } else { "closed" },
+                ),
+            )
             .with_field("remote-link", if live.is_some() { "webrtc" } else { "none" })
             .with_field("remote-state", remote.status())
             .with_field(
@@ -469,6 +477,30 @@ impl Product for TreeLane {
                     .set(Some((point.0 - left, point.1 - top)));
                 self.shared.release_step.set(None);
                 ctx.pointer.push(HostPointer::Release(point.0, point.1));
+                Ok(())
+            },
+            // `reveal <role:name|.class> [text]`: scroll the first match into
+            // view in its scrolling ancestors, as a click would, without
+            // pressing it, so a capture can show a scrolled state.
+            "reveal" => {
+                let (head, text) = rest.trim().split_once(' ').unwrap_or((rest.trim(), ""));
+                let mut selector = if let Some(role) = head.strip_prefix("role:") {
+                    Selector::role(role)
+                } else if let Some(class) = head.strip_prefix('.') {
+                    Selector::class(class)
+                } else {
+                    return Err(format!("reveal wants role:name or .class, got '{head}'"));
+                };
+                if !text.trim().is_empty() {
+                    selector = selector.containing(text.trim());
+                }
+                let node = {
+                    let dom = ctx.runner.dom();
+                    let dom = dom.borrow();
+                    taproot::matching(&dom, &selector).into_iter().next()
+                }
+                .ok_or_else(|| format!("reveal {rest}: nothing matches"))?;
+                ctx.scroll_into_view(node, cambium_rootstock::ScrollAlign::Nearest);
                 Ok(())
             },
             // `center-node <url>`: bring a node into view by panning the camera

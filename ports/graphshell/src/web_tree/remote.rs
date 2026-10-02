@@ -12,11 +12,11 @@
 //! button per advertised intent, the draft form for an intent with inputs,
 //! the link's disconnect, reconnect and nudge, and the action status.
 use super::*;
-use cambium::{SelectState, button, lens, select};
+use cambium::{DisclosureState, SelectState, button, disclosure, lens, select};
 use graphshell::client::remote::ActionForm;
 use graphshell::client::{ActionDraftSemantics, MountedScene};
 use graphshell::remote_board::RemoteBoard;
-use mere::canvas::BoardFit;
+use mere::canvas::{BoardFit, BoardText};
 
 use super::super::web_rtc_link::{self, LiveRemote, RemoteHost};
 
@@ -27,9 +27,26 @@ pub(super) const BOARD_FIT: BoardFit = BoardFit {
     right: 24.0,
     top: 24.0,
     bottom: 24.0,
+    frame_edges: true,
 };
 /// The draft form's unset choice.
 const CHOOSE: &str = "Choose…";
+
+/// Which Graph tools sections are open. Both start open; the region scrolls.
+pub(super) struct Sections {
+    pub(super) physics: DisclosureState,
+    pub(super) remote: DisclosureState,
+}
+
+impl Default for Sections {
+    fn default() -> Self {
+        Self {
+            physics: DisclosureState::new("tools-physics", "Arrangement and physics")
+                .expanded(true),
+            remote: DisclosureState::new("tools-remote", "Remote session").expanded(true),
+        }
+    }
+}
 
 /// Which session the canvas leaf shows.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -50,6 +67,8 @@ pub(super) struct TreeRemote {
     /// Receipt events, drained by the scenario lane.
     pub(super) events: Vec<String>,
     pub(super) board: RemoteBoard,
+    /// The faces the board sets its card titles in: the page's own.
+    pub(super) text: BoardText,
     /// Bumped on every change, so the frame hook knows to rebuild the view.
     pub(super) generation: u64,
 }
@@ -63,6 +82,11 @@ impl TreeRemote {
             form: ActionForm::new("Ready"),
             events: Vec::new(),
             board: RemoteBoard::new(),
+            text: {
+                let mut text = BoardText::new();
+                text.register_font(include_bytes!("../../web/GraphshellSans.ttf").to_vec());
+                text
+            },
             generation: 0,
         }
     }
@@ -185,6 +209,10 @@ impl TreePage {
             self.shared.canvas.borrow_mut().reset_frame_time();
         }
         self.session = session;
+        if session == Session::Remote {
+            // Showing the board opens its section ("opens when remote is shown").
+            self.sections.remote.expanded = true;
+        }
         self.shared.remote_shown.set(session == Session::Remote);
         self.shared.dirty.set(true);
     }
@@ -334,10 +362,12 @@ fn draft_form(page: &TreePage, draft: &ActionDraftSemantics) -> Child {
                 .attr("role", "alert"),
         ));
     }
-    children.push(Box::new(button(
-        draft.submit_label.clone(),
-        |page: &mut TreePage, _| page.submit(),
-    )));
+    // "Submit" rather than the action's own label, which its button in the
+    // actions group already carries; the form is named by the action.
+    children.push(Box::new(
+        button("Submit", |page: &mut TreePage, _| page.submit())
+            .attr("aria-description", draft.submit_label.clone()),
+    ));
     children.push(command("Cancel", TreePage::cancel));
     Box::new(
         el("form", children)
@@ -350,7 +380,6 @@ fn draft_form(page: &TreePage, draft: &ActionDraftSemantics) -> Child {
 pub(super) fn section(page: &TreePage) -> Child {
     let remote = page.shared.remote.borrow();
     let mut children: Vec<Child> = vec![
-        Box::new(el("h2", "Remote session")),
         Box::new(
             el(
                 "div",
@@ -369,6 +398,23 @@ pub(super) fn section(page: &TreePage) -> Child {
                 .attr("role", "status"),
         ),
     ];
+    // The board's cards by title, in the scene's order.
+    let titles: Vec<Child> = remote
+        .live
+        .as_ref()
+        .map(|live| live.session.card_labels())
+        .unwrap_or_default()
+        .into_iter()
+        .map(|title| Box::new(el("li", title).attr("role", "listitem")) as Child)
+        .collect();
+    if !titles.is_empty() {
+        children.push(Box::new(
+            el("ul", titles)
+                .attr("class", "tools-cards")
+                .attr("role", "list")
+                .attr("aria-label", "Cards"),
+        ));
+    }
     let actions: Vec<Child> = remote
         .actions()
         .into_iter()
@@ -413,9 +459,15 @@ pub(super) fn section(page: &TreePage) -> Child {
             .attr("class", "tools-status")
             .attr("role", "status"),
     ));
+    drop(remote);
     Box::new(
-        el("section", children)
-            .attr("class", "tools-section")
-            .attr("aria-label", "Remote session"),
+        el(
+            "section",
+            disclosure(&page.sections.remote, children, |page: &mut TreePage| {
+                page.sections.remote.toggle()
+            }),
+        )
+        .attr("class", "tools-section")
+        .attr("aria-label", "Remote session"),
     )
 }

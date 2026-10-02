@@ -17,6 +17,9 @@ wait
 assert snap action-status ~ Accepted
 assert snap remote-revision == 2
 assert snap remote-cards == 2
+# The region scrolls: bring the action status into view for the capture.
+reveal role:status Accepted
+settle 2
 capture c4b3_before_outage
 wait
 # Down.
@@ -39,6 +42,9 @@ assert event remote-bell revision 3
 assert snap remote-revision == 3
 assert snap remote-cards == 3
 assert snap remote-resume ~ diff · 2 → 3
+# The region scrolls: bring the action status into view for the capture.
+reveal role:status Nudged
+settle 2
 capture c4b3_resumed
 wait
 log c4b3 reconnect receipt complete

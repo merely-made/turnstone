@@ -25,6 +25,8 @@ wait
 assert snap action-status ~ Accepted
 assert snap remote-revision == 2
 assert snap remote-cards == 2
+# The region scrolls: bring the action status into view for the capture.
+reveal role:status Accepted
 settle 2
 capture physics_remote_appended
 wait

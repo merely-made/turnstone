@@ -76,7 +76,9 @@ const SHEET: &str = "\
     .tree-body { display:flex; flex-direction:row; flex:1 1 auto; min-height:0; position:relative; }     .tools-overlay { position:absolute; top:0; right:0; bottom:0; z-index:10; }     .tools-storage { margin:2px 0 6px; color:#9fb0bb; font-size:12px; } \
     .tree-graph { display:flex; flex-direction:column; flex:1 1 auto; min-width:0; } \
     .tree-canvas { display: block; flex: 1 1 auto; min-height: 0; } \
-    .tree-tools { flex:0 0 auto; width:279px; padding:4px 10px; background:#0d161b; border-left:1px solid #2c3b44; } \
+    .tree-tools { flex:0 0 auto; width:279px; padding:4px 10px; background:#0d161b; border-left:1px solid #2c3b44; overflow-y:auto; min-height:0; } \
+    .tree-tools .disclosure-trigger { display:block; width:100%; text-align:left; font-size:14px; background:transparent; border:none; padding:2px 0 4px; margin:0; } \
+    .tools-cards { margin:2px 0 4px; padding:0 0 0 16px; font-size:12px; color:#dce3e8; } \
     .tree-tools h2 { font-size:14px; margin:2px 0 4px; } \
     .tree-tools h3 { font-size:13px; margin:4px 0 2px; } \
     .tools-section + .tools-section { margin-top:10px; border-top:1px solid #2c3b44; padding-top:4px; } \
@@ -175,12 +177,20 @@ impl TextureProducer for CanvasProducer {
                 let mut remote = shared.remote.borrow_mut();
                 remote.sync_board(choice);
                 remote.board.tick();
+                let remote = &mut *remote;
+                let empty = mere::canvas::BoardScene::default();
                 let painted = if remote.mounted().is_some() {
                     remote.board.scene()
                 } else {
-                    &mere::canvas::BoardScene::default()
+                    &empty
                 };
-                painted.paint(remote.board.board(), size.0, size.1, remote::BOARD_FIT)
+                painted.paint_titled(
+                    remote.board.board(),
+                    size.0,
+                    size.1,
+                    remote::BOARD_FIT,
+                    &mut remote.text,
+                )
             };
             shared.dirty.set(false);
             let [physical_width, physical_height] = cx.frame.physical_size;
@@ -317,6 +327,8 @@ pub(crate) struct TreePage {
     physics: physics::PhysicsPanel,
     /// Which session the canvas leaf shows.
     session: remote::Session,
+    /// Which Graph tools sections are open.
+    sections: remote::Sections,
     /// The open remote draft's field selects.
     draft: remote::DraftControls,
     /// The remote generation the view last rebuilt for.
@@ -586,6 +598,7 @@ async fn boot(root: Element) -> Result<(), String> {
                 physics,
                 tools_open: false,
                 session: remote::Session::Local,
+                sections: remote::Sections::default(),
                 draft: remote::DraftControls::default(),
                 remote_seen: 0,
                 size: (width, height),
