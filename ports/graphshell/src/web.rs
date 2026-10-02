@@ -27,6 +27,7 @@ mod web_product;
 mod web_projection;
 mod web_practice;
 mod web_remote;
+mod web_rtc_link;
 mod web_scenario;
 mod web_timing;
 mod web_tree;
@@ -37,10 +38,10 @@ use std::rc::Rc;
 
 use genet_render::TextSystem;
 use graphshell::browser_storage::{StoragePersistence, decide, status_line};
-use graphshell::client::{ActionDraft, ActionDraftSemantics, ActionDraftTarget};
+use graphshell::client::{ActionDraft, ActionDraftSemantics, ActionForm};
 use graphshell::endpoint::{IntentSink, ProjectionSource};
 use graphshell::protocol::{IntentResult, ProjectionSession};
-use mere::canvas::{Canvas, PhysicsBoard, PointerButton};
+use mere::canvas::{Canvas, PointerButton};
 use netrender::Scene;
 use serde::Deserialize;
 use wasm_bindgen::JsCast;
@@ -66,7 +67,7 @@ use graphshell::projection_editor::{
     ProjectionDefinitionSink, ProjectionDraft, ProjectionEditor, ProjectionPanel, Provenance,
     PublicSourceRevision, Reading, RevisionEvidence, SelectionMode, SourceBinding,
 };
-use graphshell::view::ProjectionLayoutView;
+use graphshell::remote_board::RemoteBoard;
 use graphshell_client::frozen::Satisfaction;
 use muniment::IndexedDbBackend;
 use uuid::Uuid;
@@ -83,23 +84,6 @@ const CAPTURE_VISITS_GLOBAL: &str = "graphshellInitialVisitsJson";
 const HISTORY_FILTER_GLOBAL: &str = "graphshellHistoryFilterJson";
 const HISTORY_FORGET_GLOBAL: &str = "graphshellHistoryForgetJson";
 const PROJECTION_EDITOR_STORAGE_KEY: &str = "graphshellProjectionDefinitionV1";
-
-/// Stable fallback paint for an open backdrop kind. Product hosts can replace
-/// this with native art; an unfamiliar remote scene still gets a distinct,
-/// deterministic face from its wire data.
-fn remote_backdrop_color(kind: &str) -> [f32; 4] {
-    const PALETTE: [[f32; 4]; 5] = [
-        [0.10, 0.19, 0.22, 1.0],
-        [0.16, 0.17, 0.25, 1.0],
-        [0.18, 0.14, 0.20, 1.0],
-        [0.13, 0.21, 0.17, 1.0],
-        [0.22, 0.18, 0.12, 1.0],
-    ];
-    let hash = kind.bytes().fold(0x811c_9dc5_u32, |hash, byte| {
-        (hash ^ u32::from(byte)).wrapping_mul(0x0100_0193)
-    });
-    PALETTE[hash as usize % PALETTE.len()]
-}
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 struct InitialCaptureSummary {
@@ -158,8 +142,7 @@ struct BrowserHost {
     /// The remote board's physics: the mounted scene's items as bodies, the
     /// score's positions as anchor slots, the local canvas's law mirrored.
     /// Synced whenever the acknowledged revision moves. (Physics catalog — P3.)
-    remote_board: PhysicsBoard,
-    remote_board_revision: Option<u64>,
+    remote_board: RemoteBoard,
     /// `layout_stats` is a pairwise pass over every node; recompute it only
     /// on motion, one frame past rest, and on a chrome change.
     layout_stats_stale: bool,
@@ -170,7 +153,6 @@ struct BrowserHost {
     remote_session: Option<ProjectionSession>,
     remote_status: String,
     remote_joining: bool,
-    remote_last_resume: String,
     active: ActiveSession,
     canvas: Canvas,
     canvas_element: HtmlCanvasElement,
@@ -180,10 +162,9 @@ struct BrowserHost {
     chrome_text: TextSystem,
     chrome_dirty: bool,
     detail_open: bool,
-    action_count: u32,
-    action_status: String,
-    action_draft: Option<ActionDraft>,
-    action_draft_target: Option<ActionDraftTarget>,
+    /// The page's own action surface, used until a WebRTC session holds one
+    /// (`form`, `form_mut`).
+    actions: ActionForm,
     rendered_action_draft: Option<ActionDraftSemantics>,
     action_draft_semantics_ready: bool,
     width: u32,
@@ -360,7 +341,7 @@ impl BrowserHost {
             detail_open: self.detail_open,
             detail_address,
             selection,
-            action_status: self.action_status.clone(),
+            action_status: self.form().status.clone(),
             viewport_label: format!(
                 "{} × {} · {}",
                 self.width,
@@ -373,7 +354,7 @@ impl BrowserHost {
             physics_law,
             physics_paused,
             remote_cards,
-            action_draft: self.action_draft.as_ref().map(ActionDraft::semantics),
+            action_draft: self.form().draft.as_ref().map(ActionDraft::semantics),
         };
         if let Some(live) = &self.live_projection {
             live.decorate_chrome(&mut model);
@@ -495,93 +476,6 @@ impl BrowserHost {
             self.product_status = status;
             self.chrome_dirty = true;
         }
-    }
-
-    fn remote_scene(&self) -> Scene {
-        let mut scene = Scene::new(self.width, self.height);
-        scene.push_rect(
-            0.0,
-            0.0,
-            self.width as f32,
-            self.height as f32,
-            [0.025, 0.045, 0.057, 1.0],
-        );
-        let Some(mounted) = self.remote_mounted() else {
-            return scene;
-        };
-        let bounds = mounted.scene.tables.bounds;
-        let scale = ((self.width as f32 - 100.0) / bounds.size.w.max(1.0))
-            .min((self.height as f32 - 180.0) / bounds.size.h.max(1.0))
-            .min(1.0);
-        let origin_x = (self.width as f32 - bounds.size.w * scale) * 0.5 - bounds.origin.x * scale;
-        let origin_y = 116.0 - bounds.origin.y * scale;
-        let layout = ProjectionLayoutView::from_scene(&mounted.scene);
-        for backdrop in &layout.backdrops {
-            let x0 = origin_x + backdrop.x * scale;
-            let y0 = origin_y + backdrop.y * scale;
-            let x1 = x0 + backdrop.width * scale;
-            let y1 = y0 + backdrop.height * scale;
-            let color = remote_backdrop_color(&backdrop.kind);
-            scene.push_rect(x0, y0, x1, y1, color);
-            if backdrop.collidable {
-                let stroke = 2.0;
-                let edge = [0.78, 0.61, 0.31, 0.9];
-                scene.push_rect(x0, y0, x1, y0 + stroke, edge);
-                scene.push_rect(x0, y1 - stroke, x1, y1, edge);
-                scene.push_rect(x0, y0, x0 + stroke, y1, edge);
-                scene.push_rect(x1 - stroke, y0, x1, y1, edge);
-            }
-        }
-        for (instance, item) in mounted.scene.active_items_in_order() {
-            // Where the physics put the card, falling back to the score's
-            // own position for an item the board has not seen yet.
-            let (x, y) = self
-                .remote_board
-                .position(&instance.0.to_string())
-                .unwrap_or((item.transform.translate.x, item.transform.translate.y));
-            let center_x = origin_x + x * scale;
-            let center_y = origin_y + y * scale;
-            let (card_w, card_h) = match item.footprint {
-                sceno::Footprint::Rect { size } => (size.w * scale, size.h * scale),
-                _ => (120.0, 80.0),
-            };
-            // An item sitting where a person put it should not look identical
-            // to one the arrangement happened to place there. Read from the
-            // snapshot rather than inferred, which is why A1 puts the honored
-            // half on the wire beside the unmet half.
-            let pinned = Satisfaction::is_pinned(&mounted.scene.tables, instance);
-            let color = if instance.0 == 0 {
-                [0.16, 0.31, 0.35, 1.0]
-            } else {
-                [0.23, 0.28, 0.38, 1.0]
-            };
-            if pinned {
-                // A held edge, drawn outside the card so it reads as something
-                // done to the item rather than part of it.
-                scene.push_rect(
-                    center_x - card_w * 0.5 - 3.0,
-                    center_y - card_h * 0.5 - 3.0,
-                    center_x + card_w * 0.5 + 3.0,
-                    center_y + card_h * 0.5 + 3.0,
-                    [0.85, 0.72, 0.35, 1.0],
-                );
-            }
-            scene.push_rect(
-                center_x - card_w * 0.5 - 5.0,
-                center_y - card_h * 0.5 + 6.0,
-                center_x + card_w * 0.5 + 5.0,
-                center_y + card_h * 0.5 + 11.0,
-                [0.01, 0.02, 0.025, 0.45],
-            );
-            scene.push_rect(
-                center_x - card_w * 0.5,
-                center_y - card_h * 0.5,
-                center_x + card_w * 0.5,
-                center_y + card_h * 0.5,
-                color,
-            );
-        }
-        scene
     }
 
     /// Run one named command. `false` when no such command exists, so a
@@ -894,8 +788,12 @@ impl BrowserHost {
             .app
             .open_address(&address, &self.handler_id)
             .map_err(|error| error.to_string());
-        self.action_count = self.action_count.saturating_add(1);
-        self.action_status = match result {
+        let count = {
+            let form = self.form_mut();
+            form.count = form.count.saturating_add(1);
+            form.count
+        };
+        let status = match result {
             Ok(IntentResult::Accepted)
                 if self.active == ActiveSession::Local && self.handler_id == "system.default" =>
             {
@@ -905,110 +803,51 @@ impl BrowserHost {
                         .map_err(|_| "host-browser open failed".to_string())
                 }) {
                     Ok(Some(_)) => format!(
-                        "Accepted · opened in host browser · {} invocation(s)",
-                        self.action_count
+                        "Accepted · opened in host browser · {count} invocation(s)"
                     ),
                     Ok(None) => "Failed · host browser blocked the external open".to_string(),
                     Err(error) => format!("Failed · {error}"),
                 }
             },
-            Ok(IntentResult::Accepted) => format!("Accepted · {} invocation(s)", self.action_count),
+            Ok(IntentResult::Accepted) => format!("Accepted · {count} invocation(s)"),
             Ok(other) => format!("{other:?}"),
             Err(error) => format!("Failed · {error}"),
         };
+        self.form_mut().status = status;
         self.detail_open = true;
     }
 
-    fn open_remote_action_draft(&mut self) {
-        let Some(session) = self.remote_session.clone() else {
-            self.action_status = "Failed · remote projection is not mounted".to_string();
-            return;
-        };
-        let Some((observed_epoch, observed_revision)) = self
-            .remote_mounted()
-            .map(|mounted| (mounted.scene.epoch, mounted.scene.revision))
-        else {
-            self.action_status = "Failed · remote projection is not mounted".to_string();
-            return;
-        };
-        let tree = match self
-            .remote_client()
-            .ok_or("remote link is not discovered".to_string())
-            .and_then(|client| {
-                client
-                    .accessibility_tree(&session, &web_remote::remote_profile())
-                    .map_err(|error| format!("{error:?}"))
-            }) {
-            Ok(tree) => tree,
-            Err(error) => {
-                self.action_status = format!("Failed · remote accessibility tree: {error}");
-                return;
-            },
-        };
-        // A bounded form opens as a draft. Plain actions are offered as
-        // buttons by `update_remote_semantics`; opening the detail is enough.
-        let Some((target, action)) = tree.children.iter().find_map(|item| {
-            item.actions
-                .iter()
-                .find(|action| action.input_form.is_some())
-                .cloned()
-                .map(|action| (item.instance, action))
-        }) else {
-            let count = tree
-                .children
-                .iter()
-                .map(|item| item.actions.len())
-                .sum::<usize>();
-            self.action_status = format!("{count} remote action(s) advertised");
-            return;
-        };
-        self.action_status = format!("Choose values · {}", action.label);
-        self.action_draft = Some(ActionDraft::new(action));
-        self.action_draft_target = Some(ActionDraftTarget {
-            session,
-            target,
-            observed_epoch,
-            observed_revision,
-        });
-    }
-
     fn choose_action_draft(&mut self, field: &str, value: &str) {
-        let Some(draft) = self.action_draft.as_mut() else {
-            self.action_status = "Failed · no remote action draft is open".to_string();
-            return;
-        };
-        self.action_status = match draft.choose(field, value) {
-            Ok(()) => format!("Selected {field}"),
-            Err(error) => format!("Choose values · {error}"),
-        };
+        self.form_mut().choose(field, value);
         self.chrome_dirty = true;
     }
 
     fn submit_action_draft(&mut self) {
-        if matches!(self.remote, RemoteLink::WebRtc(_)) {
-            self.submit_remote_draft();
-            return;
-        }
-        let Some(target) = self.action_draft_target.clone() else {
-            self.action_status = "Failed · no remote action draft target is open".to_string();
+        self.detail_open = true;
+        let fixture = match &mut self.remote {
+            RemoteLink::Fixture(fixture) => fixture,
+            RemoteLink::WebRtc(live) => {
+                live.session.submit_draft();
+                return;
+            },
+        };
+        let form = &mut self.actions;
+        let Some(target) = form.target.clone() else {
+            form.status = "Failed · no remote action draft target is open".to_string();
             return;
         };
-        let Some(draft) = self.action_draft.as_mut() else {
-            self.action_status = "Failed · no remote action draft is open".to_string();
+        let Some(draft) = form.draft.as_mut() else {
+            form.status = "Failed · no remote action draft is open".to_string();
             return;
         };
         let invocation = match draft.invocation(&target) {
             Ok(invocation) => invocation,
             Err(error) => {
-                self.action_status = format!("Choose required values · {error}");
-                self.detail_open = true;
+                form.status = format!("Choose required values · {error}");
                 return;
             },
         };
-        self.action_count = self.action_count.saturating_add(1);
-        let RemoteLink::Fixture(fixture) = &mut self.remote else {
-            return;
-        };
+        form.count = form.count.saturating_add(1);
         match fixture.invoke(invocation) {
             Ok(IntentResult::Accepted) => match fixture.snapshot(fixture.request()) {
                 Ok(snapshot) => match self.app.mount_remote(snapshot) {
@@ -1020,34 +859,29 @@ impl BrowserHost {
                             .map(|mounted| mounted.scene.revision.0)
                             .unwrap_or_default();
                         self.remote_session = Some(session);
-                        self.action_status = format!(
+                        form.status = format!(
                             "Accepted · resnapshotted revision {revision} · {} invocation(s)",
-                            self.action_count
+                            form.count
                         );
-                        self.action_draft = None;
-                        self.action_draft_target = None;
+                        form.close();
                     },
                     Err(error) => {
-                        self.action_status =
-                            format!("Accepted · failed to mount resnapshot: {error}");
+                        form.status = format!("Accepted · failed to mount resnapshot: {error}");
                     },
                 },
                 Err(error) => {
-                    self.action_status =
-                        format!("Accepted · failed to request resnapshot: {error}");
+                    form.status = format!("Accepted · failed to request resnapshot: {error}");
                 },
             },
             Ok(IntentResult::Stale { .. }) => {
-                self.action_status = "Stale · reopen the remote action form".to_string();
-                self.action_draft = None;
-                self.action_draft_target = None;
+                form.status = "Stale · reopen the remote action form".to_string();
+                form.close();
             },
             Ok(IntentResult::Rejected { reason }) => {
-                self.action_status = format!("Rejected · {reason}");
+                form.status = format!("Rejected · {reason}");
             },
-            Err(error) => self.action_status = format!("Failed · {error}"),
+            Err(error) => form.status = format!("Failed · {error}"),
         }
-        self.detail_open = true;
     }
 
     fn pointer_position(&self, x: i32, y: i32) -> (f32, f32) {
@@ -1775,6 +1609,7 @@ fn publish_history_controls(
 }
 
 fn update_semantics(host: &mut BrowserHost) -> Result<(), String> {
+    host.pump_remote();
     if host.practice.is_some() {
         let body=root()?;
         if body.get_attribute("data-ready").as_deref()!=Some("true") {
@@ -1871,7 +1706,7 @@ fn update_semantics(host: &mut BrowserHost) -> Result<(), String> {
     .map_err(|_| "could not expose active session")?;
     body.set_attribute("data-detail-open", &host.detail_open.to_string())
         .map_err(|_| "could not expose detail state")?;
-    body.set_attribute("data-action-count", &host.action_count.to_string())
+    body.set_attribute("data-action-count", &host.form().count.to_string())
         .map_err(|_| "could not expose action count")?;
     body.set_attribute("data-storage", &host.storage_status)
         .map_err(|_| "could not expose storage state")?;
@@ -2019,8 +1854,7 @@ async fn run(root_element: Element) -> Result<(), String> {
     let state = Rc::new(RefCell::new(BrowserHost {
         app,
         remote: RemoteLink::Fixture(remote),
-        remote_board: PhysicsBoard::new(),
-        remote_board_revision: None,
+        remote_board: RemoteBoard::new(),
         layout_stats_stale: true,
         layout_moved: false,
         layout_stats: mere::canvas::LayoutStats::default(),
@@ -2028,7 +1862,6 @@ async fn run(root_element: Element) -> Result<(), String> {
         remote_session: Some(remote_session),
         remote_status: "fixture".to_string(),
         remote_joining: false,
-        remote_last_resume: String::new(),
         active: ActiveSession::Local,
         canvas: graph_canvas,
         canvas_element: canvas,
@@ -2037,10 +1870,7 @@ async fn run(root_element: Element) -> Result<(), String> {
         chrome_text,
         chrome_dirty: false,
         detail_open: false,
-        action_count: 0,
-        action_status: "Ready".to_string(),
-        action_draft: None,
-        action_draft_target: None,
+        actions: ActionForm::new("Ready"),
         rendered_action_draft: None,
         action_draft_semantics_ready: false,
         width,

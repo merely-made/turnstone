@@ -703,6 +703,18 @@ impl PersonalSyncHost {
             .map_err(|error| PersonalSyncHostError::Transport(error.to_string()))
     }
 
+    /// Every address the endpoint holds for `node`, with which ones carry
+    /// traffic now: the readable current path a device directory reports.
+    pub async fn peer_paths(
+        &self,
+        node: [u8; 32],
+    ) -> Result<Vec<transport::PeerPath>, PersonalSyncHostError> {
+        self.network
+            .peer_paths(node)
+            .await
+            .map_err(|error| PersonalSyncHostError::Transport(error.to_string()))
+    }
+
     pub async fn author(
         &self,
         events: Vec<PersonalGraphEvent>,

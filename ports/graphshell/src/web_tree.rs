@@ -76,8 +76,14 @@ const SHEET: &str = "\
     .tree-body { display:flex; flex-direction:row; flex:1 1 auto; min-height:0; position:relative; }     .tools-overlay { position:absolute; top:0; right:0; bottom:0; z-index:10; }     .tools-storage { margin:2px 0 6px; color:#9fb0bb; font-size:12px; } \
     .tree-graph { display:flex; flex-direction:column; flex:1 1 auto; min-width:0; } \
     .tree-canvas { display: block; flex: 1 1 auto; min-height: 0; } \
-    .tree-tools { flex:0 0 auto; width:279px; padding:4px 10px; background:#0d161b; border-left:1px solid #2c3b44; } \
+    .tree-tools { flex:0 0 auto; width:279px; padding:4px 10px; background:#0d161b; border-left:1px solid #2c3b44; overflow-y:auto; min-height:0; } \
+    .tree-tools .disclosure-trigger { display:block; width:100%; text-align:left; font-size:14px; background:transparent; border:none; padding:2px 0 4px; margin:0; } \
+    .tools-cards { margin:2px 0 4px; padding:0 0 0 16px; font-size:12px; color:#dce3e8; } \
     .tree-tools h2 { font-size:14px; margin:2px 0 4px; } \
+    .tree-tools h3 { font-size:13px; margin:4px 0 2px; } \
+    .tools-section + .tools-section { margin-top:10px; border-top:1px solid #2c3b44; padding-top:4px; } \
+    .tools-switch button[aria-pressed=true] { background:#2d5a63; border-color:#79a9be; } \
+    .tools-active { margin:4px 0; color:#f0dfb8; font-size:12px; } \
     .tree-tools label { display:block; margin:3px 0; } \
     .tree-tools .tools-caption { display:block; color:#9fb0bb; font-size:12px; } \
     .tree-tools button { background:#263640; color:#dce3e8; padding:3px 10px; margin:2px 0 4px; border:1px solid #637581; } \
@@ -122,6 +128,11 @@ struct Shared {
     press_point: Cell<Option<(f32, f32)>>,
     /// Every recorded release, for the receipt.
     release_log: RefCell<Vec<String>>,
+    /// The remote session (`remote::TreeRemote`); its channel's pumps reach
+    /// it from outside the runner.
+    remote: Rc<RefCell<remote::TreeRemote>>,
+    /// Whether the canvas leaf shows the remote board rather than the graph.
+    remote_shown: Cell<bool>,
 }
 
 impl Shared {
@@ -157,6 +168,50 @@ impl TextureProducer for CanvasProducer {
             shared.size.set(size);
         }
         let profile = shared.timing.borrow().active();
+        if shared.remote_shown.get() {
+            // One leaf, the producer picks the scene: the board, mirroring
+            // the canvas's law, ticked once a frame and drawn from its bodies.
+            let choice = canvas.physics_choice();
+            drop(canvas);
+            let scene = {
+                let mut remote = shared.remote.borrow_mut();
+                remote.sync_board(choice);
+                remote.board.tick();
+                let remote = &mut *remote;
+                let empty = mere::canvas::BoardScene::default();
+                let painted = if remote.mounted().is_some() {
+                    remote.board.scene()
+                } else {
+                    &empty
+                };
+                painted.paint_titled(
+                    remote.board.board(),
+                    size.0,
+                    size.1,
+                    remote::BOARD_FIT,
+                    &mut remote.text,
+                )
+            };
+            shared.dirty.set(false);
+            let [physical_width, physical_height] = cx.frame.physical_size;
+            shared.physical_size.set(cx.frame.physical_size);
+            let (texture, view) = cx.core.rasterize_scaled_for(
+                CANVAS_RASTER,
+                &scene,
+                physical_width,
+                physical_height,
+                ColorLoad::Clear(SHELL_CLEAR),
+                cx.frame.layout_scale,
+            );
+            self.texture = Some(texture);
+            self.generation += 1;
+            return Some(ProducedTexture {
+                view,
+                generation: self.generation,
+                alpha: SourceAlpha::Straight,
+                encoding: SourceEncoding::Srgb,
+            });
+        }
         let (scene, moving) = if profile {
             let (scene, moving, sample) = match cx.frame.timestamp {
                 Some(timestamp) => canvas.frame_profiled_at(
@@ -257,6 +312,21 @@ impl TextureProducer for CanvasProducer {
         self.shared.canvas.borrow_mut().reset_frame_time();
         self.texture = None;
     }
+
+    /// While the board is shown, the slot is a list of its cards, each named
+    /// by its title and placed where it is painted. The graph keeps the
+    /// slot's own DOM semantics for now.
+    fn semantics(&mut self) -> Option<cambium_rootstock::ProducerSemantics> {
+        if !self.shared.remote_shown.get() {
+            return None;
+        }
+        let (width, height) = self.shared.size.get();
+        Some(remote::board_semantics(
+            &self.shared.remote.borrow(),
+            width,
+            height,
+        ))
+    }
 }
 
 /// The application state the tree renders.
@@ -270,6 +340,16 @@ pub(crate) struct TreePage {
     product: Option<product::SavedProduct>,
     /// The "Graph tools" arrangement and physics section.
     physics: physics::PhysicsPanel,
+    /// Which session the canvas leaf shows.
+    session: remote::Session,
+    /// Which Graph tools sections are open.
+    sections: remote::Sections,
+    /// The open remote draft's field selects.
+    draft: remote::DraftControls,
+    /// The remote generation the view last rebuilt for.
+    remote_seen: u64,
+    /// Whether a remote link has been seen, so its section opens once.
+    remote_link_seen: bool,
     /// Whether the collapsed Graph tools region is open over the canvas.
     tools_open: bool,
     /// The tree's logical size, followed from the host each frame. Genet sizes
@@ -376,6 +456,7 @@ fn tools_region(page: &TreePage) -> Child {
         ));
     }
     children.push(physics::section(page));
+    children.push(remote::section(page));
     Box::new(
         el("aside", children)
             .attr("class", "tree-tools")
@@ -505,6 +586,8 @@ async fn boot(root: Element) -> Result<(), String> {
         release_step: Cell::new(None),
         press_point: Cell::new(None),
         release_log: RefCell::new(Vec::new()),
+        remote: Rc::new(RefCell::new(remote::TreeRemote::new())),
+        remote_shown: Cell::new(false),
     });
     visibility::install(&shared, &document)?;
     let options = HostOptions {
@@ -531,6 +614,11 @@ async fn boot(root: Element) -> Result<(), String> {
                 product,
                 physics,
                 tools_open: false,
+                session: remote::Session::Local,
+                sections: remote::Sections::default(),
+                draft: remote::DraftControls::default(),
+                remote_seen: 0,
+                remote_link_seen: false,
                 size: (width, height),
             },
             logic: view as Logic,
@@ -590,6 +678,22 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
                     }
                 });
                 frame_shared.dirty.set(true);
+            }
+            // The remote session moves outside the runner (its channel's
+            // pumps); rebuild the view when it has.
+            let (generation, linked) = {
+                let remote = frame_shared.remote.borrow();
+                (remote.generation, remote.live.is_some())
+            };
+            if ctx.runner.state().remote_seen != generation {
+                ctx.runner.update(|page| {
+                    page.remote_seen = generation;
+                    // The section starts closed and opens when a link exists.
+                    if linked && !page.remote_link_seen {
+                        page.remote_link_seen = true;
+                        page.sections.remote.expanded = true;
+                    }
+                });
             }
             if ctx.runner.state().physics.transition.is_some() {
                 ctx.runner.update(|page| page.advance_arrangement(now_ms()));
@@ -707,5 +811,11 @@ mod controls;
 mod lane;
 mod physics;
 mod product;
+mod remote;
 mod visibility;
+
+/// Join a host over WebRTC as the tree's remote session (`?signal=`).
+pub(crate) fn connect_remote(signal_url: String, invite: Option<String>) -> Result<(), String> {
+    remote::connect(signal_url, invite)
+}
 use lane::TreeLane;

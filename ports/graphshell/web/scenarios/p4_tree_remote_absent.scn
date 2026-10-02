@@ -1,0 +1,16 @@
+# Without a remote link (no `?signal=`), the Remote session section starts
+# closed ("Remote starts collapsed") and opens by its own trigger. Showing
+# remote then shows an empty board.
+assert snap ready == true
+assert snap remote-link == none
+assert snap tools-sections == physics:open,remote:closed
+capture remote_absent_closed
+settle 2
+click role:button Remote session
+settle 2
+assert snap tools-sections == physics:open,remote:open
+click role:button Remote mount
+settle 2
+assert snap session == remote
+assert snap active-session == Remote projection · no link
+log remote absent receipt complete

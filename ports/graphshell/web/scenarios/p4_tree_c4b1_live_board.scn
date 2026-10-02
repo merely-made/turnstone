@@ -1,0 +1,49 @@
+# Tree version of c4b1_live_board.scn: the real mount over WebRTC (`?signal=`),
+# driven through the Graph tools region's "Remote session" section.
+#
+# `wait` holds while a remote answer is still to come: the join and the mount
+# first, then each intent's round trip and the bell-driven resume after it.
+wait
+assert snap remote-link == webrtc
+assert snap remote-state == open
+assert snap remote-revision == 1
+assert snap remote-cards == 1
+# The Remote session section starts closed and opened when the link came up.
+assert snap tools-sections == physics:open,remote:open
+click role:button Remote mount
+settle 1
+assert snap session == remote
+assert text Remote projection · 1 objects · revision 1
+# The region scrolls: bring the action status into view for the capture.
+reveal role:status Ready
+settle 2
+capture c4b1_mounted
+wait
+# The endpoint advertises both intents; the section offers one button each.
+# The forbidden one is refused, and the revision stands still — measured by
+# a resnapshot, since a refusal rings no bell.
+assert text Append a card
+assert text Forbidden action
+click role:button Forbidden action
+wait
+assert snap action-status ~ Rejected
+assert snap remote-revision == 1
+assert snap remote-cards == 1
+# The admitted one is accepted; the bell it rings drives a resume the host
+# answers by diff, and the board shows the second card.
+click role:button Append a card
+wait
+assert snap action-status ~ Accepted
+assert snap remote-revision == 2
+assert snap remote-cards == 2
+assert snap remote-resume ~ diff
+assert event remote-bell revision 2
+# The board's slot names each card where it is painted.
+assert snap board-nodes ~ Card 0@
+assert snap board-nodes ~ Card 1@
+# The region scrolls: bring the action status into view for the capture.
+reveal role:status Accepted
+settle 2
+capture c4b1_appended
+wait
+log c4b1 live board receipt complete

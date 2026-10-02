@@ -1,0 +1,52 @@
+# Tree version of physics_remote_board.scn: the live fixture's board mounted
+# over WebRTC (`?signal=`); its items are bodies on the remote board, the
+# score's positions their anchor slots, the local canvas's law mirrored. The
+# physics section stays operable while remote. The score is never written back.
+wait
+assert snap remote-link == webrtc
+assert snap remote-state == open
+assert snap remote-revision == 1
+assert snap remote-cards == 1
+# Pick Charge through the panel (the board mirrors the canvas's choice).
+click role:combobox Physics law
+settle 1
+click role:option Charge
+settle 1
+click role:button Apply physics
+settle 1
+click role:button Remote mount
+settle 1
+assert snap session == remote
+assert snap remote-physics-law == charge.barnes-hut
+# Append a card: it enters at its slot, 140 units from the first, with a
+# settle burst; under Charge the pair pushes apart against the anchor pull.
+click role:button Append a card
+wait
+assert snap action-status ~ Accepted
+assert snap remote-revision == 2
+assert snap remote-cards == 2
+# The region scrolls: bring the action status into view for the capture.
+reveal role:status Accepted
+settle 2
+capture physics_remote_appended
+wait
+settle 360
+assert snap remote-gap >= 170
+capture physics_remote_charge_settled
+wait
+# Orbit, applied while the board is shown: the cards keep moving — energy
+# above a floor two seconds in and five seconds later.
+click role:combobox Physics law
+settle 1
+click role:option Orbit
+settle 1
+click role:button Apply physics
+settle 1
+assert snap remote-physics-law == orbit.gravity
+settle 120
+assert snap remote-energy >= 1
+settle 300
+assert snap remote-energy >= 1
+capture physics_remote_orbit
+wait
+log physics remote board receipt complete

@@ -506,10 +506,10 @@ impl Automatable for Probe<'_> {
                 .get_attribute("data-focused-node")
                 .unwrap_or_default(),
         );
-        snap = snap.with_field("action-status", self.host.action_status.clone());
+        snap = snap.with_field("action-status", self.host.form().status.clone());
         snap = snap.with_field("remote-link", self.host.remote_link_name());
-        snap = snap.with_field("remote-state", self.host.remote_status.clone());
-        snap = snap.with_field("remote-resume", self.host.remote_last_resume.clone());
+        snap = snap.with_field("remote-state", self.host.remote_status());
+        snap = snap.with_field("remote-resume", self.host.remote_last_resume());
         snap = snap.with_field(
             "remote-revision",
             self.host

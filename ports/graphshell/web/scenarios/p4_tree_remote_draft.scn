@@ -1,0 +1,64 @@
+# The tree's draft form against the live fixture's bounded intent ("Append a
+# coloured card", one required choice of colour), over WebRTC (`?signal=`).
+# Open the draft, submit it unset (refused here, nothing sent), cancel it,
+# open it again, choose a colour and submit: the endpoint accepts, and the
+# new card carries the colour in its title.
+wait
+assert snap remote-link == webrtc
+assert snap remote-state == open
+assert snap remote-revision == 1
+click role:button Remote mount
+settle 1
+assert snap session == remote
+# Each Graph tools section is a disclosure; closing Arrangement and physics
+# leaves the remote section without scrolling, and opening it brings it back.
+assert snap tools-sections == physics:open,remote:open
+click role:button Arrangement and physics
+settle 2
+assert snap tools-sections == physics:closed,remote:open
+capture remote_physics_closed
+settle 2
+click role:button Arrangement and physics
+settle 2
+assert snap tools-sections == physics:open,remote:open
+assert text Append a coloured card
+click role:button Append a coloured card
+settle 2
+assert snap remote-draft-open == true
+assert snap action-status ~ Choose values · Append a coloured card
+# The region scrolls: bring the whole form into view for the capture.
+reveal role:status Choose values
+settle 2
+capture remote_draft_open
+settle 2
+# Unset: refused before the endpoint is asked; the link is not at fault.
+click role:button Submit
+settle 2
+assert snap action-status ~ Choose required values
+assert snap remote-draft-open == true
+assert snap remote-state == open
+assert snap remote-revision == 1
+# Cancel closes it.
+click role:button Cancel
+settle 2
+assert snap remote-draft-open == false
+# Again, with a colour.
+click role:button Append a coloured card
+settle 2
+click role:combobox Colour
+settle 1
+click role:option Blue
+settle 1
+click role:button Submit
+wait
+assert snap action-status ~ Accepted
+assert snap remote-revision == 2
+assert snap remote-cards == 2
+assert snap remote-draft-open == false
+assert text Card 1 · Blue
+# The region scrolls: bring the action status into view for the capture.
+reveal role:status Accepted
+settle 2
+capture remote_draft_accepted
+wait
+log remote draft receipt complete
