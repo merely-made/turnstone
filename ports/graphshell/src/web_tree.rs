@@ -60,6 +60,11 @@ const ZOOM_STEP: f32 = 40.0;
 /// The docked "Graph tools" region's width, logical px. The canvas takes the
 /// rest of the row.
 const TOOLS_WIDTH: u32 = 300;
+/// Below this tree width the region collapses to a "Graph tools" toggle that
+/// opens it over the canvas. Docked, the canvas keeps at least 600 px: a
+/// centred node dragged 220 px needs 476, and the fitted fixture spans
+/// about 320.
+const TOOLS_DOCK_MIN_WIDTH: u32 = TOOLS_WIDTH + 600;
 
 const SHEET: &str = "\
     :root { font-family: Roboto, sans-serif; font-size: 14px; color: #dce3e8; background: #070c0f; } \
@@ -68,7 +73,7 @@ const SHEET: &str = "\
     .tree-status { margin: 4px 12px 8px; } \
     .tree-controls { display:flex; gap:6px; padding:6px 12px; flex-wrap:wrap; } \
     .tree-controls button { background:#263640; color:#dce3e8; padding:5px 10px; border:1px solid #637581; } \
-    .tree-body { display:flex; flex-direction:row; flex:1 1 auto; min-height:0; } \
+    .tree-body { display:flex; flex-direction:row; flex:1 1 auto; min-height:0; position:relative; }     .tools-overlay { position:absolute; top:0; right:0; bottom:0; z-index:10; }     .tools-storage { margin:2px 0 6px; color:#9fb0bb; font-size:12px; } \
     .tree-graph { display:flex; flex-direction:column; flex:1 1 auto; min-width:0; } \
     .tree-canvas { display: block; flex: 1 1 auto; min-height: 0; } \
     .tree-tools { flex:0 0 auto; width:279px; padding:4px 10px; background:#0d161b; border-left:1px solid #2c3b44; } \
@@ -265,6 +270,8 @@ pub(crate) struct TreePage {
     product: Option<product::SavedProduct>,
     /// The "Graph tools" arrangement and physics section.
     physics: physics::PhysicsPanel,
+    /// Whether the collapsed Graph tools region is open over the canvas.
+    tools_open: bool,
     /// The tree's logical size, followed from the host each frame. Genet sizes
     /// a custom leaf's cross axis from its intrinsic size and does not stretch
     /// an absolutely placed box between its insets, so the view is told its
@@ -298,7 +305,12 @@ fn view(page: &TreePage) -> Child {
     let (width, height) = page.size;
     // Genet does not stretch a custom leaf across its cross axis, so the
     // canvas column is told the width the tools region leaves it.
-    let canvas_width = width.saturating_sub(TOOLS_WIDTH).max(1);
+    let docked = tools_docked(page);
+    let canvas_width = if docked {
+        width.saturating_sub(TOOLS_WIDTH).max(1)
+    } else {
+        width.max(1)
+    };
     let graph = on_wheel(
         on_key(
             on_pointer(
@@ -330,13 +342,44 @@ fn view(page: &TreePage) -> Child {
                     "div",
                     (
                         el("div", graph).attr("class", "tree-graph"),
-                        physics::tools(page),
+                        if docked {
+                            Some(tools_region(page))
+                        } else {
+                            page.tools_open.then(|| {
+                                Box::new(
+                                    el("div", tools_region(page)).attr("class", "tools-overlay"),
+                                ) as Child
+                            })
+                        },
                     ),
                 )
                 .attr("class", "tree-body"),
             ),
         )
         .attr("style", format!("width:{width}px;height:{height}px;")),
+    )
+}
+
+/// Whether the Graph tools region docks beside the canvas at this width.
+fn tools_docked(page: &TreePage) -> bool {
+    page.size.0 >= TOOLS_DOCK_MIN_WIDTH
+}
+
+/// The Graph tools region: the storage line on `app=local`, then its sections.
+fn tools_region(page: &TreePage) -> Child {
+    let mut children: Vec<Child> = Vec::new();
+    if let Some(product) = &page.product {
+        children.push(Box::new(
+            el("p", format!("Storage: {}", product.storage))
+                .attr("class", "tools-storage")
+                .attr("role", "status"),
+        ));
+    }
+    children.push(physics::section(page));
+    Box::new(
+        el("aside", children)
+            .attr("class", "tree-tools")
+            .attr("aria-label", "Graph tools"),
     )
 }
 
@@ -487,6 +530,7 @@ async fn boot(root: Element) -> Result<(), String> {
                 picked: None,
                 product,
                 physics,
+                tools_open: false,
                 size: (width, height),
             },
             logic: view as Logic,

@@ -79,6 +79,16 @@ impl TreeLane {
         });
         let mut snapshot = snapshot
             .with_field("ready", "true")
+            .with_field(
+                "tools-mode",
+                if tools_docked(page) {
+                    "docked"
+                } else if page.tools_open {
+                    "open"
+                } else {
+                    "collapsed"
+                },
+            )
             .with_field("layout", page.physics.layout_id.clone())
             .with_field("physics-law", choice.law.id())
             .with_field(

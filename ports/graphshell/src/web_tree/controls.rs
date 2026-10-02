@@ -49,7 +49,7 @@ pub(super) fn toolbar(page: &TreePage) -> Child {
             CanvasCommand::TogglePhysics,
         ),
     ];
-    let buttons: Vec<Child> = commands
+    let mut buttons: Vec<Child> = commands
         .into_iter()
         .map(|(label, command)| {
             Box::new(button(label, move |page: &mut TreePage, _| {
@@ -58,6 +58,18 @@ pub(super) fn toolbar(page: &TreePage) -> Child {
             })) as Child
         })
         .collect();
+    // Collapsed, the Graph tools region opens over the canvas from here.
+    if !tools_docked(page) {
+        buttons.push(Box::new(
+            button("Graph tools", |page: &mut TreePage, _| {
+                page.tools_open = !page.tools_open;
+            })
+            .attr(
+                "aria-expanded",
+                if page.tools_open { "true" } else { "false" },
+            ),
+        ));
+    }
     Box::new(
         el("nav", buttons)
             .attr("class", "tree-controls")

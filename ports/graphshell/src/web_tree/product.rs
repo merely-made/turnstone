@@ -20,7 +20,10 @@ pub(super) struct SavedProduct {
     pub(super) address: String,
     pub(super) detail_open: bool,
     pub(super) saving: bool,
+    /// Save feedback for the detail editor; empty until a save.
     pub(super) status: String,
+    /// The store's open and persistence state, shown in Graph tools.
+    pub(super) storage: String,
     pub(super) save_state: &'static str,
     pub(super) session: String,
     pub(super) reopened: bool,
@@ -60,7 +63,7 @@ pub(super) async fn open() -> Result<Option<SavedProduct>, String> {
         .map_err(|error| error.to_string())?;
     app.mount_local().map_err(|error| error.to_string())?;
     let persistence = super::super::resolve_storage_persistence().await;
-    let status = graphshell::browser_storage::status_line(
+    let storage = graphshell::browser_storage::status_line(
         if reopened {
             "IndexedDB reopened"
         } else {
@@ -78,7 +81,8 @@ pub(super) async fn open() -> Result<Option<SavedProduct>, String> {
         address: String::new(),
         detail_open: false,
         saving: false,
-        status,
+        status: String::new(),
+        storage,
         save_state: "idle",
         session,
         reopened,
@@ -213,9 +217,12 @@ pub(super) fn controls(page: &TreePage) -> Child {
     let Some(product) = &page.product else {
         return Box::new(el("div", ()));
     };
-    let mut children: Vec<Child> = vec![Box::new(
-        el("p", product.status.clone()).attr("role", "status"),
-    )];
+    let mut children: Vec<Child> = Vec::new();
+    if !product.status.is_empty() {
+        children.push(Box::new(
+            el("p", product.status.clone()).attr("role", "status"),
+        ));
+    }
     if product.selected.is_some() {
         children.push(Box::new(button(
             if product.detail_open {
