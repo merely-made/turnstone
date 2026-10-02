@@ -1,0 +1,61 @@
+# Density on the tree, through the docked Graph tools panel: Gastner–Newman's
+# evolving field, room following mass. Its signature is the rank of mass
+# against area share and an even density, not energy (the flow writes
+# positions). Springs from the same arrangement is the negative control, and
+# picking Density greys the overlays with the law's reason.
+assert snap ready == true
+# The boot arrangement pauses the canvas; the receipt wants the law running.
+click role:button Play physics
+settle 1
+assert snap physics-paused == false
+# No arrangement: the boot Spiral's anchor springs would pull under every law.
+click role:combobox Arrangement
+settle 1
+click role:option Free (physics alone)
+settle 1
+click role:button Apply arrangement
+settle 1
+assert snap layout == free
+# The control: Springs does not give room by mass.
+click role:combobox Physics law
+settle 1
+click role:option Springs
+settle 1
+click role:button Apply physics
+settle 300
+assert snap physics-law == spring.rapier
+assert snap layout-mass-area-rank <= 0.79
+capture physics_density_springs_control
+settle 2
+# An overlay ticked under Springs is refused once Density is picked.
+click role:checkbox Tide
+settle 1
+assert snap panel-overlays == tide
+assert snap disabled-overlays == 0
+click role:combobox Physics law
+settle 1
+click role:option Density
+settle 1
+assert snap disabled-overlays == 8
+assert text Density takes no overlays
+capture physics_density_refused
+settle 2
+click role:button Apply physics
+settle 1
+assert snap physics-law == density.gastner-newman
+assert snap physics-profile == law.density
+assert snap panel-profile == law.density
+assert text Physics set to Density
+capture physics_density_start
+settle 2
+# Past the pass cap (120 one-second passes; up to three ticks a frame here).
+# Play runs the canvas until paused, so `wait` cannot see the law stop: the
+# law's own demand for ticks can, and drops once its passes are done.
+settle 5000
+assert snap physics-continuous == false
+capture physics_density_settled
+settle 2
+assert snap layout-mass-area-rank >= 0.8
+assert snap layout-density-cv <= 0.35
+assert snap layout-overlaps == 0
+log physics density receipt complete

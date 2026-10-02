@@ -46,13 +46,18 @@ pub fn ticked_overlays(ticked: impl Fn(PhysicsOverlay) -> bool) -> Vec<PhysicsOv
         .collect()
 }
 
-/// Apply physics: sources, overlays and law in one rebuild. Returns the status.
+/// Apply physics: sources, overlays and law in one rebuild. Returns the
+/// status, with the law's reason when it refused the overlays.
 pub fn apply_physics(canvas: &mut Canvas, choice: &PhysicsChoice) -> String {
-    canvas.set_physics_choice(choice);
-    with_overlays(
+    let refused = canvas.set_physics_choice(choice).err();
+    let status = with_overlays(
         format!("Physics set to {}", canvas.physics_law().label()),
         canvas,
-    )
+    );
+    match refused {
+        Some(refusal) => format!("{status} · {}", refusal.reason),
+        None => status,
+    }
 }
 
 /// Apply a named profile's law and overlays. Sources are left as they are.

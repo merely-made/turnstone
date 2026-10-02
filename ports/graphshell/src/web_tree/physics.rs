@@ -82,16 +82,27 @@ impl PhysicsPanel {
             .map_or(0, |index| index + 1);
     }
 
-    /// The choice the controls hold.
+    /// The law the picker names (applied or not).
+    pub(super) fn picked_law(&self) -> PhysicsLaw {
+        PhysicsLaw::ALL[self.law.selected.min(PhysicsLaw::ALL.len() - 1)]
+    }
+
+    /// The choice the controls hold. A law that refuses overlays holds none,
+    /// whatever was ticked before it was picked.
     pub(super) fn choice(&self) -> PhysicsChoice {
+        let law = self.picked_law();
         PhysicsChoice {
-            law: PhysicsLaw::ALL[self.law.selected.min(PhysicsLaw::ALL.len() - 1)],
-            overlays: canvas_physics::ticked_overlays(|overlay| {
-                PhysicsOverlay::ALL
-                    .iter()
-                    .position(|o| *o == overlay)
-                    .is_some_and(|index| self.overlays[index])
-            }),
+            law,
+            overlays: if law.overlay_refusal().is_some() {
+                Vec::new()
+            } else {
+                canvas_physics::ticked_overlays(|overlay| {
+                    PhysicsOverlay::ALL
+                        .iter()
+                        .position(|o| *o == overlay)
+                        .is_some_and(|index| self.overlays[index])
+                })
+            },
             kind: PhysicsKindSource::ALL[self.kind.selected.min(PhysicsKindSource::ALL.len() - 1)],
             mass: PhysicsMassSource::ALL[self.mass.selected.min(PhysicsMassSource::ALL.len() - 1)],
             depth: PhysicsDepthSource::ALL
@@ -191,13 +202,15 @@ fn apply(label: &'static str, action: fn(&mut TreePage)) -> Child {
     Box::new(button(label, move |page: &mut TreePage, _| action(page)))
 }
 
-/// The "Graph tools" region's arrangement and physics section.
-pub(super) fn section(page: &TreePage) -> Child {
-    let overlays: Vec<Child> = CANVAS_PHYSICS_OVERLAYS
+/// The overlay checkboxes, or, while the picked law refuses overlays, the
+/// same boxes greyed and inert with the law's reason beneath.
+fn overlay_group(page: &TreePage) -> Child {
+    let refusal = page.physics.picked_law().overlay_refusal();
+    let mut boxes: Vec<Child> = CANVAS_PHYSICS_OVERLAYS
         .iter()
         .enumerate()
-        .map(|(index, (_, label))| {
-            Box::new(el(
+        .map(|(index, (_, label))| match refusal {
+            None => Box::new(el(
                 "label",
                 (
                     lens(
@@ -206,9 +219,44 @@ pub(super) fn section(page: &TreePage) -> Child {
                     ),
                     el("span", *label),
                 ),
-            )) as Child
+            )) as Child,
+            Some(_) => Box::new(
+                el(
+                    "label",
+                    (
+                        el("span", "[ ]")
+                            .attr("role", "checkbox")
+                            .attr("aria-label", *label)
+                            .attr("aria-checked", "false")
+                            .attr("aria-disabled", "true")
+                            .attr("aria-describedby", "tools-overlay-note")
+                            .attr("class", "checkbox disabled"),
+                        el("span", *label),
+                    ),
+                )
+                .attr("class", "disabled"),
+            ) as Child,
         })
         .collect();
+    if let Some(reason) = refusal {
+        boxes.push(Box::new(
+            el("p", reason)
+                .attr("id", "tools-overlay-note")
+                .attr("class", "tools-note"),
+        ));
+    }
+    let group = el("div", boxes)
+        .attr("class", "tools-overlays")
+        .attr("role", "group")
+        .attr("aria-label", "Overlays");
+    match refusal {
+        Some(_) => Box::new(group.attr("aria-disabled", "true")),
+        None => Box::new(group),
+    }
+}
+
+/// The "Graph tools" region's arrangement and physics section.
+pub(super) fn section(page: &TreePage) -> Child {
     let profiles: Vec<&'static str> = std::iter::once(CUSTOM_LABEL)
         .chain(CANVAS_PHYSICS_PROFILES.iter().map(|profile| profile.label))
         .collect();
@@ -222,12 +270,7 @@ pub(super) fn section(page: &TreePage) -> Child {
         picker("Physics law", labels(CANVAS_PHYSICS_LAWS), |page| {
             &mut page.physics.law
         }),
-        Box::new(
-            el("div", overlays)
-                .attr("class", "tools-overlays")
-                .attr("role", "group")
-                .attr("aria-label", "Overlays"),
-        ),
+        overlay_group(page),
         picker("Kinds", labels(CANVAS_PHYSICS_KIND_SOURCES), |page| {
             &mut page.physics.kind
         }),

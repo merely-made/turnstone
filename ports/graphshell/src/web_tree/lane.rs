@@ -72,6 +72,24 @@ impl TreeLane {
                 .collect::<Vec<_>>()
                 .join(",")
         };
+        // The overlay boxes greyed while the picked law refuses overlays.
+        let disabled = {
+            let dom = ctx.runner.dom();
+            let dom = dom.borrow();
+            mere::canvas::CANVAS_PHYSICS_OVERLAYS
+                .iter()
+                .filter(|(_, label)| {
+                    !taproot::matching(
+                        &dom,
+                        &Selector::role("checkbox")
+                            .containing(*label)
+                            .with_attr("aria-disabled", "true"),
+                    )
+                    .is_empty()
+                })
+                .count()
+                .to_string()
+        };
         let drag_return = self.drop.and_then(|(dx, dy)| {
             let (x, y) = canvas.focused_screen_position()?;
             let (left, top, _, _) = leaf_rect(ctx)?;
@@ -112,7 +130,14 @@ impl TreeLane {
             .with_field("panel-profile", page.physics.profile_id())
             .with_field("panel-status", page.physics.status.clone())
             .with_field("checked-overlays", checked)
+            .with_field("disabled-overlays", disabled)
             .with_field("canvas-nodes", canvas.graph().node_count().to_string())
+            .with_field("physics-settling", canvas.is_settling().to_string())
+            .with_field(
+                "physics-continuous",
+                canvas.physics_tick_demand().0.to_string(),
+            )
+            .with_field("physics-budget", canvas.physics_tick_demand().1.to_string())
             .with_field(
                 "dragging-node",
                 canvas

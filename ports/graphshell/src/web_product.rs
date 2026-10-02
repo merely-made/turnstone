@@ -243,14 +243,16 @@ impl BrowserHost {
             mere::canvas::PhysicsDepthSource::parse(&scene.physics_depth_source)
                 .unwrap_or(mere::canvas::PhysicsDepthSource::Roots),
         );
-        self.canvas.set_physics_overlays(
+        // A saved scene cannot pair Density with overlays (the canvas refused
+        // them when it was made), so a refusal here has nothing to report.
+        let _ = self.canvas.set_physics_overlays(
             scene
                 .physics_overlays
                 .iter()
                 .filter_map(|id| mere::canvas::PhysicsOverlay::parse(id))
                 .collect(),
         );
-        self.canvas.set_physics_law(
+        let _ = self.canvas.set_physics_law(
             mere::canvas::PhysicsLaw::parse(&scene.physics_law)
                 .unwrap_or(mere::canvas::PhysicsLaw::Springs),
         );
@@ -871,7 +873,37 @@ fn sync_physics_controls(host: &BrowserHost) -> Result<(), String> {
         "profile-select",
         host.canvas.physics_profile_id().unwrap_or(""),
     )?;
-    Ok(())
+    sync_overlay_availability()
+}
+
+/// Grey the overlay checkboxes, with the reason beside them, while the law
+/// picker names a law that takes no overlays (Density). Runs when the picker
+/// changes and whenever the controls follow the canvas.
+pub(super) fn sync_overlay_availability() -> Result<(), String> {
+    let law = PhysicsLaw::parse(&select_value("physics-select")?);
+    let refusal = law.and_then(PhysicsLaw::overlay_refusal);
+    let fieldset = element("physics-overlays")?;
+    if refusal.is_some() {
+        fieldset
+            .set_attribute("disabled", "")
+            .map_err(|_| "could not disable the overlays".to_string())?;
+        for overlay in PhysicsOverlay::ALL {
+            element_as::<HtmlInputElement>(&format!("overlay-{}", overlay.id()))?
+                .set_checked(false);
+        }
+    } else {
+        fieldset
+            .remove_attribute("disabled")
+            .map_err(|_| "could not enable the overlays".to_string())?;
+    }
+    let note = element("overlay-note")?;
+    note.set_text_content(refusal);
+    if refusal.is_some() {
+        note.remove_attribute("hidden")
+    } else {
+        note.set_attribute("hidden", "")
+    }
+    .map_err(|_| "could not show the overlay note".to_string())
 }
 
 pub(super) fn selected_handler() -> Result<String, String> {
