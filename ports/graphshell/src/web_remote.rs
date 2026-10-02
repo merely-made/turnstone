@@ -432,6 +432,10 @@ pub(super) fn update_remote_semantics(
 /// `loader.js` from `?signal=` (and `?invite=`) once the host is ready.
 #[wasm_bindgen]
 pub fn connect_remote(signal_url: String, invite: Option<String>) -> Result<(), JsValue> {
+    if super::web_tree::mounted() {
+        return super::web_tree::connect_remote(signal_url, invite)
+            .map_err(|error| JsValue::from_str(&error));
+    }
     let state = web_scenario::host().ok_or_else(|| JsValue::from_str("the host has not booted"))?;
     web_rtc_link::connect(state, signal_url, invite);
     Ok(())

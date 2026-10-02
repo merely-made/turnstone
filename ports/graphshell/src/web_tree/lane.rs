@@ -155,6 +155,77 @@ impl TreeLane {
         snapshot
     }
 
+    /// The remote session's observations, named as the old page names them.
+    fn remote_fields(
+        &self,
+        ctx: &AppCtx<'_, TreePage, Logic, Child>,
+        snapshot: ProbeSnapshot,
+    ) -> ProbeSnapshot {
+        let page = ctx.runner.state();
+        let remote = self.shared.remote.borrow();
+        let board = &remote.board;
+        let live = remote.live.as_ref();
+        snapshot
+            .with_field(
+                "session",
+                match page.session {
+                    remote::Session::Local => "local",
+                    remote::Session::Remote => "remote",
+                },
+            )
+            .with_field("active-session", remote::active_line(page))
+            .with_field("remote-link", if live.is_some() { "webrtc" } else { "none" })
+            .with_field("remote-state", remote.status())
+            .with_field(
+                "remote-revision",
+                remote.revision().map(|r| r.to_string()).unwrap_or_default(),
+            )
+            .with_field(
+                "remote-cards",
+                remote
+                    .mounted()
+                    .map(|mounted| mounted.scene.tables.items.len().to_string())
+                    .unwrap_or_default(),
+            )
+            .with_field(
+                "remote-resume",
+                live.map(|live| live.session.last_resume().to_string())
+                    .unwrap_or_default(),
+            )
+            .with_field(
+                "remote-rejoins",
+                live.map(|live| live.session.rejoins().to_string())
+                    .unwrap_or_default(),
+            )
+            .with_field(
+                "remote-actions",
+                remote
+                    .actions()
+                    .into_iter()
+                    .map(|(label, _)| label)
+                    .collect::<Vec<_>>()
+                    .join("|"),
+            )
+            .with_field(
+                "remote-physics-law",
+                self.shared.canvas.borrow().physics_law().id(),
+            )
+            .with_field("remote-energy", format!("{:.1}", board.energy()))
+            .with_field(
+                "remote-gap",
+                board
+                    .gap("0", "1")
+                    .map(|gap| format!("{gap:.0}"))
+                    .unwrap_or_default(),
+            )
+            .with_field("remote-overlaps", board.overlaps().to_string())
+            .with_field(
+                "remote-draft-open",
+                remote.form().draft.is_some().to_string(),
+            )
+            .with_field("action-status", remote.form().status.clone())
+    }
+
     /// `click-node <url>`: press and release over a node, through the host's
     /// pointer path, so the pick runs as a real click's would.
     fn node_point(
@@ -284,7 +355,7 @@ impl Product for TreeLane {
                 Some((left + x - px).hypot(top + y - py))
             });
         let step = canvas.elapsed_step_report().unwrap_or_default();
-        let snapshot = self.physics_fields(ctx, ProbeSnapshot::default());
+        let snapshot = self.remote_fields(ctx, self.physics_fields(ctx, ProbeSnapshot::default()));
         let snapshot = snapshot
             .with_field("physics-steps", step.steps.to_string())
             .with_field(
@@ -454,18 +525,26 @@ impl Product for TreeLane {
         }
     }
 
-    /// Busy while the layout moves or a timing window's GPU times are out, so
-    /// `wait` holds for a settled frame and a finished report.
+    /// The remote session's receipt events.
+    fn drain_events(&mut self, _ctx: &mut mesquite::Ctx<'_, Self>) -> Vec<String> {
+        std::mem::take(&mut self.shared.remote.borrow_mut().events)
+    }
+
+    /// Busy while a capture is pending, a remote answer is still to come, the
+    /// local canvas moves while it is the one shown, or a timing window's GPU
+    /// times are out ("Moving counts only when local is shown").
     fn busy_mut(
         &mut self,
         ctx: &mut AppCtx<'_, TreePage, Logic, Child>,
         capture_pending: bool,
     ) -> Option<bool> {
         let pending = self.shared.timing.borrow_mut().poll();
+        let local_shown = ctx.runner.state().session == remote::Session::Local;
         Some(
             capture_pending
                 || pending
-                || self.shared.moving.get()
+                || self.shared.remote.borrow().in_flight()
+                || (local_shown && self.shared.moving.get())
                 || ctx
                     .runner
                     .state()

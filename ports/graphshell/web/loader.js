@@ -42,6 +42,9 @@ function semanticNode(element) {
     ...(role ? { role } : {}),
     ...(label ? { label } : {}),
     ...(element.id ? { id: element.id } : {}),
+    ...(element.getAttribute("aria-description")
+      ? { description: element.getAttribute("aria-description") }
+      : {}),
     ...(element.hasAttribute("aria-pressed")
       ? { pressed: element.getAttribute("aria-pressed") === "true" }
       : {}),
