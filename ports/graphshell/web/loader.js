@@ -45,6 +45,10 @@ function semanticNode(element) {
     ...(element.getAttribute("aria-description")
       ? { description: element.getAttribute("aria-description") }
       : {}),
+    // Where the mirror places a drawn item, CSS px, to compare with the paint.
+    ...(["listitem", "img"].includes(role) && element.getBoundingClientRect().width > 0
+      ? { box: (({ x, y, width, height }) => [x, y, width, height].map(Math.round))(element.getBoundingClientRect()) }
+      : {}),
     ...(element.hasAttribute("aria-expanded")
       ? { expanded: element.getAttribute("aria-expanded") === "true" }
       : {}),

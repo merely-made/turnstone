@@ -32,7 +32,9 @@ pub(super) const BOARD_FIT: BoardFit = BoardFit {
 /// The draft form's unset choice.
 const CHOOSE: &str = "Choose…";
 
-/// Which Graph tools sections are open. Both start open; the region scrolls.
+/// Which Graph tools sections are open. Arrangement and physics starts
+/// open; Remote session starts closed and opens when a link is established or
+/// remote is shown ("Remote starts collapsed"). The region scrolls.
 pub(super) struct Sections {
     pub(super) physics: DisclosureState,
     pub(super) remote: DisclosureState,
@@ -43,7 +45,7 @@ impl Default for Sections {
         Self {
             physics: DisclosureState::new("tools-physics", "Arrangement and physics")
                 .expanded(true),
-            remote: DisclosureState::new("tools-remote", "Remote session").expanded(true),
+            remote: DisclosureState::new("tools-remote", "Remote session").expanded(false),
         }
     }
 }
@@ -301,6 +303,36 @@ impl TreePage {
                 remote.form_mut().status = status;
             }
         });
+    }
+}
+
+/// The board's slot as an accessible list: one item per card, named by its
+/// title, at the rectangle it is painted in.
+pub(super) fn board_semantics(
+    remote: &TreeRemote,
+    width: u32,
+    height: u32,
+) -> cambium_rootstock::ProducerSemantics {
+    use cambium_rootstock::{ProducerNode, ProducerRole, ProducerSemantics};
+    let children = if remote.mounted().is_some() {
+        remote
+            .board
+            .scene()
+            .card_rects(remote.board.board(), width, height, BOARD_FIT)
+            .into_iter()
+            .map(|(_, title, rect)| ProducerNode {
+                role: ProducerRole::ListItem,
+                name: title,
+                rect: [rect.x, rect.y, rect.width, rect.height],
+            })
+            .collect()
+    } else {
+        Vec::new()
+    };
+    ProducerSemantics {
+        role: Some(ProducerRole::List),
+        name: Some(format!("Remote board · {} cards", children.len())),
+        children,
     }
 }
 

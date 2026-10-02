@@ -8,6 +8,8 @@ assert snap remote-link == webrtc
 assert snap remote-state == open
 assert snap remote-revision == 1
 assert snap remote-cards == 1
+# The Remote session section starts closed and opened when the link came up.
+assert snap tools-sections == physics:open,remote:open
 click role:button Remote mount
 settle 1
 assert snap session == remote
@@ -36,6 +38,9 @@ assert snap remote-revision == 2
 assert snap remote-cards == 2
 assert snap remote-resume ~ diff
 assert event remote-bell revision 2
+# The board's slot names each card where it is painted.
+assert snap board-nodes ~ Card 0@
+assert snap board-nodes ~ Card 1@
 # The region scrolls: bring the action status into view for the capture.
 reveal role:status Accepted
 settle 2

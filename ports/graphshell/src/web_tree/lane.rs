@@ -232,6 +232,25 @@ impl TreeLane {
                 remote.form().draft.is_some().to_string(),
             )
             .with_field("action-status", remote.form().status.clone())
+            // What the board's slot tells a reader: each card's name and the
+            // rectangle it is painted in, leaf-local px.
+            .with_field(
+                "board-nodes",
+                if self.shared.remote_shown.get() {
+                    let (width, height) = self.shared.size.get();
+                    remote::board_semantics(&remote, width, height)
+                        .children
+                        .iter()
+                        .map(|node| {
+                            let [x, y, w, h] = node.rect;
+                            format!("{}@{x:.0},{y:.0},{w:.0},{h:.0}", node.name)
+                        })
+                        .collect::<Vec<_>>()
+                        .join("|")
+                } else {
+                    String::new()
+                },
+            )
     }
 
     /// `click-node <url>`: press and release over a node, through the host's

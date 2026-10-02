@@ -312,6 +312,21 @@ impl TextureProducer for CanvasProducer {
         self.shared.canvas.borrow_mut().reset_frame_time();
         self.texture = None;
     }
+
+    /// While the board is shown, the slot is a list of its cards, each named
+    /// by its title and placed where it is painted. The graph keeps the
+    /// slot's own DOM semantics for now.
+    fn semantics(&mut self) -> Option<cambium_rootstock::ProducerSemantics> {
+        if !self.shared.remote_shown.get() {
+            return None;
+        }
+        let (width, height) = self.shared.size.get();
+        Some(remote::board_semantics(
+            &self.shared.remote.borrow(),
+            width,
+            height,
+        ))
+    }
 }
 
 /// The application state the tree renders.
@@ -333,6 +348,8 @@ pub(crate) struct TreePage {
     draft: remote::DraftControls,
     /// The remote generation the view last rebuilt for.
     remote_seen: u64,
+    /// Whether a remote link has been seen, so its section opens once.
+    remote_link_seen: bool,
     /// Whether the collapsed Graph tools region is open over the canvas.
     tools_open: bool,
     /// The tree's logical size, followed from the host each frame. Genet sizes
@@ -601,6 +618,7 @@ async fn boot(root: Element) -> Result<(), String> {
                 sections: remote::Sections::default(),
                 draft: remote::DraftControls::default(),
                 remote_seen: 0,
+                remote_link_seen: false,
                 size: (width, height),
             },
             logic: view as Logic,
@@ -663,9 +681,19 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
             }
             // The remote session moves outside the runner (its channel's
             // pumps); rebuild the view when it has.
-            let generation = frame_shared.remote.borrow().generation;
+            let (generation, linked) = {
+                let remote = frame_shared.remote.borrow();
+                (remote.generation, remote.live.is_some())
+            };
             if ctx.runner.state().remote_seen != generation {
-                ctx.runner.update(|page| page.remote_seen = generation);
+                ctx.runner.update(|page| {
+                    page.remote_seen = generation;
+                    // The section starts closed and opens when a link exists.
+                    if linked && !page.remote_link_seen {
+                        page.remote_link_seen = true;
+                        page.sections.remote.expanded = true;
+                    }
+                });
             }
             if ctx.runner.state().physics.transition.is_some() {
                 ctx.runner.update(|page| page.advance_arrangement(now_ms()));
