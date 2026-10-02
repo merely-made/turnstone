@@ -656,6 +656,11 @@ pub(super) fn update_product_semantics(
         ("data-layout-spread", format!("{:.0}", stats.spread)),
         ("data-layout-overlaps", stats.overlaps.to_string()),
         ("data-layout-stretch", format!("{:.2}", stats.stretch)),
+        (
+            "data-layout-mass-area-rank",
+            format!("{:.2}", stats.mass_area_rank),
+        ),
+        ("data-layout-density-cv", format!("{:.3}", stats.density_cv)),
         ("data-product-status", host.product_status.clone()),
         (
             "data-dragging",

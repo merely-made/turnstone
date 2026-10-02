@@ -150,7 +150,12 @@ impl TreeLane {
             snapshot = snapshot
                 .with_field("layout-spread", format!("{:.0}", stats.spread))
                 .with_field("layout-overlaps", stats.overlaps.to_string())
-                .with_field("layout-stretch", format!("{:.2}", stats.stretch));
+                .with_field("layout-stretch", format!("{:.2}", stats.stretch))
+                .with_field(
+                    "layout-mass-area-rank",
+                    format!("{:.2}", stats.mass_area_rank),
+                )
+                .with_field("layout-density-cv", format!("{:.3}", stats.density_cv));
         }
         snapshot
     }
