@@ -43,6 +43,13 @@ pub fn board_scene(mounted: &MountedScene) -> BoardScene {
             .into_iter()
             .map(|(instance, item)| BoardCard {
                 id: instance.0.to_string(),
+                // The name the endpoint's presentation gives the card.
+                title: mounted
+                    .presentation
+                    .offers_for(instance)
+                    .and_then(|offers| offers.first())
+                    .map(|offer| offer.semantics.label.clone())
+                    .unwrap_or_default(),
                 slot: (item.transform.translate.x, item.transform.translate.y),
                 site: tables
                     .sources
@@ -147,6 +154,8 @@ mod tests {
         assert_eq!(scene.cards[0].slot, (0.0, 0.0));
         assert_eq!(scene.cards[1].slot, (140.0, 0.0));
         assert_eq!(scene.cards[0].site, "live.graphshell");
+        assert_eq!(scene.cards[0].title, "Card 0", "a snapshot lists cards in index order");
+        assert_eq!(scene.cards[1].title, "Card 1");
         assert!(matches!(scene.cards[0].footprint, BoardFootprint::Rect { .. }));
     }
 
