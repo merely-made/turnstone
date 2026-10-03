@@ -13,8 +13,8 @@
 //! is the part that is actually Graphshell's: two layers, content blitted
 //! opaque and chrome composited over it with alpha.
 
-use std::cell::Cell;
-use std::rc::Rc;
+use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
 
 use genet_render_host::{RenderCore, WindowSurface};
 use netrender::{ColorLoad, ExternalTexturePlacement, NetrenderOptions, Scene};
@@ -48,12 +48,12 @@ pub(crate) struct PendingCapture {
     width: u32,
     height: u32,
     padded_bytes_per_row: u32,
-    done: Rc<Cell<bool>>,
+    done: Arc<AtomicBool>,
 }
 
 impl PendingCapture {
     pub(crate) fn ready(&self) -> bool {
-        self.done.get()
+        self.done.load(Ordering::Acquire)
     }
 
     /// Tightly packed RGBA8 rows, top-down. Call only after `ready`.
@@ -224,13 +224,16 @@ impl GpuPresenter {
             },
         );
         self.core.queue().submit([encoder.finish()]);
-        let done = Rc::new(Cell::new(false));
+        // An atomic flag, not `Rc<Cell<bool>>`: with wgpu's
+        // `fragile-send-sync-non-atomic-wasm` on (cubecl-wgpu enables it, and
+        // features unify) a wasm `map_async` callback must be `Send`.
+        let done = Arc::new(AtomicBool::new(false));
         let flag = done.clone();
         // On WebGPU the callback arrives from the browser's event loop once the
         // copy has executed; no poll is needed or possible here.
-        buffer
-            .slice(..)
-            .map_async(wgpu::MapMode::Read, move |_| flag.set(true));
+        buffer.slice(..).map_async(wgpu::MapMode::Read, move |_| {
+            flag.store(true, Ordering::Release)
+        });
         PendingCapture {
             buffer,
             width,

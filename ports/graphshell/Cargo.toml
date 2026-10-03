@@ -82,6 +82,9 @@ webrtc-join = [
 # is the separate `graphshell-web` crate (`web/Cargo.toml`, whose `[lib] path`
 # is `src/web.rs`), and it names its own JS bindings; the IndexedDB backend it
 # stores through belongs to muniment, beside the redb and zip realizations.
+# The web host's canvas and remote board stage repulsion on the page's GPU
+# (physics catalog plan, P5c; mere `canvas-gpu`, ruled 2026-10-02).
+canvas-gpu = ["web", "mere/canvas-gpu"]
 web = [
     "dep:async-trait",
     "dep:chartulary",

@@ -1803,7 +1803,7 @@ async fn run(root_element: Element) -> Result<(), String> {
     // tree page draws for those parameters, so the two can be timed side by
     // side (the one-tree plan's phase 3).
     let canvas_graph = match web_graphs::requested() {
-        Some((nodes, seed)) => web_graphs::generated(nodes, seed),
+        Some((nodes, seed)) => web_graphs::generated(nodes, seed, web_graphs::links()),
         None => app.host.graph().clone(),
     };
     let mut graph_canvas = web_graphs::prepared_canvas(canvas_graph, width, height);

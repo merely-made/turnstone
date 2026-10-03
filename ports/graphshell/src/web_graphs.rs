@@ -11,6 +11,10 @@
 //! page draw the same graph when they are timed side by side. Each node links
 //! to one earlier node, which keeps the graph connected, and half as many
 //! extra links join random pairs. Both pages lay a graph out the same way.
+//! `&links=tree` drops the extra links, leaving the spanning tree, and
+//! `&links=none` every link: unlinked bodies, where Springs is exclusion and
+//! the boundary alone, for receipts that measure repulsion (a linked random
+//! graph packs into a ball under Springs, its long edges pulling inward).
 
 use mere::canvas::{Canvas, project_canvas_strategy};
 use mere::kernel::geometry::PortablePoint;
@@ -33,8 +37,32 @@ pub(crate) fn requested() -> Option<(usize, u64)> {
     Some((nodes, seed))
 }
 
-/// A connected graph of `nodes` nodes, the same for the same `seed`.
-pub(crate) fn generated(nodes: usize, seed: u64) -> Graph {
+/// Which of the generated graph's links the page URL keeps.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum Links {
+    /// The spanning tree and the extra links (the default).
+    All,
+    /// The spanning tree alone (`links=tree`).
+    Tree,
+    /// No links (`links=none`).
+    None,
+}
+
+pub(crate) fn links() -> Links {
+    let requested = web_sys::window()
+        .and_then(|window| window.location().search().ok())
+        .and_then(|search| web_sys::UrlSearchParams::new_with_str(&search).ok())
+        .and_then(|params| params.get("links"));
+    match requested.as_deref() {
+        Some("tree") => Links::Tree,
+        Some("none") => Links::None,
+        _ => Links::All,
+    }
+}
+
+/// A connected graph of `nodes` nodes, the same for the same `seed`, keeping
+/// the links `links` names.
+pub(crate) fn generated(nodes: usize, seed: u64, links: Links) -> Graph {
     let mut graph = Graph::new();
     // xorshift64: small, and the same on every platform.
     let mut state = seed.wrapping_mul(0x9E37_79B9_7F4A_7C15) | 1;
@@ -63,9 +91,11 @@ pub(crate) fn generated(nodes: usize, seed: u64) -> Graph {
     };
     for index in 1..nodes {
         let earlier = (next() % index as u64) as usize;
-        assert_relation(&mut graph, keys[index], keys[earlier], link());
+        if links != Links::None {
+            assert_relation(&mut graph, keys[index], keys[earlier], link());
+        }
     }
-    if nodes > 1 {
+    if links == Links::All && nodes > 1 {
         for _ in 0..nodes / 2 {
             let from = (next() % nodes as u64) as usize;
             let to = (next() % nodes as u64) as usize;

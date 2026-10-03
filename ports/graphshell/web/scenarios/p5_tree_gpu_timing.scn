@@ -1,0 +1,21 @@
+# Physics catalog P5c: the physics stage per frame on a generated graph while
+# Springs runs with no arrangement, for the web host's GPU threshold. Run per
+# size with ?nodes=<n>&seed=7, once with ?gpu=off and once with
+# ?gpu_threshold=0, and compare the timing window's physics stage.
+assert snap ready == true
+click role:button Play physics
+settle 2
+assert snap physics-paused == false
+click role:combobox Arrangement
+settle 1
+click role:option Free (physics alone)
+settle 1
+click role:button Apply arrangement
+settle 1
+assert snap layout == free
+settle 10
+timing start physics-cost
+settle 20
+timing stop
+log-physics timed
+log p5 timing receipt complete

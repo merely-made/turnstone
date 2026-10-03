@@ -22,6 +22,8 @@
 use std::cell::Cell;
 use std::collections::BTreeMap;
 use std::rc::Rc;
+use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
 
 use serde_json::{Value, json};
 use wasm_bindgen::{JsCast, closure::Closure};
@@ -108,7 +110,7 @@ struct Window {
 /// A closed window waiting for its GPU times.
 struct Closing {
     window: Window,
-    readback: Option<(wgpu::Buffer, Rc<Cell<bool>>)>,
+    readback: Option<(wgpu::Buffer, Arc<AtomicBool>)>,
 }
 
 /// One window's summary, as the receipt reports it.
@@ -214,7 +216,7 @@ impl GpuMarks {
         device: &wgpu::Device,
         queue: &wgpu::Queue,
         frames: u32,
-    ) -> (wgpu::Buffer, Rc<Cell<bool>>) {
+    ) -> (wgpu::Buffer, Arc<AtomicBool>) {
         let bytes = u64::from(frames * 2) * 8;
         let readback = device.create_buffer(&wgpu::BufferDescriptor {
             label: Some("frame timing readback"),
@@ -230,11 +232,14 @@ impl GpuMarks {
             encoder.copy_buffer_to_buffer(&self.resolve, 0, &readback, 0, bytes);
         }
         queue.submit([encoder.finish()]);
-        let done = Rc::new(Cell::new(false));
+        // An atomic flag, not `Rc<Cell<bool>>`: with wgpu's
+        // `fragile-send-sync-non-atomic-wasm` on (cubecl-wgpu enables it, and
+        // features unify) a wasm `map_async` callback must be `Send`.
+        let done = Arc::new(AtomicBool::new(false));
         let flag = done.clone();
-        readback
-            .slice(..)
-            .map_async(wgpu::MapMode::Read, move |_| flag.set(true));
+        readback.slice(..).map_async(wgpu::MapMode::Read, move |_| {
+            flag.store(true, Ordering::Release)
+        });
         (readback, done)
     }
 }
@@ -364,7 +369,7 @@ impl FrameTiming {
             return false;
         };
         let gpu_ms = match &closing.readback {
-            Some((_, done)) if !done.get() => {
+            Some((_, done)) if !done.load(Ordering::Acquire) => {
                 self.closing = Some(closing);
                 return true;
             },

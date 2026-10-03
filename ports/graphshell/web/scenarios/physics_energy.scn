@@ -1,6 +1,6 @@
-# Physics receipt: Energy, LinLog — linear attraction along edges,
-# logarithmic repulsion. Its signature is separation: no overlapping bodies,
-# communities apart.
+# Physics receipt: Energy, ForceAtlas2's force model — attraction linear in
+# distance along edges, repulsion falling as 1/d. Its signature is
+# separation: no overlapping bodies, communities apart.
 assert title GRAPHSHELL H3 READY
 assert snap ready == true
 dom click [data-command="toggle-physics"]
