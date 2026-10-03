@@ -149,8 +149,8 @@ layout-dom-api = { git = "https://github.com/merely-made/genet.git", rev = "bd3e
 genet-scripted-dom = { git = "https://github.com/merely-made/genet.git", rev = "bd3e8861b2932d62b73c9936ac3a317f1df3ffdb", version = "=0.1.2" }
 vello = { git = "https://github.com/mark-ik/vello.git", tag = "vello-0.10.0" }
 # The resident lane's CubeCL stack (mere `canvas-gpu`, physics catalog P5c),
-# restated from the root manifest: cubecl-runtime 0.11.0-pre.2's published
-# manifest lacks the wasm-bindgen-futures edge its wasm tuner uses, and
-# burn-cubecl carries the same-allocation binding fix. Delete with the root's.
+# restated from the root manifest because [patch] is not inherited:
+# cubecl-runtime 0.11.0-pre.4 with persistence removed from its defaults
+# (ruling 375). burn-cubecl takes the registry crate, as at the root, since
+# its selector was retired under ruling 410. Delete with the root's row.
 cubecl-runtime = { path = "../../../support/patches/cubecl-runtime" }
-burn-cubecl = { path = "../../../support/patches/burn-cubecl" }
