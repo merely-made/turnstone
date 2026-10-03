@@ -1,0 +1,35 @@
+# Kinds by meaning on the tree route (dynamics grammar plan, G2): the wasm
+# build takes the lexical fallback, and one content earns one embedding run.
+assert snap ready == true
+click role:button Play physics
+settle 1
+assert snap physics-paused == false
+click role:combobox Arrangement
+settle 1
+click role:option Free (physics alone)
+settle 1
+click role:button Apply arrangement
+settle 1
+assert snap layout == free
+assert snap meaning-backend == lexical
+assert snap meaning-runs == 0
+click role:combobox Physics law
+settle 1
+click role:option Kinds
+settle 1
+click role:combobox Kinds
+settle 1
+click role:option By meaning
+settle 1
+click role:button Apply physics
+settle 1
+assert snap physics-law == kinds.particle-life
+assert snap physics-kind-source == meaning
+assert snap meaning-snapshot-backend == lexical
+assert snap meaning-runs == 1
+capture physics_meaning_start
+settle 60
+assert snap meaning-runs == 1
+assert snap physics-energy >= 1
+capture physics_meaning_moving
+log physics meaning receipt complete

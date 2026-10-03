@@ -10,10 +10,7 @@
 
 use std::collections::HashMap;
 
-use mere::canvas::{
-    CANVAS_LAYOUT_STRATEGIES, Canvas, PhysicsChoice, PhysicsOverlay,
-    project_canvas_strategy_with_score_for_view,
-};
+use mere::canvas::{CANVAS_LAYOUT_STRATEGIES, Canvas, PhysicsChoice, PhysicsOverlay};
 use mere::kernel::geometry::PortablePoint;
 use mere::kernel::graph::NodeKey;
 
@@ -111,16 +108,16 @@ pub fn apply_arrangement(
     }
     let previous_score = canvas.projection_score().cloned();
     let extents = canvas.strategy_extents();
-    let projection = project_canvas_strategy_with_score_for_view(
+    // The canvas is the binding: the arrangement reads its channel
+    // registry's facts (the cluster partition Kinds and Group pull read).
+    let zoom = canvas.camera().zoom;
+    let projection = canvas.project_arrangement_for_view(
         layout_id,
-        canvas.graph(),
-        canvas.focused_key(),
         viewport.0,
         viewport.1,
-        None,
         Some(&extents),
         true,
-        canvas.camera().zoom,
+        zoom,
         previous_score.as_ref(),
     );
     let transition = ArrangementTransition::between(canvas, &projection.positions)?;
@@ -325,6 +322,7 @@ mod tests {
                 )
             }),
             kind: PhysicsKindSource::Degree,
+            groups: PhysicsKindSource::Cluster,
             mass: PhysicsMassSource::PageRank,
             depth: PhysicsDepthSource::Focus,
         };

@@ -130,13 +130,10 @@ impl BrowserHost {
         self.canvas.apply_cartography_faces(old.face_iter());
 
         let extents = self.canvas.strategy_extents();
-        let projection = project_canvas_strategy_with_score_for_view(
+        let projection = self.canvas.project_arrangement_for_view(
             &self.layout_id,
-            self.canvas.graph(),
-            self.canvas.focused_key(),
             self.width,
             self.height,
-            None,
             Some(&extents),
             true,
             camera.zoom,
@@ -428,6 +425,8 @@ impl BrowserHost {
             overlays: canvas_physics::ticked_overlays(|overlay| ticked.contains(&overlay)),
             kind: PhysicsKindSource::parse(&select_value("kind-source-select")?)
                 .unwrap_or(PhysicsKindSource::Site),
+            // No control yet: Group pull keeps the channel it reads.
+            groups: self.canvas.physics_group_source(),
             mass: PhysicsMassSource::parse(&select_value("mass-source-select")?)
                 .unwrap_or(PhysicsMassSource::Degree),
             depth: PhysicsDepthSource::parse(&select_value("depth-source-select")?)
