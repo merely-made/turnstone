@@ -10525,8 +10525,8 @@ dependencies = [
 
 [[package]]
 name = "retinue"
-version = "0.1.1"
-source = "git+https://github.com/merely-made/retinue.git?rev=5db362ee4ecc6f19b28c840704cd508d95b8c982#5db362ee4ecc6f19b28c840704cd508d95b8c982"
+version = "0.2.0"
+source = "git+https://github.com/merely-made/retinue.git?rev=fa4f925059cc698058cb21fecc1c825d095741a9#fa4f925059cc698058cb21fecc1c825d095741a9"
 dependencies = [
  "aes 0.9.3",
  "bzip2",
