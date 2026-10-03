@@ -1923,7 +1923,24 @@ async fn run(root_element: Element) -> Result<(), String> {
 
 #[wasm_bindgen(start)]
 pub fn start() {
+    run_static_constructors();
     console_error_panic_hook::set_once();
+}
+
+/// Runs the module's static constructors once, before any other Rust code.
+///
+/// wasm-ld links a module that never calls `__wasm_call_ctors` itself
+/// command-style: it wraps every export to run all constructors first, on
+/// every JS-to-wasm call. Pre.4 CubeCL brings 8,166 of them (Pliron's
+/// `inventory` registrations). This call makes the link reactor-style instead:
+/// no wrappers, one run per instance. Burn migration plan §13.33.
+fn run_static_constructors() {
+    unsafe extern "C" {
+        fn __wasm_call_ctors();
+    }
+    // SAFETY: the linker-synthesized constructor list; the start export runs
+    // once per instance, before every other export.
+    unsafe { __wasm_call_ctors() }
 }
 
 /// Mount the component into `root`: the full page's body-filling element or
