@@ -430,6 +430,10 @@ impl Product for TreeLane {
             .with_field("focus", format!("{focus:?}"))
             .with_field("focus-kind", focus_kind)
             .with_field("physics-paused", canvas.physics_paused().to_string())
+            // Arrangement roles (dynamics grammar plan, G7): the recipe's role
+            // and how many settles Settled has recorded.
+            .with_field("arrangement-role", canvas.arrangement_roles().default.id())
+            .with_field("settles", canvas.settle_count().to_string())
             .with_field("physics-energy", canvas.physics_energy().to_string())
             .with_field(
                 "finite",

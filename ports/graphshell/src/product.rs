@@ -6,7 +6,7 @@
 
 //! Daily graph-product operations composed from Mere's portable graph and canvas surfaces.
 
-use std::collections::{BTreeSet, HashSet};
+use std::collections::{BTreeMap, BTreeSet, HashSet};
 
 use chartulary::AcceptAll;
 use chirograph::{PortableCardV1, Sha256NamedInformation};
@@ -235,11 +235,131 @@ pub struct SavedSceneV1 {
     /// Where the Depth overlay reads depth from (`roots`, `layers`, `focus`).
     #[serde(default = "default_physics_depth_source")]
     pub physics_depth_source: String,
+    /// The anchored role's return stiffness. A scene saved before G7 stored
+    /// its anchor pull here, and with no `arrangement_roles` that pull is read
+    /// as the roles it acted as (see [`SavedSceneV1::roles`]).
+    #[serde(default = "default_anchor_stiffness")]
     pub arrangement_pull: f32,
+    /// The arrangement's roles: recipe default, site groups, items by member
+    /// (dynamics grammar plan, G7). Absent in a scene saved before G7.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub arrangement_roles: Option<SavedRolesV1>,
     pub camera_offset: (f32, f32),
     pub camera_zoom: f32,
     pub default_handler: String,
     pub cartography: CartographyGeometry,
+}
+
+/// An arrangement's roles as a scene saves them, by role id
+/// (`seeded`, `anchored`, `pinned`; `mere::canvas::Role::id`).
+#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct SavedRolesV1 {
+    pub default: String,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub groups: BTreeMap<String, String>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub items: BTreeMap<Uuid, String>,
+}
+
+impl SavedSceneV1 {
+    /// The roles this scene opens with, and the anchored stiffness. A scene
+    /// saved before G7 has only its pull: the canvas anchored every item at
+    /// that pull while playing, so a positive pull reads as anchored at it and
+    /// zero as seeded, and the scene behaves as it did. An unknown role id
+    /// fails rather than falling back.
+    pub fn roles(&self) -> Result<(SavedRoles, f32), String> {
+        let parse = |id: &str| {
+            mere::canvas::Role::parse(id).ok_or_else(|| format!("unknown arrangement role {id}"))
+        };
+        let Some(saved) = &self.arrangement_roles else {
+            return Ok(if self.arrangement_pull > 0.0 {
+                (
+                    SavedRoles::uniform(mere::canvas::Role::Anchored),
+                    self.arrangement_pull,
+                )
+            } else {
+                (
+                    SavedRoles::uniform(mere::canvas::Role::Seeded),
+                    default_anchor_stiffness(),
+                )
+            });
+        };
+        let mut roles = SavedRoles::uniform(parse(&saved.default)?);
+        for (group, id) in &saved.groups {
+            roles.groups.insert(group.clone(), parse(id)?);
+        }
+        for (member, id) in &saved.items {
+            roles.items.insert(*member, parse(id)?);
+        }
+        Ok((roles, self.arrangement_pull))
+    }
+}
+
+/// [`SavedRolesV1`] parsed: items by member, since node keys are a canvas's
+/// own.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct SavedRoles {
+    pub default: mere::canvas::Role,
+    pub groups: BTreeMap<String, mere::canvas::Role>,
+    pub items: BTreeMap<Uuid, mere::canvas::Role>,
+}
+
+impl SavedRoles {
+    pub fn uniform(role: mere::canvas::Role) -> Self {
+        Self {
+            default: role,
+            groups: BTreeMap::new(),
+            items: BTreeMap::new(),
+        }
+    }
+
+    /// The canvas's table, items rebound from members to `graph`'s keys; a
+    /// member the graph lacks is dropped.
+    pub fn table(&self, graph: &mere::kernel::graph::Graph) -> mere::canvas::RoleTable {
+        mere::canvas::RoleTable {
+            default: self.default,
+            groups: self.groups.clone(),
+            items: self
+                .items
+                .iter()
+                .filter_map(|(member, role)| Some((graph.get_node_key_by_id(*member)?, *role)))
+                .collect(),
+        }
+    }
+
+    /// A canvas's table, items by member.
+    pub fn from_table(table: &mere::canvas::RoleTable, graph: &mere::kernel::graph::Graph) -> Self {
+        Self {
+            default: table.default,
+            groups: table.groups.clone(),
+            items: table
+                .items
+                .iter()
+                .filter_map(|(key, role)| Some((graph.get_node(*key)?.id, *role)))
+                .collect(),
+        }
+    }
+
+    /// The saved form, by role id.
+    pub fn saved(&self) -> SavedRolesV1 {
+        SavedRolesV1 {
+            default: self.default.id().to_string(),
+            groups: self
+                .groups
+                .iter()
+                .map(|(group, role)| (group.clone(), role.id().to_string()))
+                .collect(),
+            items: self
+                .items
+                .iter()
+                .map(|(member, role)| (*member, role.id().to_string()))
+                .collect(),
+        }
+    }
+}
+
+fn default_anchor_stiffness() -> f32 {
+    mere::canvas::DEFAULT_ANCHOR_STIFFNESS
 }
 
 fn default_physics_law() -> String {
@@ -866,6 +986,82 @@ mod tests {
         );
     }
 
+    /// G7: a scene saved before the roles has only its anchor pull, and opens
+    /// as it behaved: a positive pull is every item anchored at that pull, zero
+    /// is seeded. A new scene round-trips all three roles at all three scopes,
+    /// and an unknown role id fails rather than falling back.
+    #[test]
+    fn saved_scene_roles_read_old_pulls_as_they_behaved_and_round_trip() {
+        use mere::canvas::Role;
+        let legacy = |pull: f32| {
+            serde_json::json!({
+                "name": "Before the roles",
+                "selected": [],
+                "layout_strategy": "phyllotaxis.default",
+                "physics_paused": false,
+                "physics_damping": 0.7,
+                "arrangement_pull": pull,
+                "camera_offset": [0.0, 0.0],
+                "camera_zoom": 1.0,
+                "default_handler": "system.default",
+                "cartography": CartographyGeometry::default(),
+            })
+        };
+        let old: SavedSceneV1 = serde_json::from_value(legacy(12.0)).expect("opens");
+        assert_eq!(old.arrangement_roles, None);
+        assert_eq!(
+            old.roles().unwrap(),
+            (SavedRoles::uniform(Role::Anchored), 12.0)
+        );
+        let fixture: SavedSceneV1 = serde_json::from_value(legacy(0.4)).unwrap();
+        assert_eq!(
+            fixture.roles().unwrap(),
+            (SavedRoles::uniform(Role::Anchored), 0.4),
+            "anchored at its own pull"
+        );
+        let unpulled: SavedSceneV1 = serde_json::from_value(legacy(0.0)).unwrap();
+        assert_eq!(
+            unpulled.roles().unwrap(),
+            (
+                SavedRoles::uniform(Role::Seeded),
+                mere::canvas::DEFAULT_ANCHOR_STIFFNESS
+            ),
+            "no pull was the seed-only reading"
+        );
+        let resaved = serde_json::to_value(&old).unwrap();
+        assert!(
+            resaved.get("arrangement_roles").is_none(),
+            "an old scene re-saved unchanged stays an old scene"
+        );
+
+        let member = Uuid::from_u128(7);
+        let mut roles = SavedRoles::uniform(Role::Pinned);
+        roles.groups.insert("example.test".into(), Role::Anchored);
+        roles.items.insert(member, Role::Seeded);
+        let new = SavedSceneV1 {
+            arrangement_pull: 3.0,
+            arrangement_roles: Some(roles.saved()),
+            ..old.clone()
+        };
+        let json = serde_json::to_string(&new).unwrap();
+        let back: SavedSceneV1 = serde_json::from_str(&json).unwrap();
+        assert_eq!(back, new);
+        assert_eq!(serde_json::to_string(&back).unwrap(), json, "byte for byte");
+        assert_eq!(back.roles().unwrap(), (roles, 3.0));
+
+        let unknown = SavedSceneV1 {
+            arrangement_roles: Some(SavedRolesV1 {
+                default: "tethered".into(),
+                ..SavedRolesV1::default()
+            }),
+            ..old
+        };
+        assert_eq!(
+            unknown.roles().unwrap_err(),
+            "unknown arrangement role tethered"
+        );
+    }
+
     #[test]
     fn projection_clock_excludes_paused_host_time_and_replays_deterministically() {
         fn run() -> Vec<f32> {
@@ -951,6 +1147,7 @@ mod tests {
             physics_mass_source: "pagerank".to_string(),
             physics_depth_source: "layers".to_string(),
             arrangement_pull: 0.4,
+            arrangement_roles: None,
             camera_offset: (123.0, 234.0),
             camera_zoom: 1.2,
             default_handler: "system.default".to_string(),

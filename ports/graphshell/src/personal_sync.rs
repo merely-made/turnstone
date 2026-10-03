@@ -1775,6 +1775,7 @@ mod tests {
                     physics_mass_source: "degree".into(),
                     physics_depth_source: "roots".into(),
                     arrangement_pull: 0.4,
+                    arrangement_roles: None,
                     camera_offset: (12.0, 24.0),
                     camera_zoom: 1.2,
                     default_handler: "graphshell.inspect".into(),

@@ -227,7 +227,12 @@ impl BrowserHost {
             .apply_cartography_materials(scene.cartography.material_iter());
         self.canvas
             .apply_cartography_faces(scene.cartography.face_iter());
-        self.canvas.set_arrangement_pull(scene.arrangement_pull);
+        // The roles ride the scene; a scene saved before them reads its pull
+        // as the roles it acted as (dynamics grammar plan, G7).
+        let (roles, stiffness) = scene.roles()?;
+        self.canvas.set_anchor_stiffness(stiffness);
+        let table = roles.table(self.canvas.graph());
+        self.canvas.set_arrangement_roles(table);
         // The law, its overlays and the kind source ride the scene; an unknown id
         // (a scene from a newer catalog) falls back to the default rather than
         // failing the restore. (Physics catalog — P1.)
@@ -499,7 +504,14 @@ impl BrowserHost {
             physics_kind_source: self.canvas.physics_kind_source().id().to_string(),
             physics_mass_source: self.canvas.physics_mass_source().id().to_string(),
             physics_depth_source: self.canvas.physics_depth_source().id().to_string(),
-            arrangement_pull: self.canvas.arrangement_pull(),
+            arrangement_pull: self.canvas.anchor_stiffness(),
+            arrangement_roles: Some(
+                graphshell::product::SavedRoles::from_table(
+                    self.canvas.arrangement_roles(),
+                    self.canvas.graph(),
+                )
+                .saved(),
+            ),
             camera_offset: camera.offset,
             camera_zoom: camera.zoom,
             default_handler: select_value("handler-select")?,

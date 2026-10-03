@@ -985,6 +985,16 @@ fn remap_scene(scene: &SavedSceneV1, ids: &HashMap<Uuid, Uuid>) -> SavedSceneV1 
         physics_mass_source: scene.physics_mass_source.clone(),
         physics_depth_source: scene.physics_depth_source.clone(),
         arrangement_pull: scene.arrangement_pull,
+        arrangement_roles: scene.arrangement_roles.as_ref().map(|roles| {
+            crate::product::SavedRolesV1 {
+                items: roles
+                    .items
+                    .iter()
+                    .filter_map(|(id, role)| Some((remap(*id)?, role.clone())))
+                    .collect(),
+                ..roles.clone()
+            }
+        }),
         camera_offset: scene.camera_offset,
         camera_zoom: scene.camera_zoom,
         default_handler: scene.default_handler.clone(),
