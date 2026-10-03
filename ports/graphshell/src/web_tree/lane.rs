@@ -110,6 +110,21 @@ impl TreeLane {
             // run computes on, and how many runs the page has made.
             .with_field("meaning-backend", canvas.meaning_backend().id())
             .with_field("meaning-runs", canvas.meaning_runs().to_string())
+            .with_field("meaning-pending", canvas.meaning_pending().to_string())
+            .with_field(
+                "meaning-slice",
+                canvas
+                    .meaning_slice()
+                    .map(|scores| scores.to_string())
+                    .unwrap_or_else(|| "whole".to_string()),
+            )
+            .with_field(
+                "meaning-steps",
+                canvas
+                    .meaning()
+                    .map(|snapshot| snapshot.steps.to_string())
+                    .unwrap_or_default(),
+            )
             .with_field(
                 "meaning-snapshot-backend",
                 canvas
@@ -121,6 +136,7 @@ impl TreeLane {
             .with_field("physics-mass-source", choice.mass.id())
             .with_field("physics-depth-source", choice.depth.id())
             .with_field("panel-law", page.physics.choice().law.id())
+            .with_field("panel-group-source", page.physics.choice().groups.id())
             .with_field("panel-overlays", page.physics.ticked())
             .with_field("panel-profile", page.physics.profile_id())
             .with_field("panel-status", page.physics.status.clone())

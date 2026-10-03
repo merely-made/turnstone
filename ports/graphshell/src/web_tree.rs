@@ -616,6 +616,9 @@ async fn boot(root: Element) -> Result<(), String> {
         remote: Rc::new(RefCell::new(remote::TreeRemote::new())),
         remote_shown: Cell::new(false),
     });
+    if let Some(slice) = controls::meaning_slice()? {
+        shared.canvas.borrow_mut().set_meaning_slice(slice);
+    }
     visibility::install(&shared, &document)?;
     let options = HostOptions {
         title: "Graphshell, one tree".into(),

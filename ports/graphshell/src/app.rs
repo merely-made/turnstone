@@ -712,6 +712,7 @@ mod tests {
             physics_law: "spring.rapier".to_string(),
             physics_overlays: Vec::new(),
             physics_kind_source: "site".to_string(),
+            physics_group_source: "site".to_string(),
             physics_mass_source: "degree".to_string(),
             physics_depth_source: "roots".to_string(),
             arrangement_pull: 0.4,

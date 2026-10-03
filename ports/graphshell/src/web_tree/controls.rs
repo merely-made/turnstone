@@ -151,6 +151,24 @@ pub(super) fn gpu_options() -> Result<GpuOptions, String> {
     Ok(options)
 }
 
+/// The page's Meaning slice (dynamics grammar plan, G2, F35): `meaning_slice=0`
+/// runs a Meaning run whole on the frame it starts, `meaning_slice=<n>` spends
+/// at most `n` pair scores a frame; absent, the canvas's wasm default holds.
+pub(super) fn meaning_slice() -> Result<Option<Option<usize>>, String> {
+    let search = web_sys::window()
+        .ok_or("no window")?
+        .location()
+        .search()
+        .map_err(|_| "cannot read page options")?;
+    let params =
+        web_sys::UrlSearchParams::new_with_str(&search).map_err(|_| "invalid page options")?;
+    let Some(value) = params.get("meaning_slice") else {
+        return Ok(None);
+    };
+    let scores: usize = value.parse().map_err(|_| "invalid meaning_slice")?;
+    Ok(Some((scores > 0).then_some(scores)))
+}
+
 pub(super) fn physics_config() -> Result<mere::canvas::ElapsedStepConfig, String> {
     let mut config = mere::canvas::ElapsedStepConfig::default();
     let search = web_sys::window()

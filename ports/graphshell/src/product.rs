@@ -229,6 +229,11 @@ pub struct SavedSceneV1 {
     /// Where the Kinds law reads a node's kind from (`site`, `cluster`, `degree`).
     #[serde(default = "default_physics_kind_source")]
     pub physics_kind_source: String,
+    /// Where Group pull reads its groups from (any kind source); site when
+    /// absent, so a scene saved before the channel reads as it did. (Dynamics
+    /// grammar plan, G2, F37.)
+    #[serde(default = "default_physics_group_source")]
+    pub physics_group_source: String,
     /// Where Orbit's masses and the hub overlays' weights come from (`degree`, `pagerank`).
     #[serde(default = "default_physics_mass_source")]
     pub physics_mass_source: String,
@@ -247,6 +252,10 @@ fn default_physics_law() -> String {
 }
 
 fn default_physics_kind_source() -> String {
+    mere::canvas::PhysicsKindSource::Site.id().to_string()
+}
+
+fn default_physics_group_source() -> String {
     mere::canvas::PhysicsKindSource::Site.id().to_string()
 }
 
@@ -838,6 +847,11 @@ mod tests {
             mere::canvas::PhysicsKindSource::Site.id()
         );
         assert_eq!(
+            scene.physics_group_source,
+            mere::canvas::PhysicsKindSource::Site.id(),
+            "a scene saved before the groups channel pulls by site, as it did"
+        );
+        assert_eq!(
             scene.physics_mass_source,
             mere::canvas::PhysicsMassSource::Degree.id()
         );
@@ -853,6 +867,7 @@ mod tests {
                 mere::canvas::PhysicsOverlay::GridSnap.id().to_string(),
             ],
             physics_kind_source: mere::canvas::PhysicsKindSource::Cluster.id().to_string(),
+            physics_group_source: mere::canvas::PhysicsKindSource::Meaning.id().to_string(),
             physics_mass_source: mere::canvas::PhysicsMassSource::PageRank.id().to_string(),
             physics_depth_source: mere::canvas::PhysicsDepthSource::Focus.id().to_string(),
             ..scene
@@ -863,6 +878,10 @@ mod tests {
         assert_eq!(
             mere::canvas::PhysicsLaw::parse(&back.physics_law),
             Some(mere::canvas::PhysicsLaw::Kinds)
+        );
+        assert_eq!(
+            mere::canvas::PhysicsKindSource::parse(&back.physics_group_source),
+            Some(mere::canvas::PhysicsKindSource::Meaning)
         );
     }
 
@@ -948,6 +967,7 @@ mod tests {
             physics_law: "stress.kamada-kawai".to_string(),
             physics_overlays: vec!["grid-snap".to_string()],
             physics_kind_source: "site".to_string(),
+            physics_group_source: "site".to_string(),
             physics_mass_source: "pagerank".to_string(),
             physics_depth_source: "layers".to_string(),
             arrangement_pull: 0.4,

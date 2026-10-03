@@ -232,6 +232,10 @@ impl BrowserHost {
             mere::canvas::PhysicsKindSource::parse(&scene.physics_kind_source)
                 .unwrap_or(mere::canvas::PhysicsKindSource::Site),
         );
+        self.canvas.set_physics_group_source(
+            mere::canvas::PhysicsKindSource::parse(&scene.physics_group_source)
+                .unwrap_or(mere::canvas::PhysicsKindSource::Site),
+        );
         self.canvas.set_physics_mass_source(
             mere::canvas::PhysicsMassSource::parse(&scene.physics_mass_source)
                 .unwrap_or(mere::canvas::PhysicsMassSource::Degree),
@@ -425,8 +429,8 @@ impl BrowserHost {
             overlays: canvas_physics::ticked_overlays(|overlay| ticked.contains(&overlay)),
             kind: PhysicsKindSource::parse(&select_value("kind-source-select")?)
                 .unwrap_or(PhysicsKindSource::Site),
-            // No control yet: Group pull keeps the channel it reads.
-            groups: self.canvas.physics_group_source(),
+            groups: PhysicsKindSource::parse(&select_value("group-source-select")?)
+                .unwrap_or(PhysicsKindSource::Site),
             mass: PhysicsMassSource::parse(&select_value("mass-source-select")?)
                 .unwrap_or(PhysicsMassSource::Degree),
             depth: PhysicsDepthSource::parse(&select_value("depth-source-select")?)
@@ -496,6 +500,7 @@ impl BrowserHost {
                 .map(|overlay| overlay.id().to_string())
                 .collect(),
             physics_kind_source: self.canvas.physics_kind_source().id().to_string(),
+            physics_group_source: self.canvas.physics_group_source().id().to_string(),
             physics_mass_source: self.canvas.physics_mass_source().id().to_string(),
             physics_depth_source: self.canvas.physics_depth_source().id().to_string(),
             arrangement_pull: self.canvas.arrangement_pull(),
@@ -642,6 +647,10 @@ pub(super) fn update_product_semantics(
         (
             "data-physics-kind-source",
             host.canvas.physics_kind_source().id().to_string(),
+        ),
+        (
+            "data-physics-group-source",
+            host.canvas.physics_group_source().id().to_string(),
         ),
         (
             "data-physics-mass-source",
@@ -809,6 +818,7 @@ fn ensure_physics_controls(host: &BrowserHost) -> Result<(), String> {
     }
     fill_select("physics-select", CANVAS_PHYSICS_LAWS, None)?;
     fill_select("kind-source-select", CANVAS_PHYSICS_KIND_SOURCES, None)?;
+    fill_select("group-source-select", CANVAS_PHYSICS_KIND_SOURCES, None)?;
     fill_select("mass-source-select", CANVAS_PHYSICS_MASS_SOURCES, None)?;
     fill_select("depth-source-select", CANVAS_PHYSICS_DEPTH_SOURCES, None)?;
     let profiles: Vec<(&str, &str)> = CANVAS_PHYSICS_PROFILES
@@ -856,6 +866,10 @@ fn sync_physics_controls(host: &BrowserHost) -> Result<(), String> {
             .set_checked(host.canvas.physics_overlays().contains(&overlay));
     }
     set_select_value("kind-source-select", host.canvas.physics_kind_source().id())?;
+    set_select_value(
+        "group-source-select",
+        host.canvas.physics_group_source().id(),
+    )?;
     set_select_value("mass-source-select", host.canvas.physics_mass_source().id())?;
     set_select_value(
         "depth-source-select",
