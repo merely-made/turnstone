@@ -181,6 +181,11 @@ impl TreeLane {
                     format!("{:.2}", stats.mass_area_rank),
                 )
                 .with_field("layout-density-cv", format!("{:.3}", stats.density_cv));
+            if let Some(start) = page.physics.law_start {
+                for (name, value) in start.fields(&stats) {
+                    snapshot = snapshot.with_field(name, value);
+                }
+            }
         } else {
             // Past the all-pairs limit, spread and overlaps (same
             // definition, a grid) still report; stretch does not.
@@ -522,6 +527,21 @@ impl Product for TreeLane {
                         _ => Err(format!("timing wants start <label> or stop, got '{rest}'")),
                     }
                 })
+            },
+            // `log-layout <label>`: room by mass now and where the law
+            // started, into the receipt.
+            "log-layout" => {
+                let canvas = self.shared.canvas.borrow();
+                let start = ctx.runner.state().physics.law_start;
+                self.shared
+                    .physics_log
+                    .borrow_mut()
+                    .push(graphshell::canvas_physics::layout_line(
+                        rest.trim(),
+                        &canvas,
+                        start.as_ref(),
+                    ));
+                Ok(())
             },
             // `log-physics <label>`: the layout's signature and the GPU
             // lane's counts into the receipt, so a run can be read without

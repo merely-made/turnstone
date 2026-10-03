@@ -435,6 +435,7 @@ impl BrowserHost {
             depth: PhysicsDepthSource::parse(&select_value("depth-source-select")?)
                 .unwrap_or(PhysicsDepthSource::Roots),
         };
+        self.law_start = Some(canvas_physics::LawStart::of(&self.canvas));
         let status = canvas_physics::apply_physics(&mut self.canvas, &choice);
         sync_physics_controls(self)?;
         Ok(status)
@@ -443,6 +444,7 @@ impl BrowserHost {
     /// The profile picker's Apply: a named (law, overlays) pair, then the
     /// panel's controls follow it. (Physics catalog — P2.)
     fn apply_profile_from_form(&mut self) -> Result<String, String> {
+        self.law_start = Some(canvas_physics::LawStart::of(&self.canvas));
         let status =
             canvas_physics::apply_profile(&mut self.canvas, &select_value("profile-select")?)?;
         sync_physics_controls(self)?;
@@ -731,6 +733,13 @@ pub(super) fn update_product_semantics(
     ] {
         body.set_attribute(name, &value)
             .map_err(|_| format!("could not expose {name}"))?;
+    }
+    // Where the last law started, and whether the layout now beats it.
+    if let Some(start) = host.law_start {
+        for (name, value) in start.fields(&stats) {
+            body.set_attribute(&format!("data-{name}"), &value)
+                .map_err(|_| format!("could not expose {name}"))?;
+        }
     }
     Ok(())
 }

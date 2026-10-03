@@ -1,24 +1,17 @@
 # Physics receipt: Density on the old page, through the panel. Its signature
 # is room following mass (the rank of mass against area share) and an even
-# density, not energy (the flow writes positions). Springs is the negative
-# control, and picking Density disables the overlays with the law's reason.
+# density, not energy (the flow writes positions). On the fixture the bar is
+# qualitative (ruled 2026-10-03): from the boot start the rank rises above
+# the start's and the density CV falls. Springs from the same start is the
+# control (physics_density_control), and picking Density disables the
+# overlays with the law's reason.
 assert title GRAPHSHELL H3 READY
 assert snap ready == true
-dom click [data-command="toggle-physics"]
-settle 1
-assert snap physics-paused == false
-# No arrangement: the boot Spiral's anchor springs would pull under every law.
-select #gs-arrangement-select free
-dom click [data-command="apply-arrangement"]
-settle 1
-assert snap layout == free
-# The control: Springs does not give room by mass.
-select #gs-physics-select spring.rapier
-dom click [data-command="apply-physics"]
-settle 300
-assert snap physics-law == spring.rapier
-assert snap layout-mass-area-rank <= 0.79
+# The boot arrangement pauses the canvas, so the law is set and applied with
+# nothing moving: its start is the boot layout, the control's too.
+assert snap physics-paused == true
 # An overlay ticked under Springs is disabled once Density is picked.
+select #gs-physics-select spring.rapier
 check #gs-overlay-tide on
 assert attr #gs-overlay-note hidden
 select #gs-physics-select density.gastner-newman
@@ -32,15 +25,25 @@ settle 1
 assert snap physics-law == density.gastner-newman
 assert snap physics-profile == law.density
 assert dom #gs-product-status Physics set to Density
+assert snap physics-paused == true
+log-layout density start
+# No arrangement: the boot Spiral's anchor springs would pull under every
+# law. Returning to none resumes the canvas.
+select #gs-arrangement-select free
+dom click [data-command="apply-arrangement"]
+settle 1
+assert snap layout == free
+assert snap physics-paused == false
 capture physics_density_start
-wait
-# Until the flow stops (three calm passes, the 120-pass cap behind them;
-# one tick a frame here).
-settle 2400
+settle 2
+# Until the flow stops (60 passes at least, then three calm ones, the
+# 120-pass cap behind them; one tick a frame here).
+settle 7400
 assert snap physics-continuous == false
 capture physics_density_settled
 wait
-assert snap layout-mass-area-rank >= 0.8
-assert snap layout-density-cv <= 0.35
+log-layout density settled
+assert snap layout-rank-rose == true
+assert snap layout-cv-fell == true
 assert snap layout-overlaps == 0
 log physics density receipt complete

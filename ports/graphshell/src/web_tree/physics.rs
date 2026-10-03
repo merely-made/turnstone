@@ -8,7 +8,7 @@
 use super::*;
 use cambium::{SelectState, button, checkbox, disclosure, lens, select};
 use graphshell::canvas_physics::{
-    self, ArrangementTransition, CUSTOM_PROFILE, arrangement_choices,
+    self, ArrangementTransition, CUSTOM_PROFILE, LawStart, arrangement_choices,
 };
 use mere::canvas::{
     CANVAS_PHYSICS_DEPTH_SOURCES, CANVAS_PHYSICS_KIND_SOURCES, CANVAS_PHYSICS_LAWS,
@@ -33,6 +33,8 @@ pub(super) struct PhysicsPanel {
     pub(super) layout_id: String,
     pub(super) status: String,
     pub(super) transition: Option<ArrangementTransition>,
+    /// The layout where the last law was applied.
+    pub(super) law_start: Option<LawStart>,
 }
 
 fn index_of<T: PartialEq>(items: impl IntoIterator<Item = T>, item: T) -> usize {
@@ -60,6 +62,7 @@ impl PhysicsPanel {
             layout_id: layout_id.to_string(),
             status: String::new(),
             transition: None,
+            law_start: None,
         };
         panel.sync(canvas);
         panel
@@ -152,6 +155,7 @@ impl TreePage {
     fn apply_physics(&mut self) {
         let choice = self.physics.choice();
         let mut canvas = self.shared.canvas.borrow_mut();
+        self.physics.law_start = Some(LawStart::of(&canvas));
         self.physics.status = canvas_physics::apply_physics(&mut canvas, &choice);
         self.physics.sync(&canvas);
         self.shared.dirty.set(true);
@@ -160,6 +164,7 @@ impl TreePage {
     fn apply_profile(&mut self) {
         let id = self.physics.profile_id();
         let mut canvas = self.shared.canvas.borrow_mut();
+        self.physics.law_start = Some(LawStart::of(&canvas));
         self.physics.status = match canvas_physics::apply_profile(&mut canvas, id) {
             Ok(status) => status,
             Err(error) => format!("Failed · {error}"),
