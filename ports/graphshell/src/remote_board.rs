@@ -78,6 +78,12 @@ impl RemoteBoard {
         Self::default()
     }
 
+    /// Stage the board's repulsion on the host's device (P5c).
+    #[cfg(feature = "canvas-gpu")]
+    pub fn set_physics_device(&mut self, device: Option<mere::canvas::PhysicsDevice>) {
+        self.board.set_physics_device(device);
+    }
+
     /// Mirror `choice` (a no-op when unchanged) and, whenever the
     /// acknowledged revision moves, reconcile the bodies to the scene: a new
     /// card spawns at its slot with a settle burst, the others keep their

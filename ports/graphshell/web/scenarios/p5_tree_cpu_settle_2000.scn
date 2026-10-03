@@ -1,0 +1,36 @@
+# Physics catalog P5c: the CPU twin of p5_tree_gpu_settle_2000, the same
+# steps and bounds with the repulsion on the CPU law
+# (tree.html?nodes=2000&seed=7&links=none&gpu=off).
+assert snap ready == true
+assert snap canvas-nodes == 2000
+click role:button Play physics
+settle 2
+assert snap physics-paused == false
+click role:combobox Arrangement
+settle 1
+click role:option Free (physics alone)
+settle 1
+click role:button Apply arrangement
+settle 1
+assert snap layout == free
+assert snap physics-law == spring.rapier
+log-physics start
+timing start settle-2000
+settle 30
+timing stop
+log-physics after-30-frames
+settle 90
+log-physics after-120-frames
+# The bounds both runs must meet: the CPU run's signature, two-sided so a
+# broken device law (overlaps, spread shrinking, energy stalling or running
+# away) fails. Measured on the CPU run of 2026-10-02 (0 overlaps, spread
+# 1,075, energy 399,968 after 120 frames, still expanding). Unlinked bodies
+# (links=none): a linked random graph packs into a jammed ball under Springs,
+# where the CPU run itself overlaps by the thousand and the energy is chaotic.
+assert snap layout-overlaps <= 0
+assert snap layout-spread >= 1020
+assert snap layout-spread <= 1130
+assert snap physics-energy >= 200000
+assert snap physics-energy <= 800000
+assert snap physics-device == off
+log p5 cpu settle 2000 receipt complete
