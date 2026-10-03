@@ -312,6 +312,32 @@ mod tests {
         PhysicsMassSource,
     };
 
+    /// Prints the reference fixture's relations as node-index pairs, for a
+    /// probe elsewhere that needs the same topology. Diagnostic only.
+    #[test]
+    #[ignore = "diagnostic: prints the fixture topology"]
+    fn print_fixture_topology() {
+        let persona = crate::mere_host::SelectedPersonaRef {
+            persona: crate::mere_host::FIXTURE_PERSONA_ADDRESS.to_string(),
+            profile: "profile:graphshell-tree".to_string(),
+        };
+        let app = crate::app::GraphshellApp::fixture(muniment::MemoryBackend::new(), persona)
+            .expect("fixture");
+        let graph = app.host.graph();
+        let mut keys: Vec<_> = graph.nodes().map(|(key, _)| key).collect();
+        keys.sort_by_key(|key| key.index());
+        let index = |key| keys.iter().position(|k| *k == key).unwrap();
+        let pairs: Vec<String> = graph
+            .relations()
+            .map(|r| format!("({}, {})", index(r.from), index(r.to)))
+            .collect();
+        println!(
+            "FIXTURE nodes {} relations [{}]",
+            keys.len(),
+            pairs.join(", ")
+        );
+    }
+
     fn canvas() -> Canvas {
         let mut canvas = Canvas::with_sample_graph();
         canvas.resize(800, 600);
