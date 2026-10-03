@@ -1,6 +1,6 @@
 # Physics catalog P5c: a 2,000-node settle on the tree with the repulsion on
-# the page's GPU at threshold 0
-# (tree.html?nodes=2000&seed=7&links=none&gpu_threshold=0), Springs, no arrangement, no links,
+# the page's GPU at the web defaults (threshold 400, N = 9; no gpu_* options)
+# (tree.html?nodes=2000&seed=7&links=none), Springs, no arrangement, no links,
 # against the same bounds as its CPU twin p5_tree_cpu_settle_2000. The lane's
 # counts prove the device ran. `log-physics` writes the signature and counts
 # into the receipt; the timing window gives the physics stage per frame.
@@ -36,7 +36,7 @@ assert snap layout-spread <= 1130
 assert snap physics-energy >= 200000
 assert snap physics-energy <= 800000
 assert snap physics-device == on
-assert snap gpu-threshold == 0
+assert snap gpu-threshold == 400
 assert snap gpu-device-steps >= 100
 assert snap gpu-failures == 0
 log p5 gpu settle 2000 receipt complete

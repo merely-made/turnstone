@@ -108,13 +108,16 @@ impl TreePage {
 
 /// Probe-page configuration; the Canvas API accepts the same settings directly.
 /// The web host's GPU repulsion threshold: the node count at or above
-/// which the canvas stages `NodeExclusion` on the page's device. Measured on
-/// this host (physics catalog plan, P5 findings); `gpu_threshold` overrides.
-pub(super) const WEB_GPU_THRESHOLD: usize = 1_000;
-/// How many steps old a device answer may be on this host: its frames run up
-/// to three physics steps and a readback lands only between frames (ruled
-/// 2026-10-02, "1 native, 3 web"). `gpu_max_stale_steps` overrides.
-pub(super) const WEB_GPU_MAX_STALE_STEPS: u32 = 3;
+/// which the canvas stages `NodeExclusion` on the page's device, this host's
+/// measured crossover (physics stage 4.5 ms CPU against 1.5 on the device at
+/// 512 nodes, 1.1 against 3.1 at 256; ruled 2026-10-02, "Web N = 9, web
+/// threshold 400"). `gpu_threshold` overrides.
+pub(super) const WEB_GPU_THRESHOLD: usize = 400;
+/// How many steps old a device answer may be on this host. Chrome answers a
+/// readback about two frames after the submit, six steps at three a frame,
+/// so 9 covers it with a frame to spare (same ruling). `gpu_max_stale_steps`
+/// overrides.
+pub(super) const WEB_GPU_MAX_STALE_STEPS: u32 = 9;
 
 /// The page's GPU repulsion options: `gpu=off` keeps the CPU law (the
 /// baseline a receipt compares against), `gpu_threshold` and
