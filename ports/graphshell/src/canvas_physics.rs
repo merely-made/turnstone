@@ -460,4 +460,85 @@ mod tests {
             CANVAS_LAYOUT_STRATEGIES.len() + 1
         );
     }
+
+    /// The tree page's canvas at the receipts' 1400 by 900 window.
+    const TREE_CANVAS: (u32, u32) = (982, 627);
+
+    /// The P2 fixture as the tree page opens it (`web_tree.rs`,
+    /// `web_graphs::prepared_canvas`): the reference host's graph on the boot
+    /// Spiral, fitted to the canvas.
+    fn p2_fixture_canvas() -> Canvas {
+        use crate::app::GraphshellApp;
+        use crate::mere_host::{FIXTURE_PERSONA_ADDRESS, SelectedPersonaRef};
+        const SPIRAL: &str = "phyllotaxis.default";
+        let persona = SelectedPersonaRef {
+            persona: FIXTURE_PERSONA_ADDRESS.to_string(),
+            profile: "profile:graphshell-tree".to_string(),
+        };
+        let app = GraphshellApp::fixture(muniment::MemoryBackend::new(), persona).unwrap();
+        let (width, height) = TREE_CANVAS;
+        let mut canvas = Canvas::with_graph(app.host.graph().clone());
+        canvas.resize(width, height);
+        canvas.set_layout_strategy(Some(SPIRAL.to_string()));
+        let positions = mere::canvas::project_canvas_strategy(
+            SPIRAL,
+            canvas.graph(),
+            None,
+            width,
+            height,
+            None,
+            None,
+            true,
+        );
+        canvas.apply_strategy_positions(&positions);
+        canvas.fit_to_content();
+        canvas
+    }
+
+    /// F10 (dynamics grammar plan, G1): Kinds reached as its receipt reaches
+    /// it (Play, Free, Kinds by site), whose Play is the play control's
+    /// continuous run, then 1 800 frames at 60 Hz, one step each. Its kinetic
+    /// energy stays above the P2 floor of 1 at 6 s and at 30 s, so Kinds
+    /// never rests on the P2 fixture.
+    #[test]
+    fn kinds_never_rests_on_the_p2_fixture() {
+        use std::time::Duration;
+        let (width, height) = TREE_CANVAS;
+        let mut canvas = p2_fixture_canvas();
+        canvas.set_physics_paused(false);
+        apply_arrangement(&mut canvas, FREE_ARRANGEMENT, TREE_CANVAS).unwrap();
+        apply_physics(
+            &mut canvas,
+            &PhysicsChoice {
+                law: PhysicsLaw::Kinds,
+                kind: PhysicsKindSource::Site,
+                ..PhysicsChoice::default()
+            },
+        );
+        let mut steps = 0;
+        let mut readings = Vec::new();
+        for frame in 0..=1800u64 {
+            canvas.frame_at(
+                width,
+                height,
+                Duration::from_micros(frame * 1_000_000 / 60),
+                Default::default(),
+            );
+            steps += canvas
+                .elapsed_step_report()
+                .map_or(0, |report| report.steps);
+            if [60, 360, 1800].contains(&frame) {
+                readings.push((frame, steps, canvas.physics_energy()));
+            }
+        }
+        println!("kinds on the P2 fixture (frame, steps, energy): {readings:?}");
+        for &(frame, steps, energy) in &readings {
+            assert_eq!(
+                u64::from(steps),
+                frame - 1,
+                "a step every frame after the first"
+            );
+            assert!(energy >= 1.0, "kinds at frame {frame}: energy {energy}");
+        }
+    }
 }

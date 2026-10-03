@@ -1,6 +1,6 @@
 # Tree version of physics_energy.scn: the same receipt through the docked Graph tools
 # panel's Cambium controls and the tree lane's observations.
-# Energy, LinLog: separation, no overlapping bodies.
+# Energy, ForceAtlas2's force model: separation, no overlapping bodies.
 assert snap ready == true
 # The boot arrangement pauses the canvas; the receipt wants the law running.
 click role:button Play physics
