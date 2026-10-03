@@ -48,10 +48,10 @@ assert snap panel-profile == law.density
 assert text Physics set to Density
 capture physics_density_start
 settle 2
-# Past the pass cap (120 one-second passes; up to three ticks a frame here).
+# Until the flow stops (three calm passes, the 120-pass cap behind them).
 # Play runs the canvas until paused, so `wait` cannot see the law stop: the
 # law's own demand for ticks can, and drops once its passes are done.
-settle 5000
+settle 2400
 assert snap physics-continuous == false
 capture physics_density_settled
 settle 2

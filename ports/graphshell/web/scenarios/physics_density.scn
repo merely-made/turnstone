@@ -34,8 +34,10 @@ assert snap physics-profile == law.density
 assert dom #gs-product-status Physics set to Density
 capture physics_density_start
 wait
-# Past the pass cap (one tick a frame here, 120 one-second passes).
-settle 7300
+# Until the flow stops (three calm passes, the 120-pass cap behind them;
+# one tick a frame here).
+settle 2400
+assert snap physics-continuous == false
 capture physics_density_settled
 wait
 assert snap layout-mass-area-rank >= 0.8

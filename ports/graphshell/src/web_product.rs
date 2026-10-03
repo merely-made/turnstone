@@ -663,6 +663,12 @@ pub(super) fn update_product_semantics(
             format!("{:.2}", stats.mass_area_rank),
         ),
         ("data-layout-density-cv", format!("{:.3}", stats.density_cv)),
+        // Whether the physics world still asks for ticks of its own (a law
+        // whose flow has not stopped): what a receipt waits on after Play.
+        (
+            "data-physics-continuous",
+            host.canvas.physics_tick_demand().0.to_string(),
+        ),
         ("data-product-status", host.product_status.clone()),
         (
             "data-dragging",
