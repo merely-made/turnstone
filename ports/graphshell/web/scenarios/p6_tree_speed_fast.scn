@@ -1,0 +1,31 @@
+# Seiche's speed dial (physics catalog plan, 2026-10-03): fast-forward under
+# the frame budget. tree.html?nodes=300&seed=7&links=none&gpu=off&physics_speed=50
+# is too large for fifty CPU ticks inside the default 8 ms budget, so the
+# budget binds, the canvas reports the speed it reached, and stepping stays
+# inside the budget. p6_tree_speed_fast_control is the same at 24 nodes.
+assert snap ready == true
+assert snap physics-speed == 50
+assert snap physics-budget-us == 8000
+click role:button Play physics
+settle 2
+assert snap physics-paused == false
+click role:combobox Arrangement
+settle 1
+click role:option Free (physics alone)
+settle 1
+click role:button Apply arrangement
+settle 1
+assert snap layout == free
+settle 10
+timing start speed-fast
+settle 30
+timing stop
+log-physics fast
+assert snap physics-budget-bound == true
+assert snap physics-owed-steps >= 40
+assert snap physics-effective-speed >= 1
+assert snap physics-effective-speed <= 25
+assert snap pace-frames == 30
+assert snap pace-compute-max-us <= 8000
+assert snap finite == true
+log p6 speed fast receipt complete

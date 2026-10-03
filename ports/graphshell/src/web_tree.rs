@@ -117,6 +117,9 @@ struct Shared {
     gpu: RefCell<Option<(wgpu::Device, wgpu::Queue)>>,
     timing: RefCell<FrameTiming>,
     physics_config: mere::canvas::ElapsedStepConfig,
+    /// The page's simulation speed and budget, and the frames the receipts read.
+    speed: speed::SpeedOptions,
+    pace: RefCell<speed::PaceWindow>,
     gpu_options: controls::GpuOptions,
     /// The page's device for the canvas's and the board's repulsion, built
     /// once from the host's render core on the producer's first frame.
@@ -281,6 +284,7 @@ impl TextureProducer for CanvasProducer {
             ]);
         }
         shared.moving.set(moving);
+        speed::record(shared, &canvas, moving);
         if let Some((x, y)) = shared.release_watch.get()
             && cx.frame.timestamp.is_some()
             && canvas.dragging_node().is_none()
@@ -605,6 +609,8 @@ async fn boot(root: Element) -> Result<(), String> {
         gpu: RefCell::new(None),
         timing: RefCell::new(FrameTiming::default()),
         physics_config: controls::physics_config()?,
+        speed: speed::options()?,
+        pace: RefCell::new(speed::PaceWindow::default()),
         gpu_options: controls::gpu_options()?,
         physics_device: RefCell::new(None),
         visibility: visibility::requested()?,
@@ -616,6 +622,7 @@ async fn boot(root: Element) -> Result<(), String> {
         remote: Rc::new(RefCell::new(remote::TreeRemote::new())),
         remote_shown: Cell::new(false),
     });
+    speed::apply(&mut shared.canvas.borrow_mut(), shared.speed);
     visibility::install(&shared, &document)?;
     let options = HostOptions {
         title: "Graphshell, one tree".into(),
@@ -839,6 +846,7 @@ mod lane;
 mod physics;
 mod product;
 mod remote;
+mod speed;
 mod visibility;
 
 /// Join a host over WebRTC as the tree's remote session (`?signal=`).

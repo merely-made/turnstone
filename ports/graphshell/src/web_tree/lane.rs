@@ -417,6 +417,7 @@ impl Product for TreeLane {
             });
         let step = canvas.elapsed_step_report().unwrap_or_default();
         let snapshot = self.remote_fields(ctx, self.physics_fields(ctx, ProbeSnapshot::default()));
+        let snapshot = super::speed::fields(snapshot, &canvas, &self.shared);
         let snapshot = snapshot
             .with_field("physics-steps", step.steps.to_string())
             .with_field(

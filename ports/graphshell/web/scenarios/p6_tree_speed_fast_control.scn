@@ -1,0 +1,25 @@
+# The control for p6_tree_speed_fast: 24 nodes at 50x
+# (tree.html?nodes=24&seed=7&links=none&gpu=off&physics_speed=50), cheap
+# enough that the budget never binds and the canvas runs every tick owed.
+assert snap ready == true
+assert snap physics-speed == 50
+click role:button Play physics
+settle 2
+assert snap physics-paused == false
+click role:combobox Arrangement
+settle 1
+click role:option Free (physics alone)
+settle 1
+click role:button Apply arrangement
+settle 1
+assert snap layout == free
+settle 4
+timing start speed-fast-control
+settle 4
+timing stop
+log-physics fast-control
+assert snap physics-budget-bound == false
+assert snap physics-effective-speed >= 25
+assert snap pace-compute-max-us <= 8000
+assert snap finite == true
+log p6 speed fast control receipt complete
