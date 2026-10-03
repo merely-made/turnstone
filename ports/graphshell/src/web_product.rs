@@ -719,6 +719,12 @@ pub(super) fn update_product_semantics(
         body.set_attribute(name, &value)
             .map_err(|_| format!("could not expose {name}"))?;
     }
+    // Framing reads the camera too, so it is fresh every frame, not on the
+    // stats' staleness.
+    for (name, value) in canvas_physics::framing_fields(&host.canvas) {
+        body.set_attribute(&format!("data-{name}"), &value)
+            .map_err(|_| format!("could not expose {name}"))?;
+    }
     Ok(())
 }
 

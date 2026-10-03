@@ -1,0 +1,29 @@
+# The framing check's positive control (2026-10-03): under Still, which holds
+# every body where it is, the fixture frames; then one node is planted far
+# off the visible canvas and the check counts exactly that node. A law
+# receipt's `layout-outside == 0` fails on this frame.
+assert title GRAPHSHELL H3 READY
+assert snap ready == true
+dom click [data-command="toggle-physics"]
+settle 1
+assert snap physics-paused == false
+select #gs-arrangement-select free
+dom click [data-command="apply-arrangement"]
+settle 1
+assert snap layout == free
+select #gs-physics-select still.default
+dom click [data-command="apply-physics"]
+settle 1
+assert snap physics-law == still.default
+settle 60
+assert snap canvas-nodes == 11
+assert snap layout-outside == 0
+# Planted: a canvas-local point four thousand px right of the canvas.
+add-node 4000 300 mere://frame/control
+settle 1
+assert snap canvas-nodes == 12
+settle 60
+assert snap layout-outside == 1
+capture physics_framing_planted
+wait
+log physics framing control complete

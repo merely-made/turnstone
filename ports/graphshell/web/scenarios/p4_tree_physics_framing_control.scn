@@ -1,0 +1,34 @@
+# The framing check's positive control (2026-10-03): under Still, which holds
+# every body where it is, the fixture frames; then one node is planted far
+# off the visible canvas and the check counts exactly that node. A law
+# receipt's `layout-outside == 0` fails on this frame.
+assert snap ready == true
+click role:button Play physics
+settle 1
+assert snap physics-paused == false
+click role:combobox Arrangement
+settle 1
+click role:option Free (physics alone)
+settle 1
+click role:button Apply arrangement
+settle 1
+assert snap layout == free
+click role:combobox Physics law
+settle 1
+click role:option Still
+settle 1
+click role:button Apply physics
+settle 1
+assert snap physics-law == still.default
+settle 60
+assert snap canvas-nodes == 11
+assert snap layout-outside == 0
+# Planted: a canvas-local point four thousand px right of the canvas.
+add-node 4000 300 mere://frame/control
+settle 1
+assert snap canvas-nodes == 12
+settle 60
+assert snap layout-outside == 1
+capture physics_framing_planted
+settle 2
+log physics framing control complete

@@ -159,6 +159,9 @@ impl TreeLane {
                 .with_field("layout-spread", format!("{:.0}", stats.spread))
                 .with_field("layout-overlaps", stats.overlaps.to_string());
         }
+        for (name, value) in graphshell::canvas_physics::framing_fields(&canvas) {
+            snapshot = snapshot.with_field(name, value);
+        }
         // The GPU repulsion lane (P5c): whether the page has a device, and
         // the lane's counts, the receipt's proof the device ran.
         let device = self.shared.physics_device.borrow();
@@ -500,6 +503,9 @@ impl Product for TreeLane {
                 let canvas = self.shared.canvas.borrow();
                 let stats = canvas.layout_stats_without_stretch();
                 let lane = canvas.repulsion_stats().unwrap_or_default();
+                let framing = graphshell::canvas_physics::framing_fields(&canvas)
+                    .map(|(name, value)| format!("{name} {value}"))
+                    .join(" ");
                 let answers = self
                     .shared
                     .physics_device
@@ -509,7 +515,7 @@ impl Product for TreeLane {
                 self.shared.physics_log.borrow_mut().push(format!(
                     "physics {}: law {} nodes {} energy {:.1} spread {:.0} overlaps {} \
                      device {} device-steps {} cpu-steps {} submissions {} answers {} failures {} \
-                     waiting {} stale {} mismatched {} last-age {}",
+                     waiting {} stale {} mismatched {} last-age {} {framing}",
                     rest.trim(),
                     canvas.physics_law().id(),
                     canvas.graph().node_count(),

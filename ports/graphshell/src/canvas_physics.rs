@@ -299,6 +299,23 @@ impl ArrangementTransition {
     }
 }
 
+/// The framing check's inset: a node's centre must lie inside the visible
+/// canvas itself.
+pub const FRAMING_MARGIN: f32 = 0.0;
+
+/// The framing fields both pages publish, from the canvas's own positions and
+/// camera: nodes whose centre is off the visible canvas, and the layout's and
+/// the view's world extents (`min_x,min_y,max_x,max_y`).
+pub fn framing_fields(canvas: &Canvas) -> [(&'static str, String); 3] {
+    let framing = canvas.layout_framing(FRAMING_MARGIN);
+    let text = |[a, b, c, d]: [f32; 4]| format!("{a:.0},{b:.0},{c:.0},{d:.0}");
+    [
+        ("layout-outside", framing.outside.to_string()),
+        ("layout-extent", text(framing.extent)),
+        ("view-extent", text(framing.view)),
+    ]
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -508,6 +525,101 @@ mod tests {
                 "a step every frame after the first"
             );
             assert!(energy >= 1.0, "kinds at frame {frame}: energy {energy}");
+        }
+    }
+
+    /// Diagnostic (energy-frame lane): every law reached as its tree receipt
+    /// reaches it, then 3 600 frames at 60 Hz; the layout's world extent, the
+    /// view's, the nodes off screen and each component's centroid over time.
+    #[test]
+    #[ignore = "diagnostic: prints the framing readings"]
+    fn diag_law_framing_on_the_p2_fixture() {
+        use std::collections::HashMap;
+        use std::time::Duration;
+        let (width, height) = TREE_CANVAS;
+        let probe = p2_fixture_canvas();
+        // Components by union-find over the relation edges.
+        let keys: Vec<_> = probe.graph().nodes().map(|(key, _)| key).collect();
+        let mut parent: HashMap<_, _> = keys.iter().map(|&k| (k, k)).collect();
+        fn root<K: Copy + Eq + std::hash::Hash>(parent: &mut HashMap<K, K>, k: K) -> K {
+            let mut r = k;
+            while parent[&r] != r {
+                r = parent[&r];
+            }
+            parent.insert(k, r);
+            r
+        }
+        for relation in probe.graph().relations() {
+            let (a, b) = (root(&mut parent, relation.from), root(&mut parent, relation.to));
+            parent.insert(a, b);
+        }
+        let mut component: HashMap<_, usize> = HashMap::new();
+        let mut roots = Vec::new();
+        for &k in &keys {
+            let r = root(&mut parent, k);
+            let index = roots.iter().position(|&x| x == r).unwrap_or_else(|| {
+                roots.push(r);
+                roots.len() - 1
+            });
+            component.insert(probe.graph().get_node(k).unwrap().id, index);
+        }
+        let sizes: Vec<usize> = (0..roots.len())
+            .map(|c| component.values().filter(|&&x| x == c).count())
+            .collect();
+        println!(
+            "fixture: {} nodes, {} relations, components {:?}",
+            keys.len(),
+            probe.graph().relations().count(),
+            sizes
+        );
+        for (id, _) in mere::canvas::CANVAS_PHYSICS_LAWS {
+            let law = PhysicsLaw::parse(id).unwrap();
+            let mut canvas = p2_fixture_canvas();
+            let fitted = canvas.layout_framing(0.0);
+            canvas.set_physics_paused(false);
+            apply_arrangement(&mut canvas, FREE_ARRANGEMENT, TREE_CANVAS).unwrap();
+            apply_physics(
+                &mut canvas,
+                &PhysicsChoice {
+                    law,
+                    ..PhysicsChoice::default()
+                },
+            );
+            println!(
+                "{id}: boot view [{:.0} {:.0} {:.0} {:.0}] zoom {:.3}, boot extent [{:.0} {:.0} {:.0} {:.0}]",
+                fitted.view[0], fitted.view[1], fitted.view[2], fitted.view[3],
+                canvas.camera().zoom,
+                fitted.extent[0], fitted.extent[1], fitted.extent[2], fitted.extent[3],
+            );
+            for frame in 0..=3600u64 {
+                canvas.frame_at(
+                    width,
+                    height,
+                    Duration::from_micros(frame * 1_000_000 / 60),
+                    Default::default(),
+                );
+                if [1, 30, 60, 120, 360, 600, 1200, 1800, 3600].contains(&frame) {
+                    let f = canvas.layout_framing(0.0);
+                    let geometry = canvas.cartography_geometry();
+                    let mut sums = vec![(0.0f32, 0.0f32, 0usize); roots.len()];
+                    for (node, (x, y)) in geometry.iter() {
+                        let c = component[&node];
+                        sums[c] = (sums[c].0 + x, sums[c].1 + y, sums[c].2 + 1);
+                    }
+                    let centroids: Vec<String> = sums
+                        .iter()
+                        .map(|(x, y, n)| format!("({:.0},{:.0})", x / *n as f32, y / *n as f32))
+                        .collect();
+                    println!(
+                        "  frame {frame:>4} ({:>5.1} s): extent [{:.0} {:.0} {:.0} {:.0}] {:.0}x{:.0}, outside {}/{}, energy {:.1}, components {}",
+                        frame as f32 / 60.0,
+                        f.extent[0], f.extent[1], f.extent[2], f.extent[3],
+                        f.extent[2] - f.extent[0], f.extent[3] - f.extent[1],
+                        f.outside, f.nodes, canvas.physics_energy(),
+                        centroids.join(" "),
+                    );
+                }
+            }
         }
     }
 }

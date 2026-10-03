@@ -45,6 +45,9 @@ assert snap physics-profile == crystal
 assert snap physics-law == stress.kamada-kawai
 assert snap physics-overlays == grid-snap
 capture physics_profiles_crystal
+# Framing (2026-10-03): every node's centre on the visible canvas at the
+# frame this capture shows.
+assert snap layout-outside == 0
 wait
 select #gs-profile-select tide
 dom click [data-command="apply-profile"]
@@ -59,6 +62,9 @@ settle 1
 assert snap physics-profile == sediment
 assert snap physics-overlays == depth-gravity
 capture physics_profiles_sediment
+# Framing (2026-10-03): every node's centre on the visible canvas at the
+# frame this capture shows.
+assert snap layout-outside == 0
 wait
 select #gs-profile-select magnet
 dom click [data-command="apply-profile"]
@@ -81,4 +87,5 @@ check #gs-overlay-skeleton off
 dom click [data-command="apply-physics"]
 settle 1
 assert snap physics-profile == void
+assert snap layout-outside == 0
 log physics profiles receipt complete
