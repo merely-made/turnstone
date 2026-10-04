@@ -24,6 +24,9 @@ assert snap physics-paused == false
 settle 900
 log-layout springs settled
 capture physics_density_springs_control
+# Framing (2026-10-04, "Density gets the check here"): every node's centre on
+# the visible canvas at the frame this capture shows, after the settle.
+assert snap layout-outside == 0
 settle 2
 # Negative on this start (-0.03 when measured), and neither the rank risen
 # nor the density evened from where it started.

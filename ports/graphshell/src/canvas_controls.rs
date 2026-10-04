@@ -38,7 +38,7 @@ impl CanvasCommand {
                 canvas.set_ctrl(false);
             },
             // Fitting resumes following the layout; a pan or zoom (both reach
-            // the canvas's wheel) stops it.
+            // the canvas's wheel) or a node drag stops it.
             Self::Fit => {
                 canvas.fit_to_content();
                 canvas.set_view_follow(true);
