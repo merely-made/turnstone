@@ -369,7 +369,7 @@ fn dispatch_event(dispatch: &GroupSessionDispatch) -> Result<PersonalGraphEvent,
 }
 
 fn decode_dispatch(bytes: &[u8]) -> Result<GroupSessionDispatch, GraphKeyError> {
-    p2panda_core::cbor::decode_cbor(bytes)
+    p2panda_core::cbor::decode_cbor_strict(bytes)
         .map_err(|error| GraphKeyError::Session(error.to_string()))
 }
 
