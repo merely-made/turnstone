@@ -131,7 +131,8 @@ web-sys = { version = "0.3", features = [
 # just those crates in dev builds — never the crates edited here, so an
 # incremental host build stays fast. This manifest is its own workspace, so
 # the override reaches the wasm build alone. (Physics catalog — the P2 profile
-# item, 2026-09-04.)
+# item, 2026-09-04; glamx joined 2026-10-04 so the root manifest, which now
+# optimizes the same physics crates in dev, names the same six.)
 [profile.dev.package.rapier2d]
 opt-level = 3
 [profile.dev.package.parry2d]
@@ -141,6 +142,8 @@ opt-level = 3
 [profile.dev.package.simba]
 opt-level = 3
 [profile.dev.package.seiche]
+opt-level = 3
+[profile.dev.package.glamx]
 opt-level = 3
 
 [patch.crates-io]
