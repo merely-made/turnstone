@@ -770,6 +770,128 @@ mod tests {
         }
     }
 
+    /// Orbit reached as its receipts reach it (Play, Free, Orbit), then
+    /// `seconds` at 60 Hz (ruled 2026-10-04, "Frictionless orbits + centring"):
+    /// the extent stays within 3x its first second's, the energy stays above
+    /// the P2 floor of 1 every second, every node is on the tree page's canvas
+    /// through the canvas's own camera at the receipts' two reads (1 s and
+    /// 6 s), and the graph orbits: each node's angle about the centroid turns
+    /// at least a revolution per 120 s on average.
+    fn orbit_on_the_p2_fixture(seconds: u64) {
+        use std::time::Duration;
+        let (width, height) = TREE_CANVAS;
+        let mut canvas = p2_fixture_canvas();
+        canvas.set_physics_paused(false);
+        apply_arrangement(&mut canvas, FREE_ARRANGEMENT, TREE_CANVAS).unwrap();
+        apply_physics(
+            &mut canvas,
+            &PhysicsChoice {
+                law: PhysicsLaw::Orbit,
+                ..PhysicsChoice::default()
+            },
+        );
+        let keys: Vec<NodeKey> = canvas.graph().nodes().map(|(key, _)| key).collect();
+        let at = |canvas: &Canvas| -> Vec<(f32, f32)> {
+            keys.iter()
+                .filter_map(|&key| canvas.node_position(key).map(|p| (p.x, p.y)))
+                .collect()
+        };
+        let centroid = |points: &[(f32, f32)]| {
+            let n = points.len() as f32;
+            let (x, y) = points
+                .iter()
+                .fold((0.0, 0.0), |(x, y), p| (x + p.0, y + p.1));
+            (x / n, y / n)
+        };
+        let angles = |points: &[(f32, f32)]| {
+            let c = centroid(points);
+            points
+                .iter()
+                .map(|p| (p.1 - c.1).atan2(p.0 - c.0))
+                .collect::<Vec<f32>>()
+        };
+        let mut angle = angles(&at(&canvas));
+        let mut turned = vec![0.0f32; keys.len()];
+        let (mut first, mut largest) = (0.0f32, 0.0f32);
+        let mut readings = Vec::new();
+        for frame in 1..=seconds * 60 {
+            canvas.frame_at(
+                width,
+                height,
+                Duration::from_micros(frame * 1_000_000 / 60),
+                Default::default(),
+            );
+            let points = at(&canvas);
+            assert_eq!(points.len(), keys.len(), "every node placed");
+            for (i, a) in angles(&points).into_iter().enumerate() {
+                let mut d = a - angle[i];
+                while d > std::f32::consts::PI {
+                    d -= std::f32::consts::TAU;
+                }
+                while d < -std::f32::consts::PI {
+                    d += std::f32::consts::TAU;
+                }
+                turned[i] += d;
+                angle[i] = a;
+            }
+            if frame % 60 != 0 {
+                continue;
+            }
+            let (mut lo, mut hi) = (points[0], points[0]);
+            for p in &points {
+                lo = (lo.0.min(p.0), lo.1.min(p.1));
+                hi = (hi.0.max(p.0), hi.1.max(p.1));
+            }
+            let extent = (hi.0 - lo.0).max(hi.1 - lo.1);
+            let outside = keys
+                .iter()
+                .filter_map(|&key| canvas.screen_position_of(key))
+                .filter(|&(x, y)| x < 0.0 || y < 0.0 || x > width as f32 || y > height as f32)
+                .count();
+            if frame == 60 {
+                first = extent;
+            }
+            largest = largest.max(extent);
+            let energy = canvas.physics_energy();
+            readings.push((frame / 60, extent.round(), energy.round(), outside));
+            assert!(energy >= 1.0, "orbit at {} s: energy {energy}", frame / 60);
+            if frame == 60 || frame == 360 {
+                assert_eq!(
+                    outside,
+                    0,
+                    "orbit at {} s: nodes off the canvas",
+                    frame / 60
+                );
+            }
+        }
+        let revolutions =
+            turned.iter().map(|t| t.abs()).sum::<f32>() / keys.len() as f32 / std::f32::consts::TAU;
+        println!(
+            "orbit on the P2 fixture (s, extent, energy, outside): {readings:?}; revolutions {revolutions:.2}"
+        );
+        assert!(
+            largest <= 3.0 * first,
+            "orbit stays bound: {largest:.0} against {first:.0} at 1 s"
+        );
+        assert!(
+            revolutions >= seconds as f32 / 120.0,
+            "orbit orbits: {revolutions:.2} revolutions in {seconds} s"
+        );
+    }
+
+    /// The quick default: Orbit's bars over 30 s.
+    #[test]
+    fn orbit_stays_bound_and_orbiting_on_the_p2_fixture() {
+        orbit_on_the_p2_fixture(30);
+    }
+
+    /// The full claim, 120 s (about 130 s in a debug build).
+    #[test]
+    #[ignore = "receipt: Orbit's bars over 120 s; run by Orbit-touching lanes"]
+    fn orbit_stays_bound_and_orbiting_on_the_p2_fixture_for_two_minutes() {
+        orbit_on_the_p2_fixture(120);
+    }
+
     /// The law-start fields say "rose" and "fell" only when the layout beats
     /// the start; the same stats read false on both (the control).
     #[test]
