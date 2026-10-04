@@ -89,6 +89,8 @@ const SHEET: &str = "\
     .tree-tools button { background:#263640; color:#dce3e8; padding:3px 10px; margin:2px 0 4px; border:1px solid #637581; } \
     .tools-overlays { display:flex; flex-wrap:wrap; margin:2px 0; } \
     .tools-overlays label { width:136px; margin:1px 0; } \
+    .tools-overlays label.disabled { opacity:.45; } \
+    .tools-note { margin:2px 0 4px; color:#c9b27c; font-size:12px; } \
     .tools-status { margin:4px 0; color:#9fb0bb; font-size:12px; } \
     .select-box { background:#263640; border:1px solid #637581; padding:2px 8px; } \
     .select-list { background:#17232b; border:1px solid #637581; z-index:20; width:262px; } \

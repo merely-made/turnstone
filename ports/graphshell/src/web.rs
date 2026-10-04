@@ -207,6 +207,10 @@ struct BrowserHost {
     /// Frame times for a scenario's `timing` windows, measured as the tree
     /// page measures its own (the one-tree plan's phase 3).
     timing: web_timing::FrameTiming,
+    /// The layout where the last law was applied, and the scenario's
+    /// `log-layout` lines.
+    law_start: Option<graphshell::canvas_physics::LawStart>,
+    layout_log: Vec<String>,
 }
 
 struct BrowserProjectionSink;
@@ -1909,6 +1913,8 @@ async fn run(root_element: Element) -> Result<(), String> {
         capture_pending: None,
         capture_count: 0,
         timing: web_timing::FrameTiming::default(),
+        law_start: None,
+        layout_log: Vec::new(),
     }));
     web_scenario::install(&state);
     install_events(&state)?;
