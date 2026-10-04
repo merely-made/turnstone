@@ -361,6 +361,8 @@ impl BrowserHost {
             physics_law,
             physics_paused,
             remote_cards,
+            remote_speed: (self.active == ActiveSession::Remote && self.remote_mounted().is_some())
+                .then(|| web_speed::board_line(self.remote_board.speed())),
             action_draft: self.form().draft.as_ref().map(ActionDraft::semantics),
         };
         if let Some(live) = &self.live_projection {
@@ -1849,6 +1851,7 @@ async fn run(root_element: Element) -> Result<(), String> {
         physics_law: mere::canvas::PhysicsLaw::Springs.label().to_string(),
         physics_paused,
         remote_cards: Vec::new(),
+        remote_speed: None,
         action_draft: None,
     };
     // The chrome's font. A browser has no system fonts for fontique to find,

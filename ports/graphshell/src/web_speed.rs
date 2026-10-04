@@ -91,6 +91,17 @@ pub(crate) fn preset_of(canvas: &Canvas) -> usize {
         .map_or(DEFAULT_PRESET, |(index, _)| index)
 }
 
+/// A speed as the pages print it: "2x", "0.2x", "3.7x".
+pub(crate) fn label(speed: Speed) -> String {
+    let text = format!("{:.3}", speed.factor());
+    format!("{}x", text.trim_end_matches('0').trim_end_matches('.'))
+}
+
+/// The line a remote board shows: its speed, the viewer's own dial.
+pub(crate) fn board_line(speed: Speed) -> String {
+    format!("Board speed {}, from your Speed setting", label(speed))
+}
+
 /// Set preset `index`; the status line the page shows.
 pub(crate) fn choose(canvas: &mut Canvas, index: usize) -> String {
     let (value, label) = PRESETS[index.min(PRESETS.len() - 1)];

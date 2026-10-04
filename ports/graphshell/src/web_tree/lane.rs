@@ -287,6 +287,10 @@ impl TreeLane {
                 "remote-physics-law",
                 self.shared.canvas.borrow().physics_law().id(),
             )
+            .with_field(
+                "remote-physics-speed",
+                remote.board.speed().factor().to_string(),
+            )
             .with_field("remote-energy", format!("{:.1}", board.energy()))
             .with_field(
                 "remote-gap",

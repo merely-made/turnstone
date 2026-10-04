@@ -40,6 +40,9 @@ pub(crate) struct ChromeModel {
     /// carries the geometry; this retained chrome layer supplies a readable
     /// face for each item without inventing product fields in the renderer.
     pub remote_cards: Vec<String>,
+    /// The remote board's speed, the viewer's own dial; `None` while the local
+    /// canvas is shown.
+    pub remote_speed: Option<String>,
     pub action_draft: Option<ActionDraftSemantics>,
 }
 
@@ -191,6 +194,9 @@ fn chrome_view(model: ChromeModel) -> impl View<(), (), GenetCtx, Element = Gene
                         )),
                     )
                     .attr("class", "hint"),
+                    model
+                        .remote_speed
+                        .map(|line| el("div", text(line)).attr("class", "hint")),
                 ),
             )
             .attr("class", "rail"),

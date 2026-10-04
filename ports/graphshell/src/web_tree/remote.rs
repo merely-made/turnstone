@@ -151,11 +151,16 @@ impl TreeRemote {
         })
     }
 
-    /// Mirror `choice` onto the board and reconcile it to the scene.
-    pub(super) fn sync_board(&mut self, choice: mere::canvas::PhysicsChoice) {
+    /// Mirror the viewer's `choice` and `speed` onto the board and reconcile
+    /// it to the scene.
+    pub(super) fn sync_board(
+        &mut self,
+        choice: mere::canvas::PhysicsChoice,
+        speed: mere::canvas::Speed,
+    ) {
         let revision = self.revision();
         let mounted = self.live.as_ref().and_then(|live| live.session.mounted());
-        self.board.sync(mounted, revision, choice);
+        self.board.sync(mounted, revision, choice, speed);
     }
 }
 
@@ -430,6 +435,15 @@ pub(super) fn section(page: &TreePage) -> Child {
                 .attr("role", "status"),
         ),
     ];
+    // The board steps at the viewer's own dial (ruled 2026-10-04, "The
+    // viewer's own dial").
+    if remote.mounted().is_some() {
+        children.push(Box::new(
+            el("p", crate::web_speed::board_line(remote.board.speed()))
+                .attr("class", "tools-status")
+                .attr("aria-label", "Remote board speed"),
+        ));
+    }
     // The board's cards by title, in the scene's order.
     let titles: Vec<Child> = remote
         .live

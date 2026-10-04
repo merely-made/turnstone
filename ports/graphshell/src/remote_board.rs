@@ -10,13 +10,14 @@
 //! Both browser pages draw the remote session through this, so the mapping
 //! from Graphshell's scene to the board is written once. The score's
 //! positions become anchor slots; the board mirrors the local canvas's
-//! physics choice; nothing is written back. (Physics catalog — P3.)
+//! physics choice and its speed dial (ruled 2026-10-04, "The viewer's own
+//! dial"); nothing is written back. (Physics catalog — P3.)
 
 use graphshell_client::MountedScene;
 use graphshell_client::frozen::Satisfaction;
 use mere::canvas::{
-    BoardBackdrop, BoardCard, BoardFootprint, BoardRect, BoardScene, PhysicsBoard,
-    PhysicsChoice,
+    BoardBackdrop, BoardCard, BoardFootprint, BoardRect, BoardScene, PhysicsBoard, PhysicsChoice,
+    Speed,
 };
 use crate::view::ProjectionLayoutView;
 
@@ -71,6 +72,8 @@ pub struct RemoteBoard {
     board: PhysicsBoard,
     scene: BoardScene,
     revision: Option<u64>,
+    /// The viewer's speed, as last mirrored.
+    speed: Speed,
 }
 
 impl RemoteBoard {
@@ -84,12 +87,22 @@ impl RemoteBoard {
         self.board.set_physics_device(device);
     }
 
-    /// Mirror `choice` (a no-op when unchanged) and, whenever the
-    /// acknowledged revision moves, reconcile the bodies to the scene: a new
-    /// card spawns at its slot with a settle burst, the others keep their
-    /// simulated positions, every slot is re-anchored.
-    pub fn sync(&mut self, mounted: Option<&MountedScene>, revision: Option<u64>, choice: PhysicsChoice) {
+    /// Mirror the viewer's `choice` and `speed` (no-ops when unchanged) and,
+    /// whenever the acknowledged revision moves, reconcile the bodies to the
+    /// scene: a new card spawns at its slot with a settle burst, the others
+    /// keep their simulated positions, every slot is re-anchored.
+    pub fn sync(
+        &mut self,
+        mounted: Option<&MountedScene>,
+        revision: Option<u64>,
+        choice: PhysicsChoice,
+        speed: Speed,
+    ) {
         self.board.set_choice(choice);
+        if speed != self.speed {
+            self.speed = speed;
+            self.board.set_speed(speed);
+        }
         if revision == self.revision && !self.board.is_empty() {
             return;
         }
@@ -99,6 +112,11 @@ impl RemoteBoard {
         self.scene = board_scene(mounted);
         self.board.sync(self.scene.items());
         self.revision = revision;
+    }
+
+    /// The speed the board steps at: the viewer's, as last mirrored.
+    pub fn speed(&self) -> Speed {
+        self.speed
     }
 
     /// Advance the board one frame; whether it is still moving.
@@ -170,16 +188,63 @@ mod tests {
         let mut endpoint = LiveEndpoint::new();
         let (client, session) = mount(&mut endpoint);
         let mut remote = RemoteBoard::new();
-        remote.sync(client.mounted(&session), Some(1), PhysicsChoice::default());
+        remote.sync(
+            client.mounted(&session),
+            Some(1),
+            PhysicsChoice::default(),
+            Speed::REAL_TIME,
+        );
         assert_eq!(remote.board().len(), 1);
 
         endpoint.append();
         let (client, session) = mount(&mut endpoint);
         // Same revision claimed: nothing is reconciled.
-        remote.sync(client.mounted(&session), Some(1), PhysicsChoice::default());
+        remote.sync(
+            client.mounted(&session),
+            Some(1),
+            PhysicsChoice::default(),
+            Speed::REAL_TIME,
+        );
         assert_eq!(remote.board().len(), 1);
-        remote.sync(client.mounted(&session), Some(2), PhysicsChoice::default());
+        remote.sync(
+            client.mounted(&session),
+            Some(2),
+            PhysicsChoice::default(),
+            Speed::REAL_TIME,
+        );
         assert_eq!(remote.board().len(), 2);
         assert_eq!(remote.scene().cards.len(), 2);
+    }
+
+    /// The board steps at the speed the viewer's dial chose, and a change of
+    /// dial reaches it on the next sync. (Ruled 2026-10-04, "The viewer's own
+    /// dial".)
+    #[test]
+    fn the_board_steps_at_the_viewers_chosen_speed() {
+        let mut endpoint = LiveEndpoint::new();
+        endpoint.append();
+        let (client, session) = mount(&mut endpoint);
+        let mounted = client.mounted(&session);
+        let mut remote = RemoteBoard::new();
+        let steps = |remote: &mut RemoteBoard, frames: u64| {
+            let before = remote.board().pace().ticks;
+            for _ in 0..frames {
+                remote.tick();
+            }
+            remote.board().pace().ticks - before
+        };
+        remote.sync(mounted, Some(1), PhysicsChoice::default(), Speed::REAL_TIME);
+        assert_eq!(steps(&mut remote, 4), 4, "1x: a tick a frame");
+        remote.sync(
+            mounted,
+            Some(1),
+            PhysicsChoice::default(),
+            Speed::from_factor(5.0),
+        );
+        assert_eq!(remote.speed(), Speed::from_factor(5.0));
+        assert_eq!(steps(&mut remote, 4), 20, "the viewer's 5x");
+        // Control: the same board back at the viewer's 1x runs a tick a frame.
+        remote.sync(mounted, Some(1), PhysicsChoice::default(), Speed::REAL_TIME);
+        assert_eq!(steps(&mut remote, 4), 4);
     }
 }

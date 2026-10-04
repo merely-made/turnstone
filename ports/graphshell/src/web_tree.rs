@@ -201,12 +201,14 @@ impl TextureProducer for CanvasProducer {
         let profile = shared.timing.borrow().active();
         if shared.remote_shown.get() {
             // One leaf, the producer picks the scene: the board, mirroring
-            // the canvas's law, ticked once a frame and drawn from its bodies.
+            // the canvas's law and speed, ticked once a frame and drawn from
+            // its bodies.
             let choice = canvas.physics_choice();
+            let speed = canvas.physics_speed();
             drop(canvas);
             let scene = {
                 let mut remote = shared.remote.borrow_mut();
-                remote.sync_board(choice);
+                remote.sync_board(choice, speed);
                 remote.board.tick();
                 let remote = &mut *remote;
                 let empty = mere::canvas::BoardScene::default();
