@@ -1,0 +1,35 @@
+# Density's CPU tier on the web at the page's generated graph (run with
+# ?nodes=200&seed=7): the profiler's physics stage per frame and the steps it
+# ran, while the flow is under way, beside a Springs window on the same graph.
+assert snap ready == true
+click role:button Play physics
+settle 1
+click role:combobox Arrangement
+settle 1
+click role:option Free (physics alone)
+settle 1
+click role:button Apply arrangement
+settle 1
+click role:combobox Physics law
+settle 1
+click role:option Springs
+settle 1
+click role:button Apply physics
+settle 10
+timing start springs-200
+settle 60
+timing stop
+click role:combobox Physics law
+settle 1
+click role:option Density
+settle 1
+click role:button Apply physics
+settle 30
+assert snap physics-law == density.gastner-newman
+timing start density-200
+settle 60
+timing stop
+assert snap canvas-nodes == 200
+capture density_cost_200
+settle 2
+log density cost receipt complete

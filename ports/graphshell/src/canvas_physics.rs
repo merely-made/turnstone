@@ -11,7 +11,7 @@
 use std::collections::HashMap;
 
 use mere::canvas::{
-    CANVAS_LAYOUT_STRATEGIES, Canvas, PhysicsChoice, PhysicsOverlay,
+    CANVAS_LAYOUT_STRATEGIES, Canvas, LayoutStats, PhysicsChoice, PhysicsOverlay,
     project_canvas_strategy_with_score_for_view,
 };
 use mere::kernel::geometry::PortablePoint;
@@ -46,13 +46,18 @@ pub fn ticked_overlays(ticked: impl Fn(PhysicsOverlay) -> bool) -> Vec<PhysicsOv
         .collect()
 }
 
-/// Apply physics: sources, overlays and law in one rebuild. Returns the status.
+/// Apply physics: sources, overlays and law in one rebuild. Returns the
+/// status, with the law's reason when it refused the overlays.
 pub fn apply_physics(canvas: &mut Canvas, choice: &PhysicsChoice) -> String {
-    canvas.set_physics_choice(choice);
-    with_overlays(
+    let refused = canvas.set_physics_choice(choice).err();
+    let status = with_overlays(
         format!("Physics set to {}", canvas.physics_law().label()),
         canvas,
-    )
+    );
+    match refused {
+        Some(refusal) => format!("{status} · {}", refusal.reason),
+        None => status,
+    }
 }
 
 /// Apply a named profile's law and overlays. Sources are left as they are.
@@ -67,6 +72,68 @@ pub fn apply_profile(canvas: &mut Canvas, id: &str) -> Result<String, String> {
         format!("Profile {id}: {}", canvas.physics_law().label()),
         canvas,
     ))
+}
+
+/// The layout's room-by-mass signature where a law was applied, so a
+/// receipt can say what the law did from there: rank above the start's,
+/// density CV under it (Density's qualitative bar, ruled 2026-10-03).
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
+pub struct LawStart {
+    pub mass_area_rank: f32,
+    pub density_cv: f32,
+}
+
+impl LawStart {
+    pub fn of(canvas: &Canvas) -> Self {
+        let stats = canvas.layout_stats();
+        Self {
+            mass_area_rank: stats.mass_area_rank,
+            density_cv: stats.density_cv,
+        }
+    }
+
+    /// Snapshot fields: the start's values and whether `now` beats them.
+    pub fn fields(&self, now: &LayoutStats) -> [(&'static str, String); 4] {
+        [
+            (
+                "law-start-mass-area-rank",
+                format!("{:.2}", self.mass_area_rank),
+            ),
+            ("law-start-density-cv", format!("{:.3}", self.density_cv)),
+            (
+                "layout-rank-rose",
+                (now.mass_area_rank > self.mass_area_rank).to_string(),
+            ),
+            (
+                "layout-cv-fell",
+                (now.density_cv < self.density_cv).to_string(),
+            ),
+        ]
+    }
+}
+
+/// A receipt line for `log-layout <label>`: the law, the layout's signature
+/// now, and where the law started.
+pub fn layout_line(label: &str, canvas: &Canvas, start: Option<&LawStart>) -> String {
+    let stats = canvas.layout_stats();
+    let start = start.map_or_else(
+        || "start unrecorded".to_string(),
+        |start| {
+            format!(
+                "start rank {:.3} cv {:.3}",
+                start.mass_area_rank, start.density_cv
+            )
+        },
+    );
+    format!(
+        "layout {label}: law {} nodes {} rank {:.3} cv {:.3} overlaps {} spread {:.0}; {start}",
+        canvas.physics_law().id(),
+        canvas.graph().node_count(),
+        stats.mass_area_rank,
+        stats.density_cv,
+        stats.overlaps,
+        stats.spread,
+    )
 }
 
 fn with_overlays(status: String, canvas: &Canvas) -> String {
@@ -307,6 +374,32 @@ mod tests {
         PhysicsMassSource,
     };
 
+    /// Prints the reference fixture's relations as node-index pairs, for a
+    /// probe elsewhere that needs the same topology. Diagnostic only.
+    #[test]
+    #[ignore = "diagnostic: prints the fixture topology"]
+    fn print_fixture_topology() {
+        let persona = crate::mere_host::SelectedPersonaRef {
+            persona: crate::mere_host::FIXTURE_PERSONA_ADDRESS.to_string(),
+            profile: "profile:graphshell-tree".to_string(),
+        };
+        let app = crate::app::GraphshellApp::fixture(muniment::MemoryBackend::new(), persona)
+            .expect("fixture");
+        let graph = app.host.graph();
+        let mut keys: Vec<_> = graph.nodes().map(|(key, _)| key).collect();
+        keys.sort_by_key(|key| key.index());
+        let index = |key| keys.iter().position(|k| *k == key).unwrap();
+        let pairs: Vec<String> = graph
+            .relations()
+            .map(|r| format!("({}, {})", index(r.from), index(r.to)))
+            .collect();
+        println!(
+            "FIXTURE nodes {} relations [{}]",
+            keys.len(),
+            pairs.join(", ")
+        );
+    }
+
     fn canvas() -> Canvas {
         let mut canvas = Canvas::with_sample_graph();
         canvas.resize(800, 600);
@@ -509,5 +602,39 @@ mod tests {
             );
             assert!(energy >= 1.0, "kinds at frame {frame}: energy {energy}");
         }
+    }
+
+    /// The law-start fields say "rose" and "fell" only when the layout beats
+    /// the start; the same stats read false on both (the control).
+    #[test]
+    fn law_start_reads_rose_and_fell_only_past_the_start() {
+        let start = LawStart {
+            mass_area_rank: 0.2,
+            density_cv: 0.4,
+        };
+        let field = |now: &LayoutStats, name: &str| {
+            start
+                .fields(now)
+                .into_iter()
+                .find(|(field, _)| *field == name)
+                .map(|(_, value)| value)
+                .unwrap()
+        };
+        let better = LayoutStats {
+            mass_area_rank: 0.7,
+            density_cv: 0.2,
+            ..LayoutStats::default()
+        };
+        let same = LayoutStats {
+            mass_area_rank: 0.2,
+            density_cv: 0.4,
+            ..LayoutStats::default()
+        };
+        assert_eq!(field(&better, "layout-rank-rose"), "true");
+        assert_eq!(field(&better, "layout-cv-fell"), "true");
+        assert_eq!(field(&same, "layout-rank-rose"), "false");
+        assert_eq!(field(&same, "layout-cv-fell"), "false");
+        assert_eq!(field(&same, "law-start-mass-area-rank"), "0.20");
+        assert_eq!(field(&same, "law-start-density-cv"), "0.400");
     }
 }
