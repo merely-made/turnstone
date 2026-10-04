@@ -114,6 +114,12 @@ impl RemoteBoard {
         self.revision = revision;
     }
 
+    /// The step budget the board's frames run under: the page's, as its
+    /// canvas's.
+    pub fn set_step_budget(&mut self, budget: Option<mere::canvas::StepBudget>) {
+        self.board.set_step_budget(budget);
+    }
+
     /// The speed the board steps at: the viewer's, as last mirrored.
     pub fn speed(&self) -> Speed {
         self.speed

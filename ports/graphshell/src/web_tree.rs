@@ -124,6 +124,8 @@ struct Shared {
     pace: RefCell<speed::PaceWindow>,
     /// The speed reached, under the speed picker while the budget binds.
     reached: RefCell<crate::web_speed::ReachedNote>,
+    /// The step budget, a share of the measured frame interval.
+    frame_budget: RefCell<crate::web_speed::FrameBudget>,
     gpu_options: controls::GpuOptions,
     /// The page's device for the canvas's and the board's repulsion, built
     /// once from the host's render core on the producer's first frame.
@@ -198,6 +200,14 @@ impl TextureProducer for CanvasProducer {
             canvas.resize(size.0, size.1);
             shared.size.set(size);
         }
+        // The step budget is a share of the page's measured frame interval
+        // (ruled 2026-10-04, "Target + Max, budget as frame share").
+        let frame_ms = cx
+            .frame
+            .timestamp
+            .map_or_else(now_ms, |timestamp| timestamp.as_secs_f64() * 1000.0);
+        let budget = shared.frame_budget.borrow_mut().frame(frame_ms);
+        canvas.set_physics_step_budget(Some(budget));
         let profile = shared.timing.borrow().active();
         if shared.remote_shown.get() {
             // One leaf, the producer picks the scene: the board, mirroring
@@ -209,6 +219,7 @@ impl TextureProducer for CanvasProducer {
             let scene = {
                 let mut remote = shared.remote.borrow_mut();
                 remote.sync_board(choice, speed);
+                remote.board.set_step_budget(Some(budget));
                 remote.board.tick();
                 let remote = &mut *remote;
                 let empty = mere::canvas::BoardScene::default();
@@ -290,7 +301,7 @@ impl TextureProducer for CanvasProducer {
             ]);
         }
         shared.moving.set(moving);
-        speed::record(shared, &canvas, moving);
+        speed::record(shared, &canvas, moving, budget.per_frame);
         if let Some((x, y)) = shared.release_watch.get()
             && cx.frame.timestamp.is_some()
             && canvas.dragging_node().is_none()
@@ -606,6 +617,7 @@ async fn boot(root: Element) -> Result<(), String> {
         }
     };
     let nodes = graph.node_count();
+    let speed_options = crate::web_speed::options()?;
     let shared = Rc::new(Shared {
         canvas: RefCell::new(web_graphs::prepared_canvas(graph, width, height)),
         dirty: Cell::new(true),
@@ -615,9 +627,10 @@ async fn boot(root: Element) -> Result<(), String> {
         gpu: RefCell::new(None),
         timing: RefCell::new(FrameTiming::default()),
         physics_config: controls::physics_config()?,
-        speed: crate::web_speed::options()?,
+        speed: speed_options,
         pace: RefCell::new(speed::PaceWindow::default()),
         reached: RefCell::new(crate::web_speed::ReachedNote::default()),
+        frame_budget: RefCell::new(crate::web_speed::FrameBudget::new(speed_options.share)),
         gpu_options: controls::gpu_options()?,
         physics_device: RefCell::new(None),
         visibility: visibility::requested()?,
@@ -629,7 +642,11 @@ async fn boot(root: Element) -> Result<(), String> {
         remote: Rc::new(RefCell::new(remote::TreeRemote::new())),
         remote_shown: Cell::new(false),
     });
-    crate::web_speed::apply(&mut shared.canvas.borrow_mut(), shared.speed);
+    crate::web_speed::apply(
+        &mut shared.canvas.borrow_mut(),
+        shared.speed,
+        &shared.frame_budget.borrow(),
+    );
     visibility::install(&shared, &document)?;
     let options = HostOptions {
         title: "Graphshell, one tree".into(),

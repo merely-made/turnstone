@@ -703,7 +703,19 @@ pub(super) fn update_product_semantics(
         ),
         (
             "data-physics-speed",
-            host.canvas.physics_speed().factor().to_string(),
+            crate::web_speed::field(host.canvas.physics_speed()),
+        ),
+        (
+            "data-physics-budget-us",
+            host.frame_budget.budget().per_frame.as_micros().to_string(),
+        ),
+        (
+            "data-physics-budget-share",
+            host.frame_budget.share().to_string(),
+        ),
+        (
+            "data-frame-interval-ms",
+            format!("{:.1}", host.frame_budget.interval_ms()),
         ),
         (
             "data-physics-effective-speed",

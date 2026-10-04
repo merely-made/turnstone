@@ -289,7 +289,7 @@ impl TreeLane {
             )
             .with_field(
                 "remote-physics-speed",
-                remote.board.speed().factor().to_string(),
+                crate::web_speed::field(remote.board.speed()),
             )
             .with_field("remote-energy", format!("{:.1}", board.energy()))
             .with_field(

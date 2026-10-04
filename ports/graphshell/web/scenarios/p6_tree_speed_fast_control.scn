@@ -20,6 +20,8 @@ timing stop
 log-physics fast-control
 assert snap physics-budget-bound == false
 assert snap physics-effective-speed >= 25
-assert snap pace-compute-max-us <= 8000
+# Each frame's stepping inside its own budget plus the clock's 100 us grain,
+# as p6_tree_speed_fast.
+assert snap pace-over-budget-us <= 100
 assert snap finite == true
 log p6 speed fast control receipt complete

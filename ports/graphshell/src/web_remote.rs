@@ -352,7 +352,7 @@ pub(super) fn update_remote_semantics(
     set("data-remote-physics-law", host.canvas.physics_law().id())?;
     set(
         "data-remote-physics-speed",
-        &host.remote_board.speed().factor().to_string(),
+        &crate::web_speed::field(host.remote_board.speed()),
     )?;
     set(
         "data-remote-energy",
