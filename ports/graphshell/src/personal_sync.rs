@@ -21,7 +21,7 @@ use mere::kernel::geometry::PortablePoint;
 use mere::kernel::graph::apply::{GraphDelta, add_node, apply_graph_delta};
 use mere::kernel::graph::{EdgeAssertion, Graph, RelationSelector};
 use muniment::Backend;
-use p2panda_core::cbor::{decode_cbor, encode_cbor};
+use p2panda_core::cbor::{decode_cbor_strict, encode_cbor};
 use p2panda_core::{Body, Hash, Header, Operation, SigningKey, Topic, VerifyingKey};
 use p2panda_store::topics::TopicStore;
 use personae::{IdentityError, IdentityProvider};
@@ -679,7 +679,7 @@ fn validate_event(event: &PersonalGraphEvent) -> Result<(), Reject> {
             .map(|_| ())
             .map_err(|error| Reject::new("invalid-group-prekey", error.to_string())),
         PersonalGraphEvent::GroupDispatch { dispatch } => {
-            decode_cbor::<GroupSessionDispatch, _>(dispatch.as_slice())
+            decode_cbor_strict::<GroupSessionDispatch, _>(dispatch.as_slice())
                 .map(|_| ())
                 .map_err(|error| Reject::new("invalid-group-dispatch", error.to_string()))
         },
@@ -778,16 +778,16 @@ pub fn from_operation(
     let bytes = body.to_bytes();
     match operation.header.extensions.encryption {
         PersonalEncryption::Plaintext => {
-            decode_cbor(bytes.as_slice()).map_err(|_| PersonalGraphWireError::Malformed)
+            decode_cbor_strict(bytes.as_slice()).map_err(|_| PersonalGraphWireError::Malformed)
         },
         PersonalEncryption::GroupV1 => {
             let keyring = keyring.ok_or(PersonalGraphWireError::NoKey)?;
-            let envelope: GroupCiphertext =
-                decode_cbor(bytes.as_slice()).map_err(|_| PersonalGraphWireError::Malformed)?;
+            let envelope: GroupCiphertext = decode_cbor_strict(bytes.as_slice())
+                .map_err(|_| PersonalGraphWireError::Malformed)?;
             let plaintext = keyring
                 .open(&envelope)
                 .map_err(|error| PersonalGraphWireError::Unsealable(error.to_string()))?;
-            decode_cbor(plaintext.as_slice()).map_err(|_| PersonalGraphWireError::Malformed)
+            decode_cbor_strict(plaintext.as_slice()).map_err(|_| PersonalGraphWireError::Malformed)
         },
     }
 }
