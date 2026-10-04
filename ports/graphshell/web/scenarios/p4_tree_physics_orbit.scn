@@ -34,4 +34,7 @@ settle 2
 assert snap physics-energy >= 1
 settle 300
 assert snap physics-energy >= 1
+# Framing after the final settle too: Orbit is bounded since its retune
+# (2026-10-04, "Frictionless orbits + centring", "Radial floor at 0.82").
+assert snap layout-outside == 0
 log physics orbit receipt complete
