@@ -211,6 +211,8 @@ struct BrowserHost {
     /// `log-layout` lines.
     law_start: Option<graphshell::canvas_physics::LawStart>,
     layout_log: Vec<String>,
+    /// The last `measure-faces` reading, for the snapshot.
+    faces: Option<graphshell::canvas_faces::FaceAlignment>,
 }
 
 struct BrowserProjectionSink;
@@ -1915,6 +1917,7 @@ async fn run(root_element: Element) -> Result<(), String> {
         timing: web_timing::FrameTiming::default(),
         law_start: None,
         layout_log: Vec::new(),
+        faces: None,
     }));
     web_scenario::install(&state);
     install_events(&state)?;

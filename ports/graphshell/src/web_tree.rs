@@ -136,6 +136,8 @@ struct Shared {
     release_log: RefCell<Vec<String>>,
     /// Lines `log-physics` recorded, for the receipt.
     physics_log: RefCell<Vec<String>>,
+    /// The last `measure-faces` reading, for the snapshot.
+    faces: Cell<Option<graphshell::canvas_faces::FaceAlignment>>,
     /// The remote session (`remote::TreeRemote`); its channel's pumps reach
     /// it from outside the runner.
     remote: Rc<RefCell<remote::TreeRemote>>,
@@ -615,6 +617,7 @@ async fn boot(root: Element) -> Result<(), String> {
         press_point: Cell::new(None),
         release_log: RefCell::new(Vec::new()),
         physics_log: RefCell::new(Vec::new()),
+        faces: Cell::new(None),
         remote: Rc::new(RefCell::new(remote::TreeRemote::new())),
         remote_shown: Cell::new(false),
     });

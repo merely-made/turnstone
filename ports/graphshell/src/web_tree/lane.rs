@@ -494,6 +494,10 @@ impl Product for TreeLane {
                 "gpu-timed",
                 self.shared.timing.borrow().gpu_timed().to_string(),
             );
+        let faces = self.shared.faces.get().unwrap_or_default().fields();
+        let snapshot = faces.into_iter().fold(snapshot, |snapshot, (name, value)| {
+            snapshot.with_field(name, value)
+        });
         if let Some(product) = &page.product {
             snapshot
                 .with_field("graph-session", product.session.clone())
@@ -594,6 +598,28 @@ impl Product for TreeLane {
                     lane.mismatched,
                     lane.last_age,
                 ));
+                Ok(())
+            },
+            // `set-zoom <z>`: the zoom exactly, about the canvas centre.
+            "set-zoom" => {
+                let zoom = rest.trim().parse().map_err(|_| "set-zoom wants a number")?;
+                let size = self.shared.size.get();
+                CanvasCommand::SetZoom { zoom }.apply(&mut self.shared.canvas.borrow_mut(), size);
+                self.shared.dirty.set(true);
+                Ok(())
+            },
+            // `measure-faces <label>`: each face in view against its drawn
+            // body, into the snapshot and the receipt.
+            "measure-faces" => {
+                let faces = graphshell::canvas_faces::FaceAlignment::measure(
+                    &self.shared.canvas.borrow(),
+                    self.shared.size.get(),
+                );
+                self.shared.faces.set(Some(faces));
+                self.shared
+                    .physics_log
+                    .borrow_mut()
+                    .push(faces.line(rest.trim()));
                 Ok(())
             },
             "click-node" => {
