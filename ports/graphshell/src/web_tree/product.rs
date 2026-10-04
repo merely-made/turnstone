@@ -3,8 +3,9 @@
 
 //! The bounded local saved-graph workflow on the retained tree.
 use super::*;
-use cambium::TextInput;
+use cambium::{SelectState, TextInput};
 use graphshell::local_edit::{NodeMetadata, metadata, save_metadata, sync_canvas_metadata};
+use mere::canvas::Role;
 use muniment::IndexedDbBackend;
 use uuid::Uuid;
 
@@ -19,6 +20,9 @@ pub(super) struct SavedProduct {
     pub(super) tags: TextInput,
     pub(super) address: String,
     pub(super) detail_open: bool,
+    /// The picked item's own role: index 0 is "as recipe" (no override),
+    /// then each role (F48).
+    pub(super) role: SelectState,
     pub(super) saving: bool,
     /// Save feedback for the detail editor; empty until a save.
     pub(super) status: String,
@@ -80,6 +84,7 @@ pub(super) async fn open() -> Result<Option<SavedProduct>, String> {
         tags: TextInput::new(""),
         address: String::new(),
         detail_open: false,
+        role: SelectState::new(0).with_label("Item role"),
         saving: false,
         status: String::new(),
         storage,
@@ -162,6 +167,13 @@ impl SavedProduct {
         }
     }
 
+    /// Open the detail editor, its item role read from the canvas.
+    pub(super) fn open_detail(&mut self, canvas: &Canvas) {
+        self.detail_open = true;
+        self.role.selected =
+            item_role_index(self.selected.and_then(|member| canvas.member_role(member)));
+    }
+
     pub(super) fn save(&mut self) {
         if self.saving {
             return;
@@ -212,6 +224,38 @@ impl SavedProduct {
     }
 }
 
+/// The item role select's index for an override (0 is "as recipe").
+fn item_role_index(role: Option<Role>) -> usize {
+    role.and_then(|role| Role::ALL.iter().position(|r| *r == role))
+        .map_or(0, |index| index + 1)
+}
+
+/// Set or clear the picked item's own role (F48). It is view state, saved
+/// with the scene, not graph truth.
+fn apply_item_role(page: &mut TreePage) {
+    let Some(product) = &mut page.product else {
+        return;
+    };
+    let Some(member) = product.selected else {
+        product.status = "Select an object first".into();
+        return;
+    };
+    let role = product
+        .role
+        .selected
+        .checked_sub(1)
+        .and_then(|i| Role::ALL.get(i).copied());
+    page.shared
+        .canvas
+        .borrow_mut()
+        .set_member_role(member, role);
+    product.status = match role {
+        Some(role) => format!("Item role set to {}", role.id()),
+        None => "Item role follows the recipe".into(),
+    };
+    page.shared.dirty.set(true);
+}
+
 pub(super) fn controls(page: &TreePage) -> Child {
     use cambium::{DetailRow, DetailSection, button, detail_panel, el, lens, text_field_typed};
     let Some(product) = &page.product else {
@@ -231,8 +275,13 @@ pub(super) fn controls(page: &TreePage) -> Child {
                 "Open details"
             },
             |page: &mut TreePage, _| {
+                let canvas = page.shared.canvas.borrow();
                 if let Some(product) = &mut page.product {
-                    product.detail_open = !product.detail_open;
+                    if product.detail_open {
+                        product.detail_open = false;
+                    } else {
+                        product.open_detail(&canvas);
+                    }
                 }
             },
         )));
@@ -276,6 +325,25 @@ pub(super) fn controls(page: &TreePage) -> Child {
                         product.save();
                     }
                 },
+            )));
+            let options: Vec<&'static str> = std::iter::once("As recipe")
+                .chain(Role::ALL.iter().map(|role| role.label()))
+                .collect();
+            fields.push(Box::new(el(
+                "label",
+                (
+                    "Item role",
+                    lens(
+                        move |state: &mut SelectState| cambium::select(state, &options),
+                        |page: &mut TreePage| {
+                            &mut page.product.as_mut().expect("local detail").role
+                        },
+                    ),
+                ),
+            )));
+            fields.push(Box::new(button(
+                "Apply item role",
+                |page: &mut TreePage, _| apply_item_role(page),
             )));
         }
         children.push(Box::new(

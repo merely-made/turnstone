@@ -61,7 +61,7 @@ use graphshell::capture::{
 use graphshell::mere_host::{
     FIXTURE_DEVICE_TWO_ADDRESS, FIXTURE_PERSONA_ADDRESS, FIXTURE_WEB_ADDRESS, SelectedPersonaRef,
 };
-use graphshell::product::{RelationFamilyFilter, SavedSceneV1};
+use graphshell::product::{RelationFamilyFilter, SavedSceneV2};
 use graphshell::projection_editor::{
     Appearance, Channel, EditorAction, Encoding, Interaction, ProjectionDefinition,
     ProjectionDefinitionSink, ProjectionDraft, ProjectionEditor, ProjectionPanel, Provenance,
@@ -182,7 +182,7 @@ struct BrowserHost {
     last_export: String,
     export_bytes: usize,
     imported_nodes: usize,
-    saved_scene: Option<SavedSceneV1>,
+    saved_scene: Option<SavedSceneV2>,
     arrangement_transition: Option<graphshell::canvas_physics::ArrangementTransition>,
     primary_member: Option<Uuid>,
     last_detail_member: Option<Uuid>,
@@ -207,6 +207,10 @@ struct BrowserHost {
     /// Frame times for a scenario's `timing` windows, measured as the tree
     /// page measures its own (the one-tree plan's phase 3).
     timing: web_timing::FrameTiming,
+    /// The layout where the last law was applied, and the scenario's
+    /// `log-layout` lines.
+    law_start: Option<graphshell::canvas_physics::LawStart>,
+    layout_log: Vec<String>,
 }
 
 struct BrowserProjectionSink;
@@ -1909,6 +1913,8 @@ async fn run(root_element: Element) -> Result<(), String> {
         capture_pending: None,
         capture_count: 0,
         timing: web_timing::FrameTiming::default(),
+        law_start: None,
+        layout_log: Vec::new(),
     }));
     web_scenario::install(&state);
     install_events(&state)?;

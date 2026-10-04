@@ -1,0 +1,60 @@
+# Density on the tree, through the docked Graph tools panel: Gastner–Newman's
+# evolving field, room following mass. Its signature is the rank of mass
+# against area share and an even density, not energy (the flow writes
+# positions). On the fixture the bar is qualitative (ruled 2026-10-03): from
+# the boot start the rank rises above the start's and the density CV falls.
+# Springs from the same start is the control (p4_tree_physics_density_control),
+# and picking Density greys the overlays with the law's reason.
+assert snap ready == true
+# The boot arrangement pauses the canvas, so the law is set and applied with
+# nothing moving: its start is the boot layout, the control's too.
+assert snap physics-paused == true
+# An overlay ticked under Springs is refused once Density is picked.
+click role:combobox Physics law
+settle 1
+click role:option Springs
+settle 1
+click role:checkbox Tide
+settle 1
+assert snap panel-overlays == tide
+assert snap disabled-overlays == 0
+click role:combobox Physics law
+settle 1
+click role:option Density
+settle 1
+assert snap disabled-overlays == 8
+assert text Density takes no overlays
+capture physics_density_refused
+settle 2
+click role:button Apply physics
+settle 1
+assert snap physics-law == density.gastner-newman
+assert snap physics-profile == law.density
+assert snap panel-profile == law.density
+assert text Physics set to Density
+assert snap physics-paused == true
+log-layout density start
+# No arrangement: the boot Spiral's anchor springs would pull under every
+# law. Returning to none resumes the canvas.
+click role:combobox Arrangement
+settle 1
+click role:option Free (physics alone)
+settle 1
+click role:button Apply arrangement
+settle 1
+assert snap layout == free
+assert snap physics-paused == false
+capture physics_density_start
+settle 2
+# Until the flow stops (60 passes at least, then three calm ones, the
+# 120-pass cap behind them): the law's own demand for ticks drops once its
+# passes are done.
+settle 7400
+assert snap physics-continuous == false
+capture physics_density_settled
+settle 2
+log-layout density settled
+assert snap layout-rank-rose == true
+assert snap layout-cv-fell == true
+assert snap layout-overlaps == 0
+log physics density receipt complete

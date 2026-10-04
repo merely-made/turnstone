@@ -21,7 +21,7 @@ use mere::kernel::geometry::PortablePoint;
 use mere::kernel::graph::apply::{GraphDelta, add_node, apply_graph_delta};
 use mere::kernel::graph::{EdgeAssertion, Graph, RelationSelector};
 use muniment::Backend;
-use p2panda_core::cbor::{decode_cbor, encode_cbor};
+use p2panda_core::cbor::{decode_cbor_strict, encode_cbor};
 use p2panda_core::{Body, Hash, Header, Operation, SigningKey, Topic, VerifyingKey};
 use p2panda_store::topics::TopicStore;
 use personae::{IdentityError, IdentityProvider};
@@ -36,7 +36,7 @@ use stickleback::{
 use uuid::Uuid;
 
 use crate::access::{ACCESS_HISTORY_FACET, AccessHistory, AccessRecord};
-use crate::product::{SAVED_SCENE_FACET, SavedSceneV1};
+use crate::product::{SAVED_SCENE_FACET, SAVED_SCENE_FACET_V1, SavedSceneV2};
 
 pub const PERSONAL_GRAPH_LOG: u64 = 0;
 pub const PERSONAL_GRAPH_LIMITS: CausalLimits = CausalLimits {
@@ -154,7 +154,7 @@ pub enum PersonalGraphEvent {
     },
     SaveScene {
         node: Uuid,
-        scene: SavedSceneV1,
+        scene: SavedSceneV2,
     },
     /// scope=persona; movement=persona-synced opt-in; mutability=live;
     /// security=ordinary. The handler id is a preference, not a credential or
@@ -426,7 +426,7 @@ pub enum KeyAgreementEvent {
 pub struct SyncProjection {
     pub graph: Graph,
     pub access_records: Vec<AccessRecord>,
-    pub scenes: BTreeMap<Uuid, SavedSceneV1>,
+    pub scenes: BTreeMap<Uuid, SavedSceneV2>,
     pub handler_preferences: BTreeMap<String, String>,
     pub blob_availability: Vec<BlobAvailabilityObservation>,
     pub available_blobs: BTreeMap<[u8; 32], BTreeSet<String>>,
@@ -679,7 +679,7 @@ fn validate_event(event: &PersonalGraphEvent) -> Result<(), Reject> {
             .map(|_| ())
             .map_err(|error| Reject::new("invalid-group-prekey", error.to_string())),
         PersonalGraphEvent::GroupDispatch { dispatch } => {
-            decode_cbor::<GroupSessionDispatch, _>(dispatch.as_slice())
+            decode_cbor_strict::<GroupSessionDispatch, _>(dispatch.as_slice())
                 .map(|_| ())
                 .map_err(|error| Reject::new("invalid-group-dispatch", error.to_string()))
         },
@@ -714,7 +714,7 @@ fn validate_facet_name(facet: &str) -> Result<(), Reject> {
             "facet id is empty or too long",
         ));
     }
-    if facet == ACCESS_HISTORY_FACET || facet == SAVED_SCENE_FACET {
+    if facet == ACCESS_HISTORY_FACET || facet == SAVED_SCENE_FACET || facet == SAVED_SCENE_FACET_V1 {
         return Err(Reject::new(
             "reserved-personal-graph-facet",
             "facet has a dedicated append or scene event",
@@ -778,16 +778,16 @@ pub fn from_operation(
     let bytes = body.to_bytes();
     match operation.header.extensions.encryption {
         PersonalEncryption::Plaintext => {
-            decode_cbor(bytes.as_slice()).map_err(|_| PersonalGraphWireError::Malformed)
+            decode_cbor_strict(bytes.as_slice()).map_err(|_| PersonalGraphWireError::Malformed)
         },
         PersonalEncryption::GroupV1 => {
             let keyring = keyring.ok_or(PersonalGraphWireError::NoKey)?;
-            let envelope: GroupCiphertext =
-                decode_cbor(bytes.as_slice()).map_err(|_| PersonalGraphWireError::Malformed)?;
+            let envelope: GroupCiphertext = decode_cbor_strict(bytes.as_slice())
+                .map_err(|_| PersonalGraphWireError::Malformed)?;
             let plaintext = keyring
                 .open(&envelope)
                 .map_err(|error| PersonalGraphWireError::Unsealable(error.to_string()))?;
-            decode_cbor(plaintext.as_slice()).map_err(|_| PersonalGraphWireError::Malformed)
+            decode_cbor_strict(plaintext.as_slice()).map_err(|_| PersonalGraphWireError::Malformed)
         },
     }
 }
@@ -1319,7 +1319,7 @@ pub async fn materialize<B: Backend + Clone + Send + Sync + 'static>(
 fn apply_event(
     graph: &mut Graph,
     access: &mut BTreeMap<Uuid, AccessRecord>,
-    scenes: &mut BTreeMap<Uuid, SavedSceneV1>,
+    scenes: &mut BTreeMap<Uuid, SavedSceneV2>,
     handlers: &mut BTreeMap<String, String>,
     blob_availability: &mut BTreeMap<Uuid, BlobAvailabilityObservation>,
     event: &PersonalGraphEvent,
@@ -1763,7 +1763,7 @@ mod tests {
             },
             PersonalGraphEvent::SaveScene {
                 node: B,
-                scene: SavedSceneV1 {
+                scene: SavedSceneV2 {
                     name: "Shared scene".into(),
                     selected: vec![A, B],
                     layout_strategy: Some("grid.default".into()),
@@ -1775,6 +1775,7 @@ mod tests {
                     physics_mass_source: "degree".into(),
                     physics_depth_source: "roots".into(),
                     arrangement_pull: 0.4,
+                    arrangement_roles: None,
                     camera_offset: (12.0, 24.0),
                     camera_zoom: 1.2,
                     default_handler: "graphshell.inspect".into(),

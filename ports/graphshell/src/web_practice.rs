@@ -3,9 +3,12 @@
 
 //! A working session over disclosed source objects. Product evidence enters at
 //! the edge; the grammar places occurrences, Seiche moves a transient view,
-//! and Cambium/Genet build retained Netrender fragments. Motion never lays out
-//! text or recompiles a recipe. The browser's native controls are a keyed
-//! realization of the very same Control records, including their rectangles.
+//! and Cambium/Genet build retained Netrender fragments. An axis the recipe
+//! encodes from a data field is pinned on that axis, so motion never moves a
+//! card off its value there (dynamics grammar plan, G7, F28). Motion never
+//! lays out text or recompiles a recipe. The browser's native controls are a
+//! keyed realization of the very same Control records, including their
+//! rectangles.
 
 use cambium::{GenetAppRunner, el, text};
 use genet_render::TextSystem;
@@ -21,7 +24,7 @@ use graphshell::{
     },
     projection_editor::{Channel, ProjectionDefinition, SourceBinding},
 };
-use mere::canvas::{BoardItem, PhysicsBoard};
+use mere::canvas::{Axes, BoardItem, PhysicsBoard};
 use netrender::{Scene, ScenePath, Transform};
 use serde::{Deserialize, Serialize};
 use std::{
@@ -105,6 +108,16 @@ pub(super) struct PracticeHost {
     card_size: (f32, f32),
     selected_tone: Option<String>,
     focus_view: bool,
+}
+
+/// The axes `definition` encodes from data fields, declared from the
+/// encoding rather than inferred from positions.
+fn encoded_axes(definition: &ProjectionDefinition) -> Axes {
+    let field = |channel: &Channel| matches!(channel, Channel::Field(f) if !f.trim().is_empty());
+    Axes {
+        x: field(&definition.encoding.x),
+        y: field(&definition.encoding.y),
+    }
 }
 
 fn tones(value: &serde_json::Value) -> String {
@@ -203,7 +216,7 @@ impl PracticeHost {
         definition.encoding.y = Channel::Field("y".into());
         let compiled = compile(&definition, &dataset).map_err(|e| format!("{e:?}"))?;
         let mut board = PhysicsBoard::new();
-        board.set_pull(120.0);
+        board.set_encoded_axes(encoded_axes(&definition));
         Ok(Self {
             workspace,
             dataset,
@@ -276,8 +289,8 @@ impl PracticeHost {
             .collect();
         if !self.workspace.runtime().physics_enabled {
             self.board = PhysicsBoard::new();
-            self.board.set_pull(120.0);
         }
+        self.board.set_encoded_axes(encoded_axes(&self.definition));
         self.board.sync(items);
         if !self.workspace.runtime().physics_enabled {
             self.board.halt();
@@ -608,7 +621,7 @@ impl PracticeHost {
                 if width > 650 {
                     add(
                         "gesture",
-                        "Drag a card; release to settle toward its slot".into(),
+                        "Drag a card; release to return it to its slot".into(),
                         String::new(),
                         "quiet",
                         [210.0, y, w - 230.0, 33.0],
@@ -1070,6 +1083,10 @@ impl PracticeHost {
             (
                 "data-practice-settling",
                 self.board.is_settling().to_string(),
+            ),
+            (
+                "data-practice-encoded-drift",
+                format!("{:.3}", self.board.encoded_drift()),
             ),
             (
                 "data-practice-metrics",
