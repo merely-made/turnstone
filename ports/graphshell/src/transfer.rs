@@ -40,7 +40,7 @@ use crate::access::{
 };
 use crate::mere_host::MereHost;
 use crate::product::{
-    CONTENT_FACET, ExportRequest, ProductCodicilV2, ProductError, SavedSceneV1, decode_codicil,
+    CONTENT_FACET, ExportRequest, ProductCodicilV2, ProductError, SavedSceneV2, decode_codicil,
 };
 
 pub const TRANSFER_MANIFEST_SCHEMA: &str = "graphshell.transfer-manifest/v1";
@@ -971,9 +971,9 @@ fn remapped_id(source: &str, id_by_source: &HashMap<Uuid, Uuid>) -> Result<Strin
         })
 }
 
-fn remap_scene(scene: &SavedSceneV1, ids: &HashMap<Uuid, Uuid>) -> SavedSceneV1 {
+fn remap_scene(scene: &SavedSceneV2, ids: &HashMap<Uuid, Uuid>) -> SavedSceneV2 {
     let remap = |id: Uuid| ids.get(&id).copied();
-    SavedSceneV1 {
+    SavedSceneV2 {
         name: scene.name.clone(),
         selected: scene.selected.iter().filter_map(|id| remap(*id)).collect(),
         layout_strategy: scene.layout_strategy.clone(),
@@ -986,6 +986,16 @@ fn remap_scene(scene: &SavedSceneV1, ids: &HashMap<Uuid, Uuid>) -> SavedSceneV1 
         physics_mass_source: scene.physics_mass_source.clone(),
         physics_depth_source: scene.physics_depth_source.clone(),
         arrangement_pull: scene.arrangement_pull,
+        arrangement_roles: scene.arrangement_roles.as_ref().map(|roles| {
+            crate::product::SavedRolesV1 {
+                items: roles
+                    .items
+                    .iter()
+                    .filter_map(|(id, role)| Some((remap(*id)?, role.clone())))
+                    .collect(),
+                ..roles.clone()
+            }
+        }),
         camera_offset: scene.camera_offset,
         camera_zoom: scene.camera_zoom,
         default_handler: scene.default_handler.clone(),

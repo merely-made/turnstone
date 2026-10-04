@@ -1,0 +1,28 @@
+# Density's control on the old page: Springs from the same boot start as
+# physics_density, which does not give room by mass. Its rank and density CV
+# go to the receipt beside Density's.
+assert title GRAPHSHELL H3 READY
+assert snap ready == true
+# Applied while the boot arrangement holds the canvas paused, as Density is.
+assert snap physics-paused == true
+select #gs-physics-select spring.rapier
+dom click [data-command="apply-physics"]
+settle 1
+assert snap physics-law == spring.rapier
+assert snap physics-paused == true
+log-layout springs start
+select #gs-arrangement-select free
+dom click [data-command="apply-arrangement"]
+settle 1
+assert snap layout == free
+assert snap physics-paused == false
+settle 900
+log-layout springs settled
+capture physics_density_springs_control
+wait
+# Negative on this start (-0.03 when measured), and neither the rank risen
+# nor the density evened from where it started.
+assert snap layout-mass-area-rank <= 0
+assert snap layout-rank-rose == false
+assert snap layout-cv-fell == false
+log physics density control complete
