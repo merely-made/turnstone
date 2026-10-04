@@ -46,9 +46,12 @@ pub fn ticked_overlays(ticked: impl Fn(PhysicsOverlay) -> bool) -> Vec<PhysicsOv
         .collect()
 }
 
-/// Apply physics: sources, overlays and law in one rebuild. Returns the status.
+/// Apply physics: sources, overlays and law in one rebuild, and the camera
+/// follows the layout while it plays (ruled 2026-10-03, "Follow while
+/// playing"). Returns the status.
 pub fn apply_physics(canvas: &mut Canvas, choice: &PhysicsChoice) -> String {
     canvas.set_physics_choice(choice);
+    canvas.set_view_follow(true);
     with_overlays(
         format!("Physics set to {}", canvas.physics_law().label()),
         canvas,
@@ -63,6 +66,7 @@ pub fn apply_profile(canvas: &mut Canvas, id: &str) -> Result<String, String> {
     if !canvas.apply_physics_profile(id) {
         return Err(format!("unknown physics profile {id}"));
     }
+    canvas.set_view_follow(true);
     Ok(with_overlays(
         format!("Profile {id}: {}", canvas.physics_law().label()),
         canvas,
@@ -103,6 +107,7 @@ pub fn apply_arrangement(
         canvas.set_projection_score(None);
         canvas.set_layout_strategy(None);
         canvas.set_selected_members(&selected);
+        canvas.set_view_follow(true);
         return Ok(ArrangementApplied {
             layout_id: layout_id.to_string(),
             status: "Arrangement set to free: physics alone".to_string(),
@@ -304,15 +309,17 @@ impl ArrangementTransition {
 pub const FRAMING_MARGIN: f32 = 0.0;
 
 /// The framing fields both pages publish, from the canvas's own positions and
-/// camera: nodes whose centre is off the visible canvas, and the layout's and
-/// the view's world extents (`min_x,min_y,max_x,max_y`).
-pub fn framing_fields(canvas: &Canvas) -> [(&'static str, String); 3] {
+/// camera: nodes whose centre is off the visible canvas, the layout's and the
+/// view's world extents (`min_x,min_y,max_x,max_y`), and whether the camera is
+/// following the layout.
+pub fn framing_fields(canvas: &Canvas) -> [(&'static str, String); 4] {
     let framing = canvas.layout_framing(FRAMING_MARGIN);
     let text = |[a, b, c, d]: [f32; 4]| format!("{a:.0},{b:.0},{c:.0},{d:.0}");
     [
         ("layout-outside", framing.outside.to_string()),
         ("layout-extent", text(framing.extent)),
         ("view-extent", text(framing.view)),
+        ("view-follow", canvas.view_follows().to_string()),
     ]
 }
 
@@ -407,6 +414,34 @@ mod tests {
         choice.overlays.clear();
         apply_physics(&mut canvas, &choice);
         assert_eq!(profile_id(&canvas), "void");
+    }
+
+    /// "Follow while playing" (2026-10-03): a law, profile or Free switch
+    /// follows the layout, any pan or zoom stops it, Fit graph resumes it, and
+    /// an analytic arrangement leaves it as it was.
+    #[test]
+    fn switches_follow_the_layout_a_pan_or_zoom_stops_it_and_fit_resumes_it() {
+        use crate::canvas_controls::CanvasCommand;
+        let mut canvas = canvas();
+        let viewport = (800, 600);
+        let pan = CanvasCommand::Pan { dx: 10.0, dy: 0.0 };
+        assert!(!canvas.view_follows(), "not before a switch");
+        apply_physics(&mut canvas, &PhysicsChoice::default());
+        assert!(canvas.view_follows(), "a law switch follows");
+        pan.apply(&mut canvas, viewport);
+        assert!(!canvas.view_follows(), "a pan stops it");
+        apply_profile(&mut canvas, "liquid").unwrap();
+        assert!(canvas.view_follows(), "a profile switch follows");
+        CanvasCommand::Zoom { delta: 1.0 }.apply(&mut canvas, viewport);
+        assert!(!canvas.view_follows(), "a zoom stops it");
+        apply_arrangement(&mut canvas, FREE_ARRANGEMENT, viewport).unwrap();
+        assert!(canvas.view_follows(), "Free follows");
+        pan.apply(&mut canvas, viewport);
+        CanvasCommand::Fit.apply(&mut canvas, viewport);
+        assert!(canvas.view_follows(), "Fit graph resumes it");
+        pan.apply(&mut canvas, viewport);
+        apply_arrangement(&mut canvas, "grid.default", viewport).unwrap();
+        assert!(!canvas.view_follows(), "an arrangement leaves it off");
     }
 
     #[test]

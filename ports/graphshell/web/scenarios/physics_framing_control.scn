@@ -1,7 +1,9 @@
-# The framing check's positive control (2026-10-03): under Still, which holds
-# every body where it is, the fixture frames; then one node is planted far
-# off the visible canvas and the check counts exactly that node. A law
-# receipt's `layout-outside == 0` fails on this frame.
+# The framing check's positive control, and following's rules ("Follow while
+# playing", 2026-10-03). Under Still, which holds every body where it is, the
+# fixture frames. A pan stops the camera following, so a node planted 4,000 px
+# off the canvas stays off it and the check counts exactly that node: a law
+# receipt's `layout-outside == 0` fails on that frame. Fit graph resumes
+# following, and the view takes the planted node in.
 assert title GRAPHSHELL H3 READY
 assert snap ready == true
 dom click [data-command="toggle-physics"]
@@ -16,14 +18,25 @@ dom click [data-command="apply-physics"]
 settle 1
 assert snap physics-law == still.default
 settle 60
+assert snap view-follow == true
 assert snap canvas-nodes == 11
 assert snap layout-outside == 0
-# Planted: a canvas-local point four thousand px right of the canvas.
+dom click [data-command="pan-left"]
+settle 30
+assert snap view-follow == false
+assert snap layout-outside == 0
 add-node 4000 300 mere://frame/control
 settle 1
 assert snap canvas-nodes == 12
 settle 60
+assert snap view-follow == false
 assert snap layout-outside == 1
 capture physics_framing_planted
+wait
+act fit-content
+settle 60
+assert snap view-follow == true
+assert snap layout-outside == 0
+capture physics_framing_fitted
 wait
 log physics framing control complete

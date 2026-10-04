@@ -37,7 +37,12 @@ impl CanvasCommand {
                 canvas.wheel(0.0, delta);
                 canvas.set_ctrl(false);
             },
-            Self::Fit => canvas.fit_to_content(),
+            // Fitting resumes following the layout; a pan or zoom (both reach
+            // the canvas's wheel) stops it.
+            Self::Fit => {
+                canvas.fit_to_content();
+                canvas.set_view_follow(true);
+            },
             Self::RestoreArrangement => {
                 canvas.restore_arrangement();
             },
