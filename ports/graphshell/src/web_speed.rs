@@ -5,11 +5,14 @@
 //! 2026-10-04, "Speed select" and "Target + Max, budget as frame share"):
 //! presets from 0.2x to 50x and Max in the physics section, 1x by default,
 //! applied when chosen, with the speed reached shown while the layout moves.
-//! The step budget is a share of each frame, measured from the page's own
-//! frame timestamps, so every machine gets the same bound. Also the
+//! The step budget is a share of the display's frame period, taken as the
+//! shortest recent interval between the page's own frame timestamps (ruled
+//! 2026-10-04, "The display's frame"): it does not grow when frames slow, so
+//! physics cannot feed back into the frame it is budgeted from. Also the
 //! `physics_speed` and `physics_budget_share` page options and the browser
 //! clock the budget is measured on.
 
+use std::collections::VecDeque;
 use std::time::Duration;
 
 use mere::canvas::{Canvas, Speed, StepBudget};
@@ -31,17 +34,17 @@ pub(crate) const PRESETS: [(&str, &str); 8] = [
 pub(crate) const DEFAULT_PRESET: usize = 2;
 const MAX_VALUE: &str = "max";
 
-/// The share of each frame a frame's ticks above real time may spend unless
-/// the page asks otherwise (ruled 2026-10-04: 50%).
+/// The share of the display's frame a frame's ticks above real time may
+/// spend unless the page asks otherwise (ruled 2026-10-04: 50%).
 const DEFAULT_BUDGET_SHARE: f64 = 0.5;
-/// The frame interval assumed until the page has measured one: 60 Hz.
+/// The display period assumed until the page has measured an interval: 60 Hz.
 const FIRST_INTERVAL_MS: f64 = 1000.0 / 60.0;
 /// A gap longer than this between frames is a hidden or suspended page, not a
-/// frame, and does not move the measured interval.
+/// frame, and is not taken in.
 const GAP_MS: f64 = 1000.0;
-/// How much of each new interval the measured interval takes in, so one slow
-/// frame does not swing the budget.
-const INTERVAL_WEIGHT: f64 = 0.25;
+/// The recent intervals the display period is the shortest of: about two
+/// seconds at 60 Hz, half a second at 240 Hz.
+const RECENT_INTERVALS: usize = 120;
 /// How often the reached-speed note may change, in host milliseconds, so a
 /// live figure reads rather than flickers.
 const NOTE_INTERVAL_MS: f64 = 500.0;
@@ -87,11 +90,12 @@ fn clock() -> Duration {
     Duration::from_secs_f64(now_ms().max(0.0) / 1000.0)
 }
 
-/// The step budget as a share of the page's measured frame interval.
-#[derive(Clone, Copy, Debug)]
+/// The step budget as a share of the display's frame period: the shortest
+/// of the last [`RECENT_INTERVALS`] intervals between frames.
+#[derive(Clone, Debug)]
 pub(crate) struct FrameBudget {
     share: f64,
-    interval_ms: Option<f64>,
+    intervals: VecDeque<f64>,
     last_ms: Option<f64>,
 }
 
@@ -99,21 +103,20 @@ impl FrameBudget {
     pub(crate) fn new(share: f64) -> Self {
         Self {
             share,
-            interval_ms: None,
+            intervals: VecDeque::with_capacity(RECENT_INTERVALS),
             last_ms: None,
         }
     }
 
-    /// Take this frame's timestamp into the measured interval; the budget for
-    /// the frame.
+    /// Take this frame's timestamp in; the budget for the frame.
     pub(crate) fn frame(&mut self, now_ms: f64) -> StepBudget {
         if let Some(last) = self.last_ms {
             let interval = now_ms - last;
             if interval > 0.0 && interval < GAP_MS {
-                self.interval_ms = Some(match self.interval_ms {
-                    Some(measured) => measured + (interval - measured) * INTERVAL_WEIGHT,
-                    None => interval,
-                });
+                if self.intervals.len() == RECENT_INTERVALS {
+                    self.intervals.pop_front();
+                }
+                self.intervals.push_back(interval);
             }
         }
         self.last_ms = Some(now_ms);
@@ -122,7 +125,7 @@ impl FrameBudget {
 
     pub(crate) fn budget(&self) -> StepBudget {
         StepBudget {
-            per_frame: Duration::from_secs_f64(self.share * self.interval_ms() / 1000.0),
+            per_frame: Duration::from_secs_f64(self.share * self.display_period_ms() / 1000.0),
             clock,
         }
     }
@@ -131,9 +134,19 @@ impl FrameBudget {
         self.share
     }
 
-    /// The measured frame interval, or 60 Hz's until a frame has been seen.
-    pub(crate) fn interval_ms(&self) -> f64 {
-        self.interval_ms.unwrap_or(FIRST_INTERVAL_MS)
+    /// The display's frame period: the shortest recent interval, or 60 Hz's
+    /// until one has been measured.
+    pub(crate) fn display_period_ms(&self) -> f64 {
+        self.intervals
+            .iter()
+            .copied()
+            .reduce(f64::min)
+            .unwrap_or(FIRST_INTERVAL_MS)
+    }
+
+    /// The last interval between frames: what the page is actually running at.
+    pub(crate) fn last_interval_ms(&self) -> f64 {
+        self.intervals.back().copied().unwrap_or(FIRST_INTERVAL_MS)
     }
 }
 

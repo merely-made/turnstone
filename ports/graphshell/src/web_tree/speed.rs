@@ -52,7 +52,8 @@ pub(super) fn record(shared: &Shared, canvas: &Canvas, moving: bool, budget: Dur
     let frame_budget = shared.frame_budget.borrow();
     shared.physics_log.borrow_mut().push(format!(
         "pace: speed {} effective {} bound {} ticks {} over {} frames drawn-moved {} \
-         stepped {} compute-max {} us over-budget-max {} us budget {} us ({} of {:.1} ms)",
+         stepped {} compute-max {} us over-budget-max {} us budget {} us ({} of a {:.1} ms \
+         display period; last frame {:.1} ms)",
         crate::web_speed::field(canvas.physics_speed()),
         pace.effective_speed
             .map_or_else(|| "none".into(), |speed| format!("{speed:.3}")),
@@ -65,7 +66,8 @@ pub(super) fn record(shared: &Shared, canvas: &Canvas, moving: bool, budget: Dur
         summary.over_budget_us,
         budget.as_micros(),
         frame_budget.share(),
-        frame_budget.interval_ms(),
+        frame_budget.display_period_ms(),
+        frame_budget.last_interval_ms(),
     ));
 }
 
@@ -165,8 +167,12 @@ pub(super) fn fields(snapshot: ProbeSnapshot, canvas: &Canvas, shared: &Shared) 
         )
         .with_field("physics-budget-share", frame_budget.share().to_string())
         .with_field(
+            "display-period-ms",
+            format!("{:.1}", frame_budget.display_period_ms()),
+        )
+        .with_field(
             "frame-interval-ms",
-            format!("{:.1}", frame_budget.interval_ms()),
+            format!("{:.1}", frame_budget.last_interval_ms()),
         )
         .with_field("physics-ticks", pace.ticks.to_string())
         .with_field("physics-owed-steps", step.owed_steps.to_string())

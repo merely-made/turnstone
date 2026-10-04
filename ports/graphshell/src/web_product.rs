@@ -714,8 +714,12 @@ pub(super) fn update_product_semantics(
             host.frame_budget.share().to_string(),
         ),
         (
+            "data-display-period-ms",
+            format!("{:.1}", host.frame_budget.display_period_ms()),
+        ),
+        (
             "data-frame-interval-ms",
-            format!("{:.1}", host.frame_budget.interval_ms()),
+            format!("{:.1}", host.frame_budget.last_interval_ms()),
         ),
         (
             "data-physics-effective-speed",
