@@ -495,7 +495,7 @@ fn keys(page: &mut TreePage, key: &Key) -> bool {
     if let Some(product) = &mut page.product {
         match key {
             Key::Named(NamedKey::Enter) if product.selected.is_some() => {
-                product.detail_open = true;
+                product.open_detail(&page.shared.canvas.borrow());
                 return true;
             },
             Key::Named(NamedKey::Escape) if product.detail_open => {
@@ -724,7 +724,10 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
                     }
                 });
             }
-            if ctx.runner.state().physics.transition.is_some() {
+            // A stop that returned anchored items (G7, F24) starts its own.
+            if ctx.runner.state().physics.transition.is_some()
+                || frame_shared.canvas.borrow().has_stop_return()
+            {
                 ctx.runner.update(|page| page.advance_arrangement(now_ms()));
             }
             let size = (

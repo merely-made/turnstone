@@ -13,7 +13,7 @@ use graphshell::canvas_physics::{
 use mere::canvas::{
     CANVAS_PHYSICS_DEPTH_SOURCES, CANVAS_PHYSICS_KIND_SOURCES, CANVAS_PHYSICS_LAWS,
     CANVAS_PHYSICS_MASS_SOURCES, CANVAS_PHYSICS_OVERLAYS, CANVAS_PHYSICS_PROFILES, PhysicsChoice,
-    PhysicsDepthSource, PhysicsKindSource, PhysicsLaw, PhysicsMassSource, PhysicsOverlay,
+    PhysicsDepthSource, PhysicsKindSource, PhysicsLaw, PhysicsMassSource, PhysicsOverlay, Role,
 };
 
 /// The profile picker's first entry, read when the live pair names no profile.
@@ -22,6 +22,8 @@ const CUSTOM_LABEL: &str = "Custom (no profile)";
 /// The panel's control state and the arrangement it last applied.
 pub(super) struct PhysicsPanel {
     pub(super) arrangement: SelectState,
+    /// The recipe's role for the arrangement's positions (F48).
+    pub(super) role: SelectState,
     pub(super) law: SelectState,
     pub(super) kind: SelectState,
     pub(super) mass: SelectState,
@@ -53,6 +55,7 @@ impl PhysicsPanel {
                 layout_id,
             ))
             .with_label("Arrangement"),
+            role: SelectState::new(0).with_label("Role"),
             law: SelectState::new(0).with_label("Physics law"),
             kind: SelectState::new(0).with_label("Kinds"),
             mass: SelectState::new(0).with_label("Mass"),
@@ -72,6 +75,7 @@ impl PhysicsPanel {
     /// to the one naming the pair, or custom.
     pub(super) fn sync(&mut self, canvas: &Canvas) {
         let live = canvas.physics_choice();
+        self.role.selected = index_of(Role::ALL, canvas.arrangement_roles().default);
         self.law.selected = index_of(PhysicsLaw::ALL, live.law);
         self.kind.selected = index_of(PhysicsKindSource::ALL, live.kind);
         self.mass.selected = index_of(PhysicsMassSource::ALL, live.mass);
@@ -85,9 +89,9 @@ impl PhysicsPanel {
             .map_or(0, |index| index + 1);
     }
 
-    /// The law the picker names (applied or not).
-    pub(super) fn picked_law(&self) -> PhysicsLaw {
-        PhysicsLaw::ALL[self.law.selected.min(PhysicsLaw::ALL.len() - 1)]
+    /// The recipe role the role control holds.
+    pub(super) fn role(&self) -> Role {
+        Role::ALL[self.role.selected.min(Role::ALL.len() - 1)]
     }
 
     /// The choice the controls hold. A law that refuses overlays holds none,
@@ -131,6 +135,11 @@ impl PhysicsPanel {
             .collect::<Vec<_>>()
             .join(",")
     }
+
+    /// The law the picker names (applied or not).
+    pub(super) fn picked_law(&self) -> PhysicsLaw {
+        PhysicsLaw::ALL[self.law.selected.min(PhysicsLaw::ALL.len() - 1)]
+    }
 }
 
 impl TreePage {
@@ -149,6 +158,15 @@ impl TreePage {
                 },
                 Err(error) => format!("Failed · {error}"),
             };
+        self.shared.dirty.set(true);
+    }
+
+    /// The recipe's role: every item takes it unless a group or the item
+    /// says otherwise (F22, F48).
+    fn apply_role(&mut self) {
+        let role = self.physics.role();
+        self.shared.canvas.borrow_mut().set_arrangement_role(role);
+        self.physics.status = format!("Role set to {}", role.id());
         self.shared.dirty.set(true);
     }
 
@@ -272,6 +290,12 @@ pub(super) fn section(page: &TreePage) -> Child {
             |page| &mut page.physics.arrangement,
         ),
         apply("Apply arrangement", TreePage::apply_arrangement),
+        picker(
+            "Role",
+            Role::ALL.iter().map(|role| role.label()).collect(),
+            |page| &mut page.physics.role,
+        ),
+        apply("Apply role", TreePage::apply_role),
         picker("Physics law", labels(CANVAS_PHYSICS_LAWS), |page| {
             &mut page.physics.law
         }),

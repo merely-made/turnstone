@@ -1,0 +1,31 @@
+# The picked item's role in the detail panel (dynamics grammar plan, G7, F48),
+# on the saved-graph route (`?app=local`). An item follows the recipe until it
+# is given its own role, and "As recipe" clears that again.
+assert snap source == saved graph
+click role:button Fit graph
+settle 3
+click-node https://example.test/i2p-port
+settle 2
+key Enter
+settle 2
+assert snap detail-open == true
+assert snap item-role == recipe
+click role:combobox Item role
+settle 1
+click role:option Pinned
+settle 1
+click role:button Apply item role
+settle 2
+assert snap item-role == pinned
+assert text Item role set to pinned
+capture p4_tree_item_role_pinned
+wait
+click role:combobox Item role
+settle 1
+click role:option As recipe
+settle 1
+click role:button Apply item role
+settle 2
+assert snap item-role == recipe
+assert text Item role follows the recipe
+log item role receipt complete
