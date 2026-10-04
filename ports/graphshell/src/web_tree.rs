@@ -89,6 +89,8 @@ const SHEET: &str = "\
     .tree-tools button { background:#263640; color:#dce3e8; padding:3px 10px; margin:2px 0 4px; border:1px solid #637581; } \
     .tools-overlays { display:flex; flex-wrap:wrap; margin:2px 0; } \
     .tools-overlays label { width:136px; margin:1px 0; } \
+    .tools-overlays label.disabled { opacity:.45; } \
+    .tools-note { margin:2px 0 4px; color:#c9b27c; font-size:12px; } \
     .tools-status { margin:4px 0; color:#9fb0bb; font-size:12px; } \
     .select-box { background:#263640; border:1px solid #637581; padding:2px 8px; } \
     .select-list { background:#17232b; border:1px solid #637581; z-index:20; width:262px; } \
@@ -497,7 +499,7 @@ fn keys(page: &mut TreePage, key: &Key) -> bool {
     if let Some(product) = &mut page.product {
         match key {
             Key::Named(NamedKey::Enter) if product.selected.is_some() => {
-                product.detail_open = true;
+                product.open_detail(&page.shared.canvas.borrow());
                 return true;
             },
             Key::Named(NamedKey::Escape) if product.detail_open => {
@@ -729,7 +731,10 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
                     }
                 });
             }
-            if ctx.runner.state().physics.transition.is_some() {
+            // A stop that returned anchored items (G7, F24) starts its own.
+            if ctx.runner.state().physics.transition.is_some()
+                || frame_shared.canvas.borrow().has_stop_return()
+            {
                 ctx.runner.update(|page| page.advance_arrangement(now_ms()));
             }
             let size = (

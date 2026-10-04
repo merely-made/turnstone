@@ -179,6 +179,10 @@ pub(super) fn install_events(state: &Rc<RefCell<BrowserHost>>) -> Result<(), Str
         else {
             return;
         };
+        if select.id() == "gs-physics-select" {
+            let _ = super::web_product::sync_overlay_availability();
+            return;
+        }
         let Some(field) = select.get_attribute("data-action-draft-field") else {
             return;
         };

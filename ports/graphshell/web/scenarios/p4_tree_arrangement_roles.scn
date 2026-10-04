@@ -1,0 +1,50 @@
+# Arrangement roles through the docked Graph tools panel (dynamics grammar
+# plan, G7). The boot Spiral lands paused and seeded (F23). A pick made while
+# playing runs its transition and plays on from the landed positions (F24);
+# a pick made while paused stays paused. Settled, the latest settle's
+# positions, is picked like any other arrangement (F30).
+assert snap ready == true
+assert snap physics-paused == true
+assert snap arrangement-role == seeded
+assert snap layout == phyllotaxis.default
+capture roles_boot_spiral
+click role:button Play physics
+settle 1
+assert snap physics-paused == false
+# A pick while playing: Grid animates in, then physics plays on.
+click role:combobox Arrangement
+settle 1
+click role:option Grid
+settle 1
+click role:button Apply arrangement
+settle 90
+assert snap layout == grid.default
+assert snap physics-paused == false
+capture roles_grid_playing
+# Play on until the graph comes to rest at least once: Settled records it.
+settle 1800
+assert snap settles >= 1
+assert snap physics-paused == false
+click role:combobox Arrangement
+settle 1
+click role:option Settled (last rest)
+settle 1
+click role:button Apply arrangement
+settle 90
+assert snap layout == settled
+assert snap physics-paused == false
+capture roles_settled
+# A pick while paused stays paused.
+click role:button Pause physics
+settle 2
+assert snap physics-paused == true
+click role:combobox Arrangement
+settle 1
+click role:option Spiral
+settle 1
+click role:button Apply arrangement
+settle 90
+assert snap layout == phyllotaxis.default
+assert snap physics-paused == true
+capture roles_spiral_paused
+log arrangement roles receipt complete

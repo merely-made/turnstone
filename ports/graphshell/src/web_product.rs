@@ -10,7 +10,7 @@ use std::collections::HashMap;
 
 use graphshell::canvas_physics;
 use graphshell::product::{
-    EditableRelation, ExportRequest, LocalFileMetadata, RelationFamilyFilter, SavedSceneV1,
+    EditableRelation, ExportRequest, LocalFileMetadata, RelationFamilyFilter, SavedSceneV2,
     TransferScope,
 };
 use mere::canvas::{
@@ -85,6 +85,8 @@ impl BrowserHost {
             "apply-physics" => self.apply_physics_from_form(),
             "apply-profile" => self.apply_profile_from_form(),
             "apply-face" => self.apply_face(),
+            "apply-role" => self.apply_role_from_form(),
+            "apply-item-role" => self.apply_item_role_from_form(),
             "save-scene" => self.save_scene(),
             "reopen-scene" => self.reopen_scene(),
             "export-codicil" | "export-engram" => self.export_codicil(),
@@ -184,7 +186,7 @@ impl BrowserHost {
         Ok(())
     }
 
-    pub(super) fn apply_saved_scene(&mut self, scene: SavedSceneV1) -> Result<(), String> {
+    pub(super) fn apply_saved_scene(&mut self, scene: SavedSceneV2) -> Result<(), String> {
         self.arrangement_transition = None;
         self.layout_id = scene
             .layout_strategy
@@ -227,7 +229,12 @@ impl BrowserHost {
             .apply_cartography_materials(scene.cartography.material_iter());
         self.canvas
             .apply_cartography_faces(scene.cartography.face_iter());
-        self.canvas.set_arrangement_pull(scene.arrangement_pull);
+        // The roles ride the scene; a scene saved before them reads its pull
+        // as the roles it acted as (dynamics grammar plan, G7).
+        let (roles, stiffness) = scene.roles()?;
+        self.canvas.set_anchor_stiffness(stiffness);
+        let table = roles.table(self.canvas.graph());
+        self.canvas.set_arrangement_roles(table);
         // The law, its overlays and the kind source ride the scene; an unknown id
         // (a scene from a newer catalog) falls back to the default rather than
         // failing the restore. (Physics catalog — P1.)
@@ -243,14 +250,16 @@ impl BrowserHost {
             mere::canvas::PhysicsDepthSource::parse(&scene.physics_depth_source)
                 .unwrap_or(mere::canvas::PhysicsDepthSource::Roots),
         );
-        self.canvas.set_physics_overlays(
+        // A saved scene cannot pair Density with overlays (the canvas refused
+        // them when it was made), so a refusal here has nothing to report.
+        let _ = self.canvas.set_physics_overlays(
             scene
                 .physics_overlays
                 .iter()
                 .filter_map(|id| mere::canvas::PhysicsOverlay::parse(id))
                 .collect(),
         );
-        self.canvas.set_physics_law(
+        let _ = self.canvas.set_physics_law(
             mere::canvas::PhysicsLaw::parse(&scene.physics_law)
                 .unwrap_or(mere::canvas::PhysicsLaw::Springs),
         );
@@ -433,6 +442,7 @@ impl BrowserHost {
             depth: PhysicsDepthSource::parse(&select_value("depth-source-select")?)
                 .unwrap_or(PhysicsDepthSource::Roots),
         };
+        self.law_start = Some(canvas_physics::LawStart::of(&self.canvas));
         let status = canvas_physics::apply_physics(&mut self.canvas, &choice);
         sync_physics_controls(self)?;
         Ok(status)
@@ -441,6 +451,7 @@ impl BrowserHost {
     /// The profile picker's Apply: a named (law, overlays) pair, then the
     /// panel's controls follow it. (Physics catalog — P2.)
     fn apply_profile_from_form(&mut self) -> Result<String, String> {
+        self.law_start = Some(canvas_physics::LawStart::of(&self.canvas));
         let status =
             canvas_physics::apply_profile(&mut self.canvas, &select_value("profile-select")?)?;
         sync_physics_controls(self)?;
@@ -473,6 +484,31 @@ impl BrowserHost {
         Ok(format!("Representation set to {}", face.as_code()))
     }
 
+    /// The recipe's role for the arrangement's positions (F48).
+    fn apply_role_from_form(&mut self) -> Result<String, String> {
+        let id = select_value("role-select")?;
+        let role = mere::canvas::Role::parse(&id).ok_or_else(|| format!("unknown role {id}"))?;
+        self.canvas.set_arrangement_role(role);
+        Ok(format!("Role set to {}", role.id()))
+    }
+
+    /// The selected object's own role, or "recipe" to clear it (F48).
+    fn apply_item_role_from_form(&mut self) -> Result<String, String> {
+        let member = self.focused_member()?;
+        let id = select_value("item-role-select")?;
+        let role = match id.as_str() {
+            "recipe" => None,
+            other => Some(
+                mere::canvas::Role::parse(other).ok_or_else(|| format!("unknown role {other}"))?,
+            ),
+        };
+        self.canvas.set_member_role(member, role);
+        Ok(match role {
+            Some(role) => format!("Item role set to {}", role.id()),
+            None => "Item role follows the recipe".to_string(),
+        })
+    }
+
     fn save_scene(&mut self) -> Result<String, String> {
         let selected = {
             let selected = self.canvas.selected_members();
@@ -483,7 +519,7 @@ impl BrowserHost {
             }
         };
         let camera = self.canvas.camera();
-        let scene = SavedSceneV1 {
+        let scene = SavedSceneV2 {
             name: "Graphshell working scene".to_string(),
             selected,
             layout_strategy: Some(self.layout_id.clone()),
@@ -499,7 +535,14 @@ impl BrowserHost {
             physics_kind_source: self.canvas.physics_kind_source().id().to_string(),
             physics_mass_source: self.canvas.physics_mass_source().id().to_string(),
             physics_depth_source: self.canvas.physics_depth_source().id().to_string(),
-            arrangement_pull: self.canvas.arrangement_pull(),
+            arrangement_pull: self.canvas.anchor_stiffness(),
+            arrangement_roles: Some(
+                graphshell::product::SavedRoles::from_table(
+                    self.canvas.arrangement_roles(),
+                    self.canvas.graph(),
+                )
+                .saved(),
+            ),
             camera_offset: camera.offset,
             camera_zoom: camera.zoom,
             default_handler: select_value("handler-select")?,
@@ -609,6 +652,12 @@ pub(super) fn update_product_semantics(
             set_select_value("handler-select", &host.handler_id)?;
             set_select_value("arrangement-select", &host.layout_id)?;
             set_select_value("face-select", &host.face)?;
+            set_select_value(
+                "item-role-select",
+                host.canvas
+                    .member_role(id)
+                    .map_or("recipe", |role| role.id()),
+            )?;
         }
         host.last_detail_member = member;
     }
@@ -656,6 +705,17 @@ pub(super) fn update_product_semantics(
         ("data-layout-spread", format!("{:.0}", stats.spread)),
         ("data-layout-overlaps", stats.overlaps.to_string()),
         ("data-layout-stretch", format!("{:.2}", stats.stretch)),
+        (
+            "data-layout-mass-area-rank",
+            format!("{:.2}", stats.mass_area_rank),
+        ),
+        ("data-layout-density-cv", format!("{:.3}", stats.density_cv)),
+        // Whether the physics world still asks for ticks of its own (a law
+        // whose flow has not stopped): what a receipt waits on after Play.
+        (
+            "data-physics-continuous",
+            host.canvas.physics_tick_demand().0.to_string(),
+        ),
         ("data-product-status", host.product_status.clone()),
         (
             "data-dragging",
@@ -701,6 +761,17 @@ pub(super) fn update_product_semantics(
         ("data-filter-count", host.filter_count.to_string()),
         ("data-layout", host.layout_id.clone()),
         (
+            "data-arrangement-role",
+            host.canvas.arrangement_roles().default.id().to_string(),
+        ),
+        (
+            "data-item-role",
+            member
+                .and_then(|id| host.canvas.member_role(id))
+                .map_or("recipe", |role| role.id())
+                .to_string(),
+        ),
+        (
             "data-physics-paused",
             host.canvas.physics_paused().to_string(),
         ),
@@ -718,6 +789,13 @@ pub(super) fn update_product_semantics(
     ] {
         body.set_attribute(name, &value)
             .map_err(|_| format!("could not expose {name}"))?;
+    }
+    // Where the last law started, and whether the layout now beats it.
+    if let Some(start) = host.law_start {
+        for (name, value) in start.fields(&stats) {
+            body.set_attribute(&format!("data-{name}"), &value)
+                .map_err(|_| format!("could not expose {name}"))?;
+        }
     }
     Ok(())
 }
@@ -866,9 +944,39 @@ fn sync_physics_controls(host: &BrowserHost) -> Result<(), String> {
         "profile-select",
         host.canvas.physics_profile_id().unwrap_or(""),
     )?;
-    Ok(())
+    set_select_value("role-select", host.canvas.arrangement_roles().default.id())?;
+    sync_overlay_availability()
 }
 
+/// Grey the overlay checkboxes, with the reason beside them, while the law
+/// picker names a law that takes no overlays (Density). Runs when the picker
+/// changes and whenever the controls follow the canvas.
+pub(super) fn sync_overlay_availability() -> Result<(), String> {
+    let law = PhysicsLaw::parse(&select_value("physics-select")?);
+    let refusal = law.and_then(PhysicsLaw::overlay_refusal);
+    let fieldset = element("physics-overlays")?;
+    if refusal.is_some() {
+        fieldset
+            .set_attribute("disabled", "")
+            .map_err(|_| "could not disable the overlays".to_string())?;
+        for overlay in PhysicsOverlay::ALL {
+            element_as::<HtmlInputElement>(&format!("overlay-{}", overlay.id()))?
+                .set_checked(false);
+        }
+    } else {
+        fieldset
+            .remove_attribute("disabled")
+            .map_err(|_| "could not enable the overlays".to_string())?;
+    }
+    let note = element("overlay-note")?;
+    note.set_text_content(refusal);
+    if refusal.is_some() {
+        note.remove_attribute("hidden")
+    } else {
+        note.set_attribute("hidden", "")
+    }
+    .map_err(|_| "could not show the overlay note".to_string())
+}
 pub(super) fn selected_handler() -> Result<String, String> {
     select_value("handler-select")
 }

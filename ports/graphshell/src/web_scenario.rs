@@ -137,6 +137,7 @@ pub(super) fn tick(host: &mut BrowserHost) {
             let hidden = host.timing.any_hidden();
             let mut log = outcome.log;
             log.extend(host.timing.receipt_lines());
+            log.append(&mut host.layout_log);
             if hidden {
                 log.push("FAIL: the page was hidden while a timing window was open".to_string());
             }
@@ -382,6 +383,18 @@ impl Probe<'_> {
                 Ok(())
             },
             "assert" => self.app_assert(rest, line),
+            // `log-layout <label>`: room by mass now and where the law
+            // started, into the receipt.
+            "log-layout" => {
+                let host = &mut *self.host;
+                let line = graphshell::canvas_physics::layout_line(
+                    rest.trim(),
+                    &host.canvas,
+                    host.law_start.as_ref(),
+                );
+                host.layout_log.push(line);
+                Ok(())
+            },
             // `timing start <label>` and `timing stop`: a window of frame
             // times, measured as the tree page measures its own.
             "timing" => {

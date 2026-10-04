@@ -1,0 +1,17 @@
+# The practice recipe encodes x and y from data fields, so each card is pinned
+# on both axes and physics only separates overlaps; the former pull of 120 is
+# retired (dynamics grammar plan, G7, F28). The drift is the largest distance
+# any card sits from its value on an encoded axis.
+assert snap practice-view == relations
+assert snap practice-motion == true
+settle 240
+assert snap practice-encoded-drift <= 0.01
+capture practice_encoded_grid
+wait
+dom click [data-practice-command="scatter"]
+settle 240
+assert snap practice-layout == scatter.default
+assert snap practice-encoded-drift <= 0.01
+capture practice_encoded_scatter
+wait
+log practice encoded axes receipt complete

@@ -72,6 +72,24 @@ impl TreeLane {
                 .collect::<Vec<_>>()
                 .join(",")
         };
+        // The overlay boxes greyed while the picked law refuses overlays.
+        let disabled = {
+            let dom = ctx.runner.dom();
+            let dom = dom.borrow();
+            mere::canvas::CANVAS_PHYSICS_OVERLAYS
+                .iter()
+                .filter(|(_, label)| {
+                    !taproot::matching(
+                        &dom,
+                        &Selector::role("checkbox")
+                            .containing(*label)
+                            .with_attr("aria-disabled", "true"),
+                    )
+                    .is_empty()
+                })
+                .count()
+                .to_string()
+        };
         let drag_return = self.drop.and_then(|(dx, dy)| {
             let (x, y) = canvas.focused_screen_position()?;
             let (left, top, _, _) = leaf_rect(ctx)?;
@@ -112,7 +130,14 @@ impl TreeLane {
             .with_field("panel-profile", page.physics.profile_id())
             .with_field("panel-status", page.physics.status.clone())
             .with_field("checked-overlays", checked)
+            .with_field("disabled-overlays", disabled)
             .with_field("canvas-nodes", canvas.graph().node_count().to_string())
+            .with_field("physics-settling", canvas.is_settling().to_string())
+            .with_field(
+                "physics-continuous",
+                canvas.physics_tick_demand().0.to_string(),
+            )
+            .with_field("physics-budget", canvas.physics_tick_demand().1.to_string())
             .with_field(
                 "dragging-node",
                 canvas
@@ -150,7 +175,17 @@ impl TreeLane {
             snapshot = snapshot
                 .with_field("layout-spread", format!("{:.0}", stats.spread))
                 .with_field("layout-overlaps", stats.overlaps.to_string())
-                .with_field("layout-stretch", format!("{:.2}", stats.stretch));
+                .with_field("layout-stretch", format!("{:.2}", stats.stretch))
+                .with_field(
+                    "layout-mass-area-rank",
+                    format!("{:.2}", stats.mass_area_rank),
+                )
+                .with_field("layout-density-cv", format!("{:.3}", stats.density_cv));
+            if let Some(start) = page.physics.law_start {
+                for (name, value) in start.fields(&stats) {
+                    snapshot = snapshot.with_field(name, value);
+                }
+            }
         } else {
             // Past the all-pairs limit, spread and overlaps (same
             // definition, a grid) still report; stretch does not.
@@ -431,6 +466,12 @@ impl Product for TreeLane {
             .with_field("focus", format!("{focus:?}"))
             .with_field("focus-kind", focus_kind)
             .with_field("physics-paused", canvas.physics_paused().to_string())
+            // Arrangement roles (dynamics grammar plan, G7): the recipe's role
+            // and how many settles Settled has recorded.
+            .with_field("arrangement-role", canvas.arrangement_roles().default.id())
+            .with_field("panel-role", page.physics.role().id())
+            .with_field("settles", canvas.settle_count().to_string())
+            .with_field("anchored-home", canvas.anchored_home_count().to_string())
             .with_field("physics-energy", canvas.physics_energy().to_string())
             .with_field(
                 "finite",
@@ -469,6 +510,13 @@ impl Product for TreeLane {
                 )
                 .with_field("detail-title", product.title.text())
                 .with_field("detail-tags", product.tags.text())
+                .with_field(
+                    "item-role",
+                    product
+                        .selected
+                        .and_then(|member| canvas.member_role(member))
+                        .map_or("recipe", |role| role.id()),
+                )
         } else {
             snapshot
         }
@@ -493,6 +541,21 @@ impl Product for TreeLane {
                         _ => Err(format!("timing wants start <label> or stop, got '{rest}'")),
                     }
                 })
+            },
+            // `log-layout <label>`: room by mass now and where the law
+            // started, into the receipt.
+            "log-layout" => {
+                let canvas = self.shared.canvas.borrow();
+                let start = ctx.runner.state().physics.law_start;
+                self.shared
+                    .physics_log
+                    .borrow_mut()
+                    .push(graphshell::canvas_physics::layout_line(
+                        rest.trim(),
+                        &canvas,
+                        start.as_ref(),
+                    ));
+                Ok(())
             },
             // `log-physics <label>`: the layout's signature and the GPU
             // lane's counts into the receipt, so a run can be read without
