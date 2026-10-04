@@ -16,16 +16,6 @@ use mere::canvas::{
     PhysicsDepthSource, PhysicsKindSource, PhysicsLaw, PhysicsMassSource, PhysicsOverlay, Role,
 };
 
-
-// Copyright 2026 Mark Alan Boykin
-// SPDX-License-Identifier: MPL-2.0
-//! The "Graph tools" side region's first section: arrangement and physics.
-//!
-//! Cambium controls hold the form; Apply reads them into the typed inputs of
-//! `graphshell::canvas_physics`, which the old page's form also calls.
-};
-};
-
 /// The profile picker's first entry, read when the live pair names no profile.
 const CUSTOM_LABEL: &str = "Custom (no profile)";
 
@@ -287,6 +277,7 @@ fn overlay_group(page: &TreePage) -> Child {
         None => Box::new(group),
     }
 }
+
 /// The "Graph tools" region's arrangement and physics section.
 pub(super) fn section(page: &TreePage) -> Child {
     let profiles: Vec<&'static str> = std::iter::once(CUSTOM_LABEL)

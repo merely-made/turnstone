@@ -137,6 +137,7 @@ pub fn layout_line(label: &str, canvas: &Canvas, start: Option<&LawStart>) -> St
         stats.spread,
     )
 }
+
 fn with_overlays(status: String, canvas: &Canvas) -> String {
     let overlays = canvas.physics_overlays();
     if overlays.is_empty() {
