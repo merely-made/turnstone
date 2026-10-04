@@ -21,16 +21,18 @@ use crate::product::ProjectionClock;
 
 /// The arrangement picker's "no arrangement" choice: physics alone.
 pub const FREE_ARRANGEMENT: &str = "free";
+/// The latest settle's positions, an arrangement like any other (F30).
+pub use mere::canvas::SETTLED_ARRANGEMENT;
 /// What a profile picker reads when the live pair names no profile.
 pub const CUSTOM_PROFILE: &str = "custom";
 
 /// The arrangement picker's choices, `(id, label)`: the canvas's graph-wide
-/// strategies, then free.
+/// strategies, then the latest settle, then free.
 pub fn arrangement_choices() -> impl Iterator<Item = (&'static str, &'static str)> {
-    CANVAS_LAYOUT_STRATEGIES
-        .iter()
-        .copied()
-        .chain([(FREE_ARRANGEMENT, "Free (physics alone)")])
+    CANVAS_LAYOUT_STRATEGIES.iter().copied().chain([
+        (SETTLED_ARRANGEMENT, "Settled (last rest)"),
+        (FREE_ARRANGEMENT, "Free (physics alone)"),
+    ])
 }
 
 /// The live profile id, or [`CUSTOM_PROFILE`].
@@ -176,6 +178,9 @@ pub fn apply_arrangement(
             transition: None,
         });
     }
+    if layout_id == SETTLED_ARRANGEMENT {
+        return apply_settled(canvas);
+    }
     let previous_score = canvas.projection_score().cloned();
     let extents = canvas.strategy_extents();
     let projection = project_canvas_strategy_with_score_for_view(
@@ -191,7 +196,7 @@ pub fn apply_arrangement(
         previous_score.as_ref(),
     );
     let transition = ArrangementTransition::between(canvas, &projection.positions)?;
-    canvas.set_layout_strategy(Some(layout_id.to_string()));
+    canvas.pick_layout_strategy(Some(layout_id.to_string()));
     canvas.set_projection_score(projection.score);
     if transition.is_none() {
         canvas.apply_strategy_positions(&projection.positions);
@@ -212,34 +217,80 @@ pub fn apply_arrangement(
     })
 }
 
+/// Settled: the latest settle's positions, with no score, animated to like
+/// any analytic arrangement. Refused until the graph has come to rest once.
+fn apply_settled(canvas: &mut Canvas) -> Result<ArrangementApplied, String> {
+    let positions = canvas
+        .settled_positions()
+        .ok_or("nothing has settled yet: play physics until the graph rests")?
+        .to_vec();
+    let transition = ArrangementTransition::between(canvas, &positions)?;
+    canvas.pick_layout_strategy(Some(SETTLED_ARRANGEMENT.to_string()));
+    canvas.set_projection_score(None);
+    if transition.is_none() {
+        canvas.apply_strategy_positions(&positions);
+    }
+    Ok(ArrangementApplied {
+        layout_id: SETTLED_ARRANGEMENT.to_string(),
+        status: if transition.is_some() {
+            format!("Arrangement changing to {SETTLED_ARRANGEMENT}")
+        } else {
+            format!("Arrangement set to {SETTLED_ARRANGEMENT}")
+        },
+        transition,
+    })
+}
+
 /// Advance a running arrangement transition at host time `host_ms`. When it
 /// lands, the final slots apply, the transition clears, and the landed
-/// status comes back.
+/// status comes back. A stop that returned anchored items (F24) starts its
+/// own transition here, from where they were to their positions.
 pub fn advance_arrangement(
     canvas: &mut Canvas,
     transition: &mut Option<ArrangementTransition>,
     layout_id: &str,
     host_ms: f64,
 ) -> Option<String> {
+    if let Some(stop) = canvas.take_stop_return() {
+        *transition = ArrangementTransition::returning(canvas, &stop)
+            .ok()
+            .flatten();
+    }
+    let returning = transition.as_ref()?.returning;
     let (positions, complete) = transition.as_mut()?.advance(host_ms);
-    if complete {
-        canvas.apply_strategy_positions(&positions);
-        *transition = None;
-        Some(format!("Arrangement set to {layout_id}"))
-    } else {
-        canvas.preview_strategy_positions(&positions);
-        None
+    match (returning, complete) {
+        (false, true) => {
+            canvas.apply_strategy_positions(&positions);
+            *transition = None;
+            Some(format!("Arrangement set to {layout_id}"))
+        },
+        (false, false) => {
+            canvas.preview_strategy_positions(&positions);
+            None
+        },
+        (true, true) => {
+            canvas.land_paused_positions(&positions);
+            *transition = None;
+            None
+        },
+        (true, false) => {
+            canvas.preview_paused_positions(&positions);
+            None
+        },
     }
 }
 
-/// One playback of an analytic arrangement change. Scenotime owns the
-/// schedule; the host owns the frame clock it is advanced with.
+/// One playback of an analytic arrangement change, or of a stop's return of
+/// anchored items. Scenotime owns the schedule; the host owns the frame clock
+/// it is advanced with.
 pub struct ArrangementTransition {
     schedule: scenotime::TransitionSchedule,
     clock: ProjectionClock,
     node_of: HashMap<sceno::InstanceId, NodeKey>,
     start_positions: Vec<(NodeKey, PortablePoint)>,
     final_positions: Vec<(NodeKey, PortablePoint)>,
+    /// A stop's return: it lands as the paused placement, not as slots.
+    returning: bool,
 }
 
 impl ArrangementTransition {
@@ -249,9 +300,35 @@ impl ArrangementTransition {
         canvas: &Canvas,
         final_positions: &[(NodeKey, PortablePoint)],
     ) -> Result<Option<Self>, String> {
-        let final_of = final_positions.iter().copied().collect::<HashMap<_, _>>();
         let old_geometry = canvas.cartography_geometry();
-        let old_of = old_geometry.iter().collect::<HashMap<_, _>>();
+        let old_of = old_geometry
+            .iter()
+            .map(|(id, (x, y))| (id, PortablePoint::new(x, y)))
+            .collect::<HashMap<_, _>>();
+        Self::from_to(canvas, &old_of, final_positions, false)
+    }
+
+    /// A stop's return (F24): from where the anchored items were to their
+    /// arrangement positions, everything else holding still.
+    pub fn returning(
+        canvas: &Canvas,
+        stop: &mere::canvas::StopReturn,
+    ) -> Result<Option<Self>, String> {
+        let start_of = stop
+            .from
+            .iter()
+            .filter_map(|(key, at)| Some((canvas.graph().get_node(*key)?.id, *at)))
+            .collect::<HashMap<_, _>>();
+        Self::from_to(canvas, &start_of, &stop.to, true)
+    }
+
+    fn from_to(
+        canvas: &Canvas,
+        old_of: &HashMap<uuid::Uuid, PortablePoint>,
+        final_positions: &[(NodeKey, PortablePoint)],
+        returning: bool,
+    ) -> Result<Option<Self>, String> {
+        let final_of = final_positions.iter().copied().collect::<HashMap<_, _>>();
         let extents = canvas.strategy_extents();
         let mut nodes = canvas.graph().nodes().collect::<Vec<_>>();
         nodes.sort_by_key(|(_, node)| node.id);
@@ -265,10 +342,7 @@ impl ArrangementTransition {
             let Some(target) = final_of.get(&key).copied() else {
                 continue;
             };
-            let current = old_of
-                .get(&node.id)
-                .map(|(x, y)| PortablePoint::new(*x, *y))
-                .unwrap_or(target);
+            let current = old_of.get(&node.id).copied().unwrap_or(target);
             let source = scene.intern_source(sceno::SourceRef::new(
                 mere::canvas::MERE_GRAPH_ADAPTER,
                 node.id.to_string(),
@@ -331,6 +405,7 @@ impl ArrangementTransition {
             node_of,
             start_positions,
             final_positions: final_positions.to_vec(),
+            returning,
         }))
     }
 
@@ -489,9 +564,14 @@ mod tests {
     fn free_drops_the_strategy_and_an_analytic_arrangement_restores_it() {
         let mut canvas = canvas();
         assert!(apply_arrangement(&mut canvas, "spiral", (800, 600)).is_err());
+        assert!(!canvas.physics_paused(), "the sample canvas plays");
         let applied = apply_arrangement(&mut canvas, "grid.default", (800, 600)).unwrap();
         assert_eq!(applied.layout_id, "grid.default");
-        assert!(canvas.physics_paused(), "an analytic arrangement pauses");
+        assert!(applied.transition.is_some(), "the grid animates there");
+        assert!(
+            canvas.physics_paused(),
+            "an analytic arrangement pauses while it lands"
+        );
         if let Some(transition) = applied.transition {
             let mut transition = Some(transition);
             let mut landed = None;
@@ -508,6 +588,7 @@ mod tests {
             }
             assert_eq!(landed.as_deref(), Some("Arrangement set to grid.default"));
             assert!(transition.is_none());
+            assert!(!canvas.physics_paused(), "then plays on from it (F24)");
         }
         let applied = apply_arrangement(&mut canvas, FREE_ARRANGEMENT, (800, 600)).unwrap();
         assert!(applied.transition.is_none());
@@ -517,10 +598,95 @@ mod tests {
             arrangement_choices().any(|(id, _)| id == FREE_ARRANGEMENT),
             "free is offered"
         );
+        assert!(
+            arrangement_choices().any(|(id, _)| id == SETTLED_ARRANGEMENT),
+            "settled is offered (F30)"
+        );
         assert_eq!(
             arrangement_choices().count(),
-            CANVAS_LAYOUT_STRATEGIES.len() + 1
+            CANVAS_LAYOUT_STRATEGIES.len() + 2
         );
+    }
+
+    /// F24 through the host: a stop with anchored items starts a transition
+    /// on the next advance, its frames move only the anchored items, and it
+    /// lands them on their positions while the seeded item stays. Settled is
+    /// refused until something has settled (G7).
+    #[test]
+    fn a_stop_returns_anchored_items_by_a_transition() {
+        use mere::canvas::Role;
+        let mut canvas = canvas();
+        assert!(apply_arrangement(&mut canvas, SETTLED_ARRANGEMENT, (800, 600)).is_err());
+        let applied = apply_arrangement(&mut canvas, "grid.default", (800, 600)).unwrap();
+        let mut transition = applied.transition;
+        for frame in 0..600 {
+            if advance_arrangement(
+                &mut canvas,
+                &mut transition,
+                "grid.default",
+                frame as f64 * 16.0,
+            )
+            .is_some()
+            {
+                break;
+            }
+        }
+        assert!(!canvas.physics_paused(), "the pick played on");
+        canvas.set_arrangement_role(Role::Anchored);
+        let keys: Vec<_> = canvas.graph().nodes().map(|(k, _)| k).collect();
+        let seeded = canvas.graph().get_node(keys[0]).unwrap().id;
+        canvas.set_member_role(seeded, Some(Role::Seeded));
+        for _ in 0..90 {
+            canvas.frame(800, 600);
+        }
+        let moved = canvas.cartography_geometry();
+        canvas.set_physics_paused(true);
+        assert!(canvas.has_stop_return());
+        let mut transition = None;
+        assert!(advance_arrangement(&mut canvas, &mut transition, "grid.default", 0.0).is_none());
+        assert!(transition.is_some(), "the stop's return animates");
+        assert!(!canvas.has_stop_return());
+        let mut frames = 0;
+        while transition.is_some() && frames < 600 {
+            frames += 1;
+            advance_arrangement(
+                &mut canvas,
+                &mut transition,
+                "grid.default",
+                frames as f64 * 16.0,
+            );
+            canvas.frame(800, 600);
+        }
+        assert!(transition.is_none(), "it lands");
+        let landed = canvas.cartography_geometry();
+        let slots = canvas.arrangement_roles().clone();
+        assert_eq!(slots.default, Role::Anchored);
+        let seeded_at = |geometry: &mere::canvas::CartographyGeometry| {
+            geometry
+                .iter()
+                .find(|(id, _)| *id == seeded)
+                .map(|(_, at)| at)
+        };
+        assert_eq!(seeded_at(&landed), seeded_at(&moved), "seeded stays");
+        // Restore puts every item on its arrangement position: the anchored
+        // ones were already there, the seeded one was not.
+        assert!(canvas.restore_arrangement());
+        let home = canvas.cartography_geometry();
+        let mut returned = 0;
+        for (id, at) in landed.iter() {
+            let slot = home.iter().find(|(i, _)| *i == id).unwrap().1;
+            let there = (at.0 - slot.0).abs() < 1e-3 && (at.1 - slot.1).abs() < 1e-3;
+            if id == seeded {
+                assert!(!there, "the seeded item was not returned");
+            } else if there {
+                returned += 1;
+            }
+        }
+        println!(
+            "stop return: {frames} frames, {returned} of {} anchored items home",
+            keys.len() - 1
+        );
+        assert_eq!(returned, keys.len() - 1, "every anchored item landed home");
     }
 
     /// The tree page's canvas at the receipts' 1400 by 900 window.

@@ -10,7 +10,7 @@ use std::collections::HashMap;
 
 use graphshell::canvas_physics;
 use graphshell::product::{
-    EditableRelation, ExportRequest, LocalFileMetadata, RelationFamilyFilter, SavedSceneV1,
+    EditableRelation, ExportRequest, LocalFileMetadata, RelationFamilyFilter, SavedSceneV2,
     TransferScope,
 };
 use mere::canvas::{
@@ -85,6 +85,8 @@ impl BrowserHost {
             "apply-physics" => self.apply_physics_from_form(),
             "apply-profile" => self.apply_profile_from_form(),
             "apply-face" => self.apply_face(),
+            "apply-role" => self.apply_role_from_form(),
+            "apply-item-role" => self.apply_item_role_from_form(),
             "save-scene" => self.save_scene(),
             "reopen-scene" => self.reopen_scene(),
             "export-codicil" | "export-engram" => self.export_codicil(),
@@ -184,7 +186,7 @@ impl BrowserHost {
         Ok(())
     }
 
-    pub(super) fn apply_saved_scene(&mut self, scene: SavedSceneV1) -> Result<(), String> {
+    pub(super) fn apply_saved_scene(&mut self, scene: SavedSceneV2) -> Result<(), String> {
         self.arrangement_transition = None;
         self.layout_id = scene
             .layout_strategy
@@ -227,7 +229,12 @@ impl BrowserHost {
             .apply_cartography_materials(scene.cartography.material_iter());
         self.canvas
             .apply_cartography_faces(scene.cartography.face_iter());
-        self.canvas.set_arrangement_pull(scene.arrangement_pull);
+        // The roles ride the scene; a scene saved before them reads its pull
+        // as the roles it acted as (dynamics grammar plan, G7).
+        let (roles, stiffness) = scene.roles()?;
+        self.canvas.set_anchor_stiffness(stiffness);
+        let table = roles.table(self.canvas.graph());
+        self.canvas.set_arrangement_roles(table);
         // The law, its overlays and the kind source ride the scene; an unknown id
         // (a scene from a newer catalog) falls back to the default rather than
         // failing the restore. (Physics catalog — P1.)
@@ -477,6 +484,31 @@ impl BrowserHost {
         Ok(format!("Representation set to {}", face.as_code()))
     }
 
+    /// The recipe's role for the arrangement's positions (F48).
+    fn apply_role_from_form(&mut self) -> Result<String, String> {
+        let id = select_value("role-select")?;
+        let role = mere::canvas::Role::parse(&id).ok_or_else(|| format!("unknown role {id}"))?;
+        self.canvas.set_arrangement_role(role);
+        Ok(format!("Role set to {}", role.id()))
+    }
+
+    /// The selected object's own role, or "recipe" to clear it (F48).
+    fn apply_item_role_from_form(&mut self) -> Result<String, String> {
+        let member = self.focused_member()?;
+        let id = select_value("item-role-select")?;
+        let role = match id.as_str() {
+            "recipe" => None,
+            other => Some(
+                mere::canvas::Role::parse(other).ok_or_else(|| format!("unknown role {other}"))?,
+            ),
+        };
+        self.canvas.set_member_role(member, role);
+        Ok(match role {
+            Some(role) => format!("Item role set to {}", role.id()),
+            None => "Item role follows the recipe".to_string(),
+        })
+    }
+
     fn save_scene(&mut self) -> Result<String, String> {
         let selected = {
             let selected = self.canvas.selected_members();
@@ -487,7 +519,7 @@ impl BrowserHost {
             }
         };
         let camera = self.canvas.camera();
-        let scene = SavedSceneV1 {
+        let scene = SavedSceneV2 {
             name: "Graphshell working scene".to_string(),
             selected,
             layout_strategy: Some(self.layout_id.clone()),
@@ -503,7 +535,14 @@ impl BrowserHost {
             physics_kind_source: self.canvas.physics_kind_source().id().to_string(),
             physics_mass_source: self.canvas.physics_mass_source().id().to_string(),
             physics_depth_source: self.canvas.physics_depth_source().id().to_string(),
-            arrangement_pull: self.canvas.arrangement_pull(),
+            arrangement_pull: self.canvas.anchor_stiffness(),
+            arrangement_roles: Some(
+                graphshell::product::SavedRoles::from_table(
+                    self.canvas.arrangement_roles(),
+                    self.canvas.graph(),
+                )
+                .saved(),
+            ),
             camera_offset: camera.offset,
             camera_zoom: camera.zoom,
             default_handler: select_value("handler-select")?,
@@ -613,6 +652,12 @@ pub(super) fn update_product_semantics(
             set_select_value("handler-select", &host.handler_id)?;
             set_select_value("arrangement-select", &host.layout_id)?;
             set_select_value("face-select", &host.face)?;
+            set_select_value(
+                "item-role-select",
+                host.canvas
+                    .member_role(id)
+                    .map_or("recipe", |role| role.id()),
+            )?;
         }
         host.last_detail_member = member;
     }
@@ -715,6 +760,17 @@ pub(super) fn update_product_semantics(
         ),
         ("data-filter-count", host.filter_count.to_string()),
         ("data-layout", host.layout_id.clone()),
+        (
+            "data-arrangement-role",
+            host.canvas.arrangement_roles().default.id().to_string(),
+        ),
+        (
+            "data-item-role",
+            member
+                .and_then(|id| host.canvas.member_role(id))
+                .map_or("recipe", |role| role.id())
+                .to_string(),
+        ),
         (
             "data-physics-paused",
             host.canvas.physics_paused().to_string(),
@@ -888,6 +944,7 @@ fn sync_physics_controls(host: &BrowserHost) -> Result<(), String> {
         "profile-select",
         host.canvas.physics_profile_id().unwrap_or(""),
     )?;
+    set_select_value("role-select", host.canvas.arrangement_roles().default.id())?;
     sync_overlay_availability()
 }
 
@@ -920,7 +977,6 @@ pub(super) fn sync_overlay_availability() -> Result<(), String> {
     }
     .map_err(|_| "could not show the overlay note".to_string())
 }
-
 pub(super) fn selected_handler() -> Result<String, String> {
     select_value("handler-select")
 }
