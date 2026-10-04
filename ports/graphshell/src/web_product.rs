@@ -734,6 +734,14 @@ pub(super) fn update_product_semantics(
             },
         ),
         (
+            // The same distance in world units, whatever the zoom.
+            "data-drag-return-world",
+            match (host.drag_drop_world, host.canvas.focused_world_position()) {
+                (Some((dx, dy)), Some((x, y))) => format!("{:.0}", (x - dx).hypot(y - dy)),
+                _ => String::new(),
+            },
+        ),
+        (
             "data-focused-x",
             host.canvas
                 .focused_screen_position()

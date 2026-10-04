@@ -11,6 +11,8 @@ pub(super) struct TreeLane {
     pub(super) pointer: Option<(f32, f32)>,
     /// Page px where the last `release-at` let go, for `drag-return`.
     pub(super) drop: Option<(f32, f32)>,
+    /// The same drop in world units, for `drag-return-world`.
+    pub(super) drop_world: Option<(f32, f32)>,
 }
 
 /// `layout-*` fields are a pairwise pass plus all-pairs hop distances, so a
@@ -160,6 +162,21 @@ impl TreeLane {
                     .release_step
                     .get()
                     .map(|(distance, _)| format!("{distance:.1}"))
+                    .unwrap_or_default(),
+            )
+            .with_field(
+                "drag-return-step-world",
+                self.shared
+                    .release_step_world
+                    .get()
+                    .map(|distance| format!("{distance:.1}"))
+                    .unwrap_or_default(),
+            )
+            .with_field(
+                "drag-return-world",
+                self.drop_world
+                    .zip(canvas.focused_world_position())
+                    .map(|((dx, dy), (x, y))| format!("{:.0}", (x - dx).hypot(y - dy)))
                     .unwrap_or_default(),
             )
             .with_field(
@@ -629,6 +646,27 @@ impl Product for TreeLane {
                 ctx.pointer.push(HostPointer::Moved(point.0, point.1));
                 Ok(())
             },
+            // The same move in world units, so a receipt's gesture means the
+            // same distance to the law at any zoom; at zoom 1 it is `move-by`
+            // (ruled 2026-10-04, "Measure in world units").
+            "move-by-world" => {
+                let args: Vec<f32> = rest
+                    .split_whitespace()
+                    .map(str::parse)
+                    .collect::<Result<_, _>>()
+                    .map_err(|_| "move-by-world wants dx dy")?;
+                if args.len() != 2 {
+                    return Err("move-by-world wants dx dy".into());
+                }
+                let (left, top, _, _) = leaf_rect(ctx).ok_or("the canvas leaf is not painted")?;
+                let point = self.pointer.as_mut().ok_or("move-by-world without a press")?;
+                let canvas = self.shared.canvas.borrow();
+                let (wx, wy) = canvas.world_point_at((point.0 - left, point.1 - top));
+                let (sx, sy) = canvas.screen_point_of((wx + args[0], wy + args[1]));
+                *point = (sx + left, sy + top);
+                ctx.pointer.push(HostPointer::Moved(point.0, point.1));
+                Ok(())
+            },
             "release-at" => {
                 let point = self.pointer.take().ok_or("release-at without a press")?;
                 self.drop = Some(point);
@@ -638,6 +676,14 @@ impl Product for TreeLane {
                     .release_watch
                     .set(Some((point.0 - left, point.1 - top)));
                 self.shared.release_step.set(None);
+                let world = self
+                    .shared
+                    .canvas
+                    .borrow()
+                    .world_point_at((point.0 - left, point.1 - top));
+                self.drop_world = Some(world);
+                self.shared.release_watch_world.set(Some(world));
+                self.shared.release_step_world.set(None);
                 ctx.pointer.push(HostPointer::Release(point.0, point.1));
                 Ok(())
             },

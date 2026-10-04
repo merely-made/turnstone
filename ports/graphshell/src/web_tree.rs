@@ -130,6 +130,10 @@ struct Shared {
     /// The focused node's distance from that drop point on that frame, and
     /// how many physics steps the frame executed.
     release_step: Cell<Option<(f32, u32)>>,
+    /// The same drop point in world units, and the same distance in world
+    /// units on that frame, whatever the zoom.
+    release_watch_world: Cell<Option<(f32, f32)>>,
+    release_step_world: Cell<Option<f32>>,
     /// Where the last scripted press landed, canvas-local px, for the receipt.
     press_point: Cell<Option<(f32, f32)>>,
     /// Every recorded release, for the receipt.
@@ -295,6 +299,12 @@ impl TextureProducer for CanvasProducer {
                 .zip(shared.press_point.get())
                 .map_or(f32::NAN, |((fx, fy), (px, py))| (fx - px).hypot(fy - py));
             shared.release_step.set(Some((distance, report.steps)));
+            shared.release_step_world.set(
+                canvas
+                    .focused_world_position()
+                    .zip(shared.release_watch_world.get())
+                    .map(|((fx, fy), (wx, wy))| (fx - wx).hypot(fy - wy)),
+            );
             shared.release_log.borrow_mut().push(format!(
                 "release-step {} {distance:.1} px after {} steps ({from_press:.1} px from the press point, zoom {:.2})",
                 canvas.physics_law().id(),
@@ -612,6 +622,8 @@ async fn boot(root: Element) -> Result<(), String> {
         visibility: visibility::requested()?,
         release_watch: Cell::new(None),
         release_step: Cell::new(None),
+        release_watch_world: Cell::new(None),
+        release_step_world: Cell::new(None),
         press_point: Cell::new(None),
         release_log: RefCell::new(Vec::new()),
         physics_log: RefCell::new(Vec::new()),
@@ -792,6 +804,7 @@ pub(crate) fn run(text: &str) -> Result<(), String> {
             errors: Vec::new(),
             pointer: None,
             drop: None,
+            drop_world: None,
         },
         Some(taproot::Scenario::parse(text).map_err(|e| e.to_string())?),
         None,
