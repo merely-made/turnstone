@@ -771,16 +771,21 @@ mod tests {
     }
 
     /// Orbit reached as its receipts reach it (Play, Free, Orbit), then
-    /// `seconds` at 60 Hz (ruled 2026-10-04, "Frictionless orbits + centring"):
+    /// `seconds` at 60 Hz under the host's `damping` (`None`, the canvas's
+    /// default; ruled 2026-10-04, "Frictionless orbits + centring" and
+    /// "Radial floor at 0.82"):
     /// the extent stays within 3x its first second's, the energy stays above
     /// the P2 floor of 1 every second, every node is on the tree page's canvas
     /// through the canvas's own camera at the receipts' two reads (1 s and
     /// 6 s), and the graph orbits: each node's angle about the centroid turns
     /// at least a revolution per 120 s on average.
-    fn orbit_on_the_p2_fixture(seconds: u64) {
+    fn orbit_on_the_p2_fixture(seconds: u64, damping: Option<f32>) {
         use std::time::Duration;
         let (width, height) = TREE_CANVAS;
         let mut canvas = p2_fixture_canvas();
+        if let Some(damping) = damping {
+            canvas.set_physics_damping(damping);
+        }
         canvas.set_physics_paused(false);
         apply_arrangement(&mut canvas, FREE_ARRANGEMENT, TREE_CANVAS).unwrap();
         apply_physics(
@@ -867,7 +872,7 @@ mod tests {
         let revolutions =
             turned.iter().map(|t| t.abs()).sum::<f32>() / keys.len() as f32 / std::f32::consts::TAU;
         println!(
-            "orbit on the P2 fixture (s, extent, energy, outside): {readings:?}; revolutions {revolutions:.2}"
+            "orbit on the P2 fixture at damping {damping:?} (s, extent, energy, outside): {readings:?}; revolutions {revolutions:.2}"
         );
         assert!(
             largest <= 3.0 * first,
@@ -882,14 +887,21 @@ mod tests {
     /// The quick default: Orbit's bars over 30 s.
     #[test]
     fn orbit_stays_bound_and_orbiting_on_the_p2_fixture() {
-        orbit_on_the_p2_fixture(30);
+        orbit_on_the_p2_fixture(30, None);
     }
 
     /// The full claim, 120 s (about 130 s in a debug build).
     #[test]
     #[ignore = "receipt: Orbit's bars over 120 s; run by Orbit-touching lanes"]
     fn orbit_stays_bound_and_orbiting_on_the_p2_fixture_for_two_minutes() {
-        orbit_on_the_p2_fixture(120);
+        orbit_on_the_p2_fixture(120, None);
+    }
+
+    /// The same at no host damping, where the radial floor does the settling.
+    #[test]
+    #[ignore = "receipt: Orbit's bars over 120 s at no damping; run by Orbit-touching lanes"]
+    fn orbit_stays_bound_and_orbiting_on_the_p2_fixture_at_no_damping() {
+        orbit_on_the_p2_fixture(120, Some(0.0));
     }
 
     /// The law-start fields say "rose" and "fell" only when the layout beats
