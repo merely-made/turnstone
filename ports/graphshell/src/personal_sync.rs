@@ -36,7 +36,7 @@ use stickleback::{
 use uuid::Uuid;
 
 use crate::access::{ACCESS_HISTORY_FACET, AccessHistory, AccessRecord};
-use crate::product::{SAVED_SCENE_FACET, SavedSceneV1};
+use crate::product::{SAVED_SCENE_FACET, SAVED_SCENE_FACET_V1, SavedSceneV2};
 
 pub const PERSONAL_GRAPH_LOG: u64 = 0;
 pub const PERSONAL_GRAPH_LIMITS: CausalLimits = CausalLimits {
@@ -154,7 +154,7 @@ pub enum PersonalGraphEvent {
     },
     SaveScene {
         node: Uuid,
-        scene: SavedSceneV1,
+        scene: SavedSceneV2,
     },
     /// scope=persona; movement=persona-synced opt-in; mutability=live;
     /// security=ordinary. The handler id is a preference, not a credential or
@@ -426,7 +426,7 @@ pub enum KeyAgreementEvent {
 pub struct SyncProjection {
     pub graph: Graph,
     pub access_records: Vec<AccessRecord>,
-    pub scenes: BTreeMap<Uuid, SavedSceneV1>,
+    pub scenes: BTreeMap<Uuid, SavedSceneV2>,
     pub handler_preferences: BTreeMap<String, String>,
     pub blob_availability: Vec<BlobAvailabilityObservation>,
     pub available_blobs: BTreeMap<[u8; 32], BTreeSet<String>>,
@@ -714,7 +714,7 @@ fn validate_facet_name(facet: &str) -> Result<(), Reject> {
             "facet id is empty or too long",
         ));
     }
-    if facet == ACCESS_HISTORY_FACET || facet == SAVED_SCENE_FACET {
+    if facet == ACCESS_HISTORY_FACET || facet == SAVED_SCENE_FACET || facet == SAVED_SCENE_FACET_V1 {
         return Err(Reject::new(
             "reserved-personal-graph-facet",
             "facet has a dedicated append or scene event",
@@ -1319,7 +1319,7 @@ pub async fn materialize<B: Backend + Clone + Send + Sync + 'static>(
 fn apply_event(
     graph: &mut Graph,
     access: &mut BTreeMap<Uuid, AccessRecord>,
-    scenes: &mut BTreeMap<Uuid, SavedSceneV1>,
+    scenes: &mut BTreeMap<Uuid, SavedSceneV2>,
     handlers: &mut BTreeMap<String, String>,
     blob_availability: &mut BTreeMap<Uuid, BlobAvailabilityObservation>,
     event: &PersonalGraphEvent,
@@ -1763,7 +1763,7 @@ mod tests {
             },
             PersonalGraphEvent::SaveScene {
                 node: B,
-                scene: SavedSceneV1 {
+                scene: SavedSceneV2 {
                     name: "Shared scene".into(),
                     selected: vec![A, B],
                     layout_strategy: Some("grid.default".into()),

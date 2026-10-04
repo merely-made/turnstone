@@ -10,7 +10,7 @@ use std::collections::HashMap;
 
 use graphshell::canvas_physics;
 use graphshell::product::{
-    EditableRelation, ExportRequest, LocalFileMetadata, RelationFamilyFilter, SavedSceneV1,
+    EditableRelation, ExportRequest, LocalFileMetadata, RelationFamilyFilter, SavedSceneV2,
     TransferScope,
 };
 use mere::canvas::{
@@ -85,6 +85,8 @@ impl BrowserHost {
             "apply-physics" => self.apply_physics_from_form(),
             "apply-profile" => self.apply_profile_from_form(),
             "apply-face" => self.apply_face(),
+            "apply-role" => self.apply_role_from_form(),
+            "apply-item-role" => self.apply_item_role_from_form(),
             "save-scene" => self.save_scene(),
             "reopen-scene" => self.reopen_scene(),
             "export-codicil" | "export-engram" => self.export_codicil(),
@@ -184,7 +186,7 @@ impl BrowserHost {
         Ok(())
     }
 
-    pub(super) fn apply_saved_scene(&mut self, scene: SavedSceneV1) -> Result<(), String> {
+    pub(super) fn apply_saved_scene(&mut self, scene: SavedSceneV2) -> Result<(), String> {
         self.arrangement_transition = None;
         self.layout_id = scene
             .layout_strategy
@@ -478,6 +480,31 @@ impl BrowserHost {
         Ok(format!("Representation set to {}", face.as_code()))
     }
 
+    /// The recipe's role for the arrangement's positions (F48).
+    fn apply_role_from_form(&mut self) -> Result<String, String> {
+        let id = select_value("role-select")?;
+        let role = mere::canvas::Role::parse(&id).ok_or_else(|| format!("unknown role {id}"))?;
+        self.canvas.set_arrangement_role(role);
+        Ok(format!("Role set to {}", role.id()))
+    }
+
+    /// The selected object's own role, or "recipe" to clear it (F48).
+    fn apply_item_role_from_form(&mut self) -> Result<String, String> {
+        let member = self.focused_member()?;
+        let id = select_value("item-role-select")?;
+        let role = match id.as_str() {
+            "recipe" => None,
+            other => Some(
+                mere::canvas::Role::parse(other).ok_or_else(|| format!("unknown role {other}"))?,
+            ),
+        };
+        self.canvas.set_member_role(member, role);
+        Ok(match role {
+            Some(role) => format!("Item role set to {}", role.id()),
+            None => "Item role follows the recipe".to_string(),
+        })
+    }
+
     fn save_scene(&mut self) -> Result<String, String> {
         let selected = {
             let selected = self.canvas.selected_members();
@@ -488,7 +515,7 @@ impl BrowserHost {
             }
         };
         let camera = self.canvas.camera();
-        let scene = SavedSceneV1 {
+        let scene = SavedSceneV2 {
             name: "Graphshell working scene".to_string(),
             selected,
             layout_strategy: Some(self.layout_id.clone()),
@@ -621,6 +648,12 @@ pub(super) fn update_product_semantics(
             set_select_value("handler-select", &host.handler_id)?;
             set_select_value("arrangement-select", &host.layout_id)?;
             set_select_value("face-select", &host.face)?;
+            set_select_value(
+                "item-role-select",
+                host.canvas
+                    .member_role(id)
+                    .map_or("recipe", |role| role.id()),
+            )?;
         }
         host.last_detail_member = member;
     }
@@ -712,6 +745,17 @@ pub(super) fn update_product_semantics(
         ),
         ("data-filter-count", host.filter_count.to_string()),
         ("data-layout", host.layout_id.clone()),
+        (
+            "data-arrangement-role",
+            host.canvas.arrangement_roles().default.id().to_string(),
+        ),
+        (
+            "data-item-role",
+            member
+                .and_then(|id| host.canvas.member_role(id))
+                .map_or("recipe", |role| role.id())
+                .to_string(),
+        ),
         (
             "data-physics-paused",
             host.canvas.physics_paused().to_string(),
@@ -878,6 +922,7 @@ fn sync_physics_controls(host: &BrowserHost) -> Result<(), String> {
         "profile-select",
         host.canvas.physics_profile_id().unwrap_or(""),
     )?;
+    set_select_value("role-select", host.canvas.arrangement_roles().default.id())?;
     Ok(())
 }
 

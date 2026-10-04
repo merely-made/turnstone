@@ -293,7 +293,7 @@ mod tests {
         FIXTURE_SCENE_ADDRESS, FIXTURE_WEB_ADDRESS, UNKNOWN_FIXTURE_FACET, fixture_handlers,
     };
     use crate::product::{
-        PINNED_PROJECTION_FACET, PinnedProjectionAuthorityV1, PinnedProjectionCardV1, SavedSceneV1,
+        PINNED_PROJECTION_FACET, PinnedProjectionAuthorityV1, PinnedProjectionCardV1, SavedSceneV2,
     };
 
     const SAVED_AT_SECS: u64 = 1_700_000_000;
@@ -703,7 +703,7 @@ mod tests {
             .1
             .id;
         selected_ids.push(access);
-        let scene = SavedSceneV1 {
+        let scene = SavedSceneV2 {
             name: "Identity and access".to_string(),
             selected: selected_ids.clone(),
             layout_strategy: Some("grid.default".to_string()),

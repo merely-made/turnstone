@@ -433,7 +433,9 @@ impl Product for TreeLane {
             // Arrangement roles (dynamics grammar plan, G7): the recipe's role
             // and how many settles Settled has recorded.
             .with_field("arrangement-role", canvas.arrangement_roles().default.id())
+            .with_field("panel-role", page.physics.role().id())
             .with_field("settles", canvas.settle_count().to_string())
+            .with_field("anchored-home", canvas.anchored_home_count().to_string())
             .with_field("physics-energy", canvas.physics_energy().to_string())
             .with_field(
                 "finite",
@@ -472,6 +474,13 @@ impl Product for TreeLane {
                 )
                 .with_field("detail-title", product.title.text())
                 .with_field("detail-tags", product.tags.text())
+                .with_field(
+                    "item-role",
+                    product
+                        .selected
+                        .and_then(|member| canvas.member_role(member))
+                        .map_or("recipe", |role| role.id()),
+                )
         } else {
             snapshot
         }

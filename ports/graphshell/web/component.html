@@ -216,6 +216,15 @@
             <button data-command="apply-arrangement">Arrange</button>
             <button data-command="toggle-physics">Pause physics</button>
           </div>
+          <label for="gs-role-select">Role</label>
+          <select id="gs-role-select">
+            <option value="seeded">Seeded</option>
+            <option value="anchored">Anchored</option>
+            <option value="pinned">Pinned</option>
+          </select>
+          <div class="button-row">
+            <button data-command="apply-role">Apply role</button>
+          </div>
           <label for="gs-physics-select">Physics</label>
           <select id="gs-physics-select"></select>
           <fieldset id="gs-physics-overlays" class="checks">
@@ -307,6 +316,15 @@
           <option value="sprite">Sprite</option>
         </select>
         <button data-command="apply-face">Use representation</button>
+
+        <label for="gs-item-role-select">Item role</label>
+        <select id="gs-item-role-select">
+          <option value="recipe">As recipe</option>
+          <option value="seeded">Seeded</option>
+          <option value="anchored">Anchored</option>
+          <option value="pinned">Pinned</option>
+        </select>
+        <button data-command="apply-item-role">Use role</button>
 
         <label for="gs-handler-select">Open handler</label>
         <select id="gs-handler-select">

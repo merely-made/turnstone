@@ -1,0 +1,29 @@
+# The old page's role selects (dynamics grammar plan, G7, F48): the recipe's
+# role under Arrangement, and the selected object's own role in its detail.
+assert title GRAPHSHELL H3 READY
+assert snap ready == true
+assert snap arrangement-role == seeded
+select #gs-role-select anchored
+dom click [data-command="apply-role"]
+settle 1
+assert snap arrangement-role == anchored
+assert dom #gs-product-status Role set to anchored
+dom click [data-command="open-detail"]
+settle 2
+assert snap item-role == recipe
+select #gs-item-role-select pinned
+dom click [data-command="apply-item-role"]
+settle 1
+assert snap item-role == pinned
+assert dom #gs-product-status Item role set to pinned
+capture role_controls_item_pinned
+wait
+select #gs-item-role-select recipe
+dom click [data-command="apply-item-role"]
+settle 1
+assert snap item-role == recipe
+select #gs-role-select seeded
+dom click [data-command="apply-role"]
+settle 1
+assert snap arrangement-role == seeded
+log old page role controls receipt complete

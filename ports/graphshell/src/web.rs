@@ -61,7 +61,7 @@ use graphshell::capture::{
 use graphshell::mere_host::{
     FIXTURE_DEVICE_TWO_ADDRESS, FIXTURE_PERSONA_ADDRESS, FIXTURE_WEB_ADDRESS, SelectedPersonaRef,
 };
-use graphshell::product::{RelationFamilyFilter, SavedSceneV1};
+use graphshell::product::{RelationFamilyFilter, SavedSceneV2};
 use graphshell::projection_editor::{
     Appearance, Channel, EditorAction, Encoding, Interaction, ProjectionDefinition,
     ProjectionDefinitionSink, ProjectionDraft, ProjectionEditor, ProjectionPanel, Provenance,
@@ -182,7 +182,7 @@ struct BrowserHost {
     last_export: String,
     export_bytes: usize,
     imported_nodes: usize,
-    saved_scene: Option<SavedSceneV1>,
+    saved_scene: Option<SavedSceneV2>,
     arrangement_transition: Option<graphshell::canvas_physics::ArrangementTransition>,
     primary_member: Option<Uuid>,
     last_detail_member: Option<Uuid>,

@@ -493,7 +493,7 @@ fn keys(page: &mut TreePage, key: &Key) -> bool {
     if let Some(product) = &mut page.product {
         match key {
             Key::Named(NamedKey::Enter) if product.selected.is_some() => {
-                product.detail_open = true;
+                product.open_detail(&page.shared.canvas.borrow());
                 return true;
             },
             Key::Named(NamedKey::Escape) if product.detail_open => {
