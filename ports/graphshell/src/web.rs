@@ -29,6 +29,7 @@ mod web_practice;
 mod web_remote;
 mod web_rtc_link;
 mod web_scenario;
+mod web_speed;
 mod web_timing;
 mod web_tree;
 mod web_view;
@@ -146,6 +147,8 @@ struct BrowserHost {
     /// `layout_stats` is a pairwise pass over every node; recompute it only
     /// on motion, one frame past rest, and on a chrome change.
     layout_stats_stale: bool,
+    /// The speed reached, shown under the speed select while the budget binds.
+    reached_note: web_speed::ReachedNote,
     layout_moved: bool,
     layout_stats: mere::canvas::LayoutStats,
     /// Screen px where the last `drag-focused` released, for `data-drag-return`.
@@ -1811,6 +1814,7 @@ async fn run(root_element: Element) -> Result<(), String> {
         None => app.host.graph().clone(),
     };
     let mut graph_canvas = web_graphs::prepared_canvas(canvas_graph, width, height);
+    web_speed::apply(&mut graph_canvas, web_speed::options()?);
     let physics_paused = graph_canvas.physics_paused();
     graph_canvas.select_by_url(FIXTURE_WEB_ADDRESS);
     let primary_member = graph_canvas.focused_member();
@@ -1860,6 +1864,7 @@ async fn run(root_element: Element) -> Result<(), String> {
         remote: RemoteLink::Fixture(remote),
         remote_board: RemoteBoard::new(),
         layout_stats_stale: true,
+        reached_note: web_speed::ReachedNote::default(),
         layout_moved: false,
         layout_stats: mere::canvas::LayoutStats::default(),
         drag_drop: None,

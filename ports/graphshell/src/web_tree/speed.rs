@@ -1,73 +1,24 @@
 // Copyright 2026 Mark Alan Boykin
 // SPDX-License-Identifier: MPL-2.0
 
-//! The speed dial on the tree page: the `physics_speed` and
-//! `physics_budget_ms` page options, the browser clock the budget is measured
-//! on, and the window of recent frames the receipts read (did the drawing
-//! move, did the simulation step, what did stepping cost).
+//! The speed dial's receipts on the tree page: the window of recent frames
+//! they read (did the drawing move, did the simulation step, what did
+//! stepping cost). The options, the clock and the presets are
+//! [`crate::web_speed`]'s, shared with the main page.
 
 use std::collections::VecDeque;
 use std::time::Duration;
 
-use mere::canvas::{Canvas, Speed, StepBudget};
+use mere::canvas::Canvas;
 use mere::kernel::graph::NodeKey;
 use taproot::ProbeSnapshot;
 
 use super::Shared;
-use crate::web_timing::now_ms;
 
-/// The budget a frame's ticks above real time may spend unless the page asks
-/// otherwise: half a 60 Hz frame. Provisional, put to Mark with the control.
-const DEFAULT_BUDGET_MS: f64 = 8.0;
 /// Frames the receipts' window holds.
 const WINDOW: usize = 30;
 /// Nodes whose drawn positions stand for the drawing.
 const SAMPLE: usize = 8;
-
-#[derive(Clone, Copy, Debug)]
-pub(super) struct SpeedOptions {
-    pub(super) speed: Speed,
-    pub(super) budget: Duration,
-    /// The page asked for a speed or a budget: log the pace into the receipt.
-    explicit: bool,
-}
-
-pub(super) fn options() -> Result<SpeedOptions, String> {
-    let search = web_sys::window()
-        .ok_or("no window")?
-        .location()
-        .search()
-        .map_err(|_| "cannot read page options")?;
-    let params =
-        web_sys::UrlSearchParams::new_with_str(&search).map_err(|_| "invalid page options")?;
-    let speed = match params.get("physics_speed") {
-        Some(value) => Speed::from_factor(value.parse().map_err(|_| "invalid physics_speed")?),
-        None => Speed::REAL_TIME,
-    };
-    let budget_ms = match params.get("physics_budget_ms") {
-        Some(value) => value.parse().map_err(|_| "invalid physics_budget_ms")?,
-        None => DEFAULT_BUDGET_MS,
-    };
-    Ok(SpeedOptions {
-        speed,
-        budget: Duration::from_secs_f64(f64::max(budget_ms, 0.0) / 1000.0),
-        explicit: params.has("physics_speed") || params.has("physics_budget_ms"),
-    })
-}
-
-fn clock() -> Duration {
-    Duration::from_secs_f64(now_ms().max(0.0) / 1000.0)
-}
-
-/// Give the canvas the page's speed and a budget on the browser clock.
-pub(super) fn apply(canvas: &mut Canvas, options: SpeedOptions) {
-    canvas.set_physics_speed(options.speed);
-    canvas.set_physics_step_budget(Some(StepBudget {
-        per_frame: options.budget,
-        clock,
-    }));
-}
-
 /// Pace lines a dial run writes into the receipt, at most.
 const LOG_LINES: usize = 40;
 

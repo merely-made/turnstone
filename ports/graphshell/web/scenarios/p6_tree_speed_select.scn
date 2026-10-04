@@ -1,0 +1,35 @@
+# Seiche's speed dial through Graph tools' Speed picker (physics catalog plan,
+# ruled 2026-10-04, "Speed select"): 1x by default; 50x applies when chosen,
+# and on tree.html?nodes=300&seed=7&links=none&gpu=off, too large for fifty
+# CPU ticks in the 8 ms budget, the speed reached shows beneath the picker;
+# back at 1x the budget no longer binds.
+assert snap ready == true
+assert snap physics-speed == 1
+click role:button Play physics
+settle 2
+assert snap physics-paused == false
+click role:combobox Arrangement
+settle 1
+click role:option Free (physics alone)
+settle 1
+click role:button Apply arrangement
+settle 1
+assert snap layout == free
+click role:combobox Speed
+settle 1
+click role:option 50x
+settle 2
+assert snap physics-speed == 50
+assert text Speed set to 50x
+settle 40
+assert snap physics-budget-bound == true
+assert text Running at
+assert text the frame budget is full
+capture p6_tree_speed_select_bound
+click role:combobox Speed
+settle 1
+click role:option 1x
+settle 4
+assert snap physics-speed == 1
+assert snap physics-budget-bound == false
+log p6 speed select receipt complete

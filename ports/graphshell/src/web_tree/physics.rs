@@ -37,6 +37,11 @@ pub(super) struct PhysicsPanel {
     pub(super) transition: Option<ArrangementTransition>,
     /// The layout where the last law was applied.
     pub(super) law_start: Option<LawStart>,
+    /// The speed preset picked, the one the canvas runs, and the note on the
+    /// speed reached while the budget binds.
+    pub(super) speed: SelectState,
+    pub(super) applied_speed: usize,
+    pub(super) speed_note: Option<String>,
 }
 
 fn index_of<T: PartialEq>(items: impl IntoIterator<Item = T>, item: T) -> usize {
@@ -66,6 +71,9 @@ impl PhysicsPanel {
             status: String::new(),
             transition: None,
             law_start: None,
+            speed: SelectState::new(crate::web_speed::preset_of(canvas)).with_label("Speed"),
+            applied_speed: crate::web_speed::preset_of(canvas),
+            speed_note: None,
         };
         panel.sync(canvas);
         panel
@@ -136,6 +144,11 @@ impl PhysicsPanel {
             .join(",")
     }
 
+    /// Whether the speed picker names a preset the canvas does not run yet.
+    pub(super) fn speed_pending(&self) -> bool {
+        self.speed.selected != self.applied_speed
+    }
+
     /// The law the picker names (applied or not).
     pub(super) fn picked_law(&self) -> PhysicsLaw {
         PhysicsLaw::ALL[self.law.selected.min(PhysicsLaw::ALL.len() - 1)]
@@ -176,6 +189,15 @@ impl TreePage {
         self.physics.law_start = Some(LawStart::of(&canvas));
         self.physics.status = canvas_physics::apply_physics(&mut canvas, &choice);
         self.physics.sync(&canvas);
+        self.shared.dirty.set(true);
+    }
+
+    /// The picked speed, applied when chosen (ruled 2026-10-04, "Speed select").
+    pub(super) fn apply_speed(&mut self) {
+        let index = self.physics.speed.selected;
+        let mut canvas = self.shared.canvas.borrow_mut();
+        self.physics.status = crate::web_speed::choose(&mut canvas, index);
+        self.physics.applied_speed = index;
         self.shared.dirty.set(true);
     }
 
@@ -278,6 +300,18 @@ fn overlay_group(page: &TreePage) -> Child {
     }
 }
 
+/// The speed reached, beneath the speed picker, while the budget binds.
+fn speed_note(page: &TreePage) -> Child {
+    match &page.physics.speed_note {
+        Some(note) => Box::new(
+            el("p", note.clone())
+                .attr("class", "tools-note")
+                .attr("role", "status"),
+        ),
+        None => Box::new(el("span", "").attr("hidden", "")),
+    }
+}
+
 /// The "Graph tools" region's arrangement and physics section.
 pub(super) fn section(page: &TreePage) -> Child {
     let profiles: Vec<&'static str> = std::iter::once(CUSTOM_LABEL)
@@ -310,6 +344,15 @@ pub(super) fn section(page: &TreePage) -> Child {
             &mut page.physics.depth
         }),
         apply("Apply physics", TreePage::apply_physics),
+        picker(
+            "Speed",
+            crate::web_speed::PRESETS
+                .iter()
+                .map(|(_, label)| *label)
+                .collect(),
+            |page| &mut page.physics.speed,
+        ),
+        speed_note(page),
         picker("Profile", profiles, |page| &mut page.physics.profile),
         apply("Apply profile", TreePage::apply_profile),
         Box::new(

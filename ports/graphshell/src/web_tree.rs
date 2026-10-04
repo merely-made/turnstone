@@ -120,8 +120,10 @@ struct Shared {
     timing: RefCell<FrameTiming>,
     physics_config: mere::canvas::ElapsedStepConfig,
     /// The page's simulation speed and budget, and the frames the receipts read.
-    speed: speed::SpeedOptions,
+    speed: crate::web_speed::SpeedOptions,
     pace: RefCell<speed::PaceWindow>,
+    /// The speed reached, under the speed picker while the budget binds.
+    reached: RefCell<crate::web_speed::ReachedNote>,
     gpu_options: controls::GpuOptions,
     /// The page's device for the canvas's and the board's repulsion, built
     /// once from the host's render core on the producer's first frame.
@@ -611,8 +613,9 @@ async fn boot(root: Element) -> Result<(), String> {
         gpu: RefCell::new(None),
         timing: RefCell::new(FrameTiming::default()),
         physics_config: controls::physics_config()?,
-        speed: speed::options()?,
+        speed: crate::web_speed::options()?,
         pace: RefCell::new(speed::PaceWindow::default()),
+        reached: RefCell::new(crate::web_speed::ReachedNote::default()),
         gpu_options: controls::gpu_options()?,
         physics_device: RefCell::new(None),
         visibility: visibility::requested()?,
@@ -624,7 +627,7 @@ async fn boot(root: Element) -> Result<(), String> {
         remote: Rc::new(RefCell::new(remote::TreeRemote::new())),
         remote_shown: Cell::new(false),
     });
-    speed::apply(&mut shared.canvas.borrow_mut(), shared.speed);
+    crate::web_speed::apply(&mut shared.canvas.borrow_mut(), shared.speed);
     visibility::install(&shared, &document)?;
     let options = HostOptions {
         title: "Graphshell, one tree".into(),
@@ -736,6 +739,18 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
                 || frame_shared.canvas.borrow().has_stop_return()
             {
                 ctx.runner.update(|page| page.advance_arrangement(now_ms()));
+            }
+            // The speed picker applies when chosen ("Speed select"), and the
+            // speed reached shows beneath it while the budget binds.
+            if ctx.runner.state().physics.speed_pending() {
+                ctx.runner.update(TreePage::apply_speed);
+            }
+            let (note, changed) = frame_shared
+                .reached
+                .borrow_mut()
+                .update(&frame_shared.canvas.borrow());
+            if changed {
+                ctx.runner.update(|page| page.physics.speed_note = note);
             }
             let size = (
                 ctx.logical_size.0.round().max(1.0) as u32,

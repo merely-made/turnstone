@@ -183,6 +183,12 @@ pub(super) fn install_events(state: &Rc<RefCell<BrowserHost>>) -> Result<(), Str
             let _ = super::web_product::sync_overlay_availability();
             return;
         }
+        if select.id() == "gs-speed-select" {
+            let mut host = change_state.borrow_mut();
+            host.run_command("choose-speed");
+            let _ = update_semantics(&mut host);
+            return;
+        }
         let Some(field) = select.get_attribute("data-action-draft-field") else {
             return;
         };
