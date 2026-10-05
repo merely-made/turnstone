@@ -502,7 +502,9 @@ impl BrowserHost {
                 mere::canvas::Role::parse(other).ok_or_else(|| format!("unknown role {other}"))?,
             ),
         };
-        self.canvas.set_member_role(member, role);
+        if !self.canvas.set_member_role(member, role) {
+            return Err("Item role refused: the item does not permit it".into());
+        }
         Ok(match role {
             Some(role) => format!("Item role set to {}", role.id()),
             None => "Item role follows the recipe".to_string(),
