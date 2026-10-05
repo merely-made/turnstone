@@ -6,16 +6,16 @@
 //! presets from 0.2x to 50x and Max in the physics section, 1x by default,
 //! applied when chosen, with the speed reached shown while the layout moves.
 //! The step budget is [`graphshell::frame_budget`]'s, half the display's
-//! frame period at most 1/60 s; here its gate keeps two of the browser
-//! clock's 100 us steps past the forecast tick (ruled 2026-10-04, "Gate keeps
-//! a forecast margin"). Also the `physics_speed`, `physics_budget_share` and
+//! frame period as the page's frame intervals show it, at most 1/60 s; here
+//! its gate keeps two of the browser clock's 100 us steps past the forecast
+//! tick (ruled 2026-10-04, "Gate keeps a forecast margin"). Also the `physics_speed`, `physics_budget_share` and
 //! `physics_budget_margin_us` page options and the browser clock the budget
 //! is measured on.
 
 use std::time::Duration;
 
-pub(crate) use graphshell::frame_budget::FrameBudget;
-use mere::canvas::{Canvas, Speed};
+pub(crate) use graphshell::frame_budget::{FrameBudget, Period};
+use mere::canvas::{Canvas, DEFAULT_BUDGET_SHARE, Speed};
 
 use crate::web_timing::now_ms;
 
@@ -34,12 +34,10 @@ pub(crate) const PRESETS: [(&str, &str); 8] = [
 pub(crate) const DEFAULT_PRESET: usize = 2;
 const MAX_VALUE: &str = "max";
 
-/// The share of the display's frame a frame's ticks above real time may
-/// spend unless the page asks otherwise (ruled 2026-10-04: 50%).
-const DEFAULT_BUDGET_SHARE: f64 = 0.5;
 /// The browser clock's step: Chrome's `performance.now` resolves 100 us on a
 /// page that is not cross-origin isolated.
 pub(crate) const CLOCK_GRAIN_US: u64 = 100;
+pub(crate) const CLOCK_GRAIN: Duration = Duration::from_micros(CLOCK_GRAIN_US);
 /// Time the gate keeps past the forecast tick unless the page asks
 /// otherwise: two clock steps. A tick and its forecast are both read in
 /// steps, so a tick the forecast saw at one reading can read two steps
@@ -105,6 +103,24 @@ pub(crate) fn options() -> Result<SpeedOptions, String> {
 
 pub(crate) fn clock() -> Duration {
     Duration::from_secs_f64(now_ms().max(0.0) / 1000.0)
+}
+
+/// The page's frame budget: its share and margin, on the browser clock.
+pub(crate) fn frame_budget(options: SpeedOptions) -> FrameBudget {
+    FrameBudget::new(options.share, options.margin, clock, CLOCK_GRAIN)
+}
+
+/// Where the display period came from, for the receipts: "inferred" or
+/// "fallback", and how far the worst interval sat from its multiple (the
+/// nearest candidate's, when none fitted), in ms.
+pub(crate) fn period_fields(budget: &FrameBudget) -> (&'static str, String) {
+    match budget.period() {
+        Period::Inferred { residual_ms, .. } => ("inferred", format!("{residual_ms:.3}")),
+        Period::Fallback { nearest_ms, .. } => (
+            "fallback",
+            nearest_ms.map_or_else(|| "none".into(), |ms| format!("{ms:.3}")),
+        ),
+    }
 }
 
 /// Give the canvas the page's speed and its first budget.

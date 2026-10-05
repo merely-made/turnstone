@@ -206,8 +206,8 @@ impl TextureProducer for CanvasProducer {
             canvas.resize(size.0, size.1);
             shared.size.set(size);
         }
-        // The step budget is a share of the page's measured frame interval
-        // (ruled 2026-10-04, "Target + Max, budget as frame share").
+        // The step budget is a share of the display's period, read from the
+        // frames' intervals (ruled 2026-10-04, "Infer the period").
         let frame_ms = cx
             .frame
             .timestamp
@@ -642,11 +642,7 @@ async fn boot(root: Element) -> Result<(), String> {
         speed: speed_options,
         pace: RefCell::new(speed::PaceWindow::default()),
         reached: RefCell::new(crate::web_speed::ReachedNote::default()),
-        frame_budget: RefCell::new(crate::web_speed::FrameBudget::new(
-            speed_options.share,
-            speed_options.margin,
-            crate::web_speed::clock,
-        )),
+        frame_budget: RefCell::new(crate::web_speed::frame_budget(speed_options)),
         gpu_options: controls::gpu_options()?,
         physics_device: RefCell::new(None),
         visibility: visibility::requested()?,

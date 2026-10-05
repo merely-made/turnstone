@@ -59,8 +59,8 @@ pub(super) fn record(shared: &Shared, canvas: &Canvas, moving: bool, budget: Dur
     let frame_budget = shared.frame_budget.borrow();
     shared.physics_log.borrow_mut().push(format!(
         "pace: speed {} effective {} bound {} ticks {} over {} frames drawn-moved {} \
-         stepped {} compute-max {} us over-budget-max {} us budget {} us ({} of a {:.1} ms \
-         display period; last frame {:.1} ms) margin {} us; every window: worst {} us, \
+         stepped {} compute-max {} us over-budget-max {} us budget {} us ({} of a {:.2} ms \
+         display period, {} {}; last frame {:.1} ms) margin {} us; every window: worst {} us, \
          {} frames past the grain",
         crate::web_speed::field(canvas.physics_speed()),
         pace.effective_speed
@@ -75,6 +75,8 @@ pub(super) fn record(shared: &Shared, canvas: &Canvas, moving: bool, budget: Dur
         budget.as_micros(),
         frame_budget.share(),
         frame_budget.display_period_ms(),
+        crate::web_speed::period_fields(&frame_budget).0,
+        crate::web_speed::period_fields(&frame_budget).1,
         frame_budget.last_interval_ms(),
         frame_budget.margin().as_micros(),
         window.worst_field(),
@@ -177,16 +179,30 @@ pub(super) fn pace_line(label: &str, canvas: &Canvas, shared: &Shared) -> String
     let window = shared.pace.borrow();
     let frame_budget = shared.frame_budget.borrow();
     format!(
-        "pace {label}: speed {} budget {} us margin {} us display period {:.1} ms; every \
-         window: {} frames above real time, worst {} us over budget, {} past the grain",
+        "pace {label}: speed {} budget {} us margin {} us display period {:.3} ms ({}, worst \
+         interval {} ms off its multiple); every window: {} frames above real time, worst {} us \
+         over budget, {} past the grain",
         crate::web_speed::field(canvas.physics_speed()),
         frame_budget.budget().per_frame.as_micros(),
         frame_budget.margin().as_micros(),
         frame_budget.display_period_ms(),
+        crate::web_speed::period_fields(&frame_budget).0,
+        crate::web_speed::period_fields(&frame_budget).1,
         window.above,
         window.worst_field(),
         window.over_grain,
     )
+}
+
+/// `log-intervals <label>`: the recent frame intervals the display period is
+/// read from, for a diagnostic to fit offline.
+pub(super) fn intervals_line(label: &str, shared: &Shared) -> String {
+    let frame_budget = shared.frame_budget.borrow();
+    let intervals: Vec<String> = frame_budget
+        .intervals()
+        .map(|ms| format!("{ms:.3}"))
+        .collect();
+    format!("intervals {label}: {}", intervals.join(" "))
 }
 
 /// The dial's fields on the lane's snapshot.
@@ -213,7 +229,11 @@ pub(super) fn fields(snapshot: ProbeSnapshot, canvas: &Canvas, shared: &Shared) 
         .with_field("physics-budget-share", frame_budget.share().to_string())
         .with_field(
             "display-period-ms",
-            format!("{:.1}", frame_budget.display_period_ms()),
+            format!("{:.2}", frame_budget.display_period_ms()),
+        )
+        .with_field(
+            "display-period-source",
+            crate::web_speed::period_fields(&frame_budget).0,
         )
         .with_field(
             "frame-interval-ms",

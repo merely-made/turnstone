@@ -719,7 +719,13 @@ pub(super) fn update_product_semantics(
         ),
         (
             "data-display-period-ms",
-            format!("{:.1}", host.frame_budget.display_period_ms()),
+            format!("{:.2}", host.frame_budget.display_period_ms()),
+        ),
+        (
+            "data-display-period-source",
+            crate::web_speed::period_fields(&host.frame_budget)
+                .0
+                .to_string(),
         ),
         (
             "data-frame-interval-ms",

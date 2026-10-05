@@ -639,6 +639,13 @@ impl Product for TreeLane {
                 self.shared.physics_log.borrow_mut().push(line);
                 Ok(())
             },
+            // `log-intervals <label>`: the frame intervals the display
+            // period is read from, into the receipt.
+            "log-intervals" => {
+                let line = super::speed::intervals_line(rest.trim(), &self.shared);
+                self.shared.physics_log.borrow_mut().push(line);
+                Ok(())
+            },
             // `set-zoom <z>`: the zoom exactly, about the canvas centre.
             "set-zoom" => {
                 let zoom = rest.trim().parse().map_err(|_| "set-zoom wants a number")?;

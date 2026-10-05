@@ -1,0 +1,24 @@
+# Diagnostic, not a receipt: the frame intervals the display period is read
+# from (physics catalog plan, 2026-10-04, "Infer the period"), logged four
+# times while the layout moves, to fit offline. Run on the 300-node page
+# (?nodes=300&seed=7&links=none&gpu=off&physics_speed=max) and on a light
+# one (?nodes=24&seed=7&links=none&gpu=off&physics_speed=max).
+assert snap ready == true
+click role:button Play physics
+settle 2
+click role:combobox Arrangement
+settle 1
+click role:option Free (physics alone)
+settle 1
+click role:button Apply arrangement
+settle 6
+log-pace first
+log-intervals first
+settle 6
+log-intervals second
+settle 6
+log-intervals third
+settle 6
+log-pace fourth
+log-intervals fourth
+log diag display period complete
