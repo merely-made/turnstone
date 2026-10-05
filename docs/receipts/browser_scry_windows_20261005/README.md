@@ -41,6 +41,15 @@ construction and later visibility do not close continued presentation.
 composition and event-delivery boundary needs correlated image evidence before
 assigning a backend root cause.
 
+Supplier review identifies a concrete Scry 0.7.1 freshness defect: its capture
+notification consumer marks all arrivals seen, but dequeues one sample from a
+two-slot pool. If no further frame arrives, a newer queued sample can remain
+unread. A supplier-local fix must drain the bounded pool and retain its newest
+sample while closing superseded frames. This finding is consistent with stale
+pixels, but does not prove the cause of all blank captures. This receipt still
+consumes published 0.7.1; a supplier source fix or pure queue test cannot change
+its native acceptance result.
+
 Latest locked all-target checks pass with default features and with `scry,weld`
 (`default-check-final.log`, `combined-check-complete.log`). The current clipped
 source passes all 18 Workbench tests, including independent graph selection
