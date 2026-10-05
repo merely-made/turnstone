@@ -20,8 +20,22 @@ name = "graphshell_web"
 crate-type = ["cdylib"]
 path = "../src/web.rs"
 
+# The viewer cone (mer3ly site canvas plan, Rulings 109-110): every feature is
+# additive and on by default, so the default build is the full page. The viewer
+# is `--no-default-features`, with or without `canvas-gpu`.
 [features]
-default = ["image-decode"]
+default = ["main-page", "product", "remote", "canvas-gpu", "image-decode"]
+# The H5 reference host and its `mount` export (`src/web_main.rs`). It drives
+# the product modules and the remote link, so it needs both.
+main-page = ["product", "remote"]
+# What a page saves: IndexedDB, saved scenes, the tree's product mode,
+# `web_product` and `web_practice`.
+product = ["muniment/indexeddb", "dep:sha2"]
+# The WebRTC door and the remote board: `web_remote`, `web_rtc_link`, the tree's
+# remote board.
+remote = ["graphshell/webrtc-browser", "dep:futures-channel", "dep:futures-util"]
+# The canvas's repulsion on the page's own WebGPU device (physics catalog P5c).
+canvas-gpu = ["graphshell/canvas-gpu", "mere/canvas-gpu"]
 # Forwards genet-livery's image decoding (mer3ly Ruling 111); on by default.
 image-decode = ["genet-render/image-decode", "taproot/image-decode", "cambium-rootstock/image-decode", "mesquite/image-decode", "cambium-genet-web-host/image-decode", "graphshell/image-decode", "mere/image-decode"]
 
@@ -30,14 +44,12 @@ image-decode = ["genet-render/image-decode", "taproot/image-decode", "cambium-ro
 # and needs `--cfg getrandom_backend="wasm_js"` in this target's rustflags:
 # personae's wasm32 identity stack sits on getrandom 0.3, whose `wasm_js`
 # feature is inert without the cfg. The cfg is committed in .cargo/config.toml.
-graphshell = { path = "..", default-features = false, features = ["web", "webrtc-browser", "canvas-gpu"] }
-# `canvas-gpu`: the canvas's repulsion on the page's own WebGPU device
-# (physics catalog plan, P5c).
-mere = { path = "../../../crates/mere", default-features = false, features = ["graph", "canvas", "canvas-gpu"] }
+graphshell = { path = "..", default-features = false, features = ["web"] }
+mere = { path = "../../../crates/mere", default-features = false, features = ["graph", "canvas"] }
 # `indexeddb` supplies the browser realization of muniment's byte-store seam,
 # which this crate hands to `GraphshellApp` as its backend. It lived here until
 # the duplicate showed up; muniment owns the backend family, so it owns this.
-muniment = { path = "../../../crates/eidetic/muniment", features = ["indexeddb"] }
+muniment = { path = "../../../crates/eidetic/muniment" }
 graphshell-client = { path = "../../../crates/graphshell/graphshell-client" }
 sceno = { path = "../../../crates/cambium/scenes/sceno" }
 scenotime = { path = "../../../crates/cambium/scenes/scenotime" }
@@ -68,9 +80,9 @@ netrender_device = { git = "https://github.com/merely-made/netrender.git", rev =
 serde_json = "1"
 # The remote link's outbound queue: the host enqueues lines synchronously,
 # a task drains them onto the channel.
-futures-channel = "0.3"
-futures-util = { version = "0.3", default-features = false }
-sha2 = "0.11"
+futures-channel = { version = "0.3", optional = true }
+futures-util = { version = "0.3", default-features = false, optional = true }
+sha2 = { version = "0.11", optional = true }
 uuid = { version = "1", features = ["serde", "v4"] }
 wasm-bindgen = "=0.2.129"
 wasm-bindgen-futures = "0.4"
