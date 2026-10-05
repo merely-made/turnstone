@@ -24,7 +24,7 @@ use graphshell::{
     },
     projection_editor::{Channel, ProjectionDefinition, SourceBinding},
 };
-use mere::canvas::{Axes, BoardItem, PhysicsBoard};
+use mere::canvas::{ArrangementAction, Axes, BoardItem, PermittedActions, PhysicsBoard};
 use netrender::{Scene, ScenePath, Transform};
 use serde::{Deserialize, Serialize};
 use std::{
@@ -290,6 +290,7 @@ impl PracticeHost {
         if !self.workspace.runtime().physics_enabled {
             self.board = PhysicsBoard::new();
         }
+        self.sync_permitted();
         self.board.set_encoded_axes(encoded_axes(&self.definition));
         self.board.sync(items);
         if !self.workspace.runtime().physics_enabled {
@@ -297,6 +298,17 @@ impl PracticeHost {
         }
         self.clock_ms = None;
         self.accumulator_ms = 0.0;
+    }
+
+    /// With motion off the board withdraws drag, so a still board holds its
+    /// cards; the pointer reads the board's advertisement (G9).
+    fn sync_permitted(&mut self) {
+        self.board
+            .set_permitted_actions(if self.workspace.runtime().physics_enabled {
+                PermittedActions::all()
+            } else {
+                PermittedActions::without(ArrangementAction::Drag)
+            });
     }
 
     pub(super) fn command(&mut self, command: &str) -> Result<(), String> {
@@ -370,6 +382,8 @@ impl PracticeHost {
                     if enabled {
                         self.sync_slots(self.extent.0, self.extent.1);
                     } else {
+                        // Withdrawing drag ends one under way, as a release.
+                        self.sync_permitted();
                         self.board.halt();
                         self.dragging = None;
                     }
@@ -1212,7 +1226,9 @@ pub(super) fn install(state: &Rc<RefCell<BrowserHost>>) -> Result<(), String> {
                 return;
             };
             if phase == "pointerdown" {
-                if event.button() != 0 || !practice.workspace.runtime().physics_enabled {
+                // Whether the card may move is the board's advertisement,
+                // which `drag_start` reads (G9).
+                if event.button() != 0 {
                     return;
                 }
                 let Some(target) = event.target().and_then(|t| t.dyn_into::<Element>().ok()) else {
