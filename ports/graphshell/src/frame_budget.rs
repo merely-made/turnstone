@@ -4,15 +4,18 @@
 //! The step budget both web pages give the canvas and the remote board: a
 //! share of the display's frame period (physics catalog plan, ruled
 //! 2026-10-04, "The display's frame"). A browser does not say its display's
-//! rate, but a page's frames start on the display's refreshes, so every
-//! interval between them is a whole number of periods: the period is the
-//! largest between 1/360 s and 1/60 s that every recent interval is a whole
-//! multiple of, within the clock's grain ("Infer the period"). Taken from the
-//! intervals, not their length, it does not grow when physics slows the
-//! page. When nothing fits, the shortest recent interval stands in, never
-//! longer than 1/60 s ("Known rate, else capped"). The page passes its clock,
-//! that clock's grain, and the margin its gate keeps ("Gate keeps a forecast
-//! margin").
+//! rate, but a page's frames start on the display's refreshes, so the
+//! intervals between them are whole numbers of periods ("Infer the period").
+//! Read from the intervals, not their length, it does not grow when physics
+//! slows the page. Real intervals stray: some frames near a page's start
+//! land off any multiple, steady ones scatter by two clock steps, a display
+//! can switch or vary its rate. So the period is the largest in
+//! [1/360 s, 1/60 s] that three quarters of the last 40 intervals fit within
+//! two clock steps and the refresh jitter, taken up to a multiple of itself
+//! when that multiple keeps most of the fit, so a fraction of the period is
+//! never read; where no period fits, the 1/60 s cap ("Both machines +
+//! planted", 2026-10-05). The page passes its clock, that clock's grain, and
+//! the margin its gate keeps ("Gate keeps a forecast margin").
 
 use std::collections::VecDeque;
 use std::time::Duration;
@@ -27,22 +30,39 @@ pub const MIN_PERIOD_MS: f64 = 1000.0 / 360.0;
 /// A gap longer than this between frames is a hidden or suspended page, not a
 /// frame, and is not taken in.
 const GAP_MS: f64 = 1000.0;
-/// The recent intervals the period is read from: about two seconds at 60 Hz,
-/// half a second at 240 Hz.
+/// The intervals kept, for the diagnostics that log them.
 const RECENT_INTERVALS: usize = 120;
+/// The most recent intervals the period is read from: a quarter of a second
+/// at 165 Hz, two thirds at 60 Hz, longer on a page that misses refreshes,
+/// short enough that a page's start or a display's switch soon ages out.
+const ESTIMATE_INTERVALS: usize = 40;
+/// Intervals needed before a period is read at all.
+const MIN_INTERVALS: usize = 12;
+/// The share of intervals a period must fit.
+const QUORUM: f64 = 0.75;
+/// A multiple of the period found is taken instead when it keeps this much
+/// of the fit (and fits half the intervals): every multiple of the true
+/// period is a multiple of its half too, so a half that narrowly clears the
+/// quorum where the period narrowly misses it is lifted back.
+const KEEP: f64 = 0.85;
+const KEEP_FLOOR: f64 = 0.5;
+/// How far an interval may sit from a multiple and still fit: each of its
+/// two timestamps within a clock step, plus the refresh's own jitter.
+const JITTER_MS: f64 = 0.1;
+/// The shortest distinct intervals the candidate periods are drawn from.
+const CANDIDATE_INTERVALS: usize = 8;
 /// How far past its bounds a fitted period may fall and be taken as the
 /// bound: a 60 Hz panel's measured period can read a hair over 1/60 s.
-const BOUND_SLACK: f64 = 0.01;
+const BOUND_SLACK: f64 = 0.02;
 
 /// Where the display period came from.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Period {
-    /// Every recent interval is a whole multiple of `ms`, the worst within
-    /// `residual_ms` of its multiple.
-    Inferred { ms: f64, residual_ms: f64 },
-    /// No period fitted: the shortest recent interval at most 1/60 s, or 1/60 s
-    /// before any interval. `nearest_ms` is how close the best candidate came.
-    Fallback { ms: f64, nearest_ms: Option<f64> },
+    /// `fit` of the recent intervals are whole multiples of `ms`.
+    Inferred { ms: f64, fit: f64 },
+    /// No period fitted the quorum: the 1/60 s cap. `nearest` is the best
+    /// share a candidate reached, if any was tried.
+    Fallback { ms: f64, nearest: Option<f64> },
 }
 
 impl Period {
@@ -79,7 +99,7 @@ impl FrameBudget {
             last_ms: None,
             period: Period::Fallback {
                 ms: MAX_PERIOD_MS,
-                nearest_ms: None,
+                nearest: None,
             },
         }
     }
@@ -93,7 +113,9 @@ impl FrameBudget {
                     self.intervals.pop_front();
                 }
                 self.intervals.push_back(interval);
-                self.period = period_of(&self.intervals, self.grain_ms);
+                let recent = self.intervals.len().saturating_sub(ESTIMATE_INTERVALS);
+                let recent: Vec<f64> = self.intervals.iter().skip(recent).copied().collect();
+                self.period = period_of(&recent, self.grain_ms);
             }
         }
         self.last_ms = Some(now_ms);
@@ -137,54 +159,109 @@ impl FrameBudget {
     }
 }
 
-/// The largest period in bounds that every interval is a whole multiple of
-/// within `grain_ms`, tried at the shortest interval divided by 1, 2, 3, ...
-/// and refined over all of them; else the fallback.
-fn period_of(intervals: &VecDeque<f64>, grain_ms: f64) -> Period {
-    let Some(shortest) = intervals.iter().copied().reduce(f64::min) else {
-        return Period::Fallback {
-            ms: MAX_PERIOD_MS,
-            nearest_ms: None,
-        };
+/// The largest period in bounds that [`QUORUM`] of `intervals` fit, from
+/// candidates at the shortest intervals over 1, 2, 3, ..., each refined over
+/// the intervals near its multiples, then lifted to a multiple that keeps the
+/// fit; else the 1/60 s cap.
+fn period_of(intervals: &[f64], grain_ms: f64) -> Period {
+    let fallback = |nearest| Period::Fallback {
+        ms: MAX_PERIOD_MS,
+        nearest,
     };
-    let first = (shortest / (MAX_PERIOD_MS * (1.0 + BOUND_SLACK)))
-        .ceil()
-        .max(1.0) as u32;
-    let last = (shortest / (MIN_PERIOD_MS * (1.0 - BOUND_SLACK))).floor() as u32;
+    if intervals.len() < MIN_INTERVALS {
+        return fallback(None);
+    }
+    let tolerance = 2.0 * grain_ms + JITTER_MS;
+    let (low, high) = (
+        MIN_PERIOD_MS * (1.0 - BOUND_SLACK),
+        MAX_PERIOD_MS * (1.0 + BOUND_SLACK),
+    );
+    let mut shortest: Vec<f64> = intervals
+        .iter()
+        .map(|&i| (i / grain_ms).round() * grain_ms)
+        .collect();
+    shortest.sort_by(f64::total_cmp);
+    shortest.dedup();
+    shortest.truncate(CANDIDATE_INTERVALS);
+    let mut candidates: Vec<f64> = shortest
+        .iter()
+        .flat_map(|&i| {
+            let first = (i / high).ceil().max(1.0) as u32;
+            let last = (i / low).floor() as u32;
+            (first..=last).map(move |k| i / f64::from(k))
+        })
+        .collect();
+    candidates.sort_by(|a, b| b.total_cmp(a));
     let mut nearest: Option<f64> = None;
-    for k in first..=last {
-        let (ms, residual_ms) = fitted(intervals, shortest / f64::from(k));
-        if !(MIN_PERIOD_MS * (1.0 - BOUND_SLACK)..=MAX_PERIOD_MS * (1.0 + BOUND_SLACK))
-            .contains(&ms)
-        {
+    for guess in candidates {
+        let ms = refined(intervals, guess);
+        if !(low..=high).contains(&ms) {
             continue;
         }
-        if residual_ms <= grain_ms {
-            return Period::Inferred {
-                ms: ms.clamp(MIN_PERIOD_MS, MAX_PERIOD_MS),
-                residual_ms,
-            };
+        let fit = fit(intervals, ms, tolerance);
+        if fit < QUORUM {
+            nearest = Some(nearest.map_or(fit, |n: f64| n.max(fit)));
+            continue;
         }
-        nearest = Some(nearest.map_or(residual_ms, |n: f64| n.min(residual_ms)));
+        let (ms, fit) = lifted(intervals, ms, fit, tolerance, high);
+        return Period::Inferred {
+            ms: ms.clamp(MIN_PERIOD_MS, MAX_PERIOD_MS),
+            fit,
+        };
     }
-    Period::Fallback {
-        ms: shortest.clamp(MIN_PERIOD_MS, MAX_PERIOD_MS),
-        nearest_ms: nearest,
-    }
+    fallback(nearest)
 }
 
-/// The period near `guess` that the intervals are multiples of (their total
-/// over their multiples), and the worst interval's distance from its multiple.
-fn fitted(intervals: &VecDeque<f64>, guess: f64) -> (f64, f64) {
-    let (total, multiples) = intervals.iter().fold((0.0, 0.0), |(total, multiples), &i| {
-        (total + i, multiples + (i / guess).round().max(1.0))
-    });
-    let ms = total / multiples;
-    let residual = intervals
+/// The share of `intervals` within `tolerance` of a whole multiple of `ms`.
+fn fit(intervals: &[f64], ms: f64, tolerance: f64) -> f64 {
+    let fitting = intervals
         .iter()
-        .map(|&i| (i - (i / ms).round().max(1.0) * ms).abs())
-        .fold(0.0, f64::max);
-    (ms, residual)
+        .filter(|&&i| {
+            let n = (i / ms).round();
+            n >= 1.0 && (i - n * ms).abs() <= tolerance
+        })
+        .count();
+    fitting as f64 / intervals.len() as f64
+}
+
+/// The period near `guess` by least squares through the intervals within a
+/// sixth of a period of its multiples, twice.
+fn refined(intervals: &[f64], guess: f64) -> f64 {
+    let mut ms = guess;
+    for _ in 0..2 {
+        let (moment, square) = intervals.iter().fold((0.0, 0.0), |(moment, square), &i| {
+            let n = (i / ms).round();
+            if n >= 1.0 && (i - n * ms).abs() <= ms / 6.0 {
+                (moment + i * n, square + n * n)
+            } else {
+                (moment, square)
+            }
+        });
+        if square == 0.0 {
+            break;
+        }
+        ms = moment / square;
+    }
+    ms
+}
+
+/// `ms` taken up to twice or three times itself while the multiple keeps
+/// [`KEEP`] of the fit, and at least [`KEEP_FLOOR`] of the intervals.
+fn lifted(intervals: &[f64], mut ms: f64, mut fit: f64, tolerance: f64, high: f64) -> (f64, f64) {
+    'lift: loop {
+        for k in [2.0, 3.0] {
+            if ms * k > high {
+                continue;
+            }
+            let multiple = refined(intervals, ms * k);
+            let kept = self::fit(intervals, multiple, tolerance);
+            if kept >= KEEP * fit && kept >= KEEP_FLOOR {
+                (ms, fit) = (multiple, kept);
+                continue 'lift;
+            }
+        }
+        return (ms, fit);
+    }
 }
 
 #[cfg(test)]
@@ -192,6 +269,33 @@ mod tests {
     use super::*;
 
     const GRAIN: Duration = Duration::from_micros(100);
+
+    /// period-diag-a.log, the 300-node page, the last 40 intervals of its fourth window.
+    const WINDOWS_300_LOADED: [f64; 40] = [
+        516.6, 639.5, 419.9, 449.9, 589.1, 607.9, 413.3, 200.6, 656.5, 686.7, 474.2, 431.5, 382.9,
+        382.9, 383.0, 440.0, 382.9, 547.0, 370.8, 352.6, 401.2, 364.7, 358.5, 376.9, 352.5, 412.2,
+        462.1, 440.4, 370.8, 389.0, 346.4, 334.3, 334.3, 492.3, 389.1, 358.6, 346.4, 352.5, 335.5,
+        322.0,
+    ];
+    /// period-diag-a.log, the 24-node page, the last 40 intervals of its fourth window.
+    const WINDOWS_24_LOADED: [f64; 40] = [
+        109.4, 303.9, 316.1, 115.5, 297.8, 303.9, 103.4, 188.3, 253.0, 91.2, 85.1, 73.0, 60.6,
+        243.3, 79.0, 79.0, 72.9, 66.9, 206.6, 72.9, 60.8, 60.9, 60.9, 66.7, 206.7, 66.9, 60.7,
+        67.1, 66.6, 60.8, 200.6, 60.7, 60.8, 60.8, 66.8, 66.9, 188.6, 54.6, 60.7, 67.0,
+    ];
+    /// period-diag-b.log, the 300-node page, the last 40 intervals of its fourth window.
+    const WINDOWS_300: [f64; 40] = [
+        284.8, 375.8, 272.7, 424.3, 345.4, 321.3, 236.4, 115.1, 303.0, 230.4, 296.9, 218.2, 224.3,
+        230.2, 297.0, 206.1, 206.1, 206.0, 290.9, 206.1, 200.0, 206.0, 200.0, 285.0, 199.9, 200.0,
+        193.9, 200.0, 194.0, 278.8, 187.8, 188.0, 199.9, 272.8, 194.0, 193.9, 272.7, 200.0, 194.1,
+        272.6,
+    ];
+    /// period-diag-b.log, the 24-node page, the last 40 intervals of its fourth window.
+    const WINDOWS_24: [f64; 40] = [
+        54.7, 121.5, 42.6, 48.5, 121.6, 109.5, 42.5, 91.2, 36.5, 36.4, 42.5, 30.4, 36.6, 36.4,
+        36.5, 103.3, 36.4, 36.6, 36.4, 36.4, 30.5, 36.4, 36.5, 36.5, 36.5, 30.4, 36.4, 36.4, 103.4,
+        30.4, 36.4, 42.6, 30.4, 36.5, 36.4, 30.4, 36.5, 30.4, 36.4, 30.5,
+    ];
 
     fn clock() -> Duration {
         Duration::ZERO
@@ -201,111 +305,286 @@ mod tests {
         FrameBudget::new(0.5, Duration::from_micros(200), clock, GRAIN)
     }
 
-    /// Frames `vsyncs` refreshes of a `hz` display apart, each timestamp read
-    /// in the clock's 100 us steps, from 1,000 ms.
-    fn refreshes(budget: &mut FrameBudget, hz: f64, vsyncs: &[u32], repeat: usize) {
+    /// A small deterministic generator for the planted traces.
+    struct Lcg(u64);
+
+    impl Lcg {
+        fn unit(&mut self) -> f64 {
+            self.0 = self
+                .0
+                .wrapping_mul(6364136223846793005)
+                .wrapping_add(1442695040888963407);
+            (self.0 >> 11) as f64 / (1u64 << 53) as f64
+        }
+
+        fn pick(&mut self, from: &[u32]) -> u32 {
+            from[(self.unit() * from.len() as f64) as usize % from.len()]
+        }
+    }
+
+    /// Intervals between frames `vsyncs` refreshes of a `hz` display apart,
+    /// each true timestamp moved by up to `jitter_ms` and read in `grain_ms`
+    /// steps.
+    fn planted(hz: f64, vsyncs: &[u32], grain_ms: f64, jitter_ms: f64, rng: &mut Lcg) -> Vec<f64> {
         let period = 1000.0 / hz;
-        let mut at = budget.last_ms.unwrap_or(1000.0);
-        let mut true_at = at;
-        if budget.last_ms.is_none() {
-            budget.frame(at);
-        }
-        for &n in vsyncs.iter().cycle().take(vsyncs.len() * repeat) {
-            true_at += f64::from(n) * period;
-            at = (true_at * 10.0).floor() / 10.0;
-            budget.frame(at);
-        }
+        let read = |t: f64| (t / grain_ms).floor() * grain_ms;
+        let mut true_at = 1000.0;
+        let mut last = read(true_at);
+        vsyncs
+            .iter()
+            .map(|&n| {
+                true_at += f64::from(n) * period;
+                let at = read(true_at + (rng.unit() * 2.0 - 1.0) * jitter_ms);
+                let interval = at - last;
+                last = at;
+                interval
+            })
+            .collect()
     }
 
-    fn budget_us(budget: &FrameBudget) -> u128 {
-        budget.budget().per_frame.as_micros()
+    fn vsyncs(rng: &mut Lcg, from: &[u32], count: usize) -> Vec<u32> {
+        (0..count).map(|_| rng.pick(from)).collect()
     }
 
-    fn inferred(budget: &FrameBudget) -> f64 {
-        match budget.period() {
-            Period::Inferred { ms, residual_ms } => {
-                assert!(residual_ms <= 0.1, "residual {residual_ms}");
-                ms
+    fn read(intervals: &[f64], grain_ms: f64) -> Period {
+        let recent = &intervals[intervals.len().saturating_sub(ESTIMATE_INTERVALS)..];
+        period_of(recent, grain_ms)
+    }
+
+    fn assert_reads(name: &str, period: Period, ms: f64) {
+        match period {
+            Period::Inferred { ms: read, .. } => {
+                assert!(
+                    (read / ms - 1.0).abs() < 0.01,
+                    "{name}: read {read} ms, not {ms}"
+                );
             },
-            other => panic!("not inferred: {other:?}"),
+            other => panic!("{name}: {other:?}, not {ms} ms"),
         }
     }
 
-    /// "Infer the period" (ruled 2026-10-04): a page that misses refreshes
-    /// still reads its display's period, at 60, 120, 144 and 165 Hz, from
-    /// intervals of mixed whole multiples read in 100 us steps.
+    /// "Both machines + planted" (ruled 2026-10-05): every planted trace
+    /// reads within 1% of the period it holds, or falls back where it holds
+    /// none, and none reads a fraction. The positive control is 60 Hz.
     #[test]
-    fn the_period_is_inferred_from_whole_multiples_of_the_refresh() {
-        for (hz, vsyncs, us) in [
-            (60.0, &[1, 1, 2, 1, 3][..], 8_333),
-            (120.0, &[2, 3, 2, 4, 5][..], 4_166),
-            (144.0, &[3, 4, 5, 3, 7][..], 3_472),
-            (165.0, &[4, 5, 6, 7, 8, 9, 10, 14, 17][..], 3_030),
+    fn planted_traces_read_their_period_or_fall_back() {
+        let hz = |hz: f64| 1000.0 / hz;
+        let rng = &mut Lcg(7);
+        let traces: Vec<(&str, Vec<f64>, f64, Option<f64>)> = vec![
+            (
+                "60 Hz, the positive control",
+                {
+                    let v = vsyncs(rng, &[1, 1, 2, 3], 60);
+                    planted(60.0, &v, 0.1, 0.0, rng)
+                },
+                0.1,
+                Some(hz(60.0)),
+            ),
+            (
+                "165 Hz, 4 to 17 refreshes",
+                {
+                    let v = vsyncs(rng, &[4, 5, 6, 7, 9, 14, 17], 60);
+                    planted(165.0, &v, 0.1, 0.0, rng)
+                },
+                0.1,
+                Some(hz(165.0)),
+            ),
+            (
+                "144 Hz on a 5 us clock",
+                {
+                    let v = vsyncs(rng, &[3, 4, 5], 60);
+                    planted(144.0, &v, 0.005, 0.0, rng)
+                },
+                0.005,
+                Some(hz(144.0)),
+            ),
+            (
+                "a 30 fps cap at 60 Hz",
+                planted(60.0, &[2; 60], 0.1, 0.0, rng),
+                0.1,
+                Some(hz(60.0)),
+            ),
+            (
+                "a 30 fps cap at 144 Hz",
+                {
+                    let v = vsyncs(rng, &[4, 5], 60);
+                    planted(144.0, &v, 0.1, 0.0, rng)
+                },
+                0.1,
+                Some(hz(144.0)),
+            ),
+            (
+                "variable refresh",
+                (0..60)
+                    .map(|_| (70.0 + rng.unit() * 330.0).round() / 10.0)
+                    .collect(),
+                0.1,
+                None,
+            ),
+            (
+                "a switch from 60 to 144 Hz",
+                {
+                    let mut v = planted(60.0, &[1; 40], 0.1, 0.0, rng);
+                    let fast = vsyncs(rng, &[2, 3], 40);
+                    v.extend(planted(144.0, &fast, 0.1, 0.0, rng));
+                    v
+                },
+                0.1,
+                Some(hz(144.0)),
+            ),
+            (
+                "a switch from 144 to 60 Hz",
+                {
+                    let fast = vsyncs(rng, &[2, 3], 40);
+                    let mut v = planted(144.0, &fast, 0.1, 0.0, rng);
+                    v.extend(planted(60.0, &[1; 40], 0.1, 0.0, rng));
+                    v
+                },
+                0.1,
+                Some(hz(60.0)),
+            ),
+            (
+                "a switch from 120 to 60 Hz",
+                {
+                    let fast = vsyncs(rng, &[1, 2, 3], 40);
+                    let mut v = planted(120.0, &fast, 0.1, 0.0, rng);
+                    let slow = vsyncs(rng, &[1, 2], 40);
+                    v.extend(planted(60.0, &slow, 0.1, 0.0, rng));
+                    v
+                },
+                0.1,
+                Some(hz(60.0)),
+            ),
+            (
+                "165 Hz with 15% outliers",
+                {
+                    let v = vsyncs(rng, &[5, 6, 7], 60);
+                    planted(165.0, &v, 0.1, 0.0, rng)
+                        .into_iter()
+                        .map(|i| {
+                            if rng.unit() < 0.15 {
+                                (200.0 + rng.unit() * 1000.0).round() / 10.0
+                            } else {
+                                i
+                            }
+                        })
+                        .collect()
+                },
+                0.1,
+                Some(hz(165.0)),
+            ),
+            (
+                "165 Hz with 0.1 ms of refresh jitter",
+                {
+                    let v = vsyncs(rng, &[5, 6, 7], 60);
+                    planted(165.0, &v, 0.1, 0.1, rng)
+                },
+                0.1,
+                Some(hz(165.0)),
+            ),
+            (
+                "165 Hz, mostly six refreshes",
+                {
+                    let v = vsyncs(rng, &[6, 6, 6, 5, 7], 60);
+                    planted(165.0, &v, 0.1, 0.0, rng)
+                },
+                0.1,
+                Some(hz(165.0)),
+            ),
+        ];
+        for (name, intervals, grain, period) in traces {
+            match period {
+                Some(ms) => assert_reads(name, read(&intervals, grain), ms),
+                None => assert!(
+                    matches!(read(&intervals, grain), Period::Fallback { ms, .. } if ms == MAX_PERIOD_MS),
+                    "{name}: {:?}",
+                    read(&intervals, grain)
+                ),
+            }
+        }
+    }
+
+    /// This machine's logged windows (2026-10-04 and 05, its 165 Hz panel,
+    /// whose period read 6.06 to 6.08 ms): each reads within 1% of 6.07 ms,
+    /// the loaded ones too.
+    #[test]
+    fn logged_windows_read_this_panels_period() {
+        for (name, window) in [
+            ("300 nodes", WINDOWS_300),
+            ("24 nodes", WINDOWS_24),
+            ("300 nodes, loaded", WINDOWS_300_LOADED),
+            ("24 nodes, loaded", WINDOWS_24_LOADED),
         ] {
-            let mut budget = fresh();
-            refreshes(&mut budget, hz, vsyncs, 15);
-            let ms = inferred(&budget);
-            assert!((ms - 1000.0 / hz).abs() < 0.01, "{hz} Hz read {ms} ms");
-            // Timestamps read in steps put the read period within a
-            // microsecond of the true one over these intervals.
-            assert!(
-                budget_us(&budget).abs_diff(us) <= 1,
-                "{hz} Hz: {}",
-                budget_us(&budget)
-            );
+            assert_reads(name, period_of(&window, 0.1), 6.07);
         }
     }
 
     /// A page that only ever takes an even number of refreshes reads twice
-    /// the period, an overestimate: the budget twice half the display's
-    /// frame. The cap still bounds it: at 60 Hz two refreshes are past it, so
-    /// the period read is the true one.
+    /// the period, the most its intervals show: an overestimate, never a
+    /// fraction, and the cap still bounds it.
     #[test]
     fn even_multiples_overestimate_the_period() {
+        let rng = &mut Lcg(3);
+        let v = vsyncs(rng, &[2, 4, 6], 60);
+        assert_reads(
+            "even multiples",
+            read(&planted(165.0, &v, 0.1, 0.0, rng), 0.1),
+            2000.0 / 165.0,
+        );
+        let doubled = planted(60.0, &[2, 4, 2], 0.1, 0.0, rng);
+        assert!(matches!(
+            read(&doubled, 0.1),
+            Period::Fallback { .. } | Period::Inferred { .. }
+        ));
         let mut budget = fresh();
-        refreshes(&mut budget, 165.0, &[2, 4, 6, 4, 8], 20);
-        assert!((inferred(&budget) - 2000.0 / 165.0).abs() < 0.01);
-        assert_eq!(budget_us(&budget), 6_060);
-        let mut budget = fresh();
-        refreshes(&mut budget, 60.0, &[2, 4, 2], 20);
+        budget.frame(1000.0);
+        for &interval in doubled.iter().cycle().take(40) {
+            let at = budget.last_ms.unwrap() + interval;
+            budget.frame(at);
+        }
         assert_eq!(
-            budget_us(&budget),
+            budget.budget().per_frame.as_micros(),
             8_333,
             "two 60 Hz refreshes are past the cap"
         );
     }
 
-    /// The fallback ("Known rate, else capped"): 1/60 s before any interval;
-    /// intervals that share no period leave the shortest, at most 1/60 s; a
-    /// hidden page's gap is not an interval; old intervals age out.
+    /// The budget: 1/60 s's half before enough intervals; the inferred
+    /// period's half once they fit; a hidden page's gap is not an interval;
+    /// an old display's intervals age out of the 40 read.
     #[test]
-    fn without_a_common_period_the_shortest_interval_is_capped_at_60_hz() {
+    fn the_budget_follows_the_period_read() {
         let mut budget = fresh();
-        assert_eq!(budget_us(&budget), 8_333, "60 Hz before any interval");
+        let us = |budget: &FrameBudget| budget.budget().per_frame.as_micros();
+        assert_eq!(us(&budget), 8_333, "60 Hz before any interval");
+        let rng = &mut Lcg(11);
         budget.frame(1000.0);
-        for interval in [23.7, 31.9, 27.3, 41.1, 25.6] {
+        let v = vsyncs(rng, &[4, 5, 6], 60);
+        for interval in planted(165.0, &v, 0.1, 0.0, rng) {
             let at = budget.last_ms.unwrap() + interval;
             budget.frame(at);
         }
-        assert!(matches!(budget.period(), Period::Fallback { .. }));
-        assert_eq!(budget_us(&budget), 8_333, "a slow page is capped");
-        let mut budget = fresh();
-        budget.frame(1000.0);
-        for interval in [7.25, 9.125, 8.5, 7.875] {
-            let at = budget.last_ms.unwrap() + interval;
-            budget.frame(at);
-        }
-        assert!(matches!(budget.period(), Period::Fallback { ms, .. } if ms == 7.25));
-        assert_eq!(budget_us(&budget), 3_625);
-
-        let mut budget = fresh();
-        refreshes(&mut budget, 165.0, &[4, 5], 10);
-        assert_eq!(budget_us(&budget), 3_030);
+        assert!(us(&budget).abs_diff(3_030) <= 2, "{}", us(&budget));
         let at = budget.last_ms.unwrap() + 1500.0;
         budget.frame(at);
-        assert_eq!(budget_us(&budget), 3_030, "the gap is not an interval");
-        refreshes(&mut budget, 60.0, &[1], RECENT_INTERVALS);
-        assert_eq!(budget_us(&budget), 8_333, "165 Hz's intervals aged out");
+        assert!(
+            us(&budget).abs_diff(3_030) <= 2,
+            "the gap is not an interval"
+        );
+        for interval in planted(60.0, &[1; 40], 0.1, 0.0, rng) {
+            let at = budget.last_ms.unwrap() + interval;
+            budget.frame(at);
+        }
+        assert!(
+            us(&budget).abs_diff(8_333) <= 2,
+            "165 Hz's intervals aged out: {}",
+            us(&budget)
+        );
         assert_eq!(budget.budget().margin, Duration::from_micros(200));
+        assert_eq!(
+            budget.intervals().count(),
+            100,
+            "60 + 40 intervals, the gap not one"
+        );
     }
 }

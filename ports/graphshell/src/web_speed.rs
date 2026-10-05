@@ -159,14 +159,14 @@ fn planted_clock() -> Duration {
 }
 
 /// Where the display period came from, for the receipts: "inferred" or
-/// "fallback", and how far the worst interval sat from its multiple (the
-/// nearest candidate's, when none fitted), in ms.
+/// "fallback", and the share of recent intervals the period fits (the best a
+/// candidate reached, when none cleared the quorum).
 pub(crate) fn period_fields(budget: &FrameBudget) -> (&'static str, String) {
     match budget.period() {
-        Period::Inferred { residual_ms, .. } => ("inferred", format!("{residual_ms:.3}")),
-        Period::Fallback { nearest_ms, .. } => (
+        Period::Inferred { fit, .. } => ("inferred", format!("{fit:.2}")),
+        Period::Fallback { nearest, .. } => (
             "fallback",
-            nearest_ms.map_or_else(|| "none".into(), |ms| format!("{ms:.3}")),
+            nearest.map_or_else(|| "none".into(), |share| format!("{share:.2}")),
         ),
     }
 }

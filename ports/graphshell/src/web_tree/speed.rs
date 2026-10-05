@@ -67,7 +67,7 @@ pub(super) fn record(shared: &Shared, canvas: &Canvas, moving: bool, budget: Dur
     shared.physics_log.borrow_mut().push(format!(
         "pace: speed {} effective {} bound {} ticks {} over {} frames drawn-moved {} \
          stepped {} compute-max {} us over-budget-max {} us budget {} us ({} of a {:.2} ms \
-         display period, {} {}; last frame {:.1} ms) margin {} us; every window: worst {} us, \
+         display period, {} at {}; last frame {:.1} ms) margin {} us; every window: worst {} us, \
          {} frames past the grain",
         crate::web_speed::field(canvas.physics_speed()),
         pace.effective_speed
@@ -207,8 +207,8 @@ pub(super) fn pace_line(label: &str, canvas: &Canvas, shared: &Shared) -> String
     let window = shared.pace.borrow();
     let frame_budget = shared.frame_budget.borrow();
     format!(
-        "pace {label}: speed {} budget {} us margin {} us display period {:.3} ms ({}, worst \
-         interval {} ms off its multiple); every window: {} frames the gate admitted ticks in, \
+        "pace {label}: speed {} budget {} us margin {} us display period {:.3} ms ({}, fitting \
+         {} of the recent intervals); every window: {} frames the gate admitted ticks in, \
          worst {} us over budget ({}), {} past the grain; {} floor-only frames past it",
         crate::web_speed::field(canvas.physics_speed()),
         frame_budget.budget().per_frame.as_micros(),
