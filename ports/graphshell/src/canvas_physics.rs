@@ -48,10 +48,13 @@ pub fn ticked_overlays(ticked: impl Fn(PhysicsOverlay) -> bool) -> Vec<PhysicsOv
         .collect()
 }
 
-/// Apply physics: sources, overlays and law in one rebuild. Returns the
-/// status, with the law's reason when it refused the overlays.
+/// Apply physics: sources, overlays and law in one rebuild, and the camera
+/// follows the layout while it plays (ruled 2026-10-03, "Follow while
+/// playing"). Returns the status, with the law's reason when it refused the
+/// overlays.
 pub fn apply_physics(canvas: &mut Canvas, choice: &PhysicsChoice) -> String {
     let refused = canvas.set_physics_choice(choice).err();
+    canvas.set_view_follow(true);
     let status = with_overlays(
         format!("Physics set to {}", canvas.physics_law().label()),
         canvas,
@@ -70,6 +73,7 @@ pub fn apply_profile(canvas: &mut Canvas, id: &str) -> Result<String, String> {
     if !canvas.apply_physics_profile(id) {
         return Err(format!("unknown physics profile {id}"));
     }
+    canvas.set_view_follow(true);
     Ok(with_overlays(
         format!("Profile {id}: {}", canvas.physics_law().label()),
         canvas,
@@ -172,6 +176,7 @@ pub fn apply_arrangement(
         canvas.set_projection_score(None);
         canvas.set_layout_strategy(None);
         canvas.set_selected_members(&selected);
+        canvas.set_view_follow(true);
         return Ok(ArrangementApplied {
             layout_id: layout_id.to_string(),
             status: "Arrangement set to free: physics alone".to_string(),
@@ -441,6 +446,25 @@ impl ArrangementTransition {
     }
 }
 
+/// The framing check's inset: a node's centre must lie inside the visible
+/// canvas itself.
+pub const FRAMING_MARGIN: f32 = 0.0;
+
+/// The framing fields both pages publish, from the canvas's own positions and
+/// camera: nodes whose centre is off the visible canvas, the layout's and the
+/// view's world extents (`min_x,min_y,max_x,max_y`), and whether the camera is
+/// following the layout.
+pub fn framing_fields(canvas: &Canvas) -> [(&'static str, String); 4] {
+    let framing = canvas.layout_framing(FRAMING_MARGIN);
+    let text = |[a, b, c, d]: [f32; 4]| format!("{a:.0},{b:.0},{c:.0},{d:.0}");
+    [
+        ("layout-outside", framing.outside.to_string()),
+        ("layout-extent", text(framing.extent)),
+        ("view-extent", text(framing.view)),
+        ("view-follow", canvas.view_follows().to_string()),
+    ]
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -558,6 +582,34 @@ mod tests {
         choice.overlays.clear();
         apply_physics(&mut canvas, &choice);
         assert_eq!(profile_id(&canvas), "void");
+    }
+
+    /// "Follow while playing" (2026-10-03): a law, profile or Free switch
+    /// follows the layout, any pan or zoom stops it, Fit graph resumes it, and
+    /// an analytic arrangement leaves it as it was.
+    #[test]
+    fn switches_follow_the_layout_a_pan_or_zoom_stops_it_and_fit_resumes_it() {
+        use crate::canvas_controls::CanvasCommand;
+        let mut canvas = canvas();
+        let viewport = (800, 600);
+        let pan = CanvasCommand::Pan { dx: 10.0, dy: 0.0 };
+        assert!(!canvas.view_follows(), "not before a switch");
+        apply_physics(&mut canvas, &PhysicsChoice::default());
+        assert!(canvas.view_follows(), "a law switch follows");
+        pan.apply(&mut canvas, viewport);
+        assert!(!canvas.view_follows(), "a pan stops it");
+        apply_profile(&mut canvas, "liquid").unwrap();
+        assert!(canvas.view_follows(), "a profile switch follows");
+        CanvasCommand::Zoom { delta: 1.0 }.apply(&mut canvas, viewport);
+        assert!(!canvas.view_follows(), "a zoom stops it");
+        apply_arrangement(&mut canvas, FREE_ARRANGEMENT, viewport).unwrap();
+        assert!(canvas.view_follows(), "Free follows");
+        pan.apply(&mut canvas, viewport);
+        CanvasCommand::Fit.apply(&mut canvas, viewport);
+        assert!(canvas.view_follows(), "Fit graph resumes it");
+        pan.apply(&mut canvas, viewport);
+        apply_arrangement(&mut canvas, "grid.default", viewport).unwrap();
+        assert!(!canvas.view_follows(), "an arrangement leaves it off");
     }
 
     #[test]
@@ -767,6 +819,101 @@ mod tests {
                 "a step every frame after the first"
             );
             assert!(energy >= 1.0, "kinds at frame {frame}: energy {energy}");
+        }
+    }
+
+    /// Diagnostic (energy-frame lane): every law reached as its tree receipt
+    /// reaches it, then 3 600 frames at 60 Hz; the layout's world extent, the
+    /// view's, the nodes off screen and each component's centroid over time.
+    #[test]
+    #[ignore = "diagnostic: prints the framing readings"]
+    fn diag_law_framing_on_the_p2_fixture() {
+        use std::collections::HashMap;
+        use std::time::Duration;
+        let (width, height) = TREE_CANVAS;
+        let probe = p2_fixture_canvas();
+        // Components by union-find over the relation edges.
+        let keys: Vec<_> = probe.graph().nodes().map(|(key, _)| key).collect();
+        let mut parent: HashMap<_, _> = keys.iter().map(|&k| (k, k)).collect();
+        fn root<K: Copy + Eq + std::hash::Hash>(parent: &mut HashMap<K, K>, k: K) -> K {
+            let mut r = k;
+            while parent[&r] != r {
+                r = parent[&r];
+            }
+            parent.insert(k, r);
+            r
+        }
+        for relation in probe.graph().relations() {
+            let (a, b) = (root(&mut parent, relation.from), root(&mut parent, relation.to));
+            parent.insert(a, b);
+        }
+        let mut component: HashMap<_, usize> = HashMap::new();
+        let mut roots = Vec::new();
+        for &k in &keys {
+            let r = root(&mut parent, k);
+            let index = roots.iter().position(|&x| x == r).unwrap_or_else(|| {
+                roots.push(r);
+                roots.len() - 1
+            });
+            component.insert(probe.graph().get_node(k).unwrap().id, index);
+        }
+        let sizes: Vec<usize> = (0..roots.len())
+            .map(|c| component.values().filter(|&&x| x == c).count())
+            .collect();
+        println!(
+            "fixture: {} nodes, {} relations, components {:?}",
+            keys.len(),
+            probe.graph().relations().count(),
+            sizes
+        );
+        for (id, _) in mere::canvas::CANVAS_PHYSICS_LAWS {
+            let law = PhysicsLaw::parse(id).unwrap();
+            let mut canvas = p2_fixture_canvas();
+            let fitted = canvas.layout_framing(0.0);
+            canvas.set_physics_paused(false);
+            apply_arrangement(&mut canvas, FREE_ARRANGEMENT, TREE_CANVAS).unwrap();
+            apply_physics(
+                &mut canvas,
+                &PhysicsChoice {
+                    law,
+                    ..PhysicsChoice::default()
+                },
+            );
+            println!(
+                "{id}: boot view [{:.0} {:.0} {:.0} {:.0}] zoom {:.3}, boot extent [{:.0} {:.0} {:.0} {:.0}]",
+                fitted.view[0], fitted.view[1], fitted.view[2], fitted.view[3],
+                canvas.camera().zoom,
+                fitted.extent[0], fitted.extent[1], fitted.extent[2], fitted.extent[3],
+            );
+            for frame in 0..=3600u64 {
+                canvas.frame_at(
+                    width,
+                    height,
+                    Duration::from_micros(frame * 1_000_000 / 60),
+                    Default::default(),
+                );
+                if [1, 30, 60, 120, 360, 600, 1200, 1800, 3600].contains(&frame) {
+                    let f = canvas.layout_framing(0.0);
+                    let geometry = canvas.cartography_geometry();
+                    let mut sums = vec![(0.0f32, 0.0f32, 0usize); roots.len()];
+                    for (node, (x, y)) in geometry.iter() {
+                        let c = component[&node];
+                        sums[c] = (sums[c].0 + x, sums[c].1 + y, sums[c].2 + 1);
+                    }
+                    let centroids: Vec<String> = sums
+                        .iter()
+                        .map(|(x, y, n)| format!("({:.0},{:.0})", x / *n as f32, y / *n as f32))
+                        .collect();
+                    println!(
+                        "  frame {frame:>4} ({:>5.1} s): extent [{:.0} {:.0} {:.0} {:.0}] {:.0}x{:.0}, outside {}/{}, energy {:.1}, components {}",
+                        frame as f32 / 60.0,
+                        f.extent[0], f.extent[1], f.extent[2], f.extent[3],
+                        f.extent[2] - f.extent[0], f.extent[3] - f.extent[1],
+                        f.outside, f.nodes, canvas.physics_energy(),
+                        centroids.join(" "),
+                    );
+                }
+            }
         }
     }
 
