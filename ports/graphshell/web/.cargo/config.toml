@@ -7,5 +7,7 @@
 # backend needs this cfg as well as the feature. With it committed, every
 # build of a commit run from this directory makes the same bundle, from a
 # plain shell or a script. Target-scoped, so native builds never see it.
+# Do not also export CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN_RUSTFLAGS: Cargo joins
+# that variable with this array, and the duplicate flag changes the bundle.
 [target.wasm32-unknown-unknown]
 rustflags = ['--cfg', 'getrandom_backend="wasm_js"']
