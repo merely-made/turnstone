@@ -26,6 +26,8 @@ pub mod canary;
 #[cfg(feature = "web")]
 pub mod canvas_controls;
 #[cfg(feature = "web")]
+pub mod canvas_faces;
+#[cfg(feature = "web")]
 pub mod canvas_physics;
 #[cfg(feature = "web")]
 pub mod capture;

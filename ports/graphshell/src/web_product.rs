@@ -742,6 +742,14 @@ pub(super) fn update_product_semantics(
             },
         ),
         (
+            // The same distance in world units, whatever the zoom.
+            "data-drag-return-world",
+            match (host.drag_drop_world, host.canvas.focused_world_position()) {
+                (Some((dx, dy)), Some((x, y))) => format!("{:.0}", (x - dx).hypot(y - dy)),
+                _ => String::new(),
+            },
+        ),
+        (
             "data-focused-x",
             host.canvas
                 .focused_screen_position()
@@ -796,6 +804,12 @@ pub(super) fn update_product_semantics(
         ("data-face", host.face.clone()),
     ] {
         body.set_attribute(name, &value)
+            .map_err(|_| format!("could not expose {name}"))?;
+    }
+    // Framing reads the camera too, so it is fresh every frame, not on the
+    // stats' staleness.
+    for (name, value) in canvas_physics::framing_fields(&host.canvas) {
+        body.set_attribute(&format!("data-{name}"), &value)
             .map_err(|_| format!("could not expose {name}"))?;
     }
     // Where the last law started, and whether the layout now beats it.

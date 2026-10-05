@@ -52,6 +52,9 @@ settle 2
 settle 7400
 assert snap physics-continuous == false
 capture physics_density_settled
+# Framing (2026-10-04, "Density gets the check here"): every node's centre on
+# the visible canvas at the frame this capture shows, after the settle.
+assert snap layout-outside == 0
 settle 2
 log-layout density settled
 assert snap layout-rank-rose == true

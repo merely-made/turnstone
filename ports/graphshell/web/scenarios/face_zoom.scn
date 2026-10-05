@@ -1,0 +1,95 @@
+# Face-zoom receipt, the old page (physics catalog plan, the face offset ruled 2026-10-04:
+# "transform-origin in the gnode style"). At six zooms, every face wholly in
+# view sits on its body as Livery drew it (read back by hit test), and the
+# face is the face inset (0.72) of the body. Physics paused, so nothing moves
+# between zooms; a node count keeps the check from passing on an empty frame.
+assert title GRAPHSHELL H3 READY
+assert snap ready == true
+dom click [data-command="toggle-physics"]
+settle 1
+assert snap physics-paused == false
+select #gs-arrangement-select free
+dom click [data-command="apply-arrangement"]
+settle 1
+assert snap layout == free
+select #gs-physics-select spring.rapier
+dom click [data-command="apply-physics"]
+settle 1
+assert snap physics-law == spring.rapier
+settle 60
+dom click [data-command="toggle-physics"]
+settle 2
+assert snap physics-paused == true
+set-zoom 1
+settle 2
+assert snap zoom >= 0.9999
+assert snap zoom <= 1.0001
+measure-faces 1.00
+assert snap face-nodes >= 11
+assert snap face-missing == 0
+assert snap face-offset-max <= 0.01
+assert snap face-ratio-min >= 0.719
+assert snap face-ratio-max <= 0.721
+capture face_zoom_100
+wait
+set-zoom 0.75
+settle 2
+assert snap zoom >= 0.7499
+assert snap zoom <= 0.7501
+measure-faces 0.75
+assert snap face-nodes >= 11
+assert snap face-missing == 0
+assert snap face-offset-max <= 0.01
+assert snap face-ratio-min >= 0.719
+assert snap face-ratio-max <= 0.721
+capture face_zoom_075
+wait
+set-zoom 0.5
+settle 2
+assert snap zoom >= 0.4999
+assert snap zoom <= 0.5001
+measure-faces 0.50
+assert snap face-nodes >= 11
+assert snap face-missing == 0
+assert snap face-offset-max <= 0.01
+assert snap face-ratio-min >= 0.719
+assert snap face-ratio-max <= 0.721
+capture face_zoom_050
+wait
+set-zoom 0.25
+settle 2
+assert snap zoom >= 0.2499
+assert snap zoom <= 0.2501
+measure-faces 0.25
+assert snap face-nodes >= 11
+assert snap face-missing == 0
+assert snap face-offset-max <= 0.01
+assert snap face-ratio-min >= 0.719
+assert snap face-ratio-max <= 0.721
+capture face_zoom_025
+wait
+set-zoom 0.1
+settle 2
+assert snap zoom >= 0.0999
+assert snap zoom <= 0.1001
+measure-faces 0.10
+assert snap face-nodes >= 11
+assert snap face-missing == 0
+assert snap face-offset-max <= 0.01
+assert snap face-ratio-min >= 0.719
+assert snap face-ratio-max <= 0.721
+capture face_zoom_010
+wait
+set-zoom 2
+settle 2
+assert snap zoom >= 1.9999
+assert snap zoom <= 2.0001
+measure-faces 2.00
+assert snap face-nodes >= 1
+assert snap face-missing == 0
+assert snap face-offset-max <= 0.01
+assert snap face-ratio-min >= 0.719
+assert snap face-ratio-max <= 0.721
+capture face_zoom_200
+wait
+log face-zoom receipt complete

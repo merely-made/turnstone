@@ -323,10 +323,25 @@ impl Probe<'_> {
                 self.moved(x + d[0], y + d[1]);
                 Ok(())
             },
+            // The same move in world units, so a receipt's gesture means the
+            // same distance to the law at any zoom; at zoom 1 it is `move-by`
+            // (ruled 2026-10-04, "Measure in world units").
+            "move-by-world" => {
+                let d = numbers(rest, 2)?;
+                let (x, y) = self
+                    .host
+                    .canvas
+                    .focused_world_position()
+                    .ok_or("wants exactly one focused node")?;
+                let (sx, sy) = self.host.canvas.screen_point_of((x + d[0], y + d[1]));
+                self.moved(sx, sy);
+                Ok(())
+            },
             "release-at" => {
                 let (x, y) = self.focused_point()?;
                 self.release(x, y);
                 self.host.drag_drop = Some((x, y));
+                self.host.drag_drop_world = self.host.canvas.focused_world_position();
                 Ok(())
             },
             // `add-node <x> <y> <url>`: the empty-space add gesture, at a point
@@ -383,6 +398,27 @@ impl Probe<'_> {
                 Ok(())
             },
             "assert" => self.app_assert(rest, line),
+            // `set-zoom <z>`: the zoom exactly, about the canvas centre, as
+            // the tree page's verb.
+            "set-zoom" => {
+                let zoom = numbers(rest, 1)?[0];
+                let host = &mut *self.host;
+                graphshell::canvas_controls::CanvasCommand::SetZoom { zoom }
+                    .apply(&mut host.canvas, (host.width, host.height));
+                Ok(())
+            },
+            // `measure-faces <label>`: each face in view against its drawn
+            // body, into the snapshot and the receipt.
+            "measure-faces" => {
+                let host = &mut *self.host;
+                let faces = graphshell::canvas_faces::FaceAlignment::measure(
+                    &host.canvas,
+                    (host.width, host.height),
+                );
+                host.faces = Some(faces);
+                host.layout_log.push(faces.line(rest.trim()));
+                Ok(())
+            },
             // `log-layout <label>`: room by mass now and where the law
             // started, into the receipt.
             "log-layout" => {
@@ -513,6 +549,10 @@ impl Automatable for Probe<'_> {
         snap = snap.with_field("camera-x", parts.next().unwrap_or_default());
         snap = snap.with_field("camera-y", parts.next().unwrap_or_default());
         snap = snap.with_field("camera", camera);
+        snap = snap.with_field("zoom", self.host.canvas.camera().zoom.to_string());
+        for (name, value) in self.host.faces.unwrap_or_default().fields() {
+            snap = snap.with_field(name, value);
+        }
         snap = snap.with_field(
             "focused-node",
             canvas

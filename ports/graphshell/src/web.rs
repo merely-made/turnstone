@@ -150,6 +150,8 @@ struct BrowserHost {
     layout_stats: mere::canvas::LayoutStats,
     /// Screen px where the last `drag-focused` released, for `data-drag-return`.
     drag_drop: Option<(f32, f32)>,
+    /// The same drop in world units, for `data-drag-return-world`.
+    drag_drop_world: Option<(f32, f32)>,
     remote_session: Option<ProjectionSession>,
     remote_status: String,
     remote_joining: bool,
@@ -211,6 +213,8 @@ struct BrowserHost {
     /// `log-layout` lines.
     law_start: Option<graphshell::canvas_physics::LawStart>,
     layout_log: Vec<String>,
+    /// The last `measure-faces` reading, for the snapshot.
+    faces: Option<graphshell::canvas_faces::FaceAlignment>,
 }
 
 struct BrowserProjectionSink;
@@ -1863,6 +1867,7 @@ async fn run(root_element: Element) -> Result<(), String> {
         layout_moved: false,
         layout_stats: mere::canvas::LayoutStats::default(),
         drag_drop: None,
+        drag_drop_world: None,
         remote_session: Some(remote_session),
         remote_status: "fixture".to_string(),
         remote_joining: false,
@@ -1915,6 +1920,7 @@ async fn run(root_element: Element) -> Result<(), String> {
         timing: web_timing::FrameTiming::default(),
         law_start: None,
         layout_log: Vec::new(),
+        faces: None,
     }));
     web_scenario::install(&state);
     install_events(&state)?;
