@@ -18,6 +18,18 @@ use std::collections::BTreeMap;
 use crate::projection_editor::ProjectionDefinition;
 pub use scenomise::projection::*;
 
+use sceno::Size2;
+
+/// Graphshell's card, in scene units. Paint scales the whole scene to fit the
+/// window, so this is the one size the compiler lays out.
+pub const PRACTICE_CARD: Size2 = Size2 { w: 164.0, h: 68.0 };
+
+/// Graphshell's one projection compiler: its card, and no custom solvers yet.
+pub fn practice_compiler() -> &'static ProjectionCompiler {
+    static COMPILER: std::sync::OnceLock<ProjectionCompiler> = std::sync::OnceLock::new();
+    COMPILER.get_or_init(|| ProjectionCompiler::new(ItemSizes { card: PRACTICE_CARD }))
+}
+
 /// A bounded starting definition for the disclosed practice dataset. These
 /// field names are a host recipe, not an inferred product schema.
 pub fn default_definition(dataset: &ProjectionDataset) -> ProjectionDefinition {
@@ -39,7 +51,7 @@ pub fn default_definition(dataset: &ProjectionDataset) -> ProjectionDefinition {
             label: Some(Channel::Field("label".into())),
         },
         arrangement: crate::projection_editor::Arrangement {
-            kind: GRID_ARRANGEMENT_ID.into(),
+            kind: scenomise::catalog::Family::Grid.id().into(),
             direction: "coordinates".into(),
             spacing: 16,
             options: BTreeMap::new(),
@@ -71,7 +83,7 @@ const NODES_READING_ID: &str = "nodes";
 #[cfg(test)]
 use crate::projection_editor::{Channel, RevisionEvidence, SourceBinding};
 #[cfg(test)]
-use sceno::{Footprint, InstanceId, Size2, SourceRef, Vec2};
+use sceno::{Footprint, InstanceId, SourceRef, Vec2};
 #[cfg(test)]
 use std::collections::HashMap;
 
@@ -87,15 +99,15 @@ mod tests {
     fn refresh_reuses_geometry_for_labels_and_new_revisions() {
         let mut data = dataset();
         let mut recipe = definition(GRID_ARRANGEMENT_ID);
-        let previous = compile(&recipe, &data).unwrap();
+        let previous = practice_compiler().compile(&recipe, &data).unwrap();
         data.occurrences[0]
             .values
             .insert("label".into(), ProjectionValue::Text("New caption".into()));
         data.revision = "new-revision".into();
         recipe.provenance.source_revision = Some(data.revision.clone());
-        let next = refresh(&previous, &recipe, &data).unwrap();
+        let next = practice_compiler().refresh(&previous, &recipe, &data).unwrap();
         assert!(next.placement_reused);
-        assert_eq!(next.scene, compile(&recipe, &data).unwrap().scene);
+        assert_eq!(next.scene, practice_compiler().compile(&recipe, &data).unwrap().scene);
         assert_eq!(next.scene.items, previous.scene.items);
         assert!(next.labels.values().any(|label| label == "New caption"));
         assert_ne!(next.scene.generation, previous.scene.generation);
@@ -105,39 +117,39 @@ mod tests {
     fn refresh_rejects_invalid_readings_and_resolves_changed_geometry() {
         let mut data = dataset();
         let mut recipe = definition(SCATTER_ARRANGEMENT_ID);
-        let previous = compile(&recipe, &data).unwrap();
+        let previous = practice_compiler().compile(&recipe, &data).unwrap();
         data.occurrences[0]
             .values
             .insert("x".into(), ProjectionValue::Number(42.0));
-        let moved = refresh(&previous, &recipe, &data).unwrap();
+        let moved = practice_compiler().refresh(&previous, &recipe, &data).unwrap();
         assert!(!moved.placement_reused);
-        assert_eq!(moved.scene, compile(&recipe, &data).unwrap().scene);
+        assert_eq!(moved.scene, practice_compiler().compile(&recipe, &data).unwrap().scene);
         recipe.arrangement.spacing += 1;
-        assert!(!refresh(&moved, &recipe, &data).unwrap().placement_reused);
+        assert!(!practice_compiler().refresh(&moved, &recipe, &data).unwrap().placement_reused);
         data.occurrences[0]
             .values
             .insert("label".into(), ProjectionValue::Number(3.0));
-        assert!(refresh(&moved, &recipe, &data).is_err());
+        assert!(practice_compiler().refresh(&moved, &recipe, &data).is_err());
     }
 
     #[test]
     fn refresh_preserves_occurrence_identity_and_measured_footprints() {
         let mut data = dataset();
         let recipe = definition(GRID_ARRANGEMENT_ID);
-        let mut previous = compile(&recipe, &data).unwrap();
+        let mut previous = practice_compiler().compile(&recipe, &data).unwrap();
         data.occurrences.reverse();
-        assert!(refresh(&previous, &recipe, &data).unwrap().placement_reused);
+        assert!(practice_compiler().refresh(&previous, &recipe, &data).unwrap().placement_reused);
         previous.score.items[0].footprint = Footprint::Rect {
             size: Size2::new(300.0, 68.0),
         };
-        assert!(!refresh(&previous, &recipe, &data).unwrap().placement_reused);
-        let previous = compile(&recipe, &data).unwrap();
+        assert!(!practice_compiler().refresh(&previous, &recipe, &data).unwrap().placement_reused);
+        let previous = practice_compiler().compile(&recipe, &data).unwrap();
         data.occurrences[0].occurrence_id = "replacement".into();
         data.occurrences[0].values.insert(
             "occurrence_id".into(),
             ProjectionValue::Text("replacement".into()),
         );
-        assert!(!refresh(&previous, &recipe, &data).unwrap().placement_reused);
+        assert!(!practice_compiler().refresh(&previous, &recipe, &data).unwrap().placement_reused);
     }
 
     #[test]
@@ -145,7 +157,7 @@ mod tests {
         let dataset: ProjectionDataset =
             serde_json::from_str(include_str!("../web/fixtures/woodshed-stage.json")).unwrap();
         let mut definition = default_definition(&dataset);
-        let grid = compile(&definition, &dataset).unwrap();
+        let grid = practice_compiler().compile(&definition, &dataset).unwrap();
         assert_eq!(grid.scene.items.len(), 3);
         assert_eq!(grid.scene.sources.len(), 2);
         assert_eq!(grid.scene.items[0].source, grid.scene.items[1].source);
@@ -161,7 +173,7 @@ mod tests {
         };
         let saved = serde_json::to_vec(&snapshot).unwrap();
         let reopened =
-            compile_snapshot(&serde_json::from_slice(&saved).unwrap(), &dataset).unwrap();
+            practice_compiler().compile_snapshot(&serde_json::from_slice(&saved).unwrap(), &dataset).unwrap();
         assert_eq!(reopened.selected, Some(InstanceId(1)));
         assert_eq!(reopened.labels[&InstanceId(1)], "chord:Major");
         assert_ne!(
@@ -169,7 +181,7 @@ mod tests {
             reopened.scene.items[1].transform
         );
         assert_eq!(grid.occurrence_by_instance, reopened.occurrence_by_instance);
-        let replay = compile_snapshot(&snapshot, &dataset).unwrap();
+        let replay = practice_compiler().compile_snapshot(&snapshot, &dataset).unwrap();
         assert_eq!(
             serde_json::to_vec(&reopened.score).unwrap(),
             serde_json::to_vec(&replay.score).unwrap()
@@ -183,7 +195,7 @@ mod tests {
         definition.arrangement.kind = "made-up-layout".into();
         definition.encoding.x = Channel::Field("missing".into());
         definition.appearance.realization = "unregistered-renderer".into();
-        let issues = compile(&definition, &dataset()).unwrap_err();
+        let issues = practice_compiler().compile(&definition, &dataset()).unwrap_err();
         for field in ["arrangement.kind", "encoding.x", "appearance.realization"] {
             assert!(issues.iter().any(|issue| issue.field == field));
         }
@@ -268,7 +280,7 @@ mod tests {
 
     #[test]
     fn scatter_compiles_repeated_sources_to_distinct_instances_in_stable_order() {
-        let compiled = compile(&definition(SCATTER_ARRANGEMENT_ID), &dataset()).expect("compiles");
+        let compiled = practice_compiler().compile(&definition(SCATTER_ARRANGEMENT_ID), &dataset()).expect("compiles");
         assert_eq!(compiled.scene.items.len(), 2);
         assert_eq!(
             compiled.scene.sources.len(),
@@ -291,14 +303,15 @@ mod tests {
 
     #[test]
     fn grid_uses_dense_numeric_ranks() {
-        let compiled = compile(&definition(GRID_ARRANGEMENT_ID), &dataset()).expect("compiles");
+        let compiled = practice_compiler().compile(&definition(GRID_ARRANGEMENT_ID), &dataset()).expect("compiles");
         assert_eq!(
             compiled.scene.items[0].transform.translate,
-            Vec2::new(0.0, 100.0)
+            Vec2::new(0.0, 84.0)
         );
+        // Pitch is the measured card plus spacing (stack seams S16).
         assert_eq!(
             compiled.scene.items[1].transform.translate,
-            Vec2::new(200.0, 0.0)
+            Vec2::new(180.0, 0.0)
         );
     }
 
@@ -310,7 +323,7 @@ mod tests {
         };
         let bytes = serde_json::to_vec(&snapshot).expect("serializes");
         let reopened: ProjectionSnapshot = serde_json::from_slice(&bytes).expect("deserializes");
-        let compiled = compile_snapshot(&reopened, &dataset()).expect("restores");
+        let compiled = practice_compiler().compile_snapshot(&reopened, &dataset()).expect("restores");
         assert_eq!(compiled.selected, Some(InstanceId(1)));
         assert_eq!(
             compiled
@@ -329,7 +342,7 @@ mod tests {
             definition,
             selected_occurrence: Some("gone".into()),
         };
-        let issues = compile_snapshot(&snapshot, &dataset()).expect_err("must refuse mismatch");
+        let issues = practice_compiler().compile_snapshot(&snapshot, &dataset()).expect_err("must refuse mismatch");
         assert!(issues.iter().any(|issue| issue.field == "encoding.color"));
         assert!(
             issues
@@ -350,11 +363,11 @@ mod tests {
             .arrangement
             .options
             .insert("era_bands".into(), "false".into());
-        let issues = compile(&definition, &dataset()).expect_err("must refuse unknown option");
+        let issues = practice_compiler().compile(&definition, &dataset()).expect_err("must refuse unknown option");
         assert!(
             issues
                 .iter()
-                .any(|issue| issue.field == "arrangement.options")
+                .any(|issue| issue.field == "arrangement.options.era_bands")
         );
     }
 
@@ -364,8 +377,8 @@ mod tests {
         dataset.occurrences[0]
             .values
             .insert("x".into(), ProjectionValue::Number(0.5));
-        let compiled = compile(&definition(GRID_ARRANGEMENT_ID), &dataset).expect("ranked cell");
-        assert_eq!(compiled.scene.items[1].transform.translate.x, 200.0);
+        let compiled = practice_compiler().compile(&definition(GRID_ARRANGEMENT_ID), &dataset).expect("ranked cell");
+        assert_eq!(compiled.scene.items[1].transform.translate.x, 180.0);
     }
 
     #[test]
@@ -378,7 +391,7 @@ mod tests {
             occurrence("d", "D", 2.0, 2.0),
         ];
 
-        let compiled = compile(&definition(GRID_ARRANGEMENT_ID), &dataset).expect("ranked grid");
+        let compiled = practice_compiler().compile(&definition(GRID_ARRANGEMENT_ID), &dataset).expect("ranked grid");
         assert_eq!(
             compiled.occurrence_by_instance,
             HashMap::from([
@@ -396,10 +409,10 @@ mod tests {
                 .map(|item| item.transform.translate)
                 .collect::<Vec<_>>(),
             vec![
-                Vec2::new(0.0, 100.0),
+                Vec2::new(0.0, 84.0),
                 Vec2::new(0.0, 0.0),
-                Vec2::new(400.0, 0.0),
-                Vec2::new(200.0, 100.0),
+                Vec2::new(360.0, 0.0),
+                Vec2::new(180.0, 84.0),
             ]
         );
     }

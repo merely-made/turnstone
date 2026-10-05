@@ -19,8 +19,8 @@ use graphshell::{
         PracticeWorkspace, PracticeWorkspaceSnapshot, Selection,
     },
     projection_compile::{
-        CompiledProjection, ProjectionDataset, ProjectionFieldType, ProjectionOccurrence,
-        ProjectionValue, compile, default_definition, refresh,
+        CompiledProjection, PRACTICE_CARD, ProjectionDataset, ProjectionFieldType,
+        ProjectionOccurrence, ProjectionValue, default_definition, practice_compiler,
     },
     projection_editor::{Channel, ProjectionDefinition, SourceBinding},
 };
@@ -214,7 +214,7 @@ impl PracticeHost {
         definition.appearance.title = "Thursday practice".into();
         definition.encoding.x = Channel::Field("x".into());
         definition.encoding.y = Channel::Field("y".into());
-        let compiled = compile(&definition, &dataset).map_err(|e| format!("{e:?}"))?;
+        let compiled = practice_compiler().compile(&definition, &dataset).map_err(|e| format!("{e:?}"))?;
         let mut board = PhysicsBoard::new();
         board.set_encoded_axes(encoded_axes(&definition));
         Ok(Self {
@@ -238,7 +238,7 @@ impl PracticeHost {
             dragging: None,
             clock_ms: None,
             accumulator_ms: 0.0,
-            card_size: (164.0, 68.0),
+            card_size: (PRACTICE_CARD.w, PRACTICE_CARD.h),
             selected_tone: None,
             focus_view: false,
         })
@@ -258,10 +258,10 @@ impl PracticeHost {
         let scale = (available_w / bounds.size.w.max(1.0))
             .min(available_h / bounds.size.h.max(1.0))
             .min(1.5);
-        self.card_size = (164.0 * scale, 68.0 * scale);
+        self.card_size = (PRACTICE_CARD.w * scale, PRACTICE_CARD.h * scale);
         let stacked = width < 480;
         if stacked {
-            self.card_size = (width.saturating_sub(48) as f32, 68.0);
+            self.card_size = (width.saturating_sub(48) as f32, PRACTICE_CARD.h);
         }
         let origin_x = (width as f32 - bounds.size.w * scale) * 0.5;
         let origin_y = 216.0 + (available_h - bounds.size.h * scale) * 0.5;
@@ -341,7 +341,7 @@ impl PracticeHost {
                 "grid" | "scatter" => {
                     let mut definition = self.definition.clone();
                     definition.arrangement.kind = format!("{command}.default");
-                    let compiled = refresh(&self.compiled, &definition, &self.dataset)
+                    let compiled = practice_compiler().refresh(&self.compiled, &definition, &self.dataset)
                         .map_err(|e| format!("{e:?}"))?;
                     self.workspace
                         .set_runtime(PracticeRuntimeConfig {
@@ -410,7 +410,7 @@ impl PracticeHost {
                     if saved.workspace.runtime.layout_id != saved.definition.arrangement.kind {
                         return Err("Saved layout disagrees with recipe".into());
                     }
-                    let compiled = refresh(&self.compiled, &saved.definition, &self.dataset)
+                    let compiled = practice_compiler().refresh(&self.compiled, &saved.definition, &self.dataset)
                         .map_err(|e| format!("{e:?}"))?;
                     let workspace = PracticeWorkspace::reopen(
                         saved.workspace,
