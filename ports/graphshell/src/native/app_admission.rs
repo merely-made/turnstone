@@ -344,7 +344,9 @@ pub fn configured_app_endpoint() -> String {
         .unwrap_or_else(default_app_endpoint)
 }
 
-fn default_app_endpoint() -> String {
+/// The platform default, ignoring the environment override. Only the
+/// installed resident may bind it.
+pub fn default_app_endpoint() -> String {
     #[cfg(windows)]
     {
         DEFAULT_WINDOWS_APP_ENDPOINT.to_string()
