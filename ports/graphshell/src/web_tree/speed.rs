@@ -38,6 +38,9 @@ pub(super) struct PaceWindow {
     above: usize,
     worst_over_budget_us: Option<i64>,
     over_grain: usize,
+    /// The worst frame's own budget, stepping time and ticks, and which
+    /// frame above real time it was (from 1).
+    worst_frame: Option<(Duration, Duration, u32, usize)>,
 }
 
 /// Record the frame just drawn under `budget`; on a dial run, every `WINDOW`
@@ -127,6 +130,14 @@ impl PaceWindow {
             let micros = |duration: Duration| duration.as_micros().min(i64::MAX as u128) as i64;
             let over = micros(report.compute.unwrap_or_default()) - micros(budget);
             self.above += 1;
+            if self.worst_over_budget_us.is_none_or(|worst| over > worst) {
+                self.worst_frame = Some((
+                    budget,
+                    report.compute.unwrap_or_default(),
+                    report.steps,
+                    self.above,
+                ));
+            }
             self.worst_over_budget_us =
                 Some(self.worst_over_budget_us.map_or(over, |w| w.max(over)));
             if over > crate::web_speed::CLOCK_GRAIN_US as i64 {
@@ -181,7 +192,7 @@ pub(super) fn pace_line(label: &str, canvas: &Canvas, shared: &Shared) -> String
     format!(
         "pace {label}: speed {} budget {} us margin {} us display period {:.3} ms ({}, worst \
          interval {} ms off its multiple); every window: {} frames above real time, worst {} us \
-         over budget, {} past the grain",
+         over budget ({}), {} past the grain",
         crate::web_speed::field(canvas.physics_speed()),
         frame_budget.budget().per_frame.as_micros(),
         frame_budget.margin().as_micros(),
@@ -190,6 +201,14 @@ pub(super) fn pace_line(label: &str, canvas: &Canvas, shared: &Shared) -> String
         crate::web_speed::period_fields(&frame_budget).1,
         window.above,
         window.worst_field(),
+        window.worst_frame.map_or_else(
+            || "no frame".into(),
+            |(budget, compute, steps, nth)| format!(
+                "frame {nth}: {} us stepping {steps} ticks against a {} us budget",
+                compute.as_micros(),
+                budget.as_micros()
+            )
+        ),
         window.over_grain,
     )
 }
