@@ -83,7 +83,7 @@ where
         let connection = server;
         server = ServerOptions::new().create(endpoint)?;
         let handle = handle.clone();
-        tokio::spawn(async move {
+        crate::native::tasks::spawn_tracked(async move {
             if let Err(error) = verify_same_user(&connection) {
                 tracing::warn!(%error, door = what, "rejected a client of another user");
                 return;
@@ -112,7 +112,7 @@ where
     loop {
         let (connection, _) = listener.accept().await?;
         let handle = handle.clone();
-        tokio::spawn(async move {
+        crate::native::tasks::spawn_tracked(async move {
             handle(Box::new(connection)).await;
         });
     }

@@ -29,6 +29,7 @@ use crate::native::endpoint_catalog::{
 use crate::native::identity_ui::{NativeIdentityUi, apply_native_identity_action};
 use crate::native::local_session::{LocalSession, admit_local_client, identity_endpoint_for};
 use crate::native::personae_host::PersonaeHost;
+use crate::native::tasks::spawn_tracked_with_handle;
 use crate::session_loop::{SessionLoopError, SessionSummary, serve_admitted_session};
 use crate::session_notices::serve_admitted_session_notifying;
 
@@ -44,6 +45,10 @@ pub enum BrowserHostError {
     Catalog(#[from] ResidentEndpointCatalogError),
     #[error("browser session task failed: {0}")]
     Task(#[from] tokio::task::JoinError),
+    /// The session task ended without answering: it panicked or was
+    /// cancelled with its resident's tasks.
+    #[error("browser session task ended without answering")]
+    TaskEnded(#[from] tokio::sync::oneshot::error::RecvError),
 }
 
 /// Serve one browser-launched native-messaging process.
@@ -208,7 +213,7 @@ where
     let server = match selected_endpoint {
         BrowserSessionEndpoint::Identity { surface } => {
             let mut endpoint = identity_endpoint_for(Arc::clone(&personae), &authority, surface);
-            tokio::spawn(async move {
+            spawn_tracked_with_handle(async move {
                 let revocations = RwLock::new(revocations);
                 let mut resume = |_: &mut IdentityEndpoint<S>, _: ResumeRequest| {
                     Err("identity resume is not implemented".to_string())
@@ -229,7 +234,7 @@ where
             // A missing route therefore never yields a live browser session,
             // and the endpoint only sees the narrow admitted context.
             let mut endpoint = catalog.open(route.id(), &endpoint_context)?;
-            tokio::spawn(async move {
+            spawn_tracked_with_handle(async move {
                 let revocations = RwLock::new(revocations);
                 let mut resume = |endpoint: &mut ResidentEndpointSession,
                                   request: ResumeRequest| {
