@@ -49,6 +49,14 @@ sample while closing superseded frames. This finding is consistent with stale
 pixels, but does not prove the cause of all blank captures. This receipt still
 consumes published 0.7.1; a supplier source fix or pure queue test cannot change
 its native acceptance result.
+The bounded supplier fix is now implemented locally. All five focused Windows
+capture tests pass, including the deliberately broken single-dequeue control;
+`supplier-scry-freshness.json` records its source hash, executed command and
+claim limits. Scry commit `39818a7` contains that source, the Windows plan and
+only its scoped canonical-index hunks. The baseline Scry audit/preflight WIP
+is preserved outside the commit because initial hunk ownership is uncertain.
+The code awaits repaired-source native qualification. Stable target
+`C:/t/cargo-targets/wgpu-scry` is retained for Scry repository reuse.
 
 Latest locked all-target checks pass with default features and with `scry,weld`
 (`default-check-final.log`, `combined-check-complete.log`). The current clipped
