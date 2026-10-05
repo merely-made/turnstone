@@ -24,8 +24,9 @@ assert snap physics-effective-speed >= 25
 # A light page, still slower than 60 Hz: the period is capped here too.
 assert snap display-period-ms <= 16.7
 assert snap physics-budget-us <= 8333
-# Each frame's stepping inside its own budget plus the clock's 100 us grain,
-# over every window, as p6_tree_speed_fast.
+# Each frame's admitted ticks inside its own budget plus the clock's 100 us
+# grain, over every window, as p6_tree_speed_fast.
+assert snap pace-gated-frames >= 1
 assert snap pace-over-budget-us <= 100
 assert snap pace-over-budget-worst-us <= 100
 assert snap pace-over-grain-frames == 0

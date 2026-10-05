@@ -32,15 +32,19 @@ pub(super) struct PaceWindow {
     frames: VecDeque<Frame>,
     since_log: usize,
     logged: usize,
-    /// Every frame above real time since the page opened: how many, the
-    /// most one ran over its budget (µs), and how many ran past the budget
-    /// and the clock's grain.
+    /// Every frame above real time since the page opened in which the gate
+    /// admitted ticks past the 1x floor (ruled 2026-10-05, "Only ticks past
+    /// the floor"): how many, the most the admitted ticks ran past the
+    /// frame's budget (µs), and how many ran past it and the clock's grain.
     above: usize,
     worst_over_budget_us: Option<i64>,
     over_grain: usize,
-    /// The worst frame's own budget, stepping time and ticks, and which
-    /// frame above real time it was (from 1).
+    /// The worst such frame's own budget, the end of its admitted ticks, its
+    /// ticks in all, and which frame above real time it was (from 1).
     worst_frame: Option<(Duration, Duration, u32, usize)>,
+    /// Frames above real time whose floor alone ran past the budget and the
+    /// grain, the gate admitting nothing: the floor's, not the gate's.
+    floor_over: usize,
 }
 
 /// Record the frame just drawn under `budget`; on a dial run, every `WINDOW`
@@ -92,6 +96,8 @@ struct Frame {
     drawn_moved: bool,
     stepped: bool,
     compute: Duration,
+    /// When the ticks the gate admitted past the floor ended, if any.
+    admitted_until: Option<Duration>,
     /// The step budget this frame ran under.
     budget: Duration,
 }
@@ -102,8 +108,9 @@ struct Summary {
     moved: usize,
     stepped: usize,
     compute_max: Duration,
-    /// The most any frame's stepping ran over its own budget, in µs
-    /// (negative when every frame stayed under).
+    /// The most the ticks the gate admitted ran past their frame's budget,
+    /// in µs (negative when every frame stayed under; floor-only frames are
+    /// not the gate's).
     over_budget_us: i64,
 }
 
@@ -128,20 +135,25 @@ impl PaceWindow {
         let report = canvas.elapsed_step_report().unwrap_or_default();
         if canvas.physics_speed() > Speed::REAL_TIME {
             let micros = |duration: Duration| duration.as_micros().min(i64::MAX as u128) as i64;
-            let over = micros(report.compute.unwrap_or_default()) - micros(budget);
-            self.above += 1;
-            if self.worst_over_budget_us.is_none_or(|worst| over > worst) {
-                self.worst_frame = Some((
-                    budget,
-                    report.compute.unwrap_or_default(),
-                    report.steps,
-                    self.above,
-                ));
-            }
-            self.worst_over_budget_us =
-                Some(self.worst_over_budget_us.map_or(over, |w| w.max(over)));
-            if over > crate::web_speed::CLOCK_GRAIN_US as i64 {
-                self.over_grain += 1;
+            let grain = crate::web_speed::CLOCK_GRAIN_US as i64;
+            match report.admitted_until {
+                Some(until) if report.admitted > 0 => {
+                    let over = micros(until) - micros(budget);
+                    self.above += 1;
+                    if self.worst_over_budget_us.is_none_or(|worst| over > worst) {
+                        self.worst_frame = Some((budget, until, report.steps, self.above));
+                    }
+                    self.worst_over_budget_us =
+                        Some(self.worst_over_budget_us.map_or(over, |w| w.max(over)));
+                    if over > grain {
+                        self.over_grain += 1;
+                    }
+                },
+                _ => {
+                    if micros(report.compute.unwrap_or_default()) - micros(budget) > grain {
+                        self.floor_over += 1;
+                    }
+                },
             }
         }
         if self.frames.len() == WINDOW {
@@ -151,6 +163,7 @@ impl PaceWindow {
             drawn_moved: previous.as_ref() != self.last.as_ref(),
             stepped: report.steps > 0,
             compute: report.compute.unwrap_or_default(),
+            admitted_until: report.admitted_until.filter(|_| report.admitted > 0),
             budget,
         });
     }
@@ -177,7 +190,11 @@ impl PaceWindow {
             over_budget_us: self
                 .frames
                 .iter()
-                .map(|frame| micros(frame.compute) - micros(frame.budget))
+                .filter_map(|frame| {
+                    frame
+                        .admitted_until
+                        .map(|until| micros(until) - micros(frame.budget))
+                })
                 .max()
                 .unwrap_or(i64::MIN),
         }
@@ -191,8 +208,8 @@ pub(super) fn pace_line(label: &str, canvas: &Canvas, shared: &Shared) -> String
     let frame_budget = shared.frame_budget.borrow();
     format!(
         "pace {label}: speed {} budget {} us margin {} us display period {:.3} ms ({}, worst \
-         interval {} ms off its multiple); every window: {} frames above real time, worst {} us \
-         over budget ({}), {} past the grain",
+         interval {} ms off its multiple); every window: {} frames the gate admitted ticks in, \
+         worst {} us over budget ({}), {} past the grain; {} floor-only frames past it",
         crate::web_speed::field(canvas.physics_speed()),
         frame_budget.budget().per_frame.as_micros(),
         frame_budget.margin().as_micros(),
@@ -203,13 +220,15 @@ pub(super) fn pace_line(label: &str, canvas: &Canvas, shared: &Shared) -> String
         window.worst_field(),
         window.worst_frame.map_or_else(
             || "no frame".into(),
-            |(budget, compute, steps, nth)| format!(
-                "frame {nth}: {} us stepping {steps} ticks against a {} us budget",
-                compute.as_micros(),
+            |(budget, until, steps, nth)| format!(
+                "frame {nth}: admitted ticks ended at {} us of {steps} ticks against a {} us \
+                 budget",
+                until.as_micros(),
                 budget.as_micros()
             )
         ),
         window.over_grain,
+        window.floor_over,
     )
 }
 
@@ -275,6 +294,11 @@ pub(super) fn fields(snapshot: ProbeSnapshot, canvas: &Canvas, shared: &Shared) 
         .with_field(
             "pace-over-grain-frames",
             shared.pace.borrow().over_grain.to_string(),
+        )
+        .with_field("pace-gated-frames", shared.pace.borrow().above.to_string())
+        .with_field(
+            "pace-floor-over-frames",
+            shared.pace.borrow().floor_over.to_string(),
         )
         .with_field(
             "physics-budget-margin-us",

@@ -1,0 +1,32 @@
+# The positive control for p6_tree_speed_fast's bound (physics catalog plan,
+# ruled 2026-10-05, "Only ticks past the floor"): the same run with a 10 ms
+# stall planted in the budget's clock every 97th reading
+# (tree.html?nodes=300&seed=7&links=none&gpu=off&physics_speed=max&physics_plant_stall_ms=10).
+# A stall inside a tick the gate admitted ends it past the budget, so the
+# bound p6_tree_speed_fast holds must see it: this receipt asserts the miss.
+assert snap ready == true
+assert snap physics-speed == max
+assert snap physics-budget-share == 0.5
+assert snap physics-budget-margin-us == 200
+click role:button Play physics
+settle 2
+assert snap physics-paused == false
+click role:combobox Arrangement
+settle 1
+click role:option Free (physics alone)
+settle 1
+click role:button Apply arrangement
+settle 1
+assert snap layout == free
+settle 10
+timing start speed-fast-planted
+settle 30
+timing stop
+log-physics fast-planted
+log-pace fast-planted
+assert snap physics-budget-bound == true
+assert snap pace-gated-frames >= 1
+assert snap pace-over-grain-frames >= 1
+assert snap pace-over-budget-worst-us >= 1000
+assert snap finite == true
+log p6 speed fast planted control complete

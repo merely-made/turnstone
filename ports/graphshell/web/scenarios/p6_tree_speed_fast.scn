@@ -6,7 +6,9 @@
 # tree.html?nodes=300&seed=7&links=none&gpu=off&physics_speed=max runs as fast
 # as the budget allows, so the budget binds every frame, the canvas reports
 # the speed it reached, and stepping stays inside each frame's own budget.
-# p6_tree_speed_fast_control is 50x at 24 nodes.
+# p6_tree_speed_fast_control is 50x at 24 nodes; p6_tree_speed_fast_planted
+# is this receipt with a stall planted in the budget's clock, which must fail
+# the bound.
 assert snap ready == true
 assert snap physics-speed == max
 assert snap physics-budget-share == 0.5
@@ -36,7 +38,10 @@ assert snap physics-budget-us <= 8333
 # Each frame's bound is its budget plus the browser clock's 100 us
 # resolution (performance.now), ruled 2026-10-04, "Bound = budget + clock
 # grain", over every frame above real time since the page opened, not only
-# the last window's (ruled the same day with the margin).
+# the last window's (ruled the same day with the margin), on the ticks the
+# gate admitted past the 1x floor (ruled 2026-10-05, "Only ticks past the
+# floor"): the floor's own ticks run whatever the budget.
+assert snap pace-gated-frames >= 1
 assert snap pace-over-budget-us <= 100
 assert snap pace-over-budget-worst-us <= 100
 assert snap pace-over-grain-frames == 0

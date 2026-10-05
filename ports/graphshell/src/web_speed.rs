@@ -12,6 +12,7 @@
 //! `physics_budget_margin_us` page options and the browser clock the budget
 //! is measured on.
 
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::Duration;
 
 pub(crate) use graphshell::frame_budget::{FrameBudget, Period};
@@ -56,6 +57,10 @@ pub(crate) struct SpeedOptions {
     pub(crate) share: f64,
     /// What the gate keeps past the forecast tick.
     pub(crate) margin: Duration,
+    /// A planted stall in the budget's clock, every so many readings: the
+    /// receipts' positive control (`physics_plant_stall_ms`,
+    /// `physics_plant_every`, 97 by default).
+    pub(crate) plant: Option<(Duration, u64)>,
     /// The page asked for a speed or a budget: receipts log the pace.
     pub(crate) explicit: bool,
 }
@@ -87,10 +92,28 @@ pub(crate) fn options() -> Result<SpeedOptions, String> {
             .map_err(|_| "physics_budget_margin_us wants whole microseconds")?,
         None => DEFAULT_MARGIN_US,
     };
+    let plant = match params.get("physics_plant_stall_ms") {
+        Some(value) => {
+            let stall = value
+                .parse::<u64>()
+                .map_err(|_| "physics_plant_stall_ms wants whole milliseconds")?;
+            let every = match params.get("physics_plant_every") {
+                Some(every) => every
+                    .parse::<u64>()
+                    .ok()
+                    .filter(|every| *every > 0)
+                    .ok_or("physics_plant_every wants a count above 0")?,
+                None => 97,
+            };
+            Some((Duration::from_millis(stall), every))
+        },
+        None => None,
+    };
     Ok(SpeedOptions {
         speed,
         share,
         margin: Duration::from_micros(margin_us),
+        plant,
         explicit: [
             "physics_speed",
             "physics_budget_share",
@@ -105,9 +128,34 @@ pub(crate) fn clock() -> Duration {
     Duration::from_secs_f64(now_ms().max(0.0) / 1000.0)
 }
 
-/// The page's frame budget: its share and margin, on the browser clock.
+/// The page's frame budget: its share and margin, on the browser clock, or
+/// on the planted one when the page asks for a stall.
 pub(crate) fn frame_budget(options: SpeedOptions) -> FrameBudget {
+    let clock = match options.plant {
+        Some((stall, every)) => {
+            PLANT_STALL_US.store(stall.as_micros() as u64, Ordering::Relaxed);
+            PLANT_EVERY.store(every, Ordering::Relaxed);
+            planted_clock
+        },
+        None => clock,
+    };
     FrameBudget::new(options.share, options.margin, clock, CLOCK_GRAIN)
+}
+
+static PLANT_STALL_US: AtomicU64 = AtomicU64::new(0);
+static PLANT_EVERY: AtomicU64 = AtomicU64::new(0);
+static PLANT_READINGS: AtomicU64 = AtomicU64::new(0);
+
+/// The browser clock with a planted stall: every `PLANT_EVERY`th reading
+/// busy-waits `PLANT_STALL_US` before it reads, so a tick the gate admitted
+/// can run past the budget whatever its forecast.
+fn planted_clock() -> Duration {
+    let every = PLANT_EVERY.load(Ordering::Relaxed);
+    if every > 0 && PLANT_READINGS.fetch_add(1, Ordering::Relaxed) % every == every - 1 {
+        let until = now_ms() + PLANT_STALL_US.load(Ordering::Relaxed) as f64 / 1000.0;
+        while now_ms() < until {}
+    }
+    clock()
 }
 
 /// Where the display period came from, for the receipts: "inferred" or
