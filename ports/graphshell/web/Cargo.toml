@@ -24,7 +24,7 @@ path = "../src/web.rs"
 # `webrtc-browser` is the C4 door's peer half (`webrtc_browser`, `webrtc_join`)
 # and needs `--cfg getrandom_backend="wasm_js"` in this target's rustflags:
 # personae's wasm32 identity stack sits on getrandom 0.3, whose `wasm_js`
-# feature is inert without the cfg. See .cargo/config.toml.example.
+# feature is inert without the cfg. The cfg is committed in .cargo/config.toml.
 graphshell = { path = "..", default-features = false, features = ["web", "webrtc-browser", "canvas-gpu"] }
 # `canvas-gpu`: the canvas's repulsion on the page's own WebGPU device
 # (physics catalog plan, P5c).
