@@ -13,6 +13,10 @@
 //! handle. A host supplies [`ProjectionDefinitionSink`] when it elects to
 //! persist a valid definition.
 
+pub use scenograph::relationship::{
+    RecipeEdit, RelationshipRecipe, RelationshipRecipeDraft, RelationshipRequirements,
+    RelationshipSnapshot, relationship_recipe,
+};
 use std::collections::BTreeMap;
 
 pub use scenograph::{
