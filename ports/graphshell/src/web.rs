@@ -1953,6 +1953,9 @@ async fn run(root_element: Element) -> Result<(), String> {
 
 #[wasm_bindgen(start)]
 pub fn start() {
+    // First, before any other Rust code: pre.4 CubeCL's static constructors,
+    // once (burn migration plan §13.33; rulings 532 and 536).
+    cambium_genet_web_host::run_static_constructors_once();
     console_error_panic_hook::set_once();
 }
 
