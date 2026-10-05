@@ -23,6 +23,9 @@ capture physics_springs_start
 wait
 settle 60
 capture physics_springs_settled
+# Framing (2026-10-03): every node's centre on the visible canvas at the
+# frame this capture shows, read from the canvas's positions and camera.
+assert snap layout-outside == 0
 wait
 # The spring's own energy rings down within four seconds (a probe read
 # 235 000 → 1 800 → 460). What remains is a slow outward drift of the two
@@ -33,4 +36,6 @@ settle 300
 assert snap physics-energy <= 500
 assert snap layout-overlaps == 0
 assert snap layout-spread <= 250
+# Framing after the settle.
+assert snap layout-outside == 0
 log physics springs receipt complete

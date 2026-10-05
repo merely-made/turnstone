@@ -19,10 +19,15 @@ capture physics_still_start
 wait
 settle 60
 capture physics_still_held
+# Framing (2026-10-03): every node's centre on the visible canvas at the
+# frame this capture shows, read from the canvas's positions and camera.
+assert snap layout-outside == 0
 wait
 settle 300
 assert snap physics-energy <= 0.5
 # Held from the tight free seed, the graph did not fly apart: the contact
 # solver may nudge overlapping bodies, never blast them.
 assert snap layout-spread <= 200
+# Framing after the settle.
+assert snap layout-outside == 0
 log physics still receipt complete

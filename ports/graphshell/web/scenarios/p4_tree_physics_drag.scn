@@ -1,9 +1,12 @@
 # Tree version of physics_drag.scn: the same receipt through the docked Graph tools
 # panel's Cambium controls and the tree lane's observations.
 # Drag under every law. The fixture's web node is selected, pressed, moved
-# 220px right and released; `drag-return` is how far the law has since
+# 220 world units right and released; `drag-return-world` is how far the law has since
 # carried it off the drop point. A law that rests reclaims the node, a
 # restless law keeps moving, Still holds it where it was let go.
+# In world units (ruled 2026-10-04, "Measure in world units"): the gesture and
+# every drag-return read the same to the law at any zoom the following view
+# reaches, and exactly as the px forms did at zoom 1.
 assert snap ready == true
 # The boot arrangement pauses the canvas; the receipt wants the law running.
 click role:button Play physics
@@ -36,15 +39,15 @@ press-focused
 settle 1
 # The press took hold of a node (a member id, so it carries a dash).
 assert snap dragging-node ~ -
-move-by 220 0
+move-by-world 220 0
 settle 1
 release-at
 settle 3
 # The release window is read on the first frame after the release that
 # executed physics steps, not a render frame count.
-assert snap drag-return-step <= 20
+assert snap drag-return-step-world <= 20
 settle 300
-assert snap drag-return >= 40
+assert snap drag-return-world >= 40
 assert snap layout-overlaps == 0
 capture physics_drag_springs_reclaimed
 settle 2
@@ -67,15 +70,15 @@ press-focused
 settle 1
 # The press took hold of a node (a member id, so it carries a dash).
 assert snap dragging-node ~ -
-move-by 220 0
+move-by-world 220 0
 settle 1
 release-at
 settle 3
 # The release window is read on the first frame after the release that
 # executed physics steps, not a render frame count.
-assert snap drag-return-step <= 20
+assert snap drag-return-step-world <= 20
 settle 300
-assert snap drag-return >= 40
+assert snap drag-return-world >= 40
 assert snap layout-overlaps == 0
 
 # --- Stress ---
@@ -96,15 +99,15 @@ press-focused
 settle 1
 # The press took hold of a node (a member id, so it carries a dash).
 assert snap dragging-node ~ -
-move-by 220 0
+move-by-world 220 0
 settle 1
 release-at
 settle 3
 # The release window is read on the first frame after the release that
 # executed physics steps, not a render frame count.
-assert snap drag-return-step <= 20
+assert snap drag-return-step-world <= 20
 settle 300
-assert snap drag-return >= 40
+assert snap drag-return-world >= 40
 assert snap layout-overlaps == 0
 
 # --- Energy ---
@@ -125,15 +128,15 @@ press-focused
 settle 1
 # The press took hold of a node (a member id, so it carries a dash).
 assert snap dragging-node ~ -
-move-by 220 0
+move-by-world 220 0
 settle 1
 release-at
 settle 3
 # The release window is read on the first frame after the release that
 # executed physics steps, not a render frame count.
-assert snap drag-return-step <= 20
+assert snap drag-return-step-world <= 20
 settle 300
-assert snap drag-return >= 40
+assert snap drag-return-world >= 40
 assert snap layout-overlaps == 0
 
 # --- Orbit ---
@@ -154,14 +157,14 @@ press-focused
 settle 1
 # The press took hold of a node (a member id, so it carries a dash).
 assert snap dragging-node ~ -
-move-by 220 0
+move-by-world 220 0
 settle 1
 release-at
 settle 3
 # The release window is read on the first frame after the release that
 # executed physics steps, not a render frame count.
 # A moving law carries the node within its first stepped frame.
-assert snap drag-return-step <= 60
+assert snap drag-return-step-world <= 60
 settle 120
 assert snap physics-energy >= 1
 
@@ -183,14 +186,14 @@ press-focused
 settle 1
 # The press took hold of a node (a member id, so it carries a dash).
 assert snap dragging-node ~ -
-move-by 220 0
+move-by-world 220 0
 settle 1
 release-at
 settle 3
 # The release window is read on the first frame after the release that
 # executed physics steps, not a render frame count.
 # A moving law carries the node within its first stepped frame.
-assert snap drag-return-step <= 60
+assert snap drag-return-step-world <= 60
 settle 120
 assert snap physics-energy >= 1
 
@@ -212,14 +215,14 @@ press-focused
 settle 1
 # The press took hold of a node (a member id, so it carries a dash).
 assert snap dragging-node ~ -
-move-by 220 0
+move-by-world 220 0
 settle 1
 release-at
 settle 3
 # The release window is read on the first frame after the release that
 # executed physics steps, not a render frame count.
 # A moving law carries the node within its first stepped frame.
-assert snap drag-return-step <= 60
+assert snap drag-return-step-world <= 60
 settle 120
 assert snap physics-energy >= 1
 
@@ -241,14 +244,14 @@ press-focused
 settle 1
 # The press took hold of a node (a member id, so it carries a dash).
 assert snap dragging-node ~ -
-move-by 220 0
+move-by-world 220 0
 settle 1
 release-at
 settle 3
 # The release window is read on the first frame after the release that
 # executed physics steps, not a render frame count.
 # A moving law carries the node within its first stepped frame.
-assert snap drag-return-step <= 60
+assert snap drag-return-step-world <= 60
 settle 120
 assert snap physics-energy >= 1
 
@@ -270,14 +273,14 @@ press-focused
 settle 1
 # The press took hold of a node (a member id, so it carries a dash).
 assert snap dragging-node ~ -
-move-by 220 0
+move-by-world 220 0
 settle 1
 release-at
 settle 3
 # The release window is read on the first frame after the release that
 # executed physics steps, not a render frame count.
 # A moving law carries the node within its first stepped frame.
-assert snap drag-return-step <= 60
+assert snap drag-return-step-world <= 60
 settle 120
 assert snap physics-energy >= 1
 
@@ -299,17 +302,17 @@ press-focused
 settle 1
 # The press took hold of a node (a member id, so it carries a dash).
 assert snap dragging-node ~ -
-move-by 220 0
+move-by-world 220 0
 settle 1
 release-at
 settle 3
 # The release window is read on the first frame after the release that
 # executed physics steps, not a render frame count.
 # A moving law carries the node within its first stepped frame.
-assert snap drag-return-step <= 60
+assert snap drag-return-step-world <= 60
 # Anneal cools rather than holding an energy: what it owes is displacement.
 settle 300
-assert snap drag-return >= 40
+assert snap drag-return-world >= 40
 assert snap layout-overlaps == 0
 
 # --- Still ---
@@ -330,15 +333,15 @@ press-focused
 settle 1
 # The press took hold of a node (a member id, so it carries a dash).
 assert snap dragging-node ~ -
-move-by 220 0
+move-by-world 220 0
 settle 1
 release-at
 settle 3
 # The release window is read on the first frame after the release that
 # executed physics steps, not a render frame count.
-assert snap drag-return-step <= 20
+assert snap drag-return-step-world <= 20
 settle 300
-assert snap drag-return <= 5
+assert snap drag-return-world <= 5
 assert snap physics-energy <= 1
 capture physics_drag_still_held
 settle 2

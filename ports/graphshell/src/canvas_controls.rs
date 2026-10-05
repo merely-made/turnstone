@@ -56,7 +56,12 @@ impl CanvasCommand {
                     zoom: canvas.camera().zoom,
                 });
             },
-            Self::Fit => canvas.fit_to_content(),
+            // Fitting resumes following the layout; a pan or zoom (both reach
+            // the canvas's wheel) or a node drag stops it.
+            Self::Fit => {
+                canvas.fit_to_content();
+                canvas.set_view_follow(true);
+            },
             Self::RestoreArrangement => {
                 canvas.restore_arrangement();
             },

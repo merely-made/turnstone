@@ -1,8 +1,11 @@
 # Physics receipt (P4): drag under every law. The node the boot selects is
-# pressed, moved 220px right, and released; `drag-return` is how far the law
+# pressed, moved 220 world units right, and released; `drag-return-world` is how far the law
 # has since carried it off the drop point. A law that rests reclaims the node
 # (the springs pull it home); a restless law keeps moving instead; Still holds
 # it exactly where it was let go.
+# In world units (ruled 2026-10-04, "Measure in world units"): the gesture and
+# every drag-return read the same to the law at any zoom the following view
+# reaches, and exactly as the px forms did at zoom 1.
 assert title GRAPHSHELL H3 READY
 assert snap ready == true
 dom click [data-command="toggle-physics"]
@@ -25,13 +28,13 @@ press-focused
 settle 1
 # The press took hold of a node (a member id, so it carries a dash).
 assert snap dragging ~ -
-move-by 220 0
+move-by-world 220 0
 settle 1
 release-at
 settle 1
-assert snap drag-return <= 20
+assert snap drag-return-world <= 20
 settle 300
-assert snap drag-return >= 40
+assert snap drag-return-world >= 40
 assert snap layout-overlaps == 0
 capture physics_drag_springs_reclaimed
 wait
@@ -48,13 +51,13 @@ press-focused
 settle 1
 # The press took hold of a node (a member id, so it carries a dash).
 assert snap dragging ~ -
-move-by 220 0
+move-by-world 220 0
 settle 1
 release-at
 settle 1
-assert snap drag-return <= 20
+assert snap drag-return-world <= 20
 settle 300
-assert snap drag-return >= 40
+assert snap drag-return-world >= 40
 assert snap layout-overlaps == 0
 
 # --- Stress ---
@@ -69,13 +72,13 @@ press-focused
 settle 1
 # The press took hold of a node (a member id, so it carries a dash).
 assert snap dragging ~ -
-move-by 220 0
+move-by-world 220 0
 settle 1
 release-at
 settle 1
-assert snap drag-return <= 20
+assert snap drag-return-world <= 20
 settle 300
-assert snap drag-return >= 40
+assert snap drag-return-world >= 40
 assert snap layout-overlaps == 0
 
 # --- Energy ---
@@ -90,13 +93,13 @@ press-focused
 settle 1
 # The press took hold of a node (a member id, so it carries a dash).
 assert snap dragging ~ -
-move-by 220 0
+move-by-world 220 0
 settle 1
 release-at
 settle 1
-assert snap drag-return <= 20
+assert snap drag-return-world <= 20
 settle 300
-assert snap drag-return >= 40
+assert snap drag-return-world >= 40
 assert snap layout-overlaps == 0
 
 # --- Orbit ---
@@ -111,12 +114,12 @@ press-focused
 settle 1
 # The press took hold of a node (a member id, so it carries a dash).
 assert snap dragging ~ -
-move-by 220 0
+move-by-world 220 0
 settle 1
 release-at
 settle 1
 # A moving law carries the node within the release frame itself.
-assert snap drag-return <= 60
+assert snap drag-return-world <= 60
 settle 120
 assert snap physics-energy >= 1
 
@@ -132,12 +135,12 @@ press-focused
 settle 1
 # The press took hold of a node (a member id, so it carries a dash).
 assert snap dragging ~ -
-move-by 220 0
+move-by-world 220 0
 settle 1
 release-at
 settle 1
 # A moving law carries the node within the release frame itself.
-assert snap drag-return <= 60
+assert snap drag-return-world <= 60
 settle 120
 assert snap physics-energy >= 1
 
@@ -153,12 +156,12 @@ press-focused
 settle 1
 # The press took hold of a node (a member id, so it carries a dash).
 assert snap dragging ~ -
-move-by 220 0
+move-by-world 220 0
 settle 1
 release-at
 settle 1
 # A moving law carries the node within the release frame itself.
-assert snap drag-return <= 60
+assert snap drag-return-world <= 60
 settle 120
 assert snap physics-energy >= 1
 
@@ -174,12 +177,12 @@ press-focused
 settle 1
 # The press took hold of a node (a member id, so it carries a dash).
 assert snap dragging ~ -
-move-by 220 0
+move-by-world 220 0
 settle 1
 release-at
 settle 1
 # A moving law carries the node within the release frame itself.
-assert snap drag-return <= 60
+assert snap drag-return-world <= 60
 settle 120
 assert snap physics-energy >= 1
 
@@ -195,12 +198,12 @@ press-focused
 settle 1
 # The press took hold of a node (a member id, so it carries a dash).
 assert snap dragging ~ -
-move-by 220 0
+move-by-world 220 0
 settle 1
 release-at
 settle 1
 # A moving law carries the node within the release frame itself.
-assert snap drag-return <= 60
+assert snap drag-return-world <= 60
 settle 120
 assert snap physics-energy >= 1
 
@@ -216,16 +219,16 @@ press-focused
 settle 1
 # The press took hold of a node (a member id, so it carries a dash).
 assert snap dragging ~ -
-move-by 220 0
+move-by-world 220 0
 settle 1
 release-at
 settle 1
 # A moving law carries the node within the release frame itself.
-assert snap drag-return <= 60
+assert snap drag-return-world <= 60
 # Anneal is a search that cools: it does not hold a steady energy, so what it
 # owes is displacement — the node is not where the drag left it.
 settle 300
-assert snap drag-return >= 40
+assert snap drag-return-world >= 40
 assert snap layout-overlaps == 0
 
 # --- Still ---
@@ -240,13 +243,13 @@ press-focused
 settle 1
 # The press took hold of a node (a member id, so it carries a dash).
 assert snap dragging ~ -
-move-by 220 0
+move-by-world 220 0
 settle 1
 release-at
 settle 1
-assert snap drag-return <= 20
+assert snap drag-return-world <= 20
 settle 300
-assert snap drag-return <= 5
+assert snap drag-return-world <= 5
 assert snap physics-energy <= 1
 capture physics_drag_still_held
 wait

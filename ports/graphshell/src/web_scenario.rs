@@ -323,10 +323,25 @@ impl Probe<'_> {
                 self.moved(x + d[0], y + d[1]);
                 Ok(())
             },
+            // The same move in world units, so a receipt's gesture means the
+            // same distance to the law at any zoom; at zoom 1 it is `move-by`
+            // (ruled 2026-10-04, "Measure in world units").
+            "move-by-world" => {
+                let d = numbers(rest, 2)?;
+                let (x, y) = self
+                    .host
+                    .canvas
+                    .focused_world_position()
+                    .ok_or("wants exactly one focused node")?;
+                let (sx, sy) = self.host.canvas.screen_point_of((x + d[0], y + d[1]));
+                self.moved(sx, sy);
+                Ok(())
+            },
             "release-at" => {
                 let (x, y) = self.focused_point()?;
                 self.release(x, y);
                 self.host.drag_drop = Some((x, y));
+                self.host.drag_drop_world = self.host.canvas.focused_world_position();
                 Ok(())
             },
             // `add-node <x> <y> <url>`: the empty-space add gesture, at a point
