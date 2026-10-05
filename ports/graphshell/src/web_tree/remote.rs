@@ -320,10 +320,14 @@ pub(super) fn board_semantics(
             .scene()
             .card_rects(remote.board.board(), width, height, BOARD_FIT)
             .into_iter()
-            .map(|(_, title, rect)| ProducerNode {
+            .enumerate()
+            .map(|(ordinal, (id, title, rect))| ProducerNode {
+                // A card's id is its scene instance.
+                key: id.parse().unwrap_or(ordinal as u64),
                 role: ProducerRole::ListItem,
                 name: title,
                 rect: [rect.x, rect.y, rect.width, rect.height],
+                actions: Vec::new(),
             })
             .collect()
     } else {

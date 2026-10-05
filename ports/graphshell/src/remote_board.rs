@@ -110,6 +110,11 @@ impl RemoteBoard {
         &self.board
     }
 
+    /// The board, for the viewer's own actions on its cards (F64).
+    pub fn board_mut(&mut self) -> &mut PhysicsBoard {
+        &mut self.board
+    }
+
     /// The board as last described; hosts paint it with
     /// `scene().paint(board(), ..)`.
     pub fn scene(&self) -> &BoardScene {

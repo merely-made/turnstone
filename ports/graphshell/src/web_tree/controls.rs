@@ -151,6 +151,23 @@ pub(super) fn gpu_options() -> Result<GpuOptions, String> {
     Ok(options)
 }
 
+/// A planted accessibility defect from `?plant_a11y=` (`missing_item`,
+/// `missing_action`, `dead_action`): the receipts' positive control.
+pub(super) fn reader_plant() -> Result<graphshell::canvas_reader::Plant, String> {
+    let search = web_sys::window()
+        .ok_or("no window")?
+        .location()
+        .search()
+        .map_err(|_| "cannot read page options")?;
+    let params =
+        web_sys::UrlSearchParams::new_with_str(&search).map_err(|_| "invalid page options")?;
+    match params.get("plant_a11y") {
+        None => Ok(graphshell::canvas_reader::Plant::None),
+        Some(value) => graphshell::canvas_reader::Plant::parse(&value)
+            .ok_or_else(|| format!("invalid plant_a11y {value}")),
+    }
+}
+
 pub(super) fn physics_config() -> Result<mere::canvas::ElapsedStepConfig, String> {
     let mut config = mere::canvas::ElapsedStepConfig::default();
     let search = web_sys::window()
