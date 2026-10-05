@@ -628,6 +628,17 @@ impl Product for TreeLane {
                 ));
                 Ok(())
             },
+            // `log-pace <label>`: the speed dial's budget and every
+            // window's worst frame into the receipt.
+            "log-pace" => {
+                let line = super::speed::pace_line(
+                    rest.trim(),
+                    &self.shared.canvas.borrow(),
+                    &self.shared,
+                );
+                self.shared.physics_log.borrow_mut().push(line);
+                Ok(())
+            },
             // `set-zoom <z>`: the zoom exactly, about the canvas centre.
             "set-zoom" => {
                 let zoom = rest.trim().parse().map_err(|_| "set-zoom wants a number")?;

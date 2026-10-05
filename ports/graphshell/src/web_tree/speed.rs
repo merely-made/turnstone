@@ -3,14 +3,15 @@
 
 //! The speed dial's receipts on the tree page: the window of recent frames
 //! they read (did the drawing move, did the simulation step, what did
-//! stepping cost against that frame's budget). The options, the clock, the
-//! frame-share budget and the presets are [`crate::web_speed`]'s, shared with
-//! the main page.
+//! stepping cost against that frame's budget), and the worst frame above
+//! real time across every window since the page opened. The options, the
+//! clock, the frame-share budget and the presets are [`crate::web_speed`]'s,
+//! shared with the main page.
 
 use std::collections::VecDeque;
 use std::time::Duration;
 
-use mere::canvas::Canvas;
+use mere::canvas::{Canvas, Speed};
 use mere::kernel::graph::NodeKey;
 use taproot::ProbeSnapshot;
 
@@ -31,6 +32,12 @@ pub(super) struct PaceWindow {
     frames: VecDeque<Frame>,
     since_log: usize,
     logged: usize,
+    /// Every frame above real time since the page opened: how many, the
+    /// most one ran over its budget (µs), and how many ran past the budget
+    /// and the clock's grain.
+    above: usize,
+    worst_over_budget_us: Option<i64>,
+    over_grain: usize,
 }
 
 /// Record the frame just drawn under `budget`; on a dial run, every `WINDOW`
@@ -53,7 +60,8 @@ pub(super) fn record(shared: &Shared, canvas: &Canvas, moving: bool, budget: Dur
     shared.physics_log.borrow_mut().push(format!(
         "pace: speed {} effective {} bound {} ticks {} over {} frames drawn-moved {} \
          stepped {} compute-max {} us over-budget-max {} us budget {} us ({} of a {:.1} ms \
-         display period; last frame {:.1} ms)",
+         display period; last frame {:.1} ms) margin {} us; every window: worst {} us, \
+         {} frames past the grain",
         crate::web_speed::field(canvas.physics_speed()),
         pace.effective_speed
             .map_or_else(|| "none".into(), |speed| format!("{speed:.3}")),
@@ -68,6 +76,9 @@ pub(super) fn record(shared: &Shared, canvas: &Canvas, moving: bool, budget: Dur
         frame_budget.share(),
         frame_budget.display_period_ms(),
         frame_budget.last_interval_ms(),
+        frame_budget.margin().as_micros(),
+        window.worst_field(),
+        window.over_grain,
     ));
 }
 
@@ -110,6 +121,16 @@ impl PaceWindow {
             return;
         }
         let report = canvas.elapsed_step_report().unwrap_or_default();
+        if canvas.physics_speed() > Speed::REAL_TIME {
+            let micros = |duration: Duration| duration.as_micros().min(i64::MAX as u128) as i64;
+            let over = micros(report.compute.unwrap_or_default()) - micros(budget);
+            self.above += 1;
+            self.worst_over_budget_us =
+                Some(self.worst_over_budget_us.map_or(over, |w| w.max(over)));
+            if over > crate::web_speed::CLOCK_GRAIN_US as i64 {
+                self.over_grain += 1;
+            }
+        }
         if self.frames.len() == WINDOW {
             self.frames.pop_front();
         }
@@ -119,6 +140,12 @@ impl PaceWindow {
             compute: report.compute.unwrap_or_default(),
             budget,
         });
+    }
+
+    /// The worst frame above real time so far, or "none".
+    fn worst_field(&self) -> String {
+        self.worst_over_budget_us
+            .map_or_else(|| "none".into(), |worst| worst.to_string())
     }
 
     fn summary(&self) -> Summary {
@@ -142,6 +169,24 @@ impl PaceWindow {
                 .unwrap_or(i64::MIN),
         }
     }
+}
+
+/// `log-pace <label>`: the budget and every window's worst frame, for the
+/// receipt.
+pub(super) fn pace_line(label: &str, canvas: &Canvas, shared: &Shared) -> String {
+    let window = shared.pace.borrow();
+    let frame_budget = shared.frame_budget.borrow();
+    format!(
+        "pace {label}: speed {} budget {} us margin {} us display period {:.1} ms; every \
+         window: {} frames above real time, worst {} us over budget, {} past the grain",
+        crate::web_speed::field(canvas.physics_speed()),
+        frame_budget.budget().per_frame.as_micros(),
+        frame_budget.margin().as_micros(),
+        frame_budget.display_period_ms(),
+        window.above,
+        window.worst_field(),
+        window.over_grain,
+    )
 }
 
 /// The dial's fields on the lane's snapshot.
@@ -184,4 +229,16 @@ pub(super) fn fields(snapshot: ProbeSnapshot, canvas: &Canvas, shared: &Shared) 
             summary.compute_max.as_micros().to_string(),
         )
         .with_field("pace-over-budget-us", summary.over_budget_us.to_string())
+        .with_field(
+            "pace-over-budget-worst-us",
+            shared.pace.borrow().worst_field(),
+        )
+        .with_field(
+            "pace-over-grain-frames",
+            shared.pace.borrow().over_grain.to_string(),
+        )
+        .with_field(
+            "physics-budget-margin-us",
+            frame_budget.margin().as_micros().to_string(),
+        )
 }

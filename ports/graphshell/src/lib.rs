@@ -65,6 +65,8 @@ pub mod personal_sync;
 #[cfg(all(feature = "native", not(target_arch = "wasm32")))]
 pub mod policy_projection;
 #[cfg(feature = "web")]
+pub mod frame_budget;
+#[cfg(feature = "web")]
 pub mod product;
 #[cfg(feature = "web")]
 pub mod remote_board;

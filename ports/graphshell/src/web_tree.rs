@@ -642,7 +642,11 @@ async fn boot(root: Element) -> Result<(), String> {
         speed: speed_options,
         pace: RefCell::new(speed::PaceWindow::default()),
         reached: RefCell::new(crate::web_speed::ReachedNote::default()),
-        frame_budget: RefCell::new(crate::web_speed::FrameBudget::new(speed_options.share)),
+        frame_budget: RefCell::new(crate::web_speed::FrameBudget::new(
+            speed_options.share,
+            speed_options.margin,
+            crate::web_speed::clock,
+        )),
         gpu_options: controls::gpu_options()?,
         physics_device: RefCell::new(None),
         visibility: visibility::requested()?,

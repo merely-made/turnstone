@@ -714,6 +714,10 @@ pub(super) fn update_product_semantics(
             host.frame_budget.share().to_string(),
         ),
         (
+            "data-physics-budget-margin-us",
+            host.frame_budget.margin().as_micros().to_string(),
+        ),
+        (
             "data-display-period-ms",
             format!("{:.1}", host.frame_budget.display_period_ms()),
         ),

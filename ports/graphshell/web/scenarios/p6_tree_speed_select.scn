@@ -35,6 +35,7 @@ assert text Speed set to Max
 settle 40
 assert snap physics-budget-bound == true
 assert snap pace-over-budget-us <= 100
+assert snap pace-over-budget-worst-us <= 100
 assert text the frame budget is full
 click role:combobox Speed
 settle 1

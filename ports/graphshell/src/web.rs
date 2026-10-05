@@ -1828,7 +1828,11 @@ async fn run(root_element: Element) -> Result<(), String> {
     };
     let mut graph_canvas = web_graphs::prepared_canvas(canvas_graph, width, height);
     let speed_options = web_speed::options()?;
-    let frame_budget = web_speed::FrameBudget::new(speed_options.share);
+    let frame_budget = web_speed::FrameBudget::new(
+        speed_options.share,
+        speed_options.margin,
+        web_speed::clock,
+    );
     web_speed::apply(&mut graph_canvas, speed_options, &frame_budget);
     let physics_paused = graph_canvas.physics_paused();
     graph_canvas.select_by_url(FIXTURE_WEB_ADDRESS);

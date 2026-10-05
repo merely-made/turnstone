@@ -18,10 +18,16 @@ timing start speed-fast-control
 settle 4
 timing stop
 log-physics fast-control
+log-pace fast-control
 assert snap physics-budget-bound == false
 assert snap physics-effective-speed >= 25
+# A light page, still slower than 60 Hz: the period is capped here too.
+assert snap display-period-ms <= 16.7
+assert snap physics-budget-us <= 8333
 # Each frame's stepping inside its own budget plus the clock's 100 us grain,
-# as p6_tree_speed_fast.
+# over every window, as p6_tree_speed_fast.
 assert snap pace-over-budget-us <= 100
+assert snap pace-over-budget-worst-us <= 100
+assert snap pace-over-grain-frames == 0
 assert snap finite == true
 log p6 speed fast control receipt complete
