@@ -1,0 +1,162 @@
+{
+  "result": "fail",
+  "qualification": "Enter and pointer pixels qualified; full owner-context/lifecycle diagnostic failed",
+  "source_manifest": "source-manifest-owner-first.json",
+  "files": [
+    {
+      "path": "native-owner/00_b_inspector_after_pin.png",
+      "bytes": 176571,
+      "sha256": "666123060ddeaed5b7e5f5d05e8677e32c52b44da6cbfda4cdbc97eb2bf85e83"
+    },
+    {
+      "path": "native-owner/00_b_inspector_before_pin.png",
+      "bytes": 184939,
+      "sha256": "b850a7504ac0372efc17a9b81695adba1c92c51b99743cd4a297d275bedb6af5"
+    },
+    {
+      "path": "native-owner/01_two_scry_pages.png",
+      "bytes": 149159,
+      "sha256": "f37ef606c7109527c5249bf8d46f92c3c7a5aa70548e97c828d88cc4874b66e2"
+    },
+    {
+      "path": "native-owner/02_text_pointer_and_keyboard.png",
+      "bytes": 171716,
+      "sha256": "db61970d4b3478820b18f9fa0bb16aad10cd56d70a9d4ea19bdfd14176c787c5"
+    },
+    {
+      "path": "native-owner/02b_b_reloaded.png",
+      "bytes": 164009,
+      "sha256": "5eeaef7b56320527f26ccd707a1c0d2d6aba63a7c85b51354c87cb7c64231942"
+    },
+    {
+      "path": "native-owner/02c_a_wheel.png",
+      "bytes": 169495,
+      "sha256": "58d0c66946e440b78a39cca8e3bde2dea683288189a57ac581fa20fa66e69cae"
+    },
+    {
+      "path": "native-owner/02d_b_wheel.png",
+      "bytes": 176029,
+      "sha256": "57839efa0005c0e68af303b4fdac5d175f3141bea7e047c03344e88967db00c0"
+    },
+    {
+      "path": "native-owner/02e_both_scroll_reset.png",
+      "bytes": 170529,
+      "sha256": "adcb3b450146a3e7a3543b6044ab2eb2667868b50490de472284ddb5463c0c83"
+    },
+    {
+      "path": "native-owner/03_find_and_zoom_unavailable.png",
+      "bytes": 170525,
+      "sha256": "ff71893af7db7d5090ef0d59b4faa5d4c98617474dc3999c7682305362c5aa5f"
+    },
+    {
+      "path": "native-owner/04_resized_two_pages.png",
+      "bytes": 134174,
+      "sha256": "673f32db8d8de4293590f200cd6fe00f4ec4c1fb7ace5cb103a3ea90fbc376a4"
+    },
+    {
+      "path": "native-owner/05_a_reader_b_scry.png",
+      "bytes": 295059,
+      "sha256": "2fc4be8cebe3a4d009910ebc70c6c20e70955e71738b4e18ccb4e0d8bef87d91"
+    },
+    {
+      "path": "native-owner/06_a_scry_reconstructed.png",
+      "bytes": 134184,
+      "sha256": "13f9c34fa6df41d9e9363e7a32798e8c2ef473cb78adc6748b53e655e8bf92e5"
+    },
+    {
+      "path": "native-owner/07_both_closed.png",
+      "bytes": 105215,
+      "sha256": "fa1ee73a9b553a17615c5e46bceb9d46d212c49b5f753d2d3419b8ccc6005108"
+    },
+    {
+      "path": "native-owner/08_ready_for_restart.png",
+      "bytes": 105215,
+      "sha256": "fa1ee73a9b553a17615c5e46bceb9d46d212c49b5f753d2d3419b8ccc6005108"
+    },
+    {
+      "path": "native-owner/closed.surface-frames.json",
+      "bytes": 784,
+      "sha256": "0212ac6c5c4b6fc1d8adf08a4e7d64c5c60e690b8a40bf1624b0fd59af0d3ff7"
+    },
+    {
+      "path": "native-owner/closed.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "native-owner/diagnostics.json",
+      "bytes": 85982,
+      "sha256": "9cb1c345f708e9d5c1e9c64895c0fb942ab678a4c54512b348787ecfef0c8475"
+    },
+    {
+      "path": "native-owner/input.surface-frames.json",
+      "bytes": 788,
+      "sha256": "ac9779d1a753b91feca9abc85d02935d78d515cad8ab7e1dc409930f76615525"
+    },
+    {
+      "path": "native-owner/input.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "native-owner/reconstructed.surface-frames.json",
+      "bytes": 784,
+      "sha256": "0212ac6c5c4b6fc1d8adf08a4e7d64c5c60e690b8a40bf1624b0fd59af0d3ff7"
+    },
+    {
+      "path": "native-owner/reconstructed.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "native-owner/reopened.surface-frames.json",
+      "bytes": 784,
+      "sha256": "0212ac6c5c4b6fc1d8adf08a4e7d64c5c60e690b8a40bf1624b0fd59af0d3ff7"
+    },
+    {
+      "path": "native-owner/reopened.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "native-owner/resized.surface-frames.json",
+      "bytes": 790,
+      "sha256": "eb57dd73ec7d4bd3c6d98e7f3b62ec6a217dbfe266640a44ffd6563a9c371a5e"
+    },
+    {
+      "path": "native-owner/resized.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "native-owner/run.log",
+      "bytes": 8365,
+      "sha256": "60d10d79c61729822e4cfeb90df3802effbc14a0be431188323b4380dcabadb3"
+    },
+    {
+      "path": "native-owner/scenario.done",
+      "bytes": 6236,
+      "sha256": "c5c3910e3a25a2aa19cac98fd8e0ada1fa6ea946bb4de11ae2e0a7e87e0a64ee"
+    },
+    {
+      "path": "native-owner/two-pages.surface-frames.json",
+      "bytes": 785,
+      "sha256": "13ccc0641d5bc6588503116b9aaad3dc46022568035524ba1a54f580aa38a592"
+    },
+    {
+      "path": "native-owner/two-pages.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "native-owner/wheel-reset.surface-frames.json",
+      "bytes": 788,
+      "sha256": "c6d7977f9faf971341d5e75194367d6054759dca12df6910283812a195a17d2c"
+    },
+    {
+      "path": "native-owner/wheel-reset.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+
+running 3 tests
+test surface_poll::tests::inactive_polling_clears_deadline_and_reenable_starts_fresh ... ok
+test surface_poll::tests::early_cancelled_wakes_do_not_postpone_surface_poll ... ok
+test surface_poll::tests::late_wake_polls_once_without_catch_up_spin ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

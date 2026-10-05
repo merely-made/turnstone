@@ -1,0 +1,7 @@
+{
+  "result": "ABORTED",
+  "reason": "Native MoveFocus and mouse down/up returned successfully. trace-after-input-click was written after two further paints; no trace-before-type. Later phase remains unproven.",
+  "pid": 42680,
+  "executable_sha256": "d0db4d81a609b163311f7d7240cd8e82babb96df529e26e2ea66c2437b78de7d",
+  "recorded_utc": "2026-10-05T20:48:46.7502089Z"
+}

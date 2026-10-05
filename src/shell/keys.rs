@@ -54,10 +54,11 @@ impl PageZoomChord {
 }
 
 /// Whether a key is a chord this module claims before the focused surface sees
-/// it: Ctrl+F, and the page-zoom chords. A page must not also receive them.
+/// it: address/command summons, reload, find, and page zoom.
 fn is_claimed_ctrl_chord(key: &WinitKey) -> bool {
     matches!(key, WinitKey::Character(value)
-        if value.eq_ignore_ascii_case("f") || PageZoomChord::for_character(value).is_some())
+        if ["f", "l", "k", "r"].iter().any(|claimed| value.eq_ignore_ascii_case(claimed))
+            || PageZoomChord::for_character(value).is_some())
 }
 
 fn content_scroll_key(key: &WinitKey, shift: bool) -> Option<SessionScrollKey> {
@@ -75,6 +76,26 @@ fn content_scroll_key(key: &WinitKey, shift: bool) -> Option<SessionScrollKey> {
 }
 
 impl Shell {
+    /// Self-drive committed text exercises producer dispatch without claiming
+    /// a platform IME composition or physical-keyboard acceptance receipt.
+    pub(super) fn type_surface_text(&mut self, text: &str) -> bool {
+        let crate::surface::FocusTarget::Content { node, .. } = self.app.focus else {
+            return false;
+        };
+        if !self.surface_producers.contains_key(&node) {
+            return false;
+        }
+        for character in text.chars() {
+            let text = character.to_string();
+            let key = WinitKey::Character(text.clone().into());
+            if !self.deliver_surface_key(&key, true, Some(&text)) {
+                return false;
+            }
+            self.deliver_surface_key(&key, false, None);
+        }
+        true
+    }
+
     /// Deliver a key directly to a focused frame-streaming surface. Document
     /// sessions keep their semantic scroll-key path below; a browser surface
     /// needs the platform-style key stream itself. Escape intentionally falls
@@ -88,9 +109,15 @@ impl Shell {
         let crate::surface::FocusTarget::Content { node, .. } = self.app.focus else {
             return false;
         };
-        if self.app.user_agent_decision.is_open()
+        if self.app.omnibar.open
+            || self.app.user_agent_decision.is_open()
             || self.app.document_find.open
             || (self.ctrl && is_claimed_ctrl_chord(key))
+            || (self.alt
+                && matches!(
+                    key,
+                    WinitKey::Named(WinitNamedKey::ArrowLeft | WinitNamedKey::ArrowRight)
+                ))
         {
             return false;
         }
@@ -528,7 +555,9 @@ mod tests {
         assert_eq!(action("1"), None);
         assert_eq!(action("f"), None);
 
-        for value in ["=", "+", "-", "_", "0", "f", "F"] {
+        for value in [
+            "=", "+", "-", "_", "0", "f", "F", "l", "L", "k", "K", "r", "R",
+        ] {
             assert!(
                 is_claimed_ctrl_chord(&WinitKey::Character(value.into())),
                 "ctrl+{value} is claimed before the page sees it"

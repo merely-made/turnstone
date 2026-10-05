@@ -1,0 +1,22 @@
+/* Copyright 2026 Mark Alan Boykin. SPDX-License-Identifier: MPL-2.0 */
+* { box-sizing: border-box; }
+html { color-scheme: light; overflow-anchor: none; }
+body { margin: 0; background: #f8fbff; color: #102338; font: 16px/1.45 sans-serif; }
+html[data-page="B"] body { background: #fff9ed; color: #382710; }
+main { padding: 12px; min-width: 180px; }
+h1 { font-size: 24px; line-height: 30px; margin: 0 0 8px; }
+label { display: block; }
+input, textarea { display: block; width: 100%; font: inherit; padding: 4px; }
+input { height: 34px; margin-bottom: 8px; }
+button { display: block; min-height: 34px; padding: 4px 10px; font: inherit; }
+button:focus, input:focus, textarea:focus { outline: 3px solid #347cc4; }
+#summary { margin: 8px 0; overflow-wrap: anywhere; position: sticky; top: 0;
+           z-index: 1; background: #f8fbff; border: 1px solid #347cc4; }
+pre { margin: 6px 0; padding: 6px; background: #e5edf5; font-size: 12px;
+      white-space: pre-wrap; overflow-wrap: anywhere; }
+#events { max-height: 160px; overflow: auto; }
+.motion { width: 24px; height: 8px; background: #d12a40;
+          animation: travel 1s linear infinite alternate; }
+@keyframes travel { from { transform: translateX(0); } to { transform: translateX(120px); } }
+.spacer { height: 1200px; border-left: 8px solid #347cc4; padding: 12px; }
+@media (max-width: 350px) { main { padding: 8px; } }

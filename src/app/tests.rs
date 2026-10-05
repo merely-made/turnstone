@@ -3435,6 +3435,52 @@ fn workbench_actions_flow_through_the_spine() {
     assert!(app.active_workbench().unwrap().has_tile(a));
 }
 
+/// A Workbench page can differ from the canvas selection. Browser controls
+/// act on that page without changing or operating on its graph sibling.
+#[test]
+fn workbench_browser_commands_preserve_the_independent_graph_selection() {
+    let mut app = App::test_stub();
+    app.update(Action::OpenAddress("https://example.com/a".into()));
+    let a = app.graph_runtimes.focused_member().unwrap();
+    app.update(Action::OpenInWorkbench);
+    app.update(Action::OpenAddress("https://example.com/b".into()));
+    let b = app.graph_runtimes.focused_member().unwrap();
+    app.update(Action::OpenInWorkbench);
+    app.content.note_live(a, None);
+    app.content.note_live(b, None);
+    app.update(Action::WorkbenchActivate(a));
+    assert_eq!(app.graph_runtimes.focused_member(), Some(b));
+    assert_eq!(
+        app.browser_command_target(),
+        Some((a, "https://example.com/a".into()))
+    );
+
+    app.graph_pane_frame(app.default_graph_pane(), 800, 600).unwrap();
+    app.update(Action::SummonPane(crate::panes::PaneKindId::new(
+        crate::panes::kind::INSPECTOR,
+    )));
+    assert_eq!(app.browser_command_target(), Some((a, "https://example.com/a".into())),
+        "a graph repaint must not retarget the following Inspector");
+
+    let closed = app.update(Action::ToggleNodeContent);
+    assert!(closed.contains(&Effect::CloseContent { node: a }));
+    assert!(!closed.contains(&Effect::CloseContent { node: b }));
+    assert!(matches!(
+        app.content.get(b),
+        Some(crate::content::NodeContent::Live)
+    ));
+    let opened = app.update(Action::ToggleNodeContent);
+    assert!(opened.iter().any(|effect| matches!(effect,
+        Effect::SpawnContent { node, url } if *node == a && url == "https://example.com/a")));
+    app.content.note_live(a, None);
+    let reloaded = app.update(Action::Reload);
+    assert!(reloaded.iter().any(|effect| matches!(effect,
+        Effect::SpawnContent { node, url } if *node == a && url == "https://example.com/a")));
+    assert!(!reloaded.iter().any(|effect| matches!(effect,
+        Effect::SpawnContent { node, .. } | Effect::CloseContent { node } if *node == b)));
+    assert_eq!(app.graph_runtimes.focused_member(), Some(b));
+}
+
 /// Two graph panes may name different graph/Forme sources while followers
 /// resolve the last graph-pane context in their own space. Camera/selection
 /// and Workbench state stay behind those pane and Forme boundaries.

@@ -1,0 +1,27 @@
+{
+  "recorded_utc": "2026-10-05T21:09:24.407325+00:00",
+  "rustc": "rustc 1.98.1 (48a229cea 2026-09-01)",
+  "compile": "Wrap exact surface_poll.rs in mod surface_poll and pipe to rustc --edition 2024 --test - -o <stable-target>/debug/surface_poll_tests.exe",
+  "control_mutation": {
+    "from": "Some(*self.next.get_or_insert_with(|| now + self.interval))",
+    "to": "self.next = Some(now + self.interval); self.next"
+  },
+  "result": "Exact module: 3 passed. Deliberately reset deadline: early-cancelled-wake regression failed as expected. Not a native host proof.",
+  "files": [
+    {
+      "path": "C:\\Users\\mark_\\Code\\repos\\turnstone\\src\\shell\\surface_poll.rs",
+      "sha256": "16735409747fcbf6da2dae6483a476c26039326c19540ee4725c41b3c12022c9",
+      "bytes": 3501
+    },
+    {
+      "path": "C:\\t\\cargo-targets\\turnstone\\debug\\surface_poll_tests.exe",
+      "sha256": "4206ec0b6386b06abdda036723074de552c858d55503b30ce0c8ca7df562477b",
+      "bytes": 748032
+    },
+    {
+      "path": "C:\\t\\cargo-targets\\turnstone\\debug\\surface_poll_control.exe",
+      "sha256": "0f80983eed1ff28d9cc56266db91ef3bda74bfa66efed77096539f217cf71509",
+      "bytes": 747008
+    }
+  ]
+}

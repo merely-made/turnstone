@@ -1,0 +1,37 @@
+RESULT fail
+captured 00_b_inspector_before_pin
+captured 00_b_inspector_after_pin
+captured 01_two_scry_pages
+captured 02_text_pointer_and_keyboard
+FAIL: assert snap browser-current Contains 'scry_B=B-retained': got 'Scry B | text=bravo | clicks=0 | stored=B-retained | cookie= | viewport=255x285@2 | scroll=0,0 | scrolled=no | wheels=0  http://127.0.0.1:43123/page-b.html'
+captured 02b_b_reloaded
+FAIL: assert snap browser-current Contains 'scrolled=yes': got 'Scry B | text=bravo | clicks=0 | stored=B-retained | cookie= | viewport=255x285@2 | scroll=0,0 | scrolled=no | wheels=0  http://127.0.0.1:43123/page-b.html'
+FAIL: assert snap browser-current Contains 'wheels=1': got 'Scry B | text=bravo | clicks=0 | stored=B-retained | cookie= | viewport=255x285@2 | scroll=0,0 | scrolled=no | wheels=0  http://127.0.0.1:43123/page-b.html'
+captured 02c_a_wheel
+captured 02d_b_wheel
+FAIL: assert snap browser-current Contains 'scroll=0,0 | scrolled=no': got 'Scry B | text=bravo | clicks=0 | stored=B-retained | cookie= | viewport=255x285@2 | scroll=0,285 | scrolled=yes | wheels=1  http://127.0.0.1:43123/page-b.html'
+FAIL: assert snap browser-current Contains 'wheels=2': got 'Scry B | text=bravo | clicks=0 | stored=B-retained | cookie= | viewport=255x285@2 | scroll=0,285 | scrolled=yes | wheels=1  http://127.0.0.1:43123/page-b.html'
+captured 02e_both_scroll_reset
+captured 03_find_and_zoom_unavailable
+captured 04_resized_two_pages
+FAIL: assert snap browser-current Contains '/page-a.html': got 'Scry B | text=bravo | clicks=0 | stored=B-retained | cookie= | viewport=88x285@2 | scroll=0,0 | scrolled=no | wheels=2  http://127.0.0.1:43123/page-b.html'
+FAIL: assert row 'URL: http://127.0.0.1:43123/page-a.html': trail [] roster [] inspector ["Title: Scry B | text=bravo | clicks=0 | stored=B-retained | cookie= | viewport=43x285@2 | scroll=0,0 | scrolled=no | wheels=2", "URL: http://127.0.0.1:43123/page-b.html", "Node id: 5c175cc9-ae78-404c-8e6a-f1e97a803ee0", "Addresses: 1", "Pinned: no", "Tags: none", "Import provenance: none", "Classifications: none", "Mime hint: text/html", "Viewer: scrying.web", "Compat: no", "Content state: live", "Engine: scrying.web", "Find in page: unavailable: Scry's Inker adapter does not forward document find commands or results", "Page zoom: unavailable: Scry's Inker adapter forwards legacy zoom settings but not typed page zoom or its outcome", "Requested page zoom: 100%", "Page capture: unavailable: Scry's Inker adapter does not implement correlated page capture", "Navigation controls: partial: navigation controls are forwarded to the concrete system webview backend", "Structural read: none for this lane", "you: ReplaySetNodeTitleById", "you: ReplaySetNodeTitleById", "you: ReplaySetNodeTitleById", "you: ReplaySetNodeTitleById", "you: ReplaySetNodeTitleById"] arrange []
+FAIL: assert text 'http://127.0.0.1:43123/page-a.html': not on any surface
+captured 05_a_reader_b_scry
+FAIL: assert row 'URL: http://127.0.0.1:43123/page-a.html': trail [] roster [] inspector ["Title: Scry B | text=bravo | clicks=0 | stored=B-retained | cookie= | viewport=43x285@2 | scroll=0,0 | scrolled=no | wheels=0", "URL: http://127.0.0.1:43123/page-b.html", "Node id: 5c175cc9-ae78-404c-8e6a-f1e97a803ee0", "Addresses: 1", "Pinned: no", "Tags: none", "Import provenance: none", "Classifications: none", "Mime hint: text/html", "Viewer: scrying.web", "Compat: no", "Content state: live", "Engine: scrying.web", "Find in page: unavailable: Scry's Inker adapter does not forward document find commands or results", "Page zoom: unavailable: Scry's Inker adapter forwards legacy zoom settings but not typed page zoom or its outcome", "Requested page zoom: 100%", "Page capture: unavailable: Scry's Inker adapter does not implement correlated page capture", "Navigation controls: partial: navigation controls are forwarded to the concrete system webview backend", "Structural read: none for this lane", "you: ReplaySetNodeTitleById", "you: ReplaySetNodeTitleById", "you: ReplaySetNodeTitleById", "you: ReplaySetNodeTitleById", "you: ReplaySetNodeTitleById"] arrange []
+FAIL: assert snap browser-current Contains 'Scry A | text=alpha | clicks=0 | stored=A-retained': got 'Scry B | text=bravo | clicks=0 | stored=B-retained | cookie= | viewport=43x285@2 | scroll=0,0 | scrolled=no | wheels=0  http://127.0.0.1:43123/page-b.html'
+FAIL: assert snap browser-current Contains 'scry_A=A-retained': got 'Scry B | text=bravo | clicks=0 | stored=B-retained | cookie= | viewport=43x285@2 | scroll=0,0 | scrolled=no | wheels=0  http://127.0.0.1:43123/page-b.html'
+captured 06_a_scry_reconstructed
+FAIL: assert snap browser-current Contains '/page-a.html': got 'Scry B | text=bravo | clicks=0 | stored=B-retained | cookie= | viewport=88x285@2 | scroll=0,0 | scrolled=no | wheels=0  http://127.0.0.1:43123/page-b.html'
+FAIL: assert snap browser-current-content Eq 'live': got 'closed'
+FAIL: assert no-surface 'content': the primary plan is ["canvas", "pane", "divider", "content", "chrome"]
+FAIL: assert snap host-surface-producers Eq '0': got '2'
+FAIL: assert snap host-scry-producers Eq '0': got '2'
+captured 07_both_closed
+FAIL: assert snap browser-current-content Eq 'live': got 'closed'
+FAIL: assert snap browser-current Contains 'scry_B=B-retained': got 'Scry B | text=bravo | clicks=0 | stored=B-retained | cookie= | viewport=88x285@2 | scroll=0,0 | scrolled=no | wheels=0  http://127.0.0.1:43123/page-b.html'
+FAIL: assert snap browser-current Contains '/page-a.html': got 'Scry B | text=bravo | clicks=0 | stored=B-retained | cookie= | viewport=88x285@2 | scroll=0,0 | scrolled=no | wheels=0  http://127.0.0.1:43123/page-b.html'
+FAIL: assert snap browser-current Contains 'Scry A | text=alpha | clicks=0 | stored=A-retained': got 'Scry B | text=bravo | clicks=0 | stored=B-retained | cookie= | viewport=88x285@2 | scroll=0,0 | scrolled=no | wheels=0  http://127.0.0.1:43123/page-b.html'
+FAIL: assert snap browser-current Contains 'scry_A=A-retained': got 'Scry B | text=bravo | clicks=0 | stored=B-retained | cookie= | viewport=88x285@2 | scroll=0,0 | scrolled=no | wheels=0  http://127.0.0.1:43123/page-b.html'
+captured 08_ready_for_restart
+B1 run 1 complete; run 2 must reuse the exact TURNSTONE_ROOT and loopback origin

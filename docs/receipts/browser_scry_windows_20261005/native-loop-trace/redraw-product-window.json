@@ -1,0 +1,8 @@
+{
+  "pid": 43236,
+  "hwnd": 13896308,
+  "diagnostic_action": "RedrawWindow INVALIDATE|INTERNALPAINT to the uniquely named owned Turnstone window",
+  "result": true,
+  "recorded_utc": "2026-10-05T20:57:48.9814797Z",
+  "prior_probe_target": "Process.MainWindowHandle resolved to the private capture Static HWND, so earlier redraw probe did not target the product window"
+}

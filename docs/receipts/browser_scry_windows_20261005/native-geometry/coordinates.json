@@ -1,0 +1,48 @@
+{
+  "purpose": "Old-executable geometry and pixel research; not pending-selector or full input acceptance",
+  "scenario_result": "ok",
+  "executable_sha256": "084D1536A6150A267061CFD698A3A44C87155AE989FB4D0E1F8030E801344D57",
+  "capture": "distinct-two-pages.png",
+  "client_physical_pixels": [1024, 600],
+  "coordinate_space": "Window-client physical pixels, measured from the actual capture",
+  "fixture_origin": "http://127.0.0.1:43123",
+  "profile": "../profile/inspector",
+  "layout": "Maximized Workbench with two horizontal cells",
+  "pages": {
+    "A": {
+      "node": "f5ec49c5-b6e8-4b4e-8684-74c57a3b5ff6",
+      "surface_xywh": [0, 30, 509, 570],
+      "title_css_viewport": [255, 285],
+      "title_dpr": 2,
+      "input_bounds_xyxy_approx": [16, 169, 464, 235],
+      "button_bounds_xyxy_approx": [16, 252, 343, 323],
+      "input_point": [240, 200],
+      "button_point": [180, 266],
+      "current_pixels": "Scry A heading and script summary: empty text, clicks=0, stored/cookie empty, viewport=255x285@2, scroll=0,0, wheels=0",
+      "frames_imports_waits": [168, 168, 168]
+    },
+    "B": {
+      "node": "e5a014dc-f59d-4589-af37-08b06cb4ff35",
+      "surface_xywh": [515, 30, 509, 570],
+      "title_css_viewport": [255, 285],
+      "title_dpr": 2,
+      "input_bounds_xyxy_approx": [531, 169, 979, 235],
+      "button_bounds_xyxy_approx": [531, 252, 862, 323],
+      "input_point": [755, 200],
+      "button_point": [695, 266],
+      "current_pixels": "Scry B heading and script summary: empty text, clicks=0, stored/cookie empty, viewport=255x285@2, scroll=0,0, wheels=0",
+      "frames_imports_waits": [169, 169, 169]
+    }
+  },
+  "environment": {
+    "SCRY_A_INPUT_X": 240,
+    "SCRY_A_INPUT_Y": 200,
+    "SCRY_A_BUTTON_X": 180,
+    "SCRY_A_BUTTON_Y": 266,
+    "SCRY_B_INPUT_X": 755,
+    "SCRY_B_INPUT_Y": 200,
+    "SCRY_B_BUTTON_X": 695,
+    "SCRY_B_BUTTON_Y": 266
+  },
+  "overlay_notes": "Browser toolbar covers approximately x203..821,y12..49. Caption covers approximately x8..697,y282..306 across part of each button. Button points use the visible upper region above the caption. Neither point has been used for input in this geometry-only run. Remeasure if the executable, client geometry, UI scale, or fixture CSS changes."
+}

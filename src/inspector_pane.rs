@@ -18,8 +18,9 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 use cambium::{
-    AnyView, DetailRow, DetailSection, DomHandle, GenetCtx, GenetElement, PointerClick, RadioGroup,
-    button, detail_panel, el, lens, map_message_result, radio_group,
+    AnyView, DetailRow, DetailSection, DomHandle, GenetCtx, GenetElement, Key, NamedKey,
+    PointerClick, RadioGroup, View, button, detail_panel, el, lens, map_message_result, on_click,
+    on_key, request_focus,
 };
 use genet_scripted_dom::ScriptedDom;
 
@@ -41,7 +42,7 @@ struct InspectorState {
     sections: Vec<InspectorSection>,
     member: Option<uuid::Uuid>,
     radio: RadioGroup,
-    synced_viewer: usize,
+    viewer_options: Vec<crate::inspector_controls::ViewerOption>,
     capabilities: Vec<String>,
     clip_target: Option<String>,
     clip_source_available: bool,
@@ -57,6 +58,100 @@ type InspectorRunner = cambium::GenetAppRunner<
     InspectorView,
     InspectorIntent,
 >;
+
+/// The viewer uses Cambium's radio keyboard pattern with host availability.
+/// Disabled rows retain saved identity but cannot activate or receive focus.
+fn viewer_radio_group(
+    state: &RadioGroup,
+    options: &[crate::inspector_controls::ViewerOption],
+) -> impl View<RadioGroup, (), GenetCtx, Element = GenetElement> + use<> {
+    let enabled: Rc<Vec<usize>> = Rc::new(
+        options
+            .iter()
+            .enumerate()
+            .filter_map(|(index, option)| option.selectable.then_some(index))
+            .collect(),
+    );
+    let active = if enabled.contains(&state.selected) {
+        state.selected
+    } else {
+        enabled.first().copied().unwrap_or(0)
+    };
+    let items: Vec<_> = options
+        .iter()
+        .enumerate()
+        .map(|(index, option)| {
+            let selected = index == state.selected;
+            let selectable = option.selectable;
+            let enabled = enabled.clone();
+            let item = on_click(
+                el::<_, RadioGroup, ()>(
+                    "div",
+                    format!("{}{}", if selected { "(o) " } else { "( ) " }, option.label,),
+                )
+                .attr("role", "radio")
+                .attr("aria-checked", if selected { "true" } else { "false" })
+                .attr("aria-disabled", if selectable { "false" } else { "true" })
+                .attr(
+                    "data-engine-id",
+                    option.viewer.clone().unwrap_or_else(|| "auto".into()),
+                )
+                .attr(
+                    "tabindex",
+                    if index == active && selectable {
+                        "0"
+                    } else {
+                        "-1"
+                    },
+                )
+                .attr(
+                    "class",
+                    match (selected, selectable) {
+                        (true, true) => "radio selected",
+                        (false, true) => "radio",
+                        (true, false) => "radio selected muted",
+                        (false, false) => "radio muted",
+                    },
+                ),
+                move |state: &mut RadioGroup, _| {
+                    if selectable {
+                        state.selected = index;
+                        state.focus_request = None;
+                    }
+                },
+            );
+            let keyboard = on_key(item, move |state: &mut RadioGroup, event| {
+                if !selectable || enabled.is_empty() {
+                    return;
+                }
+                let position = enabled
+                    .iter()
+                    .position(|candidate| *candidate == index)
+                    .unwrap();
+                let next = match event.key {
+                    Key::Named(NamedKey::ArrowLeft | NamedKey::ArrowUp) => {
+                        enabled[(position + enabled.len() - 1) % enabled.len()]
+                    },
+                    Key::Named(NamedKey::ArrowRight | NamedKey::ArrowDown) => {
+                        enabled[(position + 1) % enabled.len()]
+                    },
+                    Key::Named(NamedKey::Home) => enabled[0],
+                    Key::Named(NamedKey::End) => enabled[enabled.len() - 1],
+                    Key::Named(NamedKey::Space) => index,
+                    _ => return,
+                };
+                state.selected = next;
+                state.focus_request = Some(next);
+                event.prevent_default();
+            })
+            .focusable(index == active && selectable);
+            request_focus(keyboard, state.focus_request == Some(index) && selectable)
+        })
+        .collect();
+    el::<_, RadioGroup, ()>("div", items)
+        .attr("role", "radiogroup")
+        .attr("aria-label", state.label.clone())
+}
 
 fn inspector_pane_view(state: &InspectorState) -> InspectorView {
     let sections: Vec<DetailSection> = state
@@ -106,9 +201,10 @@ fn inspector_pane_view(state: &InspectorState) -> InspectorView {
         },
     )
     .attr("style", "white-space: normal; overflow-wrap: anywhere;");
+    let viewer_options = state.viewer_options.clone();
     let viewer = map_message_result(
         lens(
-            |radio: &mut RadioGroup| radio_group(radio, &crate::inspector_controls::VIEWER_OPTIONS),
+            move |radio: &mut RadioGroup| viewer_radio_group(radio, &viewer_options),
             |state: &mut InspectorState| &mut state.radio,
         ),
         |_state, message| match message {
@@ -170,7 +266,11 @@ impl InspectorPane {
             sections: Vec::new(),
             member: None,
             radio: RadioGroup::new(0).with_label("Viewer"),
-            synced_viewer: 0,
+            viewer_options: vec![crate::inspector_controls::ViewerOption {
+                viewer: None,
+                label: "Auto".into(),
+                selectable: true,
+            }],
             capabilities: Vec::new(),
             clip_target: None,
             clip_source_available: false,
@@ -204,16 +304,18 @@ impl InspectorPane {
     ) {
         let sections = inspector_sections_for_pane(app, pane_id);
         let member = inspector_member(app, pane_id);
-        let synced_viewer = crate::inspector_controls::index_for_viewer(
-            member
-                .and_then(|member| app.browser.get(member))
-                .and_then(|browser| browser.viewer_override.as_deref()),
-        );
+        let saved_viewer = member
+            .and_then(|member| app.browser.get(member))
+            .and_then(|browser| browser.viewer_override.as_deref());
+        let viewer_options = crate::inspector_controls::viewer_options(app, saved_viewer);
+        let synced_viewer =
+            crate::inspector_controls::index_for_viewer(&viewer_options, saved_viewer);
         let capabilities = crate::inspector_controls::capabilities(app, member);
         self.runner.update(|state| {
             state.member = member;
             state.radio.selected = synced_viewer;
-            state.synced_viewer = synced_viewer;
+            state.radio.focus_request = None;
+            state.viewer_options = viewer_options;
             state.capabilities = capabilities;
             state.sections = sections;
             state.clip_target = clip_target.map(str::to_string);
@@ -250,7 +352,35 @@ impl InspectorPane {
         self.dom.borrow()
     }
 
+    /// Resolve a scenario against the shaped fragments actually painted by
+    /// this pane. The generic probe's estimated text layout can put its row
+    /// centre on a different option, especially in a narrow Inspector.
+    pub(crate) fn selector_point(
+        &self,
+        selector: &taproot::Selector,
+    ) -> Result<Option<(f32, f32)>, &'static str> {
+        if !selector.matches_surface("inspector") {
+            return Ok(None);
+        }
+        let dom = self.dom.borrow();
+        let mut point = None;
+        for node in taproot::matching(&dom, selector) {
+            let Some((x, y, width, height)) = self.layout.visible_rect(&dom, node) else {
+                continue;
+            };
+            if width <= 0.0 || height <= 0.0 {
+                continue;
+            }
+            if point.is_some() {
+                return Err("multiple visible Inspector targets match the selector");
+            }
+            point = Some((x + width / 2.0, y + height / 2.0));
+        }
+        Ok(point)
+    }
+
     pub fn click(&mut self, x: f32, y: f32, w: u32, h: u32) -> Vec<InspectorIntent> {
+        let previous_viewer = self.runner.state().radio.selected;
         let hit = self.layout.hit_test_scrolled(
             &mut self.dom.borrow_mut(),
             crate::ui::CAMBIUM_SHEET,
@@ -264,13 +394,14 @@ impl InspectorPane {
             .map(|node| self.runner.dispatch_click(node, PointerClick::at((x, y))))
             .unwrap_or_default();
         let state = self.runner.state();
-        if state.radio.selected != state.synced_viewer
+        if state.radio.selected != previous_viewer
             && let Some(member) = state.member
+            && let Some(viewer) = crate::inspector_controls::viewer_for_index(
+                &state.viewer_options,
+                state.radio.selected,
+            )
         {
-            intents.push(InspectorIntent::SetViewer {
-                member,
-                viewer: crate::inspector_controls::viewer_for_index(state.radio.selected),
-            });
+            intents.push(InspectorIntent::SetViewer { member, viewer });
         }
         intents
     }

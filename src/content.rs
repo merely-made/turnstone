@@ -21,6 +21,73 @@ use std::collections::HashMap;
 
 use uuid::Uuid;
 
+/// Host observations about engine construction, separate from a live page's
+/// document capabilities. Registration does not imply a page is running.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum EngineAvailability {
+    Registered,
+    OnDemand { detail: String },
+    Unavailable { reason: String },
+}
+
+impl EngineAvailability {
+    pub fn is_selectable(&self) -> bool {
+        !matches!(self, Self::Unavailable { .. })
+    }
+
+    pub fn describe(&self) -> String {
+        match self {
+            Self::Registered => "registered".into(),
+            Self::OnDemand { detail } => format!("on demand: {detail}"),
+            Self::Unavailable { reason } => format!("unavailable: {reason}"),
+        }
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum EngineFamily {
+    Document,
+    Surface,
+    Unknown,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct EngineDescriptor {
+    pub id: String,
+    pub label: String,
+    pub family: EngineFamily,
+    pub availability: EngineAvailability,
+}
+
+/// Names known engines without using a closed list to decide registration.
+pub fn engine_label(id: &str) -> String {
+    match id {
+        "genet.livery" => "Genet",
+        "genet.reader" => "Reader",
+        "scrying.web" => "System webview",
+        "graft.servo" => "Servo",
+        "weld.chromium" => "Chromium",
+        "nematic.gemtext" => "Gemini / Spartan",
+        "nematic.gopher" => "Gopher",
+        "nematic.markdown" => "Markdown",
+        "nematic.djot" => "Djot",
+        "nematic.text" => "Plain text",
+        "nematic.knot" => "Knot",
+        "nematic.knot-djot" => "Djot",
+        "nematic.file" => "Local file",
+        "nematic.finger" => "Finger",
+        "nematic.scroll" => "Scroll",
+        "nematic.nex" => "Nex",
+        "nematic.guppy" => "Guppy",
+        "nematic.titan" => "Titan",
+        "nematic.feed" => "Feed",
+        nematic::ENGINE_MICRON => "NomadNet",
+        "knot.authoring" => "Knot",
+        _ => id,
+    }
+    .into()
+}
+
 /// Typed extraction lineage projected on a node rendered through `genet.reader`.
 pub const READER_LINEAGE_FACET: &str = "web.reader-lineage";
 

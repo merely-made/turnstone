@@ -53,6 +53,7 @@ impl App {
             sessions: pandect::ManifestStore::new(),
             session_id,
             content: ContentStates::default(),
+            engine_inventory: Vec::new(),
             feeds: crate::feed::FeedSubscriptions::default(),
             redshank: crate::redshank_host::RedshankHost::default(),
             redshank_members: std::collections::BTreeMap::new(),
@@ -149,6 +150,11 @@ impl App {
 
     #[cfg(test)]
     pub(crate) fn test_stub() -> Self {
-        Self::isolated(std::env::temp_dir().join("turnstone-app-test"))
+        let mut app = Self::isolated(std::env::temp_dir().join("turnstone-app-test"));
+        app.engine_inventory = crate::shell::project_engine_inventory(
+            &crate::shell::standard_content_engines(),
+            &inker::SurfaceEngineRegistry::new(),
+        );
+        app
     }
 }

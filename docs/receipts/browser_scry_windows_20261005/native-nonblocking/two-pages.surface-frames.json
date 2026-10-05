@@ -1,0 +1,38 @@
+{
+  "cached_frames": 2,
+  "content_surfaces": [
+    {
+      "height": 570.0,
+      "node": "0e9b56b8-d318-4d54-ad2c-9dbaf5ba9c68",
+      "surface_id": 10031339145376005763,
+      "width": 509.0,
+      "x": 0.0,
+      "y": 30.0
+    },
+    {
+      "height": 570.0,
+      "node": "dcd0310c-c52d-43a4-9ae8-a0212d4599f0",
+      "surface_id": 11431826830913705109,
+      "width": 509.0,
+      "x": 515.0,
+      "y": 30.0
+    }
+  ],
+  "live_producers": 2,
+  "scry_importers": [
+    {
+      "fence_handle": 4436,
+      "frames": 161,
+      "imports": 161,
+      "node": "0e9b56b8-d318-4d54-ad2c-9dbaf5ba9c68",
+      "waits": 161
+    },
+    {
+      "fence_handle": 5452,
+      "frames": 46,
+      "imports": 46,
+      "node": "dcd0310c-c52d-43a4-9ae8-a0212d4599f0",
+      "waits": 46
+    }
+  ]
+}

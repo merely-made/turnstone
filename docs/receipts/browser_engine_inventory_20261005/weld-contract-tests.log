@@ -1,0 +1,583 @@
+warning: patch `p2panda-stream v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.4#0a54ab82)` was not used in the crate graph
+help: Check that the patched package version and available features are compatible
+      with the dependency requirements. If the patch has a different version from
+      what is locked in the Cargo.lock file, run `cargo update` to use the new
+      version. This may also occur with an optional dependency that is not enabled.
+ Downloading crates ...
+  Downloaded camino v1.2.6
+  Downloaded console v0.16.6
+  Downloaded cef-dll-sys v151.8.1+151.3.24
+  Downloaded cef v151.8.1+151.3.24
+   Compiling windows-sys v0.61.2
+   Compiling serde_json v1.0.151
+   Compiling windows v0.62.2
+   Compiling mio v1.2.3
+   Compiling tokio v1.53.1
+   Compiling tokio-util v0.7.19
+   Compiling tokio-rustls v0.26.5
+   Compiling khronos_api v3.1.0
+   Compiling muniment v0.1.2 (https://github.com/merely-made/mere.git?rev=bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3#bd5912fb)
+   Compiling gl_generator v0.14.0
+   Compiling h2 v0.4.19
+   Compiling hyper v1.11.1
+   Compiling hyper-util v0.1.20
+   Compiling naga v30.0.1
+   Compiling hyper-rustls v0.27.9
+   Compiling glutin_wgl_sys v0.6.1
+   Compiling khronos-egl v6.0.0
+   Compiling n0-future v0.3.2
+   Compiling wgpu-types v30.0.1
+   Compiling wgpu-hal v30.0.1
+   Compiling ssh-agent-lib v0.6.0
+   Compiling wgpu-naga-bridge v30.0.1
+   Compiling glow v0.17.0
+   Compiling personae v0.2.1 (https://github.com/merely-made/mere.git?rev=bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3#bd5912fb)
+   Compiling noq-udp v1.3.0
+   Compiling tower v0.5.3
+   Compiling gpu-allocator v0.28.0
+   Compiling wgpu-core v30.0.1
+   Compiling wgpu-core-deps-windows-linux-android v30.0.1
+   Compiling tower-http v0.6.11
+   Compiling chartulary v0.2.2 (https://github.com/merely-made/mere.git?rev=bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3#bd5912fb)
+   Compiling tokio-stream v0.1.19
+   Compiling wgpu v30.0.1
+   Compiling ipconfig v0.3.4
+   Compiling reqwest v0.13.5
+   Compiling netdev v0.45.1
+   Compiling wmi v0.18.4
+   Compiling n0-dns-resolver v0.1.0
+   Compiling noq v1.3.0
+   Compiling n0-watcher v1.0.0
+   Compiling igd-next v0.17.1
+   Compiling iroh-dns v1.3.0
+   Compiling netwatch v0.19.3
+   Compiling mere-forme v0.1.0 (https://github.com/merely-made/mere.git?rev=bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3#bd5912fb)
+   Compiling tokio-websockets v0.13.3
+   Compiling sceno v0.0.4 (https://github.com/merely-made/mere.git?rev=bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3#bd5912fb)
+   Compiling naga v29.0.4
+   Compiling iroh-relay v1.2.0
+   Compiling portmapper v0.19.3
+   Compiling backon v1.6.0
+   Compiling iroh v1.2.0
+   Compiling vello_shaders v0.10.0
+   Compiling mere-kernel v0.0.2 (https://github.com/merely-made/mere.git?rev=bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3#bd5912fb)
+   Compiling anstyle v1.0.14
+   Compiling once_cell_polyfill v1.70.2
+   Compiling acto v0.8.2
+   Compiling jsonschema v0.18.3
+   Compiling irpc v0.17.0
+   Compiling utf8parse v0.2.2
+   Compiling winapi v0.3.9
+   Compiling anstyle-parse v1.0.0
+   Compiling netrender-vello v0.10.1
+   Compiling swarm-discovery v0.6.3
+   Compiling eidetic v0.0.2 (https://github.com/merely-made/mere.git?rev=bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3#bd5912fb)
+   Compiling netrender_device v0.1.2 (https://github.com/merely-made/netrender.git?rev=9607d16f1907f6c2085648ae96abcaa30d7c3d41#9607d16f)
+   Compiling ring v0.17.14
+   Compiling colorchoice v1.0.5
+   Compiling is_terminal_polyfill v1.70.2
+   Compiling genet-fontique v0.10.0 (https://github.com/merely-made/genet.git?rev=69a2383b2ad777b884a72f31f8f8fb7ece275c0b#69a2383b)
+   Compiling iroh-gossip v0.101.0
+   Compiling netrender v0.1.2 (https://github.com/merely-made/netrender.git?rev=9607d16f1907f6c2085648ae96abcaa30d7c3d41#9607d16f)
+   Compiling ractor v0.16.5
+   Compiling iroh-mdns-address-lookup v0.5.0
+   Compiling p2panda-discovery v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.4#0a54ab82)
+   Compiling p2panda-sync v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.4#0a54ab82)
+   Compiling tabard v0.0.1 (https://github.com/merely-made/mere.git?rev=bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3#bd5912fb)
+   Compiling gemini-protocol v0.1.7 (https://github.com/merely-made/smolweb.git?rev=882baeb1b59bbdbb305e475f6675f69af997c4f4#882baeb1)
+   Compiling windows-sys v0.60.2
+   Compiling zeroize v1.9.0
+   Compiling rustls-pki-types v1.15.1
+   Compiling genet-parley v0.10.0 (https://github.com/merely-made/genet.git?rev=69a2383b2ad777b884a72f31f8f8fb7ece275c0b#69a2383b)
+   Compiling scroll-protocol v0.1.0
+   Compiling mere-p2panda-net v0.7.4 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.4#0a54ab82)
+   Compiling misfin v0.0.4
+   Compiling nex-protocol v0.1.1
+   Compiling gopher-protocol v0.1.1
+   Compiling guppy-protocol v0.1.1
+   Compiling finger-protocol v0.1.1
+   Compiling spartan-protocol v0.1.1
+   Compiling httparse v1.10.1
+   Compiling crc32fast v1.5.2
+   Compiling clap_lex v1.1.1
+   Compiling errand v0.3.4 (https://github.com/merely-made/mere.git?rev=bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3#bd5912fb)
+   Compiling stickleback v0.1.1 (https://github.com/merely-made/mere.git?rev=bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3#bd5912fb)
+   Compiling anstyle-wincon v3.0.11
+   Compiling anstyle-query v1.1.5
+   Compiling notochord v0.1.0 (https://github.com/merely-made/mere.git?rev=bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3#bd5912fb)
+   Compiling portable-atomic v1.15.0
+   Compiling simd-adler32 v0.3.10
+   Compiling bytes v1.12.1
+   Compiling miniz_oxide v0.9.1
+   Compiling http v1.5.0
+   Compiling rustls-webpki v0.103.15
+   Compiling anstream v1.0.0
+   Compiling paint_list_render v0.1.2 (https://github.com/merely-made/netrender.git?rev=9607d16f1907f6c2085648ae96abcaa30d7c3d41#9607d16f)
+   Compiling rustls v0.23.45
+   Compiling mere-alembic v0.0.1 (https://github.com/merely-made/mere.git?rev=bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3#bd5912fb)
+   Compiling clap_derive v4.6.7
+   Compiling fs-err v3.3.1
+   Compiling encode_unicode v1.0.0
+   Compiling subtle v2.6.1
+   Compiling base64 v0.23.1
+   Compiling ureq-proto v0.6.4
+   Compiling console v0.16.6
+   Compiling pandect v0.1.1 (https://github.com/merely-made/mere.git?rev=bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3#bd5912fb)
+   Compiling quinn v0.11.12
+   Compiling socks v0.3.4
+   Compiling flate2 v1.1.10
+   Compiling clap_builder v4.6.7
+   Compiling webpki-roots v1.0.9
+   Compiling scenotime v0.0.4 (https://github.com/merely-made/mere.git?rev=bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3#bd5912fb)
+   Compiling h3 v0.0.8
+   Compiling filetime v0.2.29
+   Compiling utf8-zero v0.8.1
+   Compiling unit-prefix v0.5.2
+   Compiling indicatif v0.18.6
+   Compiling ureq v3.4.2
+   Compiling tar v0.4.46
+   Compiling h3-quinn v0.0.10
+   Compiling chirograph v0.0.2 (https://github.com/merely-made/mere.git?rev=bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3#bd5912fb)
+   Compiling tokio-tungstenite v0.29.0
+   Compiling cambium v0.3.3 (https://github.com/merely-made/mere.git?rev=bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3#bd5912fb)
+   Compiling nematic v0.1.1 (https://github.com/merely-made/mere.git?rev=bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3#bd5912fb)
+   Compiling clap v4.6.7
+   Compiling async-compression v0.4.48
+   Compiling positioned-io v0.3.5
+   Compiling regex v1.13.1
+   Compiling iroh-io v0.6.2
+   Compiling semver v1.0.28
+   Compiling fleece v0.5.0 (https://github.com/merely-made/genet.git?rev=69a2383b2ad777b884a72f31f8f8fb7ece275c0b#69a2383b)
+   Compiling genet-livery v0.0.4 (https://github.com/merely-made/genet.git?rev=69a2383b2ad777b884a72f31f8f8fb7ece275c0b#69a2383b)
+   Compiling bao-tree v0.16.1
+   Compiling download-cef v2.3.2
+   Compiling netfetcher v0.1.1 (https://github.com/merely-made/genet.git?rev=69a2383b2ad777b884a72f31f8f8fb7ece275c0b#69a2383b)
+   Compiling iroh-util v0.6.0
+   Compiling scenomise v0.0.4 (https://github.com/merely-made/mere.git?rev=bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3#bd5912fb)
+   Compiling reflink-copy v0.1.30
+   Compiling cmake v0.1.58
+   Compiling camino v1.2.6
+   Compiling cef-dll-sys v151.8.1+151.3.24
+   Compiling iroh-blobs v0.103.0
+   Compiling document-canvas v0.1.0 (https://github.com/merely-made/mere.git?rev=bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3#bd5912fb)
+   Compiling servitor v0.0.2 (https://github.com/merely-made/mere.git?rev=bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3#bd5912fb)
+   Compiling cpal v0.17.3
+   Compiling mere-transport v0.0.2 (https://github.com/merely-made/mere.git?rev=bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3#bd5912fb)
+   Compiling graphshell-endpoint v0.0.2 (https://github.com/merely-made/mere.git?rev=bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3#bd5912fb)
+   Compiling mien v0.0.1 (https://github.com/merely-made/mere.git?rev=bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3#bd5912fb)
+   Compiling wio v0.2.2
+   Compiling grafting v0.6.0
+   Compiling redshank-model v0.0.0 (https://github.com/merely-made/woodshed.git?rev=cefc903dcd7f506803acfe2ee52cad7693787188#cefc903d)
+   Compiling cargo-platform v0.3.3
+   Compiling cargo_metadata v0.23.1
+   Compiling accesskit_windows v0.32.1
+   Compiling gemot v0.1.1 (https://github.com/merely-made/mere.git?rev=bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3#bd5912fb)
+   Compiling knot-editor-host v0.1.1 (https://github.com/merely-made/mere.git?rev=bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3#bd5912fb)
+   Compiling firewheel-cpal v0.10.0
+   Compiling mere-cartography v0.0.2 (https://github.com/merely-made/mere.git?rev=bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3#bd5912fb)
+   Compiling mere-fetch v0.0.1 (https://github.com/merely-made/mere.git?rev=bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3#bd5912fb)
+   Compiling luggage v0.1.0 (https://github.com/merely-made/mere.git?rev=bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3#bd5912fb)
+   Compiling knot-file-catalog v0.0.1 (https://github.com/merely-made/knot-editor.git?rev=3dfb70b01e79dadfcbd1e615ded43b34f01802da#3dfb70b0)
+   Compiling grafting v0.6.0 (https://github.com/merely-made/wgpu-graft.git?rev=403a30c2fab39c573d1eebb57a0995e2c3347ff1#403a30c2)
+   Compiling welding v0.15.0 (https://github.com/merely-made/wgpu-weld.git?rev=65d057def7db2b5034add6e316cbd51d97c163a1#65d057de)
+   Compiling pictograph v0.2.0 (https://github.com/merely-made/mere.git?rev=bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3#bd5912fb)
+   Compiling castellan v0.0.3 (https://github.com/merely-made/mere.git?rev=bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3#bd5912fb)
+   Compiling knot-capture v0.0.1 (https://github.com/merely-made/knot-editor.git?rev=3dfb70b01e79dadfcbd1e615ded43b34f01802da#3dfb70b0)
+   Compiling mere-webrtc-carrier v0.0.1 (https://github.com/merely-made/mere.git?rev=bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3#bd5912fb)
+   Compiling firewheel v0.10.0
+   Compiling mere-linked-data v0.0.1 (https://github.com/merely-made/mere.git?rev=bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3#bd5912fb)
+   Compiling knot-document v0.0.1 (https://github.com/merely-made/knot-editor.git?rev=3dfb70b01e79dadfcbd1e615ded43b34f01802da#3dfb70b0)
+   Compiling platen v0.0.1 (https://github.com/merely-made/mere.git?rev=bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3#bd5912fb)
+   Compiling mere-document-lanes v0.1.0 (https://github.com/merely-made/mere.git?rev=bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3#bd5912fb)
+   Compiling mere-mesh v0.0.1 (https://github.com/merely-made/mere.git?rev=bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3#bd5912fb)
+   Compiling graphshell-client v0.0.2 (https://github.com/merely-made/mere.git?rev=bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3#bd5912fb)
+   Compiling genet-render v0.2.0 (https://github.com/merely-made/genet.git?rev=69a2383b2ad777b884a72f31f8f8fb7ece275c0b#69a2383b)
+   Compiling eidetic-search v0.0.1 (https://github.com/merely-made/mere.git?rev=bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3#bd5912fb)
+   Compiling genet-render-host v0.2.0 (https://github.com/merely-made/genet.git?rev=69a2383b2ad777b884a72f31f8f8fb7ece275c0b#69a2383b)
+   Compiling grafting-frame v0.1.0 (https://github.com/merely-made/wgpu-graft.git?rev=403a30c2fab39c573d1eebb57a0995e2c3347ff1#403a30c2)
+   Compiling light-file-dialog v3.21.3
+   Compiling scenograph v0.0.4 (https://github.com/merely-made/mere.git?rev=bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3#bd5912fb)
+   Compiling redshank-surfaces v0.0.0 (https://github.com/merely-made/woodshed.git?rev=cefc903dcd7f506803acfe2ee52cad7693787188#cefc903d)
+   Compiling redshank-playback v0.0.0 (https://github.com/merely-made/woodshed.git?rev=cefc903dcd7f506803acfe2ee52cad7693787188#cefc903d)
+   Compiling knot-editor v0.0.3 (https://github.com/merely-made/knot-editor.git?rev=3dfb70b01e79dadfcbd1e615ded43b34f01802da#3dfb70b0)
+   Compiling genet-documents v0.1.0 (https://github.com/merely-made/genet.git?rev=69a2383b2ad777b884a72f31f8f8fb7ece275c0b#69a2383b)
+   Compiling graphshell v0.0.2 (https://github.com/merely-made/mere.git?rev=bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3#bd5912fb)
+   Compiling retinue v0.2.0 (https://github.com/merely-made/retinue.git?rev=fa4f925059cc698058cb21fecc1c825d095741a9#fa4f9250)
+   Compiling cef v151.8.1+151.3.24
+   Compiling genet-winit-host v0.2.0 (https://github.com/merely-made/genet.git?rev=69a2383b2ad777b884a72f31f8f8fb7ece275c0b#69a2383b)
+   Compiling mere-moot v0.0.1 (https://github.com/merely-made/mere.git?rev=bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3#bd5912fb)
+   Compiling mere v0.0.2 (https://github.com/merely-made/mere.git?rev=bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3#bd5912fb)
+   Compiling distillery v0.0.1 (https://github.com/merely-made/mere.git?rev=bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3#bd5912fb)
+   Compiling rfd v0.17.2
+   Compiling commons-spine v0.0.1 (https://github.com/merely-made/mere.git?rev=bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3#bd5912fb)
+   Compiling accesskit_winit v0.32.2
+   Compiling redshank-storage v0.0.0 (https://github.com/merely-made/woodshed.git?rev=cefc903dcd7f506803acfe2ee52cad7693787188#cefc903d)
+   Compiling cambium-winit v0.3.0 (https://github.com/merely-made/mere.git?rev=bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3#bd5912fb)
+   Compiling taproot v0.1.0 (https://github.com/merely-made/genet.git?rev=69a2383b2ad777b884a72f31f8f8fb7ece275c0b#69a2383b)
+   Compiling import v0.0.1 (https://github.com/merely-made/mere.git?rev=bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3#bd5912fb)
+   Compiling mere-athanor v0.0.1 (https://github.com/merely-made/mere.git?rev=bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3#bd5912fb)
+   Compiling weld-engine v0.2.0 (https://github.com/merely-made/mere.git?rev=bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3#bd5912fb)
+   Compiling mere-chrome v0.0.1 (https://github.com/merely-made/mere.git?rev=bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3#bd5912fb)
+   Compiling turnstone v0.1.0 (C:\Users\mark_\Code\repos\turnstone)
+warning: unused imports: `Suggestion` and `normalize_address`
+  --> src\app\mod.rs:20:31
+   |
+20 | use crate::ui::{OmnibarState, Suggestion, normalize_address};
+   |                               ^^^^^^^^^^  ^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `browse`
+  --> src\app\mod.rs:26:13
+   |
+26 | use crate::{browse, session};
+   |             ^^^^^^
+
+warning: unused import: `crate::panes::PaneContent`
+  --> src\app\node_arms.rs:16:5
+   |
+16 | use crate::panes::PaneContent;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `CaretMove`
+  --> src\app\omnibar_arms.rs:12:29
+   |
+12 | use crate::action::{Action, CaretMove, Effect};
+   |                             ^^^^^^^^^
+
+warning: unused import: `crate::panes::PaneContent`
+  --> src\app\palette.rs:16:5
+   |
+16 | use crate::panes::PaneContent;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `uuid::Uuid`
+  --> src\app\session_lifecycle.rs:17:5
+   |
+17 | use uuid::Uuid;
+   |     ^^^^^^^^^^
+
+warning: unused import: `PaneContent`
+  --> src\app\session_lifecycle.rs:22:44
+   |
+22 | use crate::panes::{FrisketLayout, GraphId, PaneContent, SessionId};
+   |                                            ^^^^^^^^^^^
+
+warning: unused imports: `MOOT_ACT_ACTION` and `MOOT_DELEGATION_DOMAIN`
+    --> src\place\worker.rs:2663:44
+     |
+2663 |         CollectionChange, ContributionRef, MOOT_ACT_ACTION, MOOT_DELEGATION_DOMAIN,
+     |                                            ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `CapabilityScope`, `DelegationCertificate`, `DelegationParent`, and `delegation_signing_salt`
+    --> src\place\worker.rs:2677:9
+     |
+2677 |         CapabilityScope, DelegationCertificate, DelegationParent, DelegationRevocation,
+     |         ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^
+2678 |         SignedDelegationCertificate, SignedDelegationRevocation, delegation_signing_salt,
+     |                                                                  ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::action::CaretMove`
+   --> src\shell\drive.rs:524:13
+    |
+524 |         use crate::action::CaretMove;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::sync::mpsc::Receiver`
+  --> src\shell\effects.rs:13:5
+   |
+13 | use std::sync::mpsc::Receiver;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `FetchCommand` and `FetchUpdate`
+  --> src\shell\effects.rs:15:13
+   |
+15 | use fetch::{FetchCommand, FetchUpdate};
+   |             ^^^^^^^^^^^^  ^^^^^^^^^^^
+
+warning: unused import: `SessionClick`
+  --> src\shell\effects.rs:17:46
+   |
+17 |     DocumentFindQuery, EngineProfileBinding, SessionClick, SessionSpawnRequest, SurfaceSpawnRequest,
+   |                                              ^^^^^^^^^^^^
+
+warning: unused import: `crate::panes::PaneContent`
+  --> src\shell\effects.rs:22:5
+   |
+22 | use crate::panes::PaneContent;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::surface::SurfaceKind`
+  --> src\shell\render.rs:25:5
+   |
+25 | use crate::surface::SurfaceKind;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `PhysicalPosition`
+  --> src\shell\lens.rs:19:18
+   |
+19 | use winit::dpi::{PhysicalPosition, PhysicalSize};
+   |                  ^^^^^^^^^^^^^^^^
+
+warning: unused imports: `Key as WinitKey` and `NamedKey as WinitNamedKey`
+  --> src\shell\input.rs:16:23
+   |
+16 | use winit::keyboard::{Key as WinitKey, NamedKey as WinitNamedKey};
+   |                       ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `SessionScrollKey`
+  --> src\shell\input.rs:20:27
+   |
+20 | use inker::{SessionClick, SessionScrollKey};
+   |                           ^^^^^^^^^^^^^^^^
+
+warning: unused import: `CaretMove`
+  --> src\shell\input.rs:24:29
+   |
+24 | use crate::action::{Action, CaretMove};
+   |                             ^^^^^^^^^
+
+warning: unused import: `decode_sprite`
+  --> src\shell\input.rs:27:20
+   |
+27 | use super::{Shell, decode_sprite};
+   |                    ^^^^^^^^^^^^^
+
+warning: unused import: `input::pointer_button`
+  --> src\shell\mod.rs:32:5
+   |
+32 | use input::pointer_button;
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::path::Path`
+  --> src\shell\mod.rs:35:5
+   |
+35 | use std::path::Path;
+   |     ^^^^^^^^^^^^^^^
+
+warning: unused import: `image::ImageEncoder`
+  --> src\shell\mod.rs:42:5
+   |
+42 | use image::ImageEncoder;
+   |     ^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `mere::canvas::WHEEL_PAN_SCALE`
+  --> src\shell\mod.rs:44:5
+   |
+44 | use mere::canvas::WHEEL_PAN_SCALE;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `ColorLoad` and `NetrenderOptions`
+  --> src\shell\mod.rs:50:17
+   |
+50 | use netrender::{ColorLoad, NetrenderOptions};
+   |                 ^^^^^^^^^  ^^^^^^^^^^^^^^^^
+
+warning: unused import: `winit::application::ApplicationHandler`
+  --> src\shell\mod.rs:51:5
+   |
+51 | use winit::application::ApplicationHandler;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `PhysicalPosition` and `PhysicalSize`
+  --> src\shell\mod.rs:52:18
+   |
+52 | use winit::dpi::{PhysicalPosition, PhysicalSize};
+   |                  ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^
+
+warning: unused imports: `ElementState`, `Ime`, `MouseButton`, `MouseScrollDelta`, and `WindowEvent`
+  --> src\shell\mod.rs:53:20
+   |
+53 | use winit::event::{ElementState, Ime, MouseButton, MouseScrollDelta, WindowEvent};
+   |                    ^^^^^^^^^^^^  ^^^  ^^^^^^^^^^^  ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^
+
+warning: unused imports: `Key as WinitKey` and `NamedKey as WinitNamedKey`
+  --> src\shell\mod.rs:55:23
+   |
+55 | use winit::keyboard::{Key as WinitKey, NamedKey as WinitNamedKey};
+   |                       ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `Effect`
+  --> src\shell\mod.rs:64:29
+   |
+64 | use crate::action::{Action, Effect, Update};
+   |                             ^^^^^^
+
+warning: unused import: `session`
+  --> src\shell\mod.rs:67:21
+   |
+67 | use crate::{browse, session};
+   |                     ^^^^^^^
+
+warning: unused import: `mere::canvas::palette`
+  --> src\swatch_pane\mod.rs:32:5
+   |
+32 | use mere::canvas::palette;
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `ColorF`
+  --> src\swatch_pane\mod.rs:33:17
+   |
+33 | use sprigging::{ColorF, LeafRegistry, RenderedLeaves};
+   |                 ^^^^^^
+
+warning: unused import: `crate::content::NodeContent`
+  --> src\swatch_pane\mod.rs:37:5
+   |
+37 | use crate::content::NodeContent;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::overmap`
+  --> src\swatch_pane\mod.rs:38:5
+   |
+38 | use crate::overmap;
+   |     ^^^^^^^^^^^^^^
+
+warning: unused import: `genet_clipboard::TextClipboard`
+   --> src\shell\effects.rs:522:25
+    |
+522 |                     use genet_clipboard::TextClipboard as _;
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: variable does not need to be mutable
+    --> src\place\worker.rs:3821:13
+     |
+3821 |         let mut welcome = |open: &mut OpenPlace, seed: u8| {
+     |             ----^^^^^^^
+     |             |
+     |             help: remove this `mut`
+     |
+     = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `caption`
+   --> src\shell\render.rs:754:13
+    |
+754 |         let caption = self
+    |             ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_caption`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `ok`
+   --> src\shell\render.rs:988:17
+    |
+988 |             let ok = capture_composed(host, &layers, w, h, &path);
+    |                 ^^ help: if this is intentional, prefix it with an underscore: `_ok`
+
+warning: function `save_certs` is never used
+   --> src\denizen.rs:733:8
+    |
+733 | pub fn save_certs(session_dir: &Path, subject_hex: &str, certs: &[SignedDelegationCertificate]) {
+    |        ^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: methods `projection_input_binding` and `runtime_projection_source` are never used
+    --> src\knot_authoring.rs:2603:12
+     |
+2393 | impl KnotDocumentSession {
+     | ------------------------ methods in this implementation
+...
+2603 |     pub fn projection_input_binding(&self) -> Option<&ProjectionInputBinding> {
+     |            ^^^^^^^^^^^^^^^^^^^^^^^^
+...
+2613 |     pub fn runtime_projection_source(&self) -> Option<RuntimeSourceBinding<KnotRuntimeWitness>> {
+     |            ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `granted_ring_names` is never used
+   --> src\ring.rs:370:8
+    |
+370 | pub fn granted_ring_names(authority: &impl AuthorityProvider, subject: Subject) -> Vec<String> {
+    |        ^^^^^^^^^^^^^^^^^^
+
+warning: function `roster_grid_rows` is never used
+  --> src\roster_view.rs:99:8
+   |
+99 | pub fn roster_grid_rows(app: &App) -> Vec<RosterGridRow> {
+   |        ^^^^^^^^^^^^^^^^
+
+warning: field `0` is never read
+   --> src\scenario.rs:245:12
+    |
+245 |     Settle(u32),
+    |     ------ ^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+245 -     Settle(u32),
+245 +     Settle(()),
+    |
+
+warning: field `0` is never read
+   --> src\scenario.rs:279:17
+    |
+279 |     AssertEvent(String),
+    |     ----------- ^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+279 -     AssertEvent(String),
+279 +     AssertEvent(()),
+    |
+
+warning: field `0` is never read
+   --> src\scenario.rs:299:9
+    |
+299 |     Log(String),
+    |     --- ^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+299 -     Log(String),
+299 +     Log(()),
+    |
+
+warning: method `pane_label` is never used
+    --> src\shell\mod.rs:1284:8
+     |
+ 576 | impl Shell {
+     | ---------- method in this implementation
+...
+1284 |     fn pane_label(&self, id: crate::panes::PaneId) -> String {
+     |        ^^^^^^^^^^
+
+warning: function `ime_cursor_area` is never used
+    --> src\ui.rs:1128:8
+     |
+1128 | pub fn ime_cursor_area(state: &OmnibarState, w: u32) -> ((f32, f32), (f32, f32)) {
+     |        ^^^^^^^^^^^^^^^
+
+warning: function `chrome_has_content` is never used
+    --> src\ui.rs:1146:8
+     |
+1146 | pub fn chrome_has_content(state: &OmnibarState, caption: Option<&str>) -> bool {
+     |        ^^^^^^^^^^^^^^^^^^
+
+warning: function `scene_from_dom_with_leaves` is never used
+    --> src\ui.rs:2328:8
+     |
+2328 | pub fn scene_from_dom_with_leaves(
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `turnstone` (lib test) generated 50 warnings (run `cargo fix --lib -p turnstone --tests` to apply 38 suggestions)
+    Finished `test` profile [unoptimized] target(s) in 6m 38s
+     Running unittests src\lib.rs (C:/t/cargo-targets/turnstone\debug\deps\turnstone-960d9f6a024d4a0e.exe)
+
+running 6 tests
+test shell::weld::contract_tests::page_drag_effects_round_trip_without_backend_only_bits ... ok
+test shell::weld::contract_tests::arbitrary_drag_string_mime_is_rejected_instead_of_dropped ... ok
+test shell::weld::contract_tests::weld_find_result_uses_the_shared_zero_based_model ... ok
+test shell::weld::contract_tests::weld_devtools_settings_are_refused_before_producer_dispatch ... ok
+test shell::weld::contract_tests::data_transfer_preserves_files_and_standard_string_types ... ok
+test shell::weld::contract_tests::weld_zoom_settings_preserve_scale_validation_and_dispatch_failure ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 646 filtered out; finished in 0.00s
+

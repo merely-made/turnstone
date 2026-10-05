@@ -1,0 +1,31 @@
+{
+  "recorded_utc": "2026-10-05T23:14:59.890268+00:00",
+  "source_manifest": "source-manifest.json",
+  "source_inputs_reverified": 152,
+  "executable_sha256": "a245130a4becccd35c81c78a5108a2a74d0e980fa52744937711f4e678421948",
+  "lock_sha256": "fb490421b31b10246c17a0dc70d5760e503fdb9c92761f40b342d0af42bd60e5",
+  "full_run": {
+    "output": "native-clipped",
+    "result": "fail",
+    "cookie_assertion_failures": 4,
+    "all_other_script_assertions_pass": true,
+    "external_repaint": false
+  },
+  "restart_run": {
+    "output": "native-restart",
+    "result": "fail",
+    "cookie_assertion_failures": 2,
+    "all_other_script_assertions_pass": true,
+    "external_repaint": false,
+    "same_executable_profile_origin": true
+  },
+  "full_b1_accepted": false,
+  "open_native_gates": [
+    "cookie retention on in-place reload, reconstruction, reopen and process restart",
+    "current captured/imported/composited pixels after input and reopening"
+  ],
+  "visual_review": "visual-review.json",
+  "fixture_server": "owned managed process stopped",
+  "retained_isolated_targets_homes_worktrees": [],
+  "retained_synthetic_profiles": "ignored receipt profile/; failed gate evidence owned by Turnstone"
+}

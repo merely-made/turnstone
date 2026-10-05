@@ -11,7 +11,7 @@
 //! also drives, so one description runs through two runners.
 
 use winit::application::ApplicationHandler;
-use winit::event::{ElementState, Ime, MouseScrollDelta, WindowEvent};
+use winit::event::{ElementState, Ime, MouseScrollDelta, StartCause, WindowEvent};
 use winit::event_loop::{ActiveEventLoop, ControlFlow};
 use winit::window::WindowId;
 
@@ -30,15 +30,28 @@ use crate::browse;
 use super::Shell;
 
 impl ApplicationHandler for Shell {
+    fn new_events(&mut self, _event_loop: &ActiveEventLoop, _cause: StartCause) {
+        // Native COM calls can consume/coalesce Win32 paint requests during
+        // input delivery. A deadline wake requests paint outside WM_PAINT so
+        // captured browser mailboxes and self-drive cannot lose their clock.
+        // Replace this fallback when the engines expose a host wake callback.
+        let active = !self.surface_producers.is_empty() || self.shared_scenario.is_some();
+        if self.surface_poll_clock.poll_due(active, std::time::Instant::now()) {
+            self.request_redraw();
+        }
+    }
+
     fn about_to_wait(&mut self, event_loop: &ActiveEventLoop) {
         let effects = self.app.tick(crate::denizen::now_ms());
         self.run_effects(effects);
         self.pump_redshank();
-        // Minute is the smallest supported schedule. A bounded wake also
-        // supplies the production clock to W4 behaviors when the UI is idle.
-        event_loop.set_control_flow(ControlFlow::WaitUntil(
-            std::time::Instant::now() + std::time::Duration::from_secs(60),
-        ));
+        // Live captured surfaces require a clock independent of paint delivery.
+        // Otherwise a minute supplies the idle W4 schedule clock.
+        let active = !self.surface_producers.is_empty() || self.shared_scenario.is_some();
+        let now = std::time::Instant::now();
+        let deadline = self.surface_poll_clock.deadline(active, now)
+            .unwrap_or_else(|| now + std::time::Duration::from_secs(60));
+        event_loop.set_control_flow(ControlFlow::WaitUntil(deadline));
     }
 
     fn exiting(&mut self, _event_loop: &ActiveEventLoop) {
@@ -95,10 +108,9 @@ impl ApplicationHandler for Shell {
         let options = NetrenderOptions {
             tile_cache_size: Some(64),
             enable_vello: true,
-            // CEF's accelerated Windows callback exports a D3D12 shared
-            // texture. The host device must use the same API before any
-            // surface is spawned; a Vulkan device cannot import that handle.
-            #[cfg(all(feature = "weld", windows))]
+            // Windows browser producers export D3D12 shared textures. The
+            // host must use the same API before constructing either producer.
+            #[cfg(all(any(feature = "weld", feature = "scry"), windows))]
             backends: Some(wgpu::Backends::DX12),
             ..Default::default()
         };
@@ -223,7 +235,9 @@ impl ApplicationHandler for Shell {
         if let (Some(adapter), Some(window)) = (self.a11y_adapter.as_mut(), self.window.as_ref())
             && window.id() == window_id
         {
+            tracing::debug!(target: "turnstone::selfdrive", redraw = matches!(event, WindowEvent::RedrawRequested), "begin accessibility event delivery");
             adapter.process_event(window, &event);
+            tracing::debug!(target: "turnstone::selfdrive", "finished accessibility event delivery");
         }
         if self.window.as_ref().map(|w| w.id()) != Some(window_id) {
             // A lens window's event (rung 7): canvas gestures through the
@@ -368,9 +382,13 @@ impl ApplicationHandler for Shell {
                 }
             }
             WindowEvent::RedrawRequested => {
+                tracing::debug!(target: "turnstone::selfdrive", "begin render");
                 self.render();
+                tracing::debug!(target: "turnstone::selfdrive", "finished render; begin accessibility update");
                 self.push_a11y_tree();
+                tracing::debug!(target: "turnstone::selfdrive", "finished accessibility update; begin scenario tick");
                 self.scenario_pump(event_loop);
+                tracing::debug!(target: "turnstone::selfdrive", "finished scenario tick");
             }
             _ => {}
         }

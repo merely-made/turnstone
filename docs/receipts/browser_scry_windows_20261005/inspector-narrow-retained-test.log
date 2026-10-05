@@ -1,0 +1,756 @@
+warning: patch `p2panda-stream v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.4#0a54ab82)` was not used in the crate graph
+help: Check that the patched package version and available features are compatible
+      with the dependency requirements. If the patch has a different version from
+      what is locked in the Cargo.lock file, run `cargo update` to use the new
+      version. This may also occur with an optional dependency that is not enabled.
+    Blocking waiting for file lock on build directory
+warning: unused imports: `Suggestion` and `normalize_address`
+  --> src\app\mod.rs:20:31
+   |
+20 | use crate::ui::{OmnibarState, Suggestion, normalize_address};
+   |                               ^^^^^^^^^^  ^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `browse`
+  --> src\app\mod.rs:26:13
+   |
+26 | use crate::{browse, session};
+   |             ^^^^^^
+
+warning: unused import: `crate::panes::PaneContent`
+  --> src\app\node_arms.rs:16:5
+   |
+16 | use crate::panes::PaneContent;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `CaretMove`
+  --> src\app\omnibar_arms.rs:12:29
+   |
+12 | use crate::action::{Action, CaretMove, Effect};
+   |                             ^^^^^^^^^
+
+warning: unused import: `crate::panes::PaneContent`
+  --> src\app\palette.rs:16:5
+   |
+16 | use crate::panes::PaneContent;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `uuid::Uuid`
+  --> src\app\session_lifecycle.rs:17:5
+   |
+17 | use uuid::Uuid;
+   |     ^^^^^^^^^^
+
+warning: unused import: `PaneContent`
+  --> src\app\session_lifecycle.rs:22:44
+   |
+22 | use crate::panes::{FrisketLayout, GraphId, PaneContent, SessionId};
+   |                                            ^^^^^^^^^^^
+
+warning: unused imports: `MOOT_ACT_ACTION` and `MOOT_DELEGATION_DOMAIN`
+    --> src\place\worker.rs:2663:44
+     |
+2663 |         CollectionChange, ContributionRef, MOOT_ACT_ACTION, MOOT_DELEGATION_DOMAIN,
+     |                                            ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `CapabilityScope`, `DelegationCertificate`, `DelegationParent`, and `delegation_signing_salt`
+    --> src\place\worker.rs:2677:9
+     |
+2677 |         CapabilityScope, DelegationCertificate, DelegationParent, DelegationRevocation,
+     |         ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^
+2678 |         SignedDelegationCertificate, SignedDelegationRevocation, delegation_signing_salt,
+     |                                                                  ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::action::CaretMove`
+   --> src\shell\drive.rs:591:13
+    |
+591 |         use crate::action::CaretMove;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::sync::mpsc::Receiver`
+  --> src\shell\effects.rs:13:5
+   |
+13 | use std::sync::mpsc::Receiver;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `FetchCommand` and `FetchUpdate`
+  --> src\shell\effects.rs:15:13
+   |
+15 | use fetch::{FetchCommand, FetchUpdate};
+   |             ^^^^^^^^^^^^  ^^^^^^^^^^^
+
+warning: unused import: `SessionClick`
+  --> src\shell\effects.rs:17:46
+   |
+17 |     DocumentFindQuery, EngineProfileBinding, SessionClick, SessionSpawnRequest, SurfaceSpawnRequest,
+   |                                              ^^^^^^^^^^^^
+
+warning: unused import: `crate::panes::PaneContent`
+  --> src\shell\effects.rs:22:5
+   |
+22 | use crate::panes::PaneContent;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::surface::SurfaceKind`
+  --> src\shell\render.rs:25:5
+   |
+25 | use crate::surface::SurfaceKind;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `PhysicalPosition`
+  --> src\shell\lens.rs:19:18
+   |
+19 | use winit::dpi::{PhysicalPosition, PhysicalSize};
+   |                  ^^^^^^^^^^^^^^^^
+
+warning: unused imports: `Key as WinitKey` and `NamedKey as WinitNamedKey`
+  --> src\shell\input.rs:16:23
+   |
+16 | use winit::keyboard::{Key as WinitKey, NamedKey as WinitNamedKey};
+   |                       ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `SessionScrollKey`
+  --> src\shell\input.rs:20:27
+   |
+20 | use inker::{SessionClick, SessionScrollKey};
+   |                           ^^^^^^^^^^^^^^^^
+
+warning: unused import: `CaretMove`
+  --> src\shell\input.rs:24:29
+   |
+24 | use crate::action::{Action, CaretMove};
+   |                             ^^^^^^^^^
+
+warning: unused import: `decode_sprite`
+  --> src\shell\input.rs:27:20
+   |
+27 | use super::{Shell, decode_sprite};
+   |                    ^^^^^^^^^^^^^
+
+warning: unused import: `input::pointer_button`
+  --> src\shell\mod.rs:34:5
+   |
+34 | use input::pointer_button;
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::path::Path`
+  --> src\shell\mod.rs:37:5
+   |
+37 | use std::path::Path;
+   |     ^^^^^^^^^^^^^^^
+
+warning: unused import: `image::ImageEncoder`
+  --> src\shell\mod.rs:44:5
+   |
+44 | use image::ImageEncoder;
+   |     ^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `mere::canvas::WHEEL_PAN_SCALE`
+  --> src\shell\mod.rs:46:5
+   |
+46 | use mere::canvas::WHEEL_PAN_SCALE;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `ColorLoad` and `NetrenderOptions`
+  --> src\shell\mod.rs:52:17
+   |
+52 | use netrender::{ColorLoad, NetrenderOptions};
+   |                 ^^^^^^^^^  ^^^^^^^^^^^^^^^^
+
+warning: unused import: `winit::application::ApplicationHandler`
+  --> src\shell\mod.rs:53:5
+   |
+53 | use winit::application::ApplicationHandler;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `PhysicalPosition` and `PhysicalSize`
+  --> src\shell\mod.rs:54:18
+   |
+54 | use winit::dpi::{PhysicalPosition, PhysicalSize};
+   |                  ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^
+
+warning: unused imports: `ElementState`, `Ime`, `MouseButton`, `MouseScrollDelta`, and `WindowEvent`
+  --> src\shell\mod.rs:55:20
+   |
+55 | use winit::event::{ElementState, Ime, MouseButton, MouseScrollDelta, WindowEvent};
+   |                    ^^^^^^^^^^^^  ^^^  ^^^^^^^^^^^  ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^
+
+warning: unused imports: `Key as WinitKey` and `NamedKey as WinitNamedKey`
+  --> src\shell\mod.rs:57:23
+   |
+57 | use winit::keyboard::{Key as WinitKey, NamedKey as WinitNamedKey};
+   |                       ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `Effect`
+  --> src\shell\mod.rs:66:29
+   |
+66 | use crate::action::{Action, Effect, Update};
+   |                             ^^^^^^
+
+warning: unused import: `session`
+  --> src\shell\mod.rs:69:21
+   |
+69 | use crate::{browse, session};
+   |                     ^^^^^^^
+
+warning: unused import: `mere::canvas::palette`
+  --> src\swatch_pane\mod.rs:32:5
+   |
+32 | use mere::canvas::palette;
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `ColorF`
+  --> src\swatch_pane\mod.rs:33:17
+   |
+33 | use sprigging::{ColorF, LeafRegistry, RenderedLeaves};
+   |                 ^^^^^^
+
+warning: unused import: `crate::content::NodeContent`
+  --> src\swatch_pane\mod.rs:37:5
+   |
+37 | use crate::content::NodeContent;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::overmap`
+  --> src\swatch_pane\mod.rs:38:5
+   |
+38 | use crate::overmap;
+   |     ^^^^^^^^^^^^^^
+
+warning: unused import: `genet_clipboard::TextClipboard`
+   --> src\shell\effects.rs:636:25
+    |
+636 |                     use genet_clipboard::TextClipboard as _;
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: variable does not need to be mutable
+    --> src\place\worker.rs:3821:13
+     |
+3821 |         let mut welcome = |open: &mut OpenPlace, seed: u8| {
+     |             ----^^^^^^^
+     |             |
+     |             help: remove this `mut`
+     |
+     = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `caption`
+   --> src\shell\render.rs:754:13
+    |
+754 |         let caption = self
+    |             ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_caption`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `ok`
+    --> src\shell\render.rs:1017:17
+     |
+1017 |             let ok = capture_composed(host, &layers, w, h, &path);
+     |                 ^^ help: if this is intentional, prefix it with an underscore: `_ok`
+
+warning: function `save_certs` is never used
+   --> src\denizen.rs:733:8
+    |
+733 | pub fn save_certs(session_dir: &Path, subject_hex: &str, certs: &[SignedDelegationCertificate]) {
+    |        ^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: methods `projection_input_binding` and `runtime_projection_source` are never used
+    --> src\knot_authoring.rs:2603:12
+     |
+2393 | impl KnotDocumentSession {
+     | ------------------------ methods in this implementation
+...
+2603 |     pub fn projection_input_binding(&self) -> Option<&ProjectionInputBinding> {
+     |            ^^^^^^^^^^^^^^^^^^^^^^^^
+...
+2613 |     pub fn runtime_projection_source(&self) -> Option<RuntimeSourceBinding<KnotRuntimeWitness>> {
+     |            ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `granted_ring_names` is never used
+   --> src\ring.rs:370:8
+    |
+370 | pub fn granted_ring_names(authority: &impl AuthorityProvider, subject: Subject) -> Vec<String> {
+    |        ^^^^^^^^^^^^^^^^^^
+
+warning: function `roster_grid_rows` is never used
+  --> src\roster_view.rs:99:8
+   |
+99 | pub fn roster_grid_rows(app: &App) -> Vec<RosterGridRow> {
+   |        ^^^^^^^^^^^^^^^^
+
+warning: field `0` is never read
+   --> src\scenario.rs:245:12
+    |
+245 |     Settle(u32),
+    |     ------ ^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+245 -     Settle(u32),
+245 +     Settle(()),
+    |
+
+warning: field `0` is never read
+   --> src\scenario.rs:279:17
+    |
+279 |     AssertEvent(String),
+    |     ----------- ^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+279 -     AssertEvent(String),
+279 +     AssertEvent(()),
+    |
+
+warning: field `0` is never read
+   --> src\scenario.rs:299:9
+    |
+299 |     Log(String),
+    |     --- ^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+299 -     Log(String),
+299 +     Log(()),
+    |
+
+warning: method `pane_label` is never used
+    --> src\shell\mod.rs:1341:8
+     |
+ 601 | impl Shell {
+     | ---------- method in this implementation
+...
+1341 |     fn pane_label(&self, id: crate::panes::PaneId) -> String {
+     |        ^^^^^^^^^^
+
+warning: field `resource_epoch` is never read
+  --> src\shell\surface_frames.rs:42:16
+   |
+41 | pub(super) struct ImportedSurfaceFrame {
+   |                   -------------------- field in this struct
+42 |     pub(super) resource_epoch: u64,
+   |                ^^^^^^^^^^^^^^
+
+warning: function `ime_cursor_area` is never used
+    --> src\ui.rs:1128:8
+     |
+1128 | pub fn ime_cursor_area(state: &OmnibarState, w: u32) -> ((f32, f32), (f32, f32)) {
+     |        ^^^^^^^^^^^^^^^
+
+warning: function `chrome_has_content` is never used
+    --> src\ui.rs:1146:8
+     |
+1146 | pub fn chrome_has_content(state: &OmnibarState, caption: Option<&str>) -> bool {
+     |        ^^^^^^^^^^^^^^^^^^
+
+warning: function `scene_from_dom_with_leaves` is never used
+    --> src\ui.rs:2328:8
+     |
+2328 | pub fn scene_from_dom_with_leaves(
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `turnstone` (lib test) generated 51 warnings (run `cargo fix --lib -p turnstone --tests` to apply 38 suggestions)
+    Finished `test` profile [unoptimized] target(s) in 10m 05s
+     Running unittests src\lib.rs (C:/t/cargo-targets/turnstone\debug\deps\turnstone-48d90642c0f3d10a.exe)
+
+running 1 test
+narrow Inspector estimated=(125.5, 238.5), painted=(125.5, 228), reused=false
+
+thread 'inspector_pane::tests::narrow_inspector_probe_selects_registered_scry_for_followed_b_after_a' (41892) panicked at src\inspector_pane\tests.rs:668:32:
+called `Option::unwrap()` on a `None` value
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test inspector_pane::tests::narrow_inspector_probe_selects_registered_scry_for_followed_b_after_a ... FAILED
+
+failures:
+
+failures:
+    inspector_pane::tests::narrow_inspector_probe_selects_registered_scry_for_followed_b_after_a
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 655 filtered out; finished in 0.33s
+
+error: test failed, to rerun pass `--lib`
+warning: patch `p2panda-stream v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.4#0a54ab82)` was not used in the crate graph
+help: Check that the patched package version and available features are compatible
+      with the dependency requirements. If the patch has a different version from
+      what is locked in the Cargo.lock file, run `cargo update` to use the new
+      version. This may also occur with an optional dependency that is not enabled.
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+   Compiling turnstone v0.1.0 (C:\Users\mark_\Code\repos\turnstone)
+warning: unused imports: `Suggestion` and `normalize_address`
+  --> src\app\mod.rs:20:31
+   |
+20 | use crate::ui::{OmnibarState, Suggestion, normalize_address};
+   |                               ^^^^^^^^^^  ^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `browse`
+  --> src\app\mod.rs:26:13
+   |
+26 | use crate::{browse, session};
+   |             ^^^^^^
+
+warning: unused import: `crate::panes::PaneContent`
+  --> src\app\node_arms.rs:16:5
+   |
+16 | use crate::panes::PaneContent;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `CaretMove`
+  --> src\app\omnibar_arms.rs:12:29
+   |
+12 | use crate::action::{Action, CaretMove, Effect};
+   |                             ^^^^^^^^^
+
+warning: unused import: `crate::panes::PaneContent`
+  --> src\app\palette.rs:16:5
+   |
+16 | use crate::panes::PaneContent;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `uuid::Uuid`
+  --> src\app\session_lifecycle.rs:17:5
+   |
+17 | use uuid::Uuid;
+   |     ^^^^^^^^^^
+
+warning: unused import: `PaneContent`
+  --> src\app\session_lifecycle.rs:22:44
+   |
+22 | use crate::panes::{FrisketLayout, GraphId, PaneContent, SessionId};
+   |                                            ^^^^^^^^^^^
+
+warning: unused imports: `MOOT_ACT_ACTION` and `MOOT_DELEGATION_DOMAIN`
+    --> src\place\worker.rs:2663:44
+     |
+2663 |         CollectionChange, ContributionRef, MOOT_ACT_ACTION, MOOT_DELEGATION_DOMAIN,
+     |                                            ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `CapabilityScope`, `DelegationCertificate`, `DelegationParent`, and `delegation_signing_salt`
+    --> src\place\worker.rs:2677:9
+     |
+2677 |         CapabilityScope, DelegationCertificate, DelegationParent, DelegationRevocation,
+     |         ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^
+2678 |         SignedDelegationCertificate, SignedDelegationRevocation, delegation_signing_salt,
+     |                                                                  ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::action::CaretMove`
+   --> src\shell\drive.rs:591:13
+    |
+591 |         use crate::action::CaretMove;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::sync::mpsc::Receiver`
+  --> src\shell\effects.rs:13:5
+   |
+13 | use std::sync::mpsc::Receiver;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `FetchCommand` and `FetchUpdate`
+  --> src\shell\effects.rs:15:13
+   |
+15 | use fetch::{FetchCommand, FetchUpdate};
+   |             ^^^^^^^^^^^^  ^^^^^^^^^^^
+
+warning: unused import: `SessionClick`
+  --> src\shell\effects.rs:17:46
+   |
+17 |     DocumentFindQuery, EngineProfileBinding, SessionClick, SessionSpawnRequest, SurfaceSpawnRequest,
+   |                                              ^^^^^^^^^^^^
+
+warning: unused import: `crate::panes::PaneContent`
+  --> src\shell\effects.rs:22:5
+   |
+22 | use crate::panes::PaneContent;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::surface::SurfaceKind`
+  --> src\shell\render.rs:25:5
+   |
+25 | use crate::surface::SurfaceKind;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `PhysicalPosition`
+  --> src\shell\lens.rs:19:18
+   |
+19 | use winit::dpi::{PhysicalPosition, PhysicalSize};
+   |                  ^^^^^^^^^^^^^^^^
+
+warning: unused imports: `Key as WinitKey` and `NamedKey as WinitNamedKey`
+  --> src\shell\input.rs:16:23
+   |
+16 | use winit::keyboard::{Key as WinitKey, NamedKey as WinitNamedKey};
+   |                       ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `SessionScrollKey`
+  --> src\shell\input.rs:20:27
+   |
+20 | use inker::{SessionClick, SessionScrollKey};
+   |                           ^^^^^^^^^^^^^^^^
+
+warning: unused import: `CaretMove`
+  --> src\shell\input.rs:24:29
+   |
+24 | use crate::action::{Action, CaretMove};
+   |                             ^^^^^^^^^
+
+warning: unused import: `decode_sprite`
+  --> src\shell\input.rs:27:20
+   |
+27 | use super::{Shell, decode_sprite};
+   |                    ^^^^^^^^^^^^^
+
+warning: unused import: `input::pointer_button`
+  --> src\shell\mod.rs:34:5
+   |
+34 | use input::pointer_button;
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::path::Path`
+  --> src\shell\mod.rs:37:5
+   |
+37 | use std::path::Path;
+   |     ^^^^^^^^^^^^^^^
+
+warning: unused import: `image::ImageEncoder`
+  --> src\shell\mod.rs:44:5
+   |
+44 | use image::ImageEncoder;
+   |     ^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `mere::canvas::WHEEL_PAN_SCALE`
+  --> src\shell\mod.rs:46:5
+   |
+46 | use mere::canvas::WHEEL_PAN_SCALE;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `ColorLoad` and `NetrenderOptions`
+  --> src\shell\mod.rs:52:17
+   |
+52 | use netrender::{ColorLoad, NetrenderOptions};
+   |                 ^^^^^^^^^  ^^^^^^^^^^^^^^^^
+
+warning: unused import: `winit::application::ApplicationHandler`
+  --> src\shell\mod.rs:53:5
+   |
+53 | use winit::application::ApplicationHandler;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `PhysicalPosition` and `PhysicalSize`
+  --> src\shell\mod.rs:54:18
+   |
+54 | use winit::dpi::{PhysicalPosition, PhysicalSize};
+   |                  ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^
+
+warning: unused imports: `ElementState`, `Ime`, `MouseButton`, `MouseScrollDelta`, and `WindowEvent`
+  --> src\shell\mod.rs:55:20
+   |
+55 | use winit::event::{ElementState, Ime, MouseButton, MouseScrollDelta, WindowEvent};
+   |                    ^^^^^^^^^^^^  ^^^  ^^^^^^^^^^^  ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^
+
+warning: unused imports: `Key as WinitKey` and `NamedKey as WinitNamedKey`
+  --> src\shell\mod.rs:57:23
+   |
+57 | use winit::keyboard::{Key as WinitKey, NamedKey as WinitNamedKey};
+   |                       ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `Effect`
+  --> src\shell\mod.rs:66:29
+   |
+66 | use crate::action::{Action, Effect, Update};
+   |                             ^^^^^^
+
+warning: unused import: `session`
+  --> src\shell\mod.rs:69:21
+   |
+69 | use crate::{browse, session};
+   |                     ^^^^^^^
+
+warning: unused import: `mere::canvas::palette`
+  --> src\swatch_pane\mod.rs:32:5
+   |
+32 | use mere::canvas::palette;
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `ColorF`
+  --> src\swatch_pane\mod.rs:33:17
+   |
+33 | use sprigging::{ColorF, LeafRegistry, RenderedLeaves};
+   |                 ^^^^^^
+
+warning: unused import: `crate::content::NodeContent`
+  --> src\swatch_pane\mod.rs:37:5
+   |
+37 | use crate::content::NodeContent;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::overmap`
+  --> src\swatch_pane\mod.rs:38:5
+   |
+38 | use crate::overmap;
+   |     ^^^^^^^^^^^^^^
+
+warning: unused import: `genet_clipboard::TextClipboard`
+   --> src\shell\effects.rs:636:25
+    |
+636 |                     use genet_clipboard::TextClipboard as _;
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: variable does not need to be mutable
+    --> src\place\worker.rs:3821:13
+     |
+3821 |         let mut welcome = |open: &mut OpenPlace, seed: u8| {
+     |             ----^^^^^^^
+     |             |
+     |             help: remove this `mut`
+     |
+     = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `caption`
+   --> src\shell\render.rs:754:13
+    |
+754 |         let caption = self
+    |             ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_caption`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `ok`
+    --> src\shell\render.rs:1017:17
+     |
+1017 |             let ok = capture_composed(host, &layers, w, h, &path);
+     |                 ^^ help: if this is intentional, prefix it with an underscore: `_ok`
+
+warning: function `save_certs` is never used
+   --> src\denizen.rs:733:8
+    |
+733 | pub fn save_certs(session_dir: &Path, subject_hex: &str, certs: &[SignedDelegationCertificate]) {
+    |        ^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: methods `projection_input_binding` and `runtime_projection_source` are never used
+    --> src\knot_authoring.rs:2603:12
+     |
+2393 | impl KnotDocumentSession {
+     | ------------------------ methods in this implementation
+...
+2603 |     pub fn projection_input_binding(&self) -> Option<&ProjectionInputBinding> {
+     |            ^^^^^^^^^^^^^^^^^^^^^^^^
+...
+2613 |     pub fn runtime_projection_source(&self) -> Option<RuntimeSourceBinding<KnotRuntimeWitness>> {
+     |            ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `granted_ring_names` is never used
+   --> src\ring.rs:370:8
+    |
+370 | pub fn granted_ring_names(authority: &impl AuthorityProvider, subject: Subject) -> Vec<String> {
+    |        ^^^^^^^^^^^^^^^^^^
+
+warning: function `roster_grid_rows` is never used
+  --> src\roster_view.rs:99:8
+   |
+99 | pub fn roster_grid_rows(app: &App) -> Vec<RosterGridRow> {
+   |        ^^^^^^^^^^^^^^^^
+
+warning: field `0` is never read
+   --> src\scenario.rs:245:12
+    |
+245 |     Settle(u32),
+    |     ------ ^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+245 -     Settle(u32),
+245 +     Settle(()),
+    |
+
+warning: field `0` is never read
+   --> src\scenario.rs:279:17
+    |
+279 |     AssertEvent(String),
+    |     ----------- ^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+279 -     AssertEvent(String),
+279 +     AssertEvent(()),
+    |
+
+warning: field `0` is never read
+   --> src\scenario.rs:299:9
+    |
+299 |     Log(String),
+    |     --- ^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+299 -     Log(String),
+299 +     Log(()),
+    |
+
+warning: method `pane_label` is never used
+    --> src\shell\mod.rs:1341:8
+     |
+ 601 | impl Shell {
+     | ---------- method in this implementation
+...
+1341 |     fn pane_label(&self, id: crate::panes::PaneId) -> String {
+     |        ^^^^^^^^^^
+
+warning: field `resource_epoch` is never read
+  --> src\shell\surface_frames.rs:42:16
+   |
+41 | pub(super) struct ImportedSurfaceFrame {
+   |                   -------------------- field in this struct
+42 |     pub(super) resource_epoch: u64,
+   |                ^^^^^^^^^^^^^^
+
+warning: function `ime_cursor_area` is never used
+    --> src\ui.rs:1128:8
+     |
+1128 | pub fn ime_cursor_area(state: &OmnibarState, w: u32) -> ((f32, f32), (f32, f32)) {
+     |        ^^^^^^^^^^^^^^^
+
+warning: function `chrome_has_content` is never used
+    --> src\ui.rs:1146:8
+     |
+1146 | pub fn chrome_has_content(state: &OmnibarState, caption: Option<&str>) -> bool {
+     |        ^^^^^^^^^^^^^^^^^^
+
+warning: function `scene_from_dom_with_leaves` is never used
+    --> src\ui.rs:2328:8
+     |
+2328 | pub fn scene_from_dom_with_leaves(
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: linking with `link.exe` failed: exit code: 1104
+  |
+  = note: "C:\\Program Files\\Microsoft Visual Studio\\18\\Insiders\\VC\\Tools\\MSVC\\14.51.36231\\bin\\HostX64\\x64\\link.exe" "/NOLOGO" "C:/t/cargo-targets/turnstone\\debug\\deps\\rustcO8wrCO\\symbols.o" "<257 object files omitted>" "C:\\t\\cargo-targets\\turnstone\\debug\\deps/{libcambium_winit-c582f6534d781086,librfd-13183caa6a826635,libathanor-2d451583b6e564c8,libtracing_subscriber-e0c6b43cfedb0d34,libsharded_slab-34604d93c8fb469d,libmatchers-41254e88b1fe6a7b,libnu_ansi_term-30f9c9fbc15fc47b,libthread_local-4fdf9969de9d8f9b,libtracing_log-550f1e14d27f2347,libimport-af5087fbcaa56672,libdirs-d444c5ae048c164d,libdirs_sys-410638ff67214bf1,libchrome-f402eeead401178a}.rlib" "<sysroot>\\lib\\rustlib\\x86_64-pc-windows-msvc\\lib/{libtest-*,libgetopts-*,librustc_std_workspace_std-*}.rlib" "C:\\t\\cargo-targets\\turnstone\\debug\\deps/{libturquet-ee681217e622736e,libsofars-df00c1ad28ad914b,libhifitime-94d06aaaf6557bf7,liblexical_core-168a1b436c222044,liblexical_parse_float-6df7705c193b2899,liblexical_parse_integer-b44e895b987e4277,liblexical_util-8ab0f46b4db002c0,libsnafu-be9ed465ddabf6de,libjiff-11a2b2c332eaa163,libjiff_tzdb_platform-a55e00bea51f1c35,libjiff_tzdb-ebbd6d4a7cb17358,libjiff_core-e629d00d7def1576,libaccesskit_winit-9907900b98c4967d,libscrying_engine-ee12bb21a4055606,libscrying-53843a9f9f8f58c7,libwebview2_com-b110894ca9ec799b,libwebview2_com_sys-7b3bacba464ad045,libgrafting-4dce675e161d084d,libgenet_winit_host-23327e4815894f9b,libgenet_render_host-41614601e94daec2,libaccesskit_windows-6ac9aa1205a9e79a,libaccesskit_consumer-4d812672dbadb4d1,libgenet_clipboard-622db05608ece9d6,libarboard-f4897a49877214ed,libclipboard_win-fa6aac10b27b799d,liberror_code-a3db9df59119c334,libtaproot-ddf29080f73f5c7e,libredshank_storage-e68b9b317e244623,libredshank_playback-b098edbde6b1023b,libsymphonia-8ea22ddc30e71998,libsymphonia_format_riff-8e517a7173ccc145,libsymphonia_format_isomp4-bf32b97696476011,libsymphonia_utils_xiph-6995a97b01d8bffa,libsymphonia_metadata-249d6d6ec1c7b606,libencoding_rs-70eaa27484fd3af8,libcore_detect-1120c1c1e2eda880,libsymphonia_codec_pcm-3b30ed68484d90fa,libsymphonia_codec_aac-b36f0aef38bb3fc4,libsymphonia_bundle_mp3-ee5ec01a36a0428e,libsymphonia_core-a482ee96a0e0e5e5,libbitflags-82a746f77b307301,libservo_media_player-0c8e9e4ebd10a3c9,libservo_media_traits-b76eeb9f8f44cad9,libservo_media_streams-f57ce75ef6c8876d,libipc_channel-7e3452cac17ceee1,libfirewheel-9cce75c7f7e3461f,libfirewheel_cpal-d327e3c8eaa525a2,libcpal-f621005e0e48d8e0,libdasp_sample-5890fb52058fb187,libfirewheel_nodes-2db462976e98b0da,libfixed_resample-e5c79eb684b4e929,libfast_interleave-3b813e4019ffb5a5,librubato-1c7169be8fd1547d,librealfft-dff5c5a402ab56c0,librustfft-f19ec5f02ff89b17,libprimal_check-3767d7dc85f24cd5,libtranspose-55a1125c35d4f101,libstrength_reduce-40ff105fc530f63a,libfirewheel_graph-c916c005a8d36566,libtriple_buffer-498824a3273a82bf,libfirewheel_core-a6abfdfe187adcbc,libthunderdome-041d3106fc711a1d,librtgc-ed2afb97461a06ee,libringbuf-e69ed5584c20ab1c,libportable_atomic_util-ec7209263214b85a,libbevy_platform-711126b8719e3fd3,libaudio_primitives-0bdd51248c63b48d,libknot_editor-591a3925c6b05546,libmora_cmudict-37b30e9e5e4fbbf0,libnotify-adc3ef20ea6e44c8,libwalkdir-cb837a4405986694,libwindows_sys-970b288e0fca0f08,libwindows_targets-a481202939d51e47,libnotify_types-27510dce7ea1b819,libmora-a36c7a66fca1f46b,libknot_capture-11b8cb115b914449,libsimilar-3b08356e1ffe68fb,libknot_file_catalog-f0bcde4f952227f5,libcommons_spine-73570f54cfbace8b,libmoot-4953a5a6fa9ed0de,libgemot-518d921485700e36,libp2panda_auth-7b3d7153a6f9b9c6,libmooting-26be29040ddf3404,libmien-2e1804872415e233,libeidetic_search-6911014d5044311a,libretinue-89d6feaea206a833,libcbc-be994215c053425d,libbzip2-0e29bc4613479749,liblibbz2_rs_sys-9ba7ccc1f9b76dfc,libaes-eefa935e2912ef8a,libcpubits-c09d66bcc2a30012,libheapless-14baf1d949cd3648,libhash32-79b665d0efd31ddf,libmere_document_lanes-fed8b9de8c99fdf2,libgenet_documents-4afb7a73ab623fa0,libgenet_render-a7e14fe16a1e7be9,libfleece-627038e7f69dd77c,libunicode_bidi-ce6f271e4f65b7f7,libbrowsing_context_api-e98c2f63bc74c791,libwinit-7587fb2623297ea4,libwindows_sys-b5157d4f7013a03b,libsmol_str-ead73f75ad5314a2,libcursor_icon-09f56c94b70db4de,libdpi-4b38ac69e19dee49,libknot_document-fe863a9604ca6f6c,libsame_file-25c46de9bd3f1755,libwinapi_util-1c93547a9bd76619,libknot_editor_host-c0194db2a702ddaf,libnematic-547620e60bf4aea6,libpulldown_cmark-3737563aa1f674e5,libillume-fe52fd438de72551,libjotdown-182fdd9b2ec64aa1,liblogos-2c6710fe8b6ea693,libdistillery-79ed9c84d0fdf455,libmesh-6cba4bdf78fe70cb,libgraphshell-e6cae40a3f53f8a3,libwebrtc_carrier-1916b4d68dfb78f8,libluggage-ecfbfdab1eec57f6,libsemver-e98676e67a576cb9,libscenograph-e0455bb53124406c,liblight_file_dialog-e084ca1df23e8cbf,libcastellan-4e3a2edbd80fc9df,libsha1-a75c96d10e8cc45e,libtransport-bb76345ad98531e3,libstickleback-20194e4044b2a624,libp2panda_encryption-8f717289b6743e2e,libx25519_dalek-f407b727b6d413c2,libhpke_rs_rust_crypto-6fd970c13ee10cd4,libx25519_dalek-bb2311137aeb1eb7,libk256-17d51532cd4cc182,libhpke_rs-14e5c3d1765dcd08,liblibcrux_sha3-5df6b924bf8bf250,liblibcrux_traits-a59b61ed312fb4db,liblibcrux_secrets-bb30c33e43aea4b8,liblibcrux_intrinsics-d4c90f5feb5a39ac,libhax_lib-ef8cb3320b7e7349,libhpke_rs_crypto-5eda244e739b0a85,libproofs-a61cd309ff11d459,libp2panda_net-39a0c1dec199aa10,libp2panda_sync-2a0a665bc533803a,libiroh_mdns_address_lookup-b0ace1d24992c3f4,libswarm_discovery-711dd98904e3d400,libhickory_proto-d3ba1b63b9b4f9e3,libacto-8daee35637d2f1fe,libsmol_str-e33473956f0180c5,libiroh_gossip-8943b15964f61ebc,libfutures_concurrency-c6b80b89ab553612,librand_chacha-d0a3a7a65ee5bee0,libp2panda_discovery-e049313ecc816147,libractor-2cf8c7f69ecd5778,libbon-2c0042099bb29269,libp2panda_store-2dd6cf1d5db94f2b,libp2panda_core-48cfe6e36bef1976,libcbor_core-5d4b2e520705370a,libsnow-af5b82ed18b41654,libchacha20poly1305-6600d7ef8d3b48b8,libhkdf-3b80eb7587d40387,libhmac-2911fff3e0325d9f,libiroh_blobs-8683e9c5969254d9,libreflink_copy-0fd3c3d55b63ffe9,libiroh_util-4a9a26f018a77fcb,libiroh_tickets-a20aa89c17f7a9be,libiroh-6c2d1250afa45329,libportmapper-1a3928de88a2c385,libigd_next-6e0f0e0725127c7f,libattohttpc-fc7fb8743046a9ed,libxmltree-53464a93c5435a27,libxml-9188b3a6b5e150a4,libpapaya-0a631cad40784bf3,libseize-bc6ad3fae83acec6,libbackon-9279d4848dba5181,libiroh_metrics-c81f8eb5855d1027,libryu-9ae9fb73ae823009,libnetwatch-ec32a5eb831b57ea,libnetdev-4b65cb326ac6ba2f,libmac_addr-62195d8633f06c9d,libwmi-79ba32141b967932,libchrono-aa221ccf40e5d683,libn0_watcher-02456b806647e1b5,libiroh_relay-b915f2f0f25c85e7,libserde_bytes-17a1a698a1be39db,libtokio_websockets-7c4768ac6750df88,libnum_enum-1e0356642fdbd77e,libiroh_dns-6644ca03f90a8958,libn0_dns_resolver-7edfeaeccc96fbcb,libipconfig-0b1ab50c45522586,libwindows_registry-e69ea7b032a23bac,libwidestring-dd83869388e6360b,libreqwest-7bae59c77560a2e2,libtower_http-3162710fa7c90e45,libtower-7d9c650d13ff904c,libtower_layer-f8cee83f655b58e3,libsync_wrapper-b764d1e089ff78fa,liblru-5fbec439976e35b5,libsimple_dns-0cb8f5303c517a3a,libarc_swap-83402dde85a2c157,libiroh_base-1b6c1b11907077d5,libdata_encoding_macro-db5aacef025e2859,libirpc-6bacd45a181f3af8,librcgen-1588813013512229,libyasna-aeb5081cacc12f35,libpem-db809ef5bb26e582,libbase64-14913bbb395d650e,libn0_future-9319ac1729fbcb9a,libfutures_buffered-9dd2056ce521bca2,libspin-551a31673ae6df17,libdiatomic_waker-f36e1277ebb08cdf,libcordyceps-f5951bcf1b3d3110,libnoq-b21dd3c765500603,libtokio_stream-47e2eddb83513006,libnoq_udp-ad6ecdf097c5cf06,libnoq_proto-3dc925e472ef7a71,libderive_more-574492c9e0008b41,libsorted_index_buffer-bc08ed56efeca674,libidentity_hash-6c7ae3cba9f8f56b,libredb-fe01fbae342ea7ef,libn0_error-a5d9647b0e33958d,libbao_tree-a8b8bd283636c84d,libpositioned_io-9b2c171aa859e735,libwinapi-91855186ae8966f8,libgenawaiter-02e1370b77ca0ed8,libgenawaiter_macro-6612b778000b4d33,libfutures_lite-ddbe1031855111c3,libparking-6d0d99483089291d,libiroh_io-fba479fd2fac5423,libpin_project-e768b671cb9e7a89,librange_collections-9a3bafc01e1dacc1,libref_cast-c68072aafd723309,libinplace_vec_builder-d9528b732d0d64a3,libbinary_merge-5899f169ef3786f5,libgraphshell_endpoint-e51b15c4616de076,libgraphshell_client-04e994d915b3be5e,libchirograph-b78ab4fd9b983fd4,libscenotime-5572b1d9935a9260,libfetch-0f56a40fa47d5f07,libpandect-8e1da3c0c41f2ad3,libhex-76ad0b49c70e7c84,libciborium-e8f165d895b051a9,libciborium_ll-6021ac19eb00b041,libciborium_io-df7e91e802c9fce4,libdirs-c26a45749003be04,libdirs_sys-143dfe9ac6c88f76,libwindows_sys-7580b9e3e733fb74,libwindows_targets-5eef94bf31671dab,liboption_ext-fbc189ddae0e6bb8,libalembic-56fbe7b3e3dbd7ad,libnotochord-f3908028d22e98c1,libpostcard-8ba5cf7c9e290748,libheapless-abf9ec968d7f0d79,libhash32-71db9206a54e562c,libcobs-a4c9b8be824e10cf,libincipit-7e3036e269322014,libeidetic-e5c6c3b1d2b3292c,libjsonschema-84ea410583e8babb,libregex-29604f66a65cc04e,libiso8601-dd73eb7475820ec6,libbytecount-30c7f250030ff7fa,libfraction-261762c8c7113aaf,libnum-b4657c99168779c6,libfancy_regex-02284eb8ef5e4b4d,libbit_set-4f0f8d31e18b354e,libbit_vec-aad52ffdff7eea25,libregex_automata-085da604bd097416,libaho_corasick-d9abaede8613fe6f,libregex_syntax-1aaf59736556fe2a,libnum_cmp-2db2ad346e8230ee,libahash-6e3bc99d995c9b68,libfjall-d9bedf70cbcaf89e,libdashmap-d4a03f2bfc750de0,libhashbrown-5d836690d39fc6e7,libstd_semaphore-7d04b1d7d0cb4937,liblsm_tree-81a4c12ad7a8e976,liblz4_flex-ee7bff38463c8ee2,libself_cell-690bf43dff32d1e5,libguardian-9ba099a760c77dbf,libdouble_ended_peekable-490bf819d1d8bedd,libcrossbeam_skiplist-f83bfcd849ce8f34,libquick_cache-1578b9bf611afced,libvalue_log-5c1b41bf3c64eeda,libxxhash_rust-f335fd147816f329,libtempfile-ed8fc362cc6dccfc,libinterval_heap-b972df7aaa626e7c,libcompare-53e6db5e77ae9602,libbyteview-fe77ee2761f27c44,libpath_absolutize-70bf780413a2b119,libpath_dedot-57a0c8dc7060c99c,libvarint_rs-4bab7cc1fb135a08,liberrand-14fcd1dc58873472,libquick_xml-8fd13156d530f0f0,libspartan_protocol-cde3a1f7126e7f4f,libscroll_protocol-8406e71b0b9b1832,libnex_protocol-e60b8aeb042cb9bb,libmisfin-e7e9036ae0477d22,librcgen-5cbc0a31c5fb6cb4,libpem-77b3a8906a825b78,libyasna-9e3843eaef30ebb6,libguppy_protocol-e655be1e626faea0,libgopher_protocol-37177967165fdcdb,libgemini_protocol-f06cdb02a9ea0ea1,libfinger_protocol-3e127439966e8ea6,libnetfetcher-b9ee652bb9da6818,libh3_quinn-5a79121bd04c1c47,libh3-5b433acf74ca199c,libfastrand-979b1add22b396ef,libquinn-71f007584a4f83b5,libquinn_udp-035d6b5bfe6ea7a2,libquinn_proto-0c3b9d406701d4b3,liblru_slab-0e1fcfd93e5ec117,librand_pcg-40a1bd1ddc21f7fc,librustls_platform_verifier-cca89be514902d8a,libfastbloom-a953230173470890,librand-5ec5c9f2cec1249a,libtinyvec-68648f471e07e579,librustc_hash-a5834c0c291a12b9,libpsl-78f0735ff3aab4f7,libpsl_types-791f4867d48ed430,libtokio_tungstenite-c4857d5cad7479bb,libwebpki_roots-e55a0f2fc99716c9,libtungstenite-b068826dc30e3301,libdata_encoding-e30ad195f03ad2e8,libsha1-2de6eb5e7ce1386d,libhyper_rustls-4e1f7dad2d93ba07,libwebpki_roots-fedb81a22846567e,libtokio_rustls-250cda542868a6d5,libhyper_util-fe35b2159c1c3370,libipnet-a1c7304723bdd781,libtower_service-924c5ede341102e6,libhyper-fffbf082103d53aa,libwant-3111a8181b21ea7c,libtry_lock-a3755c64ee7da6aa,libhttparse-8d8131b8a81e2d83,libh2-0aa4f3e6f6f08630,libatomic_waker-89ea775f893081ce,libhttpdate-de857d8fc14e9e49,librustls-5d4541bb143c155a,libwebpki-a04e89e551f72e78,librustls_pki_types-21db19c0b4c02294,libhttp_body_util-a439f118a140ac27,libhttp_body-37ae7d32dc97b66e,libhttp-7674ffeb98618bc3,libring-e7454baf0f4bbae5,libuntrusted-cc2b6d5ce0d60472,libasync_compression-b444624fb40c16ca,libcompression_codecs-5ff30318240531fc,libzstd-7278af3897f8a61a,libzstd_safe-971bc8835da2c68b,libzstd_sys-80ff0bd71c020aac,libbrotli-97803c28a7dc3fe9,libcompression_core-2c71bdc20c7410a0,libcookie-e9e11ab882906d9f,libbase64-d97f59060892e69b,libpersonae-b2781c9765c2137e,libgethostname-7465404b968e91b4,libwindows_sys-096a286ce09a44af,libwindows_targets-17d685024da32493,libargon2-9b2cf65e40084d8c,libblake2-221d861fd48eaabe,libpassword_hash-e868168b7bcdcac1,libchacha20poly1305-acb019f822bb8720,libchacha20-d95cdeb24b45bff3,libpoly1305-2b950952bc93b374,libuniversal_hash-2174d0242da7b04d,libaead-1a02951299d8b816,libcipher-607ef20952f66957,libinout-47e6ce5cf0cb2601,libblock_padding-bd5af9dd373e9370,libthiserror-4ea0cc76766d7602,libssh_agent_lib-9fe672ced91aafb6,libtokio_util-f008267e615be91e,libtokio-a8a851e654177414,libsocket2-96ed7bb873d5d958,libbytes-353dccb61961337c,libmio-faf2c75a355145b7,libservice_binding-63fcc6e673172e0a,libfutures-f5cf06c54c4df62c,libfutures_executor-393e115f67271a2f,libsecrecy-2ed1c1c05d3ff331,libssh_key-5ce6f5c58760c7bd,libed25519_dalek-46083b7797794a68,libcurve25519_dalek-9f318b19ec5303de,libed25519-bfd5dc864f8a7886,libp521-ad85008b1c79c51c,libp384-0e59a54144700128,libp256-573c15114b58f588,libecdsa-ec0b76433c5032d1,librfc6979-2dc528ae5e050da5,libprimeorder-5a37f1d08ce32941,libelliptic_curve-ae79076807eb361b,libhkdf-2298085dfd2c6d39,libhmac-f54e3c9e4e3ce771,libcrypto_bigint-8ca60ef501752b5a,libgroup-d19bb2f010212fd5,libff-289c1764324935bd,libbcrypt_pbkdf-1212c94ca43612f7,libpbkdf2-7822e53f16d67c24,libblowfish-87ada40846cfb622,libssh_cipher-94e3df640ebdd064,libcbc-315fda3b9720800a,libaes_gcm-c31e61df091f14d9,libctr-53dfbf947c12bccc,libghash-aaa91266c028468e,libpolyval-042dd90920e75d32,libaes-022aeb65b8032564,libaead-fa842bd9d7d8ccca,libpoly1305-88bbdf9d2de0580f,libopaque_debug-450a4f3540f87976,libuniversal_hash-3170c8b1ff57c75d,libchacha20-79c00b7e5085af8f,libcipher-226f4d3cb827de0d,libinout-e70e89382c0241f2,libblock_padding-75b755853ad40df1,librsa-ac5f0fc2912f357c,libpkcs1-dcdabf446a49788c,libpkcs8-6aab7d00768acdad,libspki-51fa3fbd1759fe25,libnum_bigint_dig-b7d8ebde76e6269b,libnum_iter-fa4838268436ead0,librand-53572328b1d415d6,librand_chacha-ebe57e9194b5ffad,liblazy_static-d581dd663118aa31,libspin-0377b0f4ab2b9e31,libsec1-857b02caafcdbb05,libder-f9c1d9d8930a6142,libbase16ct-9737ee77a59d4246,libssh_encoding-7883fec25d1fc54f,libsha2-36b898e9e5dd10d9,libcpufeatures-4d8a3bb2e7bf7804,libpem_rfc7468-00b54ba165e748c5,libsignature-f4da91a4f1dc1682,librand_core-733d281dfc906328,libgetrandom-f05b483100598ee2,libdigest-e1dc7f8b64ad8ccd,libconst_oid-9ff3bcb57178bc38,libblock_buffer-814db89650df8708,libcrypto_common-851ef6385e0c6e05,libgeneric_array-c630d79a290e79fe,libredshank_surfaces-dc0d11895623ad18,libtimed_text-5a85ffd87d7fb27d,libcambium-d0c19f7d59174e4c,libmere_surface_api-35d2374ef74cc45b,libgenet_text-211791a2ef213f01,libunicode_segmentation-d9710eee162b53c0,libsprigging-ef54013ea7013352,libvello-b0a9d0407e1ad369,libvello_encoding-9227995cd0b07d6d,libmeristem-9dc023008f44513f,libanymore-ca617c637ba4112d,libredshank_model-b68f179268ff9096,libmere-45352440865fc962,libplaten-71c0e2ef1c3489c0,libworkbench-34bd4e98c63ced19,libdocument_canvas-2c314ca709b6d4d8,liblinked_data-8200d707ad34468a,liboxttl-e0247395c467dcce,liboxjsonld-7077f6b1f8fba89a,libryu_js-c1a847307d197170,libjson_event_parser-cdeb2b984d9024ac,liboxrdf-998af08ea72cec3e,liboxiri-4868f64048c9359c,liboxilangtag-b3183e0f143e16a9,librand-8ccf66f406bbcfcf,librand_chacha-2f4225b5109b30f8,libppv_lite86-208a7a1d8d46e8c3,librand_core-48c876f2634659c9,libgetrandom-04f84b2aa73aac96,libtabard-f498c5d48507a72e,libpictograph-17f63a30d49bcea6,libemblem-80b9b2acc1d809d9,libpaint_list_render-9c29fc5a40d2115f,libnetrender-bd53ffaee533eca0,libvello-cfa57d1285669009,libfutures_intrusive-afa97193875c1d36,libvello_shaders-64ba7fb843c14641,libvello_encoding-4aaf57b3b4b15b79,libguillotiere-bf48814a2745d459,libsvg_fmt-c633a62c82219aac,libskrifa-744b865162166f6b,libread_fonts-c397a4cd870bf9ba,libfont_types-147740dbf68dfe06,libpeniko-f376b663f13d24e4,libkurbo-abe63a5350b8ade3,libpolycool-c11d68df2e5a55ab,libcolor-a3048fc16c65b050,libnetrender_device-92e61056402b7477,libpollster-d462287da7407288,libwgpu-8cc51d3d392ea1ee,libwgpu_core-02fbc3e4a6ea7f84,libwgpu_hal-749413c8528cb960,librenderdoc_sys-359741cd008b61f3,libwgpu_naga_bridge-82c20b5b5ef96ec6,libglutin_wgl_sys-237c1fb9225295ab,libglow-5a087fa05310f735,libgpu_allocator-1881e2738e2fd95b,libpresser-3011d5fcb49b58bc,libash-c0d439c9f289534d,liblibloading-44e843df579e671d,libhashbrown-e0a77cfd480e951b,libnaga-b60abe1513a06a6d,liblibm-63bd41b8d6072d8f,libunicode_ident-c77aefbe2519e161,libcodespan_reporting-8d19a050a5794f74,libunicode_width-72a999e098c8a60c,libspirv-dc9b68d3037eb85b,librange_alloc-853744c38ce40aef,libbit_set-bd876c7e2115149d,libbit_vec-def91f99cb1329df,libwgpu_types-fefb170526d7df3d,libraw_window_handle-2441a42bc2c47fcd,libnaga_types-acd472629e656ad7,librustc_hash-5280571dac2a8850,libesp-566f863893765661,libtinct-4c62194eeaf92eb9,libcartography-84b887b92a1c21e2,libscenomise-eb4f69fd002515f8,libsceno-7375b1e19a7579c8,libseiche-a48b5a67af2cb857,libarmillary-ded7ba32a866afe9,librapier2d-fbc396e07d45ef34,libstatic_assertions-fd0099b77ef94f9d,libparry2d-1467cd8966c9a954,libena-02f45e32856abf23,libdowncast_rs-859e9efe7c7a9f00,libordered_float-85187a0310e99a2d,libglamx-de6bb7cbc7666ac0,libnalgebra-7a1676c393c74d5b,libmatrixmultiply-95be3e44c06f795a,librawpointer-2376f90c5d8eaf0b,libsimba-b03ae1c191c82e65,libwide-49dc3fbcc319e6ef,libsafe_arch-f252bbb4a9ab978b,libglam-66f49e6a0bb58714,libapprox-46a2f65b6ebee8af,libkernel-8ad633780c3ccfe3,libweb_time-c7f6dbd495910a23,libtime-4c60829a781c8ab3,libpowerfmt-cc06b6eb8e6a4f06,libnum_conv-b73ecca6986934ad,libderanged-52cc5ba39a1d93d5,libtime_core-8b8523978185a284,libinfer-dea448d324b6b694,libcfb-5986bb6ee96b2358,libfnv-9475c744ef55934b,libbyteorder-fc10471e23cea382,libmime_guess-dbcabbb87f765b1b,libunicase-f81e77359ada887f,libmime-c5132c3637464d54,liburl-d68aec0727694b4a,libidna-90070a4abd019fb6,libidna_adapter-7d257379bf349120,libform_urlencoded-fc167ac4162b12b6,libpercent_encoding-e930d0178672c942,libnumen-6aad03106603b02f,libstrum-65c6d74ce3ef8453,libfutures_util-5f6d7ba427b4d366,libfutures_io-1f7b30380daff964,libslab-8cf2dd0935ab1f09,libfutures_channel-9926017d823d795c,libfutures_sink-696712ff4a10722d,libfutures_task-b39a65d5bc51cfad,libfutures_core-e284a4dc546904cf,libcrossbeam_channel-14f774b5465ec82a,libgenet_scripted_dom-e1f74e0f9ea27eda,libgenet_static_dom-70b1409b8ce5a4be,libxml5ever-9e559ee0953149b0,libhtml5ever-8be0330dc7eea48e,libengine_observables_api-4b4b8acf89a5fe57,libgenet_livery-f36b756cc35a7d6b,libfontsan-cce370b801a55566,libfontsan_woff2-0798cc4101752b5f,libbrotli_decompressor-2df6cfa84ef405eb,liballoc_stdlib-db4885e8d3e2d6d0,liballoc_no_stdlib-30af5ac281de518f,liblibz_sys-38248393cfa6b369,libimage-ecca980861abaee4,libqoi-fe8a21b7d348192a,libmoxcms-c917212598179399,libpxfm-9420d180be50e78e,libimage_webp-4c4c0c37a694af63,libtiff-9db417356fd359f3,libfax-fc852b2b21d57dd1,libpng-1b29eb06be4a2197,libflate2-6fb13161636d2d77,libminiz_oxide-9d0208750e4a1796,libfdeflate-072929cc74d01fb0,libcrc32fast-392a192204411539,libexr-1f5989f73e6f2d86,libminiz_oxide-f24dcd05aca74bce,libzune_inflate-2f6c44b4b6a776d9,libsimd_adler32-d03ed9864fbe7380,libbit_field-7bed6b079d16b386,libpulp-71a700e3200eb540,libnum_complex-5e4d3f0df7282a89,liblebe-20e48a7a2ce6a131,libhalf-1b464f1c14097f45,libzerocopy-d89eec4f2cd7a7bc,libzune_jpeg-8b7192d143c26606,libzune_core-702c1d958f388dba,libgif-0ec7899dbbc19948,libcolor_quant-4723abd6e9e8a59a,libweezl-bcd0f15794eeb296,libbyteorder_lite-07d70700b0f38909,libravif-3ee1d5ec859fc1ae,libloop9-ad7df70f85eb87fa,libavif_serialize-d7cecdabc02bd06b,libquick_error-b8976bcf449713f3,librgb-93f2420a541d365f,librav1e-e5e853b222f5e735,libprofiling-42b95c723e295e80,libav_scenechange-64e49a88d4f6aa74,liby4m-d1c54f500a7acc88,libaligned-7ccd91829a947c2e,libas_slice-cb23620c4656c40c,libav1_grain-31fd42116a4a13a9,libnom-7629643224e5d2c4,libnum_rational-8795d9901f02690a,libnum_bigint-5373eaf528d388fa,libnum_integer-ab98aed2e45c846f,libanyhow-c7da08a5c4770a3c,libmaybe_rayon-ab0b5a28e10b1ebb,librayon-293c88709799a733,librayon_core-53159462b1331481,libcrossbeam_deque-1d36d08e797cdd8c,libcrossbeam_epoch-cb568a1779e72286,libcrossbeam_utils-a3238fcaf3f3266a,libv_frame-bf11aed653fbf827,libaligned_vec-dde079c9218e88cf,libequator-9fed53ac32df7727,libthiserror-7679e97dbcc112dd,libbitstream_io-4fc8da43f9ba54ab,libitertools-c38ecb4b6ec7a65b,libeither-167864932e7e0050,libimgref-335db29d43ac51c9,libdata_url-78a996c63811ae2d,libparley-96760e626b854748,libskrifa-4768d2a81edb4ebc,libharfrust-91b6f887bc6b1e6e,libbitflags-5f6750e4cd928839,libparley_data-cd83e59c4c9dc2e5,libicu_segmenter-d408cf47b1f08e4e,libicu_locale_fallback-515babfe54a3ddf3,libicu_locale_fallback_data-f8f0dbb03fe523bf,libicu_segmenter_data-c1ffa3946c45a5d1,libicu_properties-54754683a4b21544,libicu_properties_data-b38d9a730fbda5c6,libicu_normalizer-9c7fe9f80389aead,libicu_normalizer_data-4eab678f97179f90,libicu_collections-415c7e729c584cb6,libutf8_iter-ea788c869c33a28d,libpotential_utf-897571e3a8d22927,libicu_provider-697eda4924cc5e7f,libicu_locale_core-c4d3395939597e9e,libtinystr-488226b30ae10ca7,liblitemap-b2cb15bb310ac366,libwriteable-d19930e38a3e471b,libzerovec-30fd0b1e7fde2c5d,libzerotrie-ddeaf62bce8b5a37,libyoke-a95886c540359a60,libstable_deref_trait-5decee9af3f4e6f5,libzerofrom-7f030d253de98629,libfontique-786799133a796df7,libmemmap2-6bc5608b4c4f385a,liblinebender_resource_handle-bf119b58b5a3f44c,libread_fonts-356239ddf7efd8e4,libfont_types-569d846705c0b349,libbytemuck-3b258e157aa12ac0,libwindows-7a148661d1738ceb,libwindows_numerics-1cbd9221d4d3ff01,libwindows_future-e0f28cea8f81e61d,libwindows_threading-d2ffc81be0f0078b,libwindows_collections-a98a34ab9f0b64d0,libwindows_core-85c295e682a5e906,libwindows_strings-df938e5539aff8e8,libwindows_result-5e4774f9b2c05b44,libparlance-b7c4b36cb24022b7,libgenet_document_resources-25843a7bfbe3f659,libgenet_host_api-3f647a7287120854,libpaint_list_api-5027fa5bc5ad0131,liblivery-e0dbd1138db2ebfe,libcadency-9d335720d133b00b,libcssparser-2da44d4e24d9127b,libdtoa_short-3eb94a2ee0ce0199,libdtoa-fe7d253309912d1d,liblayout_dom_api-f52875564c8b4a0f,libmarkup5ever-0a8afc2809f9cc7c,libtendril-7012c3b65f658b2d,libweb_atoms-f818e23267c46bc0,libstring_cache-286971949daf5e3d,libprecomputed_hash-4fcfc5e5b6cfd775,libparking_lot-6772e672bf8d3e1f,libparking_lot_core-fb61c3b5a1562a05,liblock_api-15d1ec7903fe7de3,libscopeguard-83539dcf5aefdd59,libdebug_unreachable-0c04bb7ee3153ef3,libphf-689e03da1db6398e,libphf_shared-d17c0c7d345a52df,libsiphasher-ff4e6fc3f6b0b5d5,libbuckram-7adbc9e0b53d85e4,libstacker-86c4d1f3b70298e1,libpsm-887bd2cef3b648dd,libwindows_sys-78e3b3838a1ce07c,libwindows_link-b351af5a0d03852c,liblibc-1337fe01a4f9e01a,libtaffy-0e13cb34a5cdc811,libsmallvec-7e5f9a77f0ac552a,libeuclid-1fd94532c8bb0adc,libnum_traits-1abd6254e3a1bd4d,libforme-059b8aa87b0f0588,libtaffy-25dd94cab70dbf29,libgrid-61345962ea51b941,libapparatus-6e6b0bd0b3961245,libservitor-50266be35238b25c,libchartulary-984e79d22bf0116a,librkyv-d38982f48c67d42d,librend-27cf2b88fe41e0c7,libmunge-1ff44e86b7339be4,libbytecheck-168aee9e17f100e3,libsimdutf8-db47133852ac6771,librancor-edcd98ba142b9b45,libptr_meta-4d103e6aadbcdf0f,libslotmap-4cd07b8f6503d4fb,libmuniment-9b606a4a11071dab,libserde_json-0f925dfa364b1bf6,libmemchr-76603139fff0e3f8,libzmij-0b8008ec9aacd232,libitoa-eb21de40fdcb5537,libredb-4460e49dff81effa,libinsigne-f134af3eaee76815,libblake3-5d778e732e177450,libconstant_time_eq-db5e7aa573728b3c,libarrayvec-618fca5a1a17733f,libed25519_dalek-1b0a1a84c82a029f,libsha2-8c7b070c92018abe,libcurve25519_dalek-ccbc67611bbf984f,libcpufeatures-898d9c43cfb470bb,libsubtle-d093db3d97431781,libdigest-50adf48387ced337,libctutils-5177f789bd1dc937,libcmov-ddd769e278c93d7a,libcrypto_common-79723d858c93e5de,libblock_buffer-3fac3e59bd88a43e,libhybrid_array-7e718d59e0e031cb,libtypenum-ff824fde59230765,libed25519-46aa3dc9517ef38e,libserdect-3d85e20b051c495c,libbase16ct-52f6a9e17eb52b9d,libsignature-078b03d53eb6f718,libpkcs8-1061480d04c6553a,libspki-3db677a7e6e670d3,libder-c533b455d97eff74,libzeroize-ba459bd9fd51ff67,libpem_rfc7468-ace16fc09a65ae2a,libbase64ct-c7e7b9fe51669dfd,libconst_oid-ebde8df5340aca29,libuxtree-cc5b8f8ccabc45f1,libinker-b55ea1eb4d3ced8a,libpetgraph-4b8b63799bbb70a7,libhashbrown-6f57a1deea53e91c,libfoldhash-4f364ca25dc43b2d,libindexmap-d884f988e8c7cd9b,libhashbrown-c0cf579e65ba9d43,libequivalent-cb95a6ed0edce797,libfoldhash-820d86ead36e58a1,liballocator_api2-6e4cfa1d1b7d1380,libfixedbitset-db561e0e34f87d58,libtracing-21291e770dcef622,liblog-443afc45fb1e58cd,libpin_project_lite-b568e2a1bcba1784,libtracing_core-773a5894984b7209,libonce_cell-4affd259c6945ead,libportable_atomic-152ea4ff6b23d1d5,libdocument_session_api-a109ab7f7c52c470,libaccesskit-3a7b0d2779b5415e,libuuid-0b5db382794fa720,libgetrandom-db8ac823ff12770b,librand_core-28d888a272aef139,libcfg_if-0f4c3946f5536865,libsha1_smol-af498c52a7728583,libserde-d8ae83e0e2b66f1c,libserde_core-7ee6b2dd42c0775d}.rlib" "<sysroot>\\lib\\rustlib\\x86_64-pc-windows-msvc\\lib/{libstd-*,libpanic_unwind-*,libcfg_if-*,libwindows_link-*,librustc_demangle-*,libstd_detect-*,libhashbrown-*,librustc_std_workspace_alloc-*,libunwind-*,librustc_std_workspace_core-*,liballoc-*,libcore-*,libcompiler_builtins-*}.rlib" "kernel32.lib" "advapi32.lib" "kernel32.lib" "user32.lib" "shell32.lib" "gdi32.lib" "advapi32.lib" "C:\\Users\\mark_\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\windows_x86_64_msvc-0.53.1\\lib\\windows.0.53.0.lib" "C:\\Users\\mark_\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\windows_x86_64_msvc-0.52.6\\lib\\windows.0.52.0.lib" "iphlpapi.lib" "kernel32.lib" "advapi32.lib" "gdi32.lib" "kernel32.lib" "msimg32.lib" "opengl32.lib" "winspool.lib" "C:\\Users\\mark_\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\windows_x86_64_msvc-0.48.5\\lib\\windows.0.48.5.lib" "C:\\Users\\mark_\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\windows_x86_64_msvc-0.52.6\\lib\\windows.0.52.0.lib" "bcrypt.lib" "advapi32.lib" "opengl32.lib" "legacy_stdio_definitions.lib" "kernel32.lib" "kernel32.lib" "kernel32.lib" "ntdll.lib" "userenv.lib" "ws2_32.lib" "dbghelp.lib" "/defaultlib:msvcrt" "/NXCOMPAT" "/LIBPATH:C:/t/cargo-targets/turnstone\\debug\\build\\blake3-016b20cd6b164300\\out" "/LIBPATH:C:/t/cargo-targets/turnstone\\debug\\build\\ring-4c1aea0b0a93b252\\out" "/LIBPATH:C:/t/cargo-targets/turnstone\\debug\\build\\stacker-70a3527d2fa4b074\\out" "/LIBPATH:C:/t/cargo-targets/turnstone\\debug\\build\\psm-ca037a059f99cb46\\out" "/LIBPATH:C:/t/cargo-targets/turnstone\\debug\\build\\fontsan-6f7a8c9a9c8347f5\\out" "/LIBPATH:C:/t/cargo-targets/turnstone\\debug\\build\\fontsan-woff2-2f7e450e39bccee1\\out" "/LIBPATH:C:/t/cargo-targets/turnstone\\debug\\build\\libz-sys-a0e3cd759609da71\\out\\lib" "/LIBPATH:C:/t/cargo-targets/turnstone\\debug\\build\\zstd-sys-3a62a66f211df595\\out" "/LIBPATH:C:/t/cargo-targets/turnstone\\debug\\build\\webview2-com-sys-9a3ace37def2b9d6\\out\\x64" "/LIBPATH:C:\\Users\\mark_\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\windows_x86_64_msvc-0.52.6\\lib" "/LIBPATH:C:\\Program Files\\Microsoft Visual Studio\\18\\Insiders\\VC\\Tools\\MSVC\\14.51.36231\\atlmfc\\lib\\x64" "/LIBPATH:C:\\Users\\mark_\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\windows_x86_64_msvc-0.48.5\\lib" "/LIBPATH:C:\\Users\\mark_\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\windows_x86_64_msvc-0.53.1\\lib" "/OUT:C:/t/cargo-targets/turnstone\\debug\\deps\\turnstone-48d90642c0f3d10a.exe" "/OPT:REF,NOICF" "/DEBUG" "/PDBALTPATH:%_PDB%" "/NATVIS:<sysroot>\\lib\\rustlib\\etc\\intrinsic.natvis" "/NATVIS:<sysroot>\\lib\\rustlib\\etc\\liballoc.natvis" "/NATVIS:<sysroot>\\lib\\rustlib\\etc\\libcore.natvis" "/NATVIS:<sysroot>\\lib\\rustlib\\etc\\libstd.natvis" "/NATVIS:C:/t/cargo-targets/turnstone\\debug\\deps\\rustcO8wrCO\\turnstone-0.natvis" "/NATVIS:C:/t/cargo-targets/turnstone\\debug\\deps\\rustcO8wrCO\\turnstone-1.natvis" "/NATVIS:C:/t/cargo-targets/turnstone\\debug\\deps\\rustcO8wrCO\\turnstone-2.natvis"
+  = note: some arguments are omitted. use `--verbose` to show all linker arguments
+  = note: LINK : fatal error LNK1104: cannot open file 'C:\t\cargo-targets\turnstone\debug\deps\turnstone-48d90642c0f3d10a.exe'
+          
+
+warning: `turnstone` (lib test) generated 51 warnings
+error: could not compile `turnstone` (lib test) due to 1 previous error; 51 warnings emitted

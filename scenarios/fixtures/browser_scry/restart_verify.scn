@@ -1,0 +1,48 @@
+# B1 run 2, distinct process. Reuse run 1's exact TURNSTONE_ROOT and fixture
+# origin; use a separate capture directory. Never re-run the seeding script.
+# Select restored tabs through normal pointer input, without re-fetching.
+# Record restored pins/layout BEFORE any intervention if automatic reopening
+# differs. Failure to restore live content is a restart failure, not a reason
+# to silently toggle the page on and call it restored.
+settle 180
+assert pane workbench
+assert wb-cells == 2
+assert wb-cell Scry A
+assert wb-cell Scry B
+assert surface content
+assert snap host-surface-producers == 2
+assert snap host-scry-producers == 2
+assert snap host-scry-imported-pages == 2
+capture 01_restored_two_pages
+record-idle restored
+click surface:workbench .tab Scry A
+settle 60
+assert snap browser-current ~ /page-a.html
+assert snap browser-current-content == live
+settle 20
+act Open Inspector pane
+settle 10
+assert row URL: ${SCRY_FIXTURE_BASE}/page-a.html
+assert text ${SCRY_FIXTURE_BASE}/page-a.html
+assert row Viewer: scrying.web
+assert snap browser-find-capability ~ unavailable
+assert snap browser-zoom-capability ~ unavailable
+assert snap browser-current ~ Scry A | text=alpha | clicks=0 | stored=A-retained
+assert snap browser-current ~ scry_A=A-retained
+capture 02_restored_a_profile
+act Close pane
+click surface:workbench .tab Scry B
+settle 60
+assert snap browser-current ~ /page-b.html
+assert snap browser-current-content == live
+settle 20
+act Open Inspector pane
+settle 10
+assert row URL: ${SCRY_FIXTURE_BASE}/page-b.html
+assert text ${SCRY_FIXTURE_BASE}/page-b.html
+assert row Viewer: scrying.web
+assert snap browser-current ~ Scry B | text=bravo | clicks=0 | stored=B-retained
+assert snap browser-current ~ scry_B=B-retained
+capture 03_restored_b_profile
+act Close pane
+log B1 run 2: restored pins, two-page layout, local storage, text and page cookies observed

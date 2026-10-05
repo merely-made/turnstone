@@ -1,0 +1,18 @@
+
+running 1 test
+
+thread 'surface_poll::tests::early_cancelled_wakes_do_not_postpone_surface_poll' (45452) panicked at <anon>:60:13:
+assertion `left == right` failed
+  left: Some(Instant { t: 4611732201.577088803s })
+ right: Some(Instant { t: 4611732201.576088803s })
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test surface_poll::tests::early_cancelled_wakes_do_not_postpone_surface_poll ... FAILED
+
+failures:
+
+failures:
+    surface_poll::tests::early_cancelled_wakes_do_not_postpone_surface_poll
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s
+
+EXPECTED FAILURE: the reset-on-every-event control reproduces deadline starvation.

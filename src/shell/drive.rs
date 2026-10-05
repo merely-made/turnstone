@@ -154,23 +154,28 @@ impl taproot::Automatable for Shell {
                     {
                         guards.push(("knot", rect, knot.dom_ref()));
                     }
-                }
+                },
                 crate::surface::SurfaceKind::Pane(id) => match self.pane_content(id) {
                     Some(PaneContent::Roster) => {
                         if let Some(g) = self.renderers.roster.get(&id) {
                             guards.push(("roster", rect, g.dom_ref()));
                         }
-                    }
+                    },
                     Some(PaneContent::Trail) => {
                         if let Some(pane) = self.renderers.trail.get(&id) {
                             guards.push(("trail", rect, pane.dom_ref()));
                         }
-                    }
+                    },
                     Some(PaneContent::Inspector) => {
                         if let Some(pane) = self.renderers.inspector.get(&id) {
                             guards.push(("inspector", rect, pane.dom_ref()));
                         }
-                    }
+                    },
+                    Some(PaneContent::Workbench) => {
+                        if let Some(pane) = self.renderers.workbench.get(&id) {
+                            guards.push(("workbench", rect, pane.dom_ref()));
+                        }
+                    },
                     Some(PaneContent::Gloss(_)) => {
                         if let Some(pane) = self.renderers.gloss.get(&id) {
                             guards.push(("gloss", rect, pane.dom_ref()));
@@ -182,49 +187,49 @@ impl taproot::Automatable for Shell {
                         if let Some(pane) = self.renderers.transcript.get(&id) {
                             guards.push(("transcript", rect, pane.dom_ref()));
                         }
-                    }
+                    },
                     Some(PaneContent::Registered(kind))
                         if kind.as_str() == crate::panes::kind::SETTINGS =>
                     {
                         if let Some(pane) = self.renderers.settings.get(&id) {
                             guards.push(("settings", rect, pane.dom_ref()));
                         }
-                    }
+                    },
                     Some(PaneContent::Registered(kind))
                         if kind.as_str() == crate::panes::kind::ARRANGE =>
                     {
                         if let Some(pane) = self.renderers.arrange.get(&id) {
                             guards.push(("arrange", rect, pane.dom_ref()));
                         }
-                    }
+                    },
                     Some(PaneContent::Registered(kind))
                         if kind.as_str() == crate::panes::kind::PUBLISHING =>
                     {
                         if let Some(pane) = self.renderers.publish.get(&id) {
                             guards.push(("publishing", rect, pane.dom_ref()));
                         }
-                    }
+                    },
                     Some(PaneContent::Registered(kind))
                         if kind.as_str() == crate::panes::kind::SHARED_KNOT =>
                     {
                         if let Some(pane) = self.renderers.shared_knot.get(&id) {
                             guards.push(("shared-knot", rect, pane.dom_ref()));
                         }
-                    }
+                    },
                     Some(PaneContent::Registered(kind))
                         if kind.as_str() == crate::panes::kind::DEVICE_RECEIPTS =>
                     {
                         if let Some(pane) = self.renderers.device_receipts.get(&id) {
                             guards.push(("device-receipts", rect, pane.dom_ref()));
                         }
-                    }
+                    },
                     Some(PaneContent::Registered(kind))
                         if kind.as_str() == crate::panes::kind::FROZEN_PROJECTION =>
                     {
                         if let Some(pane) = self.renderers.frozen_projection.get(&id) {
                             guards.push(("frozen-projection", rect, pane.dom_ref()));
                         }
-                    }
+                    },
                     Some(PaneContent::Registered(_)) => {
                         if let Some(pane) = self.renderers.contributed.get(id) {
                             contributed_guards.push((
@@ -234,15 +239,15 @@ impl taproot::Automatable for Shell {
                                 pane.stylesheet(),
                             ));
                         }
-                    }
+                    },
                     Some(PaneContent::Overmap(_)) => {
                         if let Some(pane) = self.renderers.overmap.get(&id) {
                             guards.push(("overmap", rect, pane.dom_ref()));
                         }
-                    }
-                    _ => {}
+                    },
+                    _ => {},
                 },
-                _ => {}
+                _ => {},
             }
         }
         let mut surfaces: Vec<taproot::ProbeSurface> = guards
@@ -272,6 +277,81 @@ impl taproot::Automatable for Shell {
     fn selector_target(&self, selector: &taproot::Selector) -> taproot::SelectorTarget {
         match selector.surface.as_deref() {
             None => taproot::SelectorTarget::Unsupported,
+            Some("workbench") => {
+                let plan = self.surface_plan();
+                let mut selected = None;
+                for surface in &plan {
+                    let crate::surface::SurfaceKind::Pane(id) = surface.kind else {
+                        continue;
+                    };
+                    if self.pane_content(id) != Some(PaneContent::Workbench) {
+                        continue;
+                    }
+                    let Some(pane) = self.renderers.workbench.get(&id) else {
+                        continue;
+                    };
+                    let point = match pane.selector_point(selector) {
+                        Ok(Some((x, y))) => (surface.rect.x + x, surface.rect.y + y),
+                        Ok(None) => continue,
+                        Err(_) => return taproot::SelectorTarget::Miss,
+                    };
+                    if crate::surface::hit_test(&plan, self.app.focus, point.0, point.1)
+                        .is_none_or(|hit| hit.id != surface.id)
+                        || pane
+                            .tab_at(
+                                point.0 - surface.rect.x,
+                                point.1 - surface.rect.y,
+                                surface.rect.w as u32,
+                                surface.rect.h as u32,
+                            )
+                            .is_none()
+                        || selected.is_some()
+                    {
+                        return taproot::SelectorTarget::Miss;
+                    }
+                    selected = Some(taproot::Hit {
+                        surface: "workbench",
+                        point,
+                    });
+                }
+                selected.map_or(taproot::SelectorTarget::Miss, taproot::SelectorTarget::Hit)
+            },
+            Some("inspector") => {
+                let plan = self.surface_plan();
+                let mut selected = None;
+                for surface in &plan {
+                    let crate::surface::SurfaceKind::Pane(id) = surface.kind else {
+                        continue;
+                    };
+                    if self.pane_content(id) != Some(PaneContent::Inspector) {
+                        continue;
+                    }
+                    let Some(pane) = self.renderers.inspector.get(&id) else {
+                        continue;
+                    };
+                    let point = match pane.selector_point(selector) {
+                        Ok(Some((x, y))) => (surface.rect.x + x, surface.rect.y + y),
+                        Ok(None) => continue,
+                        Err(_) => return taproot::SelectorTarget::Miss,
+                    };
+                    // Retained pane geometry still goes through ordinary
+                    // physical routing. An overlapping toolbar or another
+                    // surface must not receive an attributed Inspector click.
+                    if crate::surface::hit_test(&plan, self.app.focus, point.0, point.1)
+                        .is_none_or(|hit| hit.id != surface.id)
+                    {
+                        return taproot::SelectorTarget::Miss;
+                    }
+                    if selected.is_some() {
+                        return taproot::SelectorTarget::Miss;
+                    }
+                    selected = Some(taproot::Hit {
+                        surface: "inspector",
+                        point,
+                    });
+                }
+                selected.map_or(taproot::SelectorTarget::Miss, taproot::SelectorTarget::Hit)
+            },
             Some("contributed") => match self.contributed_selector(selector) {
                 Ok(target) => target
                     .point()
@@ -283,7 +363,8 @@ impl taproot::Automatable for Shell {
                     }),
                 Err(_) => taproot::SelectorTarget::Miss,
             },
-            Some(_) => taproot::SelectorTarget::Miss,
+            // Other ordinary pane scopes retain the shared DOM probe fallback.
+            Some(_) => taproot::SelectorTarget::Unsupported,
         }
     }
 
@@ -291,7 +372,7 @@ impl taproot::Automatable for Shell {
         match selector.surface.as_deref() {
             None => None,
             Some("contributed") => Some(self.click_contributed(selector)),
-            Some(_) => Some(false),
+            Some(_) => None,
         }
     }
 
@@ -327,6 +408,10 @@ impl taproot::Automatable for Shell {
         let kept = snap.focused.as_ref().is_some_and(|node| node.kept);
         let mut out = taproot::ProbeSnapshot::default()
             .with_field("focus", snap.focus)
+            .with_field(
+                "host-surface-producers",
+                self.surface_producers.len().to_string(),
+            )
             .with_field("node-count", snap.node_count.to_string())
             .with_field("roster-tab", snap.roster_tab)
             // The panes and surfaces as joined tags, so a generic scenario can
@@ -346,6 +431,20 @@ impl taproot::Automatable for Shell {
             // rule the panes and actions fields follow.
             .with_field("suggestions", snap.omnibar.suggestions.join(","))
             .with_field("kept", kept.to_string());
+        #[cfg(all(feature = "scry", windows))]
+        {
+            let ready = self
+                .scry_frame_importers
+                .values()
+                .filter(|importer| importer.stats().frames > 0)
+                .count();
+            out = out
+                .with_field(
+                    "host-scry-producers",
+                    self.scry_frame_importers.len().to_string(),
+                )
+                .with_field("host-scry-imported-pages", ready.to_string());
+        }
         if let Some(find) = snap.document_find {
             out = out
                 .with_field("document-find-query", find.query)
@@ -370,6 +469,14 @@ impl taproot::Automatable for Shell {
         // read-back seam exists.
         if let Some(node) = snap.focused.as_ref() {
             out = out.with_field("page-zoom-requested", node.page_zoom_percent.to_string());
+            out = out.with_field(
+                "host-focused-engine",
+                self.app
+                    .content
+                    .facts(node.member)
+                    .map(|facts| facts.engine.clone())
+                    .unwrap_or_default(),
+            );
             if let Some(applied) = node.applied_page_zoom_percent {
                 out = out.with_field("page-zoom-applied", applied.to_string());
             }
@@ -413,6 +520,53 @@ impl taproot::Automatable for Shell {
         // Fold the url in with the caption, so `assert snap focused ~ example.com`
         // can name the navigated address, not only the display caption.
         out.focused = snap.focused.map(|n| format!("{}  {}", n.caption, n.url));
+        // Browser commands and page input have a pane/member owner independent
+        // of the graph cursor. Keep the graph snapshot's meaning intact.
+        if let Some((member, url)) = self.app.browser_command_target() {
+            let title = self
+                .app
+                .graph_runtimes
+                .graph_containing_member(member)
+                .and_then(|graph| self.app.graph_runtimes.canvas(graph))
+                .and_then(|canvas| canvas.graph().get_node_by_id(member))
+                .map(|(_, node)| node.title.clone())
+                .unwrap_or_default();
+            let state = self
+                .app
+                .content
+                .get(member)
+                .map_or("closed", |state| match state {
+                    crate::content::NodeContent::Live => "live",
+                    crate::content::NodeContent::Requested => "requested",
+                    crate::content::NodeContent::Failed(_) => "failed",
+                    _ => "awaiting-input",
+                });
+            out = out
+                .with_field("browser-current", format!("{title}  {url}"))
+                .with_field("browser-current-content", state)
+                .with_field(
+                    "browser-page-zoom-requested",
+                    crate::app::page_zoom_percent(
+                        self.app
+                            .browser
+                            .get(member)
+                            .and_then(|state| state.page_scale),
+                    )
+                    .to_string(),
+                );
+            if let Some(facts) = self.app.content.facts(member) {
+                out = out
+                    .with_field("browser-current-engine", facts.engine.clone())
+                    .with_field(
+                        "browser-find-capability",
+                        facts.capabilities.find_in_page.describe(),
+                    )
+                    .with_field(
+                        "browser-zoom-capability",
+                        facts.capabilities.page_zoom.describe(),
+                    );
+            }
+        }
         out
     }
 
@@ -438,7 +592,7 @@ impl taproot::Automatable for Shell {
             Some(action) => {
                 Shell::act(self, action);
                 true
-            }
+            },
             None => false,
         }
     }
@@ -468,7 +622,11 @@ impl taproot::Automatable for Shell {
         if self.app.graph_runtimes.is_settling() {
             return Some(true);
         }
-        Some(self.content_sessions.values_mut().any(|session| !session.settled()))
+        Some(
+            self.content_sessions
+                .values_mut()
+                .any(|session| !session.settled()),
+        )
     }
 
     fn press(&mut self, x: f32, y: f32) {
@@ -503,11 +661,14 @@ impl taproot::Driveable for Shell {
     /// parser and run it against the Shell via `run_scenario_step`. An unknown
     /// verb fails loudly (parse returns Err), never a silent skip.
     fn app_step(&mut self, line: &str) -> Result<(), String> {
+        tracing::debug!(target: "turnstone::selfdrive", verb = line.split_whitespace().next().unwrap_or(""), "begin app step");
         let step = crate::scenario::parse(line)?
             .into_iter()
             .next()
             .ok_or_else(|| format!("app_step: empty line '{line}'"))?;
-        self.run_scenario_step(&step)
+        let result = self.run_scenario_step(&step);
+        tracing::debug!(target: "turnstone::selfdrive", ok = result.is_ok(), "finished app step");
+        result
     }
 }
 
@@ -552,12 +713,14 @@ impl Shell {
                     }
                 } else if self.app.document_find.open {
                     self.act(Action::InsertDocumentFind(text.clone()));
+                } else if !self.app.omnibar.open && self.type_surface_text(text) {
+                    // Commit through the same producer key stream as winit.
                 } else {
                     for c in text.chars() {
                         self.act(Action::OmnibarChar(c));
                     }
                 }
-            }
+            },
             Step::Insert(text) => {
                 if self.app.user_agent_decision.is_open() {
                     if self.app.user_agent_decision.accepts_text() {
@@ -573,10 +736,12 @@ impl Shell {
                     self.request_redraw();
                 } else if self.deliver_knot_ime(&winit::event::Ime::Commit(text.clone())) {
                     self.request_redraw();
+                } else if self.type_surface_text(text) {
+                    // Hosted committed text is distinct from OS IME/preedit.
                 } else {
                     return Err("insert: no focused text editor".into());
                 }
-            }
+            },
             Step::Key(key) => {
                 // Route through the SAME key seam winit uses, so `key` drives
                 // whatever holds focus (the omnibar, a focused page, the
@@ -603,24 +768,36 @@ impl Shell {
                 };
                 let previous_ctrl = self.ctrl;
                 self.ctrl |= ctrl;
-                self.on_key(&winit_key);
+                // Match the text accompanying a native winit key press. In
+                // Chromium, Enter's carriage-return char event activates the
+                // focused button after rawKeyDown.
+                let text = match winit_key {
+                    WinitKey::Named(WinitNamedKey::Enter) => Some("\r"),
+                    WinitKey::Named(WinitNamedKey::Space) => Some(" "),
+                    _ => None,
+                };
+                if self.deliver_surface_key(&winit_key, true, text) {
+                    self.deliver_surface_key(&winit_key, false, None);
+                } else {
+                    self.on_key(&winit_key);
+                }
                 self.ctrl = previous_ctrl;
-            }
+            },
             Step::Script(source) => self.run_scenario_script(source),
             Step::Click(x, y) => {
                 self.deliver_press(*x, *y, MouseButton::Left);
                 self.deliver_release(*x, *y, MouseButton::Left);
-            }
+            },
             Step::Press(x, y) => self.deliver_press(*x, *y, MouseButton::Left),
             Step::Release(x, y) => self.deliver_release(*x, *y, MouseButton::Left),
             Step::Move(x, y) => self.deliver_move(*x, *y),
             Step::Touch(id, phase, x, y, pressure) => {
                 self.deliver_touch_contact(*id, *phase, *x, *y, *pressure, None)
-            }
+            },
             Step::RightClick(x, y) => {
                 self.deliver_press(*x, *y, MouseButton::Right);
                 self.deliver_release(*x, *y, MouseButton::Right);
-            }
+            },
             Step::ClickRow(substr) => self.click_pane_row(substr),
             Step::ClickTab(label) => self.click_pane_tab(label),
             Step::ClickNode(substr) => self.click_pane_node(substr),
@@ -630,10 +807,10 @@ impl Shell {
                 self.deliver_move(mid.0, mid.1);
                 self.deliver_move(to.0, to.1);
                 self.deliver_release(to.0, to.1, MouseButton::Left);
-            }
+            },
             Step::DragTab(from, onto, edge) => {
                 self.drag_workbench_tab(from, onto, edge.as_deref());
-            }
+            },
             Step::DragTabOut(from) => self.drag_workbench_tab_out(from),
             Step::HoverFile(x, y, path) => self.hover_file(*x, *y, std::path::Path::new(path)),
             Step::DropFile(x, y, path) => self.drop_file(*x, *y, std::path::Path::new(path)),
@@ -642,7 +819,7 @@ impl Shell {
                 let role = super::reader_observe::ReaderAppearanceRole::parse(role)
                     .ok_or_else(|| format!("scroll-reader: unknown Reader role '{role}'"))?;
                 self.scroll_reader_appearance(role, *dy)?;
-            }
+            },
             Step::Divider(ratio) => self.act(Action::SetActivePaneDivider(*ratio)),
             Step::RecordReaderAppearances(name) => {
                 let observations = self.reader_appearance_observations();
@@ -661,14 +838,35 @@ impl Shell {
                         path.display()
                     )
                 })?;
-            }
+            },
             Step::RecordIdle(name) => {
                 let diagnosis = self.idle_diagnosis();
                 let path = self.shared_out_dir.join(format!("{name}.txt"));
-                std::fs::write(&path, format!("RESULT ok\n{}\n", diagnosis.describe())).map_err(|error| {
-                    format!("record-idle '{}': could not write {}: {error}", name, path.display())
-                })?;
-            }
+                std::fs::write(&path, format!("RESULT ok\n{}\n", diagnosis.describe())).map_err(
+                    |error| {
+                        format!(
+                            "record-idle '{}': could not write {}: {error}",
+                            name,
+                            path.display()
+                        )
+                    },
+                )?;
+                #[cfg(all(feature = "scry", windows))]
+                {
+                    let surfaces = self.surface_plan().into_iter().filter_map(|surface| {
+                        let crate::surface::SurfaceKind::Content(node) = surface.kind else { return None; };
+                        let rect = surface.rect;
+                        Some(serde_json::json!({"node":node,"surface_id":surface.id.0,"x":rect.x,"y":rect.y,"width":rect.w,"height":rect.h}))
+                    }).collect::<Vec<_>>();
+                    let stats = self.scry_frame_importers.iter().map(|(node, importer)| {
+                        let stats = importer.stats();
+                        serde_json::json!({"node":node,"fence_handle":importer.fence_handle(),"frames":stats.frames,"imports":stats.imports,"waits":stats.waits})
+                    }).collect::<Vec<_>>();
+                    std::fs::write(self.shared_out_dir.join(format!("{name}.surface-frames.json")),
+                        serde_json::to_vec_pretty(&serde_json::json!({"live_producers":self.surface_producers.len(),"cached_frames":self.surface_frames.len(),"scry_importers":stats,"content_surfaces":surfaces})).map_err(|error|error.to_string())?)
+                        .map_err(|error|error.to_string())?;
+                }
+            },
 
             // ---- asserts: read the snapshot, Err on mismatch (former tick) ----
             Step::AssertOmnibar(open) => {
@@ -677,9 +875,9 @@ impl Shell {
                     let state = if *open { "open" } else { "closed" };
                     return Err(format!("assert omnibar {state}: it is not"));
                 }
-            }
+            },
             Step::AssertScrolled(want_moved) => match self.content_scroll_moved {
-                Some(moved) if moved == *want_moved => {}
+                Some(moved) if moved == *want_moved => {},
                 Some(_) => {
                     let (want, got) = if *want_moved {
                         ("moved", "did not")
@@ -687,12 +885,12 @@ impl Shell {
                         ("still", "moved")
                     };
                     return Err(format!("assert scrolled {want}: the focused page {got}"));
-                }
+                },
                 None => {
                     return Err(
                         "assert scrolled: no content scroll key has been delivered".to_string()
                     );
-                }
+                },
             },
             Step::AssertText(want) => {
                 let snap = crate::observe::snapshot(&self.app);
@@ -702,7 +900,7 @@ impl Shell {
                         snap.omnibar.text
                     ));
                 }
-            }
+            },
             Step::AssertFocused(substr) => {
                 let needle = substr.to_lowercase();
                 let snap = crate::observe::snapshot(&self.app);
@@ -713,7 +911,7 @@ impl Shell {
                 if !hay.contains(&needle) {
                     return Err(format!("assert focused '{substr}': focused is '{hay}'"));
                 }
-            }
+            },
             Step::AssertBrowserFetch(substr) => {
                 let actual = crate::observe::snapshot(&self.app)
                     .browser_fetch
@@ -723,7 +921,7 @@ impl Shell {
                         "assert fetch '{substr}': focused browser fetch is '{actual}'"
                     ));
                 }
-            }
+            },
             Step::AssertLinkPreview(substr) => {
                 let actual = crate::observe::snapshot(&self.app)
                     .link_preview
@@ -733,7 +931,7 @@ impl Shell {
                         "assert link-preview '{substr}': preview is '{actual}'"
                     ));
                 }
-            }
+            },
             Step::AssertSurface(kind) => {
                 let snap = crate::observe::snapshot(&self.app);
                 if !snap.surfaces.iter().any(|s| s == kind) {
@@ -742,13 +940,13 @@ impl Shell {
                         snap.surfaces
                     ));
                 }
-            }
+            },
             Step::AssertFocus(kind) => {
                 let snap = crate::observe::snapshot(&self.app);
                 if snap.focus != *kind {
                     return Err(format!("assert focus '{kind}': focus is '{}'", snap.focus));
                 }
-            }
+            },
             Step::AssertPane(tag) => {
                 let snap = crate::observe::snapshot(&self.app);
                 if !snap.panes.iter().any(|p| p == tag) {
@@ -757,14 +955,14 @@ impl Shell {
                         snap.panes
                     ));
                 }
-            }
+            },
             Step::AssertMaximized(want) => {
                 let snap = crate::observe::snapshot(&self.app);
                 if snap.maximized != *want {
                     let state = if *want { "maximized" } else { "not maximized" };
                     return Err(format!("assert {state}: it is not"));
                 }
-            }
+            },
             Step::AssertNoRow(substr) => {
                 let snap = crate::observe::snapshot(&self.app);
                 let hit = snap
@@ -778,7 +976,7 @@ impl Shell {
                         "assert no-row '{substr}': a row still has it: '{row}'"
                     ));
                 }
-            }
+            },
             Step::AssertRow(substr) => {
                 let snap = crate::observe::snapshot(&self.app);
                 let hit = snap
@@ -794,7 +992,7 @@ impl Shell {
                         snap.trail_rows, snap.roster_rows, snap.inspector_rows, snap.arrange_rows
                     ));
                 }
-            }
+            },
             Step::AssertTab(want) => {
                 let snap = crate::observe::snapshot(&self.app);
                 if snap.roster_tab != want {
@@ -803,7 +1001,7 @@ impl Shell {
                         snap.roster_tab
                     ));
                 }
-            }
+            },
             Step::AssertRatio(op, want) => {
                 let snap = crate::observe::snapshot(&self.app);
                 let ok = snap.split_ratio.is_some_and(|r| cmp_f32(op, r, *want));
@@ -813,7 +1011,7 @@ impl Shell {
                         snap.split_ratio
                     ));
                 }
-            }
+            },
             Step::AssertActiveRatio(op, want) => {
                 let snap = crate::observe::snapshot(&self.app);
                 let ok = snap.active_ratio.is_some_and(|r| cmp_f32(op, r, *want));
@@ -823,7 +1021,7 @@ impl Shell {
                         snap.active_ratio
                     ));
                 }
-            }
+            },
             Step::AssertSuggestions(op, n) => {
                 let snap = crate::observe::snapshot(&self.app);
                 let len = snap.omnibar.suggestions.len();
@@ -833,12 +1031,12 @@ impl Shell {
                         snap.omnibar.suggestions
                     ));
                 }
-            }
+            },
             Step::AssertVisible => {
                 if !crate::observe::snapshot(&self.app).graph_visible {
                     return Err("assert visible: every node is off-screen".to_string());
                 }
-            }
+            },
             Step::AssertContentLive => {
                 let snap = crate::observe::snapshot(&self.app);
                 let focused = snap.focused.as_ref().map(|f| f.member);
@@ -851,7 +1049,7 @@ impl Shell {
                         state.unwrap_or_else(|| "without content state".to_string())
                     ));
                 }
-            }
+            },
             Step::AssertWbCells(op, n) => {
                 let snap = crate::observe::snapshot(&self.app);
                 if !cmp_usize(op, snap.workbench_cells.len(), *n) {
@@ -861,7 +1059,7 @@ impl Shell {
                         snap.workbench_cells
                     ));
                 }
-            }
+            },
             Step::AssertWbCell(substr) => {
                 let snap = crate::observe::snapshot(&self.app);
                 if !snap.workbench_cells.iter().any(|c| c.contains(substr)) {
@@ -870,7 +1068,7 @@ impl Shell {
                         snap.workbench_cells
                     ));
                 }
-            }
+            },
             Step::AssertWbFraction(op, want) => {
                 let snap = crate::observe::snapshot(&self.app);
                 let ok = snap
@@ -883,13 +1081,13 @@ impl Shell {
                         snap.workbench_fractions
                     ));
                 }
-            }
+            },
             Step::AssertWindows(op, n) => {
                 let snap = crate::observe::snapshot(&self.app);
                 if !cmp_usize(op, snap.windows, *n) {
                     return Err(format!("assert windows {op:?} {n}: have {}", snap.windows));
                 }
-            }
+            },
             Step::AssertSessions(op, n) => {
                 let snap = crate::observe::snapshot(&self.app);
                 if !cmp_usize(op, snap.session_count, *n) {
@@ -898,7 +1096,7 @@ impl Shell {
                         snap.session_count
                     ));
                 }
-            }
+            },
             Step::AssertSession(substr) => {
                 let snap = crate::observe::snapshot(&self.app);
                 if !snap.session.to_lowercase().contains(&substr.to_lowercase()) {
@@ -907,13 +1105,13 @@ impl Shell {
                         snap.session
                     ));
                 }
-            }
+            },
             Step::AssertNodes(op, n) => {
                 let snap = crate::observe::snapshot(&self.app);
                 if !cmp_usize(op, snap.node_count, *n) {
                     return Err(format!("assert nodes {op:?} {n}: have {}", snap.node_count));
                 }
-            }
+            },
             Step::AssertEnergy(op, n) => {
                 let snap = crate::observe::snapshot(&self.app);
                 if !cmp_f32(op, snap.physics_energy, *n) {
@@ -922,7 +1120,7 @@ impl Shell {
                         snap.physics_energy
                     ));
                 }
-            }
+            },
             Step::AssertPhysicsRunning(want) => {
                 let snap = crate::observe::snapshot(&self.app);
                 if snap.physics_paused == *want {
@@ -936,7 +1134,7 @@ impl Shell {
                         }
                     ));
                 }
-            }
+            },
             Step::AssertOverlaps(op, n) => {
                 let snap = crate::observe::snapshot(&self.app);
                 if !cmp_usize(op, snap.layout_overlaps, *n) {
@@ -945,7 +1143,7 @@ impl Shell {
                         snap.layout_overlaps
                     ));
                 }
-            }
+            },
             Step::AssertA11y(substr) => {
                 let (tree, _, _) = self.projected_a11y_tree();
                 let lines = crate::a11y::tree_lines(&tree);
@@ -956,18 +1154,18 @@ impl Shell {
                         lines.iter().take(12).collect::<Vec<_>>()
                     ));
                 }
-            }
+            },
 
             // ---- generic verbs the shared loop owns; never reached, defensive ----
             Step::Act(label) => {
                 if !taproot::Automatable::act(self, label) {
                     return Err(format!("act: no palette action labelled '{label}'"));
                 }
-            }
-            Step::Settle(_) | Step::Log(_) => {}
+            },
+            Step::Settle(_) | Step::Log(_) => {},
             Step::Capture(name) => {
                 self.pending_capture = Some(self.shared_out_dir.join(format!("{name}.png")));
-            }
+            },
             Step::CaptureLens(name) => {
                 // A lens capture lands on the LENS's own redraw, so it cannot
                 // report success here. What it can do is refuse the impossible
@@ -985,7 +1183,7 @@ impl Shell {
                 // The lens presents on its own redraw; nudge every window so
                 // the pending capture lands this pump.
                 self.request_redraw();
-            }
+            },
             Step::AssertLensPane(substr) => {
                 let snap = crate::observe::snapshot(&self.app);
                 if !snap.lens_panes.iter().any(|p| p.contains(substr)) {
@@ -994,7 +1192,7 @@ impl Shell {
                         snap.lens_panes
                     ));
                 }
-            }
+            },
             Step::AssertNoPane(tag) => {
                 let snap = crate::observe::snapshot(&self.app);
                 if snap.panes.iter().any(|p| p == tag) {
@@ -1003,7 +1201,7 @@ impl Shell {
                         snap.panes
                     ));
                 }
-            }
+            },
             Step::AssertLensSurface(kind) => {
                 // The first lens window's LIVE plan — the same one its render
                 // and input use — so a green assert certifies what that window
@@ -1023,7 +1221,7 @@ impl Shell {
                         "assert lens-surface '{kind}': the lens plan is {kinds:?}"
                     ));
                 }
-            }
+            },
             Step::AssertNoLensPane(substr) => {
                 let snap = crate::observe::snapshot(&self.app);
                 if snap.lens_panes.iter().any(|p| p.contains(substr)) {
@@ -1032,7 +1230,7 @@ impl Shell {
                         snap.lens_panes
                     ));
                 }
-            }
+            },
             Step::AssertNoSurface(kind) => {
                 let snap = crate::observe::snapshot(&self.app);
                 if snap.surfaces.iter().any(|s| s == kind) {
@@ -1041,10 +1239,13 @@ impl Shell {
                         snap.surfaces
                     ));
                 }
-            }
+            },
             Step::AssertReaderAppearances(op, want) => {
                 let appearances = self.reader_appearance_observations();
-                if appearances.windows(2).any(|pair| pair[0].id.0 >= pair[1].id.0) {
+                if appearances
+                    .windows(2)
+                    .any(|pair| pair[0].id.0 >= pair[1].id.0)
+                {
                     return Err(format!(
                         "assert reader-appearances: observations are not sorted: {}",
                         Self::describe_reader_appearances(&appearances)
@@ -1053,88 +1254,121 @@ impl Shell {
                 if !cmp_usize(op, appearances.len(), *want) {
                     return Err(format!(
                         "assert reader-appearances: got {}, expected {:?} {}; {}",
-                        appearances.len(), op, want,
+                        appearances.len(),
+                        op,
+                        want,
                         Self::describe_reader_appearances(&appearances)
                     ));
                 }
-            }
+            },
             Step::AssertReaderSources(op, want) => {
                 let appearances = self.reader_appearance_observations();
-                let sources = appearances.iter().map(|appearance| appearance.source_group)
-                    .collect::<std::collections::BTreeSet<_>>().len();
+                let sources = appearances
+                    .iter()
+                    .map(|appearance| appearance.source_group)
+                    .collect::<std::collections::BTreeSet<_>>()
+                    .len();
                 if !cmp_usize(op, sources, *want) {
                     return Err(format!(
                         "assert reader-sources: got {}, expected {:?} {}; {}",
-                        sources, op, want,
+                        sources,
+                        op,
+                        want,
                         Self::describe_reader_appearances(&appearances)
                     ));
                 }
-            }
+            },
             Step::AssertReaderRole(role) => {
                 let role = super::reader_observe::ReaderAppearanceRole::parse(role)
                     .ok_or_else(|| format!("assert reader-role: unknown Reader role '{role}'"))?;
                 let appearances = self.reader_appearance_observations();
-                let count = appearances.iter().filter(|appearance| appearance.role == role).count();
+                let count = appearances
+                    .iter()
+                    .filter(|appearance| appearance.role == role)
+                    .count();
                 if count != 1 {
                     return Err(format!(
-                        "assert reader-role {}: got {count}; {}", role.label(),
+                        "assert reader-role {}: got {count}; {}",
+                        role.label(),
                         Self::describe_reader_appearances(&appearances)
                     ));
                 }
-            }
+            },
             Step::AssertReaderViewport(role) => {
-                let role = super::reader_observe::ReaderAppearanceRole::parse(role).ok_or_else(|| {
-                    format!("assert reader-viewport: unknown Reader role '{role}'")
-                })?;
+                let role =
+                    super::reader_observe::ReaderAppearanceRole::parse(role).ok_or_else(|| {
+                        format!("assert reader-viewport: unknown Reader role '{role}'")
+                    })?;
                 let appearances = self.reader_appearance_observations();
-                let matching = appearances.iter().filter(|appearance| appearance.role == role).collect::<Vec<_>>();
+                let matching = appearances
+                    .iter()
+                    .filter(|appearance| appearance.role == role)
+                    .collect::<Vec<_>>();
                 let [appearance] = matching.as_slice() else {
                     return Err(format!(
-                        "assert reader-viewport {}: expected one appearance; {}", role.label(),
+                        "assert reader-viewport {}: expected one appearance; {}",
+                        role.label(),
                         Self::describe_reader_appearances(&appearances)
                     ));
                 };
-                let expected = (appearance.rect.w.round().max(1.0) as u32, appearance.rect.h.round().max(1.0) as u32);
+                let expected = (
+                    appearance.rect.w.round().max(1.0) as u32,
+                    appearance.rect.h.round().max(1.0) as u32,
+                );
                 if appearance.viewport != expected {
                     return Err(format!(
                         "assert reader-viewport {}: got {}x{}, plan requires {}x{}; {}",
-                        role.label(), appearance.viewport.0, appearance.viewport.1, expected.0, expected.1,
+                        role.label(),
+                        appearance.viewport.0,
+                        appearance.viewport.1,
+                        expected.0,
+                        expected.1,
                         Self::describe_reader_appearances(&appearances)
                     ));
                 }
-            }
+            },
             Step::AssertReaderScroll(role, op, want) => {
                 let role = super::reader_observe::ReaderAppearanceRole::parse(role)
                     .ok_or_else(|| format!("assert reader-scroll: unknown Reader role '{role}'"))?;
                 let appearances = self.reader_appearance_observations();
-                let matching = appearances.iter().filter(|appearance| appearance.role == role).collect::<Vec<_>>();
+                let matching = appearances
+                    .iter()
+                    .filter(|appearance| appearance.role == role)
+                    .collect::<Vec<_>>();
                 let [appearance] = matching.as_slice() else {
                     return Err(format!(
-                        "assert reader-scroll {}: expected one appearance; {}", role.label(),
+                        "assert reader-scroll {}: expected one appearance; {}",
+                        role.label(),
                         Self::describe_reader_appearances(&appearances)
                     ));
                 };
                 if !cmp_f32(op, appearance.scroll_y, *want) {
                     return Err(format!(
                         "assert reader-scroll {}: got {:.1}, expected {:?} {:.1}; {}",
-                        role.label(), appearance.scroll_y, op, want,
+                        role.label(),
+                        appearance.scroll_y,
+                        op,
+                        want,
                         Self::describe_reader_appearances(&appearances)
                     ));
                 }
-            }
+            },
             Step::AssertContentSessionsIdle => {
                 let diagnosis = self.idle_diagnosis();
                 if !diagnosis.unsettled_sessions.is_empty() {
-                    return Err(format!("assert content-sessions-idle: {}", diagnosis.describe()));
+                    return Err(format!(
+                        "assert content-sessions-idle: {}",
+                        diagnosis.describe()
+                    ));
                 }
-            }
+            },
             Step::AssertContentReady => {
                 let diagnosis = self.idle_diagnosis();
                 if !diagnosis.content_ready() {
                     return Err(format!("assert content-ready: {}", diagnosis.describe()));
                 }
-            }
-            Step::AssertEvent(_) => {}
+            },
+            Step::AssertEvent(_) => {},
 
             // ---- T5a: sticky waits and the place record receipt ----
             Step::WaitRow(frames, substr) => {
@@ -1154,7 +1388,7 @@ impl Shell {
                         snap.trail_rows, snap.roster_rows, snap.inspector_rows, snap.arrange_rows
                     ));
                 }
-            }
+            },
             Step::WaitStatus(frames, substr) => {
                 let ok = self.wait_frames(*frames, |shell| {
                     crate::observe::snapshot(&shell.app)
@@ -1168,7 +1402,7 @@ impl Shell {
                         "wait-status '{substr}' after {frames} frames: place status is {status:?}"
                     ));
                 }
-            }
+            },
             Step::WaitKnot(frames, substr) => {
                 fn knot_lines(app: &crate::app::App) -> Vec<String> {
                     app.knot_documents()
@@ -1177,7 +1411,9 @@ impl Shell {
                         .collect()
                 }
                 let ok = self.wait_frames(*frames, |shell| {
-                    knot_lines(&shell.app).iter().any(|line| line.contains(substr.as_str()))
+                    knot_lines(&shell.app)
+                        .iter()
+                        .any(|line| line.contains(substr.as_str()))
                 });
                 if !ok {
                     let lines = knot_lines(&self.app);
@@ -1185,7 +1421,7 @@ impl Shell {
                         "wait-knot '{substr}' after {frames} frames: knot documents are {lines:?}"
                     ));
                 }
-            }
+            },
             Step::WaitFile(frames, path) => {
                 let p = std::path::Path::new(path.as_str());
                 let ok = self.wait_frames(*frames, |_| {
@@ -1196,7 +1432,7 @@ impl Shell {
                         "wait-file '{path}' after {frames} frames: still missing or empty"
                     ));
                 }
-            }
+            },
             Step::RecordPlace(name) => {
                 let value = crate::observe::place_record(&self.app);
                 let body = serde_json::to_string_pretty(&value).map_err(|error| {
@@ -1204,9 +1440,12 @@ impl Shell {
                 })?;
                 let path = self.shared_out_dir.join(format!("{name}.json"));
                 std::fs::write(&path, body).map_err(|error| {
-                    format!("record-place '{name}': could not write {}: {error}", path.display())
+                    format!(
+                        "record-place '{name}': could not write {}: {error}",
+                        path.display()
+                    )
                 })?;
-            }
+            },
             Step::TouchFile(path) => {
                 let p = std::path::Path::new(path.as_str());
                 std::fs::write(p, "touched\n")

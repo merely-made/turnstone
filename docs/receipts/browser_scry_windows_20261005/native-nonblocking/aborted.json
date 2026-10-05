@@ -1,0 +1,7 @@
+{
+  "result": "ABORTED",
+  "reason": "No input checkpoint after more than six minutes beyond two-pages; keyboard callback queue alone did not resolve progression. Actual stop location remains unproven.",
+  "pid": 33720,
+  "executable_sha256": "9221c083785fddf15c0a00347714532a0323e587682d3922496c1d64e95e30b0",
+  "recorded_utc": "2026-10-05T20:39:25.0023104Z"
+}

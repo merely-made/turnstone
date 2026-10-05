@@ -1,0 +1,41 @@
+<!doctype html>
+<!-- Copyright 2026 Mark Alan Boykin. SPDX-License-Identifier: MPL-2.0 -->
+<html lang="en" data-page="B">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Scry B</title>
+  <link rel="stylesheet" href="fixture.css">
+  <script defer src="fixture.js"></script>
+</head>
+<body><main>
+  <h1>Scry B</h1>
+  <label for="entry">Page B text</label>
+  <input id="entry" autocomplete="off" spellcheck="false">
+  <button id="activate" type="button">Activate B and save</button>
+  <p id="summary" role="status">Waiting for the local fixture script.</p>
+  <div class="motion" aria-hidden="true"></div>
+  <pre id="state" aria-label="Page B observed state"></pre>
+  <label for="composition">Page B composition diagnostic</label>
+  <textarea id="composition" rows="2" spellcheck="false"></textarea>
+  <pre id="events" aria-label="Page B recent events"></pre>
+  <article>
+    <h2>Local browsing fixture B</h2>
+    <p>This is the second page of the same local browser acceptance fixture.
+    Its controls have the same positions as page A but different identities.
+    A click or key belongs to the page that owns focus. The visible state and
+    title report the page's actual DOM behavior, rather than an accepted host
+    request that never reached its input.</p>
+    <p>SCRYFINDMARK appears here once. Page find and page zoom remain separate
+    from the shell's own search, interface scale, and graph camera. Browser
+    capability refusal must stay visible until their adapter routes exist.</p>
+    <p>After switching page A to another engine, activate page B again. Page B
+    should retain its input and existing activation count while its sibling is
+    reconstructed. Restarting the application should reopen each page with
+    its own saved text and marker, using the original browser profiles.</p>
+    <div class="spacer">Scroll B to the lower marker.</div>
+    <p id="lower">SCRYLOWER_B: only page B should move when its wheel is used.</p>
+    <a href="page-a.html">Navigate B to page A</a>
+  </article>
+</main></body>
+</html>

@@ -63,10 +63,9 @@ impl Shell {
             let options = NetrenderOptions {
                 tile_cache_size: Some(16),
                 enable_vello: true,
-                // A Weld build has one Windows CEF runtime whose native frames
-                // are D3D12 resources. Keep every Turnstone presentation
-                // device on that API, including a lens created later.
-                #[cfg(all(feature = "weld", windows))]
+                // Windows browser frames use D3D12 resources. Keep every
+                // presentation device on that API, including later lenses.
+                #[cfg(all(any(feature = "weld", feature = "scry"), windows))]
                 backends: Some(wgpu::Backends::DX12),
                 ..Default::default()
             };

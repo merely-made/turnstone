@@ -1,0 +1,7 @@
+RESULT fail
+captured 01_engine_inventory
+captured 02_reader_selected
+captured 03_unavailable_rows_refused
+FAIL: assert row 'Viewer: auto': trail [] roster [] inspector ["Title: mere://browser-engine-inventory", "URL: mere://browser-engine-inventory", "Node id: 0326eb23-df87-45ca-bca7-7781f49fab5b", "Addresses: 1", "Pinned: no", "Tags: none", "Import provenance: none", "Classifications: none", "Mime hint: none", "Viewer: genet.livery", "Compat: no", "Content state: none", "you: ReplayNavigateNodeById", "you: ReplayTouchNodeLastVisitedById", "you: ReplayAddNodeWithIdIfMissing", "you: ReplaySetEdgesByIds", "you: ReplayAssertRelationByIds"] arrange []
+captured 04_auto_restored
+Browser engine inventory native scenario complete

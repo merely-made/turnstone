@@ -77,7 +77,10 @@ fn workbench_view(state: &WorkbenchState) -> WbView {
             .attr("style", format!("height: {body_h}px;"));
         children.push(Box::new(placed_with(
             Placement::new(cell.rect.x, cell.rect.y),
-            format!("width: {}px; height: {}px;", cell.rect.w, cell.rect.h),
+            format!(
+                "width: {}px; height: {}px; overflow: hidden;",
+                cell.rect.w, cell.rect.h
+            ),
             (strip, body),
         )));
     }
@@ -171,10 +174,10 @@ impl WorkbenchPane {
                     Some(Some(NodeContent::AwaitingInput)) => "content needs input".to_string(),
                     Some(Some(NodeContent::AwaitingIdentity)) => {
                         "content needs a client identity".to_string()
-                    }
+                    },
                     Some(Some(NodeContent::AwaitingTrust)) => {
                         "content needs a certificate decision".to_string()
-                    }
+                    },
                     Some(Some(NodeContent::Failed(err))) => format!("failed: {err}"),
                     Some(None) => "content off — Toggle live content".to_string(),
                     None => String::new(),
@@ -202,6 +205,10 @@ impl WorkbenchPane {
         &self.tiling
     }
 
+    pub fn dom_ref(&self) -> std::cell::Ref<'_, ScriptedDom> {
+        self.dom.borrow()
+    }
+
     /// The pane's scene at its size, under the host's cambium sheet.
     pub fn scene(&mut self, w: u32, h: u32) -> netrender::Scene {
         self.layout.scene_scrolled(
@@ -227,7 +234,7 @@ impl WorkbenchPane {
     /// DOM (the ask-the-layout rule: tab x-positions are flex + text
     /// measurement, so only the layout knows them). The tab-drag gesture's
     /// press resolution.
-    pub fn tab_at(&self, x: f32, y: f32, w: u32, h: u32) -> Option<Uuid> {
+    pub fn tab_at(&self, x: f32, y: f32, _w: u32, _h: u32) -> Option<Uuid> {
         let dom = self.dom.borrow();
         // Tabs appear in DOM order: cells in walk order, tabs in member order.
         let flat: Vec<Uuid> = self
@@ -239,8 +246,7 @@ impl WorkbenchPane {
             .collect();
         let tabs = dom.all_with_class(dom.document(), "tab");
         for (i, &tab) in tabs.iter().enumerate() {
-            if let Some((tx, ty, tw, th)) =
-                crate::ui::node_rect(&dom, tab, crate::ui::CAMBIUM_SHEET, w, h)
+            if let Some((tx, ty, tw, th)) = self.layout.visible_rect(&dom, tab)
                 && x >= tx
                 && x < tx + tw
                 && y >= ty
@@ -250,6 +256,37 @@ impl WorkbenchPane {
             }
         }
         None
+    }
+
+    /// Resolve only visible painted tabs, retaining their real member hit.
+    pub(crate) fn selector_point(
+        &self,
+        selector: &taproot::Selector,
+    ) -> Result<Option<(f32, f32)>, &'static str> {
+        if !selector.matches_surface("workbench") {
+            return Ok(None);
+        }
+        let dom = self.dom.borrow();
+        let tabs = dom.all_with_class(dom.document(), "tab");
+        let mut point = None;
+        for node in taproot::matching(&dom, selector) {
+            if !tabs.contains(&node) {
+                continue;
+            }
+            let Some((x, y, width, height)) = self.layout.visible_rect(&dom, node) else {
+                continue;
+            };
+            if width <= 0.0 || height <= 0.0 {
+                continue;
+            }
+            if point.is_some() {
+                return Err("multiple visible Workbench tabs match");
+            }
+            // The floating toolbar can cover a tab's centre; use the visible
+            // top strip, then let the shell verify the actual surface hit.
+            point = Some((x + width / 2.0, y + height / 8.0));
+        }
+        Ok(point)
     }
 
     /// Route a click at pane-local `(x, y)` into the view (a tab click moves
@@ -301,6 +338,7 @@ mod tests {
     fn pane_over(app: &App, w: f32, h: f32) -> WorkbenchPane {
         let mut pane = WorkbenchPane::new();
         pane.sync(app, app.default_graph_pane(), w, h);
+        pane.scene(w as u32, h as u32);
         pane
     }
 
@@ -313,6 +351,43 @@ mod tests {
         let b = app.graph_runtimes.focused_member().unwrap();
         app.update(Action::OpenInWorkbench);
         (app, a, b)
+    }
+
+    #[test]
+    fn long_page_titles_cannot_claim_the_siblings_tab() {
+        let (mut app, a, b) = app_with_two_tiles();
+        for (member, name) in [(a, "Scry A"), (b, "Scry B")] {
+            app.update(Action::ContentTitleChanged {
+                member,
+                title: format!("{name} {}", "long page state ".repeat(64)),
+            });
+        }
+        let pane = pane_over(&app, 800.0, 600.0);
+        for (member, name) in [(a, "Scry A"), (b, "Scry B")] {
+            let point = pane
+                .selector_point(
+                    &taproot::Selector::class("tab")
+                        .containing(name)
+                        .on_surface("workbench"),
+                )
+                .unwrap()
+                .expect("the visible tab has a target");
+            let cell = pane
+                .tiling()
+                .cells
+                .iter()
+                .find(|cell| cell.members.contains(&member))
+                .unwrap();
+            assert!(
+                cell.rect.contains(point.0, point.1),
+                "tab hit stays in its owning cell"
+            );
+            assert_eq!(pane.tab_at(point.0, point.1, 800, 600), Some(member));
+        }
+        assert!(
+            pane.selector_point(&taproot::Selector::class("tab").on_surface("workbench"))
+                .is_err()
+        );
     }
 
     /// Two tiles draw as two cells, each wearing a real tab strip; the strips'

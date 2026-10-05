@@ -1,0 +1,162 @@
+{
+  "result": "fail",
+  "qualification": "unassisted progression diagnostic, not full acceptance",
+  "source_manifest": "source-manifest-wake-first.json",
+  "files": [
+    {
+      "path": "native-wake/00_b_inspector_after_pin.png",
+      "bytes": 179213,
+      "sha256": "c74f9e5b5669875aa8d4772892fd2b4c4005506005979d3fd35331098de8aea8"
+    },
+    {
+      "path": "native-wake/00_b_inspector_before_pin.png",
+      "bytes": 186319,
+      "sha256": "a8b82e5c8d746bedee9519cdd68ea49f05db47557c3854dfc93b5ced222e706c"
+    },
+    {
+      "path": "native-wake/01_two_scry_pages.png",
+      "bytes": 149160,
+      "sha256": "43b55033b2fceb3af8a26a58885e31d62c0cec35e448925567fdc291e722c573"
+    },
+    {
+      "path": "native-wake/02_text_pointer_and_keyboard.png",
+      "bytes": 170562,
+      "sha256": "0dff87796ac3e264eed9683897220812ea81d1fcd89a0891c9a592cc25ac20e9"
+    },
+    {
+      "path": "native-wake/02b_b_reloaded.png",
+      "bytes": 163441,
+      "sha256": "0a8f5ab74ab6e7f666af762913bf75f0d9bacadcbbdb5642619aa9ed40816237"
+    },
+    {
+      "path": "native-wake/02c_a_wheel.png",
+      "bytes": 164629,
+      "sha256": "e7bd052278f86975a196eb7757cf12daa76625d35ea7c6f72dd283fc25bbf269"
+    },
+    {
+      "path": "native-wake/02d_b_wheel.png",
+      "bytes": 170810,
+      "sha256": "fa711da6f0b94f688aa37560c6f414410fcb70e8772eaeeaced14077a9306704"
+    },
+    {
+      "path": "native-wake/02e_both_scroll_reset.png",
+      "bytes": 161148,
+      "sha256": "58a9caa1a95db926715fa33d20680860c941cd69ae9b9b97557f942bf20014d9"
+    },
+    {
+      "path": "native-wake/03_find_and_zoom_unavailable.png",
+      "bytes": 161148,
+      "sha256": "a5b589f523b2c7b22b01f8346f4986a32f970f0a36540dde3dea7953132a4aba"
+    },
+    {
+      "path": "native-wake/04_resized_two_pages.png",
+      "bytes": 121256,
+      "sha256": "5d2f21599decfc16fcf3609cf3a4d42afda01cb38e405713d4dfdf97d3f878d4"
+    },
+    {
+      "path": "native-wake/05_a_reader_b_scry.png",
+      "bytes": 286970,
+      "sha256": "90c088c8399b617fd7196b0280623164013cb265b2063edf4156cb448de3ba23"
+    },
+    {
+      "path": "native-wake/06_a_scry_reconstructed.png",
+      "bytes": 121508,
+      "sha256": "218d91c41b46594d85d1beb7ef201fecdbf100183f7625ac3a5b4aca5c5629e9"
+    },
+    {
+      "path": "native-wake/07_both_closed.png",
+      "bytes": 66801,
+      "sha256": "0ac3995520a4c7821607294248090a8d69402eaa0c4e7268ecf1dfa343e1c621"
+    },
+    {
+      "path": "native-wake/08_ready_for_restart.png",
+      "bytes": 61613,
+      "sha256": "628be8fd9ad69eb4cb0945376a9aeaeda681cb9ff99109c45f3e63bac6512b7c"
+    },
+    {
+      "path": "native-wake/closed.surface-frames.json",
+      "bytes": 97,
+      "sha256": "14a5ba9bd265bb533f59df96beca4a7ef3fd682fde3d8bc539999b5770bf8d95"
+    },
+    {
+      "path": "native-wake/closed.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "native-wake/diagnostics.json",
+      "bytes": 85935,
+      "sha256": "b41eef637548280b8672ee2a7520910ea969d5b20132a9976825ce783b1e19e2"
+    },
+    {
+      "path": "native-wake/input.surface-frames.json",
+      "bytes": 782,
+      "sha256": "d3fea5f90a05467f05348bb5f4aeb78beefb8ad4ff4ee144bd90ea980b0794b3"
+    },
+    {
+      "path": "native-wake/input.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "native-wake/reconstructed.surface-frames.json",
+      "bytes": 784,
+      "sha256": "39c7d9b762f3d01edc0eb8d571bcb1526e3f3a43841a75005cd86d0a3937e116"
+    },
+    {
+      "path": "native-wake/reconstructed.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "native-wake/reopened.surface-frames.json",
+      "bytes": 778,
+      "sha256": "50e1e4eabc6c3611ade1eccba67ded863ac8905a9182ce54eb2d2003a31cb11b"
+    },
+    {
+      "path": "native-wake/reopened.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "native-wake/resized.surface-frames.json",
+      "bytes": 790,
+      "sha256": "298227ffc13da2f1445cd1f28915a0f31399ce40e6cba1192be1d60e2c934da4"
+    },
+    {
+      "path": "native-wake/resized.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "native-wake/run.log",
+      "bytes": 1546247,
+      "sha256": "b0e42ceb12ce6abf32fdf5a33474c52ca66274bd2af9e822ad985ade4776bef2"
+    },
+    {
+      "path": "native-wake/scenario.done",
+      "bytes": 3400,
+      "sha256": "be7f0a61ae6618953e2ce2babc1abb5e72f6cd28dbf72e5b1f47503a307bd96a"
+    },
+    {
+      "path": "native-wake/two-pages.surface-frames.json",
+      "bytes": 785,
+      "sha256": "4d2da7b59528262fca6228d9e637e56bc6263685f88cb23c2fba887ead4446c9"
+    },
+    {
+      "path": "native-wake/two-pages.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "native-wake/wheel-reset.surface-frames.json",
+      "bytes": 788,
+      "sha256": "4b92844cdbf866388ff3031c63e1756945957d494125e7a5f942270469cf248f"
+    },
+    {
+      "path": "native-wake/wheel-reset.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    }
+  ]
+}

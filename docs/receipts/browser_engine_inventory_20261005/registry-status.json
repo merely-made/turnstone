@@ -1,0 +1,26 @@
+[
+  {
+    "crate": "grafting",
+    "max_stable_version": "0.6.0",
+    "updated_at": "2026-09-04T07:34:48.341864Z",
+    "source": "https://crates.io/api/v1/crates/grafting"
+  },
+  {
+    "crate": "grafting-frame",
+    "max_stable_version": "0.1.0",
+    "updated_at": "2026-09-05T03:53:13.002227Z",
+    "source": "https://crates.io/api/v1/crates/grafting-frame"
+  },
+  {
+    "crate": "scrying",
+    "max_stable_version": "0.7.1",
+    "updated_at": "2026-09-04T20:16:48.614666Z",
+    "source": "https://crates.io/api/v1/crates/scrying"
+  },
+  {
+    "crate": "welding",
+    "max_stable_version": "0.14.1",
+    "updated_at": "2026-09-04T09:59:08.999485Z",
+    "source": "https://crates.io/api/v1/crates/welding"
+  }
+]

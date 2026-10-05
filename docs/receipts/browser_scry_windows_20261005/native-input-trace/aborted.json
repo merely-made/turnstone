@@ -1,0 +1,7 @@
+{
+  "result": "ABORTED",
+  "reason": "Reached trace-before-input-click; trace-after-input-click never arrived. This locates the synchronous content press path but does not distinguish MoveFocus from SendMouseInput or subsequent render.",
+  "pid": 11080,
+  "executable_sha256": "9221c083785fddf15c0a00347714532a0323e587682d3922496c1d64e95e30b0",
+  "recorded_utc": "2026-10-05T20:42:40.4619533Z"
+}

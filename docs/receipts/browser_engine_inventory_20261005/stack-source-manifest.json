@@ -1,0 +1,76 @@
+[
+  {
+    "repo": "mere",
+    "base_head": "c36641d699c9fedbd17758380a2807b9ad9766ef",
+    "files": [
+      {
+        "path": "Cargo.toml",
+        "sha256": "aeaed8f7b78adbca326ccad39c52cf404f67eae46136ed57875f8a2591c745e8"
+      },
+      {
+        "path": "Cargo.lock",
+        "sha256": "5f8f9fe1115c677cb5cd028bd64706efd3f177ee7a609b6cc6ce9126a2746772"
+      },
+      {
+        "path": "crates/inker/engines/scrying-engine/Cargo.toml",
+        "sha256": "550b1eb206bc8175e1a60ce6807f1eb0ce1c5adce0fb5dccd7b0fd397915e4e6"
+      },
+      {
+        "path": "crates/inker/engines/scrying-engine/src/lib.rs",
+        "sha256": "5ae1cfe714fe5fa4fa16993af368381f257b9a429712da10f9b4289af323fde6"
+      },
+      {
+        "path": "crates/inker/engines/scrying-engine/src/producer.rs",
+        "sha256": "d2e6781b70c9a440006e64374588228c16234bbf1f4a53158b355e7ca32726c8"
+      },
+      {
+        "path": "crates/inker/engines/scrying-engine/src/translation.rs",
+        "sha256": "19c8164178903688ace869680712071ded30977d15f8a49ed23da7a35cd31f43"
+      },
+      {
+        "path": "crates/inker/engines/scrying-engine/src/engine.rs",
+        "sha256": "9116059e7717ca005476d561add5808ddc2e3cea6c4a5f0449cbda6f7117c2b8"
+      },
+      {
+        "path": "crates/inker/inker/src/surface_engine.rs",
+        "sha256": "eb5fe625ebf62b8dc6a355252935c1973fbc5349c6ea77416876a8652f3cdd60"
+      }
+    ]
+  },
+  {
+    "repo": "wgpu-scry",
+    "base_head": "99c0a9deb783a9e9607278123d9b65c62f61e3a3",
+    "files": [
+      {
+        "path": ".github/workflows/hardware-headed.yml",
+        "sha256": "907cd788b17d9e2fd54919b7266b2a61b134637b9b13edf3ffd5e387f78f9d0b"
+      },
+      {
+        "path": "scripts/assert-active-wayland-session.sh",
+        "sha256": "12f5881623f48a451d325a9bb9be8535fe9f8ddef461b36359c8ecbc859af265"
+      },
+      {
+        "path": "scripts/test-active-wayland-session.sh",
+        "sha256": "56b2669f55e570331bdb4df56c875da8f5a6b8b0cc22a548c292d0b28c12a9fc"
+      }
+    ]
+  },
+  {
+    "repo": "wgpu-weld",
+    "base_head": "65d057def7db2b5034add6e316cbd51d97c163a1",
+    "files": [
+      {
+        "path": ".github/workflows/hardware-headed.yml",
+        "sha256": "6739f68ea8eefd2b939965fe565709854434a3682146f2f61ca560fff50489e2"
+      },
+      {
+        "path": "scripts/assert-active-wayland-session.sh",
+        "sha256": "12f5881623f48a451d325a9bb9be8535fe9f8ddef461b36359c8ecbc859af265"
+      },
+      {
+        "path": "scripts/test-active-wayland-session.sh",
+        "sha256": "56b2669f55e570331bdb4df56c875da8f5a6b8b0cc22a548c292d0b28c12a9fc"
+      }
+    ]
+  }
+]

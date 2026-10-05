@@ -1,0 +1,13 @@
+{
+  "cached_frames": 1,
+  "live_producers": 1,
+  "scry_importers": [
+    {
+      "fence_handle": 4140,
+      "frames": 4,
+      "imports": 4,
+      "node": "633263b4-1eb9-49cb-97c9-259c0787ecd9",
+      "waits": 4
+    }
+  ]
+}

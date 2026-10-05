@@ -1,0 +1,56 @@
+# B1 Windows Scry two-page host acceptance. NOT YET A NATIVE RECEIPT.
+# Serve scenarios/fixtures/browser_scry as a static loopback HTTP root; set
+# SCRY_FIXTURE_BASE to its origin, e.g. http://127.0.0.1:43123. No public network.
+# Fresh TURNSTONE_ROOT for run 1. Reuse that EXACT root and origin for run 2:
+# scenarios/fixtures/browser_scry/restart_verify.scn. Keep each run's captures.
+# The host must register scrying.web, use one shared OFFSCREEN CompositionRoot,
+# persist request profiles, import OwnedPayload, allocate a unique host fence
+# per producer, and synchronize every paint including an unchanged epoch.
+# This scenario requires the B1 selfdrive hosted `type` and key down/up paths:
+# existing type/on_key alone do not dispatch text/keys to a frame producer.
+# CDP delivery is the keyboard claim; OS focus, physical keys, and IME remain
+# separate native gates below. Title updates report actual DOM results.
+# At the two-cell maximized layout, set SCRY_A_INPUT_X/Y, SCRY_A_BUTTON_X/Y,
+# SCRY_B_INPUT_X/Y, SCRY_B_BUTTON_X/Y to measured window-client physical points.
+# Record those points, window size, DPI, executable/dependency hashes, registry
+# version, host topology, profile paths, and all diagnostics with the receipt.
+settle 30
+key escape
+open ${SCRY_FIXTURE_BASE}/page-a.html
+settle 80
+assert focused /page-a.html
+# Publish the Workbench's active member before the follower Inspector opens.
+# Its target can differ from the shell address and process-wide graph cursor.
+act Open node in Workbench
+settle 80
+assert wb-cells == 1
+act Open Inspector pane
+settle 10
+assert row URL: ${SCRY_FIXTURE_BASE}/page-a.html
+assert text ${SCRY_FIXTURE_BASE}/page-a.html
+click-row scrying.web
+settle 160
+assert row URL: ${SCRY_FIXTURE_BASE}/page-a.html
+assert row Viewer: scrying.web
+assert snap focused ~ Scry A | text= | clicks=0 | stored=
+act Close pane
+settle 10
+assert content-live
+assert wb-cells == 1
+assert wb-cell Scry A
+assert snap host-surface-producers == 1
+assert snap host-scry-producers == 1
+assert snap host-scry-imported-pages == 1
+
+open ${SCRY_FIXTURE_BASE}/page-b.html
+settle 80
+assert focused /page-b.html
+act Open node in Workbench
+settle 80
+assert wb-cells == 2
+act Open Inspector pane
+settle 10
+assert row URL: ${SCRY_FIXTURE_BASE}/page-b.html
+assert text ${SCRY_FIXTURE_BASE}/page-b.html
+capture inspector-b-before
+record-idle inspector-b

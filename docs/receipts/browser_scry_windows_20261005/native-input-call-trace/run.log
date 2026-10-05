@@ -1,0 +1,49 @@
+2026-10-05T20:44:58.764979Z  INFO turnstone::launch: turnstone starting
+2026-10-05T20:44:58.836461Z  INFO turnstone::identity: profile identity protection=OS auto-unlock sealed records at C:\Users\mark_\AppData\Local\personae\vault (DPAPI-wrapped root)
+2026-10-05T20:44:58.874018Z  INFO turnstone::app::session_lifecycle: no session graph; starting on the sample graph
+2026-10-05T20:45:00.445617Z  INFO turnstone::shell::a11y_bridge: a11y_bridge: installed
+2026-10-05T20:45:05.963124Z  WARN turnstone::gemini_identity: failed to project Gemini client identity error=client identities are only valid for gemini:// or titan:// capsules
+2026-10-05T20:45:06.221756Z  INFO turnstone::browse: page fetched url=http://127.0.0.1:43123/page-a.html content_type=Some("text/html") bytes=2040
+2026-10-05T20:45:06.241043Z  INFO turnstone::browse: node title enriched from the page url=http://127.0.0.1:43123/page-a.html title=Scry A
+2026-10-05T20:45:10.456438Z  INFO turnstone::shell::effects: content session live node=91d12979-a319-42bc-a049-bdf5189e7f47 url=http://127.0.0.1:43123/page-a.html engine=genet.livery
+2026-10-05T20:45:18.909884Z  INFO turnstone::shell::effects: content session closed node=91d12979-a319-42bc-a049-bdf5189e7f47
+2026-10-05T20:45:19.760738Z  INFO turnstone::shell::effects: surface content live node=91d12979-a319-42bc-a049-bdf5189e7f47 url=http://127.0.0.1:43123/page-a.html engine=scrying.web
+[producer] resize: 1024x600 -> 252x570
+[producer] start_capture: 252x570 ready in 121ms
+[producer] resize: 252x570 -> 509x570
+[producer] start_capture: 509x570 ready in 74ms
+2026-10-05T20:45:37.050386Z  WARN turnstone::gemini_identity: failed to project Gemini client identity error=client identities are only valid for gemini:// or titan:// capsules
+2026-10-05T20:45:37.202200Z  INFO turnstone::browse: page fetched url=http://127.0.0.1:43123/page-b.html content_type=Some("text/html") bytes=2098
+2026-10-05T20:45:37.212167Z  INFO turnstone::browse: node title enriched from the page url=http://127.0.0.1:43123/page-b.html title=Scry B
+2026-10-05T20:45:42.538511Z  INFO turnstone::shell::effects: content session live node=8591603f-7db6-4009-8a54-03bfda6ab811 url=http://127.0.0.1:43123/page-b.html engine=genet.livery
+[producer] resize: 509x570 -> 252x570
+[producer] start_capture: 252x570 ready in 44ms
+[producer] resize: 252x570 -> 123x570
+[producer] start_capture: 123x570 ready in 61ms
+2026-10-05T20:45:50.546966Z  INFO turnstone::shell::render: capture state open=false text= suggestions=0 surfaces=8 chrome=true nodes=14
+2026-10-05T20:45:51.272427Z  INFO turnstone::shell::effects: content session closed node=8591603f-7db6-4009-8a54-03bfda6ab811
+2026-10-05T20:45:52.499793Z  INFO turnstone::shell::effects: surface content live node=8591603f-7db6-4009-8a54-03bfda6ab811 url=http://127.0.0.1:43123/page-b.html engine=scrying.web
+[producer] resize: 1024x600 -> 123x570
+[producer] start_capture: 123x570 ready in 137ms
+2026-10-05T20:46:13.073733Z  INFO turnstone::shell::render: capture state open=false text= suggestions=0 surfaces=8 chrome=true nodes=14
+[producer] resize: 123x570 -> 252x570
+[producer] start_capture: 252x570 ready in 130ms
+[producer] resize: 123x570 -> 252x570
+[producer] start_capture: 252x570 ready in 92ms
+[producer] resize: 252x570 -> 509x570
+[producer] start_capture: 509x570 ready in 40ms
+[producer] resize: 252x570 -> 509x570
+[producer] start_capture: 509x570 ready in 44ms
+2026-10-05T20:46:18.446996Z  INFO turnstone::shell::render: capture state open=false text= suggestions=0 surfaces=4 chrome=true nodes=14
+2026-10-05T20:46:18.838160Z  WARN turnstone::gemini_identity: failed to project Gemini client identity error=client identities are only valid for gemini:// or titan:// capsules
+2026-10-05T20:46:18.902932Z  INFO turnstone::browse: page fetched url=http://127.0.0.1:43123/page-a.html content_type=Some("text/html") bytes=2040
+2026-10-05T20:46:18.912477Z  INFO turnstone::browse: node title enriched from the page url=http://127.0.0.1:43123/page-a.html title=Scry A
+2026-10-05T20:46:19.283043Z  INFO turnstone::shell::effects: surface content live node=91d12979-a319-42bc-a049-bdf5189e7f47 url=http://127.0.0.1:43123/page-a.html engine=scrying.web
+[producer] resize: 1024x600 -> 509x570
+[producer] start_capture: 509x570 ready in 46ms
+2026-10-05T20:46:19.937687Z DEBUG turnstone::scry_input: begin native focus delivery reason=Mouse
+2026-10-05T20:46:19.940752Z DEBUG turnstone::scry_input: finished native focus delivery ok=true
+2026-10-05T20:46:19.940813Z DEBUG turnstone::scry_input: begin native mouse delivery input=MouseInput { kind: LeftButtonDown, virtual_keys: MouseVirtualKeys { control: false, shift: false, left_button: true, middle_button: false, right_button: false, x_button1: false, x_button2: false }, mouse_data: 0, point: (240, 170) }
+2026-10-05T20:46:19.940894Z DEBUG turnstone::scry_input: finished native mouse delivery ok=true
+2026-10-05T20:46:19.941381Z DEBUG turnstone::scry_input: begin native mouse delivery input=MouseInput { kind: LeftButtonUp, virtual_keys: MouseVirtualKeys { control: false, shift: false, left_button: false, middle_button: false, right_button: false, x_button1: false, x_button2: false }, mouse_data: 0, point: (240, 170) }
+2026-10-05T20:46:19.941460Z DEBUG turnstone::scry_input: finished native mouse delivery ok=true

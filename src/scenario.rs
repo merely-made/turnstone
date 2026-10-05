@@ -338,7 +338,7 @@ fn parse_xy(s: &str) -> Option<(f32, f32)> {
 /// A name with no value set is a parse error (named by line), so a typo'd or
 /// forgotten export fails loudly instead of leaving a literal `${NAME}` to be
 /// matched against by accident.
-fn expand_env(line: &str, line_no: usize) -> Result<String, String> {
+pub(crate) fn expand_env(line: &str, line_no: usize) -> Result<String, String> {
     let mut out = String::with_capacity(line.len());
     let mut rest = line;
     while let Some(start) = rest.find("${") {

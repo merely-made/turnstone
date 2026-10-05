@@ -1,0 +1,1902 @@
+[
+  {
+    "conclusion": "success",
+    "databaseId": 33916390001,
+    "headSha": "d391a4cc2ab3a65154193498975198396ec4130d",
+    "jobs": [
+      {
+        "completedAt": "2026-09-04T20:46:39Z",
+        "conclusion": "success",
+        "databaseId": 101164431497,
+        "name": "Intel iMac registry-only triplet proof",
+        "startedAt": "2026-09-04T20:28:27Z",
+        "status": "completed",
+        "steps": [
+          {
+            "completedAt": "2026-09-04T20:28:30Z",
+            "conclusion": "success",
+            "name": "Set up job",
+            "number": 1,
+            "startedAt": "2026-09-04T20:28:27Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:28:32Z",
+            "conclusion": "success",
+            "name": "Run actions/checkout@v4",
+            "number": 2,
+            "startedAt": "2026-09-04T20:28:30Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:28:32Z",
+            "conclusion": "success",
+            "name": "Serialize host hardware use",
+            "number": 3,
+            "startedAt": "2026-09-04T20:28:32Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:28:36Z",
+            "conclusion": "success",
+            "name": "Run dtolnay/rust-toolchain@1.97.1",
+            "number": 4,
+            "startedAt": "2026-09-04T20:28:32Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:28:38Z",
+            "conclusion": "success",
+            "name": "Run actions/checkout@v4",
+            "number": 5,
+            "startedAt": "2026-09-04T20:28:36Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:28:39Z",
+            "conclusion": "success",
+            "name": "Run actions/checkout@v4",
+            "number": 6,
+            "startedAt": "2026-09-04T20:28:38Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:28:41Z",
+            "conclusion": "success",
+            "name": "Ensure CEF native build tools",
+            "number": 7,
+            "startedAt": "2026-09-04T20:28:39Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:28:42Z",
+            "conclusion": "success",
+            "name": "Install relocatable Python tooling",
+            "number": 8,
+            "startedAt": "2026-09-04T20:28:41Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:28:45Z",
+            "conclusion": "success",
+            "name": "Put Python 3.13 on PATH",
+            "number": 9,
+            "startedAt": "2026-09-04T20:28:42Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:28:58Z",
+            "conclusion": "success",
+            "name": "Stage and verify registry-only consumers",
+            "number": 10,
+            "startedAt": "2026-09-04T20:28:45Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:34:25Z",
+            "conclusion": "success",
+            "name": "Run Servo registry Graft live frame, input, and resize gate",
+            "number": 11,
+            "startedAt": "2026-09-04T20:28:58Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:35:51Z",
+            "conclusion": "success",
+            "name": "Run WKWebView live frame, input, resize, script, and cookie battery",
+            "number": 12,
+            "startedAt": "2026-09-04T20:34:25Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:46:29Z",
+            "conclusion": "success",
+            "name": "Build and run CEF host-owned-wgpu parity battery",
+            "number": 13,
+            "startedAt": "2026-09-04T20:35:51Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:46:31Z",
+            "conclusion": "success",
+            "name": "Run actions/upload-artifact@v4",
+            "number": 14,
+            "startedAt": "2026-09-04T20:46:29Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:46:31Z",
+            "conclusion": "success",
+            "name": "Post Install relocatable Python tooling",
+            "number": 24,
+            "startedAt": "2026-09-04T20:46:31Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:46:32Z",
+            "conclusion": "success",
+            "name": "Post Run actions/checkout@v4",
+            "number": 25,
+            "startedAt": "2026-09-04T20:46:31Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:46:33Z",
+            "conclusion": "success",
+            "name": "Post Run actions/checkout@v4",
+            "number": 26,
+            "startedAt": "2026-09-04T20:46:32Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:46:33Z",
+            "conclusion": "success",
+            "name": "Post Serialize host hardware use",
+            "number": 27,
+            "startedAt": "2026-09-04T20:46:33Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:46:34Z",
+            "conclusion": "success",
+            "name": "Post Run actions/checkout@v4",
+            "number": 28,
+            "startedAt": "2026-09-04T20:46:33Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:46:34Z",
+            "conclusion": "success",
+            "name": "Complete job",
+            "number": 29,
+            "startedAt": "2026-09-04T20:46:34Z",
+            "status": "completed"
+          }
+        ],
+        "url": "https://github.com/merely-made/wgpu-graft/actions/runs/33916390001/job/101164431497"
+      },
+      {
+        "completedAt": "2026-09-04T20:54:21Z",
+        "conclusion": "success",
+        "databaseId": 101164431682,
+        "name": "NVIDIA DX12 registry-only triplet proof",
+        "startedAt": "2026-09-04T20:28:27Z",
+        "status": "completed",
+        "steps": [
+          {
+            "completedAt": "2026-09-04T20:28:32Z",
+            "conclusion": "success",
+            "name": "Set up job",
+            "number": 1,
+            "startedAt": "2026-09-04T20:28:29Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:28:40Z",
+            "conclusion": "success",
+            "name": "Run actions/checkout@v4",
+            "number": 2,
+            "startedAt": "2026-09-04T20:28:32Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:28:40Z",
+            "conclusion": "success",
+            "name": "Serialize host hardware use",
+            "number": 3,
+            "startedAt": "2026-09-04T20:28:40Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:28:41Z",
+            "conclusion": "success",
+            "name": "Select Rust 1.97.1",
+            "number": 4,
+            "startedAt": "2026-09-04T20:28:40Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:28:47Z",
+            "conclusion": "success",
+            "name": "Run actions/checkout@v4",
+            "number": 5,
+            "startedAt": "2026-09-04T20:28:41Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:28:52Z",
+            "conclusion": "success",
+            "name": "Run actions/checkout@v4",
+            "number": 6,
+            "startedAt": "2026-09-04T20:28:47Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:28:53Z",
+            "conclusion": "success",
+            "name": "Record the physical adapter",
+            "number": 7,
+            "startedAt": "2026-09-04T20:28:52Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:29:35Z",
+            "conclusion": "success",
+            "name": "Stage and verify registry-only consumers",
+            "number": 8,
+            "startedAt": "2026-09-04T20:28:53Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:38:54Z",
+            "conclusion": "success",
+            "name": "Run Servo registry Graft live frame, input, and resize gate",
+            "number": 9,
+            "startedAt": "2026-09-04T20:29:35Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:41:29Z",
+            "conclusion": "success",
+            "name": "Run WebView2 live frame, input, resize, script, and cookie battery",
+            "number": 10,
+            "startedAt": "2026-09-04T20:38:54Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:54:04Z",
+            "conclusion": "success",
+            "name": "Build and run CEF host-owned-wgpu parity battery",
+            "number": 11,
+            "startedAt": "2026-09-04T20:41:29Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:54:07Z",
+            "conclusion": "success",
+            "name": "Run actions/upload-artifact@v4",
+            "number": 12,
+            "startedAt": "2026-09-04T20:54:04Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:54:11Z",
+            "conclusion": "success",
+            "name": "Post Run actions/checkout@v4",
+            "number": 21,
+            "startedAt": "2026-09-04T20:54:07Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:54:14Z",
+            "conclusion": "success",
+            "name": "Post Run actions/checkout@v4",
+            "number": 22,
+            "startedAt": "2026-09-04T20:54:11Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:54:14Z",
+            "conclusion": "success",
+            "name": "Post Serialize host hardware use",
+            "number": 23,
+            "startedAt": "2026-09-04T20:54:14Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:54:17Z",
+            "conclusion": "success",
+            "name": "Post Run actions/checkout@v4",
+            "number": 24,
+            "startedAt": "2026-09-04T20:54:14Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:54:17Z",
+            "conclusion": "success",
+            "name": "Complete job",
+            "number": 25,
+            "startedAt": "2026-09-04T20:54:17Z",
+            "status": "completed"
+          }
+        ],
+        "url": "https://github.com/merely-made/wgpu-graft/actions/runs/33916390001/job/101164431682"
+      },
+      {
+        "completedAt": "2026-09-04T20:47:32Z",
+        "conclusion": "success",
+        "databaseId": 101164431712,
+        "name": "RADV Vulkan registry-only triplet proof",
+        "startedAt": "2026-09-04T20:28:27Z",
+        "status": "completed",
+        "steps": [
+          {
+            "completedAt": "2026-09-04T20:28:30Z",
+            "conclusion": "success",
+            "name": "Set up job",
+            "number": 1,
+            "startedAt": "2026-09-04T20:28:27Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:28:31Z",
+            "conclusion": "success",
+            "name": "Run actions/checkout@v4",
+            "number": 2,
+            "startedAt": "2026-09-04T20:28:30Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:28:31Z",
+            "conclusion": "success",
+            "name": "Serialize host hardware use",
+            "number": 3,
+            "startedAt": "2026-09-04T20:28:31Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:28:31Z",
+            "conclusion": "success",
+            "name": "Run dtolnay/rust-toolchain@1.97.1",
+            "number": 4,
+            "startedAt": "2026-09-04T20:28:31Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:28:33Z",
+            "conclusion": "success",
+            "name": "Run actions/checkout@v4",
+            "number": 5,
+            "startedAt": "2026-09-04T20:28:31Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:28:33Z",
+            "conclusion": "success",
+            "name": "Run actions/checkout@v4",
+            "number": 6,
+            "startedAt": "2026-09-04T20:28:33Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:28:34Z",
+            "conclusion": "success",
+            "name": "Assert headed WPE prerequisites",
+            "number": 7,
+            "startedAt": "2026-09-04T20:28:33Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:28:46Z",
+            "conclusion": "success",
+            "name": "Stage and verify registry-only consumers",
+            "number": 8,
+            "startedAt": "2026-09-04T20:28:34Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:36:47Z",
+            "conclusion": "success",
+            "name": "Run Servo registry Graft live frame, input, and resize gate",
+            "number": 9,
+            "startedAt": "2026-09-04T20:28:46Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:37:50Z",
+            "conclusion": "success",
+            "name": "Run WPE host-owned-wgpu pixel, input, message, and cookie gates",
+            "number": 10,
+            "startedAt": "2026-09-04T20:36:47Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:47:23Z",
+            "conclusion": "success",
+            "name": "Build and run CEF host-owned-wgpu parity battery",
+            "number": 11,
+            "startedAt": "2026-09-04T20:37:50Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:47:25Z",
+            "conclusion": "success",
+            "name": "Run actions/upload-artifact@v4",
+            "number": 12,
+            "startedAt": "2026-09-04T20:47:23Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:47:25Z",
+            "conclusion": "success",
+            "name": "Post Run actions/checkout@v4",
+            "number": 21,
+            "startedAt": "2026-09-04T20:47:25Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:47:25Z",
+            "conclusion": "success",
+            "name": "Post Run actions/checkout@v4",
+            "number": 22,
+            "startedAt": "2026-09-04T20:47:25Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:47:25Z",
+            "conclusion": "success",
+            "name": "Post Serialize host hardware use",
+            "number": 23,
+            "startedAt": "2026-09-04T20:47:25Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:47:26Z",
+            "conclusion": "success",
+            "name": "Post Run actions/checkout@v4",
+            "number": 24,
+            "startedAt": "2026-09-04T20:47:25Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:47:26Z",
+            "conclusion": "success",
+            "name": "Complete job",
+            "number": 25,
+            "startedAt": "2026-09-04T20:47:26Z",
+            "status": "completed"
+          }
+        ],
+        "url": "https://github.com/merely-made/wgpu-graft/actions/runs/33916390001/job/101164431712"
+      },
+      {
+        "completedAt": "2026-09-04T20:41:47Z",
+        "conclusion": "success",
+        "databaseId": 101164431772,
+        "name": "Apple M4 registry-only triplet proof",
+        "startedAt": "2026-09-04T20:28:27Z",
+        "status": "completed",
+        "steps": [
+          {
+            "completedAt": "2026-09-04T20:28:30Z",
+            "conclusion": "success",
+            "name": "Set up job",
+            "number": 1,
+            "startedAt": "2026-09-04T20:28:27Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:28:31Z",
+            "conclusion": "success",
+            "name": "Run actions/checkout@v4",
+            "number": 2,
+            "startedAt": "2026-09-04T20:28:30Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:28:31Z",
+            "conclusion": "success",
+            "name": "Serialize host hardware use",
+            "number": 3,
+            "startedAt": "2026-09-04T20:28:31Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:28:33Z",
+            "conclusion": "success",
+            "name": "Run dtolnay/rust-toolchain@1.97.1",
+            "number": 4,
+            "startedAt": "2026-09-04T20:28:31Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:28:34Z",
+            "conclusion": "success",
+            "name": "Run actions/checkout@v4",
+            "number": 5,
+            "startedAt": "2026-09-04T20:28:33Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:28:35Z",
+            "conclusion": "success",
+            "name": "Run actions/checkout@v4",
+            "number": 6,
+            "startedAt": "2026-09-04T20:28:34Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:28:36Z",
+            "conclusion": "success",
+            "name": "Ensure CEF native build tools",
+            "number": 7,
+            "startedAt": "2026-09-04T20:28:35Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:28:36Z",
+            "conclusion": "success",
+            "name": "Install relocatable Python tooling",
+            "number": 8,
+            "startedAt": "2026-09-04T20:28:36Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:28:37Z",
+            "conclusion": "success",
+            "name": "Put Python 3.13 on PATH",
+            "number": 9,
+            "startedAt": "2026-09-04T20:28:36Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:28:46Z",
+            "conclusion": "success",
+            "name": "Stage and verify registry-only consumers",
+            "number": 10,
+            "startedAt": "2026-09-04T20:28:37Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:31:14Z",
+            "conclusion": "success",
+            "name": "Run Servo registry Graft live frame, input, and resize gate",
+            "number": 11,
+            "startedAt": "2026-09-04T20:28:46Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:32:17Z",
+            "conclusion": "success",
+            "name": "Run WKWebView live frame, input, resize, script, and cookie battery",
+            "number": 12,
+            "startedAt": "2026-09-04T20:31:14Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:41:39Z",
+            "conclusion": "success",
+            "name": "Build and run CEF host-owned-wgpu parity battery",
+            "number": 13,
+            "startedAt": "2026-09-04T20:32:17Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:41:41Z",
+            "conclusion": "success",
+            "name": "Run actions/upload-artifact@v4",
+            "number": 14,
+            "startedAt": "2026-09-04T20:41:39Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:41:41Z",
+            "conclusion": "success",
+            "name": "Post Install relocatable Python tooling",
+            "number": 24,
+            "startedAt": "2026-09-04T20:41:41Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:41:42Z",
+            "conclusion": "success",
+            "name": "Post Run actions/checkout@v4",
+            "number": 25,
+            "startedAt": "2026-09-04T20:41:41Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:41:42Z",
+            "conclusion": "success",
+            "name": "Post Run actions/checkout@v4",
+            "number": 26,
+            "startedAt": "2026-09-04T20:41:42Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:41:42Z",
+            "conclusion": "success",
+            "name": "Post Serialize host hardware use",
+            "number": 27,
+            "startedAt": "2026-09-04T20:41:42Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:41:42Z",
+            "conclusion": "success",
+            "name": "Post Run actions/checkout@v4",
+            "number": 28,
+            "startedAt": "2026-09-04T20:41:42Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-09-04T20:41:43Z",
+            "conclusion": "success",
+            "name": "Complete job",
+            "number": 29,
+            "startedAt": "2026-09-04T20:41:42Z",
+            "status": "completed"
+          }
+        ],
+        "url": "https://github.com/merely-made/wgpu-graft/actions/runs/33916390001/job/101164431772"
+      }
+    ],
+    "status": "completed",
+    "url": "https://github.com/merely-made/wgpu-graft/actions/runs/33916390001"
+  },
+  {
+    "conclusion": "success",
+    "databaseId": 37205146754,
+    "headSha": "65d057def7db2b5034add6e316cbd51d97c163a1",
+    "jobs": [
+      {
+        "completedAt": "2026-10-04T13:30:04Z",
+        "conclusion": "success",
+        "databaseId": 111444678344,
+        "name": "Intel iMac Metal parity battery",
+        "startedAt": "2026-10-04T13:18:24Z",
+        "status": "completed",
+        "steps": [
+          {
+            "completedAt": "2026-10-04T13:18:27Z",
+            "conclusion": "success",
+            "name": "Set up job",
+            "number": 1,
+            "startedAt": "2026-10-04T13:18:25Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T13:18:29Z",
+            "conclusion": "success",
+            "name": "Run actions/checkout@v7",
+            "number": 2,
+            "startedAt": "2026-10-04T13:18:27Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T13:18:32Z",
+            "conclusion": "success",
+            "name": "Fetch the shared host hardware lock",
+            "number": 3,
+            "startedAt": "2026-10-04T13:18:29Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T13:18:32Z",
+            "conclusion": "success",
+            "name": "Serialize host hardware use",
+            "number": 4,
+            "startedAt": "2026-10-04T13:18:32Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T13:18:36Z",
+            "conclusion": "success",
+            "name": "Run dtolnay/rust-toolchain@1.97.1",
+            "number": 5,
+            "startedAt": "2026-10-04T13:18:32Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T13:18:40Z",
+            "conclusion": "success",
+            "name": "Ensure CEF native build tools",
+            "number": 6,
+            "startedAt": "2026-10-04T13:18:36Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T13:19:32Z",
+            "conclusion": "success",
+            "name": "Build the CEF app bundle",
+            "number": 7,
+            "startedAt": "2026-10-04T13:18:40Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T13:29:58Z",
+            "conclusion": "success",
+            "name": "Run the capability battery",
+            "number": 8,
+            "startedAt": "2026-10-04T13:19:32Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T13:29:59Z",
+            "conclusion": "success",
+            "name": "Run actions/upload-artifact@v4",
+            "number": 9,
+            "startedAt": "2026-10-04T13:29:58Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T13:29:59Z",
+            "conclusion": "success",
+            "name": "Post Serialize host hardware use",
+            "number": 16,
+            "startedAt": "2026-10-04T13:29:59Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T13:30:00Z",
+            "conclusion": "success",
+            "name": "Post Fetch the shared host hardware lock",
+            "number": 17,
+            "startedAt": "2026-10-04T13:29:59Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T13:30:01Z",
+            "conclusion": "success",
+            "name": "Post Run actions/checkout@v7",
+            "number": 18,
+            "startedAt": "2026-10-04T13:30:00Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T13:30:01Z",
+            "conclusion": "success",
+            "name": "Complete job",
+            "number": 19,
+            "startedAt": "2026-10-04T13:30:01Z",
+            "status": "completed"
+          }
+        ],
+        "url": "https://github.com/merely-made/wgpu-weld/actions/runs/37205146754/job/111444678344"
+      },
+      {
+        "completedAt": "2026-10-04T13:29:26Z",
+        "conclusion": "success",
+        "databaseId": 111444678481,
+        "name": "Apple M4 Metal parity battery",
+        "startedAt": "2026-10-04T13:18:24Z",
+        "status": "completed",
+        "steps": [
+          {
+            "completedAt": "2026-10-04T13:18:27Z",
+            "conclusion": "success",
+            "name": "Set up job",
+            "number": 1,
+            "startedAt": "2026-10-04T13:18:25Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T13:18:28Z",
+            "conclusion": "success",
+            "name": "Run actions/checkout@v7",
+            "number": 2,
+            "startedAt": "2026-10-04T13:18:27Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T13:18:30Z",
+            "conclusion": "success",
+            "name": "Fetch the shared host hardware lock",
+            "number": 3,
+            "startedAt": "2026-10-04T13:18:28Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T13:18:30Z",
+            "conclusion": "success",
+            "name": "Serialize host hardware use",
+            "number": 4,
+            "startedAt": "2026-10-04T13:18:30Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T13:18:32Z",
+            "conclusion": "success",
+            "name": "Run dtolnay/rust-toolchain@1.97.1",
+            "number": 5,
+            "startedAt": "2026-10-04T13:18:30Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T13:18:33Z",
+            "conclusion": "success",
+            "name": "Ensure CEF native build tools",
+            "number": 6,
+            "startedAt": "2026-10-04T13:18:32Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T13:18:51Z",
+            "conclusion": "success",
+            "name": "Build the CEF app bundle",
+            "number": 7,
+            "startedAt": "2026-10-04T13:18:33Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T13:29:20Z",
+            "conclusion": "success",
+            "name": "Run the capability battery",
+            "number": 8,
+            "startedAt": "2026-10-04T13:18:51Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T13:29:21Z",
+            "conclusion": "success",
+            "name": "Run actions/upload-artifact@v4",
+            "number": 9,
+            "startedAt": "2026-10-04T13:29:20Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T13:29:22Z",
+            "conclusion": "success",
+            "name": "Post Serialize host hardware use",
+            "number": 16,
+            "startedAt": "2026-10-04T13:29:21Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T13:29:22Z",
+            "conclusion": "success",
+            "name": "Post Fetch the shared host hardware lock",
+            "number": 17,
+            "startedAt": "2026-10-04T13:29:22Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T13:29:22Z",
+            "conclusion": "success",
+            "name": "Post Run actions/checkout@v7",
+            "number": 18,
+            "startedAt": "2026-10-04T13:29:22Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T13:29:23Z",
+            "conclusion": "success",
+            "name": "Complete job",
+            "number": 19,
+            "startedAt": "2026-10-04T13:29:22Z",
+            "status": "completed"
+          }
+        ],
+        "url": "https://github.com/merely-made/wgpu-weld/actions/runs/37205146754/job/111444678481"
+      },
+      {
+        "completedAt": "2026-10-05T09:34:01Z",
+        "conclusion": "success",
+        "databaseId": 111444678484,
+        "name": "NVIDIA DX12 parity battery",
+        "startedAt": "2026-10-05T09:19:56Z",
+        "status": "completed",
+        "steps": [
+          {
+            "completedAt": "2026-10-05T09:20:00Z",
+            "conclusion": "success",
+            "name": "Set up job",
+            "number": 1,
+            "startedAt": "2026-10-05T09:19:57Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-05T09:20:04Z",
+            "conclusion": "success",
+            "name": "Run actions/checkout@v7",
+            "number": 2,
+            "startedAt": "2026-10-05T09:20:00Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-05T09:20:09Z",
+            "conclusion": "success",
+            "name": "Fetch the shared host hardware lock",
+            "number": 3,
+            "startedAt": "2026-10-05T09:20:04Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-05T09:20:09Z",
+            "conclusion": "success",
+            "name": "Serialize host hardware use",
+            "number": 4,
+            "startedAt": "2026-10-05T09:20:09Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-05T09:22:41Z",
+            "conclusion": "success",
+            "name": "Build the sandboxed CEF bundle",
+            "number": 5,
+            "startedAt": "2026-10-05T09:20:09Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-05T09:33:48Z",
+            "conclusion": "success",
+            "name": "Run the capability battery",
+            "number": 6,
+            "startedAt": "2026-10-05T09:22:41Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-05T09:33:52Z",
+            "conclusion": "success",
+            "name": "Run actions/upload-artifact@v4",
+            "number": 7,
+            "startedAt": "2026-10-05T09:33:48Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-05T09:33:52Z",
+            "conclusion": "success",
+            "name": "Post Serialize host hardware use",
+            "number": 12,
+            "startedAt": "2026-10-05T09:33:52Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-05T09:33:55Z",
+            "conclusion": "success",
+            "name": "Post Fetch the shared host hardware lock",
+            "number": 13,
+            "startedAt": "2026-10-05T09:33:52Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-05T09:33:58Z",
+            "conclusion": "success",
+            "name": "Post Run actions/checkout@v7",
+            "number": 14,
+            "startedAt": "2026-10-05T09:33:55Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-05T09:34:00Z",
+            "conclusion": "success",
+            "name": "Complete job",
+            "number": 15,
+            "startedAt": "2026-10-05T09:33:58Z",
+            "status": "completed"
+          }
+        ],
+        "url": "https://github.com/merely-made/wgpu-weld/actions/runs/37205146754/job/111444678484"
+      },
+      {
+        "completedAt": "2026-10-04T13:29:00Z",
+        "conclusion": "success",
+        "databaseId": 111444678524,
+        "name": "RADV Wayland parity and popup battery",
+        "startedAt": "2026-10-04T13:18:25Z",
+        "status": "completed",
+        "steps": [
+          {
+            "completedAt": "2026-10-04T13:18:28Z",
+            "conclusion": "success",
+            "name": "Set up job",
+            "number": 1,
+            "startedAt": "2026-10-04T13:18:26Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T13:18:29Z",
+            "conclusion": "success",
+            "name": "Run actions/checkout@v7",
+            "number": 2,
+            "startedAt": "2026-10-04T13:18:28Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T13:18:31Z",
+            "conclusion": "success",
+            "name": "Fetch the shared host hardware lock",
+            "number": 3,
+            "startedAt": "2026-10-04T13:18:29Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T13:18:31Z",
+            "conclusion": "success",
+            "name": "Serialize host hardware use",
+            "number": 4,
+            "startedAt": "2026-10-04T13:18:31Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T13:18:34Z",
+            "conclusion": "success",
+            "name": "Run dtolnay/rust-toolchain@1.97.1",
+            "number": 5,
+            "startedAt": "2026-10-04T13:18:31Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T13:28:55Z",
+            "conclusion": "success",
+            "name": "Run the capability battery",
+            "number": 6,
+            "startedAt": "2026-10-04T13:18:34Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T13:28:57Z",
+            "conclusion": "success",
+            "name": "Run actions/upload-artifact@v4",
+            "number": 7,
+            "startedAt": "2026-10-04T13:28:55Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T13:28:57Z",
+            "conclusion": "success",
+            "name": "Post Serialize host hardware use",
+            "number": 12,
+            "startedAt": "2026-10-04T13:28:57Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T13:28:57Z",
+            "conclusion": "success",
+            "name": "Post Fetch the shared host hardware lock",
+            "number": 13,
+            "startedAt": "2026-10-04T13:28:57Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T13:28:57Z",
+            "conclusion": "success",
+            "name": "Post Run actions/checkout@v7",
+            "number": 14,
+            "startedAt": "2026-10-04T13:28:57Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T13:28:58Z",
+            "conclusion": "success",
+            "name": "Complete job",
+            "number": 15,
+            "startedAt": "2026-10-04T13:28:57Z",
+            "status": "completed"
+          }
+        ],
+        "url": "https://github.com/merely-made/wgpu-weld/actions/runs/37205146754/job/111444678524"
+      }
+    ],
+    "status": "completed",
+    "url": "https://github.com/merely-made/wgpu-weld/actions/runs/37205146754"
+  },
+  {
+    "conclusion": "failure",
+    "databaseId": 37197779933,
+    "headSha": "65d057def7db2b5034add6e316cbd51d97c163a1",
+    "jobs": [
+      {
+        "completedAt": "2026-10-04T11:11:28Z",
+        "conclusion": "success",
+        "databaseId": 111423111496,
+        "name": "Intel iMac Metal pixel fixture",
+        "startedAt": "2026-10-04T11:09:44Z",
+        "status": "completed",
+        "steps": [
+          {
+            "completedAt": "2026-10-04T11:09:46Z",
+            "conclusion": "success",
+            "name": "Set up job",
+            "number": 1,
+            "startedAt": "2026-10-04T11:09:45Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T11:09:48Z",
+            "conclusion": "success",
+            "name": "Run actions/checkout@v7",
+            "number": 2,
+            "startedAt": "2026-10-04T11:09:46Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T11:09:51Z",
+            "conclusion": "success",
+            "name": "Fetch the shared host hardware lock",
+            "number": 3,
+            "startedAt": "2026-10-04T11:09:48Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T11:09:51Z",
+            "conclusion": "success",
+            "name": "Serialize host hardware use",
+            "number": 4,
+            "startedAt": "2026-10-04T11:09:51Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T11:09:57Z",
+            "conclusion": "success",
+            "name": "Run dtolnay/rust-toolchain@1.97.1",
+            "number": 5,
+            "startedAt": "2026-10-04T11:09:51Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T11:09:59Z",
+            "conclusion": "success",
+            "name": "Ensure CEF native build tools",
+            "number": 6,
+            "startedAt": "2026-10-04T11:09:57Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T11:11:17Z",
+            "conclusion": "success",
+            "name": "Build the CEF app bundle",
+            "number": 7,
+            "startedAt": "2026-10-04T11:09:59Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T11:11:24Z",
+            "conclusion": "success",
+            "name": "Run deterministic CEF to IOSurface to Metal gate",
+            "number": 8,
+            "startedAt": "2026-10-04T11:11:17Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T11:11:25Z",
+            "conclusion": "success",
+            "name": "Post Serialize host hardware use",
+            "number": 14,
+            "startedAt": "2026-10-04T11:11:24Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T11:11:25Z",
+            "conclusion": "success",
+            "name": "Post Fetch the shared host hardware lock",
+            "number": 15,
+            "startedAt": "2026-10-04T11:11:25Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T11:11:26Z",
+            "conclusion": "success",
+            "name": "Post Run actions/checkout@v7",
+            "number": 16,
+            "startedAt": "2026-10-04T11:11:25Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T11:11:27Z",
+            "conclusion": "success",
+            "name": "Complete job",
+            "number": 17,
+            "startedAt": "2026-10-04T11:11:26Z",
+            "status": "completed"
+          }
+        ],
+        "url": "https://github.com/merely-made/wgpu-weld/actions/runs/37197779933/job/111423111496"
+      },
+      {
+        "completedAt": "2026-10-04T11:09:55Z",
+        "conclusion": "failure",
+        "databaseId": 111423111665,
+        "name": "RADV native Wayland pixel fixture",
+        "startedAt": "2026-10-04T11:09:44Z",
+        "status": "completed",
+        "steps": [
+          {
+            "completedAt": "2026-10-04T11:09:46Z",
+            "conclusion": "success",
+            "name": "Set up job",
+            "number": 1,
+            "startedAt": "2026-10-04T11:09:44Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T11:09:47Z",
+            "conclusion": "success",
+            "name": "Run actions/checkout@v7",
+            "number": 2,
+            "startedAt": "2026-10-04T11:09:46Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T11:09:48Z",
+            "conclusion": "success",
+            "name": "Fetch the shared host hardware lock",
+            "number": 3,
+            "startedAt": "2026-10-04T11:09:47Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T11:09:49Z",
+            "conclusion": "success",
+            "name": "Serialize host hardware use",
+            "number": 4,
+            "startedAt": "2026-10-04T11:09:48Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T11:09:52Z",
+            "conclusion": "success",
+            "name": "Run dtolnay/rust-toolchain@1.97.1",
+            "number": 5,
+            "startedAt": "2026-10-04T11:09:49Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T11:09:52Z",
+            "conclusion": "failure",
+            "name": "Assert the native Wayland session",
+            "number": 6,
+            "startedAt": "2026-10-04T11:09:52Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T11:09:52Z",
+            "conclusion": "skipped",
+            "name": "Run deterministic CEF to DMA-BUF to wgpu gate",
+            "number": 7,
+            "startedAt": "2026-10-04T11:09:52Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T11:09:52Z",
+            "conclusion": "success",
+            "name": "Post Serialize host hardware use",
+            "number": 12,
+            "startedAt": "2026-10-04T11:09:52Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T11:09:52Z",
+            "conclusion": "success",
+            "name": "Post Fetch the shared host hardware lock",
+            "number": 13,
+            "startedAt": "2026-10-04T11:09:52Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T11:09:52Z",
+            "conclusion": "success",
+            "name": "Post Run actions/checkout@v7",
+            "number": 14,
+            "startedAt": "2026-10-04T11:09:52Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T11:09:52Z",
+            "conclusion": "success",
+            "name": "Complete job",
+            "number": 15,
+            "startedAt": "2026-10-04T11:09:52Z",
+            "status": "completed"
+          }
+        ],
+        "url": "https://github.com/merely-made/wgpu-weld/actions/runs/37197779933/job/111423111665"
+      },
+      {
+        "completedAt": "2026-10-04T11:10:29Z",
+        "conclusion": "success",
+        "databaseId": 111423111753,
+        "name": "Apple M4 Metal pixel fixture",
+        "startedAt": "2026-10-04T11:09:44Z",
+        "status": "completed",
+        "steps": [
+          {
+            "completedAt": "2026-10-04T11:09:46Z",
+            "conclusion": "success",
+            "name": "Set up job",
+            "number": 1,
+            "startedAt": "2026-10-04T11:09:45Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T11:09:48Z",
+            "conclusion": "success",
+            "name": "Run actions/checkout@v7",
+            "number": 2,
+            "startedAt": "2026-10-04T11:09:46Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T11:09:49Z",
+            "conclusion": "success",
+            "name": "Fetch the shared host hardware lock",
+            "number": 3,
+            "startedAt": "2026-10-04T11:09:48Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T11:09:49Z",
+            "conclusion": "success",
+            "name": "Serialize host hardware use",
+            "number": 4,
+            "startedAt": "2026-10-04T11:09:49Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T11:09:51Z",
+            "conclusion": "success",
+            "name": "Run dtolnay/rust-toolchain@1.97.1",
+            "number": 5,
+            "startedAt": "2026-10-04T11:09:49Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T11:09:52Z",
+            "conclusion": "success",
+            "name": "Ensure CEF native build tools",
+            "number": 6,
+            "startedAt": "2026-10-04T11:09:51Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T11:10:23Z",
+            "conclusion": "success",
+            "name": "Build the CEF app bundle",
+            "number": 7,
+            "startedAt": "2026-10-04T11:09:52Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T11:10:26Z",
+            "conclusion": "success",
+            "name": "Run deterministic CEF to IOSurface to Metal gate",
+            "number": 8,
+            "startedAt": "2026-10-04T11:10:23Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T11:10:26Z",
+            "conclusion": "success",
+            "name": "Post Serialize host hardware use",
+            "number": 14,
+            "startedAt": "2026-10-04T11:10:26Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T11:10:26Z",
+            "conclusion": "success",
+            "name": "Post Fetch the shared host hardware lock",
+            "number": 15,
+            "startedAt": "2026-10-04T11:10:26Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T11:10:26Z",
+            "conclusion": "success",
+            "name": "Post Run actions/checkout@v7",
+            "number": 16,
+            "startedAt": "2026-10-04T11:10:26Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T11:10:27Z",
+            "conclusion": "success",
+            "name": "Complete job",
+            "number": 17,
+            "startedAt": "2026-10-04T11:10:26Z",
+            "status": "completed"
+          }
+        ],
+        "url": "https://github.com/merely-made/wgpu-weld/actions/runs/37197779933/job/111423111753"
+      },
+      {
+        "completedAt": "2026-10-05T09:19:54Z",
+        "conclusion": "success",
+        "databaseId": 111423111810,
+        "name": "NVIDIA RTX 4060 DX12 pixel fixture",
+        "startedAt": "2026-10-05T09:17:49Z",
+        "status": "completed",
+        "steps": [
+          {
+            "completedAt": "2026-10-05T09:17:52Z",
+            "conclusion": "success",
+            "name": "Set up job",
+            "number": 1,
+            "startedAt": "2026-10-05T09:17:51Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-05T09:17:57Z",
+            "conclusion": "success",
+            "name": "Run actions/checkout@v7",
+            "number": 2,
+            "startedAt": "2026-10-05T09:17:52Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-05T09:18:01Z",
+            "conclusion": "success",
+            "name": "Fetch the shared host hardware lock",
+            "number": 3,
+            "startedAt": "2026-10-05T09:17:57Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-05T09:18:02Z",
+            "conclusion": "success",
+            "name": "Serialize host hardware use",
+            "number": 4,
+            "startedAt": "2026-10-05T09:18:01Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-05T09:18:03Z",
+            "conclusion": "success",
+            "name": "Assert the provisioned Rust toolchain",
+            "number": 5,
+            "startedAt": "2026-10-05T09:18:02Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-05T09:18:03Z",
+            "conclusion": "success",
+            "name": "Record the physical adapter",
+            "number": 6,
+            "startedAt": "2026-10-05T09:18:03Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-05T09:19:48Z",
+            "conclusion": "success",
+            "name": "Run sandboxed CEF to DX12 to wgpu gate",
+            "number": 7,
+            "startedAt": "2026-10-05T09:18:03Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-05T09:19:48Z",
+            "conclusion": "success",
+            "name": "Post Serialize host hardware use",
+            "number": 12,
+            "startedAt": "2026-10-05T09:19:48Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-05T09:19:50Z",
+            "conclusion": "success",
+            "name": "Post Fetch the shared host hardware lock",
+            "number": 13,
+            "startedAt": "2026-10-05T09:19:48Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-05T09:19:53Z",
+            "conclusion": "success",
+            "name": "Post Run actions/checkout@v7",
+            "number": 14,
+            "startedAt": "2026-10-05T09:19:50Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-05T09:19:53Z",
+            "conclusion": "success",
+            "name": "Complete job",
+            "number": 15,
+            "startedAt": "2026-10-05T09:19:53Z",
+            "status": "completed"
+          }
+        ],
+        "url": "https://github.com/merely-made/wgpu-weld/actions/runs/37197779933/job/111423111810"
+      }
+    ],
+    "status": "completed",
+    "url": "https://github.com/merely-made/wgpu-weld/actions/runs/37197779933"
+  },
+  {
+    "conclusion": "failure",
+    "databaseId": 37210994529,
+    "headSha": "99c0a9deb783a9e9607278123d9b65c62f61e3a3",
+    "jobs": [
+      {
+        "completedAt": "2026-10-04T14:55:27Z",
+        "conclusion": "success",
+        "databaseId": 111461991096,
+        "name": "Apple M4 WKWebView and ScreenCaptureKit battery",
+        "startedAt": "2026-10-04T14:54:26Z",
+        "status": "completed",
+        "steps": [
+          {
+            "completedAt": "2026-10-04T14:54:28Z",
+            "conclusion": "success",
+            "name": "Set up job",
+            "number": 1,
+            "startedAt": "2026-10-04T14:54:27Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T14:54:29Z",
+            "conclusion": "success",
+            "name": "Run actions/checkout@v7",
+            "number": 2,
+            "startedAt": "2026-10-04T14:54:28Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T14:54:31Z",
+            "conclusion": "success",
+            "name": "Fetch the shared host hardware lock",
+            "number": 3,
+            "startedAt": "2026-10-04T14:54:29Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T14:54:31Z",
+            "conclusion": "success",
+            "name": "Serialize host hardware use",
+            "number": 4,
+            "startedAt": "2026-10-04T14:54:31Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T14:54:33Z",
+            "conclusion": "success",
+            "name": "Run dtolnay/rust-toolchain@1.97.1",
+            "number": 5,
+            "startedAt": "2026-10-04T14:54:31Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T14:55:23Z",
+            "conclusion": "success",
+            "name": "Run WKWebView assertions including live capture and resize",
+            "number": 6,
+            "startedAt": "2026-10-04T14:54:33Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T14:55:23Z",
+            "conclusion": "success",
+            "name": "Post Serialize host hardware use",
+            "number": 10,
+            "startedAt": "2026-10-04T14:55:23Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T14:55:23Z",
+            "conclusion": "success",
+            "name": "Post Fetch the shared host hardware lock",
+            "number": 11,
+            "startedAt": "2026-10-04T14:55:23Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T14:55:24Z",
+            "conclusion": "success",
+            "name": "Post Run actions/checkout@v7",
+            "number": 12,
+            "startedAt": "2026-10-04T14:55:23Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T14:55:24Z",
+            "conclusion": "success",
+            "name": "Complete job",
+            "number": 13,
+            "startedAt": "2026-10-04T14:55:24Z",
+            "status": "completed"
+          }
+        ],
+        "url": "https://github.com/merely-made/wgpu-scry/actions/runs/37210994529/job/111461991096"
+      },
+      {
+        "completedAt": "2026-10-05T09:36:44Z",
+        "conclusion": "success",
+        "databaseId": 111461991259,
+        "name": "NVIDIA WebView2 assertion battery",
+        "startedAt": "2026-10-05T09:34:02Z",
+        "status": "completed",
+        "steps": [
+          {
+            "completedAt": "2026-10-05T09:34:06Z",
+            "conclusion": "success",
+            "name": "Set up job",
+            "number": 1,
+            "startedAt": "2026-10-05T09:34:04Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-05T09:34:10Z",
+            "conclusion": "success",
+            "name": "Run actions/checkout@v7",
+            "number": 2,
+            "startedAt": "2026-10-05T09:34:06Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-05T09:34:15Z",
+            "conclusion": "success",
+            "name": "Fetch the shared host hardware lock",
+            "number": 3,
+            "startedAt": "2026-10-05T09:34:10Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-05T09:34:15Z",
+            "conclusion": "success",
+            "name": "Serialize host hardware use",
+            "number": 4,
+            "startedAt": "2026-10-05T09:34:15Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-05T09:34:17Z",
+            "conclusion": "success",
+            "name": "Assert the provisioned toolchain and adapter",
+            "number": 5,
+            "startedAt": "2026-10-05T09:34:15Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-05T09:36:34Z",
+            "conclusion": "success",
+            "name": "Run browser-shape assertions",
+            "number": 6,
+            "startedAt": "2026-10-05T09:34:17Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-05T09:36:37Z",
+            "conclusion": "success",
+            "name": "Run DX12 capture and scale assertions",
+            "number": 7,
+            "startedAt": "2026-10-05T09:36:34Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-05T09:36:37Z",
+            "conclusion": "success",
+            "name": "Post Serialize host hardware use",
+            "number": 12,
+            "startedAt": "2026-10-05T09:36:37Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-05T09:36:40Z",
+            "conclusion": "success",
+            "name": "Post Fetch the shared host hardware lock",
+            "number": 13,
+            "startedAt": "2026-10-05T09:36:37Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-05T09:36:43Z",
+            "conclusion": "success",
+            "name": "Post Run actions/checkout@v7",
+            "number": 14,
+            "startedAt": "2026-10-05T09:36:40Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-05T09:36:43Z",
+            "conclusion": "success",
+            "name": "Complete job",
+            "number": 15,
+            "startedAt": "2026-10-05T09:36:43Z",
+            "status": "completed"
+          }
+        ],
+        "url": "https://github.com/merely-made/wgpu-scry/actions/runs/37210994529/job/111461991259"
+      },
+      {
+        "completedAt": "2026-10-04T14:54:39Z",
+        "conclusion": "failure",
+        "databaseId": 111461991285,
+        "name": "RADV WPE to Vulkan pixel gate",
+        "startedAt": "2026-10-04T14:54:26Z",
+        "status": "completed",
+        "steps": [
+          {
+            "completedAt": "2026-10-04T14:54:30Z",
+            "conclusion": "success",
+            "name": "Set up job",
+            "number": 1,
+            "startedAt": "2026-10-04T14:54:27Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T14:54:30Z",
+            "conclusion": "success",
+            "name": "Run actions/checkout@v7",
+            "number": 2,
+            "startedAt": "2026-10-04T14:54:30Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T14:54:32Z",
+            "conclusion": "success",
+            "name": "Fetch the shared host hardware lock",
+            "number": 3,
+            "startedAt": "2026-10-04T14:54:30Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T14:54:32Z",
+            "conclusion": "success",
+            "name": "Serialize host hardware use",
+            "number": 4,
+            "startedAt": "2026-10-04T14:54:32Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T14:54:36Z",
+            "conclusion": "success",
+            "name": "Run dtolnay/rust-toolchain@1.97.1",
+            "number": 5,
+            "startedAt": "2026-10-04T14:54:32Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T14:54:36Z",
+            "conclusion": "failure",
+            "name": "Assert the native Wayland and WPE environment",
+            "number": 6,
+            "startedAt": "2026-10-04T14:54:36Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T14:54:36Z",
+            "conclusion": "skipped",
+            "name": "Run WPE DMABUF to Vulkan pixel gate",
+            "number": 7,
+            "startedAt": "2026-10-04T14:54:36Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T14:54:36Z",
+            "conclusion": "skipped",
+            "name": "Run WPE page-side input gate",
+            "number": 8,
+            "startedAt": "2026-10-04T14:54:36Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T14:54:36Z",
+            "conclusion": "success",
+            "name": "Post Serialize host hardware use",
+            "number": 14,
+            "startedAt": "2026-10-04T14:54:36Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T14:54:36Z",
+            "conclusion": "success",
+            "name": "Post Fetch the shared host hardware lock",
+            "number": 15,
+            "startedAt": "2026-10-04T14:54:36Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T14:54:36Z",
+            "conclusion": "success",
+            "name": "Post Run actions/checkout@v7",
+            "number": 16,
+            "startedAt": "2026-10-04T14:54:36Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T14:54:36Z",
+            "conclusion": "success",
+            "name": "Complete job",
+            "number": 17,
+            "startedAt": "2026-10-04T14:54:36Z",
+            "status": "completed"
+          }
+        ],
+        "url": "https://github.com/merely-made/wgpu-scry/actions/runs/37210994529/job/111461991285"
+      },
+      {
+        "completedAt": "2026-10-04T14:56:04Z",
+        "conclusion": "failure",
+        "databaseId": 111461991310,
+        "name": "Intel iMac WKWebView and ScreenCaptureKit battery",
+        "startedAt": "2026-10-04T14:54:26Z",
+        "status": "completed",
+        "steps": [
+          {
+            "completedAt": "2026-10-04T14:54:29Z",
+            "conclusion": "success",
+            "name": "Set up job",
+            "number": 1,
+            "startedAt": "2026-10-04T14:54:27Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T14:54:31Z",
+            "conclusion": "success",
+            "name": "Run actions/checkout@v7",
+            "number": 2,
+            "startedAt": "2026-10-04T14:54:29Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T14:54:33Z",
+            "conclusion": "success",
+            "name": "Fetch the shared host hardware lock",
+            "number": 3,
+            "startedAt": "2026-10-04T14:54:31Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T14:54:33Z",
+            "conclusion": "success",
+            "name": "Serialize host hardware use",
+            "number": 4,
+            "startedAt": "2026-10-04T14:54:33Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T14:54:36Z",
+            "conclusion": "success",
+            "name": "Run dtolnay/rust-toolchain@1.97.1",
+            "number": 5,
+            "startedAt": "2026-10-04T14:54:33Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T14:56:00Z",
+            "conclusion": "failure",
+            "name": "Run WKWebView assertions including live capture and resize",
+            "number": 6,
+            "startedAt": "2026-10-04T14:54:36Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T14:56:00Z",
+            "conclusion": "success",
+            "name": "Post Serialize host hardware use",
+            "number": 10,
+            "startedAt": "2026-10-04T14:56:00Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T14:56:01Z",
+            "conclusion": "success",
+            "name": "Post Fetch the shared host hardware lock",
+            "number": 11,
+            "startedAt": "2026-10-04T14:56:00Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T14:56:02Z",
+            "conclusion": "success",
+            "name": "Post Run actions/checkout@v7",
+            "number": 12,
+            "startedAt": "2026-10-04T14:56:01Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-10-04T14:56:02Z",
+            "conclusion": "success",
+            "name": "Complete job",
+            "number": 13,
+            "startedAt": "2026-10-04T14:56:02Z",
+            "status": "completed"
+          }
+        ],
+        "url": "https://github.com/merely-made/wgpu-scry/actions/runs/37210994529/job/111461991310"
+      }
+    ],
+    "status": "completed",
+    "url": "https://github.com/merely-made/wgpu-scry/actions/runs/37210994529"
+  }
+]

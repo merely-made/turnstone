@@ -1,7 +1,10 @@
 # Turnstone engine adoption — arbitrary engines, selectable in the app
 
 **Date:** 2026-08-03
-**Status:** scoped with Mark. The ask: arbitrary selection of engines,
+**Status, 2026-10-05:** in progress; the current browser consumer sequence is
+the October appendix of the [user-agent taxonomy](2026-08-03_user_agent_taxonomy_plan.md).
+This plan retains the engine-specific construction and sandbox evidence.
+The ask: arbitrary selection of engines,
 possible and selectable within the app, including genet with its rungs
 (placeholder where a rung cannot spawn yet, best effort, for testing and
 design-to-shape purposes).
@@ -16,21 +19,25 @@ and meerkat is deleted, so the receipts are gone while the model stands.
 Turnstone independently re-landed the foundation. This plan binds the
 remaining model to Turnstone's actual state; it does not re-decide it.
 
-## Current state (verified 2026-08-20)
+## Current state (rechecked 2026-10-05)
 
 - **Routing**: the content lane routes through `inker::EngineRoutePolicy`
   with `pinned_engine` support ([effects.rs](../src/shell/effects.rs)).
-- **Session engines registered**: `genet.livery` (LiverySessionEngine), the
+- **Session engines registered**: `genet.livery` (LiverySessionEngine), Reader, the
   native smolweb lanes, and the Knot authoring engine, in a
   `SessionRegistry<netrender::Scene>` ([mod.rs](../src/shell/mod.rs)).
-- **Picker**: the Apparatus pane's viewer radio respawns live content
-  through the pinned engine. `VIEWER_OPTIONS` has Auto and genet.livery; a
-  Windows `--features weld` build adds weld.chromium. Persisted `genet.web`
-  pins migrate to `genet.livery` when their session is adopted.
+- **Picker**: Inspector owns viewer changes. The initial October audit found
+  a hardcoded Auto/Livery/Reader list, with Weld added by feature, and unknown
+  saved pins displayed as Auto. The local B0 patch replaces that with a registry-backed
+  inventory and explicit unavailability; its verification is recorded in the
+  taxonomy progress log. Persisted `genet.web` pins still migrate to
+  `genet.livery` when their session is adopted.
 - **Surface engines**: the Windows Weld first cut is now wired behind
   `--features weld`: an inker `SurfaceEngineRegistry`, `weld.chromium`
   producer map, D3D12 transferred-handle import cache, primary-window
-  composition and pointer/key routing. Scrying and graft remain unregistered.
+  composition and pointer/key routing. The local Windows Scry consumer is
+  wired behind `--features scry`; native qualification is recorded below.
+  Servo/Graft remains unconstructed.
   [2026-07-18_meerkat_harvest.md](2026-07-18_meerkat_harvest.md) and git
   history are the donors.
 - **Compositor**: the shell already composes per-surface textures via
@@ -40,7 +47,9 @@ remaining model to Turnstone's actual state; it does not re-decide it.
 - **Scripted lane**: `genet_documents::ScriptedSessionEngine` exists;
   Turnstone's `piccolo` feature pulls the script-engine crates but registers
   no scripted content engine.
-- **Features**: `wasm` and `piccolo` only. No engine features.
+- **Features**: `wasm`, `piccolo`, `scry` and `weld`. The Weld producer is constructed
+  lazily on Windows after the host device and CEF runtime path are available.
+  A feature build alone is not a successful runtime construction receipt.
 
 ## The model, restated for Turnstone
 
@@ -50,7 +59,7 @@ Three engine kinds, two of them live here today:
 |---|---|---|---|
 | Document | `EngineRegistry` | `EngineDocument` blocks | via nematic lanes (cards/capture) |
 | Session | `SessionRegistry<Scene>` | paint scenes | live: livery, smolweb, knot |
-| Surface | `SurfaceEngineRegistry` | GPU texture stream | Windows Weld first cut behind `weld`; scrying and graft absent |
+| Surface | `SurfaceEngineRegistry` | GPU texture stream | Windows Weld behind `weld`, local Windows Scry behind `scry`; Servo/Graft absent |
 
 "Genet with its rungs" means the genet engine's capability ladder is exposed
 as selectable lanes rather than one opaque entry: `genet.livery` (clean-room
@@ -66,7 +75,7 @@ row never pretends to spawn.
 
 ### E0. Registry-driven picker
 
-Replace the hardcoded `VIEWER_OPTIONS` array: the Apparatus viewer enumerates
+Replace the hardcoded `VIEWER_OPTIONS` array: the Inspector viewer enumerates
 engine ids from the registries the shell actually holds, plus declared-but-
 unavailable entries with their reason. Auto stays row zero. The picker shows
 kind (document/session/surface) so a surface pick reads as the black-box tier
@@ -91,7 +100,7 @@ feature.
 
 ### E2. Surface engines (scrying, graft, weld)
 
-One cargo feature per crate (`scrying`, `graft`, `weld`), per the picker
+One cargo feature per consumer (`scry`, `graft`, `weld`), per the picker
 plan's build-tier decision. Work:
 
 1. A `SurfaceEngineRegistry` beside the session registry in the shell.
@@ -109,10 +118,54 @@ Route integration is already there (`scrying.web` is a routable id, kept out
 of default policy, reachable by pin), so E0's picker is the activation
 surface.
 
-Done when: with `--features scrying`, pinning `scrying.web` on a node shows
+Done when: with `--features scry`, pinning `scrying.web` on a node shows
 the system WebView's texture composited in that node's tile on Windows, and
 a scenario receipt captures it; graft and weld repeat the shape (their
 producers may land later, each behind its feature, disabled rows until then).
+
+#### E2-Scry Windows consumer (local source, cookie/presentation gates open)
+
+The optional adapter comes from Turnstone's existing Mere `bd5912fb` pin and
+uses published `scrying` 0.7.1 with wgpu 30. Existing family pins stay intact.
+`scrying.web` is constructed lazily on the UI thread against the primary
+window's device and queue. Producers share an owned offscreen composition root;
+each captures its own visual and persists an explicit per-node profile at
+`scry/webview2-profiles/<node>` under the data root.
+
+Each producer has a dedicated DX12 fence. Scry's producer-local fence counters
+cannot safely share one fence across pages. Owned frame payloads pass through
+the Scry/Graft importer, with an exact fence/metadata check and a wait for every
+paint, including a reused allocation. Replacement and teardown retire cached
+textures and synchronizers. Lazy capture/import failures retire the producer
+and report failed content rather than a blank live page.
+
+The host corrects the pinned adapter's mouse translation by using WebView2's
+mouse API for mouse events, retaining touch/pen routing and actual button state.
+Text and key forwarding use the existing producer seam; CDP input does not
+qualify OS IME. Browser shortcuts remain owned by Turnstone. Find, typed page
+zoom, correlated capture, credential answers, and an accessibility tree remain
+unavailable until the adapter forwards them. Native rehosting and different-size
+appearances of one node require separate gates.
+
+The [Windows consumer receipt](../docs/receipts/browser_scry_windows_20261005/README.md)
+owns the two-page, input, resize, engine-switch, teardown and restart evidence.
+The full native script completes without external repaint and fails only four
+cookie assertions; separate-process restoration passes pins, localStorage and
+saved text while failing two cookie assertions. Manual review also finds stale
+post-input images and blank reopened tiles despite live counters. B1 stays
+gated on cookie retention and current pixels. Source compilation and imported
+frame counts do not close B1 or the trio's release gates.
+
+The pinned adapter's Windows keyboard helper blocks while pumping messages.
+Early native runs stopped advancing, without establishing a blocked native
+stack. Turnstone uses the
+already-locked `webview2-com` 0.39.1 callback binding to queue CDP key commands
+with one request in flight. Completion callbacks update weak queue state;
+normal host polling submits the next command and reports errors or timeouts.
+This preserves command completion order without nesting a Windows message
+loop in the host handler. A retained host deadline restores progression without
+external repaint. Observed CDP Enter/text DOM outcomes are in the receipt;
+current-pixel, physical-keyboard and OS IME acceptance remain open.
 
 #### E2-Weld Windows first cut (implemented, headed receipt 2026-08-14)
 

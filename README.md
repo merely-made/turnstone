@@ -46,11 +46,16 @@ when working across repositories. Local config and locks are never committed.
 Advance Git pins as tested integration sets, rather than chasing every sibling
 commit. A local build and a redirect-free locked build are separate checks.
 
-The September 22 portable set is Mere `0e031fa5`, Genet `99769450`, Knot
-`8610058b` and Woodshed `f5a66493`. Knot and Redshank moved to that Mere and
-Genet first, so Knot's publishing/projection interfaces and Redshank's Cambium
-surface interface cross into Turnstone as one copy of each Mere type; the
-September 20 attempt failed because they still carried Mere `ca798151`.
+The local Windows system-webview implementation is optional:
+`cargo run --features scry`. It requires the WebView2 runtime and a D3D12 host;
+construction failures are reported by the browser. Two-page native qualification
+is gated on cookie retention and current captured pixels, as recorded in the
+[Scry consumer receipt](docs/receipts/browser_scry_windows_20261005/README.md).
+
+The current portable set is Mere `bd5912fb`, Genet `69a2383b`, Knot
+`3dfb70b0`, Woodshed `cefc903d` and Retinue `fa4f9250`. Knot and Redshank
+share the Mere/Genet surface family with Turnstone so retained-surface,
+publishing and projection interfaces have one source identity.
 Sibling mode uses current local Mere/Genet with a separate lock.
 The portable pins must advance as a tested set covering those interfaces.
 
@@ -63,19 +68,38 @@ library.
 
 What runs today: the graph canvas (pan / zoom / isometric, deterministic
 layout strategies); a summonable omnibar (find / go / actions lanes);
-back, forward, reload; live web content on two engine lanes (the genet stylo
-lane and the clean-room `genet.livery` lane) with a per-node viewer override;
-retargeting panes (Roster, Trail, Gloss, Inspector, Apparatus) and a
+back, forward, reload; clean-room `genet.livery`, Reader and native smolweb
+document lanes, plus optional Windows `weld.chromium`, with a per-node viewer
+override; retargeting panes (Roster, Trail, Gloss and Inspector) and a
 platen-tiled Workbench; multi-window lenses with identity-preserving pane and
 tile tear-out; and multi-session (`sessions/<id>/` with a switcher and
-restart restore). Every capability carries a self-driving scenario receipt
-(the shared taproot driver) plus an accessibility projection.
+restart restore). Dated scenario receipts record their exact native behavior
+and accessibility scope; broader human accessibility acceptance remains open.
 
-The peer-web product spine is not yet wired end to end. Personae identity,
-Murm, Gemot, shared graph/chat convergence, Knot communal sync, and Retinue
-carriage have separate executable receipts; Turnstone still lacks the live
-place port that composes them. The bounded integration plan is the
-[peer-web reframe](design_docs/2026-07-28_turnstone_peer_web_reframe.md).
+The live place port composes Personae, Gemot and shared graph/chat convergence.
+Recorded native place scenarios cover shared addresses, reader write refusal,
+reconnect and a founder-held Knot document edited through its projection.
+That document path depends on its holder being online. The exact scope is in
+the [place port plan](design_docs/2026-07-28_turnstone_place_port_plan.md).
+
+Current browser work follows the
+[user-agent taxonomy](design_docs/2026-08-03_user_agent_taxonomy_plan.md):
+engine availability and control truth first, then actual Scry and Servo/Graft
+consumers and the remaining hosted browser operations. Local Windows Scry
+source now constructs system webviews with per-node profiles and a shared
+offscreen composition root. Turnstone imports owned frame payloads on its
+existing device, with a dedicated fence per producer and a wait on every
+paint. The two-page scripts exercise DOM input, switching, resource teardown
+and separate-process localStorage/pin restoration. Full acceptance remains
+gated on lost native cookies and stale or blank captured pixels. Typed
+find/zoom, OS IME, lenses and native rehosting remain gates;
+Servo/Graft is not yet constructed. Independent trio release receipts do not
+qualify application integration here.
+
+The local October engine-picker patch derives choices from actual registries,
+uses human labels, and keeps unavailable saved pins visible with reasons. Its
+[qualification receipt](docs/receipts/browser_engine_inventory_20261005/README.md)
+records default/optional-Weld tests and the native picker scenario.
 
 The live plan is `design_docs/2026-07-10_turnstone_architecture_plan.md`; the
 founding brief is `design_docs/2026-07-08_turnstone_founding.md`.

@@ -1,0 +1,8 @@
+RESULT fail
+FAIL: assert row 'Viewer: scrying.web': trail [] roster [] inspector ["Title: Scry B", "URL: http://127.0.0.1:43123/page-b.html", "Node id: 467b7e57-ac33-43e3-a8bb-3164655b5cbb", "Addresses: 1", "Pinned: no", "Tags: none", "Import provenance: none", "Classifications: none", "Mime hint: text/html", "Viewer: auto", "Compat: no", "Content state: live", "Engine: genet.livery", "Find in page: supported", "Page zoom: supported", "Requested page zoom: 100%", "Page capture: unavailable: Livery sessions do not capture rendered pages", "Navigation controls: partial: the host owns document lineage, policy, and refetch", "Document title: Scry B", "Document structure: headings=2 outline=20", "Outgoing links: 1", "you: ReplaySetNodeTitleById", "you: ReplaySetNodeTitleById", "you: ReplaySetNodeTitleById", "you: ReplaySetEdgesByIds", "you: ReplayAssertRelationByIds"] arrange []
+FAIL: assert snap focused Contains 'Scry B | text= | clicks=0 | stored=': got 'Scry B  ·  127.0.0.1  http://127.0.0.1:43123/page-b.html'
+FAIL: assert snap host-surface-producers Eq '2': got '1'
+FAIL: assert snap host-scry-producers Eq '2': got '1'
+FAIL: assert snap host-scry-imported-pages Eq '2': got '1'
+FAIL: assert maximized: it is not
+captured 01_two_scry_pages

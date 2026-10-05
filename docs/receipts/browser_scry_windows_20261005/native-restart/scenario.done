@@ -1,0 +1,7 @@
+RESULT fail
+captured 01_restored_two_pages
+FAIL: assert snap browser-current Contains 'scry_A=A-retained': got 'Scry A | text=alpha | clicks=0 | stored=A-retained | cookie= | viewport=43x285@2 | scroll=0,0 | scrolled=no | wheels=0  http://127.0.0.1:43123/page-a.html'
+captured 02_restored_a_profile
+FAIL: assert snap browser-current Contains 'scry_B=B-retained': got 'Scry B | text=bravo | clicks=0 | stored=B-retained | cookie= | viewport=43x285@2 | scroll=0,0 | scrolled=no | wheels=0  http://127.0.0.1:43123/page-b.html'
+captured 03_restored_b_profile
+B1 run 2: restored pins, two-page layout, local storage, text and page cookies observed

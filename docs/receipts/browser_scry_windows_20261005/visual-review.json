@@ -1,0 +1,40 @@
+{
+  "recorded_utc": "2026-10-05T23:14:59.890268+00:00",
+  "method": "manual review of original application captures",
+  "source_manifest": "source-manifest.json",
+  "executable_sha256": "a245130a4becccd35c81c78a5108a2a74d0e980fa52744937711f4e678421948",
+  "full_presentation_accepted": false,
+  "observations": [
+    {
+      "image": "native-clipped/02_text_pointer_and_keyboard.png",
+      "finding": "A body shows alpha/clicks=2; B body shows bravo/clicks=1 while its current tab title and DOM assertion show clicks=2. Current input pixels are not qualified.",
+      "sha256": "43110e4fd93c944e54fcbc0ac530cea597c3097cefd168bb8c7772e79ee93184"
+    },
+    {
+      "image": "native-clipped/02e_both_scroll_reset.png",
+      "finding": "A captured body shows scroll=0,285, scrolled=yes, wheels=1; current DOM assertions pass scroll=0,0, scrolled=no, wheels=2. B body shows reset scroll=0,0/wheels=2. Distinct fences and equal positive frame/import/wait counters do not prove current pixels.",
+      "sha256": "5bd9e81169ba5acf28e34dd48ef02365a6546695be29cb850d742d9d23713f77"
+    },
+    {
+      "image": "native-clipped/05_a_reader_b_scry.png",
+      "finding": "Reader A and a visible Scry B body appear alongside the Inspector Reader selection. This is engine identity evidence only.",
+      "sha256": "a1c122c4f3df7194943a7825e8236f19c6bd5abb7610f8c5ed20757e795092f2"
+    },
+    {
+      "image": "native-clipped/08_ready_for_restart.png",
+      "finding": "Both native tiles are blank despite live/current DOM and localStorage assertions. Reopening presentation is not accepted.",
+      "sha256": "fb8ff6aec473bc65b9feec97801fd2845411a559a9b2107678c7aa37e0e47f7e"
+    },
+    {
+      "image": "native-restart/01_restored_two_pages.png",
+      "finding": "A body visibly contains alpha; B tile is blank. Restored model cells and live import counters do not qualify both images.",
+      "sha256": "b847a745dbbf52edbca19388114792efff9677b694f1317fee528cd02647b725"
+    },
+    {
+      "image": "native-restart/03_restored_b_profile.png",
+      "finding": "Both A and B bodies become visible; clipped input text alpha/bravo and system-webview selection are visible. Later visibility does not waive prior blank/current-image failures.",
+      "sha256": "48778a394c427eb30d4f219a680b9f866bbcc035145541a2e0818e20c86d7b4b"
+    }
+  ],
+  "root_cause": "not established; correlate native capture, importer, host composition and event-delivery generations"
+}

@@ -1,0 +1,7 @@
+{
+  "result": "aborted",
+  "recorded_utc": "2026-10-05T20:16:22.4552824Z",
+  "process_id": 42640,
+  "last_capture": "01_two_scry_pages.png",
+  "reason": "No input-stage capture or scenario sentinel after several minutes; published keyboard path pumps Windows messages from handler. Reentry is a source-grounded hypothesis, not a captured native stack."
+}
