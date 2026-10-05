@@ -194,7 +194,8 @@ function handleNativeIdentityResult(message) {
   setNativeIdentityControlsDisabled(false);
   const result = message.result;
   if (result.status === "imported_ssh_private") {
-    const replacement = result.replaced_existing ? "replaced" : "imported";
+    // A held key is left untouched (chatelaine ruling 54).
+    const replacement = result.replaced_existing ? "already held" : "imported";
     setStatus(`SSH key ${replacement} · ${result.fingerprint} · refreshing`);
     request({ Snapshot: projection }, "snapshot");
     return;
