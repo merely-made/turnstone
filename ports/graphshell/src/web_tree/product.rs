@@ -245,11 +245,13 @@ fn apply_item_role(page: &mut TreePage) {
         .selected
         .checked_sub(1)
         .and_then(|i| Role::ALL.get(i).copied());
-    page.shared
+    let set = page
+        .shared
         .canvas
         .borrow_mut()
         .set_member_role(member, role);
     product.status = match role {
+        _ if !set => "Item role refused: the item does not permit it".into(),
         Some(role) => format!("Item role set to {}", role.id()),
         None => "Item role follows the recipe".into(),
     };

@@ -17,8 +17,8 @@ use std::{
 
 use graphshell::{
     projection_compile::{
-        ProjectionDataset, ProjectionFieldType, ProjectionOccurrence, ProjectionValue, compile,
-        refresh,
+        ProjectionDataset, ProjectionFieldType, ProjectionOccurrence, ProjectionValue,
+        practice_compiler,
     },
     projection_editor::{Channel, SourceBinding},
 };
@@ -88,14 +88,14 @@ fn main() {
         definition.encoding.x = Channel::Field("x".into());
         definition.encoding.y = Channel::Field("y".into());
         let samples = samples(if count == 10_000 { 5 } else { 15 });
-        let previous = compile(&definition, &dataset).expect("initial placement");
+        let previous = practice_compiler().compile(&definition, &dataset).expect("initial placement");
         dataset.occurrences[0]
             .values
             .insert("label".into(), ProjectionValue::Text("Edited label".into()));
         let timings = (0..samples)
             .map(|_| {
                 let started = Instant::now();
-                let compiled = compile(&definition, &dataset).expect("benchmark fixture compiles");
+                let compiled = practice_compiler().compile(&definition, &dataset).expect("benchmark fixture compiles");
                 std::hint::black_box(compiled.score.items.len());
                 started.elapsed()
             })
@@ -108,7 +108,7 @@ fn main() {
             .map(|_| {
                 let started = Instant::now();
                 let compiled =
-                    refresh(&previous, &definition, &dataset).expect("validated refresh");
+                    practice_compiler().refresh(&previous, &definition, &dataset).expect("validated refresh");
                 assert!(compiled.placement_reused);
                 std::hint::black_box(compiled.labels.len());
                 started.elapsed()

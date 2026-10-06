@@ -1,0 +1,43 @@
+# What a screen reader reaches of the graph canvas (dynamics grammar plan,
+# G9: F62, F65 to F68), read from the page's own semantic tree
+# (graphshellSemanticTree), not from the app's state. The canvas slot is a
+# group named "N of M shown"; each item on screen is a group whose Drag and
+# Pin are buttons, named by label and described by their explanation. A
+# reader's Pin pins the item; a reader's Drag starts a keyboard move the
+# arrows steer, Enter drops by role and Escape puts back. The positive
+# controls run this receipt with ?plant_a11y=missing_item, missing_action and
+# dead_action, and each must fail.
+assert snap ready == true
+settle 3
+assert snap reader-canvas == 11 of 11 shown
+assert snap reader-items == 11
+assert snap reader-buttons ~ Alice:Drag+Pin
+assert snap reader-buttons ~ Reference notes:Drag+Pin
+assert snap reader-described == 22
+reader-click Alice | Pin
+settle 2
+assert snap pinned ~ Alice
+reader-click Reference notes | Drag
+settle 1
+assert snap key-moving == true
+key ArrowRight
+settle 1
+key ArrowRight
+settle 1
+assert snap key-move-offset == 84,0
+key Enter
+settle 2
+assert snap key-moving == false
+assert snap key-move-offset == 84,0
+reader-click Reference notes | Drag
+settle 1
+key ArrowDown
+settle 1
+assert snap key-move-offset == 0,42
+key Escape
+settle 2
+assert snap key-moving == false
+assert snap key-move-offset == 0,0
+capture canvas_reader
+wait
+log canvas reader receipt complete

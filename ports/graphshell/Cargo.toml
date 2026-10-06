@@ -87,6 +87,9 @@ webrtc-join = [
 canvas-gpu = ["web", "mere/canvas-gpu"]
 web = [
     "dep:async-trait",
+    # The canvas's producer semantics for a screen reader (`canvas_reader`;
+    # dynamics grammar plan, F67).
+    "dep:cambium-rootstock",
     "dep:chartulary",
     "dep:eidetic",
     "dep:mere",
@@ -116,6 +119,7 @@ personal-sync = [
 # The check conclusions and faults, named directly (insigne proofs plan, B).
 insigne = { workspace = true, features = ["verify"] }
 async-trait = { version = "0.1", optional = true }
+cambium-rootstock = { workspace = true, optional = true }
 base64.workspace = true
 chartulary = { workspace = true, optional = true }
 distillery = { path = "../distillery", optional = true }
@@ -266,6 +270,14 @@ path = "src/bin/h4f_agent_probe.rs"
 required-features = ["native"]
 
 [dev-dependencies]
+# The native accessibility receipt (dynamics grammar plan, F67): the canvas's
+# producer semantics through cambium-winit-a11y's AccessKit lowering, driven
+# by the headless harness, its view built with Cambium, the tree read in
+# AccessKit's own types.
+accesskit = "0.24"
+cambium = { workspace = true }
+cambium-genet-winit-host = { workspace = true }
+cambium-winit-a11y = { workspace = true }
 # W1's integration receipt drives the actual Distillery Chronicle endpoint.
 # Distillery depends on Mere's substrate, not Graphshell, so this test-only
 # edge does not enter the product dependency graph.

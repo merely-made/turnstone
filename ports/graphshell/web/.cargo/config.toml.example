@@ -1,10 +1,9 @@
 # Copy to .cargo/config.local.toml (gitignored) — or merge into yours.
 #
-# The wasm32 identity stack (personae -> getrandom 0.3) needs this cfg; the
-# `wasm_js` feature alone is inert. Without it the `webrtc-browser` feature
-# of graphshell does not compile for wasm32-unknown-unknown.
-[target.wasm32-unknown-unknown]
-rustflags = ['--cfg', 'getrandom_backend="wasm_js"']
+# The wasm32 cfg this crate needs (`getrandom_backend="wasm_js"`, for
+# personae's getrandom 0.3) is committed in .cargo/config.toml since
+# 2026-10-04 (burn plan 13.44). Do not repeat it here: Cargo joins rustflags
+# arrays across config files, so a second copy only duplicates the flag.
 
 # The live file also carries a genet path-patch table, which is NOT reproduced
 # here because its paths are absolute and machine-local. Two things about it
