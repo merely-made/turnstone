@@ -55,6 +55,10 @@ const KEEP_FLOOR: f64 = 0.5;
 /// refreshes. A page whose frames all do gains nothing from the half, and
 /// reads twice the period, the most its intervals show.
 const DESCEND_GAIN: f64 = 0.15;
+/// The period found is first polished to the best-fitting refined candidate
+/// within this share of it: a candidate can refine a little short of the
+/// period, and a half judged against that weaker fit can look better.
+const POLISH: f64 = 0.01;
 /// How far an interval may sit from a multiple and still fit: each of its
 /// two timestamps within a clock step, plus the refresh's own jitter.
 const JITTER_MS: f64 = 0.1;
@@ -202,7 +206,7 @@ fn period_of(intervals: &[f64], grain_ms: f64) -> Period {
         .collect();
     candidates.sort_by(|a, b| b.total_cmp(a));
     let mut nearest: Option<f64> = None;
-    for guess in candidates {
+    for &guess in &candidates {
         let ms = refined(intervals, guess);
         if !(low..=high).contains(&ms) {
             continue;
@@ -212,6 +216,7 @@ fn period_of(intervals: &[f64], grain_ms: f64) -> Period {
             nearest = Some(nearest.map_or(fit, |n: f64| n.max(fit)));
             continue;
         }
+        let (ms, fit) = polished(intervals, &candidates, ms, fit, tolerance);
         let (ms, fit) = lifted(intervals, ms, fit, tolerance, high);
         let (ms, fit) = descended(intervals, ms, fit, tolerance, low);
         return Period::Inferred {
@@ -253,6 +258,27 @@ fn refined(intervals: &[f64], guess: f64) -> f64 {
         ms = moment / square;
     }
     ms
+}
+
+/// The best fit among the candidates within [`POLISH`] of `ms`, refined.
+fn polished(
+    intervals: &[f64],
+    candidates: &[f64],
+    ms: f64,
+    fit: f64,
+    tolerance: f64,
+) -> (f64, f64) {
+    candidates
+        .iter()
+        .filter(|&&guess| (guess / ms - 1.0).abs() <= POLISH)
+        .map(|&guess| {
+            let near = refined(intervals, guess);
+            (near, self::fit(intervals, near, tolerance))
+        })
+        .fold(
+            (ms, fit),
+            |best, near| if near.1 > best.1 { near } else { best },
+        )
 }
 
 /// `ms` taken up to twice or three times itself while the multiple keeps
@@ -331,6 +357,28 @@ mod tests {
     const WINDOWS_300_EARLY: [f64; 20] = [
         899.6, 85.1, 48.6, 121.6, 230.9, 291.8, 212.8, 285.6, 212.8, 218.8, 303.9, 194.5, 200.6,
         97.3, 182.4, 182.3, 182.3, 188.4, 182.3, 182.4,
+    ];
+
+    /// The ThinkPad's 300-node page, calm (2026-10-06, its 60.003 Hz panel), the last 40 intervals.
+    const THINKPAD_300: [f64; 40] = [
+        500.0, 483.2, 483.4, 316.6, 433.3, 283.4, 316.6, 166.6, 283.4, 300.0, 300.0, 399.9, 283.4,
+        283.3, 283.3, 283.4, 283.3, 383.3, 266.6, 266.7, 283.3, 266.6, 266.7, 266.7, 250.0, 383.2,
+        266.7, 250.0, 266.6, 266.7, 300.0, 283.4, 283.2, 400.0, 266.7, 266.6, 366.6, 250.1, 249.9,
+        250.1,
+    ];
+    /// The ThinkPad's 24-node page with eight busy processes, the last 40 intervals.
+    const THINKPAD_24_LOADED: [f64; 40] = [
+        166.7, 350.0, 100.0, 116.7, 316.7, 116.5, 116.8, 216.6, 100.0, 116.7, 100.0, 300.0, 83.2,
+        83.4, 100.0, 283.3, 83.3, 83.4, 83.3, 250.0, 100.0, 66.6, 83.4, 83.3, 250.0, 66.6, 83.4,
+        83.3, 66.7, 233.3, 83.3, 100.0, 100.0, 250.0, 83.3, 83.4, 66.6, 83.4, 233.2, 66.7,
+    ];
+    /// The ThinkPad's 300-node page under load, its first 26 intervals: a
+    /// candidate there refines short of the period, and stepping down from that
+    /// weaker fit read half the period until the fit was polished.
+    const THINKPAD_300_LOADED_EARLY: [f64; 26] = [
+        101.948, 200.1, 116.6, 283.4, 550.0, 716.5, 400.0, 616.7, 466.6, 450.0, 583.3, 433.3,
+        600.0, 216.7, 566.6, 599.9, 416.7, 400.0, 399.9, 400.0, 416.7, 399.9, 333.4, 433.3, 300.0,
+        299.9,
     ];
 
     fn clock() -> Duration {
@@ -540,15 +588,30 @@ mod tests {
         }
     }
 
-    /// This machine's logged windows (2026-10-04 to 06, its 165 Hz panel,
-    /// whose period read 6.06 to 6.08 ms): each reads within 1% of 6.07 ms,
-    /// the loaded ones too, and the early one where the page's frames mostly
-    /// took 30 refreshes.
+    /// Both machines' logged windows (2026-10-04 to 06): this machine's 165 Hz
+    /// panel, whose period read 6.06 to 6.08 ms, each within 1% of 6.07 ms,
+    /// the loaded ones too and the early one where the page's frames mostly
+    /// took 30 refreshes; the ThinkPad's 60.003 Hz panel, calm, loaded and
+    /// early, each within 1% of 16.666 ms.
     #[test]
     fn logged_windows_read_this_panels_period() {
         // The early window's trap is real: twice the period clears the quorum.
         assert!(fit(&WINDOWS_300_EARLY, 2.0 * 6.078, 0.3) >= QUORUM);
         assert_reads("300 nodes, early", period_of(&WINDOWS_300_EARLY, 0.1), 6.07);
+        // The ThinkPad's 60.003 Hz panel; its early loaded window's trap is
+        // real too: the half fits as many intervals as the period.
+        let early = &THINKPAD_300_LOADED_EARLY;
+        assert!(fit(early, 1000.0 / 60.003 / 2.0, 0.3) >= fit(early, 1000.0 / 60.003, 0.3));
+        for (name, window) in [
+            ("ThinkPad, 300 nodes", &THINKPAD_300[..]),
+            ("ThinkPad, 24 nodes, loaded", &THINKPAD_24_LOADED[..]),
+            (
+                "ThinkPad, 300 nodes, loaded, early",
+                &THINKPAD_300_LOADED_EARLY[..],
+            ),
+        ] {
+            assert_reads(name, period_of(window, 0.1), 1000.0 / 60.003);
+        }
         for (name, window) in [
             ("300 nodes", WINDOWS_300),
             ("24 nodes", WINDOWS_24),
