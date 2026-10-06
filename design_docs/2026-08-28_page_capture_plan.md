@@ -485,3 +485,12 @@ Recorded here so they are not lost, and because each is independently closable:
   setting, live withdrawal, and existing partition-healing tests. Full log:
   `C:\t\turnstone-collection-accepted-20260913.log`. `git diff --check` also passed.
   These are automated app/worker/peer receipts; a headed interaction was not run.
+
+- **2026-10-06, received from Mere's S14 archive pass.** Mere archived its
+  capture provenance consent plan
+  (`mere/design_docs/archive_docs/2026-10-06_completed_plans/2026-06-26_capture_provenance_consent_plan.md`), and Mere's ruling
+  S55 sends its C4 consent gate to the live recorders' owners: this plan, for
+  the trail memory, and Graphshell's reference host plan at H5. Turnstone's
+  gate is still the no-op `consented_to_keep` in `src/trail_memory.rs`, which
+  returns `true`. Its default is open: `Full`, as Mere's C4 shipped, or
+  disabled and opt-in, as Graphshell's `HistoryCapturePolicy` is. Recorded in Mere's archived plan tails plan (`mere/design_docs/mere_docs/implementation_strategy/2026-07-03_archived_plan_tails_plan.md`, section "2026-10-06 archive pass").

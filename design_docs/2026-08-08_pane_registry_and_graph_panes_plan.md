@@ -832,6 +832,17 @@ layout can be shared or reset without changing graph/session truth.
 
 ## Progress
 
+- 2026-10-06: received from Mere's S14 archive pass (Mere rulings S60 and
+  S69). Mere archived its workbench component plan
+  (`mere/design_docs/archive_docs/2026-10-06_completed_plans/2026-08-31_workbench_component_plan.md`); its S3, Turnstone's
+  compositor walking the shared Workbench tree, belongs to A4 here. The pin it
+  waited on (`bd5912fb`) is satisfied, and adoption has not started. Mere also
+  archived the Knot shared surface plan, whose T lane noted a pointer-capture
+  routing gap (2026-09-05): `ContributedSurface::pointer_move`
+  (`src/contributed_surface.rs`) still dispatches moves without consulting the
+  session's `pointer_capture()`. No Turnstone plan names that gap; it is noted
+  here because this plan owns the contributed-pane path. Recorded in Mere's archived plan tails plan (`mere/design_docs/mere_docs/implementation_strategy/2026-07-03_archived_plan_tails_plan.md`, section "2026-10-06 archive pass").
+
 - 2026-09-04: A4 revised to outcome 1 on Mark's ruling, from a screen full of
   panes with no way to close them: the pane frame becomes Workbench's tree
   with tabs, floats and serde, and Cambium's strip gets the close ×. The
