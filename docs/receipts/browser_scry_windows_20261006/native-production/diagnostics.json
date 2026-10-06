@@ -1,0 +1,3488 @@
+{
+  "records": [
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 19
+        },
+        "receipt_time": {
+          "secs": 25,
+          "nanos": 984315200
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "other-app-event"
+      },
+      "accounted_bytes": 133
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 20
+        },
+        "receipt_time": {
+          "secs": 26,
+          "nanos": 161887800
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 21
+        },
+        "receipt_time": {
+          "secs": 30,
+          "nanos": 88067600
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "other-app-event"
+      },
+      "accounted_bytes": 133
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 22
+        },
+        "receipt_time": {
+          "secs": 30,
+          "nanos": 352700700
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 23
+        },
+        "receipt_time": {
+          "secs": 31,
+          "nanos": 631189000
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "other-app-event"
+      },
+      "accounted_bytes": 133
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 24
+        },
+        "receipt_time": {
+          "secs": 31,
+          "nanos": 631203700
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "other-app-event"
+      },
+      "accounted_bytes": 133
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 25
+        },
+        "receipt_time": {
+          "secs": 32,
+          "nanos": 88378500
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "other-app-event"
+      },
+      "accounted_bytes": 133
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 26
+        },
+        "receipt_time": {
+          "secs": 32,
+          "nanos": 363081300
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 27
+        },
+        "receipt_time": {
+          "secs": 41,
+          "nanos": 600761100
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "other-app-event"
+      },
+      "accounted_bytes": 133
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 28
+        },
+        "receipt_time": {
+          "secs": 41,
+          "nanos": 713420800
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 29
+        },
+        "receipt_time": {
+          "secs": 41,
+          "nanos": 734780000
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 30
+        },
+        "receipt_time": {
+          "secs": 42,
+          "nanos": 139285800
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "other-app-event"
+      },
+      "accounted_bytes": 133
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 31
+        },
+        "receipt_time": {
+          "secs": 42,
+          "nanos": 789447500
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 32
+        },
+        "receipt_time": {
+          "secs": 42,
+          "nanos": 809911500
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 33
+        },
+        "receipt_time": {
+          "secs": 44,
+          "nanos": 260726200
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 34
+        },
+        "receipt_time": {
+          "secs": 44,
+          "nanos": 331577700
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 35
+        },
+        "receipt_time": {
+          "secs": 44,
+          "nanos": 407736200
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 36
+        },
+        "receipt_time": {
+          "secs": 44,
+          "nanos": 484571100
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 37
+        },
+        "receipt_time": {
+          "secs": 44,
+          "nanos": 563341600
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 38
+        },
+        "receipt_time": {
+          "secs": 44,
+          "nanos": 865467300
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 39
+        },
+        "receipt_time": {
+          "secs": 45,
+          "nanos": 312314700
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 40
+        },
+        "receipt_time": {
+          "secs": 45,
+          "nanos": 895873200
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 41
+        },
+        "receipt_time": {
+          "secs": 45,
+          "nanos": 961348400
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 42
+        },
+        "receipt_time": {
+          "secs": 46,
+          "nanos": 25997300
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 43
+        },
+        "receipt_time": {
+          "secs": 46,
+          "nanos": 94260800
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 44
+        },
+        "receipt_time": {
+          "secs": 46,
+          "nanos": 160515600
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 45
+        },
+        "receipt_time": {
+          "secs": 46,
+          "nanos": 427593000
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 46
+        },
+        "receipt_time": {
+          "secs": 46,
+          "nanos": 925771300
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 47
+        },
+        "receipt_time": {
+          "secs": 47,
+          "nanos": 528655400
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "other-app-event"
+      },
+      "accounted_bytes": 133
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 48
+        },
+        "receipt_time": {
+          "secs": 47,
+          "nanos": 528680400
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "other-app-event"
+      },
+      "accounted_bytes": 133
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 49
+        },
+        "receipt_time": {
+          "secs": 47,
+          "nanos": 703782300
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "other-app-event"
+      },
+      "accounted_bytes": 133
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 50
+        },
+        "receipt_time": {
+          "secs": 47,
+          "nanos": 711241000
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "other-app-event"
+      },
+      "accounted_bytes": 133
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 51
+        },
+        "receipt_time": {
+          "secs": 47,
+          "nanos": 919568900
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "other-app-event"
+      },
+      "accounted_bytes": 133
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 52
+        },
+        "receipt_time": {
+          "secs": 48,
+          "nanos": 10849000
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 53
+        },
+        "receipt_time": {
+          "secs": 50,
+          "nanos": 362590000
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 54
+        },
+        "receipt_time": {
+          "secs": 50,
+          "nanos": 406203200
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 55
+        },
+        "receipt_time": {
+          "secs": 50,
+          "nanos": 425206000
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 56
+        },
+        "receipt_time": {
+          "secs": 50,
+          "nanos": 446382700
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 57
+        },
+        "receipt_time": {
+          "secs": 50,
+          "nanos": 467001300
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 58
+        },
+        "receipt_time": {
+          "secs": 50,
+          "nanos": 487727600
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 59
+        },
+        "receipt_time": {
+          "secs": 50,
+          "nanos": 509887900
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 60
+        },
+        "receipt_time": {
+          "secs": 50,
+          "nanos": 531891200
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 61
+        },
+        "receipt_time": {
+          "secs": 50,
+          "nanos": 553200700
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 62
+        },
+        "receipt_time": {
+          "secs": 50,
+          "nanos": 602593300
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 63
+        },
+        "receipt_time": {
+          "secs": 50,
+          "nanos": 624204200
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 64
+        },
+        "receipt_time": {
+          "secs": 50,
+          "nanos": 645934400
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 65
+        },
+        "receipt_time": {
+          "secs": 50,
+          "nanos": 667793100
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 66
+        },
+        "receipt_time": {
+          "secs": 50,
+          "nanos": 693204200
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 67
+        },
+        "receipt_time": {
+          "secs": 50,
+          "nanos": 720984100
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 68
+        },
+        "receipt_time": {
+          "secs": 50,
+          "nanos": 750470900
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 69
+        },
+        "receipt_time": {
+          "secs": 52,
+          "nanos": 556832100
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 70
+        },
+        "receipt_time": {
+          "secs": 52,
+          "nanos": 576631900
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 71
+        },
+        "receipt_time": {
+          "secs": 52,
+          "nanos": 626979100
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 72
+        },
+        "receipt_time": {
+          "secs": 52,
+          "nanos": 647787600
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 73
+        },
+        "receipt_time": {
+          "secs": 52,
+          "nanos": 668271800
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 74
+        },
+        "receipt_time": {
+          "secs": 52,
+          "nanos": 690626000
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 75
+        },
+        "receipt_time": {
+          "secs": 52,
+          "nanos": 711644500
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 76
+        },
+        "receipt_time": {
+          "secs": 52,
+          "nanos": 730556700
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 77
+        },
+        "receipt_time": {
+          "secs": 52,
+          "nanos": 749847400
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 78
+        },
+        "receipt_time": {
+          "secs": 52,
+          "nanos": 770326600
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 79
+        },
+        "receipt_time": {
+          "secs": 52,
+          "nanos": 790936700
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 80
+        },
+        "receipt_time": {
+          "secs": 52,
+          "nanos": 812334800
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 81
+        },
+        "receipt_time": {
+          "secs": 52,
+          "nanos": 833407800
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 82
+        },
+        "receipt_time": {
+          "secs": 52,
+          "nanos": 884909000
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 83
+        },
+        "receipt_time": {
+          "secs": 52,
+          "nanos": 906303400
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 84
+        },
+        "receipt_time": {
+          "secs": 52,
+          "nanos": 928866900
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 85
+        },
+        "receipt_time": {
+          "secs": 54,
+          "nanos": 961224800
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 86
+        },
+        "receipt_time": {
+          "secs": 54,
+          "nanos": 982293200
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 87
+        },
+        "receipt_time": {
+          "secs": 55,
+          "nanos": 37188200
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 88
+        },
+        "receipt_time": {
+          "secs": 55,
+          "nanos": 58238900
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 89
+        },
+        "receipt_time": {
+          "secs": 55,
+          "nanos": 81114700
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 90
+        },
+        "receipt_time": {
+          "secs": 55,
+          "nanos": 103567200
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 91
+        },
+        "receipt_time": {
+          "secs": 55,
+          "nanos": 125061300
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 92
+        },
+        "receipt_time": {
+          "secs": 55,
+          "nanos": 145018300
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 93
+        },
+        "receipt_time": {
+          "secs": 55,
+          "nanos": 168487600
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 94
+        },
+        "receipt_time": {
+          "secs": 55,
+          "nanos": 192027200
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 95
+        },
+        "receipt_time": {
+          "secs": 55,
+          "nanos": 214888400
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 96
+        },
+        "receipt_time": {
+          "secs": 55,
+          "nanos": 236674500
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 97
+        },
+        "receipt_time": {
+          "secs": 55,
+          "nanos": 259145500
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 98
+        },
+        "receipt_time": {
+          "secs": 55,
+          "nanos": 281850100
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 99
+        },
+        "receipt_time": {
+          "secs": 55,
+          "nanos": 335357800
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 100
+        },
+        "receipt_time": {
+          "secs": 55,
+          "nanos": 358467400
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 101
+        },
+        "receipt_time": {
+          "secs": 56,
+          "nanos": 981875800
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 102
+        },
+        "receipt_time": {
+          "secs": 57,
+          "nanos": 7263700
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 103
+        },
+        "receipt_time": {
+          "secs": 57,
+          "nanos": 62925000
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 104
+        },
+        "receipt_time": {
+          "secs": 57,
+          "nanos": 85244300
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 105
+        },
+        "receipt_time": {
+          "secs": 57,
+          "nanos": 107730700
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 106
+        },
+        "receipt_time": {
+          "secs": 57,
+          "nanos": 129885500
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 107
+        },
+        "receipt_time": {
+          "secs": 57,
+          "nanos": 152009400
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 108
+        },
+        "receipt_time": {
+          "secs": 57,
+          "nanos": 173285100
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 109
+        },
+        "receipt_time": {
+          "secs": 57,
+          "nanos": 194839300
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 110
+        },
+        "receipt_time": {
+          "secs": 57,
+          "nanos": 215163500
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 111
+        },
+        "receipt_time": {
+          "secs": 57,
+          "nanos": 237279300
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 112
+        },
+        "receipt_time": {
+          "secs": 57,
+          "nanos": 259989500
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 113
+        },
+        "receipt_time": {
+          "secs": 57,
+          "nanos": 283720500
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 114
+        },
+        "receipt_time": {
+          "secs": 57,
+          "nanos": 307025600
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 115
+        },
+        "receipt_time": {
+          "secs": 57,
+          "nanos": 327970500
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 116
+        },
+        "receipt_time": {
+          "secs": 57,
+          "nanos": 351419100
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 117
+        },
+        "receipt_time": {
+          "secs": 57,
+          "nanos": 408902300
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 118
+        },
+        "receipt_time": {
+          "secs": 58,
+          "nanos": 814299800
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "other-app-event"
+      },
+      "accounted_bytes": 133
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 119
+        },
+        "receipt_time": {
+          "secs": 59,
+          "nanos": 443454100
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 120
+        },
+        "receipt_time": {
+          "secs": 59,
+          "nanos": 464685300
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 121
+        },
+        "receipt_time": {
+          "secs": 61,
+          "nanos": 835462900
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 122
+        },
+        "receipt_time": {
+          "secs": 61,
+          "nanos": 856781300
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 123
+        },
+        "receipt_time": {
+          "secs": 66,
+          "nanos": 276111300
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "other-app-event"
+      },
+      "accounted_bytes": 133
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 124
+        },
+        "receipt_time": {
+          "secs": 66,
+          "nanos": 524643900
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 125
+        },
+        "receipt_time": {
+          "secs": 66,
+          "nanos": 542399600
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 126
+        },
+        "receipt_time": {
+          "secs": 67,
+          "nanos": 391262700
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "other-app-event"
+      },
+      "accounted_bytes": 133
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 127
+        },
+        "receipt_time": {
+          "secs": 67,
+          "nanos": 391276500
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "other-app-event"
+      },
+      "accounted_bytes": 133
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 128
+        },
+        "receipt_time": {
+          "secs": 67,
+          "nanos": 414557900
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "other-app-event"
+      },
+      "accounted_bytes": 133
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 129
+        },
+        "receipt_time": {
+          "secs": 74,
+          "nanos": 948443500
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "other-app-event"
+      },
+      "accounted_bytes": 133
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 130
+        },
+        "receipt_time": {
+          "secs": 74,
+          "nanos": 948479800
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "other-app-event"
+      },
+      "accounted_bytes": 133
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 131
+        },
+        "receipt_time": {
+          "secs": 75,
+          "nanos": 356457800
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "other-app-event"
+      },
+      "accounted_bytes": 133
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 132
+        },
+        "receipt_time": {
+          "secs": 75,
+          "nanos": 636525500
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 133
+        },
+        "receipt_time": {
+          "secs": 75,
+          "nanos": 656075000
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 134
+        },
+        "receipt_time": {
+          "secs": 85,
+          "nanos": 750205400
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "other-app-event"
+      },
+      "accounted_bytes": 133
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 135
+        },
+        "receipt_time": {
+          "secs": 85,
+          "nanos": 897946900
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 136
+        },
+        "receipt_time": {
+          "secs": 85,
+          "nanos": 921009900
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 137
+        },
+        "receipt_time": {
+          "secs": 89,
+          "nanos": 79539200
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "other-app-event"
+      },
+      "accounted_bytes": 133
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 138
+        },
+        "receipt_time": {
+          "secs": 91,
+          "nanos": 191692000
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "other-app-event"
+      },
+      "accounted_bytes": 133
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 139
+        },
+        "receipt_time": {
+          "secs": 93,
+          "nanos": 345462400
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "other-app-event"
+      },
+      "accounted_bytes": 133
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 140
+        },
+        "receipt_time": {
+          "secs": 93,
+          "nanos": 723000000
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "other-app-event"
+      },
+      "accounted_bytes": 133
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 141
+        },
+        "receipt_time": {
+          "secs": 93,
+          "nanos": 929616200
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 142
+        },
+        "receipt_time": {
+          "secs": 93,
+          "nanos": 952437500
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 143
+        },
+        "receipt_time": {
+          "secs": 99,
+          "nanos": 447872200
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "other-app-event"
+      },
+      "accounted_bytes": 133
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 144
+        },
+        "receipt_time": {
+          "secs": 99,
+          "nanos": 787440500
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "other-app-event"
+      },
+      "accounted_bytes": 133
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 145
+        },
+        "receipt_time": {
+          "secs": 100,
+          "nanos": 7718300
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    },
+    {
+      "envelope": {
+        "schema_version": 1,
+        "reference": {
+          "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+          "source": "turnstone.app-event-fanout",
+          "sequence": 146
+        },
+        "receipt_time": {
+          "secs": 100,
+          "nanos": 46708700
+        },
+        "metadata": {
+          "source_boot": null,
+          "source_time": null,
+          "operation": null,
+          "cause": null,
+          "subject": null,
+          "semantic_revision": null,
+          "presented_frame": null
+        }
+      },
+      "payload": {
+        "kind": "content-title-changed"
+      },
+      "accounted_bytes": 139
+    }
+  ],
+  "gaps": [
+    {
+      "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+      "source": "turnstone.app-event-fanout",
+      "first_sequence": 1,
+      "next_sequence": 19
+    }
+  ],
+  "boundary": null,
+  "stats": {
+    "run": "f6e543de-4cbb-4535-9471-af68ffdad68b",
+    "source": "turnstone.app-event-fanout",
+    "generation": 0,
+    "retained_records": 128,
+    "retained_bytes": 17630,
+    "first_retained_sequence": 19,
+    "last_retained_sequence": 146,
+    "next_sequence": 147,
+    "loss": {
+      "rejected_disabled": 0,
+      "rejected_oversized": 0,
+      "rejected_accounting": 0,
+      "evicted": 18,
+      "expired": 0,
+      "dropped": 0
+    }
+  },
+  "next_sequence": 147
+}

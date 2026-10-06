@@ -49,3 +49,5 @@ scenarios/fixtures/titan_acceptance.gmi text eol=lf
 docs/receipts/browser_engine_inventory_20261005/** -text
 docs/receipts/browser_scry_windows_20261005/** -text
 docs/receipts/graph_semantics_p2_20261005/** -text
+# Immutable captures and native logs retain their original bytes/whitespace.
+docs/receipts/browser_scry_windows_20261006/** -text -whitespace

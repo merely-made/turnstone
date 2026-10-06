@@ -1,0 +1,1417 @@
+warning: patch `p2panda-stream v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.4#0a54ab82)` was not used in the crate graph
+help: Check that the patched package version and available features are compatible
+      with the dependency requirements. If the patch has a different version from
+      what is locked in the Cargo.lock file, run `cargo update` to use the new
+      version. This may also occur with an optional dependency that is not enabled.
+    Blocking waiting for file lock on package cache
+warning: unused imports: `Suggestion` and `normalize_address`
+  --> src\app\mod.rs:20:31
+   |
+20 | use crate::ui::{OmnibarState, Suggestion, normalize_address};
+   |                               ^^^^^^^^^^  ^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `browse`
+  --> src\app\mod.rs:26:13
+   |
+26 | use crate::{browse, session};
+   |             ^^^^^^
+
+warning: unused import: `crate::panes::PaneContent`
+  --> src\app\node_arms.rs:16:5
+   |
+16 | use crate::panes::PaneContent;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `CaretMove`
+  --> src\app\omnibar_arms.rs:12:29
+   |
+12 | use crate::action::{Action, CaretMove, Effect};
+   |                             ^^^^^^^^^
+
+warning: unused import: `crate::panes::PaneContent`
+  --> src\app\palette.rs:16:5
+   |
+16 | use crate::panes::PaneContent;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `uuid::Uuid`
+  --> src\app\session_lifecycle.rs:17:5
+   |
+17 | use uuid::Uuid;
+   |     ^^^^^^^^^^
+
+warning: unused import: `PaneContent`
+  --> src\app\session_lifecycle.rs:22:44
+   |
+22 | use crate::panes::{FrisketLayout, GraphId, PaneContent, SessionId};
+   |                                            ^^^^^^^^^^^
+
+warning: unused imports: `MOOT_ACT_ACTION` and `MOOT_DELEGATION_DOMAIN`
+    --> src\place\worker.rs:2663:44
+     |
+2663 |         CollectionChange, ContributionRef, MOOT_ACT_ACTION, MOOT_DELEGATION_DOMAIN,
+     |                                            ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `CapabilityScope`, `DelegationCertificate`, `DelegationParent`, and `delegation_signing_salt`
+    --> src\place\worker.rs:2677:9
+     |
+2677 |         CapabilityScope, DelegationCertificate, DelegationParent, DelegationRevocation,
+     |         ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^
+2678 |         SignedDelegationCertificate, SignedDelegationRevocation, delegation_signing_salt,
+     |                                                                  ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::action::CaretMove`
+   --> src\shell\drive.rs:685:13
+    |
+685 |         use crate::action::CaretMove;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::sync::mpsc::Receiver`
+  --> src\shell\effects.rs:13:5
+   |
+13 | use std::sync::mpsc::Receiver;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `FetchCommand` and `FetchUpdate`
+  --> src\shell\effects.rs:15:13
+   |
+15 | use fetch::{FetchCommand, FetchUpdate};
+   |             ^^^^^^^^^^^^  ^^^^^^^^^^^
+
+warning: unused import: `SessionClick`
+  --> src\shell\effects.rs:17:46
+   |
+17 |     DocumentFindQuery, EngineProfileBinding, SessionClick, SessionSpawnRequest, SurfaceSpawnRequest,
+   |                                              ^^^^^^^^^^^^
+
+warning: unused import: `crate::panes::PaneContent`
+  --> src\shell\effects.rs:22:5
+   |
+22 | use crate::panes::PaneContent;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::surface::SurfaceKind`
+  --> src\shell\render.rs:25:5
+   |
+25 | use crate::surface::SurfaceKind;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `PhysicalPosition`
+  --> src\shell\lens.rs:19:18
+   |
+19 | use winit::dpi::{PhysicalPosition, PhysicalSize};
+   |                  ^^^^^^^^^^^^^^^^
+
+warning: unused imports: `Key as WinitKey` and `NamedKey as WinitNamedKey`
+  --> src\shell\input.rs:16:23
+   |
+16 | use winit::keyboard::{Key as WinitKey, NamedKey as WinitNamedKey};
+   |                       ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `SessionScrollKey`
+  --> src\shell\input.rs:20:27
+   |
+20 | use inker::{SessionClick, SessionScrollKey};
+   |                           ^^^^^^^^^^^^^^^^
+
+warning: unused import: `CaretMove`
+  --> src\shell\input.rs:24:29
+   |
+24 | use crate::action::{Action, CaretMove};
+   |                             ^^^^^^^^^
+
+warning: unused import: `decode_sprite`
+  --> src\shell\input.rs:27:20
+   |
+27 | use super::{Shell, decode_sprite};
+   |                    ^^^^^^^^^^^^^
+
+warning: unused import: `input::pointer_button`
+  --> src\shell\mod.rs:35:5
+   |
+35 | use input::pointer_button;
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::path::Path`
+  --> src\shell\mod.rs:38:5
+   |
+38 | use std::path::Path;
+   |     ^^^^^^^^^^^^^^^
+
+warning: unused import: `image::ImageEncoder`
+  --> src\shell\mod.rs:45:5
+   |
+45 | use image::ImageEncoder;
+   |     ^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `mere::canvas::WHEEL_PAN_SCALE`
+  --> src\shell\mod.rs:47:5
+   |
+47 | use mere::canvas::WHEEL_PAN_SCALE;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `ColorLoad` and `NetrenderOptions`
+  --> src\shell\mod.rs:53:17
+   |
+53 | use netrender::{ColorLoad, NetrenderOptions};
+   |                 ^^^^^^^^^  ^^^^^^^^^^^^^^^^
+
+warning: unused import: `winit::application::ApplicationHandler`
+  --> src\shell\mod.rs:54:5
+   |
+54 | use winit::application::ApplicationHandler;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `PhysicalPosition` and `PhysicalSize`
+  --> src\shell\mod.rs:55:18
+   |
+55 | use winit::dpi::{PhysicalPosition, PhysicalSize};
+   |                  ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^
+
+warning: unused imports: `ElementState`, `Ime`, `MouseButton`, `MouseScrollDelta`, and `WindowEvent`
+  --> src\shell\mod.rs:56:20
+   |
+56 | use winit::event::{ElementState, Ime, MouseButton, MouseScrollDelta, WindowEvent};
+   |                    ^^^^^^^^^^^^  ^^^  ^^^^^^^^^^^  ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^
+
+warning: unused imports: `Key as WinitKey` and `NamedKey as WinitNamedKey`
+  --> src\shell\mod.rs:58:23
+   |
+58 | use winit::keyboard::{Key as WinitKey, NamedKey as WinitNamedKey};
+   |                       ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `Effect`
+  --> src\shell\mod.rs:67:29
+   |
+67 | use crate::action::{Action, Effect, Update};
+   |                             ^^^^^^
+
+warning: unused import: `session`
+  --> src\shell\mod.rs:70:21
+   |
+70 | use crate::{browse, session};
+   |                     ^^^^^^^
+
+warning: unused import: `mere::canvas::palette`
+  --> src\swatch_pane\mod.rs:32:5
+   |
+32 | use mere::canvas::palette;
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `ColorF`
+  --> src\swatch_pane\mod.rs:33:17
+   |
+33 | use sprigging::{ColorF, LeafRegistry, RenderedLeaves};
+   |                 ^^^^^^
+
+warning: unused import: `crate::content::NodeContent`
+  --> src\swatch_pane\mod.rs:37:5
+   |
+37 | use crate::content::NodeContent;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::overmap`
+  --> src\swatch_pane\mod.rs:38:5
+   |
+38 | use crate::overmap;
+   |     ^^^^^^^^^^^^^^
+
+warning: unused import: `genet_clipboard::TextClipboard`
+   --> src\shell\effects.rs:699:25
+    |
+699 |                     use genet_clipboard::TextClipboard as _;
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: variable does not need to be mutable
+    --> src\place\worker.rs:3821:13
+     |
+3821 |         let mut welcome = |open: &mut OpenPlace, seed: u8| {
+     |             ----^^^^^^^
+     |             |
+     |             help: remove this `mut`
+     |
+     = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `caption`
+   --> src\shell\render.rs:754:13
+    |
+754 |         let caption = self
+    |             ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_caption`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `ok`
+    --> src\shell\render.rs:1017:17
+     |
+1017 |             let ok = capture_composed(host, &layers, w, h, &path);
+     |                 ^^ help: if this is intentional, prefix it with an underscore: `_ok`
+
+warning: function `save_certs` is never used
+   --> src\denizen.rs:733:8
+    |
+733 | pub fn save_certs(session_dir: &Path, subject_hex: &str, certs: &[SignedDelegationCertificate]) {
+    |        ^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: methods `projection_input_binding` and `runtime_projection_source` are never used
+    --> src\knot_authoring.rs:2603:12
+     |
+2393 | impl KnotDocumentSession {
+     | ------------------------ methods in this implementation
+...
+2603 |     pub fn projection_input_binding(&self) -> Option<&ProjectionInputBinding> {
+     |            ^^^^^^^^^^^^^^^^^^^^^^^^
+...
+2613 |     pub fn runtime_projection_source(&self) -> Option<RuntimeSourceBinding<KnotRuntimeWitness>> {
+     |            ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `granted_ring_names` is never used
+   --> src\ring.rs:370:8
+    |
+370 | pub fn granted_ring_names(authority: &impl AuthorityProvider, subject: Subject) -> Vec<String> {
+    |        ^^^^^^^^^^^^^^^^^^
+
+warning: function `roster_grid_rows` is never used
+  --> src\roster_view.rs:99:8
+   |
+99 | pub fn roster_grid_rows(app: &App) -> Vec<RosterGridRow> {
+   |        ^^^^^^^^^^^^^^^^
+
+warning: field `0` is never read
+   --> src\scenario.rs:245:12
+    |
+245 |     Settle(u32),
+    |     ------ ^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+245 -     Settle(u32),
+245 +     Settle(()),
+    |
+
+warning: field `0` is never read
+   --> src\scenario.rs:279:17
+    |
+279 |     AssertEvent(String),
+    |     ----------- ^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+279 -     AssertEvent(String),
+279 +     AssertEvent(()),
+    |
+
+warning: field `0` is never read
+   --> src\scenario.rs:299:9
+    |
+299 |     Log(String),
+    |     --- ^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+299 -     Log(String),
+299 +     Log(()),
+    |
+
+warning: method `pane_label` is never used
+    --> src\shell\mod.rs:1354:8
+     |
+ 613 | impl Shell {
+     | ---------- method in this implementation
+...
+1354 |     fn pane_label(&self, id: crate::panes::PaneId) -> String {
+     |        ^^^^^^^^^^
+
+warning: field `resource_epoch` is never read
+  --> src\shell\surface_frames.rs:44:16
+   |
+43 | pub(super) struct ImportedSurfaceFrame {
+   |                   -------------------- field in this struct
+44 |     pub(super) resource_epoch: u64,
+   |                ^^^^^^^^^^^^^^
+
+warning: function `ime_cursor_area` is never used
+    --> src\ui.rs:1128:8
+     |
+1128 | pub fn ime_cursor_area(state: &OmnibarState, w: u32) -> ((f32, f32), (f32, f32)) {
+     |        ^^^^^^^^^^^^^^^
+
+warning: function `chrome_has_content` is never used
+    --> src\ui.rs:1146:8
+     |
+1146 | pub fn chrome_has_content(state: &OmnibarState, caption: Option<&str>) -> bool {
+     |        ^^^^^^^^^^^^^^^^^^
+
+warning: function `scene_from_dom_with_leaves` is never used
+    --> src\ui.rs:2328:8
+     |
+2328 | pub fn scene_from_dom_with_leaves(
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `turnstone` (lib test) generated 51 warnings (run `cargo fix --lib -p turnstone --tests` to apply 38 suggestions)
+    Finished `test` profile [unoptimized] target(s) in 1m 39s
+     Running unittests src\lib.rs (C:/t/cargo-targets/turnstone\debug\deps\turnstone-e99996fb98102bd2.exe)
+
+running 675 tests
+test a11y::bridge_integrity::a_contributed_tree_attaches_below_its_registered_pane ... ok
+test a11y::bridge_integrity::the_pushed_tree_has_no_dangling_children_and_no_duplicate_ids ... ok
+test a11y::route_table::every_graph_member_is_reachable_by_route_when_an_orrery_exists ... ok
+test a11y::tests::panes_workbench_and_documents_project_under_one_root ... ok
+test a11y::tests::the_stitched_tree_is_coherent ... ok
+test a11y::route_table::a_routed_selection_changes_the_app_and_a_miss_says_so ... ok
+test app::contributed_pane_arms::tests::contributed_summon_preserves_source_and_mints_one_identity ... ok
+test app::contributed_pane_arms::tests::contributed_summon_rolls_back_when_blueprint_cannot_place_target ... ok
+test app::contributed_pane_arms::tests::contributed_summon_targets_the_active_lens ... ok
+test app::document_find_arms::tests::captured_target_and_request_drop_late_find_results ... ok
+test app::contributed_pane_arms::tests::knot_file_choices_are_palette_actions_lowered_to_shell_effects ... ok
+test app::document_find_arms::tests::unsupported_engine_neither_offers_nor_opens_find ... ok
+test app::document_find_arms::tests::engine_managed_count_is_observed_without_synthetic_matches ... ok
+test app::document_find_arms::tests::current_match_is_observable_and_accessible ... ok
+test app::document_find_arms::tests::workbench_find_and_zoom_follow_the_browser_page_with_an_independent_graph_cursor ... ok
+test app::node_arms::tests::committed_content_navigation_grows_the_same_members_lineage ... ok
+test app::node_arms::tests::page_zoom_steps_the_chromium_ladder_and_persists_the_request ... ok
+test app::node_arms::tests::the_ladder_ends_report_rather_than_stepping_past_themselves ... ok
+test a11y::bridge_integrity::diagnostic_gloss_rows_attach_without_routes_and_retire_after_removal ... ok
+test app::feed_arms::tests::guid_stable_episode_url_change_navigates_the_existing_member ... ok
+test app::node_arms::tests::opening_an_address_keeps_the_new_selection_through_pane_rendering ... ok
+test app::node_arms::tests::zoom_rows_appear_only_for_a_live_engine_that_reports_the_control ... ok
+test app::feed_arms::tests::host_tick_runs_the_persisted_cadence ... ok
+test app::palette::tests::captured_collection_rows_preserve_worker_versions_and_mark_selection ... ok
+test a11y::tests::the_omnibar_projects_while_open ... ok
+test app::palette::tests::duplicate_collection_names_have_stable_distinct_palette_labels ... ok
+test a11y::route_table::an_omnibar_route_opens_the_omnibar_through_the_spine ... ok
+test app::palette::tests::stale_captured_collection_selection_offers_the_latest_version ... ok
+test app::feed_arms::tests::subscription_refresh_projects_unread_entries_once ... ok
+test app::pane_arms::tests::floating_pane_moves_through_live_primary_and_lens_projections ... ok
+test app::omnibar_arms::tests::captured_page_mode_drops_results_after_stale_or_empty_refresh ... ok
+test app::omnibar_arms::tests::committing_a_captured_source_opens_its_source_address ... ok
+test app::palette::tests::committing_a_captured_collection_row_emits_its_exact_version ... ok
+test app::omnibar_arms::tests::captured_search_respects_a_single_row_setting ... ok
+test app::omnibar_arms::tests::captured_page_mode_finds_body_text_without_recall_rows ... ok
+test app::runtime_pool::tests::forme_runtime_key_keeps_graph_and_forme_separate ... ok
+test app::redshank_arms::tests::opening_an_enclosure_yields_a_redshank_episode_pane ... ok
+test app::runtime_pool::tests::graph_pool_keeps_two_graph_authorities_independent ... ok
+test app::runtime_pool::tests::pane_viewports_do_not_alias_on_one_graph ... ok
+test app::runtime_pool::tests::workbenches_are_owned_by_their_forme_runtime ... ok
+test app::runtime_pool::tests::pane_selections_do_not_alias_on_one_graph ... ok
+test app::redshank_arms::tests::a_note_and_progress_project_into_the_graph_and_reopen_after_a_restart ... ok
+test app::tests::a_left_place_refuses_reconnect_and_rejoins_by_clearing_its_mark ... ok
+test app::tests::a_held_document_is_refused_outside_a_place_and_its_node_stays ... ok
+test app::tests::a_profile_with_no_vault_still_registers_a_knot_engine ... ok
+test app::tests::a_refused_invitation_leaves_no_binding_in_app_state ... ok
+test app::tests::a_shared_knot_address_needs_no_path_of_its_own ... ok
+test app::tests::a_stale_join_answer_cannot_bind_a_session ... ok
+test app::tests::actor_fetched_body_is_retained_for_the_requested_content_spawn ... ok
+test app::tests::an_expired_invitation_is_reported_with_its_time ... ok
+test app::tests::available_actions_lead_with_the_contextual_rows ... ok
+test app::tests::back_forward_and_reload_flow_through_the_spine ... ok
+test app::tests::adopt_session_restores_the_saved_canvas_layout_from_facets ... ok
+test app::resident_admission_tests::uninstall_persists_revocation_and_rebuild_rejects_lagging_binding ... ok
+test app::resident_admission_tests::pause_skips_manual_runs_and_resume_is_durable ... ok
+test app::tests::binary_page_response_becomes_durable_download_custody ... ok
+test app::tests::capture_action_preserves_explicit_member_for_the_host ... ok
+test app::tests::browser_states_refresh_and_round_trip ... ok
+test app::resident_run_tests::adopting_foreign_run_records_clears_the_live_table_without_rewriting_them ... ok
+test app::tests::boot_launch_fetch_precedes_the_restored_content_spawn ... ok
+test app::tests::close_session_trashes_and_recover_restores_identity ... ok
+test app::tests::composing_a_gloss_pane_toggles_sections_on_its_own_leaf ... ok
+test app::tests::changed_gemini_certificate_requires_an_explicit_trust_commit_before_refetch ... ok
+test app::tests::content_flip_lowers_and_fails_honestly ... ok
+test app::tests::copying_the_local_rendezvous_carries_the_whole_ticket ... ok
+test app::resident_admission_tests::duplicate_subjects_refuse_manual_routing_without_actions ... ok
+test app::tests::delete_stages_into_the_bin_and_recover_restores_identity ... ok
+test app::tests::committing_a_node_row_selects_without_fetch_effects ... ok
+test app::resident_run_tests::malformed_run_store_refuses_before_manual_body_mutation ... ok
+test app::tests::committing_an_action_row_runs_the_action_and_closes ... ok
+test app::tests::empty_recycle_bin_forgets_on_command ... ok
+test app::tests::failed_leave_from_joining_cannot_adopt_a_late_join_answer ... ok
+test app::tests::configured_row_limit_applies_to_the_live_omnibar_projection ... ok
+test app::tests::fork_session_snapshots_the_component_with_its_facets ... ok
+test app::tests::graph_views_workbenches_and_followers_are_pane_scoped ... ok
+test app::tests::corrupt_admission_state_refuses_install_without_replacing_tombstones ... ok
+test app::tests::keep_action_is_target_bound_idempotent_and_observable ... ok
+test app::tests::gemini_identity_is_confirmed_once_and_reused_only_for_its_capsule ... ok
+test app::tests::lens_ops_close_removes_the_summoned_pane ... ok
+test app::tests::live_settings_snapshot_reconfigures_the_running_chrome_value_once ... ok
+test app::tests::leave_place_is_correlated_and_failure_keeps_a_retryable_degraded_binding ... ok
+test app::tests::malformed_place_binding_is_visible_without_hiding_cached_graph ... ok
+test app::tests::a_rerooted_profile_refuses_automatic_certificate_reissue ... ok
+test app::tests::micron_form_editor_is_explicit_redacts_masked_input_and_emits_one_request ... ok
+test app::tests::micron_form_fixed_variable_action_selection_and_visible_edit_errors ... ok
+test app::tests::moving_a_composed_section_reorders_that_leaf_and_clamps ... ok
+test app::tests::nomadnet_omnibar_stop_and_reload_keep_native_request_identity ... ok
+test app::tests::fork_carries_denizen_worlds_as_real_copies ... ok
+test app::tests::denizen_installs_after_visible_review ... ok
+test app::tests::micron_form_navigation_reload_and_close_cancel_and_ignore_late_reply ... ok
+test app::tests::micron_form_rejects_refreshed_source_before_send_and_on_reply ... ok
+test app::tests::omnibar_transcript_freezes_its_open_context_and_repeats_it ... ok
+test app::tests::micron_form_refuses_submission_after_source_address_changes ... ok
+test app::tests::place_collection_selection_lowers_the_exact_version_and_clear ... ok
+test app::tests::place_collection_completion_is_correlated_and_failure_keeps_the_snapshot ... ok
+test app::tests::place_prekey_offer_is_written_beside_its_card ... ok
+test app::tests::ordinary_smolweb_input_navigates_and_refetches_with_a_percent_encoded_query ... ok
+test app::tests::deleting_a_denizen_archives_its_world_and_recovery_restores_residency ... ok
+test app::tests::place_artifacts_are_written_where_the_person_asked ... ok
+test app::tests::place_founding_prompts_commit_escape_and_refuse ... ok
+test app::tests::place_binding_survives_switch_and_restart_as_a_worker_open ... ok
+test app::tests::install_delegates_from_the_profile_identity_and_uninstall_revokes_it ... ok
+test app::tests::publishing_pane_is_a_summonable_window_control ... ok
+test app::tests::place_invite_lifetime_suffix_is_read_from_the_right ... ok
+test app::tests::reconnect_hint_cleanup_can_fail_at_binding_removal_without_losing_history ... ok
+test app::tests::reconnect_metadata_failure_does_not_remove_the_admitted_binding ... ok
+test app::tests::place_revoke_rows_are_a_founders_one_per_other_member ... ok
+test app::tests::recall_keeps_a_footing_inside_the_row_budget ... ok
+test app::tests::reconnect_place_requires_binding_and_ignores_departed_generation ... ok
+test app::tests::place_reader_invitation_and_share_rows_act_only_inside_a_place ... ok
+test app::tests::retired_static_viewer_pins_migrate_to_livery ... ok
+test app::tests::reload_after_a_failed_native_fetch_replaces_the_error_with_a_content_spawn ... ok
+test app::tests::shared_knot_pane_is_a_summonable_reader_control ... ok
+test app::tests::requested_page_scale_round_trips_through_the_store ... ok
+test app::tests::shared_nodes_arrive_without_disturbing_the_local_canvas ... ok
+test app::tests::recall_never_outranks_the_typed_address ... ok
+test app::tests::place_status_leaves_the_omnibar_open_over_a_pane_open ... ok
+test app::tests::source_capture_refuses_a_member_without_a_current_target ... ok
+test app::tests::source_capture_completion_attaches_an_ordered_node_reference_series ... ok
+test app::tests::source_capture_carries_current_target_without_requesting_png ... ok
+test app::tests::place_status_refresh_is_local_filtered_and_generation_scoped ... ok
+test app::tests::stop_cancels_only_the_focused_request_and_rejects_its_late_answer ... ok
+test app::tests::stale_or_failed_source_capture_completion_never_attaches_a_reference ... ok
+test app::tests::rename_session_through_the_omnibar_mode ... ok
+test app::tests::streamed_page_spawns_from_a_prefix_then_replaces_and_settles ... ok
+test app::tests::sensitive_smolweb_input_is_masked_and_never_enters_graph_or_events ... ok
+test app::tests::summon_enforces_registry_multiplicity_in_one_space ... ok
+test app::tests::the_cascade_budget_arrives_from_settings_and_changes_live ... ok
+test app::tests::stale_place_update_from_a_departed_session_is_ignored ... ok
+test app::tests::tear_out_moves_the_leaf_and_keeps_its_id ... ok
+test app::tests::the_overmap_composes_sections_too ... ok
+test app::tests::the_actions_lane_and_short_needles_never_recall ... ok
+test app::tests::superseded_recall_answers_drop ... ok
+test app::tests::spartan_prompt_target_resolves_against_its_source_member ... ok
+test app::tests::workbench_actions_flow_through_the_spine ... ok
+test app::tests::titan_address_opens_an_explicit_composer_without_uploading ... ok
+test app::tests::titan_composer_stages_body_mime_hidden_token_and_literal_confirmation ... ok
+test app::tests::workbench_persists_and_restores_pruned ... ok
+test app::user_agent_decision_arms::tests::authentication_secrets_are_redacted_and_absent_from_observation ... ok
+test app::user_agent_decision_arms::tests::permission_choice_is_retained_and_lowers_the_captured_request ... ok
+test arrange_pane::tests::intents_lower_to_the_palette_actions_by_id ... ok
+test app::tests::workbench_browser_commands_preserve_the_independent_graph_selection ... ok
+test behaviors::tests::a_digest_names_the_nodes_that_changed_not_their_containers ... ok
+test behaviors::tests::a_field_delta_names_no_node ... ok
+test app::user_agent_decision_arms::tests::withdrawn_request_cannot_answer_a_later_navigation ... ok
+test behaviors::tests::a_malformed_id_yields_no_scope_rather_than_a_bogus_one ... ok
+test behaviors::tests::a_node_the_graph_does_not_hold_falls_back_to_its_bare_id ... ok
+test behaviors::tests::a_relation_delta_yields_both_ends ... ok
+test behaviors::tests::a_delta_naming_one_node_yields_that_node ... ok
+test behaviors::tests::an_unwoken_context_is_empty_rather_than_absent ... ok
+test browse::tests::changed_certificate_preserves_the_fetch_target_and_both_fingerprints ... ok
+test arrange_pane::tests::the_rows_read_the_canvas_back ... ok
+test browse::tests::enrichment_stamps_the_requesting_node_among_url_twins ... ok
+test behaviors::tests::typed_journal_authors_preserve_no_self_wake_subject_matching ... ok
+test browse::tests::certificate_request_prompts_once_then_reports_rejection ... ok
+test browse::tests::failed_favicon_completion_clears_its_pending_request ... ok
+test browse::tests::favicon_completions_remove_only_their_own_request ... ok
+test browse::tests::input_response_keeps_actor_target_separate_from_graph_owner ... ok
+test browse::tests::pending_table_correlates_and_refuses_to_guess ... ok
+test browse::tests::subresource_waiters_share_one_fetch_and_clear_together ... ok
+test browse::tests::superseding_and_stopping_cancel_only_the_named_request ... ok
+test app::tests::typing_asks_for_recall_and_the_answer_becomes_rows ... ok
+test browse::tests::superseded_node_drops_the_late_result ... ok
+test app::tests::the_row_count_follows_the_viewport_under_the_configured_ceiling ... ok
+test browse::tests::page_progress_keeps_the_request_pending_until_terminal_answer ... ok
+test browse::tests::favicon_write_stores_png_bytes_under_their_digest ... ok
+test cambium_pane::tests::a_roster_cell_resolves_by_text ... ok
+test app::tests::resident_petitions_run_through_the_gate ... ok
+test cambium_pane::tests::grid_dom_is_hit_testable ... ok
+test cambium_pane::tests::two_roster_runners_keep_independent_selection ... ok
+test cambium_pane::tests::every_tab_is_drawn_in_the_strip ... ok
+test cambium_pane::tests::clicking_a_tab_switches_the_body ... ok
+test cambium_pane::tests::tablist_height_matches_the_sheet ... ok
+test chrome_view::tests::authentication_card_debug_withholds_credential_fields ... ok
+test chrome_view::tests::authentication_card_masks_password_and_a11y_withholds_credentials ... ok
+test cambium_pane::tests::a_row_in_a_long_narrow_roster_navigates_to_its_own_url ... ok
+test app::tests::swapped_script_body_is_refused_before_runtime_execution ... ok
+test chrome_view::tests::browser_strip_targets_the_workbench_member_without_moving_graph_selection ... ok
+test chrome_view::tests::a_press_hit_tests_without_cascading_again ... ok
+test chrome_view::tests::a_changed_chrome_cascades_again ... ok
+test chrome_view::tests::document_find_projects_controlled_input_status_and_controls ... ok
+test chrome_view::tests::browser_strip_routes_per_node_back_forward_and_reload ... ok
+test chrome_view::tests::active_fetch_switches_reload_to_stop_and_projects_link_preview ... ok
+test chrome_view::tests::an_unchanged_chrome_paints_without_cascading_again ... ok
+test chrome_view::tests::chrome_windows_are_forest_siblings_with_scoped_layout ... ok
+test chrome_view::tests::hidden_shellbar_is_removed_from_the_chrome_and_a11y_projections ... ok
+test content::tests::fetched_documents_are_member_and_address_scoped ... ok
+test content::tests::flip_toggles_and_failure_retries ... ok
+test content::tests::live_nodes_lists_only_live ... ok
+test content::tests::source_candidates_are_html_and_address_scoped ... ok
+test content::tests::streamed_documents_accumulate_exact_bytes_before_decoding ... ok
+test content_classes::tests::download_record_displaces_the_generic_web_page_class ... ok
+test content_classes::tests::reconciliation_is_idempotent ... ok
+test chrome_view::tests::the_caret_split_mirrors_omnibar_state ... ok
+test content_classes::tests::web_and_note_classes_coexist_and_are_admitted_in_one_graph ... ok
+test contributed_a11y::tests::a_new_admission_never_reuses_the_old_platform_action_id ... ok
+test contributed_a11y::tests::an_unfocused_dom_does_not_invent_focus_and_its_root_uses_the_pane_rect ... ok
+test chrome_view::tests::live_appearance_is_applied_to_the_retained_chrome_surface ... ok
+test contributed_a11y::tests::equal_dom_ids_in_two_panes_never_collide ... ok
+test contributed_a11y::tests::namespacing_places_bounds_and_preserves_distinct_actions ... ok
+test chrome_view::tests::clicking_a_suggestion_row_bubbles_its_index ... ok
+test contributed_a11y::tests::queued_old_admission_cannot_activate_a_current_runner_control ... ok
+test contributed_a11y::tests::test_provider_without_host_effects_still_admits_current_actions ... ok
+test contributed_surface::tests::admission_generations_never_wrap_or_reuse_removed_identity ... ok
+test contributed_surface::tests::erased_sessions_dispatch_and_sync_independently_and_drop_from_map ... ok
+test contributed_a11y::tests::current_runner_focus_is_admitted_repeatedly_without_activation ... ok
+test contributed_surface::tests::registration_asserts_the_descriptor_source_kind_matches_the_schema ... ok
+test contributed_surface::tests::registry_rejects_duplicate_and_validates_schema ... ok
+test contributed_surface::tests::retained_map_reuses_one_source_and_replaces_a_repinned_source ... ok
+test chrome_view::tests::permission_decision_projects_origin_choices_and_accessibility ... ok
+test contributed_surface::tests::source_schema_is_only_external_schema ... ok
+test contributed_surface::tests::typed_unavailability_becomes_a_generic_retained_surface ... ok
+test contributed_a11y::tests::helper_refuses_hidden_disabled_and_unsupported_runner_actions ... ok
+test contributed_surface::tests::admitted_pane_exposes_its_retained_dom_and_complete_probe_stylesheet ... ok
+test denizen::tests::a_deadband_is_strictly_parsed_and_named_in_review ... ok
+test denizen::tests::a_legacy_binding_rebuilds_and_asks_for_a_heal ... ok
+test diagnostic_observations::tests::byte_limit_accounts_the_encoded_category_and_envelope ... ok
+test denizen::tests::nested_logs_round_trip_through_disk ... ok
+test diagnostic_observations::tests::event_copy_omits_urls_paths_titles_prompts_and_errors ... ok
+test contributed_surface::tests::retained_projection_and_actions_share_the_live_dom_session ... ok
+test diagnostic_observations::tests::inspection_age_and_disabled_status_are_actual_store_readings ... ok
+test diagnostic_observations::tests::inspection_keeps_loss_redaction_and_receipt_reader_independent ... ok
+test diagnostic_observations::tests::inspection_settings_are_independent_of_retention ... ok
+test diagnostic_observations::tests::overflow_is_visible_to_independent_readers ... ok
+test diagnostic_observations::tests::zero_configuration_reports_disabled_retention ... ok
+test chrome_view::tests::one_mutation_invalidates_every_window_root ... ok
+test distillery_installed_surface::tests::malformed_mesh_ids_and_spinning_cadences_are_refused_before_admission ... ok
+test distillery_installed_surface::tests::payload_version_is_checked_before_the_snapshot_is_built ... ok
+test distillery_installed_surface::tests::registry_admits_the_published_distillery_surface_from_a_versioned_source ... ok
+test diagnostic_observations::tests::requested_export_failure_fails_the_scenario_sentinel ... ok
+test diagnostic_observations::tests::successful_requested_receipt_exports_records_and_loss ... ok
+test download::tests::attachment_and_unrenderable_media_download_but_text_stays_a_document ... ok
+test download::tests::filename_prefers_disposition_and_removes_path_authority ... ok
+test distillery_installed_surface::tests::admitted_surface_renders_the_projected_profile_and_paths ... ok
+test feed::tests::gemtext_feed_preserves_relative_urls_dates_and_dedupes ... ok
+test feed::tests::guid_identity_survives_an_enclosure_or_link_change ... ok
+test feed::tests::podcast_facts_resolve_against_the_caller_base_and_guid_wins_deduplication ... ok
+test feed::tests::rss_and_json_feed_share_the_entry_shape ... ok
+test denizen::tests::staged_installs_are_content_derived_and_reviewable ... ok
+test frame_timing::tests::ms_reports_the_frame_log_unit ... ok
+test frame_timing::tests::raster_totals_are_derived_from_the_split ... ok
+test frame_timing::tests::reset_clears_between_frame_accumulation ... ok
+test distillery_installed_surface::tests::resident_cadences_round_trip_through_the_versioned_source ... ok
+test frame_timing::tests::suggestion_runs_and_refits_count_separately ... ok
+test distillery_installed_surface::tests::retained_accessibility_projects_a_generic_status_surface ... ok
+test feed::tests::schedule_survives_restart_and_suppresses_unchanged_entries ... ok
+test gemini_identity::tests::identity_is_stable_per_persona_and_unlinkable_across_capsules ... ok
+test gemini_trust::tests::a_change_requires_the_current_pin_and_persists_the_decision ... ok
+test gemini_trust::tests::an_interrupted_replace_recovers_the_previous_pin ... ok
+test gemini_trust::tests::first_contact_survives_reopen ... ok
+test gemini_identity::tests::approval_is_persona_and_capsule_scoped_and_persists_without_secrets ... ok
+test identity::tests::opening_the_vault_retires_the_unsealed_seed ... ok
+test identity::tests::the_unsealed_fallback_persists_and_says_so ... ok
+test chrome_view::tests::keep_button_targets_the_member_then_projects_kept_state ... ok
+test identity::tests::the_root_identity_survives_a_restart ... ok
+test inspector_pane::tests::engine_inventory_mapping_preserves_unknown_saved_pin ... ok
+test inspector_pane::tests::engine_inventory_new_registration_reaches_picker_and_observation ... ok
+test inspector_pane::tests::clip_button_bubbles_a_typed_inspector_intent ... ok
+test inspector_pane::tests::engine_inventory_resync_discards_focus_request_when_rows_change ... ok
+test inspector_pane::tests::engine_inventory_survives_session_adoption ... ok
+test cookie_custody::tests::a_cookie_set_in_one_run_is_there_in_the_next ... ok
+test inspector_pane::tests::focused_document_capabilities_sit_beside_the_viewer_picker ... ok
+test inspector_pane::tests::engine_inventory_valid_selection_recovers_failed_pin_but_keeps_at_rest_closed ... ok
+test inspector_pane::tests::synced_sections_reach_the_dom ... ok
+test inspector_pane::tests::the_requested_page_zoom_is_mirrored_beside_the_capability ... ok
+test chrome_view::tests::install_review_wraps_intact_and_keeps_card_and_click_geometry ... ok
+test inspector_view::tests::a_lane_without_introspection_is_reported_not_synthesized ... ok
+test inspector_view::tests::closing_content_drops_the_facts ... ok
+test inspector_pane::tests::probe_resolved_clip_button_reaches_the_pane_at_receipt_size ... ok
+test inspector_view::tests::focused_node_with_live_content_reports_both_sections ... ok
+test inspector_pane::tests::engine_inventory_saved_unknown_is_selected_disabled_and_refuses_click ... ok
+test inspector_view::tests::livery_and_weld_capability_limits_are_presented_honestly ... ok
+test knot_authoring::tests::a_blank_path_setting_reads_as_unset ... ok
+test knot_authoring::tests::a_member_with_no_vault_visits_but_holds_nothing ... ok
+test knot_authoring::tests::a_place_held_address_matches_the_holder_own_disclosed_address ... ok
+test knot_authoring::tests::a_place_held_address_names_its_holder_and_stays_a_knot_address ... ok
+test inspector_view::tests::no_focus_reports_none_honestly ... ok
+test inspector_view::tests::only_a_person_with_the_ui_id_renders_as_you ... ok
+test knot_authoring::tests::inspector_clip_crosses_the_typed_endpoint_action ... ignored, receipt: set KNOT_ENDPOINT_TEST_BIN to a built Mere knot_endpoint
+test knot_authoring::tests::inspector_clip_retains_livery_source_evidence_end_to_end ... ignored, receipt: set KNOT_ENDPOINT_TEST_BIN to a built Mere knot_endpoint
+test knot_authoring::tests::a_visit_only_engine_offers_no_clip_target ... ok
+test knot_authoring::tests::knot_addresses_are_selected_without_claiming_other_files ... ok
+test knot_authoring::tests::dom_ranges_only_name_an_observed_representation ... ok
+test knot_authoring::tests::real_knot_consumer_saves_rejects_stale_and_reopens ... ignored, receipt: set KNOT_ENDPOINT_TEST_BIN to a built Mere knot_endpoint
+test knot_authoring::tests::received_communal_auto_run_waits_for_explicit_confirmation ... ignored, receipt: set KNOT_ENDPOINT_TEST_BIN to a built Mere knot_endpoint
+test knot_authoring::tests::resolve_and_run_cross_the_consented_authoring_path ... ignored, receipt: set KNOT_ENDPOINT_TEST_BIN to a built Mere knot_endpoint
+test knot_authoring::tests::only_a_personae_root_is_read_as_a_holder ... ok
+test knot_authoring::tests::sealed_cache_attribution_is_visible_in_the_derived_preview ... ok
+test knot_authoring::tests::sealed_cache_age_uses_readable_units ... ok
+test download::tests::store_writes_a_collision_free_copy_and_retrievable_blob ... ok
+test knot_authoring::tests::unversioned_knot_source_requires_a_runtime_witness_without_durable_token ... ok
+test knot_authoring::tests::synced_knot_head_becomes_public_scenograph_revision_without_save_token ... ok
+test knot_document_surface::tests::absent_file_is_a_generic_typed_unavailable_surface ... ok
+test knot_authoring::tests::sharing_rewrites_a_locally_held_document_to_its_holder ... ok
+test knot_authoring::tests::projected_action_is_probe_drivable_by_instance_identity ... ok
+test inspector_pane::tests::engine_inventory_human_label_keeps_engine_id_scenario_target ... ok
+test knot_document_surface::tests::payload_version_is_checked_before_file_authority_is_opened ... ok
+test knot_document_surface::tests::read_only_source_opens_a_read_only_document_session ... ok
+test knot_document_surface::tests::registry_admits_the_published_knot_surface_from_a_versioned_file_source ... ok
+test knot_document_surface::tests::native_protocol_sources_are_admitted_by_extension ... ok
+test inspector_pane::tests::viewer_controls_write_the_followed_member_instead_of_the_runtime_cursor ... ok
+test nomadnet::tests::native_address_keeps_destination_and_opaque_path ... ok
+test nomadnet::tests::unresolved_aliases_are_rejected_in_every_retained_container ... ok
+test nomadnet::tests::native_projection_qualifies_same_node_page_links ... ok
+test nomadnet::tests::micron_session_preserves_source_and_produces_scene ... ok
+test observe::tests::snapshot_projects_focused_document_capabilities ... ok
+test knot_document_surface::tests::native_protocol_file_sessions_edit_and_save_exact_source_bytes ... ok
+test observe::tests::snapshot_reports_the_requested_page_zoom ... ok
+test overmap::tests::a_label_less_session_titles_by_id_prefix ... ok
+test observe::tests::snapshot_reports_a_retained_engine_applied_page_zoom ... ok
+test inspector_pane::tests::picking_a_viewer_reports_the_intent_and_mirrors_back ... ok
+test overmap::tests::duplicate_container_ids_collapse_rather_than_corrupt ... ok
+test pane::tests::a_divider_ratio_moves_the_seam ... ok
+test pane::tests::a_horizontal_split_halves_the_width_by_ratio ... ok
+test overmap::tests::session_of_url_rejects_foreign_urls ... ok
+test overmap::tests::sessions_project_as_container_nodes_with_lineage ... ok
+test pane::tests::a_single_leaf_takes_the_whole_area ... ok
+test pane::tests::a_vertical_split_halves_the_height ... ok
+test pane::tests::maximize_gives_one_pane_the_whole_area ... ok
+test pane::tests::placement_carries_the_leaf_graph_binding ... ok
+test panes::blueprint_tests::a_named_layout_carries_a_non_default_chrome_composition ... ok
+test panes::blueprint_tests::context_following_resolves_focus_and_pin_makes_it_fixed ... ok
+test panes::blueprint_tests::floating_pane_relocates_through_dock_and_window_without_losing_identity ... ok
+test panes::blueprint_tests::floating_relocates_the_same_pane_and_survives_serde ... ok
+test panes::blueprint_tests::tearout_moves_one_pane_spec_between_spaces_without_changing_identity ... ok
+test panes::blueprint_tests::nary_tabs_mixed_surfaces_drag_resize_save_reload_and_tear_out ... ok
+test panes::blueprint_tests::validation_rejects_duplicate_stations_and_forme_graph_mismatch ... ok
+test panes::blueprint_tests::validation_rejects_one_pane_id_in_two_spaces ... ok
+test knot_document_surface::tests::retained_accessibility_distinguishes_editable_and_read_only_documents ... ok
+test panes::blueprint_tests::normalization_prunes_unknowns_joins_splits_and_repairs_fractions ... ok
+test panes::legacy_bridge::tests::conversion_preserves_leaf_identity_and_binary_ratios ... ok
+test panes::registry::tests::built_in_ids_and_schemas_are_unique_and_namespaced ... ok
+test panes::registry::tests::publishing_workflows_are_typed_registrations ... ok
+test panes::registry::tests::source_shapes_validate_fixed_and_following_sources ... ok
+test panes::registry::tests::registration_is_the_legacy_content_factory ... ok
+test panes::registry::tests::retired_system_and_placeholder_are_not_registered ... ok
+test panes::store::tests::load_returns_none_when_no_file ... ok
+test nomadnet::tests::micron_form_explicit_interface_sends_map_and_bounds_resource_reply ... ok
+test panes::store::tests::malformed_json_is_invalid_data ... ok
+test panes::tests::dedupe_graph_panes_keeps_one_orrery_per_graph ... ok
+test panes::tests::frame_layout_round_trips_through_serde ... ok
+test panes::store::tests::configured_gloss_section_order_survives_frame_and_lens_save ... ok
+test panes::tests::each_leaf_emits_a_pane_node_with_content_tag_label ... ok
+test panes::store::tests::save_then_load_round_trips_layout ... ok
+test panes::tests::reparent_leaf_moves_leaf_without_losing_pane_id ... ok
+test panes::tests::reparent_leaf_refuses_self_move ... ok
+test panes::tests::ids_are_deterministic_across_runs ... ok
+test panes::tests::project_frame_with_attaches_subtree_to_matching_leaf ... ok
+test panes::tests::graph_bound_panes_are_classified_apart_from_window_chrome ... ok
+test panes::tests::reparent_leaf_refuses_when_target_is_not_a_leaf ... ok
+test observe::tests::semantic_actions_emit_events ... ok
+test panes::tests::retag_graph_bound_repoints_only_graph_bound_leaves ... ok
+test panes::tests::retag_graph_bound_from_repoints_only_the_outgoing_graph ... ok
+test panes::tests::root_carries_frame_label ... ok
+test panes::tests::set_split_ratio_clamps_and_finds_path ... ok
+test panes::tests::split_nodes_carry_axis_and_ratio_in_description ... ok
+test place::contract::tests::every_place_state_maps_to_a_report_that_holds_its_invariants ... ok
+test place::captured_collection::tests::missing_and_unavailable_manifest_statuses_never_become_text ... ok
+test place::contract::tests::left_maps_to_the_left_verdict_with_reading_unknown_and_no_membership ... ok
+test place::contract::tests::grant_expired_maps_to_expired_with_reading_unknown ... ok
+test place::contract::tests::grant_revoked_maps_to_revoked_with_reading_cut ... ok
+test panes::store::tests::retired_panes_restore_their_content_and_arrangement_in_frame_and_lenses ... ok
+test place::contract::tests::member_standing_maps_to_joined_with_membership_and_a_grant ... ok
+test place::captured_collection::tests::targeted_withdrawal_remints_only_the_selected_contribution_away ... ok
+test place::contract::tests::membership_revoked_maps_to_revoked_with_reading_cut ... ok
+test place::invite::tests::a_tampered_artifact_is_refused_by_its_own_digest ... ok
+test place::invite::tests::a_well_formed_invitation_round_trips_and_validates ... ok
+test place::invite::tests::an_addressed_artifact_never_reads_as_verified_empty ... ok
+test place::invite::tests::a_projection_grant_is_optional_and_digest_checked_like_the_rest ... ok
+test place::invite::tests::an_unknown_carrier_survives_parsing_but_is_never_dialed ... ok
+test place::invite::tests::an_oversized_inline_artifact_is_refused_before_it_is_trusted ... ok
+test place::invite::tests::rendezvous_bounds_refuse_a_flooded_envelope ... ok
+test place::invite::tests::version_and_binding_faults_are_named_distinctly ... ok
+test observe::tests::snapshot_reads_focus_omnibar_and_content_coherently ... ok
+test place::captured_collection::tests::local_records_group_search_and_survive_cold_reopen ... ok
+test inspector_pane::tests::narrow_inspector_probe_selects_registered_scry_for_followed_b_after_a ... ok
+test place::lanes::tests::a_founder_binds_listen_only_and_reports_its_own_rendezvous ... ok
+2026-10-06T21:57:11.669440Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:57:11.669436Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:57:11.682963Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:57:11.683365Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:57:12.498724Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:57:12.510472Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:57:12.541667Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:57:12.544372Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:57:12.546572Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:57:12.557097Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:57:12.563146Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:57:12.598683Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+test place::lanes::tests::a_closed_live_bind_releases_the_store_lock_for_a_reopen ... ok
+2026-10-06T21:57:14.217101Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:57:14.217167Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:57:14.217344Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:57:14.229993Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:57:14.230053Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:57:14.230804Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+test place::lanes::tests::a_founder_reconnects_through_an_empty_descriptor ... ok
+2026-10-06T21:57:15.070084Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:57:15.070282Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:57:15.070282Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:57:17.301659Z  WARN p2panda_net::iroh_endpoint::actors::connection: ignoring connection: accepting failed: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:17.326202Z  WARN p2panda_net::iroh_endpoint::actors::connection: connection establishment failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:17.335577Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol session_id=0 topic="6c81e5a1a0"
+2026-10-06T21:57:17.374520Z  WARN p2panda_net::iroh_endpoint::actors::connection: ignoring connection: accepting failed: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:17.374817Z  WARN p2panda_net::iroh_endpoint::actors::connection: connection establishment failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:17.377861Z  WARN p2panda_net::iroh_endpoint::actors::connection: ignoring connection: accepting failed: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:17.378137Z  WARN p2panda_net::iroh_endpoint::actors::connection: connection establishment failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:17.383099Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol session_id=0 topic="6c81e5a1a0"
+2026-10-06T21:57:17.383466Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol session_id=0 topic="6c81e5a1a0"
+2026-10-06T21:57:18.476364Z  WARN p2panda_net::iroh_endpoint::actors::connection: ignoring connection: accepting failed: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:18.483014Z  WARN p2panda_net::iroh_endpoint::actors::connection: connection establishment failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:18.490521Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol session_id=0 topic="daab3d7481"
+2026-10-06T21:57:18.514729Z  WARN p2panda_net::iroh_endpoint::actors::connection: ignoring connection: accepting failed: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:18.516090Z  WARN p2panda_net::iroh_endpoint::actors::connection: connection establishment failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:18.531638Z  WARN p2panda_net::iroh_endpoint::actors::connection: ignoring connection: accepting failed: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:18.533354Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol session_id=0 topic="daab3d7481"
+2026-10-06T21:57:18.533648Z  WARN p2panda_net::iroh_endpoint::actors::connection: connection establishment failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:18.547943Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol session_id=0 topic="daab3d7481"
+2026-10-06T21:57:18.602958Z  WARN p2panda_net::iroh_endpoint::actors::connection: ignoring connection: accepting failed: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:18.605862Z  WARN p2panda_net::iroh_endpoint::actors::connection: ignoring connection: accepting failed: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:18.608701Z  WARN p2panda_net::iroh_endpoint::actors::connection: connection establishment failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:18.615147Z  WARN p2panda_net::iroh_endpoint::actors::connection: connection establishment failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:18.623423Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol session_id=0 topic="7a7a7a7a7a"
+2026-10-06T21:57:18.631242Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol session_id=0 topic="7a7a7a7a7a"
+2026-10-06T21:57:18.787667Z  WARN p2panda_net::iroh_endpoint::actors::connection: ignoring connection: accepting failed: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:18.818028Z  WARN p2panda_net::iroh_endpoint::actors::connection: connection establishment failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:18.850274Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol session_id=0 topic="7a7a7a7a7a"
+2026-10-06T21:57:20.008597Z  WARN p2panda_net::iroh_endpoint::actors::connection: ignoring connection: accepting failed: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:20.009223Z  WARN p2panda_net::iroh_endpoint::actors::connection: connection establishment failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:20.013098Z  WARN p2panda_net::iroh_endpoint::actors::connection: ignoring connection: accepting failed: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:20.013490Z  WARN p2panda_net::iroh_endpoint::actors::connection: connection establishment failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:20.023829Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol session_id=0 topic="be83ec286f"
+2026-10-06T21:57:20.029733Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol session_id=0 topic="be83ec286f"
+2026-10-06T21:57:20.569329Z  WARN p2panda_net::iroh_endpoint::actors::connection: ignoring connection: accepting failed: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:20.571376Z  WARN p2panda_net::iroh_endpoint::actors::connection: connection establishment failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:20.577424Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol session_id=0 topic="9c9c9c9c9c"
+2026-10-06T21:57:20.581025Z  WARN p2panda_net::iroh_endpoint::actors::connection: ignoring connection: accepting failed: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:20.593576Z  WARN p2panda_net::iroh_endpoint::actors::connection: connection establishment failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:20.644708Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol session_id=0 topic="9c9c9c9c9c"
+2026-10-06T21:57:20.707607Z  WARN p2panda_net::iroh_endpoint::actors::connection: ignoring connection: accepting failed: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:20.707910Z  WARN p2panda_net::iroh_endpoint::actors::connection: connection establishment failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:20.710213Z  WARN p2panda_net::iroh_endpoint::actors::connection: ignoring connection: accepting failed: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:20.719385Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol session_id=0 topic="9c9c9c9c9c"
+2026-10-06T21:57:20.725651Z  WARN p2panda_net::iroh_endpoint::actors::connection: connection establishment failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:20.743945Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol session_id=0 topic="9c9c9c9c9c"
+2026-10-06T21:57:21.652664Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })")
+2026-10-06T21:57:21.654041Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })")
+2026-10-06T21:57:21.655240Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=0 topic="be83ec286f"
+2026-10-06T21:57:21.656333Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=1 topic="be83ec286f"
+2026-10-06T21:57:21.656565Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=0 topic="be83ec286f"
+2026-10-06T21:57:21.656567Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=1 topic="be83ec286f"
+2026-10-06T21:57:21.656691Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })")
+2026-10-06T21:57:21.657426Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=1 topic="be83ec286f"
+2026-10-06T21:57:21.658748Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: log sync error receiving from message stream: MessageStream("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })") session_id=0 topic="be83ec286f"
+2026-10-06T21:57:21.659480Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=1 topic="4b14359a34"
+2026-10-06T21:57:21.659583Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=0 topic="4b14359a34"
+2026-10-06T21:57:21.665879Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: log sync error receiving from message stream: MessageStream("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })") session_id=0 topic="be83ec286f"
+2026-10-06T21:57:21.668778Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:21.669745Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="be83ec286f"
+2026-10-06T21:57:21.670294Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:21.670807Z ERROR iroh::socket::transports::relay: relay_recv_channel closed
+2026-10-06T21:57:21.692421Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:21.692677Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:21.693126Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:21.693306Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:21.694267Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="be83ec286f"
+2026-10-06T21:57:21.695343Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="4b14359a34"
+2026-10-06T21:57:21.695334Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="f93825626f"
+2026-10-06T21:57:21.695439Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="4b14359a34"
+2026-10-06T21:57:21.695457Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="f93825626f"
+2026-10-06T21:57:21.707422Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="93fc1f54c9"
+2026-10-06T21:57:21.707551Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="93fc1f54c9"
+2026-10-06T21:57:21.709588Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=1 topic="93fc1f54c9"
+2026-10-06T21:57:21.709697Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=0 topic="93fc1f54c9"
+2026-10-06T21:57:21.709956Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:21.710145Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:21.710626Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="be83ec286f"
+2026-10-06T21:57:21.710815Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="be83ec286f"
+2026-10-06T21:57:21.711559Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="be83ec286f"
+2026-10-06T21:57:21.711668Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="be83ec286f"
+2026-10-06T21:57:22.128598Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=1 topic="b63c9d24d6"
+2026-10-06T21:57:22.129965Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=0 topic="daab3d7481"
+2026-10-06T21:57:22.130111Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=1 topic="daab3d7481"
+2026-10-06T21:57:22.130705Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })")
+2026-10-06T21:57:22.130960Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })")
+2026-10-06T21:57:22.131116Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=1 topic="daab3d7481"
+2026-10-06T21:57:22.131263Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=0 topic="daab3d7481"
+2026-10-06T21:57:22.131342Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })")
+2026-10-06T21:57:22.131390Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })")
+2026-10-06T21:57:22.132299Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:22.133141Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:22.133937Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:22.134066Z ERROR iroh::socket::transports::relay: relay_recv_channel closed
+2026-10-06T21:57:22.134175Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:22.134323Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:22.134399Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:22.134546Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:22.134592Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:22.135056Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:22.135185Z ERROR iroh::socket::transports::relay: relay_recv_channel closed
+2026-10-06T21:57:22.135279Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:22.137782Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="daab3d7481"
+2026-10-06T21:57:22.137942Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: log sync error receiving from message stream: MessageStream("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })") session_id=0 topic="daab3d7481"
+2026-10-06T21:57:22.138031Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="6b0ead49d3"
+2026-10-06T21:57:22.139232Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:22.139270Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="b63c9d24d6"
+2026-10-06T21:57:22.139591Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:22.140659Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: log sync error receiving from message stream: MessageStream("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })") session_id=0 topic="daab3d7481"
+2026-10-06T21:57:22.141633Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="083c5354dc"
+2026-10-06T21:57:22.145455Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=0 topic="daab3d7481"
+2026-10-06T21:57:22.145878Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=1 topic="6b0ead49d3"
+2026-10-06T21:57:22.146614Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="daab3d7481"
+2026-10-06T21:57:22.147283Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: log sync error receiving from message stream: MessageStream("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })") session_id=0 topic="daab3d7481"
+2026-10-06T21:57:22.149451Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="daab3d7481"
+2026-10-06T21:57:22.149599Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="daab3d7481"
+2026-10-06T21:57:22.154767Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="daab3d7481"
+2026-10-06T21:57:22.389041Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })")
+2026-10-06T21:57:22.389293Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })")
+2026-10-06T21:57:22.389504Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })")
+2026-10-06T21:57:22.389698Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })")
+2026-10-06T21:57:22.389937Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })")
+2026-10-06T21:57:22.390118Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })")
+2026-10-06T21:57:22.390129Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })")
+2026-10-06T21:57:22.390320Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })")
+2026-10-06T21:57:22.391849Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: log sync error receiving from message stream: MessageStream("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })") session_id=0 topic="7a7a7a7a7a"
+2026-10-06T21:57:22.392103Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=0 topic="7a7a7a7a7a"
+2026-10-06T21:57:22.392204Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=1 topic="7a7a7a7a7a"
+2026-10-06T21:57:22.392492Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=1 topic="7a7a7a7a7a"
+2026-10-06T21:57:22.393296Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: log sync error receiving from message stream: MessageStream("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })") session_id=0 topic="7a7a7a7a7a"
+2026-10-06T21:57:22.393581Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=0 topic="7a7a7a7a7a"
+2026-10-06T21:57:22.394050Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=0 topic="7a7a7a7a7a"
+2026-10-06T21:57:22.394174Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=1 topic="7b7b7b7b7b"
+2026-10-06T21:57:22.394301Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:22.394555Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:22.396418Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="7a7a7a7a7a"
+2026-10-06T21:57:22.396978Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:22.397182Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:22.397867Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:22.398750Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:22.399705Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:22.399949Z ERROR iroh::socket::transports::relay: relay_recv_channel closed
+2026-10-06T21:57:22.401805Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: log sync error receiving from message stream: MessageStream("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })") session_id=0 topic="7a7a7a7a7a"
+2026-10-06T21:57:22.405235Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:22.407454Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="7c7c7c7c7c"
+2026-10-06T21:57:22.412474Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:22.412474Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:22.412580Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:22.413430Z ERROR iroh::socket::transports::relay: relay_recv_channel closed
+2026-10-06T21:57:22.413706Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="7a7a7a7a7a"
+2026-10-06T21:57:22.413825Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="7a7a7a7a7a"
+2026-10-06T21:57:22.417074Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="7a7a7a7a7a"
+2026-10-06T21:57:22.417257Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="7a7a7a7a7a"
+2026-10-06T21:57:22.421731Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="7b7b7b7b7b"
+2026-10-06T21:57:22.458845Z  WARN p2panda_net::iroh_endpoint::actors::connection: ignoring connection: accepting failed: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:22.463023Z  WARN p2panda_net::iroh_endpoint::actors::connection: connection establishment failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:22.464790Z  WARN p2panda_net::iroh_endpoint::actors::connection: ignoring connection: accepting failed: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:22.467309Z  WARN p2panda_net::iroh_endpoint::actors::connection: connection establishment failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:22.468908Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol session_id=0 topic="d22a3a4cce"
+2026-10-06T21:57:22.470658Z  WARN p2panda_net::iroh_endpoint::actors::connection: ignoring connection: accepting failed: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:22.471491Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol session_id=0 topic="d22a3a4cce"
+2026-10-06T21:57:22.472398Z  WARN p2panda_net::iroh_endpoint::actors::connection: connection establishment failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:22.473330Z  WARN p2panda_net::iroh_endpoint::actors::connection: ignoring connection: accepting failed: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:22.501325Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol session_id=0 topic="d22a3a4cce"
+2026-10-06T21:57:22.526518Z  WARN p2panda_net::iroh_endpoint::actors::connection: connection establishment failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:22.555899Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol session_id=0 topic="d22a3a4cce"
+test place::lanes::tests::a_membership_admission_and_a_shared_node_race_to_a_connected_joiner ... ok
+2026-10-06T21:57:22.990389Z  WARN p2panda_net::iroh_endpoint::actors::connection: ignoring connection: accepting failed: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:22.991207Z  WARN p2panda_net::iroh_endpoint::actors::connection: connection establishment failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:22.995366Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol session_id=0 topic="7e7e7e7e7e"
+test place::lanes::tests::a_joiner_catches_up_on_a_live_place_over_one_ticket ... ok
+2026-10-06T21:57:23.031801Z  WARN p2panda_net::iroh_endpoint::actors::connection: ignoring connection: accepting failed: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:23.032108Z  WARN p2panda_net::iroh_endpoint::actors::connection: connection establishment failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:23.046591Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol session_id=0 topic="7e7e7e7e7e"
+2026-10-06T21:57:23.058500Z  WARN p2panda_net::iroh_endpoint::actors::connection: ignoring connection: accepting failed: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:23.079677Z  WARN p2panda_net::iroh_endpoint::actors::connection: connection establishment failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:23.090935Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol session_id=0 topic="7e7e7e7e7e"
+2026-10-06T21:57:23.177847Z  WARN p2panda_net::iroh_endpoint::actors::connection: ignoring connection: accepting failed: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:23.180246Z  WARN p2panda_net::iroh_endpoint::actors::connection: connection establishment failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:23.201224Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol session_id=0 topic="7e7e7e7e7e"
+2026-10-06T21:57:23.548537Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })")
+2026-10-06T21:57:23.548690Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })")
+2026-10-06T21:57:23.548897Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:23.549317Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:23.549317Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:23.549337Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:23.550511Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })")
+2026-10-06T21:57:23.550511Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:23.550511Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:23.550798Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })")
+2026-10-06T21:57:23.551252Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:23.551417Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:23.551721Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=1 topic="044c80c0f2"
+2026-10-06T21:57:23.557308Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })")
+2026-10-06T21:57:23.557662Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })")
+2026-10-06T21:57:23.557853Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })")
+2026-10-06T21:57:23.557858Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })")
+2026-10-06T21:57:23.558092Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })")
+2026-10-06T21:57:23.558099Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })")
+2026-10-06T21:57:23.558306Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })")
+2026-10-06T21:57:23.558453Z ERROR iroh::socket::transports::relay: relay_recv_channel closed
+2026-10-06T21:57:23.558525Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })")
+2026-10-06T21:57:23.558771Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=0 topic="6c81e5a1a0"
+2026-10-06T21:57:23.558827Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=1 topic="6c81e5a1a0"
+2026-10-06T21:57:23.559583Z ERROR iroh::socket::transports::relay: relay_recv_channel closed
+2026-10-06T21:57:23.561290Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=1 topic="6c81e5a1a0"
+2026-10-06T21:57:23.561820Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="6c81e5a1a0"
+2026-10-06T21:57:23.562202Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })")
+2026-10-06T21:57:23.564015Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })")
+2026-10-06T21:57:23.565186Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=1 topic="6c81e5a1a0"
+2026-10-06T21:57:23.567637Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:23.567954Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:23.568166Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:23.568375Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="6c81e5a1a0"
+2026-10-06T21:57:23.568987Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=0 topic="6c81e5a1a0"
+2026-10-06T21:57:23.569163Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="6c81e5a1a0"
+2026-10-06T21:57:23.569312Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="0a69da7059"
+2026-10-06T21:57:23.569969Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:23.570239Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:23.570442Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:23.570629Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:23.570834Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:23.571572Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="6c81e5a1a0"
+2026-10-06T21:57:23.573456Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="6c81e5a1a0"
+2026-10-06T21:57:23.575802Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="f28b02dfbc"
+2026-10-06T21:57:23.576290Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:23.576539Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="6c81e5a1a0"
+2026-10-06T21:57:23.579567Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: MessageSink("Io(Custom { kind: NotConnected, error: ConnectionLost(TransportError(Error { code: INTERNAL_ERROR, frame: None, reason: \"endpoint driver future was dropped\", crypto: None })) })") session_id=1 topic="daab3d7481"
+2026-10-06T21:57:23.580103Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=0 topic="0a69da7059"
+2026-10-06T21:57:23.581074Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=0 topic="f28b02dfbc"
+2026-10-06T21:57:23.587121Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="044c80c0f2"
+2026-10-06T21:57:23.594393Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="6c81e5a1a0"
+2026-10-06T21:57:23.636026Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: MessageSink("Io(Custom { kind: NotConnected, error: ConnectionLost(TransportError(Error { code: INTERNAL_ERROR, frame: None, reason: \"endpoint driver future was dropped\", crypto: None })) })") session_id=1 topic="daab3d7481"
+2026-10-06T21:57:23.662567Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: MessageSink("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })") session_id=1 topic="7a7a7a7a7a"
+2026-10-06T21:57:23.936217Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: MessageSink("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })") session_id=1 topic="7a7a7a7a7a"
+2026-10-06T21:57:25.062899Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: MessageSink("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })") session_id=1 topic="be83ec286f"
+2026-10-06T21:57:25.069033Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: MessageSink("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })") session_id=1 topic="be83ec286f"
+2026-10-06T21:57:25.218539Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:57:25.218700Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:57:25.218781Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:57:25.218856Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:57:25.219484Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:57:25.224574Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:57:25.710563Z  WARN p2panda_net::iroh_endpoint::actors::connection: ignoring connection: accepting failed: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:25.710899Z  WARN p2panda_net::iroh_endpoint::actors::connection: connection establishment failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:25.737620Z  WARN p2panda_net::iroh_endpoint::actors::connection: ignoring connection: accepting failed: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:25.738438Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol session_id=0 topic="62404e09d0"
+2026-10-06T21:57:25.795879Z  WARN p2panda_net::iroh_endpoint::actors::connection: connection establishment failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:25.799517Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol session_id=0 topic="62404e09d0"
+2026-10-06T21:57:25.891300Z  WARN p2panda_net::iroh_endpoint::actors::connection: ignoring connection: accepting failed: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:25.906478Z  WARN p2panda_net::iroh_endpoint::actors::connection: connection establishment failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:25.950877Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol session_id=0 topic="62404e09d0"
+2026-10-06T21:57:26.666164Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=0 topic="be83ec286f"
+2026-10-06T21:57:26.685782Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: log sync error receiving from message stream: MessageStream("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })") session_id=0 topic="62404e09d0"
+2026-10-06T21:57:26.686628Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=0 topic="62404e09d0"
+2026-10-06T21:57:26.686733Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=1 topic="62404e09d0"
+2026-10-06T21:57:26.693339Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:26.693775Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:26.694715Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=1 topic="62404e09d0"
+2026-10-06T21:57:26.694831Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=0 topic="62404e09d0"
+2026-10-06T21:57:26.694926Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: log sync error receiving from message stream: MessageStream("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })") session_id=0 topic="62404e09d0"
+2026-10-06T21:57:26.695277Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:26.695529Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:26.695753Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:26.695802Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:26.695917Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:26.695999Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:26.696153Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="c0f5dac73a"
+2026-10-06T21:57:26.696291Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:26.697215Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:26.698870Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="be83ec286f"
+2026-10-06T21:57:26.698912Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=0 topic="c0f5dac73a"
+2026-10-06T21:57:26.698898Z ERROR iroh::socket::transports::relay: relay_recv_channel closed
+2026-10-06T21:57:26.698882Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="62404e09d0"
+2026-10-06T21:57:26.698974Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=1 topic="c0f5dac73a"
+2026-10-06T21:57:26.698960Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="0b74e251ed"
+2026-10-06T21:57:26.700159Z ERROR iroh::socket::transports::relay: relay_recv_channel closed
+2026-10-06T21:57:26.700305Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:26.700775Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:26.701569Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:26.701739Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:26.703444Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="62404e09d0"
+2026-10-06T21:57:26.704194Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="62404e09d0"
+2026-10-06T21:57:26.705964Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="62404e09d0"
+2026-10-06T21:57:26.706986Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="be83ec286f"
+2026-10-06T21:57:26.707410Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="35df5b236a"
+2026-10-06T21:57:26.710071Z ERROR iroh::socket::transports::relay: relay_recv_channel closed
+2026-10-06T21:57:26.711298Z ERROR iroh::socket::transports::relay: relay_recv_channel closed
+2026-10-06T21:57:26.712999Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="be83ec286f"
+2026-10-06T21:57:26.713224Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="be83ec286f"
+test place::lanes::tests::a_reader_is_refused_at_the_projection_door ... ok
+2026-10-06T21:57:27.149244Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="daab3d7481"
+2026-10-06T21:57:27.149317Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=1 topic="daab3d7481"
+2026-10-06T21:57:27.159724Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="b63c9d24d6"
+2026-10-06T21:57:27.159367Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="6b0ead49d3"
+2026-10-06T21:57:27.157268Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="daab3d7481"
+2026-10-06T21:57:27.156875Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="083c5354dc"
+2026-10-06T21:57:27.149453Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=0 topic="6b0ead49d3"
+2026-10-06T21:57:27.156462Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="daab3d7481"
+2026-10-06T21:57:27.379487Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })")
+2026-10-06T21:57:27.380231Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:27.380409Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:27.380595Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:27.380732Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="9c9c9c9c9c"
+2026-10-06T21:57:27.380934Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:27.381176Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=1 topic="9c9c9c9c9c"
+2026-10-06T21:57:27.381262Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=0 topic="9c9c9c9c9c"
+2026-10-06T21:57:27.381624Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=0 topic="9c9c9c9c9c"
+2026-10-06T21:57:27.382838Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:27.383027Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:27.383538Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:27.383601Z ERROR iroh::socket::transports::relay: relay_recv_channel closed
+2026-10-06T21:57:27.383830Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:27.384697Z ERROR iroh::socket::transports::relay: relay_recv_channel closed
+2026-10-06T21:57:27.385158Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="9c9c9c9c9c"
+2026-10-06T21:57:27.385320Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="9c9c9c9c9c"
+2026-10-06T21:57:27.387685Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=0 topic="9c9c9c9c9c"
+2026-10-06T21:57:27.387684Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=1 topic="9c9c9c9c9c"
+2026-10-06T21:57:27.387828Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=0 topic="9c9c9c9c9c"
+2026-10-06T21:57:27.388336Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="9c9c9c9c9c"
+2026-10-06T21:57:27.388740Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="9c9c9c9c9c"
+2026-10-06T21:57:27.389114Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="9c9c9c9c9c"
+2026-10-06T21:57:27.389690Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="9c9c9c9c9c"
+2026-10-06T21:57:27.392944Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="9c9c9c9c9c"
+2026-10-06T21:57:27.393538Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=0 topic="9c9c9c9c9c"
+2026-10-06T21:57:27.393631Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=1 topic="9c9c9c9c9c"
+2026-10-06T21:57:27.398031Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=0 topic="7a7a7a7a7a"
+2026-10-06T21:57:27.398300Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=1 topic="7a7a7a7a7a"
+2026-10-06T21:57:27.398482Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=1 topic="7a7a7a7a7a"
+2026-10-06T21:57:27.399599Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="7a7a7a7a7a"
+2026-10-06T21:57:27.402710Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=0 topic="7b7b7b7b7b"
+2026-10-06T21:57:27.426109Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="7b7b7b7b7b"
+2026-10-06T21:57:27.426304Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="7a7a7a7a7a"
+2026-10-06T21:57:27.426356Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="7c7c7c7c7c"
+2026-10-06T21:57:27.426521Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="7a7a7a7a7a"
+2026-10-06T21:57:27.911323Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })")
+2026-10-06T21:57:27.912414Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })")
+2026-10-06T21:57:27.912646Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:27.913372Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=2 topic="7e7e7e7e7e"
+2026-10-06T21:57:27.913564Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:27.913815Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:27.915206Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=1 topic="7e7e7e7e7e"
+2026-10-06T21:57:27.915313Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: log sync error receiving from message stream: MessageStream("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })") session_id=0 topic="7e7e7e7e7e"
+2026-10-06T21:57:27.916088Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="7f7f7f7f7f"
+2026-10-06T21:57:27.917444Z ERROR iroh::socket::transports::relay: relay_recv_channel closed
+2026-10-06T21:57:27.917447Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:27.917444Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:27.917772Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:27.917809Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:27.918024Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="7e7e7e7e7e"
+2026-10-06T21:57:27.918307Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="8080808080"
+2026-10-06T21:57:27.918317Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="7e7e7e7e7e"
+2026-10-06T21:57:27.918600Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:27.918727Z ERROR iroh::socket::transports::relay: relay_recv_channel closed
+2026-10-06T21:57:27.919707Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=2 topic="7e7e7e7e7e"
+2026-10-06T21:57:27.920095Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: log sync error receiving from message stream: MessageStream("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })") session_id=0 topic="7e7e7e7e7e"
+2026-10-06T21:57:27.921039Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=1 topic="7e7e7e7e7e"
+2026-10-06T21:57:27.921189Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: log sync error receiving from message stream: MessageStream("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })") session_id=0 topic="7e7e7e7e7e"
+2026-10-06T21:57:27.921564Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:27.921852Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="7e7e7e7e7e"
+2026-10-06T21:57:27.922577Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="7e7e7e7e7e"
+2026-10-06T21:57:27.923281Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="7e7e7e7e7e"
+2026-10-06T21:57:27.923371Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="7e7e7e7e7e"
+2026-10-06T21:57:27.925891Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="7e7e7e7e7e"
+2026-10-06T21:57:28.030970Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: MessageSink("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })") session_id=1 topic="7e7e7e7e7e"
+2026-10-06T21:57:28.111386Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: MessageSink("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })") session_id=1 topic="7e7e7e7e7e"
+2026-10-06T21:57:28.256125Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: MessageSink("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })") session_id=1 topic="7e7e7e7e7e"
+test place::lanes::tests::a_partition_heals_and_both_sides_converge ... ok
+test place::lanes::tests::a_live_share_withdrawal_empties_the_receiver_selected_collection ... ok
+2026-10-06T21:57:28.569553Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=0 topic="6c81e5a1a0"
+2026-10-06T21:57:28.571959Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=0 topic="044c80c0f2"
+2026-10-06T21:57:28.572676Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=1 topic="6c81e5a1a0"
+2026-10-06T21:57:28.575241Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="0a69da7059"
+2026-10-06T21:57:28.575819Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="6c81e5a1a0"
+2026-10-06T21:57:28.577426Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=1 topic="6c81e5a1a0"
+2026-10-06T21:57:28.579064Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="f28b02dfbc"
+2026-10-06T21:57:28.579463Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="6c81e5a1a0"
+2026-10-06T21:57:28.594748Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="044c80c0f2"
+2026-10-06T21:57:28.594763Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=1 topic="f28b02dfbc"
+2026-10-06T21:57:28.595212Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=1 topic="0a69da7059"
+2026-10-06T21:57:28.595303Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="6c81e5a1a0"
+2026-10-06T21:57:28.598164Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="6c81e5a1a0"
+2026-10-06T21:57:30.182290Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=0 topic="150c8d83cc"
+2026-10-06T21:57:30.182570Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })")
+2026-10-06T21:57:30.182800Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })")
+2026-10-06T21:57:30.182901Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })")
+2026-10-06T21:57:30.183076Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })")
+2026-10-06T21:57:30.183130Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=0 topic="d22a3a4cce"
+2026-10-06T21:57:30.183289Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })")
+2026-10-06T21:57:30.186547Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=0 topic="d22a3a4cce"
+2026-10-06T21:57:30.187070Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })")
+2026-10-06T21:57:30.185283Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=1 topic="d22a3a4cce"
+2026-10-06T21:57:30.187283Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=0 topic="d22a3a4cce"
+2026-10-06T21:57:30.187308Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=1 topic="4a6e671586"
+2026-10-06T21:57:30.187384Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=0 topic="4a6e671586"
+2026-10-06T21:57:30.187795Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=0 topic="d22a3a4cce"
+2026-10-06T21:57:30.188380Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:30.188522Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:30.188537Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=0 topic="d22a3a4cce"
+2026-10-06T21:57:30.188735Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=1 topic="d22a3a4cce"
+2026-10-06T21:57:30.189055Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=0 topic="d22a3a4cce"
+2026-10-06T21:57:30.189108Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:30.189281Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:30.189695Z ERROR iroh::socket::transports::relay: relay_recv_channel closed
+2026-10-06T21:57:30.189721Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=1 topic="f337142687"
+2026-10-06T21:57:30.189799Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=0 topic="f337142687"
+2026-10-06T21:57:30.189937Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=1 topic="d22a3a4cce"
+2026-10-06T21:57:30.190004Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:30.190237Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:30.190436Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:30.190912Z ERROR iroh::socket::transports::relay: relay_recv_channel closed
+2026-10-06T21:57:30.191180Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:30.191203Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:30.191379Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="d22a3a4cce"
+2026-10-06T21:57:30.191431Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:30.192676Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:30.193070Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:30.193109Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="d22a3a4cce"
+2026-10-06T21:57:30.193313Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="d22a3a4cce"
+2026-10-06T21:57:30.194538Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="150c8d83cc"
+2026-10-06T21:57:30.194956Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="d22a3a4cce"
+2026-10-06T21:57:30.195238Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:30.195371Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:30.195616Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="4a6e671586"
+2026-10-06T21:57:30.195803Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="d22a3a4cce"
+2026-10-06T21:57:30.198412Z ERROR iroh::socket::transports::relay: relay_recv_channel closed
+2026-10-06T21:57:30.198988Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })")
+2026-10-06T21:57:30.199609Z ERROR iroh::socket::transports::relay: relay_recv_channel closed
+2026-10-06T21:57:30.202987Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="d22a3a4cce"
+2026-10-06T21:57:30.203140Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="d22a3a4cce"
+test place::lanes::tests::a_projection_session_nudges_the_founder_the_way_a_lane_arrival_does ... ok
+2026-10-06T21:57:30.752462Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: MessageSink("Io(Custom { kind: NotConnected, error: ConnectionLost(TransportError(Error { code: INTERNAL_ERROR, frame: None, reason: \"endpoint driver future was dropped\", crypto: None })) })") session_id=1 topic="62404e09d0"
+2026-10-06T21:57:31.702094Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="0b74e251ed"
+2026-10-06T21:57:31.702254Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="62404e09d0"
+2026-10-06T21:57:31.706975Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="c0f5dac73a"
+2026-10-06T21:57:31.707569Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="62404e09d0"
+2026-10-06T21:57:31.707675Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="62404e09d0"
+2026-10-06T21:57:31.714815Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="62404e09d0"
+2026-10-06T21:57:31.721573Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="35df5b236a"
+2026-10-06T21:57:32.320271Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:57:32.320282Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:57:32.396374Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="9c9c9c9c9c"
+2026-10-06T21:57:32.400953Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="9c9c9c9c9c"
+2026-10-06T21:57:32.519732Z ERROR iroh::socket: Endpoint dropped without calling `Endpoint::close`. Aborting ungracefully.
+2026-10-06T21:57:32.931318Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=1 topic="7e7e7e7e7e"
+2026-10-06T21:57:33.088093Z ERROR iroh::socket: Endpoint dropped without calling `Endpoint::close`. Aborting ungracefully.
+2026-10-06T21:57:34.883051Z  WARN p2panda_net::iroh_endpoint::actors::connection: ignoring connection: accepting failed: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:34.915667Z  WARN p2panda_net::iroh_endpoint::actors::connection: connection establishment failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:34.918157Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol session_id=2 topic="be83ec286f"
+2026-10-06T21:57:34.949357Z  WARN p2panda_net::iroh_endpoint::actors::connection: ignoring connection: accepting failed: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:34.958255Z  WARN p2panda_net::iroh_endpoint::actors::connection: connection establishment failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:34.968059Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol session_id=2 topic="be83ec286f"
+2026-10-06T21:57:34.992926Z  WARN p2panda_net::iroh_endpoint::actors::connection: ignoring connection: accepting failed: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:35.008327Z  WARN p2panda_net::iroh_endpoint::actors::connection: connection establishment failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:35.022723Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol session_id=2 topic="be83ec286f"
+2026-10-06T21:57:35.194325Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="d22a3a4cce"
+2026-10-06T21:57:35.199253Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="d22a3a4cce"
+2026-10-06T21:57:35.199522Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="150c8d83cc"
+2026-10-06T21:57:35.208504Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=1 topic="d22a3a4cce"
+2026-10-06T21:57:35.211522Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=0 topic="d22a3a4cce"
+2026-10-06T21:57:35.215800Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="4a6e671586"
+2026-10-06T21:57:35.297682Z  WARN p2panda_net::iroh_endpoint::actors::connection: ignoring connection: accepting failed: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:35.298460Z  WARN p2panda_net::iroh_endpoint::actors::connection: connection establishment failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:35.316538Z  WARN p2panda_net::iroh_endpoint::actors::connection: ignoring connection: accepting failed: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:35.319482Z  WARN p2panda_net::iroh_endpoint::actors::connection: connection establishment failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:35.323830Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol session_id=0 topic="8a8a8a8a8a"
+2026-10-06T21:57:35.331464Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol session_id=0 topic="462e5e7a28"
+2026-10-06T21:57:35.345194Z  WARN p2panda_net::iroh_endpoint::actors::connection: ignoring connection: accepting failed: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:35.349044Z  WARN p2panda_net::iroh_endpoint::actors::connection: connection establishment failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:35.376050Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol session_id=0 topic="462e5e7a28"
+2026-10-06T21:57:35.392412Z  WARN p2panda_net::iroh_endpoint::actors::connection: ignoring connection: accepting failed: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:35.394967Z  WARN p2panda_net::iroh_endpoint::actors::connection: connection establishment failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:35.398347Z  WARN p2panda_net::iroh_endpoint::actors::connection: ignoring connection: accepting failed: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:35.405330Z  WARN p2panda_net::iroh_endpoint::actors::connection: ignoring connection: accepting failed: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:35.405888Z  WARN p2panda_net::iroh_endpoint::actors::connection: connection establishment failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:35.406014Z  WARN p2panda_net::iroh_endpoint::actors::connection: connection establishment failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:35.407767Z  WARN p2panda_net::iroh_endpoint::actors::connection: ignoring connection: accepting failed: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:35.415680Z  WARN p2panda_net::iroh_endpoint::actors::connection: connection establishment failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:35.418473Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol session_id=0 topic="8a8a8a8a8a"
+2026-10-06T21:57:35.419945Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol session_id=0 topic="8a8a8a8a8a"
+2026-10-06T21:57:35.420431Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol session_id=0 topic="8a8a8a8a8a"
+2026-10-06T21:57:35.429937Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol session_id=0 topic="8a8a8a8a8a"
+test place::lanes::tests::a_joined_member_reads_chat_authored_after_a_later_invite ... ok
+2026-10-06T21:57:36.210918Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })")
+2026-10-06T21:57:36.211196Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })")
+2026-10-06T21:57:36.211316Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=0 topic="8c8c8c8c8c"
+2026-10-06T21:57:36.211410Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=1 topic="8c8c8c8c8c"
+2026-10-06T21:57:36.211957Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:36.212164Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:36.212185Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:36.212544Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:36.213463Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: log sync error receiving from message stream: MessageStream("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })") session_id=0 topic="8a8a8a8a8a"
+2026-10-06T21:57:36.214316Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=1 topic="8a8a8a8a8a"
+2026-10-06T21:57:36.214645Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: log sync error receiving from message stream: MessageStream("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })") session_id=0 topic="8a8a8a8a8a"
+2026-10-06T21:57:36.215125Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="8a8a8a8a8a"
+2026-10-06T21:57:36.215406Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:36.215579Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="8a8a8a8a8a"
+2026-10-06T21:57:36.215644Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:36.215742Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="8c8c8c8c8c"
+2026-10-06T21:57:36.220653Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:36.220675Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: log sync error receiving from message stream: MessageStream("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })") session_id=0 topic="8a8a8a8a8a"
+2026-10-06T21:57:36.220918Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=1 topic="8a8a8a8a8a"
+2026-10-06T21:57:36.220930Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=0 topic="8b8b8b8b8b"
+2026-10-06T21:57:36.221002Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:36.221038Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=1 topic="8b8b8b8b8b"
+2026-10-06T21:57:36.221087Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=0 topic="8a8a8a8a8a"
+2026-10-06T21:57:36.221502Z ERROR iroh::socket::transports::relay: relay_recv_channel closed
+2026-10-06T21:57:36.222626Z ERROR iroh::socket::transports::relay: relay_recv_channel closed
+2026-10-06T21:57:36.224988Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="8b8b8b8b8b"
+test place::lanes::tests::a_revoke_with_no_group_recipient_is_refused_and_changes_nothing ... ok
+2026-10-06T21:57:37.474060Z ERROR iroh::socket: Endpoint dropped without calling `Endpoint::close`. Aborting ungracefully.
+2026-10-06T21:57:40.343392Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: MessageSink("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })") session_id=1 topic="8a8a8a8a8a"
+2026-10-06T21:57:40.442866Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: MessageSink("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })") session_id=1 topic="8a8a8a8a8a"
+2026-10-06T21:57:40.445105Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: MessageSink("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })") session_id=1 topic="8a8a8a8a8a"
+2026-10-06T21:57:40.449599Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: MessageSink("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })") session_id=1 topic="8a8a8a8a8a"
+2026-10-06T21:57:40.461112Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: MessageSink("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })") session_id=1 topic="8a8a8a8a8a"
+2026-10-06T21:57:40.488326Z ERROR iroh::socket::transports::relay: relay_recv_channel closed
+2026-10-06T21:57:40.489610Z ERROR iroh::socket::transports::relay: relay_recv_channel closed
+2026-10-06T21:57:40.807685Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:57:40.807685Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:57:40.807685Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:57:40.807724Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:57:40.807947Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:57:40.808154Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:57:41.209837Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })")
+2026-10-06T21:57:41.210229Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })")
+2026-10-06T21:57:41.210714Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })")
+2026-10-06T21:57:41.210961Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })")
+2026-10-06T21:57:41.211078Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })")
+2026-10-06T21:57:41.211248Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })")
+2026-10-06T21:57:41.211333Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })")
+2026-10-06T21:57:41.211540Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })")
+2026-10-06T21:57:41.211719Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })")
+2026-10-06T21:57:41.211719Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=0 topic="ecfd2ff1fe"
+2026-10-06T21:57:41.211986Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })")
+2026-10-06T21:57:41.214164Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:41.215046Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:41.215041Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="462e5e7a28"
+2026-10-06T21:57:41.215566Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:41.215692Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=1 topic="20e978323a"
+2026-10-06T21:57:41.215797Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=0 topic="20e978323a"
+2026-10-06T21:57:41.215946Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:41.216555Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:41.217472Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })")
+2026-10-06T21:57:41.217535Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })")
+2026-10-06T21:57:41.217688Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=1 topic="462e5e7a28"
+2026-10-06T21:57:41.217688Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="20e978323a"
+2026-10-06T21:57:41.217727Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })")
+2026-10-06T21:57:41.217827Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=0 topic="462e5e7a28"
+2026-10-06T21:57:41.217897Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:41.217944Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=1 topic="462e5e7a28"
+2026-10-06T21:57:41.217984Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=1 topic="462e5e7a28"
+2026-10-06T21:57:41.218114Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:41.218379Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:41.218531Z ERROR iroh::socket::transports::relay: relay_recv_channel closed
+2026-10-06T21:57:41.218873Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=0 topic="462e5e7a28"
+2026-10-06T21:57:41.218983Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:41.218999Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=0 topic="462e5e7a28"
+2026-10-06T21:57:41.219958Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:41.220128Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="462e5e7a28"
+2026-10-06T21:57:41.220771Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="ecfd2ff1fe"
+2026-10-06T21:57:41.222125Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=0 topic="9ec5a3b45e"
+2026-10-06T21:57:41.222549Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="462e5e7a28"
+2026-10-06T21:57:41.223990Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="8a8a8a8a8a"
+2026-10-06T21:57:41.224103Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:41.224193Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:41.224525Z ERROR iroh::socket::transports::relay: relay_recv_channel closed
+2026-10-06T21:57:41.224618Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="8a8a8a8a8a"
+2026-10-06T21:57:41.224875Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=0 topic="8a8a8a8a8a"
+2026-10-06T21:57:41.226331Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="8c8c8c8c8c"
+2026-10-06T21:57:41.230169Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:41.230435Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:41.230683Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="462e5e7a28"
+2026-10-06T21:57:41.231595Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="9ec5a3b45e"
+2026-10-06T21:57:41.232575Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:41.233574Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="8b8b8b8b8b"
+2026-10-06T21:57:41.238476Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:41.238833Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="462e5e7a28"
+2026-10-06T21:57:41.238907Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:41.239175Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:41.239215Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="462e5e7a28"
+2026-10-06T21:57:41.241225Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=1 topic="462e5e7a28"
+2026-10-06T21:57:41.241349Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=0 topic="462e5e7a28"
+2026-10-06T21:57:41.246478Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="462e5e7a28"
+2026-10-06T21:57:41.851582Z  WARN p2panda_net::iroh_endpoint::actors::connection: ignoring connection: accepting failed: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:41.852459Z  WARN p2panda_net::iroh_endpoint::actors::connection: connection establishment failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:41.868983Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol session_id=0 topic="043d3692bb"
+2026-10-06T21:57:41.998184Z  WARN p2panda_net::iroh_endpoint::actors::connection: ignoring connection: accepting failed: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:41.999792Z  WARN p2panda_net::iroh_endpoint::actors::connection: connection establishment failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:42.011698Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol session_id=0 topic="043d3692bb"
+2026-10-06T21:57:42.234828Z  WARN p2panda_net::iroh_endpoint::actors::connection: ignoring connection: accepting failed: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:42.237036Z  WARN p2panda_net::iroh_endpoint::actors::connection: connection establishment failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:42.252427Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol session_id=0 topic="9e16eeab78"
+2026-10-06T21:57:42.260280Z  WARN p2panda_net::iroh_endpoint::actors::connection: ignoring connection: accepting failed: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:42.265247Z  WARN p2panda_net::iroh_endpoint::actors::connection: connection establishment failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:42.269491Z  WARN p2panda_net::iroh_endpoint::actors::connection: ignoring connection: accepting failed: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:42.273807Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol session_id=0 topic="9e16eeab78"
+2026-10-06T21:57:42.303916Z  WARN p2panda_net::iroh_endpoint::actors::connection: connection establishment failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:42.306148Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol session_id=0 topic="9e16eeab78"
+2026-10-06T21:57:42.392293Z  WARN p2panda_net::iroh_endpoint::actors::connection: ignoring connection: accepting failed: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:42.394876Z  WARN p2panda_net::iroh_endpoint::actors::connection: connection establishment failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:42.403609Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol session_id=0 topic="9e16eeab78"
+2026-10-06T21:57:43.971172Z  WARN p2panda_net::iroh_endpoint::actors::connection: ignoring connection: accepting failed: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:43.977523Z  WARN p2panda_net::iroh_endpoint::actors::connection: connection establishment failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:43.979326Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol session_id=4 topic="be83ec286f"
+2026-10-06T21:57:43.983765Z  WARN p2panda_net::iroh_endpoint::actors::connection: ignoring connection: accepting failed: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:44.073266Z  WARN p2panda_net::iroh_endpoint::actors::connection: connection establishment failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:44.130167Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol session_id=4 topic="be83ec286f"
+2026-10-06T21:57:44.211769Z  WARN p2panda_net::iroh_endpoint::actors::connection: ignoring connection: accepting failed: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:44.258816Z  WARN p2panda_net::iroh_endpoint::actors::connection: connection establishment failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:44.312123Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol session_id=4 topic="be83ec286f"
+2026-10-06T21:57:46.143486Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: log sync error receiving from message stream: MessageStream("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })") session_id=0 topic="be83ec286f"
+2026-10-06T21:57:46.143820Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: log sync error receiving from message stream: MessageStream("Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) })") session_id=0 topic="be83ec286f"
+2026-10-06T21:57:46.162162Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:46.162259Z  WARN p2panda_sync::protocols::topic_log_sync: sync session closed with error error=DecodeMessage("Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b\"\" })) })")
+2026-10-06T21:57:46.170114Z ERROR iroh::socket::transports::relay: relay_recv_channel closed
+2026-10-06T21:57:46.225564Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="20e978323a"
+2026-10-06T21:57:46.227518Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=1 topic="9ec5a3b45e"
+2026-10-06T21:57:46.228308Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=0 topic="462e5e7a28"
+2026-10-06T21:57:46.229249Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="462e5e7a28"
+2026-10-06T21:57:46.242768Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="462e5e7a28"
+2026-10-06T21:57:46.245717Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="ecfd2ff1fe"
+2026-10-06T21:57:46.245922Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=0 topic="462e5e7a28"
+2026-10-06T21:57:46.350611Z ERROR iroh::socket::transports::relay: relay_recv_channel closed
+2026-10-06T21:57:46.257895Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="9ec5a3b45e"
+2026-10-06T21:57:46.260830Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="462e5e7a28"
+2026-10-06T21:57:46.266713Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=0 topic="462e5e7a28"
+2026-10-06T21:57:46.268748Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=1 topic="462e5e7a28"
+2026-10-06T21:57:46.277575Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=1 topic="ecfd2ff1fe"
+2026-10-06T21:57:46.277772Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(LocallyClosed) }) session_id=1 topic="462e5e7a28"
+2026-10-06T21:57:46.283021Z  WARN iroh::socket: tasks didn't finish in time, aborting
+2026-10-06T21:57:46.351737Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=4 topic="f93825626f"
+2026-10-06T21:57:46.351836Z ERROR iroh::socket::transports::relay: relay_recv_channel closed
+2026-10-06T21:57:46.367083Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=5 topic="be83ec286f"
+2026-10-06T21:57:46.380502Z  WARN p2panda_net::iroh_endpoint::actors::connection: ignoring connection: accepting failed: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:46.407967Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=4 topic="be83ec286f"
+2026-10-06T21:57:46.407967Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: error sending on message sink: Io(Custom { kind: NotConnected, error: ConnectionLost(ApplicationClosed(ApplicationClose { error_code: 0, reason: b"" })) }) session_id=5 topic="f93825626f"
+2026-10-06T21:57:46.412190Z ERROR iroh::socket::transports::relay: relay_recv_channel closed
+2026-10-06T21:57:46.413486Z ERROR iroh::socket::transports::relay: relay_recv_channel closed
+2026-10-06T21:57:46.448496Z  WARN p2panda_net::iroh_endpoint::actors::connection: connection establishment failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:46.456962Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol session_id=0 topic="426990c712"
+2026-10-06T21:57:46.468981Z  WARN p2panda_net::iroh_endpoint::actors::connection: ignoring connection: accepting failed: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:46.495076Z  WARN p2panda_net::iroh_endpoint::actors::connection: connection establishment failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+test place::lanes::tests::a_bounded_writer_grant_expires_while_connected_and_reconnect_still_admits ... ok
+2026-10-06T21:57:46.501545Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol session_id=0 topic="426990c712"
+2026-10-06T21:57:46.513056Z  WARN p2panda_net::iroh_endpoint::actors::connection: ignoring connection: accepting failed: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:46.636484Z  WARN p2panda_net::iroh_endpoint::actors::connection: connection establishment failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:46.652554Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol session_id=0 topic="426990c712"
+2026-10-06T21:57:46.724552Z  WARN p2panda_net::iroh_endpoint::actors::connection: ignoring connection: accepting failed: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:46.841074Z  WARN p2panda_net::iroh_endpoint::actors::connection: connection establishment failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol
+2026-10-06T21:57:46.954547Z  WARN p2panda_net::sync::actors::topic_manager: sync session failed: aborted by peer: the cryptographic handshake failed: error 120: peer doesn't support any known protocol session_id=0 topic="426990c712"

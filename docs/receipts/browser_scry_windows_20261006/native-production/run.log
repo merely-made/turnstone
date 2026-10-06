@@ -1,0 +1,164 @@
+2026-10-06T21:07:56.129086Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:07:56.137989Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:07:56.851077Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:07:56.859839Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:07:57.638325Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:07:57.675413Z  WARN turnstone::gemini_identity: failed to project Gemini client identity error=client identities are only valid for gemini:// or titan:// capsules
+2026-10-06T21:07:58.525130Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:07:58.538620Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:08:00.121057Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:08:01.800962Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:08:03.395497Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:08:05.140121Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:08:05.152954Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:08:06.697823Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+[producer] resize: 1024x600 -> 252x570
+[producer] start_capture: 252x570 ready in 40ms
+2026-10-06T21:08:07.628474Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:08:07.638612Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:08:09.377467Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:08:09.387315Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:08:11.061080Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:08:12.106424Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:08:12.116218Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:08:13.032723Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:08:14.769203Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:08:14.780306Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:08:16.414718Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:08:16.424189Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+[producer] resize: 252x570 -> 509x570
+[producer] start_capture: 509x570 ready in 27ms
+2026-10-06T21:08:17.945335Z  WARN turnstone::gemini_identity: failed to project Gemini client identity error=client identities are only valid for gemini:// or titan:// capsules
+2026-10-06T21:08:18.129831Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:08:18.139427Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:08:19.857042Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:08:20.741505Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:08:20.751117Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+[producer] resize: 509x570 -> 252x570
+[producer] start_capture: 252x570 ready in 32ms
+2026-10-06T21:08:22.281521Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:08:23.208473Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:08:23.218386Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:08:24.838458Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:08:24.847863Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+[producer] resize: 252x570 -> 123x570
+[producer] start_capture: 123x570 ready in 34ms
+2026-10-06T21:08:26.372325Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:08:26.382228Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+[producer] resize: 1024x600 -> 123x570
+[producer] start_capture: 123x570 ready in 28ms
+2026-10-06T21:08:28.084488Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:08:28.095409Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:08:29.687080Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:08:29.696784Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:08:31.372389Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:08:31.382014Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:08:33.116678Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:08:33.125337Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:08:34.741544Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:08:35.729001Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:08:35.738699Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:08:37.262834Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+[producer] resize: 123x570 -> 252x570
+[producer] start_capture: 252x570 ready in 26ms
+[producer] resize: 123x570 -> 252x570
+[producer] start_capture: 252x570 ready in 26ms
+2026-10-06T21:08:38.172010Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:08:38.181328Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+[producer] resize: 252x570 -> 509x570
+[producer] start_capture: 509x570 ready in 24ms
+[producer] resize: 252x570 -> 509x570
+[producer] start_capture: 509x570 ready in 23ms
+2026-10-06T21:08:39.958649Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:08:39.967928Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:08:41.666493Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:08:42.547011Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:08:42.556849Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:08:43.291237Z  WARN turnstone::gemini_identity: failed to project Gemini client identity error=client identities are only valid for gemini:// or titan:// capsules
+[producer] resize: 1024x600 -> 509x570
+[producer] start_capture: 509x570 ready in 30ms
+2026-10-06T21:08:44.061815Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:08:45.771378Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:08:47.508238Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:08:47.518490Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:08:49.153183Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:08:49.164094Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:08:50.790396Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:08:50.800490Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:08:52.388264Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:08:53.325286Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:08:53.335548Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:08:54.183268Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:08:55.015225Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:08:55.025354Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+[producer] resize: 509x570 -> 252x570
+[producer] start_capture: 252x570 ready in 28ms
+[producer] resize: 509x570 -> 252x570
+[producer] start_capture: 252x570 ready in 27ms
+2026-10-06T21:08:56.651698Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:08:56.661846Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+[producer] resize: 252x570 -> 175x570
+[producer] start_capture: 175x570 ready in 33ms
+[producer] resize: 252x570 -> 175x570
+[producer] start_capture: 175x570 ready in 28ms
+2026-10-06T21:08:58.274333Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:08:59.224083Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:08:59.233010Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:09:00.806173Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:09:01.655869Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:09:01.664402Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+[producer] resize: 175x570 -> 85x570
+[producer] start_capture: 85x570 ready in 27ms
+[producer] resize: 175x570 -> 85x570
+[producer] start_capture: 85x570 ready in 27ms
+2026-10-06T21:09:03.238853Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:09:04.946922Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:09:06.622976Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:09:07.458329Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:09:07.468682Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:09:09.112375Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:09:09.122101Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:09:10.716321Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+[producer] resize: 1024x600 -> 85x570
+[producer] start_capture: 85x570 ready in 31ms
+2026-10-06T21:09:11.651152Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:09:11.661382Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:09:13.244855Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:09:13.254880Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:09:15.026863Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:09:15.036526Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:09:16.571393Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:09:18.166519Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:09:18.177371Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:09:19.830373Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:09:19.840680Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:09:21.031435Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+[producer] resize: 85x570 -> 175x570
+[producer] start_capture: 175x570 ready in 33ms
+[producer] resize: 85x570 -> 175x570
+[producer] start_capture: 175x570 ready in 28ms
+2026-10-06T21:09:23.074817Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:09:24.103565Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:09:26.074673Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:09:28.211692Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:09:29.127433Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+[producer] resize: 1024x600 -> 175x570
+[producer] start_capture: 175x570 ready in 30ms
+2026-10-06T21:09:30.996008Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:09:31.006143Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:09:32.608865Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:09:32.618319Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:09:34.250244Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:09:35.111006Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:09:35.119890Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+[producer] resize: 1024x600 -> 175x570
+[producer] start_capture: 175x570 ready in 28ms
+2026-10-06T21:09:35.989926Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:09:37.753406Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:09:37.763201Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:09:39.408171Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:09:39.417786Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:09:41.078201Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:09:41.087571Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:09:42.706663Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T21:09:42.715159Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b

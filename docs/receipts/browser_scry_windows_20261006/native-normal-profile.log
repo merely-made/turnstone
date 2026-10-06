@@ -1,0 +1,147 @@
+2026-10-06T20:52:26.469913Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T20:52:26.481756Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T20:52:27.305728Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T20:52:27.316975Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T20:52:28.665774Z  WARN turnstone::gemini_identity: failed to project Gemini client identity error=client identities are only valid for gemini:// or titan:// capsules
+2026-10-06T20:52:28.864493Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T20:52:29.731736Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T20:52:29.742887Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T20:52:31.510023Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T20:52:31.522316Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T20:52:33.252286Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T20:52:34.948601Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T20:52:34.962853Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T20:52:36.543609Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T20:52:38.187007Z  INFO turnstone::scry_cookie_probe: native profile facts=Ok(("C:\\Users\\mark_\\Code\\repos\\turnstone\\docs\\receipts\\browser_scry_windows_20261006\\profile\\normal-profile\\scry\\webview2-profiles\\48b85a38-afb6-4b5b-ba88-44b97db9eb90\\EBWebView\\Default", false))
+[producer] resize: 1024x600 -> 252x570
+2026-10-06T20:52:38.357660Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+[producer] start_capture: 252x570 ready in 44ms
+2026-10-06T20:52:38.448913Z  INFO turnstone::scry_cookie_probe: native cookies (values omitted) facts=[]
+2026-10-06T20:52:39.278383Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T20:52:39.293439Z  INFO turnstone::scry_cookie_probe: native cookies (values omitted) facts=[]
+2026-10-06T20:52:40.211617Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T20:52:40.221291Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T20:52:40.333997Z  INFO turnstone::scry_cookie_probe: native cookies (values omitted) facts=[]
+2026-10-06T20:52:41.349775Z  INFO turnstone::scry_cookie_probe: native cookies (values omitted) facts=[]
+2026-10-06T20:52:41.855732Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T20:52:42.381806Z  INFO turnstone::scry_cookie_probe: native cookies (values omitted) facts=[]
+2026-10-06T20:52:42.697913Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T20:52:42.708167Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T20:52:43.475113Z  INFO turnstone::scry_cookie_probe: native cookies (values omitted) facts=[]
+2026-10-06T20:52:44.412625Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T20:52:44.502525Z  INFO turnstone::scry_cookie_probe: native cookies (values omitted) facts=[]
+2026-10-06T20:52:45.502079Z  INFO turnstone::scry_cookie_probe: native cookies (values omitted) facts=[]
+2026-10-06T20:52:45.976816Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T20:52:45.986549Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T20:52:46.540747Z  INFO turnstone::scry_cookie_probe: native cookies (values omitted) facts=[]
+2026-10-06T20:52:47.508619Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T20:52:47.518559Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T20:52:47.566788Z  INFO turnstone::scry_cookie_probe: native cookies (values omitted) facts=[]
+[producer] resize: 252x570 -> 509x570
+[producer] start_capture: 509x570 ready in 33ms
+2026-10-06T20:52:48.566220Z  INFO turnstone::scry_cookie_probe: native cookies (values omitted) facts=[]
+2026-10-06T20:52:49.153216Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T20:52:49.164581Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T20:52:49.181744Z  WARN turnstone::gemini_identity: failed to project Gemini client identity error=client identities are only valid for gemini:// or titan:// capsules
+2026-10-06T20:52:49.615386Z  INFO turnstone::scry_cookie_probe: native cookies (values omitted) facts=[]
+2026-10-06T20:52:50.617794Z  INFO turnstone::scry_cookie_probe: native cookies (values omitted) facts=[]
+2026-10-06T20:52:50.780002Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T20:52:51.629834Z  INFO turnstone::scry_cookie_probe: native cookies (values omitted) facts=[]
+2026-10-06T20:52:51.744183Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T20:52:51.754956Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T20:52:52.653098Z  INFO turnstone::scry_cookie_probe: native cookies (values omitted) facts=[]
+[producer] resize: 509x570 -> 252x570
+[producer] start_capture: 252x570 ready in 29ms
+2026-10-06T20:52:53.401159Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T20:52:53.680800Z  INFO turnstone::scry_cookie_probe: native cookies (values omitted) facts=[]
+2026-10-06T20:52:54.670637Z  INFO turnstone::scry_cookie_probe: native cookies (values omitted) facts=[]
+2026-10-06T20:52:55.170326Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T20:52:55.679052Z  INFO turnstone::scry_cookie_probe: native cookies (values omitted) facts=[]
+2026-10-06T20:52:56.139650Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T20:52:56.150239Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T20:52:56.699140Z  INFO turnstone::scry_cookie_probe: native cookies (values omitted) facts=[]
+[producer] resize: 252x570 -> 123x570
+[producer] start_capture: 123x570 ready in 31ms
+2026-10-06T20:52:57.752127Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T20:52:57.895776Z  INFO turnstone::scry_cookie_probe: native cookies (values omitted) facts=[]
+2026-10-06T20:52:58.668311Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T20:52:58.678236Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T20:52:59.526598Z  INFO turnstone::scry_cookie_probe: native profile facts=Ok(("C:\\Users\\mark_\\Code\\repos\\turnstone\\docs\\receipts\\browser_scry_windows_20261006\\profile\\normal-profile\\scry\\webview2-profiles\\75203cb6-f4eb-417a-8fc0-54f8b4718283\\EBWebView\\Default", false))
+2026-10-06T20:52:59.550333Z  INFO turnstone::scry_cookie_probe: native cookies (values omitted) facts=[]
+[producer] resize: 1024x600 -> 123x570
+[producer] start_capture: 123x570 ready in 33ms
+2026-10-06T20:52:59.761754Z  INFO turnstone::scry_cookie_probe: native cookies (values omitted) facts=[]
+2026-10-06T20:52:59.826273Z  INFO turnstone::scry_cookie_probe: native cookies (values omitted) facts=[]
+2026-10-06T20:53:00.400637Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T20:53:00.411839Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T20:53:00.635998Z  INFO turnstone::scry_cookie_probe: native cookies (values omitted) facts=[]
+2026-10-06T20:53:00.876908Z  INFO turnstone::scry_cookie_probe: native cookies (values omitted) facts=[]
+2026-10-06T20:53:01.695841Z  INFO turnstone::scry_cookie_probe: native cookies (values omitted) facts=[]
+2026-10-06T20:53:01.888378Z  INFO turnstone::scry_cookie_probe: native cookies (values omitted) facts=[]
+2026-10-06T20:53:01.946683Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T20:53:01.957139Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T20:53:02.721679Z  INFO turnstone::scry_cookie_probe: native cookies (values omitted) facts=[]
+2026-10-06T20:53:02.934454Z  INFO turnstone::scry_cookie_probe: native cookies (values omitted) facts=[]
+2026-10-06T20:53:03.557854Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T20:53:03.718440Z  INFO turnstone::scry_cookie_probe: native cookies (values omitted) facts=[]
+2026-10-06T20:53:03.952990Z  INFO turnstone::scry_cookie_probe: native cookies (values omitted) facts=[]
+2026-10-06T20:53:04.733789Z  INFO turnstone::scry_cookie_probe: native cookies (values omitted) facts=[]
+2026-10-06T20:53:05.015066Z  INFO turnstone::scry_cookie_probe: native cookies (values omitted) facts=[]
+2026-10-06T20:53:05.195860Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T20:53:05.746618Z  INFO turnstone::scry_cookie_probe: native cookies (values omitted) facts=[]
+2026-10-06T20:53:06.038802Z  INFO turnstone::scry_cookie_probe: native cookies (values omitted) facts=[]
+2026-10-06T20:53:06.807499Z  INFO turnstone::scry_cookie_probe: native cookies (values omitted) facts=[]
+2026-10-06T20:53:06.934051Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T20:53:07.060409Z  INFO turnstone::scry_cookie_probe: native cookies (values omitted) facts=[]
+2026-10-06T20:53:07.819027Z  INFO turnstone::scry_cookie_probe: native cookies (values omitted) facts=[]
+2026-10-06T20:53:08.102736Z  INFO turnstone::scry_cookie_probe: native cookies (values omitted) facts=[]
+2026-10-06T20:53:08.661138Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T20:53:08.861043Z  INFO turnstone::scry_cookie_probe: native cookies (values omitted) facts=[]
+2026-10-06T20:53:09.462752Z  INFO turnstone::scry_cookie_probe: native cookies (values omitted) facts=[]
+[producer] resize: 123x570 -> 252x570
+2026-10-06T20:53:09.617254Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+[producer] start_capture: 252x570 ready in 28ms
+[producer] resize: 123x570 -> 252x570
+2026-10-06T20:53:09.627035Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+[producer] start_capture: 252x570 ready in 28ms
+2026-10-06T20:53:09.887174Z  INFO turnstone::scry_cookie_probe: native cookies (values omitted) facts=[]
+2026-10-06T20:53:10.459221Z  INFO turnstone::scry_cookie_probe: native cookies (values omitted) facts=[]
+2026-10-06T20:53:10.890203Z  INFO turnstone::scry_cookie_probe: native cookies (values omitted) facts=[]
+[producer] resize: 252x570 -> 509x570
+[producer] start_capture: 509x570 ready in 30ms
+[producer] resize: 252x570 -> 509x570
+[producer] start_capture: 509x570 ready in 32ms
+2026-10-06T20:53:11.260734Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T20:53:11.466075Z  INFO turnstone::scry_cookie_probe: native cookies (values omitted) facts=[]
+2026-10-06T20:53:11.889621Z  INFO turnstone::scry_cookie_probe: native cookies (values omitted) facts=[]
+2026-10-06T20:53:12.187390Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T20:53:12.197335Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T20:53:12.493500Z  INFO turnstone::scry_cookie_probe: native cookies (values omitted) facts=[]
+2026-10-06T20:53:12.881461Z  INFO turnstone::scry_cookie_probe: native cookies (values omitted) facts=[]
+2026-10-06T20:53:13.496579Z  INFO turnstone::scry_cookie_probe: native cookies (values omitted) facts=[("scry_A", "127.0.0.1", "/", Some(1791406393.382335), false, false)]
+2026-10-06T20:53:13.762208Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T20:53:13.772400Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T20:53:13.891467Z  INFO turnstone::scry_cookie_probe: native cookies (values omitted) facts=[]
+2026-10-06T20:53:14.507297Z  INFO turnstone::scry_cookie_probe: native cookies (values omitted) facts=[("scry_A", "127.0.0.1", "/", Some(1791406393.921523), false, false)]
+2026-10-06T20:53:14.935942Z  INFO turnstone::scry_cookie_probe: native cookies (values omitted) facts=[]
+2026-10-06T20:53:15.342004Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T20:53:15.512976Z  INFO turnstone::scry_cookie_probe: native cookies (values omitted) facts=[("scry_A", "127.0.0.1", "/", Some(1791406393.921523), false, false)]
+2026-10-06T20:53:15.995567Z  INFO turnstone::scry_cookie_probe: native cookies (values omitted) facts=[("scry_B", "127.0.0.1", "/", Some(1791406395.899467), false, false)]
+2026-10-06T20:53:16.265065Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T20:53:16.276153Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T20:53:16.783646Z  WARN turnstone::gemini_identity: failed to project Gemini client identity error=client identities are only valid for gemini:// or titan:// capsules
+2026-10-06T20:53:17.002665Z  INFO turnstone::scry_cookie_probe: native profile facts=Ok(("C:\\Users\\mark_\\Code\\repos\\turnstone\\docs\\receipts\\browser_scry_windows_20261006\\profile\\normal-profile\\scry\\webview2-profiles\\75203cb6-f4eb-417a-8fc0-54f8b4718283\\EBWebView\\Default", false))
+2026-10-06T20:53:17.104111Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T20:53:17.241578Z  INFO turnstone::scry_cookie_probe: native profile facts=Ok(("C:\\Users\\mark_\\Code\\repos\\turnstone\\docs\\receipts\\browser_scry_windows_20261006\\profile\\normal-profile\\scry\\webview2-profiles\\75203cb6-f4eb-417a-8fc0-54f8b4718283\\EBWebView\\Default", false))
+2026-10-06T20:53:17.242312Z  INFO turnstone::scry_cookie_probe: native cookies (values omitted) facts=[("scry_A", "127.0.0.1", "/", Some(1791406393.921523), false, false)]
+[producer] resize: 1024x600 -> 509x570
+[producer] start_capture: 509x570 ready in 41ms
+2026-10-06T20:53:17.311394Z  INFO turnstone::scry_cookie_probe: native cookies (values omitted) facts=[("scry_B", "127.0.0.1", "/", Some(1791406395.899467), false, false)]
+2026-10-06T20:53:17.785944Z  INFO turnstone::scry_cookie_probe: native cookies (values omitted) facts=[("scry_A", "127.0.0.1", "/", Some(1791406393.921523), false, false)]
+2026-10-06T20:53:18.001802Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T20:53:18.012097Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T20:53:18.261047Z  INFO turnstone::scry_cookie_probe: native cookies (values omitted) facts=[("scry_B", "127.0.0.1", "/", Some(1791406395.899467), false, false)]
+2026-10-06T20:53:18.797799Z  INFO turnstone::scry_cookie_probe: native cookies (values omitted) facts=[("scry_A", "127.0.0.1", "/", Some(1791406393.921523), false, false)]
+2026-10-06T20:53:19.261172Z  INFO turnstone::scry_cookie_probe: native cookies (values omitted) facts=[("scry_B", "127.0.0.1", "/", Some(1791406395.899467), false, false)]
+2026-10-06T20:53:19.831786Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-06T20:53:19.841232Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b

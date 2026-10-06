@@ -1,0 +1,274 @@
+    Blocking waiting for file lock on package cache
+warning: patch `p2panda-stream v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.4#0a54ab82)` was not used in the crate graph
+help: Check that the patched package version and available features are compatible
+      with the dependency requirements. If the patch has a different version from
+      what is locked in the Cargo.lock file, run `cargo update` to use the new
+      version. This may also occur with an optional dependency that is not enabled.
+   Compiling turnstone v0.1.0 (C:\Users\mark_\Code\repos\turnstone)
+warning: unused imports: `Suggestion` and `normalize_address`
+  --> src\app\mod.rs:20:31
+   |
+20 | use crate::ui::{OmnibarState, Suggestion, normalize_address};
+   |                               ^^^^^^^^^^  ^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `browse`
+  --> src\app\mod.rs:26:13
+   |
+26 | use crate::{browse, session};
+   |             ^^^^^^
+
+warning: unused import: `crate::panes::PaneContent`
+  --> src\app\node_arms.rs:16:5
+   |
+16 | use crate::panes::PaneContent;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `CaretMove`
+  --> src\app\omnibar_arms.rs:12:29
+   |
+12 | use crate::action::{Action, CaretMove, Effect};
+   |                             ^^^^^^^^^
+
+warning: unused import: `crate::panes::PaneContent`
+  --> src\app\palette.rs:16:5
+   |
+16 | use crate::panes::PaneContent;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `uuid::Uuid`
+  --> src\app\session_lifecycle.rs:17:5
+   |
+17 | use uuid::Uuid;
+   |     ^^^^^^^^^^
+
+warning: unused import: `PaneContent`
+  --> src\app\session_lifecycle.rs:22:44
+   |
+22 | use crate::panes::{FrisketLayout, GraphId, PaneContent, SessionId};
+   |                                            ^^^^^^^^^^^
+
+warning: unused imports: `MOOT_ACT_ACTION` and `MOOT_DELEGATION_DOMAIN`
+    --> src\place\worker.rs:2663:44
+     |
+2663 |         CollectionChange, ContributionRef, MOOT_ACT_ACTION, MOOT_DELEGATION_DOMAIN,
+     |                                            ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `CapabilityScope`, `DelegationCertificate`, `DelegationParent`, and `delegation_signing_salt`
+    --> src\place\worker.rs:2677:9
+     |
+2677 |         CapabilityScope, DelegationCertificate, DelegationParent, DelegationRevocation,
+     |         ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^
+2678 |         SignedDelegationCertificate, SignedDelegationRevocation, delegation_signing_salt,
+     |                                                                  ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::action::CaretMove`
+   --> src\shell\drive.rs:685:13
+    |
+685 |         use crate::action::CaretMove;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::sync::mpsc::Receiver`
+  --> src\shell\effects.rs:13:5
+   |
+13 | use std::sync::mpsc::Receiver;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `FetchCommand` and `FetchUpdate`
+  --> src\shell\effects.rs:15:13
+   |
+15 | use fetch::{FetchCommand, FetchUpdate};
+   |             ^^^^^^^^^^^^  ^^^^^^^^^^^
+
+warning: unused import: `SessionClick`
+  --> src\shell\effects.rs:17:46
+   |
+17 |     DocumentFindQuery, EngineProfileBinding, SessionClick, SessionSpawnRequest, SurfaceSpawnRequest,
+   |                                              ^^^^^^^^^^^^
+
+warning: unused import: `crate::panes::PaneContent`
+  --> src\shell\effects.rs:22:5
+   |
+22 | use crate::panes::PaneContent;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::surface::SurfaceKind`
+  --> src\shell\render.rs:25:5
+   |
+25 | use crate::surface::SurfaceKind;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `PhysicalPosition`
+  --> src\shell\lens.rs:19:18
+   |
+19 | use winit::dpi::{PhysicalPosition, PhysicalSize};
+   |                  ^^^^^^^^^^^^^^^^
+
+warning: unused imports: `Key as WinitKey` and `NamedKey as WinitNamedKey`
+  --> src\shell\input.rs:16:23
+   |
+16 | use winit::keyboard::{Key as WinitKey, NamedKey as WinitNamedKey};
+   |                       ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `SessionScrollKey`
+  --> src\shell\input.rs:20:27
+   |
+20 | use inker::{SessionClick, SessionScrollKey};
+   |                           ^^^^^^^^^^^^^^^^
+
+warning: unused import: `CaretMove`
+  --> src\shell\input.rs:24:29
+   |
+24 | use crate::action::{Action, CaretMove};
+   |                             ^^^^^^^^^
+
+warning: unused import: `decode_sprite`
+  --> src\shell\input.rs:27:20
+   |
+27 | use super::{Shell, decode_sprite};
+   |                    ^^^^^^^^^^^^^
+
+warning: unused import: `input::pointer_button`
+  --> src\shell\mod.rs:35:5
+   |
+35 | use input::pointer_button;
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::path::Path`
+  --> src\shell\mod.rs:38:5
+   |
+38 | use std::path::Path;
+   |     ^^^^^^^^^^^^^^^
+
+warning: unused import: `image::ImageEncoder`
+  --> src\shell\mod.rs:45:5
+   |
+45 | use image::ImageEncoder;
+   |     ^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `mere::canvas::WHEEL_PAN_SCALE`
+  --> src\shell\mod.rs:47:5
+   |
+47 | use mere::canvas::WHEEL_PAN_SCALE;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `ColorLoad` and `NetrenderOptions`
+  --> src\shell\mod.rs:53:17
+   |
+53 | use netrender::{ColorLoad, NetrenderOptions};
+   |                 ^^^^^^^^^  ^^^^^^^^^^^^^^^^
+
+warning: unused import: `winit::application::ApplicationHandler`
+  --> src\shell\mod.rs:54:5
+   |
+54 | use winit::application::ApplicationHandler;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `PhysicalPosition` and `PhysicalSize`
+  --> src\shell\mod.rs:55:18
+   |
+55 | use winit::dpi::{PhysicalPosition, PhysicalSize};
+   |                  ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^
+
+warning: unused imports: `ElementState`, `Ime`, `MouseButton`, `MouseScrollDelta`, and `WindowEvent`
+  --> src\shell\mod.rs:56:20
+   |
+56 | use winit::event::{ElementState, Ime, MouseButton, MouseScrollDelta, WindowEvent};
+   |                    ^^^^^^^^^^^^  ^^^  ^^^^^^^^^^^  ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^
+
+warning: unused imports: `Key as WinitKey` and `NamedKey as WinitNamedKey`
+  --> src\shell\mod.rs:58:23
+   |
+58 | use winit::keyboard::{Key as WinitKey, NamedKey as WinitNamedKey};
+   |                       ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `Effect`
+  --> src\shell\mod.rs:67:29
+   |
+67 | use crate::action::{Action, Effect, Update};
+   |                             ^^^^^^
+
+warning: unused import: `session`
+  --> src\shell\mod.rs:70:21
+   |
+70 | use crate::{browse, session};
+   |                     ^^^^^^^
+
+warning: unused import: `mere::canvas::palette`
+  --> src\swatch_pane\mod.rs:32:5
+   |
+32 | use mere::canvas::palette;
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `ColorF`
+  --> src\swatch_pane\mod.rs:33:17
+   |
+33 | use sprigging::{ColorF, LeafRegistry, RenderedLeaves};
+   |                 ^^^^^^
+
+warning: unused import: `crate::content::NodeContent`
+  --> src\swatch_pane\mod.rs:37:5
+   |
+37 | use crate::content::NodeContent;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::overmap`
+  --> src\swatch_pane\mod.rs:38:5
+   |
+38 | use crate::overmap;
+   |     ^^^^^^^^^^^^^^
+
+error[E0308]: mismatched types
+   --> src\shell\weld.rs:324:17
+    |
+324 |                   self.0.borrow_mut().$name($($arg),*)
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `Option<NativeFrame>`, found `Option<Dx12SharedTexture>`
+...
+337 | /         forward! {
+338 | |         fn surface_mode(&self) -> CefSurfaceMode;
+339 | |         fn capabilities(&self) -> CefSurfaceCapabilities;
+340 | |         fn acquire_native_frame(&mut self) -> Option<welding::NativeFrame>;
+    | |                                               ---------------------------- expected `std::option::Option<welding::NativeFrame>` because of return type
+...   |
+397 | |         fn close(&mut self) -> Result<(), WeldError>;
+398 | |         }
+    | |_________- in this macro invocation
+    |
+    = note: expected enum `std::option::Option<welding::NativeFrame>`
+               found enum `std::option::Option<welding::native_frame::Dx12SharedTexture>`
+    = note: this error originates in the macro `forward` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+warning: unused import: `genet_clipboard::TextClipboard`
+   --> src\shell\effects.rs:699:25
+    |
+699 |                     use genet_clipboard::TextClipboard as _;
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: variable does not need to be mutable
+    --> src\place\worker.rs:3821:13
+     |
+3821 |         let mut welcome = |open: &mut OpenPlace, seed: u8| {
+     |             ----^^^^^^^
+     |             |
+     |             help: remove this `mut`
+     |
+     = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `caption`
+   --> src\shell\render.rs:754:13
+    |
+754 |         let caption = self
+    |             ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_caption`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `ok`
+    --> src\shell\render.rs:1017:17
+     |
+1017 |             let ok = capture_composed(host, &layers, w, h, &path);
+     |                 ^^ help: if this is intentional, prefix it with an underscore: `_ok`
+
+For more information about this error, try `rustc --explain E0308`.
+warning: `turnstone` (lib test) generated 39 warnings
+error: could not compile `turnstone` (lib test) due to 1 previous error; 39 warnings emitted

@@ -1,0 +1,6 @@
+RESULT fail
+captured 01_permission_decision
+FAIL: assert snap browser-current Contains '/permission-result': got 'Turnstone D0 permission fixture  http://127.0.0.1:43107/permission'
+captured 02_permission_answered
+captured 03_permission_teardown
+Direct Weld permission callback and teardown complete

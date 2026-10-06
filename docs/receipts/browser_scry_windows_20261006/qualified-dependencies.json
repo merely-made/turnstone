@@ -1,0 +1,112 @@
+[
+  {
+    "name": "genet-documents",
+    "version": "0.1.0",
+    "source": "git+https://github.com/merely-made/genet.git?rev=69a2383b2ad777b884a72f31f8f8fb7ece275c0b#69a2383b2ad777b884a72f31f8f8fb7ece275c0b",
+    "manifest_path": "C:\\Users\\mark_\\.cargo\\git\\checkouts\\genet-0bbbe1b4c8511eb3\\69a2383\\components\\genet-documents\\Cargo.toml",
+    "features": [
+      "default",
+      "livery"
+    ]
+  },
+  {
+    "name": "genet-winit-host",
+    "version": "0.2.0",
+    "source": "git+https://github.com/merely-made/genet.git?rev=69a2383b2ad777b884a72f31f8f8fb7ece275c0b#69a2383b2ad777b884a72f31f8f8fb7ece275c0b",
+    "manifest_path": "C:\\Users\\mark_\\.cargo\\git\\checkouts\\genet-0bbbe1b4c8511eb3\\69a2383\\components\\genet-winit-host\\Cargo.toml",
+    "features": []
+  },
+  {
+    "name": "grafting",
+    "version": "0.6.0",
+    "source": "registry+https://github.com/rust-lang/crates.io-index",
+    "manifest_path": "C:\\Users\\mark_\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\grafting-0.6.0\\Cargo.toml",
+    "features": [
+      "wgpu-30"
+    ]
+  },
+  {
+    "name": "grafting",
+    "version": "0.6.0",
+    "source": "git+https://github.com/merely-made/wgpu-graft.git?rev=403a30c2fab39c573d1eebb57a0995e2c3347ff1#403a30c2fab39c573d1eebb57a0995e2c3347ff1",
+    "manifest_path": "C:\\Users\\mark_\\.cargo\\git\\checkouts\\wgpu-graft-c53eab123f092d6e\\403a30c\\grafting\\Cargo.toml",
+    "features": [
+      "wgpu-30"
+    ]
+  },
+  {
+    "name": "inker",
+    "version": "0.1.1",
+    "source": "git+https://github.com/merely-made/mere.git?rev=bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3#bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3",
+    "manifest_path": "C:\\Users\\mark_\\.cargo\\git\\checkouts\\mere-9d8e871c24d9ba76\\bd5912f\\crates\\inker\\inker\\Cargo.toml",
+    "features": []
+  },
+  {
+    "name": "mere",
+    "version": "0.0.2",
+    "source": "git+https://github.com/merely-made/mere.git?rev=bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3#bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3",
+    "manifest_path": "C:\\Users\\mark_\\.cargo\\git\\checkouts\\mere-9d8e871c24d9ba76\\bd5912f\\crates\\mere\\Cargo.toml",
+    "features": [
+      "canvas",
+      "default",
+      "graph",
+      "linked-data",
+      "workbench"
+    ]
+  },
+  {
+    "name": "scrying",
+    "version": "0.7.1",
+    "source": "git+https://github.com/merely-made/wgpu-scry.git?rev=39818a7eddb8bec33f7c61ed144da226bc0a1d04#39818a7eddb8bec33f7c61ed144da226bc0a1d04",
+    "manifest_path": "C:\\Users\\mark_\\.cargo\\git\\checkouts\\wgpu-scry-39597474cbbd1668\\39818a7\\scrying\\Cargo.toml",
+    "features": [
+      "wgpu-30"
+    ]
+  },
+  {
+    "name": "scrying-engine",
+    "version": "0.2.0",
+    "source": "git+https://github.com/merely-made/mere.git?rev=bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3#bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3",
+    "manifest_path": "C:\\Users\\mark_\\.cargo\\git\\checkouts\\mere-9d8e871c24d9ba76\\bd5912f\\crates\\inker\\engines\\scrying-engine\\Cargo.toml",
+    "features": []
+  },
+  {
+    "name": "weld-engine",
+    "version": "0.2.0",
+    "source": "git+https://github.com/merely-made/mere.git?rev=bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3#bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3",
+    "manifest_path": "C:\\Users\\mark_\\.cargo\\git\\checkouts\\mere-9d8e871c24d9ba76\\bd5912f\\crates\\inker\\engines\\weld-engine\\Cargo.toml",
+    "features": [
+      "default",
+      "welding-0-15"
+    ]
+  },
+  {
+    "name": "welding",
+    "version": "0.15.0",
+    "source": "git+https://github.com/merely-made/wgpu-weld.git?rev=4784d07c4064195c33136b9b91c8231913f08e06#4784d07c4064195c33136b9b91c8231913f08e06",
+    "manifest_path": "C:\\Users\\mark_\\.cargo\\git\\checkouts\\wgpu-weld-ecaec5b64ea90a16\\4784d07\\welding\\Cargo.toml",
+    "features": [
+      "cef-runtime",
+      "default",
+      "wgpu-30"
+    ]
+  },
+  {
+    "name": "wgpu",
+    "version": "30.0.1",
+    "source": "registry+https://github.com/rust-lang/crates.io-index",
+    "manifest_path": "C:\\Users\\mark_\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\wgpu-30.0.1\\Cargo.toml",
+    "features": [
+      "default",
+      "dx12",
+      "gles",
+      "metal",
+      "parking_lot",
+      "std",
+      "vulkan",
+      "web",
+      "webgpu",
+      "wgsl"
+    ]
+  }
+]

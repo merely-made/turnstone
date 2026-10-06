@@ -24,6 +24,67 @@ use crate::session;
 
 use super::Shell;
 
+// Chromium profile storage expects ordinary Win32 paths. Rust canonicalization
+// returns extended paths, which prevented cookie persistence in our native receipt.
+fn browser_profile_path(path: std::path::PathBuf) -> Result<std::path::PathBuf, String> {
+    #[cfg(windows)]
+    {
+        use std::path::{Component, Prefix};
+        let mut parts = path.components();
+        match parts.next() {
+            Some(Component::Prefix(prefix)) => match prefix.kind() {
+                Prefix::VerbatimDisk(drive) => {
+                    let mut normal = std::path::PathBuf::from(format!("{}:\\", drive as char));
+                    normal.extend(parts.filter(|part| !matches!(part, Component::RootDir)));
+                    return Ok(normal);
+                },
+                Prefix::VerbatimUNC(server, share) => {
+                    let mut normal = std::path::PathBuf::from(r"\\");
+                    normal.push(server);
+                    normal.push(share);
+                    normal.extend(parts.filter(|part| !matches!(part, Component::RootDir)));
+                    return Ok(normal);
+                },
+                Prefix::Verbatim(_) | Prefix::DeviceNS(_) => {
+                    return Err("browser profiles require a drive or UNC path".into());
+                },
+                _ => {},
+            },
+            _ => {},
+        }
+    }
+    Ok(path)
+}
+
+#[cfg(all(test, windows))]
+mod browser_profile_path_tests {
+    use super::browser_profile_path;
+    use std::path::PathBuf;
+
+    #[test]
+    fn canonical_drive_and_unc_paths_keep_the_resolved_location() {
+        for (input, expected) in [
+            (
+                r"\\?\C:\profile with spaces\node",
+                r"C:\profile with spaces\node",
+            ),
+            (r"\\?\UNC\server\share\node", r"\\server\share\node"),
+            (r"C:\ordinary\node", r"C:\ordinary\node"),
+        ] {
+            assert_eq!(
+                browser_profile_path(PathBuf::from(input)).unwrap(),
+                PathBuf::from(expected)
+            );
+        }
+    }
+
+    #[test]
+    fn unsupported_device_paths_are_refused() {
+        assert!(browser_profile_path(PathBuf::from(r"\\?\Volume{fixture}\node")).is_err());
+        assert!(browser_profile_path(PathBuf::from(r"\\.\device\node")).is_err());
+    }
+}
+
 /// How many recalled pages the omnibar asks for. The lane sits below the
 /// node and go rows, so a handful is what there is room to read.
 const RECALL_ROW_LIMIT: usize = 5;
@@ -517,6 +578,8 @@ impl Shell {
                     profile.display()
                 )
             })?;
+
+            let profile = browser_profile_path(profile)?;
 
             // Producer epochs belong to one instance. Retire old custody and
             // synchronization before a replacement can emit an equal epoch.

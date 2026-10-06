@@ -179,7 +179,7 @@ impl App {
         {
             rows.push(("Keep node".to_string(), Action::KeepNode { member }));
         }
-        if self.graph_runtimes.focused_member().is_some_and(|member| {
+        if self.browser_command_target().is_some_and(|(member, _)| {
             matches!(
                 self.content.get(member),
                 Some(crate::content::NodeContent::Live)
@@ -192,7 +192,7 @@ impl App {
         }
         // Page zoom is a document scale, so only a live engine that reports the
         // control offers it. An engine without it simply has no rows.
-        if let Some(member) = self.graph_runtimes.focused_member()
+        if let Some((member, _)) = self.browser_command_target()
             && self.page_zoom_offered(member)
         {
             rows.push(("Zoom in".to_string(), Action::PageZoomIn { member }));

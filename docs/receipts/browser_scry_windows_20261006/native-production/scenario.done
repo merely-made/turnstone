@@ -1,0 +1,16 @@
+RESULT ok
+captured 00_b_inspector_before_pin
+captured 00_b_inspector_after_pin
+captured 01_two_scry_pages
+captured 02_text_pointer_and_keyboard
+captured 02b_b_reloaded
+captured 02c_a_wheel
+captured 02d_b_wheel
+captured 02e_both_scroll_reset
+captured 03_find_and_zoom_unavailable
+captured 04_resized_two_pages
+captured 05_a_reader_b_scry
+captured 06_a_scry_reconstructed
+captured 07_both_closed
+captured 08_ready_for_restart
+B1 run 1 complete; run 2 must reuse the exact TURNSTONE_ROOT and loopback origin

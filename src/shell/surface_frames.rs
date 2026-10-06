@@ -25,6 +25,8 @@ use winit::dpi::PhysicalSize;
 enum FrameSource {
     #[cfg(feature = "weld")]
     RawDx12,
+    #[cfg(feature = "weld")]
+    WeldOwned,
     #[cfg(feature = "scry")]
     ScryOwned,
 }
@@ -102,6 +104,17 @@ pub(super) fn update_imported_frame(
     queue: &wgpu::Queue,
     #[cfg(feature = "scry")] scrying_importer: Option<&ScryingFrameImporter>,
 ) -> Result<(), SurfaceError> {
+    #[cfg(feature = "weld")]
+    if matches!(&frame.texture, NativeTextureHandle::OwnedPayload(payload)
+        if payload.payload_kind() == "welding-0.15.native-frame")
+    {
+        let result = update_welding_frame(cached, frame, device, queue);
+        if result.is_err() {
+            *cached = None;
+        }
+        return result;
+    }
+
     #[cfg(feature = "scry")]
     if matches!(&frame.texture, NativeTextureHandle::OwnedPayload(_)) {
         let result = update_scrying_frame(cached, frame, scrying_importer);
@@ -261,6 +274,78 @@ fn update_scrying_frame(
     stats.imports = stats.imports.saturating_add(1);
     stats.waits = stats.waits.saturating_add(1);
     importer.stats.set(stats);
+    Ok(())
+}
+
+#[cfg(feature = "weld")]
+fn prepare_welding_frame(
+    frame: SurfaceFrame,
+) -> Result<(welding::native_frame::Dx12SharedTexture, FrameIdentity), SurfaceError> {
+    if !matches!(&frame.sync, inker::SurfaceSyncHandle::None) {
+        return Err(SurfaceError::FrameAcquisitionFailed(
+            "Weld callback frame requires completed synchronization".into(),
+        ));
+    }
+    let expected = FrameIdentity {
+        source: FrameSource::WeldOwned,
+        epoch: frame.resource_epoch,
+        width: frame.width,
+        height: frame.height,
+        format: map_texture_format(&frame.format)?,
+    };
+    let native = weld_engine::into_welding_native_frame(frame).map_err(|_| {
+        SurfaceError::Unsupported("Turnstone received an unknown Weld owned payload".into())
+    })?;
+    let welding::NativeFrame::Dx12SharedTexture(native) = native else {
+        return Err(SurfaceError::Unsupported(
+            "Windows Weld requires a D3D12 frame".into(),
+        ));
+    };
+    validate_welding_native_frame(native, expected)
+}
+
+#[cfg(feature = "weld")]
+fn validate_welding_native_frame(
+    native: welding::native_frame::Dx12SharedTexture,
+    expected: FrameIdentity,
+) -> Result<(welding::native_frame::Dx12SharedTexture, FrameIdentity), SurfaceError> {
+    let actual = FrameIdentity {
+        source: FrameSource::WeldOwned,
+        epoch: native.generation(),
+        width: native.size().width,
+        height: native.size().height,
+        format: native.format(),
+    };
+    if expected != actual {
+        return Err(SurfaceError::FrameAcquisitionFailed(
+            "Weld surface envelope disagrees with its owned native frame".into(),
+        ));
+    }
+    reuse_allocation(None, expected)?;
+    Ok((native, expected))
+}
+
+#[cfg(feature = "weld")]
+fn update_welding_frame(
+    cached: &mut Option<ImportedSurfaceFrame>,
+    frame: SurfaceFrame,
+    device: &wgpu::Device,
+    queue: &wgpu::Queue,
+) -> Result<(), SurfaceError> {
+    let (native, identity) = prepare_welding_frame(frame)?;
+    reuse_allocation(cached.as_ref().map(|existing| existing.identity), identity)?;
+    // Callback handoff requires Weld's cache-visible read on every paint,
+    // including another write to the same allocation epoch.
+    let host = welding::HostWgpuContext::new(device.clone(), queue.clone());
+    let imported = welding::WgpuTextureImporter::import_owned_dx12_callback_frame(native, &host)
+        .map_err(|error| {
+            SurfaceError::FrameAcquisitionFailed(format!("Weld frame import failed: {error}"))
+        })?;
+    *cached = Some(ImportedSurfaceFrame {
+        resource_epoch: identity.epoch,
+        identity,
+        texture: imported.texture,
+    });
     Ok(())
 }
 
@@ -642,5 +727,68 @@ mod tests {
         assert!(handle_is_open(raw));
         drop(native);
         assert!(!handle_is_open(raw));
+    }
+}
+
+#[cfg(all(test, feature = "weld"))]
+mod welding_frame_tests {
+    use super::*;
+    use std::os::windows::{fs::OpenOptionsExt, io::OwnedHandle};
+
+    #[test]
+    fn rejected_weld_envelopes_release_native_custody_before_import() {
+        let identity = FrameIdentity {
+            source: FrameSource::WeldOwned,
+            epoch: 3,
+            width: 16,
+            height: 8,
+            format: wgpu::TextureFormat::Bgra8Unorm,
+        };
+        for expected in [
+            FrameIdentity {
+                width: 17,
+                ..identity
+            },
+            FrameIdentity {
+                epoch: 4,
+                ..identity
+            },
+            FrameIdentity {
+                format: wgpu::TextureFormat::Rgba8Unorm,
+                ..identity
+            },
+        ] {
+            let path = tempfile::NamedTempFile::new().unwrap().into_temp_path();
+            let open_exclusive = || {
+                std::fs::OpenOptions::new()
+                    .read(true)
+                    .share_mode(0)
+                    .open(&path)
+            };
+            let handle: OwnedHandle = open_exclusive().unwrap().into();
+            assert!(open_exclusive().is_err());
+            let native = welding::native_frame::Dx12SharedTexture::from_owned_handle(
+                handle,
+                PhysicalSize::new(16, 8),
+                wgpu::TextureFormat::Bgra8Unorm,
+                3,
+            )
+            .unwrap();
+            assert!(validate_welding_native_frame(native, expected).is_err());
+            assert!(
+                open_exclusive().is_ok(),
+                "native custody must release the exclusive file handle"
+            );
+        }
+        assert!(
+            !reuse_allocation(
+                Some(identity),
+                FrameIdentity {
+                    source: FrameSource::RawDx12,
+                    ..identity
+                }
+            )
+            .unwrap()
+        );
     }
 }

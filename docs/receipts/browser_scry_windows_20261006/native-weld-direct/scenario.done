@@ -1,0 +1,10 @@
+RESULT fail
+captured 00_b_inspector_before_pin
+captured 00_b_inspector_after_pin
+captured 01_two_scry_pages
+FAIL: assert snap browser-zoom-capability Contains 'partial': got 'supported'
+FAIL: assert snap document-find-count Eq '1': got '0'
+captured 02_find
+captured 03_zoom
+captured 04_teardown
+B2 direct Weld: two producers, find, requested zoom and zero-resource teardown

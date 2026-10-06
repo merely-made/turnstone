@@ -1,0 +1,826 @@
+﻿2026-10-06T21:21:49.1036087Z Current runner version: '2.337.0'
+2026-10-06T21:21:49.1043696Z Runner name: 'wgpu-thinkpad-radv'
+2026-10-06T21:21:49.1044534Z Runner group name: 'wgpu-hardware'
+2026-10-06T21:21:49.1045505Z Machine name: 'thinkpad-l14-f'
+2026-10-06T21:21:49.1048837Z ##[group]GITHUB_TOKEN Permissions
+2026-10-06T21:21:49.1051804Z Contents: read
+2026-10-06T21:21:49.1052398Z Metadata: read
+2026-10-06T21:21:49.1053136Z ##[endgroup]
+2026-10-06T21:21:49.1055330Z Secret source: Actions
+2026-10-06T21:21:49.1056365Z Cache mode: write
+2026-10-06T21:21:49.1057303Z Prepare workflow directory
+2026-10-06T21:21:49.1656974Z Prepare all required actions
+2026-10-06T21:21:49.1710867Z Getting action download info
+2026-10-06T21:21:49.4606854Z Download action repository 'actions/checkout@v7' (SHA:3d3c42e5aac5ba805825da76410c181273ba90b1)
+2026-10-06T21:21:50.0354085Z Download action repository 'dtolnay/rust-toolchain@1.97.1' (SHA:9ca9f0b320e19763058bc9531663c225d20db487)
+2026-10-06T21:21:50.4000458Z Complete job name: RADV WPE to Vulkan pixel gate
+2026-10-06T21:21:50.5351320Z ##[group]Run actions/checkout@v7
+2026-10-06T21:21:50.5352289Z with:
+2026-10-06T21:21:50.5352772Z   repository: merely-made/wgpu-scry
+2026-10-06T21:21:50.5357510Z   token: ***
+2026-10-06T21:21:50.5357965Z   ssh-strict: true
+2026-10-06T21:21:50.5358434Z   ssh-user: git
+2026-10-06T21:21:50.5358906Z   persist-credentials: true
+2026-10-06T21:21:50.5359417Z   clean: true
+2026-10-06T21:21:50.5360085Z   sparse-checkout-cone-mode: true
+2026-10-06T21:21:50.5360637Z   fetch-depth: 1
+2026-10-06T21:21:50.5361085Z   fetch-tags: false
+2026-10-06T21:21:50.5361545Z   show-progress: true
+2026-10-06T21:21:50.5362020Z   lfs: false
+2026-10-06T21:21:50.5362471Z   submodules: false
+2026-10-06T21:21:50.5362948Z   set-safe-directory: true
+2026-10-06T21:21:50.5363484Z   allow-unsafe-pr-checkout: false
+2026-10-06T21:21:50.5364297Z env:
+2026-10-06T21:21:50.5364758Z   CARGO_NET_GIT_FETCH_WITH_CLI: true
+2026-10-06T21:21:50.5365359Z   RUSTFLAGS: -D warnings
+2026-10-06T21:21:50.5366092Z   CARGO_TARGET_DIR: /home/markik/Code/targets/wgpu-scry-hardware
+2026-10-06T21:21:50.5366831Z   XDG_RUNTIME_DIR: /run/user/1000
+2026-10-06T21:21:50.5367385Z   WAYLAND_DISPLAY: wayland-0
+2026-10-06T21:21:50.5367897Z   DISPLAY: 
+2026-10-06T21:21:50.5368424Z   DBUS_SESSION_BUS_ADDRESS: unix:path=/run/user/1000/bus
+2026-10-06T21:21:50.5369092Z   XDG_SESSION_TYPE: wayland
+2026-10-06T21:21:50.5369757Z   XDG_CURRENT_DESKTOP: GNOME
+2026-10-06T21:21:50.5370282Z   WGPU_BACKEND: vulkan
+2026-10-06T21:21:50.5370773Z ##[endgroup]
+2026-10-06T21:21:50.6634968Z Syncing repository: merely-made/wgpu-scry
+2026-10-06T21:21:50.6637989Z ##[group]Getting Git version info
+2026-10-06T21:21:50.6638929Z Working directory is '/home/markik/actions-runner-wgpu/_work/wgpu-scry/wgpu-scry'
+2026-10-06T21:21:50.6640775Z [command]/usr/bin/git version
+2026-10-06T21:21:50.6641506Z git version 2.55.0
+2026-10-06T21:21:50.6643353Z ##[endgroup]
+2026-10-06T21:21:50.6650942Z Copying '/home/markik/.gitconfig' to '/home/markik/actions-runner-wgpu/_work/_temp/7cc3e909-19bc-4e23-815a-7ab19f90ef8a/.gitconfig'
+2026-10-06T21:21:50.6664025Z Temporarily overriding HOME='/home/markik/actions-runner-wgpu/_work/_temp/7cc3e909-19bc-4e23-815a-7ab19f90ef8a' before making global git config changes
+2026-10-06T21:21:50.6665648Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-06T21:21:50.6667561Z [command]/usr/bin/git config --global --add safe.directory /home/markik/actions-runner-wgpu/_work/wgpu-scry/wgpu-scry
+2026-10-06T21:21:50.6718834Z [command]/usr/bin/git config --local --get remote.origin.url
+2026-10-06T21:21:50.6753177Z https://github.com/merely-made/wgpu-scry
+2026-10-06T21:21:50.6769691Z ##[group]Removing previously created refs, to avoid conflicts
+2026-10-06T21:21:50.6773676Z [command]/usr/bin/git rev-parse --symbolic-full-name --verify --quiet HEAD
+2026-10-06T21:21:50.6809161Z refs/heads/main
+2026-10-06T21:21:50.6819269Z [command]/usr/bin/git checkout --detach
+2026-10-06T21:21:50.6881509Z HEAD is now at 889d3b6 Check Mac capture size expectations in the native hardware lane
+2026-10-06T21:21:50.6984148Z [command]/usr/bin/git branch --delete --force main
+2026-10-06T21:21:50.7036946Z Deleted branch main (was 889d3b6).
+2026-10-06T21:21:50.7096551Z ##[endgroup]
+2026-10-06T21:21:50.7101432Z [command]/usr/bin/git submodule status
+2026-10-06T21:21:50.7504287Z ##[group]Cleaning the repository
+2026-10-06T21:21:50.7510916Z [command]/usr/bin/git clean -ffdx
+2026-10-06T21:21:50.7584202Z Removing .host-hardware-lock/
+2026-10-06T21:21:50.7599411Z [command]/usr/bin/git reset --hard HEAD
+2026-10-06T21:21:50.7658127Z HEAD is now at 889d3b6 Check Mac capture size expectations in the native hardware lane
+2026-10-06T21:21:50.7662380Z ##[endgroup]
+2026-10-06T21:21:50.7664995Z ##[group]Disabling automatic garbage collection
+2026-10-06T21:21:50.7682871Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-06T21:21:50.7719840Z ##[endgroup]
+2026-10-06T21:21:50.7720676Z ##[group]Setting up auth
+2026-10-06T21:21:50.7721334Z Removing SSH command configuration
+2026-10-06T21:21:50.7724111Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-06T21:21:50.7791810Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-06T21:21:50.8187358Z Removing HTTP extra header
+2026-10-06T21:21:50.8193191Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-06T21:21:50.8237965Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-06T21:21:50.8649192Z Removing includeIf entries pointing to credentials config files
+2026-10-06T21:21:50.8650414Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-06T21:21:50.8697361Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-06T21:21:50.9138408Z [command]/usr/bin/git config --file /home/markik/actions-runner-wgpu/_work/_temp/git-credentials-5529fe85-be52-4628-ab1f-94d74db312c3.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-06T21:21:50.9199097Z [command]/usr/bin/git config --local includeIf.gitdir:/home/markik/actions-runner-wgpu/_work/wgpu-scry/wgpu-scry/.git.path /home/markik/actions-runner-wgpu/_work/_temp/git-credentials-5529fe85-be52-4628-ab1f-94d74db312c3.config
+2026-10-06T21:21:50.9243051Z [command]/usr/bin/git config --local includeIf.gitdir:/home/markik/actions-runner-wgpu/_work/wgpu-scry/wgpu-scry/.git/worktrees/*.path /home/markik/actions-runner-wgpu/_work/_temp/git-credentials-5529fe85-be52-4628-ab1f-94d74db312c3.config
+2026-10-06T21:21:50.9290408Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-5529fe85-be52-4628-ab1f-94d74db312c3.config
+2026-10-06T21:21:50.9343866Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-5529fe85-be52-4628-ab1f-94d74db312c3.config
+2026-10-06T21:21:50.9436679Z ##[endgroup]
+2026-10-06T21:21:50.9437863Z ##[group]Fetching the repository
+2026-10-06T21:21:50.9439437Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +97b7579ca5e2818aff08a83b2f66d2ea4a82e77d:refs/remotes/origin/main
+2026-10-06T21:21:51.3575332Z From https://github.com/merely-made/wgpu-scry
+2026-10-06T21:21:51.3579402Z  + 889d3b6...97b7579 97b7579ca5e2818aff08a83b2f66d2ea4a82e77d -> origin/main  (forced update)
+2026-10-06T21:21:51.3590719Z [command]/usr/bin/git branch --list --remote origin/main
+2026-10-06T21:21:51.3630018Z   origin/main
+2026-10-06T21:21:51.3642056Z [command]/usr/bin/git rev-parse refs/remotes/origin/main
+2026-10-06T21:21:51.3682194Z 97b7579ca5e2818aff08a83b2f66d2ea4a82e77d
+2026-10-06T21:21:51.3690197Z ##[endgroup]
+2026-10-06T21:21:51.3692325Z ##[group]Determining the checkout info
+2026-10-06T21:21:51.3693980Z ##[endgroup]
+2026-10-06T21:21:51.3694974Z [command]/usr/bin/git sparse-checkout disable
+2026-10-06T21:21:51.3763030Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-06T21:21:51.3814072Z ##[group]Checking out the ref
+2026-10-06T21:21:51.3816132Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+2026-10-06T21:21:51.3878297Z Warning: you are leaving 1 commit behind, not connected to
+2026-10-06T21:21:51.3881993Z any of your branches:
+2026-10-06T21:21:51.3882667Z 
+2026-10-06T21:21:51.3883602Z   889d3b6 Check Mac capture size expectations in the native hardware lane
+2026-10-06T21:21:51.3885086Z 
+2026-10-06T21:21:51.3885996Z If you want to keep it by creating a new branch, this may be a good time
+2026-10-06T21:21:51.3887935Z to do so with:
+2026-10-06T21:21:51.3888556Z 
+2026-10-06T21:21:51.3889679Z  git branch <new-branch-name> 889d3b6
+2026-10-06T21:21:51.3890650Z 
+2026-10-06T21:21:51.3891231Z Switched to a new branch 'main'
+2026-10-06T21:21:51.3892685Z branch 'main' set up to track 'origin/main'.
+2026-10-06T21:21:51.3897291Z ##[endgroup]
+2026-10-06T21:21:51.3953479Z [command]/usr/bin/git log -1 --format=%H
+2026-10-06T21:21:51.3991456Z 97b7579ca5e2818aff08a83b2f66d2ea4a82e77d
+2026-10-06T21:21:51.4500579Z ##[group]Run actions/checkout@v7
+2026-10-06T21:21:51.4501748Z with:
+2026-10-06T21:21:51.4502675Z   repository: merely-made/wgpu-graft
+2026-10-06T21:21:51.4503975Z   ref: 781aa6aad3f63b83ad48b192a6a5d078be1d71b8
+2026-10-06T21:21:51.4505295Z   path: .host-hardware-lock
+2026-10-06T21:21:51.4506558Z   sparse-checkout: .github/actions/host-hardware-lock
+2026-10-06T21:21:51.4516443Z   sparse-checkout-cone-mode: false
+2026-10-06T21:21:51.4527423Z   token: ***
+2026-10-06T21:21:51.4528315Z   ssh-strict: true
+2026-10-06T21:21:51.4529239Z   ssh-user: git
+2026-10-06T21:21:51.4530218Z   persist-credentials: true
+2026-10-06T21:21:51.4531263Z   clean: true
+2026-10-06T21:21:51.4532196Z   fetch-depth: 1
+2026-10-06T21:21:51.4533123Z   fetch-tags: false
+2026-10-06T21:21:51.4534080Z   show-progress: true
+2026-10-06T21:21:51.4535028Z   lfs: false
+2026-10-06T21:21:51.4535900Z   submodules: false
+2026-10-06T21:21:51.4536871Z   set-safe-directory: true
+2026-10-06T21:21:51.4538025Z   allow-unsafe-pr-checkout: false
+2026-10-06T21:21:51.4539135Z env:
+2026-10-06T21:21:51.4540063Z   CARGO_NET_GIT_FETCH_WITH_CLI: true
+2026-10-06T21:21:51.4541249Z   RUSTFLAGS: -D warnings
+2026-10-06T21:21:51.4542591Z   CARGO_TARGET_DIR: /home/markik/Code/targets/wgpu-scry-hardware
+2026-10-06T21:21:51.4544187Z   XDG_RUNTIME_DIR: /run/user/1000
+2026-10-06T21:21:51.4545330Z   WAYLAND_DISPLAY: wayland-0
+2026-10-06T21:21:51.4546382Z   DISPLAY: 
+2026-10-06T21:21:51.4547490Z   DBUS_SESSION_BUS_ADDRESS: unix:path=/run/user/1000/bus
+2026-10-06T21:21:51.4548914Z   XDG_SESSION_TYPE: wayland
+2026-10-06T21:21:51.4550025Z   XDG_CURRENT_DESKTOP: GNOME
+2026-10-06T21:21:51.4551099Z   WGPU_BACKEND: vulkan
+2026-10-06T21:21:51.4552076Z ##[endgroup]
+2026-10-06T21:21:51.5507127Z Syncing repository: merely-made/wgpu-graft
+2026-10-06T21:21:51.5514253Z ##[group]Getting Git version info
+2026-10-06T21:21:51.5516352Z Working directory is '/home/markik/actions-runner-wgpu/_work/wgpu-scry/wgpu-scry/.host-hardware-lock'
+2026-10-06T21:21:51.5540696Z [command]/usr/bin/git version
+2026-10-06T21:21:51.5587438Z git version 2.55.0
+2026-10-06T21:21:51.5649374Z ##[endgroup]
+2026-10-06T21:21:51.5664923Z Copying '/home/markik/.gitconfig' to '/home/markik/actions-runner-wgpu/_work/_temp/7d42be40-6394-4ebf-bc3a-0e03b833397a/.gitconfig'
+2026-10-06T21:21:51.5676296Z Temporarily overriding HOME='/home/markik/actions-runner-wgpu/_work/_temp/7d42be40-6394-4ebf-bc3a-0e03b833397a' before making global git config changes
+2026-10-06T21:21:51.5679908Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-06T21:21:51.5683033Z [command]/usr/bin/git config --global --add safe.directory /home/markik/actions-runner-wgpu/_work/wgpu-scry/wgpu-scry/.host-hardware-lock
+2026-10-06T21:21:51.5746392Z ##[group]Determining repository object format
+2026-10-06T21:21:51.5749048Z ##[endgroup]
+2026-10-06T21:21:51.5751545Z ##[group]Initializing the repository
+2026-10-06T21:21:51.5754781Z [command]/usr/bin/git init /home/markik/actions-runner-wgpu/_work/wgpu-scry/wgpu-scry/.host-hardware-lock
+2026-10-06T21:21:51.5805937Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-06T21:21:51.5811202Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-06T21:21:51.5815643Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-06T21:21:51.5817280Z hint: call:
+2026-10-06T21:21:51.5818115Z hint:
+2026-10-06T21:21:51.5819166Z hint: 	git config --global init.defaultBranch <name>
+2026-10-06T21:21:51.5820586Z hint:
+2026-10-06T21:21:51.5821823Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-06T21:21:51.5823872Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-06T21:21:51.5825616Z hint:
+2026-10-06T21:21:51.5826482Z hint: 	git branch -m <name>
+2026-10-06T21:21:51.5827480Z hint:
+2026-10-06T21:21:51.5828836Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-06T21:21:51.5832194Z Initialized empty Git repository in /home/markik/actions-runner-wgpu/_work/wgpu-scry/wgpu-scry/.host-hardware-lock/.git/
+2026-10-06T21:21:51.5836589Z [command]/usr/bin/git remote add origin https://github.com/merely-made/wgpu-graft
+2026-10-06T21:21:51.5866508Z ##[endgroup]
+2026-10-06T21:21:51.5868184Z ##[group]Disabling automatic garbage collection
+2026-10-06T21:21:51.5869967Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-06T21:21:51.5925052Z ##[endgroup]
+2026-10-06T21:21:51.5926872Z ##[group]Setting up auth
+2026-10-06T21:21:51.5928005Z Removing SSH command configuration
+2026-10-06T21:21:51.5929794Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-06T21:21:51.5975442Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-06T21:21:51.6367864Z Removing HTTP extra header
+2026-10-06T21:21:51.6372459Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-06T21:21:51.6414639Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-06T21:21:51.6810954Z Removing includeIf entries pointing to credentials config files
+2026-10-06T21:21:51.6815665Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-06T21:21:51.6868018Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-06T21:21:51.7276513Z [command]/usr/bin/git config --file /home/markik/actions-runner-wgpu/_work/_temp/git-credentials-5f5af400-7591-4be7-ad85-d7a9cbcfaefc.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-06T21:21:51.7355177Z [command]/usr/bin/git config --local includeIf.gitdir:/home/markik/actions-runner-wgpu/_work/wgpu-scry/wgpu-scry/.host-hardware-lock/.git.path /home/markik/actions-runner-wgpu/_work/_temp/git-credentials-5f5af400-7591-4be7-ad85-d7a9cbcfaefc.config
+2026-10-06T21:21:51.7405448Z [command]/usr/bin/git config --local includeIf.gitdir:/home/markik/actions-runner-wgpu/_work/wgpu-scry/wgpu-scry/.host-hardware-lock/.git/worktrees/*.path /home/markik/actions-runner-wgpu/_work/_temp/git-credentials-5f5af400-7591-4be7-ad85-d7a9cbcfaefc.config
+2026-10-06T21:21:51.7448603Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.host-hardware-lock/.git.path /github/runner_temp/git-credentials-5f5af400-7591-4be7-ad85-d7a9cbcfaefc.config
+2026-10-06T21:21:51.7500970Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.host-hardware-lock/.git/worktrees/*.path /github/runner_temp/git-credentials-5f5af400-7591-4be7-ad85-d7a9cbcfaefc.config
+2026-10-06T21:21:51.7548764Z ##[endgroup]
+2026-10-06T21:21:51.7551079Z ##[group]Fetching the repository
+2026-10-06T21:21:51.7556988Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --filter=blob:none --depth=1 origin 781aa6aad3f63b83ad48b192a6a5d078be1d71b8
+2026-10-06T21:21:52.2625212Z From https://github.com/merely-made/wgpu-graft
+2026-10-06T21:21:52.2626857Z  * branch            781aa6aad3f63b83ad48b192a6a5d078be1d71b8 -> FETCH_HEAD
+2026-10-06T21:21:52.2638529Z [command]/usr/bin/git rev-parse --verify --quiet 781aa6aad3f63b83ad48b192a6a5d078be1d71b8^{object}
+2026-10-06T21:21:52.2675465Z 781aa6aad3f63b83ad48b192a6a5d078be1d71b8
+2026-10-06T21:21:52.2683716Z ##[endgroup]
+2026-10-06T21:21:52.2685183Z ##[group]Determining the checkout info
+2026-10-06T21:21:52.2686839Z ##[endgroup]
+2026-10-06T21:21:52.2688291Z ##[group]Setting up sparse checkout
+2026-10-06T21:21:52.2692303Z [command]/usr/bin/git config core.sparseCheckout true
+2026-10-06T21:21:52.2745530Z [command]/usr/bin/git rev-parse --git-path info/sparse-checkout
+2026-10-06T21:21:52.2780453Z .git/info/sparse-checkout
+2026-10-06T21:21:52.2794220Z ##[endgroup]
+2026-10-06T21:21:52.2795723Z ##[group]Checking out the ref
+2026-10-06T21:21:52.2798153Z [command]/usr/bin/git checkout --progress --force 781aa6aad3f63b83ad48b192a6a5d078be1d71b8
+2026-10-06T21:21:53.0550184Z Note: switching to '781aa6aad3f63b83ad48b192a6a5d078be1d71b8'.
+2026-10-06T21:21:53.0551161Z 
+2026-10-06T21:21:53.0551664Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-10-06T21:21:53.0552830Z changes and commit them, and you can discard any commits you make in this
+2026-10-06T21:21:53.0553879Z state without impacting any branches by switching back to a branch.
+2026-10-06T21:21:53.0554226Z 
+2026-10-06T21:21:53.0554435Z If you want to create a new branch to retain commits you create, you may
+2026-10-06T21:21:53.0555013Z do so (now or later) by using -c with the switch command. Example:
+2026-10-06T21:21:53.0555309Z 
+2026-10-06T21:21:53.0555432Z   git switch -c <new-branch-name>
+2026-10-06T21:21:53.0555627Z 
+2026-10-06T21:21:53.0555745Z Or undo this operation with:
+2026-10-06T21:21:53.0555947Z 
+2026-10-06T21:21:53.0556048Z   git switch -
+2026-10-06T21:21:53.0556352Z 
+2026-10-06T21:21:53.0556615Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-10-06T21:21:53.0556970Z 
+2026-10-06T21:21:53.0557113Z HEAD is now at 781aa6a Document-node24-host-lock
+2026-10-06T21:21:53.0562635Z ##[endgroup]
+2026-10-06T21:21:53.0624612Z [command]/usr/bin/git log -1 --format=%H
+2026-10-06T21:21:53.0665123Z 781aa6aad3f63b83ad48b192a6a5d078be1d71b8
+2026-10-06T21:21:53.0893369Z ##[group]Run ./.host-hardware-lock/.github/actions/host-hardware-lock
+2026-10-06T21:21:53.0893834Z with:
+2026-10-06T21:21:53.0894047Z   timeout_seconds: 7200
+2026-10-06T21:21:53.0894307Z   stale_seconds: 14400
+2026-10-06T21:21:53.0894532Z   poll_seconds: 5
+2026-10-06T21:21:53.0894740Z env:
+2026-10-06T21:21:53.0894948Z   CARGO_NET_GIT_FETCH_WITH_CLI: true
+2026-10-06T21:21:53.0895252Z   RUSTFLAGS: -D warnings
+2026-10-06T21:21:53.0895618Z   CARGO_TARGET_DIR: /home/markik/Code/targets/wgpu-scry-hardware
+2026-10-06T21:21:53.0896014Z   XDG_RUNTIME_DIR: /run/user/1000
+2026-10-06T21:21:53.0896292Z   WAYLAND_DISPLAY: wayland-0
+2026-10-06T21:21:53.0896546Z   DISPLAY: 
+2026-10-06T21:21:53.0905052Z   DBUS_SESSION_BUS_ADDRESS: unix:path=/run/user/1000/bus
+2026-10-06T21:21:53.0905633Z   XDG_SESSION_TYPE: wayland
+2026-10-06T21:21:53.0905900Z   XDG_CURRENT_DESKTOP: GNOME
+2026-10-06T21:21:53.0906156Z   WGPU_BACKEND: vulkan
+2026-10-06T21:21:53.0906433Z ##[endgroup]
+2026-10-06T21:21:53.1281736Z Acquired host hardware lock at /tmp/merely-wgpu-hardware-lock/host.lock
+2026-10-06T21:21:53.1571931Z ##[group]Run dtolnay/rust-toolchain@1.97.1
+2026-10-06T21:21:53.1572493Z with:
+2026-10-06T21:21:53.1573154Z env:
+2026-10-06T21:21:53.1573513Z   CARGO_NET_GIT_FETCH_WITH_CLI: true
+2026-10-06T21:21:53.1573967Z   RUSTFLAGS: -D warnings
+2026-10-06T21:21:53.1574472Z   CARGO_TARGET_DIR: /home/markik/Code/targets/wgpu-scry-hardware
+2026-10-06T21:21:53.1575079Z   XDG_RUNTIME_DIR: /run/user/1000
+2026-10-06T21:21:53.1575510Z   WAYLAND_DISPLAY: wayland-0
+2026-10-06T21:21:53.1575901Z   DISPLAY: 
+2026-10-06T21:21:53.1576348Z   DBUS_SESSION_BUS_ADDRESS: unix:path=/run/user/1000/bus
+2026-10-06T21:21:53.1576835Z   XDG_SESSION_TYPE: wayland
+2026-10-06T21:21:53.1577235Z   XDG_CURRENT_DESKTOP: GNOME
+2026-10-06T21:21:53.1577628Z   WGPU_BACKEND: vulkan
+2026-10-06T21:21:53.1577969Z ##[endgroup]
+2026-10-06T21:21:53.1654322Z ##[start-action display=Parse toolchain version;id=__dtolnay_rust-toolchain.parse]
+2026-10-06T21:21:53.1748568Z ##[group]Run if [[ -z $toolchain ]]; then
+2026-10-06T21:21:53.1749122Z [36;1mif [[ -z $toolchain ]]; then[0m
+2026-10-06T21:21:53.1749874Z [36;1m  # GitHub does not enforce `required: true` inputs itself. https://github.com/actions/runner/issues/1070[0m
+2026-10-06T21:21:53.1750505Z [36;1m  echo "'toolchain' is a required input" >&2[0m
+2026-10-06T21:21:53.1750840Z [36;1m  exit 1[0m
+2026-10-06T21:21:53.1751197Z [36;1melif [[ $toolchain =~ ^stable' '[0-9]+' '(year|month|week|day)s?' 'ago$ ]]; then[0m
+2026-10-06T21:21:53.1751649Z [36;1m  if [[ Linux == macOS ]]; then[0m
+2026-10-06T21:21:53.1752240Z [36;1m    echo "toolchain=1.$((($(date -v-$(sed 's/stable \([0-9]*\) \(.\).*/\1\2/' <<< $toolchain) +%s)/60/60/24-16569)/7/6))" >> $GITHUB_OUTPUT[0m
+2026-10-06T21:21:53.1752807Z [36;1m  else[0m
+2026-10-06T21:21:53.1753243Z [36;1m    echo "toolchain=1.$((($(date --date "${toolchain#stable }" +%s)/60/60/24-16569)/7/6))" >> $GITHUB_OUTPUT[0m
+2026-10-06T21:21:53.1753746Z [36;1m  fi[0m
+2026-10-06T21:21:53.1754069Z [36;1melif [[ $toolchain =~ ^stable' 'minus' '[0-9]+' 'releases?$ ]]; then[0m
+2026-10-06T21:21:53.1754654Z [36;1m  echo "toolchain=1.$((($(date +%s)/60/60/24-16569)/7/6-${toolchain//[^0-9]/}))" >> $GITHUB_OUTPUT[0m
+2026-10-06T21:21:53.1755165Z [36;1melif [[ $toolchain =~ ^1\.[0-9]+$ ]]; then[0m
+2026-10-06T21:21:53.1755751Z [36;1m  echo "toolchain=1.$((i=${toolchain#1.}, c=($(date +%s)/60/60/24-16569)/7/6, i+9*i*(10*i<=c)+90*i*(100*i<=c)))" >> $GITHUB_OUTPUT[0m
+2026-10-06T21:21:53.1756301Z [36;1melse[0m
+2026-10-06T21:21:53.1756570Z [36;1m  echo "toolchain=$toolchain" >> $GITHUB_OUTPUT[0m
+2026-10-06T21:21:53.1756892Z [36;1mfi[0m
+2026-10-06T21:21:53.1786455Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-06T21:21:53.1786876Z env:
+2026-10-06T21:21:53.1787101Z   CARGO_NET_GIT_FETCH_WITH_CLI: true
+2026-10-06T21:21:53.1787394Z   RUSTFLAGS: -D warnings
+2026-10-06T21:21:53.1787724Z   CARGO_TARGET_DIR: /home/markik/Code/targets/wgpu-scry-hardware
+2026-10-06T21:21:53.1788111Z   XDG_RUNTIME_DIR: /run/user/1000
+2026-10-06T21:21:53.1788427Z   WAYLAND_DISPLAY: wayland-0
+2026-10-06T21:21:53.1788683Z   DISPLAY: 
+2026-10-06T21:21:53.1788943Z   DBUS_SESSION_BUS_ADDRESS: unix:path=/run/user/1000/bus
+2026-10-06T21:21:53.1789298Z   XDG_SESSION_TYPE: wayland
+2026-10-06T21:21:53.1789723Z   XDG_CURRENT_DESKTOP: GNOME
+2026-10-06T21:21:53.1789986Z   WGPU_BACKEND: vulkan
+2026-10-06T21:21:53.1790218Z   toolchain: 1.97.1
+2026-10-06T21:21:53.1790436Z ##[endgroup]
+2026-10-06T21:21:53.1907167Z ##[end-action id=__dtolnay_rust-toolchain.parse;outcome=success;conclusion=success;duration_ms=25]
+2026-10-06T21:21:53.1924571Z ##[start-action display=Construct rustup command line;id=__dtolnay_rust-toolchain.flags]
+2026-10-06T21:21:53.1972515Z ##[group]Run echo "targets=$(for t in ${targets//,/ }; do echo -n ' --target' $t; done)" >> $GITHUB_OUTPUT
+2026-10-06T21:21:53.1973510Z [36;1mecho "targets=$(for t in ${targets//,/ }; do echo -n ' --target' $t; done)" >> $GITHUB_OUTPUT[0m
+2026-10-06T21:21:53.1974643Z [36;1mecho "components=$(for c in ${components//,/ }; do echo -n ' --component' $c; done)" >> $GITHUB_OUTPUT[0m
+2026-10-06T21:21:53.1975263Z [36;1mecho "downgrade=" >> $GITHUB_OUTPUT[0m
+2026-10-06T21:21:53.1997279Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-06T21:21:53.1997687Z env:
+2026-10-06T21:21:53.1997916Z   CARGO_NET_GIT_FETCH_WITH_CLI: true
+2026-10-06T21:21:53.1998207Z   RUSTFLAGS: -D warnings
+2026-10-06T21:21:53.1998542Z   CARGO_TARGET_DIR: /home/markik/Code/targets/wgpu-scry-hardware
+2026-10-06T21:21:53.1998931Z   XDG_RUNTIME_DIR: /run/user/1000
+2026-10-06T21:21:53.1999214Z   WAYLAND_DISPLAY: wayland-0
+2026-10-06T21:21:53.1999470Z   DISPLAY: 
+2026-10-06T21:21:53.1999847Z   DBUS_SESSION_BUS_ADDRESS: unix:path=/run/user/1000/bus
+2026-10-06T21:21:53.2000197Z   XDG_SESSION_TYPE: wayland
+2026-10-06T21:21:53.2000455Z   XDG_CURRENT_DESKTOP: GNOME
+2026-10-06T21:21:53.2000726Z   WGPU_BACKEND: vulkan
+2026-10-06T21:21:53.2000956Z   targets: 
+2026-10-06T21:21:53.2001157Z   components: 
+2026-10-06T21:21:53.2001367Z ##[endgroup]
+2026-10-06T21:21:53.2081074Z ##[end-action id=__dtolnay_rust-toolchain.flags;outcome=success;conclusion=success;duration_ms=15]
+2026-10-06T21:21:53.2083820Z ##[start-action display=Set $CARGO_HOME;id=__dtolnay_rust-toolchain.__run]
+2026-10-06T21:21:53.2117724Z ##[group]Run echo CARGO_HOME=${CARGO_HOME:-"$HOME/.cargo"} >> $GITHUB_ENV
+2026-10-06T21:21:53.2118285Z [36;1mecho CARGO_HOME=${CARGO_HOME:-"$HOME/.cargo"} >> $GITHUB_ENV[0m
+2026-10-06T21:21:53.2139301Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-06T21:21:53.2139827Z env:
+2026-10-06T21:21:53.2140063Z   CARGO_NET_GIT_FETCH_WITH_CLI: true
+2026-10-06T21:21:53.2140386Z   RUSTFLAGS: -D warnings
+2026-10-06T21:21:53.2140745Z   CARGO_TARGET_DIR: /home/markik/Code/targets/wgpu-scry-hardware
+2026-10-06T21:21:53.2141166Z   XDG_RUNTIME_DIR: /run/user/1000
+2026-10-06T21:21:53.2141454Z   WAYLAND_DISPLAY: wayland-0
+2026-10-06T21:21:53.2141713Z   DISPLAY: 
+2026-10-06T21:21:53.2141988Z   DBUS_SESSION_BUS_ADDRESS: unix:path=/run/user/1000/bus
+2026-10-06T21:21:53.2142379Z   XDG_SESSION_TYPE: wayland
+2026-10-06T21:21:53.2142646Z   XDG_CURRENT_DESKTOP: GNOME
+2026-10-06T21:21:53.2142928Z   WGPU_BACKEND: vulkan
+2026-10-06T21:21:53.2143168Z ##[endgroup]
+2026-10-06T21:21:53.2217110Z ##[end-action id=__dtolnay_rust-toolchain.__run;outcome=success;conclusion=success;duration_ms=13]
+2026-10-06T21:21:53.2221388Z ##[start-action display=Install rustup if needed;id=__dtolnay_rust-toolchain.__run_2]
+2026-10-06T21:21:53.2271108Z ##[group]Run if ! command -v rustup &>/dev/null; then
+2026-10-06T21:21:53.2271766Z [36;1mif ! command -v rustup &>/dev/null; then[0m
+2026-10-06T21:21:53.2273084Z [36;1m  curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused --location --silent --show-error --fail https://sh.rustup.rs | sh -s -- --default-toolchain none -y[0m
+2026-10-06T21:21:53.2274385Z [36;1m  echo "$CARGO_HOME/bin" >> $GITHUB_PATH[0m
+2026-10-06T21:21:53.2274860Z [36;1mfi[0m
+2026-10-06T21:21:53.2301865Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-06T21:21:53.2302500Z env:
+2026-10-06T21:21:53.2302838Z   CARGO_NET_GIT_FETCH_WITH_CLI: true
+2026-10-06T21:21:53.2303261Z   RUSTFLAGS: -D warnings
+2026-10-06T21:21:53.2303801Z   CARGO_TARGET_DIR: /home/markik/Code/targets/wgpu-scry-hardware
+2026-10-06T21:21:53.2304394Z   XDG_RUNTIME_DIR: /run/user/1000
+2026-10-06T21:21:53.2304805Z   WAYLAND_DISPLAY: wayland-0
+2026-10-06T21:21:53.2305178Z   DISPLAY: 
+2026-10-06T21:21:53.2305575Z   DBUS_SESSION_BUS_ADDRESS: unix:path=/run/user/1000/bus
+2026-10-06T21:21:53.2306115Z   XDG_SESSION_TYPE: wayland
+2026-10-06T21:21:53.2306499Z   XDG_CURRENT_DESKTOP: GNOME
+2026-10-06T21:21:53.2306878Z   WGPU_BACKEND: vulkan
+2026-10-06T21:21:53.2307262Z   CARGO_HOME: /home/markik/.cargo
+2026-10-06T21:21:53.2307662Z ##[endgroup]
+2026-10-06T21:21:53.7271369Z info: downloading installer
+2026-10-06T21:21:56.5057719Z warn: it looks like you have an existing rustup settings file at:
+2026-10-06T21:21:56.5058160Z warn: /home/markik/.rustup/settings.toml
+2026-10-06T21:21:56.5059074Z warn: rustup will install the default toolchain as specified in the settings file,
+2026-10-06T21:21:56.5059777Z warn: instead of the one inferred from the default host tuple.
+2026-10-06T21:21:56.5271910Z info: profile set to default
+2026-10-06T21:21:56.5272278Z info: default host tuple is x86_64-unknown-linux-gnu
+2026-10-06T21:21:56.5272638Z info: skipping toolchain installation
+2026-10-06T21:21:56.5272848Z 
+2026-10-06T21:21:56.5272873Z 
+2026-10-06T21:21:56.5272998Z Rust is installed now. Great!
+2026-10-06T21:21:56.5273184Z 
+2026-10-06T21:21:56.5273345Z To get started you may need to restart your current shell.
+2026-10-06T21:21:56.5273777Z This would reload your PATH environment variable to include
+2026-10-06T21:21:56.5274168Z Cargo's bin directory ($HOME/.cargo/bin).
+2026-10-06T21:21:56.5274379Z 
+2026-10-06T21:21:56.5274526Z To configure your current shell, you need to source the
+2026-10-06T21:21:56.5274896Z corresponding env file under $HOME/.cargo.
+2026-10-06T21:21:56.5275115Z 
+2026-10-06T21:21:56.5275352Z Consider running the right command for your shell (note the leading DOT):
+2026-10-06T21:21:56.5275811Z . "$HOME/.cargo/env" # For sh/ash/dash/pdksh/bash
+2026-10-06T21:21:56.5276214Z cargo:rerun-if-env-changed=CC_x86_64-unknown-linux-gnu
+2026-10-06T21:21:56.5276573Z CC_x86_64-unknown-linux-gnu = None
+2026-10-06T21:21:56.5276911Z cargo:rerun-if-env-changed=CC_x86_64_unknown_linux_gnu
+2026-10-06T21:21:56.5277262Z CC_x86_64_unknown_linux_gnu = None
+2026-10-06T21:21:56.5277555Z cargo:rerun-if-env-changed=HOST_CC
+2026-10-06T21:21:56.5277828Z HOST_CC = None
+2026-10-06T21:21:56.5278057Z cargo:rerun-if-env-changed=CC
+2026-10-06T21:21:56.5278313Z CC = None
+2026-10-06T21:21:56.5278563Z cargo:rerun-if-env-changed=CC_ENABLE_DEBUG_OUTPUT
+2026-10-06T21:21:56.5389126Z cargo:rerun-if-env-changed=CRATE_CC_NO_DEFAULTS
+2026-10-06T21:21:56.5389621Z CRATE_CC_NO_DEFAULTS = None
+2026-10-06T21:21:56.5389930Z cargo:rerun-if-env-changed=CFLAGS
+2026-10-06T21:21:56.5390197Z CFLAGS = None
+2026-10-06T21:21:56.5390435Z cargo:rerun-if-env-changed=HOST_CFLAGS
+2026-10-06T21:21:56.5390771Z HOST_CFLAGS = None
+2026-10-06T21:21:56.5391085Z cargo:rerun-if-env-changed=CFLAGS_x86_64_unknown_linux_gnu
+2026-10-06T21:21:56.5391614Z CFLAGS_x86_64_unknown_linux_gnu = None
+2026-10-06T21:21:56.5392017Z cargo:rerun-if-env-changed=CFLAGS_x86_64-unknown-linux-gnu
+2026-10-06T21:21:56.5392392Z CFLAGS_x86_64-unknown-linux-gnu = None
+2026-10-06T21:21:56.5506694Z ##[end-action id=__dtolnay_rust-toolchain.__run_2;outcome=success;conclusion=success;duration_ms=3328]
+2026-10-06T21:21:56.5509379Z ##[start-action display=Install rustup if needed on windows;id=__dtolnay_rust-toolchain.__run_3]
+2026-10-06T21:21:56.5528925Z ##[end-action id=__dtolnay_rust-toolchain.__run_3;outcome=skipped;conclusion=skipped;duration_ms=0]
+2026-10-06T21:21:56.5545969Z ##[start-action display=rustup toolchain install 1.97.1;id=__dtolnay_rust-toolchain.__run_4]
+2026-10-06T21:21:56.5580618Z ##[group]Run log=$(mktemp)
+2026-10-06T21:21:56.5581080Z [36;1mlog=$(mktemp)[0m
+2026-10-06T21:21:56.5581501Z [36;1mtrap 'rm -f "$log"' EXIT[0m
+2026-10-06T21:21:56.5581942Z [36;1mfor attempt in 1 2 3 4 5; do[0m
+2026-10-06T21:21:56.5582832Z [36;1m  if rustup toolchain install 1.97.1 --profile minimal --no-self-update --force-non-host 2>&1 | tee "$log"; then[0m
+2026-10-06T21:21:56.5583766Z [36;1m    break[0m
+2026-10-06T21:21:56.5584101Z [36;1m  else[0m
+2026-10-06T21:21:56.5584423Z [36;1m    status=$?[0m
+2026-10-06T21:21:56.5584768Z [36;1m  fi[0m
+2026-10-06T21:21:56.5585234Z [36;1m  if [[ $attempt == 5 ]] || ! grep -Fq 'checksum failed for ' "$log" \[0m
+2026-10-06T21:21:56.5586202Z [36;1m      || ! grep -Fq 'this is likely due to an ongoing update of the official release server' "$log"; then[0m
+2026-10-06T21:21:56.5587013Z [36;1m    exit "$status"[0m
+2026-10-06T21:21:56.5587387Z [36;1m  fi[0m
+2026-10-06T21:21:56.5587996Z [36;1m  echo "Retrying rustup toolchain install in 30 seconds (retry $attempt of 4)" >&2[0m
+2026-10-06T21:21:56.5588739Z [36;1m  sleep 30[0m
+2026-10-06T21:21:56.5589065Z [36;1mdone[0m
+2026-10-06T21:21:56.5621614Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-06T21:21:56.5622185Z env:
+2026-10-06T21:21:56.5622792Z   CARGO_NET_GIT_FETCH_WITH_CLI: true
+2026-10-06T21:21:56.5623216Z   RUSTFLAGS: -D warnings
+2026-10-06T21:21:56.5623737Z   CARGO_TARGET_DIR: /home/markik/Code/targets/wgpu-scry-hardware
+2026-10-06T21:21:56.5624317Z   XDG_RUNTIME_DIR: /run/user/1000
+2026-10-06T21:21:56.5624724Z   WAYLAND_DISPLAY: wayland-0
+2026-10-06T21:21:56.5625098Z   DISPLAY: 
+2026-10-06T21:21:56.5625495Z   DBUS_SESSION_BUS_ADDRESS: unix:path=/run/user/1000/bus
+2026-10-06T21:21:56.5626010Z   XDG_SESSION_TYPE: wayland
+2026-10-06T21:21:56.5626397Z   XDG_CURRENT_DESKTOP: GNOME
+2026-10-06T21:21:56.5626777Z   WGPU_BACKEND: vulkan
+2026-10-06T21:21:56.5627126Z   CARGO_HOME: /home/markik/.cargo
+2026-10-06T21:21:56.5627545Z   RUSTUP_PERMIT_COPY_RENAME: 1
+2026-10-06T21:21:56.5627932Z ##[endgroup]
+2026-10-06T21:21:56.6338573Z info: syncing channel updates for 1.97.1-x86_64-unknown-linux-gnu
+2026-10-06T21:21:56.8283199Z 
+2026-10-06T21:21:56.8394864Z   1.97.1-x86_64-unknown-linux-gnu unchanged - rustc 1.97.1 (8bab26f4f 2026-07-14)
+2026-10-06T21:21:56.8395274Z 
+2026-10-06T21:21:56.8477398Z ##[end-action id=__dtolnay_rust-toolchain.__run_4;outcome=success;conclusion=success;duration_ms=293]
+2026-10-06T21:21:56.8484420Z ##[start-action display=rustup default 1.97.1;id=__dtolnay_rust-toolchain.__run_5]
+2026-10-06T21:21:56.8514812Z ##[group]Run rustup default 1.97.1 --force-non-host
+2026-10-06T21:21:56.8515324Z [36;1mrustup default 1.97.1 --force-non-host[0m
+2026-10-06T21:21:56.8542746Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-06T21:21:56.8543176Z env:
+2026-10-06T21:21:56.8543449Z   CARGO_NET_GIT_FETCH_WITH_CLI: true
+2026-10-06T21:21:56.8543756Z   RUSTFLAGS: -D warnings
+2026-10-06T21:21:56.8544106Z   CARGO_TARGET_DIR: /home/markik/Code/targets/wgpu-scry-hardware
+2026-10-06T21:21:56.8544503Z   XDG_RUNTIME_DIR: /run/user/1000
+2026-10-06T21:21:56.8544789Z   WAYLAND_DISPLAY: wayland-0
+2026-10-06T21:21:56.8545068Z   DISPLAY: 
+2026-10-06T21:21:56.8545328Z   DBUS_SESSION_BUS_ADDRESS: unix:path=/run/user/1000/bus
+2026-10-06T21:21:56.8545690Z   XDG_SESSION_TYPE: wayland
+2026-10-06T21:21:56.8545959Z   XDG_CURRENT_DESKTOP: GNOME
+2026-10-06T21:21:56.8546298Z   WGPU_BACKEND: vulkan
+2026-10-06T21:21:56.8546646Z   CARGO_HOME: /home/markik/.cargo
+2026-10-06T21:21:56.8547035Z ##[endgroup]
+2026-10-06T21:21:56.8653833Z info: using existing install for 1.97.1-x86_64-unknown-linux-gnu
+2026-10-06T21:21:56.8664211Z info: default toolchain set to 1.97.1-x86_64-unknown-linux-gnu
+2026-10-06T21:21:56.8664700Z 
+2026-10-06T21:21:56.8786038Z   1.97.1-x86_64-unknown-linux-gnu unchanged - rustc 1.97.1 (8bab26f4f 2026-07-14)
+2026-10-06T21:21:56.8786567Z 
+2026-10-06T21:21:56.8787491Z info: note that the toolchain '1.97.1-x86_64-unknown-linux-gnu' is currently in use (overridden by '/home/markik/actions-runner-wgpu/_work/wgpu-scry/wgpu-scry/rust-toolchain.toml')
+2026-10-06T21:21:56.8813245Z ##[end-action id=__dtolnay_rust-toolchain.__run_5;outcome=success;conclusion=success;duration_ms=32]
+2026-10-06T21:21:56.8816831Z ##[start-action display=Create cachekey;id=__dtolnay_rust-toolchain.rustc-version]
+2026-10-06T21:21:56.8845731Z ##[group]Run DATE=$(rustc +1.97.1 --version --verbose | sed -ne 's/^commit-date: \(20[0-9][0-9]\)-\([01][0-9]\)-\([0-3][0-9]\)$/\1\2\3/p')
+2026-10-06T21:21:56.8846649Z [36;1mDATE=$(rustc +1.97.1 --version --verbose | sed -ne 's/^commit-date: \(20[0-9][0-9]\)-\([01][0-9]\)-\([0-3][0-9]\)$/\1\2\3/p')[0m
+2026-10-06T21:21:56.8847371Z [36;1mHASH=$(rustc +1.97.1 --version --verbose | sed -ne 's/^commit-hash: //p')[0m
+2026-10-06T21:21:56.8847913Z [36;1mecho "cachekey=$(echo $DATE$HASH | head -c12)" >> $GITHUB_OUTPUT[0m
+2026-10-06T21:21:56.8869035Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-06T21:21:56.8869412Z env:
+2026-10-06T21:21:56.8870556Z   CARGO_NET_GIT_FETCH_WITH_CLI: true
+2026-10-06T21:21:56.8870852Z   RUSTFLAGS: -D warnings
+2026-10-06T21:21:56.8871512Z   CARGO_TARGET_DIR: /home/markik/Code/targets/wgpu-scry-hardware
+2026-10-06T21:21:56.8871919Z   XDG_RUNTIME_DIR: /run/user/1000
+2026-10-06T21:21:56.8872364Z   WAYLAND_DISPLAY: wayland-0
+2026-10-06T21:21:56.8872617Z   DISPLAY: 
+2026-10-06T21:21:56.8872878Z   DBUS_SESSION_BUS_ADDRESS: unix:path=/run/user/1000/bus
+2026-10-06T21:21:56.8873225Z   XDG_SESSION_TYPE: wayland
+2026-10-06T21:21:56.8873483Z   XDG_CURRENT_DESKTOP: GNOME
+2026-10-06T21:21:56.8873742Z   WGPU_BACKEND: vulkan
+2026-10-06T21:21:56.8873988Z   CARGO_HOME: /home/markik/.cargo
+2026-10-06T21:21:56.8874253Z ##[endgroup]
+2026-10-06T21:21:56.9354974Z ##[end-action id=__dtolnay_rust-toolchain.rustc-version;outcome=success;conclusion=success;duration_ms=53]
+2026-10-06T21:21:56.9368344Z ##[start-action display=Disable incremental compilation;id=__dtolnay_rust-toolchain.__run_6]
+2026-10-06T21:21:56.9399099Z ##[group]Run if [ -z "${CARGO_INCREMENTAL+set}" ]; then
+2026-10-06T21:21:56.9399920Z [36;1mif [ -z "${CARGO_INCREMENTAL+set}" ]; then[0m
+2026-10-06T21:21:56.9400468Z [36;1m  echo CARGO_INCREMENTAL=0 >> $GITHUB_ENV[0m
+2026-10-06T21:21:56.9400936Z [36;1mfi[0m
+2026-10-06T21:21:56.9424760Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-06T21:21:56.9425248Z env:
+2026-10-06T21:21:56.9425482Z   CARGO_NET_GIT_FETCH_WITH_CLI: true
+2026-10-06T21:21:56.9425774Z   RUSTFLAGS: -D warnings
+2026-10-06T21:21:56.9426108Z   CARGO_TARGET_DIR: /home/markik/Code/targets/wgpu-scry-hardware
+2026-10-06T21:21:56.9426494Z   XDG_RUNTIME_DIR: /run/user/1000
+2026-10-06T21:21:56.9426826Z   WAYLAND_DISPLAY: wayland-0
+2026-10-06T21:21:56.9427143Z   DISPLAY: 
+2026-10-06T21:21:56.9427465Z   DBUS_SESSION_BUS_ADDRESS: unix:path=/run/user/1000/bus
+2026-10-06T21:21:56.9427808Z   XDG_SESSION_TYPE: wayland
+2026-10-06T21:21:56.9428063Z   XDG_CURRENT_DESKTOP: GNOME
+2026-10-06T21:21:56.9428316Z   WGPU_BACKEND: vulkan
+2026-10-06T21:21:56.9428567Z   CARGO_HOME: /home/markik/.cargo
+2026-10-06T21:21:56.9428831Z ##[endgroup]
+2026-10-06T21:21:56.9489265Z ##[end-action id=__dtolnay_rust-toolchain.__run_6;outcome=success;conclusion=success;duration_ms=11]
+2026-10-06T21:21:56.9492932Z ##[start-action display=Enable colors in Cargo output;id=__dtolnay_rust-toolchain.__run_7]
+2026-10-06T21:21:56.9532364Z ##[group]Run if [ -z "${CARGO_TERM_COLOR+set}" ]; then
+2026-10-06T21:21:56.9532811Z [36;1mif [ -z "${CARGO_TERM_COLOR+set}" ]; then[0m
+2026-10-06T21:21:56.9533177Z [36;1m  echo CARGO_TERM_COLOR=always >> $GITHUB_ENV[0m
+2026-10-06T21:21:56.9533497Z [36;1mfi[0m
+2026-10-06T21:21:56.9557062Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-06T21:21:56.9557454Z env:
+2026-10-06T21:21:56.9557700Z   CARGO_NET_GIT_FETCH_WITH_CLI: true
+2026-10-06T21:21:56.9557988Z   RUSTFLAGS: -D warnings
+2026-10-06T21:21:56.9558321Z   CARGO_TARGET_DIR: /home/markik/Code/targets/wgpu-scry-hardware
+2026-10-06T21:21:56.9558739Z   XDG_RUNTIME_DIR: /run/user/1000
+2026-10-06T21:21:56.9559014Z   WAYLAND_DISPLAY: wayland-0
+2026-10-06T21:21:56.9559269Z   DISPLAY: 
+2026-10-06T21:21:56.9559739Z   DBUS_SESSION_BUS_ADDRESS: unix:path=/run/user/1000/bus
+2026-10-06T21:21:56.9560087Z   XDG_SESSION_TYPE: wayland
+2026-10-06T21:21:56.9560348Z   XDG_CURRENT_DESKTOP: GNOME
+2026-10-06T21:21:56.9560646Z   WGPU_BACKEND: vulkan
+2026-10-06T21:21:56.9560977Z   CARGO_HOME: /home/markik/.cargo
+2026-10-06T21:21:56.9561351Z   CARGO_INCREMENTAL: 0
+2026-10-06T21:21:56.9561662Z ##[endgroup]
+2026-10-06T21:21:56.9657755Z ##[end-action id=__dtolnay_rust-toolchain.__run_7;outcome=success;conclusion=success;duration_ms=16]
+2026-10-06T21:21:56.9660843Z ##[start-action display=Enable Cargo sparse registry;id=__dtolnay_rust-toolchain.__run_8]
+2026-10-06T21:21:56.9706519Z ##[group]Run # implemented in 1.66, stabilized in 1.68, made default in 1.70
+2026-10-06T21:21:56.9707112Z [36;1m# implemented in 1.66, stabilized in 1.68, made default in 1.70[0m
+2026-10-06T21:21:56.9707973Z [36;1mif [ -z "${CARGO_REGISTRIES_CRATES_IO_PROTOCOL+set}" -o -f "/home/markik/actions-runner-wgpu/_work/_temp"/.implicit_cargo_registries_crates_io_protocol ]; then[0m
+2026-10-06T21:21:56.9709128Z [36;1m  if rustc +1.97.1 --version --verbose | grep -q '^release: 1\.6[89]\.'; then[0m
+2026-10-06T21:21:56.9710258Z [36;1m    touch "/home/markik/actions-runner-wgpu/_work/_temp"/.implicit_cargo_registries_crates_io_protocol || true[0m
+2026-10-06T21:21:56.9710946Z [36;1m    echo CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse >> $GITHUB_ENV[0m
+2026-10-06T21:21:56.9711494Z [36;1m  elif rustc +1.97.1 --version --verbose | grep -q '^release: 1\.6[67]\.'; then[0m
+2026-10-06T21:21:56.9712206Z [36;1m    touch "/home/markik/actions-runner-wgpu/_work/_temp"/.implicit_cargo_registries_crates_io_protocol || true[0m
+2026-10-06T21:21:56.9712874Z [36;1m    echo CARGO_REGISTRIES_CRATES_IO_PROTOCOL=git >> $GITHUB_ENV[0m
+2026-10-06T21:21:56.9713257Z [36;1m  fi[0m
+2026-10-06T21:21:56.9713469Z [36;1mfi[0m
+2026-10-06T21:21:56.9736120Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-06T21:21:56.9736486Z env:
+2026-10-06T21:21:56.9736707Z   CARGO_NET_GIT_FETCH_WITH_CLI: true
+2026-10-06T21:21:56.9737005Z   RUSTFLAGS: -D warnings
+2026-10-06T21:21:56.9737336Z   CARGO_TARGET_DIR: /home/markik/Code/targets/wgpu-scry-hardware
+2026-10-06T21:21:56.9737725Z   XDG_RUNTIME_DIR: /run/user/1000
+2026-10-06T21:21:56.9738011Z   WAYLAND_DISPLAY: wayland-0
+2026-10-06T21:21:56.9738255Z   DISPLAY: 
+2026-10-06T21:21:56.9738519Z   DBUS_SESSION_BUS_ADDRESS: unix:path=/run/user/1000/bus
+2026-10-06T21:21:56.9738869Z   XDG_SESSION_TYPE: wayland
+2026-10-06T21:21:56.9739148Z   XDG_CURRENT_DESKTOP: GNOME
+2026-10-06T21:21:56.9739398Z   WGPU_BACKEND: vulkan
+2026-10-06T21:21:56.9739799Z   CARGO_HOME: /home/markik/.cargo
+2026-10-06T21:21:56.9740070Z   CARGO_INCREMENTAL: 0
+2026-10-06T21:21:56.9740308Z   CARGO_TERM_COLOR: always
+2026-10-06T21:21:56.9740555Z ##[endgroup]
+2026-10-06T21:21:57.0152486Z ##[end-action id=__dtolnay_rust-toolchain.__run_8;outcome=success;conclusion=success;duration_ms=49]
+2026-10-06T21:21:57.0155242Z ##[start-action display=Work around spurious network errors in curl 8.0;id=__dtolnay_rust-toolchain.__run_9]
+2026-10-06T21:21:57.0186636Z ##[group]Run # https://rust-lang.zulipchat.com/#narrow/stream/246057-t-cargo/topic/timeout.20investigation
+2026-10-06T21:21:57.0187481Z [36;1m# https://rust-lang.zulipchat.com/#narrow/stream/246057-t-cargo/topic/timeout.20investigation[0m
+2026-10-06T21:21:57.0188149Z [36;1mif rustc +1.97.1 --version --verbose | grep -q '^release: 1\.7[01]\.'; then[0m
+2026-10-06T21:21:57.0188653Z [36;1m  echo CARGO_HTTP_MULTIPLEXING=false >> $GITHUB_ENV[0m
+2026-10-06T21:21:57.0189006Z [36;1mfi[0m
+2026-10-06T21:21:57.0217936Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-06T21:21:57.0218452Z env:
+2026-10-06T21:21:57.0218752Z   CARGO_NET_GIT_FETCH_WITH_CLI: true
+2026-10-06T21:21:57.0219071Z   RUSTFLAGS: -D warnings
+2026-10-06T21:21:57.0219418Z   CARGO_TARGET_DIR: /home/markik/Code/targets/wgpu-scry-hardware
+2026-10-06T21:21:57.0219944Z   XDG_RUNTIME_DIR: /run/user/1000
+2026-10-06T21:21:57.0220219Z   WAYLAND_DISPLAY: wayland-0
+2026-10-06T21:21:57.0220467Z   DISPLAY: 
+2026-10-06T21:21:57.0220748Z   DBUS_SESSION_BUS_ADDRESS: unix:path=/run/user/1000/bus
+2026-10-06T21:21:57.0221089Z   XDG_SESSION_TYPE: wayland
+2026-10-06T21:21:57.0221358Z   XDG_CURRENT_DESKTOP: GNOME
+2026-10-06T21:21:57.0231514Z   WGPU_BACKEND: vulkan
+2026-10-06T21:21:57.0231823Z   CARGO_HOME: /home/markik/.cargo
+2026-10-06T21:21:57.0232121Z   CARGO_INCREMENTAL: 0
+2026-10-06T21:21:57.0232373Z   CARGO_TERM_COLOR: always
+2026-10-06T21:21:57.0232635Z ##[endgroup]
+2026-10-06T21:21:57.0462775Z ##[end-action id=__dtolnay_rust-toolchain.__run_9;outcome=success;conclusion=success;duration_ms=30]
+2026-10-06T21:21:57.0467600Z ##[start-action display=rustc +1.97.1 --version --verbose;id=__dtolnay_rust-toolchain.__run_10]
+2026-10-06T21:21:57.0501842Z ##[group]Run rustc +1.97.1 --version --verbose
+2026-10-06T21:21:57.0502373Z [36;1mrustc +1.97.1 --version --verbose[0m
+2026-10-06T21:21:57.0528074Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-06T21:21:57.0528448Z env:
+2026-10-06T21:21:57.0529018Z   CARGO_NET_GIT_FETCH_WITH_CLI: true
+2026-10-06T21:21:57.0529309Z   RUSTFLAGS: -D warnings
+2026-10-06T21:21:57.0529791Z   CARGO_TARGET_DIR: /home/markik/Code/targets/wgpu-scry-hardware
+2026-10-06T21:21:57.0530360Z   XDG_RUNTIME_DIR: /run/user/1000
+2026-10-06T21:21:57.0530658Z   WAYLAND_DISPLAY: wayland-0
+2026-10-06T21:21:57.0530917Z   DISPLAY: 
+2026-10-06T21:21:57.0531175Z   DBUS_SESSION_BUS_ADDRESS: unix:path=/run/user/1000/bus
+2026-10-06T21:21:57.0531521Z   XDG_SESSION_TYPE: wayland
+2026-10-06T21:21:57.0531952Z   XDG_CURRENT_DESKTOP: GNOME
+2026-10-06T21:21:57.0532238Z   WGPU_BACKEND: vulkan
+2026-10-06T21:21:57.0532484Z   CARGO_HOME: /home/markik/.cargo
+2026-10-06T21:21:57.0532758Z   CARGO_INCREMENTAL: 0
+2026-10-06T21:21:57.0532993Z   CARGO_TERM_COLOR: always
+2026-10-06T21:21:57.0533244Z ##[endgroup]
+2026-10-06T21:21:57.0735887Z rustc 1.97.1 (8bab26f4f 2026-07-14)
+2026-10-06T21:21:57.0736605Z binary: rustc
+2026-10-06T21:21:57.0737210Z commit-hash: 8bab26f4f68e0e26f0bb7960be334d5b520ea452
+2026-10-06T21:21:57.0738007Z commit-date: 2026-07-14
+2026-10-06T21:21:57.0738554Z host: x86_64-unknown-linux-gnu
+2026-10-06T21:21:57.0739188Z release: 1.97.1
+2026-10-06T21:21:57.0740171Z LLVM version: 22.1.6
+2026-10-06T21:21:57.0787273Z ##[end-action id=__dtolnay_rust-toolchain.__run_10;outcome=success;conclusion=success;duration_ms=31]
+2026-10-06T21:21:57.0876300Z ##[group]Run test -S "$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY"
+2026-10-06T21:21:57.0876845Z [36;1mtest -S "$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY"[0m
+2026-10-06T21:21:57.0877262Z [36;1mtest -z "${DISPLAY:-}"[0m
+2026-10-06T21:21:57.0877607Z [36;1mpkg-config --atleast-version=2.52 wpe-webkit-2.0[0m
+2026-10-06T21:21:57.0878011Z [36;1mbash scripts/test-active-wayland-session.sh[0m
+2026-10-06T21:21:57.0878408Z [36;1mbash scripts/assert-active-wayland-session.sh[0m
+2026-10-06T21:21:57.0902951Z shell: /usr/bin/bash -e {0}
+2026-10-06T21:21:57.0903345Z env:
+2026-10-06T21:21:57.0903644Z   CARGO_NET_GIT_FETCH_WITH_CLI: true
+2026-10-06T21:21:57.0904048Z   RUSTFLAGS: -D warnings
+2026-10-06T21:21:57.0917468Z   CARGO_TARGET_DIR: /home/markik/Code/targets/wgpu-scry-hardware
+2026-10-06T21:21:57.0918108Z   XDG_RUNTIME_DIR: /run/user/1000
+2026-10-06T21:21:57.0918562Z   WAYLAND_DISPLAY: wayland-0
+2026-10-06T21:21:57.0918932Z   DISPLAY: 
+2026-10-06T21:21:57.0919363Z   DBUS_SESSION_BUS_ADDRESS: unix:path=/run/user/1000/bus
+2026-10-06T21:21:57.0920053Z   XDG_SESSION_TYPE: wayland
+2026-10-06T21:21:57.0920421Z   XDG_CURRENT_DESKTOP: GNOME
+2026-10-06T21:21:57.0920804Z   WGPU_BACKEND: vulkan
+2026-10-06T21:21:57.0921161Z   CARGO_HOME: /home/markik/.cargo
+2026-10-06T21:21:57.0921585Z   CARGO_INCREMENTAL: 0
+2026-10-06T21:21:57.0921909Z   CARGO_TERM_COLOR: always
+2026-10-06T21:21:57.0922216Z ##[endgroup]
+2026-10-06T21:21:57.1386286Z PASS: rotated
+2026-10-06T21:21:57.1500371Z PASS: inactive
+2026-10-06T21:21:57.1613868Z PASS: x11
+2026-10-06T21:21:57.1720269Z PASS: other_uid
+2026-10-06T21:21:57.1805879Z PASS: no_sessions
+2026-10-06T21:21:57.1888613Z PASS: user_lookup_failure
+2026-10-06T21:21:57.2007631Z PASS: session_lookup_failure
+2026-10-06T21:21:57.2114775Z PASS: missing_type
+2026-10-06T21:21:57.2337378Z Verified active Wayland session 7 for runner UID 1000.
+2026-10-06T21:21:57.2528899Z ##[group]Run cargo test --locked -p scrying --features wpe --lib worker_constructor_is_refused
+2026-10-06T21:21:57.2529845Z [36;1mcargo test --locked -p scrying --features wpe --lib worker_constructor_is_refused[0m
+2026-10-06T21:21:57.2550412Z shell: /usr/bin/bash -e {0}
+2026-10-06T21:21:57.2550703Z env:
+2026-10-06T21:21:57.2550948Z   CARGO_NET_GIT_FETCH_WITH_CLI: true
+2026-10-06T21:21:57.2551239Z   RUSTFLAGS: -D warnings
+2026-10-06T21:21:57.2551583Z   CARGO_TARGET_DIR: /home/markik/Code/targets/wgpu-scry-hardware
+2026-10-06T21:21:57.2551973Z   XDG_RUNTIME_DIR: /run/user/1000
+2026-10-06T21:21:57.2552256Z   WAYLAND_DISPLAY: wayland-0
+2026-10-06T21:21:57.2552525Z   DISPLAY: 
+2026-10-06T21:21:57.2552804Z   DBUS_SESSION_BUS_ADDRESS: unix:path=/run/user/1000/bus
+2026-10-06T21:21:57.2553177Z   XDG_SESSION_TYPE: wayland
+2026-10-06T21:21:57.2553448Z   XDG_CURRENT_DESKTOP: GNOME
+2026-10-06T21:21:57.2553711Z   WGPU_BACKEND: vulkan
+2026-10-06T21:21:57.2554312Z   CARGO_HOME: /home/markik/.cargo
+2026-10-06T21:21:57.2554584Z   CARGO_INCREMENTAL: 0
+2026-10-06T21:21:57.2554827Z   CARGO_TERM_COLOR: always
+2026-10-06T21:21:57.2555066Z ##[endgroup]
+2026-10-06T21:21:57.4954672Z [1m[92m   Compiling[0m scrying v0.7.1 (/home/markik/actions-runner-wgpu/_work/wgpu-scry/wgpu-scry/scrying)
+2026-10-06T21:21:59.0302840Z [1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 1.76s
+2026-10-06T21:21:59.0441008Z [1m[92m     Running[0m unittests src/lib.rs (/home/markik/Code/targets/wgpu-scry-hardware/debug/deps/scrying-bc31b0e83a1a28cf)
+2026-10-06T21:21:59.0779738Z 
+2026-10-06T21:21:59.0791044Z running 1 test
+2026-10-06T21:21:59.0795991Z test wpe_producer::producer::tests::worker_constructor_is_refused_before_webkit_initialization ... ok
+2026-10-06T21:21:59.0796446Z 
+2026-10-06T21:21:59.0796721Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 56 filtered out; finished in 0.00s
+2026-10-06T21:21:59.0797098Z 
+2026-10-06T21:21:59.0969003Z ##[group]Run set -o pipefail
+2026-10-06T21:21:59.0969699Z [36;1mset -o pipefail[0m
+2026-10-06T21:21:59.0970029Z [36;1mlog_file="$(mktemp)"[0m
+2026-10-06T21:21:59.0970399Z [36;1mtrap 'rm -f "$log_file"' EXIT[0m
+2026-10-06T21:21:59.0970908Z [36;1mif ! cargo test --locked -p scrying --features wpe \[0m
+2026-10-06T21:21:59.0971447Z [36;1m  --test wpe_to_vulkan_roundtrip -- \[0m
+2026-10-06T21:21:59.0971930Z [36;1m  --ignored --nocapture --test-threads=1 \[0m
+2026-10-06T21:21:59.0972395Z [36;1m  2>&1 | tee "$log_file"; then[0m
+2026-10-06T21:21:59.0972776Z [36;1m  exit 1[0m
+2026-10-06T21:21:59.0973057Z [36;1mfi[0m
+2026-10-06T21:21:59.0973556Z [36;1mif ! grep -Fq 'NATIVE WPE GATE PASS: wpe_to_vulkan_roundtrip' "$log_file"; then[0m
+2026-10-06T21:21:59.0974346Z [36;1m  echo 'Native WPE gate did not complete on the process main thread.'[0m
+2026-10-06T21:21:59.0974975Z [36;1m  exit 1[0m
+2026-10-06T21:21:59.0975189Z [36;1mfi[0m
+2026-10-06T21:21:59.0975472Z [36;1mif grep -q 'SKIP:' "$log_file"; then[0m
+2026-10-06T21:21:59.0976047Z [36;1m  echo 'WPE Vulkan pixel gate emitted SKIP; hardware prerequisites were expected to be present.'[0m
+2026-10-06T21:21:59.0976748Z [36;1m  exit 1[0m
+2026-10-06T21:21:59.0977032Z [36;1mfi[0m
+2026-10-06T21:21:59.1003604Z shell: /usr/bin/bash -e {0}
+2026-10-06T21:21:59.1004047Z env:
+2026-10-06T21:21:59.1004351Z   CARGO_NET_GIT_FETCH_WITH_CLI: true
+2026-10-06T21:21:59.1004806Z   RUSTFLAGS: -D warnings
+2026-10-06T21:21:59.1005293Z   CARGO_TARGET_DIR: /home/markik/Code/targets/wgpu-scry-hardware
+2026-10-06T21:21:59.1005855Z   XDG_RUNTIME_DIR: /run/user/1000
+2026-10-06T21:21:59.1006262Z   WAYLAND_DISPLAY: wayland-0
+2026-10-06T21:21:59.1006593Z   DISPLAY: 
+2026-10-06T21:21:59.1006952Z   DBUS_SESSION_BUS_ADDRESS: unix:path=/run/user/1000/bus
+2026-10-06T21:21:59.1007470Z   XDG_SESSION_TYPE: wayland
+2026-10-06T21:21:59.1007841Z   XDG_CURRENT_DESKTOP: GNOME
+2026-10-06T21:21:59.1008183Z   WGPU_BACKEND: vulkan
+2026-10-06T21:21:59.1008553Z   CARGO_HOME: /home/markik/.cargo
+2026-10-06T21:21:59.1008966Z   CARGO_INCREMENTAL: 0
+2026-10-06T21:21:59.1009310Z   CARGO_TERM_COLOR: always
+2026-10-06T21:21:59.1009805Z ##[endgroup]
+2026-10-06T21:21:59.3110142Z [1m[92m   Compiling[0m scrying v0.7.1 (/home/markik/actions-runner-wgpu/_work/wgpu-scry/wgpu-scry/scrying)
+2026-10-06T21:22:01.3524561Z [1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 2.23s
+2026-10-06T21:22:01.3663171Z [1m[92m     Running[0m tests/wpe_to_vulkan_roundtrip.rs (/home/markik/Code/targets/wgpu-scry-hardware/debug/deps/wpe_to_vulkan_roundtrip-8433a6e0fb9e5e98)
+2026-10-06T21:22:01.6615247Z wpe→vk: 1024x768 fourcc=0x34325258 mod=0x020000044051ba01 planes=2
+2026-10-06T21:22:01.6616425Z wpe→vk:   plane[0]: fd=34 st_ino=482 offset=0 stride=4096
+2026-10-06T21:22:01.6617466Z wpe→vk:   plane[1]: fd=35 st_ino=482 offset=3145728 stride=1024
+2026-10-06T21:22:01.6618712Z wgpu instance flags: InstanceFlags(DEBUG | VALIDATION) (VK_LAYER_KHRONOS_validation requested)
+2026-10-06T21:22:01.7504833Z wpe→vk: wgpu Vulkan host up
+2026-10-06T21:22:01.7534555Z wpe→vk: imported texture 1024x768 format=Bgra8UnormSrgb gen=2
+2026-10-06T21:22:01.7806758Z wpe→vk: pixel-correctness OK (64×64 center sample all within ±8 of BGRA=[255, 144, 30, 255])
+2026-10-06T21:22:01.7913508Z NATIVE WPE GATE PASS: wpe_to_vulkan_roundtrip
+2026-10-06T21:22:01.8464424Z ##[group]Run set -o pipefail
+2026-10-06T21:22:01.8465116Z [36;1mset -o pipefail[0m
+2026-10-06T21:22:01.8465666Z [36;1mlog_file="$(mktemp)"[0m
+2026-10-06T21:22:01.8466312Z [36;1mtrap 'rm -f "$log_file"' EXIT[0m
+2026-10-06T21:22:01.8467122Z [36;1mif ! cargo test --locked -p scrying --features wpe \[0m
+2026-10-06T21:22:01.8468159Z [36;1m  --test wpe_input -- --ignored --nocapture --test-threads=1 \[0m
+2026-10-06T21:22:01.8469047Z [36;1m  2>&1 | tee "$log_file"; then[0m
+2026-10-06T21:22:01.8469897Z [36;1m  exit 1[0m
+2026-10-06T21:22:01.8470402Z [36;1mfi[0m
+2026-10-06T21:22:01.8479729Z [36;1mif ! grep -Fq 'NATIVE WPE GATE PASS: wpe_input' "$log_file"; then[0m
+2026-10-06T21:22:01.8480673Z [36;1m  echo 'Native WPE gate did not complete on the process main thread.'[0m
+2026-10-06T21:22:01.8481108Z [36;1m  exit 1[0m
+2026-10-06T21:22:01.8481319Z [36;1mfi[0m
+2026-10-06T21:22:01.8481557Z [36;1mif grep -q 'SKIP:' "$log_file"; then[0m
+2026-10-06T21:22:01.8482160Z [36;1m  echo 'WPE page-side input gate emitted SKIP; hardware prerequisites were expected to be present.'[0m
+2026-10-06T21:22:01.8482741Z [36;1m  exit 1[0m
+2026-10-06T21:22:01.8482962Z [36;1mfi[0m
+2026-10-06T21:22:01.8514808Z shell: /usr/bin/bash -e {0}
+2026-10-06T21:22:01.8515107Z env:
+2026-10-06T21:22:01.8515348Z   CARGO_NET_GIT_FETCH_WITH_CLI: true
+2026-10-06T21:22:01.8515640Z   RUSTFLAGS: -D warnings
+2026-10-06T21:22:01.8515979Z   CARGO_TARGET_DIR: /home/markik/Code/targets/wgpu-scry-hardware
+2026-10-06T21:22:01.8516369Z   XDG_RUNTIME_DIR: /run/user/1000
+2026-10-06T21:22:01.8516656Z   WAYLAND_DISPLAY: wayland-0
+2026-10-06T21:22:01.8516903Z   DISPLAY: 
+2026-10-06T21:22:01.8517163Z   DBUS_SESSION_BUS_ADDRESS: unix:path=/run/user/1000/bus
+2026-10-06T21:22:01.8517523Z   XDG_SESSION_TYPE: wayland
+2026-10-06T21:22:01.8517784Z   XDG_CURRENT_DESKTOP: GNOME
+2026-10-06T21:22:01.8518031Z   WGPU_BACKEND: vulkan
+2026-10-06T21:22:01.8518265Z   CARGO_HOME: /home/markik/.cargo
+2026-10-06T21:22:01.8518543Z   CARGO_INCREMENTAL: 0
+2026-10-06T21:22:01.8518783Z   CARGO_TERM_COLOR: always
+2026-10-06T21:22:01.8519022Z ##[endgroup]
+2026-10-06T21:22:02.0577166Z [1m[92m   Compiling[0m scrying v0.7.1 (/home/markik/actions-runner-wgpu/_work/wgpu-scry/wgpu-scry/scrying)
+2026-10-06T21:22:02.7567003Z [1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 0.88s
+2026-10-06T21:22:02.7712048Z [1m[92m     Running[0m tests/wpe_input.rs (/home/markik/Code/targets/wgpu-scry-hardware/debug/deps/wpe_input-827701bf2986d88f)
+2026-10-06T21:22:03.1060264Z input smoke: page-side pointer listeners ready
+2026-10-06T21:22:03.2080492Z input smoke: first frame 1024x768
+2026-10-06T21:22:03.2193825Z input smoke: page received pointer move: wpe-input:move:512:384
+2026-10-06T21:22:03.2195308Z input smoke: ignoring unrelated page message "wpe-input:move:512:384"
+2026-10-06T21:22:03.2360822Z input smoke: page received button down: wpe-input:down:512:384
+2026-10-06T21:22:03.2361449Z input smoke: ignoring unrelated page message "wpe-input:down:512:384"
+2026-10-06T21:22:03.2468933Z input smoke: page received button up: wpe-input:up:512:384
+2026-10-06T21:22:03.2470701Z input smoke: ignoring unrelated page message "wpe-input:up:512:384"
+2026-10-06T21:22:03.2634576Z input smoke: page received scroll: wpe-input:scroll:512:384
+2026-10-06T21:22:03.2731051Z input smoke: chrome.webview.postMessage round-trip = Some("hi from page")
+2026-10-06T21:22:03.2821229Z input smoke: cookie round-trip OK (1 cookie(s) returned for example.test)
+2026-10-06T21:22:03.2865171Z input smoke: post-input frame 1024x768
+2026-10-06T21:22:03.2866110Z NATIVE WPE GATE PASS: wpe_input
+2026-10-06T21:22:03.3344192Z Post job cleanup.
+2026-10-06T21:22:03.3659149Z Released host hardware lock at /tmp/merely-wgpu-hardware-lock/host.lock
+2026-10-06T21:22:03.3788489Z Post job cleanup.
+2026-10-06T21:22:03.4684624Z [command]/usr/bin/git version
+2026-10-06T21:22:03.4729358Z git version 2.55.0
+2026-10-06T21:22:03.4758302Z Copying '/home/markik/.gitconfig' to '/home/markik/actions-runner-wgpu/_work/_temp/77dd5949-fce6-4570-946f-4c1b28692ea1/.gitconfig'
+2026-10-06T21:22:03.4770132Z Temporarily overriding HOME='/home/markik/actions-runner-wgpu/_work/_temp/77dd5949-fce6-4570-946f-4c1b28692ea1' before making global git config changes
+2026-10-06T21:22:03.4782128Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-06T21:22:03.4783376Z [command]/usr/bin/git config --global --add safe.directory /home/markik/actions-runner-wgpu/_work/wgpu-scry/wgpu-scry/.host-hardware-lock
+2026-10-06T21:22:03.4838988Z Removing SSH command configuration
+2026-10-06T21:22:03.4850193Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-06T21:22:03.4933072Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-06T21:22:03.5353605Z Removing HTTP extra header
+2026-10-06T21:22:03.5392832Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-06T21:22:03.5444359Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-06T21:22:03.5833618Z Removing includeIf entries pointing to credentials config files
+2026-10-06T21:22:03.5841787Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-06T21:22:03.5872244Z includeif.gitdir:/home/markik/actions-runner-wgpu/_work/wgpu-scry/wgpu-scry/.host-hardware-lock/.git.path
+2026-10-06T21:22:03.5873154Z includeif.gitdir:/home/markik/actions-runner-wgpu/_work/wgpu-scry/wgpu-scry/.host-hardware-lock/.git/worktrees/*.path
+2026-10-06T21:22:03.5873869Z includeif.gitdir:/github/workspace/.host-hardware-lock/.git.path
+2026-10-06T21:22:03.5874397Z includeif.gitdir:/github/workspace/.host-hardware-lock/.git/worktrees/*.path
+2026-10-06T21:22:03.5881569Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/markik/actions-runner-wgpu/_work/wgpu-scry/wgpu-scry/.host-hardware-lock/.git.path
+2026-10-06T21:22:03.5915968Z /home/markik/actions-runner-wgpu/_work/_temp/git-credentials-5f5af400-7591-4be7-ad85-d7a9cbcfaefc.config
+2026-10-06T21:22:03.5927068Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/markik/actions-runner-wgpu/_work/wgpu-scry/wgpu-scry/.host-hardware-lock/.git.path \/home\/markik\/actions\-runner\-wgpu\/_work\/_temp\/git\-credentials\-5f5af400\-7591\-4be7\-ad85\-d7a9cbcfaefc\.config
+2026-10-06T21:22:03.5971311Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/markik/actions-runner-wgpu/_work/wgpu-scry/wgpu-scry/.host-hardware-lock/.git/worktrees/*.path
+2026-10-06T21:22:03.6004331Z /home/markik/actions-runner-wgpu/_work/_temp/git-credentials-5f5af400-7591-4be7-ad85-d7a9cbcfaefc.config
+2026-10-06T21:22:03.6015156Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/markik/actions-runner-wgpu/_work/wgpu-scry/wgpu-scry/.host-hardware-lock/.git/worktrees/*.path \/home\/markik\/actions\-runner\-wgpu\/_work\/_temp\/git\-credentials\-5f5af400\-7591\-4be7\-ad85\-d7a9cbcfaefc\.config
+2026-10-06T21:22:03.6061424Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.host-hardware-lock/.git.path
+2026-10-06T21:22:03.6093118Z /github/runner_temp/git-credentials-5f5af400-7591-4be7-ad85-d7a9cbcfaefc.config
+2026-10-06T21:22:03.6102035Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.host-hardware-lock/.git.path \/github\/runner_temp\/git\-credentials\-5f5af400\-7591\-4be7\-ad85\-d7a9cbcfaefc\.config
+2026-10-06T21:22:03.6145948Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.host-hardware-lock/.git/worktrees/*.path
+2026-10-06T21:22:03.6175367Z /github/runner_temp/git-credentials-5f5af400-7591-4be7-ad85-d7a9cbcfaefc.config
+2026-10-06T21:22:03.6185594Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.host-hardware-lock/.git/worktrees/*.path \/github\/runner_temp\/git\-credentials\-5f5af400\-7591\-4be7\-ad85\-d7a9cbcfaefc\.config
+2026-10-06T21:22:03.6228066Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-06T21:22:03.6668184Z Removing credentials config '/home/markik/actions-runner-wgpu/_work/_temp/git-credentials-5f5af400-7591-4be7-ad85-d7a9cbcfaefc.config'
+2026-10-06T21:22:03.6880398Z Post job cleanup.
+2026-10-06T21:22:03.7823659Z [command]/usr/bin/git version
+2026-10-06T21:22:03.7904842Z git version 2.55.0
+2026-10-06T21:22:03.7939296Z Copying '/home/markik/.gitconfig' to '/home/markik/actions-runner-wgpu/_work/_temp/3df64f71-14c9-4d69-8963-129b80e57570/.gitconfig'
+2026-10-06T21:22:03.7949201Z Temporarily overriding HOME='/home/markik/actions-runner-wgpu/_work/_temp/3df64f71-14c9-4d69-8963-129b80e57570' before making global git config changes
+2026-10-06T21:22:03.7950965Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-06T21:22:03.7955078Z [command]/usr/bin/git config --global --add safe.directory /home/markik/actions-runner-wgpu/_work/wgpu-scry/wgpu-scry
+2026-10-06T21:22:03.7999730Z Removing SSH command configuration
+2026-10-06T21:22:03.8008589Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-06T21:22:03.8056719Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-06T21:22:03.8438454Z Removing HTTP extra header
+2026-10-06T21:22:03.8442383Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-06T21:22:03.8501744Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-06T21:22:03.8914290Z Removing includeIf entries pointing to credentials config files
+2026-10-06T21:22:03.8921280Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-06T21:22:03.8961122Z includeif.gitdir:/home/markik/actions-runner-wgpu/_work/wgpu-scry/wgpu-scry/.git.path
+2026-10-06T21:22:03.8963249Z includeif.gitdir:/home/markik/actions-runner-wgpu/_work/wgpu-scry/wgpu-scry/.git/worktrees/*.path
+2026-10-06T21:22:03.8964532Z includeif.gitdir:/github/workspace/.git.path
+2026-10-06T21:22:03.8965386Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-10-06T21:22:03.8971402Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/markik/actions-runner-wgpu/_work/wgpu-scry/wgpu-scry/.git.path
+2026-10-06T21:22:03.9008446Z /home/markik/actions-runner-wgpu/_work/_temp/git-credentials-5529fe85-be52-4628-ab1f-94d74db312c3.config
+2026-10-06T21:22:03.9021128Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/markik/actions-runner-wgpu/_work/wgpu-scry/wgpu-scry/.git.path \/home\/markik\/actions\-runner\-wgpu\/_work\/_temp\/git\-credentials\-5529fe85\-be52\-4628\-ab1f\-94d74db312c3\.config
+2026-10-06T21:22:03.9076219Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/markik/actions-runner-wgpu/_work/wgpu-scry/wgpu-scry/.git/worktrees/*.path
+2026-10-06T21:22:03.9118357Z /home/markik/actions-runner-wgpu/_work/_temp/git-credentials-5529fe85-be52-4628-ab1f-94d74db312c3.config
+2026-10-06T21:22:03.9128836Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/markik/actions-runner-wgpu/_work/wgpu-scry/wgpu-scry/.git/worktrees/*.path \/home\/markik\/actions\-runner\-wgpu\/_work\/_temp\/git\-credentials\-5529fe85\-be52\-4628\-ab1f\-94d74db312c3\.config
+2026-10-06T21:22:03.9192005Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+2026-10-06T21:22:03.9231160Z /github/runner_temp/git-credentials-5529fe85-be52-4628-ab1f-94d74db312c3.config
+2026-10-06T21:22:03.9241059Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path \/github\/runner_temp\/git\-credentials\-5529fe85\-be52\-4628\-ab1f\-94d74db312c3\.config
+2026-10-06T21:22:03.9302774Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-10-06T21:22:03.9339107Z /github/runner_temp/git-credentials-5529fe85-be52-4628-ab1f-94d74db312c3.config
+2026-10-06T21:22:03.9349255Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path \/github\/runner_temp\/git\-credentials\-5529fe85\-be52\-4628\-ab1f\-94d74db312c3\.config
+2026-10-06T21:22:03.9395287Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-06T21:22:03.9806829Z Removing credentials config '/home/markik/actions-runner-wgpu/_work/_temp/git-credentials-5529fe85-be52-4628-ab1f-94d74db312c3.config'
+2026-10-06T21:22:03.9992065Z Cleaning up orphan processes

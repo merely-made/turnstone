@@ -1,0 +1,10 @@
+{
+  "path": "C:/t/cargo-targets/turnstone/debug/deps/turnstone-e99996fb98102bd2.exe",
+  "sha256": "a32626654e0310d4ab1ff10afe408454639d621f8935e8c74ba378a6a3bbf52a",
+  "source_manifest": "final-source-manifest.json",
+  "compilation": "cargo test --offline --locked --features scry,weld --lib shell::weld --target-dir C:/t/cargo-targets/turnstone -- --test-threads=1",
+  "compilation_log": "weld-character-code-tests.log",
+  "result": "6 passed; 0 failed",
+  "production_build_log": "weld-character-code-build.log",
+  "note": "The earlier broad-suite binary and source snapshot are separately recorded in library-test-binary.json."
+}

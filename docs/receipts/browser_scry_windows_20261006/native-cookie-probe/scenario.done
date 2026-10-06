@@ -1,0 +1,7 @@
+RESULT fail
+captured 00_b_inspector_before_pin
+captured 00_b_inspector_after_pin
+captured 01_two_scry_pages
+captured 02_text_pointer_and_keyboard
+FAIL: assert snap browser-current Contains 'scry_B=B-retained': got 'Scry B | text=bravo | clicks=0 | stored=B-retained | cookie= | viewport=255x285@2 | scroll=0,0 | scrolled=no | wheels=0  http://127.0.0.1:43123/page-b.html'
+captured 02b_b_reloaded

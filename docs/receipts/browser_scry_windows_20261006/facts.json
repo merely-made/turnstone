@@ -1,0 +1,55 @@
+{
+  "recorded_utc": "2026-10-06T22:27:56.933750+00:00",
+  "source_manifest": "final-source-manifest.json",
+  "exe_sha256": "1e1893c4ac2a61f6af2c05e3ea2049028274ecf26ccbed50b8d5ff9507d5d967",
+  "features": [
+    "scry",
+    "weld"
+  ],
+  "runs": {
+    "native-weld-final-input": {
+      "result": "RESULT ok",
+      "native_exit": 0,
+      "exit_evidence": "Runner completed after explicit exit/result checks"
+    },
+    "native-scry-final": {
+      "result": "RESULT ok",
+      "native_exit": 0,
+      "exit_evidence": "Runner completed after explicit exit/result checks"
+    },
+    "native-scry-final-restart": {
+      "result": "RESULT ok",
+      "native_exit": 0,
+      "exit_evidence": "Runner completed after explicit exit/result checks"
+    },
+    "native-weld-permission-final": {
+      "result": "RESULT ok",
+      "native_exit": 0,
+      "exit_evidence": "Runner completed after explicit exit/result checks"
+    }
+  },
+  "permission_server": "RESULT ok",
+  "scry_closed": {
+    "cached_frames": 0,
+    "content_surfaces": [],
+    "live_producers": 0,
+    "scry_importers": []
+  },
+  "final_targeted_tests": "6 passed; 0 failed; serial Weld contracts/sandbox",
+  "preceding_broad_suite": "665 passed, 1 failed, 9 ignored, 2 filtered; sandbox 2 pass serially; failed network case passes isolated",
+  "broad_suite_clean": false,
+  "limits": [
+    "selfdrive input, not physical keyboard/IME",
+    "Weld requested zoom remains Partial",
+    "permission denial callback, not successful geolocation",
+    "DPR differs by engine",
+    "Servo consumer and next registry release remain open"
+  ],
+  "retained_state": {
+    "target": "C:/t/cargo-targets/turnstone",
+    "target_owner": "Existing shared Turnstone build output",
+    "profiles": "Ignored synthetic exact-profile restart evidence",
+    "isolated_cargo_home": null,
+    "worktree": null
+  }
+}

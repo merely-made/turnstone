@@ -1,0 +1,5 @@
+RESULT ok
+captured 01_restored_two_pages
+captured 02_restored_a_profile
+captured 03_restored_b_profile
+B1 run 2: restored pins, two-page layout, local storage, text and page cookies observed

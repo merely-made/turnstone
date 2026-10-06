@@ -1,0 +1,11 @@
+RESULT fail
+FAIL: assert snap decision-kind: no such field
+FAIL: assert snap decision-prompt: no such field
+FAIL: assert snap decision-prompt: no such field
+FAIL: assert a11y 'button: Allow once': 12 lines, none match (first 12: ["label: Turnstone D0 permission fixture  ·  127.0.0.1", "group: chrome", "document: http://127.0.0.1:43107/permission", "group: graph canvas, 13 nodes", "group: orrery", "tab: Tile c0b958a9-e928-4cb1-82e3-a32b9cbdd815", "group: Slot 0", "group: Tile layout", "group: workbench", "group", "group: content", "window: Turnstone"])
+captured 01_permission_decision
+FAIL: assert event 'permission-answered': not in the stream (last: ["workbench-opened http://127.0.0.1:43107/permission", "pane-closed", "content c0b958a9-e928-4cb1-82e3-a32b9cbdd815 live", "content c0b958a9-e928-4cb1-82e3-a32b9cbdd815 requested", "viewer-changed c0b958a9-e928-4cb1-82e3-a32b9cbdd815 weld.chromium", "pane-summoned Inspector"])
+FAIL: assert snap browser-current Contains '/permission-result': got 'Turnstone D0 permission fixture  http://127.0.0.1:43107/permission'
+captured 02_permission_answered
+captured 03_permission_teardown
+Direct Weld permission callback and teardown complete

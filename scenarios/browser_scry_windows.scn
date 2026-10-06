@@ -153,16 +153,20 @@ click surface:workbench .tab Scry A
 settle 20
 assert snap browser-current ~ scrolled=yes
 assert snap browser-current ~ wheels=1
+# Wheel's title can precede the default scroll task; allow its final
+# scroll/title callback to settle without changing the required state.
 scroll ${SCRY_A_INPUT_X} ${SCRY_A_INPUT_Y} 600
-settle 80
+settle 160
 assert snap browser-current ~ scroll=0,0 | scrolled=no
 assert snap browser-current ~ wheels=2
 click surface:workbench .tab Scry B
 settle 20
 assert snap browser-current ~ scrolled=yes
 assert snap browser-current ~ wheels=1
+# Wheel's title can precede the default scroll task; allow its final
+# scroll/title callback to settle without changing the required state.
 scroll ${SCRY_B_INPUT_X} ${SCRY_B_INPUT_Y} 600
-settle 80
+settle 160
 assert snap browser-current ~ scroll=0,0 | scrolled=no
 assert snap browser-current ~ wheels=2
 capture 02e_both_scroll_reset

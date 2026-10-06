@@ -10,7 +10,7 @@ use super::App;
 
 impl App {
     pub(super) fn open_document_find(&mut self) -> Vec<Effect> {
-        let Some(target) = self.graph_runtimes.focused_member() else {
+        let Some((target, _)) = self.browser_command_target() else {
             return vec![Effect::Redraw];
         };
         if !matches!(
@@ -155,11 +155,11 @@ impl App {
             Ok(model) => {
                 self.document_find.model = model;
                 self.document_find.error = None;
-            }
+            },
             Err(error) => {
                 self.document_find.model = DocumentFindModel::default();
                 self.document_find.error = Some(error);
-            }
+            },
         }
         vec![Effect::Redraw]
     }
@@ -192,6 +192,64 @@ mod tests {
                 },
             }),
         );
+    }
+
+    #[test]
+    fn workbench_find_and_zoom_follow_the_browser_page_with_an_independent_graph_cursor() {
+        let mut app = App::test_stub();
+        app.update(Action::OpenAddress("https://example.test/a".into()));
+        let a = app.graph_runtimes.focused_member().unwrap();
+        app.update(Action::OpenInWorkbench);
+        app.update(Action::OpenAddress("https://example.test/b".into()));
+        let b = app.graph_runtimes.focused_member().unwrap();
+        app.update(Action::OpenInWorkbench);
+        app.content.note_live(
+            a,
+            Some(ContentFacts {
+                engine: "test.document".into(),
+                structure: None,
+                lineage: None,
+                capabilities: DocumentCapabilityFacts {
+                    find_in_page: CapabilityStatus::Supported,
+                    page_zoom: CapabilityStatus::Supported,
+                    ..Default::default()
+                },
+            }),
+        );
+        app.content.note_live(b, None);
+        app.update(Action::WorkbenchActivate(a));
+        assert_eq!(app.graph_runtimes.focused_member(), Some(b));
+        let actions = app.available_actions();
+        assert!(actions.iter().any(|(label, _)| label == "Find in document"));
+        assert!(
+            actions
+                .iter()
+                .any(|(_, action)| matches!(action, Action::PageZoomIn { member } if *member == a))
+        );
+        app.update(Action::OpenDocumentFind);
+        assert_eq!(app.document_find.target, Some(a));
+        let effects = app.update(Action::InsertDocumentFind("needle".into()));
+        assert!(
+            effects
+                .iter()
+                .any(|effect| matches!(effect, Effect::FindContent { node, .. } if *node == a))
+        );
+        assert_eq!(app.graph_runtimes.focused_member(), Some(b));
+        app.update(Action::CloseDocumentFind);
+        app.content.note_live(a, None);
+        note_findable(&mut app, b);
+        assert!(
+            !app.available_actions()
+                .iter()
+                .any(|(label, _)| label == "Find in document")
+        );
+        assert!(
+            !app.available_actions()
+                .iter()
+                .any(|(_, action)| matches!(action, Action::PageZoomIn { .. }))
+        );
+        app.update(Action::OpenDocumentFind);
+        assert!(!app.document_find.open);
     }
 
     #[test]

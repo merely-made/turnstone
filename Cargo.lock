@@ -11226,8 +11226,7 @@ dependencies = [
 [[package]]
 name = "scrying"
 version = "0.7.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "91234eac6fdcb82aa895cc686d4f5eedfcc1492cb5d3b890d1a085d463d16073"
+source = "git+https://github.com/merely-made/wgpu-scry.git?rev=39818a7eddb8bec33f7c61ed144da226bc0a1d04#39818a7eddb8bec33f7c61ed144da226bc0a1d04"
 dependencies = [
  "ash",
  "block2 0.6.2",
@@ -14133,12 +14132,13 @@ dependencies = [
  "dpi",
  "inker",
  "tracing",
+ "welding",
 ]
 
 [[package]]
 name = "welding"
 version = "0.15.0"
-source = "git+https://github.com/merely-made/wgpu-weld.git?rev=65d057def7db2b5034add6e316cbd51d97c163a1#65d057def7db2b5034add6e316cbd51d97c163a1"
+source = "git+https://github.com/merely-made/wgpu-weld.git?rev=4784d07c4064195c33136b9b91c8231913f08e06#4784d07c4064195c33136b9b91c8231913f08e06"
 dependencies = [
  "base64 0.22.1",
  "cef",

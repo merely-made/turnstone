@@ -332,7 +332,7 @@ impl Shell {
             && let WinitKey::Character(value) = key
             && let Some(chord) = PageZoomChord::for_character(value)
         {
-            if let Some(member) = self.app.graph_runtimes.focused_member() {
+            if let Some((member, _)) = self.app.browser_command_target() {
                 self.act(chord.action(member));
             }
             return;

@@ -1,0 +1,11 @@
+RESULT fail
+captured 00_b_inspector_before_pin
+captured 00_b_inspector_after_pin
+captured 01_two_weld_pages
+FAIL: assert snap browser-current Contains 'text=alpha': got 'Scry A | text=ALPHA | clicks=1 | stored=A-retained | cookie=scry_A=A-retained | viewport=509x570@1 | scroll=0,0 | scrolled=no | wheels=0  http://127.0.0.1:43123/page-a.html'
+FAIL: assert snap browser-current Contains 'text=bravo': got 'Scry B | text=BRAVO | clicks=1 | stored=B-retained | cookie=scry_B=B-retained | viewport=509x570@1 | scroll=0,0 | scrolled=no | wheels=0  http://127.0.0.1:43123/page-b.html'
+captured 01b_independent_weld_input
+captured 02_find
+captured 03_zoom
+captured 04_teardown
+B2 direct Weld: two producers, find, requested zoom and zero-resource teardown

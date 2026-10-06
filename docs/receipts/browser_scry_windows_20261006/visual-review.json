@@ -1,0 +1,16 @@
+{
+  "method": "Direct inspection of native composed-frame PNGs",
+  "captures": {
+    "native-weld-final-input/01b_independent_weld_input.png": "Visible lowercase alpha/bravo, separate click counts and cookies in two pages",
+    "native-weld-final-input/02_find.png": "A has one highlighted Page A text match; B retains independent text; chrome targets A",
+    "native-weld-final-input/03_zoom.png": "A viewport 463x518 at about 1.1, B 509x570 at 1; requested zoom is Partial",
+    "native-weld-final-input/04_teardown.png": "Both content surfaces off, with no residual page imagery",
+    "native-scry-final/02_text_pointer_and_keyboard.png": "Current alpha/bravo and two clicks each, independent cookie values, DPR 2",
+    "native-scry-final/06_a_scry_reconstructed.png": "Reconstructed A and sibling B both visibly populated with retained text/site state",
+    "native-scry-final/07_both_closed.png": "Both content surfaces off, no residual page imagery; separate structural snapshot is zero",
+    "native-scry-final/08_ready_for_restart.png": "Both reopened pages visibly populated before process exit",
+    "native-scry-final-restart/01_restored_two_pages.png": "Separate process restores two populated pages and retained alpha/bravo",
+    "native-weld-permission-final/01_permission_decision.png": "Exact loopback origin requests location; real Allow once/Always allow/Deny controls",
+    "native-weld-permission-final/02_permission_answered.png": "Native denial callback navigates and renders Permission callback answered"
+  }
+}

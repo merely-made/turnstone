@@ -1,0 +1,38 @@
+# Direct WeldingSurface permission callback through retained Turnstone chrome.
+# Serve browser_decisions_server.ps1 on loopback port 43107, fresh profile.
+# Denial completes the real browser API without requiring an OS location fix.
+settle 30
+key escape
+open http://127.0.0.1:43107/permission
+settle 80
+act Open node in Workbench
+settle 80
+act Open Inspector pane
+settle 10
+click surface:inspector .radio @data-engine-id=weld.chromium
+settle 160
+act Close pane
+settle 10
+act Open node in Workbench
+settle 10
+act Maximize pane
+settle 40
+assert content-live
+assert snap host-surface-producers == 1
+click-at 310 303
+settle 120
+assert snap decision-kind == permission
+assert snap decision-prompt ~ 127.0.0.1:43107
+assert snap decision-prompt ~ location
+assert a11y button: Deny
+capture 01_permission_decision
+click-at 430 154
+settle 120
+assert event permission-answered
+assert snap browser-current ~ /permission-result
+capture 02_permission_answered
+act Toggle live content
+settle 80
+assert snap host-surface-producers == 0
+capture 03_permission_teardown
+log Direct Weld permission callback and teardown complete

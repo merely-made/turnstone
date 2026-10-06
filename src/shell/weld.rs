@@ -7,27 +7,25 @@
 //! Turnstone's Windows `weld.chromium` host implementation.
 //!
 //! The inker adapter stays CEF-free. This module owns the process runtime,
-//! per-tile CEF producer, and the vocabulary translations for the deliberately
-//! small first projection.
+//! per-tile CEF producer, and product limits. Mere's version-pinned adapter
+//! owns input, capability and ordered completion translation.
 
+use std::cell::RefCell;
 use std::path::{Path, PathBuf};
+use std::rc::Rc;
 use std::sync::Arc;
 
 use inker::{
-    CursorShape, DataTransfer, DataTransferItem, DocumentFindDirection, DocumentFindQuery,
-    DocumentFindState, DragEvent, DragOperationSet, DragPhase, FocusReason, FrameHandleOwnership,
-    HttpAuthenticationAnswer, HttpAuthenticationChallenge, HttpProtectionSpace, KeyboardEvent,
-    KeyboardModifiers, MouseButton, MouseEvent, MouseEventKind, NativeTextureHandle,
-    NavigationEvent, PermissionAnswer, PermissionDescriptor, PermissionRequest, PhysicalPosition,
-    PointerButtons, PointerEvent, PointerPhase, PointerType, SurfaceError, SurfaceSettings,
-    SurfaceSyncHandle, SurfaceTextureFormat, UserAgentRequestId, WebFeatureStatus,
-    WebFrameTransportMode, WebMessage, WebSurfaceCapabilities, WebSurfaceEvent,
+    Cookie, CursorShape, DocumentFindDirection, DocumentFindQuery, DragEvent, DragOperationSet,
+    FocusReason, HttpAuthenticationAnswer, KeyboardEvent, MouseEvent, PermissionAnswer,
+    PhysicalPosition, PointerEvent, SurfaceError, SurfaceSettings, UserAgentRequestId,
+    WebFeatureStatus, WebRequestId, WebSurfaceCapabilities, WebSurfaceEvent,
 };
 use weld_engine::{WeldFrame, WeldProducerFactory, WeldSurface};
 use welding::{
     CefRuntime, CefRuntimeConfig, CefSandboxMode, CefSurfaceConfig, CefSurfaceProducer,
-    CefWindowsSandboxContext, FocusDirection, HostWgpuContext, KeyEvent, KeyEventKind,
-    MouseAction, PlatformCefConfig as WindowsCefConfig, PlatformCefProducer as WindowsCefProducer,
+    CefWindowsSandboxContext, HostWgpuContext, PlatformCefConfig as WindowsCefConfig,
+    PlatformCefProducer as WindowsCefProducer,
 };
 use winit::dpi::PhysicalSize;
 
@@ -83,11 +81,7 @@ impl WeldProducerFactory for TurnstoneWeldFactory {
         &self,
         request: &inker::SurfaceSpawnRequest,
     ) -> Result<Box<dyn WeldSurface>, SurfaceError> {
-        let mut surface = CefSurfaceConfig::default();
-        surface.initial_url = request.url.clone();
-        surface.initial_size = PhysicalSize::new(request.width.max(1), request.height.max(1));
-        surface.handle_permission_requests = true;
-        surface.handle_auth_challenges = true;
+        let surface = weld_surface_config(request);
         let profile_dir = PathBuf::from(&request.profile.user_data_dir);
         // CEF creates a profile's files but not a missing parent chain. Make
         // the resolved per-node directory real before request-context creation
@@ -98,19 +92,36 @@ impl WeldProducerFactory for TurnstoneWeldFactory {
                 profile_dir.display()
             ))
         })?;
-        surface.user_data_dir = Some(profile_dir);
         let mut producer = WindowsCefProducer::new(
             self.runtime.as_ref(),
-            WindowsCefConfig { surface },
+            WindowsCefConfig {
+                surface: weld_surface_config(request),
+            },
             &self.host,
         )
         .map_err(weld_spawn_error)?;
         producer.set_visible(true).map_err(weld_spawn_error)?;
+        let producer = Rc::new(RefCell::new(producer));
         Ok(Box::new(TurnstoneWeldSurface {
+            inner: weld_engine::WeldingSurface::new(
+                Box::new(native_bridge::Producer(producer.clone())),
+                &surface,
+            ),
             producer,
-            find_query: DocumentFindQuery::default(),
         }))
     }
+}
+
+fn weld_surface_config(request: &inker::SurfaceSpawnRequest) -> CefSurfaceConfig {
+    let mut surface = CefSurfaceConfig::default();
+    surface.initial_url = request.url.clone();
+    surface.initial_size = PhysicalSize::new(request.width.max(1), request.height.max(1));
+    surface.handle_permission_requests = true;
+    surface.handle_auth_challenges = true;
+    let [red, green, blue, _] = SurfaceSettings::default().background_color;
+    surface.background_color = Some([red, green, blue]);
+    surface.user_data_dir = Some(PathBuf::from(&request.profile.user_data_dir));
+    surface
 }
 
 pub(super) fn initialize_runtime(
@@ -144,7 +155,10 @@ pub(super) fn initialize_runtime(
     let preference = requested_sandbox_preference()?;
     SANDBOX_ROUTE.with(move |cell| {
         let route = cell.borrow();
-        match (route.as_ref().unwrap_or(&WeldSandboxRoute::Direct), preference) {
+        match (
+            route.as_ref().unwrap_or(&WeldSandboxRoute::Direct),
+            preference,
+        ) {
             (WeldSandboxRoute::Direct, Some(SandboxPreference::Sandboxed)) => Err(
                 "TURNSTONE_WELD_SANDBOX=sandboxed requires launching through the CEF Windows \
                  bootstrap route (RunWinMain); the direct turnstone.exe entry point cannot \
@@ -156,7 +170,7 @@ pub(super) fn initialize_runtime(
                 CefRuntime::initialize(config)
                     .map(Arc::new)
                     .map_err(|error| format!("could not initialize Weld CEF runtime: {error}"))
-            }
+            },
             (WeldSandboxRoute::Bootstrap(_), Some(SandboxPreference::Unsandboxed)) => Err(
                 "TURNSTONE_WELD_SANDBOX=unsandboxed is not supported when launched through the \
                  CEF Windows bootstrap route; that context always initializes \
@@ -169,7 +183,7 @@ pub(super) fn initialize_runtime(
                     .initialize(config)
                     .map(Arc::new)
                     .map_err(|error| format!("could not initialize Weld CEF runtime: {error}"))
-            }
+            },
         }
     })
 }
@@ -197,7 +211,7 @@ fn requested_sandbox_preference() -> Result<Option<SandboxPreference>, String> {
         Err(std::env::VarError::NotPresent) => Ok(None),
         Err(std::env::VarError::NotUnicode(_)) => {
             Err("TURNSTONE_WELD_SANDBOX is not valid UTF-8".into())
-        }
+        },
     }
 }
 
@@ -231,72 +245,203 @@ mod sandbox_preference_tests {
 }
 
 struct TurnstoneWeldSurface {
-    producer: WindowsCefProducer,
-    find_query: DocumentFindQuery,
+    inner: weld_engine::WeldingSurface,
+    producer: Rc<RefCell<WindowsCefProducer>>,
+}
+
+// The pinned direct adapter sends PointerEvent only to CEF's touch path.
+// Keep the host's richer mouse pointer route until that shared seam accepts it;
+// legacy Inker MouseEvent would drop modifiers and held-button state.
+fn weld_mouse_pointer(event: PointerEvent) -> Result<welding::MouseEvent, SurfaceError> {
+    Ok(welding::MouseEvent {
+        x: event.position.x.round() as i32,
+        y: event.position.y.round() as i32,
+        button: map_mouse_button(event.button)?,
+        action: match event.phase {
+            inker::PointerPhase::Down => welding::MouseAction::Pressed,
+            inker::PointerPhase::Move => welding::MouseAction::Moved,
+            inker::PointerPhase::Up | inker::PointerPhase::Cancel => welding::MouseAction::Released,
+        },
+        modifiers: map_event_modifiers(event.modifiers, event.buttons),
+    })
+}
+
+fn weld_character_input(event: &KeyboardEvent) -> Option<welding::KeyEvent> {
+    if !event.pressed {
+        return None;
+    }
+    let character = event.text.as_ref()?.chars().next()?;
+    Some(welding::KeyEvent {
+        kind: welding::KeyEventKind::Char,
+        // CEF's CHAR event takes the character code, not the virtual key
+        // used for raw down/up; virtual A (65) would turn typed "a" into "A".
+        windows_key_code: character as i32,
+        native_key_code: event.scan_code as i32,
+        character: Some(character),
+        modifiers: map_event_modifiers(event.modifiers, inker::PointerButtons::NONE),
+    })
+}
+
+fn map_mouse_button(
+    button: Option<inker::MouseButton>,
+) -> Result<welding::MouseButton, SurfaceError> {
+    match button.unwrap_or(inker::MouseButton::Left) {
+        inker::MouseButton::Left => Ok(welding::MouseButton::Left),
+        inker::MouseButton::Middle => Ok(welding::MouseButton::Middle),
+        inker::MouseButton::Right => Ok(welding::MouseButton::Right),
+        inker::MouseButton::Back | inker::MouseButton::Forward => Err(SurfaceError::Unsupported(
+            "CEF mouse back/forward buttons are not projected by Turnstone yet".into(),
+        )),
+    }
+}
+
+fn map_event_modifiers(
+    modifiers: inker::KeyboardModifiers,
+    buttons: inker::PointerButtons,
+) -> welding::EventModifiers {
+    welding::EventModifiers {
+        shift: modifiers.shift,
+        ctrl: modifiers.ctrl,
+        alt: modifiers.alt,
+        meta: modifiers.meta,
+        left_mouse_button: buttons.contains(inker::PointerButtons::PRIMARY),
+        middle_mouse_button: buttons.contains(inker::PointerButtons::AUXILIARY),
+        right_mouse_button: buttons.contains(inker::PointerButtons::SECONDARY),
+    }
+}
+
+// One native producer, shared only within the owning host thread. The
+// direct adapter consumes the same frames and ordered event queue as before.
+mod native_bridge {
+    use super::{Rc, RefCell, WindowsCefProducer};
+    use welding::*;
+    use winit::dpi::PhysicalSize;
+
+    pub(super) struct Producer(pub(super) Rc<RefCell<WindowsCefProducer>>);
+
+    macro_rules! forward {
+        () => {};
+        (fn $name:ident(&mut self $(, $arg:ident: $ty:ty)*) -> $ret:ty; $($rest:tt)*) => {
+            fn $name(&mut self $(, $arg: $ty)*) -> $ret {
+                CefSurfaceProducer::$name(&mut *self.0.borrow_mut(), $($arg),*)
+            }
+            forward! { $($rest)* }
+        };
+        (fn $name:ident(&self $(, $arg:ident: $ty:ty)*) -> $ret:ty; $($rest:tt)*) => {
+            fn $name(&self $(, $arg: $ty)*) -> $ret {
+                CefSurfaceProducer::$name(&*self.0.borrow(), $($arg),*)
+            }
+            forward! { $($rest)* }
+        };
+    }
+
+    impl CefSurfaceProducer for Producer {
+        forward! {
+        fn surface_mode(&self) -> CefSurfaceMode;
+        fn capabilities(&self) -> CefSurfaceCapabilities;
+        fn acquire_native_frame(&mut self) -> Option<welding::NativeFrame>;
+        fn acquire_frame(&mut self, ctx: &HostWgpuContext) -> Result<Option<ImportedTexture>, WeldError>;
+        fn acquire_popup(&mut self, _ctx: &HostWgpuContext) -> Result<Option<PopupSurface>, WeldError>;
+        fn popup_rect(&self) -> Option<PopupRect>;
+        fn set_visible(&mut self, _visible: bool) -> Result<(), WeldError>;
+        fn poll_cursor_shape(&mut self) -> Option<CursorShape>;
+        fn poll_ime_composition(&mut self) -> Option<ImeComposition>;
+        fn ime_set_composition(&mut self, _text: &str, _selection: (u32, u32)) -> Result<(), WeldError>;
+        fn ime_commit_text(&mut self, _text: &str) -> Result<(), WeldError>;
+        fn ime_finish_composing(&mut self, _keep_selection: bool) -> Result<(), WeldError>;
+        fn ime_cancel_composition(&mut self) -> Result<(), WeldError>;
+        fn resize(&mut self, size: PhysicalSize<u32>) -> Result<(), WeldError>;
+        fn set_scale_factor(&mut self, _scale: f32) -> Result<(), WeldError>;
+        fn scale_factor(&self) -> f32;
+        fn navigate_to_url(&mut self, url: &str) -> Result<(), WeldError>;
+        fn navigate_to_string(&mut self, content: &str, mime_type: &str) -> Result<(), WeldError>;
+        fn reload(&mut self) -> Result<(), WeldError>;
+        fn send_devtools_message(&mut self, _json: &str) -> Result<(), WeldError>;
+        fn poll_devtools_message(&mut self) -> Option<String>;
+        fn devtools_dropped(&self) -> u64;
+        fn grant_permission(&mut self, _id: PermissionId) -> Result<(), WeldError>;
+        fn deny_permission(&mut self, _id: PermissionId) -> Result<(), WeldError>;
+        fn answer_auth(&mut self, _id: AuthId, _username: &str, _password: &str) -> Result<(), WeldError>;
+        fn cancel_auth(&mut self, _id: AuthId) -> Result<(), WeldError>;
+        fn cancel_download(&mut self, _id: DownloadId) -> Result<(), WeldError>;
+        fn pause_download(&mut self, _id: DownloadId) -> Result<(), WeldError>;
+        fn resume_download(&mut self, _id: DownloadId) -> Result<(), WeldError>;
+        fn request_repaint(&mut self) -> Result<(), WeldError>;
+        fn stop(&mut self) -> Result<(), WeldError>;
+        fn can_go_back(&self) -> bool;
+        fn can_go_forward(&self) -> bool;
+        fn zoom(&mut self, _command: ZoomCommand) -> Result<(), WeldError>;
+        fn set_zoom_level(&mut self, _level: f64) -> Result<(), WeldError>;
+        fn zoom_level(&self) -> f64;
+        fn print_to_pdf(&mut self, _path: &std::path::Path) -> Result<(), WeldError>;
+        fn print(&mut self) -> Result<(), WeldError>;
+        fn request_snapshot_png(&mut self) -> Result<SnapshotRequestId, WeldError>;
+        fn poll_snapshot_png(&mut self) -> Option<SnapshotPngCompletion>;
+        fn find(&mut self, _text: &str, _forward: bool, _match_case: bool, _find_next: bool) -> Result<(), WeldError>;
+        fn stop_finding(&mut self, _clear_selection: bool) -> Result<(), WeldError>;
+        fn go_back(&mut self) -> Result<(), WeldError>;
+        fn go_forward(&mut self) -> Result<(), WeldError>;
+        fn send_mouse_input(&mut self, event: MouseEvent) -> Result<(), WeldError>;
+        fn send_touch_input(&mut self, _event: TouchInput) -> Result<(), WeldError>;
+        fn send_drag_input(&mut self, _event: DragInput) -> Result<(), WeldError>;
+        fn finish_drag_source(&mut self, _x: i32, _y: i32, _operation: DragOperations) -> Result<(), WeldError>;
+        fn send_keyboard_input(&mut self, event: KeyEvent) -> Result<(), WeldError>;
+        fn move_focus(&mut self, direction: FocusDirection) -> Result<(), WeldError>;
+        fn post_web_message(&mut self, message: &str) -> Result<(), WeldError>;
+        fn poll_web_event(&mut self) -> Option<CefSurfaceEvent>;
+        fn execute_script(&mut self, script: &str, source_url: &str) -> Result<(), WeldError>;
+        fn request_script_result(&mut self, _id: WebRequestId, _script: &str) -> Result<(), WeldError>;
+        fn set_cookie(&mut self, _url: &str, _cookie: &Cookie) -> Result<(), WeldError>;
+        fn request_cookies(&mut self, _id: WebRequestId, _url: Option<&str>) -> Result<(), WeldError>;
+        fn delete_cookies(&mut self, _url: Option<&str>, _name: Option<&str>) -> Result<(), WeldError>;
+        fn open_devtools(&self) -> Result<(), WeldError>;
+        fn browser_id(&self) -> i32;
+        fn close(&mut self) -> Result<(), WeldError>;
+        }
+    }
 }
 
 const WELD_DEVTOOLS_UNAVAILABLE: &str = "CEF 151 native DevTools windows are unsafe for accelerated off-screen browsers; Weld refuses them, and Turnstone has not exposed the separate CDP channel";
 
 impl WeldSurface for TurnstoneWeldSurface {
     fn resize(&mut self, width: u32, height: u32) -> Result<(), SurfaceError> {
-        self.producer
-            .resize(PhysicalSize::new(width.max(1), height.max(1)))
-            .map_err(weld_input_error)
+        self.inner.resize(width, height)
     }
 
     fn acquire_frame(&mut self) -> Result<Option<WeldFrame>, SurfaceError> {
-        let Some(frame) = self.producer.acquire_native_frame() else {
-            return Ok(None);
-        };
-        let size = frame.size();
-        let format = map_texture_format(frame.format())?;
-        let resource_epoch = frame.generation();
-        let handle = frame.into_raw_handle() as u64;
-        Ok(Some(WeldFrame {
-            texture: NativeTextureHandle::D3d12Shared {
-                handle,
-                ownership: FrameHandleOwnership::Transferred,
-            },
-            sync: SurfaceSyncHandle::None,
-            width: size.width,
-            height: size.height,
-            format,
-            resource_epoch,
-        }))
+        self.inner.acquire_frame()
     }
 
     fn load_url(&mut self, url: &str) -> Result<(), SurfaceError> {
-        self.producer.navigate_to_url(url).map_err(weld_input_error)
+        self.inner.load_url(url)
     }
 
     fn load_html(&mut self, html: &str) -> Result<(), SurfaceError> {
-        self.producer
-            .navigate_to_string(html, "text/html")
-            .map_err(weld_input_error)
+        self.inner.load_html(html)
     }
 
     fn reload(&mut self) -> Result<(), SurfaceError> {
-        self.producer.reload().map_err(weld_input_error)
+        self.inner.reload()
     }
 
     fn stop(&mut self) -> Result<(), SurfaceError> {
-        self.producer.stop().map_err(weld_input_error)
+        self.inner.stop()
     }
 
     fn go_back(&mut self) -> Result<(), SurfaceError> {
-        self.producer.go_back().map_err(weld_input_error)
+        self.inner.go_back()
     }
 
     fn go_forward(&mut self) -> Result<(), SurfaceError> {
-        self.producer.go_forward().map_err(weld_input_error)
+        self.inner.go_forward()
     }
 
     fn can_go_back(&self) -> bool {
-        self.producer.can_go_back()
+        self.inner.can_go_back()
     }
 
     fn can_go_forward(&self) -> bool {
-        self.producer.can_go_forward()
+        self.inner.can_go_forward()
     }
 
     fn document_find(
@@ -305,111 +450,30 @@ impl WeldSurface for TurnstoneWeldSurface {
         direction: DocumentFindDirection,
         _find_next: bool,
     ) -> Result<(), SurfaceError> {
-        self.find_query = query.clone();
-        // CEF calls this fourth argument `findNext`, but Chromium lowers it as
-        // `find_match`: false counts matches without selecting one. Turnstone
-        // always needs an active, revealed match. A query or case change still
-        // starts a new Chromium find session; later calls advance that session.
-        self.producer
-            .find(
-                &query.text,
-                matches!(direction, DocumentFindDirection::Next),
-                query.match_case,
-                true,
-            )
-            .map_err(weld_input_error)
+        self.inner.document_find(query, direction, _find_next)
     }
 
     fn clear_document_find(&mut self) -> Result<(), SurfaceError> {
-        self.find_query = DocumentFindQuery::default();
-        self.producer.stop_finding(true).map_err(weld_input_error)
+        self.inner.clear_document_find()
     }
 
     fn notify_mouse(&mut self, event: MouseEvent) -> Result<(), SurfaceError> {
-        self.producer
-            .send_mouse_input(welding::MouseEvent {
-                x: event.position.x.round() as i32,
-                y: event.position.y.round() as i32,
-                button: map_mouse_button(event.button)?,
-                action: map_mouse_action(event.kind),
-                modifiers: Default::default(),
-            })
-            .map_err(weld_input_error)
+        self.inner.notify_mouse(event)
     }
 
     fn notify_pointer(&mut self, event: PointerEvent) -> Result<(), SurfaceError> {
-        match event.pointer_type {
-            PointerType::Mouse => self
+        if event.pointer_type == inker::PointerType::Mouse {
+            return self
                 .producer
-                .send_mouse_input(welding::MouseEvent {
-                    x: event.position.x.round() as i32,
-                    y: event.position.y.round() as i32,
-                    button: map_mouse_button(event.button)?,
-                    action: match event.phase {
-                        PointerPhase::Down => MouseAction::Pressed,
-                        PointerPhase::Move => MouseAction::Moved,
-                        PointerPhase::Up | PointerPhase::Cancel => MouseAction::Released,
-                    },
-                    modifiers: map_event_modifiers(event.modifiers, event.buttons),
-                })
-                .map_err(weld_input_error),
-            PointerType::Pen | PointerType::Touch => {
-                if event.pointer_id < 0 {
-                    return Err(SurfaceError::InputFailed(
-                        "CEF touch contact ids must be non-negative".into(),
-                    ));
-                }
-                let active = matches!(event.phase, PointerPhase::Down | PointerPhase::Move);
-                self.producer
-                    .send_touch_input(welding::TouchInput {
-                        id: event.pointer_id,
-                        device: match event.pointer_type {
-                            PointerType::Pen => welding::ContactDevice::Pen,
-                            PointerType::Touch => welding::ContactDevice::Touch,
-                            _ => unreachable!(),
-                        },
-                        x: event.position.x,
-                        y: event.position.y,
-                        radius_x: (event.width / 2.0).max(0.0),
-                        radius_y: (event.height / 2.0).max(0.0),
-                        rotation_angle: event.twist.unwrap_or(0.0),
-                        pressure: event.pressure.unwrap_or(if active { 0.5 } else { 0.0 }),
-                        phase: match event.phase {
-                            PointerPhase::Down => welding::TouchPhase::Started,
-                            PointerPhase::Move => welding::TouchPhase::Moved,
-                            PointerPhase::Up => welding::TouchPhase::Ended,
-                            PointerPhase::Cancel => welding::TouchPhase::Cancelled,
-                        },
-                        modifiers: map_event_modifiers(event.modifiers, event.buttons),
-                    })
-                    .map_err(weld_input_error)
-            }
-            PointerType::Unknown => Err(SurfaceError::Unsupported(
-                "Weld cannot truthfully choose a CEF pointer type for an unknown device".into(),
-            )),
+                .borrow_mut()
+                .send_mouse_input(weld_mouse_pointer(event)?)
+                .map_err(weld_engine::welding_0_15::map_error);
         }
+        self.inner.notify_pointer(event)
     }
 
     fn notify_drag(&mut self, event: DragEvent) -> Result<(), SurfaceError> {
-        let payload = matches!(event.phase, DragPhase::Enter)
-            .then(|| map_data_transfer(&event.data_transfer))
-            .transpose()?;
-        let allowed_operations = map_drag_operations(event.data_transfer.allowed_operations);
-        self.producer
-            .send_drag_input(welding::DragInput {
-                kind: match event.phase {
-                    DragPhase::Enter => welding::DragEventKind::Enter,
-                    DragPhase::Over => welding::DragEventKind::Over,
-                    DragPhase::Leave => welding::DragEventKind::Leave,
-                    DragPhase::Drop => welding::DragEventKind::Drop,
-                },
-                payload,
-                x: event.position.x.round() as i32,
-                y: event.position.y.round() as i32,
-                modifiers: map_event_modifiers(event.modifiers, event.buttons),
-                allowed_operations,
-            })
-            .map_err(weld_input_error)
+        self.inner.notify_drag(event)
     }
 
     fn finish_drag_source(
@@ -417,131 +481,42 @@ impl WeldSurface for TurnstoneWeldSurface {
         position: PhysicalPosition,
         operation: DragOperationSet,
     ) -> Result<(), SurfaceError> {
-        self.producer
-            .finish_drag_source(
-                position.x.round() as i32,
-                position.y.round() as i32,
-                map_drag_operations(operation),
-            )
-            .map_err(weld_input_error)
+        self.inner.finish_drag_source(position, operation)
     }
 
-    fn notify_keyboard(&mut self, event: KeyboardEvent) -> Result<(), SurfaceError> {
-        let modifiers = welding::EventModifiers {
-            shift: event.modifiers.shift,
-            ctrl: event.modifiers.ctrl,
-            alt: event.modifiers.alt,
-            meta: event.modifiers.meta,
-            ..Default::default()
-        };
-        let key = KeyEvent {
-            kind: if event.pressed {
-                KeyEventKind::RawKeyDown
-            } else {
-                KeyEventKind::KeyUp
-            },
-            windows_key_code: event.key_code as i32,
-            native_key_code: event.scan_code as i32,
-            character: None,
-            modifiers,
-        };
-        self.producer
-            .send_keyboard_input(key)
-            .map_err(weld_input_error)?;
-        if event.pressed
-            && let Some(character) = event.text.and_then(|text| text.chars().next())
-        {
+    fn notify_keyboard(&mut self, mut event: KeyboardEvent) -> Result<(), SurfaceError> {
+        // CEF requires a separate CHAR event; the pinned shared adapter maps
+        // only raw key down/up. Preserve the existing host text delivery.
+        let character = weld_character_input(&event);
+        event.text = None;
+        self.inner.notify_keyboard(event)?;
+        if let Some(character) = character {
             self.producer
-                .send_keyboard_input(KeyEvent {
-                    kind: KeyEventKind::Char,
-                    windows_key_code: event.key_code as i32,
-                    native_key_code: event.scan_code as i32,
-                    character: Some(character),
-                    modifiers,
-                })
-                .map_err(weld_input_error)?;
+                .borrow_mut()
+                .send_keyboard_input(character)
+                .map_err(weld_engine::welding_0_15::map_error)?;
         }
         Ok(())
     }
 
     fn focus(&mut self, reason: FocusReason) -> Result<(), SurfaceError> {
-        let direction = match reason {
-            FocusReason::ShiftTab => FocusDirection::Backward,
-            FocusReason::Mouse | FocusReason::Tab | FocusReason::Programmatic => {
-                FocusDirection::Forward
-            }
-        };
-        self.producer
-            .move_focus(direction)
-            .map_err(weld_input_error)
+        self.inner.focus(reason)
     }
 
     fn poll_cursor_shape(&mut self) -> Option<CursorShape> {
-        self.producer.poll_cursor_shape().map(map_cursor_shape)
+        self.inner.poll_cursor_shape()
     }
 
-    /// welding `39ed0b1` ("Unify CEF web events with caller request IDs")
-    /// retired the separate `poll_navigation_event` / `poll_web_message`
-    /// producer methods in favour of one ordered `poll_web_event` stream
-    /// (`welding::CefSurfaceEvent`). This drains that stream directly rather
-    /// than keeping the two now-nonexistent pollers as private helpers, since
-    /// nothing else in this adapter needs to poll them individually.
     fn poll_web_event(&mut self) -> Option<WebSurfaceEvent> {
-        match self.producer.poll_web_event()? {
-            welding::CefSurfaceEvent::Navigation(welding::NavigationEvent::FindResult {
-                count,
-                active_match,
-                final_update,
-            }) => Some(WebSurfaceEvent::DocumentFindChanged(weld_find_state(
-                self.find_query.clone(),
-                count,
-                active_match,
-                final_update,
-            ))),
-            welding::CefSurfaceEvent::Navigation(event) => Some(map_weld_web_event(event)),
-            welding::CefSurfaceEvent::WebMessage(payload) => {
-                Some(WebSurfaceEvent::WebMessage(WebMessage {
-                    tag: "weld".into(),
-                    payload,
-                }))
-            }
-            other => Some(WebSurfaceEvent::BackendDiagnostic {
-                severity: "debug".into(),
-                message: format!("unprojected Weld event: {other:?}"),
-            }),
-        }
+        self.inner.poll_web_event()
     }
 
-    // `request_page_capture` is not a member of the pinned mere `2b1ce46e`
-    // `weld_engine::WeldSurface` trait (it is a *default* method on
-    // `inker::WebSurface`, per P1's contract, and no engine is forced to
-    // implement it). `weld_engine::WeldProducer` — the type this crate
-    // wraps `TurnstoneWeldSurface` in via `WeldProducerFactory` — does not
-    // override that default either, so a Weld-backed producer's
-    // `as_web_surface().request_page_capture(..)` call currently resolves to
-    // `WebSurface`'s default `Err(SurfaceError::Unsupported(..))`. That is
-    // the correct place for the request to enter: `Shell::request_page_capture`
-    // (src/shell/render.rs) already handles that typed error by rolling back
-    // the pending `CaptureCorrelation` entry, so the S9 correlation semantics
-    // (single-flight, typed Busy, exact-target refusal — all owned by
-    // src/shell/page_capture.rs, untouched here) are preserved regardless of
-    // whether the Weld transport itself honours the request. Driving
-    // `welding`'s still-present `request_snapshot_png` / `poll_snapshot_png`
-    // through this adapter (P2) needs a hook mere's weld-engine does not
-    // expose at this pin; that remains open, tracked by the plan doc.
     fn answer_permission(
         &mut self,
         id: UserAgentRequestId,
         answer: PermissionAnswer,
     ) -> Result<(), SurfaceError> {
-        let id = u32::try_from(id.get()).map_err(|_| {
-            SurfaceError::InputFailed("Weld permission request id exceeds u32".into())
-        })?;
-        match answer {
-            PermissionAnswer::Grant => self.producer.grant_permission(id),
-            PermissionAnswer::Deny | PermissionAnswer::Dismiss => self.producer.deny_permission(id),
-        }
-        .map_err(weld_input_error)
+        self.inner.answer_permission(id, answer)
     }
 
     fn answer_http_authentication(
@@ -549,88 +524,64 @@ impl WeldSurface for TurnstoneWeldSurface {
         id: UserAgentRequestId,
         answer: &HttpAuthenticationAnswer,
     ) -> Result<(), SurfaceError> {
-        let id = u32::try_from(id.get()).map_err(|_| {
-            SurfaceError::InputFailed("Weld authentication request id exceeds u32".into())
-        })?;
-        match answer {
-            HttpAuthenticationAnswer::Credentials(credentials) => {
-                self.producer
-                    .answer_auth(id, &credentials.username, &credentials.password)
-            }
-            HttpAuthenticationAnswer::Cancel => self.producer.cancel_auth(id),
-        }
-        .map_err(weld_input_error)
+        self.inner.answer_http_authentication(id, answer)
     }
 
     fn web_capabilities(&self) -> WebSurfaceCapabilities {
-        weld_web_capabilities()
+        host_capabilities(self.inner.web_capabilities())
     }
 
     fn apply_settings(&mut self, settings: &SurfaceSettings) -> Result<(), SurfaceError> {
-        apply_weld_surface_settings(settings, |level| {
-            self.producer.set_zoom_level(level).map_err(weld_input_error)
-        })
+        apply_weld_surface_settings(settings, |_| self.inner.apply_settings(settings))
+    }
+
+    fn set_cookie(&mut self, cookie: &Cookie) -> Result<(), SurfaceError> {
+        self.inner.set_cookie(cookie)
+    }
+
+    fn delete_cookie(&mut self, cookie: &Cookie) -> Result<(), SurfaceError> {
+        self.inner.delete_cookie(cookie)
+    }
+
+    fn request_cookies_for_url(&mut self, id: WebRequestId, url: &str) -> Result<(), SurfaceError> {
+        self.inner.request_cookies_for_url(id, url)
+    }
+
+    fn request_script_result(
+        &mut self,
+        id: WebRequestId,
+        script: &str,
+    ) -> Result<(), SurfaceError> {
+        self.inner.request_script_result(id, script)
     }
 }
 
-fn weld_web_capabilities() -> WebSurfaceCapabilities {
-    let mut capabilities = WebSurfaceCapabilities {
-        backend_name: "weld.cef.windows".into(),
-        backend_version: None,
-        frame_transport: WebFrameTransportMode::ImportedTexture,
-        ..Default::default()
-    };
+fn host_capabilities(mut capabilities: WebSurfaceCapabilities) -> WebSurfaceCapabilities {
     capabilities.devtools = WebFeatureStatus::unsupported(WELD_DEVTOOLS_UNAVAILABLE);
-    capabilities.document.find_in_page = WebFeatureStatus::Supported;
     capabilities.document.page_zoom = WebFeatureStatus::Partial {
-        detail: "the requested scale is applied as a CEF zoom level, but Windows runs CEF's UI thread separately so the effective level cannot be read back"
-            .into(),
+        detail:
+            "CEF accepts requested zoom; the threaded host cannot read back its effective level"
+                .into(),
     };
-    capabilities.document.page_capture = WebFeatureStatus::unsupported(
-        "mere weld-engine 2b1ce46e does not route page-capture requests through WeldSurface yet (P2)",
-    );
-    capabilities.document.navigation = WebFeatureStatus::Supported;
-    capabilities.pointer.mouse = WebFeatureStatus::Supported;
     capabilities.pointer.pen = WebFeatureStatus::Partial {
-        detail: "CEF accepts pen contacts, but winit 0.30 does not identify pen versus touch"
-            .into(),
+        detail: "CEF accepts pen contacts, but winit does not identify pen versus touch".into(),
     };
-    capabilities.pointer.touch = WebFeatureStatus::Supported;
     capabilities.pointer.contact_geometry = WebFeatureStatus::Partial {
-        detail:
-            "the contract and CEF carry contact geometry; winit touch events do not supply it"
-                .into(),
+        detail: "winit touch events do not supply contact geometry".into(),
     };
-    capabilities.pointer.pressure = WebFeatureStatus::Supported;
-    capabilities.pointer.tangential_pressure = WebFeatureStatus::unsupported(
-        "CEF's touch-event input has no tangential-pressure field",
-    );
-    capabilities.pointer.tilt =
-        WebFeatureStatus::unsupported("CEF's touch-event input has no tilt fields");
     capabilities.pointer.twist = WebFeatureStatus::Partial {
-        detail: "the contract and CEF carry twist; winit touch events do not supply it".into(),
+        detail: "winit touch events do not supply twist".into(),
     };
-    capabilities.pointer.altitude_azimuth =
-        WebFeatureStatus::unsupported("CEF's touch-event input has no altitude/azimuth fields");
-    capabilities.drag_drop.host_to_page = WebFeatureStatus::Supported;
     capabilities.drag_drop.page_to_host = WebFeatureStatus::Partial {
-        detail:
-            "Weld reports page drags, but Turnstone cannot start a native winit drag loop yet"
-                .into(),
+        detail: "page drags are observable; Turnstone has no native winit drag loop".into(),
     };
-    capabilities.drag_drop.file_items = WebFeatureStatus::Supported;
-    capabilities.drag_drop.string_items = WebFeatureStatus::Partial {
-        detail: "text/plain, text/html, and text/uri-list are projected; arbitrary MIME strings are rejected"
-            .into(),
-    };
-    capabilities.permissions = WebFeatureStatus::Supported;
     capabilities.auth = WebFeatureStatus::Partial {
-        detail: "Turnstone's retained credential decision and answer path are wired, but CEF 151 did not emit GetAuthCredentials for a top-level server challenge; proxy authentication is untested".into(),
+        detail: "answers are wired; CEF 151 did not emit a top-level authentication challenge, and proxy authentication is untested".into(),
     };
-    capabilities.degradation_reasons = vec![
-        "Turnstone projects pointer input and host-to-page drag/drop; page-to-host drag is observable but has no native winit drag loop".into(),
-        "PDF, native printing, downloads, cookies, script results, CDP, popup composition, and snapshots have no Turnstone control surface yet".into(),
-    ];
+    capabilities.degradation_reasons.push(
+        "popups, downloads, native drag loops and correlated snapshots await product controls"
+            .into(),
+    );
     capabilities
 }
 
@@ -657,342 +608,8 @@ fn apply_weld_surface_settings(
     set_zoom_level(settings.zoom_factor.ln() / 1.2_f64.ln())
 }
 
-fn map_event_modifiers(
-    modifiers: KeyboardModifiers,
-    buttons: PointerButtons,
-) -> welding::EventModifiers {
-    welding::EventModifiers {
-        shift: modifiers.shift,
-        ctrl: modifiers.ctrl,
-        alt: modifiers.alt,
-        meta: modifiers.meta,
-        left_mouse_button: buttons.contains(PointerButtons::PRIMARY),
-        middle_mouse_button: buttons.contains(PointerButtons::AUXILIARY),
-        right_mouse_button: buttons.contains(PointerButtons::SECONDARY),
-    }
-}
-
-fn map_drag_operations(operations: DragOperationSet) -> welding::DragOperations {
-    let mut mapped = welding::DragOperations::NONE;
-    if operations.contains(DragOperationSet::COPY) {
-        mapped = mapped | welding::DragOperations::COPY;
-    }
-    if operations.contains(DragOperationSet::LINK) {
-        mapped = mapped | welding::DragOperations::LINK;
-    }
-    if operations.contains(DragOperationSet::MOVE) {
-        mapped = mapped | welding::DragOperations::MOVE;
-    }
-    mapped
-}
-
-fn map_weld_drag_operations(operations: welding::DragOperations) -> DragOperationSet {
-    let mut mapped = DragOperationSet::NONE;
-    if operations.0 & welding::DragOperations::COPY.0 != 0 {
-        mapped = mapped | DragOperationSet::COPY;
-    }
-    if operations.0 & welding::DragOperations::LINK.0 != 0 {
-        mapped = mapped | DragOperationSet::LINK;
-    }
-    if operations.0 & welding::DragOperations::MOVE.0 != 0 {
-        mapped = mapped | DragOperationSet::MOVE;
-    }
-    mapped
-}
-
-fn map_data_transfer(transfer: &DataTransfer) -> Result<welding::DragPayload, SurfaceError> {
-    let mut payload = welding::DragPayload::default();
-    for item in &transfer.items {
-        match item {
-            DataTransferItem::File {
-                path, display_name, ..
-            } => payload.files.push(welding::DragFile {
-                path: path.clone(),
-                display_name: display_name.clone(),
-            }),
-            DataTransferItem::String { mime_type, data } => {
-                match mime_type.to_ascii_lowercase().as_str() {
-                    "text/plain" => payload.fragment_text = Some(data.clone()),
-                    "text/html" => payload.fragment_html = Some(data.clone()),
-                    "text/uri-list" => {
-                        payload.link_url = data
-                            .lines()
-                            .map(str::trim)
-                            .find(|line| !line.is_empty() && !line.starts_with('#'))
-                            .map(str::to_owned);
-                    }
-                    other => {
-                        return Err(SurfaceError::Unsupported(format!(
-                            "Weld cannot preserve dragged string MIME type {other}"
-                        )));
-                    }
-                }
-            }
-        }
-    }
-    Ok(payload)
-}
-
-fn map_weld_drag_payload(
-    payload: welding::DragPayload,
-    operations: welding::DragOperations,
-) -> DataTransfer {
-    let mut items = Vec::new();
-    items.extend(
-        payload
-            .files
-            .into_iter()
-            .map(|file| DataTransferItem::File {
-                mime_type: String::new(),
-                path: file.path,
-                display_name: file.display_name,
-            }),
-    );
-    if let Some(data) = payload.link_url {
-        items.push(DataTransferItem::String {
-            mime_type: "text/uri-list".into(),
-            data,
-        });
-    }
-    if let Some(data) = payload.fragment_text {
-        items.push(DataTransferItem::String {
-            mime_type: "text/plain".into(),
-            data,
-        });
-    }
-    if let Some(data) = payload.fragment_html {
-        items.push(DataTransferItem::String {
-            mime_type: "text/html".into(),
-            data,
-        });
-    }
-    DataTransfer {
-        items,
-        allowed_operations: map_weld_drag_operations(operations),
-    }
-}
-
-fn map_texture_format(format: wgpu::TextureFormat) -> Result<SurfaceTextureFormat, SurfaceError> {
-    match format {
-        wgpu::TextureFormat::Rgba8Unorm => Ok(SurfaceTextureFormat::Rgba8Unorm),
-        wgpu::TextureFormat::Rgba8UnormSrgb => Ok(SurfaceTextureFormat::Rgba8UnormSrgb),
-        wgpu::TextureFormat::Bgra8Unorm => Ok(SurfaceTextureFormat::Bgra8Unorm),
-        wgpu::TextureFormat::Bgra8UnormSrgb => Ok(SurfaceTextureFormat::Bgra8UnormSrgb),
-        other => Err(SurfaceError::Unsupported(format!(
-            "Weld emitted an unmapped texture format {other:?}"
-        ))),
-    }
-}
-
-fn map_mouse_button(button: Option<MouseButton>) -> Result<welding::MouseButton, SurfaceError> {
-    match button.unwrap_or(MouseButton::Left) {
-        MouseButton::Left => Ok(welding::MouseButton::Left),
-        MouseButton::Middle => Ok(welding::MouseButton::Middle),
-        MouseButton::Right => Ok(welding::MouseButton::Right),
-        MouseButton::Back | MouseButton::Forward => Err(SurfaceError::Unsupported(
-            "CEF mouse back/forward buttons are not projected by Turnstone yet".into(),
-        )),
-    }
-}
-
-fn map_mouse_action(kind: MouseEventKind) -> MouseAction {
-    match kind {
-        MouseEventKind::Moved => MouseAction::Moved,
-        MouseEventKind::Pressed => MouseAction::Pressed,
-        MouseEventKind::Released => MouseAction::Released,
-        MouseEventKind::ScrollPixels { delta_x, delta_y }
-        | MouseEventKind::ScrollLines { delta_x, delta_y } => MouseAction::WheelScrolled {
-            delta_x: delta_x.round() as i32,
-            delta_y: delta_y.round() as i32,
-        },
-    }
-}
-
-fn weld_find_state(
-    query: DocumentFindQuery,
-    count: i32,
-    active_match: i32,
-    complete: bool,
-) -> DocumentFindState {
-    DocumentFindState::engine_managed(
-        query,
-        usize::try_from(count.max(0)).unwrap_or(0),
-        (active_match > 0)
-            .then(|| usize::try_from(active_match - 1).ok())
-            .flatten(),
-        complete,
-    )
-}
-
-fn map_weld_web_event(event: welding::NavigationEvent) -> WebSurfaceEvent {
-    match event {
-        welding::NavigationEvent::LoadStart { url } => {
-            WebSurfaceEvent::Navigation(NavigationEvent::Started { url })
-        }
-        welding::NavigationEvent::LoadEnd { url, .. } => {
-            WebSurfaceEvent::Navigation(NavigationEvent::Finished { url, title: None })
-        }
-        welding::NavigationEvent::LoadError {
-            url, error_text, ..
-        } => WebSurfaceEvent::Navigation(NavigationEvent::Failed {
-            url,
-            reason: error_text,
-        }),
-        welding::NavigationEvent::AddressChanged { url } => {
-            WebSurfaceEvent::Navigation(NavigationEvent::Committed { url })
-        }
-        welding::NavigationEvent::TitleChanged { title } => WebSurfaceEvent::TitleChanged { title },
-        welding::NavigationEvent::ContentProcessTerminated {
-            status,
-            error_code,
-            error_string,
-        } => WebSurfaceEvent::ProcessCrashed {
-            reason: format!("{status:?} ({error_code}): {error_string}"),
-        },
-        welding::NavigationEvent::NewWindowRequested { url, user_gesture } => {
-            if !user_gesture {
-                tracing::debug!(%url, "Weld auxiliary navigable lacked user activation");
-            }
-            WebSurfaceEvent::NewWindowRequested { url }
-        }
-        welding::NavigationEvent::ContextMenuRequested {
-            x,
-            y,
-            link_url,
-            source_url,
-            ..
-        } => WebSurfaceEvent::ContextMenuRequested {
-            x: x.into(),
-            y: y.into(),
-            link_url: (!link_url.is_empty()).then_some(link_url),
-            image_url: (!source_url.is_empty()).then_some(source_url),
-        },
-        welding::NavigationEvent::PermissionRequested {
-            id,
-            origin,
-            permissions,
-            ..
-        } => WebSurfaceEvent::PermissionRequested(PermissionRequest {
-            id: UserAgentRequestId::new(id.into()),
-            origin,
-            descriptors: permissions
-                .into_iter()
-                .map(map_permission_descriptor)
-                .collect(),
-        }),
-        welding::NavigationEvent::AuthChallenged {
-            id,
-            origin_url,
-            host,
-            port,
-            realm,
-            scheme,
-            is_proxy,
-        } => WebSurfaceEvent::AuthenticationRequested(HttpAuthenticationChallenge {
-            id: UserAgentRequestId::new(id.into()),
-            protection_space: HttpProtectionSpace {
-                origin_url,
-                host,
-                port,
-                realm: (!realm.is_empty()).then_some(realm),
-                scheme: scheme.to_ascii_lowercase(),
-                is_proxy,
-            },
-        }),
-        welding::NavigationEvent::DownloadStarted {
-            url,
-            suggested_filename,
-            ..
-        } => WebSurfaceEvent::DownloadRequested {
-            url,
-            suggested_name: (!suggested_filename.is_empty()).then_some(suggested_filename),
-        },
-        welding::NavigationEvent::DragStarted {
-            payload,
-            allowed_operations,
-            x,
-            y,
-        } => WebSurfaceEvent::PageDragStarted {
-            data_transfer: map_weld_drag_payload(payload, allowed_operations),
-            position: PhysicalPosition {
-                x: x as f32,
-                y: y as f32,
-            },
-        },
-        welding::NavigationEvent::ConsoleMessage {
-            level,
-            message,
-            source,
-            line,
-        } => WebSurfaceEvent::ConsoleMessage {
-            level: level.to_string(),
-            text: message,
-            source: (!source.is_empty()).then_some(source),
-            line: u32::try_from(line).ok(),
-        },
-        other => WebSurfaceEvent::BackendDiagnostic {
-            severity: "debug".into(),
-            message: format!("unprojected Weld event: {other:?}"),
-        },
-    }
-}
-
-fn map_cursor_shape(shape: welding::CursorShape) -> CursorShape {
-    match shape {
-        welding::CursorShape::Default => CursorShape::Default,
-        welding::CursorShape::Pointer => CursorShape::Pointer,
-        welding::CursorShape::Text => CursorShape::Text,
-        welding::CursorShape::Crosshair => CursorShape::Crosshair,
-        welding::CursorShape::Move | welding::CursorShape::ResizeAll => CursorShape::Move,
-        welding::CursorShape::NotAllowed => CursorShape::NotAllowed,
-        welding::CursorShape::ResizeNs => CursorShape::ResizeNs,
-        welding::CursorShape::ResizeEw => CursorShape::ResizeEw,
-        welding::CursorShape::ResizeNeSw => CursorShape::ResizeNesw,
-        welding::CursorShape::ResizeNwSe => CursorShape::ResizeNwse,
-        welding::CursorShape::Grab => CursorShape::Grab,
-        welding::CursorShape::Grabbing => CursorShape::Grabbing,
-        welding::CursorShape::Custom(value) if value == "none" => CursorShape::Hidden,
-        _ => CursorShape::Default,
-    }
-}
-
-fn map_permission_descriptor(kind: welding::PermissionKind) -> PermissionDescriptor {
-    match kind {
-        welding::PermissionKind::CameraStream => PermissionDescriptor::Camera,
-        welding::PermissionKind::MicStream => PermissionDescriptor::Microphone,
-        welding::PermissionKind::Geolocation => PermissionDescriptor::Geolocation,
-        welding::PermissionKind::Notifications => PermissionDescriptor::Notifications,
-        welding::PermissionKind::Clipboard => PermissionDescriptor::ClipboardRead,
-        welding::PermissionKind::MidiSysex => PermissionDescriptor::Midi { sysex: true },
-        welding::PermissionKind::PointerLock => PermissionDescriptor::PointerLock,
-        welding::PermissionKind::KeyboardLock => PermissionDescriptor::KeyboardLock,
-        welding::PermissionKind::IdleDetection => PermissionDescriptor::IdleDetection,
-        welding::PermissionKind::LocalFonts => PermissionDescriptor::LocalFonts,
-        welding::PermissionKind::StorageAccess => PermissionDescriptor::StorageAccess,
-        welding::PermissionKind::ProtectedMediaIdentifier => {
-            PermissionDescriptor::ProtectedMediaIdentifier
-        }
-        welding::PermissionKind::DesktopAudioCapture => PermissionDescriptor::DisplayCapture {
-            audio: true,
-            video: false,
-        },
-        welding::PermissionKind::DesktopVideoCapture => PermissionDescriptor::DisplayCapture {
-            audio: false,
-            video: true,
-        },
-        welding::PermissionKind::Other(bit) => {
-            PermissionDescriptor::Other(format!("cef-permission-bit:{bit:#010x}"))
-        }
-        other => PermissionDescriptor::Other(format!("weld:{other:?}")),
-    }
-}
-
 fn weld_spawn_error(error: welding::WeldError) -> SurfaceError {
     SurfaceError::SpawnFailed(error.to_string())
-}
-
-fn weld_input_error(error: welding::WeldError) -> SurfaceError {
-    SurfaceError::InputFailed(error.to_string())
 }
 
 #[cfg(test)]
@@ -1000,9 +617,84 @@ mod contract_tests {
     use super::*;
 
     #[test]
+    fn text_input_emits_a_native_character_only_on_key_down() {
+        let mut event = KeyboardEvent {
+            key_code: 65,
+            scan_code: 30,
+            pressed: true,
+            text: Some("a".into()),
+            modifiers: inker::KeyboardModifiers {
+                shift: true,
+                ..Default::default()
+            },
+        };
+        let character = weld_character_input(&event).unwrap();
+        assert_eq!(character.kind, welding::KeyEventKind::Char);
+        assert_eq!(character.character, Some('a'));
+        assert_eq!(character.windows_key_code, 97);
+        assert!(character.modifiers.shift);
+        event.pressed = false;
+        assert!(weld_character_input(&event).is_none());
+        event.pressed = true;
+        event.text = None;
+        assert!(weld_character_input(&event).is_none());
+    }
+
+    #[test]
+    fn mouse_pointer_bridge_keeps_native_buttons_modifiers_and_drag_state() {
+        let mut event = PointerEvent {
+            pointer_id: 1,
+            pointer_type: inker::PointerType::Mouse,
+            is_primary: true,
+            phase: inker::PointerPhase::Down,
+            position: PhysicalPosition { x: 12.4, y: 23.6 },
+            button: Some(inker::MouseButton::Right),
+            buttons: inker::PointerButtons::SECONDARY,
+            width: 1.0,
+            height: 1.0,
+            pressure: None,
+            tangential_pressure: None,
+            tilt_x: None,
+            tilt_y: None,
+            twist: None,
+            altitude_angle: None,
+            azimuth_angle: None,
+            modifiers: inker::KeyboardModifiers {
+                shift: true,
+                ctrl: true,
+                alt: true,
+                meta: true,
+            },
+        };
+        let pressed = weld_mouse_pointer(event.clone()).unwrap();
+        assert_eq!((pressed.x, pressed.y), (12, 24));
+        assert_eq!(pressed.button, welding::MouseButton::Right);
+        assert_eq!(pressed.action, welding::MouseAction::Pressed);
+        assert!(pressed.modifiers.shift && pressed.modifiers.ctrl);
+        assert!(pressed.modifiers.alt && pressed.modifiers.meta);
+        assert!(pressed.modifiers.right_mouse_button);
+        assert!(!pressed.modifiers.left_mouse_button);
+        event.phase = inker::PointerPhase::Move;
+        assert_eq!(
+            weld_mouse_pointer(event.clone()).unwrap().action,
+            welding::MouseAction::Moved
+        );
+        event.phase = inker::PointerPhase::Up;
+        event.buttons = inker::PointerButtons::NONE;
+        let released = weld_mouse_pointer(event.clone()).unwrap();
+        assert_eq!(released.action, welding::MouseAction::Released);
+        assert!(!released.modifiers.right_mouse_button);
+        event.button = Some(inker::MouseButton::Back);
+        assert!(matches!(
+            weld_mouse_pointer(event),
+            Err(SurfaceError::Unsupported(_))
+        ));
+    }
+
+    #[test]
     fn weld_devtools_settings_are_refused_before_producer_dispatch() {
         assert!(matches!(
-            weld_web_capabilities().devtools,
+            host_capabilities(WebSurfaceCapabilities::default()).devtools,
             WebFeatureStatus::Unsupported { reason } if reason == WELD_DEVTOOLS_UNAVAILABLE
         ));
         let settings = SurfaceSettings {
@@ -1050,83 +742,5 @@ mod contract_tests {
             }),
             Err(SurfaceError::InputFailed(reason)) if reason == "CEF refused zoom"
         ));
-    }
-
-    #[test]
-    fn weld_find_result_uses_the_shared_zero_based_model() {
-        let query = DocumentFindQuery::new("turnstone");
-        let state = weld_find_state(query.clone(), 4, 2, true);
-        assert_eq!(state.query, query);
-        assert_eq!(state.count, 4);
-        assert!(state.matches.is_empty());
-        assert_eq!(state.current, Some(1));
-        assert!(state.complete);
-        assert!(state.current_match().is_none());
-
-        let empty = weld_find_state(DocumentFindQuery::new("missing"), -1, 0, false);
-        assert!(empty.matches.is_empty());
-        assert_eq!(empty.count, 0);
-        assert_eq!(empty.current, None);
-        assert!(!empty.complete);
-    }
-
-    #[test]
-    fn data_transfer_preserves_files_and_standard_string_types() {
-        let transfer = DataTransfer {
-            items: vec![
-                DataTransferItem::File {
-                    mime_type: "text/plain".into(),
-                    path: PathBuf::from("receipt.txt"),
-                    display_name: Some("receipt.txt".into()),
-                },
-                DataTransferItem::String {
-                    mime_type: "text/uri-list".into(),
-                    data: "# source\nhttps://example.com/receipt".into(),
-                },
-                DataTransferItem::String {
-                    mime_type: "text/plain".into(),
-                    data: "Receipt".into(),
-                },
-                DataTransferItem::String {
-                    mime_type: "text/html".into(),
-                    data: "<b>Receipt</b>".into(),
-                },
-            ],
-            allowed_operations: DragOperationSet::COPY | DragOperationSet::LINK,
-        };
-        let payload = map_data_transfer(&transfer).unwrap();
-        assert_eq!(payload.files.len(), 1);
-        assert_eq!(
-            payload.link_url.as_deref(),
-            Some("https://example.com/receipt")
-        );
-        assert_eq!(payload.fragment_text.as_deref(), Some("Receipt"));
-        assert_eq!(payload.fragment_html.as_deref(), Some("<b>Receipt</b>"));
-    }
-
-    #[test]
-    fn arbitrary_drag_string_mime_is_rejected_instead_of_dropped() {
-        let transfer = DataTransfer {
-            items: vec![DataTransferItem::String {
-                mime_type: "application/vnd.example.receipt".into(),
-                data: "opaque".into(),
-            }],
-            allowed_operations: DragOperationSet::COPY,
-        };
-        assert!(matches!(
-            map_data_transfer(&transfer),
-            Err(SurfaceError::Unsupported(_))
-        ));
-    }
-
-    #[test]
-    fn page_drag_effects_round_trip_without_backend_only_bits() {
-        let native = welding::DragOperations::COPY
-            | welding::DragOperations::MOVE
-            | welding::DragOperations::PRIVATE;
-        let mapped = map_weld_drag_operations(native);
-        assert!(mapped.contains(DragOperationSet::COPY));
-        assert!(mapped.contains(DragOperationSet::MOVE));
-        assert!(!mapped.contains(DragOperationSet::LINK));
     }
 }

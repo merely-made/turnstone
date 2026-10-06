@@ -1,0 +1,10 @@
+RESULT fail
+FAIL: assert snap decision-kind: no such field
+FAIL: assert snap decision-prompt: no such field
+FAIL: assert snap decision-prompt: no such field
+FAIL: assert a11y 'button: Allow once': 12 lines, none match (first 12: ["label: Permission answered  ·  127.0.0.1", "group: chrome", "document: http://127.0.0.1:43107/permission-result", "group: graph canvas, 13 nodes", "group: orrery", "tab: Tile 7cc740dd-d5fc-4a43-815f-b2daa8d2bbd7", "group: Slot 0", "group: Tile layout", "group: workbench", "group", "group: content", "window: Turnstone"])
+captured 01_permission_decision
+FAIL: assert event 'permission-answered': not in the stream (last: ["content-title 7cc740dd-d5fc-4a43-815f-b2daa8d2bbd7 Permission answered", "content-navigated 7cc740dd-d5fc-4a43-815f-b2daa8d2bbd7 http://127.0.0.1:43107/permission-result", "user-agent-request-withdrawn 7cc740dd-d5fc-4a43-815f-b2daa8d2bbd7 request=1 kind=permission reason=navigation-started", "permission-requested 7cc740dd-d5fc-4a43-815f-b2daa8d2bbd7 request=1 http://127.0.0.1:43107 Geolocation", "workbench-opened http://127.0.0.1:43107/permission", "pane-closed"])
+captured 02_permission_answered
+captured 03_permission_teardown
+Direct Weld permission callback and teardown complete

@@ -1,0 +1,306 @@
+# B1 Windows Scry two-page host acceptance. NOT YET A NATIVE RECEIPT.
+# Serve scenarios/fixtures/browser_scry as a static loopback HTTP root; set
+# SCRY_FIXTURE_BASE to its origin, e.g. http://127.0.0.1:43123. No public network.
+# Fresh TURNSTONE_ROOT for run 1. Reuse that EXACT root and origin for run 2:
+# scenarios/fixtures/browser_scry/restart_verify.scn. Keep each run's captures.
+# The host must register scrying.web, use one shared OFFSCREEN CompositionRoot,
+# persist request profiles, import OwnedPayload, allocate a unique host fence
+# per producer, and synchronize every paint including an unchanged epoch.
+# This scenario requires the B1 selfdrive hosted `type` and key down/up paths:
+# existing type/on_key alone do not dispatch text/keys to a frame producer.
+# CDP delivery is the keyboard claim; OS focus, physical keys, and IME remain
+# separate native gates below. Title updates report actual DOM results.
+# At the two-cell maximized layout, set SCRY_A_INPUT_X/Y, SCRY_A_BUTTON_X/Y,
+# SCRY_B_INPUT_X/Y, SCRY_B_BUTTON_X/Y to measured window-client physical points.
+# Record those points, window size, DPI, executable/dependency hashes, registry
+# version, host topology, profile paths, and all diagnostics with the receipt.
+settle 30
+key escape
+open ${SCRY_FIXTURE_BASE}/page-a.html
+settle 80
+assert focused /page-a.html
+# Publish the Workbench's active member before the follower Inspector opens.
+# Its target can differ from the shell address and process-wide graph cursor.
+act Open node in Workbench
+settle 80
+assert wb-cells == 1
+act Open Inspector pane
+settle 10
+assert row URL: ${SCRY_FIXTURE_BASE}/page-a.html
+assert text ${SCRY_FIXTURE_BASE}/page-a.html
+click surface:inspector .radio @data-engine-id=scrying.web
+settle 160
+assert row URL: ${SCRY_FIXTURE_BASE}/page-a.html
+assert row Viewer: scrying.web
+assert snap focused ~ Scry A | text= | clicks=0 | stored=
+act Close pane
+settle 10
+# Closing Inspector clears active_pane. Re-activate the existing live tile so
+# later maximize/divider actions have a Workbench owner.
+act Open node in Workbench
+settle 10
+assert content-live
+assert wb-cells == 1
+assert wb-cell Scry A
+assert snap host-surface-producers == 1
+assert snap host-scry-producers == 1
+assert snap host-scry-imported-pages == 1
+
+open ${SCRY_FIXTURE_BASE}/page-b.html
+settle 80
+assert focused /page-b.html
+act Open node in Workbench
+settle 80
+assert wb-cells == 2
+act Open Inspector pane
+settle 10
+assert row URL: ${SCRY_FIXTURE_BASE}/page-b.html
+assert text ${SCRY_FIXTURE_BASE}/page-b.html
+capture 00_b_inspector_before_pin
+click surface:inspector .radio @data-engine-id=scrying.web
+settle 160
+capture 00_b_inspector_after_pin
+assert row URL: ${SCRY_FIXTURE_BASE}/page-b.html
+assert row Viewer: scrying.web
+assert snap focused ~ Scry B | text= | clicks=0 | stored=
+act Close pane
+settle 10
+act Open node in Workbench
+settle 10
+assert content-live
+assert wb-cells == 2
+assert wb-cell Scry A
+assert wb-cell Scry B
+assert surface content
+assert snap host-surface-producers == 2
+assert snap host-scry-producers == 2
+assert snap host-scry-imported-pages == 2
+act Maximize pane
+settle 40
+assert maximized
+capture 01_two_scry_pages
+record-idle two-pages
+# Acceptance also requires the two-pages surface-frames receipt to contain
+# TWO live producers and TWO distinct Scry importer node IDs with frames/waits.
+# Workbench cells, titles, a scenario sentinel, or one Livery page do not prove
+# that there are two Scry producers or that their captured pixels were drawn.
+
+# Select existing tabs through real Workbench pointer input. Opening a URL
+# fetches it again and cannot qualify preserved sibling state. Current page
+# assertions read the browser command owner, independently of graph selection.
+click surface:workbench .tab Scry A
+settle 10
+click-at ${SCRY_A_INPUT_X} ${SCRY_A_INPUT_Y}
+assert focus content
+type alpha
+settle 30
+assert snap browser-current ~ Scry A | text=alpha | clicks=0 | stored=
+click-at ${SCRY_A_BUTTON_X} ${SCRY_A_BUTTON_Y}
+settle 30
+assert snap browser-current ~ Scry A | text=alpha | clicks=1 | stored=A-retained
+key enter
+settle 30
+assert snap browser-current ~ Scry A | text=alpha | clicks=2 | stored=A-retained
+
+click surface:workbench .tab Scry B
+settle 10
+click-at ${SCRY_B_INPUT_X} ${SCRY_B_INPUT_Y}
+assert focus content
+type bravo
+settle 30
+assert snap browser-current ~ Scry B | text=bravo | clicks=0 | stored=
+click-at ${SCRY_B_BUTTON_X} ${SCRY_B_BUTTON_Y}
+settle 30
+assert snap browser-current ~ Scry B | text=bravo | clicks=1 | stored=B-retained
+key enter
+settle 30
+assert snap browser-current ~ Scry B | text=bravo | clicks=2 | stored=B-retained
+capture 02_text_pointer_and_keyboard
+record-idle input
+
+# Reload B through the ordinary action, without reseeding its form or profile.
+act Reload
+settle 160
+assert snap browser-current-content == live
+assert snap browser-current ~ Scry B | text=bravo | clicks=0 | stored=B-retained
+assert snap browser-current ~ scry_B=B-retained
+capture 02b_b_reloaded
+
+# Wheel routing at the existing maximized two-cell geometry. The input points
+# remain inside their panes after scrolling. Avoid assuming a platform-specific
+# wheel distance: the title reports its numeric offset, a nonzero flag, and
+# delivered wheel-event count. The sibling must retain its own count/state;
+# captures retain numeric offsets for comparison across the two page steps.
+click surface:workbench .tab Scry A
+settle 20
+assert snap browser-current ~ scroll=0,0 | scrolled=no
+assert snap browser-current ~ wheels=0
+scroll ${SCRY_A_INPUT_X} ${SCRY_A_INPUT_Y} -600
+settle 80
+assert snap browser-current ~ scrolled=yes
+assert snap browser-current ~ wheels=1
+capture 02c_a_wheel
+click surface:workbench .tab Scry B
+settle 20
+assert snap browser-current ~ scroll=0,0 | scrolled=no
+assert snap browser-current ~ wheels=0
+scroll ${SCRY_B_INPUT_X} ${SCRY_B_INPUT_Y} -600
+settle 80
+assert snap browser-current ~ scrolled=yes
+assert snap browser-current ~ wheels=1
+capture 02d_b_wheel
+click surface:workbench .tab Scry A
+settle 20
+assert snap browser-current ~ scrolled=yes
+assert snap browser-current ~ wheels=1
+scroll ${SCRY_A_INPUT_X} ${SCRY_A_INPUT_Y} 600
+settle 80
+assert snap browser-current ~ scroll=0,0 | scrolled=no
+assert snap browser-current ~ wheels=2
+click surface:workbench .tab Scry B
+settle 20
+assert snap browser-current ~ scrolled=yes
+assert snap browser-current ~ wheels=1
+scroll ${SCRY_B_INPUT_X} ${SCRY_B_INPUT_Y} 600
+settle 80
+assert snap browser-current ~ scroll=0,0 | scrolled=no
+assert snap browser-current ~ wheels=2
+capture 02e_both_scroll_reset
+record-idle wheel-reset
+
+# Current adapter truth. Ctrl+F must visibly refuse; the marker is not searched.
+assert snap browser-find-capability ~ unavailable
+assert snap browser-zoom-capability ~ unavailable
+assert snap browser-page-zoom-requested == 100
+key ctrl+f
+settle 10
+assert event affordance-unavailable find-in-document
+capture 03_find_and_zoom_unavailable
+key escape
+assert focus graph
+
+# Two pane geometries exercise resize/placement while keeping both producers.
+act Maximize pane
+settle 60
+assert not-maximized
+divider 0.65
+settle 60
+assert wb-cells == 2
+capture 04_resized_two_pages
+record-idle resized
+
+# Switch A while B remains live. Profile markers must survive reconstruction.
+click surface:workbench .tab Scry A
+settle 20
+assert snap browser-current ~ /page-a.html
+click surface:workbench .tab Scry A
+settle 20
+act Open Inspector pane
+settle 10
+assert row URL: ${SCRY_FIXTURE_BASE}/page-a.html
+assert text ${SCRY_FIXTURE_BASE}/page-a.html
+click surface:inspector .radio @data-engine-id=genet.reader
+settle 100
+assert row Viewer: genet.reader
+assert snap browser-current-content == live
+assert snap host-surface-producers == 1
+assert snap host-scry-producers == 1
+capture 05_a_reader_b_scry
+click surface:inspector .radio @data-engine-id=scrying.web
+settle 160
+assert row URL: ${SCRY_FIXTURE_BASE}/page-a.html
+assert row Viewer: scrying.web
+assert snap browser-current-content == live
+assert snap host-surface-producers == 2
+assert snap host-scry-producers == 2
+assert snap host-scry-imported-pages == 2
+assert snap browser-find-capability ~ unavailable
+assert snap browser-zoom-capability ~ unavailable
+assert snap browser-current ~ Scry A | text=alpha | clicks=0 | stored=A-retained
+assert snap browser-current ~ scry_A=A-retained
+act Close pane
+settle 30
+click surface:workbench .tab Scry A
+settle 10
+assert wb-cells == 2
+capture 06_a_scry_reconstructed
+record-idle reconstructed
+
+# Explicit per-node teardown, then reopen both with the saved profile state.
+# Surface-count/producer-count and GPU custody need host diagnostics alongside
+# this behavioral receipt; a stale screenshot is not a destruction receipt.
+click surface:workbench .tab Scry A
+assert snap browser-current ~ /page-a.html
+assert snap browser-current-content == live
+click surface:workbench .tab Scry A
+settle 20
+act Toggle live content
+settle 30
+click surface:workbench .tab Scry B
+assert snap browser-current ~ /page-b.html
+assert snap browser-current-content == live
+click surface:workbench .tab Scry B
+settle 20
+act Toggle live content
+settle 30
+assert no-surface content
+assert snap host-surface-producers == 0
+assert snap host-scry-producers == 0
+capture 07_both_closed
+record-idle closed
+# Select each retained closed tile, then explicitly reopen its content.
+# The selected pane member owns the toggle; URL opening would fetch again.
+click surface:workbench .tab Scry B
+assert snap browser-current ~ /page-b.html
+act Toggle live content
+settle 160
+assert snap browser-current-content == live
+assert snap host-surface-producers == 1
+assert snap host-scry-producers == 1
+assert snap host-scry-imported-pages == 1
+assert snap browser-current ~ Scry B | text=bravo | clicks=0 | stored=B-retained
+assert snap browser-current ~ scry_B=B-retained
+click surface:workbench .tab Scry A
+assert snap browser-current ~ /page-a.html
+act Toggle live content
+settle 160
+assert snap browser-current-content == live
+assert snap host-surface-producers == 2
+assert snap host-scry-producers == 2
+assert snap host-scry-imported-pages == 2
+assert snap browser-current ~ Scry A | text=alpha | clicks=0 | stored=A-retained
+assert snap browser-current ~ scry_A=A-retained
+assert wb-cells == 2
+act Save session
+settle 40
+capture 08_ready_for_restart
+record-idle reopened
+log B1 run 1 complete; run 2 must reuse the exact TURNSTONE_ROOT and loopback origin
+
+
+# Separate human/native checklist on the same fixture and topology, using its
+# OWN fresh profile. Do not change the seeded alpha/bravo profile between the
+# two scripted runs. Keep the fresh-root isolation control distinct as well.
+# 1. Click A input, select its text, physically type native-A; click B and type
+#    native-B. Only the intended DOM input and event log may change. Tab/backtab
+#    across controls, blur to chrome/canvas, then refocus the other pane.
+# 2. Resize the real client window 1024x600 -> 1280x800 -> 800x600, then move
+#    between available DPI scales. Read both viewport panels, remeasure click
+#    points, and verify pointer/keyboard after each change. Verify chrome/menu
+#    overlays remain above captured pages and the offscreen HWND stays hidden.
+# 3. Wheel A to SCRYLOWER_A while B stays at scroll zero; reverse, then repeat
+#    for B. Keep this multi-pane wheel result distinct from basic pointer pass.
+# 4. OS IME/preedit/candidate placement/composition is explicitly still open:
+#    test both textareas only if the host provides a real composition route.
+#    CDP committed text and fixture composition events do not certify OS IME.
+# 5. Switch A Scry -> Reader -> Scry while B receives another activation;
+#    inspect B's unchanged text/count and animated square. Close one producer,
+#    interact with its sibling, close all, reopen, and inspect custody cleanup.
+# 6. Normal exit then relaunch with the same root/profile/origin. Both pins,
+#    page identities, layout, saved alpha/bravo, markers, and cookies must
+#    return. A separate fresh-root launch is the storage isolation control.
+# 7. Find and typed page zoom must stay unavailable with reasons until actual
+#    adapter forwarding/outcomes land; do not substitute native browser UI.
+#    Ctrl+=/-/0 must emit a page-zoom refusal, leave requested zoom at 100,
+#    and leave the fixture viewport unchanged. The existing named-key DSL
+#    does not include those chords, so record this as a separate native gate.

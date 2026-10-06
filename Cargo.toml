@@ -229,7 +229,7 @@ mere-surface-api = { git = "https://github.com/merely-made/mere.git", rev = "bd5
 workbench = { git = "https://github.com/merely-made/mere.git", rev = "bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3" }
 # Chromium surface-engine adapter. `weld-engine` is the neutral inker bridge;
 # the CEF runtime remains opt-in because it carries a bundled browser runtime.
-weld-engine = { git = "https://github.com/merely-made/mere.git", rev = "bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3", optional = true }
+weld-engine = { git = "https://github.com/merely-made/mere.git", rev = "bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3", features = ["welding-0-15"], optional = true }
 # Pins match mere's workspace so the shared subtrees unify.
 winit = "0.30.13"
 # PNG encode for the scenario lane's GPU self-capture (composed-frame
@@ -307,7 +307,7 @@ scrying-engine = { git = "https://github.com/merely-made/mere.git", rev = "bd591
 webview2-com = { version = "=0.39.1", optional = true }
 # Weld owns CEF's callback-time copy; Grafting owns the generic DX12 shared
 # handle import on Turnstone's existing wgpu device.
-welding = { git = "https://github.com/merely-made/wgpu-weld.git", rev = "65d057def7db2b5034add6e316cbd51d97c163a1", features = ["cef-runtime"], optional = true }
+welding = { git = "https://github.com/merely-made/wgpu-weld.git", rev = "4784d07c4064195c33136b9b91c8231913f08e06", features = ["cef-runtime"], optional = true }
 grafting = { git = "https://github.com/merely-made/wgpu-graft.git", rev = "403a30c2fab39c573d1eebb57a0995e2c3347ff1", default-features = false, features = ["wgpu-30"], optional = true }
 windows = { version = "0.62", features = ["Win32_Foundation"], optional = true }
 
@@ -316,6 +316,8 @@ windows = { version = "0.62", features = ["Win32_Foundation"], optional = true }
 # mere must restate them. Owned sources are pinned to immutable revisions or
 # release tags; no local paths appear here, so a clean checkout compiles anywhere.
 [patch.crates-io]
+# Qualify the queued-capture repair without advancing the shared Mere family.
+scrying = { git = "https://github.com/merely-made/wgpu-scry.git", rev = "39818a7eddb8bec33f7c61ed144da226bc0a1d04" }
 gemini-protocol = { git = "https://github.com/merely-made/smolweb.git", rev = "882baeb1b59bbdbb305e475f6675f69af997c4f4" }
 # No Stylo-family patch: Genet's live route is Livery/Buckram. The surviving
 # `stylo_malloc_size_of` utility is independent and does not link a CSS engine.

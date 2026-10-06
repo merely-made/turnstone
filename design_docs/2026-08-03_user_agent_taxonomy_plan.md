@@ -1,11 +1,12 @@
 # User-agent taxonomy â€” the things a browser owes its user, by spec
 
 **Date:** 2026-08-03
-**Status, 2026-10-05:** in progress. Browser taxonomy and the Scry/Weld/Servo
+**Status, 2026-10-06:** in progress. Browser taxonomy and the Scry/Weld/Servo
 integration take priority in this pass. The October implementation and release
 qualification below supersede the August ordering and point-in-time inventory.
-B0 is qualified; optional Windows Scry B1 source is present, with native
-qualification in progress in the [consumer receipt](../docs/receipts/browser_scry_windows_20261005/README.md).
+B0 is qualified. The current Windows Scry B1 and direct Weld B2 consumer
+qualification is recorded in the [October 6 receipt](../docs/receipts/browser_scry_windows_20261006/README.md).
+Servo B3 and the broader browser operations remain separate next slices.
 The ask: all the things a browser needs, by
 spec, on the **user-agent side**, not the engine side. Engines render;
 the UA owns the browsing-context features around them. This plan inventories
@@ -213,10 +214,11 @@ array; optional/runtime/platform gaps are labelled; an unsupported saved pin
 does not silently look like Auto; target-bound selection and stale-pane guards
 remain intact; default and relevant optional-feature consumer tests pass.
 
-**B1. Windows Scry consumer.** Local optional source is implemented under
-`--features scry`; full acceptance is **gated on cookie retention and current
-captured pixels**. The pinned Inker Scry
-adapter uses registry `scrying` 0.7.1 on wgpu 30. The host shares an owned
+**B1. Windows Scry consumer.** The bounded primary-Workbench slice is qualified
+under `--features scry,weld` on Windows in the
+[October 6 receipt](../docs/receipts/browser_scry_windows_20261006/README.md).
+The pinned Inker Scry adapter resolves `scrying` 0.7.1 at immutable queue repair
+`39818a7` on wgpu 30. The host shares an owned
 offscreen `CompositionRoot` and captures each page visual independently;
 Turnstone's renderer composes its owned frame payload on the existing device.
 Each producer has a dedicated fence, and the importer validates its identity
@@ -224,15 +226,16 @@ and waits on every paint, including a reused allocation. Profiles remain
 explicit per-node directories under `scry/webview2-profiles/<node>`.
 
 The current acceptance scope is two distinct pages in the primary Workbench.
-The [consumer receipt](../docs/receipts/browser_scry_windows_20261005/README.md)
-separates source, executed checks, native behavior and open gates. Existing
-repository pins are unchanged; the optional dependency adds lock identities.
-The full native script has only four cookie assertion failures; separate
+The [October 5 control](../docs/receipts/browser_scry_windows_20261005/README.md)
+preserves the earlier failures. Mere and Genet repository pins remain unchanged;
+the October 6 root patch selects the immutable Scry queue repair.
+In the earlier control, the full native script has four cookie assertion failures; separate
 process restoration has only two cookie assertion failures. DOM input/owner,
 switch/resize, zero-resource close and saved pin/localStorage/text restoration
-checks pass. Manual review finds stale images after input and blank reopened
+checks pass. Its manual review finds stale images after input and blank reopened
 tiles despite positive import/wait counts. These are bounded receipts, not
-full B1 acceptance. Browser commands now follow the active Workbench member
+full B1 acceptance; the October 6 runs close cookies and current pixels.
+Browser commands now follow the active Workbench member
 without replacing graph selection; tab hit boxes stay inside their painted
 cell even when titles are long.
 
@@ -245,9 +248,11 @@ Typed find/zoom forwarding, IME, lenses, native rehosting and different-size
 appearances of one node remain explicit gates. A single-page demo does not
 close the simultaneous-page gate.
 
-**B2. Weld adapter completeness.** Evaluate the existing direct
-`welding-0-15` adapter against Turnstone's host responsibilities before
-duplicating additional translations. Keep runtime/subprocess/sandbox and
+**B2. Weld adapter completeness.** The October 6 Windows consumer adopts the
+direct `welding-0-15` adapter, preserves owned-frame and ordered-event custody,
+and qualifies the bounded native input/find/zoom/permission/teardown slice.
+The narrow mouse/CHAR bridge remains until Mere closes its shared input gate.
+Keep runtime/subprocess/sandbox and
 profile policy application-owned. Accepted script/cookie completions must not
 be discarded into diagnostic strings when those operations are exposed.
 
@@ -410,3 +415,35 @@ records these forks without silently choosing new policy.
   hardware jobs stopped at stale logind session preflight. Local Scry/Weld
   preflight fixes passed eight mocked cases each; native reruns remain open.
   The cross-repository release plan records the exact runs and claim limits.
+- **2026-10-06 B1/B2 Windows native:** the final locked production executable
+  passes all four [consumer runs](../docs/receipts/browser_scry_windows_20261006/README.md):
+  two-page Scry, same-profile separate-process restart, direct shared Weld
+  adapter and real native permission denial/callback. Scry current input pixels,
+  independent clicks/scroll, native cookies, resize, Reader switching,
+  reconstruction and zero-producer/cache/importer close are qualified. The
+  queue-freshness repair is pinned to immutable Scry `39818a7`; canonical
+  Windows profile paths are lowered to ordinary DOS/UNC paths without changing
+  the resolved directory. Mere and Genet pins remain unchanged.
+  Weld uses Mere's `welding-0-15` adapter and runtime-equivalent `4784d07`
+  package identity, with ordered completions and owned-frame custody retained.
+  Every paint imports through the producer helper on the current host device.
+  Workbench browser controls now follow their actual page while graph selection
+  stays independent. Native find, requested zoom (Partial), two-page lowercase
+  text/clicks, permission-denial navigation/render and teardown pass.
+  The pinned/current shared adapter rejects richer mouse PointerEvent and lacks
+  CEF CHAR delivery, so a narrow host bridge forwards to the same producer;
+  its [Mere removal gate](../docs/receipts/browser_scry_windows_20261006/mere-weld-input-followup.md)
+  includes actual character codes, buttons and modifiers. Six final Weld tests
+  pass. The prior broad source snapshot has one parallel network sync-round
+  failure that passes in isolation; its suite is not reported as clean.
+  Earlier failures and captures remain immutable controls.
+- **2026-10-06 next owners:** B3 needs a process-owned Servo event loop,
+  immutable upstream source, per-view ordered events, explicit profile support,
+  host-device import and frame-origin/input/resize/teardown proof. Graft's
+  importer does not provide that browser producer. Broader Mere integration
+  remains held at the reviewed boundary. Scry's fresh RADV run passes; native
+  Mac capture cadence fails and fresh NVIDIA jobs remain queued. A next trio
+  release still requires passing claimed hosts, exact-source package/tag and
+  registry-only consumer proof. Physical keyboard, supplementary Unicode, OS
+  IME, sandbox bootstrap, lenses and broader browser operations remain scoped
+  gates, not inferred from the four passing Windows scenarios.

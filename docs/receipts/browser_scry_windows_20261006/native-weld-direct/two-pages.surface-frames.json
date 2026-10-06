@@ -1,0 +1,23 @@
+{
+  "cached_frames": 2,
+  "content_surfaces": [
+    {
+      "height": 570.0,
+      "node": "5cf4a8cd-3bbf-4ae6-bead-2f62129367d3",
+      "surface_id": 8676505050326506,
+      "width": 509.0,
+      "x": 0.0,
+      "y": 30.0
+    },
+    {
+      "height": 570.0,
+      "node": "41152c1f-1a29-4ad5-93f0-51df6bf2f8db",
+      "surface_id": 275944400326739692,
+      "width": 509.0,
+      "x": 515.0,
+      "y": 30.0
+    }
+  ],
+  "live_producers": 2,
+  "scry_importers": []
+}

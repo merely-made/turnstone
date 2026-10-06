@@ -1,0 +1,43 @@
+{
+  "recorded_utc": "2026-10-06T21:36:54.9041677Z",
+  "os": {
+    "Caption": "Microsoft Windows 11 Home Insider Preview",
+    "Version": "10.0.26220",
+    "BuildNumber": "26220"
+  },
+  "gpu": [
+    {
+      "Name": "AMD Radeon 780M Graphics",
+      "DriverVersion": "31.0.14084.3001"
+    },
+    {
+      "Name": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "DriverVersion": "32.0.16.1088"
+    }
+  ],
+  "cef_path": "C:/Users/mark_/Code/cef-cache/wgpu-weld/151.3.24/cef_windows_x86_64",
+  "window_client": {
+    "width": 1024,
+    "height": 600
+  },
+  "fixture_origin": "http://127.0.0.1:43123",
+  "input_route": "selfdrive mouse and CDP key/text",
+  "scry_points": {
+    "a_input": [
+      240,
+      200
+    ],
+    "a_button": [
+      180,
+      266
+    ],
+    "b_input": [
+      755,
+      200
+    ],
+    "b_button": [
+      695,
+      266
+    ]
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "path": "C:/t/cargo-targets/turnstone/debug/deps/turnstone-e99996fb98102bd2.exe",
+  "sha256": "0a4618c6e08f628de177b9749a83a9fd66b8b019aeec3d97479692a85e511cd5",
+  "compilation": "cargo test --offline --locked --features scry,weld --lib --target-dir C:/t/cargo-targets/turnstone -- --test-threads=1",
+  "compilation_log": "browser-final-lib-serial-partial.log",
+  "invocations": [
+    "--test-threads=8 --skip shell::weld::sandbox_preference_tests",
+    "shell::weld::sandbox_preference_tests --test-threads=1"
+  ],
+  "runtime_path_prefix": "C:/t/cargo-targets/turnstone/debug"
+}

@@ -1,0 +1,112 @@
+diff --git a/src/shell/scry.rs b/src/shell/scry.rs
+index 3d95806..ea4eaec 100644
+--- a/src/shell/scry.rs
++++ b/src/shell/scry.rs
+@@ -246,7 +246,8 @@ impl SurfaceProducer for TurnstoneScryProducer {
+             // Inker's older MouseEvent shape, which lacks modifiers and Leave.
+             let input = mouse_pointer_input(&ev)?;
+             tracing::debug!(target: "turnstone::scry_input", ?input, "begin native mouse delivery");
+-            let result = self.producer
++            let result = self
++                .producer
+                 .borrow()
+                 .send_mouse_input(input)
+                 .map_err(scrying_engine::translation::map_error);
+@@ -326,8 +327,15 @@ fn mouse_pointer_input(ev: &PointerEvent) -> Result<native::MouseInput, SurfaceE
+ struct SharedNativeProducer(
+     Rc<RefCell<PlatformWebSurfaceProducer>>,
+     Rc<RefCell<KeyboardDispatchQueue>>,
++    Rc<RefCell<Option<CookieProbe>>>,
+ );
+ 
++/// Opt-in native storage diagnostics. Values never leave the browser profile.
++struct CookieProbe {
++    next: Instant,
++    pending: bool,
++}
++
+ const KEYBOARD_COMPLETION_TIMEOUT: Duration = Duration::from_secs(2);
+ 
+ /// Completion callbacks only update this state. The owner-thread host poll
+@@ -386,12 +394,73 @@ impl KeyboardDispatchQueue {
+ 
+ impl SharedNativeProducer {
+     fn new(producer: Rc<RefCell<PlatformWebSurfaceProducer>>) -> Self {
++        let probe =
++            (std::env::var("TURNSTONE_SCRY_COOKIE_PROBE").as_deref() == Ok("1")).then(|| {
++                CookieProbe {
++                    next: Instant::now(),
++                    pending: false,
++                }
++            });
++        if probe.is_some() {
++            use webview2_com::Microsoft::Web::WebView2::Win32::ICoreWebView2_13;
++            use windows::core::Interface;
++            let facts = (|| -> windows::core::Result<_> {
++                let view = producer.borrow().webview().cast::<ICoreWebView2_13>()?;
++                // SAFETY: same-thread COM profile access; take_pwstr frees the
++                // ProfilePath allocation returned by WebView2.
++                let profile = unsafe { view.Profile()? };
++                let mut path = windows::core::PWSTR::null();
++                let mut private = windows::core::BOOL::default();
++                unsafe {
++                    profile.ProfilePath(&mut path)?;
++                    let path = webview2_com::take_pwstr(path);
++                    profile.IsInPrivateModeEnabled(&mut private)?;
++                    Ok((path, private.as_bool()))
++                }
++            })();
++            tracing::info!(target: "turnstone::scry_cookie_probe", ?facts, "native profile");
++        }
+         Self(
+             producer,
+             Rc::new(RefCell::new(KeyboardDispatchQueue::default())),
++            Rc::new(RefCell::new(probe)),
+         )
+     }
+ 
++    fn drive_cookie_probe(&self) {
++        let mut slot = self.2.borrow_mut();
++        let Some(probe) = slot.as_mut() else {
++            return;
++        };
++        let mut producer = self.0.borrow_mut();
++        if let Some(cookies) = producer.poll_cookies() {
++            let facts: Vec<_> = cookies
++                .iter()
++                .map(|cookie| {
++                    (
++                        &cookie.name,
++                        &cookie.domain,
++                        &cookie.path,
++                        cookie.expires_at,
++                        cookie.is_secure,
++                        cookie.is_http_only,
++                    )
++                })
++                .collect();
++            tracing::info!(target: "turnstone::scry_cookie_probe", ?facts, "native cookies (values omitted)");
++            probe.pending = false;
++        }
++        if !probe.pending && Instant::now() >= probe.next {
++            probe.next = Instant::now() + Duration::from_secs(1);
++            match producer.request_all_cookies() {
++                Ok(()) => probe.pending = true,
++                Err(error) => {
++                    tracing::warn!(target: "turnstone::scry_cookie_probe", %error, "native cookie read refused")
++                },
++            }
++        }
++    }
++
+     fn drive_keyboard(&self) -> Result<(), native::WebSurfaceError> {
+         let Some(params) = self.1.borrow_mut().next(Instant::now())? else {
+             return Ok(());
+@@ -585,6 +654,7 @@ impl WebSurfaceProducer for SharedNativeProducer {
+         // Completion errors stay latched for the next fallible acquire/send;
+         // this event-only API cannot report SurfaceError.
+         let _ = self.drive_keyboard();
++        self.drive_cookie_probe();
+         WebSurfaceProducer::poll_web_surface_event(&mut *self.0.borrow_mut())
+     }
+ }

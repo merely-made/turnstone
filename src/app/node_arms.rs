@@ -95,9 +95,12 @@ impl App {
     }
 
     pub(crate) fn focused_can_back(&self) -> bool {
-        let Some(node) = self.graph_runtimes.focused_member() else {
-            return false;
-        };
+        self.graph_runtimes
+            .focused_member()
+            .is_some_and(|node| self.member_can_back(node))
+    }
+
+    pub(crate) fn member_can_back(&self, node: Uuid) -> bool {
         self.graph_runtimes
             .graph_containing_member(node)
             .and_then(|graph| self.graph_runtimes.canvas(graph))
@@ -105,9 +108,12 @@ impl App {
     }
 
     pub(crate) fn focused_can_forward(&self) -> bool {
-        let Some(node) = self.graph_runtimes.focused_member() else {
-            return false;
-        };
+        self.graph_runtimes
+            .focused_member()
+            .is_some_and(|node| self.member_can_forward(node))
+    }
+
+    pub(crate) fn member_can_forward(&self, node: Uuid) -> bool {
         self.graph_runtimes
             .graph_containing_member(node)
             .and_then(|graph| self.graph_runtimes.canvas(graph))

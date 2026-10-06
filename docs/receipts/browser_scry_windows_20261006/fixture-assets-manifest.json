@@ -1,0 +1,19 @@
+{
+  "recorded_utc": "2026-10-06T22:12:16.168747+00:00",
+  "base_head": "c3b14cb0004190e440a8448d00b09fe67a323478",
+  "note": "Supplement existing manifests: these unchanged CSS/JS assets match the base Git tree and predate the native runs.",
+  "files": [
+    {
+      "path": "scenarios/fixtures/browser_scry/fixture.css",
+      "sha256": "2a24946351027f46d92dc6ab844aaed6ac6f9d9517bc1a6a563c4ae728e7bb36",
+      "base_git_blob": "f1f1791d3ba2ff29f87769622a29b15395a43a34",
+      "modified_utc": "2026-10-05T22:46:57.914778+00:00"
+    },
+    {
+      "path": "scenarios/fixtures/browser_scry/fixture.js",
+      "sha256": "99173283207f034fab6d088a03acb7b39df1d0319fddf8aa8b069ad8d1533291",
+      "base_git_blob": "b728ac073b89aa10c86cce5042025ea1415b588f",
+      "modified_utc": "2026-10-05T19:24:00.379813+00:00"
+    }
+  ]
+}

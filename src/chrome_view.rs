@@ -741,10 +741,11 @@ impl ChromeSurfaces {
             })
             .collect();
         let open = omnibar.open;
-        let focused = app.graph_runtimes.focused_member();
+        let browser_target = app.browser_command_target();
+        let focused = browser_target.as_ref().map(|(member, _)| *member);
         let focused_kept = focused.is_some_and(|member| app.node_is_kept(member));
-        let can_back = app.focused_can_back();
-        let can_forward = app.focused_can_forward();
+        let can_back = focused.is_some_and(|member| app.member_can_back(member));
+        let can_forward = focused.is_some_and(|member| app.member_can_forward(member));
         let fetching = focused.is_some_and(|node| app.content.fetch_in_progress(node));
         let fetch_status = focused.and_then(|node| match app.content.fetch_phase(node) {
             Some(crate::content::PageFetchPhase::Requested) => Some("Requested".to_string()),
@@ -762,7 +763,7 @@ impl ChromeSurfaces {
             },
             Some(crate::content::PageFetchPhase::Settled { .. }) | None => None,
         });
-        let focused_url = app.graph_runtimes.focused_url().map(str::to_string);
+        let focused_url = browser_target.map(|(_, url)| url);
         let link_preview = app.link_preview.clone();
         let mut find_input = TextInput::new(app.document_find.query.clone());
         find_input.set_caret_byte(app.document_find.query.len(), false);
@@ -1171,6 +1172,37 @@ mod tests {
         assert!(!debug.contains("private-user"));
         assert!(!debug.contains("private-password"));
         assert!(debug.contains("[redacted]"));
+    }
+
+    #[test]
+    fn browser_strip_targets_the_workbench_member_without_moving_graph_selection() {
+        let mut app = crate::app::App::test_stub();
+        app.update(Action::OpenAddress("https://example.test/a".into()));
+        let a = app.graph_runtimes.focused_member().unwrap();
+        app.update(Action::OpenInWorkbench);
+        app.update(Action::OpenAddress("https://example.test/b".into()));
+        let b = app.graph_runtimes.focused_member().unwrap();
+        app.update(Action::OpenInWorkbench);
+        app.update(Action::WorkbenchActivate(a));
+        // Settle the fixture fetches so the strip displays the page URL,
+        // rather than the higher-priority in-flight fetch status.
+        for member in [a, b] {
+            let request = app.content.active_fetch(member).unwrap();
+            assert!(app.content.settle_fetch(member, request));
+        }
+        let mut chrome = ChromeSurfaces::new();
+        chrome.sync(&app, &[(0, 1024.0, 600.0)]);
+        let intents = browser_button_intents(&mut chrome);
+        assert!(intents.contains(&ChromeIntent::KeepNode(a)));
+        assert!(!intents.contains(&ChromeIntent::KeepNode(b)));
+        let dom = chrome.dom.borrow();
+        let status = dom.all_with_class(dom.document(), "browser-status");
+        assert_eq!(status.len(), 1);
+        assert!(
+            dom.outer_html(status[0])
+                .contains("https://example.test/a")
+        );
+        assert_eq!(app.graph_runtimes.focused_member(), Some(b));
     }
 
     #[test]
