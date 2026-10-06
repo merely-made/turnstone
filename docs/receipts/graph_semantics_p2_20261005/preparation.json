@@ -1,0 +1,19 @@
+{
+  "status": "prepared; not applied or compiled against pending supplier API",
+  "turnstone_base": "2913a4f",
+  "consumer_base_sha256": "d496e0b96da33e627d265dfb5df980096b8a256aa33bc73a71738f8087974213",
+  "candidate_sha256_lf": "241b9fa838a2307d470f4534f1fb30c15ee61df55db5bb819407f37c44754b6c",
+  "patch_sha256": "dcc8fb73209b6c4db692c4166cdd678f8376d67428e8c4545aa4e43bfe3318d6",
+  "supplier_branch": "graph-semantics",
+  "supplier_base": "e25e774b",
+  "supplier_path": "C:/Users/mark_/Code/worktrees/mere-graph-semantics",
+  "contract": "Graph::surface_ids_showing_resource(Uuid)->Vec<Uuid>; Graph::shown_resource_id(NodeKey)->Option<Uuid>; three appended String-ID captures",
+  "checks": [
+    "Rust parser via rustfmt stdout: passed",
+    "git apply --check against current tracked behaviors.rs: passed"
+  ],
+  "future_tests": 6,
+  "portable_pins_and_lock": "unchanged",
+  "native_scry_receipt": "unchanged; this is a separate graph behavior gate",
+  "replay_api": "CapturedDelta::replay_delta(&self)->Option<GraphDelta>; verified existing supplier method"
+}

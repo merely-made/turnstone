@@ -391,8 +391,13 @@ records these forks without silently choosing new policy.
   `ReplaySetShownResourceById` capture variants, preserving old fields and
   postcard ordinals. A future Turnstone consumer patch owns the exhaustive
   `behaviors.rs` match; the existing edge test literal remains compatible.
-  That patch and a tested integration pin are held for the reviewed supplier
-  diff, outside this receipt's existing pins and proof scope. Resource changes
+  Mark subsequently authorized the coordinated consumer patch. Its exhaustive
+  graph-aware match and six regressions are prepared, unapplied, in the
+  [P2 consumer receipt](../docs/receipts/graph_semantics_p2_20261005/README.md).
+  Rust syntax and patch applicability pass; compilation/executed regressions
+  require the reviewed supplier API checkpoint. The patch and a tested
+  integration pin stay outside the frozen Scry receipt's pins and proof scope.
+  Resource changes
   must fan out to current showing surfaces; historical migration effects must
   retain their explicit resource endpoints rather than infer them from current
   surface URLs.

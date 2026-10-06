@@ -27,6 +27,9 @@ set.
   document behavior. Promote a shared contract when a real consumer forces it.
 - Use one action catalog and one observable state spine. UI, automation, and
   accessibility should consume the same named actions and facts.
+- Resource journal captures resolve through explicit current showing-surface
+  identity before behavior ancestry scopes; resource UUIDs are not surface
+  scopes, and current URLs cannot recover historical resource endpoints.
 - Match proof to the claim: focused unit tests for state and identity, real
   consumer tests for wiring, restart receipts for persistence, and headed
   interaction receipts for visible UI.
