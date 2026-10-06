@@ -6,6 +6,8 @@ integration take priority in this pass. The October implementation and release
 qualification below supersede the August ordering and point-in-time inventory.
 B0 is qualified. The current Windows Scry B1 and direct Weld B2 consumer
 qualification is recorded in the [October 6 receipt](../docs/receipts/browser_scry_windows_20261006/README.md).
+The subsequent [current-main integration receipt](../docs/receipts/browser_main_integration_20261006/README.md)
+separately records the upstream Mere/Burn dependency merge and consumer checks.
 Servo B3 and the broader browser operations remain separate next slices.
 The ask: all the things a browser needs, by
 spec, on the **user-agent side**, not the engine side. Engines render;
@@ -447,3 +449,15 @@ records these forks without silently choosing new policy.
   registry-only consumer proof. Physical keyboard, supplementary Unicode, OS
   IME, sandbox bootstrap, lenses and broader browser operations remain scoped
   gates, not inferred from the four passing Windows scenarios.
+- **2026-10-06 main integration:** while preparing the browser push, upstream
+  main advanced to `97e8e49` with the stable Burn graph. The integration retains
+  its Mere `3d1cdacc` and Woodshed `9e982b88` pins/root patches alongside the
+  browser's Scry repair and direct Weld feature. The Inker/surface-api trees
+  are identical between the old/new Mere pins; application Rust and fixture
+  source is unchanged. The [integration receipt](../docs/receipts/browser_main_integration_20261006/README.md)
+  keeps this dependency snapshot separate from browser commit `a383cdd` and its
+  frozen receipt. Its locked combined build and 83 focused browser tests pass;
+  all four native scenarios pass on the integrated executable, with reviewed
+  captures and unchanged fingerprints. This does not apply
+  the held graph-semantics consumer patch or reclassify the earlier broad-suite
+  network failure as a clean result.

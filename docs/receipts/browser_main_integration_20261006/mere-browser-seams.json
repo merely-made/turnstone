@@ -1,0 +1,10 @@
+{
+  "old_revision": "bd5912fbbb8f468defc3bbeee7eac5a4f7d2b2f3",
+  "new_revision": "3d1cdacc90aa6a0736154d841223a3ae29e23aa5",
+  "comparison": "git diff old new -- crates/inker crates/system/surface-api",
+  "result": "No differences",
+  "verified_present_trees_at_both_revisions": {
+    "crates/inker": "c40eb32d70989734809e736ebe832aac1de521dd",
+    "crates/system/surface-api": "9ea6ee2921d2eb5921b4e7ad920b50ac91eeca70"
+  }
+}

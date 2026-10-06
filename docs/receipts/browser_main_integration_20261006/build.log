@@ -1,0 +1,7 @@
+error: failed to load source for dependency `burn-remote`
+
+Caused by:
+  unable to update https://github.com/merely-made/mere.git?rev=3d1cdacc90aa6a0736154d841223a3ae29e23aa5#3d1cdacc
+
+Caused by:
+  can't checkout from 'https://github.com/merely-made/mere.git': you are in the offline mode (--offline)

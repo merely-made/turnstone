@@ -1,0 +1,65 @@
+{
+  "recorded_utc": "2026-10-06T22:40:47.177959+00:00",
+  "source_manifest": "source-manifest.json",
+  "exe_sha256": "8dfbcbfe4ca06960d8e61febdd574ad73c23f4108cc043c5c53df29240450175",
+  "features": [
+    "scry",
+    "weld"
+  ],
+  "changed_qualification_inputs": [
+    "Cargo.toml",
+    "Cargo.lock"
+  ],
+  "browser_tests": {
+    "shell": 60,
+    "find": 5,
+    "chrome": 18
+  },
+  "runs": {
+    "native-weld-final-input": {
+      "result": "RESULT ok",
+      "native_exit": 0,
+      "evidence": "Runner completed after explicit exit/result checks"
+    },
+    "native-scry-final": {
+      "result": "RESULT ok",
+      "native_exit": 0,
+      "evidence": "Runner completed after explicit exit/result checks"
+    },
+    "native-scry-final-restart": {
+      "result": "RESULT ok",
+      "native_exit": 0,
+      "evidence": "Runner completed after explicit exit/result checks"
+    },
+    "native-weld-permission-final": {
+      "result": "RESULT ok",
+      "native_exit": 0,
+      "evidence": "Runner completed after explicit exit/result checks"
+    }
+  },
+  "permission_server": "RESULT ok",
+  "scry_closed": {
+    "cached_frames": 0,
+    "content_surfaces": [],
+    "live_producers": 0,
+    "scry_importers": []
+  },
+  "full_library_suite_rerun": false,
+  "prior_broad_suite_clean": false,
+  "prior_suite_note": "Prior snapshot's network sync-round test failed parallel and passed isolated; preserved in frozen prior receipt",
+  "limits": [
+    "Windows primary Workbench only",
+    "selfdrive input, not physical keyboard/IME",
+    "requested Weld zoom remains Partial",
+    "denial callback, not successful geolocation",
+    "DPR differs by engine",
+    "Servo and next registry release remain open"
+  ],
+  "retained_state": {
+    "target": "C:/t/cargo-targets/turnstone",
+    "target_owner": "Existing shared Turnstone target",
+    "profiles": "Ignored synthetic exact-profile restart evidence",
+    "isolated_cargo_home": null,
+    "worktree": null
+  }
+}

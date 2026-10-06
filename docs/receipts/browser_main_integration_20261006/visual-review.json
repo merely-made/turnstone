@@ -1,0 +1,16 @@
+{
+  "method": "Direct inspection of native composed-frame PNGs",
+  "captures": {
+    "native-weld-final-input/01b_independent_weld_input.png": "Visible alpha/bravo, independent clicks and cookies",
+    "native-weld-final-input/02_find.png": "One highlighted A match and chrome targets A; B remains separate",
+    "native-weld-final-input/03_zoom.png": "Only A visibly scales, about 1.1 versus B 1; requested zoom remains Partial",
+    "native-weld-final-input/04_teardown.png": "Both content surfaces off without residual page imagery",
+    "native-scry-final/02_text_pointer_and_keyboard.png": "Current independent input/clicks and retained site state",
+    "native-scry-final/06_a_scry_reconstructed.png": "Both reconstructed/sibling pages visibly populated",
+    "native-scry-final/07_both_closed.png": "Both pages off; structural snapshot separately confirms zero state",
+    "native-scry-final/08_ready_for_restart.png": "Both reopened pages visibly populated",
+    "native-scry-final-restart/01_restored_two_pages.png": "Separate process restores both populated pages and text",
+    "native-weld-permission-final/01_permission_decision.png": "Real exact-origin location request and native decision controls",
+    "native-weld-permission-final/02_permission_answered.png": "Denial callback navigates and renders result page"
+  }
+}
