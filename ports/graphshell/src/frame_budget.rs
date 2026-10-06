@@ -13,7 +13,8 @@
 //! [1/360 s, 1/60 s] that three quarters of the last 40 intervals fit within
 //! two clock steps and the refresh jitter, taken up to a multiple of itself
 //! when that multiple keeps most of the fit, so a fraction of the period is
-//! never read; where no period fits, the 1/60 s cap ("Both machines +
+//! never read, and down to a fraction when that fits many more, so a
+//! multiple is not read where the page's frames are mostly even; where no period fits, the 1/60 s cap ("Both machines +
 //! planted", 2026-10-05). The page passes its clock, that clock's grain, and
 //! the margin its gate keeps ("Gate keeps a forecast margin").
 
@@ -36,8 +37,10 @@ const RECENT_INTERVALS: usize = 120;
 /// at 165 Hz, two thirds at 60 Hz, longer on a page that misses refreshes,
 /// short enough that a page's start or a display's switch soon ages out.
 const ESTIMATE_INTERVALS: usize = 40;
-/// Intervals needed before a period is read at all.
-const MIN_INTERVALS: usize = 12;
+/// Intervals needed before a period is read at all: with fewer, a page's
+/// first frames, which land off any multiple, can carry a candidate past the
+/// quorum (every logged window of this machine reads true from 16 on).
+const MIN_INTERVALS: usize = 16;
 /// The share of intervals a period must fit.
 const QUORUM: f64 = 0.75;
 /// A multiple of the period found is taken instead when it keeps this much
@@ -46,6 +49,12 @@ const QUORUM: f64 = 0.75;
 /// quorum where the period narrowly misses it is lifted back.
 const KEEP: f64 = 0.85;
 const KEEP_FLOOR: f64 = 0.5;
+/// A half or a third of the period found is taken instead when it fits this
+/// much more of the intervals: the period found was then a multiple of the
+/// display's, as on a page whose frames mostly take an even number of
+/// refreshes. A page whose frames all do gains nothing from the half, and
+/// reads twice the period, the most its intervals show.
+const DESCEND_GAIN: f64 = 0.15;
 /// How far an interval may sit from a multiple and still fit: each of its
 /// two timestamps within a clock step, plus the refresh's own jitter.
 const JITTER_MS: f64 = 0.1;
@@ -204,6 +213,7 @@ fn period_of(intervals: &[f64], grain_ms: f64) -> Period {
             continue;
         }
         let (ms, fit) = lifted(intervals, ms, fit, tolerance, high);
+        let (ms, fit) = descended(intervals, ms, fit, tolerance, low);
         return Period::Inferred {
             ms: ms.clamp(MIN_PERIOD_MS, MAX_PERIOD_MS),
             fit,
@@ -264,6 +274,25 @@ fn lifted(intervals: &[f64], mut ms: f64, mut fit: f64, tolerance: f64, high: f6
     }
 }
 
+/// `ms` taken down to a half or a third of itself while that fits
+/// [`DESCEND_GAIN`] more of the intervals.
+fn descended(intervals: &[f64], mut ms: f64, mut fit: f64, tolerance: f64, low: f64) -> (f64, f64) {
+    'descend: loop {
+        for k in [2.0, 3.0] {
+            if ms / k < low {
+                continue;
+            }
+            let fraction = refined(intervals, ms / k);
+            let gained = self::fit(intervals, fraction, tolerance);
+            if gained >= fit + DESCEND_GAIN {
+                (ms, fit) = (fraction, gained);
+                continue 'descend;
+            }
+        }
+        return (ms, fit);
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -295,6 +324,13 @@ mod tests {
         54.7, 121.5, 42.6, 48.5, 121.6, 109.5, 42.5, 91.2, 36.5, 36.4, 42.5, 30.4, 36.6, 36.4,
         36.5, 103.3, 36.4, 36.6, 36.4, 36.4, 30.5, 36.4, 36.5, 36.5, 36.5, 30.4, 36.4, 36.4, 103.4,
         30.4, 36.4, 42.6, 30.4, 36.5, 36.4, 30.4, 36.5, 30.4, 36.4, 30.5,
+    ];
+
+    /// 2026-10-06, the 300-node page, its first 20 intervals: mostly 30 refreshes, an even
+    /// number, so twice the period clears the quorum before the period does.
+    const WINDOWS_300_EARLY: [f64; 20] = [
+        899.6, 85.1, 48.6, 121.6, 230.9, 291.8, 212.8, 285.6, 212.8, 218.8, 303.9, 194.5, 200.6,
+        97.3, 182.4, 182.3, 182.3, 188.4, 182.3, 182.4,
     ];
 
     fn clock() -> Duration {
@@ -504,11 +540,15 @@ mod tests {
         }
     }
 
-    /// This machine's logged windows (2026-10-04 and 05, its 165 Hz panel,
+    /// This machine's logged windows (2026-10-04 to 06, its 165 Hz panel,
     /// whose period read 6.06 to 6.08 ms): each reads within 1% of 6.07 ms,
-    /// the loaded ones too.
+    /// the loaded ones too, and the early one where the page's frames mostly
+    /// took 30 refreshes.
     #[test]
     fn logged_windows_read_this_panels_period() {
+        // The early window's trap is real: twice the period clears the quorum.
+        assert!(fit(&WINDOWS_300_EARLY, 2.0 * 6.078, 0.3) >= QUORUM);
+        assert_reads("300 nodes, early", period_of(&WINDOWS_300_EARLY, 0.1), 6.07);
         for (name, window) in [
             ("300 nodes", WINDOWS_300),
             ("24 nodes", WINDOWS_24),
