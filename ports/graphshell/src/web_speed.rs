@@ -61,6 +61,10 @@ pub(crate) struct SpeedOptions {
     /// receipts' positive control (`physics_plant_stall_ms`,
     /// `physics_plant_every`, 97 by default).
     pub(crate) plant: Option<(Duration, u64)>,
+    /// A planted busy-wait in every frame at Max, outside physics, so Max
+    /// runs fewer ticks a second than 1x: the control for the fast receipt's
+    /// "Relative to the page's 1x" (`physics_plant_max_frame_ms`).
+    pub(crate) plant_max_frame: Option<Duration>,
     /// The page asked for a speed or a budget: receipts log the pace.
     pub(crate) explicit: bool,
 }
@@ -109,11 +113,20 @@ pub(crate) fn options() -> Result<SpeedOptions, String> {
         },
         None => None,
     };
+    let plant_max_frame = match params.get("physics_plant_max_frame_ms") {
+        Some(value) => {
+            Some(Duration::from_millis(value.parse::<u64>().map_err(
+                |_| "physics_plant_max_frame_ms wants whole milliseconds",
+            )?))
+        },
+        None => None,
+    };
     Ok(SpeedOptions {
         speed,
         share,
         margin: Duration::from_micros(margin_us),
         plant,
+        plant_max_frame,
         explicit: [
             "physics_speed",
             "physics_budget_share",
@@ -126,6 +139,16 @@ pub(crate) fn options() -> Result<SpeedOptions, String> {
 
 pub(crate) fn clock() -> Duration {
     Duration::from_secs_f64(now_ms().max(0.0) / 1000.0)
+}
+
+/// Busy-wait `wait` if the canvas runs at Max: the planted frame cost.
+pub(crate) fn plant_max_frame(canvas: &Canvas, wait: Option<Duration>) {
+    if let Some(wait) = wait
+        && canvas.physics_speed() == Speed::UNCAPPED
+    {
+        let until = now_ms() + wait.as_secs_f64() * 1000.0;
+        while now_ms() < until {}
+    }
 }
 
 /// The page's frame budget: its share and margin, on the browser clock, or

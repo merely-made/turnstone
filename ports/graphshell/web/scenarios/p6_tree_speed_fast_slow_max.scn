@@ -1,0 +1,37 @@
+# The positive control for p6_tree_speed_fast's comparison with 1x (physics
+# catalog plan, ruled 2026-10-06, "Relative to the page's 1x"): the same run
+# with a 500 ms busy-wait planted in every frame at Max, outside physics
+# (tree.html?nodes=300&seed=7&links=none&gpu=off&physics_speed=1&physics_plant_max_frame_ms=500),
+# so Max runs fewer ticks a second than the page's 1x: this receipt asserts
+# the comparison misses.
+assert snap ready == true
+assert snap physics-speed == 1
+assert snap physics-budget-share == 0.5
+assert snap physics-budget-margin-us == 200
+click role:button Play physics
+settle 2
+assert snap physics-paused == false
+click role:combobox Arrangement
+settle 1
+click role:option Free (physics alone)
+settle 1
+click role:button Apply arrangement
+settle 1
+assert snap layout == free
+settle 10
+mark-pace one-x
+assert snap physics-effective-marked >= 0.001
+click role:combobox Speed
+settle 1
+click role:option Max
+settle 2
+assert snap physics-speed == max
+timing start speed-fast-slow-max
+settle 30
+timing stop
+log-physics fast-slow-max
+log-pace fast-slow-max
+assert snap physics-speed == max
+assert snap physics-effective-over-marked <= 0.99
+assert snap finite == true
+log p6 speed fast slow max control complete

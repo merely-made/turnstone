@@ -217,6 +217,7 @@ impl TextureProducer for CanvasProducer {
             .map_or_else(now_ms, |timestamp| timestamp.as_secs_f64() * 1000.0);
         let budget = shared.frame_budget.borrow_mut().frame(frame_ms);
         canvas.set_physics_step_budget(Some(budget));
+        crate::web_speed::plant_max_frame(&canvas, shared.speed.plant_max_frame);
         let profile = shared.timing.borrow().active();
         if shared.remote_shown.get() {
             // One leaf, the producer picks the scene: the board, mirroring

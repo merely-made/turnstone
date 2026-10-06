@@ -766,6 +766,17 @@ impl Product for TreeLane {
                 self.shared.physics_log.borrow_mut().push(line);
                 Ok(())
             },
+            // `mark-pace <label>`: the effective speed now, for a later
+            // comparison on the same page.
+            "mark-pace" => {
+                let line = super::speed::mark_line(
+                    rest.trim(),
+                    &self.shared.canvas.borrow(),
+                    &self.shared,
+                );
+                self.shared.physics_log.borrow_mut().push(line);
+                Ok(())
+            },
             // `log-intervals <label>`: the frame intervals the display
             // period is read from, into the receipt.
             "log-intervals" => {
