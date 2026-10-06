@@ -6,6 +6,18 @@ has native and headed reopening receipts. Remaining product migration and
 large-graph responsiveness are open.
 **Parent:** [Graphshell on one Cambium tree](2026-09-25_graphshell_one_tree_plan.md).
 
+*Annotation, 2026-10-06 (S14 pass):* this inventory predates the physics
+panel and the remote session on the tree. The Graph tools physics panel
+landed on 2026-10-01 (`6279ca31`), which also moved the old page's physics
+form onto a typed `PhysicsChoice` applied through `canvas_physics`. The
+Remote session section landed on 2026-10-01 (`e9d95554`) and starts closed
+since 2026-10-02 (`9adc4415`). So `TreePage` now holds the physics panel and
+session state beside its graph, and the "First slice" and "Owners and seams"
+paragraphs and migration steps 2 and 3 below describe the tree before them.
+The [controls receipt](../testing/2026-09-27_graphshell_controls_physics_receipt.md)'s
+2026-10-01 and 2026-10-02 sections record both. The inventory is not rebuilt
+here.
+
 Mark approved proceeding to Cambium while treating rendering performance and
 live physics as open work. A paused graph rendered through a producer establishes
 the integration path; it does not establish moving-graph behavior or acceptable
