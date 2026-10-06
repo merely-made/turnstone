@@ -1,0 +1,30 @@
+# Tree version of physics_converted.scn (dynamics grammar plan, G3): the
+# panel refuses only what a law's currency refuses. Still and Anneal are
+# kinematic and take an overlay converted, so no overlay is greyed for them;
+# Density's interim refusal greys all eight (p4_tree_physics_density).
+assert snap ready == true
+click role:combobox Physics law
+settle 1
+click role:option Anneal
+settle 1
+click role:checkbox Centre
+settle 1
+assert snap panel-overlays == gravity-locus
+assert snap disabled-overlays == 0
+click role:combobox Physics law
+settle 1
+click role:option Still
+settle 1
+assert snap disabled-overlays == 0
+click role:button Apply physics
+settle 1
+assert snap physics-law == still.default
+assert snap physics-overlays == gravity-locus
+assert text Physics set to Still
+click role:combobox Physics law
+settle 1
+click role:option Density
+settle 1
+assert snap disabled-overlays == 8
+assert text Density takes no overlays
+log physics converted receipt complete
