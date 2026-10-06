@@ -38,6 +38,13 @@ browser page still owns the broader product state and integrations. Keep
 existing pages available until each remaining behavior has crossed the
 boundary and passed its receipt.
 
+**Corrected 2026-10-06 (S14 pass):** `TreePage` now holds more than its
+graph. The Graph tools physics panel (`physics`, `6279ca31`, 2026-10-01) and
+the Remote session section (`session`, `sections`, `draft`, `remote_seen`,
+`remote_link_seen`, `tools_open`; `e9d95554`, 2026-10-01, and `9adc4415`,
+2026-10-02) are on the tree, on both tree routes
+(`ports/graphshell/src/web_tree.rs`).
+
 ## Owners and seams
 
 | Concern | Existing owner and integration point |
@@ -56,6 +63,11 @@ in `web_product.rs::apply_physics_from_form` and `apply_profile_from_form`.
 When moving that form, split typed inputs from browser adapters and reuse
 `CANVAS_PHYSICS_*` catalogs. Preserve source-before-law application order and
 profile synchronization. Do not copy the form handler into the tree.
+
+**Corrected 2026-10-06 (S14 pass):** this split landed in `6279ca31`.
+`apply_physics_from_form` now builds a typed `PhysicsChoice` and calls
+`canvas_physics::apply_physics`, and `apply_profile_from_form` calls
+`canvas_physics::apply_profile`.
 
 ## Shared capabilities to check before dependent controls move
 
@@ -96,6 +108,10 @@ rest of step 3, together with the remote session from step 2 that two of its
 scenarios need. The rulings (base, done-condition, routes, execution) are in
 the parent plan's §1, "Phase 4 physics-panel rulings".
 
+**Corrected 2026-10-06 (S14 pass):** both have moved: the physics panel
+(`6279ca31`, 2026-10-01) from step 3 and the Remote session (`e9d95554`,
+2026-10-01; `9adc4415`, 2026-10-02) from step 2 are on both tree routes.
+
 Each panel is done when its existing product effect, keyboard operation,
 accessibility projection and relevant scenario pass on the tree. Full phase 4
 also requires the parent plan's entire receipt and five-page gates.
@@ -103,6 +119,8 @@ also requires the parent plan's entire receipt and five-page gates.
 ## Pages and scenario obligations
 
 There are 40 `.scn` files in `ports/graphshell/web/scenarios/` at this inventory.
+**Corrected 2026-10-06 (S14 pass):** that count is the tree before this
+inventory's own commit: 40 at `bb52201c^`, 87 at `26060e88`.
 Preserve assertions about product behavior while replacing component DOM verbs
 with generic Cambium actions and observations. External embedding-page controls
 remain browser DOM controls and need a browser-level boundary test.
