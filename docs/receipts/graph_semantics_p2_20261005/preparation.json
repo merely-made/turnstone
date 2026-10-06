@@ -1,9 +1,9 @@
 {
-  "status": "prepared; not applied or compiled against pending supplier API",
+  "status": "prepared/unapplied; exact bounded source functions compile and six regressions pass against owner-frozen supplier WIP",
   "turnstone_base": "2913a4f",
   "consumer_base_sha256": "d496e0b96da33e627d265dfb5df980096b8a256aa33bc73a71738f8087974213",
-  "candidate_sha256_lf": "241b9fa838a2307d470f4534f1fb30c15ee61df55db5bb819407f37c44754b6c",
-  "patch_sha256": "dcc8fb73209b6c4db692c4166cdd678f8376d67428e8c4545aa4e43bfe3318d6",
+  "candidate_sha256_lf": "1b4d0e3b51cc6cc87d9d5975207015d60e41b8c3c50bd85c4f1d16706dd166ce",
+  "patch_sha256": "07b943e5491ad8b8411bb9b0a1da4a78c00e861f23ab3f12cf9714ef1e449ed0",
   "supplier_branch": "graph-semantics",
   "supplier_base": "e25e774b",
   "supplier_path": "C:/Users/mark_/Code/worktrees/mere-graph-semantics",
@@ -15,5 +15,15 @@
   "future_tests": 6,
   "portable_pins_and_lock": "unchanged",
   "native_scry_receipt": "unchanged; this is a separate graph behavior gate",
-  "replay_api": "CapturedDelta::replay_delta(&self)->Option<GraphDelta>; verified existing supplier method"
+  "replay_api": "CapturedDelta::replay_delta(&self)->Option<GraphDelta>; verified existing supplier method",
+  "fixture_mapping": "explicit recorded resource creation and shown-resource association; surface insertion alone does not imply one",
+  "source_gate_result": "source-gate-result.json",
+  "source_gate_boundary": "actual kernel/servitor types; excludes GUI/App drain, committed API and main integration",
+  "source_gate_checks": {
+    "passed": 6,
+    "failed": 0,
+    "unchanged_source_inputs": 209,
+    "committed_supplier_checkpoint": false,
+    "full_turnstone_integration": false
+  }
 }

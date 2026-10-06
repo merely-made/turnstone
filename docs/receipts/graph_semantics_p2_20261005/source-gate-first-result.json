@@ -1,0 +1,9 @@
+{
+  "result": "six passed; source checkpoint not accepted because inputs drifted",
+  "passed": 6,
+  "failed": 0,
+  "drift": [
+    "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\graph\\resource.rs",
+    "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\graph\\snapshot\\mod.rs"
+  ]
+}

@@ -124,7 +124,7 @@
              field_id: "field".into(),
          }).is_empty());
      }
-@@ -680,3 +712,160 @@
+@@ -680,3 +712,174 @@
          assert!(ancestry_scopes(&graph, "not-a-uuid").is_empty());
      }
  }
@@ -142,6 +142,20 @@
 +            position: [0.0, 0.0],
 +        };
 +        apply_graph_delta(graph, capture.replay_delta().unwrap());
++        let resource = mere::kernel::graph::ResourceNode::new(url);
++        let record = CapturedDelta::ReplaySetResourceRecordById {
++            resource_id: resource.id().to_string(),
++            record: Some(mere::kernel::persistence::PersistedResourceRecord {
++                canonical_iri: resource.canonical_iri().into(),
++                facets: Vec::new(),
++            }),
++        };
++        apply_graph_delta(graph, record.replay_delta().unwrap());
++        let shown = CapturedDelta::ReplaySetShownResourceById {
++            surface_id: surface.to_string(),
++            resource_id: Some(resource.id().to_string()),
++        };
++        apply_graph_delta(graph, shown.replay_delta().unwrap());
 +        let key = graph.get_node_key_by_id(surface).unwrap();
 +        (surface, graph.shown_resource_id(key).unwrap())
 +    }

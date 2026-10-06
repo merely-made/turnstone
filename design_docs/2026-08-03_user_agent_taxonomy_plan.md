@@ -1,4 +1,4 @@
-# User-agent taxonomy — the things a browser owes its user, by spec
+# User-agent taxonomy â€” the things a browser owes its user, by spec
 
 **Date:** 2026-08-03
 **Status, 2026-10-05:** in progress. Browser taxonomy and the Scry/Weld/Servo
@@ -30,7 +30,7 @@ the current implementation sequence.
 | View source | UA convention | Absent | Cheap and honest: the fetched bytes are already held; a source view is a content class |
 | Reader view | (convention) | Live as `genet.reader`, derived by Fleece from held HTML | Reader is a viewer lane in the engine picker; extraction lineage remains attached to the representation |
 | Trust / security posture | TLS UI conventions; per-protocol postures | Smolweb fidelity WS2 scoped, unbuilt; place lanes have real authority chrome | One posture vocabulary across https/gemini/reticulum/place lanes, shown in tile chrome (fidelity plan owns the descriptor) |
-| Permissions (notifications, media, geolocation…) | Permissions spec | Live host-owned permission decisions; authentication callback delivery remains partial in Weld/CEF | Web-content requests retain exact node/request identity; standing permission and process-only credential policy remain separate |
+| Permissions (notifications, media, geolocationâ€¦) | Permissions spec | Live host-owned permission decisions; authentication callback delivery remains partial in Weld/CEF | Web-content requests retain exact node/request identity; standing permission and process-only credential policy remain separate |
 | Per-site settings | (UA convention) | Per-node viewer override only | Per-host overrides exist in `EngineRoutePolicy`; widen to a per-host settings sidecar as needs appear |
 | Cookies / storage inspection | (UA convention) | N/A (static lanes carry no cookie jar; scrying tier does) | Surface-engine profile dirs are the boundary; inspection UI deferred until the scrying lane lands |
 | External protocol handling | HTML external handlers | `host.external-protocol` fallback exists, invisible | Engine plan E4 makes it legible |
@@ -394,8 +394,11 @@ records these forks without silently choosing new policy.
   Mark subsequently authorized the coordinated consumer patch. Its exhaustive
   graph-aware match and six regressions are prepared, unapplied, in the
   [P2 consumer receipt](../docs/receipts/graph_semantics_p2_20261005/README.md).
-  Rust syntax and patch applicability pass; compilation/executed regressions
-  require the reviewed supplier API checkpoint. The patch and a tested
+  Rust syntax and patch applicability pass. The exact proposed scope functions
+  and all six regressions compile/pass against the real WIP kernel/servitor API;
+  209 input fingerprints are stable across the final owner-frozen run. This
+  excludes the GUI/App drain and still awaits the reviewed committed API
+  checkpoint. The patch and a tested
   integration pin stay outside the frozen Scry receipt's pins and proof scope.
   Resource changes
   must fan out to current showing surfaces; historical migration effects must

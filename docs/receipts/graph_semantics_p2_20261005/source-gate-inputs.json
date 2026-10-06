@@ -1,0 +1,844 @@
+{
+  "recorded_utc": "2026-10-06T00:16:05.474532+00:00",
+  "supplier_base": "e25e774bce38131c51a5f27d0031a4e95793f0c7",
+  "supplier_source": "owner-signaled frozen bounded typed API WIP; full P2/main integration remain outside scope",
+  "inputs": [
+    {
+      "path": "C:\\Users\\mark_\\Code\\repos\\turnstone\\docs\\receipts\\graph_semantics_p2_20261005\\consumer_gate\\Cargo.toml",
+      "sha256": "1e80ee2ab090a3e2b445939a8f2e3950d74b18602cf87a63ac148b2db0e5237c"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\repos\\turnstone\\docs\\receipts\\graph_semantics_p2_20261005\\consumer_gate\\src\\lib.rs",
+      "sha256": "cd398f9ccd0a48e5c39cddfb563a490cfced280d1f249a4da55abff2cee8fda3"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\Cargo.toml",
+      "sha256": "aeaed8f7b78adbca326ccad39c52cf404f67eae46136ed57875f8a2591c745e8"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\conatus\\numen\\Cargo.toml",
+      "sha256": "42949056a249e585e24c606e8d320117f1f4e5d3b608367b97b478e152de420c"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\conatus\\numen\\src\\coupling.rs",
+      "sha256": "b7a1c5a071fcbbd47318b8a3961589bb4891e5430639cdac5348852ed2bd1a66"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\conatus\\numen\\src\\edge_path.rs",
+      "sha256": "05a0525cccf11474ccb4d52d731959ead791693e23bf035194d88ff5bb0dd360"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\conatus\\numen\\src\\eval.rs",
+      "sha256": "099fe0c8baf6bcefb646ac1b314e1430bf8558e41869030fe1213dd36473f2ef"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\conatus\\numen\\src\\field.rs",
+      "sha256": "5453d07f34c349e3aba42417317d677f20894d426ec7edb35f3398b023528a77"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\conatus\\numen\\src\\field_ast.rs",
+      "sha256": "959f8b47a3fee84eb20796ac36d5a9b169cb2ae4218d5c2dcc842a887303e54a"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\conatus\\numen\\src\\lib.rs",
+      "sha256": "a6e6aa0e8396457dd6c244292a0ad0861845e0dc4aca143eff8bdb16a2b4907c"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\conatus\\numen\\src\\lower_burn\\tests.rs",
+      "sha256": "762f49bd5997b494b56109d78cc5fe6e8e25b67edc1c6adb477fb835380311c9"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\conatus\\numen\\src\\lower_burn\\tests_wgpu.rs",
+      "sha256": "4764cdd21fdcc500a3865898fc2ded43e2306178833dc827aaf4bc1a412a72d7"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\conatus\\numen\\src\\lower_burn.rs",
+      "sha256": "c6a81484d135b09da084470894833a4cf4df6025bf1733e709d40a0ddb44444c"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\conatus\\numen\\src\\projection.rs",
+      "sha256": "ca9de19988c5d0250b2564883d089bd573ad46f71d72c932c339af7b409438eb"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\conatus\\numen\\src\\registry.rs",
+      "sha256": "faebe9955bea04a0a7d0e3564b39beea7f7e10ba05fde5ebd72deb33d63fc520"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\conatus\\numen\\src\\rhai_bindings.rs",
+      "sha256": "4988ded5383ade04cde4ac1a2c72043c7a45c7e8fe5f77abb42058068eb82050"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\dramatis\\insigne\\Cargo.toml",
+      "sha256": "859a8f1b7c87e919609fde7fe7388b7b0e42b0b1fbc949e602ef5d11c97e79dc"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\dramatis\\insigne\\src\\attestation.rs",
+      "sha256": "70b817de46fb9f5a8d1ad1b42da0d12be780ddf2e456ce602b02ec8301a4e08a"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\dramatis\\insigne\\src\\check.rs",
+      "sha256": "12c89073f2202c5358b64acce930adf1cbcd97aecc6e90cd02de79be3a881ac8"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\dramatis\\insigne\\src\\delegation.rs",
+      "sha256": "317e930a13bfa0b1738e02e849f66ea902999807701f4c39bf52777f3da7595b"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\dramatis\\insigne\\src\\encoding.rs",
+      "sha256": "92bd2b83627ebb9b9ea189d26d79cbd0ef2b8a3ff1971576f2339e4208a8bb5f"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\dramatis\\insigne\\src\\key.rs",
+      "sha256": "2445dd43418758d8ae590f716710c795643be6b1cf9f383c1c245d7964a80836"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\dramatis\\insigne\\src\\lib.rs",
+      "sha256": "bb199fbbc6e98c1ae1f91ce98344fdfcbf5639629ef05cfb4c1d86adadfba180"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\dramatis\\insigne\\tests\\pre_move_personae.rs",
+      "sha256": "464b8967da346953211729f3047c043e7728c8481baaaaa5d9d496b89dc19de6"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\dramatis\\personae\\Cargo.toml",
+      "sha256": "1657c466b90486307a38f9d63abe8cfab41b9aec8fabfb5d75e61f5234f69c5d"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\dramatis\\personae\\src\\agent.rs",
+      "sha256": "f54c5315bf3bc360797d1587ba2170e9979239b25b3fb059a9695bb40b3cf4dd"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\dramatis\\personae\\src\\bin\\personae-agent.rs",
+      "sha256": "2c4245d37bc959a6c64eab91b275fb6b098e1d4422ad74ad58c0275a29c7526c"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\dramatis\\personae\\src\\bin\\personae-vault\\certs.rs",
+      "sha256": "b28c2797e278fc2b8bcbaa59783dba2347ee7265f852c92936eb80d4d7b90b8a"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\dramatis\\personae\\src\\bin\\personae-vault\\main.rs",
+      "sha256": "7b0330f4f14c023e7ac58740a7e1c890c6972466622ecdb2d4df84770adb7f60"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\dramatis\\personae\\src\\bootstrap.rs",
+      "sha256": "b9e8881fc65cd57d910508031639d2a616ffe58a7510f3cc1d4b4029135c90ab"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\dramatis\\personae\\src\\carry\\grant\\mod.rs",
+      "sha256": "a7a64a6d27faddcd21e0f5b2ea7597964842bae985293b3c031fb8feb312f3cc"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\dramatis\\personae\\src\\carry\\grant\\revoke.rs",
+      "sha256": "5b9be21d6f80d1cdfefdb8407ae3e634f1bc94e3bc4ccbaa8f1cf756ba619581"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\dramatis\\personae\\src\\carry\\mod.rs",
+      "sha256": "e7a2751a6caf01d65ac10466a2a3ed6a9ce769104cd1269ee42e988294e70546"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\dramatis\\personae\\src\\carry\\refs.rs",
+      "sha256": "9718912070440a86d213275aa93b5f132faae0a497f107d01510b3d1683bf794"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\dramatis\\personae\\src\\carry\\scope.rs",
+      "sha256": "520e3fb75e55644608d7ba8ed4804b3a880b76431f9349735d48ba62bd8ec194"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\dramatis\\personae\\src\\delegation.rs",
+      "sha256": "0c59af70854fdf2739eef9d6dde7c02185cf2e1a493556cafe5fe13c307db96c"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\dramatis\\personae\\src\\enroll.rs",
+      "sha256": "de62c0261d93feaf26751afa7c34f3dacedb94e1ad66ae6b35679cc74a67b8d8"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\dramatis\\personae\\src\\error.rs",
+      "sha256": "fe3cef54519dea99defa5968e4f6ba6ce6c890bee398a213297b9e6b7104f08b"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\dramatis\\personae\\src\\keypair.rs",
+      "sha256": "610001640917a4e4afd33b6515720bfd308dfd0883bb86d3d599f53b7a268abc"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\dramatis\\personae\\src\\lib.rs",
+      "sha256": "5274f0b079c2f85c6e87660183856be197d507a82cb15067a5865c3c34b1d26b"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\dramatis\\personae\\src\\passphrase_root.rs",
+      "sha256": "9807025263521ce739aa2b3dcf190ca2bb0f95f6a054af196222402e07ca677b"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\dramatis\\personae\\src\\passphrase_storage.rs",
+      "sha256": "0d8dc9ac8c64c7fd6a232da792e9e109feb192946a9656db531bed3f31980d4b"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\dramatis\\personae\\src\\profile_wire.rs",
+      "sha256": "7cd90fd3510ed650b80f6774fa3f5cc5d53e992158eeac64c38d3f37631e060a"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\dramatis\\personae\\src\\provider.rs",
+      "sha256": "7c188ea1bb00183d46d639a133b4416a6c2224cb1cb4824ce795ab21af7c8d69"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\dramatis\\personae\\src\\roster.rs",
+      "sha256": "a70a016c187d42bee2839edd06ac7b7da99b0c67b3b2fae43ac62750a73343ae"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\dramatis\\personae\\src\\seal.rs",
+      "sha256": "93a9393172b2b6ebd1867d16b8d73da1f1e2b2e89081e31b92eda12c5fbe598b"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\dramatis\\personae\\src\\sealed_profile_storage.rs",
+      "sha256": "74a23b019170782ca856e31b93357a859d3fc43be547d17fc45589f4e457db96"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\dramatis\\personae\\src\\sealed_record_storage\\freshness.rs",
+      "sha256": "5f811b52c4b0de3df175eb16c83e63ef04250fbd84dc24e4f4570ec6ee526a63"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\dramatis\\personae\\src\\sealed_record_storage.rs",
+      "sha256": "6ef43e6cffb9ad828340c83b9689fe6fc606e4d29f1c49dbc4536584634dc834"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\dramatis\\personae\\src\\sealed_record_storage_tests.rs",
+      "sha256": "5581826011cd0200d922e39e87467e7ccb4fe469853eb96c87d078dcad52a004"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\dramatis\\personae\\src\\signing.rs",
+      "sha256": "ff605464a306cf54ca209af7c3fb4d7352e55db431f21829104abeb4d6d886f3"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\dramatis\\personae\\src\\ssh_ca.rs",
+      "sha256": "74770a2381b058d962638c432a04bc9c7e029c00d42fff6fb29675428aee4e39"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\dramatis\\personae\\src\\ssh_face.rs",
+      "sha256": "ac1968d6df496b887f1a1740642b8fe2d29b9fba53f8ee93de0449660cd78128"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\dramatis\\personae\\src\\ssh_krl.rs",
+      "sha256": "cb001298768cfea2d557f11b70556d79ff73b8a321bf6feb9a9faaee57f94810"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\dramatis\\personae\\src\\ssh_slot.rs",
+      "sha256": "1f2ae640be896654e49015f331493d3b097264cd31b4894eea38dec1c33015ae"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\dramatis\\personae\\src\\startup_unlock.rs",
+      "sha256": "4ec149d65bab684e8b5bf7c35f1fdd1fb0dfa85d2558c4753d6523c5c55c6a9b"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\dramatis\\personae\\src\\vault\\tests.rs",
+      "sha256": "a6c9014088c9e709d5a8994761f9fde5b538bbef324b99c4d0684ce244a52102"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\dramatis\\personae\\src\\vault.rs",
+      "sha256": "147eca7d56a559fb1f655191eedf178df6f831ba27383c910d95d78bb338def4"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\dramatis\\personae\\tests\\ssh_ca_live.rs",
+      "sha256": "a5df41a02fa5aff92267736e8910557c90b2a0eb33fa143d9e4e283015d67d0e"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\eidetic\\chartulary\\Cargo.toml",
+      "sha256": "14ffcccbb7fa0a1e68d38a1922f1baa405fba60d71bce50bd45c7207a412f4a3"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\eidetic\\chartulary\\src\\canonical.rs",
+      "sha256": "fbd141326e398b4dba27a17fc80b4671c06650ea18efe1ecee0a78a404692845"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\eidetic\\chartulary\\src\\caps.rs",
+      "sha256": "feeaa2fc4c726c8d7210357e4b3e78055c4ddb7edaa9f36f806c12de02df4728"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\eidetic\\chartulary\\src\\commit.rs",
+      "sha256": "e356b67c616f5d476b6d290337f5c4eab80ba92e72be51e9500fc8b3002deb0a"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\eidetic\\chartulary\\src\\container.rs",
+      "sha256": "adc27edd4698926cd524a23c7375016b5fb37dddf3ea7e798d5507f5e1beac44"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\eidetic\\chartulary\\src\\content_class.rs",
+      "sha256": "81a69dfedb69d962c5c789475d03f6f23884eea2dab92ed4995dd937088a691c"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\eidetic\\chartulary\\src\\edit.rs",
+      "sha256": "6670166fddd60e8ef408af5596fdcc3e9fbdc6dc968152b942f16ca901e0d789"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\eidetic\\chartulary\\src\\facet.rs",
+      "sha256": "d69e657c0797ef073ea79705e9d882366a00d5c71c727bd150279e5278d65459"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\eidetic\\chartulary\\src\\graph.rs",
+      "sha256": "96291c07b8581ab93e28a40a62a1f6e34e4f78c3e4e1491cabd0147fdc0a6450"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\eidetic\\chartulary\\src\\lib.rs",
+      "sha256": "e463a565bca34fb1c404832b835e4d45c65150e5530244a7964fbff6c15cce09"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\eidetic\\chartulary\\src\\nested.rs",
+      "sha256": "a8ff1da64f8586aaa6b85ecd864bd24199f2489972dcd665a452eea36f00cdb7"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\eidetic\\chartulary\\src\\rdf.rs",
+      "sha256": "f2cf16608365eec4bdaf3df86f4ef6ca4837181e7087ae59f4bd17e0dbac6445"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\eidetic\\chartulary\\src\\spine.rs",
+      "sha256": "498fb702b2995bd2a838e9e2ccc4081b87929abec1dad9d258389d9c43c70102"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\eidetic\\chartulary\\src\\stemma\\mod.rs",
+      "sha256": "3cb73c2ab5163531a2b2662daf3d53a38ec97a8a4c5107c26a014e7319743151"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\eidetic\\chartulary\\src\\stemma\\mutations.rs",
+      "sha256": "a1376d0f234e9e51dda2c9e3f0a2f711656dae446c1419f69e2964997ad36490"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\eidetic\\chartulary\\src\\stemma\\queries.rs",
+      "sha256": "a12bce01fff0d33419c61e56ac43003c4c7b60b8d7c3c26d368b861203f01048"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\eidetic\\chartulary\\src\\stemma\\snapshot.rs",
+      "sha256": "c374db69e67054a049c5f37d55a27b7d3b826cd5ea829feef960537e11d5ae7a"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\eidetic\\chartulary\\src\\stemma\\tests.rs",
+      "sha256": "7841dc8d4ab1495a837d9047924d1593892cb318a0de1bef0264098593718d33"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\eidetic\\chartulary\\src\\taxonomy.rs",
+      "sha256": "36d64bd09502af83d6547736212d5fa4dfd6049ae07e44be94e70efb3ab6185f"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\eidetic\\muniment\\Cargo.toml",
+      "sha256": "5eb23ef796f5777ea6be14969b7a9cdc80287bc302edd6bb2350f3dec015421f"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\eidetic\\muniment\\examples\\redb_cross_process_lock.rs",
+      "sha256": "07da9bc7e3ad4ef940df1cb24450ee52c72c75851c1082e40587fc8316a267de"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\eidetic\\muniment\\src\\backend.rs",
+      "sha256": "f39440cb96ebc922ba182300c7e9c65420f730c6b58fe7b611882fc569da806d"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\eidetic\\muniment\\src\\blob.rs",
+      "sha256": "4b16e4c4aff72c4d6396d2fff916dd655800d362108f523a19adcbeaf95e09c6"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\eidetic\\muniment\\src\\codec.rs",
+      "sha256": "bc76550275429d4905411116a8db082bbed92b6399c2579204d7046dc023d7a5"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\eidetic\\muniment\\src\\custody_transact_tests.rs",
+      "sha256": "0da2bfa794bd6ea4f1f7a301f0c7cb90635d39e9e5d943ebb78ec4b26c231aea"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\eidetic\\muniment\\src\\directory_backend.rs",
+      "sha256": "1e46c53ccc68baa32e14dffab8b3880bb86a5f38e2d066fc9a56a8bb445a62c2"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\eidetic\\muniment\\src\\error.rs",
+      "sha256": "321d0d1effa378f2ebcf9629258c8ac15acd909072703fce62c373c3e654d8b9"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\eidetic\\muniment\\src\\indexeddb_backend.rs",
+      "sha256": "428de2fb4ec0ba46b566e751d0cda368fabeff3d4eb526ae9bf562f8080d0918"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\eidetic\\muniment\\src\\journal\\causal.rs",
+      "sha256": "8375f1cb4eb90dfe95a77521a6bde509355eb00016c1c70b56de6fe776930e35"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\eidetic\\muniment\\src\\journal\\entries.rs",
+      "sha256": "53fe0b62b97c50621fff71d139fc33b0f370c439787dd2e56b1bb2fa2e26ce6b"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\eidetic\\muniment\\src\\journal\\fork.rs",
+      "sha256": "5b9d49e571f5d2fc0a9ad25af6322d85f71f17de01b7a09e228d34a600e3b46c"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\eidetic\\muniment\\src\\journal\\log.rs",
+      "sha256": "6e55950f06f66f9ce93d86c27b7298b46319630bf84756ebb70222aadf871959"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\eidetic\\muniment\\src\\journal\\mod.rs",
+      "sha256": "f0cbe4a634ef990a7799263476d9fec6bb8a6709da84765237618e13ccf36e14"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\eidetic\\muniment\\src\\journal\\persist.rs",
+      "sha256": "508396efed748761a4f01fcd564399ffb77613f739aae2f82a6c022cea24b69c"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\eidetic\\muniment\\src\\journal\\seq.rs",
+      "sha256": "a316438074569859bb28d54b5a1c579815c1a11cde9718e9d1af70566a8d7808"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\eidetic\\muniment\\src\\lib.rs",
+      "sha256": "f38819f490172ea0cf0c8c212783f200ce1f07a5fbc31b74fb3299cc8638320c"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\eidetic\\muniment\\src\\redb_backend.rs",
+      "sha256": "abd53da533d568adff21668c797b5918fc118a864b5685e67a6bd8b314a5d49d"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\eidetic\\muniment\\src\\slot.rs",
+      "sha256": "de93fce74acbb642ccc8b49c1d5ae9d60fde9996951257375ad8109196b57ece"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\eidetic\\muniment\\src\\zip_backend.rs",
+      "sha256": "f08a57ba84d06d44f9e4603c16a32598c70c815a8fbee5647a92583c7ea26c26"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\forme\\forme\\Cargo.toml",
+      "sha256": "9fd5353d4b69062620ddf62edd8c0113728387df595f712e2511ddbaf3db6af7"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\forme\\forme\\src\\arrangement.rs",
+      "sha256": "f66b3ce20a216c6e784487f3e49fb72c69d120a8d2181625464e53d894ca05a2"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\forme\\forme\\src\\fold.rs",
+      "sha256": "a7fcebf48888651ed94dc5f2ad20c524d079d82c79d0c18498f7e2e956b11aaf"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\forme\\forme\\src\\forme_document.rs",
+      "sha256": "dc283d7ac9f2c7aa1c69a213c803c0a9c53baa9abb8563127c1736c1e68e30bd"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\forme\\forme\\src\\layout.rs",
+      "sha256": "d581358f0add14095d7b0baadaf6da9c7857c012b04f49d98b5eab03a72a9a96"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\forme\\forme\\src\\lens.rs",
+      "sha256": "debadb541904fa431a51214414e6bf5a2a8ffb6fc1f122c478a69d182abb81f1"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\forme\\forme\\src\\lib.rs",
+      "sha256": "f3ec23f6fd7a3f162bc4483d3fa8866e7c00d9c2c11de181faa39185b6f6db48"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\forme\\forme\\src\\member.rs",
+      "sha256": "261e6d95dd3554d231f162577b67c59a9e92a82155a321b21849006c2f5c45ef"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\forme\\forme\\src\\nav.rs",
+      "sha256": "44a0bded8e721d911ddc14fd3b8f93095f5929646f4a69c4a35079f8faeae650"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\forme\\forme\\src\\parity.rs",
+      "sha256": "427148ad134283b539aa91c9854bd0da48648bc034cb364083e785f31d5f91cb"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\forme\\forme\\src\\pressure.rs",
+      "sha256": "fdd362cb59ee6a561c6d225ded110b821e91bbe91e720aeaab35346ece3f7992"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\forme\\forme\\src\\query.rs",
+      "sha256": "0f50dd387b1536918226fab5dcee5d4204885cd25990f02d679c501e9c4b9eea"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\forme\\forme\\src\\reconciliation.rs",
+      "sha256": "2d68b0beafddf8fb4ed1d5a519942d167401de1e6c2e9edc32d733ac17b74bba"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\forme\\forme\\src\\store.rs",
+      "sha256": "3a7df5992b14f56e8b0225700ba137cd64ec3d71456c97e358c60fce0a310aaf"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\forme\\forme\\src\\subgraph.rs",
+      "sha256": "3a4a011e3932c2fc6a88b4196ba695c87a9a892cb830830e21a9e052fe3d02a2"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\forme\\forme\\src\\topology\\tests.rs",
+      "sha256": "00d2d09eb20c4e720d3b805ed7ba705d37b4ccbeb043f38283e7b8a88b169305"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\forme\\forme\\src\\topology.rs",
+      "sha256": "7256f8bb6d6318937da7f60a1235a727f8eae09c8418a2995ccfb9ecdcd6b456"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\forme\\forme\\src\\tree\\actions.rs",
+      "sha256": "1bb022febf44146a6f8cbd3f5de0fcc242a2a56adaef37d9a8dcda7d723cb4ab"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\forme\\forme\\src\\tree\\layout.rs",
+      "sha256": "e0659629547edd9eafc54256a1ed0be95e9e9ef69e704ebb9a36e3fda466abb2"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\forme\\forme\\src\\tree\\tests\\basic.rs",
+      "sha256": "e0ec70132a9437010dc33b1abe5ee0d2104768d2489cfe7c8575c3a538cc6a65"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\forme\\forme\\src\\tree\\tests\\layout_rects.rs",
+      "sha256": "f9b7ff3bcba29e1de29719f05c630415e2bf3f570189762e006ed54b9ce500ee"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\forme\\forme\\src\\tree\\tests\\layout_structure.rs",
+      "sha256": "27413652c2be8f3e49ead648d9db5264f45f86d91c0c6dea8dd08d20217ccc01"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\forme\\forme\\src\\tree\\tests.rs",
+      "sha256": "48d6ae2f3ec595fc9b2fb194c81b863333b87082da6c84c413afd6e28248872e"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\forme\\forme\\src\\tree.rs",
+      "sha256": "a1d9b377913e1619d4b644157360a0d4604e8947e7ea923978ca08ec879825e3"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\forme\\forme\\src\\ux.rs",
+      "sha256": "764034c4fff827b2bdc5e39a3b98d7b9508bd6736228d94a47b8454a08717a1c"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\forme\\forme\\tests\\property_tests.rs",
+      "sha256": "9b007dd96aad27f6bbb1f59f917ecee41260a994490d684287f4a06c96be57eb"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\Cargo.toml",
+      "sha256": "063c19dfbe19290ffa72621e6c025a30a8bd925bc33019ed3afc4f5bd7988815"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\examples\\dissolution_gate.rs",
+      "sha256": "5510a73722b3df22de9619e446e1b76e76548e1cff36aaecd05eea1e6182a222"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\accessibility.rs",
+      "sha256": "e83f22599debd67eb37037a024cdc45207f8eda8a536da70fcdf2f59b477fe15"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\actions.rs",
+      "sha256": "c91d8ed94fb8d9242bd0224a22fabc6b2d310bb6303656cf2b3a24af5d52b2e1"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\address.rs",
+      "sha256": "1a36816d51c65437e123c727ed020d4a5057f8147f135461987e6be8c506b909"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\async_host.rs",
+      "sha256": "945ded47fd63af0ee75f5b3fa030abd0e989fb577f2867199d11e4964705d21e"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\async_request.rs",
+      "sha256": "a2da5bb3d63ea270c4380b16743e8263ab4eb0ba47d827d8badb7b1369e9c512"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\content.rs",
+      "sha256": "157241c4b069988d1e0a0169a8d510e9ea31d179e90256cb320ed448f269941c"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\geometry.rs",
+      "sha256": "478519dcc46ee62b0eb0ad405e526eb467009866cf9250d5e368ee602da633a5"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\graph\\apply.rs",
+      "sha256": "32e7697eccc64cf49a64a880dc23c0f1341f7b6d7ba3f57e0a08b52a910b2950"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\graph\\capture.rs",
+      "sha256": "f9ed6a864c589e616c95b75e60dc3d2394a7ef3a2e9d874535149e5eb15c4002"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\graph\\chart.rs",
+      "sha256": "1f63c66c01ed83b74c87fc4d20619a0bd32f1f23c3f079c44a2f6954d87c003d"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\graph\\cross_graph.rs",
+      "sha256": "00c26705797cbbd677e8f0dd4aa7c5ae7bfba979ae9a155624fb44e634d9cb9f"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\graph\\display.rs",
+      "sha256": "dcf2d75c34259c3853841c264730315d1d297be1697ced31f9480a03ce5b47a6"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\graph\\edge_data.rs",
+      "sha256": "044cff094999a516d2d5b8fdc3584fee213f5583be7688b23da89d4b84da2f9d"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\graph\\edge_ops.rs",
+      "sha256": "8a6b828077f9a2dc4cf1b9c29bd107a0287f3f15a0c5ea41b624e06e3110952d"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\graph\\edge_payload.rs",
+      "sha256": "9d95c2fbc3263294d9ae46e52e3472032361cac70d315ecf78b372039fb1fa50"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\graph\\edge_taxonomy.rs",
+      "sha256": "c8ccba536afba2ba455e3118b87f4256db7a686c936ab0ed54f7d871bb4301ed"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\graph\\facet_projection.rs",
+      "sha256": "3b6c2e967fd9e521f718f5740c156a8af55dff8a8515e2a2888e59d39dc9533e"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\graph\\field_ops.rs",
+      "sha256": "3c66cee37a7297450f3df1c9ee1540173d2af0850ef36684b868ad68f83520ef"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\graph\\filter.rs",
+      "sha256": "7f57fed12676071fabf61beb3486210b518811505cdad627ac23f101d2c7accb"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\graph\\fixtures.rs",
+      "sha256": "d0e87fdc28bd8e9912f37d9a23ff7badf193ad6f1c00b9df410e8e02160d3d4a"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\graph\\history.rs",
+      "sha256": "088f6f42065eee5a77e7361d914251908c8020e834c2fceee486e2b89c52bcfa"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\graph\\identity.rs",
+      "sha256": "9720a02bdf6ea31f4935c98c392d3729176c2d24e85637934abd3a7c94931de0"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\graph\\import_records.rs",
+      "sha256": "4c9ce79a578f3c6d38c3ca05ae2eab20368d714e185f83c7ddd688c5effa7431"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\graph\\journal.rs",
+      "sha256": "4827dbbaa33f5f64ea1549b07c416a6503a45aba854fa4ccb2173bc3414dcada"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\graph\\merge.rs",
+      "sha256": "9f08d71453fc836bcf9eccdce550636fd8746648182135220f50bc10e06b134c"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\graph\\mod.rs",
+      "sha256": "195f8d79c2a4d716faa00c08924c0942cbf082f92e498b77d5f256ce9be69819"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\graph\\node.rs",
+      "sha256": "3e977085264f8d93daf352f08d87eadc6ea72c32f2a86cf682fcfa752055ca57"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\graph\\node_facets.rs",
+      "sha256": "886429fe008a10e2be15d025d326c8b4d3409efd20287ae14b11a7437d6fabf4"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\graph\\node_props.rs",
+      "sha256": "0fd3a489bfc543b54c8527e5f942a19e9ace6dd73efbc47b265053dd10a26774"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\graph\\query.rs",
+      "sha256": "3d1d942242cc11e3a71995b6326ae4f4b78d686289ca8ff6dc1ec4fa565498b7"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\graph\\resource.rs",
+      "sha256": "03bf5af837ec7b9f13cd0f911c1ac2faef7ecb53c66378b97bb41088529a6408"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\graph\\revert.rs",
+      "sha256": "654e913eea8de0133a2f2f6fbb2f1a402ed96c42ea0f8b8089ed795396d5dc42"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\graph\\snapshot\\checked.rs",
+      "sha256": "37ed2617b322d53b02916f923cd94c49acb0cdf756a67e6b25ee9d490d00f095"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\graph\\snapshot\\from.rs",
+      "sha256": "59d1ebc526a67d37513d782b3e6b74e6f49d493836e30356f09ce6df8434ae9f"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\graph\\snapshot\\mod.rs",
+      "sha256": "29795161d42fa2c765b5868737530d61b969e52dc854d4b58a9760b626722378"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\graph\\snapshot\\tests.rs",
+      "sha256": "0e9a0a4e88c54f4aca2ffb28aa4c5301cc2f189f3da228387f658c88a5e7e573"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\graph\\snapshot\\to.rs",
+      "sha256": "baee9987aea5078c063e19d5152d9449dee249e495574ff8f29ac94e0327cbf8"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\graph\\source_time.rs",
+      "sha256": "1ff0472e3d0d21c1d8a48c3f8e008aad1454e8c9fc6bd3a06d9ca7dc3b7d672d"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\graph\\tests\\assertion_replay.rs",
+      "sha256": "0dc75bddd3eab2483be47442ce13d83dbf2e7c76e7e4c0a41bcb331d37d2ca6b"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\graph\\tests\\assertion_writers.rs",
+      "sha256": "a98c56ded88e215ad9a16320a66c0d33f0f145632730e0ff7b2edacb7c7604ab"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\graph\\tests\\assertions.rs",
+      "sha256": "1c7ee50431841334a35f083f579610a8036c67283559118d8623fd10dee5a883"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\graph\\tests\\edge_taxonomy.rs",
+      "sha256": "73b25d7c329d85cc374c10d2524968eeb3a3096a940a5351d49c0053adbfba42"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\graph\\tests\\filter.rs",
+      "sha256": "5731baf71bdef133d5abf2ba19c58a870f3ec66e008fa5d6b0dc82fcbffe3e9b"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\graph\\tests\\legacy_assertions.rs",
+      "sha256": "966bac0b99e2c09b7343053f1ce29b991c839a2c299542e53bd51c255d85e477"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\graph\\tests\\mod.rs",
+      "sha256": "ca19e94acc687d7fcb75c3a0967023a274b5cc32f0eb573046b89d3d0fa26dd0"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\graph\\tests\\nodes_and_edges.rs",
+      "sha256": "5873210d3995c440e2b45c73b31f34f0e346f16f16a45c67be00ce9db23ba604"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\graph\\tests\\queries_and_address.rs",
+      "sha256": "5afcfb9e688bca8544d5953b8bf3b744ad0523826cc57c036c0d6b4d81f04d40"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\graph\\tests\\snapshot_basic.rs",
+      "sha256": "85ba419a229dfb737caac1bc19846a74b5d8814a89a42febf9dcb49de8787277"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\graph\\tests\\snapshot_imports.rs",
+      "sha256": "10329fbfa39e1812340871981c5169b813c667befae6d3aca4de995a6b362667"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\graph\\tests\\snapshot_navigation.rs",
+      "sha256": "08ad133b3b4aef496565c682e9e91d99b402ba59a3265b41cba290bedc061336"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\graph\\tests\\snapshot_size.rs",
+      "sha256": "9f1ba9fd786fc1141d8ea89277b17ecceb4ccca0204ce5e7c16e1fb9f933ca45"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\host_event.rs",
+      "sha256": "35aace6869ba95fd60bc5aca9553af5827aece382993f0bacf73e31745aba563"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\host_toolkit.rs",
+      "sha256": "f6d3b767460839b9fe6327093edabcb7cbc76a3dae31d2ec4ff72a7de5e50f51"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\intents.rs",
+      "sha256": "760a8e041ac2c6caa995eb8f39ed09bb9f641a89bfb03b0f82e6b2c6b8d54f3f"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\lib.rs",
+      "sha256": "cefe52d83237a5c4745d8791d35b071c34e1221c41bf52cf2fbe1b6dd5e385c9"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\overlay.rs",
+      "sha256": "7444f8689649fb99dc8cacfc12a1b2a91828ab992cd85193c2730c08f524a956"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\paint.rs",
+      "sha256": "7ed30c61b369a7be1da0e624cd4a157f0be16a09647233119e91596f5d11e999"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\pane.rs",
+      "sha256": "c05f7df6e31b6158f0547192e8350a6e943f95cf5d6d2cfe08990b41ab234d33"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\permissions.rs",
+      "sha256": "12fa3284530e10d7fb70e603d7f05845871e46518d53bade259af944e055b0c5"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\persistence.rs",
+      "sha256": "515cd7935b6ba56ebf4f2ef7e332809a350a71a64a0d5fcdc05c1bc90edb7cc6"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\persistence_edge.rs",
+      "sha256": "09c37151c4fa030e9ab1ca80a3d287f241089249416b1dd49940395782ec25df"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\persistence_fields.rs",
+      "sha256": "a4a657616f8d15bf2124c327f9981ed4d086ff68bd54c66d36e5f967bb5c1899"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\signal_router.rs",
+      "sha256": "a0809be59e475292d2b38dd236c8c109658e5c855acf069afabfc423f319a0f3"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\store.rs",
+      "sha256": "ab82192164b802cdff5bd6bcfc8932af721d2f1183bb0f5acb224f2ca941f11c"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\tests\\actions.rs",
+      "sha256": "5cffcfe393117ce5690e5aec67e53e36380d8cfb7b3764c8ab4f466ce81b7b74"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\tests\\mod.rs",
+      "sha256": "fdfefbedf00a2ba38b9417afa503c83fa0369b36b808203b68af96c5bb7073ef"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\time.rs",
+      "sha256": "677a569604cf64e42a20022c67231114d2d4235c9b0be96ce8e874cc06f23d72"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\types.rs",
+      "sha256": "471c2fae38e787909a81f01a47e15ecd50b94a2d367698407b42b0b0f099a425"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\verso_address.rs",
+      "sha256": "fb256d06f6e418424400b2b34d7204cc57232145be7ce2a4b5e30eb58427643e"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\servitor\\Cargo.toml",
+      "sha256": "18ed1ddf2fb8be5094db3c13e7689f300feee2f3b2b406d11b4f64ece33b612a"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\servitor\\src\\cap.rs",
+      "sha256": "ea6f60f7b547c0beb44cb5104d69b7230c4ab7a4824ea3862665211d95846731"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\servitor\\src\\cascade.rs",
+      "sha256": "3f186c32966129d26f72b77d131e15922f3d0d095dae174b0378343a0baffd35"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\servitor\\src\\deadband.rs",
+      "sha256": "73e616506b71b98c1c6e61f20ea91cd3c61d69a2bc15a7db222128d352f4b26b"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\servitor\\src\\delegation.rs",
+      "sha256": "a9475f04a35d5f14d5f5c0514f5b9e81fea508400f459d5d7062021b4d63b8a6"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\servitor\\src\\gate.rs",
+      "sha256": "72836994264d4b3c8a552a10331d116fdc97d5eaf13872dab978e9206e20e1c5"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\servitor\\src\\grant.rs",
+      "sha256": "edb4e7eb30efa73d836e28a1a806261379ddcde30d6bb8382ebbe0b2b4f3dd61"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\servitor\\src\\lib.rs",
+      "sha256": "9b90b292a3167415409f04c253f324a8c221f638e9c06ec36b3e934698742934"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\servitor\\src\\resident.rs",
+      "sha256": "bff4e07250fe93be184127902194f1f941fe120724dbe6ee856fe5041ec772bd"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\servitor\\src\\run.rs",
+      "sha256": "53cd9d94dbc225e09c598d8ec9618d29b4ad19cacfde912b319ca8ec2d5b1f1b"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\servitor\\src\\tick.rs",
+      "sha256": "980341c3065a678b691ba7bc64823f34bcb8a5039fe8f1037fa7cbc22f9a010c"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\servitor\\src\\watch.rs",
+      "sha256": "836b507b96e20ccddbf7fcb19df84b2d050550e16d1ee6ad7f430d6958662c2d"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\repos\\turnstone\\docs\\receipts\\graph_semantics_p2_20261005\\behaviors.patch",
+      "sha256": "07b943e5491ad8b8411bb9b0a1da4a78c00e861f23ab3f12cf9714ef1e449ed0"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\repos\\turnstone\\docs\\receipts\\graph_semantics_p2_20261005\\consumer_gate\\Cargo.lock",
+      "sha256": "fe7fca279b2bc51b8ffa7c0eba913b060fe7d7b7ff47c648d1b899f087720a9e"
+    }
+  ],
+  "scope": "exact proposed touched_ids/resource fanout/ancestry functions and six tests, real supplier kernel+servitor types; excludes GUI/App drain/native integration"
+}
