@@ -126,6 +126,7 @@ struct Shared {
     reached: RefCell<crate::web_speed::ReachedNote>,
     /// The step budget, a share of the measured frame interval.
     frame_budget: RefCell<crate::web_speed::FrameBudget>,
+    period_worker: crate::web_period_worker::PeriodWorker,
     gpu_options: controls::GpuOptions,
     /// The page's device for the canvas's and the board's repulsion, built
     /// once from the host's render core on the producer's first frame.
@@ -215,6 +216,9 @@ impl TextureProducer for CanvasProducer {
             .frame
             .timestamp
             .map_or_else(now_ms, |timestamp| timestamp.as_secs_f64() * 1000.0);
+        shared
+            .period_worker
+            .feed(&mut shared.frame_budget.borrow_mut(), frame_ms);
         let budget = shared.frame_budget.borrow_mut().frame(frame_ms);
         canvas.set_physics_step_budget(Some(budget));
         crate::web_speed::plant_max_frame(&canvas, shared.speed.plant_max_frame);
@@ -684,9 +688,12 @@ async fn boot(root: Element) -> Result<(), String> {
         timing: RefCell::new(FrameTiming::default()),
         physics_config: controls::physics_config()?,
         speed: speed_options,
-        pace: RefCell::new(speed::PaceWindow::default()),
+        pace: RefCell::new(speed::PaceWindow::with_grain(
+            speed_options.grain.as_micros() as i64,
+        )),
         reached: RefCell::new(crate::web_speed::ReachedNote::default()),
         frame_budget: RefCell::new(crate::web_speed::frame_budget(speed_options)),
+        period_worker: crate::web_period_worker::PeriodWorker::start(speed_options.period_source),
         gpu_options: controls::gpu_options()?,
         physics_device: RefCell::new(None),
         visibility: visibility::requested()?,

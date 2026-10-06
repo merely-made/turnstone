@@ -35,17 +35,50 @@ pub(crate) const PRESETS: [(&str, &str); 8] = [
 pub(crate) const DEFAULT_PRESET: usize = 2;
 const MAX_VALUE: &str = "max";
 
-/// The browser clock's step: Chrome's `performance.now` resolves 100 us on a
-/// page that is not cross-origin isolated.
-pub(crate) const CLOCK_GRAIN_US: u64 = 100;
-pub(crate) const CLOCK_GRAIN: Duration = Duration::from_micros(CLOCK_GRAIN_US);
 /// Time the gate keeps past the forecast tick unless the page asks
-/// otherwise: two clock steps. A tick and its forecast are both read in
+/// otherwise, in clock steps: two. A tick and its forecast are both read in
 /// steps, so a tick the forecast saw at one reading can read two steps
 /// dearer (on the 300-node page every admitted tick ran at most 200 us past
-/// its forecast, 2026-10-04), and the frame's own reading takes the third,
-/// which the receipts' bound allows.
-const DEFAULT_MARGIN_US: u64 = 2 * CLOCK_GRAIN_US;
+/// its forecast, 2026-10-04, Chrome's step being 100 us), and the frame's own
+/// reading takes the third, which the receipts' bound allows.
+const DEFAULT_MARGIN_STEPS: f64 = 2.0;
+
+/// Where the display period's intervals come from (ruled 2026-10-06, "Worker
+/// rAF, main thread fallback"): the worker unless the page turns it off
+/// (`physics_period_source=main`) or plants its failure
+/// (`physics_plant_worker=fail`), the fallback's control.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum PeriodSource {
+    Worker,
+    Main,
+    PlantedFailure,
+}
+
+/// The browser clock's step, measured: the smallest change of five readings
+/// in a row (Chrome resolves 100 us on a page that is not cross-origin
+/// isolated, 5 us on one that is; Firefox 1 ms).
+pub(crate) fn clock_grain() -> Duration {
+    let mut step = f64::INFINITY;
+    for _ in 0..5 {
+        let start = now_ms();
+        let mut next = start;
+        for _ in 0..10_000_000 {
+            next = now_ms();
+            if next != start {
+                break;
+            }
+        }
+        if next > start {
+            step = step.min(next - start);
+        }
+    }
+    let ms = if step.is_finite() {
+        step.clamp(0.001, 100.0)
+    } else {
+        0.1
+    };
+    Duration::from_secs_f64(ms / 1000.0)
+}
 /// How often the reached-speed note may change, in host milliseconds, so a
 /// live figure reads rather than flickers.
 const NOTE_INTERVAL_MS: f64 = 500.0;
@@ -57,6 +90,9 @@ pub(crate) struct SpeedOptions {
     pub(crate) share: f64,
     /// What the gate keeps past the forecast tick.
     pub(crate) margin: Duration,
+    /// The browser clock's step, measured.
+    pub(crate) grain: Duration,
+    pub(crate) period_source: PeriodSource,
     /// A planted stall in the budget's clock, every so many readings: the
     /// receipts' positive control (`physics_plant_stall_ms`,
     /// `physics_plant_every`, 97 by default).
@@ -90,11 +126,27 @@ pub(crate) fn options() -> Result<SpeedOptions, String> {
             .ok_or("physics_budget_share wants a share in (0, 1]")?,
         None => DEFAULT_BUDGET_SHARE,
     };
-    let margin_us = match params.get("physics_budget_margin_us") {
-        Some(value) => value
-            .parse::<u64>()
-            .map_err(|_| "physics_budget_margin_us wants whole microseconds")?,
-        None => DEFAULT_MARGIN_US,
+    let grain = clock_grain();
+    let margin = match params.get("physics_budget_margin_us") {
+        Some(value) => Duration::from_micros(
+            value
+                .parse::<u64>()
+                .map_err(|_| "physics_budget_margin_us wants whole microseconds")?,
+        ),
+        None => grain.mul_f64(DEFAULT_MARGIN_STEPS),
+    };
+    let period_source = match (
+        params.get("physics_period_source").as_deref(),
+        params.get("physics_plant_worker").as_deref(),
+    ) {
+        (_, Some("fail")) => PeriodSource::PlantedFailure,
+        (Some("main"), _) => PeriodSource::Main,
+        (None | Some("worker"), None) => PeriodSource::Worker,
+        _ => {
+            return Err(
+                "physics_period_source wants worker or main, physics_plant_worker fail".into(),
+            );
+        },
     };
     let plant = match params.get("physics_plant_stall_ms") {
         Some(value) => {
@@ -124,7 +176,9 @@ pub(crate) fn options() -> Result<SpeedOptions, String> {
     Ok(SpeedOptions {
         speed,
         share,
-        margin: Duration::from_micros(margin_us),
+        margin,
+        grain,
+        period_source,
         plant,
         plant_max_frame,
         explicit: [
@@ -162,7 +216,11 @@ pub(crate) fn frame_budget(options: SpeedOptions) -> FrameBudget {
         },
         None => clock,
     };
-    FrameBudget::new(options.share, options.margin, clock, CLOCK_GRAIN)
+    let mut budget = FrameBudget::new(options.share, options.margin, clock, options.grain);
+    if options.period_source == PeriodSource::Main {
+        budget.disable_worker();
+    }
+    budget
 }
 
 static PLANT_STALL_US: AtomicU64 = AtomicU64::new(0);
@@ -183,7 +241,8 @@ fn planted_clock() -> Duration {
 
 /// Where the display period came from, for the receipts: "inferred" or
 /// "fallback", and the share of recent intervals the period fits (the best a
-/// candidate reached, when none cleared the quorum).
+/// candidate reached, when none cleared the quorum). Which intervals they
+/// were is the budget's source.
 pub(crate) fn period_fields(budget: &FrameBudget) -> (&'static str, String) {
     match budget.period() {
         Period::Inferred { fit, .. } => ("inferred", format!("{fit:.2}")),

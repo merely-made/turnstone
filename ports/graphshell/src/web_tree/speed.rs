@@ -48,6 +48,8 @@ pub(super) struct PaceWindow {
     /// The effective speed `mark-pace` recorded, to compare a later speed
     /// with on the same page (ruled 2026-10-06, "Relative to the page's 1x").
     marked: Option<f32>,
+    /// The page's measured clock step, in us: what "past the grain" means.
+    grain_us: i64,
 }
 
 /// Record the frame just drawn under `budget`; on a dial run, every `WINDOW`
@@ -70,8 +72,8 @@ pub(super) fn record(shared: &Shared, canvas: &Canvas, moving: bool, budget: Dur
     shared.physics_log.borrow_mut().push(format!(
         "pace: speed {} effective {} bound {} ticks {} over {} frames drawn-moved {} \
          stepped {} compute-max {} us over-budget-max {} us budget {} us ({} of a {:.2} ms \
-         display period, {} at {}; last frame {:.1} ms) margin {} us; every window: worst {} us, \
-         {} frames past the grain",
+         display period, {} at {} from the {}; last frame {:.1} ms) margin {} us; every window: \
+         worst {} us, {} frames past the grain",
         crate::web_speed::field(canvas.physics_speed()),
         pace.effective_speed
             .map_or_else(|| "none".into(), |speed| format!("{speed:.3}")),
@@ -87,6 +89,7 @@ pub(super) fn record(shared: &Shared, canvas: &Canvas, moving: bool, budget: Dur
         frame_budget.display_period_ms(),
         crate::web_speed::period_fields(&frame_budget).0,
         crate::web_speed::period_fields(&frame_budget).1,
+        frame_budget.source().label(),
         frame_budget.last_interval_ms(),
         frame_budget.margin().as_micros(),
         window.worst_field(),
@@ -118,6 +121,14 @@ struct Summary {
 }
 
 impl PaceWindow {
+    /// A window whose "past the grain" is the page's measured clock step.
+    pub(super) fn with_grain(grain_us: i64) -> Self {
+        Self {
+            grain_us,
+            ..Self::default()
+        }
+    }
+
     pub(super) fn record(&mut self, canvas: &Canvas, moving: bool, budget: Duration) {
         if self.sample.is_empty() {
             let mut keys: Vec<NodeKey> = canvas.graph().nodes().map(|(key, _)| key).collect();
@@ -138,7 +149,7 @@ impl PaceWindow {
         let report = canvas.elapsed_step_report().unwrap_or_default();
         if canvas.physics_speed() > Speed::REAL_TIME {
             let micros = |duration: Duration| duration.as_micros().min(i64::MAX as u128) as i64;
-            let grain = crate::web_speed::CLOCK_GRAIN_US as i64;
+            let grain = self.grain_us;
             match report.admitted_until {
                 Some(until) if report.admitted > 0 => {
                     let over = micros(until) - micros(budget);
@@ -213,7 +224,8 @@ pub(super) fn pace_line(label: &str, canvas: &Canvas, shared: &Shared) -> String
     let effective = canvas.physics_pace().effective_speed;
     format!(
         "pace {label}: speed {} effective {} (marked {}, ratio {}) budget {} us margin {} us \
-         display period {:.3} ms ({}, fitting {} of the recent intervals); every window: {} \
+         display period {:.3} ms ({}, fitting {} of the recent intervals from the {}, a {} us \
+         clock); every window: {} \
          frames the gate admitted ticks in, worst {} us over budget ({}), {} past the grain; \
          {} floor-only frames past it",
         crate::web_speed::field(canvas.physics_speed()),
@@ -228,6 +240,8 @@ pub(super) fn pace_line(label: &str, canvas: &Canvas, shared: &Shared) -> String
         frame_budget.display_period_ms(),
         crate::web_speed::period_fields(&frame_budget).0,
         crate::web_speed::period_fields(&frame_budget).1,
+        frame_budget.source().label(),
+        window.grain_us,
         window.above,
         window.worst_field(),
         window.worst_frame.map_or_else(
@@ -260,11 +274,19 @@ pub(super) fn mark_line(label: &str, canvas: &Canvas, shared: &Shared) -> String
 /// read from, for a diagnostic to fit offline.
 pub(super) fn intervals_line(label: &str, shared: &Shared) -> String {
     let frame_budget = shared.frame_budget.borrow();
-    let intervals: Vec<String> = frame_budget
+    let main: Vec<String> = frame_budget
         .intervals()
         .map(|ms| format!("{ms:.3}"))
         .collect();
-    format!("intervals {label}: {}", intervals.join(" "))
+    let worker: Vec<String> = frame_budget
+        .worker_interval_log()
+        .map(|ms| format!("{ms:.3}"))
+        .collect();
+    format!(
+        "intervals {label}: {}\nintervals-worker {label}: {}",
+        main.join(" "),
+        worker.join(" "),
+    )
 }
 
 /// The dial's fields on the lane's snapshot.
@@ -296,6 +318,11 @@ pub(super) fn fields(snapshot: ProbeSnapshot, canvas: &Canvas, shared: &Shared) 
         .with_field(
             "display-period-source",
             crate::web_speed::period_fields(&frame_budget).0,
+        )
+        .with_field("display-period-from", frame_budget.source().label())
+        .with_field(
+            "clock-grain-us",
+            format!("{:.0}", frame_budget.grain_ms() * 1000.0),
         )
         .with_field(
             "frame-interval-ms",

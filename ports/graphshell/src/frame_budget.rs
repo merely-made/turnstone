@@ -14,9 +14,15 @@
 //! two clock steps and the refresh jitter, taken up to a multiple of itself
 //! when that multiple keeps most of the fit, so a fraction of the period is
 //! never read, and down to a fraction when that fits many more, so a
-//! multiple is not read where the page's frames are mostly even; where no period fits, the 1/60 s cap ("Both machines +
-//! planted", 2026-10-05). The page passes its clock, that clock's grain, and
-//! the margin its gate keeps ("Gate keeps a forecast margin").
+//! multiple is not read where the page's frames are mostly even; where no
+//! period fits, the 1/60 s cap ("Both machines + planted", 2026-10-05). A
+//! page whose frames all take an even number of refreshes shows only twice
+//! the period, so the intervals come first from a worker's own rAF loop,
+//! which doing no work runs at one refresh whatever the page's load, and the
+//! main thread's stand in where the worker has no rAF, fails, or falls
+//! silent ("Worker rAF, main thread fallback", 2026-10-06). The page passes
+//! its clock, that clock's grain, and the margin its gate keeps ("Gate keeps
+//! a forecast margin").
 
 use std::collections::VecDeque;
 use std::time::Duration;
@@ -67,6 +73,47 @@ const CANDIDATE_INTERVALS: usize = 8;
 /// How far past its bounds a fitted period may fall and be taken as the
 /// bound: a 60 Hz panel's measured period can read a hair over 1/60 s.
 const BOUND_SLACK: f64 = 0.02;
+/// No period shorter than this many tolerances is read: on a coarse clock
+/// (Firefox's 1 ms steps make the tolerance 2.1 ms) a short candidate fits
+/// almost any interval within the tolerance.
+const TOLERANCES_PER_PERIOD: f64 = 6.0;
+/// The worker's intervals are read while its last batch is this recent.
+const WORKER_STALE_MS: f64 = 1000.0;
+
+/// Where the intervals the period is read from came from.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Source {
+    /// The worker's own rAF loop.
+    Worker,
+    /// The main thread's frames: no worker batches yet.
+    MainPending,
+    /// The main thread's frames: the page turned the worker off.
+    MainDisabled,
+    /// The main thread's frames: the worker has no rAF or failed to start.
+    MainUnavailable,
+    /// The main thread's frames: the worker's last batch is too old.
+    MainStale,
+}
+
+impl Source {
+    pub fn label(self) -> &'static str {
+        match self {
+            Source::Worker => "worker",
+            Source::MainPending => "main (worker pending)",
+            Source::MainDisabled => "main (worker disabled)",
+            Source::MainUnavailable => "main (no worker rAF)",
+            Source::MainStale => "main (worker stale)",
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum WorkerState {
+    Pending,
+    Live,
+    Unavailable,
+    Disabled,
+}
 
 /// Where the display period came from.
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -96,6 +143,11 @@ pub struct FrameBudget {
     grain_ms: f64,
     intervals: VecDeque<f64>,
     last_ms: Option<f64>,
+    worker: VecDeque<f64>,
+    worker_state: WorkerState,
+    /// The page's clock when the worker's last batch was taken in.
+    worker_seen_ms: Option<f64>,
+    source: Source,
     period: Period,
 }
 
@@ -110,6 +162,10 @@ impl FrameBudget {
             grain_ms: grain.as_secs_f64() * 1000.0,
             intervals: VecDeque::with_capacity(RECENT_INTERVALS),
             last_ms: None,
+            worker: VecDeque::with_capacity(RECENT_INTERVALS),
+            worker_state: WorkerState::Pending,
+            worker_seen_ms: None,
+            source: Source::MainPending,
             period: Period::Fallback {
                 ms: MAX_PERIOD_MS,
                 nearest: None,
@@ -120,19 +176,75 @@ impl FrameBudget {
     /// Take this frame's timestamp in; the budget for the frame.
     pub fn frame(&mut self, now_ms: f64) -> StepBudget {
         if let Some(last) = self.last_ms {
-            let interval = now_ms - last;
-            if interval > 0.0 && interval < GAP_MS {
-                if self.intervals.len() == RECENT_INTERVALS {
-                    self.intervals.pop_front();
-                }
-                self.intervals.push_back(interval);
-                let recent = self.intervals.len().saturating_sub(ESTIMATE_INTERVALS);
-                let recent: Vec<f64> = self.intervals.iter().skip(recent).copied().collect();
-                self.period = period_of(&recent, self.grain_ms);
-            }
+            push(&mut self.intervals, now_ms - last);
         }
         self.last_ms = Some(now_ms);
+        let worker_live = self.worker_state == WorkerState::Live
+            && self.worker.len() >= MIN_INTERVALS
+            && self
+                .worker_seen_ms
+                .is_some_and(|seen| now_ms - seen <= WORKER_STALE_MS);
+        self.source = match self.worker_state {
+            _ if worker_live => Source::Worker,
+            WorkerState::Disabled => Source::MainDisabled,
+            WorkerState::Unavailable => Source::MainUnavailable,
+            WorkerState::Live if self.worker.len() >= MIN_INTERVALS => Source::MainStale,
+            WorkerState::Live | WorkerState::Pending => Source::MainPending,
+        };
+        let from = if worker_live {
+            &self.worker
+        } else {
+            &self.intervals
+        };
+        let recent: Vec<f64> = from
+            .iter()
+            .skip(from.len().saturating_sub(ESTIMATE_INTERVALS))
+            .copied()
+            .collect();
+        self.period = period_of(&recent, self.grain_ms);
         self.budget()
+    }
+
+    /// Take a batch of the worker's rAF intervals in, at the page's `now_ms`.
+    pub fn worker_intervals(&mut self, batch: &[f64], now_ms: f64) {
+        if matches!(
+            self.worker_state,
+            WorkerState::Disabled | WorkerState::Unavailable
+        ) {
+            return;
+        }
+        for &interval in batch {
+            push(&mut self.worker, interval);
+        }
+        self.worker_state = WorkerState::Live;
+        self.worker_seen_ms = Some(now_ms);
+    }
+
+    /// The worker has no rAF, or did not start: the main thread stands in.
+    pub fn worker_unavailable(&mut self) {
+        if self.worker_state != WorkerState::Disabled {
+            self.worker_state = WorkerState::Unavailable;
+        }
+    }
+
+    /// Read only the main thread's intervals.
+    pub fn disable_worker(&mut self) {
+        self.worker_state = WorkerState::Disabled;
+    }
+
+    /// Where the intervals the period was last read from came from.
+    pub fn source(&self) -> Source {
+        self.source
+    }
+
+    /// The clock's step, in ms.
+    pub fn grain_ms(&self) -> f64 {
+        self.grain_ms
+    }
+
+    /// The worker's recent intervals, oldest first, in ms.
+    pub fn worker_interval_log(&self) -> impl Iterator<Item = f64> + '_ {
+        self.worker.iter().copied()
     }
 
     pub fn budget(&self) -> StepBudget {
@@ -172,6 +284,17 @@ impl FrameBudget {
     }
 }
 
+/// Keep a positive interval shorter than a hidden page's gap, the last
+/// [`RECENT_INTERVALS`] of them.
+fn push(intervals: &mut VecDeque<f64>, interval: f64) {
+    if interval > 0.0 && interval < GAP_MS {
+        if intervals.len() == RECENT_INTERVALS {
+            intervals.pop_front();
+        }
+        intervals.push_back(interval);
+    }
+}
+
 /// The largest period in bounds that [`QUORUM`] of `intervals` fit, from
 /// candidates at the shortest intervals over 1, 2, 3, ..., each refined over
 /// the intervals near its multiples, then lifted to a multiple that keeps the
@@ -186,7 +309,7 @@ fn period_of(intervals: &[f64], grain_ms: f64) -> Period {
     }
     let tolerance = 2.0 * grain_ms + JITTER_MS;
     let (low, high) = (
-        MIN_PERIOD_MS * (1.0 - BOUND_SLACK),
+        MIN_PERIOD_MS.max(TOLERANCES_PER_PERIOD * tolerance) * (1.0 - BOUND_SLACK),
         MAX_PERIOD_MS * (1.0 + BOUND_SLACK),
     );
     let mut shortest: Vec<f64> = intervals
@@ -379,6 +502,46 @@ mod tests {
         101.948, 200.1, 116.6, 283.4, 550.0, 716.5, 400.0, 616.7, 466.6, 450.0, 583.3, 433.3,
         600.0, 216.7, 566.6, 599.9, 416.7, 400.0, 399.9, 400.0, 416.7, 399.9, 333.4, 433.3, 300.0,
         299.9,
+    ];
+
+    /// This machine, the probe busy 11 ms a frame: 40 main-thread intervals the
+    /// rule reads at twice the 165 Hz period (2026-10-06).
+    const EVEN_MAIN: [f64; 40] = [
+        12.1, 18.2, 12.1, 84.9, 24.2, 12.1, 12.1, 12.2, 12.1, 12.1, 12.2, 12.1, 12.0, 12.2, 12.1,
+        12.1, 12.2, 12.0, 6.1, 12.1, 12.2, 12.0, 12.2, 12.1, 12.1, 12.2, 6.0, 12.2, 12.0, 12.2,
+        12.1, 12.2, 12.1, 6.0, 12.1, 12.2, 12.0, 12.2, 12.0, 12.2,
+    ];
+    /// The same run's worker rAF intervals, one refresh each.
+    const EVEN_WORKER: [f64; 40] = [
+        5.9, 6.0, 6.1, 6.1, 6.0, 6.1, 6.2, 5.9, 6.0, 6.2, 6.0, 6.0, 6.1, 6.0, 6.0, 6.2, 6.1, 5.9,
+        6.2, 6.1, 6.0, 6.0, 6.1, 6.0, 6.1, 6.2, 6.1, 5.9, 6.0, 6.3, 5.9, 6.0, 6.3, 5.8, 6.1, 6.1,
+        6.0, 6.1, 6.0, 6.1,
+    ];
+    /// The ThinkPad's Chrome worker at a 30 ms main-thread busy-wait, 60.003 Hz.
+    const THINKPAD_WORKER: [f64; 40] = [
+        16.6, 16.7, 16.7, 16.6, 16.7, 16.7, 16.6, 16.7, 16.6, 16.7, 16.6, 16.7, 16.7, 16.7, 16.7,
+        16.6, 16.6, 16.7, 16.7, 16.6, 16.7, 16.7, 16.7, 16.6, 16.6, 16.7, 16.7, 16.7, 16.6, 16.7,
+        16.7, 16.6, 16.7, 16.6, 16.7, 16.7, 16.6, 16.7, 16.7, 16.6,
+    ];
+    /// The ThinkPad's Firefox 157 worker, its clock in 1 ms steps.
+    const FIREFOX_WORKER: [f64; 40] = [
+        16.08, 17.1, 16.12, 17.1, 16.08, 17.1, 17.08, 16.1, 17.14, 16.12, 17.08, 16.9, 15.92, 17.1,
+        16.12, 17.08, 17.08, 16.1, 17.1, 16.1, 17.08, 16.08, 17.12, 17.1, 16.08, 17.14, 16.1,
+        17.08, 16.08, 17.08, 17.08, 16.28, 17.1, 16.1, 17.1, 16.1, 17.14, 16.1, 17.1, 17.02,
+    ];
+    /// The same Firefox run's main-thread intervals: not on its refreshes.
+    const FIREFOX_MAIN: [f64; 40] = [
+        67.0, 28.0, 39.0, 16.0, 33.0, 34.0, 35.0, 15.0, 83.76, 16.24, 23.0, 43.0, 34.0, 16.0, 91.0,
+        26.0, 35.0, 30.0, 17.0, 33.0, 35.0, 32.0, 34.0, 17.0, 32.0, 34.0, 33.0, 34.0, 32.0, 34.0,
+        17.0, 33.0, 33.0, 33.0, 34.0, 16.0, 34.0, 33.0, 33.0, 36.0,
+    ];
+
+    /// The ThinkPad's Chrome, the probe busy 31 ms a frame: 40 main-thread
+    /// intervals, most of them two refreshes of its 60.003 Hz panel.
+    const THINKPAD_EVEN_MAIN: [f64; 40] = [
+        31.7, 33.4, 33.3, 33.3, 33.4, 33.3, 33.3, 16.7, 33.3, 33.3, 33.4, 33.3, 33.4, 33.3, 33.3,
+        16.6, 33.4, 33.3, 33.4, 33.3, 33.3, 33.4, 33.2, 16.7, 33.4, 33.3, 33.3, 33.4, 33.3, 33.3,
+        33.4, 16.6, 50.1, 16.6, 33.3, 33.3, 33.4, 33.3, 33.4, 33.3,
     ];
 
     fn clock() -> Duration {
@@ -688,6 +851,87 @@ mod tests {
             budget.intervals().count(),
             100,
             "60 + 40 intervals, the gap not one"
+        );
+    }
+
+    /// "Worker rAF, main thread fallback" (ruled 2026-10-06): this machine's
+    /// even case, the main thread at twice the period, reads the true 165 Hz
+    /// period from the worker beside it; with the worker turned off it reads
+    /// twice again (the control); a worker without rAF, or one fallen silent,
+    /// leaves the main thread's reading and says so.
+    #[test]
+    fn the_worker_breaks_the_even_tie_and_the_main_thread_stands_in() {
+        let feed = |budget: &mut FrameBudget, worker: bool| {
+            budget.frame(1000.0);
+            for (i, &interval) in EVEN_MAIN.iter().enumerate() {
+                if worker {
+                    let now = budget.last_ms.unwrap();
+                    budget.worker_intervals(&EVEN_WORKER[i..=i], now);
+                }
+                let at = budget.last_ms.unwrap() + interval;
+                budget.frame(at);
+            }
+        };
+        let mut budget = fresh();
+        feed(&mut budget, true);
+        assert_eq!(budget.source(), Source::Worker);
+        assert_reads("worker", budget.period(), 1000.0 / 165.0);
+
+        let mut budget = fresh();
+        budget.disable_worker();
+        feed(&mut budget, true);
+        assert_eq!(budget.source(), Source::MainDisabled);
+        assert_reads("worker off", budget.period(), 2000.0 / 165.0);
+
+        let mut budget = fresh();
+        budget.worker_unavailable();
+        feed(&mut budget, true);
+        assert_eq!(budget.source(), Source::MainUnavailable);
+        assert_reads("no worker rAF", budget.period(), 2000.0 / 165.0);
+
+        let mut budget = fresh();
+        feed(&mut budget, true);
+        let at = budget.last_ms.unwrap() + 600.0;
+        budget.frame(at);
+        let at = budget.last_ms.unwrap() + 600.0;
+        budget.frame(at);
+        assert_eq!(budget.source(), Source::MainStale, "1.2 s without a batch");
+    }
+
+    /// The worker reads both machines' periods, the ThinkPad's Chrome and
+    /// Firefox (whose clock reads in 1 ms steps) included. Firefox's main
+    /// thread, not on its refreshes, reads 60 Hz's period or the cap, never
+    /// the 3 to 5 ms candidates its 2.1 ms tolerance would let fit; that
+    /// trap is real, the short candidate fitting the quorum.
+    #[test]
+    fn worker_intervals_read_both_machines_and_a_coarse_clock() {
+        assert_reads(
+            "worker, 165 Hz",
+            period_of(&EVEN_WORKER, 0.1),
+            1000.0 / 165.0,
+        );
+        assert_reads(
+            "ThinkPad worker",
+            period_of(&THINKPAD_WORKER, 0.1),
+            1000.0 / 60.003,
+        );
+        assert_reads(
+            "Firefox worker",
+            period_of(&FIREFOX_WORKER, 1.0),
+            1000.0 / 60.003,
+        );
+        // At 60 Hz twice the period is past the cap, so the ThinkPad's main
+        // thread, mostly two refreshes a frame, still reads its period.
+        assert_reads(
+            "ThinkPad main, mostly two refreshes",
+            period_of(&THINKPAD_EVEN_MAIN, 0.1),
+            1000.0 / 60.003,
+        );
+        assert!(fit(&FIREFOX_MAIN, 4.17, 2.1) >= QUORUM);
+        let main = period_of(&FIREFOX_MAIN, 1.0).ms();
+        assert!(
+            (main / (1000.0 / 60.003) - 1.0).abs() < 0.01,
+            "Firefox's main thread read {main} ms, not the period or the cap"
         );
     }
 }

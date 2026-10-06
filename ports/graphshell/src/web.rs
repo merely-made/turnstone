@@ -23,6 +23,7 @@
 mod web_events;
 mod web_gpu;
 mod web_graphs;
+mod web_period_worker;
 mod web_product;
 mod web_projection;
 mod web_practice;
@@ -151,6 +152,7 @@ struct BrowserHost {
     reached_note: web_speed::ReachedNote,
     /// The step budget, a share of the measured frame interval.
     frame_budget: web_speed::FrameBudget,
+    period_worker: web_period_worker::PeriodWorker,
     layout_moved: bool,
     layout_stats: mere::canvas::LayoutStats,
     /// Screen px where the last `drag-focused` released, for `data-drag-return`.
@@ -421,6 +423,7 @@ impl BrowserHost {
         self.advance_arrangement_transition(host_ms);
         // The step budget is a share of the display's period, read from the
         // frames' intervals (ruled 2026-10-04, "Infer the period").
+        self.period_worker.feed(&mut self.frame_budget, host_ms);
         let budget = self.frame_budget.frame(host_ms);
         self.canvas.set_physics_step_budget(Some(budget));
         self.remote_board.set_step_budget(Some(budget));
@@ -1882,6 +1885,7 @@ async fn run(root_element: Element) -> Result<(), String> {
         layout_stats_stale: true,
         reached_note: web_speed::ReachedNote::default(),
         frame_budget,
+        period_worker: web_period_worker::PeriodWorker::start(speed_options.period_source),
         layout_moved: false,
         layout_stats: mere::canvas::LayoutStats::default(),
         drag_drop: None,
