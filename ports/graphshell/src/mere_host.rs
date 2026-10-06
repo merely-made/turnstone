@@ -264,7 +264,9 @@ impl<B: Backend + Clone> MereHost<B> {
                 Some(saved) => {
                     // The old host's own load, so the first baseline is the
                     // graph it would have opened.
-                    let mut graph = Graph::from_snapshot(&saved.graph);
+                    let mut graph = Graph::try_from_snapshot(&saved.graph).map_err(|error| {
+                        MereHostError::InvalidSnapshot(format!("{HOST_SLOT}: {error}"))
+                    })?;
                     graph.overlay_facets(saved.facets);
                     let mut migrated = sessions.begin(author, Some(graph));
                     migrated.flush(wall_clock_now()).await?;
@@ -1174,6 +1176,63 @@ mod tests {
             let after_trash = opened(&backend).await;
             assert_eq!(after_trash.graph().node_count(), 0);
             assert!(!after_trash.was_reopened());
+        });
+    }
+
+    #[test]
+    fn invalid_resource_in_old_host_slot_does_not_start_a_partial_session() {
+        pollster::block_on(async {
+            let backend = MemoryBackend::new();
+            let old =
+                MereHost::fixture(MemoryBackend::new(), selected_persona(), fixture_handlers())
+                    .unwrap();
+            let mut document = PersistedMereHost {
+                graph: old.graph().to_snapshot(),
+                facets: old.graph().facets().clone(),
+                projection_epoch: 7,
+            };
+            document
+                .graph
+                .resources
+                .push(mere::kernel::persistence::PersistedResourceRecord {
+                    canonical_iri: "https://invalid.test/resource".into(),
+                    facets: vec![mere::kernel::persistence::PersistedResourceFacet {
+                        facet: "test.data".into(),
+                        value_json: "invalid JSON".into(),
+                    }],
+                });
+            let slots = JsonSlots::new(backend.clone());
+            slots.save(HOST_SLOT, &document).await.unwrap();
+            let bytes = backend.get(HOST_SLOT).await.unwrap();
+            let result = MereHost::open(
+                backend.clone(),
+                selected_persona(),
+                fixture_handlers(),
+                access_context(),
+            )
+            .await;
+            assert!(matches!(result, Err(MereHostError::InvalidSnapshot(_))));
+            assert!(
+                MereSessions::new(backend.clone())
+                    .list()
+                    .await
+                    .unwrap()
+                    .is_empty()
+            );
+            assert_eq!(
+                backend.get(HOST_SLOT).await.unwrap(),
+                bytes,
+                "invalid source is retained"
+            );
+            document.graph.resources.pop();
+            slots.save(HOST_SLOT, &document).await.unwrap();
+            let restored = opened(&backend).await;
+            assert_eq!(
+                restored.graph().node_count(),
+                old.graph().node_count(),
+                "valid old slot remains readable"
+            );
+            assert_eq!(MereSessions::new(backend).list().await.unwrap().len(), 1);
         });
     }
 

@@ -876,7 +876,8 @@ fn copied_product(
     source: &ProductCodicilV2,
     manifest: &TransferManifestV1,
 ) -> Result<(ProductCodicilV2, Vec<TransferredIdV1>), TransferError> {
-    let mut donor = Graph::from_snapshot(&source.graph);
+    let mut donor = Graph::try_from_snapshot(&source.graph)
+        .map_err(|error| TransferError::InvalidManifest(error.to_string()))?;
     donor.overlay_facets(source.facets.clone());
     let mut copy = Graph::new();
     let mut id_map = Vec::with_capacity(source.graph.nodes.len());
@@ -927,6 +928,18 @@ fn copied_product(
             edge.from_node_id = remapped_id(&edge.from_node_id, &id_by_source)?;
             edge.to_node_id = remapped_id(&edge.to_node_id, &id_by_source)?;
             Ok(edge)
+        })
+        .collect::<Result<_, TransferError>>()?;
+    snapshot.resources = source.graph.resources.clone();
+    snapshot.resource_edges = source.graph.resource_edges.clone();
+    snapshot.shown_resources = source
+        .graph
+        .shown_resources
+        .iter()
+        .cloned()
+        .map(|mut shown| {
+            shown.surface_id = remapped_id(&shown.surface_id, &id_by_source)?;
+            Ok(shown)
         })
         .collect::<Result<_, TransferError>>()?;
     snapshot.timestamp_secs = source.graph.timestamp_secs;
@@ -1483,6 +1496,89 @@ mod tests {
                     .get(&copied_file, &FacetId::new(TRANSFER_CONTENT_FACET))
                     .unwrap()[0]["byte_len"],
                 source.file_bytes.len() as u64
+            );
+        });
+    }
+
+    #[test]
+    fn copy_keeps_resource_identity_and_remaps_only_shown_surfaces() {
+        pollster::block_on(async {
+            use mere::kernel::persistence::{
+                PersistedEdge, PersistedEdgeFamily, PersistedResourceRecord,
+                PersistedSemanticEdgeData, PersistedSemanticStatement, PersistedShownResource,
+            };
+            let source = source_fixture().await;
+            let manifest =
+                package(&source, TransferOperation::Copy, "personae://persona/bob").await;
+            let mut product = verify_manifest(&manifest).unwrap();
+            let iri = "https://copy-resource.test/page";
+            let resource_id = chartulary::resource_id_from_canonical_iri(iri).to_string();
+            let tag = "https://copy-resource.test/vocab#Tag";
+            let tag_id = chartulary::resource_id_from_canonical_iri(tag).to_string();
+            product.graph.resources = [iri, tag]
+                .into_iter()
+                .map(|iri| PersistedResourceRecord {
+                    canonical_iri: iri.into(),
+                    facets: vec![],
+                })
+                .collect();
+            product.graph.resource_edges = vec![PersistedEdge {
+                from_node_id: resource_id.clone(),
+                to_node_id: tag_id,
+                families: vec![PersistedEdgeFamily::Semantic],
+                semantic: Some(PersistedSemanticEdgeData {
+                    statements: vec![PersistedSemanticStatement {
+                        statement_id: "copied-tag-handle".into(),
+                        predicate: mere::kernel::graph::resource::TAGGED_WITH_IRI.into(),
+                        recognized_sub_kind: None,
+                        label: Some("tag".into()),
+                        graph_scope: mere::kernel::types::GraphScope::Default,
+                        provenance_iri: Some("https://tagger.test/".into()),
+                        asserted_at_ms: Some(23),
+                    }],
+                    ..Default::default()
+                }),
+                traversal: None,
+                containment: None,
+                arrangement: None,
+                imported: None,
+                provenance: None,
+            }];
+            product.graph.shown_resources = product
+                .graph
+                .nodes
+                .iter()
+                .map(|surface| PersistedShownResource {
+                    surface_id: surface.node_id.clone(),
+                    resource_id: resource_id.clone(),
+                })
+                .collect();
+            let (copied, ids) = copied_product(&product, &manifest).unwrap();
+            assert_eq!(copied.graph.resources, product.graph.resources);
+            assert_eq!(copied.graph.resource_edges, product.graph.resource_edges);
+            assert_eq!(
+                copied.graph.resource_edges.len(),
+                1,
+                "the carried assertion is a positive control"
+            );
+            assert_eq!(
+                copied.graph.shown_resources.len(),
+                product.graph.shown_resources.len()
+            );
+            for shown in &copied.graph.shown_resources {
+                assert_eq!(shown.resource_id, resource_id);
+                assert!(ids.iter().any(|mapping| mapping.destination.to_string()
+                    == shown.surface_id
+                    && mapping.source != mapping.destination));
+            }
+            assert!(Graph::try_from_snapshot(&copied.graph).is_ok());
+            product.graph.shown_resources[0].resource_id = Uuid::nil().to_string();
+            assert!(
+                matches!(
+                    copied_product(&product, &manifest),
+                    Err(TransferError::InvalidManifest(_))
+                ),
+                "invalid source is refused before copying"
             );
         });
     }
