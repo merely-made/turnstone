@@ -8,7 +8,9 @@ description = "Graphshell presentation host and loopback acceptance view."
 autobins = false
 
 [features]
-default = ["native"]
+default = ["native", "image-decode"]
+# Forwards genet-livery's image decoding (mer3ly Ruling 111); on by default.
+image-decode = ["cambium-rootstock?/image-decode", "mere?/image-decode"]
 # Existing admitted sessions, transports, Personae composition, and receipt
 # binaries. This remains the default so current native callers keep working.
 native = [
