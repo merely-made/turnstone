@@ -25,7 +25,7 @@ use cambium_winit_a11y::A11yAction;
 use chirograph::{CapabilityProfile, IntentReference, PresentationCapability};
 use graphshell_client::LocalActionError;
 use mere::canvas::{
-    Canvas, DESCRIBED_ITEMS, DRAG_INTENT, PIN_INTENT, PhysicsChoice, Role as ItemRole,
+    Canvas, DESCRIBED_ITEMS, DRAG_INTENT, PIN_INTENT, PhysicsChoice, Role as ItemRole, Speed,
 };
 
 use super::*;
@@ -394,6 +394,7 @@ fn the_clients_tree_lists_the_boards_drag_and_pin_through_the_local_route() {
         app.client.mounted(&session),
         revision,
         PhysicsChoice::default(),
+        Speed::REAL_TIME,
     );
     let profile = CapabilityProfile::new([
         PresentationCapability::NativeGlyph,
