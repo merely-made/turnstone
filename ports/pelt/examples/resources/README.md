@@ -10,7 +10,7 @@ SPDX-License-Identifier: MPL-2.0
 
 Test fixture assets that Pelt's example documents reference **by repository-root
 relative path**, carried here with Pelt when it landed from genet 2026-09-03
-(`design_docs/mere_docs/implementation_strategy/2026-09-02_platform_boundary_and_repository_topology_plan.md`).
+(`design_docs/archive_docs/2026-10-06_completed_plans/2026-09-02_platform_boundary_and_repository_topology_plan.md`).
 
 They sat at the repository root until 2026-09-03, when Mark ruled that two
 Servo-derived fixture PNGs are not a top-level directory's worth of repository.
