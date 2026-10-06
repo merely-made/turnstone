@@ -29,7 +29,9 @@ bench = false
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage)', 'cfg(llvm_pgo)'] }
 
 [features]
-default = ["livery", "reader", "netfetch"]
+default = ["livery", "reader", "netfetch", "image-decode"]
+# Forwards genet-livery's image decoding (mer3ly Ruling 111); on by default.
+image-decode = ["pelt-desktop?/image-decode"]
 # viewer-engine is the retained compatibility name for the desktop adapter:
 # smoke runners, winit, and present backends around the Pelt host.
 viewer-engine = ["dep:pelt-desktop"]
