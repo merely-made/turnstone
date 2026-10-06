@@ -1,18 +1,8 @@
 {
-  "recorded_utc": "2026-10-06T00:30:05.915858+00:00",
+  "recorded_utc": "2026-10-06T00:16:05.474532+00:00",
   "supplier_base": "e25e774bce38131c51a5f27d0031a4e95793f0c7",
-  "supplier_commit": "cff35712a28419f921a3cb2ffe79ef02268af6c5",
-  "supplier_clean_before": true,
-  "supplier_source": "reviewed bounded committed P2 slice; full P2/main integration remain outside scope",
+  "supplier_source": "owner-signaled frozen bounded typed API WIP; full P2/main integration remain outside scope",
   "inputs": [
-    {
-      "path": "C:\\Users\\mark_\\Code\\repos\\turnstone\\docs\\receipts\\graph_semantics_p2_20261005\\behaviors.patch",
-      "sha256": "07b943e5491ad8b8411bb9b0a1da4a78c00e861f23ab3f12cf9714ef1e449ed0"
-    },
-    {
-      "path": "C:\\Users\\mark_\\Code\\repos\\turnstone\\docs\\receipts\\graph_semantics_p2_20261005\\consumer_gate\\Cargo.lock",
-      "sha256": "fe7fca279b2bc51b8ffa7c0eba913b060fe7d7b7ff47c648d1b899f087720a9e"
-    },
     {
       "path": "C:\\Users\\mark_\\Code\\repos\\turnstone\\docs\\receipts\\graph_semantics_p2_20261005\\consumer_gate\\Cargo.toml",
       "sha256": "1e80ee2ab090a3e2b445939a8f2e3950d74b18602cf87a63ac148b2db0e5237c"
@@ -54,16 +44,16 @@
       "sha256": "a6e6aa0e8396457dd6c244292a0ad0861845e0dc4aca143eff8bdb16a2b4907c"
     },
     {
-      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\conatus\\numen\\src\\lower_burn.rs",
-      "sha256": "c6a81484d135b09da084470894833a4cf4df6025bf1733e709d40a0ddb44444c"
-    },
-    {
       "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\conatus\\numen\\src\\lower_burn\\tests.rs",
       "sha256": "762f49bd5997b494b56109d78cc5fe6e8e25b67edc1c6adb477fb835380311c9"
     },
     {
       "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\conatus\\numen\\src\\lower_burn\\tests_wgpu.rs",
       "sha256": "4764cdd21fdcc500a3865898fc2ded43e2306178833dc827aaf4bc1a412a72d7"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\conatus\\numen\\src\\lower_burn.rs",
+      "sha256": "c6a81484d135b09da084470894833a4cf4df6025bf1733e709d40a0ddb44444c"
     },
     {
       "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\conatus\\numen\\src\\projection.rs",
@@ -202,12 +192,12 @@
       "sha256": "74a23b019170782ca856e31b93357a859d3fc43be547d17fc45589f4e457db96"
     },
     {
-      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\dramatis\\personae\\src\\sealed_record_storage.rs",
-      "sha256": "6ef43e6cffb9ad828340c83b9689fe6fc606e4d29f1c49dbc4536584634dc834"
-    },
-    {
       "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\dramatis\\personae\\src\\sealed_record_storage\\freshness.rs",
       "sha256": "5f811b52c4b0de3df175eb16c83e63ef04250fbd84dc24e4f4570ec6ee526a63"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\dramatis\\personae\\src\\sealed_record_storage.rs",
+      "sha256": "6ef43e6cffb9ad828340c83b9689fe6fc606e4d29f1c49dbc4536584634dc834"
     },
     {
       "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\dramatis\\personae\\src\\sealed_record_storage_tests.rs",
@@ -238,12 +228,12 @@
       "sha256": "4ec149d65bab684e8b5bf7c35f1fdd1fb0dfa85d2558c4753d6523c5c55c6a9b"
     },
     {
-      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\dramatis\\personae\\src\\vault.rs",
-      "sha256": "147eca7d56a559fb1f655191eedf178df6f831ba27383c910d95d78bb338def4"
-    },
-    {
       "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\dramatis\\personae\\src\\vault\\tests.rs",
       "sha256": "a6c9014088c9e709d5a8994761f9fde5b538bbef324b99c4d0684ce244a52102"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\dramatis\\personae\\src\\vault.rs",
+      "sha256": "147eca7d56a559fb1f655191eedf178df6f831ba27383c910d95d78bb338def4"
     },
     {
       "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\dramatis\\personae\\tests\\ssh_ca_live.rs",
@@ -466,16 +456,12 @@
       "sha256": "3a4a011e3932c2fc6a88b4196ba695c87a9a892cb830830e21a9e052fe3d02a2"
     },
     {
-      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\forme\\forme\\src\\topology.rs",
-      "sha256": "7256f8bb6d6318937da7f60a1235a727f8eae09c8418a2995ccfb9ecdcd6b456"
-    },
-    {
       "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\forme\\forme\\src\\topology\\tests.rs",
       "sha256": "00d2d09eb20c4e720d3b805ed7ba705d37b4ccbeb043f38283e7b8a88b169305"
     },
     {
-      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\forme\\forme\\src\\tree.rs",
-      "sha256": "a1d9b377913e1619d4b644157360a0d4604e8947e7ea923978ca08ec879825e3"
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\forme\\forme\\src\\topology.rs",
+      "sha256": "7256f8bb6d6318937da7f60a1235a727f8eae09c8418a2995ccfb9ecdcd6b456"
     },
     {
       "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\forme\\forme\\src\\tree\\actions.rs",
@@ -484,10 +470,6 @@
     {
       "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\forme\\forme\\src\\tree\\layout.rs",
       "sha256": "e0659629547edd9eafc54256a1ed0be95e9e9ef69e704ebb9a36e3fda466abb2"
-    },
-    {
-      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\forme\\forme\\src\\tree\\tests.rs",
-      "sha256": "48d6ae2f3ec595fc9b2fb194c81b863333b87082da6c84c413afd6e28248872e"
     },
     {
       "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\forme\\forme\\src\\tree\\tests\\basic.rs",
@@ -500,6 +482,14 @@
     {
       "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\forme\\forme\\src\\tree\\tests\\layout_structure.rs",
       "sha256": "27413652c2be8f3e49ead648d9db5264f45f86d91c0c6dea8dd08d20217ccc01"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\forme\\forme\\src\\tree\\tests.rs",
+      "sha256": "48d6ae2f3ec595fc9b2fb194c81b863333b87082da6c84c413afd6e28248872e"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\forme\\forme\\src\\tree.rs",
+      "sha256": "a1d9b377913e1619d4b644157360a0d4604e8947e7ea923978ca08ec879825e3"
     },
     {
       "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\forme\\forme\\src\\ux.rs",
@@ -647,7 +637,7 @@
     },
     {
       "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\graph\\snapshot\\checked.rs",
-      "sha256": "dfb487b846549576ce80410f5eb18fe20c40b77bef4c98a642a1b42cd83d3325"
+      "sha256": "37ed2617b322d53b02916f923cd94c49acb0cdf756a67e6b25ee9d490d00f095"
     },
     {
       "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\graph\\snapshot\\from.rs",
@@ -659,7 +649,7 @@
     },
     {
       "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\graph\\snapshot\\tests.rs",
-      "sha256": "54328b9db9b0ea48b9516763e286d62a863778ecebd93cc4955b3119de145322"
+      "sha256": "0e9a0a4e88c54f4aca2ffb28aa4c5301cc2f189f3da228387f658c88a5e7e573"
     },
     {
       "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\graph\\graph-kernel\\src\\graph\\snapshot\\to.rs",
@@ -840,6 +830,14 @@
     {
       "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-graph-semantics\\crates\\servitor\\src\\watch.rs",
       "sha256": "836b507b96e20ccddbf7fcb19df84b2d050550e16d1ee6ad7f430d6958662c2d"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\repos\\turnstone\\docs\\receipts\\graph_semantics_p2_20261005\\behaviors.patch",
+      "sha256": "07b943e5491ad8b8411bb9b0a1da4a78c00e861f23ab3f12cf9714ef1e449ed0"
+    },
+    {
+      "path": "C:\\Users\\mark_\\Code\\repos\\turnstone\\docs\\receipts\\graph_semantics_p2_20261005\\consumer_gate\\Cargo.lock",
+      "sha256": "fe7fca279b2bc51b8ffa7c0eba913b060fe7d7b7ff47c648d1b899f087720a9e"
     }
   ],
   "scope": "exact proposed touched_ids/resource fanout/ancestry functions and six tests, real supplier kernel+servitor types; excludes GUI/App drain/native integration"

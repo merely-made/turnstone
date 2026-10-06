@@ -2,9 +2,9 @@
 
 The authorized consumer slice is prepared in `behaviors.patch`, based on
 Turnstone `2913a4f`. Its six bounded scope regressions now compile and pass
-against Mere's actual owner-frozen WIP API, with stable source fingerprints. It is
-**unapplied** while the reviewed API checkpoint and compatible integration set
-are pending on `graph-semantics` over `e25e774b`. Production
+against reviewed committed supplier `cff35712a28419f921a3cb2ffe79ef02268af6c5` on
+`graph-semantics`. The patch remains **unapplied** while a reviewed compatible
+integration set and main integration review are pending. Production
 source, portable pins and lock, and the frozen Scry native receipt are unchanged.
 `preparation.json` records source/candidate/patch hashes and the limited checks.
 
@@ -46,14 +46,14 @@ kernel replay writes rather than reopening a fixture-only mutation boundary.
 all unchanged across the accepted run; `source-gate-result.json` binds the
 fixture, patch, lock and output hashes. The fixture compiles the exact proposed
 scope functions, ancestry walk and tests. It excludes the GUI and App drain,
-so this is not full Turnstone integration. The final run includes the supplier's
-snapshot test assertion correction and all 209 inputs still match after it.
-The first six-pass attempt had two changed supplier inputs; its separate
-`*-first` log/manifest/result remain an unaccepted source-checkpoint diagnostic.
-The second six-pass run had stable inputs; its `*-intermediate` artifacts
-preserve that earlier WIP checkpoint. A later additive API freeze justified the
-final run recorded by the unsuffixed artifacts. This is a bounded consumer
-qualification of frozen WIP, not acceptance of full Mere P2 or a committed API.
+so this is not full Turnstone integration. The unsuffixed artifacts qualify the
+reviewed committed supplier, including its final checked-loader orphan/active
+control; the supplier checkout is clean at that exact commit before and after
+the run. The first six-pass attempt had two changed supplier
+inputs; its separate `*-first` log/manifest/result remain an unaccepted source
+checkpoint diagnostic. The second stable run is retained as `*-intermediate`;
+the later owner-frozen WIP run accepted in Turnstone `feb2594` is retained as
+`*-wip`. Each is evidence only for its own recorded inputs.
 
 The actual API intentionally leaves a newly inserted surface unassociated.
 Regression setup therefore replays explicit resource-record and shown-resource
@@ -62,11 +62,12 @@ writes; it never treats the current URL as an implicit association.
 Reproduce the bounded gate with `verify_patch.py --prepare-source-gate`, then
 `cargo test --manifest-path docs/receipts/graph_semantics_p2_20261005/consumer_gate/Cargo.toml --offline --locked --target-dir C:/t/cargo-targets/turnstone --lib`.
 The fixture uses the recorded supplier worktree path. Recompute/compare input
-fingerprints when that WIP changes; a later source is not this receipt.
+fingerprints when that source changes; a later source is not this receipt.
 
-The next gate requires Mere's reviewed committed API checkpoint, qualified
-against its exact source. Full Turnstone integration additionally requires a
-reviewed compatible dependency set; no dirty-main repin is implied.
+Full Turnstone integration still requires a reviewed compatible dependency
+set and main integration review; no dirty-main repin is implied. Mere's C13-C17
+remain open, and its existing infallible snapshot wrappers/load boundaries
+await C17. This consumer receipt does not close full P2 or those gates.
 Apply the patch only with that integration. The new kernel API cannot compile
 against the current portable Mere pin.
 

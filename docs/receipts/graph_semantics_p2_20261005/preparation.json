@@ -1,5 +1,5 @@
 {
-  "status": "prepared/unapplied; exact bounded source functions compile and six regressions pass against owner-frozen supplier WIP",
+  "status": "prepared/unapplied; exact bounded source functions compile and six regressions pass against reviewed committed supplier",
   "turnstone_base": "2913a4f",
   "consumer_base_sha256": "d496e0b96da33e627d265dfb5df980096b8a256aa33bc73a71738f8087974213",
   "candidate_sha256_lf": "1b4d0e3b51cc6cc87d9d5975207015d60e41b8c3c50bd85c4f1d16706dd166ce",
@@ -18,12 +18,13 @@
   "replay_api": "CapturedDelta::replay_delta(&self)->Option<GraphDelta>; verified existing supplier method",
   "fixture_mapping": "explicit recorded resource creation and shown-resource association; surface insertion alone does not imply one",
   "source_gate_result": "source-gate-result.json",
-  "source_gate_boundary": "actual kernel/servitor types; excludes GUI/App drain, committed API and main integration",
+  "source_gate_boundary": "actual kernel/servitor types against exact committed supplier; excludes GUI/App drain and main integration",
   "source_gate_checks": {
     "passed": 6,
     "failed": 0,
     "unchanged_source_inputs": 209,
-    "committed_supplier_checkpoint": false,
+    "committed_supplier_checkpoint": true,
     "full_turnstone_integration": false
-  }
+  },
+  "supplier_commit": "cff35712a28419f921a3cb2ffe79ef02268af6c5"
 }

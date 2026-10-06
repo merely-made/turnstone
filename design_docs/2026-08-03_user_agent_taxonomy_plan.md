@@ -395,10 +395,11 @@ records these forks without silently choosing new policy.
   graph-aware match and six regressions are prepared, unapplied, in the
   [P2 consumer receipt](../docs/receipts/graph_semantics_p2_20261005/README.md).
   Rust syntax and patch applicability pass. The exact proposed scope functions
-  and all six regressions compile/pass against the real WIP kernel/servitor API;
-  209 input fingerprints are stable across the final owner-frozen run. This
-  excludes the GUI/App drain and still awaits the reviewed committed API
-  checkpoint. The patch and a tested
+  and all six regressions compile/pass against the real kernel/servitor API at
+  reviewed Mere commit `cff35712a28419f921a3cb2ffe79ef02268af6c5`;
+  209 input fingerprints are stable across that run. This excludes the GUI/App
+  drain; compatible dependency and main integration review remain open.
+  The patch and a tested
   integration pin stay outside the frozen Scry receipt's pins and proof scope.
   Resource changes
   must fan out to current showing surfaces; historical migration effects must

@@ -1,3 +1,6 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
    Compiling mere-kernel v0.0.2 (C:\Users\mark_\Code\worktrees\mere-graph-semantics\crates\graph\graph-kernel)
 warning: unused imports: `astar`, `dijkstra`, `has_path_connecting`, and `kosaraju_scc`
   --> C:\Users\mark_\Code\worktrees\mere-graph-semantics\crates\graph\graph-kernel\src\graph\mod.rs:21:22
@@ -132,16 +135,16 @@ warning: method `get_node_mut` is never used
 
 warning: `mere-kernel` (lib) generated 12 warnings (run `cargo fix --lib -p mere-kernel` to apply 5 suggestions)
    Compiling turnstone-resource-capture-gate v0.0.0 (C:\Users\mark_\Code\repos\turnstone\docs\receipts\graph_semantics_p2_20261005\consumer_gate)
-    Finished `test` profile [unoptimized + debuginfo] target(s) in 34.29s
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 12.97s
      Running unittests src\lib.rs (C:/t/cargo-targets/turnstone\debug\deps\turnstone_resource_capture_gate-581b31b2673eeaa9.exe)
 
 running 6 tests
-test resource_capture_tests::a_resource_record_wakes_all_alias_surfaces_and_not_an_unrelated_surface ... ok
-test resource_capture_tests::expanded_surface_scopes_keep_watch_matching_and_no_self_wake ... ok
 test resource_capture_tests::legacy_surface_and_exact_edge_captures_keep_their_targets ... ok
 test resource_capture_tests::malformed_or_unshown_resource_ids_do_not_become_bare_surface_wakes ... ok
-test resource_capture_tests::resource_pairs_union_both_endpoint_surfaces_and_deduplicate_self_pairs ... ok
 test resource_capture_tests::shown_resource_retarget_and_clear_wake_only_the_named_surface ... ok
+test resource_capture_tests::resource_pairs_union_both_endpoint_surfaces_and_deduplicate_self_pairs ... ok
+test resource_capture_tests::expanded_surface_scopes_keep_watch_matching_and_no_self_wake ... ok
+test resource_capture_tests::a_resource_record_wakes_all_alias_surfaces_and_not_an_unrelated_surface ... ok
 
-test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 
