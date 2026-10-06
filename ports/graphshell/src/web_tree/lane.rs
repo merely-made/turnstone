@@ -19,6 +19,81 @@ pub(super) struct TreeLane {
 /// snapshot computes them only for graphs up to this size.
 const LAYOUT_STATS_LIMIT: usize = 512;
 
+/// The page's own accessibility instrument, `window.graphshellSemanticTree()`
+/// (loader.js), read as JSON (dynamics grammar plan, F68).
+fn semantic_tree() -> Option<serde_json::Value> {
+    use wasm_bindgen::JsCast;
+    let window = web_sys::window()?;
+    let read = js_sys::Reflect::get(&window, &"graphshellSemanticTree".into())
+        .ok()?
+        .dyn_into::<js_sys::Function>()
+        .ok()?;
+    let tree = read.call0(&window).ok()?;
+    let text = js_sys::JSON::stringify(&tree).ok()?.as_string()?;
+    serde_json::from_str(&text).ok()
+}
+
+/// One item of the canvas slot as the semantic tree tells it: its name, its
+/// buttons' names, and how many of them carry a description.
+struct HeardItem {
+    name: String,
+    buttons: Vec<String>,
+    described: usize,
+}
+
+/// The canvas slot in the page's semantic tree: the group named "... shown",
+/// and its items (F65, F67).
+fn heard_canvas(tree: &serde_json::Value) -> Option<(String, Vec<HeardItem>)> {
+    let field = |node: &serde_json::Value, name: &str| {
+        node.get(name).and_then(|v| v.as_str()).map(str::to_owned)
+    };
+    let children = |node: &serde_json::Value| {
+        node.get("children")
+            .and_then(|v| v.as_array())
+            .cloned()
+            .unwrap_or_default()
+    };
+    let mut stack = vec![tree.clone()];
+    while let Some(node) = stack.pop() {
+        let is_slot = field(&node, "role").as_deref() == Some("group")
+            && field(&node, "label").is_some_and(|label| label.ends_with(" shown"));
+        if !is_slot {
+            stack.extend(children(&node));
+            continue;
+        }
+        let items = children(&node)
+            .iter()
+            .filter(|item| field(item, "role").as_deref() == Some("group"))
+            .map(|item| {
+                let buttons: Vec<_> = children(item)
+                    .into_iter()
+                    .filter(|button| field(button, "role").as_deref() == Some("button"))
+                    .collect();
+                HeardItem {
+                    name: field(item, "label").unwrap_or_default(),
+                    described: buttons
+                        .iter()
+                        .filter(|button| {
+                            field(button, "description").is_some_and(|d| !d.is_empty())
+                        })
+                        .count(),
+                    buttons: buttons
+                        .iter()
+                        .map(|button| field(button, "label").unwrap_or_default())
+                        .collect(),
+                }
+            })
+            .collect();
+        return Some((field(&node, "label").unwrap_or_default(), items));
+    }
+    None
+}
+
+/// A CSS attribute value, quoted.
+fn css_string(value: &str) -> String {
+    format!("\"{}\"", value.replace('\\', "\\\\").replace('"', "\\\""))
+}
+
 /// The canvas leaf's painted rect in page px.
 fn leaf_rect(ctx: &AppCtx<'_, TreePage, Logic, Child>) -> Option<(f32, f32, f32, f32)> {
     let leaf = {
@@ -519,6 +594,58 @@ impl Product for TreeLane {
                 "gpu-timed",
                 self.shared.timing.borrow().gpu_timed().to_string(),
             );
+        // What a screen reader reaches of the canvas, read from the page's
+        // own semantic tree, and the keyboard move (dynamics grammar plan,
+        // F65 to F68).
+        let heard = semantic_tree().as_ref().and_then(heard_canvas);
+        let snapshot = snapshot
+            .with_field(
+                "reader-canvas",
+                heard
+                    .as_ref()
+                    .map_or("none".to_string(), |(name, _)| name.clone()),
+            )
+            .with_field(
+                "reader-items",
+                heard.as_ref().map_or(0, |(_, items)| items.len()).to_string(),
+            )
+            .with_field(
+                "reader-buttons",
+                heard
+                    .as_ref()
+                    .map(|(_, items)| {
+                        items
+                            .iter()
+                            .map(|item| format!("{}:{}", item.name, item.buttons.join("+")))
+                            .collect::<Vec<_>>()
+                            .join("|")
+                    })
+                    .unwrap_or_default(),
+            )
+            .with_field(
+                "reader-described",
+                heard
+                    .as_ref()
+                    .map_or(0, |(_, items)| items.iter().map(|item| item.described).sum())
+                    .to_string(),
+            )
+            .with_field("key-moving", canvas.key_moving().is_some().to_string())
+            .with_field(
+                "key-move-offset",
+                canvas
+                    .key_move_offset()
+                    .map_or("none".to_string(), |(dx, dy)| format!("{dx:.0},{dy:.0}")),
+            )
+            .with_field(
+                "pinned",
+                canvas
+                    .graph()
+                    .nodes()
+                    .filter(|(key, _)| canvas.arrangement_role_of(*key) == mere::canvas::Role::Pinned)
+                    .map(|(key, _)| canvas.graph().node_display_label(key))
+                    .collect::<Vec<_>>()
+                    .join("|"),
+            );
         let faces = self.shared.faces.get().unwrap_or_default().fields();
         let snapshot = faces.into_iter().fold(snapshot, |snapshot, (name, value)| {
             snapshot.with_field(name, value)
@@ -667,6 +794,52 @@ impl Product for TreeLane {
                     .borrow_mut()
                     .push(faces.line(rest.trim()));
                 Ok(())
+            },
+            // `reader-click <item> | <button>`: press a canvas item's button
+            // in the accessibility mirror, as a screen reader's activation
+            // does: a click on the mirror element (F65, F66).
+            "reader-click" => {
+                use wasm_bindgen::JsCast;
+                let (item, button) = rest
+                    .split_once('|')
+                    .map(|(item, button)| (item.trim(), button.trim()))
+                    .ok_or("reader-click wants '<item> | <button>'")?;
+                let document = web_sys::window()
+                    .and_then(|window| window.document())
+                    .ok_or("no document")?;
+                let selector = format!(
+                    "[data-cambium-mirror] [role=\"group\"][aria-label$=\" shown\"] > [role=\"group\"][aria-label={}]",
+                    css_string(item)
+                );
+                let group = document
+                    .query_selector(&selector)
+                    .map_err(|_| format!("reader-click: bad selector for {item:?}"))?
+                    .ok_or_else(|| format!("reader-click: no item {item:?} in the mirror"))?;
+                let mut child = group.first_element_child();
+                while let Some(element) = child {
+                    if element.get_attribute("role").as_deref() == Some("button")
+                        && element.text_content().as_deref().map(str::trim) == Some(button)
+                    {
+                        let element = element
+                            .dyn_into::<web_sys::HtmlElement>()
+                            .map_err(|_| "reader-click: not an element")?;
+                        // From the event loop, as a reader's click arrives: the
+                        // mirror's listener takes the host, which this step holds.
+                        let click = wasm_bindgen::closure::Closure::once_into_js(move || {
+                            element.click();
+                        });
+                        web_sys::window()
+                            .ok_or("no window")?
+                            .set_timeout_with_callback_and_timeout_and_arguments_0(
+                                click.unchecked_ref(),
+                                0,
+                            )
+                            .map_err(|_| "reader-click: could not queue the click")?;
+                        return Ok(());
+                    }
+                    child = element.next_element_sibling();
+                }
+                Err(format!("reader-click: {item:?} has no {button:?} button"))
             },
             "click-node" => {
                 let (x, y) = self.node_point(ctx, rest.trim())?;

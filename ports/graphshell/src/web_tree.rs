@@ -154,6 +154,9 @@ struct Shared {
     remote: Rc<RefCell<remote::TreeRemote>>,
     /// Whether the canvas leaf shows the remote board rather than the graph.
     remote_shown: Cell<bool>,
+    /// A planted accessibility defect, the receipts' positive control
+    /// (`?plant_a11y=`; dynamics grammar plan, G9). `None` in use.
+    plant: graphshell::canvas_reader::Plant,
 }
 
 impl Shared {
@@ -371,11 +374,15 @@ impl TextureProducer for CanvasProducer {
     }
 
     /// While the board is shown, the slot is a list of its cards, each named
-    /// by its title and placed where it is painted. The graph keeps the
-    /// slot's own DOM semantics for now.
+    /// by its title and placed where it is painted. Otherwise it is the
+    /// graph's items on screen, each a group whose drag and pin are buttons
+    /// (dynamics grammar plan, F62, F65 to F67).
     fn semantics(&mut self) -> Option<cambium_rootstock::ProducerSemantics> {
         if !self.shared.remote_shown.get() {
-            return None;
+            return Some(graphshell::canvas_reader::describe_canvas(
+                &self.shared.canvas.borrow(),
+                self.shared.plant,
+            ));
         }
         let (width, height) = self.shared.size.get();
         Some(remote::board_semantics(
@@ -383,6 +390,24 @@ impl TextureProducer for CanvasProducer {
             width,
             height,
         ))
+    }
+
+    /// A reader pressed one of an item's buttons: Pin pins it, Drag starts
+    /// a keyboard move the arrows steer.
+    fn act(&mut self, key: u64, id: &str) -> bool {
+        if self.shared.remote_shown.get() {
+            return false;
+        }
+        let done = graphshell::canvas_reader::canvas_act(
+            &mut self.shared.canvas.borrow_mut(),
+            key,
+            id,
+            self.shared.plant,
+        );
+        if done {
+            self.shared.dirty.set(true);
+        }
+        done
     }
 }
 
@@ -521,8 +546,26 @@ fn tools_region(page: &TreePage) -> Child {
     )
 }
 
-/// Arrows pan and plus or minus zoom, as on the main page.
+/// Arrows pan and plus or minus zoom, as on the main page. During a
+/// keyboard move the arrows nudge the item instead, Enter drops it and
+/// Escape puts it back (F67).
 fn keys(page: &mut TreePage, key: &Key) -> bool {
+    use graphshell::canvas_reader::{MoveKey, key_move};
+    let move_key = match key {
+        Key::Named(NamedKey::ArrowLeft) => Some(MoveKey::Left),
+        Key::Named(NamedKey::ArrowRight) => Some(MoveKey::Right),
+        Key::Named(NamedKey::ArrowUp) => Some(MoveKey::Up),
+        Key::Named(NamedKey::ArrowDown) => Some(MoveKey::Down),
+        Key::Named(NamedKey::Enter) => Some(MoveKey::Drop),
+        Key::Named(NamedKey::Escape) => Some(MoveKey::Back),
+        _ => None,
+    };
+    if let Some(move_key) = move_key
+        && key_move(&mut page.shared.canvas.borrow_mut(), move_key, PAN_STEP)
+    {
+        page.shared.dirty.set(true);
+        return true;
+    }
     if let Some(product) = &mut page.product {
         match key {
             Key::Named(NamedKey::Enter) if product.selected.is_some() => {
@@ -656,6 +699,7 @@ async fn boot(root: Element) -> Result<(), String> {
         faces: Cell::new(None),
         remote: Rc::new(RefCell::new(remote::TreeRemote::new())),
         remote_shown: Cell::new(false),
+        plant: controls::reader_plant()?,
     });
     crate::web_speed::apply(
         &mut shared.canvas.borrow_mut(),

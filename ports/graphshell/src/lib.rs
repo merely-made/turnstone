@@ -30,6 +30,8 @@ pub mod canvas_faces;
 #[cfg(feature = "web")]
 pub mod canvas_physics;
 #[cfg(feature = "web")]
+pub mod canvas_reader;
+#[cfg(feature = "web")]
 pub mod capture;
 #[cfg(all(feature = "personal-sync", not(target_arch = "wasm32")))]
 pub mod carriage;

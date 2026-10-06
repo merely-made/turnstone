@@ -14,8 +14,8 @@ use cambium::{AnyView, GenetAppRunner, GenetCtx, GenetElement, el, text};
 use genet_render::TextSystem;
 use genet_scripted_dom::ScriptedDom;
 use graphshell::projection_compile::{
-    CompiledProjection, ProjectionDataset, ProjectionSnapshot, ProjectionValue, compile,
-    compile_snapshot, default_definition, refresh,
+    CompiledProjection, ProjectionDataset, ProjectionSnapshot, ProjectionValue,
+    default_definition, practice_compiler,
 };
 use graphshell::projection_editor::{EditorAction, ProjectionEditor, ProjectionPanel};
 use netrender::Scene;
@@ -73,7 +73,7 @@ impl BrowserHost {
                     },
                 };
                 // Validate before replacing a working scene with host-supplied facts.
-                let compiled = match compile(&definition, &dataset) {
+                let compiled = match practice_compiler().compile(&definition, &dataset) {
                     Ok(compiled) => compiled,
                     Err(issues) => {
                         self.projection_editor_status = format!("Source load failed: {issues:?}");
@@ -144,8 +144,8 @@ impl BrowserHost {
             })
             .and_then(|definition| {
                 let compiled = match &live.compiled {
-                    Some(previous) => refresh(previous, &definition, &live.dataset),
-                    None => compile(&definition, &live.dataset),
+                    Some(previous) => practice_compiler().refresh(previous, &definition, &live.dataset),
+                    None => practice_compiler().compile(&definition, &live.dataset),
                 };
                 compiled.map_err(|issues| {
                     issues
@@ -261,7 +261,7 @@ impl BrowserHost {
                 .ok_or("No saved executable projection")?;
             let saved: ProjectionSnapshot =
                 serde_json::from_str(&value).map_err(|e| e.to_string())?;
-            compile_snapshot(&saved, &live.dataset).map_err(|issues| {
+            practice_compiler().compile_snapshot(&saved, &live.dataset).map_err(|issues| {
                 issues
                     .iter()
                     .map(|i| format!("{}: {}", i.field, i.message))
