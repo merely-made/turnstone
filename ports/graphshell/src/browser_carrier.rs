@@ -35,7 +35,7 @@ use tokio::io::{
     AsyncBufReadExt, AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt, BufReader, DuplexStream,
 };
 
-use crate::admission::{PROJECTION_PROTOCOL, open_session};
+use crate::admission::{PROJECTION_PROTOCOL, open_network_bound_session};
 use crate::identity_projection::SshUnlockPolicyIntentV1;
 
 /// Native messaging host name shared by the extension and installer.
@@ -219,6 +219,9 @@ pub enum NativeIdentityAction {
     ImportSshPrivate {
         unlock_policy: SshUnlockPolicyIntentV1,
     },
+    /// Unlock the vault on the resident's own surface: OS presence first,
+    /// then a passphrase box (vault lock ruling 47). Nothing crosses back.
+    UnlockVault,
 }
 
 /// Public result of a native-only identity interaction.
@@ -231,6 +234,8 @@ pub enum NativeIdentityResult {
         unlock_policy: String,
         replaced_existing: bool,
     },
+    /// The vault is unlocked (or already was).
+    UnlockedVault,
     Cancelled,
     Rejected {
         reason: NativeIdentityFailure,
@@ -249,6 +254,8 @@ pub enum NativeIdentityFailure {
     InvalidPrivateKey,
     IncorrectPassphrase,
     ImportRejected,
+    /// The vault refused the unlock for a reason other than the passphrase.
+    UnlockRejected,
 }
 
 /// Host-to-browser messages.
@@ -586,7 +593,9 @@ pub async fn admit_local_session<P: IdentityProvider>(
 ) -> Result<(BrowserSessionClient, AdmittedSession<DuplexStream>), BrowserCarrierError> {
     let (mut client, server) = tokio::io::duplex(256 * 1024);
     let binding = ProofBinding::initiator(PROJECTION_PROTOCOL, None, Some(link.shared_link));
-    let hello = open_session(
+    // Bound to the local network, so a door's kept keys open no other
+    // network (vault lock ruling 46).
+    let hello = open_network_bound_session(
         identity,
         network,
         profile,
@@ -707,7 +716,7 @@ fn decode_nonce(value: &str) -> Result<[u8; 32], BrowserCarrierError> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::admission::{CONNECT_ACTION, GRAPHSHELL_DOMAIN, PROJECTION_SERVICE};
+    use crate::admission::{CONNECT_ACTION, GRAPHSHELL_DOMAIN, PROJECTION_SERVICE, open_session};
     use insigne::delegation::{
         CapabilityScope, DelegationCertificate, DelegationParent, SignedDelegationCertificate,
     };
