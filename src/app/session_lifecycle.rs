@@ -98,6 +98,7 @@ impl App {
             sessions,
             session_id,
             content: ContentStates::default(),
+            engine_inventory: Vec::new(),
             feeds: crate::feed::FeedSubscriptions::default(),
             redshank: crate::redshank_host::RedshankHost::default(),
             redshank_members: std::collections::BTreeMap::new(),

@@ -1,0 +1,29 @@
+RESULT fail
+captured 00_b_inspector_before_pin
+captured 00_b_inspector_after_pin
+captured 01_two_scry_pages
+FAIL: assert snap focused Contains 'Scry A | text=alpha | clicks=2 | stored=A-retained': got 'Scry A | text=alpha | clicks=1 | stored=A-retained | cookie=scry_A=A-retained | viewport=255x285@2 | scroll=0,0 | scrolled=no | wheels=0  ·  127.0.0.1  http://127.0.0.1:43123/page-a.html'
+FAIL: assert snap focused Contains 'Scry B | text=bravo | clicks=2 | stored=B-retained': got 'Scry B | text=bravo | clicks=1 | stored=B-retained | cookie=scry_B=B-retained | viewport=255x285@2 | scroll=0,0 | scrolled=no | wheels=0  ·  127.0.0.1  http://127.0.0.1:43123/page-b.html'
+captured 02_text_pointer_and_keyboard
+FAIL: assert snap focused Contains 'scry_B=B-retained': got 'Scry B | text=bravo | clicks=0 | stored=B-retained | cookie= | viewport=255x285@2 | scroll=0,0 | scrolled=no | wheels=0  ·  127.0.0.1  http://127.0.0.1:43123/page-b.html'
+captured 02b_b_reloaded
+captured 02c_a_wheel
+captured 02d_b_wheel
+FAIL: assert snap focused Contains 'scrolled=yes': got 'Scry A | text=alpha | clicks=0 | stored=A-retained | cookie= | viewport=255x285@2 | scroll=0,0 | scrolled=no | wheels=0  ·  127.0.0.1  http://127.0.0.1:43123/page-a.html'
+FAIL: assert snap focused Contains 'wheels=1': got 'Scry A | text=alpha | clicks=0 | stored=A-retained | cookie= | viewport=255x285@2 | scroll=0,0 | scrolled=no | wheels=0  ·  127.0.0.1  http://127.0.0.1:43123/page-a.html'
+FAIL: assert snap focused Contains 'wheels=2': got 'Scry A | text=alpha | clicks=0 | stored=A-retained | cookie= | viewport=255x285@2 | scroll=0,0 | scrolled=no | wheels=1  ·  127.0.0.1  http://127.0.0.1:43123/page-a.html'
+FAIL: assert snap focused Contains 'scrolled=yes': got 'Scry B | text=bravo | clicks=0 | stored=B-retained | cookie= | viewport=255x285@2 | scroll=0,0 | scrolled=no | wheels=0  ·  127.0.0.1  http://127.0.0.1:43123/page-b.html'
+FAIL: assert snap focused Contains 'wheels=1': got 'Scry B | text=bravo | clicks=0 | stored=B-retained | cookie= | viewport=255x285@2 | scroll=0,0 | scrolled=no | wheels=0  ·  127.0.0.1  http://127.0.0.1:43123/page-b.html'
+FAIL: assert snap focused Contains 'wheels=2': got 'Scry B | text=bravo | clicks=0 | stored=B-retained | cookie= | viewport=255x285@2 | scroll=0,0 | scrolled=no | wheels=1  ·  127.0.0.1  http://127.0.0.1:43123/page-b.html'
+captured 02e_both_scroll_reset
+captured 03_find_and_zoom_unavailable
+FAIL: assert focus 'canvas': focus is 'graph'
+captured 04_resized_two_pages
+captured 05_a_reader_b_scry
+FAIL: assert snap focused Contains 'scry_A=A-retained': got 'Scry A | text=alpha | clicks=0 | stored=A-retained | cookie= | viewport=43x285@2 | scroll=0,0 | scrolled=no | wheels=0  ·  127.0.0.1  http://127.0.0.1:43123/page-a.html'
+captured 06_a_scry_reconstructed
+captured 07_both_closed
+FAIL: assert snap focused Contains 'scry_B=B-retained': got 'Scry B | text=bravo | clicks=0 | stored=B-retained | cookie= | viewport=88x285@2 | scroll=0,0 | scrolled=no | wheels=0  ·  127.0.0.1  http://127.0.0.1:43123/page-b.html'
+FAIL: assert snap focused Contains 'scry_A=A-retained': got 'Scry A | text=alpha | clicks=0 | stored=A-retained | cookie= | viewport=88x285@2 | scroll=0,0 | scrolled=no | wheels=0  ·  127.0.0.1  http://127.0.0.1:43123/page-a.html'
+captured 08_ready_for_restart
+B1 run 1 complete; run 2 must reuse the exact TURNSTONE_ROOT and loopback origin

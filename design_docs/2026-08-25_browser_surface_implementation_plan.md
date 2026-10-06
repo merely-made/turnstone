@@ -1,17 +1,50 @@
 # Browser surfaces implementation plan
 
-**Status, 2026-08-30:** in progress. T0 contributed document surfaces, K0
+**Status, 2026-10-05:** in progress. Optional Windows Scry B1 source is present;
+full native acceptance is gated on cookies and current captured pixels.
+T0 contributed document surfaces, K0
 one-gesture Keep, F0 retained find, the D0 host decision surface, E0.1 engine
 capability disclosure, and E0.2 per-node page zoom are landed. Captured-page
 provenance P1's owner contracts and exact source pins are landed under the
 ruled [page capture and provenance plan](2026-08-28_page_capture_plan.md); its
-clean-source Turnstone compile receipt remains open. Live CEF authentication
+clean-source Turnstone compile receipt closed on 2026-09-09; hosted capture
+and remaining custody work are still open. Live CEF authentication
 callback delivery remains an independent E0 acceptance tail. This plan
 succeeds the remaining-work portion of the historical
 [browser gap analysis](2026-08-17_smolweb_browser_gap_analysis.md); the analysis
 remains useful as research and acceptance evidence.
 
 ## Authority and order
+
+### Windows Scry B1, 2026-10-05
+
+The October [user-agent taxonomy](2026-08-03_user_agent_taxonomy_plan.md) owns
+the current browser-engine adoption sequence. B0's registry-derived inventory
+and refusal behavior retain their separate qualified receipt. B1 local source
+adds `--features scry` at the existing Mere `bd5912fb` pin, consuming the
+adapter's registry `scrying` 0.7.1/wgpu 30 row. Existing repository pins are
+unchanged; the optional dependency adds lock identities.
+
+The host shares an owned offscreen composition root, preserves explicit
+per-node profiles, and imports owned payloads on Turnstone's existing device.
+Each producer owns a distinct fence; import validates that identity and waits
+on every paint, even when a texture allocation is reused. Capture, resize and
+import failures retire the producer and report failed content. The current
+qualification scope is two distinct pages in the primary Workbench, with
+independent input, primary-pane resize, switching, profile restart and teardown.
+
+The [Windows Scry consumer receipt](../docs/receipts/browser_scry_windows_20261005/README.md)
+records the full run and separate-process restoration. DOM input, owner-correct
+commands, resize/switch, zero-resource close and restored pins/localStorage/text
+pass. Four full-run and two restart cookie assertions fail. Visual review also
+finds stale post-input images and blank reopened tiles despite live counters.
+Full B1 acceptance remains gated on cookie retention and current pixels.
+CDP key/text delivery does not certify physical keyboard or OS IME. Typed
+find/zoom, permission/auth answers, correlated capture/PDF, DevTools opening
+and accessibility projection remain unavailable through the pinned adapter.
+OS IME, actual window resize/DPI, lenses, native rehosting and different-size
+appearances of one node retain separate acceptance gates. This source slice
+does not close the trio's hardware or release qualification.
 
 ### Terminology amendment, 2026-09-20
 
@@ -276,8 +309,9 @@ the applied value through the typed `set_page_zoom`; Weld stays Partial
 because Windows CEF cannot read the effective level back. Capture and the CEF
 authentication receipt remain open. Capture is in progress under the
 [page capture and provenance plan](2026-08-28_page_capture_plan.md); its D1-D6
-decisions were ruled 2026-08-30 before P1 began. P1 source is landed but awaits
-its clean-source Turnstone compile receipt before P2 starts. Capture closes
+decisions were ruled 2026-08-30 before P1 began. P1's clean-source compile gate
+closed on 2026-09-09. P2 has begun at host correlation; its Weld capture hook
+and remaining custody work are open. Capture closes
 E0's capture work, while the independent authentication probe remains before E0
 as a whole is marked landed.
 

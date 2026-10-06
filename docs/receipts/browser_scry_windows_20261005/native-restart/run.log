@@ -1,0 +1,30 @@
+2026-10-05T23:06:52.635586Z  INFO turnstone::launch: turnstone starting
+2026-10-05T23:06:52.723988Z  INFO turnstone::identity: profile identity protection=OS auto-unlock sealed records at C:\Users\mark_\AppData\Local\personae\vault (DPAPI-wrapped root)
+2026-10-05T23:06:52.778635Z  INFO turnstone::session: session graph restored path="C:\\Users\\mark_\\Code\\repos\\turnstone\\docs\\receipts\\browser_scry_windows_20261005\\profile\\acceptance-clipped\\sessions\\48bb9106-67ea-4279-ba27-37f557347b4e\\graph.json"
+2026-10-05T23:06:52.807820Z  INFO turnstone::session: workbench tiling restored path="C:\\Users\\mark_\\Code\\repos\\turnstone\\docs\\receipts\\browser_scry_windows_20261005\\profile\\acceptance-clipped\\sessions\\48bb9106-67ea-4279-ba27-37f557347b4e\\workbench.json" tiles=2
+2026-10-05T23:06:55.146142Z  INFO turnstone::shell::a11y_bridge: a11y_bridge: installed
+2026-10-05T23:07:03.442929Z  INFO turnstone::shell::effects: surface content live node=b0d55684-f011-4ce2-8fce-7779dd8358b3 url=http://127.0.0.1:43123/page-a.html engine=scrying.web
+2026-10-05T23:07:04.460433Z  INFO turnstone::shell::effects: surface content live node=89047c48-ea63-49a9-8f86-d14ae81cde20 url=http://127.0.0.1:43123/page-b.html engine=scrying.web
+[producer] resize: 1024x600 -> 175x570
+[producer] start_capture: 175x570 ready in 234ms
+[producer] resize: 1024x600 -> 175x570
+[producer] start_capture: 175x570 ready in 358ms
+2026-10-05T23:07:27.667768Z  INFO turnstone::shell::render: capture state open=false text= suggestions=0 surfaces=6 chrome=true nodes=14
+[producer] resize: 175x570 -> 85x570
+[producer] start_capture: 85x570 ready in 496ms
+[producer] resize: 175x570 -> 85x570
+[producer] start_capture: 85x570 ready in 231ms
+2026-10-05T23:07:43.308571Z  INFO turnstone::shell::render: capture state open=false text= suggestions=0 surfaces=8 chrome=true nodes=14
+[producer] resize: 85x570 -> 175x570
+[producer] start_capture: 175x570 ready in 340ms
+[producer] resize: 85x570 -> 175x570
+[producer] start_capture: 175x570 ready in 178ms
+[producer] resize: 175x570 -> 85x570
+[producer] start_capture: 85x570 ready in 254ms
+[producer] resize: 175x570 -> 85x570
+[producer] start_capture: 85x570 ready in 183ms
+2026-10-05T23:07:57.956691Z  INFO turnstone::shell::render: capture state open=false text= suggestions=0 surfaces=8 chrome=true nodes=14
+[producer] resize: 85x570 -> 175x570
+[producer] start_capture: 175x570 ready in 458ms
+[producer] resize: 85x570 -> 175x570
+[producer] start_capture: 175x570 ready in 289ms

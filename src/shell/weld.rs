@@ -235,6 +235,8 @@ struct TurnstoneWeldSurface {
     find_query: DocumentFindQuery,
 }
 
+const WELD_DEVTOOLS_UNAVAILABLE: &str = "CEF 151 native DevTools windows are unsafe for accelerated off-screen browsers; Weld refuses them, and Turnstone has not exposed the separate CDP channel";
+
 impl WeldSurface for TurnstoneWeldSurface {
     fn resize(&mut self, width: u32, height: u32) -> Result<(), SurfaceError> {
         self.producer
@@ -561,85 +563,98 @@ impl WeldSurface for TurnstoneWeldSurface {
     }
 
     fn web_capabilities(&self) -> WebSurfaceCapabilities {
-        let mut capabilities = WebSurfaceCapabilities {
-            backend_name: "weld.cef.windows".into(),
-            backend_version: None,
-            frame_transport: WebFrameTransportMode::ImportedTexture,
-            ..Default::default()
-        };
-        capabilities.devtools = WebFeatureStatus::Supported;
-        capabilities.document.find_in_page = WebFeatureStatus::Supported;
-        capabilities.document.page_zoom = WebFeatureStatus::Partial {
-            detail: "the requested scale is applied as a CEF zoom level, but Windows runs CEF's UI thread separately so the effective level cannot be read back"
-                .into(),
-        };
-        capabilities.document.page_capture = WebFeatureStatus::unsupported(
-            "mere weld-engine 2b1ce46e does not route page-capture requests through WeldSurface yet (P2)",
-        );
-        capabilities.document.navigation = WebFeatureStatus::Supported;
-        capabilities.pointer.mouse = WebFeatureStatus::Supported;
-        capabilities.pointer.pen = WebFeatureStatus::Partial {
-            detail: "CEF accepts pen contacts, but winit 0.30 does not identify pen versus touch"
-                .into(),
-        };
-        capabilities.pointer.touch = WebFeatureStatus::Supported;
-        capabilities.pointer.contact_geometry = WebFeatureStatus::Partial {
-            detail:
-                "the contract and CEF carry contact geometry; winit touch events do not supply it"
-                    .into(),
-        };
-        capabilities.pointer.pressure = WebFeatureStatus::Supported;
-        capabilities.pointer.tangential_pressure = WebFeatureStatus::unsupported(
-            "CEF's touch-event input has no tangential-pressure field",
-        );
-        capabilities.pointer.tilt =
-            WebFeatureStatus::unsupported("CEF's touch-event input has no tilt fields");
-        capabilities.pointer.twist = WebFeatureStatus::Partial {
-            detail: "the contract and CEF carry twist; winit touch events do not supply it".into(),
-        };
-        capabilities.pointer.altitude_azimuth =
-            WebFeatureStatus::unsupported("CEF's touch-event input has no altitude/azimuth fields");
-        capabilities.drag_drop.host_to_page = WebFeatureStatus::Supported;
-        capabilities.drag_drop.page_to_host = WebFeatureStatus::Partial {
-            detail:
-                "Weld reports page drags, but Turnstone cannot start a native winit drag loop yet"
-                    .into(),
-        };
-        capabilities.drag_drop.file_items = WebFeatureStatus::Supported;
-        capabilities.drag_drop.string_items = WebFeatureStatus::Partial {
-            detail: "text/plain, text/html, and text/uri-list are projected; arbitrary MIME strings are rejected"
-                .into(),
-        };
-        capabilities.permissions = WebFeatureStatus::Supported;
-        capabilities.auth = WebFeatureStatus::Partial {
-            detail: "Turnstone's retained credential decision and answer path are wired, but CEF 151 did not emit GetAuthCredentials for a top-level server challenge; proxy authentication is untested".into(),
-        };
-        capabilities.degradation_reasons = vec![
-            "Turnstone projects pointer input and host-to-page drag/drop; page-to-host drag is observable but has no native winit drag loop".into(),
-            "PDF, native printing, downloads, cookies, script results, CDP, popup composition, and snapshots have no Turnstone control surface yet".into(),
-        ];
-        capabilities
+        weld_web_capabilities()
     }
 
     fn apply_settings(&mut self, settings: &SurfaceSettings) -> Result<(), SurfaceError> {
-        if settings.dev_tools {
-            self.producer.open_devtools().map_err(weld_input_error)?;
-        }
-        // The contract carries a scale factor; CEF takes a logarithmic level,
-        // where the scale is 1.2^level. A factor that is not a positive finite
-        // number has no level, so it is refused here rather than handed to CEF
-        // as a NaN.
-        if !settings.zoom_factor.is_finite() || settings.zoom_factor <= 0.0 {
-            return Err(SurfaceError::InputFailed(format!(
-                "zoom factor {} is not a positive scale",
-                settings.zoom_factor
-            )));
-        }
-        self.producer
-            .set_zoom_level(settings.zoom_factor.ln() / 1.2_f64.ln())
-            .map_err(weld_input_error)?;
-        Ok(())
+        apply_weld_surface_settings(settings, |level| {
+            self.producer.set_zoom_level(level).map_err(weld_input_error)
+        })
     }
+}
+
+fn weld_web_capabilities() -> WebSurfaceCapabilities {
+    let mut capabilities = WebSurfaceCapabilities {
+        backend_name: "weld.cef.windows".into(),
+        backend_version: None,
+        frame_transport: WebFrameTransportMode::ImportedTexture,
+        ..Default::default()
+    };
+    capabilities.devtools = WebFeatureStatus::unsupported(WELD_DEVTOOLS_UNAVAILABLE);
+    capabilities.document.find_in_page = WebFeatureStatus::Supported;
+    capabilities.document.page_zoom = WebFeatureStatus::Partial {
+        detail: "the requested scale is applied as a CEF zoom level, but Windows runs CEF's UI thread separately so the effective level cannot be read back"
+            .into(),
+    };
+    capabilities.document.page_capture = WebFeatureStatus::unsupported(
+        "mere weld-engine 2b1ce46e does not route page-capture requests through WeldSurface yet (P2)",
+    );
+    capabilities.document.navigation = WebFeatureStatus::Supported;
+    capabilities.pointer.mouse = WebFeatureStatus::Supported;
+    capabilities.pointer.pen = WebFeatureStatus::Partial {
+        detail: "CEF accepts pen contacts, but winit 0.30 does not identify pen versus touch"
+            .into(),
+    };
+    capabilities.pointer.touch = WebFeatureStatus::Supported;
+    capabilities.pointer.contact_geometry = WebFeatureStatus::Partial {
+        detail:
+            "the contract and CEF carry contact geometry; winit touch events do not supply it"
+                .into(),
+    };
+    capabilities.pointer.pressure = WebFeatureStatus::Supported;
+    capabilities.pointer.tangential_pressure = WebFeatureStatus::unsupported(
+        "CEF's touch-event input has no tangential-pressure field",
+    );
+    capabilities.pointer.tilt =
+        WebFeatureStatus::unsupported("CEF's touch-event input has no tilt fields");
+    capabilities.pointer.twist = WebFeatureStatus::Partial {
+        detail: "the contract and CEF carry twist; winit touch events do not supply it".into(),
+    };
+    capabilities.pointer.altitude_azimuth =
+        WebFeatureStatus::unsupported("CEF's touch-event input has no altitude/azimuth fields");
+    capabilities.drag_drop.host_to_page = WebFeatureStatus::Supported;
+    capabilities.drag_drop.page_to_host = WebFeatureStatus::Partial {
+        detail:
+            "Weld reports page drags, but Turnstone cannot start a native winit drag loop yet"
+                .into(),
+    };
+    capabilities.drag_drop.file_items = WebFeatureStatus::Supported;
+    capabilities.drag_drop.string_items = WebFeatureStatus::Partial {
+        detail: "text/plain, text/html, and text/uri-list are projected; arbitrary MIME strings are rejected"
+            .into(),
+    };
+    capabilities.permissions = WebFeatureStatus::Supported;
+    capabilities.auth = WebFeatureStatus::Partial {
+        detail: "Turnstone's retained credential decision and answer path are wired, but CEF 151 did not emit GetAuthCredentials for a top-level server challenge; proxy authentication is untested".into(),
+    };
+    capabilities.degradation_reasons = vec![
+        "Turnstone projects pointer input and host-to-page drag/drop; page-to-host drag is observable but has no native winit drag loop".into(),
+        "PDF, native printing, downloads, cookies, script results, CDP, popup composition, and snapshots have no Turnstone control surface yet".into(),
+    ];
+    capabilities
+}
+
+fn apply_weld_surface_settings(
+    settings: &SurfaceSettings,
+    mut set_zoom_level: impl FnMut(f64) -> Result<(), SurfaceError>,
+) -> Result<(), SurfaceError> {
+    // Refuse at the host boundary before dispatching any producer operation.
+    // Welding's native DevTools call is deliberately unavailable; its CDP
+    // transport requires a separate control surface and opt-in configuration.
+    if settings.dev_tools {
+        return Err(SurfaceError::Unsupported(WELD_DEVTOOLS_UNAVAILABLE.into()));
+    }
+    // The contract carries a scale factor; CEF takes a logarithmic level,
+    // where the scale is 1.2^level. A factor that is not a positive finite
+    // number has no level, so it is refused here rather than handed to CEF
+    // as a NaN.
+    if !settings.zoom_factor.is_finite() || settings.zoom_factor <= 0.0 {
+        return Err(SurfaceError::InputFailed(format!(
+            "zoom factor {} is not a positive scale",
+            settings.zoom_factor
+        )));
+    }
+    set_zoom_level(settings.zoom_factor.ln() / 1.2_f64.ln())
 }
 
 fn map_event_modifiers(
@@ -983,6 +998,59 @@ fn weld_input_error(error: welding::WeldError) -> SurfaceError {
 #[cfg(test)]
 mod contract_tests {
     use super::*;
+
+    #[test]
+    fn weld_devtools_settings_are_refused_before_producer_dispatch() {
+        assert!(matches!(
+            weld_web_capabilities().devtools,
+            WebFeatureStatus::Unsupported { reason } if reason == WELD_DEVTOOLS_UNAVAILABLE
+        ));
+        let settings = SurfaceSettings {
+            dev_tools: true,
+            zoom_factor: 1.44,
+            ..Default::default()
+        };
+        let result = apply_weld_surface_settings(&settings, |_| {
+            panic!("unsupported DevTools settings must not dispatch to CEF")
+        });
+        assert!(matches!(result, Err(SurfaceError::Unsupported(reason))
+            if reason == WELD_DEVTOOLS_UNAVAILABLE));
+    }
+
+    #[test]
+    fn weld_zoom_settings_preserve_scale_validation_and_dispatch_failure() {
+        for zoom_factor in [0.0, -1.0, f64::NAN, f64::INFINITY, f64::NEG_INFINITY] {
+            let settings = SurfaceSettings {
+                zoom_factor,
+                ..Default::default()
+            };
+            assert!(matches!(
+                apply_weld_surface_settings(&settings, |_| {
+                    panic!("invalid zoom must not reach CEF")
+                }),
+                Err(SurfaceError::InputFailed(_))
+            ));
+        }
+
+        let settings = SurfaceSettings {
+            zoom_factor: 1.44,
+            ..Default::default()
+        };
+        let mut dispatched = Vec::new();
+        apply_weld_surface_settings(&settings, |level| {
+            dispatched.push(level);
+            Ok(())
+        })
+        .unwrap();
+        assert_eq!(dispatched.len(), 1);
+        assert!((dispatched[0] - 2.0).abs() < 1e-12);
+        assert!(matches!(
+            apply_weld_surface_settings(&settings, |_| {
+                Err(SurfaceError::InputFailed("CEF refused zoom".into()))
+            }),
+            Err(SurfaceError::InputFailed(reason)) if reason == "CEF refused zoom"
+        ));
+    }
 
     #[test]
     fn weld_find_result_uses_the_shared_zero_based_model() {

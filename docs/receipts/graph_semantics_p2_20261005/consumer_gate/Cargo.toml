@@ -1,0 +1,12 @@
+[package]
+name = "turnstone-resource-capture-gate"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[workspace]
+
+[dependencies]
+kernel = { package = "mere-kernel", path = "C:/Users/mark_/Code/worktrees/mere-graph-semantics/crates/graph/graph-kernel" }
+servitor = { path = "C:/Users/mark_/Code/worktrees/mere-graph-semantics/crates/servitor" }
+uuid = "1"

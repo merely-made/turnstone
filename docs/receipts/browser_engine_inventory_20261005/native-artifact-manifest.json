@@ -1,0 +1,26 @@
+[
+  {
+    "path": "01_engine_inventory.png",
+    "sha256": "3f30703fab88614256980490c3d537c51ceab5496cb84c9b8896d783b087f1aa"
+  },
+  {
+    "path": "02_reader_selected.png",
+    "sha256": "df800187cdc48aa43f4eb19db694726e831463009f313af72318258e2068e515"
+  },
+  {
+    "path": "03_unavailable_rows_refused.png",
+    "sha256": "816039d5ada405bde2acb943dff4d08a12a8ac90f24521359f8b3ccc8d7f2d40"
+  },
+  {
+    "path": "04_auto_restored.png",
+    "sha256": "0f8ef97351657641d5a88e20e07c9fe9ed05364b5f05e3662858de201a29391e"
+  },
+  {
+    "path": "diagnostics.json",
+    "sha256": "c954aec9679e5fd8e08bac9237283aff640567dee9f77290acf6bae22d12b0e2"
+  },
+  {
+    "path": "scenario.done",
+    "sha256": "0975f9f65ada62ef81fb9429fe259864079be9722d9a6732601224a3708b39d4"
+  }
+]

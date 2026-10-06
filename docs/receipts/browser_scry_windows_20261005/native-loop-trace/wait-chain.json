@@ -1,0 +1,19 @@
+{
+  "recorded_utc": "2026-10-05T20:56:51.429130+00:00",
+  "pid": 43236,
+  "ui_thread": 30012,
+  "ok": true,
+  "error": null,
+  "cycle": false,
+  "struct_bytes": 280,
+  "nodes": [
+    {
+      "kind": 8,
+      "status": 3,
+      "pid": 43236,
+      "thread": 30012,
+      "wait_ms": 2909774,
+      "context_switches": 44626
+    }
+  ]
+}

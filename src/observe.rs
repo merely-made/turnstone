@@ -40,6 +40,10 @@ pub struct Snapshot {
     pub document_find: Option<DocumentFindView>,
     /// Focused document-control availability, mirrored from its owning engine.
     pub document_capabilities: Option<DocumentCapabilitiesView>,
+    /// Host engine availability, distinct from a running page's capabilities.
+    pub engine_inventory: Vec<crate::content::EngineDescriptor>,
+    /// The same choices and refusals the focused document's viewer presents.
+    pub viewer_choices: Vec<crate::inspector_controls::ViewerOption>,
     /// The active held web permission or authentication decision. Credential
     /// text is intentionally absent; only public request identity and UI state
     /// are observable.
@@ -1008,6 +1012,12 @@ pub fn snapshot(app: &App) -> Snapshot {
                 page_capture: facts.capabilities.page_capture.describe(),
                 navigation: facts.capabilities.navigation.describe(),
             }),
+        engine_inventory: app.engine_inventory.clone(),
+        viewer_choices: crate::inspector_controls::viewer_options(app,
+            app.graph_runtimes.focused_member()
+                .and_then(|node| app.browser.get(node))
+                .and_then(|state| state.viewer_override.as_deref()),
+        ),
         user_agent_decision: app.user_agent_decision.active().map(|decision| {
             let request = decision.request();
             let authentication_field = matches!(

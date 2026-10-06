@@ -148,7 +148,10 @@ impl Shell {
         // `list-row` or a grid `roster-cell` whose text contains `substr`, over
         // all surfaces at once (no per-pane dispatch). Short-circuit `||` means a
         // hit presses once; only a total miss is attributable.
-        let hit = self.click(&taproot::Selector::class("roster-cell").containing(substr))
+        let hit = self.click(&taproot::Selector::class("radio")
+            .with_attr("data-engine-id", substr)
+            .on_surface("inspector"))
+            || self.click(&taproot::Selector::class("roster-cell").containing(substr))
             || self.click(&taproot::Selector::class("list-row").containing(substr))
             // A settings option is a row for receipt purposes (the Inspector
             // pane's radio options).
@@ -727,6 +730,7 @@ impl Shell {
                                     if let Some(div) = pane.tiling().divider_at(lx, ly).cloned() {
                                         self.wb_divider_drag = Some((div, (rect.x, rect.y)));
                                     } else if let Some(member) = pane.tab_at(lx, ly, rw, rh) {
+                                        self.app.focus = crate::surface::FocusTarget::Pane(id);
                                         self.app.publish_member_context(id, Some(member));
                                         self.wb_tab_drag = Some((id, member));
                                     }

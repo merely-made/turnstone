@@ -433,9 +433,9 @@ impl Shell {
     /// here, and Gloss reads its own independent immutable batch.
     pub(super) fn refresh_diagnostic_inspection(&mut self) {
         let requested = self.app.frisket.iter_leaves().any(|(_, content, _)| {
-            content.composition().is_some_and(|config| {
-                config.sections.iter().any(|id| id == "diagnostics")
-            })
+            content
+                .composition()
+                .is_some_and(|config| config.sections.iter().any(|id| id == "diagnostics"))
         });
         self.app.diagnostic_inspection =
             requested.then(|| self.diagnostic_observations.inspection());
@@ -479,7 +479,122 @@ impl Shell {
     }
 
     /// The effect runner: the one place effects meet ports.
+    fn spawn_browser_surface(
+        &mut self,
+        node: uuid::Uuid,
+        url: &str,
+        decision: &inker::routing::EngineRouteDecision,
+    ) -> Update {
+        let result = (|| -> Result<crate::content::ContentFacts, String> {
+            let scry = decision.engine_id == inker::routing::ENGINE_SCRYING_WEB;
+            if scry {
+                self.ensure_scry_engine()?;
+            } else {
+                self.ensure_weld_engine()?;
+            }
+            let profile = if scry {
+                self.app
+                    .data_root
+                    .join("scry")
+                    .join("webview2-profiles")
+                    .join(node.to_string())
+            } else {
+                self.app
+                    .data_root
+                    .join("weld")
+                    .join("cef-cache")
+                    .join(node.to_string())
+            };
+            std::fs::create_dir_all(&profile).map_err(|error| {
+                format!(
+                    "could not create browser profile {}: {error}",
+                    profile.display()
+                )
+            })?;
+            let profile = profile.canonicalize().map_err(|error| {
+                format!(
+                    "could not resolve browser profile {}: {error}",
+                    profile.display()
+                )
+            })?;
+
+            // Producer epochs belong to one instance. Retire old custody and
+            // synchronization before a replacement can emit an equal epoch.
+            self.content_sessions.remove(&node);
+            self.clear_reader_appearances(node);
+            self.surface_producers.remove(&node);
+            self.surface_find_requests.remove(&node);
+            self.page_captures.remove_surface(node);
+            #[cfg(all(any(feature = "weld", feature = "scry"), windows))]
+            self.surface_frames.remove(&node);
+            #[cfg(all(feature = "scry", windows))]
+            self.scry_frame_importers.remove(&node);
+
+            let spawn = SurfaceSpawnRequest {
+                url: url.to_owned(),
+                width: self.width.max(1),
+                height: self.height.max(1),
+                profile: EngineProfileBinding {
+                    user_data_dir: profile.to_string_lossy().into_owned(),
+                },
+                // Scry's host wrapper installs its dedicated producer fence
+                // in the adapter envelope. Weld's callback importer is separate.
+                fence_handle: None,
+            };
+            let mut producer = self
+                .surface_engines
+                .spawn(decision, &spawn)
+                .map_err(|error| error.to_string())?;
+            #[cfg(all(feature = "scry", windows))]
+            if scry {
+                let fence = self
+                    .scry_factory
+                    .as_ref()
+                    .ok_or_else(|| "Scry factory was not retained by the host".to_owned())?
+                    .synchronizer_for_profile(&profile)?;
+                let host = self
+                    .host
+                    .as_ref()
+                    .ok_or_else(|| "the Turnstone wgpu host is not ready".to_owned())?;
+                self.scry_frame_importers.insert(
+                    node,
+                    super::surface_frames::ScryingFrameImporter::new(
+                        host.device(),
+                        host.queue(),
+                        fence,
+                    ),
+                );
+            }
+            let capabilities = producer
+                .as_web_surface()
+                .map(|web| app_document_capabilities(web.document_capabilities()))
+                .unwrap_or_default();
+            replay_page_scale(&mut self.app, node, producer.as_mut());
+            self.surface_producers.insert(node, producer);
+            self.page_captures.register_surface(node);
+            tracing::info!(%node, %url, engine = %decision.engine_id, "surface content live");
+            Ok(crate::content::ContentFacts {
+                engine: decision.engine_id.clone(),
+                structure: None,
+                lineage: None,
+                capabilities,
+            })
+        })();
+        match result {
+            Ok(facts) => Update::ContentSpawned {
+                node,
+                facts: Some(facts),
+            },
+            Err(error) => Update::ContentFailed {
+                node,
+                error: format!("{error} ({})", decision.engine_id),
+            },
+        }
+    }
+
+    /// The effect runner: the one place effects meet ports.
     pub(super) fn run_effects(&mut self, effects: Vec<Effect>) {
+        self.publish_engine_inventory();
         // Semantic events noted by the update that produced these effects
         // drain to their consumers first (the trail-memory capture today;
         // the scenario log and diagnostics subscribe at this same drain).
@@ -902,91 +1017,15 @@ impl Shell {
                         pinned_engine: pinned,
                     };
                     let decision = self.route_policy.route(&request);
-                    if decision.engine_id == inker::routing::ENGINE_WELD_CHROMIUM {
+                    if matches!(
+                        decision.engine_id.as_str(),
+                        inker::routing::ENGINE_WELD_CHROMIUM | inker::routing::ENGINE_SCRYING_WEB
+                    ) {
                         if self.host.is_none() {
                             self.pending_surface_spawns.push((node, url));
                             continue;
                         }
-                        let update = match self.ensure_weld_engine() {
-                            Ok(()) => {
-                                let profile = self
-                                    .app
-                                    .data_root
-                                    .join("weld")
-                                    .join("cef-cache")
-                                    .join(node.to_string());
-                                match std::fs::create_dir_all(&profile) {
-                                    Ok(()) => {
-                                        let spawn = SurfaceSpawnRequest {
-                                            url: url.clone(),
-                                            width: self.width.max(1),
-                                            height: self.height.max(1),
-                                            profile: EngineProfileBinding {
-                                                user_data_dir: profile
-                                                    .to_string_lossy()
-                                                    .into_owned(),
-                                            },
-                                            fence_handle: None,
-                                        };
-                                        match self.surface_engines.spawn(&decision, &spawn) {
-                                            Ok(mut producer) => {
-                                                tracing::info!(%node, %url, engine = %decision.engine_id, "surface content live");
-                                                let capabilities = producer
-                                                    .as_web_surface()
-                                                    .map(|web| {
-                                                        app_document_capabilities(
-                                                            web.document_capabilities(),
-                                                        )
-                                                    })
-                                                    .unwrap_or_default();
-                                                // The one seed point for the
-                                                // node's requested page scale:
-                                                // first spawn, restart replay
-                                                // and the engine-switch respawn
-                                                // all arrive here. A refusal is
-                                                // reported and dropped — what
-                                                // the node asked for stays
-                                                // persisted either way.
-                                                replay_page_scale(
-                                                    &mut self.app,
-                                                    node,
-                                                    producer.as_mut(),
-                                                );
-                                                self.surface_producers.insert(node, producer);
-                                                self.page_captures.register_surface(node);
-                                                Update::ContentSpawned {
-                                                    node,
-                                                    facts: Some(crate::content::ContentFacts {
-                                                        engine: decision.engine_id.clone(),
-                                                        structure: None,
-                                                        lineage: None,
-                                                        capabilities,
-                                                    }),
-                                                }
-                                            }
-                                            Err(error) => Update::ContentFailed {
-                                                node,
-                                                error: format!(
-                                                    "{} ({})",
-                                                    error, decision.engine_id
-                                                ),
-                                            },
-                                        }
-                                    }
-                                    Err(error) => Update::ContentFailed {
-                                        node,
-                                        error: format!(
-                                            "could not create Weld profile {}: {error}",
-                                            profile.display()
-                                        ),
-                                    },
-                                }
-                            }
-                            Err(error) => Update::ContentFailed {
-                                node,
-                                error: format!("{} ({})", error, decision.engine_id),
-                            },
-                        };
+                        let update = self.spawn_browser_surface(node, &url, &decision);
                         let effects = self.app.apply_update(update);
                         self.run_effects(effects);
                         continue;
@@ -1405,8 +1444,10 @@ impl Shell {
                     }
                     if self.surface_producers.remove(&node).is_some() {
                         self.page_captures.remove_surface(node);
-                        #[cfg(all(feature = "weld", windows))]
+                        #[cfg(all(any(feature = "weld", feature = "scry"), windows))]
                         self.surface_frames.remove(&node);
+                        #[cfg(all(feature = "scry", windows))]
+                        self.scry_frame_importers.remove(&node);
                         tracing::info!(%node, "surface content closed");
                     }
                 }

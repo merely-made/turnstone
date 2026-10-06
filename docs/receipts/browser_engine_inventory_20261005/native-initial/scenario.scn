@@ -1,0 +1,51 @@
+# B0 native engine inventory and picker. Fresh TURNSTONE_ROOT, ordinary build.
+# Offline: the graph node stays at rest, so no web runtime or server is needed.
+# Inspector is maximized to keep its engine rows reachable at 1024x600.
+# The unknown restored-pin and failed-content recovery cases are unit gates;
+# this scenario verifies human labels, compatible IDs and unavailable rows.
+settle 30
+key escape
+open mere://browser-engine-inventory
+settle 10
+act Open Inspector pane
+settle 10
+act Maximize pane
+settle 10
+assert pane inspector
+assert maximized
+assert row URL: mere://browser-engine-inventory
+assert row Viewer: auto
+assert text Genet
+assert text Reader
+assert text System webview
+assert text Servo
+assert text Chromium
+assert text unavailable
+capture 01_engine_inventory
+
+# Existing engine-ID receipts must reach the human-labelled Reader row.
+click-row genet.reader
+settle 10
+assert row Viewer: genet.reader
+capture 02_reader_selected
+
+# The generic role selector exercises the same disabled pointer handler.
+click surface:inspector role:radio System webview
+settle 5
+assert row Viewer: genet.reader
+assert no-row Viewer: scrying.web
+click surface:inspector role:radio Servo
+settle 5
+assert row Viewer: genet.reader
+assert no-row Viewer: graft.servo
+capture 03_unavailable_rows_refused
+
+# Selection remains usable after refusals, through either IDs or plain labels.
+click-row genet.livery
+settle 10
+assert row Viewer: genet.livery
+click surface:inspector role:radio Auto
+settle 10
+assert row Viewer: auto
+capture 04_auto_restored
+log Browser engine inventory native scenario complete

@@ -21,8 +21,11 @@ mod page_capture;
 mod reader_observe;
 mod render;
 mod renderers;
-#[cfg(all(feature = "weld", windows))]
+#[cfg(all(feature = "scry", windows))]
+mod scry;
+#[cfg(all(any(feature = "weld", feature = "scry"), windows))]
 mod surface_frames;
+mod surface_poll;
 #[cfg(all(feature = "weld", windows))]
 pub(crate) mod weld;
 use render::{capture_composed, decode_sprite};
@@ -85,7 +88,7 @@ const SMOLWEB_SESSION_ENGINE_IDS: &[&str] = &[
 /// The content lanes that are always available in an ordinary Turnstone
 /// build. Keeping their construction together makes route availability an
 /// inspectable fact instead of an assumption split across shell setup.
-fn standard_content_engines() -> SessionRegistry<Scene> {
+pub(crate) fn standard_content_engines() -> SessionRegistry<Scene> {
     let mut engines = SessionRegistry::new();
     engines.register(Box::new(genet_documents::LiverySessionEngine::new(
         LocalFetcher.with_fallback(RemoteFetcher::shared()),
@@ -103,6 +106,95 @@ fn standard_content_engines() -> SessionRegistry<Scene> {
         ));
     }
     engines
+}
+
+/// Project the host's registrations plus the explicitly declared construction
+/// paths. Optional compilation, runtime prerequisites and registration are
+/// different observations; none asserts a live page's capabilities.
+pub(crate) fn project_engine_inventory(
+    documents: &SessionRegistry<Scene>,
+    surfaces: &inker::SurfaceEngineRegistry,
+) -> Vec<crate::content::EngineDescriptor> {
+    use crate::content::{EngineAvailability, EngineDescriptor, EngineFamily, engine_label};
+    let mut engines: Vec<_> = documents
+        .engine_ids()
+        .map(|id| (id, EngineFamily::Document))
+        .chain(surfaces.engine_ids().map(|id| (id, EngineFamily::Surface)))
+        .map(|(id, family)| EngineDescriptor {
+            id: id.into(),
+            label: engine_label(id),
+            family,
+            availability: EngineAvailability::Registered,
+        })
+        .collect();
+    engines.sort_by(|left, right| left.id.cmp(&right.id));
+    engines.dedup_by(|left, right| left.id == right.id);
+    for (id, availability) in [
+        (
+            inker::routing::ENGINE_SCRYING_WEB,
+            scry_construction_availability(),
+        ),
+        (
+            inker::routing::ENGINE_GRAFT_SERVO,
+            EngineAvailability::Unavailable {
+                reason: "Turnstone has no upstream Servo host factory yet".into(),
+            },
+        ),
+        (
+            inker::routing::ENGINE_WELD_CHROMIUM,
+            weld_construction_availability(),
+        ),
+    ] {
+        if !engines.iter().any(|engine| engine.id == id) {
+            engines.push(EngineDescriptor {
+                id: id.into(),
+                label: engine_label(id),
+                family: EngineFamily::Surface,
+                availability,
+            });
+        }
+    }
+    engines
+}
+
+fn weld_construction_availability() -> crate::content::EngineAvailability {
+    use crate::content::EngineAvailability;
+    #[cfg(all(feature = "weld", windows))]
+    {
+        let path = std::env::var_os("TURNSTONE_CEF_PATH").or_else(|| std::env::var_os("CEF_PATH"));
+        match path.map(std::path::PathBuf::from) {
+            Some(path) if path.is_dir() => EngineAvailability::OnDemand {
+                detail:
+                    "CEF runtime directory is configured; construction is checked when selected"
+                        .into(),
+            },
+            Some(_) => EngineAvailability::Unavailable {
+                reason: "the configured CEF runtime directory does not exist".into(),
+            },
+            None => EngineAvailability::Unavailable {
+                reason: "set TURNSTONE_CEF_PATH or CEF_PATH to a CEF runtime directory".into(),
+            },
+        }
+    }
+    #[cfg(not(all(feature = "weld", windows)))]
+    EngineAvailability::Unavailable {
+        reason: "requires a Windows build with the weld feature".into(),
+    }
+}
+
+fn scry_construction_availability() -> crate::content::EngineAvailability {
+    use crate::content::EngineAvailability;
+    #[cfg(all(feature = "scry", windows))]
+    {
+        EngineAvailability::OnDemand {
+            detail: "WebView2 runtime and native capture construction are checked when selected"
+                .into(),
+        }
+    }
+    #[cfg(not(all(feature = "scry", windows)))]
+    EngineAvailability::Unavailable {
+        reason: "requires a Windows build with the scry feature".into(),
+    }
 }
 
 /// Turnstone opts into linked gemtext images, while keeping the presentation
@@ -176,13 +268,28 @@ fn shared_scenario_from_env() -> Option<taproot::Scenario> {
     // A parse error becomes a scenario that logs why and fails a step (an
     // assert on a field no snapshot has), so the run reports RESULT fail with the
     // reason rather than timing out — the same courtesy turnstone's own driver pays.
-    Some(match taproot::Scenario::parse(&body) {
+    let parsed = body
+        .lines()
+        .enumerate()
+        .map(|(index, line)| crate::scenario::expand_env(line, index + 1))
+        .collect::<Result<Vec<_>, _>>()
+        .and_then(|lines| taproot::Scenario::parse(&lines.join("\n")));
+    Some(match parsed {
         Ok(sc) => sc,
         Err(err) => {
             let fallback = format!("log parse error: {err}\nassert snap __never__ == 1");
             taproot::Scenario::parse(&fallback).expect("fallback scenario parses")
         }
     })
+}
+
+fn surface_poll_interval_from_env() -> std::time::Duration {
+    let millis = std::env::var("TURNSTONE_SURFACE_POLL_MS")
+        .ok()
+        .and_then(|value| value.parse::<u64>().ok())
+        .filter(|value| (1..=60_000).contains(value))
+        .unwrap_or(16);
+    std::time::Duration::from_millis(millis)
 }
 
 /// Where a shared run writes its captures and sentinel: `TURNSTONE_CAPTURE_DIR`, or
@@ -360,12 +467,19 @@ pub struct Shell {
     /// shell owns its non-Send live handle and its imported frame cache.
     surface_engines: inker::SurfaceEngineRegistry,
     surface_producers: std::collections::HashMap<uuid::Uuid, Box<dyn inker::SurfaceProducer>>,
+    /// Mailbox fallback cadence until producers expose an event-loop wake hook.
+    surface_poll_clock: surface_poll::SurfacePollClock,
     /// Exact app request/query identity for progressive hosted find results.
     surface_find_requests: std::collections::HashMap<uuid::Uuid, (u64, String)>,
     page_captures: page_capture::CaptureCorrelation,
-    #[cfg(all(feature = "weld", windows))]
+    #[cfg(all(any(feature = "weld", feature = "scry"), windows))]
     surface_frames:
         std::collections::HashMap<uuid::Uuid, Option<surface_frames::ImportedSurfaceFrame>>,
+    #[cfg(all(feature = "scry", windows))]
+    scry_factory: Option<Arc<scry::TurnstoneScryFactory>>,
+    #[cfg(all(feature = "scry", windows))]
+    scry_frame_importers:
+        std::collections::HashMap<uuid::Uuid, surface_frames::ScryingFrameImporter>,
     /// A restored Weld-pinned node can request content before winit has created
     /// its device. Keep it requested until `resumed` instead of falsely
     /// reporting an unavailable engine.
@@ -730,10 +844,15 @@ impl Shell {
             reader_appearances: std::collections::HashMap::new(),
             surface_engines: inker::SurfaceEngineRegistry::new(),
             surface_producers: std::collections::HashMap::new(),
+            surface_poll_clock: surface_poll::SurfacePollClock::new(surface_poll_interval_from_env()),
             surface_find_requests: std::collections::HashMap::new(),
             page_captures: page_capture::CaptureCorrelation::default(),
-            #[cfg(all(feature = "weld", windows))]
+            #[cfg(all(any(feature = "weld", feature = "scry"), windows))]
             surface_frames: std::collections::HashMap::new(),
+            #[cfg(all(feature = "scry", windows))]
+            scry_factory: None,
+            #[cfg(all(feature = "scry", windows))]
+            scry_frame_importers: std::collections::HashMap::new(),
             pending_surface_spawns: Vec::new(),
             knot_visits,
             pending_visit_spawns: Vec::new(),
@@ -766,6 +885,7 @@ impl Shell {
             lens_windows: std::collections::HashMap::new(),
             pending_windows: Vec::new(),
         };
+        shell.publish_engine_inventory();
         shell.run_effects(boot_effects);
         shell
     }
@@ -830,13 +950,20 @@ impl Shell {
         self.surface_producers.clear();
         self.surface_find_requests.clear();
         self.page_captures.clear_surfaces();
-        #[cfg(all(feature = "weld", windows))]
+        #[cfg(all(any(feature = "weld", feature = "scry"), windows))]
         self.surface_frames.clear();
+        #[cfg(all(feature = "scry", windows))]
+        self.scry_frame_importers.clear();
     }
 
     fn clear_reader_appearances(&mut self, node: uuid::Uuid) {
         self.reader_appearances
             .retain(|_, (known, _)| *known != node);
+    }
+
+    fn publish_engine_inventory(&mut self) {
+        self.app.engine_inventory =
+            project_engine_inventory(&self.content_engines, &self.surface_engines);
     }
 
     #[cfg(all(feature = "weld", windows))]
@@ -863,12 +990,41 @@ impl Shell {
             weld::TurnstoneWeldFactory::new(runtime, host.device().clone(), host.queue().clone());
         self.surface_engines
             .register(Box::new(weld_engine::WeldEngine::new(Arc::new(factory))));
+        self.publish_engine_inventory();
         Ok(())
     }
 
     #[cfg(not(all(feature = "weld", windows)))]
     fn ensure_weld_engine(&mut self) -> Result<(), String> {
         Err("weld.chromium is available only in a Windows build with `--features weld`".into())
+    }
+
+    #[cfg(all(feature = "scry", windows))]
+    fn ensure_scry_engine(&mut self) -> Result<(), String> {
+        if self
+            .surface_engines
+            .contains(inker::routing::ENGINE_SCRYING_WEB)
+        {
+            return Ok(());
+        }
+        let host = self
+            .host
+            .as_ref()
+            .ok_or_else(|| "the Turnstone wgpu host is not ready".to_owned())?;
+        let factory = Arc::new(scry::TurnstoneScryFactory::new(
+            host.device().clone(),
+            host.queue().clone(),
+        ));
+        self.surface_engines
+            .register(Box::new(scry::TurnstoneScryEngine::new(factory.clone())));
+        self.scry_factory = Some(factory);
+        self.publish_engine_inventory();
+        Ok(())
+    }
+
+    #[cfg(not(all(feature = "scry", windows)))]
+    fn ensure_scry_engine(&mut self) -> Result<(), String> {
+        Err("scrying.web is available only in a Windows build with `--features scry`".into())
     }
 
     /// Poll the value projection after a settings pane persists a write. The
@@ -1035,9 +1191,7 @@ impl Shell {
                     .iter()
                     .filter_map(|c| {
                         let m = c.active_member()?;
-                        self.content_sessions
-                            .contains_key(&m)
-                            .then(|| (m, c.body()))
+                        self.has_live_content(&m).then(|| (m, c.body()))
                     })
                     .collect::<Vec<_>>()
             })
@@ -1139,7 +1293,7 @@ impl Shell {
                 .and_then(|workbench| workbench.to_arrangement().1);
             for cell in crate::workbench_tiling::place_workbench(geom.as_ref(), *rect).cells {
                 if let Some(node) = cell.active_member()
-                    && self.content_sessions.contains_key(&node)
+                    && self.has_live_content(&node)
                 {
                     appearance_roles.push((
                         node,

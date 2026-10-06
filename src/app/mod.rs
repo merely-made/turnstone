@@ -187,6 +187,8 @@ pub struct App {
     /// Per-node content lifecycle (rung 4). Data only: the live session
     /// handles live in the shell's content port, keyed by the same ids.
     pub content: ContentStates,
+    /// Transient host engine availability; retained across session switches.
+    pub engine_inventory: Vec<crate::content::EngineDescriptor>,
     /// Durable feed schedules and duplicate-suppression state for this
     /// session. Entry nodes and unread markers themselves remain graph truth.
     pub feeds: crate::feed::FeedSubscriptions,
@@ -666,7 +668,11 @@ impl App {
         };
         self.pane_context.place(pane, space);
         self.pane_context.publish(pane, context);
-        self.pane_context.focus(pane);
+        // Rendering refreshes graph context too. It must not displace the
+        // Workbench member that actually owns the user's current commands.
+        if self.active_pane.is_none_or(|active| active == pane) {
+            self.pane_context.focus(pane);
+        }
     }
 
     /// Refresh the runtime index's pane-to-space mapping after a legacy layout
@@ -1120,7 +1126,12 @@ impl App {
                 .graph_runtimes
                 .graph_containing_member(member)
                 .and_then(|graph| self.graph_runtimes.canvas(graph))
-                .and_then(|canvas| canvas.graph().get_node_by_id(member).map(|(_, node)| node.url().to_owned()))
+                .and_then(|canvas| {
+                    canvas
+                        .graph()
+                        .get_node_by_id(member)
+                        .map(|(_, node)| node.url().to_owned())
+                })
                 .map(|url| vec![Effect::CaptureSourceDocument { node: member, url }])
                 .unwrap_or_default(),
             Action::ChoosePermission { request, choice } => self.choose_permission(request, choice),

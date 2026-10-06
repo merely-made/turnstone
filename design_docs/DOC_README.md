@@ -27,6 +27,9 @@ set.
   document behavior. Promote a shared contract when a real consumer forces it.
 - Use one action catalog and one observable state spine. UI, automation, and
   accessibility should consume the same named actions and facts.
+- Resource journal captures resolve through explicit current showing-surface
+  identity before behavior ancestry scopes; resource UUIDs are not surface
+  scopes, and current URLs cannot recover historical resource endpoints.
 - Match proof to the claim: focused unit tests for state and identity, real
   consumer tests for wiring, restart receipts for persistence, and headed
   interaction receipts for visible UI.
@@ -61,11 +64,11 @@ set.
   and its clean-source compile gate are landed. Source-document capture and
   authorized collection search have app consumers; hosted Weld capture,
   offline replay, and the remaining custody work are still open.
-- [Browser surfaces implementation plan](2026-08-25_browser_surface_implementation_plan.md): sequenced Keep, find, decision UI, engine parity, arrivals, shallows, and extension work.
+- [Browser surfaces implementation plan](2026-08-25_browser_surface_implementation_plan.md): sequenced Keep, find, decision UI, engine parity, arrivals, shallows, and extension work; optional Windows Scry B1 source is present, with native cookies and current captured pixels gating full acceptance.
 - [Pane registry, graph views, and shell composition](2026-08-08_pane_registry_and_graph_panes_plan.md): registry and multi-graph pane roadmap, with remaining A-lane gates; A4 adopts the shared Workbench tree. September 30 contributed semantics qualify shared retained projection, scoped automation and platform actions with scroll/stale/refusal controls and native Sky delivery. Inspector source/endpoint binding repairs precede its next semantic route; broader surfaces and human AT remain open.
 - [Turnstone engine adoption](2026-08-03_turnstone_engine_adoption_plan.md): selectable engine routing and unavailable-engine behavior.
 - [Reticulum browsing](2026-08-03_reticulum_browsing_plan.md): native NomadNet page routing and Micron preview implemented; current shared presentation, typed interaction and independent carrier acceptance scopes.
-- [User-agent taxonomy](2026-08-03_user_agent_taxonomy_plan.md): browser obligations assigned to graph-native Turnstone homes.
+- [User-agent taxonomy](2026-08-03_user_agent_taxonomy_plan.md): browser obligations assigned to graph-native Turnstone homes; B0 is qualified and optional Windows Scry B1 source has bounded two-page/restart evidence, with cookie/presentation gates in the [consumer receipt](../docs/receipts/browser_scry_windows_20261005/README.md); profile/history checkpoints and library/application release gates remain separate.
 - [Turnstone place port](2026-07-28_turnstone_place_port_plan.md): shared-place product composition and two-peer acceptance path.
 - [Peer-web reframe](2026-07-28_turnstone_peer_web_reframe.md): current product direction for local-first personal and shared places.
 - [Turnstone architecture](2026-07-10_turnstone_architecture_plan.md): structural obviation ladder and current Mere/Turnstone boundaries.

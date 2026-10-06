@@ -1,0 +1,301 @@
+--- a/src/behaviors.rs
++++ b/src/behaviors.rs
+@@ -57,8 +57,8 @@
+ ///
+ /// A digest of the matched entries rather than the deltas themselves: a
+ /// behavior needs to know *which nodes moved under its watch*, and handing it
+-/// the raw delta vocabulary would couple every body to the kernel's 44
+-/// variants and to their evolution. Nodes and attribution are the durable
++/// the raw delta vocabulary would couple every body to the kernel's capture
++/// vocabulary and its evolution. Nodes and attribution are the durable
+ /// part of the answer.
+ #[derive(Clone, Debug, Default, PartialEq, Eq, serde::Serialize)]
+ pub struct TriggerContext {
+@@ -99,15 +99,18 @@
+ /// so long that building its scope costs more than the match is worth.
+ const MAX_ANCESTRY_DEPTH: usize = 32;
+ 
+-/// The node ids a delta touches.
++/// The currently affected surface ids a delta touches.
++///
++/// Resource records and pairs expand through explicit shown-resource identity;
++/// surface captures keep their exact target. Record metadata is not inspected.
+ ///
+ /// Exhaustive by construction: a new `CapturedDelta` variant fails to compile
+ /// here until it is classified, which is the same discipline `ring_of` uses
+ /// for actions. A variant that silently touched nothing would be a behavior
+ /// that silently stopped waking.
+-pub fn touched_ids(delta: &CapturedDelta) -> Vec<&str> {
++pub fn touched_ids(graph: &Graph, delta: &CapturedDelta) -> Vec<String> {
+     use CapturedDelta as D;
+-    match delta {
++    let ids = match delta {
+         D::ReplayAddNodeWithIdIfMissing { id, .. } => vec![id.as_str()],
+ 
+         D::ReplayRemoveNodeById { node_id, .. }
+@@ -156,6 +159,21 @@
+             parent_id,
+         } => vec![child_id.as_str(), parent_id.as_str()],
+ 
++        D::ReplaySetResourceRecordById { resource_id, .. } => {
++            return surfaces_for_resources(graph, &[resource_id.as_str()]);
++        }
++        D::ReplaySetResourceEdgesByIds {
++            from_resource_id,
++            to_resource_id,
++            ..
++        } => {
++            return surfaces_for_resources(
++                graph,
++                &[from_resource_id.as_str(), to_resource_id.as_str()],
++            );
++        }
++        D::ReplaySetShownResourceById { surface_id, .. } => vec![surface_id.as_str()],
++
+         // Session-level and field/coupling deltas name no node. The physics
+         // tier is deliberately outside this vocabulary: spatial influence
+         // reaches the graph through fields, never through a petition, so a
+@@ -168,7 +186,21 @@
+         | D::ReplaySetFieldCouplingStrengthByFieldId { .. }
+         | D::ReplayActivateFieldById { .. }
+         | D::ReplayRetractCouplingById { .. } => Vec::new(),
+-    }
++    };
++    ids.into_iter().map(str::to_owned).collect()
++}
++
++/// Resource identities are not behavior scopes. Resolve them through the
++/// graph's current shown-resource mapping, then deduplicate before ancestry.
++fn surfaces_for_resources(graph: &Graph, resources: &[&str]) -> Vec<String> {
++    resources
++        .iter()
++        .filter_map(|id| id.parse::<uuid::Uuid>().ok())
++        .flat_map(|id| graph.surface_ids_showing_resource(id))
++        .collect::<std::collections::BTreeSet<_>>()
++        .into_iter()
++        .map(|id| id.to_string())
++        .collect()
+ }
+ 
+ /// Every containment ancestry of `id`, each as a root-first scope path ending
+@@ -289,9 +321,9 @@
+         .map(|(index, entry)| (index as u64 + 1, entry))
+         .filter(|(seq, _)| *seq > cursor)
+         .map(|(seq, entry)| {
+-            let scopes = touched_ids(&entry.delta)
++            let scopes = touched_ids(graph, &entry.delta)
+                 .into_iter()
+-                .flat_map(|id| ancestry_scopes(graph, id))
++                .flat_map(|id| ancestry_scopes(graph, &id))
+                 .collect();
+             // Servitor's watch wire format matches the admitted subject id,
+             // including its no-self-wake guard. The journal keeps kind,
+@@ -611,7 +643,7 @@
+             node_id: "n1".into(),
+             title: "t".into(),
+         };
+-        assert_eq!(touched_ids(&delta), vec!["n1"]);
++        assert_eq!(touched_ids(&Graph::new(), &delta), vec!["n1"]);
+     }
+ 
+     #[test]
+@@ -620,11 +652,11 @@
+             child_id: "child".into(),
+             parent_id: "parent".into(),
+         };
+-        assert_eq!(touched_ids(&delta), vec!["child", "parent"]);
++        assert_eq!(touched_ids(&Graph::new(), &delta), vec!["child", "parent"]);
+         let undo = CapturedDelta::ReplaySetEdgesByIds {
+             from_id: "child".into(), to_id: "parent".into(), edges: Vec::new(),
+         };
+-        assert_eq!(touched_ids(&undo), vec!["child", "parent"]);
++        assert_eq!(touched_ids(&Graph::new(), &undo), vec!["child", "parent"]);
+     }
+ 
+     #[test]
+@@ -633,8 +665,8 @@
+         let delta = CapturedDelta::ReplaySetImportRecords {
+             import_records: Vec::new(),
+         };
+-        assert!(touched_ids(&delta).is_empty());
+-        assert!(touched_ids(&CapturedDelta::ReplayRemoveFieldById {
++        assert!(touched_ids(&Graph::new(), &delta).is_empty());
++        assert!(touched_ids(&Graph::new(), &CapturedDelta::ReplayRemoveFieldById {
+             field_id: "field".into(),
+         }).is_empty());
+     }
+@@ -680,3 +712,174 @@
+         assert!(ancestry_scopes(&graph, "not-a-uuid").is_empty());
+     }
+ }
++
++#[cfg(test)]
++mod resource_capture_tests {
++    use super::*;
++    use mere::kernel::graph::apply::apply_graph_delta;
++
++    fn add_surface(graph: &mut Graph, serial: u128, url: &str) -> (uuid::Uuid, uuid::Uuid) {
++        let surface = uuid::Uuid::from_u128(serial);
++        let capture = CapturedDelta::ReplayAddNodeWithIdIfMissing {
++            id: surface.to_string(),
++            url: url.into(),
++            position: [0.0, 0.0],
++        };
++        apply_graph_delta(graph, capture.replay_delta().unwrap());
++        let resource = mere::kernel::graph::ResourceNode::new(url);
++        let record = CapturedDelta::ReplaySetResourceRecordById {
++            resource_id: resource.id().to_string(),
++            record: Some(mere::kernel::persistence::PersistedResourceRecord {
++                canonical_iri: resource.canonical_iri().into(),
++                facets: Vec::new(),
++            }),
++        };
++        apply_graph_delta(graph, record.replay_delta().unwrap());
++        let shown = CapturedDelta::ReplaySetShownResourceById {
++            surface_id: surface.to_string(),
++            resource_id: Some(resource.id().to_string()),
++        };
++        apply_graph_delta(graph, shown.replay_delta().unwrap());
++        let key = graph.get_node_key_by_id(surface).unwrap();
++        (surface, graph.shown_resource_id(key).unwrap())
++    }
++
++    fn aliases(graph: &mut Graph) -> (uuid::Uuid, uuid::Uuid, uuid::Uuid) {
++        let (first, resource) = add_surface(graph, 1, "https://example.org/page?id=1");
++        let (second, alias) = add_surface(
++            graph,
++            2,
++            "https://EXAMPLE.ORG:443/page?utm_source=news&id=1#fragment",
++        );
++        assert_eq!(resource, alias);
++        (first, second, resource)
++    }
++
++    fn resource_change(resource: uuid::Uuid) -> CapturedDelta {
++        CapturedDelta::ReplaySetResourceRecordById {
++            resource_id: resource.to_string(),
++            record: None,
++        }
++    }
++
++    #[test]
++    fn a_resource_record_wakes_all_alias_surfaces_and_not_an_unrelated_surface() {
++        let mut graph = Graph::new();
++        let (first, second, resource) = aliases(&mut graph);
++        let (unrelated, _) = add_surface(&mut graph, 3, "https://example.org/other");
++        let ids = touched_ids(&graph, &resource_change(resource));
++        assert_eq!(ids, vec![first.to_string(), second.to_string()]);
++        assert!(!ids.contains(&unrelated.to_string()));
++    }
++
++    #[test]
++    fn resource_pairs_union_both_endpoint_surfaces_and_deduplicate_self_pairs() {
++        let mut graph = Graph::new();
++        let (first, second, resource) = aliases(&mut graph);
++        let (third, other) = add_surface(&mut graph, 3, "https://example.org/other");
++        let pair = |to: uuid::Uuid| CapturedDelta::ReplaySetResourceEdgesByIds {
++            from_resource_id: resource.to_string(),
++            to_resource_id: to.to_string(),
++            edges: Vec::new(),
++        };
++        assert_eq!(
++            touched_ids(&graph, &pair(other)),
++            vec![first.to_string(), second.to_string(), third.to_string()]
++        );
++        assert_eq!(
++            touched_ids(&graph, &pair(resource)),
++            vec![first.to_string(), second.to_string()]
++        );
++    }
++
++    #[test]
++    fn malformed_or_unshown_resource_ids_do_not_become_bare_surface_wakes() {
++        let mut graph = Graph::new();
++        let (first, second, resource) = aliases(&mut graph);
++        let malformed = CapturedDelta::ReplaySetResourceRecordById {
++            resource_id: "not-a-resource-uuid".into(),
++            record: None,
++        };
++        assert!(touched_ids(&graph, &malformed).is_empty());
++        assert!(touched_ids(&graph, &resource_change(uuid::Uuid::from_u128(99))).is_empty());
++        let pair = CapturedDelta::ReplaySetResourceEdgesByIds {
++            from_resource_id: "invalid".into(),
++            to_resource_id: resource.to_string(),
++            edges: Vec::new(),
++        };
++        assert_eq!(
++            touched_ids(&graph, &pair),
++            vec![first.to_string(), second.to_string()]
++        );
++    }
++
++    #[test]
++    fn shown_resource_retarget_and_clear_wake_only_the_named_surface() {
++        let mut graph = Graph::new();
++        let (first, second, old_resource) = aliases(&mut graph);
++        let (third, new_resource) = add_surface(&mut graph, 3, "https://example.org/other");
++        for shown in [Some(new_resource.to_string()), None] {
++            let capture = CapturedDelta::ReplaySetShownResourceById {
++                surface_id: first.to_string(),
++                resource_id: shown.clone(),
++            };
++            apply_graph_delta(&mut graph, capture.replay_delta().unwrap());
++            assert_eq!(touched_ids(&graph, &capture), vec![first.to_string()]);
++            assert_eq!(
++                touched_ids(&graph, &resource_change(old_resource)),
++                vec![second.to_string()]
++            );
++            let expected_new = if shown.is_some() {
++                vec![first.to_string(), third.to_string()]
++            } else {
++                vec![third.to_string()]
++            };
++            assert_eq!(
++                touched_ids(&graph, &resource_change(new_resource)),
++                expected_new
++            );
++        }
++    }
++
++    #[test]
++    fn legacy_surface_and_exact_edge_captures_keep_their_targets() {
++        let graph = Graph::new();
++        let first = uuid::Uuid::from_u128(1).to_string();
++        let second = uuid::Uuid::from_u128(2).to_string();
++        let old = CapturedDelta::ReplaySetEdgesByIds {
++            from_id: first.clone(),
++            to_id: second.clone(),
++            edges: Vec::new(),
++        };
++        assert_eq!(touched_ids(&graph, &old), vec![first.clone(), second]);
++        let removed = CapturedDelta::ReplayRemoveNodeById {
++            node_id: first.clone(),
++        };
++        assert_eq!(touched_ids(&graph, &removed), vec![first.clone()]);
++        assert_eq!(ancestry_scopes(&graph, &first)[0].segments(), &[first]);
++        assert!(ancestry_scopes(&graph, "invalid-surface").is_empty());
++    }
++
++    #[test]
++    fn expanded_surface_scopes_keep_watch_matching_and_no_self_wake() {
++        let mut graph = Graph::new();
++        let (first, second, resource) = aliases(&mut graph);
++        let subject = servitor::Subject::new([0x31; 32]);
++        let scopes = touched_ids(&graph, &resource_change(resource))
++            .into_iter()
++            .flat_map(|id| ancestry_scopes(&graph, &id))
++            .collect::<Vec<_>>();
++        let human = servitor::cascade::CommittedEntry::new(1, "human", scopes.clone());
++        let own = servitor::cascade::CommittedEntry::new(2, subject.to_hex(), scopes);
++        for surface in [first, second] {
++            let watch = servitor::Watch {
++                subject,
++                scope: servitor::ScopePath::parse(&surface.to_string()).unwrap(),
++                self_author: subject.to_hex(),
++                cursor: 0,
++            };
++            assert!(watch.matches(&human.as_event()));
++            assert!(!watch.matches(&own.as_event()));
++        }
++    }
++}

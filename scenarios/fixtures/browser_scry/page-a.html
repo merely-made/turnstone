@@ -1,0 +1,40 @@
+<!doctype html>
+<!-- Copyright 2026 Mark Alan Boykin. SPDX-License-Identifier: MPL-2.0 -->
+<html lang="en" data-page="A">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Scry A</title>
+  <link rel="stylesheet" href="fixture.css">
+  <script defer src="fixture.js"></script>
+</head>
+<body><main>
+  <h1>Scry A</h1>
+  <label for="entry">Page A text</label>
+  <input id="entry" autocomplete="off" spellcheck="false">
+  <button id="activate" type="button">Activate A and save</button>
+  <p id="summary" role="status">Waiting for the local fixture script.</p>
+  <div class="motion" aria-hidden="true"></div>
+  <pre id="state" aria-label="Page A observed state"></pre>
+  <label for="composition">Page A composition diagnostic</label>
+  <textarea id="composition" rows="2" spellcheck="false"></textarea>
+  <pre id="events" aria-label="Page A recent events"></pre>
+  <article>
+    <h2>Local browsing fixture A</h2>
+    <p>This page belongs to a local browser acceptance fixture. Its input, button,
+    and visible state make pointer routing and keyboard delivery observable.
+    Every activation saves this page's text in its browser profile. The other
+    page has independent counters and storage keys, so focus mistakes remain
+    visible instead of hiding behind a shared form.</p>
+    <p>SCRYFINDMARK appears here once. Its presence is a diagnostic target for a
+    future document find adapter. An unavailable find result today does not
+    mean that the page has no text or that the platform cannot search it.</p>
+    <p>Resize the pane and read the viewport in the state panel. The colored
+    square moves continuously so captures can expose stale presentation while
+    a static input or unchanged resource handle would otherwise conceal it.</p>
+    <div class="spacer">Scroll A to the lower marker.</div>
+    <p id="lower">SCRYLOWER_A: only page A should move when its wheel is used.</p>
+    <a href="page-b.html">Navigate A to page B</a>
+  </article>
+</main></body>
+</html>

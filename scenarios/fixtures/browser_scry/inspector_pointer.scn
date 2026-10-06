@@ -1,0 +1,18 @@
+# Diagnostic only: reuse the native-inspector profile left at B's Inspector.
+# Captured 1024x600 client geometry puts System webview at approximately 820,244.
+# This physical-point comparison does not certify selector/picker automation.
+settle 60
+assert row URL: ${SCRY_FIXTURE_BASE}/page-b.html
+assert text ${SCRY_FIXTURE_BASE}/page-b.html
+capture inspector-b-before-pointer
+assert snap host-scry-producers == 1
+click-at 820 244
+settle 160
+assert row URL: ${SCRY_FIXTURE_BASE}/page-b.html
+assert row Viewer: scrying.web
+assert snap host-surface-producers == 2
+assert snap host-scry-producers == 2
+assert snap host-scry-imported-pages == 2
+assert snap focused ~ Scry B | text= | clicks=0 | stored=
+capture inspector-b-after-pointer
+record-idle inspector-b-pointer

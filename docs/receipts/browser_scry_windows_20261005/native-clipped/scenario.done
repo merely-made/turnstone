@@ -1,0 +1,20 @@
+RESULT fail
+captured 00_b_inspector_before_pin
+captured 00_b_inspector_after_pin
+captured 01_two_scry_pages
+captured 02_text_pointer_and_keyboard
+FAIL: assert snap browser-current Contains 'scry_B=B-retained': got 'Scry B | text=bravo | clicks=0 | stored=B-retained | cookie= | viewport=255x285@2 | scroll=0,0 | scrolled=no | wheels=0  http://127.0.0.1:43123/page-b.html'
+captured 02b_b_reloaded
+captured 02c_a_wheel
+captured 02d_b_wheel
+captured 02e_both_scroll_reset
+captured 03_find_and_zoom_unavailable
+captured 04_resized_two_pages
+captured 05_a_reader_b_scry
+FAIL: assert snap browser-current Contains 'scry_A=A-retained': got 'Scry A | text=alpha | clicks=0 | stored=A-retained | cookie= | viewport=43x285@2 | scroll=0,0 | scrolled=no | wheels=0  http://127.0.0.1:43123/page-a.html'
+captured 06_a_scry_reconstructed
+captured 07_both_closed
+FAIL: assert snap browser-current Contains 'scry_B=B-retained': got 'Scry B | text=bravo | clicks=0 | stored=B-retained | cookie= | viewport=88x285@2 | scroll=0,0 | scrolled=no | wheels=0  http://127.0.0.1:43123/page-b.html'
+FAIL: assert snap browser-current Contains 'scry_A=A-retained': got 'Scry A | text=alpha | clicks=0 | stored=A-retained | cookie= | viewport=88x285@2 | scroll=0,0 | scrolled=no | wheels=0  http://127.0.0.1:43123/page-a.html'
+captured 08_ready_for_restart
+B1 run 1 complete; run 2 must reuse the exact TURNSTONE_ROOT and loopback origin

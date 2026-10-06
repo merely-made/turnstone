@@ -8,28 +8,73 @@
 //! engine capabilities and zoom; the pane mirrors these from its followed member.
 
 use crate::app::App;
+use crate::content::{EngineAvailability, EngineDescriptor, EngineFamily};
 
-/// The selectable viewer lanes, in radio order. `Auto` clears the override
-/// (the routing policy decides); the named lanes pin an engine id.
-#[cfg(feature = "weld")]
-pub const VIEWER_OPTIONS: [&str; 4] = ["Auto", "genet.livery", "genet.reader", "weld.chromium"];
-#[cfg(not(feature = "weld"))]
-pub const VIEWER_OPTIONS: [&str; 3] = ["Auto", "genet.livery", "genet.reader"];
-
-/// The viewer override a radio index maps to.
-pub fn viewer_for_index(index: usize) -> Option<String> {
-    match index {
-        0 => None,
-        i => VIEWER_OPTIONS.get(i).map(|s| s.to_string()),
-    }
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct ViewerOption {
+    pub viewer: Option<String>,
+    pub label: String,
+    pub selectable: bool,
 }
 
-/// The radio index a sidecar override maps to (unknown overrides show Auto).
-pub fn index_for_viewer(viewer: Option<&str>) -> usize {
-    match viewer {
-        Some(v) => VIEWER_OPTIONS.iter().position(|o| *o == v).unwrap_or(0),
-        None => 0,
+/// Registered and constructible lanes come first. Unavailable saved pins keep
+/// their own selected row rather than being presented as Auto.
+pub fn viewer_options(app: &App, saved: Option<&str>) -> Vec<ViewerOption> {
+    let mut engines = app.engine_inventory.clone();
+    if let Some(saved) = saved
+        && !engines.iter().any(|engine| engine.id == saved)
+    {
+        engines.push(EngineDescriptor {
+            id: saved.into(),
+            label: saved.into(),
+            family: EngineFamily::Unknown,
+            availability: EngineAvailability::Unavailable {
+                reason: "this host has no registration or construction path for the saved engine"
+                    .into(),
+            },
+        });
     }
+    engines.sort_by_key(|engine| {
+        let rank = match engine.id.as_str() {
+            "genet.livery" => 0,
+            "genet.reader" => 1,
+            _ => 2,
+        };
+        (
+            !engine.availability.is_selectable(),
+            rank,
+            engine.id.clone(),
+        )
+    });
+    std::iter::once(ViewerOption {
+        viewer: None,
+        label: "Auto".into(),
+        selectable: true,
+    })
+    .chain(engines.into_iter().map(|engine| ViewerOption {
+        viewer: Some(engine.id.clone()),
+        label: match &engine.availability {
+            EngineAvailability::Registered => engine.label.clone(),
+            availability => format!("{} ({})", engine.label, availability.describe()),
+        },
+        selectable: engine.availability.is_selectable(),
+    }))
+    .collect()
+}
+
+pub fn index_for_viewer(options: &[ViewerOption], viewer: Option<&str>) -> usize {
+    options
+        .iter()
+        .position(|option| option.viewer.as_deref() == viewer)
+        .unwrap_or(options.len())
+}
+
+/// `None` refuses an unavailable/out-of-range row; `Some(None)` selects Auto.
+pub fn viewer_for_index(options: &[ViewerOption], index: usize) -> Option<Option<String>> {
+    options
+        .get(index)
+        .filter(|option| option.selectable)
+        .map(|option| option.viewer.clone())
 }
 
 pub fn capabilities(app: &App, member: Option<uuid::Uuid>) -> Vec<String> {

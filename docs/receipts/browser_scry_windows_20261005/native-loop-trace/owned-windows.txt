@@ -1,0 +1,5 @@
+9242798|30012|True|Static|
+13896308|30012|True|Window Class|Turnstone
+8063432|30012|True|Winit Thread Event Target|
+15600356|30012|False|IME|Default IME
+3607546|30012|False|MSCTFIME UI|MSCTFIME UI

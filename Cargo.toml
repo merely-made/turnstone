@@ -299,8 +299,13 @@ piccolo = ["dep:script-engine-api", "dep:script-engine-piccolo"]
 # host because it has the live D3D12 shared-handle receipt; the feature stays
 # compile-visible elsewhere but registers no platform producer there yet.
 weld = ["dep:weld-engine", "dep:welding", "dep:grafting", "dep:windows"]
+# System WebView2 pages captured into the host's existing D3D12 device.
+# Runtime construction and per-node profiles remain host-owned.
+scry = ["dep:scrying-engine", "dep:windows", "dep:webview2-com"]
 
 [target.'cfg(windows)'.dependencies]
+scrying-engine = { git = "https://github.com/merely-made/mere.git", rev = "3d1cdacc90aa6a0736154d841223a3ae29e23aa5", optional = true }
+webview2-com = { version = "=0.39.1", optional = true }
 # Weld owns CEF's callback-time copy; Grafting owns the generic DX12 shared
 # handle import on Turnstone's existing wgpu device.
 welding = { git = "https://github.com/merely-made/wgpu-weld.git", rev = "65d057def7db2b5034add6e316cbd51d97c163a1", features = ["cef-runtime"], optional = true }

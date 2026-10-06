@@ -64,6 +64,36 @@ pub(crate) fn smolweb_query_url(input_url: &str, answer: &str) -> Option<String>
 }
 
 impl App {
+    /// Browser commands follow the active pane's published member. The graph
+    /// cursor remains the fallback when no pane supplies a member.
+    pub(crate) fn browser_command_target(&self) -> Option<(Uuid, String)> {
+        let content_member = match self.focus {
+            FocusTarget::Content { node, .. } => Some(node),
+            _ => None,
+        };
+        let member = content_member
+            .or_else(|| {
+                self.active_pane
+                    .and_then(|pane| {
+                        self.pane_context
+                            .resolve_context(
+                                pane,
+                                &crate::panes::ContextBinding::Own,
+                                crate::panes::SourceSelector::Graph,
+                            )
+                            .or_else(|| self.follower_context(pane))
+                    })
+                    .and_then(|context| context.member)
+            })
+            .or_else(|| self.graph_runtimes.focused_member())?;
+        let canvas = self
+            .graph_runtimes
+            .graph_containing_member(member)
+            .and_then(|graph| self.graph_runtimes.canvas(graph))?;
+        let (_, node) = canvas.graph().get_node_by_id(member)?;
+        Some((member, node.url().to_string()))
+    }
+
     pub(crate) fn focused_can_back(&self) -> bool {
         let Some(node) = self.graph_runtimes.focused_member() else {
             return false;
@@ -302,11 +332,15 @@ impl App {
             viewer: viewer.clone().unwrap_or_else(|| "auto".to_string()),
         });
         let mut effects = Vec::new();
-        // Live (or in-flight) content respawns through the now-pinned
-        // route, so the setting is seen applying (the Reload shape).
+        // Live, in-flight or failed content respawns through the new route.
+        // Choosing a valid viewer also recovers a failed saved engine pin.
         if matches!(
             self.content.get(member),
-            Some(crate::content::NodeContent::Live | crate::content::NodeContent::Requested)
+            Some(
+                crate::content::NodeContent::Live
+                    | crate::content::NodeContent::Requested
+                    | crate::content::NodeContent::Failed(_)
+            )
         ) && let Some(url) = self
             .graph_runtimes
             .graph()
@@ -450,11 +484,7 @@ impl App {
         // Resolve the node by MEMBER, not by URL round-trip: two
         // nodes may share a URL (the sample graph + an open), and
         // get_node_by_url picks arbitrarily between them.
-        let Some(target) = self
-            .graph_runtimes
-            .focused_member()
-            .zip(self.graph_runtimes.focused_url().map(str::to_string))
-        else {
+        let Some(target) = self.browser_command_target() else {
             return Vec::new();
         };
         let (node, url) = target;
@@ -479,11 +509,7 @@ impl App {
     }
 
     pub(super) fn reload_focused(&mut self) -> Vec<Effect> {
-        let Some(target) = self
-            .graph_runtimes
-            .focused_member()
-            .zip(self.graph_runtimes.focused_url().map(str::to_string))
-        else {
+        let Some(target) = self.browser_command_target() else {
             return vec![Effect::Redraw];
         };
         let (node, url) = target;

@@ -1,0 +1,31 @@
+{
+  "recorded_utc": "2026-10-05T23:23:42.562853+00:00",
+  "supplier": "wgpu-scry",
+  "base_head": "99c0a9deb783a9e9607278123d9b65c62f61e3a3",
+  "source": "C:\\Users\\mark_\\Code\\repos\\wgpu-scry\\scrying\\src\\webview2_composition_producer\\capture.rs",
+  "source_sha256": "404cd9c633a63a61e4ef659105e57ec9f5608d76478ab7bc84bd6915b93a5e0b",
+  "verification": "delegated executed Windows unit gate; root verified reported source hash",
+  "command": "cargo test -p scrying --lib webview2_composition_producer::capture::tests --target-dir C:/t/cargo-targets/wgpu-scry --locked",
+  "result": {
+    "passed": 5,
+    "failed": 0,
+    "filtered_out": 22
+  },
+  "tests": [
+    "coalesced_arrivals_deliver_final_static_paint_and_close_superseded_frame",
+    "legacy_single_dequeue_strands_final_static_paint_positive_control",
+    "latest_frame_keeps_single_sample_and_propagates_empty_pool_error",
+    "continuous_arrivals_are_bounded_and_preserve_next_poll_notification",
+    "visual_reparent_keeps_pending_capture_and_discards_only_pre_move_arrivals"
+  ],
+  "rustfmt_and_diff_check": "passed",
+  "scope": "both Windows acquisition APIs drain at most pool capacity2 and close superseded samples; retains existing frame conversion/fence/custody",
+  "native_run": false,
+  "turnstone_repin": false,
+  "published": false,
+  "closes_frozen_consumer_gates": false,
+  "remaining": "exact repaired-source headed current-pixel, resize and reconstruction receipt; cookies and blank-tile root causes not established",
+  "supplier_commit": "39818a7eddb8bec33f7c61ed144da226bc0a1d04",
+  "consumer_status": "published Scry0.7.1 unchanged; repaired supplier commit not yet consumed",
+  "preserved_supplier_wip": "baseline audit docs, Linux workflow and preflight scripts left outside the supplier commit because initial hunk ownership is uncertain"
+}

@@ -1,0 +1,86 @@
+2026-10-05T23:01:23.670600Z  INFO turnstone::launch: turnstone starting
+2026-10-05T23:01:23.690794Z  INFO turnstone::identity: profile identity protection=OS auto-unlock sealed records at C:\Users\mark_\AppData\Local\personae\vault (DPAPI-wrapped root)
+2026-10-05T23:01:23.712002Z  INFO turnstone::app::session_lifecycle: no session graph; starting on the sample graph
+2026-10-05T23:01:25.014781Z  INFO turnstone::shell::a11y_bridge: a11y_bridge: installed
+2026-10-05T23:01:27.772639Z  WARN turnstone::gemini_identity: failed to project Gemini client identity error=client identities are only valid for gemini:// or titan:// capsules
+2026-10-05T23:01:27.869094Z  INFO turnstone::browse: page fetched url=http://127.0.0.1:43123/page-a.html content_type=Some("text/html") bytes=2040
+2026-10-05T23:01:27.876575Z  INFO turnstone::browse: node title enriched from the page url=http://127.0.0.1:43123/page-a.html title=Scry A
+2026-10-05T23:01:30.168057Z  INFO turnstone::shell::effects: content session live node=b0d55684-f011-4ce2-8fce-7779dd8358b3 url=http://127.0.0.1:43123/page-a.html engine=genet.livery
+2026-10-05T23:01:35.194268Z  INFO turnstone::shell::effects: content session closed node=b0d55684-f011-4ce2-8fce-7779dd8358b3
+2026-10-05T23:01:35.772933Z  INFO turnstone::shell::effects: surface content live node=b0d55684-f011-4ce2-8fce-7779dd8358b3 url=http://127.0.0.1:43123/page-a.html engine=scrying.web
+[producer] resize: 1024x600 -> 252x570
+[producer] start_capture: 252x570 ready in 53ms
+[producer] resize: 252x570 -> 509x570
+[producer] start_capture: 509x570 ready in 32ms
+2026-10-05T23:01:45.155856Z  WARN turnstone::gemini_identity: failed to project Gemini client identity error=client identities are only valid for gemini:// or titan:// capsules
+2026-10-05T23:01:45.289826Z  INFO turnstone::browse: page fetched url=http://127.0.0.1:43123/page-b.html content_type=Some("text/html") bytes=2098
+2026-10-05T23:01:45.298263Z  INFO turnstone::browse: node title enriched from the page url=http://127.0.0.1:43123/page-b.html title=Scry B
+2026-10-05T23:01:48.173974Z  INFO turnstone::shell::effects: content session live node=89047c48-ea63-49a9-8f86-d14ae81cde20 url=http://127.0.0.1:43123/page-b.html engine=genet.livery
+[producer] resize: 509x570 -> 252x570
+[producer] start_capture: 252x570 ready in 28ms
+[producer] resize: 252x570 -> 123x570
+[producer] start_capture: 123x570 ready in 32ms
+2026-10-05T23:01:52.730862Z  INFO turnstone::shell::render: capture state open=false text= suggestions=0 surfaces=8 chrome=true nodes=14
+2026-10-05T23:01:53.055803Z  INFO turnstone::shell::effects: content session closed node=89047c48-ea63-49a9-8f86-d14ae81cde20
+2026-10-05T23:01:53.486625Z  INFO turnstone::shell::effects: surface content live node=89047c48-ea63-49a9-8f86-d14ae81cde20 url=http://127.0.0.1:43123/page-b.html engine=scrying.web
+[producer] resize: 1024x600 -> 123x570
+[producer] start_capture: 123x570 ready in 32ms
+2026-10-05T23:02:03.347605Z  INFO turnstone::shell::render: capture state open=false text= suggestions=0 surfaces=8 chrome=true nodes=14
+[producer] resize: 123x570 -> 252x570
+[producer] start_capture: 252x570 ready in 53ms
+[producer] resize: 123x570 -> 252x570
+[producer] start_capture: 252x570 ready in 84ms
+[producer] resize: 252x570 -> 509x570
+[producer] start_capture: 509x570 ready in 179ms
+[producer] resize: 252x570 -> 509x570
+[producer] start_capture: 509x570 ready in 312ms
+2026-10-05T23:02:08.772051Z  INFO turnstone::shell::render: capture state open=false text= suggestions=0 surfaces=4 chrome=true nodes=14
+2026-10-05T23:02:15.451467Z  INFO turnstone::shell::render: capture state open=false text= suggestions=0 surfaces=3 chrome=false nodes=14
+2026-10-05T23:02:15.833057Z  WARN turnstone::gemini_identity: failed to project Gemini client identity error=client identities are only valid for gemini:// or titan:// capsules
+2026-10-05T23:02:15.861213Z  INFO turnstone::shell::effects: surface content closed node=89047c48-ea63-49a9-8f86-d14ae81cde20
+2026-10-05T23:02:16.284209Z  INFO turnstone::shell::effects: surface content live node=89047c48-ea63-49a9-8f86-d14ae81cde20 url=http://127.0.0.1:43123/page-b.html engine=scrying.web
+2026-10-05T23:02:16.285166Z  INFO turnstone::browse: page fetched url=http://127.0.0.1:43123/page-b.html content_type=Some("text/html") bytes=2098
+2026-10-05T23:02:16.296386Z  INFO turnstone::browse: node title enriched from the page url=http://127.0.0.1:43123/page-b.html title=Scry B
+2026-10-05T23:02:16.669995Z  INFO turnstone::shell::effects: surface content live node=89047c48-ea63-49a9-8f86-d14ae81cde20 url=http://127.0.0.1:43123/page-b.html engine=scrying.web
+[producer] resize: 1024x600 -> 509x570
+[producer] start_capture: 509x570 ready in 90ms
+2026-10-05T23:02:20.481129Z  INFO turnstone::shell::render: capture state open=false text= suggestions=0 surfaces=3 chrome=false nodes=14
+2026-10-05T23:02:24.031431Z  INFO turnstone::shell::render: capture state open=false text= suggestions=0 surfaces=3 chrome=false nodes=14
+2026-10-05T23:02:28.989177Z  INFO turnstone::shell::render: capture state open=false text= suggestions=0 surfaces=3 chrome=false nodes=14
+2026-10-05T23:02:41.855033Z  INFO turnstone::shell::render: capture state open=false text= suggestions=0 surfaces=3 chrome=false nodes=14
+2026-10-05T23:02:44.053615Z  INFO turnstone::shell::render: capture state open=false text= suggestions=0 surfaces=3 chrome=false nodes=14
+[producer] resize: 509x570 -> 252x570
+[producer] start_capture: 252x570 ready in 356ms
+[producer] resize: 509x570 -> 252x570
+[producer] start_capture: 252x570 ready in 211ms
+[producer] resize: 252x570 -> 175x570
+[producer] start_capture: 175x570 ready in 263ms
+[producer] resize: 252x570 -> 175x570
+[producer] start_capture: 175x570 ready in 169ms
+2026-10-05T23:03:01.257350Z  INFO turnstone::shell::render: capture state open=false text= suggestions=0 surfaces=6 chrome=true nodes=14
+[producer] resize: 175x570 -> 85x570
+[producer] start_capture: 85x570 ready in 236ms
+[producer] resize: 175x570 -> 85x570
+[producer] start_capture: 85x570 ready in 138ms
+2026-10-05T23:03:09.766181Z  INFO turnstone::shell::effects: surface content closed node=b0d55684-f011-4ce2-8fce-7779dd8358b3
+2026-10-05T23:03:09.770293Z  INFO turnstone::shell::effects: content session live node=b0d55684-f011-4ce2-8fce-7779dd8358b3 url=http://127.0.0.1:43123/page-a.html engine=genet.reader
+2026-10-05T23:03:26.703602Z  INFO turnstone::shell::render: capture state open=false text= suggestions=0 surfaces=8 chrome=true nodes=14
+2026-10-05T23:03:27.280793Z  INFO turnstone::shell::effects: content session closed node=b0d55684-f011-4ce2-8fce-7779dd8358b3
+2026-10-05T23:03:27.886922Z  INFO turnstone::shell::effects: surface content live node=b0d55684-f011-4ce2-8fce-7779dd8358b3 url=http://127.0.0.1:43123/page-a.html engine=scrying.web
+[producer] resize: 1024x600 -> 85x570
+[producer] start_capture: 85x570 ready in 61ms
+[producer] resize: 85x570 -> 175x570
+[producer] start_capture: 175x570 ready in 37ms
+[producer] resize: 85x570 -> 175x570
+[producer] start_capture: 175x570 ready in 36ms
+2026-10-05T23:03:44.821041Z  INFO turnstone::shell::render: capture state open=false text= suggestions=0 surfaces=6 chrome=true nodes=14
+2026-10-05T23:03:46.522386Z  INFO turnstone::shell::effects: surface content closed node=b0d55684-f011-4ce2-8fce-7779dd8358b3
+2026-10-05T23:03:50.300410Z  INFO turnstone::shell::effects: surface content closed node=89047c48-ea63-49a9-8f86-d14ae81cde20
+2026-10-05T23:03:52.917467Z  INFO turnstone::shell::render: capture state open=false text= suggestions=0 surfaces=4 chrome=true nodes=14
+2026-10-05T23:03:53.872149Z  INFO turnstone::shell::effects: surface content live node=89047c48-ea63-49a9-8f86-d14ae81cde20 url=http://127.0.0.1:43123/page-b.html engine=scrying.web
+[producer] resize: 1024x600 -> 175x570
+[producer] start_capture: 175x570 ready in 41ms
+2026-10-05T23:04:04.404292Z  INFO turnstone::shell::effects: surface content live node=b0d55684-f011-4ce2-8fce-7779dd8358b3 url=http://127.0.0.1:43123/page-a.html engine=scrying.web
+[producer] resize: 1024x600 -> 175x570
+[producer] start_capture: 175x570 ready in 64ms
+2026-10-05T23:04:15.066349Z  INFO turnstone::shell::render: capture state open=false text= suggestions=0 surfaces=6 chrome=true nodes=14

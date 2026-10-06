@@ -1,0 +1,29 @@
+# Research only: current old executable, existing inspector profile/origin.
+# Tests placement and current captured pixels, not the pending selector repair.
+settle 180
+assert snap host-surface-producers == 2
+assert snap host-scry-producers == 2
+assert snap host-scry-imported-pages == 2
+assert pane inspector
+capture before-closing-inspector
+act Close pane
+settle 20
+act Open node in Workbench
+settle 20
+act Maximize pane
+settle 160
+assert maximized
+assert wb-cells == 2
+assert snap host-surface-producers == 2
+assert snap host-scry-producers == 2
+assert snap host-scry-imported-pages == 2
+capture distinct-two-pages
+record-idle geometry
+open ${SCRY_FIXTURE_BASE}/page-a.html
+settle 20
+assert snap focused ~ Scry A | text= | clicks=0 | stored=
+capture current-a-title
+open ${SCRY_FIXTURE_BASE}/page-b.html
+settle 20
+assert snap focused ~ Scry B | text= | clicks=0 | stored=
+capture current-b-title

@@ -1,0 +1,303 @@
+   Compiling proc-macro2 v1.0.107
+   Compiling quote v1.0.47
+   Compiling unicode-ident v1.0.26
+   Compiling cfg-if v1.0.5
+   Compiling getrandom v0.4.3
+   Compiling rand_core v0.10.1
+   Compiling typenum v1.20.1
+   Compiling serde_core v1.0.229
+   Compiling version_check v0.9.5
+   Compiling serde v1.0.229
+   Compiling stable_deref_trait v1.2.1
+   Compiling cpufeatures v0.3.1
+   Compiling sha1_smol v1.0.1
+   Compiling find-msvc-tools v0.1.14
+   Compiling shlex v2.0.1
+   Compiling zmij v1.0.23
+   Compiling subtle v2.6.1
+   Compiling arrayvec v0.7.8
+   Compiling litemap v0.8.3
+   Compiling serde_json v1.0.151
+   Compiling writeable v0.6.4
+   Compiling semver v1.0.28
+   Compiling memchr v2.8.3
+   Compiling generic-array v0.14.7
+   Compiling cc v1.6.0
+   Compiling slotmap v1.1.1
+   Compiling icu_properties_data v2.3.0
+   Compiling utf8_iter v1.0.4
+   Compiling rustc_version v0.4.1
+   Compiling constant_time_eq v0.4.2
+   Compiling icu_normalizer_data v2.3.0
+   Compiling hybrid-array v0.4.15
+   Compiling itoa v1.0.18
+   Compiling simdutf8 v0.1.5
+   Compiling windows_x86_64_msvc v0.52.6
+   Compiling cmov v0.5.4
+   Compiling hashbrown v0.17.1
+   Compiling curve25519-dalek v5.0.0
+   Compiling signature v3.0.0
+   Compiling smallvec v1.16.2
+   Compiling ctutils v0.4.2
+   Compiling crypto-common v0.2.2
+   Compiling block-buffer v0.12.1
+   Compiling inout v0.2.2
+   Compiling equivalent v1.0.2
+   Compiling autocfg v1.5.1
+   Compiling crypto-common v0.1.7
+   Compiling block-buffer v0.10.4
+   Compiling pin-project-lite v0.2.17
+   Compiling foldhash v0.1.5
+   Compiling syn v3.0.6
+   Compiling syn v2.0.119
+   Compiling digest v0.10.7
+   Compiling hashbrown v0.15.5
+   Compiling indexmap v2.14.2
+   Compiling ed25519 v3.0.0
+   Compiling thiserror v1.0.69
+   Compiling once_cell v1.21.4
+   Compiling getrandom v0.3.4
+   Compiling fixedbitset v0.5.7
+   Compiling heck v0.5.0
+   Compiling base64ct v1.8.3
+   Compiling unicase v2.9.0
+   Compiling rand_core v0.6.4
+   Compiling num-traits v0.2.19
+   Compiling digest v0.11.3
+   Compiling universal-hash v0.6.1
+   Compiling cipher v0.5.2
+   Compiling crossbeam-utils v0.8.23
+   Compiling sha2 v0.11.0
+   Compiling mime_guess v2.0.5
+   Compiling poly1305 v0.9.1
+   Compiling password-hash v0.5.0
+   Compiling aead v0.6.1
+   Compiling tracing-core v0.1.36
+   Compiling uuid v1.27.0
+   Compiling chacha20 v0.10.2
+   Compiling blake3 v1.8.7
+   Compiling blake2 v0.10.6
+   Compiling windows-targets v0.52.6
+   Compiling cpufeatures v0.2.17
+   Compiling grid v1.0.1
+   Compiling fnv v1.0.7
+   Compiling percent-encoding v2.3.2
+   Compiling byteorder v1.5.0
+   Compiling windows-sys v0.59.0
+   Compiling chacha20poly1305 v0.11.0
+   Compiling argon2 v0.5.3
+   Compiling cfb v0.7.3
+   Compiling form_urlencoded v1.2.2
+   Compiling slab v0.4.12
+   Compiling futures-task v0.3.34
+   Compiling futures-core v0.3.34
+   Compiling mime v0.3.17
+   Compiling time-core v0.1.9
+   Compiling powerfmt v0.2.0
+   Compiling num-conv v0.2.2
+   Compiling deranged v0.5.8
+   Compiling crossbeam-channel v0.5.17
+   Compiling infer v0.19.0
+   Compiling web-time v1.1.0
+   Compiling synstructure v0.14.0
+   Compiling time v0.3.55
+   Compiling zeroize_derive v1.5.0
+   Compiling munge_macro v0.4.7
+   Compiling curve25519-dalek-derive v0.1.1
+   Compiling strum_macros v0.28.0
+   Compiling tracing-attributes v0.1.31
+   Compiling thiserror-impl v1.0.69
+   Compiling enumn v0.1.14
+   Compiling zerofrom-derive v0.1.8
+   Compiling yoke-derive v0.8.4
+   Compiling serde_derive v1.0.229
+   Compiling zerovec-derive v0.11.6
+   Compiling displaydoc v0.2.7
+   Compiling ptr_meta_derive v0.3.2
+   Compiling bytecheck_derive v0.8.3
+   Compiling rkyv_derive v0.8.18
+   Compiling zeroize v1.9.0
+   Compiling async-trait v0.1.92
+   Compiling munge v0.4.7
+   Compiling futures-macro v0.3.34
+   Compiling ptr_meta v0.3.2
+   Compiling tracing v0.1.44
+   Compiling rancor v0.1.3
+   Compiling zerofrom v0.1.8
+   Compiling futures-util v0.3.34
+   Compiling bytecheck v0.8.3
+   Compiling strum v0.28.0
+   Compiling ed25519-dalek v3.0.0
+   Compiling yoke v0.8.3
+   Compiling rend v0.5.4
+   Compiling zerovec v0.11.8
+   Compiling zerotrie v0.2.5
+   Compiling petgraph v0.8.3
+   Compiling muniment v0.1.2 (C:\Users\mark_\Code\worktrees\mere-graph-semantics\crates\eidetic\muniment)
+   Compiling insigne v0.0.1 (C:\Users\mark_\Code\worktrees\mere-graph-semantics\crates\dramatis\insigne)
+   Compiling accesskit v0.24.1
+   Compiling numen v0.2.0 (C:\Users\mark_\Code\worktrees\mere-graph-semantics\crates\conatus\numen)
+   Compiling euclid v0.22.14
+   Compiling tinystr v0.8.4
+   Compiling potential_utf v0.1.6
+   Compiling icu_collections v2.3.0
+   Compiling icu_locale_core v2.3.0
+   Compiling personae v0.2.1 (C:\Users\mark_\Code\worktrees\mere-graph-semantics\crates\dramatis\personae)
+   Compiling taffy v0.11.0-experimental-cache-fix.3
+   Compiling icu_provider v2.3.1
+   Compiling icu_normalizer v2.3.0
+   Compiling icu_properties v2.3.0
+   Compiling mere-forme v0.1.0 (C:\Users\mark_\Code\worktrees\mere-graph-semantics\crates\forme\forme)
+   Compiling rkyv v0.8.18
+   Compiling idna_adapter v1.2.2
+   Compiling idna v1.1.0
+   Compiling url v2.5.8
+   Compiling chartulary v0.2.2 (C:\Users\mark_\Code\worktrees\mere-graph-semantics\crates\eidetic\chartulary)
+   Compiling servitor v0.0.2 (C:\Users\mark_\Code\worktrees\mere-graph-semantics\crates\servitor)
+   Compiling mere-kernel v0.0.2 (C:\Users\mark_\Code\worktrees\mere-graph-semantics\crates\graph\graph-kernel)
+warning: unused imports: `astar`, `dijkstra`, `has_path_connecting`, and `kosaraju_scc`
+  --> C:\Users\mark_\Code\worktrees\mere-graph-semantics\crates\graph\graph-kernel\src\graph\mod.rs:21:22
+   |
+21 | use petgraph::algo::{astar, dijkstra, has_path_connecting, kosaraju_scc};
+   |                      ^^^^^  ^^^^^^^^  ^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused imports: `Archived`, `Place`, and `Resolver`
+  --> C:\Users\mark_\Code\worktrees\mere-graph-semantics\crates\graph\graph-kernel\src\graph\mod.rs:25:21
+   |
+25 | use rkyv::{Archive, Archived, Deserialize, Place, Resolver, Serialize, rancor::Fallible};
+   |                     ^^^^^^^^               ^^^^^  ^^^^^^^^
+
+warning: unused import: `HashSet`
+  --> C:\Users\mark_\Code\worktrees\mere-graph-semantics\crates\graph\graph-kernel\src\graph\mod.rs:26:43
+   |
+26 | use std::collections::{BTreeMap, HashMap, HashSet};
+   |                                           ^^^^^^^
+
+warning: unused imports: `GraphSnapshot`, `PersistedAddress`, `PersistedArrangementEdgeData`, `PersistedArrangementSubKind`, `PersistedContainmentEdgeData`, `PersistedContainmentSubKind`, `PersistedEdgeFamily`, `PersistedEdge`, `PersistedImportedEdgeData`, `PersistedImportedSubKind`, `PersistedNavigationTrigger`, `PersistedNodeSessionState`, `PersistedNode`, `PersistedProvenanceEdgeData`, `PersistedProvenanceSubKind`, `PersistedSemanticEdgeData`, `PersistedSemanticSubKind`, `PersistedTraversalEdgeData`, `PersistedTraversalMetrics`, and `PersistedTraversalRecord`
+  --> C:\Users\mark_\Code\worktrees\mere-graph-semantics\crates\graph\graph-kernel\src\graph\mod.rs:35:5
+   |
+35 |     GraphSnapshot, PersistedAddress, PersistedArrangementEdgeData, PersistedArrangementSubKind,
+   |     ^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+36 |     PersistedContainmentEdgeData, PersistedContainmentSubKind, PersistedEdge, PersistedEdgeFamily,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^
+37 |     PersistedImportedEdgeData, PersistedImportedSubKind, PersistedNavigationTrigger, PersistedNode,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^
+38 |     PersistedNodeSessionState, PersistedProvenanceEdgeData, PersistedProvenanceSubKind,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^
+39 |     PersistedSemanticEdgeData, PersistedSemanticSubKind, PersistedTraversalEdgeData,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^
+40 |     PersistedTraversalMetrics, PersistedTraversalRecord,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `VecDeque`
+  --> C:\Users\mark_\Code\worktrees\mere-graph-semantics\crates\graph\graph-kernel\src\graph\query.rs:17:42
+   |
+17 | use std::collections::{HashMap, HashSet, VecDeque};
+   |                                          ^^^^^^^^
+
+warning: unused import: `EdgeRef`
+  --> C:\Users\mark_\Code\worktrees\mere-graph-semantics\crates\graph\graph-kernel\src\graph\mod.rs:24:23
+   |
+24 | use petgraph::visit::{EdgeRef, IntoEdgeReferences};
+   |                       ^^^^^^^
+
+warning: unused import: `rancor::Fallible`
+  --> C:\Users\mark_\Code\worktrees\mere-graph-semantics\crates\graph\graph-kernel\src\graph\mod.rs:25:72
+   |
+25 | use rkyv::{Archive, Archived, Deserialize, Place, Resolver, Serialize, rancor::Fallible};
+   |                                                                        ^^^^^^^^^^^^^^^^
+
+warning: methods `navigate_node`, `branch_history`, `node_history_back`, and `node_history_forward` are never used
+   --> C:\Users\mark_\Code\worktrees\mere-graph-semantics\crates\graph\graph-kernel\src\graph\mod.rs:583:19
+    |
+350 | impl Graph {
+    | ---------- methods in this implementation
+...
+583 |     pub(crate) fn navigate_node(&mut self, key: NodeKey, url: &str) {
+    |                   ^^^^^^^^^^^^^
+...
+597 |     pub(crate) fn branch_history(&mut self, child: NodeKey, parent: NodeKey) {
+    |                   ^^^^^^^^^^^^^^
+...
+609 |     pub(crate) fn node_history_back(&mut self, key: NodeKey) -> Option<String> {
+    |                   ^^^^^^^^^^^^^^^^^
+...
+619 |     pub(crate) fn node_history_forward(&mut self, key: NodeKey) -> Option<String> {
+    |                   ^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: methods `assert_semantic_predicate`, `assert_semantic_relation_in_scope`, and `assert_semantic_predicate_in_scope` are never used
+   --> C:\Users\mark_\Code\worktrees\mere-graph-semantics\crates\graph\graph-kernel\src\graph\edge_payload.rs:258:19
+    |
+ 45 | impl EdgePayload {
+    | ---------------- methods in this implementation
+...
+258 |     pub(crate) fn assert_semantic_predicate(&mut self, predicate: String) -> bool {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+262 |     pub(crate) fn assert_semantic_relation_in_scope(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+271 |     pub(crate) fn assert_semantic_predicate_in_scope(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `LogIdAsString` is never constructed
+   --> C:\Users\mark_\Code\worktrees\mere-graph-semantics\crates\graph\graph-kernel\src\graph\identity.rs:132:19
+    |
+132 | pub(crate) struct LogIdAsString;
+    |                   ^^^^^^^^^^^^^
+
+warning: multiple methods are never used
+   --> C:\Users\mark_\Code\worktrees\mere-graph-semantics\crates\graph\graph-kernel\src\graph\edge_ops.rs:132:19
+    |
+ 32 | impl Graph {
+    | ---------- methods in this implementation
+...
+132 |     pub(crate) fn assert_semantic_predicate(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+199 |     pub(crate) fn replay_assert_relation_by_ids(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+210 |     pub(crate) fn replay_set_edge_semantic_predicate_by_ids(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+228 |     pub(crate) fn replay_assert_semantic_predicate_by_ids(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+256 |     pub(crate) fn dissolve_remove_node_collect_traversals(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+492 |     pub(crate) fn get_edge_mut(&mut self, key: EdgeKey) -> Option<&mut EdgePayload> {
+    |                   ^^^^^^^^^^^^
+...
+498 |     pub(crate) fn set_edge_semantic_predicate(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: method `get_node_mut` is never used
+   --> C:\Users\mark_\Code\worktrees\mere-graph-semantics\crates\graph\graph-kernel\src\graph\query.rs:108:19
+    |
+101 | impl Graph {
+    | ---------- method in this implementation
+...
+108 |     pub(crate) fn get_node_mut(&mut self, key: NodeKey) -> Option<&mut Node> {
+    |                   ^^^^^^^^^^^^
+
+warning: `mere-kernel` (lib) generated 12 warnings (run `cargo fix --lib -p mere-kernel` to apply 5 suggestions)
+   Compiling turnstone-resource-capture-gate v0.0.0 (C:\Users\mark_\Code\repos\turnstone\docs\receipts\graph_semantics_p2_20261005\consumer_gate)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 59.23s
+     Running unittests src\lib.rs (C:/t/cargo-targets/turnstone\debug\deps\turnstone_resource_capture_gate-581b31b2673eeaa9.exe)
+
+running 6 tests
+test resource_capture_tests::legacy_surface_and_exact_edge_captures_keep_their_targets ... ok
+test resource_capture_tests::resource_pairs_union_both_endpoint_surfaces_and_deduplicate_self_pairs ... ok
+test resource_capture_tests::a_resource_record_wakes_all_alias_surfaces_and_not_an_unrelated_surface ... ok
+test resource_capture_tests::malformed_or_unshown_resource_ids_do_not_become_bare_surface_wakes ... ok
+test resource_capture_tests::expanded_surface_scopes_keep_watch_matching_and_no_self_wake ... ok
+test resource_capture_tests::shown_resource_retarget_and_clear_wake_only_the_named_surface ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

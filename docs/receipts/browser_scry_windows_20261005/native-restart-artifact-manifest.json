@@ -1,0 +1,46 @@
+{
+  "recorded_utc": "2026-10-05T23:14:59.890268+00:00",
+  "scope": "diagnostic or bounded native evidence; not full B1 acceptance",
+  "files": [
+    {
+      "path": "native-restart/01_restored_two_pages.png",
+      "sha256": "b847a745dbbf52edbca19388114792efff9677b694f1317fee528cd02647b725",
+      "bytes": 134472
+    },
+    {
+      "path": "native-restart/02_restored_a_profile.png",
+      "sha256": "f14fee34af85c910234c11ecced9a79f36f9641b8ab67690954d79a551c7d278",
+      "bytes": 199064
+    },
+    {
+      "path": "native-restart/03_restored_b_profile.png",
+      "sha256": "48778a394c427eb30d4f219a680b9f866bbcc035145541a2e0818e20c86d7b4b",
+      "bytes": 199104
+    },
+    {
+      "path": "native-restart/diagnostics.json",
+      "sha256": "6cb4268321446bf15e2bf1bc7bd5fdbaf1462de198a7cc2e4b6408386d3dfc15",
+      "bytes": 13834
+    },
+    {
+      "path": "native-restart/restored.surface-frames.json",
+      "sha256": "96180ae47be14f647e6cf5999bac6ccff54b136f417b885de4b55358f125e2b3",
+      "bytes": 778
+    },
+    {
+      "path": "native-restart/restored.txt",
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3",
+      "bytes": 110
+    },
+    {
+      "path": "native-restart/run.log",
+      "sha256": "e870ad34c57e127382d25b994ec6025d5068bb445c4a232fb052bbc2c2674fac",
+      "bytes": 2543
+    },
+    {
+      "path": "native-restart/scenario.done",
+      "sha256": "3668e1d9618a319ed1b84febc400ccaed27ba1a69e7d2dbb95c39b26742882f0",
+      "bytes": 643
+    }
+  ]
+}

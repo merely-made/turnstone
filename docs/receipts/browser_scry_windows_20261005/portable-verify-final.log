@@ -1,0 +1,7 @@
+    Blocking waiting for file lock on package cache
+warning: patch `p2panda-stream v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.4#0a54ab82)` was not used in the crate graph
+help: Check that the patched package version and available features are compatible
+      with the dependency requirements. If the patch has a different version from
+      what is locked in the Cargo.lock file, run `cargo update` to use the new
+      version. This may also occur with an optional dependency that is not enabled.
+Verified C:\Users\mark_\Code\repos\turnstone: cargo 1.98.1 (797e8a9bc 2026-08-05); lock sha256=fb490421b31b10246c17a0dc70d5760e503fdb9c92761f40b342d0af42bd60e5; packages=1275

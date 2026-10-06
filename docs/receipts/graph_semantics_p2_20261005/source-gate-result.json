@@ -1,0 +1,28 @@
+{
+  "recorded_utc": "2026-10-06T00:31:13.105729+00:00",
+  "command": "cargo test --manifest-path docs/receipts/graph_semantics_p2_20261005/consumer_gate/Cargo.toml --offline --locked --target-dir C:/t/cargo-targets/turnstone --lib",
+  "passed": 6,
+  "failed": 0,
+  "source_input_count": 209,
+  "source_drift": [],
+  "source_checkpoint_accepted": true,
+  "supplier_base": "e25e774bce38131c51a5f27d0031a4e95793f0c7",
+  "supplier_scope": "reviewed committed bounded P2 slice; C13-C17 and main integration remain open",
+  "behavior_scope": "exact proposed touched_ids/resource fanout/ancestry functions plus six real-kernel/servitor regressions",
+  "full_turnstone_integration": false,
+  "portable_pins_changed": false,
+  "native_scry_claim_changed": false,
+  "artifact_hashes": {
+    "docs\\receipts\\graph_semantics_p2_20261005\\behaviors.patch": "07b943e5491ad8b8411bb9b0a1da4a78c00e861f23ab3f12cf9714ef1e449ed0",
+    "docs\\receipts\\graph_semantics_p2_20261005\\consumer_gate\\src\\lib.rs": "cd398f9ccd0a48e5c39cddfb563a490cfced280d1f249a4da55abff2cee8fda3",
+    "docs\\receipts\\graph_semantics_p2_20261005\\consumer_gate\\Cargo.toml": "1e80ee2ab090a3e2b445939a8f2e3950d74b18602cf87a63ac148b2db0e5237c",
+    "docs\\receipts\\graph_semantics_p2_20261005\\consumer_gate\\Cargo.lock": "fe7fca279b2bc51b8ffa7c0eba913b060fe7d7b7ff47c648d1b899f087720a9e",
+    "docs\\receipts\\graph_semantics_p2_20261005\\consumer-gate.log": "fd2aefb93d9540b691f0bc96347e05063f896de1375ed0d23c240ff0b54046db",
+    "docs\\receipts\\graph_semantics_p2_20261005\\source-gate-inputs.json": "28fa7375510aa3e004ab09452f277adebcc1bb2e70a3ab6465ffe6d1b68be070"
+  },
+  "frozen_scry_source_inputs_checked": 152,
+  "frozen_scry_source_drift": [],
+  "supplier_commit": "cff35712a28419f921a3cb2ffe79ef02268af6c5",
+  "supplier_clean_before": true,
+  "supplier_clean_after": true
+}

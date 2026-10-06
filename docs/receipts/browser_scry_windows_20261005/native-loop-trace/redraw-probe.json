@@ -1,0 +1,11 @@
+{
+  "pid": 43236,
+  "hwnd": 9242798,
+  "thread": 30012,
+  "visible": true,
+  "iconic": false,
+  "last_completed_phase": "record-idle trace-after-input-click",
+  "recorded_utc": "2026-10-05T20:54:48.3516207Z",
+  "diagnostic_action": "RedrawWindow RDW_INVALIDATE|RDW_INTERNALPAINT to the verified owned Turnstone window",
+  "redraw_request_result": true
+}

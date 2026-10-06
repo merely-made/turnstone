@@ -772,7 +772,7 @@ impl Shell {
             }
         }
 
-        #[cfg(all(feature = "weld", windows))]
+        #[cfg(all(any(feature = "weld", feature = "scry"), windows))]
         let (surface_device, surface_queue) = {
             let host = self.host.as_ref().expect("host checked at render entry");
             (host.device().clone(), host.queue().clone())
@@ -783,6 +783,8 @@ impl Shell {
         // borrows `content_sessions` mutably) never overlaps the immutable
         // `host` borrow the second pass holds.
         let mut scenes: Vec<PlannedLayer> = Vec::with_capacity(surfaces.len());
+        #[cfg(all(any(feature = "weld", feature = "scry"), windows))]
+        let mut surface_failures = Vec::new();
         for surface in &surfaces {
             let rect = surface.rect;
             let (rw, rh) = (
@@ -815,12 +817,12 @@ impl Shell {
                     }) {
                         (scene, wgpu::Color::WHITE)
                     } else {
-                        #[cfg(all(feature = "weld", windows))]
+                        #[cfg(all(any(feature = "weld", feature = "scry"), windows))]
                         if let Some(producer) = self.surface_producers.get_mut(&node) {
-                            if let Err(error) = producer.resize(rw, rh) {
-                                tracing::warn!(%node, %error, "surface producer resize failed");
-                            }
-                            match producer.acquire_frame() {
+                            match producer
+                                .resize(rw, rh)
+                                .and_then(|()| producer.acquire_frame())
+                            {
                                 Ok(Some(frame)) => {
                                     let cached = self.surface_frames.entry(node).or_insert(None);
                                     if let Err(error) = super::surface_frames::update_imported_frame(
@@ -828,14 +830,26 @@ impl Shell {
                                         frame,
                                         &surface_device,
                                         &surface_queue,
+                                        #[cfg(feature = "scry")]
+                                        self.scry_frame_importers.get(&node),
                                     ) {
                                         tracing::warn!(%node, %error, "surface frame import failed");
+                                        surface_failures.push((
+                                            node,
+                                            format!("browser frame import failed: {error}"),
+                                        ));
+                                        continue;
                                     }
                                 }
                                 Ok(None) => {}
                                 Err(error) => {
-                                    tracing::warn!(%node, %error, "surface frame acquisition failed")
-                                }
+                                    tracing::warn!(%node, %error, "surface resize/capture failed");
+                                    surface_failures.push((
+                                        node,
+                                        format!("browser resize/capture failed: {error}"),
+                                    ));
+                                    continue;
+                                },
                             }
                             if let Some(Some(frame)) = self.surface_frames.get(&node) {
                                 scenes.push(PlannedLayer::Imported(CompositeLayer {
@@ -844,7 +858,7 @@ impl Shell {
                                     placement: ExternalTexturePlacement::new(rect.dest()),
                                 }));
                             }
-                            // CEF paints on its own thread. Keep driving its
+                            // Browser capture arrives asynchronously. Drive its
                             // mailbox until the shell has a wake bridge.
                             needs_redraw = true;
                             continue;
@@ -901,6 +915,21 @@ impl Shell {
                 scene,
                 clear,
             }));
+        }
+
+        #[cfg(all(any(feature = "weld", feature = "scry"), windows))]
+        if !surface_failures.is_empty() {
+            for (node, error) in surface_failures {
+                // Capture starts lazily, after spawn. A setup/import refusal
+                // must retire its custody and become a visible failed state.
+                self.run_effects(vec![crate::action::Effect::CloseContent { node }]);
+                let effects = self
+                    .app
+                    .apply_update(crate::action::Update::ContentFailed { node, error });
+                self.run_effects(effects);
+            }
+            self.request_redraw();
+            return;
         }
 
         // Pass 2 (immutable): rasterize each scene keyed by its surface id (so

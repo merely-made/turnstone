@@ -1,0 +1,24 @@
+{
+  "recorded_utc": "2026-10-05T23:14:59.890268+00:00",
+  "source_manifest": "source-manifest.json",
+  "source_manifest_sha256": "890d612ec294cb3dece5c94b2a1faa4cd2eaed10aa1eaededdffed77cf9ba313",
+  "source_inputs_reverified": 152,
+  "executable": {
+    "path": "C:\\t\\cargo-targets\\turnstone\\debug\\turnstone.exe",
+    "sha256": "a245130a4becccd35c81c78a5108a2a74d0e980fa52744937711f4e678421948",
+    "bytes": 221219840
+  },
+  "scenario": "scenarios/fixtures/browser_scry/restart_verify.scn",
+  "scenario_sha256": "bc2a1929762822bc2ef9534a8dab4fcaf614e3ec0fca3587a8adffb1fbad5ac5",
+  "native_output": "native-restart",
+  "profile_root": "C:\\Users\\mark_\\Code\\repos\\turnstone\\docs\\receipts\\browser_scry_windows_20261005\\profile\\acceptance-clipped",
+  "fixture_origin": "http://127.0.0.1:43123",
+  "surface_poll_ms": 16,
+  "separate_process": true,
+  "reseeded_storage_or_opened_urls": false,
+  "toggled_content_on": false,
+  "result": "fail",
+  "failed_assertions": 2,
+  "failures": "native page cookies absent; pins/layout/localStorage/text assertions pass",
+  "presentation_acceptance": false
+}
