@@ -88,7 +88,7 @@ pub(crate) async fn connect(
     receipt_path: Option<&Path>,
     expect_revoked: bool,
 ) -> Result<(), String> {
-    let carrier = P2pandaTransport::builder_from_seed(seed)
+    let carrier = P2pandaTransport::builder_from_seed_ref(&seed)
         .alpns(vec![projection_alpn()])
         .mdns(MdnsDiscoveryMode::Active)
         .bind()

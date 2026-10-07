@@ -105,7 +105,7 @@ async fn main() -> Result<(), String> {
         role,
     )?;
 
-    let transport = P2pandaTransport::builder_from_seed(seed)
+    let transport = P2pandaTransport::builder_from_seed_ref(&seed)
         .gossip()
         .bind()
         .await

@@ -481,12 +481,12 @@ mod tests {
     }
 
     async fn p2panda_pair() -> (P2pandaTransport, P2pandaTransport, PeerID, PeerID) {
-        let client = P2pandaTransport::builder_from_seed(viewer().master_keypair().to_seed())
+        let client = P2pandaTransport::builder_from_seed_ref(&viewer().master_keypair().to_seed())
             .alpns(vec![projection_alpn()])
             .bind()
             .await
             .expect("bind projection client");
-        let server = P2pandaTransport::builder_from_seed(owner().master_keypair().to_seed())
+        let server = P2pandaTransport::builder_from_seed_ref(&owner().master_keypair().to_seed())
             .alpns(vec![projection_alpn()])
             .bind()
             .await
