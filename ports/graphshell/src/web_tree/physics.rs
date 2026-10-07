@@ -102,22 +102,19 @@ impl PhysicsPanel {
         Role::ALL[self.role.selected.min(Role::ALL.len() - 1)]
     }
 
-    /// The choice the controls hold. A law that refuses overlays holds none,
-    /// whatever was ticked before it was picked.
+    /// The choice the controls hold. Overlays the picked law refuses are
+    /// left out, whatever was ticked before it was picked.
     pub(super) fn choice(&self) -> PhysicsChoice {
         let law = self.picked_law();
         PhysicsChoice {
             law,
-            overlays: if law.overlay_refusal().is_some() {
-                Vec::new()
-            } else {
-                canvas_physics::ticked_overlays(|overlay| {
-                    PhysicsOverlay::ALL
+            overlays: canvas_physics::ticked_overlays(|overlay| {
+                law.refuses(overlay).is_none()
+                    && PhysicsOverlay::ALL
                         .iter()
                         .position(|o| *o == overlay)
                         .is_some_and(|index| self.overlays[index])
-                })
-            },
+            }),
             kind: PhysicsKindSource::ALL[self.kind.selected.min(PhysicsKindSource::ALL.len() - 1)],
             mass: PhysicsMassSource::ALL[self.mass.selected.min(PhysicsMassSource::ALL.len() - 1)],
             depth: PhysicsDepthSource::ALL
@@ -247,43 +244,50 @@ fn apply(label: &'static str, action: fn(&mut TreePage)) -> Child {
     Box::new(button(label, move |page: &mut TreePage, _| action(page)))
 }
 
-/// The overlay checkboxes, or, while the picked law refuses overlays, the
-/// same boxes greyed and inert with the law's reason beneath.
+/// The overlay checkboxes, each greyed and inert while the picked law
+/// refuses it, with the law's reason beneath.
 fn overlay_group(page: &TreePage) -> Child {
-    let refusal = page.physics.picked_law().overlay_refusal();
+    let law = page.physics.picked_law();
+    let mut reason = None;
     let mut boxes: Vec<Child> = CANVAS_PHYSICS_OVERLAYS
         .iter()
+        .zip(PhysicsOverlay::ALL)
         .enumerate()
-        .map(|(index, (_, label))| match refusal {
-            None => Box::new(el(
-                "label",
-                (
-                    lens(
-                        move |checked: &mut bool| checkbox(*checked).attr("aria-label", *label),
-                        move |page: &mut TreePage| &mut page.physics.overlays[index],
-                    ),
-                    el("span", *label),
-                ),
-            )) as Child,
-            Some(_) => Box::new(
-                el(
+        .map(
+            |(index, ((_, label), overlay))| match law.refuses(overlay) {
+                None => Box::new(el(
                     "label",
                     (
-                        el("span", "[ ]")
-                            .attr("role", "checkbox")
-                            .attr("aria-label", *label)
-                            .attr("aria-checked", "false")
-                            .attr("aria-disabled", "true")
-                            .attr("aria-describedby", "tools-overlay-note")
-                            .attr("class", "checkbox disabled"),
+                        lens(
+                            move |checked: &mut bool| checkbox(*checked).attr("aria-label", *label),
+                            move |page: &mut TreePage| &mut page.physics.overlays[index],
+                        ),
                         el("span", *label),
                     ),
-                )
-                .attr("class", "disabled"),
-            ) as Child,
-        })
+                )) as Child,
+                Some(why) => {
+                    reason = Some(why);
+                    Box::new(
+                        el(
+                            "label",
+                            (
+                                el("span", "[ ]")
+                                    .attr("role", "checkbox")
+                                    .attr("aria-label", *label)
+                                    .attr("aria-checked", "false")
+                                    .attr("aria-disabled", "true")
+                                    .attr("aria-describedby", "tools-overlay-note")
+                                    .attr("class", "checkbox disabled"),
+                                el("span", *label),
+                            ),
+                        )
+                        .attr("class", "disabled"),
+                    ) as Child
+                },
+            },
+        )
         .collect();
-    if let Some(reason) = refusal {
+    if let Some(reason) = reason {
         boxes.push(Box::new(
             el("p", reason)
                 .attr("id", "tools-overlay-note")
@@ -294,9 +298,13 @@ fn overlay_group(page: &TreePage) -> Child {
         .attr("class", "tools-overlays")
         .attr("role", "group")
         .attr("aria-label", "Overlays");
-    match refusal {
-        Some(_) => Box::new(group.attr("aria-disabled", "true")),
-        None => Box::new(group),
+    let all_refused = PhysicsOverlay::ALL
+        .iter()
+        .all(|o| law.refuses(*o).is_some());
+    if all_refused {
+        Box::new(group.attr("aria-disabled", "true"))
+    } else {
+        Box::new(group)
     }
 }
 

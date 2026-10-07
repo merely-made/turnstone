@@ -149,7 +149,7 @@ impl TreeLane {
                 .collect::<Vec<_>>()
                 .join(",")
         };
-        // The overlay boxes greyed while the picked law refuses overlays.
+        // The overlay boxes greyed: those the picked law refuses.
         let disabled = {
             let dom = ctx.runner.dom();
             let dom = dom.borrow();

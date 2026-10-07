@@ -1,7 +1,8 @@
 # Physics receipt (dynamics grammar plan, G3): the picker refuses only what
-# a law's currency refuses. Still and Anneal are kinematic and take an
-# overlay converted (v = F/gamma, the rule Hold follows), so their overlays
-# stay on, where Density's interim refusal greys them (physics_density).
+# a law refuses. Still and Anneal are kinematic and take an overlay
+# converted (v = F/gamma, the rule Hold follows), so their overlays stay on;
+# Density takes Hub room and Centre converted and disables the rest
+# (F73).
 assert title GRAPHSHELL H3 READY
 assert snap ready == true
 select #gs-physics-select anneal.davidson-harel
@@ -18,5 +19,6 @@ assert snap physics-overlays == gravity-locus
 assert dom #gs-product-status Physics set to Still
 select #gs-physics-select density.gastner-newman
 settle 1
-assert dom #gs-overlay-note Density takes no overlays
+assert attr #gs-overlay-grid-snap disabled
+assert dom #gs-overlay-note Density takes only Hub room and Centre
 log physics converted receipt complete

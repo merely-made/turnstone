@@ -1042,29 +1042,38 @@ fn sync_physics_controls(host: &BrowserHost) -> Result<(), String> {
     sync_overlay_availability()
 }
 
-/// Grey the overlay checkboxes, with the reason beside them, while the law
-/// picker names a law that takes no overlays (Density). Runs when the picker
+/// Grey each overlay checkbox the law picker's law refuses, unchecked, with
+/// the reason beside them, and the fieldset when it refuses every one (none
+/// does today; Density refuses all but three, F73). Runs when the picker
 /// changes and whenever the controls follow the canvas.
 pub(super) fn sync_overlay_availability() -> Result<(), String> {
     let law = PhysicsLaw::parse(&select_value("physics-select")?);
-    let refusal = law.and_then(PhysicsLaw::overlay_refusal);
-    let fieldset = element("physics-overlays")?;
-    if refusal.is_some() {
-        fieldset
-            .set_attribute("disabled", "")
-            .map_err(|_| "could not disable the overlays".to_string())?;
-        for overlay in PhysicsOverlay::ALL {
-            element_as::<HtmlInputElement>(&format!("overlay-{}", overlay.id()))?
-                .set_checked(false);
+    let mut reason = None;
+    let mut all = true;
+    for overlay in PhysicsOverlay::ALL {
+        let input = element_as::<HtmlInputElement>(&format!("overlay-{}", overlay.id()))?;
+        match law.and_then(|law| law.refuses(overlay)) {
+            Some(why) => {
+                reason = Some(why);
+                input.set_checked(false);
+                input.set_disabled(true);
+            },
+            None => {
+                all = false;
+                input.set_disabled(false);
+            },
         }
-    } else {
-        fieldset
-            .remove_attribute("disabled")
-            .map_err(|_| "could not enable the overlays".to_string())?;
     }
+    let fieldset = element("physics-overlays")?;
+    if all {
+        fieldset.set_attribute("disabled", "")
+    } else {
+        fieldset.remove_attribute("disabled")
+    }
+    .map_err(|_| "could not set the overlays' state".to_string())?;
     let note = element("overlay-note")?;
-    note.set_text_content(refusal);
-    if refusal.is_some() {
+    note.set_text_content(reason);
+    if reason.is_some() {
         note.remove_attribute("hidden")
     } else {
         note.set_attribute("hidden", "")

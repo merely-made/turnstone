@@ -4,20 +4,22 @@
 # qualitative (ruled 2026-10-03): from the boot start the rank rises above
 # the start's and the density CV falls. Springs from the same start is the
 # control (physics_density_control), and picking Density disables the
-# overlays with the law's reason.
+# overlays it refuses with the law's reason (it takes Hub room and Centre
+# converted, F73).
 assert title GRAPHSHELL H3 READY
 assert snap ready == true
 # The boot arrangement pauses the canvas, so the law is set and applied with
 # nothing moving: its start is the boot layout, the control's too.
 assert snap physics-paused == true
-# An overlay ticked under Springs is disabled once Density is picked.
+# An overlay ticked under Springs that Density refuses is disabled and
+# unticked once Density is picked, so Density applies alone.
 select #gs-physics-select spring.rapier
-check #gs-overlay-tide on
+check #gs-overlay-grid-snap on
 assert attr #gs-overlay-note hidden
 select #gs-physics-select density.gastner-newman
 settle 1
-assert attr #gs-physics-overlays disabled
-assert dom #gs-overlay-note Density takes no overlays
+assert attr #gs-overlay-grid-snap disabled
+assert dom #gs-overlay-note Density takes only Hub room and Centre
 capture physics_density_refused
 wait
 dom click [data-command="apply-physics"]
