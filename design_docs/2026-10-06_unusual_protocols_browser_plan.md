@@ -4,7 +4,7 @@
 **Status (2026-10-07):** ruled. U1 to U14 are ruled: U1, U2 (accessibility
 on all three operating systems comes first), U3, U4, U5, U8 and U9 on
 2026-10-06, and U6, U7, U10 and U11 to U14 on 2026-10-07 (§7). The
-composition brief's AC1 to AC6, U15 and U16 are ruled (§7, fifth round). The stage
+composition brief's AC1 to AC6, U15, U16 and U17 are ruled (§7, fifth round). The stage
 order is in "Stage order (2026-10-07)" under §6. S0 is next; its lane is
 written under S0 and waits on Knot's repin. A cloud
 session owns the plan from 2026-10-07; an assessment lane wrote it, and no
@@ -1028,6 +1028,17 @@ the same record once this lane can push to Mere (U15).
   Mere's smolweb fidelity lane, which owns document-lanes' smolweb sessions.
   Mark: **"This lane (Recommended)"**. *Follows:* this lane owns SC, the
   session seam, E1 and both halves of S8.
+- **U17, keeping composed sessions' leaf keys apart.** Asked after finding
+  that no contributed session hands leaves to a host yet, and that Woodshed's
+  fretboard uses fixed keys. Options: per-session registries (each session
+  owns its leaf and producer registries through the session seam; keys stay
+  as written); namespaced keys in one host registry (AC5's wording, with key
+  translation on every paint and accessibility lookup); both. Mark:
+  **"Per-session registries (Recommended)"**. *Follows:* this refines AC5's
+  "keys carry a per-session namespace" for retained sessions; a namespace
+  returns only if forest mounts come to share one registry. Producers stay
+  host-side for now, because `ProducerRegistry` sits in `cambium-rootstock`
+  above the seam and holds the host's GPU device.
 
 ## Progress
 
