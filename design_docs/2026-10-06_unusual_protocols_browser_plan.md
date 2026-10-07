@@ -1,9 +1,14 @@
 # Unusual-protocols browser plan
 
 **Date:** 2026-10-06
-**Status (2026-10-06):** proposed. Ruled the same day: U1, U2 (accessibility on all three operating systems comes first), U3, U4, U5, U8 and U9. U6, U7 and U10 are with Mark. An assessment lane wrote
-this plan. No code changed, and nothing was built or run (see "Evidence and
-limits"). Stages S0 to S11 wait on the forks in §7.
+**Status (2026-10-07):** ruled. U1 to U14 are ruled: U1, U2 (accessibility
+on all three operating systems comes first), U3, U4, U5, U8 and U9 on
+2026-10-06, and U6, U7, U10 and U11 to U14 on 2026-10-07 (§7). The
+composition brief's AC1 to AC6, U15, U16 and U17 are ruled (§7, fifth round). The stage
+order is in "Stage order (2026-10-07)" under §6. S0 is next; its lane is
+written under S0 and waits on Knot's repin. A cloud
+session owns the plan from 2026-10-07; an assessment lane wrote it, and no
+code has changed (see "Evidence and limits").
 
 ## The bar
 
@@ -313,7 +318,7 @@ kind of app-local copy the stack avoids.
 |---|---|---|---|
 | **Built: a crate pane.** The app ships a provider; Turnstone admits it. | A provider crate in the owning repo (descriptor, stylesheet, erased retained session), plus a Turnstone admission module. Redshank's was 480 lines, beside a 1,327-line authority host for the device. | Low to medium per app | Every composed repo joins the tested pin set, so each Mere move needs it moved first. This is already visible inside Woodshed: its root workspace pins Mere `8106c7c2`, while the Redshank workspace Turnstone consumes pins `3d1cdacc`. Device authority (audio, microphone, MIDI) needs one owner. Build weight grows. |
 | **Runtime: a session projection.** The app serves a granted projection; the host mounts it and returns intents. | A Graphshell endpoint per app with its projection and intent vocabulary. The host draws it generically (FrozenScene, Scenograph) or with the app's surface crate compiled in, as Knot does now. | Medium per app | Generic drawing loses bespoke interaction (a fretboard is not a card). The holder must be online, as the place port plan records for Knot. The machinery has receipts: G3, K2 and I3h. |
-| **Runtime: live pixels.** Another process's producer is shown live in the host's Workbench. | A cross-process producer protocol: shared GPU textures per OS (only D3D12 shared handles exist, from Weld and Scry), input, IME and focus forwarding, accessibility bridged across processes, and lifecycle and crash isolation. | High | High. Turnstone's Scry consumer shows how hard this class is even with a vendor runtime. The [2026-10-05 receipt](../docs/receipts/browser_scry_windows_20261005/README.md) found stale post-input images and blank reopened tiles, and clearing them took a dedicated qualification phase (another session's 2026-10-06 supplier integration receipt, uncommitted when this was written). |
+| **Runtime: live pixels.** Another process's producer is shown live in the host's Workbench. | A cross-process producer protocol: shared GPU textures per OS (the full export, import and fence set exists only on Windows, as D3D12 from Weld and Scry; Linux, through DMABUF over Vulkan, and macOS, through `MTLTexture`, have import halves only, and nothing brokers a handle between two of the stack's own processes: corrected 2026-10-07 from the composition brief's F6), input, IME and focus forwarding, accessibility bridged across processes, and lifecycle and crash isolation. | High | High. Turnstone's Scry consumer shows how hard this class is even with a vendor runtime. The [2026-10-05 receipt](../docs/receipts/browser_scry_windows_20261005/README.md) found stale post-input images and blank reopened tiles, and clearing them took a dedicated qualification phase (another session's 2026-10-06 supplier integration receipt, uncommitted when this was written). |
 | **Runtime: in-process plugins.** Surfaces arrive as Wasm components. | Turnstone's optional `wasm` feature runs `app-core` components through the action envelope (participant gate B3); no guest contributes a surface. It would need a component interface for retained views and paint, plus admission. | High | Medium to high: interface churn and paint cost. |
 
 **The answer.** For a dude and an LLM, the first two modes are the reachable
@@ -399,6 +404,29 @@ is pushed:
 Each stage stops at its done-conditions. Where a stage needs a Mere change,
 that half is Mere's work (U3), and Turnstone is the forcing consumer.
 
+### Stage order (2026-10-07)
+
+From U2 (second round), U4, U7 and U8:
+
+1. **S0**, the tested-set repin.
+2. **S1**, every text document opens. *Reading, not ruled:* S1 stays ahead
+   of SC because a page that doesn't open can't be read, and its Turnstone
+   half (two engine registrations and filtered routing) is small enough to
+   move with SC.
+3. **SC**, one browsing controller in `pelt-core` (U7: before S2 and S8).
+4. **S2 and S8 together**, keyboard, focus and page accessibility on
+   Windows, macOS and Linux. This is the bar's first requirement (U2).
+5. **S3, S4, S5**, then **S6, S7, S9 and S10**.
+6. **Misfin, then Gemini over Reticulum**, after the accessibility bar is
+   met (U2). Neither has a stage yet.
+7. **The session seam (AC2 to AC5; this lane, U15)**: the Mere subtree helper, focus
+   handback at a session's edges, panic containment, per-session key
+   namespaces, and experiment E1. S8 joins page trees through the helper,
+   so the helper and E1a come before S8. *Reading, not ruled:* they run in
+   Mere beside SC, and E1b's headed walks come before S8's.
+8. **S11** is research only (U8). S11a and S11b are not started; S11c
+   became SC.
+
 ### S0. Repin as one tested set
 
 **Depends on:** U9. It comes before any stage that needs a Mere change.
@@ -416,6 +444,42 @@ that half is Mere's work (U3), and Turnstone is the forcing consumer.
 - Remote projection accepts score version 5 and gives a typed refusal for 4.
 - `python scripts/cargo_mode.py verify` passes.
 - `README.md`'s pin list matches `Cargo.toml`.
+
+**Lane (2026-10-07; U9, U12 to U14).** Inputs:
+
+- **Mere:** the revision Knot's repin lands on (the identity session,
+  vault lock ruling 55, "Knot's mere rows to current main"). It must be
+  on `origin/main` at or after `ea74604b`, so it carries WS4.
+- **Genet:** that Mere revision's pin (`d851a9db` at `ea74604b`).
+- **Knot:** the identity session's repin, carrying stack seams S77 (a
+  `Block::Menu` wildcard arm and a `..` in knot-editor's desktop preview).
+  Knot `main` (`6cb57f1`) pins Mere `e0cea3e0` today.
+- **Woodshed:** the browser session's Redshank repin to the same Mere (U13).
+  Redshank pins `db4ee312` at Woodshed `06c2b13`; Woodshed's root pins
+  `5011e2f9`, outside Turnstone's graph.
+- **Turnstone base:** the browser session's pushed commit holding its repin
+  and Servo work (U14). S0 starts from it.
+
+Steps:
+
+1. **Linux baseline (cloud).** `cargo check --workspace --locked` on
+   Turnstone `origin/main` at today's pins, so Linux breaks that predate the
+   repin are known before it.
+2. **Wait** for the Knot, Redshank and Turnstone-base commits above.
+3. **Repin (cloud).** Branch from the base. Set every Mere row, every Genet
+   row, the Knot rows and the Woodshed rows; regenerate the lock with
+   `scripts/cargo_mode.py`, never by hand.
+4. **Consumer fixes.** Surface the four physics refusals
+   (`src/app/mod.rs`, `src/app/session_lifecycle.rs`); score version 5 in,
+   a typed refusal for 4; WS4 fallout (the Gopher search `Submit` stays a
+   typed refusal until S4); `README.md`'s pins.
+5. **Linux gate (cloud),** at `-j 4` under `nice`: `cargo check
+   --workspace --all-targets --locked`, the library suite with `--locked`,
+   one source per sibling in `cargo tree --locked`, and `cargo_mode.py
+   verify`.
+6. **Windows gate.** On Mark's yes, push the branch. A session on Mark's
+   machine runs the same gate at `-j 4`, BelowNormal, and S0 merges to
+   `main` only after it passes.
 
 ### S1. Every text document opens
 
@@ -444,6 +508,39 @@ that half is Mere's work (U3), and Turnstone is the forcing consumer.
 - A headed local receipt shows a fixture Gopher server's menu opening a text
   file.
 - The receipt also records each engine id chosen.
+
+### SC. One browsing controller
+
+**Depends on:** U7 (ruled: before S2 and S8). U11: this lane does the
+`pelt-core` half, on a Mere branch with Mere's gates.
+
+`pelt-core` already has what the accessibility stages need from a
+controller: page zoom, the session's accessibility projection, click-target
+revalidation and accessibility action dispatch (`mere/ports/pelt/core/src/lib.rs`,
+lines 253-305 at `ea74604b`). Turnstone's content port has what Pelt lacks
+(§3).
+
+**Work:**
+
+- Inventory Turnstone's content port against `PeltController`, piece by
+  piece, and record which side each piece comes from. Whether Turnstone's
+  Workbench drives one `PeltController` per node tile, or adopts
+  `PeltWorkspace`, is settled by the inventory and put to Mark if both are
+  viable.
+- Move into `pelt-core` what Turnstone has and Pelt lacks: exact request
+  identity, Stop and Reload, input and trust conversations, downloads,
+  inline images, streaming and per-node lineage.
+- Turnstone's content port drives document tiles through `PeltController`
+  and keeps no controller copy of its own.
+
+**Done when:**
+
+- Turnstone and Pelt drive document tiles through one controller.
+- Turnstone's existing smolweb, NomadNet, capture and recovery tests and
+  scenarios pass through it, with the same exact Stop and Reload identities.
+- Pelt's scenario suites, including its accessibility receipts
+  (`ports/pelt/desktop/workspace_viewer/receipts/a11y.rs`), pass.
+- S1's five cases still pass.
 
 ### S2. Reading basics on every smolweb page
 
@@ -546,7 +643,9 @@ sign-off.
   provider.
 - Add reading settings: body face, size, measure, hard breaks and
   per-protocol theme.
-- Build a home pane from graph truth:
+- Add a start-view setting (U6) with three values: the home pane (default),
+  a home address (a capsule or a local `.gmi` file), or the canvas.
+- Build the home pane from graph truth, as an accessible list-shaped pane:
   - kept capsules;
   - subscriptions with unread counts;
   - the recent trail;
@@ -557,37 +656,66 @@ sign-off.
 - Every moved setting changes live and persists, and the environment only
   overrides.
 - First launch on a fresh profile shows the home pane.
+- Switching the start view to a home address, then to the canvas, takes
+  effect on the next start and persists.
+- The home pane's entries are reachable and named by keyboard and screen
+  reader (an `assert a11y` scenario lists them).
 - Non-address text offers "search with <capsule>" in the omnibar.
 
 ### S7. Offline and revisits
 
-**Depends on:** U10.
+**Depends on:** U10 (ruled: memory plus capture); the page capture plan's
+offline replay.
 
 **Work:**
 
-- Keep the last body of each visited smolweb address, in a bounded store.
-- Back and Forward show the kept body, then refresh by policy.
-- An offline visit shows the kept body, marked stale.
+- Hold the last body of each smolweb address visited in this run, in a
+  bounded in-memory store. Nothing from it reaches disk, so page lifecycle
+  L1 and the shallows hold.
+- Back and Forward show the held body, then refresh by a configurable
+  policy.
+- A visit with the network down shows the held body, marked stale.
+- Across restarts, offline reading comes from capture: a captured page
+  opens from its latest capture through the capture plan's offline replay.
 
 **Done when:**
 
-- With the network disabled, previously visited Gemini, Gopher and NomadNet
-  pages open and read.
-- The stale marker shows.
-- The store stays within its configured bound.
+- With the network disabled, Gemini, Gopher and NomadNet pages visited
+  earlier in the same run open and read, marked stale.
+- After a restart with the network disabled, captured pages open from their
+  captures, and unkept pages say they need the network.
+- No body of an unkept page is written to disk (a test inspects the
+  profile).
+- The memory store stays within its configured bound.
 
 ### S8. Accessibility of pages
 
-**Work:**
+**Runs with S2, after SC** (U2, U7).
 
-- Smolweb sessions publish their content into the stitched AccessKit tree
-  (headings, paragraphs, links and fields), not just an outline.
+**Mere half (this lane, U16):**
+
+- Smolweb and Micron sessions implement `accessibility_projection`
+  (headings, paragraphs, links and fields), as the Reader session already
+  does (`document-lanes/src/reader.rs:608` at `ea74604b`; it is the only
+  document-lanes session that does).
+
+**Turnstone half:**
+
+- Content-port tiles publish the session's projection, through SC's
+  controller, into Turnstone's AccessKit tree as a subtree through the Mere
+  helper (AC2), in place of the `Partial` outline. Turnstone's path-hash
+  stitching for contributed panes (`src/contributed_a11y.rs`) moves onto
+  the same helper. Today Turnstone publishes a `DocumentA11yProjection` only for
+  contributed surfaces (`src/contributed_surface.rs:384`, `src/ui.rs:1659`).
+- Accessibility actions on a link or field route to the owning session.
 
 **Done when:**
 
-- An `assert a11y` scenario lists link names in document order.
-- Mark, at the machine with Narrator, reads a Gemini page and a Gopher menu,
-  follows a link by keyboard, and the receipt records it.
+- An `assert a11y` scenario lists link names in document order for a Gemini
+  page, a Gopher menu and a NomadNet page.
+- On each of Windows (Narrator or NVDA), macOS (VoiceOver) and Linux (Orca),
+  a person reads a Gemini page, a Gopher menu and a NomadNet page, follows a
+  link and submits a field by keyboard, and a dated receipt records it.
 
 ### S9. Distribution and resilience
 
@@ -636,9 +764,8 @@ This stage runs independently of S1 to S10, per U8. Three independent parts:
     device.
   - Done when a staged practice Set renders beside a page and its Rehearsal
     plays. The same surface also runs in `woodshed-genet`.
-- **S11c, Pelt convergence (per U7).**
-  - Done when Turnstone and Pelt drive document tiles through one
-    controller, and both hosts' scenario suites pass.
+- **S11c, Pelt convergence (per U7).** Moved to SC on 2026-10-07, ahead of
+  S2 and S8.
 
 ## 7. Forks for Mark
 
@@ -797,6 +924,122 @@ trust, and the WS4 tail.
   tested set (Knot, then Redshank, then Turnstone), coordinated with the
   browser session that owns the dirty tree.
 
+### Rulings (2026-10-07, third round)
+
+- **U6, what Turnstone shows at start.** Options: the start view is a
+  setting (home pane by default, or a home address, or the canvas); a home
+  address only; no home. Mark: **"Start view is a setting (Recommended)"**.
+  *Follows:* S6 adds the start-view setting with the home pane as its
+  default. The pane is list-shaped, which also makes it the easiest first
+  surface for a screen reader.
+- **U7, Pelt and Turnstone's browsing loop.** Asked with the finding that
+  `pelt-core`'s controller already has page zoom, the document
+  accessibility projection and accessibility action dispatch, while
+  Turnstone's is ahead on request identity, Stop and Reload, prompts,
+  downloads, inline images, streaming and lineage. Options: converge after
+  S4; converge first, before S2 and S8, so keyboard and accessibility code
+  is written once; Turnstone's content port owns browsing and Pelt stays a
+  reference viewer. Mark: **"Converge first"**. *Follows:* stage SC, between
+  S1 and S2. Who does its `pelt-core` half is U11.
+- **U10, what keeps a visited page's body.** The plan's options (a) and (b)
+  collided with page lifecycle rulings: L1 ("History remembers where you
+  went, never what you saw"; content exists only past Keep), L2 (a capture
+  is a Keep, so "every visit is a capture" would keep every visit) and L3
+  (Keep is a bookmark, with no bytes). They were reframed before asking:
+  memory for this run plus capture; kept pages also keep their last body
+  (reverses L3); a durable cache of every visit as a setting, off by
+  default (reverses L1 while on); no offline reading. Mark: **"Memory +
+  capture (Recommended)"**. *Follows:* S7 holds bodies in memory for the
+  running process only, and offline reading across restarts comes from
+  capture. L1 to L3 stand.
+
+### Rulings (2026-10-07, fourth round)
+
+- **U11, who does SC's `pelt-core` half.** `pelt-core` lives in Mere, and
+  U3 covered only S1 to S4. Options: this Turnstone lane, on a Mere branch
+  with Mere's gates; Mere's smolweb fidelity lane; a new Pelt lane in Mere.
+  Mark: **"This Turnstone lane (Recommended)"**. *Follows:* this lane needs
+  push access to Mere, or a local session makes the Mere commits.
+- **U12, where S0 builds.** Options: the cloud session repins and gates on
+  Linux, then a session on Mark's machine runs the Windows gate; all on
+  Mark's machine; cloud only. Mark: **"Cloud first, Windows gate
+  (Recommended)"**. *Follows:* the Linux run is also U1's first Linux
+  evidence. The cloud container has 4 cores, 15 GB of memory and about
+  30 GB of disk, which may not hold a full test build.
+- **U13, who repins Redshank.** Options: the browser session, which moved
+  Redshank last; this lane; Woodshed's own lane. Mark: **"The browser
+  session (Recommended)"**.
+- **U14, the browser session's uncommitted Turnstone repin.** Options: it
+  commits and pushes its repin and Servo work first, and S0 starts from
+  that head; S0 absorbs the repin rows; the browser session carries S0.
+  Mark: **"It commits first (Recommended)"**.
+
+### Rulings (2026-10-07, fifth round: the composition brief)
+
+The U8 research lane's brief is Mere
+`design_docs/cambium_docs/research/2026-10-06_app_composition_brief.md`
+(Mere `5919dc64`). Its forks AC1 to AC6 were put to Mark as written, with
+notes on how AC2 and AC3 meet SC and S8. The brief's own §9 should carry
+the same record once this lane can push to Mere (U15).
+
+- **AC1, how one Cambium app appears inside another.** Options: same
+  process, each guest a retained session with its own document, with
+  authority that must stay in its own process behind a Graphshell session;
+  mounts in the host window's forest document; live pixels from another
+  process. Mark: **"1, but there is a utility to 2 that has yet to be
+  articulated. for now, 1 is good"**. *Follows:* retained sessions are the
+  mechanism. Forest mounts keep a use Mark has yet to articulate, which
+  AC5's reservation keeps open.
+- **AC2, joining accessibility trees.** Options: AccessKit subtrees through
+  one Mere helper every host uses; Turnstone's path-hash stitching moved into
+  Mere unchanged; each host on its own. Mark: **"One mere subtree helper
+  (Recommended)"**. *Follows:* S8 and Pelt's combined tree (through SC) use
+  the helper.
+- **AC3, experiment E1.** Options: E1a (windowless tests in Mere) and E1b
+  (headed walks with Narrator or NVDA, VoiceOver and Orca on Fedora and
+  Mint); E1a only, with the headed walks inside S8; not now. Mark: **"E1a
+  and E1b (Recommended)"**.
+- **AC4, a guest's failure.** Options: catch unwinding panics at every call
+  into a guest session and retire it; a separate process for any guest
+  built outside the host's repository; no containment. Mark: **"Catch panics
+  (Recommended)"**. Turnstone's profiles do not set `panic = "abort"`, so
+  catching works.
+- **AC5, room for forest mounts.** Options: reserve room now with three
+  additive changes (a public `build_at` form, a stylesheet scope class,
+  per-session key namespaces) and build the mount when a consumer needs it;
+  build it now; nothing until needed. Mark: **"Reserve room now
+  (Recommended)"**.
+- **AC6, a future cross-process transport.** Options: paint lists plus
+  shipped AccessKit trees, research only after AC1's path is proven; shared
+  GPU textures plus AccessKit trees; session projections only. Mark:
+  **"Paint lists + a11y trees (Recommended)"**.
+
+- **U15, who builds the session-seam work in Mere** (AC2's subtree helper,
+  focus handback, AC4's panic containment, key namespaces, AC5's
+  reservations and E1). Options: this lane, which already works in Mere for
+  SC (U11) and whose S8 waits on the helper; the stack seams owner (the
+  local "Graph database concept for Mere" session); a new composition lane.
+  Mark: **"This lane (Recommended)"**. *Follows:* this lane owns SC, the
+  session seam and S8, and needs Mere attached with push access (attached
+  2026-10-07).
+- **U16, who does S8's Mere half** (smolweb and Micron sessions in
+  document-lanes implementing `accessibility_projection`; U3 covered S1 to S4
+  only). Options: this lane, which owns the accessibility path end to end;
+  Mere's smolweb fidelity lane, which owns document-lanes' smolweb sessions.
+  Mark: **"This lane (Recommended)"**. *Follows:* this lane owns SC, the
+  session seam, E1 and both halves of S8.
+- **U17, keeping composed sessions' leaf keys apart.** Asked after finding
+  that no contributed session hands leaves to a host yet, and that Woodshed's
+  fretboard uses fixed keys. Options: per-session registries (each session
+  owns its leaf and producer registries through the session seam; keys stay
+  as written); namespaced keys in one host registry (AC5's wording, with key
+  translation on every paint and accessibility lookup); both. Mark:
+  **"Per-session registries (Recommended)"**. *Follows:* this refines AC5's
+  "keys carry a per-session namespace" for retained sessions; a namespace
+  returns only if forest mounts come to share one registry. Producers stay
+  host-side for now, because `ProducerRegistry` sits in `cambium-rootstock`
+  above the seam and holds the host's GPU device.
+
 ## Progress
 
 - **2026-10-06:**
@@ -805,6 +1048,79 @@ trust, and the WS4 tail.
     `392630bb` and `b4f14f2c`, Genet `69a2383b`, Knot `92719898`, `ef89a186`
     and `33cc855`, and Woodshed `9e982b88`.
   - No code changed, and nothing was built or run.
+- **2026-10-07:**
+  - A cloud session took the plan over from the physics coordinator
+    session. The four local plan commits were not on origin, so the text
+    came in by paste.
+  - WS4 is on Mere `origin/main`: `b4f14f2c` (R0 to R5), recorded by
+    `4e57913e`. The head, `ea74604b`, opens stack seams S76: publish
+    `gopher-protocol` 0.2.0, then repin. U9's trigger has fired. S0 waits
+    on the identity session's Knot repin.
+  - Read at Mere `ea74604b`: Pelt's desktop viewer owns one combined
+    AccessKit tree. Each focused document lane contributes a namespaced
+    child subtree, and typed actions route to one tile
+    (`ports/pelt/desktop/workspace_viewer/accessibility.rs`, 1,215 lines;
+    receipts in `.../receipts/a11y.rs`, 1,131 lines). Only the Reader
+    session implements `accessibility_projection`, so for small-web pages
+    both hosts wait on S8's Mere half.
+  - U6, U7 and U10 ruled (third round); U11 to U14 ruled (fourth round).
+  - Mark relayed the physics session's answers. WS4 and the stack seams
+    rounds belong to the local "Graph database concept for Mere" session
+    (rulings S66 and S70 to S75; R6 still on the smolweb branch; S77 is the
+    Knot pattern fix at Knot's next repin). The dirty browser-supplier tree
+    in Turnstone is most likely a Codex agent, not a Claude session: 16
+    files, about 8,800 lines added and 4,500 removed, across `weld.rs`,
+    `effects.rs`, `surface_frames.rs`, the manifests and the lock. U13 and
+    U14's "browser session" is that agent; Mark relays to it.
+  - Mark pushed the plan's four commits; Turnstone `origin/main` is
+    `032463a`. This lane's ruling commits were moved onto it.
+  - The composition brief landed (Mere `5919dc64`); AC1 to AC6, U15 and
+    U16 ruled. Mere `e1bd641` records the AC rulings in the brief's §9 and
+    gives the smolweb fidelity plan its dated U3 note. §4's live-pixel row corrected from its F6.
+  - S0 step 1, Linux baseline: the first `cargo check --workspace --locked`
+    stopped at `alsa-sys` because the container lacked ALSA's development
+    headers. That is an environment gap, not a code break. With
+    `libasound2-dev` and the usual X11, Wayland, xkbcommon, udev,
+    fontconfig, OpenSSL and D-Bus development packages installed, the
+    rerun passed: `cargo check --workspace --locked` at Turnstone
+    `032463a`'s pins (Mere `3d1cdacc`) finished clean on Linux with 82
+    warnings in `turnstone`'s lib. This is Turnstone's first Linux compile
+    evidence (U1); tests were not run.
+  - The session seam (U15) and E1a, on Mere branch `turnstone-session-seam`
+    from `fde06dc`:
+    - `uxtree::graft`: AC2's subtree helper. It checks a frame against the
+      rules the AccessKit consumer enforces by panicking, routes actions by
+      tree, and orders updates so focus entering a guest is one move.
+    - Cambium focus exits: Tab leaves a session at its edges through
+      `SurfaceEffect::FocusExit`, opt-in per session.
+    - `ContainedSession` (AC4): a guest's panic retires it as
+      `Unavailable(Unhealthy)`.
+    - Per-session leaf registries (U17) and a public `OwnedLayout::new`.
+    - E1a passes windowless against `accesskit_consumer` 0.35, 0.36 and 0.38:
+      27 tree-half checks and 18 session-half checks, with the controls
+      failing as they must. `uxtree` (19 unit tests) and `cambium`'s library
+      (249) pass; clippy is clean on the changed files.
+    - Findings: two focus-ordering gaps in the first `Grafts`, each caught by
+      a test before the fix; in-process Genet sessions never share AccessKit
+      ids (the brief's reading corrected); the seam cannot name
+      `ProducerRegistry`.
+    - E1b, the headed walks on Windows, macOS and Linux, is next. SC and S8
+      build on this seam.
+    - Merged to Mere `main` as `a59e4c47` on Mark's word, over 15 newer
+      `main` commits with no conflict. Gates on the merged tree, `--locked`:
+      `uxtree` 19 and E1a tree half 27, `cambium` library 249,
+      `cambium-winit-a11y` 3 and E1a session half 18. The S45 license-header
+      check fails on `crates/system/framing/src/tests.rs` (no MPL Exhibit A),
+      already on `main` before the merge and outside this lane; the new files
+      pass it.
+  - Next in this lane, ruled by Mark: the E1b probe for the headed walks, and
+    S8's Mere half (smolweb and Micron accessibility projections). SC's
+    inventory follows once S8's shape is set.
+  - Asked the identity session to report Knot's repin (commit, Mere and
+    Genet revisions, S77). Asked the physics session who owns WS4 and the
+    stack seams rounds (neither the fidelity plan nor Mere's log names a
+    session) and which session holds Turnstone's dirty browser tree.
+  - Nothing was built or run.
 
 ## Cross-references
 
@@ -817,6 +1133,8 @@ trust, and the WS4 tail.
   (P1, S62, S66, S70 to S75).
 - Mere suite census:
   `mere/design_docs/2026-08-22_turnstone_suite_composition_and_capability_census.md`.
+- Mere app composition brief (U8; AC1 to AC6, E1):
+  `mere/design_docs/cambium_docs/research/2026-10-06_app_composition_brief.md`.
 - Mere family composition thesis:
   `mere/design_docs/2026-08-12_family_composition_thesis_brief.md`.
 - Mere auto-update brief: `mere/design_docs/2026-07-22_auto-update_brief.md`.
