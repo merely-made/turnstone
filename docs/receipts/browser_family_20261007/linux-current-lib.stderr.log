@@ -1,0 +1,1201 @@
+error: invalid type: boolean `true`, expected a map
+ --> ../../../.cargo/git/checkouts/servo-e53a6e7b994a25fe/aac43a3/python/tidy/tests/lints-configuration/no-workspace/Cargo.toml:8:7
+  |
+8 | foo = true
+  |       ^^^^
+warning: patch `burn-remote v0.22.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)` was not used in the crate graph
+warning: patch `cubecl-runtime v0.11.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)` was not used in the crate graph
+warning: patch `p2panda-stream v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5#1bec457e)` was not used in the crate graph
+help: Check that the patched package version and available features are compatible
+      with the dependency requirements. If the patch has a different version from
+      what is locked in the Cargo.lock file, run `cargo update` to use the new
+      version. This may also occur with an optional dependency that is not enabled.
+   Compiling serde_core v1.0.229
+   Compiling serde v1.0.229
+   Compiling log v0.4.34
+   Compiling portable-atomic v1.15.0
+   Compiling smallvec v1.16.1
+   Compiling critical-section v1.2.0
+   Compiling once_cell v1.21.4
+   Compiling zeroize v1.9.0
+   Compiling typenum v1.20.1
+   Compiling pin-project-lite v0.2.17
+   Compiling rand_core v0.10.1
+   Compiling getrandom v0.4.3
+   Compiling bitflags v2.13.2
+   Compiling arrayvec v0.7.8
+   Compiling num-traits v0.2.19
+   Compiling subtle v2.6.1
+   Compiling foldhash v0.2.0
+   Compiling futures-core v0.3.34
+   Compiling thiserror v2.0.20
+   Compiling stable_deref_trait v1.2.1
+   Compiling allocator-api2 v0.2.21
+   Compiling bytes v1.12.1
+   Compiling scopeguard v1.2.0
+   Compiling lock_api v0.4.14
+   Compiling tracing-core v0.1.36
+   Compiling itoa v1.0.18
+   Compiling tracing v0.1.44
+   Compiling slab v0.4.12
+   Compiling generic-array v0.14.7
+   Compiling getrandom v0.2.17
+   Compiling cpufeatures v0.3.1
+   Compiling futures-io v0.3.34
+   Compiling zerofrom v0.1.8
+   Compiling yoke v0.8.3
+   Compiling crypto-common v0.1.7
+   Compiling hybrid-array v0.4.15
+   Compiling zerovec v0.11.8
+   Compiling socket2 v0.6.5
+   Compiling mio v1.2.3
+   Compiling writeable v0.6.4
+   Compiling crypto-common v0.2.2
+   Compiling hashbrown v0.17.1
+   Compiling tokio v1.53.1
+   Compiling tinystr v0.8.4
+   Compiling litemap v0.8.3
+   Compiling icu_locale_core v2.3.0
+   Compiling potential_utf v0.1.6
+   Compiling zerotrie v0.2.5
+   Compiling icu_provider v2.3.1
+   Compiling block-buffer v0.12.1
+   Compiling utf8_iter v1.0.4
+   Compiling sha1_smol v1.0.1
+   Compiling icu_collections v2.3.0
+   Compiling icu_properties_data v2.3.0
+   Compiling percent-encoding v2.3.2
+   Compiling icu_properties v2.3.0
+   Compiling icu_normalizer_data v2.3.0
+   Compiling icu_normalizer v2.3.0
+   Compiling crossbeam-utils v0.8.23
+   Compiling futures-sink v0.3.34
+   Compiling futures-channel v0.3.34
+   Compiling indexmap v2.14.2
+   Compiling futures-task v0.3.34
+   Compiling futures-util v0.3.34
+   Compiling bytemuck v1.25.2
+   Compiling uuid v1.27.0
+   Compiling cpufeatures v0.2.17
+   Compiling const-oid v0.9.6
+   Compiling idna_adapter v1.2.2
+   Compiling idna v1.1.0
+   Compiling parking_lot_core v0.9.12
+   Compiling form_urlencoded v1.2.2
+   Compiling url v2.5.8
+   Compiling block-buffer v0.10.4
+   Compiling digest v0.10.7
+   Compiling zmij v1.0.23
+   Compiling parking_lot v0.12.5
+   Compiling block-padding v0.4.2
+   Compiling inout v0.2.2
+   Compiling serde_json v1.0.151
+   Compiling linux-raw-sys v0.12.1
+   Compiling fastrand v2.5.0
+   Compiling rustix v1.1.5
+   Compiling num-integer v0.1.47
+   Compiling const-oid v0.10.2
+   Compiling cmov v0.5.4
+   Compiling ctutils v0.4.2
+   Compiling cipher v0.5.2
+   Compiling untrusted v0.9.0
+   Compiling ring v0.17.14
+   Compiling constant_time_eq v0.4.2
+   Compiling blake3 v1.8.7
+   Compiling spin v0.9.9
+   Compiling byteorder v1.5.0
+   Compiling chacha20 v0.10.2
+   Compiling digest v0.11.3
+   Compiling base64ct v1.8.3
+   Compiling rand_core v0.6.4
+   Compiling rustls-pki-types v1.15.1
+   Compiling powerfmt v0.2.0
+   Compiling deranged v0.5.8
+   Compiling time v0.3.55
+   Compiling anyhow v1.0.104
+   Compiling tokio-util v0.7.19
+   Compiling base64 v0.22.1
+   Compiling sha2 v0.11.0
+   Compiling ppv-lite86 v0.2.21
+   Compiling block-padding v0.3.3
+   Compiling inout v0.1.4
+   Compiling cipher v0.4.4
+   Compiling pem-rfc7468 v1.0.0
+   Compiling parking v2.2.1
+   Compiling der v0.8.2
+   Compiling rustls-webpki v0.103.15
+   Compiling euclid v0.22.14
+   Compiling libloading v0.8.9
+   Compiling rustls v0.23.45
+   Compiling spki v0.8.0
+   Compiling hashbrown v0.16.1
+   Compiling base16ct v1.0.0
+   Compiling serdect v0.4.3
+   Compiling pkcs8 v0.11.0
+   Compiling curve25519-dalek v5.0.0
+   Compiling getrandom v0.3.4
+   Compiling rand v0.10.3
+   Compiling universal-hash v0.5.1
+   Compiling signature v3.0.0
+   Compiling opaque-debug v0.3.1
+   Compiling simdutf8 v0.1.5
+   Compiling ed25519 v3.0.0
+   Compiling sha2 v0.10.9
+   Compiling fixedbitset v0.5.7
+   Compiling ed25519-dalek v3.0.0
+   Compiling lazy_static v1.5.0
+   Compiling atomic-waker v1.1.2
+   Compiling polyval v0.6.2
+   Compiling futures-lite v2.6.1
+   Compiling aead v0.5.2
+   Compiling static_assertions v1.1.0
+   Compiling ghash v0.5.1
+   Compiling ctr v0.9.2
+   Compiling aes v0.8.4
+   Compiling http v1.5.0
+   Compiling aes-gcm v0.10.3
+   Compiling der v0.7.10
+   Compiling rustc-hash v2.1.3
+   Compiling simd-adler32 v0.3.10
+   Compiling adler2 v2.0.1
+   Compiling foldhash v0.1.5
+   Compiling hashbrown v0.15.5
+   Compiling crc32fast v1.5.2
+   Compiling miniz_oxide v0.9.1
+   Compiling tokio-rustls v0.26.5
+   Compiling rand_chacha v0.3.1
+   Compiling num-bigint v0.4.8
+   Compiling hmac v0.12.1
+   Compiling futures-executor v0.3.34
+   Compiling thiserror v1.0.69
+   Compiling futures v0.3.34
+   Compiling num-rational v0.4.2
+   Compiling rand v0.8.8
+   Compiling strum v0.28.0
+   Compiling flate2 v1.1.10
+   Compiling petgraph v0.8.3
+   Compiling ff v0.13.1
+   Compiling base16ct v0.2.0
+   Compiling sec1 v0.7.3
+   Compiling accesskit v0.24.1
+   Compiling group v0.13.0
+   Compiling phf v0.13.1
+   Compiling hkdf v0.12.4
+   Compiling spki v0.7.3
+   Compiling signature v2.2.0
+   Compiling crypto-bigint v0.5.5
+   Compiling hex v0.4.3
+   Compiling new_debug_unreachable v1.0.6
+   Compiling spin v0.10.1
+   Compiling elliptic-curve v0.13.8
+   Compiling httparse v1.10.1
+   Compiling redb v2.6.3
+   Compiling crossbeam-epoch v0.9.21
+   Compiling openssl-probe v0.2.1
+   Compiling ipnet v2.12.2
+   Compiling rustls-native-certs v0.8.4
+   Compiling muniment v0.1.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling http-body v1.1.0
+   Compiling num-complex v0.4.6
+   Compiling rustls-platform-verifier v0.7.0
+   Compiling rfc6979 v0.4.0
+   Compiling dlib v0.5.3
+   Compiling half v2.7.1
+   Compiling tower-service v0.3.3
+   Compiling try-lock v0.2.5
+   Compiling linebender_resource_handle v0.1.1
+   Compiling want v0.3.1
+   Compiling ecdsa v0.16.9
+   Compiling curve25519-dalek v4.1.3
+   Compiling primeorder v0.13.6
+   Compiling regex-automata v0.4.18
+   Compiling miniz_oxide v0.8.9
+   Compiling fdeflate v0.3.7
+   Compiling h2 v0.4.19
+   Compiling poly1305 v0.8.0
+   Compiling chacha20 v0.9.1
+   Compiling hash32 v0.2.1
+   Compiling num-iter v0.1.46
+   Compiling gethostname v1.1.0
+   Compiling tinyvec v1.13.3
+   Compiling data-encoding v2.11.1
+   Compiling httpdate v1.0.3
+   Compiling hyper v1.11.1
+   Compiling profiling v1.0.18
+   Compiling heapless v0.7.17
+   Compiling png v0.18.1
+   Compiling derive_more v2.1.1
+   Compiling cobs v0.3.0
+   Compiling postcard v1.1.3
+   Compiling pin-project v1.1.13
+   Compiling hyper-util v0.1.20
+   Compiling webpki-roots v1.0.9
+   Compiling fastbloom v0.17.0
+   Compiling font-types v0.12.5
+   Compiling polycool v0.4.0
+   Compiling rand_pcg v0.10.2
+   Compiling nom v8.0.0
+   Compiling lru-slab v0.1.3
+   Compiling precomputed-hash v0.1.1
+   Compiling string_cache v0.9.0
+   Compiling n0-error v1.0.1
+   Compiling kurbo v0.13.1
+   Compiling read-fonts v0.41.0
+   Compiling p384 v0.13.1
+   Compiling p256 v0.13.2
+   Compiling http-body-util v0.1.5
+   Compiling pkcs8 v0.10.2
+   Compiling pem-rfc7468 v0.7.0
+   Compiling color v0.3.3
+   Compiling svg_fmt v0.4.5
+   Compiling guillotiere v0.7.0
+   Compiling peniko v0.6.1
+   Compiling ptr_meta v0.3.2
+   Compiling ssh-encoding v0.2.0
+   Compiling pkcs1 v0.7.5
+   Compiling web_atoms v0.2.6
+   Compiling skrifa v0.44.0
+   Compiling num-bigint-dig v0.8.6
+   Compiling matchers v0.2.0
+   Compiling tendril v0.5.1
+   Compiling ed25519 v2.2.3
+   Compiling sharded-slab v0.1.7
+   Compiling cbc v0.1.2
+   Compiling blowfish v0.9.1
+   Compiling pbkdf2 v0.12.2
+   Compiling tracing-log v0.2.0
+   Compiling thread_local v1.1.10
+   Compiling diatomic-waker v0.2.3
+   Compiling nu-ansi-term v0.50.3
+   Compiling cordyceps v0.3.5
+   Compiling futures-buffered v0.2.13
+   Compiling tracing-subscriber v0.3.23
+   Compiling bcrypt-pbkdf v0.10.0
+   Compiling ssh-cipher v0.2.0
+   Compiling ed25519-dalek v2.2.0
+   Compiling markup5ever v0.39.0
+   Compiling rsa v0.9.10
+   Compiling slotmap v1.1.1
+   Compiling rancor v0.1.3
+   Compiling hyper-rustls v0.27.9
+   Compiling p521 v0.13.3
+   Compiling rand_core v0.9.5
+   Compiling universal-hash v0.6.1
+   Compiling blake2 v0.10.6
+   Compiling sync_wrapper v1.0.2
+   Compiling serde_bytes v0.11.19
+   Compiling raw-window-handle v0.6.2
+   Compiling bytecheck v0.8.3
+   Compiling poly1305 v0.9.1
+   Compiling rand_chacha v0.9.0
+   Compiling ssh-key v0.6.7
+   Compiling n0-future v0.3.2
+   Compiling password-hash v0.5.0
+   Compiling aead v0.6.1
+   Compiling secrecy v0.10.3
+   Compiling base64 v0.23.1
+   Compiling service-binding v3.0.0
+   Compiling hashbrown v0.14.5
+   Compiling tower-layer v0.3.3
+   Compiling dashmap v6.2.1
+   Compiling ssh-agent-lib v0.6.0
+   Compiling munge v0.4.7
+   Compiling chacha20poly1305 v0.11.0
+   Compiling argon2 v0.5.3
+   Compiling rend v0.5.4
+   Compiling insigne v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling document-session-api v0.1.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling rkyv v0.8.18
+   Compiling personae v0.2.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling noq-udp v1.3.0
+   Compiling const-random v0.1.18
+   Compiling tower v0.5.3
+   Compiling layout-dom-api v0.1.1 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling naga-types v30.0.1
+   Compiling ordered-float v5.5.0
+   Compiling either v1.18.0
+   Compiling tower-http v0.6.11
+   Compiling ahash v0.8.12
+   Compiling chartulary v0.2.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling data-encoding-macro v0.1.21
+   Compiling bit-set v0.10.0
+   Compiling netlink-packet-core v0.8.2
+   Compiling tokio-stream v0.1.19
+   Compiling spirv v0.4.0+sdk-1.4.341.0
+   Compiling identity-hash v0.1.0
+   Compiling pollster v0.4.0
+   Compiling sorted-index-buffer v0.2.1
+   Compiling alloc-no-stdlib v2.0.4
+   Compiling netlink-packet-core v0.9.0
+   Compiling netlink-packet-route v0.33.0
+   Compiling alloc-stdlib v0.2.4
+   Compiling noq-proto v1.3.0
+   Compiling naga v30.0.1
+   Compiling iroh-base v1.3.0
+   Compiling reqwest v0.13.5
+   Compiling ash v0.38.0+1.3.281
+   Compiling wgpu-types v30.0.1
+   Compiling paint_list_api v0.1.2 (https://github.com/merely-made/netrender.git?rev=9607d16f1907f6c2085648ae96abcaa30d7c3d41#9607d16f)
+   Compiling sceno v0.0.4 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling netlink-sys v0.8.8
+   Compiling lru v0.18.4
+   Compiling netlink-sys v0.9.0
+   Compiling simple-dns v0.12.0
+   Compiling web-time v1.1.0
+   Compiling xml-rs v0.8.29
+   Compiling presser v0.3.1
+   Compiling mac-addr v0.3.0
+   Compiling ryu v1.0.23
+   Compiling grid v1.0.1
+   Compiling taffy v0.11.0-experimental-cache-fix.3
+   Compiling iroh-metrics v1.0.2
+   Compiling netdev v0.46.3
+   Compiling gpu-allocator v0.28.0
+   Compiling xmltree v0.10.3
+   Compiling equator v0.4.2
+   Compiling n0-dns-resolver v0.1.0
+   Compiling netlink-proto v0.12.2
+   Compiling num_enum v0.7.6
+   Compiling wgpu-naga-bridge v30.0.1
+   Compiling noq v1.3.0
+   Compiling crossbeam-deque v0.8.8
+   Compiling brotli-decompressor v5.0.3
+   Compiling netlink-packet-route v0.31.0
+   Compiling inker v0.1.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling n0-watcher v1.0.0
+   Compiling html5ever v0.39.0
+   Compiling xml5ever v0.39.0
+   Compiling arc-swap v1.9.2
+   Compiling attohttpc v0.30.1
+   Compiling crossbeam-channel v0.5.17
+   Compiling cbor-core v0.10.1
+   Compiling memmap2 v0.9.11
+   Compiling renderdoc-sys v1.1.0
+   Compiling self_cell v1.3.0
+   Compiling wgpu-hal v30.0.1
+   Compiling p2panda-core v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5#1bec457e)
+   Compiling igd-next v0.17.1
+   Compiling iroh-dns v1.3.0
+   Compiling genet-static-dom v0.1.1 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling netwatch v0.19.3
+   Compiling rayon-core v1.13.0
+   Compiling aligned-vec v0.6.4
+   Compiling mere-forme v0.1.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling tokio-websockets v0.13.3
+   Compiling numen v0.2.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling cfb v0.7.3
+   Compiling tempfile v3.27.0
+   Compiling polling v3.11.0
+   Compiling path-dedot v3.1.1
+   Compiling seize v0.5.1
+   Compiling mime v0.3.17
+   Compiling compare v0.0.6
+   Compiling interval-heap v0.0.5
+   Compiling mime_guess v2.0.5
+   Compiling papaya v0.2.5
+   Compiling hax-lib v0.3.7
+   Compiling path-absolutize v3.1.1
+   Compiling infer v0.19.0
+   Compiling iroh-relay v1.3.0
+   Compiling v_frame v0.3.9
+   Compiling rayon v1.12.0
+   Compiling portmapper v0.19.3
+   Compiling wgpu-core-deps-windows-linux-android v30.0.1
+   Compiling backon v1.6.0
+   Compiling as-slice v0.2.1
+   Compiling bit-vec v0.6.3
+   Compiling byteview v0.6.1
+   Compiling xxhash-rust v0.8.18
+   Compiling varint-rs v2.2.1
+   Compiling value-log v1.9.0
+   Compiling bit-set v0.5.3
+   Compiling aligned v0.4.3
+   Compiling iroh v1.3.0
+   Compiling wgpu-core v30.0.1
+   Compiling mere-kernel v0.0.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling wayland-sys v0.31.11
+   Compiling pem v4.0.0
+   Compiling num v0.4.3
+   Compiling crossbeam-skiplist v0.1.3
+   Compiling quick_cache v0.6.24
+   Compiling yasna v0.6.0
+   Compiling hmac v0.13.0
+   Compiling font-types v0.11.3
+   Compiling app_units v0.7.8
+   Compiling no_std_io2 v0.9.4
+   Compiling y4m v0.8.0
+   Compiling downcast-rs v1.2.1
+   Compiling guardian v1.3.0
+   Compiling scoped-tls v1.0.1
+   Compiling double-ended-peekable v0.1.0
+   Compiling lz4_flex v0.11.6
+   Compiling lsm-tree v2.10.4
+   Compiling av-scenechange v0.14.1
+   Compiling wayland-backend v0.3.17
+   Compiling async-stream v0.3.6
+   Compiling bitstream-io v4.10.0
+   Compiling genet-paint-types v0.2.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling read-fonts v0.39.2
+   Compiling rcgen v0.14.10
+   Compiling fraction v0.15.4
+   Compiling wgpu v30.0.1
+   Compiling fancy-regex v0.13.0
+   Compiling maybe-rayon v0.1.1
+   Compiling av1-grain v0.2.5
+   Compiling libcrux-secrets v0.0.6
+   Compiling itertools v0.14.0
+   Compiling vello_encoding v0.10.0
+   Compiling iso8601 v0.6.6
+   Compiling regex v1.13.1
+   Compiling event-listener v5.4.2
+   Compiling concurrent-queue v2.5.0
+   Compiling tinct v0.1.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling smol_str v0.1.24
+   Compiling bytecount v0.6.9
+   Compiling imgref v1.12.3
+   Compiling quick-error v2.0.1
+   Compiling num-cmp v0.1.0
+   Compiling std-semaphore v0.1.0
+   Compiling fjall v2.11.2
+   Compiling rav1e v0.8.1
+   Compiling jsonschema v0.18.3
+   Compiling loop9 v0.1.5
+   Compiling acto v0.8.2
+   Compiling irpc v0.17.0
+   Compiling event-listener-strategy v0.5.4
+   Compiling vello_shaders v0.10.0
+   Compiling libcrux-traits v0.0.8
+   Compiling engine-observables-api v0.2.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling p2panda-store v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5#1bec457e)
+   Compiling icu_locale_fallback_data v2.3.0
+   Compiling libcrux-intrinsics v0.0.8
+   Compiling hkdf v0.13.0
+   Compiling rand v0.9.5
+   Compiling hickory-proto v0.26.3
+   Compiling chacha20poly1305 v0.10.1
+   Compiling hpke-rs-crypto v0.7.0
+   Compiling rand_chacha v0.10.0
+   Compiling futures-intrusive v0.5.0
+   Compiling avif-serialize v0.8.9
+   Compiling libcrux-platform v0.0.3
+   Compiling syn v3.0.6
+   Compiling pxfm v0.1.30
+   Compiling weezl v0.1.12
+   Compiling byteorder-lite v0.1.0
+   Compiling color_quant v1.1.0
+   Compiling rgb v0.8.53
+   Compiling zune-core v0.5.3
+   Compiling zune-jpeg v0.5.15
+   Compiling ravif v0.13.0
+   Compiling gif v0.14.2
+   Compiling image-webp v0.2.4
+   Compiling moxcms v0.8.1
+   Compiling zvariant_utils v4.2.0
+   Compiling libcrux-sha3 v0.0.10
+   Compiling netrender-vello v0.10.1
+   Compiling swarm-discovery v0.6.3
+   Compiling icu_locale_fallback v2.3.0
+   Compiling genet-scripted-dom v0.1.2 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling bon v3.10.2
+   Compiling yeslogic-fontconfig-sys v6.0.1
+   Compiling wayland-client v0.31.15
+   Compiling icu_segmenter_data v2.3.0
+   Compiling eidetic v0.0.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling netrender_device v0.1.2 (https://github.com/merely-made/netrender.git?rev=9607d16f1907f6c2085648ae96abcaa30d7c3d41#9607d16f)
+   Compiling enumflags2 v0.7.12
+   Compiling futures-concurrency v7.7.1
+   Compiling x25519-dalek v2.0.1
+   Compiling k256 v0.13.4
+   Compiling x25519-dalek v3.0.0
+   Compiling pem v3.0.6
+   Compiling yasna v0.5.2
+   Compiling zcheapstr v1.1.0
+   Compiling option-ext v0.2.0
+   Compiling parlance v0.1.0
+   Compiling genet-host-api v0.2.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling genet-fontique v0.10.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling zvariant v5.15.0
+   Compiling rcgen v0.13.2
+   Compiling hpke-rs-rust-crypto v0.7.0
+   Compiling iroh-gossip v0.101.0
+   Compiling netrender v0.1.2 (https://github.com/merely-made/netrender.git?rev=9607d16f1907f6c2085648ae96abcaa30d7c3d41#9607d16f)
+   Compiling icu_segmenter v2.3.0
+   Compiling ractor v0.16.5
+   Compiling iroh-mdns-address-lookup v0.6.0
+   Compiling hpke-rs v0.7.0
+   Compiling image v0.25.10
+   Compiling p2panda-discovery v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5#1bec457e)
+   Compiling p2panda-sync v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5#1bec457e)
+   Compiling tabard v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling skrifa v0.42.1
+   Compiling harfrust v0.8.4
+   Compiling gemini-protocol v0.1.7 (https://github.com/merely-made/smolweb.git?rev=882baeb1b59bbdbb305e475f6675f69af997c4f4#882baeb1)
+   Compiling parley_data v0.10.0
+   Compiling quick-xml v0.39.4
+   Compiling errno v0.3.14
+   Compiling workbench v0.1.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling async-task v4.7.1
+   Compiling signal-hook-registry v1.4.8
+   Compiling genet-parley v0.10.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling scroll-protocol v0.1.0
+   Compiling mere-p2panda-net v0.7.5 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5#1bec457e)
+   Compiling p2panda-encryption v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5#1bec457e)
+   Compiling misfin v0.0.4
+   Compiling async-io v2.6.0
+   Compiling zbus_names v4.3.4
+   Compiling zstd-sys v2.1.0+zstd.1.5.7
+   Compiling async-channel v2.5.0
+   Compiling mere-proofs v0.1.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling genet-text v0.1.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling spartan-protocol v0.1.1
+   Compiling gopher-protocol v0.2.0
+   Compiling nex-protocol v0.1.1
+   Compiling finger-protocol v0.1.1
+   Compiling guppy-protocol v0.1.1
+   Compiling ciborium-io v0.2.2
+   Compiling dtoa v1.0.11
+   Compiling bitflags v1.3.2
+   Compiling symphonia-core v0.5.5
+   Compiling dtoa-short v0.3.5
+   Compiling ciborium-ll v0.2.2
+   Compiling errand v0.4.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling stickleback v0.1.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling zstd-safe v8.0.0
+   Compiling async-signal v0.2.14
+   Compiling dirs-sys v0.4.1
+   Compiling wayland-protocols v0.32.13
+   Compiling async-lock v3.4.2
+   Compiling scenotime v0.0.4 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling notochord v0.1.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling vello_encoding v0.10.0 (https://github.com/mark-ik/vello.git?tag=vello-0.10.0#4354955e)
+   Compiling piper v0.2.5
+   Compiling safe_arch v1.2.0
+   Compiling approx v0.5.1
+   Compiling linux-raw-sys v0.4.15
+   Compiling strength_reduce v0.2.4
+   Compiling transpose v0.2.3
+   Compiling rustix v0.38.44
+   Compiling cssparser v0.37.0
+   Compiling wide v1.7.1
+   Compiling blocking v1.7.0
+   Compiling multiversion v0.9.0
+   Compiling vello v0.10.0 (https://github.com/mark-ik/vello.git?tag=vello-0.10.0#4354955e)
+   Compiling chirograph v0.0.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling async-process v2.5.0
+   Compiling dirs v5.0.1
+   Compiling psm v0.1.32
+   Compiling zstd v0.14.0
+   Compiling quinn-udp v0.5.15
+   Compiling portable-atomic-util v0.2.8
+   Compiling ciborium v0.2.2
+   Compiling zbus_xml v5.2.1
+   Compiling async-executor v1.14.0
+   Compiling paint_list_render v0.1.2 (https://github.com/merely-made/netrender.git?rev=9607d16f1907f6c2085648ae96abcaa30d7c3d41#9607d16f)
+   Compiling async-broadcast v0.7.2
+   Compiling mere-alembic v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling wuff v0.2.9
+   Compiling brotli v8.0.4
+   Compiling scenograph v0.0.4 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling quinn-proto v0.11.18
+   Compiling primal-check v0.3.4
+   Compiling sha1 v0.10.7
+   Compiling incipit v0.2.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling ordered-stream v0.2.0
+   Compiling anymore v1.0.0
+   Compiling rawpointer v0.2.1
+   Compiling compression-core v0.4.33
+   Compiling jotdown v0.10.0
+   Compiling core_detect v1.0.0
+   Compiling encoding_rs v0.8.41
+   Compiling compression-codecs v0.4.43
+   Compiling matrixmultiply v0.3.11
+   Compiling meristem v0.2.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling ref-cast v1.0.27
+   Compiling zbus v5.19.0
+   Compiling pandect v0.1.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling tungstenite v0.29.0
+   Compiling rustfft v6.4.1
+   Compiling quinn v0.11.12
+   Compiling scenomise v0.0.4 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling wuff-capi v0.2.0
+   Compiling zbus-lockstep v0.5.2
+   Compiling ringbuf v0.4.8
+   Compiling stacker v0.1.25
+   Compiling sprigging v0.2.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling simba v0.10.2
+   Compiling cadency v0.0.1 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling calloop v0.13.0
+   Compiling pulldown-cmark v0.13.4
+   Compiling glam v0.33.8
+   Compiling libz-sys v1.1.29
+   Compiling mere-surface-api v0.1.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling webpki-roots v0.26.11
+   Compiling bevy_platform v0.18.1
+   Compiling h3 v0.0.8
+   Compiling genet-taffy v0.14.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling inplace-vec-builder v0.1.1
+   Compiling strict-num v0.1.1
+   Compiling psl-types v2.0.11
+   Compiling genawaiter-macro v0.99.1
+   Compiling xcursor v0.3.11
+   Compiling as-raw-xcb-connection v1.0.1
+   Compiling cursor-icon v1.2.0
+   Compiling x11rb-protocol v0.13.2
+   Compiling ttf-parser v0.25.1
+   Compiling binary-merge v0.1.2
+   Compiling arrayref v0.3.9
+   Compiling xkeysym v0.2.1
+   Compiling tiny-skia-path v0.11.4
+   Compiling range-collections v0.4.6
+   Compiling owned_ttf_parser v0.25.1
+   Compiling x11rb v0.13.2
+   Compiling wayland-csd-frame v0.3.0
+   Compiling wayland-cursor v0.31.14
+   Compiling genawaiter v0.99.1
+   Compiling psl v2.1.234
+   Compiling nalgebra v0.35.0
+   Compiling buckram v0.0.3 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling h3-quinn v0.0.10
+   Compiling rtgc v0.3.0
+   Compiling tokio-tungstenite v0.29.0
+   Compiling cambium v0.3.3 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling fontsan v0.7.0
+   Compiling nematic v0.1.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling calloop-wayland-source v0.3.0
+   Compiling livery v0.0.5 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling atspi-common v0.13.0
+   Compiling realfft v3.5.0
+   Compiling cookie v0.18.2
+   Compiling async-compression v0.4.48
+   Compiling symphonia-metadata v0.5.5
+   Compiling wayland-protocols-wlr v0.3.12
+   Compiling genet-document-resources v0.2.1 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling iroh-io v0.6.2
+   Compiling armillary v0.1.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling positioned-io v0.3.5
+   Compiling data-url v0.3.2
+   Compiling unicode-bidi v0.3.18
+   Compiling ab_glyph_rasterizer v0.1.10
+   Compiling thunderdome v0.6.1
+   Compiling iana-time-zone v0.1.65
+   Compiling chrono v0.4.45
+   Compiling firewheel-core v0.10.1
+   Compiling ab_glyph v0.2.32
+   Compiling fleece v0.5.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling genet-livery v0.0.4 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling bao-tree v0.16.1
+   Compiling smithay-client-toolkit v0.19.2
+   Compiling netfetcher v0.1.1 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling rubato v0.16.2
+   Compiling alsa-sys v0.4.0
+   Compiling glamx v0.3.1
+   Compiling redb v4.3.0
+   Compiling tiny-skia v0.11.4
+   Compiling iroh-util v0.6.0
+   Compiling uxtree v0.0.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling iroh-tickets v1.0.0
+   Compiling reflink-copy v0.1.30
+   Compiling ena v0.14.4
+   Compiling esp v0.1.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling fast-interleave v0.1.3
+   Compiling oxilangtag v0.1.6
+   Compiling lexical-util v1.0.7
+   Compiling downcast-rs v2.0.2
+   Compiling oxiri v0.2.11
+   Compiling oxrdf v0.3.4
+   Compiling parry2d v0.28.0
+   Compiling lexical-parse-integer v1.0.6
+   Compiling fixed-resample v0.9.2
+   Compiling iroh-blobs v0.103.0
+   Compiling sctk-adwaita v0.10.1
+   Compiling alsa v0.11.0
+   Compiling logos v0.16.1
+   Compiling x11-dl v2.21.0
+   Compiling snow v0.10.0
+   Compiling atspi-proxies v0.13.0
+   Compiling xkbcommon-dl v0.4.2
+   Compiling document-canvas v0.1.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling wayland-protocols-plasma v0.3.12
+   Compiling servitor v0.0.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling accesskit_consumer v0.36.0
+   Compiling triple_buffer v8.1.1
+   Compiling same-file v1.0.6
+   Compiling dpi v0.1.2
+   Compiling dasp_sample v0.11.0
+   Compiling smol_str v0.2.2
+   Compiling winit v0.30.13
+   Compiling cpal v0.17.3
+   Compiling firewheel-graph v0.10.2
+   Compiling accesskit_atspi_common v0.18.1
+   Compiling atspi v0.29.0
+   Compiling mere-transport v0.0.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling illume v0.0.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling smartstring v1.0.1
+   Compiling lexical-parse-float v1.0.6
+   Compiling rapier2d v0.33.0
+   Compiling inotify-sys v0.1.8
+   Compiling symphonia-utils-xiph v0.5.5
+   Compiling graphshell-endpoint v0.0.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling mien v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling p2panda-auth v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5#1bec457e)
+   Compiling mooting v0.1.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling knot-file-catalog v0.0.1 (https://github.com/merely-made/knot-editor.git?rev=0096591a0af98bf4777d8bfe718c0423dea9fc90#0096591a)
+   Compiling redshank-model v0.0.0 (https://github.com/merely-made/woodshed.git?rev=82271df20927d41a4cbb79c56a09fef5bbb38cde#82271df2)
+   Compiling extended v0.1.0
+   Compiling ryu-js v1.0.3
+   Compiling thin-vec v0.2.20
+   Compiling json-event-parser v0.2.3
+   Compiling oxjsonld v0.2.6
+   Compiling rhai v1.26.1
+   Compiling symphonia-format-riff v0.5.5
+   Compiling snafu v0.9.2
+   Compiling knot-capture v0.0.1 (https://github.com/merely-made/knot-editor.git?rev=0096591a0af98bf4777d8bfe718c0423dea9fc90#0096591a)
+   Compiling gemot v0.1.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling symphonia-format-isomp4 v0.5.5
+   Compiling inotify v0.11.5
+   Compiling seiche v0.0.6 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling lexical-core v1.0.6
+   Compiling knot-editor-host v0.1.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling accesskit_unix v0.21.1
+   Compiling firewheel-cpal v0.10.0
+   Compiling walkdir v2.5.0
+   Compiling firewheel-nodes v0.10.0
+   Compiling oxttl v0.2.4
+   Compiling mere-fetch v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling symphonia-bundle-mp3 v0.5.5
+   Compiling mere-cartography v0.0.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling symphonia-codec-aac v0.5.5
+   Compiling symphonia-codec-pcm v0.5.5
+   Compiling ipc-channel v0.22.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling luggage v0.1.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling sha1 v0.11.0
+   Compiling hash32 v0.3.1
+   Compiling reference-data v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling chatelaine v0.0.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling servo-media-streams v0.2.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling notify-types v2.1.0
+   Compiling libbz2-rs-sys v0.2.5
+   Compiling mora v0.1.0
+   Compiling cpubits v0.1.1
+   Compiling servo-media-traits v0.2.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling emblem v0.2.0
+   Compiling pictograph v0.2.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling servo-media-player v0.2.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling aes v0.9.3
+   Compiling mora-cmudict v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling bzip2 v0.6.1
+   Compiling notify v8.2.0
+   Compiling castellan v0.0.3 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling knot-composition v0.0.1 (https://github.com/merely-made/knot-editor.git?rev=0096591a0af98bf4777d8bfe718c0423dea9fc90#0096591a)
+   Compiling heapless v0.9.3
+   Compiling mere-webrtc-carrier v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling symphonia v0.5.5
+   Compiling mere-linked-data v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling firewheel v0.10.0
+   Compiling knot-document v0.0.1 (https://github.com/merely-made/knot-editor.git?rev=0096591a0af98bf4777d8bfe718c0423dea9fc90#0096591a)
+   Compiling hifitime v4.3.1
+   Compiling script-rhai v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling platen v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling mere-document-lanes v0.1.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling mere-mesh v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling graphshell-client v0.0.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling mere-apparatus v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling genet-render v0.2.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling arboard v3.6.1 (https://github.com/mark-ik/arboard.git?branch=custom-formats#57a68d03)
+   Compiling eidetic-search v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling genet-render-host v0.2.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling dirs-sys v0.5.0
+   Compiling cbc v0.2.1
+   Compiling sofars v0.6.1
+   Compiling jiff-core v0.1.1
+   Compiling browsing-context-api v0.1.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling audio-primitives v0.1.0 (https://github.com/merely-made/woodshed.git?rev=82271df20927d41a4cbb79c56a09fef5bbb38cde#82271df2)
+   Compiling light-file-dialog v3.21.3
+   Compiling similar v2.7.0
+   Compiling timed-text v0.1.0 (https://github.com/merely-made/woodshed.git?rev=82271df20927d41a4cbb79c56a09fef5bbb38cde#82271df2)
+   Compiling redshank-surfaces v0.0.0 (https://github.com/merely-made/woodshed.git?rev=82271df20927d41a4cbb79c56a09fef5bbb38cde#82271df2)
+   Compiling knot-editor v0.0.3 (https://github.com/merely-made/knot-editor.git?rev=0096591a0af98bf4777d8bfe718c0423dea9fc90#0096591a)
+   Compiling graphshell v0.0.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling redshank-playback v0.0.0 (https://github.com/merely-made/woodshed.git?rev=82271df20927d41a4cbb79c56a09fef5bbb38cde#82271df2)
+   Compiling genet-documents v0.1.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling jiff v0.2.37
+   Compiling turquet v0.13.0 (https://github.com/merely-made/turquet.git?rev=bc3c454f755d0bfd70ab48bd9556a1cda2213d41#bc3c454f)
+   Compiling retinue v0.2.0 (https://github.com/merely-made/retinue.git?rev=fa4f925059cc698058cb21fecc1c825d095741a9#fa4f9250)
+   Compiling dirs v6.0.0
+   Compiling genet-winit-host v0.2.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling mere-moot v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling genet-clipboard v0.1.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling mere v0.0.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling distillery v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling rfd v0.17.2
+   Compiling accesskit_winit v0.32.2
+   Compiling commons-spine v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling redshank-storage v0.0.0 (https://github.com/merely-made/woodshed.git?rev=82271df20927d41a4cbb79c56a09fef5bbb38cde#82271df2)
+   Compiling cambium-winit v0.3.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling taproot v0.1.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling import v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling mere-athanor v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling mere-chrome v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling turnstone v0.1.0 (/home/markik/Code/repos/turnstone)
+warning: unused imports: `Suggestion` and `normalize_address`
+  --> src/app/mod.rs:20:31
+   |
+20 | use crate::ui::{OmnibarState, Suggestion, normalize_address};
+   |                               ^^^^^^^^^^  ^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `browse`
+  --> src/app/mod.rs:26:13
+   |
+26 | use crate::{browse, session};
+   |             ^^^^^^
+
+warning: unused import: `crate::panes::PaneContent`
+  --> src/app/node_arms.rs:16:5
+   |
+16 | use crate::panes::PaneContent;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `CaretMove`
+  --> src/app/omnibar_arms.rs:12:29
+   |
+12 | use crate::action::{Action, CaretMove, Effect};
+   |                             ^^^^^^^^^
+
+warning: unused import: `crate::panes::PaneContent`
+  --> src/app/palette.rs:16:5
+   |
+16 | use crate::panes::PaneContent;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `uuid::Uuid`
+  --> src/app/session_lifecycle.rs:17:5
+   |
+17 | use uuid::Uuid;
+   |     ^^^^^^^^^^
+
+warning: unused import: `PaneContent`
+  --> src/app/session_lifecycle.rs:22:44
+   |
+22 | use crate::panes::{FrisketLayout, GraphId, PaneContent, SessionId};
+   |                                            ^^^^^^^^^^^
+
+warning: unused imports: `MOOT_ACT_ACTION` and `MOOT_DELEGATION_DOMAIN`
+    --> src/place/worker.rs:2663:44
+     |
+2663 |         CollectionChange, ContributionRef, MOOT_ACT_ACTION, MOOT_DELEGATION_DOMAIN,
+     |                                            ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `CapabilityScope`, `DelegationCertificate`, `DelegationParent`, and `delegation_signing_salt`
+    --> src/place/worker.rs:2677:9
+     |
+2677 |         CapabilityScope, DelegationCertificate, DelegationParent, DelegationRevocation,
+     |         ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^
+2678 |         SignedDelegationCertificate, SignedDelegationRevocation, delegation_signing_salt,
+     |                                                                  ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::action::CaretMove`
+   --> src/shell/drive.rs:692:13
+    |
+692 |         use crate::action::CaretMove;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::sync::mpsc::Receiver`
+  --> src/shell/effects.rs:13:5
+   |
+13 | use std::sync::mpsc::Receiver;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `FetchCommand` and `FetchUpdate`
+  --> src/shell/effects.rs:15:13
+   |
+15 | use fetch::{FetchCommand, FetchUpdate};
+   |             ^^^^^^^^^^^^  ^^^^^^^^^^^
+
+warning: unused import: `SessionClick`
+  --> src/shell/effects.rs:17:46
+   |
+17 |     DocumentFindQuery, EngineProfileBinding, SessionClick, SessionSpawnRequest, SurfaceSpawnRequest,
+   |                                              ^^^^^^^^^^^^
+
+warning: unused import: `crate::panes::PaneContent`
+  --> src/shell/effects.rs:22:5
+   |
+22 | use crate::panes::PaneContent;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::surface::SurfaceKind`
+  --> src/shell/render.rs:25:5
+   |
+25 | use crate::surface::SurfaceKind;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `PhysicalPosition`
+  --> src/shell/lens.rs:19:18
+   |
+19 | use winit::dpi::{PhysicalPosition, PhysicalSize};
+   |                  ^^^^^^^^^^^^^^^^
+
+warning: unused imports: `Key as WinitKey` and `NamedKey as WinitNamedKey`
+  --> src/shell/input.rs:16:23
+   |
+16 | use winit::keyboard::{Key as WinitKey, NamedKey as WinitNamedKey};
+   |                       ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `SessionScrollKey`
+  --> src/shell/input.rs:20:27
+   |
+20 | use inker::{SessionClick, SessionScrollKey};
+   |                           ^^^^^^^^^^^^^^^^
+
+warning: unused import: `CaretMove`
+  --> src/shell/input.rs:24:29
+   |
+24 | use crate::action::{Action, CaretMove};
+   |                             ^^^^^^^^^
+
+warning: unused import: `decode_sprite`
+  --> src/shell/input.rs:27:20
+   |
+27 | use super::{Shell, decode_sprite};
+   |                    ^^^^^^^^^^^^^
+
+warning: unused import: `input::pointer_button`
+  --> src/shell/mod.rs:37:5
+   |
+37 | use input::pointer_button;
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::path::Path`
+  --> src/shell/mod.rs:40:5
+   |
+40 | use std::path::Path;
+   |     ^^^^^^^^^^^^^^^
+
+warning: unused import: `image::ImageEncoder`
+  --> src/shell/mod.rs:47:5
+   |
+47 | use image::ImageEncoder;
+   |     ^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `mere::canvas::WHEEL_PAN_SCALE`
+  --> src/shell/mod.rs:49:5
+   |
+49 | use mere::canvas::WHEEL_PAN_SCALE;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `ColorLoad` and `NetrenderOptions`
+  --> src/shell/mod.rs:55:17
+   |
+55 | use netrender::{ColorLoad, NetrenderOptions};
+   |                 ^^^^^^^^^  ^^^^^^^^^^^^^^^^
+
+warning: unused import: `winit::application::ApplicationHandler`
+  --> src/shell/mod.rs:56:5
+   |
+56 | use winit::application::ApplicationHandler;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `PhysicalPosition` and `PhysicalSize`
+  --> src/shell/mod.rs:57:18
+   |
+57 | use winit::dpi::{PhysicalPosition, PhysicalSize};
+   |                  ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^
+
+warning: unused imports: `ElementState`, `Ime`, `MouseButton`, `MouseScrollDelta`, and `WindowEvent`
+  --> src/shell/mod.rs:58:20
+   |
+58 | use winit::event::{ElementState, Ime, MouseButton, MouseScrollDelta, WindowEvent};
+   |                    ^^^^^^^^^^^^  ^^^  ^^^^^^^^^^^  ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^
+
+warning: unused imports: `Key as WinitKey` and `NamedKey as WinitNamedKey`
+  --> src/shell/mod.rs:60:23
+   |
+60 | use winit::keyboard::{Key as WinitKey, NamedKey as WinitNamedKey};
+   |                       ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `Effect`
+  --> src/shell/mod.rs:69:29
+   |
+69 | use crate::action::{Action, Effect, Update};
+   |                             ^^^^^^
+
+warning: unused import: `session`
+  --> src/shell/mod.rs:72:21
+   |
+72 | use crate::{browse, session};
+   |                     ^^^^^^^
+
+warning: unused import: `mere::canvas::palette`
+  --> src/swatch_pane/mod.rs:32:5
+   |
+32 | use mere::canvas::palette;
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `ColorF`
+  --> src/swatch_pane/mod.rs:33:17
+   |
+33 | use sprigging::{ColorF, LeafRegistry, RenderedLeaves};
+   |                 ^^^^^^
+
+warning: unused import: `crate::content::NodeContent`
+  --> src/swatch_pane/mod.rs:37:5
+   |
+37 | use crate::content::NodeContent;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::overmap`
+  --> src/swatch_pane/mod.rs:38:5
+   |
+38 | use crate::overmap;
+   |     ^^^^^^^^^^^^^^
+
+warning: unused import: `genet_clipboard::TextClipboard`
+   --> src/shell/effects.rs:815:25
+    |
+815 |                     use genet_clipboard::TextClipboard as _;
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: variable does not need to be mutable
+    --> src/place/worker.rs:3821:13
+     |
+3821 |         let mut welcome = |open: &mut OpenPlace, seed: u8| {
+     |             ----^^^^^^^
+     |             |
+     |             help: remove this `mut`
+     |
+     = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `caption`
+   --> src/shell/render.rs:754:13
+    |
+754 |         let caption = self
+    |             ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_caption`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `ok`
+    --> src/shell/render.rs:1017:17
+     |
+1017 |             let ok = capture_composed(host, &layers, w, h, &path);
+     |                 ^^ help: if this is intentional, prefix it with an underscore: `_ok`
+
+warning: function `save_certs` is never used
+   --> src/denizen.rs:733:8
+    |
+733 | pub fn save_certs(session_dir: &Path, subject_hex: &str, certs: &[SignedDelegationCertificate]) {
+    |        ^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: methods `projection_input_binding` and `runtime_projection_source` are never used
+    --> src/knot_authoring.rs:2603:12
+     |
+2393 | impl KnotDocumentSession {
+     | ------------------------ methods in this implementation
+...
+2603 |     pub fn projection_input_binding(&self) -> Option<&ProjectionInputBinding> {
+     |            ^^^^^^^^^^^^^^^^^^^^^^^^
+...
+2613 |     pub fn runtime_projection_source(&self) -> Option<RuntimeSourceBinding<KnotRuntimeWitness>> {
+     |            ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `granted_ring_names` is never used
+   --> src/ring.rs:370:8
+    |
+370 | pub fn granted_ring_names(authority: &impl AuthorityProvider, subject: Subject) -> Vec<String> {
+    |        ^^^^^^^^^^^^^^^^^^
+
+warning: function `roster_grid_rows` is never used
+  --> src/roster_view.rs:99:8
+   |
+99 | pub fn roster_grid_rows(app: &App) -> Vec<RosterGridRow> {
+   |        ^^^^^^^^^^^^^^^^
+
+warning: field `0` is never read
+   --> src/scenario.rs:245:12
+    |
+245 |     Settle(u32),
+    |     ------ ^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+245 -     Settle(u32),
+245 +     Settle(()),
+    |
+
+warning: field `0` is never read
+   --> src/scenario.rs:279:17
+    |
+279 |     AssertEvent(String),
+    |     ----------- ^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+279 -     AssertEvent(String),
+279 +     AssertEvent(()),
+    |
+
+warning: field `0` is never read
+   --> src/scenario.rs:299:9
+    |
+299 |     Log(String),
+    |     --- ^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+299 -     Log(String),
+299 +     Log(()),
+    |
+
+warning: variant `Imported` is never constructed
+   --> src/shell/mod.rs:391:5
+    |
+389 | enum PlannedLayer {
+    |      ------------ variant in this enum
+390 |     Scene(PlannedScene),
+391 |     Imported(CompositeLayer),
+    |     ^^^^^^^^
+
+warning: method `pane_label` is never used
+    --> src/shell/mod.rs:1466:8
+     |
+ 682 | impl Shell {
+     | ---------- method in this implementation
+...
+1466 |     fn pane_label(&self, id: crate::panes::PaneId) -> String {
+     |        ^^^^^^^^^^
+
+warning: function `ime_cursor_area` is never used
+    --> src/ui.rs:1128:8
+     |
+1128 | pub fn ime_cursor_area(state: &OmnibarState, w: u32) -> ((f32, f32), (f32, f32)) {
+     |        ^^^^^^^^^^^^^^^
+
+warning: function `chrome_has_content` is never used
+    --> src/ui.rs:1146:8
+     |
+1146 | pub fn chrome_has_content(state: &OmnibarState, caption: Option<&str>) -> bool {
+     |        ^^^^^^^^^^^^^^^^^^
+
+warning: function `scene_from_dom_with_leaves` is never used
+    --> src/ui.rs:2328:8
+     |
+2328 | pub fn scene_from_dom_with_leaves(
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `turnstone` (lib test) generated 51 warnings (run `cargo fix --lib -p turnstone --tests` to apply 38 suggestions)
+   Compiling turnstone-sandbox-bootstrap-win v0.1.0 (/home/markik/Code/repos/turnstone/sandbox_bootstrap_win)
+    Finished `test` profile [unoptimized] target(s) in 11m 51s
+     Running unittests src/lib.rs (/home/markik/Code/target/debug/deps/turnstone-3c072bf0d8c9d694)
+error: test failed, to rerun pass `-p turnstone --lib`

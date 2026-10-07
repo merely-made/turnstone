@@ -1,0 +1,122 @@
+{
+  "schema": "sky-receipt-portability-source-audit-v1",
+  "recorded_utc": "2026-10-07T11:44:30.836655+00:00",
+  "repository_head": "abb349cf7957e2b509f4cb7f492e3e0db4821964",
+  "scope_paths": [
+    "src/sky_receipt.rs",
+    "src/sky_timeline.rs",
+    "src/sky_surface/tests.rs",
+    ".gitattributes",
+    "scenarios/fixtures/sky_receipt_v1_boston_2024-04-08.json",
+    "scenarios/fixtures/sky_receipt_v1_boston_2024-04-09.json"
+  ],
+  "source_files": [
+    {
+      "path": "src/sky_receipt.rs",
+      "before_bytes": 52792,
+      "after_bytes": 53918,
+      "before_sha256": "1a195aab130ada3c2eabe2610e9201caa61f61340d887718dfaea418fe444a87",
+      "after_sha256": "eae27a1d6953879de6db1c442dff33397fdb5b80b70c2337e069f54ccf2f4a91",
+      "newline_style_preserved": "CRLF",
+      "cfg_test_only": true,
+      "production_prefix_bytes": 1443,
+      "production_prefix_before_sha256": "0bcbd78585b1b99e174724bfaa642474f8e26074b5ca10f768ff71305410ffab",
+      "production_prefix_after_sha256": "0bcbd78585b1b99e174724bfaa642474f8e26074b5ca10f768ff71305410ffab",
+      "production_prefix_raw_byte_equal": true,
+      "rustfmt_in_memory_parse": "PASS"
+    },
+    {
+      "path": "src/sky_timeline.rs",
+      "before_bytes": 55582,
+      "after_bytes": 55874,
+      "before_sha256": "d7618358ec91b5e814897182446125775cb028c12077a2a862f55bb4d556f809",
+      "after_sha256": "c0bd3555ce453c8240caf08a7b45eb54ba59051473e163ca69dbb9d25552ca2a",
+      "newline_style_preserved": "CRLF",
+      "cfg_test_only": true,
+      "production_prefix_bytes": 35568,
+      "production_prefix_before_sha256": "d88daeed8a760523221e9ae722253490cbf8e774e286a9d2c61ba281ecae257b",
+      "production_prefix_after_sha256": "d88daeed8a760523221e9ae722253490cbf8e774e286a9d2c61ba281ecae257b",
+      "production_prefix_raw_byte_equal": true,
+      "rustfmt_in_memory_parse": "PASS"
+    },
+    {
+      "path": "src/sky_surface/tests.rs",
+      "before_bytes": 8553,
+      "after_bytes": 9129,
+      "before_sha256": "9a7dcc866c711516cf698e7b9d96e4020d0e695c9244ecb27e945f26d441678b",
+      "after_sha256": "27143dd8eb24b360519d5ccac8148016b55308e0f67346e1119ee105454b4b6e",
+      "newline_style_preserved": "LF",
+      "cfg_test_only": true,
+      "production_prefix_bytes": 0,
+      "production_prefix_before_sha256": null,
+      "production_prefix_after_sha256": null,
+      "production_prefix_raw_byte_equal": "whole file is the cfg(test) child module",
+      "rustfmt_in_memory_parse": "PASS"
+    }
+  ],
+  "fixed_dto_fixtures": [
+    {
+      "source": "docs/receipts/browser_family_20261007/windows-sky-receipt-2024-04-08.json",
+      "target": "scenarios/fixtures/sky_receipt_v1_boston_2024-04-08.json",
+      "bytes": 9637,
+      "sha256": "a244a3bc2ade271422563297dcc622ce7138355a1969504e6abf444c6ba12dd2",
+      "historical_literal_blake3": "caff8371d348ba141397a8185e291c533c6ab12d4fe85f9ce3be797707ce411d",
+      "source_copy_raw_byte_equal": true,
+      "provenance": "Exact Windows DTO bytes from root-owned same-source current diagnostics; historical P0 literal digest retained independently of recalculation."
+    },
+    {
+      "source": "docs/receipts/browser_family_20261007/windows-sky-receipt-2024-04-09.json",
+      "target": "scenarios/fixtures/sky_receipt_v1_boston_2024-04-09.json",
+      "bytes": 9209,
+      "sha256": "3d9a42d71fe1b79120a28e7d15097dead4e7b992a981b695ff7304bbae61e42a",
+      "historical_literal_blake3": "74883b5db9fa959cccdeb69744da4a99baec5bfd55bade77426cfe6b0d9c450f",
+      "source_copy_raw_byte_equal": true,
+      "provenance": "Exact Windows DTO bytes from root-owned same-source current diagnostics; historical P0 literal digest retained independently of recalculation."
+    }
+  ],
+  "fixture_git_attributes": "scenarios/fixtures/sky_receipt_v1_boston_2024-04-08.json: text: unset\nscenarios/fixtures/sky_receipt_v1_boston_2024-04-09.json: text: unset\n",
+  "attributes_before_sha256": "c3c70d79da405d2e1c00ad82230eec5337af35ff9b8fa2aaad2ff2bf1de1c734",
+  "attributes_after_sha256": "0d715d6db8d4db8012277fbdbbccaecef0d7e66b3b1a600301433cde5accb225",
+  "attributes_change": "Two exact fixture paths -text; all earlier rows unchanged.",
+  "protected_source_guards": {
+    "src/denizen.rs": {
+      "sha256": "37c2d5a8d4e00a306adefbeb61c537cd6367adf0eabd6ede6c046bcd107db3cf",
+      "unchanged": true
+    },
+    "src/chrome_view.rs": {
+      "sha256": "e41817e1c10e1edecf51c6884d2f713f3fd37043a3f437cf1ebce746b3f4550d",
+      "unchanged": true
+    },
+    "src/sky_surface.rs": {
+      "sha256": "1e5d764e9070830c3cdddb1413b1691c266571aaef6dbc78abcd41e916fcd29f",
+      "unchanged": true
+    }
+  },
+  "production_delta": "None. No serialization, digest, numerical implementation, policies, inputs, or tolerance values changed.",
+  "preserved_numerical_controls": [
+    "11 reference facts and all body/event-kind counts",
+    "request date/timezone and exact UTC civil boundaries",
+    "provider model/snapshot/accuracy0.010deg",
+    "Earth orientation identity and selected body rise/set policies",
+    "monotonic event order, local civil-day membership and zero-width position snapshots",
+    "event solver brackets<=1.01seconds",
+    "reference Sun rise/set and NewMoon times within existing5minute tolerance",
+    "all existing DTO validation and exact round-trip assertions",
+    "distinct receipts after date/policy change and unchanged opening provenance"
+  ],
+  "test_additions": [
+    "One fixedDTO golden test validates both original Windows date manifests, reserializes exact bytes and preserves caff/7488 literal BLAKE3 digests.",
+    "Same-platform repeated analytical timeline and surface calculations must produce identical receipt bytes.",
+    "Computed projection/timeline digests must hash exact actual prettyJSON bytes.",
+    "Provider provenance label must carry the full current computed receipt digest."
+  ],
+  "qualification_basis": "Root exact Windows/Linux DTO diagnosis found only four angular result leaves differing by<=7.81e-17rad; inputs, TT bounds, models, policies, provenance and other facts identical. This audit records the authorized test repair, not an independent numerical recomputation.",
+  "checks": {
+    "in_memory_rustfmt_parse": "PASS",
+    "git_diff_check": "PASS",
+    "fixture_raw_copy_equality": "PASS",
+    "git_text_attribute_unset": "PASS",
+    "protected_denizen_and_chrome_guards": "PASS"
+  },
+  "limits": "Source-only checks. No Cargo, tests, native app, commits or cleanup. Full Windows/Linux qualification belongs to Root. Exact fixedDTO hashes do not imply cross-platform astronomical computation equality."
+}

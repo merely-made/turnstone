@@ -1,0 +1,29 @@
+{
+  "command": [
+    "cargo",
+    "+1.98.1",
+    "tree",
+    "--locked",
+    "--workspace",
+    "--features",
+    "scry,weld,servo"
+  ],
+  "cwd": "C:\\Users\\mark_\\Code\\repos\\turnstone",
+  "started_utc": "2026-10-07T10:55:34.265898+00:00",
+  "finished_utc": "2026-10-07T10:55:39.275971+00:00",
+  "elapsed_seconds": 5.0,
+  "exit_code": 0,
+  "priority": "BelowNormal",
+  "environment": {
+    "CEF_PATH": "C:/Users/mark_/Code/cef-cache/wgpu-weld/154.0.34/cef_windows_x86_64",
+    "LIBCLANG_PATH": "C:/Program Files/LLVM/bin",
+    "CMAKE_GENERATOR": "Visual Studio 17 2022",
+    "CARGO_TARGET_DIR": "C:/t/cargo-targets/turnstone",
+    "CARGO_BUILD_JOBS": "1",
+    "CARGO_NET_GIT_FETCH_WITH_CLI": "true",
+    "RUSTFLAGS": null,
+    "CARGO_ENCODED_RUSTFLAGS": null,
+    "CARGO_PROFILE_DEV_DEBUG": null,
+    "CARGO_PROFILE_TEST_DEBUG": null
+  }
+}

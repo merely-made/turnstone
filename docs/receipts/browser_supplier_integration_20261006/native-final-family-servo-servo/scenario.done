@@ -1,0 +1,11 @@
+RESULT ok
+captured 01_two_upstream_servo_pages
+captured 02_a_native_input_and_navigation
+captured 03_b_native_input_and_navigation
+captured 04_resize_and_orientation
+captured 05_a_reader_b_servo
+captured 06_a_servo_reconstructed
+captured 07_both_servo_views_closed
+captured 08_reopened_in_same_servo_process
+captured 09_final_servo_teardown
+B3 upstream Servo: shared named profile, independent views and input, native navigation, normalized orientation, resize, reconstruction and teardown

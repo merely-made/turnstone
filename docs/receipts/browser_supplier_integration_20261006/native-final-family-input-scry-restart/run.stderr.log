@@ -1,0 +1,20 @@
+[producer] resize: 1024x600 -> 175x570
+[producer] start_capture: 175x570 ready in 26ms
+[producer] resize: 1024x600 -> 175x570
+[producer] start_capture: 175x570 ready in 23ms
+[producer] resize: 175x570 -> 85x570
+[producer] start_capture: 85x570 ready in 25ms
+[producer] resize: 175x570 -> 85x570
+[producer] start_capture: 85x570 ready in 24ms
+[producer] resize: 85x570 -> 175x570
+[producer] start_capture: 175x570 ready in 23ms
+[producer] resize: 85x570 -> 175x570
+[producer] start_capture: 175x570 ready in 22ms
+[producer] resize: 175x570 -> 85x570
+[producer] start_capture: 85x570 ready in 24ms
+[producer] resize: 175x570 -> 85x570
+[producer] start_capture: 85x570 ready in 22ms
+[producer] resize: 85x570 -> 175x570
+[producer] start_capture: 175x570 ready in 23ms
+[producer] resize: 85x570 -> 175x570
+[producer] start_capture: 175x570 ready in 23ms

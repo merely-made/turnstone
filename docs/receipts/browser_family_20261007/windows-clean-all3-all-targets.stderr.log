@@ -1,0 +1,1365 @@
+error: invalid type: boolean `true`, expected a map
+ --> ..\..\..\.cargo\git\checkouts\servo-e53a6e7b994a25fe\aac43a3\python\tidy\tests\lints-configuration\no-workspace\Cargo.toml:8:7
+  |
+8 | foo = true
+  |       ^^^^
+warning: patch `burn-remote v0.22.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)` was not used in the crate graph
+warning: patch `cubecl-runtime v0.11.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)` was not used in the crate graph
+warning: patch `p2panda-stream v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5#1bec457e)` was not used in the crate graph
+help: Check that the patched package version and available features are compatible
+      with the dependency requirements. If the patch has a different version from
+      what is locked in the Cargo.lock file, run `cargo update` to use the new
+      version. This may also occur with an optional dependency that is not enabled.
+    Checking zeroize v1.9.0
+    Checking foldhash v0.2.0
+    Checking stable_deref_trait v1.2.1
+    Checking allocator-api2 v0.2.21
+    Checking windows-sys v0.61.2
+    Checking hashbrown v0.17.1
+    Checking lock_api v0.4.14
+    Checking indexmap v2.14.2
+    Checking bitflags v2.13.2
+    Checking yoke v0.8.3
+    Checking zerovec v0.11.8
+    Checking tinystr v0.8.4
+    Checking icu_locale_core v2.3.0
+    Checking potential_utf v0.1.6
+    Checking zerotrie v0.2.5
+    Checking icu_provider v2.3.1
+    Checking generic-array v0.14.7
+    Checking icu_collections v2.3.0
+    Checking unicode-bidi v0.3.18
+    Checking crypto-common v0.1.7
+    Checking socket2 v0.6.5
+    Checking icu_properties v2.3.0
+    Checking mio v1.2.3
+    Checking tokio v1.53.1
+    Checking parking_lot v0.12.5
+    Checking icu_normalizer v2.3.0
+    Checking tracing v0.1.44
+    Checking form_urlencoded v1.2.2
+    Checking idna_adapter v1.2.2
+    Checking idna v1.1.0
+    Checking url v2.5.8
+    Checking zerocopy v0.8.57
+    Checking block-buffer v0.10.4
+    Checking digest v0.10.7
+    Checking windows-core v0.62.2
+    Checking spin v0.9.9
+    Checking serde_json v1.0.151
+    Checking windows-numerics v0.3.1
+    Checking windows-future v0.3.2
+    Checking windows-collections v0.3.2
+    Checking deranged v0.5.8
+    Checking windows v0.62.2
+    Checking time-core v0.1.9
+    Checking time v0.3.55
+    Checking lazy_static v1.5.0
+    Checking encoding_rs v0.8.41
+    Checking sha2 v0.10.9
+    Checking png v0.18.1
+    Checking strum v0.28.0
+    Checking derive_more v2.1.1
+    Checking kurbo v0.13.1
+    Checking tokio-util v0.7.19
+    Checking read-fonts v0.41.0
+    Checking heapless v0.7.17
+    Checking skrifa v0.44.0
+    Checking chacha20 v0.10.2
+    Checking tendril v0.5.1
+    Checking color v0.3.3
+    Checking postcard v1.1.3
+    Checking peniko v0.6.1
+    Checking half v2.7.1
+    Checking rustls-pki-types v1.15.1
+    Checking accesskit v0.24.1
+    Checking aws-lc-sys v0.45.0
+    Checking core_maths v0.1.1
+    Checking aws-lc-rs v1.18.1
+    Checking rustls-webpki v0.103.15
+    Checking winapi v0.3.9
+    Checking rustls v0.23.45
+    Checking rand v0.10.3
+    Checking rgb v0.8.53
+    Checking profiling v1.0.18
+    Checking phf_shared v0.14.0
+    Checking hashbrown v0.16.1
+    Checking phf v0.14.0
+    Checking h2 v0.4.19
+    Checking string_cache v0.11.0
+    Checking num_enum v0.7.6
+    Checking wio v0.2.2
+    Checking pin-project v1.1.13
+    Checking thin-vec v0.2.20
+    Checking thiserror v1.0.69
+    Checking cookie v0.18.2
+    Checking cssparser v0.38.0
+    Checking servo_arc v0.5.0
+    Checking smallbitvec v2.6.1
+    Checking to_shmem v0.6.0
+    Checking yoke v0.7.5
+    Checking web_atoms v0.3.0
+    Checking hyper v1.11.1
+    Checking petgraph v0.8.3
+    Checking hyper-util v0.1.20
+    Checking float-cmp v0.9.0
+    Checking strict-num v0.1.1
+    Checking zerovec v0.10.4
+    Checking selectors v0.41.0
+    Checking tinystr v0.7.6
+    Checking arrayref v0.3.9
+    Checking void v1.0.2
+    Checking litemap v0.7.5
+    Checking writeable v0.5.5
+    Checking stylo_malloc_size_of v0.22.0
+    Checking icu_locid v1.5.0
+    Checking tiny-skia-path v0.12.0
+    Checking equator v0.4.2
+    Checking peek-poke v0.3.0
+    Checking markup5ever v0.40.0
+    Checking zeitstempel v0.2.2
+    Checking wr_malloc_size_of v0.2.2
+    Checking ppv-lite86 v0.2.21
+    Checking block-padding v0.3.3
+    Checking unic-char-range v0.9.0
+    Checking fearless_simd v0.4.1
+    Checking unic-common v0.9.0
+    Checking unic-ucd-version v0.9.0
+    Checking unic-char-property v0.9.0
+    Checking icu_provider v1.5.0
+    Checking inout v0.1.4
+    Checking webrender_api v0.70.0
+    Checking vello_common v0.2.0
+    Checking stylo_atoms v0.22.0
+    Checking stylo_static_prefs v0.22.0
+    Checking aligned-vec v0.6.4
+    Checking gleam v0.15.1
+    Checking icu_segmenter_data v1.5.1
+    Checking icu_collections v1.5.0
+    Checking dwrote v0.11.5
+    Checking fontdb v0.24.0
+    Checking harfrust v0.12.0
+    Checking svgtypes v0.16.1
+    Checking roxmltree v0.21.1
+    Checking simplecss v0.2.2
+    Checking unicode-vo v0.1.0
+    Checking imagesize v0.15.0
+    Checking xmlwriter v0.1.0
+    Checking pico-args v0.5.0
+    Checking unicode-script v0.5.8
+    Checking tracy-rs v0.1.2
+    Checking wr_glyph_rasterizer v0.70.0
+    Checking usvg v0.48.1
+    Checking icu_segmenter v1.5.0
+    Checking v_frame v0.3.9
+    Checking stylo_traits v0.22.0
+    Checking glifo v0.3.0
+    Checking cipher v0.4.4
+    Checking unic-ucd-ident v0.9.0
+    Checking tiny-skia v0.12.0
+    Checking stylo_dom v0.22.0
+    Checking ordered-channel v1.2.0
+    Checking etagere v0.2.15
+    Checking webrender_build v0.70.0
+    Checking plane-split v0.18.0
+    Checking uluru v3.1.0
+    Checking as-slice v0.2.1
+    Checking bincode v1.3.3
+    Checking topological-sort v0.1.0
+    Checking atomic_refcell v0.1.14
+    Checking num_cpus v1.17.0
+    Checking webrender v0.70.0
+    Checking stylo v0.22.0
+    Checking resvg v0.48.1
+    Checking aligned v0.4.3
+    Checking vello_cpu v0.2.0
+    Checking der v0.8.2
+    Checking urlpattern v0.3.0
+    Checking keyboard-types v0.8.3
+    Checking ipc-channel v0.23.0
+    Checking content-security-policy v0.9.0
+    Checking servo-allocator v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+    Checking taffy v0.14.0
+    Checking av-scenechange v0.14.1
+    Checking icu_locale_fallback v2.3.0
+    Checking spki v0.8.0
+    Checking av1-grain v0.2.5
+    Checking raw-cpuid v11.6.0
+    Checking pulp v0.22.3
+    Checking rav1e v0.8.1
+    Checking pkcs8 v0.11.0
+    Checking servo-malloc-size-of v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+    Checking curve25519-dalek v5.0.0
+    Checking universal-hash v0.5.1
+    Checking exr v1.74.2
+    Checking tiff v0.11.3
+    Checking ravif v0.13.0
+    Checking ed25519 v3.0.0
+    Checking ed25519-dalek v3.0.0
+    Checking image v0.25.10
+    Checking tokio-rustls v0.26.5
+    Checking polyval v0.6.2
+    Checking aead v0.5.2
+    Checking ghash v0.5.1
+    Checking aes v0.8.4
+    Checking ctr v0.9.2
+    Checking aes-gcm v0.10.3
+    Checking der v0.7.10
+    Checking servo-config v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+    Checking icu_segmenter v2.3.0
+    Checking sha1 v0.10.7
+    Checking servo-base v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+    Checking rand_chacha v0.3.1
+    Checking rustls-platform-verifier v0.7.0
+    Checking hmac v0.12.1
+    Checking rand v0.8.8
+    Checking sec1 v0.7.3
+    Checking hkdf v0.12.4
+    Checking spki v0.7.3
+    Checking signature v2.2.0
+    Checking crypto-bigint v0.5.5
+    Checking webpki-roots v1.0.9
+    Checking muniment v0.1.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking rfc6979 v0.4.0
+    Checking naga-types v30.0.1
+    Checking phf v0.13.1
+    Checking curve25519-dalek v4.1.3
+    Checking elliptic-curve v0.13.8
+    Checking ecdsa v0.16.9
+    Checking primeorder v0.13.6
+    Checking hyper-rustls v0.27.9
+    Checking poly1305 v0.8.0
+    Checking chacha20 v0.9.1
+    Checking headers-core v0.3.0
+    Checking headers v0.4.2
+    Checking spirv v0.4.0+sdk-1.4.341.0
+    Checking naga v30.0.1
+    Checking wgpu-types v30.0.1
+    Checking servo-url v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+    Checking serde_urlencoded v0.7.1
+    Checking fastbloom v0.17.0
+    Checking scoped-tls v1.0.1
+    Checking gpu-allocator v0.28.0
+    Checking warp v0.4.3
+    Checking n0-error v1.0.1
+    Checking glutin_wgl_sys v0.6.1
+    Checking cookie v0.16.2
+    Checking tower v0.5.3
+    Checking wgpu-naga-bridge v30.0.1
+    Checking p384 v0.13.1
+    Checking p256 v0.13.2
+    Checking string_cache v0.9.0
+    Checking pkcs8 v0.10.2
+    Checking wgpu-hal v30.0.1
+    Checking pkcs1 v0.7.5
+    Checking ssh-encoding v0.2.0
+    Checking web_atoms v0.2.6
+    Checking webdriver v0.54.0
+    Checking num-bigint-dig v0.8.6
+    Checking servo-hyper-serde v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+    Checking ed25519 v2.2.3
+    Checking servo-profile-traits v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+    Checking servo-pixels v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+    Checking servo-geometry v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+    Checking blowfish v0.9.1
+    Checking cbc v0.1.2
+    Checking tempfile v3.27.0
+    Checking tokio-stream v0.1.19
+    Checking sharded-slab v0.1.7
+    Checking pbkdf2 v0.12.2
+    Checking nu-ansi-term v0.50.3
+    Checking inventory v0.3.24
+    Checking servo-embedder-traits v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+    Checking tracing-subscriber v0.3.23
+    Checking bcrypt-pbkdf v0.10.0
+    Checking ssh-cipher v0.2.0
+    Checking rsa v0.9.10
+    Checking ed25519-dalek v2.2.0
+    Checking wgpu-core-deps-windows-linux-android v30.0.1
+    Checking markup5ever v0.39.0
+    Checking p521 v0.13.3
+    Checking blake2 v0.10.6
+    Checking rand_chacha v0.9.0
+    Checking wgpu-core v30.0.1
+    Checking ssh-key v0.6.7
+    Checking n0-future v0.3.2
+    Checking secrecy v0.10.3
+    Checking ssh-agent-lib v0.6.0
+    Checking dashmap v6.2.1
+    Checking munge v0.4.7
+    Checking chacha20poly1305 v0.11.0
+    Checking argon2 v0.5.3
+    Checking insigne v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking rkyv v0.8.18
+    Checking wgpu v30.0.1
+    Checking personae v0.2.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking zerofrom v0.1.6 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+    Checking surfman v0.14.0
+    Checking noq-udp v1.3.0
+    Checking layout-dom-api v0.1.1 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+    Checking inker v0.1.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking libz-sys v1.1.29
+    Checking yoke v0.8.1 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+    Checking chartulary v0.2.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking tower-http v0.6.11
+    Checking noq-proto v1.3.0
+    Checking reqwest v0.13.5
+    Checking ipconfig v0.3.4
+    Checking servo-paint-api v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+    Checking iroh-base v1.3.0
+    Checking sceno v0.0.4 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking simple-dns v0.12.0
+    Checking lru v0.18.4
+    Checking netdev v0.45.1
+    Checking zerovec v0.11.5 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+    Checking n0-dns-resolver v0.1.0
+    Checking iroh-metrics v1.0.2
+    Checking noq v1.3.0
+    Checking serde_with v3.24.0
+    Checking n0-watcher v1.0.0
+    Checking html5ever v0.39.0
+    Checking xml5ever v0.39.0
+    Checking wmi v0.18.4
+    Checking read-fonts v0.43.3
+    Checking attohttpc v0.30.1
+    Checking sys-locale v0.3.2
+    Checking servo-net-traits v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+    Checking p2panda-core v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5#1bec457e)
+    Checking iroh-dns v1.3.0
+    Checking igd-next v0.17.1
+    Checking netwatch v0.19.3
+    Checking genet-static-dom v0.1.1 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+    Checking mere-forme v0.1.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking tokio-websockets v0.13.3
+    Checking numen v0.2.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking writeable v0.6.2 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+    Checking hax-lib v0.3.7
+    Checking servo-fonts-traits v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+    Checking iroh-relay v1.3.0
+    Checking ahash v0.8.12
+    Checking fontsan v0.7.0
+    Checking portmapper v0.19.3
+    Checking icu_casemap_data v2.3.0
+    Checking backon v1.6.0
+    Checking value-log v1.9.0
+    Checking iroh v1.3.0
+    Checking icu_casemap v2.3.0
+    Checking mere-kernel v0.0.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking tinystr v0.8.2 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+    Checking servo-media-streams v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+    Checking quick_cache v0.6.24
+    Checking yasna v0.6.0
+    Checking litemap v0.8.1 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+    Checking lsm-tree v2.10.4
+    Checking rcgen v0.14.10
+    Checking icu_locale_core v2.1.1 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+    Checking async-stream v0.3.6
+    Checking fraction v0.15.4
+    Checking mozjs_icu_collections v153.3.0
+    Checking libcrux-secrets v0.0.6
+    Checking potential_utf v0.1.4 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+    Checking zerotrie v0.2.3 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+    Checking servo-media-traits v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+    Checking vello_encoding v0.10.0
+    Checking fjall v2.11.2
+    Checking vello_shaders v0.10.0
+    Checking acto v0.8.2
+    Checking jsonschema v0.18.3
+    Checking irpc v0.17.0
+    Checking icu_provider v2.1.1 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+    Checking servo-media-player v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+    Checking icu_collections v2.1.1 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+    Checking libcrux-traits v0.0.8
+    Checking p2panda-store v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5#1bec457e)
+    Checking icu_locale_data v2.1.2 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+    Checking libcrux-intrinsics v0.0.8
+    Checking servo-devtools-traits v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+    Checking rand v0.9.5
+    Checking servo-webxr-api v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+    Checking chacha20poly1305 v0.10.1
+    Checking hickory-proto v0.26.3
+    Checking rand_chacha v0.10.0
+    Checking hpke-rs-crypto v0.7.0
+    Checking futures-intrusive v0.5.0
+    Checking byte-slice-cast v1.2.3
+    Checking speexdsp-resampler v0.1.0
+    Checking netrender-vello v0.10.1
+    Checking servo-media-audio v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+    Checking libcrux-sha3 v0.0.10
+    Checking swarm-discovery v0.6.3
+    Checking servo-canvas-traits v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+    Checking icu_locale v2.1.1 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+    Checking genet-scripted-dom v0.1.2 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+    Checking eidetic v0.0.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking servo-media-webrtc v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+    Checking netrender_device v0.1.2 (https://github.com/merely-made/netrender.git?rev=9607d16f1907f6c2085648ae96abcaa30d7c3d41#9607d16f)
+    Checking servo-storage-traits v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+    Checking futures-concurrency v7.7.1
+    Checking x25519-dalek v2.0.1
+    Checking k256 v0.13.4
+    Checking x25519-dalek v3.0.0
+    Checking yasna v0.5.2
+    Checking genet-fontique v0.10.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+    Checking rcgen v0.13.2
+    Checking hpke-rs-rust-crypto v0.7.0
+    Checking netrender v0.1.2 (https://github.com/merely-made/netrender.git?rev=9607d16f1907f6c2085648ae96abcaa30d7c3d41#9607d16f)
+    Checking iroh-gossip v0.101.0
+    Checking servo-media v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+    Checking ractor v0.16.5
+    Checking iroh-mdns-address-lookup v0.6.0
+    Checking hpke-rs v0.7.0
+    Checking icu_locale_data v2.3.0
+    Checking async-compression v0.4.48
+    Checking mozjs_icu_normalizer_data v153.3.0
+    Checking p2panda-discovery v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5#1bec457e)
+    Checking p2panda-sync v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5#1bec457e)
+    Checking tabard v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking mozjs_utf16_iter v153.3.0
+    Checking mozjs_utf8_iter v153.3.0
+    Checking harfrust v0.8.4
+    Checking gemini-protocol v0.1.7 (https://github.com/merely-made/smolweb.git?rev=882baeb1b59bbdbb305e475f6675f69af997c4f4#882baeb1)
+    Checking parley_data v0.10.0
+    Checking write16 v1.0.0
+    Checking ohos-deviceinfo-sys v0.1.8
+    Checking ohos-deviceinfo v0.1.0
+    Checking mozjs_icu_normalizer v153.3.0 (C:\Users\mark_\Code\repos\turnstone\vendor\mozjs-icu-normalizer)
+    Checking scroll-protocol v0.1.0
+    Checking mere-p2panda-net v0.7.5 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5#1bec457e)
+    Checking genet-parley v0.10.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+    Checking icu_locale v2.3.1
+    Checking p2panda-encryption v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5#1bec457e)
+    Checking harfbuzz-sys v0.8.0
+    Checking misfin v0.0.4
+    Checking icu_calendar_data v2.1.1 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+    Checking servo-constellation-traits v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+    Checking skrifa v0.46.2
+    Checking mere-proofs v0.1.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking calendrical_calculations v0.2.3 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+    Checking itertools v0.15.0
+    Checking nex-protocol v0.1.1
+    Checking gopher-protocol v0.2.0
+    Checking spartan-protocol v0.1.1
+    Checking guppy-protocol v0.1.1
+    Checking finger-protocol v0.1.1
+    Checking unicode-properties v0.1.4
+    Checking ixdtf v0.6.4 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+    Checking servo-fonts v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+    Checking icu_calendar v2.1.1 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+    Checking errand v0.4.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking anstyle-wincon v3.0.11
+    Checking ciborium-ll v0.2.2
+    Checking symphonia-core v0.5.5
+    Checking stickleback v0.1.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking icu_segmenter_data v2.1.1 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+    Checking icu_time_data v2.1.1 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+    Checking mozjs_icu_collator_data v153.3.0
+    Checking servo-media-thread v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+    Checking scenotime v0.0.4 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking notochord v0.1.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking vello_encoding v0.10.0 (https://github.com/mark-ik/vello.git?tag=vello-0.10.0#4354955e)
+    Checking anstyle-query v1.1.5
+    Checking anstream v1.0.0
+    Checking vello v0.10.0 (https://github.com/mark-ik/vello.git?tag=vello-0.10.0#4354955e)
+    Checking chirograph v0.0.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking mozjs_icu_collator v153.3.0 (C:\Users\mark_\Code\repos\turnstone\vendor\mozjs-icu-collator)
+warning: use of deprecated associated function `icu_properties::props::CanonicalCombiningClass::from_icu4c_value`: please comment on https://github.com/unicode-org/icu4x/issues/6067 if you need this
+   --> vendor\mozjs-icu-collator\src\elements.rs:159:34
+    |
+159 |         CanonicalCombiningClass::from_icu4c_value(trie_value as u8)
+    |                                  ^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(deprecated)]` on by default
+
+warning: use of deprecated method `icu_properties::props::CanonicalCombiningClass::to_icu4c_value`: please comment on https://github.com/unicode-org/icu4x/issues/6067 if you need this
+   --> vendor\mozjs-icu-collator\src\elements.rs:821:46
+    |
+821 |             trie_val: 0xD800 | u32::from(ccc.to_icu4c_value()),
+    |                                              ^^^^^^^^^^^^^^
+
+warning: use of deprecated associated function `icu_properties::props::CanonicalCombiningClass::from_icu4c_value`: please comment on https://github.com/unicode-org/icu4x/issues/6067 if you need this
+   --> vendor\mozjs-icu-collator\src\elements.rs:841:77
+    |
+841 |                 c_and_c: CharacterAndClass::new(c, CanonicalCombiningClass::from_icu4c_value(0xFF)),
+    |                                                                             ^^^^^^^^^^^^^^^^
+
+warning: use of deprecated associated function `icu_properties::props::CanonicalCombiningClass::from_icu4c_value`: please comment on https://github.com/unicode-org/icu4x/issues/6067 if you need this
+   --> vendor\mozjs-icu-collator\src\elements.rs:857:56
+    |
+857 |         debug_assert_ne!(ret, CanonicalCombiningClass::from_icu4c_value(0xFF));
+    |                                                        ^^^^^^^^^^^^^^^^
+
+warning: use of deprecated method `icu_properties::props::CanonicalCombiningClass::to_icu4c_value`: please comment on https://github.com/unicode-org/icu4x/issues/6067 if you need this
+   --> vendor\mozjs-icu-collator\src\elements.rs:892:57
+    |
+892 |         CharacterAndClass(u32::from(c) | (u32::from(ccc.to_icu4c_value()) << 24))
+    |                                                         ^^^^^^^^^^^^^^
+
+warning: use of deprecated associated function `icu_properties::props::CanonicalCombiningClass::from_icu4c_value`: please comment on https://github.com/unicode-org/icu4x/issues/6067 if you need this
+   --> vendor\mozjs-icu-collator\src\elements.rs:909:34
+    |
+909 |         CanonicalCombiningClass::from_icu4c_value((self.0 >> 24) as u8)
+    |                                  ^^^^^^^^^^^^^^^^
+
+warning: use of deprecated method `icu_properties::props::CanonicalCombiningClass::to_icu4c_value`: please comment on https://github.com/unicode-org/icu4x/issues/6067 if you need this
+   --> vendor\mozjs-icu-collator\src\elements.rs:924:61
+    |
+924 |         self.0 = ((ccc_from_trie_value(trie.scalar(scalar)).to_icu4c_value() as u32) << 24)
+    |                                                             ^^^^^^^^^^^^^^
+
+warning: `mozjs_icu_collator` (lib) generated 7 warnings
+    Checking icu_time v2.1.1 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+    Checking icu_segmenter v2.1.2 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+    Checking libsqlite3-sys v0.36.0
+    Checking quinn-udp v0.5.15
+    Checking ciborium v0.2.2
+    Checking paint_list_render v0.1.2 (https://github.com/merely-made/netrender.git?rev=9607d16f1907f6c2085648ae96abcaa30d7c3d41#9607d16f)
+    Checking icu_provider_adapters v2.1.1 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+    Checking mere-alembic v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking scenograph v0.0.4 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking quinn-proto v0.11.18
+    Checking cssparser v0.37.0
+    Checking html5ever v0.40.1
+    Checking hashlink v0.11.1
+    Checking arraystring v0.3.0
+    Checking fallible-streaming-iterator v0.1.9
+    Checking diplomat-runtime v0.14.0
+    Checking fallible-iterator v0.3.0
+    Checking rusqlite v0.38.0
+    Checking mozjs_collator_glue v153.3.0
+    Checking icu_capi v2.1.2 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+    Checking meristem v0.2.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking quinn v0.11.12
+    Checking pandect v0.1.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking cadency v0.0.1 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+    Checking scenomise v0.0.4 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking stacker v0.1.25
+    Checking pulldown-cmark v0.13.4
+    Checking sea-query v1.0.2
+    Checking sprigging v0.2.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking servo-script-traits v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+    Checking mozjs_locale_glue v153.3.0
+    Checking mozjs_unicode_bidi_ffi v153.3.0
+    Checking mozjs_normalizer_glue v153.3.0
+    Checking mozjs_properties_glue v153.3.0
+    Checking encoding_c_mem v0.2.6
+    Checking encoding_c v0.9.8
+    Checking tungstenite v0.29.0
+    Checking windows-sys v0.52.0
+    Checking bevy_platform v0.18.1
+    Checking webpki-roots v0.26.11
+    Checking servo-background-hang-monitor-api v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+    Checking h3 v0.0.8
+    Checking rustc-demangle v0.1.28
+    Checking h3-quinn v0.0.10
+    Checking backtrace v0.3.76
+    Checking nalgebra v0.35.0
+    Checking buckram v0.0.3 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+    Checking tokio-tungstenite v0.29.0
+    Checking rtgc v0.3.0
+    Checking mozjs_sys v153.3.0-1
+    Checking cambium v0.3.3 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking sea-query-rusqlite v0.8.0
+    Checking nematic v0.1.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking livery v0.0.5 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+    Checking tungstenite v0.30.0
+    Checking symphonia-metadata v0.5.5
+    Checking genet-document-resources v0.2.1 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+    Checking iroh-io v0.6.2
+    Checking positioned-io v0.3.5
+    Checking armillary v0.1.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking firewheel-core v0.10.1
+    Checking bao-tree v0.16.1
+    Checking genet-livery v0.0.4 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+    Checking async-tungstenite v0.35.0
+    Checking glamx v0.3.1
+    Checking mozjs v0.26.4
+    Checking netfetcher v0.1.1 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+    Checking fst v0.4.7
+    Checking servo-layout-api v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+    Checking iroh-util v0.6.0
+    Checking iroh-tickets v1.0.0
+    Checking uxtree v0.0.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking fleece v0.5.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+    Checking servo-timers v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+    Checking xml5ever v0.40.0
+    Checking nom-language v0.1.0
+    Checking reflink-copy v0.1.30
+    Checking winapi-util v0.1.11
+    Checking quick_cache v0.7.0
+    Checking imsz v0.4.1
+    Checking parry2d v0.28.0
+    Checking servo-net v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+    Checking winit v0.30.13
+    Checking oxrdf v0.3.4
+    Checking clap_builder v4.6.7
+    Checking same-file v1.0.6
+    Checking iroh-blobs v0.103.0
+    Checking servo-script-bindings v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+    Checking nom-rfc8288 v0.4.0
+    Checking logos v0.16.1
+    Checking grafting v0.6.0
+    Checking snow v0.10.0
+    Checking crypto-bigint v0.7.5
+    Checking servo-metrics v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+    Checking servo-webvtt v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+    Checking document-canvas v0.1.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking servitor v0.0.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking servo-xpath v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+    Checking chardetng v1.0.0
+    Checking swapper v0.1.0
+    Checking buf-read-ext v0.4.0
+    Checking cpal v0.17.3
+    Checking cargo_metadata v0.23.1
+    Checking firewheel-graph v0.10.2
+    Checking mere-transport v0.0.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking cef-dll-sys v154.5.0+154.0.34
+    Checking illume v0.0.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking webview2-com-sys v0.39.1
+    Checking clap v4.6.7
+    Checking rapier2d v0.33.0
+    Checking symphonia-utils-xiph v0.5.5
+    Checking servo-background-hang-monitor v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+    Checking graphshell-endpoint v0.0.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking mien v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking servo-canvas v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+    Checking mooting v0.1.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking p2panda-auth v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5#1bec457e)
+    Checking knot-file-catalog v0.0.1 (https://github.com/merely-made/knot-editor.git?rev=0096591a0af98bf4777d8bfe718c0423dea9fc90#0096591a)
+    Checking accesskit_consumer v0.35.0
+    Checking env_filter v2.0.0
+    Checking redshank-model v0.0.0 (https://github.com/merely-made/woodshed.git?rev=82271df20927d41a4cbb79c56a09fef5bbb38cde#82271df2)
+    Checking unicode_categories v0.1.1
+    Checking oxjsonld v0.2.6
+    Checking palette v0.7.7
+    Checking symphonia-format-riff v0.5.5
+    Checking rhai v1.26.1
+    Checking servo-script v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+    Checking webview2-com v0.39.1
+    Checking snafu v0.9.2
+    Checking env_logger v0.11.11
+    Checking accesskit_windows v0.32.1
+    Checking knot-capture v0.0.1 (https://github.com/merely-made/knot-editor.git?rev=0096591a0af98bf4777d8bfe718c0423dea9fc90#0096591a)
+    Checking gemot v0.1.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking servo-constellation v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+    Checking symphonia-format-isomp4 v0.5.5
+    Checking seiche v0.0.6 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking cef v154.5.0+154.0.34
+    Checking servo-devtools v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+    Checking knot-editor-host v0.1.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking mozangle v0.7.1
+    Checking firewheel-cpal v0.10.0
+    Checking walkdir v2.5.0
+    Checking oxttl v0.2.4
+    Checking firewheel-nodes v0.10.0
+    Checking servo-paint v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+    Checking mere-fetch v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking arboard v3.6.1
+    Checking symphonia-bundle-mp3 v0.5.5
+    Checking servo-storage v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+    Checking luggage v0.1.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking mere-cartography v0.0.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking symphonia-codec-aac v0.5.5
+    Checking symphonia-codec-pcm v0.5.5
+    Checking servo-media-dummy v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+    Checking servo-wakelock v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+    Checking servo-default-resources v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+    Checking servo-profile v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+    Checking reference-data v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking grafting-frame v0.1.0 (https://github.com/merely-made/wgpu-graft.git?rev=bb48281bd4a88a726a009e0518706881b74b7604#bb48281b)
+    Checking ipc-channel v0.22.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+    Checking notify-types v2.1.0
+    Checking servo-media-player v0.2.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+    Checking pictograph v0.2.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking notify v8.2.0
+    Checking castellan v0.0.3 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking heapless v0.9.3
+    Checking grafting v0.6.0 (https://github.com/merely-made/wgpu-graft.git?rev=bb48281bd4a88a726a009e0518706881b74b7604#bb48281b)
+    Checking knot-composition v0.0.1 (https://github.com/merely-made/knot-editor.git?rev=0096591a0af98bf4777d8bfe718c0423dea9fc90#0096591a)
+    Checking symphonia v0.5.5
+    Checking mere-webrtc-carrier v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking firewheel v0.10.0
+    Checking mere-linked-data v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking knot-document v0.0.1 (https://github.com/merely-made/knot-editor.git?rev=0096591a0af98bf4777d8bfe718c0423dea9fc90#0096591a)
+    Checking welding v0.15.0 (https://github.com/merely-made/wgpu-weld.git?rev=c4dd593b7a730acb4aa6ffab0fe2edf8a0584083#c4dd593b)
+    Checking hifitime v4.3.1
+    Checking scrying v0.7.1 (https://github.com/merely-made/wgpu-scry.git?rev=2c3ebd24118851cf6125cfb193f55aab20e3ad67#2c3ebd24)
+    Checking script-rhai v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking platen v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking mere-document-lanes v0.1.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking mere-mesh v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking servo-layout v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+    Checking graphshell-client v0.0.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking mere-apparatus v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking genet-render v0.2.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+    Checking arboard v3.6.1 (https://github.com/mark-ik/arboard.git?branch=custom-formats#57a68d03)
+    Checking eidetic-search v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking genet-render-host v0.2.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+    Checking dirs-sys v0.5.0
+    Checking light-file-dialog v3.21.3
+    Checking turquet v0.13.0 (https://github.com/merely-made/turquet.git?rev=bc3c454f755d0bfd70ab48bd9556a1cda2213d41#bc3c454f)
+    Checking servo v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+    Checking servo-wgpu-interop-adapter v0.1.0 (https://github.com/merely-made/wgpu-graft.git?rev=bb48281bd4a88a726a009e0518706881b74b7604#bb48281b)
+    Checking knot-editor v0.0.3 (https://github.com/merely-made/knot-editor.git?rev=0096591a0af98bf4777d8bfe718c0423dea9fc90#0096591a)
+    Checking redshank-surfaces v0.0.0 (https://github.com/merely-made/woodshed.git?rev=82271df20927d41a4cbb79c56a09fef5bbb38cde#82271df2)
+    Checking genet-documents v0.1.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+    Checking redshank-playback v0.0.0 (https://github.com/merely-made/woodshed.git?rev=82271df20927d41a4cbb79c56a09fef5bbb38cde#82271df2)
+    Checking graphshell v0.0.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking retinue v0.2.0 (https://github.com/merely-made/retinue.git?rev=fa4f925059cc698058cb21fecc1c825d095741a9#fa4f9250)
+    Checking dirs v6.0.0
+    Checking genet-winit-host v0.2.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+    Checking mere-moot v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking genet-clipboard v0.1.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+    Checking mere v0.0.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking distillery v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking scrying-engine v0.2.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking weld-engine v0.2.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking rfd v0.17.2
+    Checking commons-spine v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking accesskit_winit v0.32.2
+    Checking redshank-storage v0.0.0 (https://github.com/merely-made/woodshed.git?rev=82271df20927d41a4cbb79c56a09fef5bbb38cde#82271df2)
+    Checking cambium-winit v0.3.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking import v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking taproot v0.1.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+    Checking mere-athanor v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking mere-chrome v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking graft-engine v0.2.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking turnstone v0.1.0 (C:\Users\mark_\Code\repos\turnstone)
+warning: unused imports: `Suggestion` and `normalize_address`
+  --> src\app\mod.rs:20:31
+   |
+20 | use crate::ui::{OmnibarState, Suggestion, normalize_address};
+   |                               ^^^^^^^^^^  ^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `Update`
+  --> src\app\mod.rs:22:47
+   |
+22 | use crate::action::{Action, Effect, SpaceRef, Update};
+   |                                               ^^^^^^
+
+warning: unused imports: `browse` and `session`
+  --> src\app\mod.rs:26:13
+   |
+26 | use crate::{browse, session};
+   |             ^^^^^^  ^^^^^^^
+
+warning: unused import: `crate::panes::PaneContent`
+  --> src\app\node_arms.rs:16:5
+   |
+16 | use crate::panes::PaneContent;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `CaretMove`
+  --> src\app\omnibar_arms.rs:12:29
+   |
+12 | use crate::action::{Action, CaretMove, Effect};
+   |                             ^^^^^^^^^
+
+warning: unused import: `crate::panes::PaneContent`
+  --> src\app\palette.rs:16:5
+   |
+16 | use crate::panes::PaneContent;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `uuid::Uuid`
+  --> src\app\session_lifecycle.rs:17:5
+   |
+17 | use uuid::Uuid;
+   |     ^^^^^^^^^^
+
+warning: unused import: `PaneContent`
+  --> src\app\session_lifecycle.rs:22:44
+   |
+22 | use crate::panes::{FrisketLayout, GraphId, PaneContent, SessionId};
+   |                                            ^^^^^^^^^^^
+
+warning: unused import: `crate::action::CaretMove`
+   --> src\shell\drive.rs:692:13
+    |
+692 |         use crate::action::CaretMove;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::sync::mpsc::Receiver`
+  --> src\shell\effects.rs:13:5
+   |
+13 | use std::sync::mpsc::Receiver;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `FetchCommand` and `FetchUpdate`
+  --> src\shell\effects.rs:15:13
+   |
+15 | use fetch::{FetchCommand, FetchUpdate};
+   |             ^^^^^^^^^^^^  ^^^^^^^^^^^
+
+warning: unused import: `SessionClick`
+  --> src\shell\effects.rs:17:46
+   |
+17 |     DocumentFindQuery, EngineProfileBinding, SessionClick, SessionSpawnRequest, SurfaceSpawnRequest,
+   |                                              ^^^^^^^^^^^^
+
+warning: unused import: `crate::panes::PaneContent`
+  --> src\shell\effects.rs:22:5
+   |
+22 | use crate::panes::PaneContent;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::surface::SurfaceKind`
+  --> src\shell\render.rs:25:5
+   |
+25 | use crate::surface::SurfaceKind;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `PhysicalPosition`
+  --> src\shell\lens.rs:19:18
+   |
+19 | use winit::dpi::{PhysicalPosition, PhysicalSize};
+   |                  ^^^^^^^^^^^^^^^^
+
+warning: unused imports: `Key as WinitKey` and `NamedKey as WinitNamedKey`
+  --> src\shell\input.rs:16:23
+   |
+16 | use winit::keyboard::{Key as WinitKey, NamedKey as WinitNamedKey};
+   |                       ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `SessionScrollKey`
+  --> src\shell\input.rs:20:27
+   |
+20 | use inker::{SessionClick, SessionScrollKey};
+   |                           ^^^^^^^^^^^^^^^^
+
+warning: unused import: `CaretMove`
+  --> src\shell\input.rs:24:29
+   |
+24 | use crate::action::{Action, CaretMove};
+   |                             ^^^^^^^^^
+
+warning: unused import: `decode_sprite`
+  --> src\shell\input.rs:27:20
+   |
+27 | use super::{Shell, decode_sprite};
+   |                    ^^^^^^^^^^^^^
+
+warning: unused import: `input::pointer_button`
+  --> src\shell\mod.rs:37:5
+   |
+37 | use input::pointer_button;
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::path::Path`
+  --> src\shell\mod.rs:40:5
+   |
+40 | use std::path::Path;
+   |     ^^^^^^^^^^^^^^^
+
+warning: unused import: `image::ImageEncoder`
+  --> src\shell\mod.rs:47:5
+   |
+47 | use image::ImageEncoder;
+   |     ^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `SessionClick` and `SessionSpawnRequest`
+  --> src\shell\mod.rs:48:30
+   |
+48 | use inker::{DocumentSession, SessionClick, SessionRegistry, SessionSpawnRequest};
+   |                              ^^^^^^^^^^^^                   ^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `mere::canvas::WHEEL_PAN_SCALE`
+  --> src\shell\mod.rs:49:5
+   |
+49 | use mere::canvas::WHEEL_PAN_SCALE;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `ColorLoad` and `NetrenderOptions`
+  --> src\shell\mod.rs:55:17
+   |
+55 | use netrender::{ColorLoad, NetrenderOptions};
+   |                 ^^^^^^^^^  ^^^^^^^^^^^^^^^^
+
+warning: unused import: `winit::application::ApplicationHandler`
+  --> src\shell\mod.rs:56:5
+   |
+56 | use winit::application::ApplicationHandler;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `PhysicalPosition` and `PhysicalSize`
+  --> src\shell\mod.rs:57:18
+   |
+57 | use winit::dpi::{PhysicalPosition, PhysicalSize};
+   |                  ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^
+
+warning: unused imports: `ElementState`, `Ime`, `MouseButton`, `MouseScrollDelta`, and `WindowEvent`
+  --> src\shell\mod.rs:58:20
+   |
+58 | use winit::event::{ElementState, Ime, MouseButton, MouseScrollDelta, WindowEvent};
+   |                    ^^^^^^^^^^^^  ^^^  ^^^^^^^^^^^  ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^
+
+warning: unused imports: `Key as WinitKey` and `NamedKey as WinitNamedKey`
+  --> src\shell\mod.rs:60:23
+   |
+60 | use winit::keyboard::{Key as WinitKey, NamedKey as WinitNamedKey};
+   |                       ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `Effect`
+  --> src\shell\mod.rs:69:29
+   |
+69 | use crate::action::{Action, Effect, Update};
+   |                             ^^^^^^
+
+warning: unused import: `session`
+  --> src\shell\mod.rs:72:21
+   |
+72 | use crate::{browse, session};
+   |                     ^^^^^^^
+
+warning: unused import: `mere::canvas::palette`
+  --> src\swatch_pane\mod.rs:32:5
+   |
+32 | use mere::canvas::palette;
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `ColorF`
+  --> src\swatch_pane\mod.rs:33:17
+   |
+33 | use sprigging::{ColorF, LeafRegistry, RenderedLeaves};
+   |                 ^^^^^^
+
+warning: unused import: `crate::content::NodeContent`
+  --> src\swatch_pane\mod.rs:37:5
+   |
+37 | use crate::content::NodeContent;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::overmap`
+  --> src\swatch_pane\mod.rs:38:5
+   |
+38 | use crate::overmap;
+   |     ^^^^^^^^^^^^^^
+
+warning: unused import: `browse`
+  --> src\app\mod.rs:26:13
+   |
+26 | use crate::{browse, session};
+   |             ^^^^^^
+
+warning: unused imports: `MOOT_ACT_ACTION` and `MOOT_DELEGATION_DOMAIN`
+    --> src\place\worker.rs:2663:44
+     |
+2663 |         CollectionChange, ContributionRef, MOOT_ACT_ACTION, MOOT_DELEGATION_DOMAIN,
+     |                                            ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `CapabilityScope`, `DelegationCertificate`, `DelegationParent`, and `delegation_signing_salt`
+    --> src\place\worker.rs:2677:9
+     |
+2677 |         CapabilityScope, DelegationCertificate, DelegationParent, DelegationRevocation,
+     |         ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^
+2678 |         SignedDelegationCertificate, SignedDelegationRevocation, delegation_signing_salt,
+     |                                                                  ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `genet_clipboard::TextClipboard`
+   --> src\shell\effects.rs:815:25
+    |
+815 |                     use genet_clipboard::TextClipboard as _;
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused variable: `caption`
+   --> src\shell\render.rs:754:13
+    |
+754 |         let caption = self
+    |             ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_caption`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `ok`
+    --> src\shell\render.rs:1017:17
+     |
+1017 |             let ok = capture_composed(host, &layers, w, h, &path);
+     |                 ^^ help: if this is intentional, prefix it with an underscore: `_ok`
+
+warning: function `grid_row_center_y` is never used
+   --> src\cambium_pane.rs:168:8
+    |
+168 | pub fn grid_row_center_y(idx: usize) -> f32 {
+    |        ^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: method `resolve` is never used
+   --> src\cambium_pane.rs:241:12
+    |
+195 | impl RosterGrid {
+    | --------------- method in this implementation
+...
+241 |     pub fn resolve(&self, sel: &taproot::Selector, rect: [f32; 4]) -> Option<(f32, f32)> {
+    |            ^^^^^^^
+
+warning: method `layout_rebuilds` is never used
+   --> src\chrome_view.rs:680:12
+    |
+622 | impl ChromeSurfaces {
+    | ------------------- method in this implementation
+...
+680 |     pub fn layout_rebuilds(&self, slot: usize) -> u32 {
+    |            ^^^^^^^^^^^^^^^
+
+warning: function `save_certs` is never used
+   --> src\denizen.rs:733:8
+    |
+733 | pub fn save_certs(session_dir: &Path, subject_hex: &str, certs: &[SignedDelegationCertificate]) {
+    |        ^^^^^^^^^^
+
+warning: function `issue_install_certificates` is never used
+   --> src\denizen.rs:787:8
+    |
+787 | pub fn issue_install_certificates(
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `root_subject` is never used
+   --> src\identity.rs:207:8
+    |
+207 | pub fn root_subject(provider: &impl IdentityProvider) -> servitor::Subject {
+    |        ^^^^^^^^^^^^
+
+warning: struct `KnotRuntimeWitness` is never constructed
+   --> src\knot_authoring.rs:118:12
+    |
+118 | pub struct KnotRuntimeWitness {
+    |            ^^^^^^^^^^^^^^^^^^
+
+warning: method `matches_save_token` is never used
+   --> src\knot_authoring.rs:126:12
+    |
+122 | impl KnotRuntimeWitness {
+    | ----------------------- method in this implementation
+...
+126 |     pub fn matches_save_token(&self, candidate: &[u8]) -> bool {
+    |            ^^^^^^^^^^^^^^^^^^
+
+warning: function `knot_runtime_source_binding` is never used
+   --> src\knot_authoring.rs:150:4
+    |
+150 | fn knot_runtime_source_binding(
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: methods `status`, `projection_input_binding`, and `runtime_projection_source` are never used
+    --> src\knot_authoring.rs:2517:12
+     |
+2393 | impl KnotDocumentSession {
+     | ------------------------ methods in this implementation
+...
+2517 |     pub fn status(&mut self) -> &'static str {
+     |            ^^^^^^
+...
+2603 |     pub fn projection_input_binding(&self) -> Option<&ProjectionInputBinding> {
+     |            ^^^^^^^^^^^^^^^^^^^^^^^^
+...
+2613 |     pub fn runtime_projection_source(&self) -> Option<RuntimeSourceBinding<KnotRuntimeWitness>> {
+     |            ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: method `ops_received` is never used
+   --> src\place\lanes.rs:248:19
+    |
+184 | impl LiveLanes {
+    | -------------- method in this implementation
+...
+248 |     pub(crate) fn ops_received(&self) -> [u64; 10] {
+    |                   ^^^^^^^^^^^^
+
+warning: function `dial_holder` is never used
+    --> src\place\lanes.rs:5242:15
+     |
+5242 | pub(crate) fn dial_holder(
+     |               ^^^^^^^^^^^
+
+warning: function `granted_ring_names` is never used
+   --> src\ring.rs:370:8
+    |
+370 | pub fn granted_ring_names(authority: &impl AuthorityProvider, subject: Subject) -> Vec<String> {
+    |        ^^^^^^^^^^^^^^^^^^
+
+warning: enum `EnvelopeError` is never used
+   --> src\ring.rs:383:10
+    |
+383 | pub enum EnvelopeError {
+    |          ^^^^^^^^^^^^^
+
+warning: function `decode_envelope` is never used
+   --> src\ring.rs:396:8
+    |
+396 | pub fn decode_envelope(name: &str, payload: &str) -> Result<Action, EnvelopeError> {
+    |        ^^^^^^^^^^^^^^^
+
+warning: function `roster_grid_rows` is never used
+  --> src\roster_view.rs:99:8
+   |
+99 | pub fn roster_grid_rows(app: &App) -> Vec<RosterGridRow> {
+   |        ^^^^^^^^^^^^^^^^
+
+warning: field `0` is never read
+   --> src\scenario.rs:245:12
+    |
+245 |     Settle(u32),
+    |     ------ ^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+245 -     Settle(u32),
+245 +     Settle(()),
+    |
+
+warning: field `0` is never read
+   --> src\scenario.rs:279:17
+    |
+279 |     AssertEvent(String),
+    |     ----------- ^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+279 -     AssertEvent(String),
+279 +     AssertEvent(()),
+    |
+
+warning: field `0` is never read
+   --> src\scenario.rs:299:9
+    |
+299 |     Log(String),
+    |     --- ^^^^^^
+    |     |
+    |     field in this variant
+    |
+    = note: `Step` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+    |
+299 -     Log(String),
+299 +     Log(()),
+    |
+
+warning: function `remove_place_binding` is never used
+   --> src\session.rs:280:8
+    |
+280 | pub fn remove_place_binding(session_dir: &Path) -> Result<bool, PlaceSidecarError> {
+    |        ^^^^^^^^^^^^^^^^^^^^
+
+warning: methods `theme_id` and `shellbar_edge` are never used
+  --> src\settings_pane.rs:68:12
+   |
+63 | impl ChromeSettings {
+   | ------------------- methods in this implementation
+...
+68 |     pub fn theme_id(&self) -> Option<&str> {
+   |            ^^^^^^^^
+...
+80 |     pub fn shellbar_edge(&self) -> ShellbarEdge {
+   |            ^^^^^^^^^^^^^
+
+warning: associated items `new` and `settings` are never used
+   --> src\settings_pane.rs:229:12
+    |
+228 | impl SettingsPane {
+    | ----------------- associated items in this implementation
+229 |     pub fn new(data_root: PathBuf) -> Self {
+    |            ^^^
+...
+325 |     pub fn settings(&self) -> &ApplicationSettings {
+    |            ^^^^^^^^
+
+warning: method `pane_label` is never used
+    --> src\shell\mod.rs:1466:8
+     |
+ 682 | impl Shell {
+     | ---------- method in this implementation
+...
+1466 |     fn pane_label(&self, id: crate::panes::PaneId) -> String {
+     |        ^^^^^^^^^^
+
+warning: field `resource_epoch` is never read
+  --> src\shell\surface_frames.rs:46:16
+   |
+45 | pub(super) struct ImportedSurfaceFrame {
+   |                   -------------------- field in this struct
+46 |     pub(super) resource_epoch: u64,
+   |                ^^^^^^^^^^^^^^
+
+warning: function `focus_for_press` is never used
+   --> src\surface.rs:309:8
+    |
+309 | pub fn focus_for_press(surfaces: &[Surface], focus: FocusTarget, px: f32, py: f32) -> FocusTarget {
+    |        ^^^^^^^^^^^^^^^
+
+warning: method `resolve` is never used
+   --> src\swatch_pane\mod.rs:424:12
+    |
+244 | impl SwatchPane {
+    | --------------- method in this implementation
+...
+424 |     pub fn resolve(&self, sel: &taproot::Selector, rect: [f32; 4]) -> Option<(f32, f32)> {
+    |            ^^^^^^^
+
+warning: field `id` is never read
+  --> src\swatch_pane\presets.rs:29:9
+   |
+27 | pub struct ProjectionPreset {
+   |            ---------------- field in this struct
+28 |     /// Stable id (`"gloss.minimap"`, `"overmap.lineage"`).
+29 |     pub id: &'static str,
+   |         ^^
+   |
+   = note: `ProjectionPreset` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+
+warning: variant `Flush` is never constructed
+   --> src\trail_memory.rs:156:5
+    |
+135 | pub enum TrailCommand {
+    |          ------------ variant in this enum
+...
+156 |     Flush,
+    |     ^^^^^
+
+warning: field `frecency` is never read
+   --> src\trail_memory.rs:609:5
+    |
+602 | struct RecallIndex {
+    |        ----------- field in this struct
+...
+609 |     frecency: BTreeMap<String, f64>,
+    |     ^^^^^^^^
+
+warning: function `spawn_trail` is never used
+   --> src\trail_memory.rs:853:8
+    |
+853 | pub fn spawn_trail(wake: Wake, dir: PathBuf) -> (ActorHandle<TrailCommand>, Receiver<Update>) {
+    |        ^^^^^^^^^^^
+
+warning: method `resolve` is never used
+   --> src\trail_pane.rs:216:12
+    |
+132 | impl TrailPane {
+    | -------------- method in this implementation
+...
+216 |     pub fn resolve(&self, sel: &taproot::Selector, rect: [f32; 4]) -> Option<(f32, f32)> {
+    |            ^^^^^^^
+
+warning: method `resolve` is never used
+   --> src\transcript_pane.rs:251:12
+    |
+182 | impl TranscriptPane {
+    | ------------------- method in this implementation
+...
+251 |     pub fn resolve(&self, sel: &taproot::Selector, rect: [f32; 4]) -> Option<(f32, f32)> {
+    |            ^^^^^^^
+
+warning: constant `ROW_TEXT_BUDGET` is never used
+  --> src\ui.rs:48:18
+   |
+48 | pub(crate) const ROW_TEXT_BUDGET: f32 = CARD_W - 16.0 - 16.0;
+   |                  ^^^^^^^^^^^^^^^
+
+warning: function `chrome_row_width` is never used
+  --> src\ui.rs:61:15
+   |
+61 | pub(crate) fn chrome_row_width(text: &str) -> f32 {
+   |               ^^^^^^^^^^^^^^^^
+
+warning: function `recompute_suggestions` is never used
+   --> src\ui.rs:573:8
+    |
+573 | pub fn recompute_suggestions(
+    |        ^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `ime_cursor_area` is never used
+    --> src\ui.rs:1128:8
+     |
+1128 | pub fn ime_cursor_area(state: &OmnibarState, w: u32) -> ((f32, f32), (f32, f32)) {
+     |        ^^^^^^^^^^^^^^^
+
+warning: function `chrome_has_content` is never used
+    --> src\ui.rs:1146:8
+     |
+1146 | pub fn chrome_has_content(state: &OmnibarState, caption: Option<&str>) -> bool {
+     |        ^^^^^^^^^^^^^^^^^^
+
+warning: function `scene_from_dom_scrolled` is never used
+    --> src\ui.rs:1995:8
+     |
+1995 | pub fn scene_from_dom_scrolled(
+     |        ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `hit_test_scrolled` is never used
+    --> src\ui.rs:2022:8
+     |
+2022 | pub fn hit_test_scrolled(
+     |        ^^^^^^^^^^^^^^^^^
+
+warning: function `livery_paint_list` is never used
+    --> src\ui.rs:2048:4
+     |
+2048 | fn livery_paint_list(dom: &ScriptedDom, sheet: &str, w: u32, h: u32) -> LiveryPaintList {
+     |    ^^^^^^^^^^^^^^^^^
+
+warning: function `node_rect` is never used
+    --> src\ui.rs:2053:15
+     |
+2053 | pub(crate) fn node_rect(
+     |               ^^^^^^^^^
+
+warning: method `rebuilds` is never used
+    --> src\ui.rs:2198:12
+     |
+2182 | impl RetainedSubtreeLayout {
+     | -------------------------- method in this implementation
+...
+2198 |     pub fn rebuilds(&self) -> u32 {
+     |            ^^^^^^^^
+
+warning: function `subtree_node_rect` is never used
+    --> src\ui.rs:2286:15
+     |
+2286 | pub(crate) fn subtree_node_rect(
+     |               ^^^^^^^^^^^^^^^^^
+
+warning: function `scene_from_dom_with_leaves` is never used
+    --> src\ui.rs:2328:8
+     |
+2328 | pub fn scene_from_dom_with_leaves(
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `turnstone` (lib) generated 82 warnings (run `cargo fix --lib -p turnstone` to apply 37 suggestions)
+warning: variable does not need to be mutable
+    --> src\place\worker.rs:3821:13
+     |
+3821 |         let mut welcome = |open: &mut OpenPlace, seed: u8| {
+     |             ----^^^^^^^
+     |             |
+     |             help: remove this `mut`
+     |
+     = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `save_certs` is never used
+   --> src\denizen.rs:733:8
+    |
+733 | pub fn save_certs(session_dir: &Path, subject_hex: &str, certs: &[SignedDelegationCertificate]) {
+    |        ^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: methods `projection_input_binding` and `runtime_projection_source` are never used
+    --> src\knot_authoring.rs:2603:12
+     |
+2393 | impl KnotDocumentSession {
+     | ------------------------ methods in this implementation
+...
+2603 |     pub fn projection_input_binding(&self) -> Option<&ProjectionInputBinding> {
+     |            ^^^^^^^^^^^^^^^^^^^^^^^^
+...
+2613 |     pub fn runtime_projection_source(&self) -> Option<RuntimeSourceBinding<KnotRuntimeWitness>> {
+     |            ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    Checking turnstone-sandbox-bootstrap-win v0.1.0 (C:\Users\mark_\Code\repos\turnstone\sandbox_bootstrap_win)
+warning: `turnstone` (lib test) generated 51 warnings (45 duplicates) (run `cargo fix --lib -p turnstone --tests` to apply 4 suggestions)
+    Finished `dev` profile [unoptimized] target(s) in 5m 36s

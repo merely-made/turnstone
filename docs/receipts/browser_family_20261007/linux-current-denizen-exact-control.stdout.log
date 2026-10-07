@@ -1,0 +1,11 @@
+
+running 1 test
+test denizen::tests::staged_installs_are_content_derived_and_reviewable ... FAILED
+
+failures:
+
+failures:
+    denizen::tests::staged_installs_are_content_derived_and_reviewable
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 657 filtered out; finished in 0.05s
+

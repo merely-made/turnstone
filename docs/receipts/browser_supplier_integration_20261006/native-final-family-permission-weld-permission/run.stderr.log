@@ -1,0 +1,5 @@
+[31616:46668:1007/064225.019:ERROR:chrome\browser\extensions\external_registry_loader_win.cc:147] Missing value path for key Software\Google\Chrome\Extensions\dngcpimnedloihjnnfngkgjoidhnaolf.
+[31616:46668:1007/064225.019:ERROR:chrome\browser\extensions\external_registry_loader_win.cc:147] Missing value path for key Software\Google\Chrome\Extensions\fcoeoabgfenejglbffodgkkbkcdhcgfn.
+[31616:33252:1007/064225.115:ERROR:chrome\browser\extensions\external_registry_loader_win.cc:147] Missing value path for key Software\Google\Chrome\Extensions\dngcpimnedloihjnnfngkgjoidhnaolf.
+[31616:33252:1007/064225.115:ERROR:chrome\browser\extensions\external_registry_loader_win.cc:147] Missing value path for key Software\Google\Chrome\Extensions\fcoeoabgfenejglbffodgkkbkcdhcgfn.
+[31616:13980:1007/064227.334:ERROR:components\device_event_log\device_event_log_impl.cc:211] [06:42:27.336] USB: usb_service_win.cc:346 Failed to parse device interface GUID:

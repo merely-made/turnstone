@@ -1,0 +1,46 @@
+{
+  "observed_utc": "2026-10-07T10:58:14.660479+00:00",
+  "old_head": "aafa78df71170c83df9838c6fc207117bedc45ec",
+  "current_head": "abb349cf7957e2b509f4cb7f492e3e0db4821964",
+  "fetched_origin_main": "abb349cf7957e2b509f4cb7f492e3e0db4821964",
+  "tracked_clean": true,
+  "owned_receipt_reconciliation": "Six previously untracked outputs now published in abb; exact byte/blob equality verified before index reconciliation and ff-only; no deletion or source edit.",
+  "preserved_baseline_outputs": [
+    {
+      "path": "docs/receipts/browser_family_20261007/linux-baseline-Cargo.lock",
+      "sha256": "7cd795f9f961f928b92e3d5c357a2c01533f3dfbb5d137ee3ee3a6f0583163b3",
+      "identical_to_published": true
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/linux-baseline-Cargo.toml",
+      "sha256": "83f0e351c4d0300e3b3f5a424b613526ac9f63ea855508761787d8d279de5452",
+      "identical_to_published": true
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/linux-baseline-inputs.json",
+      "sha256": "c96262541be8c5da92dc5c82529c4c84e9d1ae89aa678e1473c4d751ccbfcbcb",
+      "identical_to_published": true
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/linux-baseline-result.json",
+      "sha256": "5aa242bce2b4746f984bd516551d11eb54738ff6faf6cd87f2ec8dda8ebba743",
+      "identical_to_published": true
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/linux-baseline.stderr.log",
+      "sha256": "6298b46dee70fbcf0beae157331067f4073fae6368b4d92acd8009ff61e79a93",
+      "identical_to_published": true
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/linux-baseline.stdout.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "identical_to_published": true
+    }
+  ],
+  "preserved_foreign_untracked": [],
+  "post_ff_untracked": [],
+  "pre_ff_named_owners": [],
+  "target_lock_observer_exit": 1,
+  "target": "/home/markik/Code/target",
+  "target_marker_sha256": "6d9d1d216e0f83abc5e5662ca62c92b4f23009466b54fa27321a69acdb778bb2"
+}

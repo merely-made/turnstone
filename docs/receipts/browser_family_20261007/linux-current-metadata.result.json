@@ -1,0 +1,31 @@
+{
+  "command": [
+    "nice",
+    "-n",
+    "10",
+    "cargo",
+    "+1.98.1",
+    "metadata",
+    "--locked",
+    "--format-version",
+    "1",
+    "--filter-platform",
+    "x86_64-unknown-linux-gnu"
+  ],
+  "cwd": "/home/markik/Code/repos/turnstone",
+  "environment": {
+    "CARGO_TARGET_DIR": "/home/markik/Code/target",
+    "CARGO_BUILD_JOBS": "1"
+  },
+  "source_sha": "abb349cf7957e2b509f4cb7f492e3e0db4821964",
+  "started_utc": "2026-10-07T11:30:09.107348+00:00",
+  "actual_exit_code": 0,
+  "scope": "Continuation at original abb after preserving failed library gate; does not override that failure.",
+  "owned_pid": 234854,
+  "finished_utc": "2026-10-07T11:30:10.528342+00:00",
+  "elapsed_seconds": 1.421,
+  "final_source_sha": "abb349cf7957e2b509f4cb7f492e3e0db4821964",
+  "tracked_diff_after": [],
+  "stdout_sha256": "1081568ccaa68f5300870e3530fb4874244b1a31e15ca317d2bfb08484f445e2",
+  "stderr_sha256": "906d60528082acd9c33a7d66c2846290f338015d65da6afd9a8598366470c508"
+}

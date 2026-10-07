@@ -1,0 +1,40 @@
+{
+  "observed_utc": "2026-10-07T11:32:28.814968+00:00",
+  "source_sha": "abb349cf7957e2b509f4cb7f492e3e0db4821964",
+  "branch": "main",
+  "tracked_diff": [],
+  "untracked_receipts": [
+    "docs/receipts/browser_family_20261007/linux-current-Cargo.lock",
+    "docs/receipts/browser_family_20261007/linux-current-Cargo.toml",
+    "docs/receipts/browser_family_20261007/linux-current-cargo-mode.result.json",
+    "docs/receipts/browser_family_20261007/linux-current-cargo-mode.stderr.log",
+    "docs/receipts/browser_family_20261007/linux-current-cargo-mode.stdout.log",
+    "docs/receipts/browser_family_20261007/linux-current-check.result.json",
+    "docs/receipts/browser_family_20261007/linux-current-check.stderr.log",
+    "docs/receipts/browser_family_20261007/linux-current-check.stdout.log",
+    "docs/receipts/browser_family_20261007/linux-current-continuation-summary.json",
+    "docs/receipts/browser_family_20261007/linux-current-denizen-exact-control.result.json",
+    "docs/receipts/browser_family_20261007/linux-current-denizen-exact-control.stderr.log",
+    "docs/receipts/browser_family_20261007/linux-current-denizen-exact-control.stdout.log",
+    "docs/receipts/browser_family_20261007/linux-current-family-provenance.json",
+    "docs/receipts/browser_family_20261007/linux-current-inputs.json",
+    "docs/receipts/browser_family_20261007/linux-current-lib.result.json",
+    "docs/receipts/browser_family_20261007/linux-current-lib.stderr.log",
+    "docs/receipts/browser_family_20261007/linux-current-lib.stdout.log",
+    "docs/receipts/browser_family_20261007/linux-current-metadata.result.json",
+    "docs/receipts/browser_family_20261007/linux-current-metadata.stderr.log",
+    "docs/receipts/browser_family_20261007/linux-current-metadata.stdout.log",
+    "docs/receipts/browser_family_20261007/linux-current-summary.json",
+    "docs/receipts/browser_family_20261007/linux-current-tree.result.json",
+    "docs/receipts/browser_family_20261007/linux-current-tree.stderr.log",
+    "docs/receipts/browser_family_20261007/linux-current-tree.stdout.log"
+  ],
+  "observed_named_owners": [],
+  "target_lock_observer": {
+    "exit": 1,
+    "stdout": "",
+    "stderr": ""
+  },
+  "target": "/home/markik/Code/target",
+  "limitations": "Point-in-time accessible named compiler/app process inventory and target lock observation; recheck before next launch."
+}

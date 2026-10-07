@@ -1,0 +1,35 @@
+
+running 24 tests
+test sky_surface::tests::source_version_and_unknown_fields_fail_closed ... ok
+test sky_receipt::tests::json_reader_rejects_another_receipt_version ... ok
+test sky_receipt::tests::json_reader_keeps_a_sane_unavailable_zone_identity ... ok
+test sky_receipt::tests::json_reader_rejects_same_midpoint_body_reordering ... ok
+test sky_receipt::tests::pretty_json_round_trips_and_hashes_the_exact_bytes ... ok
+test sky_surface::tests::duplicate_body_and_bad_zone_are_rejected_before_calculation ... ok
+test sky_timeline::tests::new_york_fall_transition_is_a_25_hour_half_open_day ... ok
+test sky_timeline::tests::new_york_spring_transition_is_a_23_hour_half_open_day ... ok
+test sky_timeline::tests::request_rejects_gap_and_fold_anchors ... ok
+test sky_receipt::tests::json_reader_rejects_tampered_engine_and_day_boundaries ... ok
+test sky_receipt::tests::json_reader_rejects_unknown_root_and_nested_fields ... ok
+test sky_timeline::tests::request_rejects_unknown_zone_and_duplicate_body ... ok
+test sky_receipt::tests::json_reader_rejects_tampered_fact_projection ... ok
+test sky_receipt::tests::json_reader_rejects_tampered_inputs_and_provenance ... ok
+test sky_receipt::tests::fixed_boston_dto_goldens_preserve_exact_serialization_and_digests ... ok
+test sky_timeline::tests::skipped_midnight_still_resolves_the_named_calendar_day ... ok
+test sky_timeline::tests::tromso_solstice_reports_no_sampled_conventional_crossing_under_policy ... ok
+test sky_timeline::tests::daily_projection_uses_public_provider_and_retains_receipt_identity ... ok
+test sky_surface::tests::polar_empty_crossings_are_described_without_visibility_inference ... ok
+test sky_surface::tests::provider_admits_semantic_controls_and_provenance ... ok
+test sky_surface::tests::reference_source_reproduces_the_p0_receipt ... ok
+test sky_timeline::tests::boston_eclipse_day_composes_an_analytical_sun_moon_receipt ... ok
+test sky_surface::tests::changing_date_or_policy_rebuilds_a_distinct_receipt ... ok
+test sky_surface::tests::next_day_replaces_one_retained_projection_without_rewriting_opening_provenance has been running for over 60 seconds
+test sky_surface::tests::next_day_replaces_one_retained_projection_without_rewriting_opening_provenance ... ok
+
+test result: ok. 24 passed; 0 failed; 0 ignored; 0 measured; 666 filtered out; finished in 82.72s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

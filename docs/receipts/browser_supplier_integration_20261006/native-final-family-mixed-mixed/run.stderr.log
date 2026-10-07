@@ -1,0 +1,21 @@
+[producer] resize: 1024x600 -> 80x570
+[producer] start_capture: 80x570 ready in 23ms
+[producer] resize: 80x570 -> 166x570
+[producer] start_capture: 166x570 ready in 25ms
+[producer] resize: 166x570 -> 123x570
+[producer] start_capture: 123x570 ready in 24ms
+[producer] resize: 123x570 -> 59x570
+[producer] start_capture: 59x570 ready in 23ms
+[38056:23140:1007/063829.010:ERROR:chrome\browser\extensions\external_registry_loader_win.cc:147] Missing value path for key Software\Google\Chrome\Extensions\dngcpimnedloihjnnfngkgjoidhnaolf.
+[38056:23140:1007/063829.012:ERROR:chrome\browser\extensions\external_registry_loader_win.cc:147] Missing value path for key Software\Google\Chrome\Extensions\fcoeoabgfenejglbffodgkkbkcdhcgfn.
+[38056:32860:1007/063829.146:ERROR:chrome\browser\extensions\external_registry_loader_win.cc:147] Missing value path for key Software\Google\Chrome\Extensions\dngcpimnedloihjnnfngkgjoidhnaolf.
+[38056:32860:1007/063829.146:ERROR:chrome\browser\extensions\external_registry_loader_win.cc:147] Missing value path for key Software\Google\Chrome\Extensions\fcoeoabgfenejglbffodgkkbkcdhcgfn.
+[38056:32924:1007/063831.268:ERROR:components\device_event_log\device_event_log_impl.cc:211] [06:38:31.268] USB: usb_service_win.cc:346 Failed to parse device interface GUID:
+[producer] resize: 59x570 -> 123x570
+[producer] start_capture: 123x570 ready in 24ms
+[producer] resize: 123x570 -> 252x570
+[producer] start_capture: 252x570 ready in 25ms
+[producer] resize: 252x570 -> 123x570
+[producer] start_capture: 123x570 ready in 23ms
+[producer] resize: 123x570 -> 85x570
+[producer] start_capture: 85x570 ready in 23ms

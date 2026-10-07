@@ -1,0 +1,496 @@
+{
+  "owned_pid": 31616,
+  "sampling_wait_milliseconds": 250,
+  "snapshots_attempted": 32,
+  "observed_modules": [
+    {
+      "pid": 41240,
+      "parent_pid": 31616,
+      "process_created_utc": "2026-10-07T10:42:24.9870654Z",
+      "command_line_flags": [
+        "--type=utility"
+      ],
+      "module": "libcef.dll",
+      "path": "C:\\t\\cargo-targets\\turnstone\\debug\\libcef.dll",
+      "sha256": "e3da6707a840a8f33f565e011542169fd51aaa5218603eb7a89039fb16d79ae7",
+      "file_version": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+      "product_version": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+      "first_observed_utc": "2026-10-07T10:42:25.8867021Z",
+      "hash_limitation": null
+    },
+    {
+      "pid": 31000,
+      "parent_pid": 31616,
+      "process_created_utc": "2026-10-07T10:42:25.1407130Z",
+      "command_line_flags": [
+        "--type=renderer"
+      ],
+      "module": "opengl32.dll",
+      "path": "C:\\WINDOWS\\SYSTEM32\\opengl32.dll",
+      "sha256": "703d6702361821144155f18e27436608668fa6ccd6a9ad153108201ba08b0e0e",
+      "file_version": "10.0.26100.9587 (WinBuild.160101.0800)",
+      "product_version": "10.0.26100.9587",
+      "first_observed_utc": "2026-10-07T10:42:26.6670265Z",
+      "hash_limitation": null
+    },
+    {
+      "pid": 31000,
+      "parent_pid": 31616,
+      "process_created_utc": "2026-10-07T10:42:25.1407130Z",
+      "command_line_flags": [
+        "--type=renderer"
+      ],
+      "module": "dxgi.dll",
+      "path": "C:\\WINDOWS\\SYSTEM32\\dxgi.dll",
+      "sha256": "310f89b07256018034c42c48bcaa0f550c13afe4634be4e00bf1419af35e274c",
+      "file_version": "10.0.26100.9587 (WinBuild.160101.0800)",
+      "product_version": "10.0.26100.9587",
+      "first_observed_utc": "2026-10-07T10:42:26.6594939Z",
+      "hash_limitation": null
+    },
+    {
+      "pid": 31616,
+      "parent_pid": 6072,
+      "process_created_utc": "2026-10-07T10:42:14.9950933Z",
+      "command_line_flags": [],
+      "module": "dxgi.dll",
+      "path": "C:\\WINDOWS\\SYSTEM32\\dxgi.dll",
+      "sha256": "310f89b07256018034c42c48bcaa0f550c13afe4634be4e00bf1419af35e274c",
+      "file_version": "10.0.26100.9587 (WinBuild.160101.0800)",
+      "product_version": "10.0.26100.9587",
+      "first_observed_utc": "2026-10-07T10:42:15.5325858Z",
+      "hash_limitation": null
+    },
+    {
+      "pid": 31616,
+      "parent_pid": 6072,
+      "process_created_utc": "2026-10-07T10:42:14.9950933Z",
+      "command_line_flags": [],
+      "module": "dxcompiler.dll",
+      "path": "C:\\t\\cargo-targets\\turnstone\\debug\\dxcompiler.dll",
+      "sha256": "d2bcdaab7772d60d2f2c53781bf4449dde9e6491ec82b24da3f581c21c12d110",
+      "file_version": "1.9.2607.0",
+      "product_version": "1.9.2607.0",
+      "first_observed_utc": "2026-10-07T10:42:16.7765244Z",
+      "hash_limitation": null
+    },
+    {
+      "pid": 31000,
+      "parent_pid": 31616,
+      "process_created_utc": "2026-10-07T10:42:25.1407130Z",
+      "command_line_flags": [
+        "--type=renderer"
+      ],
+      "module": "libcef.dll",
+      "path": "C:\\t\\cargo-targets\\turnstone\\debug\\libcef.dll",
+      "sha256": "e3da6707a840a8f33f565e011542169fd51aaa5218603eb7a89039fb16d79ae7",
+      "file_version": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+      "product_version": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+      "first_observed_utc": "2026-10-07T10:42:26.6693450Z",
+      "hash_limitation": null
+    },
+    {
+      "pid": 20716,
+      "parent_pid": 31616,
+      "process_created_utc": "2026-10-07T10:42:25.1635029Z",
+      "command_line_flags": [
+        "--type=renderer"
+      ],
+      "module": "opengl32.dll",
+      "path": "C:\\WINDOWS\\SYSTEM32\\opengl32.dll",
+      "sha256": "703d6702361821144155f18e27436608668fa6ccd6a9ad153108201ba08b0e0e",
+      "file_version": "10.0.26100.9587 (WinBuild.160101.0800)",
+      "product_version": "10.0.26100.9587",
+      "first_observed_utc": "2026-10-07T10:42:27.0639066Z",
+      "hash_limitation": null
+    },
+    {
+      "pid": 40900,
+      "parent_pid": 31616,
+      "process_created_utc": "2026-10-07T10:42:24.9712351Z",
+      "command_line_flags": [
+        "--type=gpu-process"
+      ],
+      "module": "opengl32.dll",
+      "path": "C:\\WINDOWS\\SYSTEM32\\opengl32.dll",
+      "sha256": "703d6702361821144155f18e27436608668fa6ccd6a9ad153108201ba08b0e0e",
+      "file_version": "10.0.26100.9587 (WinBuild.160101.0800)",
+      "product_version": "10.0.26100.9587",
+      "first_observed_utc": "2026-10-07T10:42:25.4478836Z",
+      "hash_limitation": null
+    },
+    {
+      "pid": 41240,
+      "parent_pid": 31616,
+      "process_created_utc": "2026-10-07T10:42:24.9870654Z",
+      "command_line_flags": [
+        "--type=utility"
+      ],
+      "module": "opengl32.dll",
+      "path": "C:\\WINDOWS\\SYSTEM32\\opengl32.dll",
+      "sha256": "703d6702361821144155f18e27436608668fa6ccd6a9ad153108201ba08b0e0e",
+      "file_version": "10.0.26100.9587 (WinBuild.160101.0800)",
+      "product_version": "10.0.26100.9587",
+      "first_observed_utc": "2026-10-07T10:42:25.8852388Z",
+      "hash_limitation": null
+    },
+    {
+      "pid": 40900,
+      "parent_pid": 31616,
+      "process_created_utc": "2026-10-07T10:42:24.9712351Z",
+      "command_line_flags": [
+        "--type=gpu-process"
+      ],
+      "module": "d3d11.dll",
+      "path": "C:\\WINDOWS\\SYSTEM32\\d3d11.dll",
+      "sha256": "d04fd4146b1d07b9b8b377001bb4ffa22bdceb38d5faccf91c9e9a318e0fb0ce",
+      "file_version": "10.0.26100.9587 (WinBuild.160101.0800)",
+      "product_version": "10.0.26100.9587",
+      "first_observed_utc": "2026-10-07T10:42:25.4410835Z",
+      "hash_limitation": null
+    },
+    {
+      "pid": 25460,
+      "parent_pid": 31616,
+      "process_created_utc": "2026-10-07T10:42:25.0083873Z",
+      "command_line_flags": [
+        "--type=utility"
+      ],
+      "module": "d3d11.dll",
+      "path": "C:\\WINDOWS\\SYSTEM32\\d3d11.dll",
+      "sha256": "d04fd4146b1d07b9b8b377001bb4ffa22bdceb38d5faccf91c9e9a318e0fb0ce",
+      "file_version": "10.0.26100.9587 (WinBuild.160101.0800)",
+      "product_version": "10.0.26100.9587",
+      "first_observed_utc": "2026-10-07T10:42:26.2597642Z",
+      "hash_limitation": null
+    },
+    {
+      "pid": 25460,
+      "parent_pid": 31616,
+      "process_created_utc": "2026-10-07T10:42:25.0083873Z",
+      "command_line_flags": [
+        "--type=utility"
+      ],
+      "module": "dxgi.dll",
+      "path": "C:\\WINDOWS\\SYSTEM32\\dxgi.dll",
+      "sha256": "310f89b07256018034c42c48bcaa0f550c13afe4634be4e00bf1419af35e274c",
+      "file_version": "10.0.26100.9587 (WinBuild.160101.0800)",
+      "product_version": "10.0.26100.9587",
+      "first_observed_utc": "2026-10-07T10:42:26.2633598Z",
+      "hash_limitation": null
+    },
+    {
+      "pid": 40900,
+      "parent_pid": 31616,
+      "process_created_utc": "2026-10-07T10:42:24.9712351Z",
+      "command_line_flags": [
+        "--type=gpu-process"
+      ],
+      "module": "libcef.dll",
+      "path": "C:\\t\\cargo-targets\\turnstone\\debug\\libcef.dll",
+      "sha256": "e3da6707a840a8f33f565e011542169fd51aaa5218603eb7a89039fb16d79ae7",
+      "file_version": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+      "product_version": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+      "first_observed_utc": "2026-10-07T10:42:25.4499783Z",
+      "hash_limitation": null
+    },
+    {
+      "pid": 40900,
+      "parent_pid": 31616,
+      "process_created_utc": "2026-10-07T10:42:24.9712351Z",
+      "command_line_flags": [
+        "--type=gpu-process"
+      ],
+      "module": "dxgi.dll",
+      "path": "C:\\WINDOWS\\SYSTEM32\\dxgi.dll",
+      "sha256": "310f89b07256018034c42c48bcaa0f550c13afe4634be4e00bf1419af35e274c",
+      "file_version": "10.0.26100.9587 (WinBuild.160101.0800)",
+      "product_version": "10.0.26100.9587",
+      "first_observed_utc": "2026-10-07T10:42:25.4451829Z",
+      "hash_limitation": null
+    },
+    {
+      "pid": 31616,
+      "parent_pid": 6072,
+      "process_created_utc": "2026-10-07T10:42:14.9950933Z",
+      "command_line_flags": [],
+      "module": "opengl32.dll",
+      "path": "C:\\WINDOWS\\SYSTEM32\\opengl32.dll",
+      "sha256": "703d6702361821144155f18e27436608668fa6ccd6a9ad153108201ba08b0e0e",
+      "file_version": "10.0.26100.9587 (WinBuild.160101.0800)",
+      "product_version": "10.0.26100.9587",
+      "first_observed_utc": "2026-10-07T10:42:15.5347890Z",
+      "hash_limitation": null
+    },
+    {
+      "pid": 20716,
+      "parent_pid": 31616,
+      "process_created_utc": "2026-10-07T10:42:25.1635029Z",
+      "command_line_flags": [
+        "--type=renderer"
+      ],
+      "module": "dxgi.dll",
+      "path": "C:\\WINDOWS\\SYSTEM32\\dxgi.dll",
+      "sha256": "310f89b07256018034c42c48bcaa0f550c13afe4634be4e00bf1419af35e274c",
+      "file_version": "10.0.26100.9587 (WinBuild.160101.0800)",
+      "product_version": "10.0.26100.9587",
+      "first_observed_utc": "2026-10-07T10:42:27.0578902Z",
+      "hash_limitation": null
+    },
+    {
+      "pid": 25460,
+      "parent_pid": 31616,
+      "process_created_utc": "2026-10-07T10:42:25.0083873Z",
+      "command_line_flags": [
+        "--type=utility"
+      ],
+      "module": "opengl32.dll",
+      "path": "C:\\WINDOWS\\SYSTEM32\\opengl32.dll",
+      "sha256": "703d6702361821144155f18e27436608668fa6ccd6a9ad153108201ba08b0e0e",
+      "file_version": "10.0.26100.9587 (WinBuild.160101.0800)",
+      "product_version": "10.0.26100.9587",
+      "first_observed_utc": "2026-10-07T10:42:26.2654198Z",
+      "hash_limitation": null
+    },
+    {
+      "pid": 41240,
+      "parent_pid": 31616,
+      "process_created_utc": "2026-10-07T10:42:24.9870654Z",
+      "command_line_flags": [
+        "--type=utility"
+      ],
+      "module": "dxgi.dll",
+      "path": "C:\\WINDOWS\\SYSTEM32\\dxgi.dll",
+      "sha256": "310f89b07256018034c42c48bcaa0f550c13afe4634be4e00bf1419af35e274c",
+      "file_version": "10.0.26100.9587 (WinBuild.160101.0800)",
+      "product_version": "10.0.26100.9587",
+      "first_observed_utc": "2026-10-07T10:42:25.8833652Z",
+      "hash_limitation": null
+    },
+    {
+      "pid": 31616,
+      "parent_pid": 6072,
+      "process_created_utc": "2026-10-07T10:42:14.9950933Z",
+      "command_line_flags": [],
+      "module": "D3D12Core.dll",
+      "path": "C:\\WINDOWS\\SYSTEM32\\D3D12Core.dll",
+      "sha256": "0716b255b7da3191ddc27885bdeafc0bf8b6567073cdf167450390ded70470e5",
+      "file_version": "10.0.26100.9587 (WinBuild.160101.0800)",
+      "product_version": "10.0.26100.9587",
+      "first_observed_utc": "2026-10-07T10:42:16.7696494Z",
+      "hash_limitation": null
+    },
+    {
+      "pid": 31000,
+      "parent_pid": 31616,
+      "process_created_utc": "2026-10-07T10:42:25.1407130Z",
+      "command_line_flags": [
+        "--type=renderer"
+      ],
+      "module": "d3d11.dll",
+      "path": "C:\\WINDOWS\\SYSTEM32\\d3d11.dll",
+      "sha256": "d04fd4146b1d07b9b8b377001bb4ffa22bdceb38d5faccf91c9e9a318e0fb0ce",
+      "file_version": "10.0.26100.9587 (WinBuild.160101.0800)",
+      "product_version": "10.0.26100.9587",
+      "first_observed_utc": "2026-10-07T10:42:26.6623295Z",
+      "hash_limitation": null
+    },
+    {
+      "pid": 31616,
+      "parent_pid": 6072,
+      "process_created_utc": "2026-10-07T10:42:14.9950933Z",
+      "command_line_flags": [],
+      "module": "d3d12.dll",
+      "path": "C:\\WINDOWS\\SYSTEM32\\d3d12.dll",
+      "sha256": "5f3b4c8ab126c9342c040ad9f268e3a3907242faf141b644cf17a14f4ecbed1b",
+      "file_version": "10.0.26100.9587 (WinBuild.160101.0800)",
+      "product_version": "10.0.26100.9587",
+      "first_observed_utc": "2026-10-07T10:42:16.7678780Z",
+      "hash_limitation": null
+    },
+    {
+      "pid": 31616,
+      "parent_pid": 6072,
+      "process_created_utc": "2026-10-07T10:42:14.9950933Z",
+      "command_line_flags": [],
+      "module": "d3d11.dll",
+      "path": "C:\\WINDOWS\\SYSTEM32\\d3d11.dll",
+      "sha256": "d04fd4146b1d07b9b8b377001bb4ffa22bdceb38d5faccf91c9e9a318e0fb0ce",
+      "file_version": "10.0.26100.9587 (WinBuild.160101.0800)",
+      "product_version": "10.0.26100.9587",
+      "first_observed_utc": "2026-10-07T10:42:15.5247677Z",
+      "hash_limitation": null
+    },
+    {
+      "pid": 40900,
+      "parent_pid": 31616,
+      "process_created_utc": "2026-10-07T10:42:24.9712351Z",
+      "command_line_flags": [
+        "--type=gpu-process"
+      ],
+      "module": "dxcompiler.dll",
+      "path": "C:\\t\\cargo-targets\\turnstone\\debug\\dxcompiler.dll",
+      "sha256": "d2bcdaab7772d60d2f2c53781bf4449dde9e6491ec82b24da3f581c21c12d110",
+      "file_version": "1.9.2607.0",
+      "product_version": "1.9.2607.0",
+      "first_observed_utc": "2026-10-07T10:42:25.8398419Z",
+      "hash_limitation": null
+    },
+    {
+      "pid": 40900,
+      "parent_pid": 31616,
+      "process_created_utc": "2026-10-07T10:42:24.9712351Z",
+      "command_line_flags": [
+        "--type=gpu-process"
+      ],
+      "module": "dxil.dll",
+      "path": "C:\\t\\cargo-targets\\turnstone\\debug\\dxil.dll",
+      "sha256": "0850398076e9e30cd9ac28fc7d56a7d350ea755b0f3b6b2fc8f35a930888c845",
+      "file_version": "101.7.2308.24",
+      "product_version": "101.7.2308.24 (release/github-release-1.7.2308, ShaderCompiler.dxcbin.0.231001.0+01e0098ba93c6973e72b7fa37b8ff7f019e383f7-101.7.2308.24.github-release-1.7.2308)",
+      "first_observed_utc": "2026-10-07T10:42:25.8371128Z",
+      "hash_limitation": null
+    },
+    {
+      "pid": 25460,
+      "parent_pid": 31616,
+      "process_created_utc": "2026-10-07T10:42:25.0083873Z",
+      "command_line_flags": [
+        "--type=utility"
+      ],
+      "module": "libcef.dll",
+      "path": "C:\\t\\cargo-targets\\turnstone\\debug\\libcef.dll",
+      "sha256": "e3da6707a840a8f33f565e011542169fd51aaa5218603eb7a89039fb16d79ae7",
+      "file_version": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+      "product_version": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+      "first_observed_utc": "2026-10-07T10:42:26.2672612Z",
+      "hash_limitation": null
+    },
+    {
+      "pid": 31616,
+      "parent_pid": 6072,
+      "process_created_utc": "2026-10-07T10:42:14.9950933Z",
+      "command_line_flags": [],
+      "module": "libcef.dll",
+      "path": "C:\\t\\cargo-targets\\turnstone\\debug\\libcef.dll",
+      "sha256": "e3da6707a840a8f33f565e011542169fd51aaa5218603eb7a89039fb16d79ae7",
+      "file_version": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+      "product_version": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+      "first_observed_utc": "2026-10-07T10:42:15.5368047Z",
+      "hash_limitation": null
+    },
+    {
+      "pid": 20716,
+      "parent_pid": 31616,
+      "process_created_utc": "2026-10-07T10:42:25.1635029Z",
+      "command_line_flags": [
+        "--type=renderer"
+      ],
+      "module": "libcef.dll",
+      "path": "C:\\t\\cargo-targets\\turnstone\\debug\\libcef.dll",
+      "sha256": "e3da6707a840a8f33f565e011542169fd51aaa5218603eb7a89039fb16d79ae7",
+      "file_version": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+      "product_version": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+      "first_observed_utc": "2026-10-07T10:42:27.0659706Z",
+      "hash_limitation": null
+    },
+    {
+      "pid": 41240,
+      "parent_pid": 31616,
+      "process_created_utc": "2026-10-07T10:42:24.9870654Z",
+      "command_line_flags": [
+        "--type=utility"
+      ],
+      "module": "d3d11.dll",
+      "path": "C:\\WINDOWS\\SYSTEM32\\d3d11.dll",
+      "sha256": "d04fd4146b1d07b9b8b377001bb4ffa22bdceb38d5faccf91c9e9a318e0fb0ce",
+      "file_version": "10.0.26100.9587 (WinBuild.160101.0800)",
+      "product_version": "10.0.26100.9587",
+      "first_observed_utc": "2026-10-07T10:42:25.8794105Z",
+      "hash_limitation": null
+    },
+    {
+      "pid": 20716,
+      "parent_pid": 31616,
+      "process_created_utc": "2026-10-07T10:42:25.1635029Z",
+      "command_line_flags": [
+        "--type=renderer"
+      ],
+      "module": "d3d11.dll",
+      "path": "C:\\WINDOWS\\SYSTEM32\\d3d11.dll",
+      "sha256": "d04fd4146b1d07b9b8b377001bb4ffa22bdceb38d5faccf91c9e9a318e0fb0ce",
+      "file_version": "10.0.26100.9587 (WinBuild.160101.0800)",
+      "product_version": "10.0.26100.9587",
+      "first_observed_utc": "2026-10-07T10:42:27.0603190Z",
+      "hash_limitation": null
+    }
+  ],
+  "observed_processes": [
+    {
+      "pid": 20716,
+      "parent_pid": 31616,
+      "created_utc": "2026-10-07T10:42:25.1635029Z",
+      "command_line_flags": [
+        "--type=renderer"
+      ],
+      "lineage": "verified live parent chain to owned root",
+      "first_observed_utc": "2026-10-07T10:42:27.0552784Z"
+    },
+    {
+      "pid": 25460,
+      "parent_pid": 31616,
+      "created_utc": "2026-10-07T10:42:25.0083873Z",
+      "command_line_flags": [
+        "--type=utility"
+      ],
+      "lineage": "verified live parent chain to owned root",
+      "first_observed_utc": "2026-10-07T10:42:26.2571513Z"
+    },
+    {
+      "pid": 40900,
+      "parent_pid": 31616,
+      "created_utc": "2026-10-07T10:42:24.9712351Z",
+      "command_line_flags": [
+        "--type=gpu-process"
+      ],
+      "lineage": "verified live parent chain to owned root",
+      "first_observed_utc": "2026-10-07T10:42:25.4309639Z"
+    },
+    {
+      "pid": 31000,
+      "parent_pid": 31616,
+      "created_utc": "2026-10-07T10:42:25.1407130Z",
+      "command_line_flags": [
+        "--type=renderer"
+      ],
+      "lineage": "verified live parent chain to owned root",
+      "first_observed_utc": "2026-10-07T10:42:26.6563542Z"
+    },
+    {
+      "pid": 31616,
+      "parent_pid": 6072,
+      "created_utc": "2026-10-07T10:42:14.9950933Z",
+      "command_line_flags": [],
+      "lineage": "process handle started by this runner",
+      "first_observed_utc": "2026-10-07T10:42:15.0153579Z"
+    },
+    {
+      "pid": 41240,
+      "parent_pid": 31616,
+      "created_utc": "2026-10-07T10:42:24.9870654Z",
+      "command_line_flags": [
+        "--type=utility"
+      ],
+      "lineage": "verified live parent chain to owned root",
+      "first_observed_utc": "2026-10-07T10:42:25.8742161Z"
+    }
+  ],
+  "observer_limitations": [
+    "Owned lineage enumeration unavailable: PID 20716; Exception calling \"GetProcessById\" with \"1\" argument(s): \"Process with an Id of 20716 is not running.\"",
+    "Owned lineage enumeration unavailable: PID 31000; Exception calling \"GetProcessById\" with \"1\" argument(s): \"Process with an Id of 31000 is not running.\""
+  ],
+  "scope": "Read-only owned root and live descendants carrying a --type role marker, with verified parent/creation identity; no child termination",
+  "inference_limit": "Sampling can miss short-lived/exited/access-restricted children or parents without a role marker; role alone does not prove CEF; missing module is not proven absent; no staging-path inference",
+  "identity_limit": "CIM and Process.StartTime creation timestamps agree within less than 1ms; lineage traversal limited to 64 processes per snapshot",
+  "command_line_policy": "Only the bounded --type role marker is retained; full command lines and other flags are excluded"
+}

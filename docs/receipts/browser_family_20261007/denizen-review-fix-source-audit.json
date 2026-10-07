@@ -1,0 +1,65 @@
+{
+  "schema": "denizen-review-fix-source-audit-v1",
+  "recorded_utc": "2026-10-07T11:34:11.129194+00:00",
+  "repository_head_at_application": "abb349cf7957e2b509f4cb7f492e3e0db4821964",
+  "production_baseline": "abb349cf7957e2b509f4cb7f492e3e0db4821964",
+  "approved_patch": {
+    "path": "docs/receipts/browser_family_20261007/linux-denizen-review-fix.patch",
+    "bytes": 7740,
+    "sha256": "97b4297ded7b0a6f291d816c4ad4b9fb0802fea078a76db84cfb8f39615bd6cf"
+  },
+  "authorization": "Root reviewed exact7740-byte patch and confirmed original Linux suite/source guards closed before application. Only cfg(test) source regions are changed.",
+  "files": [
+    {
+      "path": "src/denizen.rs",
+      "original_source_sha256": "10a79b23a35fbcd691812afae31aed856dc2dbb42db030a6d8a17ae1de30b1ae",
+      "final_source_sha256": "37c2d5a8d4e00a306adefbeb61c537cd6367adf0eabd6ede6c046bcd107db3cf",
+      "original_source_bytes": 53845,
+      "final_source_bytes": 54188,
+      "preserved_newline_style": "CRLF",
+      "original_production_prefix_sha256": "081940c4f6102e25469f042a041a000b48dc2445af083563131b12e70487dd6e",
+      "final_production_prefix_sha256": "081940c4f6102e25469f042a041a000b48dc2445af083563131b12e70487dd6e",
+      "production_prefix_raw_byte_equal": true,
+      "production_prefix_git_normalized_equal_to_abb349c": true,
+      "production_prefix_git_normalized_sha256": "0717dbd83224a71ed092ec6cca1542692cd0fbd4889fa0edc1082e701820270e",
+      "original_test_region_sha256": "07b0a1288814ac01b1934e140b24292a999edba341e572f431df19d7920dc10f",
+      "final_test_region_sha256": "746be329d8cc97d390b37575c20e8888fb8a676f788069ad03abcd0ec5589b8b",
+      "in_memory_rustfmt_parse_and_test_only_format": "PASS"
+    },
+    {
+      "path": "src/chrome_view.rs",
+      "original_source_sha256": "d845da3f001d8d80a8b11bbf832018531a283b8909dcb24dc722277ca8193059",
+      "final_source_sha256": "e41817e1c10e1edecf51c6884d2f713f3fd37043a3f437cf1ebce746b3f4550d",
+      "original_source_bytes": 63145,
+      "final_source_bytes": 65104,
+      "preserved_newline_style": "LF",
+      "original_production_prefix_sha256": "5877c600b5280fb3f7ce3c91ad1e9cfdcffbc31e027eea7b59756d362485ca60",
+      "final_production_prefix_sha256": "5877c600b5280fb3f7ce3c91ad1e9cfdcffbc31e027eea7b59756d362485ca60",
+      "production_prefix_raw_byte_equal": true,
+      "production_prefix_git_normalized_equal_to_abb349c": true,
+      "production_prefix_git_normalized_sha256": "5877c600b5280fb3f7ce3c91ad1e9cfdcffbc31e027eea7b59756d362485ca60",
+      "original_test_region_sha256": "8065da25823a3c605ec0cccd0364fb27d8c1b0490c1f4cf8bb2b54776e5fa19e",
+      "final_test_region_sha256": "2c5de07c1b3d358ba6e3eb440780f6682822dabf882a88ae65d98faf0f0e7d0b",
+      "in_memory_rustfmt_parse_and_test_only_format": "PASS"
+    }
+  ],
+  "owned_unstaged_source_paths": [
+    "src/chrome_view.rs",
+    "src/denizen.rs"
+  ],
+  "owned_git_diff_sha256": "a37f430fdf3c908e7fb939910ad7e4475f0097b57a032571b456eb76c0c56a3d",
+  "git_apply_check": "PASS",
+  "git_diff_check": "PASS",
+  "source_scope": "Only src/denizen.rs and src/chrome_view.rs test regions. Both raw production prefixes and abb349c normalized production prefixes are exact. Root-owned staged evidence/docs and unrelated .github are preserved.",
+  "test_contract": [
+    "Preserve content-derived subject identity, label and every default grant name.",
+    "Require own-world scope and Confirm decision in the full review string.",
+    "Render the actual pending Confirm row through retained ChromeSurfaces; require its wrapping class and exact projected/DOM/A11y-label text.",
+    "Require row width within CARD_W, positive measured height, complete row containment inside the card, viewport bottom margin and the actual click intent.",
+    "Reuse the helper in the existing long-watch test; retain its full-watch disclosure, deliberately overflowing ordinary width and row-height>44 assertions.",
+    "Short reviews may use one line on Windows; no platform-independent one-line width requirement remains."
+  ],
+  "verification_limits": "Only source guards, in-memory rustfmt parse/format, Git patch applicability and whitespace/scope checks were performed. No Cargo, tests, native application or commits. Actual Linux/Windows behavior remains for root-owned qualification. No painted-glyph or assistive-technology proof is claimed.",
+  "worktrees": "Owned compatibility worktrees remain intact pending Linux gate and separate cleanup authorization.",
+  "format_scope": "Only owned test additions/moved helper formatted; unrelated existing assertion formatting restored exactly."
+}

@@ -1,0 +1,270 @@
+{
+  "recorded_utc": "2026-10-07T10:59:01.966715+00:00",
+  "source_commit": "abb349cf7957e2b509f4cb7f492e3e0db4821964",
+  "tracked_source_clean": true,
+  "untracked_files_excluded_from_clean_claim": true,
+  "compiled_input_count": 258,
+  "exact_git_byte_matches": 163,
+  "git_attributes_filtered_matches": [
+    ".cargo/config.toml.example",
+    "rust-toolchain.toml",
+    "sandbox_bootstrap_win/Cargo.toml",
+    "sandbox_bootstrap_win/src/lib.rs",
+    "src/action.rs",
+    "src/app/contributed_pane_arms.rs",
+    "src/app/denizen_arms.rs",
+    "src/app/feed_arms.rs",
+    "src/app/pane_arms.rs",
+    "src/app/redshank_arms.rs",
+    "src/app/resident_admission_tests.rs",
+    "src/app/resident_run_tests.rs",
+    "src/app/runtime_pool.rs",
+    "src/app/updates.rs",
+    "src/app/user_agent_decision_arms.rs",
+    "src/behaviors.rs",
+    "src/browse.rs",
+    "src/cambium_pane.rs",
+    "src/component.rs",
+    "src/content_classes.rs",
+    "src/contributed_surface.rs",
+    "src/denizen.rs",
+    "src/device_receipts_service.rs",
+    "src/download.rs",
+    "src/feed.rs",
+    "src/frame_timing.rs",
+    "src/gemini_identity.rs",
+    "src/gemini_trust.rs",
+    "src/identity.rs",
+    "src/knot_authoring.rs",
+    "src/knot_document_surface.rs",
+    "src/launch.rs",
+    "src/main.rs",
+    "src/pane.rs",
+    "src/panes/blueprint/context.rs",
+    "src/panes/blueprint/layout.rs",
+    "src/panes/blueprint/presentation.rs",
+    "src/panes/blueprint.rs",
+    "src/panes/blueprint_tests.rs",
+    "src/panes/layout.rs",
+    "src/panes/legacy_bridge.rs",
+    "src/panes/mod.rs",
+    "src/panes/projection.rs",
+    "src/panes/registry.rs",
+    "src/panes/store.rs",
+    "src/panes/tests.rs",
+    "src/place/captured_collection.rs",
+    "src/place/contract.rs",
+    "src/place/invite.rs",
+    "src/place/lanes.rs",
+    "src/place/rendezvous.rs",
+    "src/place.rs",
+    "src/publish_pane.rs",
+    "src/publish_service.rs",
+    "src/recycle.rs",
+    "src/redshank_episode_surface.rs",
+    "src/remote_projection.rs",
+    "src/resident_admission.rs",
+    "src/resident_runs.rs",
+    "src/resident_runs_tests.rs",
+    "src/ring.rs",
+    "src/roster_view.rs",
+    "src/scenario.rs",
+    "src/script.rs",
+    "src/sections.rs",
+    "src/session.rs",
+    "src/share_reader_service.rs",
+    "src/shell/contributed_automation.rs",
+    "src/shell/events.rs",
+    "src/shell/gestures.rs",
+    "src/shell/lens.rs",
+    "src/shell/nomadnet_fetch.rs",
+    "src/shell/page_capture.rs",
+    "src/shell/render.rs",
+    "src/shell/renderers.rs",
+    "src/shell_services.rs",
+    "src/sky_receipt.rs",
+    "src/sky_surface/view.rs",
+    "src/sky_surface.rs",
+    "src/sky_timeline.rs",
+    "src/source_capture.rs",
+    "src/surface/appearance.rs",
+    "src/surface.rs",
+    "src/swatch_pane/mod.rs",
+    "src/swatch_pane/presets.rs",
+    "src/trail_memory.rs",
+    "src/trail_memory_evaluation.rs",
+    "src/trail_pane.rs",
+    "src/trail_view.rs",
+    "src/transcript_pane.rs",
+    "src/ui.rs",
+    "src/user_agent_decision.rs",
+    "src/web_policy.rs",
+    "src/workbench_tiling.rs"
+  ],
+  "local_archived_build_inputs": [
+    {
+      "path": ".cargo/config.local.toml",
+      "sha256": "b145a4d33d5cda8f79e47911f9fc242d7cc13ef7b26beea13bc2598e89ef0be3"
+    }
+  ],
+  "all_compiled_working_inputs_unchanged": true,
+  "all_tracked_inputs_match_git_objects_after_attributes": true,
+  "native_executable_sha256": "61a81cb0864635a337e4db7ca7ded22f77d8076059fe72378b17f230f713c39a",
+  "windows_gates": {
+    "windows-clean-all3-lib-tests": {
+      "command": [
+        "cargo",
+        "+1.98.1",
+        "test",
+        "--workspace",
+        "--locked",
+        "--features",
+        "scry,weld,servo",
+        "--lib",
+        "-j",
+        "2"
+      ],
+      "cwd": "C:\\Users\\mark_\\Code\\repos\\turnstone",
+      "started_utc": "2026-10-07T10:46:00.380862+00:00",
+      "finished_utc": "2026-10-07T10:49:28.190294+00:00",
+      "elapsed_seconds": 207.81200000000536,
+      "exit_code": 0,
+      "priority": "BelowNormal",
+      "environment": {
+        "CEF_PATH": "C:/Users/mark_/Code/cef-cache/wgpu-weld/154.0.34/cef_windows_x86_64",
+        "LIBCLANG_PATH": "C:/Program Files/LLVM/bin",
+        "CMAKE_GENERATOR": "Visual Studio 17 2022",
+        "CARGO_TARGET_DIR": "C:/t/cargo-targets/turnstone",
+        "CARGO_BUILD_JOBS": "1",
+        "CARGO_NET_GIT_FETCH_WITH_CLI": "true",
+        "RUSTFLAGS": null,
+        "CARGO_ENCODED_RUSTFLAGS": null,
+        "CARGO_PROFILE_DEV_DEBUG": null,
+        "CARGO_PROFILE_TEST_DEBUG": null
+      }
+    },
+    "windows-clean-all3-all-targets": {
+      "command": [
+        "cargo",
+        "+1.98.1",
+        "check",
+        "--workspace",
+        "--all-targets",
+        "--locked",
+        "--features",
+        "scry,weld,servo",
+        "-j",
+        "2"
+      ],
+      "cwd": "C:\\Users\\mark_\\Code\\repos\\turnstone",
+      "started_utc": "2026-10-07T10:49:28.336424+00:00",
+      "finished_utc": "2026-10-07T10:55:04.977342+00:00",
+      "elapsed_seconds": 336.64100000000326,
+      "exit_code": 0,
+      "priority": "BelowNormal",
+      "environment": {
+        "CEF_PATH": "C:/Users/mark_/Code/cef-cache/wgpu-weld/154.0.34/cef_windows_x86_64",
+        "LIBCLANG_PATH": "C:/Program Files/LLVM/bin",
+        "CMAKE_GENERATOR": "Visual Studio 17 2022",
+        "CARGO_TARGET_DIR": "C:/t/cargo-targets/turnstone",
+        "CARGO_BUILD_JOBS": "1",
+        "CARGO_NET_GIT_FETCH_WITH_CLI": "true",
+        "RUSTFLAGS": null,
+        "CARGO_ENCODED_RUSTFLAGS": null,
+        "CARGO_PROFILE_DEV_DEBUG": null,
+        "CARGO_PROFILE_TEST_DEBUG": null
+      }
+    },
+    "windows-clean-cargo-mode": {
+      "command": [
+        "python",
+        "scripts/cargo_mode.py",
+        "verify"
+      ],
+      "cwd": "C:\\Users\\mark_\\Code\\repos\\turnstone",
+      "started_utc": "2026-10-07T10:55:05.128054+00:00",
+      "finished_utc": "2026-10-07T10:55:34.117848+00:00",
+      "elapsed_seconds": 28.98499999998603,
+      "exit_code": 0,
+      "priority": "BelowNormal",
+      "environment": {
+        "CEF_PATH": "C:/Users/mark_/Code/cef-cache/wgpu-weld/154.0.34/cef_windows_x86_64",
+        "LIBCLANG_PATH": "C:/Program Files/LLVM/bin",
+        "CMAKE_GENERATOR": "Visual Studio 17 2022",
+        "CARGO_TARGET_DIR": "C:/t/cargo-targets/turnstone",
+        "CARGO_BUILD_JOBS": "1",
+        "CARGO_NET_GIT_FETCH_WITH_CLI": "true",
+        "RUSTFLAGS": null,
+        "CARGO_ENCODED_RUSTFLAGS": null,
+        "CARGO_PROFILE_DEV_DEBUG": null,
+        "CARGO_PROFILE_TEST_DEBUG": null
+      }
+    },
+    "windows-clean-cargo-tree": {
+      "command": [
+        "cargo",
+        "+1.98.1",
+        "tree",
+        "--locked",
+        "--workspace",
+        "--features",
+        "scry,weld,servo"
+      ],
+      "cwd": "C:\\Users\\mark_\\Code\\repos\\turnstone",
+      "started_utc": "2026-10-07T10:55:34.265898+00:00",
+      "finished_utc": "2026-10-07T10:55:39.275971+00:00",
+      "elapsed_seconds": 5.0,
+      "exit_code": 0,
+      "priority": "BelowNormal",
+      "environment": {
+        "CEF_PATH": "C:/Users/mark_/Code/cef-cache/wgpu-weld/154.0.34/cef_windows_x86_64",
+        "LIBCLANG_PATH": "C:/Program Files/LLVM/bin",
+        "CMAKE_GENERATOR": "Visual Studio 17 2022",
+        "CARGO_TARGET_DIR": "C:/t/cargo-targets/turnstone",
+        "CARGO_BUILD_JOBS": "1",
+        "CARGO_NET_GIT_FETCH_WITH_CLI": "true",
+        "RUSTFLAGS": null,
+        "CARGO_ENCODED_RUSTFLAGS": null,
+        "CARGO_PROFILE_DEV_DEBUG": null,
+        "CARGO_PROFILE_TEST_DEBUG": null
+      }
+    }
+  },
+  "lib_tests": {
+    "passed": 680,
+    "failed": 0,
+    "ignored": 9
+  },
+  "cargo_mode_packages": 1280,
+  "locked_supplier_families": {
+    "mere": {
+      "packages": 73,
+      "source": "git+https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893db6909d5ed9c4ccae30216f0d8164201a"
+    },
+    "genet": {
+      "packages": 31,
+      "source": "git+https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e206a47d1c8808472de9aa461233638768"
+    },
+    "knot-editor": {
+      "packages": 5,
+      "source": "git+https://github.com/merely-made/knot-editor.git?rev=0096591a0af98bf4777d8bfe718c0423dea9fc90#0096591a0af98bf4777d8bfe718c0423dea9fc90"
+    },
+    "woodshed": {
+      "packages": 6,
+      "source": "git+https://github.com/merely-made/woodshed.git?rev=82271df20927d41a4cbb79c56a09fef5bbb38cde#82271df20927d41a4cbb79c56a09fef5bbb38cde"
+    },
+    "wgpu-graft": {
+      "packages": 3,
+      "source": "git+https://github.com/merely-made/wgpu-graft.git?rev=bb48281bd4a88a726a009e0518706881b74b7604#bb48281bd4a88a726a009e0518706881b74b7604"
+    },
+    "wgpu-scry": {
+      "packages": 1,
+      "source": "git+https://github.com/merely-made/wgpu-scry.git?rev=2c3ebd24118851cf6125cfb193f55aab20e3ad67#2c3ebd24118851cf6125cfb193f55aab20e3ad67"
+    },
+    "wgpu-weld": {
+      "packages": 1,
+      "source": "git+https://github.com/merely-made/wgpu-weld.git?rev=c4dd593b7a730acb4aa6ffab0fe2edf8a0584083#c4dd593b7a730acb4aa6ffab0fe2edf8a0584083"
+    }
+  },
+  "scope": "S0 coordinated source qualification; foreign-tree accessibility and default Servo GPU synchronization remain release gates."
+}

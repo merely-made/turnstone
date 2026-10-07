@@ -1,0 +1,4 @@
+
+thread 'denizen::tests::staged_installs_are_content_derived_and_reviewable' (233905) panicked at src/denizen.rs:1145:9:
+the ask must fit one palette row without clipping: 549.5621px > 528px: Install trail-keeper (lua) — grants: navigate, panes, dispatch, own world — Confirm
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

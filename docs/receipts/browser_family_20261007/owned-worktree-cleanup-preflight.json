@@ -1,0 +1,2000 @@
+{
+  "schema": "owned-worktree-cleanup-preflight-v1",
+  "recorded_utc": "2026-10-07T11:01:45.256663+00:00",
+  "owner": "shared_weld_input / root Turnstone browser-family integration",
+  "scope": "Only the two exact approved clean collision worktrees were audited. Fetch updated shared remote-tracking metadata; no source, branch, worktree or primary files were changed or removed.",
+  "worktrees": [
+    {
+      "repository": "mere",
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\mere-browser-input-compat",
+      "expected_approved_path": "C:\\Users\\mark_\\Code\\worktrees\\mere-browser-input-compat",
+      "canonical_path_exact": true,
+      "path_and_ancestors_reparse_points": [],
+      "nested_reparse_points": [],
+      "filesystem_file_count": 3399,
+      "head": "57b4893db6909d5ed9c4ccae30216f0d8164201a",
+      "branch": "codex/browser-input-compat",
+      "status_porcelain_including_ignored": "",
+      "untracked_files": [],
+      "ignored_files": [],
+      "tracked_source_clean": true,
+      "remote_url": "https://github.com/merely-made/mere.git",
+      "fresh_remote_main": "57b4893db6909d5ed9c4ccae30216f0d8164201a",
+      "fetched_origin_main": "57b4893db6909d5ed9c4ccae30216f0d8164201a",
+      "compat_commit_ancestor_exit_code": 0,
+      "commit_permanently_reachable_origin_main": true,
+      "registered_worktree_metadata": "worktree C:/Users/mark_/Code/repos/mere\nHEAD e7ec66aff19923d904e0d0155ea00d78b7015fea\nbranch refs/heads/main\n\nworktree C:/Users/mark_/Code/repos/mere-verify\nHEAD ebf3e73464792431f0553c93faefb0a6f041cca5\nbranch refs/heads/ts-verify\n\nworktree C:/Users/mark_/Code/worktrees/mere-audit-250fd238\nHEAD 250fd238a9595dde04eea3582e1b3cc5ec6e1715\ndetached\n\nworktree C:/Users/mark_/Code/worktrees/mere-browser-input-compat\nHEAD 57b4893db6909d5ed9c4ccae30216f0d8164201a\nbranch refs/heads/codex/browser-input-compat\n\nworktree C:/Users/mark_/Code/worktrees/mere-burn-pre4\nHEAD 4b0713dbbb7314538b62c9d3fba3fcfaefe4acf0\nbranch refs/heads/burn-pre4-repin\n\nworktree C:/Users/mark_/Code/worktrees/mere-canvas-elapsed\nHEAD 74ee42ffc26e278316ec8e81487e618448a1b9cf\nbranch refs/heads/canvas-elapsed-host\n\nworktree C:/Users/mark_/Code/worktrees/mere-djinn-knot\nHEAD 6881d3f22002da940e6606c11656717817976415\nbranch refs/heads/djinn-knot-pre4\n\nworktree C:/Users/mark_/Code/worktrees/mere-energy-frame\nHEAD 4a291644dc3373902eeced95fc22a632aa9d6267\nbranch refs/heads/energy-frame\n\nworktree C:/Users/mark_/Code/worktrees/mere-genet-imgdec\nHEAD 50b1a87c21cee3c21bd86996aa97f185c8dc51a5\nbranch refs/heads/a11y-hidden-content\n\nworktree C:/Users/mark_/Code/worktrees/mere-genet-repin\nHEAD 11ec53d51ac46d726c98fe78d47b4790e7eadf9f\nbranch refs/heads/genet-repin\n\nworktree C:/Users/mark_/Code/worktrees/mere-grammar-g2\nHEAD 6b4039d02cf4ae9d2043874ecc4cab57aa068b37\nbranch refs/heads/grammar-g2\n\nworktree C:/Users/mark_/Code/worktrees/mere-grammar-g3\nHEAD 805481f05e4c0fc7391102013a0be1e2947e572b\nbranch refs/heads/grammar-g3\n\nworktree C:/Users/mark_/Code/worktrees/mere-grammar-g9\nHEAD 25eee99b533627d29575902d449b43c3bd9a471c\nbranch refs/heads/grammar-g9\n\nworktree C:/Users/mark_/Code/worktrees/mere-graph-semantics\nHEAD f98c7d4383032690c37590e9d54bb340da5572a7\nbranch refs/heads/graph-semantics\n\nworktree C:/Users/mark_/Code/worktrees/mere-knot-seed\nHEAD ea74604babecb236719e143dc032a7bdf1f0339f\nbranch refs/heads/knot-seed-djinn\n\nworktree C:/Users/mark_/Code/worktrees/mere-seiche-speed\nHEAD 4b916a2e4444f941bd9dae2f823ecdd64644ef05\nbranch refs/heads/seiche-speed-estimator\n\nworktree C:/Users/mark_/Code/worktrees/mere-tree-physics\nHEAD 5e137a64f2a34161bdfb8c9b9a742aa4a045153b\nbranch refs/heads/tree-physics-panel\n\nworktree C:/Users/mark_/Code/worktrees/mere-tree-remote\nHEAD cf84ee4fc3b86fa170d4a793a963ff70eaf094ac\nbranch refs/heads/tree-remote-session\n\nworktree C:/Users/mark_/Code/worktrees/mere-viewer-cone\nHEAD 7ef65d8d5a40bbdd8f872fdaa0d097c83d892f34\nbranch refs/heads/viewer-cone\n\n",
+      "git_common_dir": "C:\\Users\\mark_\\Code\\repos\\mere\\.git",
+      "worktree_git_dir": "C:\\Users\\mark_\\Code\\repos\\mere\\.git\\worktrees\\mere-browser-input-compat",
+      "git_file": "gitdir: C:/Users/mark_/Code/repos/mere/.git/worktrees/mere-browser-input-compat",
+      "registration_lock_exists": false,
+      "index_lock_exists": false,
+      "ownership": "Root-approved shared_weld_input browser-input compatibility collision worktree; task coordination is the ownership evidence, Git has no agent-owner field.",
+      "primary_preservation_guard": {
+        "path": "C:\\Users\\mark_\\Code\\repos\\mere",
+        "head": "e7ec66aff19923d904e0d0155ea00d78b7015fea",
+        "status_porcelain": "",
+        "must_preserve": true
+      },
+      "obstacles": []
+    },
+    {
+      "repository": "woodshed",
+      "path": "C:\\Users\\mark_\\Code\\worktrees\\woodshed-browser-input-compat",
+      "expected_approved_path": "C:\\Users\\mark_\\Code\\worktrees\\woodshed-browser-input-compat",
+      "canonical_path_exact": true,
+      "path_and_ancestors_reparse_points": [],
+      "nested_reparse_points": [],
+      "filesystem_file_count": 590,
+      "head": "82271df20927d41a4cbb79c56a09fef5bbb38cde",
+      "branch": "codex/browser-input-compat",
+      "status_porcelain_including_ignored": "",
+      "untracked_files": [],
+      "ignored_files": [],
+      "tracked_source_clean": true,
+      "remote_url": "https://github.com/merely-made/woodshed.git",
+      "fresh_remote_main": "82271df20927d41a4cbb79c56a09fef5bbb38cde",
+      "fetched_origin_main": "82271df20927d41a4cbb79c56a09fef5bbb38cde",
+      "compat_commit_ancestor_exit_code": 0,
+      "commit_permanently_reachable_origin_main": true,
+      "registered_worktree_metadata": "worktree C:/Users/mark_/Code/repos/woodshed\nHEAD cefc903dcd7f506803acfe2ee52cad7693787188\nbranch refs/heads/main\n\nworktree C:/Users/mark_/Code/worktrees/woodshed-browser-input-compat\nHEAD 82271df20927d41a4cbb79c56a09fef5bbb38cde\nbranch refs/heads/codex/browser-input-compat\n\n",
+      "git_common_dir": "C:\\Users\\mark_\\Code\\repos\\woodshed\\.git",
+      "worktree_git_dir": "C:\\Users\\mark_\\Code\\repos\\woodshed\\.git\\worktrees\\woodshed-browser-input-compat",
+      "git_file": "gitdir: C:/Users/mark_/Code/repos/woodshed/.git/worktrees/woodshed-browser-input-compat",
+      "registration_lock_exists": false,
+      "index_lock_exists": false,
+      "ownership": "Root-approved shared_weld_input browser-input compatibility collision worktree; task coordination is the ownership evidence, Git has no agent-owner field.",
+      "primary_preservation_guard": {
+        "path": "C:\\Users\\mark_\\Code\\repos\\woodshed",
+        "head": "cefc903dcd7f506803acfe2ee52cad7693787188",
+        "status_porcelain": " M ports/redshank/desktop/src/scenario.rs\n M ports/redshank/scenarios/README.md\n M ports/redshank/scenarios/fixtures/README.md\n M ports/redshank/scenarios/fixtures/make_fixtures.py\n M ports/redshank/spikes/playback/scripts/range_server.py\n?? ports/redshank/scenarios/fixtures/local-transcript/state-00000000000000000001.json\n?? ports/redshank/scenarios/fixtures/podnews-transcript/state-00000000000000000001.json\n?? ports/redshank/scenarios/transcript_live.scn\n?? ports/redshank/scenarios/transcript_offline_seed.scn\n?? ports/redshank/scenarios/transcript_offline_verify.scn\n?? ports/redshank/scenarios/transcript_timing.scn\n",
+        "must_preserve": true
+      },
+      "obstacles": []
+    }
+  ],
+  "process_observation": {
+    "method": "Win32_Process command-line path-match plus read-only NtQueryInformationProcess/ReadProcessMemory current-directory metadata; 64-bit and WOW64 offsets, validated against this observer own cwd. Full process command lines were not retained.",
+    "process_snapshot_count": 482,
+    "observer_pids_excluded": [
+      32936,
+      45324
+    ],
+    "current_directories_successfully_read": 307,
+    "live_references_to_owned_worktrees": [],
+    "current_directory_observer_limitations": [
+      {
+        "pid": 0,
+        "name": "System Idle Process",
+        "executable": null,
+        "limitation": "[Errno 87] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 4,
+        "name": "System",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 236,
+        "name": "Secure System",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 280,
+        "name": "Registry",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 848,
+        "name": "smss.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 1336,
+        "name": "csrss.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 1600,
+        "name": "wininit.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 1612,
+        "name": "csrss.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 1700,
+        "name": "winlogon.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 1724,
+        "name": "services.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 1764,
+        "name": "LsaIso.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 1772,
+        "name": "lsass.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 1900,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 1916,
+        "name": "fontdrvhost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 1924,
+        "name": "fontdrvhost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 2036,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 1020,
+        "name": "WUDFCompanionHost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 1316,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 832,
+        "name": "dwm.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 2148,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 2172,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 2188,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 2196,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 2220,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 2400,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 2448,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 2460,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 2500,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 2516,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 2532,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 2540,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 2764,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 2772,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 2816,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 2836,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 2864,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 3116,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 3372,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 3388,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 3440,
+        "name": "NVDisplay.Container.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 3540,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 3580,
+        "name": "amdfendrsr.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 3588,
+        "name": "atiesrxx.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 3596,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 3652,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 3808,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 3820,
+        "name": "WUDFHost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 4012,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 4240,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 4292,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 4652,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 4796,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 4904,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 4972,
+        "name": "dasHost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 4992,
+        "name": "WUDFHost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 5044,
+        "name": "WUDFHost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 4820,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 5168,
+        "name": "WUDFCompanionHost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 5192,
+        "name": "WUDFCompanionHost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 5228,
+        "name": "dasHost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 5304,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 5308,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 5320,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 5360,
+        "name": "WUDFHost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 5436,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 5444,
+        "name": "Memory Compression",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 5524,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 5556,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 5740,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 5792,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 5828,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 5848,
+        "name": "AsusOptimization.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 5856,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 6020,
+        "name": "spoolsv.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 6256,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 6352,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 6440,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 6456,
+        "name": "AsusSystemDiagnosis.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 6468,
+        "name": "AsusAppService.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 6480,
+        "name": "AsusSoftwareManager.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 6488,
+        "name": "AsusSwitch.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 6496,
+        "name": "AsusSystemAnalysis.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 6504,
+        "name": "AsusPTPService.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 6512,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 6520,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 6528,
+        "name": "wslservice.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 6536,
+        "name": "DAX3API.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 6544,
+        "name": "GameInputRedistService.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 6552,
+        "name": "nvcontainer.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 6560,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 6576,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 6584,
+        "name": "HPPrintScanDoctorService.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 6592,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 6600,
+        "name": "RtkAudUService64.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 6620,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 6632,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 6656,
+        "name": "TCPSVCS.EXE",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 6672,
+        "name": "MpDefenderCoreService.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 6684,
+        "name": "OfficeClickToRun.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 6696,
+        "name": "MsMpEng.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 6704,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 7152,
+        "name": "gamingservices.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 7256,
+        "name": "gamingservicesnet.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 7376,
+        "name": "NgcIso.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 7504,
+        "name": "WmiPrvSE.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 7792,
+        "name": "wlanext.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 8624,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 8964,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 9220,
+        "name": "AggregatorHost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 10156,
+        "name": "unsecapp.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 9820,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 9548,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 6424,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 10320,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 10692,
+        "name": "GameInputSvc.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 10728,
+        "name": "GameInputSvc.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 10888,
+        "name": "vmcompute.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 10996,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 11104,
+        "name": "DefenderAiPlatformHost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 7480,
+        "name": "NisSrv.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 8256,
+        "name": "atieclxx.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 8204,
+        "name": "NVDisplay.Container.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 8780,
+        "name": "nvcontainer.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 4176,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 9804,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 9348,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 6400,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 10424,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 3304,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 7356,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 9372,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 1784,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 9172,
+        "name": "SearchIndexer.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 4440,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 6952,
+        "name": "SecurityHealthService.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 5784,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 7464,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 5652,
+        "name": "DefenderSessionHelper.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 11012,
+        "name": "DAX3API.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 4628,
+        "name": "WmiPrvSE.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 14512,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 17604,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 19968,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 17420,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 5636,
+        "name": "ctfmon.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 24616,
+        "name": "ChsIME.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 18236,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 15340,
+        "name": "steamservice.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 15564,
+        "name": "logioptionsplus_updater.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 15632,
+        "name": "logioptionsplus_appbroker.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 24372,
+        "name": "FileSyncHelper.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 28056,
+        "name": "audiodg.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 924,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 19828,
+        "name": "dllhost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 13480,
+        "name": "AsusSoftwareManagerAgent.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 412,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 20436,
+        "name": "taskhostw.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 18564,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 34152,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 40672,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 34244,
+        "name": "codex-windows-sandbox-service.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 37300,
+        "name": "SearchProtocolHost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 46696,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 50724,
+        "name": "SearchFilterHost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 16968,
+        "name": "SearchFilterHost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 35160,
+        "name": "cowork-svc.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 31940,
+        "name": "SearchFilterHost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 37196,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 14104,
+        "name": "WmiPrvSE.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 19132,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 44204,
+        "name": "taskhostw.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 41876,
+        "name": "svchost.exe",
+        "executable": null,
+        "limitation": "[Errno 5] OpenProcess query/read unavailable"
+      },
+      {
+        "pid": 34844,
+        "name": "pwsh.exe",
+        "executable": "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
+        "limitation": "[Errno 87] OpenProcess query/read unavailable"
+      }
+    ],
+    "null_command_line_processes": [
+      {
+        "pid": 0,
+        "name": "System Idle Process",
+        "executable": null
+      },
+      {
+        "pid": 4,
+        "name": "System",
+        "executable": null
+      },
+      {
+        "pid": 236,
+        "name": "Secure System",
+        "executable": null
+      },
+      {
+        "pid": 280,
+        "name": "Registry",
+        "executable": null
+      },
+      {
+        "pid": 848,
+        "name": "smss.exe",
+        "executable": null
+      },
+      {
+        "pid": 1336,
+        "name": "csrss.exe",
+        "executable": null
+      },
+      {
+        "pid": 1600,
+        "name": "wininit.exe",
+        "executable": null
+      },
+      {
+        "pid": 1612,
+        "name": "csrss.exe",
+        "executable": null
+      },
+      {
+        "pid": 1700,
+        "name": "winlogon.exe",
+        "executable": null
+      },
+      {
+        "pid": 1724,
+        "name": "services.exe",
+        "executable": null
+      },
+      {
+        "pid": 1764,
+        "name": "LsaIso.exe",
+        "executable": null
+      },
+      {
+        "pid": 1772,
+        "name": "lsass.exe",
+        "executable": null
+      },
+      {
+        "pid": 1900,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 1916,
+        "name": "fontdrvhost.exe",
+        "executable": null
+      },
+      {
+        "pid": 1924,
+        "name": "fontdrvhost.exe",
+        "executable": null
+      },
+      {
+        "pid": 2036,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 1020,
+        "name": "WUDFCompanionHost.exe",
+        "executable": null
+      },
+      {
+        "pid": 1316,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 832,
+        "name": "dwm.exe",
+        "executable": null
+      },
+      {
+        "pid": 2148,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 2172,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 2188,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 2196,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 2220,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 2400,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 2448,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 2460,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 2500,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 2516,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 2532,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 2540,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 2764,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 2772,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 2816,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 2836,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 2864,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 3116,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 3372,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 3388,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 3440,
+        "name": "NVDisplay.Container.exe",
+        "executable": null
+      },
+      {
+        "pid": 3540,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 3580,
+        "name": "amdfendrsr.exe",
+        "executable": null
+      },
+      {
+        "pid": 3588,
+        "name": "atiesrxx.exe",
+        "executable": null
+      },
+      {
+        "pid": 3596,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 3652,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 3808,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 3820,
+        "name": "WUDFHost.exe",
+        "executable": null
+      },
+      {
+        "pid": 4012,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 4240,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 4292,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 4652,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 4796,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 4904,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 4972,
+        "name": "dasHost.exe",
+        "executable": null
+      },
+      {
+        "pid": 4992,
+        "name": "WUDFHost.exe",
+        "executable": null
+      },
+      {
+        "pid": 5044,
+        "name": "WUDFHost.exe",
+        "executable": null
+      },
+      {
+        "pid": 4820,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 5168,
+        "name": "WUDFCompanionHost.exe",
+        "executable": null
+      },
+      {
+        "pid": 5192,
+        "name": "WUDFCompanionHost.exe",
+        "executable": null
+      },
+      {
+        "pid": 5228,
+        "name": "dasHost.exe",
+        "executable": null
+      },
+      {
+        "pid": 5304,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 5308,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 5320,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 5360,
+        "name": "WUDFHost.exe",
+        "executable": null
+      },
+      {
+        "pid": 5436,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 5444,
+        "name": "Memory Compression",
+        "executable": null
+      },
+      {
+        "pid": 5524,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 5556,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 5740,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 5792,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 5828,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 5848,
+        "name": "AsusOptimization.exe",
+        "executable": null
+      },
+      {
+        "pid": 5856,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 6020,
+        "name": "spoolsv.exe",
+        "executable": null
+      },
+      {
+        "pid": 6256,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 6352,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 6440,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 6456,
+        "name": "AsusSystemDiagnosis.exe",
+        "executable": null
+      },
+      {
+        "pid": 6468,
+        "name": "AsusAppService.exe",
+        "executable": null
+      },
+      {
+        "pid": 6480,
+        "name": "AsusSoftwareManager.exe",
+        "executable": null
+      },
+      {
+        "pid": 6488,
+        "name": "AsusSwitch.exe",
+        "executable": null
+      },
+      {
+        "pid": 6496,
+        "name": "AsusSystemAnalysis.exe",
+        "executable": null
+      },
+      {
+        "pid": 6504,
+        "name": "AsusPTPService.exe",
+        "executable": null
+      },
+      {
+        "pid": 6512,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 6520,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 6528,
+        "name": "wslservice.exe",
+        "executable": null
+      },
+      {
+        "pid": 6536,
+        "name": "DAX3API.exe",
+        "executable": null
+      },
+      {
+        "pid": 6544,
+        "name": "GameInputRedistService.exe",
+        "executable": null
+      },
+      {
+        "pid": 6552,
+        "name": "nvcontainer.exe",
+        "executable": null
+      },
+      {
+        "pid": 6560,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 6576,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 6584,
+        "name": "HPPrintScanDoctorService.exe",
+        "executable": null
+      },
+      {
+        "pid": 6592,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 6600,
+        "name": "RtkAudUService64.exe",
+        "executable": null
+      },
+      {
+        "pid": 6620,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 6632,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 6656,
+        "name": "TCPSVCS.EXE",
+        "executable": null
+      },
+      {
+        "pid": 6672,
+        "name": "MpDefenderCoreService.exe",
+        "executable": null
+      },
+      {
+        "pid": 6684,
+        "name": "OfficeClickToRun.exe",
+        "executable": null
+      },
+      {
+        "pid": 6696,
+        "name": "MsMpEng.exe",
+        "executable": null
+      },
+      {
+        "pid": 6704,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 7152,
+        "name": "gamingservices.exe",
+        "executable": null
+      },
+      {
+        "pid": 7256,
+        "name": "gamingservicesnet.exe",
+        "executable": null
+      },
+      {
+        "pid": 7376,
+        "name": "NgcIso.exe",
+        "executable": null
+      },
+      {
+        "pid": 7504,
+        "name": "WmiPrvSE.exe",
+        "executable": null
+      },
+      {
+        "pid": 7792,
+        "name": "wlanext.exe",
+        "executable": null
+      },
+      {
+        "pid": 8624,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 8964,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 9220,
+        "name": "AggregatorHost.exe",
+        "executable": null
+      },
+      {
+        "pid": 10156,
+        "name": "unsecapp.exe",
+        "executable": null
+      },
+      {
+        "pid": 9820,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 9548,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 6424,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 10320,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 10692,
+        "name": "GameInputSvc.exe",
+        "executable": null
+      },
+      {
+        "pid": 10728,
+        "name": "GameInputSvc.exe",
+        "executable": null
+      },
+      {
+        "pid": 10888,
+        "name": "vmcompute.exe",
+        "executable": null
+      },
+      {
+        "pid": 10996,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 11104,
+        "name": "DefenderAiPlatformHost.exe",
+        "executable": null
+      },
+      {
+        "pid": 7480,
+        "name": "NisSrv.exe",
+        "executable": null
+      },
+      {
+        "pid": 8256,
+        "name": "atieclxx.exe",
+        "executable": null
+      },
+      {
+        "pid": 8204,
+        "name": "NVDisplay.Container.exe",
+        "executable": null
+      },
+      {
+        "pid": 8780,
+        "name": "nvcontainer.exe",
+        "executable": null
+      },
+      {
+        "pid": 4176,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 9804,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 9348,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 6400,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 10424,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 3304,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 7356,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 9372,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 1784,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 9172,
+        "name": "SearchIndexer.exe",
+        "executable": null
+      },
+      {
+        "pid": 4440,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 6952,
+        "name": "SecurityHealthService.exe",
+        "executable": null
+      },
+      {
+        "pid": 5784,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 7464,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 5652,
+        "name": "DefenderSessionHelper.exe",
+        "executable": null
+      },
+      {
+        "pid": 11012,
+        "name": "DAX3API.exe",
+        "executable": null
+      },
+      {
+        "pid": 4628,
+        "name": "WmiPrvSE.exe",
+        "executable": null
+      },
+      {
+        "pid": 14512,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 17604,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 19968,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 17420,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 5636,
+        "name": "ctfmon.exe",
+        "executable": null
+      },
+      {
+        "pid": 24616,
+        "name": "ChsIME.exe",
+        "executable": null
+      },
+      {
+        "pid": 18236,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 15340,
+        "name": "steamservice.exe",
+        "executable": null
+      },
+      {
+        "pid": 15564,
+        "name": "logioptionsplus_updater.exe",
+        "executable": null
+      },
+      {
+        "pid": 15632,
+        "name": "logioptionsplus_appbroker.exe",
+        "executable": null
+      },
+      {
+        "pid": 24372,
+        "name": "FileSyncHelper.exe",
+        "executable": null
+      },
+      {
+        "pid": 28056,
+        "name": "audiodg.exe",
+        "executable": null
+      },
+      {
+        "pid": 924,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 19828,
+        "name": "dllhost.exe",
+        "executable": null
+      },
+      {
+        "pid": 13480,
+        "name": "AsusSoftwareManagerAgent.exe",
+        "executable": null
+      },
+      {
+        "pid": 412,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 20436,
+        "name": "taskhostw.exe",
+        "executable": null
+      },
+      {
+        "pid": 18564,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 34152,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 40672,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 34244,
+        "name": "codex-windows-sandbox-service.exe",
+        "executable": null
+      },
+      {
+        "pid": 37300,
+        "name": "SearchProtocolHost.exe",
+        "executable": null
+      },
+      {
+        "pid": 46696,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 50724,
+        "name": "SearchFilterHost.exe",
+        "executable": null
+      },
+      {
+        "pid": 16968,
+        "name": "SearchFilterHost.exe",
+        "executable": null
+      },
+      {
+        "pid": 35160,
+        "name": "cowork-svc.exe",
+        "executable": null
+      },
+      {
+        "pid": 31940,
+        "name": "SearchFilterHost.exe",
+        "executable": null
+      },
+      {
+        "pid": 37196,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 14104,
+        "name": "WmiPrvSE.exe",
+        "executable": null
+      },
+      {
+        "pid": 19132,
+        "name": "svchost.exe",
+        "executable": null
+      },
+      {
+        "pid": 44204,
+        "name": "taskhostw.exe",
+        "executable": null
+      },
+      {
+        "pid": 41876,
+        "name": "svchost.exe",
+        "executable": null
+      }
+    ],
+    "limits": "A point-in-time snapshot; inaccessible/exited processes remain limitations, not proven absent. Recheck immediately before removal. No process was stopped."
+  },
+  "summary": {
+    "worktree_count": 2,
+    "clean_including_ignored_count": 2,
+    "commits_reachable_origin_main_count": 2,
+    "live_reference_count": 0,
+    "known_obstacle_count": 0,
+    "cwd_observer_limitation_count": 173,
+    "primary_guards_unchanged_during_audit": true
+  },
+  "removal_authorization": "Not authorized by this preflight. Root explicitly requires Linux result confirmation before any removal.",
+  "retention": "Both worktrees and branches remain intact pending Root confirmation and an immediate final state/process guard."
+}

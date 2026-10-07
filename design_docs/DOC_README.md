@@ -56,8 +56,10 @@ set.
   the bar ("can you use this as a web browser for the unusual protocols"),
   per-protocol state, ranked gaps and stages S0 to S11 plus SC. Ruled U1 to
   U14: accessibility on Windows, macOS and Linux leads; Pelt convergence
-  (SC) comes before the keyboard and accessibility stages. S0, the
-  tested-set repin, is next and waits on Knot's repin.
+  (SC) comes before the keyboard and accessibility stages. The plan's S0
+  execution snapshot is historical: Knot and Redshank now publish the tested
+  family, and [Turnstone's S0 receipt](../docs/receipts/browser_family_20261007/README.md)
+  records published source and passing Windows checks; Linux qualification is running.
 - [Page lifecycle](2026-09-06_page_lifecycle_plan.md): one page across
   visiting, keeping, capturing, annotating, collecting, sharing, revision
   and deletion; rulings L1-L7 join the surfaces, capture and recycle bin
@@ -70,11 +72,11 @@ set.
   and its clean-source compile gate are landed. Source-document capture and
   authorized collection search have app consumers; hosted Weld capture,
   offline replay, and the remaining custody work are still open.
-- [Browser surfaces implementation plan](2026-08-25_browser_surface_implementation_plan.md): U2 puts three-platform accessibility first; the [reconciliation receipt](../docs/receipts/browser_supplier_integration_20261006/accessibility-reconciliation/README.md) records missing foreign-tree/action seams and Servo 0.7's limited public action bridge. U9 holds final landing for the coordinated current tested set. Scoped Scry/Weld and mixed Windows controls pass; the locked three-engine build passes, but Servo default reopen reproduces a white frame. The [six-run diagnostic comparison](../docs/receipts/browser_supplier_integration_20261006/sync-diagnostic/README.md) preserves positive and negative pixels without changing defaults. Genet's decoder repair is published; current-upstream adoption is in progress on Servo 0.7 (`aac43a3f`) and CEF `154.5.0+154.0.34`, followed by the rechecked U9 Mere/Genet, Knot and Redshank family. New-build native qualification and final consumer adoption remain open.
+- [Browser surfaces implementation plan](2026-08-25_browser_surface_implementation_plan.md): the [current tested family](../docs/receipts/browser_family_20261007/README.md) is published at `abb349cf`, adopting Servo 0.7 and CEF154 after Mere/Genet, Knot and Redshank. Windows S0 passes 680 library tests, locked all-targets, Cargo verification and the single-source sibling tree; Linux qualification is running. Seven current-binary native controls exit cleanly. Default Servo stale resized pixels, foreign-tree accessibility and physical three-platform AT remain release gates; diagnostic positive pixels do not close them.
 - [Pane registry, graph views, and shell composition](2026-08-08_pane_registry_and_graph_panes_plan.md): registry and multi-graph pane roadmap, with remaining A-lane gates; A4 adopts the shared Workbench tree. September 30 contributed semantics qualify shared retained projection, scoped automation and platform actions with scroll/stale/refusal controls and native Sky delivery. Inspector source/endpoint binding repairs precede its next semantic route; broader surfaces and human AT remain open.
 - [Turnstone engine adoption](2026-08-03_turnstone_engine_adoption_plan.md): selectable engine routing and unavailable-engine behavior.
 - [Reticulum browsing](2026-08-03_reticulum_browsing_plan.md): native NomadNet page routing and Micron preview implemented; current shared presentation, typed interaction and independent carrier acceptance scopes.
-- [User-agent taxonomy](2026-08-03_user_agent_taxonomy_plan.md): browser obligations assigned to graph-native Turnstone homes; B0 and scoped Windows Scry/Weld controls are qualified in the [supplier integration receipt](../docs/receipts/browser_supplier_integration_20261006/README.md). U14 authorizes the tested older candidate's Cargo/Rust publication before S0. Input/restart/permission evidence and the intermittent Servo default pixel failure remain recorded; final U9 adoption, foreign accessibility and library/application release gates remain separate.
+- [User-agent taxonomy](2026-08-03_user_agent_taxonomy_plan.md): browser obligations assigned to graph-native Turnstone homes; B0 and scoped Windows Scry/Weld controls retain their [supplier receipt](../docs/receipts/browser_supplier_integration_20261006/README.md). U14's older publication is historical; the [U9 coordinated family](../docs/receipts/browser_family_20261007/README.md) is now published with passing Windows S0 checks. Default Servo pixel failures, foreign accessibility and library/application release gates remain separate.
 - [Turnstone place port](2026-07-28_turnstone_place_port_plan.md): shared-place product composition and two-peer acceptance path.
 - [Peer-web reframe](2026-07-28_turnstone_peer_web_reframe.md): current product direction for local-first personal and shared places.
 - [Turnstone architecture](2026-07-10_turnstone_architecture_plan.md): structural obviation ladder and current Mere/Turnstone boundaries.

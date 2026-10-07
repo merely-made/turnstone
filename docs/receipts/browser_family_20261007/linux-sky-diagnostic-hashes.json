@@ -1,0 +1,46 @@
+{
+  "recorded_utc": "2026-10-07T11:45:43.578634+00:00",
+  "scope": "Temporary diagnostic source overlay, retained original failure, restored source; no clean-source acceptance.",
+  "artifacts": [
+    {
+      "path": "linux-sky-diagnostic-overlay.patch",
+      "bytes": 1203,
+      "sha256": "759bddb376364c1a7e89c0386f00b13b8b5b9b6cb0a8e1a421c95ff262fe7ee3"
+    },
+    {
+      "path": "linux-sky-diagnostic-README.md",
+      "bytes": 2246,
+      "sha256": "3fd0ad25378dd7057fc42f52b08efdc7b9986fbd284ce76a27b4d2fcfb526bfb"
+    },
+    {
+      "path": "linux-sky-diagnostic-receipts.json",
+      "bytes": 43046,
+      "sha256": "96fc28701a4d301fdced1ae2fd9b1560279366867ddfdde6b0774487457c54bd"
+    },
+    {
+      "path": "linux-sky-diagnostic-runner.py",
+      "bytes": 6613,
+      "sha256": "9464c612a21b76415afbf4a23c3aee4f565866bc7b22ace6cbef66002e5290bc"
+    },
+    {
+      "path": "linux-sky-diagnostic.result.json",
+      "bytes": 1988,
+      "sha256": "ba79212771ec3f4d9a1be65446be430eac371fae3ad912dbeb2943867d7616bd"
+    },
+    {
+      "path": "linux-sky-diagnostic.stderr.log",
+      "bytes": 13410,
+      "sha256": "f15d7721d91d566cf5c9b74429a4d20ad0dea7a580362a5956d69a44676977fb"
+    },
+    {
+      "path": "linux-sky-diagnostic.stdout.log",
+      "bytes": 21307,
+      "sha256": "78c09d263d5326eee99e6a179ea18ece1b6bf85efa8974b166f49301d85278c0"
+    },
+    {
+      "path": "sky-cross-platform-comparison.json",
+      "bytes": 5607,
+      "sha256": "0568b8cedb2587aaf0885079f488aa2e2d763556c13dc59c803c42d0e94969db"
+    }
+  ]
+}

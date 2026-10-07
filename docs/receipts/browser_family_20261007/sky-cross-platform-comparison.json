@@ -1,0 +1,131 @@
+{
+  "recorded_utc": "2026-10-07T11:44:18.306491+00:00",
+  "scope": "Mechanical comparison of exact emitted pretty SkyReceipt DTOs under reviewed temporary cfg(test) overlay. Diagnostic only; no accepted numerical equivalence/rounding/hash policy change.",
+  "base_source_sha": "abb349cf7957e2b509f4cb7f492e3e0db4821964",
+  "reviewed_sky_overlay_sha256": "759bddb376364c1a7e89c0386f00b13b8b5b9b6cb0a8e1a421c95ff262fe7ee3",
+  "source_provenance": {
+    "linux": {
+      "record": "linux-sky-diagnostic.result.json",
+      "kind": "Measured abb+overlay source-before/during/after hashes; exact original restored and all tracked inputs unchanged.",
+      "original_test_sha256": "9a7dcc866c711516cf698e7b9d96e4020d0e695c9244ecb27e945f26d441678b",
+      "overlay_test_sha256": "7348bff96de4eeb515af755eb8c7b006b6e8edc9faf5bbb45bacce5d3d87bfdd",
+      "restored_test_sha256": "9a7dcc866c711516cf698e7b9d96e4020d0e695c9244ecb27e945f26d441678b",
+      "actual_exit_code": 101
+    },
+    "windows": {
+      "record": "windows-sky-diagnostic-source-identity.json",
+      "kind": "Root coordination identity: abb+same reviewed overlay and other audited Denizen/Chrome cfg(test) changes, production unchanged. Not clean-published source acceptance.",
+      "temporary_raw_test_source_sha256": null,
+      "limitation": "Windows temporary raw source SHA was not captured before restoration; gap explicitly retained in source-identity record.",
+      "actual_exit_code": 0
+    }
+  },
+  "artifact_hashes": [
+    {
+      "path": "linux-sky-diagnostic-overlay.patch",
+      "bytes": 1203,
+      "sha256": "759bddb376364c1a7e89c0386f00b13b8b5b9b6cb0a8e1a421c95ff262fe7ee3"
+    },
+    {
+      "path": "linux-current-sky-diagnostic-overlay.patch",
+      "bytes": 1203,
+      "sha256": "759bddb376364c1a7e89c0386f00b13b8b5b9b6cb0a8e1a421c95ff262fe7ee3"
+    },
+    {
+      "path": "linux-sky-diagnostic.result.json",
+      "bytes": 1988,
+      "sha256": "ba79212771ec3f4d9a1be65446be430eac371fae3ad912dbeb2943867d7616bd"
+    },
+    {
+      "path": "linux-sky-diagnostic.stdout.log",
+      "bytes": 21307,
+      "sha256": "78c09d263d5326eee99e6a179ea18ece1b6bf85efa8974b166f49301d85278c0"
+    },
+    {
+      "path": "linux-sky-diagnostic.stderr.log",
+      "bytes": 13410,
+      "sha256": "f15d7721d91d566cf5c9b74429a4d20ad0dea7a580362a5956d69a44676977fb"
+    },
+    {
+      "path": "linux-sky-diagnostic-receipts.json",
+      "bytes": 43046,
+      "sha256": "96fc28701a4d301fdced1ae2fd9b1560279366867ddfdde6b0774487457c54bd"
+    },
+    {
+      "path": "windows-sky-diagnostic.result.json",
+      "bytes": 1003,
+      "sha256": "2ac5a68e33fcb351a04e554894a801cde2a0489c2dd062aaadaf0d834dcbccdc"
+    },
+    {
+      "path": "windows-sky-diagnostic.stdout.log",
+      "bytes": 21324,
+      "sha256": "ebe2ad96b1674379afee32fe52aa2c41455d795681afe2fa0a921dbbb2100706"
+    },
+    {
+      "path": "windows-sky-diagnostic.stderr.log",
+      "bytes": 25224,
+      "sha256": "87b8932232d7c5a68068b6537cee9f1179cf75e2e5e8fe277c05fec2568cb2a7"
+    },
+    {
+      "path": "windows-sky-diagnostic-source-identity.json",
+      "bytes": 1254,
+      "sha256": "ea7bdfdf7d675beeda9cf135aafdb7ea606d0e4bac3e08ed99f5fc7f7f3de817"
+    }
+  ],
+  "dates": [
+    {
+      "date": "2024-04-08",
+      "windows_export_file": "windows-sky-receipt-2024-04-08.json",
+      "windows_export_file_sha256": "a244a3bc2ade271422563297dcc622ce7138355a1969504e6abf444c6ba12dd2",
+      "windows_exact_tagged_pretty_json_sha256": "a244a3bc2ade271422563297dcc622ce7138355a1969504e6abf444c6ba12dd2",
+      "linux_exact_tagged_pretty_json_sha256": "d845402ce4fcf612285ef41c7732e18d79cd6dacb63f28f3bee21ef9170136db",
+      "differences": [
+        {
+          "path": "$.facts[3].detail.airless_center_altitude_radians",
+          "kind": "numeric",
+          "windows": -0.014565968974009033,
+          "linux": -0.014565968974009037,
+          "absolute_difference": 3.469446951953614e-18
+        },
+        {
+          "path": "$.facts[10].detail.airless_center_altitude_radians",
+          "kind": "numeric",
+          "windows": -0.014709697082682464,
+          "linux": -0.01470969708268246,
+          "absolute_difference": 3.469446951953614e-18
+        }
+      ]
+    },
+    {
+      "date": "2024-04-09",
+      "windows_export_file": "windows-sky-receipt-2024-04-09.json",
+      "windows_export_file_sha256": "3d9a42d71fe1b79120a28e7d15097dead4e7b992a981b695ff7304bbae61e42a",
+      "windows_exact_tagged_pretty_json_sha256": "3d9a42d71fe1b79120a28e7d15097dead4e7b992a981b695ff7304bbae61e42a",
+      "linux_exact_tagged_pretty_json_sha256": "7dd43e9ed63830911b99291cdd16c1ec4bff477c172640341c2dc0f9deec629a",
+      "differences": [
+        {
+          "path": "$.facts[9].detail.airless_center_altitude_radians",
+          "kind": "numeric",
+          "windows": -0.014672592768253185,
+          "linux": -0.014672592768253107,
+          "absolute_difference": 7.806255641895632e-17
+        },
+        {
+          "path": "$.facts[9].detail.limb_offset_radians",
+          "kind": "numeric",
+          "windows": 0.004778213212058742,
+          "linux": 0.004778213212058743,
+          "absolute_difference": 8.673617379884035e-19
+        }
+      ]
+    }
+  ],
+  "findings": {
+    "changed_leaf_count": 4,
+    "all_changed_leaves": "Four angular f64 result fields; no other parsed DTO leaves differ, including inputs, metadata and TT interval bounds.",
+    "maximum_absolute_difference_radians": 7.806255641895632e-17,
+    "specific_math_or_libm_cause_proved": false,
+    "production_or_hash_semantics_changed": false,
+    "no_inferred_equivalence_policy": true
+  }
+}

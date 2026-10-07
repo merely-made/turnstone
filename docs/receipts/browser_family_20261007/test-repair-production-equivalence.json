@@ -1,0 +1,45 @@
+{
+  "recorded_utc": "2026-10-07T11:48:44.412679+00:00",
+  "baseline_source_commit": "abb349cf7957e2b509f4cb7f492e3e0db4821964",
+  "repair_source_commit": "8d1f907f4bd31b256737a27d3e63fe8cd8672efc",
+  "inline_test_scope_proofs": [
+    {
+      "path": "src/denizen.rs",
+      "production_prefix_normalized_bytes": 47497,
+      "production_prefix_sha256": "0717dbd83224a71ed092ec6cca1542692cd0fbd4889fa0edc1082e701820270e",
+      "production_prefix_equal": true,
+      "module_locator": "cfg(test) inline tests module, excluding early test-only imports"
+    },
+    {
+      "path": "src/chrome_view.rs",
+      "production_prefix_normalized_bytes": 36660,
+      "production_prefix_sha256": "5877c600b5280fb3f7ce3c91ad1e9cfdcffbc31e027eea7b59756d362485ca60",
+      "production_prefix_equal": true,
+      "module_locator": "cfg(test) inline tests module, excluding early test-only imports"
+    },
+    {
+      "path": "src/sky_receipt.rs",
+      "production_prefix_normalized_bytes": 41665,
+      "production_prefix_sha256": "bede3f44e18c48e6f5d21bf85369fa88a995a62e265484555f382cdf334b3fc8",
+      "production_prefix_equal": true,
+      "module_locator": "cfg(test) inline tests module, excluding early test-only imports"
+    },
+    {
+      "path": "src/sky_timeline.rs",
+      "production_prefix_normalized_bytes": 37864,
+      "production_prefix_sha256": "a6c6f9a5a2763a5611a3f71435f76ac933120a6553efb57b54d7fdf0306de611",
+      "production_prefix_equal": true,
+      "module_locator": "cfg(test) inline tests module, excluding early test-only imports"
+    }
+  ],
+  "external_test_file": "src/sky_surface/tests.rs",
+  "external_test_parent_unchanged": true,
+  "external_test_module_gated_by_cfg_test": true,
+  "cargo_and_library_entry_unchanged": true,
+  "additional_test_inputs": [
+    "scenarios/fixtures/sky_receipt_v1_boston_2024-04-08.json",
+    "scenarios/fixtures/sky_receipt_v1_boston_2024-04-09.json"
+  ],
+  "attribute_changes": "Only exact-byte preservation for the two fixed test fixtures",
+  "scope": "No production Rust code, numerical algorithms, receipt hashing, or selected supplier dependencies changed. Native receipts remain bound to their original binary/build; this equivalence proof does not relabel an old binary as rebuilt."
+}

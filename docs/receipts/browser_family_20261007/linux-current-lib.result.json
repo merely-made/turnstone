@@ -1,0 +1,32 @@
+{
+  "command": [
+    "nice",
+    "-n",
+    "10",
+    "cargo",
+    "+1.98.1",
+    "test",
+    "--workspace",
+    "--lib",
+    "--locked",
+    "-j1",
+    "--",
+    "--test-threads=1"
+  ],
+  "cwd": "/home/markik/Code/repos/turnstone",
+  "environment": {
+    "CARGO_TARGET_DIR": "/home/markik/Code/target",
+    "CARGO_BUILD_JOBS": "1"
+  },
+  "source_sha": "abb349cf7957e2b509f4cb7f492e3e0db4821964",
+  "started_utc": "2026-10-07T11:03:52.821401+00:00",
+  "scope": "Current published-family default Linux compile/tests/portable-lock verification; no foreign Windows backend features, headed browser or AT acceptance.",
+  "actual_exit_code": 101,
+  "owned_pid": 218461,
+  "finished_utc": "2026-10-07T11:28:36.031254+00:00",
+  "elapsed_seconds": 1483.21,
+  "final_source_sha": "abb349cf7957e2b509f4cb7f492e3e0db4821964",
+  "tracked_diff_after": [],
+  "stdout_sha256": "781a9781f4fe99bb34dc04cdb676f3b264c4dfd8624fca5b7d96020776b5a0f4",
+  "stderr_sha256": "93650e571f6e977bb7a09e9037f6fa6f3782fa557825d8d3b007f2df1696e6c8"
+}

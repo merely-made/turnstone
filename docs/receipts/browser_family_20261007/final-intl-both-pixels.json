@@ -1,0 +1,62 @@
+{
+  "recorded_utc": "2026-10-07T10:39:24.731740+00:00",
+  "directory": "C:/Users/mark_/Code/repos/turnstone/docs/receipts/browser_supplier_integration_20261006/native-final-family-intl-both-intl",
+  "helper_sha256": "3546f8fc1063b28fc0dc45f9b1e4e47e3f12cd078662a7c91729152aab1b110a",
+  "method": {
+    "fixture": "intl",
+    "expected_rgb": [
+      23,
+      109,
+      53
+    ],
+    "channel_tolerance": 8,
+    "minimum_green_fraction": 0.75,
+    "minimum_region_pixels": 4096,
+    "content_edge_inset_pixels": 4,
+    "required_live_producers_cached_frames_servo_active_views": 1
+  },
+  "limits": "Fixture-specific imported-body check. Native title assertions qualify page APIs separately. This does not establish text correctness, accessibility, arbitrary page correctness or native teardown.",
+  "inputs": [
+    {
+      "path": "01_native_intl_bridge.png",
+      "bytes": 77686,
+      "sha256": "456cf83bc9354a7b7121a67ead1d7b34f0b9d19fe0916891c1b0a502ce5129bf"
+    },
+    {
+      "path": "intl-servo-live.surface-frames.json",
+      "bytes": 312,
+      "sha256": "1dd923bff33e9952757c0a7b6adde5de9b0ab8363a61fb06199d792978ee1b70"
+    }
+  ],
+  "failures": [],
+  "counts": {
+    "live_producers": 1,
+    "cached_frames": 1,
+    "servo_active_views": 1
+  },
+  "surface": {
+    "node": "093e1a84-4eb5-418c-a1c8-834050e3e901",
+    "recorded_rectangle": {
+      "x": 515.0,
+      "y": 30.0,
+      "width": 509.0,
+      "height": 570.0
+    }
+  },
+  "capture_size": [
+    1024,
+    600
+  ],
+  "pixels": {
+    "sample_box": [
+      519,
+      34,
+      1020,
+      596
+    ],
+    "sampled_pixels": 281562,
+    "matched_green_pixels": 264548,
+    "matched_green_fraction": 0.9395728116720296
+  },
+  "passed": true
+}

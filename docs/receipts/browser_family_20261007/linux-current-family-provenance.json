@@ -1,0 +1,597 @@
+{
+  "metadata_sha256": "1081568ccaa68f5300870e3530fb4874244b1a31e15ca317d2bfb08484f445e2",
+  "metadata_packages": 1072,
+  "active_resolve_nodes": 1072,
+  "families": {
+    "mere": {
+      "git+https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893db6909d5ed9c4ccae30216f0d8164201a": [
+        {
+          "name": "armillary",
+          "version": "0.1.1",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "cambium",
+          "version": "0.3.3",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "cambium-rootstock",
+          "version": "0.1.0",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "cambium-winit",
+          "version": "0.3.0",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "castellan",
+          "version": "0.0.3",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "chartulary",
+          "version": "0.2.2",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "chatelaine",
+          "version": "0.0.2",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "chirograph",
+          "version": "0.0.2",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "commons-spine",
+          "version": "0.0.1",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "distillery",
+          "version": "0.0.1",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "document-canvas",
+          "version": "0.1.0",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "eidetic",
+          "version": "0.0.2",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "eidetic-search",
+          "version": "0.0.1",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "errand",
+          "version": "0.4.0",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "esp",
+          "version": "0.1.0",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "gemot",
+          "version": "0.1.1",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "graphshell",
+          "version": "0.0.2",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "graphshell-client",
+          "version": "0.0.2",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "graphshell-endpoint",
+          "version": "0.0.2",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "illume",
+          "version": "0.0.2",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "import",
+          "version": "0.0.1",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "incipit",
+          "version": "0.2.0",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "inker",
+          "version": "0.1.1",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "insigne",
+          "version": "0.0.1",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "knot-editor-host",
+          "version": "0.1.1",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "luggage",
+          "version": "0.1.0",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "mere",
+          "version": "0.0.2",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "mere-alembic",
+          "version": "0.0.1",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "mere-apparatus",
+          "version": "0.0.1",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "mere-athanor",
+          "version": "0.0.1",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "mere-cartography",
+          "version": "0.0.2",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "mere-chrome",
+          "version": "0.0.1",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "mere-document-lanes",
+          "version": "0.1.0",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "mere-fetch",
+          "version": "0.0.1",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "mere-forme",
+          "version": "0.1.0",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "mere-kernel",
+          "version": "0.0.2",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "mere-linked-data",
+          "version": "0.0.1",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "mere-mesh",
+          "version": "0.0.1",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "mere-moot",
+          "version": "0.0.1",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "mere-proofs",
+          "version": "0.1.0",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "mere-surface-api",
+          "version": "0.1.0",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "mere-transport",
+          "version": "0.0.2",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "mere-webrtc-carrier",
+          "version": "0.0.1",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "meristem",
+          "version": "0.2.0",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "mien",
+          "version": "0.0.1",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "mooting",
+          "version": "0.1.0",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "mora-cmudict",
+          "version": "0.0.1",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "muniment",
+          "version": "0.1.2",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "nematic",
+          "version": "0.1.1",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "notochord",
+          "version": "0.1.0",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "numen",
+          "version": "0.2.0",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "pandect",
+          "version": "0.1.1",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "personae",
+          "version": "0.2.1",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "pictograph",
+          "version": "0.2.0",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "platen",
+          "version": "0.0.1",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "reference-data",
+          "version": "0.0.1",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "sceno",
+          "version": "0.0.4",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "scenograph",
+          "version": "0.0.4",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "scenomise",
+          "version": "0.0.4",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "scenotime",
+          "version": "0.0.4",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "script-rhai",
+          "version": "0.0.1",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "seiche",
+          "version": "0.0.6",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "servitor",
+          "version": "0.0.2",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "sprigging",
+          "version": "0.2.1",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "stickleback",
+          "version": "0.1.1",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "tabard",
+          "version": "0.0.1",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "tinct",
+          "version": "0.1.2",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "uxtree",
+          "version": "0.0.2",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "weld-engine",
+          "version": "0.2.0",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "workbench",
+          "version": "0.1.0",
+          "active_in_default_resolve": true
+        }
+      ]
+    },
+    "woodshed": {
+      "git+https://github.com/merely-made/woodshed.git?rev=82271df20927d41a4cbb79c56a09fef5bbb38cde#82271df20927d41a4cbb79c56a09fef5bbb38cde": [
+        {
+          "name": "audio-primitives",
+          "version": "0.1.0",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "redshank-model",
+          "version": "0.0.0",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "redshank-playback",
+          "version": "0.0.0",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "redshank-storage",
+          "version": "0.0.0",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "redshank-surfaces",
+          "version": "0.0.0",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "timed-text",
+          "version": "0.1.0",
+          "active_in_default_resolve": true
+        }
+      ]
+    },
+    "genet": {
+      "git+https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e206a47d1c8808472de9aa461233638768": [
+        {
+          "name": "browsing-context-api",
+          "version": "0.1.0",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "buckram",
+          "version": "0.0.3",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "cadency",
+          "version": "0.0.1",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "document-session-api",
+          "version": "0.1.0",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "engine-observables-api",
+          "version": "0.2.0",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "fleece",
+          "version": "0.5.0",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "genet-clipboard",
+          "version": "0.1.0",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "genet-document-resources",
+          "version": "0.2.1",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "genet-documents",
+          "version": "0.1.0",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "genet-fontique",
+          "version": "0.10.0",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "genet-host-api",
+          "version": "0.2.0",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "genet-livery",
+          "version": "0.0.4",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "genet-paint-types",
+          "version": "0.2.0",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "genet-parley",
+          "version": "0.10.0",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "genet-render",
+          "version": "0.2.0",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "genet-render-host",
+          "version": "0.2.0",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "genet-scripted-dom",
+          "version": "0.1.2",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "genet-static-dom",
+          "version": "0.1.1",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "genet-taffy",
+          "version": "0.14.0",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "genet-text",
+          "version": "0.1.0",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "genet-winit-host",
+          "version": "0.2.0",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "ipc-channel",
+          "version": "0.22.0",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "layout-dom-api",
+          "version": "0.1.1",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "livery",
+          "version": "0.0.5",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "netfetcher",
+          "version": "0.1.1",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "servo-media-player",
+          "version": "0.2.0",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "servo-media-streams",
+          "version": "0.2.0",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "servo-media-traits",
+          "version": "0.2.0",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "taproot",
+          "version": "0.1.0",
+          "active_in_default_resolve": true
+        }
+      ]
+    },
+    "knot-editor": {
+      "git+https://github.com/merely-made/knot-editor.git?rev=0096591a0af98bf4777d8bfe718c0423dea9fc90#0096591a0af98bf4777d8bfe718c0423dea9fc90": [
+        {
+          "name": "knot-capture",
+          "version": "0.0.1",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "knot-composition",
+          "version": "0.0.1",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "knot-document",
+          "version": "0.0.1",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "knot-editor",
+          "version": "0.0.3",
+          "active_in_default_resolve": true
+        },
+        {
+          "name": "knot-file-catalog",
+          "version": "0.0.1",
+          "active_in_default_resolve": true
+        }
+      ]
+    },
+    "wgpu-weld": {
+      "git+https://github.com/merely-made/wgpu-weld.git?rev=c4dd593b7a730acb4aa6ffab0fe2edf8a0584083#c4dd593b7a730acb4aa6ffab0fe2edf8a0584083": [
+        {
+          "name": "welding",
+          "version": "0.15.0",
+          "active_in_default_resolve": true
+        }
+      ]
+    }
+  },
+  "path_packages": [
+    {
+      "name": "turnstone",
+      "version": "0.1.0",
+      "manifest_path": "/home/markik/Code/repos/turnstone/Cargo.toml",
+      "active_in_default_resolve": true
+    },
+    {
+      "name": "turnstone-sandbox-bootstrap-win",
+      "version": "0.1.0",
+      "manifest_path": "/home/markik/Code/repos/turnstone/sandbox_bootstrap_win/Cargo.toml",
+      "active_in_default_resolve": true
+    }
+  ],
+  "scope": "Filtered Linux default-feature metadata. Metadata membership does not establish foreign native support."
+}

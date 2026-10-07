@@ -1,0 +1,192 @@
+--- a/src/denizen.rs
++++ b/src/denizen.rs
+@@ -1120,6 +1120,7 @@
+ #[cfg(test)]
+ mod tests {
+     use super::*;
++    use crate::action::{Action, Update};
+ 
+     #[test]
+     fn staged_installs_are_content_derived_and_reviewable() {
+@@ -1141,13 +1141,14 @@
+                 ring.name()
+             );
+         }
+-        let width = crate::ui::chrome_row_width(&review);
+-        assert!(
+-            width <= crate::ui::ROW_TEXT_BUDGET,
+-            "the ask must fit one palette row without clipping: \
+-             {width}px > {}px: {review}",
+-            crate::ui::ROW_TEXT_BUDGET,
+-        );
++        assert!(review.contains("own world"), "the ask names its scope: {review}");
++        assert!(review.ends_with("Confirm"), "the ask names its decision: {review}");
++        // Review rows may wrap; exercise the actual Confirm projection.
++        let mut app = App::test_stub();
++        app.viewport = (1024.0, 320.0);
++        app.pending_install = Some(a.clone());
++        app.update(Action::OmnibarOpen { command: true });
++        crate::chrome_view::tests::assert_install_review_layout(&app, &review);
+ 
+         std::fs::write(&path, "mere.open('mere://other')").unwrap();
+         let c = stage_install(&path).unwrap();
+--- a/src/chrome_view.rs
++++ b/src/chrome_view.rs
+@@ -905,7 +905,7 @@
+ }
+ 
+ #[cfg(test)]
+-mod tests {
++pub(crate) mod tests {
+     use layout_dom_api::LayoutDom;
+ 
+     use super::*;
+@@ -1327,6 +1327,91 @@
+         assert_eq!(intents, vec![ChromeIntent::CommitRow(0)]);
+     }
+ 
++    /// The actual retained Confirm row, shared with the staged-install test.
++    pub(crate) fn assert_install_review_layout(app: &App, expected_review: &str) -> f32 {
++        let review = app
++            .omnibar
++            .suggestions
++            .iter()
++            .find(|suggestion| is_install_review(suggestion))
++            .expect("the pending install review is visible");
++        let expected = row_text(review);
++        assert_eq!(
++            expected,
++            format!("\u{203a} {expected_review}"),
++            "the displayed ask is complete"
++        );
++        assert!(
++            crate::a11y::a11y_lines(app)
++                .iter()
++                .any(|line| line == &format!("button: {expected}")),
++            "accessibility carries the same complete review"
++        );
++
++        let mut chrome = ChromeSurfaces::new();
++        chrome.sync(app, &[(0, 1024.0, 320.0)]);
++        let (x, y, row_height) = {
++            let dom = chrome.dom.borrow();
++            let root = chrome
++                .runner
++                .window_root(chrome.projections[0])
++                .expect("the primary window-root exists");
++            let sheet = crate::ui::chrome_sheet(&chrome.appearance);
++            let row = dom
++                .all_with_class(dom.document(), "omni-row-review")
++                .into_iter()
++                .next()
++                .expect("the review has its wrapping class");
++            let mut nodes = vec![row];
++            let mut displayed = String::new();
++            while let Some(node) = nodes.pop() {
++                if let Some(text) = dom.text(node) {
++                    displayed.push_str(text);
++                }
++                nodes.extend(dom.dom_children(node).collect::<Vec<_>>().into_iter().rev());
++            }
++            assert_eq!(
++                displayed, expected,
++                "the retained DOM preserves the whole ask"
++            );
++            let (rx, ry, rw, rh) = crate::ui::subtree_node_rect(&dom, root, row, &sheet, 1024, 320)
++                .expect("review has a rect");
++            assert!(
++                rw <= CARD_W,
++                "the wrapped review stays within the card: {rw}px"
++            );
++            assert!(
++                rh.is_finite() && rh > 0.0,
++                "the review has visible height: {rh}px"
++            );
++
++            let card = dom
++                .all_with_class(dom.document(), "omni")
++                .into_iter()
++                .next()
++                .expect("the omnibar card exists");
++            let (cx, cy, cw, ch) = crate::ui::subtree_node_rect(&dom, root, card, &sheet, 1024, 320)
++                .expect("card has a rect");
++            assert!(
++                rx >= cx && ry >= cy && rx + rw <= cx + cw && ry + rh <= cy + ch,
++                "the whole review remains inside the card: row=({rx}, {ry}, {rw}, {rh}) card=({cx}, {cy}, {cw}, {ch})"
++            );
++            assert!(
++                cy + ch <= 320.0 - 16.0,
++                "the row budget leaves the expanded card inside the viewport: top={cy}px card={ch}px review={rh}px rows={} extra={}px",
++                app.omnibar.suggestions.len(),
++                crate::ui::chrome_review_row_extra_height(&expected, &chrome.appearance)
++            );
++            (rx + rw / 2.0, ry + rh / 2.0, rh)
++        };
++        assert_eq!(
++            chrome.click(0, x, y, 1024, 320),
++            vec![ChromeIntent::CommitRow(0)],
++            "the expanded row remains one clickable review"
++        );
++        row_height
++    }
++
+     #[test]
+     fn install_review_wraps_intact_and_keeps_card_and_click_geometry() {
+         let (app, watch_url) = long_install_review_app();
+@@ -1352,50 +1437,12 @@
+             "accessibility carries the same complete review"
+         );
+ 
+-        let mut chrome = ChromeSurfaces::new();
+-        chrome.sync(&app, &[(0, 1024.0, 320.0)]);
+-        let (x, y) = {
+-            let dom = chrome.dom.borrow();
+-            let root = chrome
+-                .runner
+-                .window_root(chrome.projections[0])
+-                .expect("the primary window-root exists");
+-            let sheet = crate::ui::chrome_sheet(&chrome.appearance);
+-            let row = dom
+-                .all_with_class(dom.document(), "omni-row-review")
+-                .into_iter()
+-                .next()
+-                .expect("the review has its wrapping class");
+-            let (rx, ry, rw, rh) = crate::ui::subtree_node_rect(&dom, root, row, &sheet, 1024, 320)
+-                .expect("review has a rect");
+-            assert!(
+-                rw <= CARD_W,
+-                "the wrapped review stays within the card: {rw}px"
+-            );
+-            assert!(
+-                rh > 44.0,
+-                "emergency breaking takes the URL beyond the two natural URL lines: {rh}px"
+-            );
+-
+-            let card = dom
+-                .all_with_class(dom.document(), "omni")
+-                .into_iter()
+-                .next()
+-                .expect("the omnibar card exists");
+-            let (_, cy, _, ch) = crate::ui::subtree_node_rect(&dom, root, card, &sheet, 1024, 320)
+-                .expect("card has a rect");
+-            assert!(
+-                cy + ch <= 320.0 - 16.0,
+-                "the row budget leaves the expanded card inside the viewport: top={cy}px card={ch}px review={rh}px rows={} extra={}px",
+-                app.omnibar.suggestions.len(),
+-                crate::ui::chrome_review_row_extra_height(&expected, &chrome.appearance)
+-            );
+-            (rx + rw / 2.0, ry + rh / 2.0)
+-        };
+-        assert_eq!(
+-            chrome.click(0, x, y, 1024, 320),
+-            vec![ChromeIntent::CommitRow(0)],
+-            "the expanded row remains one clickable review"
++        let pending = app.pending_install.as_ref().expect("the install is staged");
++        let review_text = crate::denizen::review_line(pending);
++        let row_height = assert_install_review_layout(&app, &review_text);
++        assert!(
++            row_height > 44.0,
++            "emergency breaking takes the URL beyond the two natural URL lines: {row_height}px"
+         );
+     }
+ 

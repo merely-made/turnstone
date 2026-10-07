@@ -1,0 +1,2453 @@
+{
+  "schema": "turnstone-final-native-family-audit-v1",
+  "recorded_utc": "2026-10-07T10:57:42.375149+00:00",
+  "audited_repository_head": "abb349cf7957e2b509f4cb7f492e3e0db4821964",
+  "scope": "Read-only audit of seven completed Windows native scenario runs and existing fixture-specific pixel reports. Only this exclusive audit receipt was written; no source changes, Cargo invocation or native application was launched.",
+  "qualification_identity": {
+    "executable": "C:\\t\\cargo-targets\\turnstone\\debug\\turnstone.exe",
+    "sha256": "61a81cb0864635a337e4db7ca7ded22f77d8076059fe72378b17f230f713c39a",
+    "current_executable_hash_verified": true,
+    "completed_build_binding": {
+      "path": "docs/receipts/browser_family_20261007/native-build-binding-resource-descriptor.json",
+      "bytes": 4585,
+      "sha256": "dff1ecd55800761705e9feb6901c35d649d985e3c16ef4f888b7bec4c0cef58f"
+    },
+    "binding_pre_native_input_count": 220,
+    "head_is_audit_context_only": "This audit does not infer that the native executable was built from later receipt-only commit HEAD; executable identity comes from the completed build binding and each process result."
+  },
+  "selected_native_provider_checks": [
+    {
+      "module": "libEGL.dll",
+      "kind": "source",
+      "path": "C:\\t\\cargo-targets\\turnstone\\debug\\build\\mozangle-a4d4d55d91eeaf82\\out\\libEGL.dll",
+      "sha256": "7463ac0d8d6030b21552476d847061a54e488151dbf02e7ba06893a16c4d223c"
+    },
+    {
+      "module": "libEGL.dll",
+      "kind": "staged",
+      "path": "C:\\t\\cargo-targets\\turnstone\\debug\\libEGL.dll",
+      "sha256": "7463ac0d8d6030b21552476d847061a54e488151dbf02e7ba06893a16c4d223c"
+    },
+    {
+      "module": "libGLESv2.dll",
+      "kind": "source",
+      "path": "C:\\t\\cargo-targets\\turnstone\\debug\\build\\mozangle-a4d4d55d91eeaf82\\out\\libGLESv2.dll",
+      "sha256": "b9df0e9de4e3d827a7aa2eb5d6b6324061e8eca5070033b109ffeeb8cabd29e0"
+    },
+    {
+      "module": "libGLESv2.dll",
+      "kind": "staged",
+      "path": "C:\\t\\cargo-targets\\turnstone\\debug\\libGLESv2.dll",
+      "sha256": "b9df0e9de4e3d827a7aa2eb5d6b6324061e8eca5070033b109ffeeb8cabd29e0"
+    },
+    {
+      "module": "libcef.dll",
+      "kind": "selected CEF154.0.34 SDK",
+      "path": "C:\\Users\\mark_\\Code\\cef-cache\\wgpu-weld\\154.0.34\\cef_windows_x86_64\\libcef.dll",
+      "sha256": "e3da6707a840a8f33f565e011542169fd51aaa5218603eb7a89039fb16d79ae7"
+    }
+  ],
+  "summary": {
+    "native_run_count": 7,
+    "exit0_result_ok_no_timeout_no_cleanup_count": 7,
+    "all_expected_loaded_provider_hashes_match": true,
+    "observed_process_count": 24,
+    "observer_limitation_count": 8,
+    "finished_native_artifact_count": 131,
+    "positive_pixel_reports": 2,
+    "retained_failed_pixel_reports": 1,
+    "verified_pixel_input_references": 16,
+    "scry_restart_same_profile_and_origin": true
+  },
+  "runs": [
+    {
+      "directory": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-scry-input",
+      "process": {
+        "executable": "C:\\t\\cargo-targets\\turnstone\\debug\\turnstone.exe",
+        "executable_sha256": "61a81cb0864635a337e4db7ca7ded22f77d8076059fe72378b17f230f713c39a",
+        "executable_hashed_utc": "2026-10-07T10:34:07.4719254Z",
+        "scenario": "C:\\Users\\mark_\\Code\\repos\\turnstone\\scenarios\\browser_scry_windows.scn",
+        "profile": "C:\\Users\\mark_\\Code\\repos\\turnstone\\docs\\receipts\\browser_supplier_integration_20261006\\profile\\final-family-input-scry-input",
+        "phase_prefix": "final-family-input",
+        "owned_pid": 11016,
+        "started_utc": "2026-10-07T10:34:07.4758853Z",
+        "finished_utc": "2026-10-07T10:35:39.0052943Z",
+        "timeout_seconds": 600,
+        "timed_out": false,
+        "native_exit": 0,
+        "module_evidence": "loaded-modules.json",
+        "scenario_result": "RESULT ok",
+        "runner_error": null,
+        "cleanup_attempted": false,
+        "cleanup_error": null,
+        "environment": {
+          "RUST_LOG": "warn",
+          "SCRY_FIXTURE_BASE": "http://127.0.0.1:43123",
+          "SERVO_FIXTURE_BASE": "http://127.0.0.1:43124",
+          "TURNSTONE_CEF_PATH": "C:/Users/mark_/Code/cef-cache/wgpu-weld/154.0.34/cef_windows_x86_64",
+          "TURNSTONE_SERVO_PROFILE": null,
+          "TURNSTONE_SERVO_PROFILE_DIR": null,
+          "GRAFT_SERVO_RESIZE_TRACE": null,
+          "TURNSTONE_SERVO_GPU_SYNC": "existing",
+          "TURNSTONE_SERVO_GPU_SYNC_TIMEOUT_MS": "5000"
+        }
+      },
+      "scenario_done_first_line": "RESULT ok",
+      "scenario_done_details": [
+        "captured 00_b_inspector_before_pin",
+        "captured 00_b_inspector_after_pin",
+        "captured 01_two_scry_pages",
+        "captured 02_text_pointer_and_keyboard",
+        "captured 02b_b_reloaded",
+        "captured 02c_a_wheel",
+        "captured 02d_b_wheel",
+        "captured 02e_both_scroll_reset",
+        "captured 03_find_and_zoom_unavailable",
+        "captured 04_resized_two_pages",
+        "captured 05_a_reader_b_scry",
+        "captured 06_a_scry_reconstructed",
+        "captured 07_both_closed",
+        "captured 08_ready_for_restart",
+        "B1 run 1 complete; run 2 must reuse the exact TURNSTONE_ROOT and loopback origin"
+      ],
+      "module_observation": {
+        "owned_pid": 11016,
+        "sampling_wait_milliseconds": 250,
+        "snapshots_attempted": 194,
+        "observed_module_count": 8,
+        "observed_processes": [
+          {
+            "pid": 11016,
+            "parent_pid": 39108,
+            "created_utc": "2026-10-07T10:34:07.4758853Z",
+            "command_line_flags": [],
+            "lineage": "process handle started by this runner",
+            "first_observed_utc": "2026-10-07T10:34:07.4882146Z"
+          }
+        ],
+        "selected_observed_modules": [
+          {
+            "pid": 11016,
+            "parent_pid": 39108,
+            "process_created_utc": "2026-10-07T10:34:07.4758853Z",
+            "command_line_flags": [],
+            "module": "libcef.dll",
+            "path": "C:\\t\\cargo-targets\\turnstone\\debug\\libcef.dll",
+            "sha256": "e3da6707a840a8f33f565e011542169fd51aaa5218603eb7a89039fb16d79ae7",
+            "file_version": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+            "product_version": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+            "first_observed_utc": "2026-10-07T10:34:07.9521643Z",
+            "hash_limitation": null,
+            "expected_provider_hash_matches": true,
+            "current_file_hash_matches": true,
+            "owned_root": true
+          },
+          {
+            "pid": 11016,
+            "parent_pid": 39108,
+            "process_created_utc": "2026-10-07T10:34:07.4758853Z",
+            "command_line_flags": [],
+            "module": "EmbeddedBrowserWebView.dll",
+            "path": "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\156.0.4314.8\\EBWebView\\x64\\EmbeddedBrowserWebView.dll",
+            "sha256": "12e36f73dc8393505850773f0d3888001d6cc44f566f31167d8ba8fcfdd3f325",
+            "file_version": "156.0.4314.8",
+            "product_version": "156.0.4314.8",
+            "first_observed_utc": "2026-10-07T10:34:18.0413652Z",
+            "hash_limitation": null,
+            "current_file_hash_matches": true,
+            "owned_root": true
+          }
+        ],
+        "observer_limitations": [],
+        "scope": "Read-only owned root and live descendants carrying a --type role marker, with verified parent/creation identity; no child termination",
+        "inference_limit": "Sampling can miss short-lived/exited/access-restricted children or parents without a role marker; role alone does not prove CEF; missing module is not proven absent; no staging-path inference",
+        "identity_limit": "CIM and Process.StartTime creation timestamps agree within less than 1ms; lineage traversal limited to 64 processes per snapshot",
+        "command_line_policy": "Only the bounded --type role marker is retained; full command lines and other flags are excluded"
+      },
+      "all_native_gate_checks_passed": true,
+      "finished_file_count": 35
+    },
+    {
+      "directory": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-scry-restart",
+      "process": {
+        "executable": "C:\\t\\cargo-targets\\turnstone\\debug\\turnstone.exe",
+        "executable_sha256": "61a81cb0864635a337e4db7ca7ded22f77d8076059fe72378b17f230f713c39a",
+        "executable_hashed_utc": "2026-10-07T10:35:39.5149800Z",
+        "scenario": "C:\\Users\\mark_\\Code\\repos\\turnstone\\scenarios\\fixtures\\browser_scry\\restart_verify.scn",
+        "profile": "C:\\Users\\mark_\\Code\\repos\\turnstone\\docs\\receipts\\browser_supplier_integration_20261006\\profile\\final-family-input-scry-input",
+        "phase_prefix": "final-family-input",
+        "owned_pid": 16916,
+        "started_utc": "2026-10-07T10:35:39.5188198Z",
+        "finished_utc": "2026-10-07T10:35:57.3799043Z",
+        "timeout_seconds": 600,
+        "timed_out": false,
+        "native_exit": 0,
+        "module_evidence": "loaded-modules.json",
+        "scenario_result": "RESULT ok",
+        "runner_error": null,
+        "cleanup_attempted": false,
+        "cleanup_error": null,
+        "environment": {
+          "RUST_LOG": "warn",
+          "SCRY_FIXTURE_BASE": "http://127.0.0.1:43123",
+          "SERVO_FIXTURE_BASE": "http://127.0.0.1:43124",
+          "TURNSTONE_CEF_PATH": "C:/Users/mark_/Code/cef-cache/wgpu-weld/154.0.34/cef_windows_x86_64",
+          "TURNSTONE_SERVO_PROFILE": null,
+          "TURNSTONE_SERVO_PROFILE_DIR": null,
+          "GRAFT_SERVO_RESIZE_TRACE": null,
+          "TURNSTONE_SERVO_GPU_SYNC": "existing",
+          "TURNSTONE_SERVO_GPU_SYNC_TIMEOUT_MS": "5000"
+        }
+      },
+      "scenario_done_first_line": "RESULT ok",
+      "scenario_done_details": [
+        "captured 01_restored_two_pages",
+        "captured 02_restored_a_profile",
+        "captured 03_restored_b_profile",
+        "B1 run 2: restored pins, two-page layout, local storage, text and page cookies observed"
+      ],
+      "module_observation": {
+        "owned_pid": 16916,
+        "sampling_wait_milliseconds": 250,
+        "snapshots_attempted": 38,
+        "observed_module_count": 8,
+        "observed_processes": [
+          {
+            "pid": 16916,
+            "parent_pid": 39108,
+            "created_utc": "2026-10-07T10:35:39.5188198Z",
+            "command_line_flags": [],
+            "lineage": "process handle started by this runner",
+            "first_observed_utc": "2026-10-07T10:35:39.5301673Z"
+          }
+        ],
+        "selected_observed_modules": [
+          {
+            "pid": 16916,
+            "parent_pid": 39108,
+            "process_created_utc": "2026-10-07T10:35:39.5188198Z",
+            "command_line_flags": [],
+            "module": "EmbeddedBrowserWebView.dll",
+            "path": "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\156.0.4314.8\\EBWebView\\x64\\EmbeddedBrowserWebView.dll",
+            "sha256": "12e36f73dc8393505850773f0d3888001d6cc44f566f31167d8ba8fcfdd3f325",
+            "file_version": "156.0.4314.8",
+            "product_version": "156.0.4314.8",
+            "first_observed_utc": "2026-10-07T10:35:41.6925269Z",
+            "hash_limitation": null,
+            "current_file_hash_matches": true,
+            "owned_root": true
+          },
+          {
+            "pid": 16916,
+            "parent_pid": 39108,
+            "process_created_utc": "2026-10-07T10:35:39.5188198Z",
+            "command_line_flags": [],
+            "module": "libcef.dll",
+            "path": "C:\\t\\cargo-targets\\turnstone\\debug\\libcef.dll",
+            "sha256": "e3da6707a840a8f33f565e011542169fd51aaa5218603eb7a89039fb16d79ae7",
+            "file_version": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+            "product_version": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+            "first_observed_utc": "2026-10-07T10:35:39.9910018Z",
+            "hash_limitation": null,
+            "expected_provider_hash_matches": true,
+            "current_file_hash_matches": true,
+            "owned_root": true
+          }
+        ],
+        "observer_limitations": [],
+        "scope": "Read-only owned root and live descendants carrying a --type role marker, with verified parent/creation identity; no child termination",
+        "inference_limit": "Sampling can miss short-lived/exited/access-restricted children or parents without a role marker; role alone does not prove CEF; missing module is not proven absent; no staging-path inference",
+        "identity_limit": "CIM and Process.StartTime creation timestamps agree within less than 1ms; lineage traversal limited to 64 processes per snapshot",
+        "command_line_policy": "Only the bounded --type role marker is retained; full command lines and other flags are excluded"
+      },
+      "all_native_gate_checks_passed": true,
+      "finished_file_count": 12
+    },
+    {
+      "directory": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-weld-input",
+      "process": {
+        "executable": "C:\\t\\cargo-targets\\turnstone\\debug\\turnstone.exe",
+        "executable_sha256": "61a81cb0864635a337e4db7ca7ded22f77d8076059fe72378b17f230f713c39a",
+        "executable_hashed_utc": "2026-10-07T10:33:01.3224276Z",
+        "scenario": "C:\\Users\\mark_\\Code\\repos\\turnstone\\scenarios\\browser_weld_direct_windows.scn",
+        "profile": "C:\\Users\\mark_\\Code\\repos\\turnstone\\docs\\receipts\\browser_supplier_integration_20261006\\profile\\final-family-input-weld-input",
+        "phase_prefix": "final-family-input",
+        "owned_pid": 49600,
+        "started_utc": "2026-10-07T10:33:01.3525985Z",
+        "finished_utc": "2026-10-07T10:34:06.9358036Z",
+        "timeout_seconds": 600,
+        "timed_out": false,
+        "native_exit": 0,
+        "module_evidence": "loaded-modules.json",
+        "scenario_result": "RESULT ok",
+        "runner_error": null,
+        "cleanup_attempted": false,
+        "cleanup_error": null,
+        "environment": {
+          "RUST_LOG": "warn",
+          "SCRY_FIXTURE_BASE": "http://127.0.0.1:43123",
+          "SERVO_FIXTURE_BASE": "http://127.0.0.1:43124",
+          "TURNSTONE_CEF_PATH": "C:/Users/mark_/Code/cef-cache/wgpu-weld/154.0.34/cef_windows_x86_64",
+          "TURNSTONE_SERVO_PROFILE": null,
+          "TURNSTONE_SERVO_PROFILE_DIR": null,
+          "GRAFT_SERVO_RESIZE_TRACE": null,
+          "TURNSTONE_SERVO_GPU_SYNC": "existing",
+          "TURNSTONE_SERVO_GPU_SYNC_TIMEOUT_MS": "5000"
+        }
+      },
+      "scenario_done_first_line": "RESULT ok",
+      "scenario_done_details": [
+        "captured 00_b_inspector_before_pin",
+        "captured 00_b_inspector_after_pin",
+        "captured 01_two_weld_pages",
+        "captured 01b_independent_weld_input",
+        "captured 02_find",
+        "captured 03_zoom",
+        "captured 04_teardown",
+        "B2 direct Weld: two producers, find, requested zoom and zero-resource teardown"
+      ],
+      "module_observation": {
+        "owned_pid": 49600,
+        "sampling_wait_milliseconds": 250,
+        "snapshots_attempted": 54,
+        "observed_module_count": 37,
+        "observed_processes": [
+          {
+            "pid": 29036,
+            "parent_pid": 49600,
+            "created_utc": "2026-10-07T10:33:12.1058494Z",
+            "command_line_flags": [
+              "--type=utility"
+            ],
+            "lineage": "verified live parent chain to owned root",
+            "first_observed_utc": "2026-10-07T10:33:12.7508767Z"
+          },
+          {
+            "pid": 8048,
+            "parent_pid": 49600,
+            "created_utc": "2026-10-07T10:33:12.1318656Z",
+            "command_line_flags": [
+              "--type=utility"
+            ],
+            "lineage": "verified live parent chain to owned root",
+            "first_observed_utc": "2026-10-07T10:33:13.1471200Z"
+          },
+          {
+            "pid": 37080,
+            "parent_pid": 49600,
+            "created_utc": "2026-10-07T10:33:35.8196639Z",
+            "command_line_flags": [
+              "--type=renderer"
+            ],
+            "lineage": "verified live parent chain to owned root",
+            "first_observed_utc": "2026-10-07T10:33:36.6201864Z"
+          },
+          {
+            "pid": 46216,
+            "parent_pid": 49600,
+            "created_utc": "2026-10-07T10:33:12.0816035Z",
+            "command_line_flags": [
+              "--type=gpu-process"
+            ],
+            "lineage": "verified live parent chain to owned root",
+            "first_observed_utc": "2026-10-07T10:33:12.2770720Z"
+          },
+          {
+            "pid": 3468,
+            "parent_pid": 49600,
+            "created_utc": "2026-10-07T10:33:12.2975515Z",
+            "command_line_flags": [
+              "--type=renderer"
+            ],
+            "lineage": "verified live parent chain to owned root",
+            "first_observed_utc": "2026-10-07T10:33:15.1626174Z"
+          },
+          {
+            "pid": 49600,
+            "parent_pid": 39108,
+            "created_utc": "2026-10-07T10:33:01.3525985Z",
+            "command_line_flags": [],
+            "lineage": "process handle started by this runner",
+            "first_observed_utc": "2026-10-07T10:33:01.3738085Z"
+          },
+          {
+            "pid": 4648,
+            "parent_pid": 49600,
+            "created_utc": "2026-10-07T10:33:12.2734557Z",
+            "command_line_flags": [
+              "--type=renderer"
+            ],
+            "lineage": "verified live parent chain to owned root",
+            "first_observed_utc": "2026-10-07T10:33:14.7511734Z"
+          },
+          {
+            "pid": 38652,
+            "parent_pid": 49600,
+            "created_utc": "2026-10-07T10:33:35.7962833Z",
+            "command_line_flags": [
+              "--type=renderer"
+            ],
+            "lineage": "verified live parent chain to owned root",
+            "first_observed_utc": "2026-10-07T10:33:36.2237046Z"
+          }
+        ],
+        "selected_observed_modules": [
+          {
+            "pid": 3468,
+            "parent_pid": 49600,
+            "process_created_utc": "2026-10-07T10:33:12.2975515Z",
+            "command_line_flags": [
+              "--type=renderer"
+            ],
+            "module": "libcef.dll",
+            "path": "C:\\t\\cargo-targets\\turnstone\\debug\\libcef.dll",
+            "sha256": "e3da6707a840a8f33f565e011542169fd51aaa5218603eb7a89039fb16d79ae7",
+            "file_version": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+            "product_version": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+            "first_observed_utc": "2026-10-07T10:33:15.1746370Z",
+            "hash_limitation": null,
+            "expected_provider_hash_matches": true,
+            "current_file_hash_matches": true,
+            "owned_root": false
+          },
+          {
+            "pid": 49600,
+            "parent_pid": 39108,
+            "process_created_utc": "2026-10-07T10:33:01.3525985Z",
+            "command_line_flags": [],
+            "module": "libcef.dll",
+            "path": "C:\\t\\cargo-targets\\turnstone\\debug\\libcef.dll",
+            "sha256": "e3da6707a840a8f33f565e011542169fd51aaa5218603eb7a89039fb16d79ae7",
+            "file_version": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+            "product_version": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+            "first_observed_utc": "2026-10-07T10:33:01.9392331Z",
+            "hash_limitation": null,
+            "expected_provider_hash_matches": true,
+            "current_file_hash_matches": true,
+            "owned_root": true
+          },
+          {
+            "pid": 37080,
+            "parent_pid": 49600,
+            "process_created_utc": "2026-10-07T10:33:35.8196639Z",
+            "command_line_flags": [
+              "--type=renderer"
+            ],
+            "module": "libcef.dll",
+            "path": "C:\\t\\cargo-targets\\turnstone\\debug\\libcef.dll",
+            "sha256": "e3da6707a840a8f33f565e011542169fd51aaa5218603eb7a89039fb16d79ae7",
+            "file_version": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+            "product_version": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+            "first_observed_utc": "2026-10-07T10:33:36.6344415Z",
+            "hash_limitation": null,
+            "expected_provider_hash_matches": true,
+            "current_file_hash_matches": true,
+            "owned_root": false
+          },
+          {
+            "pid": 4648,
+            "parent_pid": 49600,
+            "process_created_utc": "2026-10-07T10:33:12.2734557Z",
+            "command_line_flags": [
+              "--type=renderer"
+            ],
+            "module": "libcef.dll",
+            "path": "C:\\t\\cargo-targets\\turnstone\\debug\\libcef.dll",
+            "sha256": "e3da6707a840a8f33f565e011542169fd51aaa5218603eb7a89039fb16d79ae7",
+            "file_version": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+            "product_version": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+            "first_observed_utc": "2026-10-07T10:33:14.7653813Z",
+            "hash_limitation": null,
+            "expected_provider_hash_matches": true,
+            "current_file_hash_matches": true,
+            "owned_root": false
+          },
+          {
+            "pid": 46216,
+            "parent_pid": 49600,
+            "process_created_utc": "2026-10-07T10:33:12.0816035Z",
+            "command_line_flags": [
+              "--type=gpu-process"
+            ],
+            "module": "libcef.dll",
+            "path": "C:\\t\\cargo-targets\\turnstone\\debug\\libcef.dll",
+            "sha256": "e3da6707a840a8f33f565e011542169fd51aaa5218603eb7a89039fb16d79ae7",
+            "file_version": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+            "product_version": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+            "first_observed_utc": "2026-10-07T10:33:12.3114592Z",
+            "hash_limitation": null,
+            "expected_provider_hash_matches": true,
+            "current_file_hash_matches": true,
+            "owned_root": false
+          },
+          {
+            "pid": 8048,
+            "parent_pid": 49600,
+            "process_created_utc": "2026-10-07T10:33:12.1318656Z",
+            "command_line_flags": [
+              "--type=utility"
+            ],
+            "module": "libcef.dll",
+            "path": "C:\\t\\cargo-targets\\turnstone\\debug\\libcef.dll",
+            "sha256": "e3da6707a840a8f33f565e011542169fd51aaa5218603eb7a89039fb16d79ae7",
+            "file_version": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+            "product_version": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+            "first_observed_utc": "2026-10-07T10:33:13.1631259Z",
+            "hash_limitation": null,
+            "expected_provider_hash_matches": true,
+            "current_file_hash_matches": true,
+            "owned_root": false
+          },
+          {
+            "pid": 29036,
+            "parent_pid": 49600,
+            "process_created_utc": "2026-10-07T10:33:12.1058494Z",
+            "command_line_flags": [
+              "--type=utility"
+            ],
+            "module": "libcef.dll",
+            "path": "C:\\t\\cargo-targets\\turnstone\\debug\\libcef.dll",
+            "sha256": "e3da6707a840a8f33f565e011542169fd51aaa5218603eb7a89039fb16d79ae7",
+            "file_version": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+            "product_version": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+            "first_observed_utc": "2026-10-07T10:33:12.7628797Z",
+            "hash_limitation": null,
+            "expected_provider_hash_matches": true,
+            "current_file_hash_matches": true,
+            "owned_root": false
+          },
+          {
+            "pid": 38652,
+            "parent_pid": 49600,
+            "process_created_utc": "2026-10-07T10:33:35.7962833Z",
+            "command_line_flags": [
+              "--type=renderer"
+            ],
+            "module": "libcef.dll",
+            "path": "C:\\t\\cargo-targets\\turnstone\\debug\\libcef.dll",
+            "sha256": "e3da6707a840a8f33f565e011542169fd51aaa5218603eb7a89039fb16d79ae7",
+            "file_version": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+            "product_version": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+            "first_observed_utc": "2026-10-07T10:33:36.2372876Z",
+            "hash_limitation": null,
+            "expected_provider_hash_matches": true,
+            "current_file_hash_matches": true,
+            "owned_root": false
+          }
+        ],
+        "observer_limitations": [
+          "Owned child observation unavailable: PID 40020; Exception calling \"GetProcessById\" with \"1\" argument(s): \"Process with an Id of 40020 is not running.\"",
+          "Owned lineage enumeration unavailable: PID 3468; Exception calling \"GetProcessById\" with \"1\" argument(s): \"Process with an Id of 3468 is not running.\"",
+          "Owned lineage enumeration unavailable: PID 37080; Exception calling \"GetProcessById\" with \"1\" argument(s): \"Process with an Id of 37080 is not running.\""
+        ],
+        "scope": "Read-only owned root and live descendants carrying a --type role marker, with verified parent/creation identity; no child termination",
+        "inference_limit": "Sampling can miss short-lived/exited/access-restricted children or parents without a role marker; role alone does not prove CEF; missing module is not proven absent; no staging-path inference",
+        "identity_limit": "CIM and Process.StartTime creation timestamps agree within less than 1ms; lineage traversal limited to 64 processes per snapshot",
+        "command_line_policy": "Only the bounded --type role marker is retained; full command lines and other flags are excluded"
+      },
+      "all_native_gate_checks_passed": true,
+      "finished_file_count": 16
+    },
+    {
+      "directory": "docs/receipts/browser_supplier_integration_20261006/native-final-family-intl-both-intl",
+      "process": {
+        "executable": "C:\\t\\cargo-targets\\turnstone\\debug\\turnstone.exe",
+        "executable_sha256": "61a81cb0864635a337e4db7ca7ded22f77d8076059fe72378b17f230f713c39a",
+        "executable_hashed_utc": "2026-10-07T10:39:01.7910787Z",
+        "scenario": "C:\\Users\\mark_\\Code\\repos\\turnstone\\scenarios\\browser_servo_intl_windows.scn",
+        "profile": "C:\\Users\\mark_\\Code\\repos\\turnstone\\docs\\receipts\\browser_supplier_integration_20261006\\profile\\final-family-intl-both-intl",
+        "phase_prefix": "final-family-intl-both",
+        "owned_pid": 29512,
+        "started_utc": "2026-10-07T10:39:01.7946307Z",
+        "finished_utc": "2026-10-07T10:39:24.5264139Z",
+        "timeout_seconds": 600,
+        "timed_out": false,
+        "native_exit": 0,
+        "module_evidence": "loaded-modules.json",
+        "scenario_result": "RESULT ok",
+        "runner_error": null,
+        "cleanup_attempted": false,
+        "cleanup_error": null,
+        "environment": {
+          "RUST_LOG": "warn",
+          "SCRY_FIXTURE_BASE": "http://127.0.0.1:43123",
+          "SERVO_FIXTURE_BASE": "http://127.0.0.1:43124",
+          "TURNSTONE_CEF_PATH": "C:/Users/mark_/Code/cef-cache/wgpu-weld/154.0.34/cef_windows_x86_64",
+          "TURNSTONE_SERVO_PROFILE": "final-family-intl-both",
+          "TURNSTONE_SERVO_PROFILE_DIR": "C:\\Users\\mark_\\Code\\repos\\turnstone\\docs\\receipts\\browser_supplier_integration_20261006\\profile\\servo-shared\\final-family-intl-both",
+          "GRAFT_SERVO_RESIZE_TRACE": null,
+          "TURNSTONE_SERVO_GPU_SYNC": "both",
+          "TURNSTONE_SERVO_GPU_SYNC_TIMEOUT_MS": "5000"
+        }
+      },
+      "scenario_done_first_line": "RESULT ok",
+      "scenario_done_details": [
+        "captured 01_native_intl_bridge",
+        "Native Servo ICU bridge: normalization, ISO calendar date, word segmentation, numeric collation"
+      ],
+      "module_observation": {
+        "owned_pid": 29512,
+        "sampling_wait_milliseconds": 250,
+        "snapshots_attempted": 49,
+        "observed_module_count": 9,
+        "observed_processes": [
+          {
+            "pid": 29512,
+            "parent_pid": 39108,
+            "created_utc": "2026-10-07T10:39:01.7946307Z",
+            "command_line_flags": [],
+            "lineage": "process handle started by this runner",
+            "first_observed_utc": "2026-10-07T10:39:01.8045745Z"
+          }
+        ],
+        "selected_observed_modules": [
+          {
+            "pid": 29512,
+            "parent_pid": 39108,
+            "process_created_utc": "2026-10-07T10:39:01.7946307Z",
+            "command_line_flags": [],
+            "module": "libEGL.dll",
+            "path": "C:\\t\\cargo-targets\\turnstone\\debug\\libEGL.dll",
+            "sha256": "7463ac0d8d6030b21552476d847061a54e488151dbf02e7ba06893a16c4d223c",
+            "file_version": "",
+            "product_version": "",
+            "first_observed_utc": "2026-10-07T10:39:11.7837118Z",
+            "hash_limitation": null,
+            "expected_provider_hash_matches": true,
+            "current_file_hash_matches": true,
+            "owned_root": true
+          },
+          {
+            "pid": 29512,
+            "parent_pid": 39108,
+            "process_created_utc": "2026-10-07T10:39:01.7946307Z",
+            "command_line_flags": [],
+            "module": "libGLESv2.dll",
+            "path": "C:\\t\\cargo-targets\\turnstone\\debug\\libGLESv2.dll",
+            "sha256": "b9df0e9de4e3d827a7aa2eb5d6b6324061e8eca5070033b109ffeeb8cabd29e0",
+            "file_version": "",
+            "product_version": "",
+            "first_observed_utc": "2026-10-07T10:39:11.7845105Z",
+            "hash_limitation": null,
+            "expected_provider_hash_matches": true,
+            "current_file_hash_matches": true,
+            "owned_root": true
+          },
+          {
+            "pid": 29512,
+            "parent_pid": 39108,
+            "process_created_utc": "2026-10-07T10:39:01.7946307Z",
+            "command_line_flags": [],
+            "module": "libcef.dll",
+            "path": "C:\\t\\cargo-targets\\turnstone\\debug\\libcef.dll",
+            "sha256": "e3da6707a840a8f33f565e011542169fd51aaa5218603eb7a89039fb16d79ae7",
+            "file_version": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+            "product_version": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+            "first_observed_utc": "2026-10-07T10:39:02.2649841Z",
+            "hash_limitation": null,
+            "expected_provider_hash_matches": true,
+            "current_file_hash_matches": true,
+            "owned_root": true
+          }
+        ],
+        "observer_limitations": [],
+        "scope": "Read-only owned root and live descendants carrying a --type role marker, with verified parent/creation identity; no child termination",
+        "inference_limit": "Sampling can miss short-lived/exited/access-restricted children or parents without a role marker; role alone does not prove CEF; missing module is not proven absent; no staging-path inference",
+        "identity_limit": "CIM and Process.StartTime creation timestamps agree within less than 1ms; lineage traversal limited to 64 processes per snapshot",
+        "command_line_policy": "Only the bounded --type role marker is retained; full command lines and other flags are excluded"
+      },
+      "all_native_gate_checks_passed": true,
+      "finished_file_count": 12
+    },
+    {
+      "directory": "docs/receipts/browser_supplier_integration_20261006/native-final-family-mixed-mixed",
+      "process": {
+        "executable": "C:\\t\\cargo-targets\\turnstone\\debug\\turnstone.exe",
+        "executable_sha256": "61a81cb0864635a337e4db7ca7ded22f77d8076059fe72378b17f230f713c39a",
+        "executable_hashed_utc": "2026-10-07T10:37:28.0201064Z",
+        "scenario": "C:\\Users\\mark_\\Code\\repos\\turnstone\\scenarios\\browser_trio_windows.scn",
+        "profile": "C:\\Users\\mark_\\Code\\repos\\turnstone\\docs\\receipts\\browser_supplier_integration_20261006\\profile\\final-family-mixed-mixed",
+        "phase_prefix": "final-family-mixed",
+        "owned_pid": 38056,
+        "started_utc": "2026-10-07T10:37:28.0240815Z",
+        "finished_utc": "2026-10-07T10:39:00.7250161Z",
+        "timeout_seconds": 600,
+        "timed_out": false,
+        "native_exit": 0,
+        "module_evidence": "loaded-modules.json",
+        "scenario_result": "RESULT ok",
+        "runner_error": null,
+        "cleanup_attempted": false,
+        "cleanup_error": null,
+        "environment": {
+          "RUST_LOG": "warn",
+          "SCRY_FIXTURE_BASE": "http://127.0.0.1:43123",
+          "SERVO_FIXTURE_BASE": "http://127.0.0.1:43124",
+          "TURNSTONE_CEF_PATH": "C:/Users/mark_/Code/cef-cache/wgpu-weld/154.0.34/cef_windows_x86_64",
+          "TURNSTONE_SERVO_PROFILE": "final-family-mixed",
+          "TURNSTONE_SERVO_PROFILE_DIR": "C:\\Users\\mark_\\Code\\repos\\turnstone\\docs\\receipts\\browser_supplier_integration_20261006\\profile\\servo-shared\\final-family-mixed",
+          "GRAFT_SERVO_RESIZE_TRACE": null,
+          "TURNSTONE_SERVO_GPU_SYNC": "existing",
+          "TURNSTONE_SERVO_GPU_SYNC_TIMEOUT_MS": "5000"
+        }
+      },
+      "scenario_done_first_line": "RESULT ok",
+      "scenario_done_details": [
+        "captured 01_four_simultaneous_native_pages",
+        "captured 02_four_pages_after_resize",
+        "captured 03_all_native_producers_closed",
+        "Mixed runtime: two upstream Servo views, one Scry page and one Weld page share the host device; simultaneous composition, resize and per-node teardown"
+      ],
+      "module_observation": {
+        "owned_pid": 38056,
+        "sampling_wait_milliseconds": 250,
+        "snapshots_attempted": 150,
+        "observed_module_count": 32,
+        "observed_processes": [
+          {
+            "pid": 29620,
+            "parent_pid": 38056,
+            "created_utc": "2026-10-07T10:38:28.9717069Z",
+            "command_line_flags": [
+              "--type=gpu-process"
+            ],
+            "lineage": "verified live parent chain to owned root",
+            "first_observed_utc": "2026-10-07T10:38:29.0546777Z"
+          },
+          {
+            "pid": 40196,
+            "parent_pid": 38056,
+            "created_utc": "2026-10-07T10:38:29.1108911Z",
+            "command_line_flags": [
+              "--type=renderer"
+            ],
+            "lineage": "verified live parent chain to owned root",
+            "first_observed_utc": "2026-10-07T10:38:31.4207804Z"
+          },
+          {
+            "pid": 48156,
+            "parent_pid": 38056,
+            "created_utc": "2026-10-07T10:38:28.9887179Z",
+            "command_line_flags": [
+              "--type=utility"
+            ],
+            "lineage": "verified live parent chain to owned root",
+            "first_observed_utc": "2026-10-07T10:38:29.5753284Z"
+          },
+          {
+            "pid": 23500,
+            "parent_pid": 38056,
+            "created_utc": "2026-10-07T10:38:29.0039261Z",
+            "command_line_flags": [
+              "--type=utility"
+            ],
+            "lineage": "verified live parent chain to owned root",
+            "first_observed_utc": "2026-10-07T10:38:30.9801022Z"
+          },
+          {
+            "pid": 38056,
+            "parent_pid": 39108,
+            "created_utc": "2026-10-07T10:37:28.0240815Z",
+            "command_line_flags": [],
+            "lineage": "process handle started by this runner",
+            "first_observed_utc": "2026-10-07T10:37:28.0332347Z"
+          },
+          {
+            "pid": 19280,
+            "parent_pid": 38056,
+            "created_utc": "2026-10-07T10:38:29.1251911Z",
+            "command_line_flags": [
+              "--type=renderer"
+            ],
+            "lineage": "verified live parent chain to owned root",
+            "first_observed_utc": "2026-10-07T10:38:31.8838827Z"
+          }
+        ],
+        "selected_observed_modules": [
+          {
+            "pid": 19280,
+            "parent_pid": 38056,
+            "process_created_utc": "2026-10-07T10:38:29.1251911Z",
+            "command_line_flags": [
+              "--type=renderer"
+            ],
+            "module": "libcef.dll",
+            "path": "C:\\t\\cargo-targets\\turnstone\\debug\\libcef.dll",
+            "sha256": "e3da6707a840a8f33f565e011542169fd51aaa5218603eb7a89039fb16d79ae7",
+            "file_version": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+            "product_version": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+            "first_observed_utc": "2026-10-07T10:38:31.8965648Z",
+            "hash_limitation": null,
+            "expected_provider_hash_matches": true,
+            "current_file_hash_matches": true,
+            "owned_root": false
+          },
+          {
+            "pid": 48156,
+            "parent_pid": 38056,
+            "process_created_utc": "2026-10-07T10:38:28.9887179Z",
+            "command_line_flags": [
+              "--type=utility"
+            ],
+            "module": "libcef.dll",
+            "path": "C:\\t\\cargo-targets\\turnstone\\debug\\libcef.dll",
+            "sha256": "e3da6707a840a8f33f565e011542169fd51aaa5218603eb7a89039fb16d79ae7",
+            "file_version": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+            "product_version": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+            "first_observed_utc": "2026-10-07T10:38:29.5918446Z",
+            "hash_limitation": null,
+            "expected_provider_hash_matches": true,
+            "current_file_hash_matches": true,
+            "owned_root": false
+          },
+          {
+            "pid": 23500,
+            "parent_pid": 38056,
+            "process_created_utc": "2026-10-07T10:38:29.0039261Z",
+            "command_line_flags": [
+              "--type=utility"
+            ],
+            "module": "libcef.dll",
+            "path": "C:\\t\\cargo-targets\\turnstone\\debug\\libcef.dll",
+            "sha256": "e3da6707a840a8f33f565e011542169fd51aaa5218603eb7a89039fb16d79ae7",
+            "file_version": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+            "product_version": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+            "first_observed_utc": "2026-10-07T10:38:30.9927890Z",
+            "hash_limitation": null,
+            "expected_provider_hash_matches": true,
+            "current_file_hash_matches": true,
+            "owned_root": false
+          },
+          {
+            "pid": 38056,
+            "parent_pid": 39108,
+            "process_created_utc": "2026-10-07T10:37:28.0240815Z",
+            "command_line_flags": [],
+            "module": "libGLESv2.dll",
+            "path": "C:\\t\\cargo-targets\\turnstone\\debug\\libGLESv2.dll",
+            "sha256": "b9df0e9de4e3d827a7aa2eb5d6b6324061e8eca5070033b109ffeeb8cabd29e0",
+            "file_version": "",
+            "product_version": "",
+            "first_observed_utc": "2026-10-07T10:37:38.0658779Z",
+            "hash_limitation": null,
+            "expected_provider_hash_matches": true,
+            "current_file_hash_matches": true,
+            "owned_root": true
+          },
+          {
+            "pid": 38056,
+            "parent_pid": 39108,
+            "process_created_utc": "2026-10-07T10:37:28.0240815Z",
+            "command_line_flags": [],
+            "module": "EmbeddedBrowserWebView.dll",
+            "path": "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\156.0.4314.8\\EBWebView\\x64\\EmbeddedBrowserWebView.dll",
+            "sha256": "12e36f73dc8393505850773f0d3888001d6cc44f566f31167d8ba8fcfdd3f325",
+            "file_version": "156.0.4314.8",
+            "product_version": "156.0.4314.8",
+            "first_observed_utc": "2026-10-07T10:38:13.9428201Z",
+            "hash_limitation": null,
+            "current_file_hash_matches": true,
+            "owned_root": true
+          },
+          {
+            "pid": 38056,
+            "parent_pid": 39108,
+            "process_created_utc": "2026-10-07T10:37:28.0240815Z",
+            "command_line_flags": [],
+            "module": "libEGL.dll",
+            "path": "C:\\t\\cargo-targets\\turnstone\\debug\\libEGL.dll",
+            "sha256": "7463ac0d8d6030b21552476d847061a54e488151dbf02e7ba06893a16c4d223c",
+            "file_version": "",
+            "product_version": "",
+            "first_observed_utc": "2026-10-07T10:37:38.0650389Z",
+            "hash_limitation": null,
+            "expected_provider_hash_matches": true,
+            "current_file_hash_matches": true,
+            "owned_root": true
+          },
+          {
+            "pid": 38056,
+            "parent_pid": 39108,
+            "process_created_utc": "2026-10-07T10:37:28.0240815Z",
+            "command_line_flags": [],
+            "module": "libcef.dll",
+            "path": "C:\\t\\cargo-targets\\turnstone\\debug\\libcef.dll",
+            "sha256": "e3da6707a840a8f33f565e011542169fd51aaa5218603eb7a89039fb16d79ae7",
+            "file_version": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+            "product_version": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+            "first_observed_utc": "2026-10-07T10:37:28.4807325Z",
+            "hash_limitation": null,
+            "expected_provider_hash_matches": true,
+            "current_file_hash_matches": true,
+            "owned_root": true
+          },
+          {
+            "pid": 40196,
+            "parent_pid": 38056,
+            "process_created_utc": "2026-10-07T10:38:29.1108911Z",
+            "command_line_flags": [
+              "--type=renderer"
+            ],
+            "module": "libcef.dll",
+            "path": "C:\\t\\cargo-targets\\turnstone\\debug\\libcef.dll",
+            "sha256": "e3da6707a840a8f33f565e011542169fd51aaa5218603eb7a89039fb16d79ae7",
+            "file_version": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+            "product_version": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+            "first_observed_utc": "2026-10-07T10:38:31.4353207Z",
+            "hash_limitation": null,
+            "expected_provider_hash_matches": true,
+            "current_file_hash_matches": true,
+            "owned_root": false
+          },
+          {
+            "pid": 29620,
+            "parent_pid": 38056,
+            "process_created_utc": "2026-10-07T10:38:28.9717069Z",
+            "command_line_flags": [
+              "--type=gpu-process"
+            ],
+            "module": "libcef.dll",
+            "path": "C:\\t\\cargo-targets\\turnstone\\debug\\libcef.dll",
+            "sha256": "e3da6707a840a8f33f565e011542169fd51aaa5218603eb7a89039fb16d79ae7",
+            "file_version": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+            "product_version": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+            "first_observed_utc": "2026-10-07T10:38:29.0689695Z",
+            "hash_limitation": null,
+            "expected_provider_hash_matches": true,
+            "current_file_hash_matches": true,
+            "owned_root": false
+          }
+        ],
+        "observer_limitations": [
+          "Owned lineage enumeration unavailable: PID 19280; Exception calling \"GetProcessById\" with \"1\" argument(s): \"Process with an Id of 19280 is not running.\"",
+          "Owned lineage enumeration unavailable: PID 23500; Exception calling \"GetProcessById\" with \"1\" argument(s): \"Process with an Id of 23500 is not running.\"",
+          "Owned lineage enumeration unavailable: PID 40196; Exception calling \"GetProcessById\" with \"1\" argument(s): \"Process with an Id of 40196 is not running.\""
+        ],
+        "scope": "Read-only owned root and live descendants carrying a --type role marker, with verified parent/creation identity; no child termination",
+        "inference_limit": "Sampling can miss short-lived/exited/access-restricted children or parents without a role marker; role alone does not prove CEF; missing module is not proven absent; no staging-path inference",
+        "identity_limit": "CIM and Process.StartTime creation timestamps agree within less than 1ms; lineage traversal limited to 64 processes per snapshot",
+        "command_line_policy": "Only the bounded --type role marker is retained; full command lines and other flags are excluded"
+      },
+      "all_native_gate_checks_passed": true,
+      "finished_file_count": 16
+    },
+    {
+      "directory": "docs/receipts/browser_supplier_integration_20261006/native-final-family-permission-weld-permission",
+      "process": {
+        "executable": "C:\\t\\cargo-targets\\turnstone\\debug\\turnstone.exe",
+        "executable_sha256": "61a81cb0864635a337e4db7ca7ded22f77d8076059fe72378b17f230f713c39a",
+        "executable_hashed_utc": "2026-10-07T10:42:14.9583888Z",
+        "scenario": "C:\\Users\\mark_\\Code\\repos\\turnstone\\scenarios\\browser_weld_permission_direct_windows.scn",
+        "profile": "C:\\Users\\mark_\\Code\\repos\\turnstone\\docs\\receipts\\browser_supplier_integration_20261006\\profile\\final-family-permission-weld-permission",
+        "phase_prefix": "final-family-permission",
+        "owned_pid": 31616,
+        "started_utc": "2026-10-07T10:42:14.9950933Z",
+        "finished_utc": "2026-10-07T10:42:42.9374308Z",
+        "timeout_seconds": 600,
+        "timed_out": false,
+        "native_exit": 0,
+        "module_evidence": "loaded-modules.json",
+        "scenario_result": "RESULT ok",
+        "runner_error": null,
+        "cleanup_attempted": false,
+        "cleanup_error": null,
+        "environment": {
+          "RUST_LOG": "warn",
+          "SCRY_FIXTURE_BASE": "http://127.0.0.1:43123",
+          "SERVO_FIXTURE_BASE": "http://127.0.0.1:43124",
+          "TURNSTONE_CEF_PATH": "C:/Users/mark_/Code/cef-cache/wgpu-weld/154.0.34/cef_windows_x86_64",
+          "TURNSTONE_SERVO_PROFILE": null,
+          "TURNSTONE_SERVO_PROFILE_DIR": null,
+          "GRAFT_SERVO_RESIZE_TRACE": null,
+          "TURNSTONE_SERVO_GPU_SYNC": "existing",
+          "TURNSTONE_SERVO_GPU_SYNC_TIMEOUT_MS": null
+        }
+      },
+      "scenario_done_first_line": "RESULT ok",
+      "scenario_done_details": [
+        "captured 01_permission_decision",
+        "captured 02_permission_answered",
+        "captured 03_permission_teardown",
+        "Direct Weld permission callback and teardown complete"
+      ],
+      "module_observation": {
+        "owned_pid": 31616,
+        "sampling_wait_milliseconds": 250,
+        "snapshots_attempted": 32,
+        "observed_module_count": 29,
+        "observed_processes": [
+          {
+            "pid": 20716,
+            "parent_pid": 31616,
+            "created_utc": "2026-10-07T10:42:25.1635029Z",
+            "command_line_flags": [
+              "--type=renderer"
+            ],
+            "lineage": "verified live parent chain to owned root",
+            "first_observed_utc": "2026-10-07T10:42:27.0552784Z"
+          },
+          {
+            "pid": 25460,
+            "parent_pid": 31616,
+            "created_utc": "2026-10-07T10:42:25.0083873Z",
+            "command_line_flags": [
+              "--type=utility"
+            ],
+            "lineage": "verified live parent chain to owned root",
+            "first_observed_utc": "2026-10-07T10:42:26.2571513Z"
+          },
+          {
+            "pid": 40900,
+            "parent_pid": 31616,
+            "created_utc": "2026-10-07T10:42:24.9712351Z",
+            "command_line_flags": [
+              "--type=gpu-process"
+            ],
+            "lineage": "verified live parent chain to owned root",
+            "first_observed_utc": "2026-10-07T10:42:25.4309639Z"
+          },
+          {
+            "pid": 31000,
+            "parent_pid": 31616,
+            "created_utc": "2026-10-07T10:42:25.1407130Z",
+            "command_line_flags": [
+              "--type=renderer"
+            ],
+            "lineage": "verified live parent chain to owned root",
+            "first_observed_utc": "2026-10-07T10:42:26.6563542Z"
+          },
+          {
+            "pid": 31616,
+            "parent_pid": 6072,
+            "created_utc": "2026-10-07T10:42:14.9950933Z",
+            "command_line_flags": [],
+            "lineage": "process handle started by this runner",
+            "first_observed_utc": "2026-10-07T10:42:15.0153579Z"
+          },
+          {
+            "pid": 41240,
+            "parent_pid": 31616,
+            "created_utc": "2026-10-07T10:42:24.9870654Z",
+            "command_line_flags": [
+              "--type=utility"
+            ],
+            "lineage": "verified live parent chain to owned root",
+            "first_observed_utc": "2026-10-07T10:42:25.8742161Z"
+          }
+        ],
+        "selected_observed_modules": [
+          {
+            "pid": 41240,
+            "parent_pid": 31616,
+            "process_created_utc": "2026-10-07T10:42:24.9870654Z",
+            "command_line_flags": [
+              "--type=utility"
+            ],
+            "module": "libcef.dll",
+            "path": "C:\\t\\cargo-targets\\turnstone\\debug\\libcef.dll",
+            "sha256": "e3da6707a840a8f33f565e011542169fd51aaa5218603eb7a89039fb16d79ae7",
+            "file_version": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+            "product_version": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+            "first_observed_utc": "2026-10-07T10:42:25.8867021Z",
+            "hash_limitation": null,
+            "expected_provider_hash_matches": true,
+            "current_file_hash_matches": true,
+            "owned_root": false
+          },
+          {
+            "pid": 31000,
+            "parent_pid": 31616,
+            "process_created_utc": "2026-10-07T10:42:25.1407130Z",
+            "command_line_flags": [
+              "--type=renderer"
+            ],
+            "module": "libcef.dll",
+            "path": "C:\\t\\cargo-targets\\turnstone\\debug\\libcef.dll",
+            "sha256": "e3da6707a840a8f33f565e011542169fd51aaa5218603eb7a89039fb16d79ae7",
+            "file_version": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+            "product_version": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+            "first_observed_utc": "2026-10-07T10:42:26.6693450Z",
+            "hash_limitation": null,
+            "expected_provider_hash_matches": true,
+            "current_file_hash_matches": true,
+            "owned_root": false
+          },
+          {
+            "pid": 40900,
+            "parent_pid": 31616,
+            "process_created_utc": "2026-10-07T10:42:24.9712351Z",
+            "command_line_flags": [
+              "--type=gpu-process"
+            ],
+            "module": "libcef.dll",
+            "path": "C:\\t\\cargo-targets\\turnstone\\debug\\libcef.dll",
+            "sha256": "e3da6707a840a8f33f565e011542169fd51aaa5218603eb7a89039fb16d79ae7",
+            "file_version": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+            "product_version": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+            "first_observed_utc": "2026-10-07T10:42:25.4499783Z",
+            "hash_limitation": null,
+            "expected_provider_hash_matches": true,
+            "current_file_hash_matches": true,
+            "owned_root": false
+          },
+          {
+            "pid": 25460,
+            "parent_pid": 31616,
+            "process_created_utc": "2026-10-07T10:42:25.0083873Z",
+            "command_line_flags": [
+              "--type=utility"
+            ],
+            "module": "libcef.dll",
+            "path": "C:\\t\\cargo-targets\\turnstone\\debug\\libcef.dll",
+            "sha256": "e3da6707a840a8f33f565e011542169fd51aaa5218603eb7a89039fb16d79ae7",
+            "file_version": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+            "product_version": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+            "first_observed_utc": "2026-10-07T10:42:26.2672612Z",
+            "hash_limitation": null,
+            "expected_provider_hash_matches": true,
+            "current_file_hash_matches": true,
+            "owned_root": false
+          },
+          {
+            "pid": 31616,
+            "parent_pid": 6072,
+            "process_created_utc": "2026-10-07T10:42:14.9950933Z",
+            "command_line_flags": [],
+            "module": "libcef.dll",
+            "path": "C:\\t\\cargo-targets\\turnstone\\debug\\libcef.dll",
+            "sha256": "e3da6707a840a8f33f565e011542169fd51aaa5218603eb7a89039fb16d79ae7",
+            "file_version": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+            "product_version": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+            "first_observed_utc": "2026-10-07T10:42:15.5368047Z",
+            "hash_limitation": null,
+            "expected_provider_hash_matches": true,
+            "current_file_hash_matches": true,
+            "owned_root": true
+          },
+          {
+            "pid": 20716,
+            "parent_pid": 31616,
+            "process_created_utc": "2026-10-07T10:42:25.1635029Z",
+            "command_line_flags": [
+              "--type=renderer"
+            ],
+            "module": "libcef.dll",
+            "path": "C:\\t\\cargo-targets\\turnstone\\debug\\libcef.dll",
+            "sha256": "e3da6707a840a8f33f565e011542169fd51aaa5218603eb7a89039fb16d79ae7",
+            "file_version": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+            "product_version": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+            "first_observed_utc": "2026-10-07T10:42:27.0659706Z",
+            "hash_limitation": null,
+            "expected_provider_hash_matches": true,
+            "current_file_hash_matches": true,
+            "owned_root": false
+          }
+        ],
+        "observer_limitations": [
+          "Owned lineage enumeration unavailable: PID 20716; Exception calling \"GetProcessById\" with \"1\" argument(s): \"Process with an Id of 20716 is not running.\"",
+          "Owned lineage enumeration unavailable: PID 31000; Exception calling \"GetProcessById\" with \"1\" argument(s): \"Process with an Id of 31000 is not running.\""
+        ],
+        "scope": "Read-only owned root and live descendants carrying a --type role marker, with verified parent/creation identity; no child termination",
+        "inference_limit": "Sampling can miss short-lived/exited/access-restricted children or parents without a role marker; role alone does not prove CEF; missing module is not proven absent; no staging-path inference",
+        "identity_limit": "CIM and Process.StartTime creation timestamps agree within less than 1ms; lineage traversal limited to 64 processes per snapshot",
+        "command_line_policy": "Only the bounded --type role marker is retained; full command lines and other flags are excluded"
+      },
+      "all_native_gate_checks_passed": true,
+      "finished_file_count": 10
+    },
+    {
+      "directory": "docs/receipts/browser_supplier_integration_20261006/native-final-family-servo-servo",
+      "process": {
+        "executable": "C:\\t\\cargo-targets\\turnstone\\debug\\turnstone.exe",
+        "executable_sha256": "61a81cb0864635a337e4db7ca7ded22f77d8076059fe72378b17f230f713c39a",
+        "executable_hashed_utc": "2026-10-07T10:35:58.4512772Z",
+        "scenario": "C:\\Users\\mark_\\Code\\repos\\turnstone\\scenarios\\browser_servo_windows.scn",
+        "profile": "C:\\Users\\mark_\\Code\\repos\\turnstone\\docs\\receipts\\browser_supplier_integration_20261006\\profile\\final-family-servo-servo",
+        "phase_prefix": "final-family-servo",
+        "owned_pid": 31380,
+        "started_utc": "2026-10-07T10:35:58.4553019Z",
+        "finished_utc": "2026-10-07T10:37:26.9782275Z",
+        "timeout_seconds": 600,
+        "timed_out": false,
+        "native_exit": 0,
+        "module_evidence": "loaded-modules.json",
+        "scenario_result": "RESULT ok",
+        "runner_error": null,
+        "cleanup_attempted": false,
+        "cleanup_error": null,
+        "environment": {
+          "RUST_LOG": "warn",
+          "SCRY_FIXTURE_BASE": "http://127.0.0.1:43123",
+          "SERVO_FIXTURE_BASE": "http://127.0.0.1:43124",
+          "TURNSTONE_CEF_PATH": "C:/Users/mark_/Code/cef-cache/wgpu-weld/154.0.34/cef_windows_x86_64",
+          "TURNSTONE_SERVO_PROFILE": "final-family-servo",
+          "TURNSTONE_SERVO_PROFILE_DIR": "C:\\Users\\mark_\\Code\\repos\\turnstone\\docs\\receipts\\browser_supplier_integration_20261006\\profile\\servo-shared\\final-family-servo",
+          "GRAFT_SERVO_RESIZE_TRACE": null,
+          "TURNSTONE_SERVO_GPU_SYNC": "existing",
+          "TURNSTONE_SERVO_GPU_SYNC_TIMEOUT_MS": "5000"
+        }
+      },
+      "scenario_done_first_line": "RESULT ok",
+      "scenario_done_details": [
+        "captured 01_two_upstream_servo_pages",
+        "captured 02_a_native_input_and_navigation",
+        "captured 03_b_native_input_and_navigation",
+        "captured 04_resize_and_orientation",
+        "captured 05_a_reader_b_servo",
+        "captured 06_a_servo_reconstructed",
+        "captured 07_both_servo_views_closed",
+        "captured 08_reopened_in_same_servo_process",
+        "captured 09_final_servo_teardown",
+        "B3 upstream Servo: shared named profile, independent views and input, native navigation, normalized orientation, resize, reconstruction and teardown"
+      ],
+      "module_observation": {
+        "owned_pid": 31380,
+        "sampling_wait_milliseconds": 250,
+        "snapshots_attempted": 190,
+        "observed_module_count": 9,
+        "observed_processes": [
+          {
+            "pid": 31380,
+            "parent_pid": 39108,
+            "created_utc": "2026-10-07T10:35:58.4553019Z",
+            "command_line_flags": [],
+            "lineage": "process handle started by this runner",
+            "first_observed_utc": "2026-10-07T10:35:58.4644068Z"
+          }
+        ],
+        "selected_observed_modules": [
+          {
+            "pid": 31380,
+            "parent_pid": 39108,
+            "process_created_utc": "2026-10-07T10:35:58.4553019Z",
+            "command_line_flags": [],
+            "module": "libGLESv2.dll",
+            "path": "C:\\t\\cargo-targets\\turnstone\\debug\\libGLESv2.dll",
+            "sha256": "b9df0e9de4e3d827a7aa2eb5d6b6324061e8eca5070033b109ffeeb8cabd29e0",
+            "file_version": "",
+            "product_version": "",
+            "first_observed_utc": "2026-10-07T10:36:08.8565479Z",
+            "hash_limitation": null,
+            "expected_provider_hash_matches": true,
+            "current_file_hash_matches": true,
+            "owned_root": true
+          },
+          {
+            "pid": 31380,
+            "parent_pid": 39108,
+            "process_created_utc": "2026-10-07T10:35:58.4553019Z",
+            "command_line_flags": [],
+            "module": "libcef.dll",
+            "path": "C:\\t\\cargo-targets\\turnstone\\debug\\libcef.dll",
+            "sha256": "e3da6707a840a8f33f565e011542169fd51aaa5218603eb7a89039fb16d79ae7",
+            "file_version": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+            "product_version": "154.0.34+g14c5a08+chromium-154.0.8037.98",
+            "first_observed_utc": "2026-10-07T10:35:58.9222255Z",
+            "hash_limitation": null,
+            "expected_provider_hash_matches": true,
+            "current_file_hash_matches": true,
+            "owned_root": true
+          },
+          {
+            "pid": 31380,
+            "parent_pid": 39108,
+            "process_created_utc": "2026-10-07T10:35:58.4553019Z",
+            "command_line_flags": [],
+            "module": "libEGL.dll",
+            "path": "C:\\t\\cargo-targets\\turnstone\\debug\\libEGL.dll",
+            "sha256": "7463ac0d8d6030b21552476d847061a54e488151dbf02e7ba06893a16c4d223c",
+            "file_version": "",
+            "product_version": "",
+            "first_observed_utc": "2026-10-07T10:36:08.8555003Z",
+            "hash_limitation": null,
+            "expected_provider_hash_matches": true,
+            "current_file_hash_matches": true,
+            "owned_root": true
+          }
+        ],
+        "observer_limitations": [],
+        "scope": "Read-only owned root and live descendants carrying a --type role marker, with verified parent/creation identity; no child termination",
+        "inference_limit": "Sampling can miss short-lived/exited/access-restricted children or parents without a role marker; role alone does not prove CEF; missing module is not proven absent; no staging-path inference",
+        "identity_limit": "CIM and Process.StartTime creation timestamps agree within less than 1ms; lineage traversal limited to 64 processes per snapshot",
+        "command_line_policy": "Only the bounded --type role marker is retained; full command lines and other flags are excluded"
+      },
+      "all_native_gate_checks_passed": true,
+      "finished_file_count": 30
+    }
+  ],
+  "pixel_evidence": [
+    {
+      "receipt": {
+        "path": "docs/receipts/browser_family_20261007/final-intl-both-pixels.json",
+        "bytes": 1710,
+        "sha256": "655c70ea804997950c6b0262f4dad8245b1881026aa2f1177057b7f1444182bf"
+      },
+      "recorded_report": {
+        "recorded_utc": "2026-10-07T10:39:24.731740+00:00",
+        "directory": "C:/Users/mark_/Code/repos/turnstone/docs/receipts/browser_supplier_integration_20261006/native-final-family-intl-both-intl",
+        "helper_sha256": "3546f8fc1063b28fc0dc45f9b1e4e47e3f12cd078662a7c91729152aab1b110a",
+        "method": {
+          "fixture": "intl",
+          "expected_rgb": [
+            23,
+            109,
+            53
+          ],
+          "channel_tolerance": 8,
+          "minimum_green_fraction": 0.75,
+          "minimum_region_pixels": 4096,
+          "content_edge_inset_pixels": 4,
+          "required_live_producers_cached_frames_servo_active_views": 1
+        },
+        "limits": "Fixture-specific imported-body check. Native title assertions qualify page APIs separately. This does not establish text correctness, accessibility, arbitrary page correctness or native teardown.",
+        "inputs": [
+          {
+            "path": "01_native_intl_bridge.png",
+            "bytes": 77686,
+            "sha256": "456cf83bc9354a7b7121a67ead1d7b34f0b9d19fe0916891c1b0a502ce5129bf"
+          },
+          {
+            "path": "intl-servo-live.surface-frames.json",
+            "bytes": 312,
+            "sha256": "1dd923bff33e9952757c0a7b6adde5de9b0ab8363a61fb06199d792978ee1b70"
+          }
+        ],
+        "failures": [],
+        "counts": {
+          "live_producers": 1,
+          "cached_frames": 1,
+          "servo_active_views": 1
+        },
+        "surface": {
+          "node": "093e1a84-4eb5-418c-a1c8-834050e3e901",
+          "recorded_rectangle": {
+            "x": 515.0,
+            "y": 30.0,
+            "width": 509.0,
+            "height": 570.0
+          }
+        },
+        "capture_size": [
+          1024,
+          600
+        ],
+        "pixels": {
+          "sample_box": [
+            519,
+            34,
+            1020,
+            596
+          ],
+          "sampled_pixels": 281562,
+          "matched_green_pixels": 264548,
+          "matched_green_fraction": 0.9395728116720296
+        },
+        "passed": true
+      },
+      "verified_inputs": [
+        {
+          "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-intl-both-intl/01_native_intl_bridge.png",
+          "bytes": 77686,
+          "sha256": "456cf83bc9354a7b7121a67ead1d7b34f0b9d19fe0916891c1b0a502ce5129bf"
+        },
+        {
+          "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-intl-both-intl/intl-servo-live.surface-frames.json",
+          "bytes": 312,
+          "sha256": "1dd923bff33e9952757c0a7b6adde5de9b0ab8363a61fb06199d792978ee1b70"
+        }
+      ],
+      "all_recorded_input_hashes_match": true,
+      "process_result": {
+        "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-intl-both-intl/process-result.json",
+        "bytes": 1509,
+        "sha256": "a4e74dc9cc5dbdcfdf512ca4e4cf99c4607d4fa12b2ee9bbffdea88044444729"
+      },
+      "process_native_exit": 0,
+      "process_scenario_result": "RESULT ok",
+      "gpu_sync": "both",
+      "retained_failure": false
+    },
+    {
+      "receipt": {
+        "path": "docs/receipts/browser_family_20261007/final-servo-orientation-pixels.json",
+        "bytes": 7246,
+        "sha256": "77fb95635ef5e5fb539f7d1ae6aa46692c836eab3480b4662e95ea91eaa2e973"
+      },
+      "recorded_report": {
+        "recorded_utc": "2026-10-07T10:40:36.636116+00:00",
+        "directory": "docs/receipts/browser_supplier_integration_20261006/native-final-family-servo-servo",
+        "method": "Each of two recorded live content rectangles must show the fixture's red top and blue bottom, 16 pixels each within RGB channel tolerance 8. Samples avoid text and the host toolbar.",
+        "limits": "Fixture-specific orientation/blank-page check; does not prove text, accessibility, physical input, DPI or arbitrary page correctness. Reader refusal and closed-view captures are reviewed separately.",
+        "checks": [
+          {
+            "capture": "01_two_upstream_servo_pages.png",
+            "capture_sha256": "0e237814dc87bc89369d021d366f4b3c015ed059d064c62043a670922a09d978",
+            "geometry": "two-servo-pages.surface-frames.json",
+            "geometry_sha256": "8cee7d95448bf3f4e6d5dd63aff5a2528d665a6e92003700120d96b6ca6e5572",
+            "surfaces": [
+              {
+                "node": "161b04ba-e37c-46f4-9cf7-505c27e082d2",
+                "bands": [
+                  {
+                    "band": "top",
+                    "matched_pixels": 16,
+                    "required_pixels": 16
+                  },
+                  {
+                    "band": "bottom",
+                    "matched_pixels": 16,
+                    "required_pixels": 16
+                  }
+                ]
+              },
+              {
+                "node": "ecd1d19f-8c74-430b-914a-14fca0e388f0",
+                "bands": [
+                  {
+                    "band": "top",
+                    "matched_pixels": 16,
+                    "required_pixels": 16
+                  },
+                  {
+                    "band": "bottom",
+                    "matched_pixels": 16,
+                    "required_pixels": 16
+                  }
+                ]
+              }
+            ],
+            "passed": true
+          },
+          {
+            "capture": "02_a_native_input_and_navigation.png",
+            "capture_sha256": "367f76478d2113c7efe91968b9c84aa22e3b5bcd1fa52e820bc55670114618fe",
+            "geometry": "independent-input.surface-frames.json",
+            "geometry_sha256": "8cee7d95448bf3f4e6d5dd63aff5a2528d665a6e92003700120d96b6ca6e5572",
+            "surfaces": [
+              {
+                "node": "161b04ba-e37c-46f4-9cf7-505c27e082d2",
+                "bands": [
+                  {
+                    "band": "top",
+                    "matched_pixels": 16,
+                    "required_pixels": 16
+                  },
+                  {
+                    "band": "bottom",
+                    "matched_pixels": 16,
+                    "required_pixels": 16
+                  }
+                ]
+              },
+              {
+                "node": "ecd1d19f-8c74-430b-914a-14fca0e388f0",
+                "bands": [
+                  {
+                    "band": "top",
+                    "matched_pixels": 16,
+                    "required_pixels": 16
+                  },
+                  {
+                    "band": "bottom",
+                    "matched_pixels": 16,
+                    "required_pixels": 16
+                  }
+                ]
+              }
+            ],
+            "passed": true
+          },
+          {
+            "capture": "03_b_native_input_and_navigation.png",
+            "capture_sha256": "7a80bfcecd388b0cbaacdbfbf1f8d9a70afd69bede6ddd7965e70a8770207be3",
+            "geometry": "independent-input.surface-frames.json",
+            "geometry_sha256": "8cee7d95448bf3f4e6d5dd63aff5a2528d665a6e92003700120d96b6ca6e5572",
+            "surfaces": [
+              {
+                "node": "161b04ba-e37c-46f4-9cf7-505c27e082d2",
+                "bands": [
+                  {
+                    "band": "top",
+                    "matched_pixels": 16,
+                    "required_pixels": 16
+                  },
+                  {
+                    "band": "bottom",
+                    "matched_pixels": 16,
+                    "required_pixels": 16
+                  }
+                ]
+              },
+              {
+                "node": "ecd1d19f-8c74-430b-914a-14fca0e388f0",
+                "bands": [
+                  {
+                    "band": "top",
+                    "matched_pixels": 16,
+                    "required_pixels": 16
+                  },
+                  {
+                    "band": "bottom",
+                    "matched_pixels": 16,
+                    "required_pixels": 16
+                  }
+                ]
+              }
+            ],
+            "passed": true
+          },
+          {
+            "capture": "04_resize_and_orientation.png",
+            "capture_sha256": "6ebf25ccbc5a0b6c5423e732f27eef8982d4d8e659bb624a1079b2ad5be16f54",
+            "geometry": "servo-resized.surface-frames.json",
+            "geometry_sha256": "6f6fa46616d86bc57abad44422fda100d117e5967bf52084391c30571e5740fe",
+            "surfaces": [
+              {
+                "node": "161b04ba-e37c-46f4-9cf7-505c27e082d2",
+                "bands": [
+                  {
+                    "band": "top",
+                    "matched_pixels": 16,
+                    "required_pixels": 16
+                  },
+                  {
+                    "band": "bottom",
+                    "matched_pixels": 16,
+                    "required_pixels": 16
+                  }
+                ]
+              },
+              {
+                "node": "ecd1d19f-8c74-430b-914a-14fca0e388f0",
+                "bands": [
+                  {
+                    "band": "top",
+                    "matched_pixels": 16,
+                    "required_pixels": 16
+                  },
+                  {
+                    "band": "bottom",
+                    "matched_pixels": 16,
+                    "required_pixels": 16
+                  }
+                ]
+              }
+            ],
+            "passed": true
+          },
+          {
+            "capture": "06_a_servo_reconstructed.png",
+            "capture_sha256": "3be22979525b3554fc0bed8bee91f0f4eee1d074964662c5cade6132cdb1e8ca",
+            "geometry": "servo-reconstructed.surface-frames.json",
+            "geometry_sha256": "6f6fa46616d86bc57abad44422fda100d117e5967bf52084391c30571e5740fe",
+            "surfaces": [
+              {
+                "node": "161b04ba-e37c-46f4-9cf7-505c27e082d2",
+                "bands": [
+                  {
+                    "band": "top",
+                    "matched_pixels": 16,
+                    "required_pixels": 16
+                  },
+                  {
+                    "band": "bottom",
+                    "matched_pixels": 16,
+                    "required_pixels": 16
+                  }
+                ]
+              },
+              {
+                "node": "ecd1d19f-8c74-430b-914a-14fca0e388f0",
+                "bands": [
+                  {
+                    "band": "top",
+                    "matched_pixels": 16,
+                    "required_pixels": 16
+                  },
+                  {
+                    "band": "bottom",
+                    "matched_pixels": 16,
+                    "required_pixels": 16
+                  }
+                ]
+              }
+            ],
+            "passed": true
+          },
+          {
+            "capture": "08_reopened_in_same_servo_process.png",
+            "capture_sha256": "1676e8415babfceb7b5561e54b8df403a8847a958a5c884e8541cb54043071d8",
+            "geometry": "servo-reopened.surface-frames.json",
+            "geometry_sha256": "6f6fa46616d86bc57abad44422fda100d117e5967bf52084391c30571e5740fe",
+            "surfaces": [
+              {
+                "node": "161b04ba-e37c-46f4-9cf7-505c27e082d2",
+                "bands": [
+                  {
+                    "band": "top",
+                    "matched_pixels": 16,
+                    "required_pixels": 16
+                  },
+                  {
+                    "band": "bottom",
+                    "matched_pixels": 16,
+                    "required_pixels": 16
+                  }
+                ]
+              },
+              {
+                "node": "ecd1d19f-8c74-430b-914a-14fca0e388f0",
+                "bands": [
+                  {
+                    "band": "top",
+                    "matched_pixels": 16,
+                    "required_pixels": 16
+                  },
+                  {
+                    "band": "bottom",
+                    "matched_pixels": 16,
+                    "required_pixels": 16
+                  }
+                ]
+              }
+            ],
+            "passed": true
+          }
+        ],
+        "passed": true
+      },
+      "verified_inputs": [
+        {
+          "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-servo-servo/01_two_upstream_servo_pages.png",
+          "bytes": 63741,
+          "sha256": "0e237814dc87bc89369d021d366f4b3c015ed059d064c62043a670922a09d978"
+        },
+        {
+          "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-servo-servo/two-servo-pages.surface-frames.json",
+          "bytes": 499,
+          "sha256": "8cee7d95448bf3f4e6d5dd63aff5a2528d665a6e92003700120d96b6ca6e5572"
+        },
+        {
+          "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-servo-servo/02_a_native_input_and_navigation.png",
+          "bytes": 51283,
+          "sha256": "367f76478d2113c7efe91968b9c84aa22e3b5bcd1fa52e820bc55670114618fe"
+        },
+        {
+          "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-servo-servo/independent-input.surface-frames.json",
+          "bytes": 499,
+          "sha256": "8cee7d95448bf3f4e6d5dd63aff5a2528d665a6e92003700120d96b6ca6e5572"
+        },
+        {
+          "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-servo-servo/03_b_native_input_and_navigation.png",
+          "bytes": 48260,
+          "sha256": "7a80bfcecd388b0cbaacdbfbf1f8d9a70afd69bede6ddd7965e70a8770207be3"
+        },
+        {
+          "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-servo-servo/independent-input.surface-frames.json",
+          "bytes": 499,
+          "sha256": "8cee7d95448bf3f4e6d5dd63aff5a2528d665a6e92003700120d96b6ca6e5572"
+        },
+        {
+          "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-servo-servo/04_resize_and_orientation.png",
+          "bytes": 85282,
+          "sha256": "6ebf25ccbc5a0b6c5423e732f27eef8982d4d8e659bb624a1079b2ad5be16f54"
+        },
+        {
+          "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-servo-servo/servo-resized.surface-frames.json",
+          "bytes": 501,
+          "sha256": "6f6fa46616d86bc57abad44422fda100d117e5967bf52084391c30571e5740fe"
+        },
+        {
+          "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-servo-servo/06_a_servo_reconstructed.png",
+          "bytes": 85110,
+          "sha256": "3be22979525b3554fc0bed8bee91f0f4eee1d074964662c5cade6132cdb1e8ca"
+        },
+        {
+          "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-servo-servo/servo-reconstructed.surface-frames.json",
+          "bytes": 501,
+          "sha256": "6f6fa46616d86bc57abad44422fda100d117e5967bf52084391c30571e5740fe"
+        },
+        {
+          "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-servo-servo/08_reopened_in_same_servo_process.png",
+          "bytes": 85993,
+          "sha256": "1676e8415babfceb7b5561e54b8df403a8847a958a5c884e8541cb54043071d8"
+        },
+        {
+          "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-servo-servo/servo-reopened.surface-frames.json",
+          "bytes": 501,
+          "sha256": "6f6fa46616d86bc57abad44422fda100d117e5967bf52084391c30571e5740fe"
+        }
+      ],
+      "all_recorded_input_hashes_match": true,
+      "process_result": {
+        "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-servo-servo/process-result.json",
+        "bytes": 1493,
+        "sha256": "9f652398f66d4b2b58422f6800f314421fe32e993c7a77ae9734d88e5bcf4a9f"
+      },
+      "process_native_exit": 0,
+      "process_scenario_result": "RESULT ok",
+      "gpu_sync": "existing",
+      "retained_failure": false
+    },
+    {
+      "receipt": {
+        "path": "docs/receipts/browser_family_20261007/resource-descriptor-default-pixels.json",
+        "bytes": 1793,
+        "sha256": "f9b89eb4d752be8f09004d666355f949519f1c79c35ba9cb0a5be14800df4b56"
+      },
+      "recorded_report": {
+        "recorded_utc": "2026-10-07T10:33:51.437051+00:00",
+        "directory": "C:/Users/mark_/Code/repos/turnstone/docs/receipts/browser_supplier_integration_20261006/native-current-resource-descriptor",
+        "helper_sha256": "3546f8fc1063b28fc0dc45f9b1e4e47e3f12cd078662a7c91729152aab1b110a",
+        "method": {
+          "fixture": "viewport",
+          "expected_rgb": [
+            23,
+            109,
+            53
+          ],
+          "channel_tolerance": 8,
+          "minimum_green_fraction": 0.75,
+          "minimum_region_pixels": 4096,
+          "content_edge_inset_pixels": 4,
+          "required_live_producers_cached_frames_servo_active_views": 1
+        },
+        "limits": "Fixture-specific imported-body check. Native title assertions qualify page APIs separately. This does not establish text correctness, accessibility, arbitrary page correctness or native teardown.",
+        "inputs": [
+          {
+            "path": "02_inspector_closed_viewport.png",
+            "bytes": 58816,
+            "sha256": "4a0cecac1286dee9e7c95f57d20094d744ee806f0a2b3f4b20b0ed97a17d0b46"
+          },
+          {
+            "path": "viewport-inspector-closed.surface-frames.json",
+            "bytes": 314,
+            "sha256": "c02385558c612bcf0540a722566a93d6663694de16b1855a21862fd3cf3a15fe"
+          }
+        ],
+        "failures": [
+          "Green body coverage is below the required fraction"
+        ],
+        "counts": {
+          "live_producers": 1,
+          "cached_frames": 1,
+          "servo_active_views": 1
+        },
+        "surface": {
+          "node": "4181b189-f83b-4bfa-9991-517768156182",
+          "recorded_rectangle": {
+            "x": 515.0,
+            "y": 30.0,
+            "width": 509.0,
+            "height": 570.0
+          }
+        },
+        "capture_size": [
+          1024,
+          600
+        ],
+        "pixels": {
+          "sample_box": [
+            519,
+            34,
+            1020,
+            596
+          ],
+          "sampled_pixels": 281562,
+          "matched_green_pixels": 134103,
+          "matched_green_fraction": 0.47628231082319344
+        },
+        "passed": false
+      },
+      "verified_inputs": [
+        {
+          "path": "docs/receipts/browser_supplier_integration_20261006/native-current-resource-descriptor/02_inspector_closed_viewport.png",
+          "bytes": 58816,
+          "sha256": "4a0cecac1286dee9e7c95f57d20094d744ee806f0a2b3f4b20b0ed97a17d0b46"
+        },
+        {
+          "path": "docs/receipts/browser_supplier_integration_20261006/native-current-resource-descriptor/viewport-inspector-closed.surface-frames.json",
+          "bytes": 314,
+          "sha256": "c02385558c612bcf0540a722566a93d6663694de16b1855a21862fd3cf3a15fe"
+        }
+      ],
+      "all_recorded_input_hashes_match": true,
+      "process_result": {
+        "path": "docs/receipts/browser_supplier_integration_20261006/native-current-resource-descriptor/process-result.json",
+        "bytes": 1493,
+        "sha256": "ecb45fc3c05d03b6adae450672ddb8f69fac3d8e1f000bc0e9a06095efc957da"
+      },
+      "process_native_exit": 0,
+      "process_scenario_result": "RESULT ok",
+      "gpu_sync": "existing",
+      "retained_failure": true
+    }
+  ],
+  "finished_native_artifacts": [
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-scry-input/00_b_inspector_after_pin.png",
+      "bytes": 205924,
+      "sha256": "2afd758dcf718e3c72bf1038195ab4c8b478072104aa3edb7fbcd051c7e0b791"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-scry-input/00_b_inspector_before_pin.png",
+      "bytes": 197176,
+      "sha256": "4272546217a0509c0152bdefd2f812ae253ac626a297ddfb60fb7515217be5d1"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-scry-input/01_two_scry_pages.png",
+      "bytes": 149161,
+      "sha256": "b1fdd8ccf07391d81191cf671dd28995317a213b5aa2935a721fbae78de5d1e2"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-scry-input/02_text_pointer_and_keyboard.png",
+      "bytes": 171520,
+      "sha256": "170e86bf2b49e9ed04db42a6a1e7a02b7847b8cfd8102c4dceafd6f9d178867a"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-scry-input/02b_b_reloaded.png",
+      "bytes": 168261,
+      "sha256": "1b01285918933831eec62dfc9ee30052c334e3c8dee7cecfe311ac460efcbf39"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-scry-input/02c_a_wheel.png",
+      "bytes": 173854,
+      "sha256": "3cc220ed299aceb16b946fc803bbf660c4ff32326404b5f91b5b6ca6f8e73930"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-scry-input/02d_b_wheel.png",
+      "bytes": 177787,
+      "sha256": "3da880284a1efc9335595cb71fe0d80591f65cb5fccd5d79485dd6e66be35da1"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-scry-input/02e_both_scroll_reset.png",
+      "bytes": 171660,
+      "sha256": "eafc05d30075da1da2a723296a3f8dfd433cd452fdcda687b09813f03f02972b"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-scry-input/03_find_and_zoom_unavailable.png",
+      "bytes": 171660,
+      "sha256": "eafc05d30075da1da2a723296a3f8dfd433cd452fdcda687b09813f03f02972b"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-scry-input/04_resized_two_pages.png",
+      "bytes": 139756,
+      "sha256": "ee7976890b505132dc6d576f698e634769d5b2abe02cc2357abb6ec0acdd48af"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-scry-input/05_a_reader_b_scry.png",
+      "bytes": 194007,
+      "sha256": "0cc34a7190701e48f995adb7e7cb063926bc8839ba35f5629f1adcea24ec0aff"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-scry-input/06_a_scry_reconstructed.png",
+      "bytes": 139814,
+      "sha256": "d9a243ee2fbdfff3d3a6d850f58451cdef511826f10933a972da2016dd1b5244"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-scry-input/07_both_closed.png",
+      "bytes": 88126,
+      "sha256": "07965f032eded310179eed818e1aafecd0d81fde4b267ab777798e7cbf335dca"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-scry-input/08_ready_for_restart.png",
+      "bytes": 139826,
+      "sha256": "2a9c580dc162ac87d6347fbcb3bf57d9c97bd10b2f237cc6f4cc45ae88e62826"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-scry-input/closed.surface-frames.json",
+      "bytes": 124,
+      "sha256": "1bed58cd98da508010f079af827425c0aef7090b11188293058190b994965ac6"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-scry-input/closed.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-scry-input/diagnostics.json",
+      "bytes": 86098,
+      "sha256": "6244b5437a43da0ff5be64daa26d14cb1527276a8f57f1bab2d178215b42906e"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-scry-input/input.surface-frames.json",
+      "bytes": 815,
+      "sha256": "b75b70e7c75bb953bae83f46e38affb7843d6affafece51d5efd1e41bd9d3622"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-scry-input/input.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-scry-input/loaded-modules.json",
+      "bytes": 5445,
+      "sha256": "802111ff8f958e8ec2ef56575310195285d0a8f4a18a95efa9fac2b0b398e85a"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-scry-input/process-result.json",
+      "bytes": 1345,
+      "sha256": "042657a9b11dc9e1fc59b24d4f6875f2cf60abe2fcb937d9eaafc91447590db6"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-scry-input/reconstructed.surface-frames.json",
+      "bytes": 811,
+      "sha256": "09778e912a3bbd7a07b9f0f627a8095d98e6552130aa46a43ff0a28df1ba9e92"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-scry-input/reconstructed.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-scry-input/reopened.surface-frames.json",
+      "bytes": 805,
+      "sha256": "45946c03ca01533b20af7cb4b7d0b31945f02b1af7658bb762e9a184ea357a44"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-scry-input/reopened.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-scry-input/resized.surface-frames.json",
+      "bytes": 817,
+      "sha256": "25828817083c90e3de0dfbc793fa38eda894138629cb71640fbaa274d028e9a2"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-scry-input/resized.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-scry-input/run.log",
+      "bytes": 22863,
+      "sha256": "02daffa39b88d19061a99145918938e9cfaae321bdda978eaf4ad7bd3f58cda4"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-scry-input/run.stderr.log",
+      "bytes": 1804,
+      "sha256": "7f4d0f85b78c039120399a8f6f1158c77689345e0e0b2af94ee57702f075a731"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-scry-input/run.stdout.log",
+      "bytes": 21028,
+      "sha256": "06c0ccf2a7f13b52b79d12fba9aed453e72a92a9f23f0819fc6d891ebef40021"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-scry-input/scenario.done",
+      "bytes": 505,
+      "sha256": "bffaf263834edb54dc5402e0f094f8bfddc90751d4418b78d9c4c24e5f428d5b"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-scry-input/two-pages.surface-frames.json",
+      "bytes": 812,
+      "sha256": "ce2166425da648d33fbded0b3940cded5724866438d2d4f48e6480df1814929c"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-scry-input/two-pages.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-scry-input/wheel-reset.surface-frames.json",
+      "bytes": 815,
+      "sha256": "e965e50f9d8221330473cec1309da46984f5127dc1338a58ba0db69a52edbd3f"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-scry-input/wheel-reset.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-scry-restart/01_restored_two_pages.png",
+      "bytes": 163429,
+      "sha256": "aba7c9759882e357fde87f60343ee127e4da657a7996d6e5ee9ada82a60cc603"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-scry-restart/02_restored_a_profile.png",
+      "bytes": 213372,
+      "sha256": "4a3437d2b860a61e8ffca83b311ca1da9e222d7c63a3c03878a5fee345c8dbb9"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-scry-restart/03_restored_b_profile.png",
+      "bytes": 213373,
+      "sha256": "6de12ed3640af7420a538b5cde49c773d814ea8e1b65db57e5090a950bef2875"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-scry-restart/diagnostics.json",
+      "bytes": 13828,
+      "sha256": "1e8eb7b83854b214f7861359e973e03c674c8399df855517a57b07bbe56f86dc"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-scry-restart/loaded-modules.json",
+      "bytes": 5444,
+      "sha256": "9333d3d26e7908bb4ce7e5da8ad063a9ce5bdf886f6880df5bc5e31e2564d55d"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-scry-restart/process-result.json",
+      "bytes": 1363,
+      "sha256": "8cb0d0b96c7e7678d9953f894ffc04094edc0e033c0560722433cf5beb03e2a1"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-scry-restart/restored.surface-frames.json",
+      "bytes": 805,
+      "sha256": "50289237257e12d208a2e9708005548aff96a15c0b187ada5d41119fe1c7041a"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-scry-restart/restored.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-scry-restart/run.log",
+      "bytes": 5259,
+      "sha256": "0e4046157d6db6a301e7ac21cca64078776bb0ae6d81346ccae4ec13cfe9788c"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-scry-restart/run.stderr.log",
+      "bytes": 850,
+      "sha256": "7db8932801b540e284fdfc77938b1400e1102c5d56dc9a4c1e48f8aa00dd43bb"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-scry-restart/run.stdout.log",
+      "bytes": 4378,
+      "sha256": "1284e713440845952e3ea136b33958fa03b0fc401b764727b7fdf7d8e2565e38"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-scry-restart/scenario.done",
+      "bytes": 191,
+      "sha256": "b4cf844b44a528b47fde8f3daaca18687bb833028abfcb862031bd5f96ae49e6"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-weld-input/00_b_inspector_after_pin.png",
+      "bytes": 227000,
+      "sha256": "b04974a080e7e8c07a045c7ec2ca0aa59a353b1d89d70d0fc98a48eaf3247f8c"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-weld-input/00_b_inspector_before_pin.png",
+      "bytes": 212039,
+      "sha256": "ccabc6ee85f8c38ae74b64ca739e539afbfe143c75d5f281d29a4ff25e96e71e"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-weld-input/01_two_weld_pages.png",
+      "bytes": 121325,
+      "sha256": "e8fcd642647bd552aedfc97f437427c46a7b86a14de4033913a20fbd17c9282d"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-weld-input/01b_independent_weld_input.png",
+      "bytes": 121830,
+      "sha256": "aa1080842e058a45f0b13427f84f8ddf386a81475567bcc74a246b9b0d29faa6"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-weld-input/02_find.png",
+      "bytes": 146597,
+      "sha256": "6f2e8e7cdbd4313580ac5a4e286e29c1b7be0fcd4347fcadb34324dbc5e3fb6e"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-weld-input/03_zoom.png",
+      "bytes": 139178,
+      "sha256": "18305d4581a5c41840e79f00a59ec3b5fd778d5b4b05bcd3a0731620a6d151db"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-weld-input/04_teardown.png",
+      "bytes": 36369,
+      "sha256": "f706e66e07236a5cdbf836f93af1b4303b1e3ca6299f58f06f2adb62af3d0cd8"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-weld-input/diagnostics.json",
+      "bytes": 35077,
+      "sha256": "ccbe58ec062cae1f5a85af868f1f5f62d5aa7303f075c4286bb9da9e2ff153b3"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-weld-input/loaded-modules.json",
+      "bytes": 24834,
+      "sha256": "c0cbc6f3367c4034be28c0330d143a7c5fa60153c5377a1114e63ce697f1524b"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-weld-input/process-result.json",
+      "bytes": 1352,
+      "sha256": "d1e01a22bced5e82a65c01e0ae1cca9ca26b4a0763e65d0c62873c5f5cf1cc9b"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-weld-input/run.log",
+      "bytes": 14660,
+      "sha256": "d6336ef81d4d110580bce725d9859f3a88d98e7a1769a9123571b735cc0eb12a"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-weld-input/run.stderr.log",
+      "bytes": 1340,
+      "sha256": "ff00c449bd2e7d1fbdc782c798841532dc08c698d855c5f36834c604b061b520"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-weld-input/run.stdout.log",
+      "bytes": 13289,
+      "sha256": "2cff2b6e012f545ce02a975e318f3896977a58582d1cb429f1be4f74efebc42b"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-weld-input/scenario.done",
+      "bytes": 276,
+      "sha256": "d4d9a20d373ebca435c8073aa521f1688b60e3164762eddb64c95520fa24cd69"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-weld-input/two-pages.surface-frames.json",
+      "bytes": 497,
+      "sha256": "d61fb3c0529e84877b90394799c0a3ad84169eb03a50c03cb87bb32481e2dde5"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-input-weld-input/two-pages.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-intl-both-intl/01_native_intl_bridge.png",
+      "bytes": 77686,
+      "sha256": "456cf83bc9354a7b7121a67ead1d7b34f0b9d19fe0916891c1b0a502ce5129bf"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-intl-both-intl/diagnostics.json",
+      "bytes": 11115,
+      "sha256": "41cd3de51a8e0f4311889567196543258b4c7892f22bd5b518817fc9dff98fb4"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-intl-both-intl/intl-servo-closed.surface-frames.json",
+      "bytes": 124,
+      "sha256": "1bed58cd98da508010f079af827425c0aef7090b11188293058190b994965ac6"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-intl-both-intl/intl-servo-closed.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-intl-both-intl/intl-servo-live.surface-frames.json",
+      "bytes": 312,
+      "sha256": "1dd923bff33e9952757c0a7b6adde5de9b0ab8363a61fb06199d792978ee1b70"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-intl-both-intl/intl-servo-live.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-intl-both-intl/loaded-modules.json",
+      "bytes": 5835,
+      "sha256": "2bf4cffc0827a45aa60ebc364aac85e014ec0ad4fb6eebba017f5053856eb63c"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-intl-both-intl/process-result.json",
+      "bytes": 1509,
+      "sha256": "a4e74dc9cc5dbdcfdf512ca4e4cf99c4607d4fa12b2ee9bbffdea88044444729"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-intl-both-intl/run.log",
+      "bytes": 7654,
+      "sha256": "2948dbce5d5427c305a38a3e14cc43ea914a08cbf7dd82b0802a1627851cd539"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-intl-both-intl/run.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-intl-both-intl/run.stdout.log",
+      "bytes": 7623,
+      "sha256": "fc8596e5db79f2ea39529fdc0c385c66201c0f05afc1d96f9ad2915676d097a6"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-intl-both-intl/scenario.done",
+      "bytes": 137,
+      "sha256": "8c2a85de05726edd732c2fa6561374b860cc2bf019e4c927acc996e4d3f744e4"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-mixed-mixed/01_four_simultaneous_native_pages.png",
+      "bytes": 154357,
+      "sha256": "980931c0f0ccf403bc1e46a28977f6f4304f0ac0364a8e48ca8caddb9799bab7"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-mixed-mixed/02_four_pages_after_resize.png",
+      "bytes": 144880,
+      "sha256": "5384b9bb37bf68f75ffe809a01dc0576094bf31e38e4caae64cbdf77c86f6914"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-mixed-mixed/03_all_native_producers_closed.png",
+      "bytes": 85036,
+      "sha256": "d5c0fc04156ca0f2c7daed14127629a6b44eb0fb80cc0bbd7d31db38738f5dee"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-mixed-mixed/diagnostics.json",
+      "bytes": 43639,
+      "sha256": "0a441a740bd801db1d774b4084cfea950870cc0752b666bc53cf7812859e6251"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-mixed-mixed/final-mixed-closed.surface-frames.json",
+      "bytes": 124,
+      "sha256": "1bed58cd98da508010f079af827425c0aef7090b11188293058190b994965ac6"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-mixed-mixed/final-mixed-closed.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-mixed-mixed/four-native-pages.surface-frames.json",
+      "bytes": 1028,
+      "sha256": "2432f071b4e18ae780afe0997261a2b9abf9a9c19d8236ad220e2fe728e4e225"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-mixed-mixed/four-native-pages.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-mixed-mixed/loaded-modules.json",
+      "bytes": 21235,
+      "sha256": "3fd27af507741590cf3041d37ee2e63440c98b9134f4a17e4482b7db5798de7c"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-mixed-mixed/mixed-resized.surface-frames.json",
+      "bytes": 1026,
+      "sha256": "e81dd84ade12df46d17f2347c6666ee753ff2c0496fad46d88b5a00ff0b3b64a"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-mixed-mixed/mixed-resized.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-mixed-mixed/process-result.json",
+      "bytes": 1492,
+      "sha256": "c9cdf13d04857b9cceed57997b1af9f36f5ccec287053abf7c132b58a7a0f13f"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-mixed-mixed/run.log",
+      "bytes": 23098,
+      "sha256": "1b367b412b88b9b05b9bb1ec21be96ac82a4432bd2d000a80203d673c0b55e4f"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-mixed-mixed/run.stderr.log",
+      "bytes": 1633,
+      "sha256": "e71a62dd025361326fa41a7fa1b4ba07b6fcd56cbec0445a06bd61d95f89fa9b"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-mixed-mixed/run.stdout.log",
+      "bytes": 21434,
+      "sha256": "aa971977ecb1e301e9d50788f375e5221ec0930bea44a2267e76693c533e488d"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-mixed-mixed/scenario.done",
+      "bytes": 280,
+      "sha256": "82bbae48db4d2567f65be0173209142254aebd8f6c056d4ad094e5b7a8735a61"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-permission-weld-permission/01_permission_decision.png",
+      "bytes": 50136,
+      "sha256": "f3f6ac5c07814be5093946513aa677459bd958b048f52c84e6dd7fc8d2aaace3"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-permission-weld-permission/02_permission_answered.png",
+      "bytes": 21717,
+      "sha256": "6d881c7dcf49e379b9a0dc3d73cfb8b17b8825f91bd0297e9501283ad627f443"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-permission-weld-permission/03_permission_teardown.png",
+      "bytes": 18445,
+      "sha256": "4a8f81c8d3a7657f08e4cbd0916414dd317f6b51f05cf62b14703cd949e617b2"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-permission-weld-permission/diagnostics.json",
+      "bytes": 12437,
+      "sha256": "2ce6324d5a8cd59767c580f8714e3c4a2bfa3bc5358eab7917dcfa5fe08b1fb6"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-permission-weld-permission/loaded-modules.json",
+      "bytes": 19466,
+      "sha256": "5eed7514dfebb33cb57ef0021c332a2731da71ca750a286517cd4056e5350450"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-permission-weld-permission/process-result.json",
+      "bytes": 1376,
+      "sha256": "a489e2e30772da1fa02c9697ecc149bb8aab7bc835057d713f4cd20ff0cd017a"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-permission-weld-permission/run.log",
+      "bytes": 7329,
+      "sha256": "b7cdd37e60aec9a8c4eb9795c7479de1251867f5f2860d9bfb85f2018e6af4eb"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-permission-weld-permission/run.stderr.log",
+      "bytes": 952,
+      "sha256": "b721bd958b9748dff87466bf7ab20344cc3ca4895f9de6ec163a6221389b8f34"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-permission-weld-permission/run.stdout.log",
+      "bytes": 6346,
+      "sha256": "4eeda93f161ba919de156f2bf18c4dd12b4d48cfbf1fc212210d64a76e3acaaf"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-permission-weld-permission/scenario.done",
+      "bytes": 160,
+      "sha256": "a84ad7237b7463d4ded2e908faa2f1bdc41264ed8f48c2006cbbeb2ea7f65ac4"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-servo-servo/01_two_upstream_servo_pages.png",
+      "bytes": 63741,
+      "sha256": "0e237814dc87bc89369d021d366f4b3c015ed059d064c62043a670922a09d978"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-servo-servo/02_a_native_input_and_navigation.png",
+      "bytes": 51283,
+      "sha256": "367f76478d2113c7efe91968b9c84aa22e3b5bcd1fa52e820bc55670114618fe"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-servo-servo/03_b_native_input_and_navigation.png",
+      "bytes": 48260,
+      "sha256": "7a80bfcecd388b0cbaacdbfbf1f8d9a70afd69bede6ddd7965e70a8770207be3"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-servo-servo/04_resize_and_orientation.png",
+      "bytes": 85282,
+      "sha256": "6ebf25ccbc5a0b6c5423e732f27eef8982d4d8e659bb624a1079b2ad5be16f54"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-servo-servo/05_a_reader_b_servo.png",
+      "bytes": 144290,
+      "sha256": "4d69ee876f172d2b24a474221fc69b80aef2326fc001791d0edf8e8cd8dc2315"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-servo-servo/06_a_servo_reconstructed.png",
+      "bytes": 85110,
+      "sha256": "3be22979525b3554fc0bed8bee91f0f4eee1d074964662c5cade6132cdb1e8ca"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-servo-servo/07_both_servo_views_closed.png",
+      "bytes": 64890,
+      "sha256": "c977c66e3cb5c35ce508c37d5387e89ea31faa175d1f18a96865640175d59efe"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-servo-servo/08_reopened_in_same_servo_process.png",
+      "bytes": 85993,
+      "sha256": "1676e8415babfceb7b5561e54b8df403a8847a958a5c884e8541cb54043071d8"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-servo-servo/09_final_servo_teardown.png",
+      "bytes": 64890,
+      "sha256": "c977c66e3cb5c35ce508c37d5387e89ea31faa175d1f18a96865640175d59efe"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-servo-servo/diagnostics.json",
+      "bytes": 43005,
+      "sha256": "1f7956d7792453462d0a479d498b0e929b56d532c2f404bb9256e63ea4d2bfe0"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-servo-servo/final-servo-closed.surface-frames.json",
+      "bytes": 124,
+      "sha256": "1bed58cd98da508010f079af827425c0aef7090b11188293058190b994965ac6"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-servo-servo/final-servo-closed.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-servo-servo/independent-input.surface-frames.json",
+      "bytes": 499,
+      "sha256": "8cee7d95448bf3f4e6d5dd63aff5a2528d665a6e92003700120d96b6ca6e5572"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-servo-servo/independent-input.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-servo-servo/loaded-modules.json",
+      "bytes": 5836,
+      "sha256": "50aa9451ab0a0ff0308e9b4f59217c72aa8ace836b6d1ee20a2275a663284911"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-servo-servo/process-result.json",
+      "bytes": 1493,
+      "sha256": "9f652398f66d4b2b58422f6800f314421fe32e993c7a77ae9734d88e5bcf4a9f"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-servo-servo/run.log",
+      "bytes": 24714,
+      "sha256": "5e88fbbefbee058414b3ed158464a2fbe4610b4644a08c8afdb5d0f586f666ca"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-servo-servo/run.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-servo-servo/run.stdout.log",
+      "bytes": 24683,
+      "sha256": "583f20542cf22af5daca6dd0713a8f8d1a68f6bc333bb0f152107d5c630f7ad4"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-servo-servo/scenario.done",
+      "bytes": 490,
+      "sha256": "284a542ed7b4aaf2ee052c26db19477299ebaa067f28c99f4bf846af0c9ab2f0"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-servo-servo/servo-closed.surface-frames.json",
+      "bytes": 124,
+      "sha256": "1bed58cd98da508010f079af827425c0aef7090b11188293058190b994965ac6"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-servo-servo/servo-closed.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-servo-servo/servo-reconstructed.surface-frames.json",
+      "bytes": 501,
+      "sha256": "6f6fa46616d86bc57abad44422fda100d117e5967bf52084391c30571e5740fe"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-servo-servo/servo-reconstructed.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-servo-servo/servo-reopened.surface-frames.json",
+      "bytes": 501,
+      "sha256": "6f6fa46616d86bc57abad44422fda100d117e5967bf52084391c30571e5740fe"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-servo-servo/servo-reopened.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-servo-servo/servo-resized.surface-frames.json",
+      "bytes": 501,
+      "sha256": "6f6fa46616d86bc57abad44422fda100d117e5967bf52084391c30571e5740fe"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-servo-servo/servo-resized.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-servo-servo/two-servo-pages.surface-frames.json",
+      "bytes": 499,
+      "sha256": "8cee7d95448bf3f4e6d5dd63aff5a2528d665a6e92003700120d96b6ca6e5572"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-final-family-servo-servo/two-servo-pages.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    }
+  ],
+  "limits": [
+    "Native process/scenario success does not establish universal pixel correctness.",
+    "The positive Intl body pixel report used explicit GPU sync both; it does not prove default-mode resize repair.",
+    "The six positive Servo orientation/blank-page capture checks used existing sync and apply only to those recorded fixture rectangles.",
+    "The same-executable resource-descriptor-default-pixels.json FAIL is retained: expected green fraction at least 0.75, measured 0.47628231082319344 after pane expansion. Default viewport pixel correctness remains open.",
+    "Module observations are samples from the runner-owned root and verified live descendants; child-exit/access/lineage races are retained, and an unobserved module is not proven absent.",
+    "Loaded libcef in a run does not by itself establish that its scenario exercised CEF.",
+    "These receipts do not qualify assistive-technology behavior, text correctness, arbitrary pages, physical input or physical DPI.",
+    "No global release verdict or clean-build pipeline completion is inferred; the root-owned Windows S0 pipeline is separately recorded."
+  ]
+}

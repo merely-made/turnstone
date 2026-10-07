@@ -1,0 +1,107 @@
+{
+  "recorded_utc": "2026-10-07T11:12:53.044532+00:00",
+  "raw_sha256": "eef1af475ef2a9c780100cdaffa04cf911b3b3d45bb4f4f986fa5da9733960a2",
+  "runs": [
+    {
+      "id": 37608297523,
+      "name": "CI",
+      "head_sha": "36d097ef5008a720b68f8273329945a4d51b7187",
+      "status": "in_progress",
+      "conclusion": null,
+      "html_url": "https://github.com/merely-made/wgpu-graft/actions/runs/37608297523",
+      "created_at": "2026-10-07T10:34:27Z",
+      "updated_at": "2026-10-07T10:34:34Z"
+    },
+    {
+      "id": 37607019715,
+      "name": "CI",
+      "head_sha": "bb48281bd4a88a726a009e0518706881b74b7604",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/merely-made/wgpu-graft/actions/runs/37607019715",
+      "created_at": "2026-10-07T10:22:58Z",
+      "updated_at": "2026-10-07T11:05:44Z"
+    },
+    {
+      "id": 37605091851,
+      "name": "CI",
+      "head_sha": "b5a5f487abad9f37fa5f840f477bd7fd3ec60aee",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/merely-made/wgpu-graft/actions/runs/37605091851",
+      "created_at": "2026-10-07T10:05:41Z",
+      "updated_at": "2026-10-07T11:07:48Z"
+    },
+    {
+      "id": 37594741520,
+      "name": "CI",
+      "head_sha": "f991ca181507dc08b7e904adcc607d73794d533b",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/merely-made/wgpu-graft/actions/runs/37594741520",
+      "created_at": "2026-10-07T08:35:09Z",
+      "updated_at": "2026-10-07T09:31:35Z"
+    },
+    {
+      "id": 37580499767,
+      "name": "CI",
+      "head_sha": "e1fc5e6ab1cbaf27d2035197467546dea8c9a2cb",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/merely-made/wgpu-graft/actions/runs/37580499767",
+      "created_at": "2026-10-07T06:15:10Z",
+      "updated_at": "2026-10-07T07:24:26Z"
+    },
+    {
+      "id": 37578874532,
+      "name": "CI",
+      "head_sha": "9ccccf94122504b4318381887ae3dd0434a91042",
+      "status": "completed",
+      "conclusion": "failure",
+      "html_url": "https://github.com/merely-made/wgpu-graft/actions/runs/37578874532",
+      "created_at": "2026-10-07T05:56:59Z",
+      "updated_at": "2026-10-07T07:02:50Z"
+    },
+    {
+      "id": 37570164940,
+      "name": "CI",
+      "head_sha": "1fd089638258148aa56e3405900d7727367e5ed1",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/merely-made/wgpu-graft/actions/runs/37570164940",
+      "created_at": "2026-10-07T04:10:20Z",
+      "updated_at": "2026-10-07T05:10:43Z"
+    },
+    {
+      "id": 37569896757,
+      "name": "CI",
+      "head_sha": "79261674fa1eaf8f31383eca15e147028838e40b",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/merely-made/wgpu-graft/actions/runs/37569896757",
+      "created_at": "2026-10-07T04:06:54Z",
+      "updated_at": "2026-10-07T05:00:46Z"
+    },
+    {
+      "id": 37555940184,
+      "name": "CI",
+      "head_sha": "95bab7e5127e71d2fd6f90cfe8266e6326d7e760",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/merely-made/wgpu-graft/actions/runs/37555940184",
+      "created_at": "2026-10-07T01:12:34Z",
+      "updated_at": "2026-10-07T02:22:08Z"
+    },
+    {
+      "id": 37554859492,
+      "name": "CI",
+      "head_sha": "01f3c9f3d68df3247e6b7ec7f65ffbca57e9b2d4",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/merely-made/wgpu-graft/actions/runs/37554859492",
+      "created_at": "2026-10-07T01:00:02Z",
+      "updated_at": "2026-10-07T02:05:54Z"
+    }
+  ],
+  "scope": "Read-only CI observation; no additional source adoption or native/AT qualification is inferred."
+}
