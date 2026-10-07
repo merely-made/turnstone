@@ -19,7 +19,7 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::Duration;
 
 pub(crate) use graphshell::frame_budget::{FrameBudget, Period};
-use mere::canvas::{Canvas, DEFAULT_BUDGET_SHARE, Speed};
+use mere::canvas::{Canvas, DEFAULT_BUDGET_SHARE, ElapsedStepConfig, Speed};
 
 use crate::web_timing::now_ms;
 
@@ -104,6 +104,10 @@ pub(crate) struct SpeedOptions {
     /// runs fewer ticks a second than 1x: the control for the fast receipt's
     /// "Relative to the page's 1x" (`physics_plant_max_frame_ms`).
     pub(crate) plant_max_frame: Option<Duration>,
+    /// A planted cap: above real time, a frame owes no more ticks than 1x
+    /// would, the control for the 50x bar ("Cap control", ruled 2026-10-06;
+    /// `physics_plant_owed=1x`).
+    pub(crate) plant_owed: bool,
     /// The page asked for a speed or a budget: receipts log the pace.
     pub(crate) explicit: bool,
 }
@@ -176,6 +180,11 @@ pub(crate) fn options() -> Result<SpeedOptions, String> {
         },
         None => None,
     };
+    let plant_owed = match params.get("physics_plant_owed").as_deref() {
+        Some("1x") => true,
+        None => false,
+        Some(_) => return Err("physics_plant_owed wants 1x".into()),
+    };
     Ok(SpeedOptions {
         speed,
         share,
@@ -184,6 +193,7 @@ pub(crate) fn options() -> Result<SpeedOptions, String> {
         period_source,
         plant,
         plant_max_frame,
+        plant_owed,
         explicit: [
             "physics_speed",
             "physics_budget_share",
@@ -205,6 +215,24 @@ pub(crate) fn plant_max_frame(canvas: &Canvas, wait: Option<Duration>) {
     {
         let until = now_ms() + wait.as_secs_f64() * 1000.0;
         while now_ms() < until {}
+    }
+}
+
+/// The frame's step limits, or with `plant` set and a capped speed above
+/// real time, its catch-up cut to `1/speed` of what 1x would take from this
+/// `wall` interval: the speed then owes what 1x owes, the planted cap.
+pub(crate) fn planted_owed(
+    config: ElapsedStepConfig,
+    speed: Speed,
+    wall: Duration,
+    plant: bool,
+) -> ElapsedStepConfig {
+    if !plant || speed <= Speed::REAL_TIME || speed == Speed::UNCAPPED {
+        return config;
+    }
+    ElapsedStepConfig {
+        max_elapsed: wall.min(config.max_elapsed).div_f32(speed.factor()),
+        ..config
     }
 }
 

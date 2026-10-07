@@ -222,6 +222,14 @@ impl TextureProducer for CanvasProducer {
         let budget = shared.frame_budget.borrow_mut().frame(frame_ms);
         canvas.set_physics_step_budget(Some(budget));
         crate::web_speed::plant_max_frame(&canvas, shared.speed.plant_max_frame);
+        let physics_config = crate::web_speed::planted_owed(
+            shared.physics_config,
+            canvas.physics_speed(),
+            std::time::Duration::from_secs_f64(
+                shared.frame_budget.borrow().last_interval_ms() / 1000.0,
+            ),
+            shared.speed.plant_owed,
+        );
         let profile = shared.timing.borrow().active();
         if shared.remote_shown.get() {
             // One leaf, the producer picks the scene: the board, mirroring
@@ -276,7 +284,7 @@ impl TextureProducer for CanvasProducer {
                     size.0,
                     size.1,
                     timestamp,
-                    shared.physics_config,
+                    physics_config,
                     now_ms,
                 ),
                 None => canvas.frame_profiled(size.0, size.1, now_ms),
@@ -296,7 +304,7 @@ impl TextureProducer for CanvasProducer {
         } else {
             match cx.frame.timestamp {
                 Some(timestamp) => {
-                    canvas.frame_at(size.0, size.1, timestamp, shared.physics_config)
+                    canvas.frame_at(size.0, size.1, timestamp, physics_config)
                 },
                 None => canvas.frame(size.0, size.1),
             }
