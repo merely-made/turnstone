@@ -98,8 +98,10 @@ review fails. Its 98 distinct browser tests pass. The small sample does not
 prove visual causality or a production fix; defaults remain unchanged. The
 temporary config is removed and the prior 175 candidate inputs restored exactly.
 The diagnostic sources remain archived. Default reopen correctness, foreign
-accessibility and final U9 adoption remain open; this docs/receipt checkpoint
-does not land the candidate Cargo/Rust work.
+accessibility and final U9 adoption remain open. U14 now authorizes this
+candidate's Cargo/Rust publication first, so S0 can start from that head.
+The candidate retains its qualified older compatibility family; it does not
+claim the newer coordinated tested set or application release acceptance.
 
 The dated [dependency currency snapshot](../docs/receipts/browser_supplier_integration_20261006/dependency-currency/README.md)
 records Servo 0.7.0 released October 5 and CEF 154 bindings released October 3.

@@ -10,9 +10,7 @@
 //! per-tile CEF producer, and product limits. Mere's version-pinned adapter
 //! owns input, capability and ordered completion translation.
 
-use std::cell::RefCell;
 use std::path::{Path, PathBuf};
-use std::rc::Rc;
 use std::sync::Arc;
 
 use inker::{
@@ -101,13 +99,11 @@ impl WeldProducerFactory for TurnstoneWeldFactory {
         )
         .map_err(weld_spawn_error)?;
         producer.set_visible(true).map_err(weld_spawn_error)?;
-        let producer = Rc::new(RefCell::new(producer));
         Ok(Box::new(TurnstoneWeldSurface {
             inner: weld_engine::WeldingSurface::new(
-                Box::new(native_bridge::Producer(producer.clone())),
+                Box::new(producer),
                 &surface,
             ),
-            producer,
         }))
     }
 }
@@ -246,159 +242,6 @@ mod sandbox_preference_tests {
 
 struct TurnstoneWeldSurface {
     inner: weld_engine::WeldingSurface,
-    producer: Rc<RefCell<WindowsCefProducer>>,
-}
-
-// The pinned direct adapter sends PointerEvent only to CEF's touch path.
-// Keep the host's richer mouse pointer route until that shared seam accepts it;
-// legacy Inker MouseEvent would drop modifiers and held-button state.
-fn weld_mouse_pointer(event: PointerEvent) -> Result<welding::MouseEvent, SurfaceError> {
-    Ok(welding::MouseEvent {
-        x: event.position.x.round() as i32,
-        y: event.position.y.round() as i32,
-        button: map_mouse_button(event.button)?,
-        action: match event.phase {
-            inker::PointerPhase::Down => welding::MouseAction::Pressed,
-            inker::PointerPhase::Move => welding::MouseAction::Moved,
-            inker::PointerPhase::Up | inker::PointerPhase::Cancel => welding::MouseAction::Released,
-        },
-        modifiers: map_event_modifiers(event.modifiers, event.buttons),
-    })
-}
-
-fn weld_character_input(event: &KeyboardEvent) -> Option<welding::KeyEvent> {
-    if !event.pressed {
-        return None;
-    }
-    let character = event.text.as_ref()?.chars().next()?;
-    Some(welding::KeyEvent {
-        kind: welding::KeyEventKind::Char,
-        // CEF's CHAR event takes the character code, not the virtual key
-        // used for raw down/up; virtual A (65) would turn typed "a" into "A".
-        windows_key_code: character as i32,
-        native_key_code: event.scan_code as i32,
-        character: Some(character),
-        modifiers: map_event_modifiers(event.modifiers, inker::PointerButtons::NONE),
-    })
-}
-
-fn map_mouse_button(
-    button: Option<inker::MouseButton>,
-) -> Result<welding::MouseButton, SurfaceError> {
-    match button.unwrap_or(inker::MouseButton::Left) {
-        inker::MouseButton::Left => Ok(welding::MouseButton::Left),
-        inker::MouseButton::Middle => Ok(welding::MouseButton::Middle),
-        inker::MouseButton::Right => Ok(welding::MouseButton::Right),
-        inker::MouseButton::Back | inker::MouseButton::Forward => Err(SurfaceError::Unsupported(
-            "CEF mouse back/forward buttons are not projected by Turnstone yet".into(),
-        )),
-    }
-}
-
-fn map_event_modifiers(
-    modifiers: inker::KeyboardModifiers,
-    buttons: inker::PointerButtons,
-) -> welding::EventModifiers {
-    welding::EventModifiers {
-        shift: modifiers.shift,
-        ctrl: modifiers.ctrl,
-        alt: modifiers.alt,
-        meta: modifiers.meta,
-        left_mouse_button: buttons.contains(inker::PointerButtons::PRIMARY),
-        middle_mouse_button: buttons.contains(inker::PointerButtons::AUXILIARY),
-        right_mouse_button: buttons.contains(inker::PointerButtons::SECONDARY),
-    }
-}
-
-// One native producer, shared only within the owning host thread. The
-// direct adapter consumes the same frames and ordered event queue as before.
-mod native_bridge {
-    use super::{Rc, RefCell, WindowsCefProducer};
-    use welding::*;
-    use winit::dpi::PhysicalSize;
-
-    pub(super) struct Producer(pub(super) Rc<RefCell<WindowsCefProducer>>);
-
-    macro_rules! forward {
-        () => {};
-        (fn $name:ident(&mut self $(, $arg:ident: $ty:ty)*) -> $ret:ty; $($rest:tt)*) => {
-            fn $name(&mut self $(, $arg: $ty)*) -> $ret {
-                CefSurfaceProducer::$name(&mut *self.0.borrow_mut(), $($arg),*)
-            }
-            forward! { $($rest)* }
-        };
-        (fn $name:ident(&self $(, $arg:ident: $ty:ty)*) -> $ret:ty; $($rest:tt)*) => {
-            fn $name(&self $(, $arg: $ty)*) -> $ret {
-                CefSurfaceProducer::$name(&*self.0.borrow(), $($arg),*)
-            }
-            forward! { $($rest)* }
-        };
-    }
-
-    impl CefSurfaceProducer for Producer {
-        forward! {
-        fn surface_mode(&self) -> CefSurfaceMode;
-        fn capabilities(&self) -> CefSurfaceCapabilities;
-        fn acquire_native_frame(&mut self) -> Option<welding::NativeFrame>;
-        fn acquire_frame(&mut self, ctx: &HostWgpuContext) -> Result<Option<ImportedTexture>, WeldError>;
-        fn acquire_popup(&mut self, _ctx: &HostWgpuContext) -> Result<Option<PopupSurface>, WeldError>;
-        fn popup_rect(&self) -> Option<PopupRect>;
-        fn set_visible(&mut self, _visible: bool) -> Result<(), WeldError>;
-        fn poll_cursor_shape(&mut self) -> Option<CursorShape>;
-        fn poll_ime_composition(&mut self) -> Option<ImeComposition>;
-        fn ime_set_composition(&mut self, _text: &str, _selection: (u32, u32)) -> Result<(), WeldError>;
-        fn ime_commit_text(&mut self, _text: &str) -> Result<(), WeldError>;
-        fn ime_finish_composing(&mut self, _keep_selection: bool) -> Result<(), WeldError>;
-        fn ime_cancel_composition(&mut self) -> Result<(), WeldError>;
-        fn resize(&mut self, size: PhysicalSize<u32>) -> Result<(), WeldError>;
-        fn set_scale_factor(&mut self, _scale: f32) -> Result<(), WeldError>;
-        fn scale_factor(&self) -> f32;
-        fn navigate_to_url(&mut self, url: &str) -> Result<(), WeldError>;
-        fn navigate_to_string(&mut self, content: &str, mime_type: &str) -> Result<(), WeldError>;
-        fn reload(&mut self) -> Result<(), WeldError>;
-        fn send_devtools_message(&mut self, _json: &str) -> Result<(), WeldError>;
-        fn poll_devtools_message(&mut self) -> Option<String>;
-        fn devtools_dropped(&self) -> u64;
-        fn grant_permission(&mut self, _id: PermissionId) -> Result<(), WeldError>;
-        fn deny_permission(&mut self, _id: PermissionId) -> Result<(), WeldError>;
-        fn answer_auth(&mut self, _id: AuthId, _username: &str, _password: &str) -> Result<(), WeldError>;
-        fn cancel_auth(&mut self, _id: AuthId) -> Result<(), WeldError>;
-        fn cancel_download(&mut self, _id: DownloadId) -> Result<(), WeldError>;
-        fn pause_download(&mut self, _id: DownloadId) -> Result<(), WeldError>;
-        fn resume_download(&mut self, _id: DownloadId) -> Result<(), WeldError>;
-        fn request_repaint(&mut self) -> Result<(), WeldError>;
-        fn stop(&mut self) -> Result<(), WeldError>;
-        fn can_go_back(&self) -> bool;
-        fn can_go_forward(&self) -> bool;
-        fn zoom(&mut self, _command: ZoomCommand) -> Result<(), WeldError>;
-        fn set_zoom_level(&mut self, _level: f64) -> Result<(), WeldError>;
-        fn zoom_level(&self) -> f64;
-        fn print_to_pdf(&mut self, _path: &std::path::Path) -> Result<(), WeldError>;
-        fn print(&mut self) -> Result<(), WeldError>;
-        fn request_snapshot_png(&mut self) -> Result<SnapshotRequestId, WeldError>;
-        fn poll_snapshot_png(&mut self) -> Option<SnapshotPngCompletion>;
-        fn find(&mut self, _text: &str, _forward: bool, _match_case: bool, _find_next: bool) -> Result<(), WeldError>;
-        fn stop_finding(&mut self, _clear_selection: bool) -> Result<(), WeldError>;
-        fn go_back(&mut self) -> Result<(), WeldError>;
-        fn go_forward(&mut self) -> Result<(), WeldError>;
-        fn send_mouse_input(&mut self, event: MouseEvent) -> Result<(), WeldError>;
-        fn send_touch_input(&mut self, _event: TouchInput) -> Result<(), WeldError>;
-        fn send_drag_input(&mut self, _event: DragInput) -> Result<(), WeldError>;
-        fn finish_drag_source(&mut self, _x: i32, _y: i32, _operation: DragOperations) -> Result<(), WeldError>;
-        fn send_keyboard_input(&mut self, event: KeyEvent) -> Result<(), WeldError>;
-        fn move_focus(&mut self, direction: FocusDirection) -> Result<(), WeldError>;
-        fn post_web_message(&mut self, message: &str) -> Result<(), WeldError>;
-        fn poll_web_event(&mut self) -> Option<CefSurfaceEvent>;
-        fn execute_script(&mut self, script: &str, source_url: &str) -> Result<(), WeldError>;
-        fn request_script_result(&mut self, _id: WebRequestId, _script: &str) -> Result<(), WeldError>;
-        fn set_cookie(&mut self, _url: &str, _cookie: &Cookie) -> Result<(), WeldError>;
-        fn request_cookies(&mut self, _id: WebRequestId, _url: Option<&str>) -> Result<(), WeldError>;
-        fn delete_cookies(&mut self, _url: Option<&str>, _name: Option<&str>) -> Result<(), WeldError>;
-        fn open_devtools(&self) -> Result<(), WeldError>;
-        fn browser_id(&self) -> i32;
-        fn close(&mut self) -> Result<(), WeldError>;
-        }
-    }
 }
 
 const WELD_DEVTOOLS_UNAVAILABLE: &str = "CEF 151 native DevTools windows are unsafe for accelerated off-screen browsers; Weld refuses them, and Turnstone has not exposed the separate CDP channel";
@@ -462,13 +305,6 @@ impl WeldSurface for TurnstoneWeldSurface {
     }
 
     fn notify_pointer(&mut self, event: PointerEvent) -> Result<(), SurfaceError> {
-        if event.pointer_type == inker::PointerType::Mouse {
-            return self
-                .producer
-                .borrow_mut()
-                .send_mouse_input(weld_mouse_pointer(event)?)
-                .map_err(weld_engine::welding_0_15::map_error);
-        }
         self.inner.notify_pointer(event)
     }
 
@@ -484,19 +320,8 @@ impl WeldSurface for TurnstoneWeldSurface {
         self.inner.finish_drag_source(position, operation)
     }
 
-    fn notify_keyboard(&mut self, mut event: KeyboardEvent) -> Result<(), SurfaceError> {
-        // CEF requires a separate CHAR event; the pinned shared adapter maps
-        // only raw key down/up. Preserve the existing host text delivery.
-        let character = weld_character_input(&event);
-        event.text = None;
-        self.inner.notify_keyboard(event)?;
-        if let Some(character) = character {
-            self.producer
-                .borrow_mut()
-                .send_keyboard_input(character)
-                .map_err(weld_engine::welding_0_15::map_error)?;
-        }
-        Ok(())
+    fn notify_keyboard(&mut self, event: KeyboardEvent) -> Result<(), SurfaceError> {
+        self.inner.notify_keyboard(event)
     }
 
     fn focus(&mut self, reason: FocusReason) -> Result<(), SurfaceError> {
@@ -615,81 +440,6 @@ fn weld_spawn_error(error: welding::WeldError) -> SurfaceError {
 #[cfg(test)]
 mod contract_tests {
     use super::*;
-
-    #[test]
-    fn text_input_emits_a_native_character_only_on_key_down() {
-        let mut event = KeyboardEvent {
-            key_code: 65,
-            scan_code: 30,
-            pressed: true,
-            text: Some("a".into()),
-            modifiers: inker::KeyboardModifiers {
-                shift: true,
-                ..Default::default()
-            },
-        };
-        let character = weld_character_input(&event).unwrap();
-        assert_eq!(character.kind, welding::KeyEventKind::Char);
-        assert_eq!(character.character, Some('a'));
-        assert_eq!(character.windows_key_code, 97);
-        assert!(character.modifiers.shift);
-        event.pressed = false;
-        assert!(weld_character_input(&event).is_none());
-        event.pressed = true;
-        event.text = None;
-        assert!(weld_character_input(&event).is_none());
-    }
-
-    #[test]
-    fn mouse_pointer_bridge_keeps_native_buttons_modifiers_and_drag_state() {
-        let mut event = PointerEvent {
-            pointer_id: 1,
-            pointer_type: inker::PointerType::Mouse,
-            is_primary: true,
-            phase: inker::PointerPhase::Down,
-            position: PhysicalPosition { x: 12.4, y: 23.6 },
-            button: Some(inker::MouseButton::Right),
-            buttons: inker::PointerButtons::SECONDARY,
-            width: 1.0,
-            height: 1.0,
-            pressure: None,
-            tangential_pressure: None,
-            tilt_x: None,
-            tilt_y: None,
-            twist: None,
-            altitude_angle: None,
-            azimuth_angle: None,
-            modifiers: inker::KeyboardModifiers {
-                shift: true,
-                ctrl: true,
-                alt: true,
-                meta: true,
-            },
-        };
-        let pressed = weld_mouse_pointer(event.clone()).unwrap();
-        assert_eq!((pressed.x, pressed.y), (12, 24));
-        assert_eq!(pressed.button, welding::MouseButton::Right);
-        assert_eq!(pressed.action, welding::MouseAction::Pressed);
-        assert!(pressed.modifiers.shift && pressed.modifiers.ctrl);
-        assert!(pressed.modifiers.alt && pressed.modifiers.meta);
-        assert!(pressed.modifiers.right_mouse_button);
-        assert!(!pressed.modifiers.left_mouse_button);
-        event.phase = inker::PointerPhase::Move;
-        assert_eq!(
-            weld_mouse_pointer(event.clone()).unwrap().action,
-            welding::MouseAction::Moved
-        );
-        event.phase = inker::PointerPhase::Up;
-        event.buttons = inker::PointerButtons::NONE;
-        let released = weld_mouse_pointer(event.clone()).unwrap();
-        assert_eq!(released.action, welding::MouseAction::Released);
-        assert!(!released.modifiers.right_mouse_button);
-        event.button = Some(inker::MouseButton::Back);
-        assert!(matches!(
-            weld_mouse_pointer(event),
-            Err(SurfaceError::Unsupported(_))
-        ));
-    }
 
     #[test]
     fn weld_devtools_settings_are_refused_before_producer_dispatch() {

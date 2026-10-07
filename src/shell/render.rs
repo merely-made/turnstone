@@ -772,7 +772,7 @@ impl Shell {
             }
         }
 
-        #[cfg(all(any(feature = "weld", feature = "scry"), windows))]
+        #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
         let (surface_device, surface_queue) = {
             let host = self.host.as_ref().expect("host checked at render entry");
             (host.device().clone(), host.queue().clone())
@@ -783,7 +783,7 @@ impl Shell {
         // borrows `content_sessions` mutably) never overlaps the immutable
         // `host` borrow the second pass holds.
         let mut scenes: Vec<PlannedLayer> = Vec::with_capacity(surfaces.len());
-        #[cfg(all(any(feature = "weld", feature = "scry"), windows))]
+        #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
         let mut surface_failures = Vec::new();
         for surface in &surfaces {
             let rect = surface.rect;
@@ -817,7 +817,7 @@ impl Shell {
                     }) {
                         (scene, wgpu::Color::WHITE)
                     } else {
-                        #[cfg(all(any(feature = "weld", feature = "scry"), windows))]
+                        #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
                         if let Some(producer) = self.surface_producers.get_mut(&node) {
                             match producer
                                 .resize(rw, rh)
@@ -917,7 +917,7 @@ impl Shell {
             }));
         }
 
-        #[cfg(all(any(feature = "weld", feature = "scry"), windows))]
+        #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
         if !surface_failures.is_empty() {
             for (node, error) in surface_failures {
                 // Capture starts lazily, after spawn. A setup/import refusal

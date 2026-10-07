@@ -2,6 +2,13 @@
 
 Packs the scenarios and tests install as participants.
 
+- [browser_servo](browser_servo/README.md) contains the real upstream Servo
+  two-view input/navigation and orientation fixture for
+  [browser_servo_windows.scn](../browser_servo_windows.scn). Its host receipt
+  additionally checks the configurable shared process profile, actual host-device
+  textures and zero active views/cached frames. Source grammar alone does not
+  qualify this engine.
+
 - `trail_keeper.lua` — a rung-1 control script (the piccolo lane).
 - `app_core_guest.wasm` — an `app-core` component (the envelope lane), built
   from mere's `crates/script/app-host/guest`. Rebuild it with:

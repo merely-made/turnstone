@@ -288,8 +288,10 @@ pass. All six scenario/exit guards pass; the separate pixel check rejects the
 white frame. Its 98 distinct browser tests pass. This supports the diagnostic,
 not a proved production fix. Defaults remain unchanged; temporary consumer
 changes are restored from verified archives. Default reopen correctness,
-foreign accessibility and final U9 pins remain open. The published checkpoint
-documents the local candidate; Cargo/Rust adoption is held.
+foreign accessibility and final U9 pins remain open. U14 authorizes committing
+and pushing the candidate's repin and Servo source before S0 starts from that
+head. This publishes the tested older family with its limitations; the newer
+coordinated family and application release acceptance remain separate gates.
 Graft's typed adapter check alone does not qualify Turnstone's actual views.
 
 Done when an upstream Servo page renders in the current Turnstone device,

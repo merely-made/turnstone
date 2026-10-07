@@ -1,10 +1,23 @@
 # Browser supplier integration, 2026-10-06
 
-This documentation/receipt checkpoint preserves local candidate work; it does
-not land its Cargo/Rust changes or the final U9 repin. Shared Weld input and
+U14 authorizes publication of the tested browser candidate, including its
+Cargo/Rust changes, before S0 starts from that head. This source checkpoint
+does not complete the final U9 repin. Shared Weld input and
 five scoped three-engine Windows controls are qualified. Servo's default
 reopen still has a reproduced intermittent white-frame failure. Foreign
 accessibility on all three platforms remains a release gate.
+
+The U14 source checkpoint selects Mere `edf175f9`, Genet `679d8314`,
+Knot `211ff57a`, nested Redshank `24f196f4` and Graft `dec11bbd`.
+All are immutable published Git revisions from the older tested family.
+The optional `servo` feature adds upstream Servo `1d44e5dd` on Windows/D3D12,
+with `TURNSTONE_SERVO_PROFILE` and `TURNSTONE_SERVO_PROFILE_DIR` selecting
+one process profile shared by its views. It also publishes the repaired host
+dispatcher, surface ownership/teardown, shared Weld input adoption and repeatable
+Servo/mixed fixtures. No local source override is active. The fresh locked
+build verifies this exact source; earlier native captures retain their recorded
+executable identities. This is a prototype source checkpoint for S0, not default
+B3 acceptance or a claim that the newer Mere family was tested.
 
 The [six-run synchronization comparison](sync-diagnostic/README.md) records
 Existing pixels passing once and failing once, producer-only and

@@ -1,5 +1,16 @@
 # Current-stack remote checkpoint, 2026-10-07
 
+**Receiving update:** Turnstone `f728016` publishes U11 through U17 and the
+shared session seam/E1a receiving record. It was merged with the browser
+documentation checkpoint at `62933ff`. U13 assigns Redshank's repin to this
+browser session; U14 explicitly chooses committing and pushing its current
+Turnstone repin and Servo source first, then S0 starts from that head. The
+candidate's verified 175 inputs and compile-only executable remain unchanged
+through the document merge. U9's final current tested set and all foreign
+accessibility gates remain open. The JSON and table below retain their earlier
+snapshot, rather than being rewritten as current observations. The paused
+graph checkpoint is not adopted.
+
 The [new JSON checkpoint](remote-refresh-20261007.json) records read-only
 fetches, exact refs, immutable manifest/document reads and ancestry checks.
 It supplements earlier evidence; it does not replace a frozen qualification,

@@ -111,7 +111,9 @@ waits does not establish visual causality; production defaults remain unchanged.
 The temporary consumer config is removed and all 175 previous candidate inputs
 are restored exactly, with the diagnostic host and supplier sources archived.
 Default reopen correctness, foreign accessibility and the final U9 set remain
-open. This documentation checkpoint does not land the candidate Cargo/Rust work.
+open. U14 authorizes committing and pushing the tested older candidate's
+Cargo/Rust work first, so S0 starts from it. The final coordinated current
+family and application release acceptance remain open.
 
 ## The model, restated for Turnstone
 

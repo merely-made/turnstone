@@ -24,9 +24,118 @@ use crate::session;
 
 use super::Shell;
 
+#[derive(Debug, PartialEq, Eq)]
+enum ContentSpawnDispatch {
+    PendingBrowser,
+    Browser,
+    Session,
+}
+
+fn dispatch_content_spawn(
+    engine_id: &str,
+    host_ready: bool,
+    pending: &mut Vec<(uuid::Uuid, String)>,
+    node: uuid::Uuid,
+    url: &str,
+) -> ContentSpawnDispatch {
+    if !matches!(
+        engine_id,
+        inker::routing::ENGINE_WELD_CHROMIUM
+            | inker::routing::ENGINE_SCRYING_WEB
+            | inker::routing::ENGINE_GRAFT_SERVO
+    ) {
+        return ContentSpawnDispatch::Session;
+    }
+    if !host_ready {
+        pending.push((node, url.to_string()));
+        return ContentSpawnDispatch::PendingBrowser;
+    }
+    ContentSpawnDispatch::Browser
+}
+
+#[cfg(test)]
+mod content_spawn_dispatch_tests {
+    use super::{ContentSpawnDispatch, dispatch_content_spawn};
+
+    #[test]
+    fn graft_spawn_waits_for_host_in_browser_surface_queue() {
+        let node = uuid::Uuid::new_v4();
+        let url = "file:///browser-servo-dispatch.html";
+        let decision = super::super::standard_route_policy().route(&inker::EngineRouteRequest {
+            workspace_id: inker::WorkspaceRouteId::new("turnstone-test"),
+            view: None,
+            node: None,
+            address: url.to_string(),
+            content_type: Some("text/html".to_string()),
+            pinned_engine: Some(inker::routing::ENGINE_GRAFT_SERVO.to_string()),
+        });
+        assert_eq!(decision.engine_id, inker::routing::ENGINE_GRAFT_SERVO);
+        assert!(!super::super::standard_content_engines().contains(&decision.engine_id));
+
+        let mut pending = vec![(uuid::Uuid::new_v4(), "https://earlier.test/".to_string())];
+        let earlier = pending[0].clone();
+        assert_eq!(
+            dispatch_content_spawn(&decision.engine_id, false, &mut pending, node, url),
+            ContentSpawnDispatch::PendingBrowser,
+            "a pinned browser must not fall into the retained-session registry"
+        );
+        assert_eq!(pending, vec![earlier, (node, url.to_string())]);
+
+        // Retry the held node/address once host initialization has completed.
+        let (queued_node, queued_url) = pending.pop().unwrap();
+        assert_eq!(
+            dispatch_content_spawn(
+                &decision.engine_id,
+                true,
+                &mut pending,
+                queued_node,
+                &queued_url,
+            ),
+            ContentSpawnDispatch::Browser
+        );
+        assert_eq!(
+            pending.len(),
+            1,
+            "a ready host does not enqueue another retry"
+        );
+    }
+
+    #[test]
+    fn browser_dispatch_preserves_other_surfaces_and_retained_sessions() {
+        let node = uuid::Uuid::new_v4();
+        let mut pending = Vec::new();
+        for engine in [
+            inker::routing::ENGINE_WELD_CHROMIUM,
+            inker::routing::ENGINE_SCRYING_WEB,
+        ] {
+            assert_eq!(
+                dispatch_content_spawn(
+                    engine,
+                    true,
+                    &mut pending,
+                    node,
+                    "https://browser.test/",
+                ),
+                ContentSpawnDispatch::Browser
+            );
+        }
+        assert_eq!(
+            dispatch_content_spawn(
+                inker::routing::ENGINE_GENET_LIVERY,
+                false,
+                &mut pending,
+                node,
+                "https://reader.test/",
+            ),
+            ContentSpawnDispatch::Session
+        );
+        assert!(pending.is_empty());
+    }
+}
+
 // Chromium profile storage expects ordinary Win32 paths. Rust canonicalization
 // returns extended paths, which prevented cookie persistence in our native receipt.
-fn browser_profile_path(path: std::path::PathBuf) -> Result<std::path::PathBuf, String> {
+pub(super) fn browser_profile_path(path: std::path::PathBuf) -> Result<std::path::PathBuf, String> {
     #[cfg(windows)]
     {
         use std::path::{Component, Prefix};
@@ -548,12 +657,19 @@ impl Shell {
     ) -> Update {
         let result = (|| -> Result<crate::content::ContentFacts, String> {
             let scry = decision.engine_id == inker::routing::ENGINE_SCRYING_WEB;
+            let servo_profile = if decision.engine_id == inker::routing::ENGINE_GRAFT_SERVO {
+                Some(self.ensure_servo_engine()?)
+            } else {
+                None
+            };
             if scry {
                 self.ensure_scry_engine()?;
-            } else {
+            } else if servo_profile.is_none() {
                 self.ensure_weld_engine()?;
             }
-            let profile = if scry {
+            let profile = if let Some(profile) = servo_profile {
+                profile
+            } else if scry {
                 self.app
                     .data_root
                     .join("scry")
@@ -588,7 +704,7 @@ impl Shell {
             self.surface_producers.remove(&node);
             self.surface_find_requests.remove(&node);
             self.page_captures.remove_surface(node);
-            #[cfg(all(any(feature = "weld", feature = "scry"), windows))]
+            #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
             self.surface_frames.remove(&node);
             #[cfg(all(feature = "scry", windows))]
             self.scry_frame_importers.remove(&node);
@@ -1080,18 +1196,21 @@ impl Shell {
                         pinned_engine: pinned,
                     };
                     let decision = self.route_policy.route(&request);
-                    if matches!(
-                        decision.engine_id.as_str(),
-                        inker::routing::ENGINE_WELD_CHROMIUM | inker::routing::ENGINE_SCRYING_WEB
+                    match dispatch_content_spawn(
+                        &decision.engine_id,
+                        self.host.is_some(),
+                        &mut self.pending_surface_spawns,
+                        node,
+                        &url,
                     ) {
-                        if self.host.is_none() {
-                            self.pending_surface_spawns.push((node, url));
+                        ContentSpawnDispatch::PendingBrowser => continue,
+                        ContentSpawnDispatch::Browser => {
+                            let update = self.spawn_browser_surface(node, &url, &decision);
+                            let effects = self.app.apply_update(update);
+                            self.run_effects(effects);
                             continue;
-                        }
-                        let update = self.spawn_browser_surface(node, &url, &decision);
-                        let effects = self.app.apply_update(update);
-                        self.run_effects(effects);
-                        continue;
+                        },
+                        ContentSpawnDispatch::Session => {},
                     }
                     // Network document sessions consume the actor's body. If
                     // the toggle arrived before that body, leave the app in
@@ -1507,7 +1626,7 @@ impl Shell {
                     }
                     if self.surface_producers.remove(&node).is_some() {
                         self.page_captures.remove_surface(node);
-                        #[cfg(all(any(feature = "weld", feature = "scry"), windows))]
+                        #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
                         self.surface_frames.remove(&node);
                         #[cfg(all(feature = "scry", windows))]
                         self.scry_frame_importers.remove(&node);

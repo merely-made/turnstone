@@ -65,7 +65,7 @@ impl Shell {
                 enable_vello: true,
                 // Windows browser frames use D3D12 resources. Keep every
                 // presentation device on that API, including later lenses.
-                #[cfg(all(any(feature = "weld", feature = "scry"), windows))]
+                #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
                 backends: Some(wgpu::Backends::DX12),
                 ..Default::default()
             };

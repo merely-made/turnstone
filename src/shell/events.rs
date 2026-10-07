@@ -31,6 +31,10 @@ use super::Shell;
 
 impl ApplicationHandler for Shell {
     fn new_events(&mut self, _event_loop: &ActiveEventLoop, _cause: StartCause) {
+        #[cfg(all(feature = "servo", windows))]
+        if let Err(error) = super::servo::pump() {
+            tracing::warn!(%error, "Servo process event pump failed");
+        }
         // Native COM calls can consume/coalesce Win32 paint requests during
         // input delivery. A deadline wake requests paint outside WM_PAINT so
         // captured browser mailboxes and self-drive cannot lose their clock.
@@ -45,6 +49,10 @@ impl ApplicationHandler for Shell {
         let effects = self.app.tick(crate::denizen::now_ms());
         self.run_effects(effects);
         self.pump_redshank();
+        #[cfg(all(feature = "servo", windows))]
+        if let Err(error) = super::servo::pump() {
+            tracing::warn!(%error, "Servo process event pump failed");
+        }
         // Live captured surfaces require a clock independent of paint delivery.
         // Otherwise a minute supplies the idle W4 schedule clock.
         let active = !self.surface_producers.is_empty() || self.shared_scenario.is_some();
@@ -55,6 +63,13 @@ impl ApplicationHandler for Shell {
     }
 
     fn exiting(&mut self, _event_loop: &ActiveEventLoop) {
+        #[cfg(all(feature = "servo", windows))]
+        {
+            self.clear_surface_content();
+            if let Err(error) = super::servo::shutdown() {
+                tracing::warn!(%error, "Servo process shutdown failed");
+            }
+        }
         // The trail memory buffers traversals between lifecycle edges, and a
         // normal quit is one: flush-and-release with a bounded ack so the
         // last session's tail survives exit. (The bin needs no exit hook —
@@ -110,7 +125,7 @@ impl ApplicationHandler for Shell {
             enable_vello: true,
             // Windows browser producers export D3D12 shared textures. The
             // host must use the same API before constructing either producer.
-            #[cfg(all(any(feature = "weld", feature = "scry"), windows))]
+            #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
             backends: Some(wgpu::Backends::DX12),
             ..Default::default()
         };
