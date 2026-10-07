@@ -21,7 +21,9 @@ use graphshell::projection_editor::{EditorAction, ProjectionEditor, ProjectionPa
 use netrender::Scene;
 use sceno::InstanceId;
 
-use super::{BrowserHost, document, draft_from_definition, element, root, set_text, window};
+use super::{
+    BrowserHost, document, draft_from_definition, element, now_ms, root, set_text, window,
+};
 
 const STORAGE_KEY: &str = "graphshellExecutableProjectionV1";
 const PRACTICE_DATA: &str = include_str!("../web/fixtures/woodshed-stage.json");
@@ -85,7 +87,7 @@ impl BrowserHost {
                 }
                 self.projection_editor = ProjectionEditor::new(draft_from_definition(&definition));
                 self.projection_editor
-                    .reduce(EditorAction::SelectPanel(ProjectionPanel::Preview));
+                    .reduce(EditorAction::SelectPanel(ProjectionPanel::Preview), now_ms());
                 self.live_projection = Some(LiveProjection {
                     dataset,
                     compiled: Some(compiled),
@@ -187,7 +189,7 @@ impl BrowserHost {
         let mut arrangement = self.projection_editor.draft().arrangement.clone();
         arrangement.kind = id.into();
         self.projection_editor
-            .reduce(EditorAction::SetArrangement(arrangement));
+            .reduce(EditorAction::SetArrangement(arrangement), now_ms());
         self.recompile_projection();
     }
 
@@ -237,6 +239,7 @@ impl BrowserHost {
         })();
         match result {
             Ok(()) => {
+                self.projection_editor.mark_saved();
                 self.projection_editor_save_count += 1;
                 self.projection_editor_status =
                     "Saved executable projection and occurrence selection".into();
@@ -275,7 +278,7 @@ impl BrowserHost {
                 self.projection_editor =
                     ProjectionEditor::new(draft_from_definition(&saved.definition));
                 self.projection_editor
-                    .reduce(EditorAction::SelectPanel(ProjectionPanel::Preview));
+                    .reduce(EditorAction::SelectPanel(ProjectionPanel::Preview), now_ms());
                 self.live_projection.as_mut().unwrap().selected = saved.selected_occurrence;
                 self.recompile_projection();
                 self.projection_editor_status =

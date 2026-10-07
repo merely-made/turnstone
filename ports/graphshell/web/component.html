@@ -113,6 +113,7 @@
           <h2>Projection editor</h2>
           <p id="gs-projection-editor-status" role="status">Draft ready · unsaved</p>
           <p id="gs-projection-editor-validation" role="status">Valid draft</p>
+          <p id="gs-projection-editor-dirty" role="status">No unsaved changes</p>
           <p id="gs-projection-editor-lane">ContentSource::Open · graphshell.projection-editor.panel · source</p>
           <div id="gs-projection-editor-panels" role="tablist" aria-label="Projection editor panels">
             <button id="gs-projection-panel-source" type="button" role="tab" data-projection-panel="source" aria-selected="true">Source</button>
@@ -178,6 +179,8 @@
             <textarea id="gs-projection-provenance-note" data-projection-field="provenance.note"></textarea>
           </section>
           <div class="button-row">
+            <button type="button" data-command="undo-projection" disabled>Undo</button>
+            <button type="button" data-command="redo-projection" disabled>Redo</button>
             <button type="button" data-command="save-projection">Save projection</button>
             <button type="button" data-command="reload-projection">Reload saved</button>
             <button type="button" data-command="close-projection-editor">Close</button>

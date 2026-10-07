@@ -1,0 +1,39 @@
+# Undo, redo and the unsaved flag in the projection editor (Scenograph editor
+# plan, E2). Two edits to one field a frame apart coalesce into one step; an
+# edit after the 400 ms window is its own step. `settle 90` outlasts the window
+# at any refresh rate up to 144 Hz.
+assert title GRAPHSHELL H3 READY
+act open-projection-editor
+settle 2
+assert dom #gs-projection-editor-dirty No unsaved changes
+assert dom #gs-projection-editor-preview Graphshell reference projection ·
+dom click [data-projection-panel="appearance"]
+settle 2
+type #gs-projection-appearance-title First
+settle 2
+type #gs-projection-appearance-title First draft
+settle 90
+type #gs-projection-appearance-title Second
+settle 2
+assert dom #gs-projection-editor-dirty Unsaved changes
+assert dom #gs-projection-editor-preview Second ·
+dom click [data-projection-panel="provenance"]
+settle 2
+dom click [data-command="undo-projection"]
+settle 2
+assert dom #gs-projection-editor-status Undone · Appearance
+assert dom #gs-projection-editor-preview First draft ·
+dom click [data-command="undo-projection"]
+settle 2
+assert dom #gs-projection-editor-preview Graphshell reference projection ·
+assert dom #gs-projection-editor-dirty No unsaved changes
+dom click [data-command="undo-projection"]
+settle 2
+assert dom #gs-projection-editor-status Nothing to undo
+dom click [data-command="redo-projection"]
+settle 2
+assert dom #gs-projection-editor-preview First draft ·
+assert dom #gs-projection-editor-dirty Unsaved changes
+capture projection_undo
+wait
+log projection editor undo proof complete

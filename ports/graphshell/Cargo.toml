@@ -145,6 +145,8 @@ scenotime.workspace = true
 serde = { version = "1", features = ["derive"], optional = true }
 serde_json.workspace = true
 workbench.workspace = true
+# The projection editor's undo (Scenograph editor plan, E2 and SE10).
+edit-history.workspace = true
 sha2 = { workspace = true, optional = true }
 uuid = { workspace = true, features = ["v5"], optional = true }
 url = { version = "2", optional = true }

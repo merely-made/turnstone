@@ -18,6 +18,9 @@ pub use scenograph::relationship::{
     RelationshipSnapshot, relationship_recipe,
 };
 use std::collections::BTreeMap;
+use std::mem::{Discriminant, discriminant};
+
+use edit_history::History;
 
 pub use scenograph::{
     Appearance, Arrangement, AuthoredDefinitionError, AuthoredProjectionDefinition, Channel,
@@ -211,12 +214,21 @@ pub enum ReduceResult {
     PanelChanged,
 }
 
+/// How long edits to one field keep coalescing into one undo step, between
+/// records, by the host's clock.
+pub const COALESCE_WINDOW_MS: u64 = 400;
+
+/// One undo step: the draft and the panel it was edited in. The workbench
+/// layout is workspace, not document, and is never recorded.
+type EditorStep = (ProjectionDraft, ProjectionPanel);
+
 /// Stateful editor boundary, independent of a widget toolkit or host.
 #[derive(Clone, Debug, PartialEq)]
 pub struct ProjectionEditor {
     draft: ProjectionDraft,
     panel: ProjectionPanel,
     workspace: Workbench,
+    history: History<EditorStep, Discriminant<EditorAction>>,
 }
 
 impl ProjectionEditor {
@@ -225,6 +237,7 @@ impl ProjectionEditor {
             draft,
             panel: ProjectionPanel::default(),
             workspace: projection_editor_workbench(),
+            history: History::new().with_window(COALESCE_WINDOW_MS),
         }
     }
 
@@ -262,11 +275,75 @@ impl ProjectionEditor {
         outcome
     }
 
-    pub fn reduce(&mut self, action: EditorAction) -> ReduceResult {
+    /// Apply one action. A draft edit that changes the draft records an undo
+    /// step first, coalescing with the run in progress when it sets the same
+    /// field within [`COALESCE_WINDOW_MS`] of `now_ms`, the host's clock.
+    pub fn reduce(&mut self, action: EditorAction, now_ms: u64) -> ReduceResult {
+        if let EditorAction::SelectPanel(panel) = action {
+            self.show_panel(panel);
+            return ReduceResult::PanelChanged;
+        }
+        let before = (self.draft.clone(), self.panel);
+        let key = discriminant(&action);
+        let result = self.apply_draft(action);
+        if self.draft != before.0 {
+            self.history.record(before, Some(key), now_ms);
+        }
+        result
+    }
+
+    /// Restore the draft before the last undo step and return to the panel it
+    /// was edited in. `false` when there is nothing to undo.
+    pub fn undo(&mut self) -> bool {
+        let current = (self.draft.clone(), self.panel);
+        self.history
+            .undo(current)
+            .map(|step| self.restore(step))
+            .is_some()
+    }
+
+    /// Re-apply the last undone step. `false` when there is nothing to redo.
+    pub fn redo(&mut self) -> bool {
+        let current = (self.draft.clone(), self.panel);
+        self.history
+            .redo(current)
+            .map(|step| self.restore(step))
+            .is_some()
+    }
+
+    pub fn can_undo(&self) -> bool {
+        self.history.can_undo()
+    }
+
+    pub fn can_redo(&self) -> bool {
+        self.history.can_redo()
+    }
+
+    /// Whether the draft differs from its last save (or from where it opened).
+    pub fn is_dirty(&self) -> bool {
+        self.history.is_dirty()
+    }
+
+    /// End the coalescing run, so the next edit is its own undo step (the end
+    /// of a drag, focus leaving a field).
+    pub fn break_run(&mut self) {
+        self.history.break_run();
+    }
+
+    fn restore(&mut self, (draft, panel): EditorStep) {
+        self.draft = draft;
+        self.show_panel(panel);
+    }
+
+    fn show_panel(&mut self, panel: ProjectionPanel) {
+        let _ = self.workspace.apply(&TileEvent::Activated(panel.tile_id()));
+        self.panel = panel;
+    }
+
+    fn apply_draft(&mut self, action: EditorAction) -> ReduceResult {
         match action {
             EditorAction::SelectPanel(panel) => {
-                let _ = self.workspace.apply(&TileEvent::Activated(panel.tile_id()));
-                self.panel = panel;
+                self.show_panel(panel);
                 ReduceResult::PanelChanged
             },
             EditorAction::SetId(value) => {
@@ -313,12 +390,20 @@ impl ProjectionEditor {
     }
 
     /// Persist only a validated, immutable definition through host policy.
+    /// A successful save marks the draft clean.
     pub fn save<S: ProjectionDefinitionSink>(
-        &self,
+        &mut self,
         sink: &mut S,
     ) -> Result<(), SaveError<S::Error>> {
         let definition = self.draft.to_definition().map_err(SaveError::Invalid)?;
-        sink.save(&definition).map_err(SaveError::Sink)
+        sink.save(&definition).map_err(SaveError::Sink)?;
+        self.history.mark_saved();
+        Ok(())
+    }
+
+    /// Mark the draft clean after the host persisted it by another path.
+    pub fn mark_saved(&mut self) {
+        self.history.mark_saved();
     }
 }
 
@@ -418,15 +503,95 @@ mod tests {
         ])
     }
 
+    fn label(editor: &ProjectionEditor) -> &str {
+        &editor.draft().label
+    }
+
+    #[test]
+    fn undo_restores_the_draft_and_returns_to_its_panel() {
+        let mut editor = ProjectionEditor::new(valid_draft());
+        editor.reduce(EditorAction::SelectPanel(ProjectionPanel::Provenance), 0);
+        editor.reduce(EditorAction::SetLabel("Edited".into()), 0);
+        editor.reduce(EditorAction::SelectPanel(ProjectionPanel::Preview), 10);
+        assert!(editor.undo());
+        assert_eq!(label(&editor), "Notes by topic");
+        assert_eq!(editor.panel(), ProjectionPanel::Provenance);
+        assert!(!editor.can_undo(), "panel changes record nothing");
+        assert!(editor.redo());
+        assert_eq!(label(&editor), "Edited");
+        assert!(editor.can_undo() && !editor.can_redo());
+    }
+
+    #[test]
+    fn edits_to_one_field_coalesce_within_the_window() {
+        let mut editor = ProjectionEditor::new(valid_draft());
+        for (at, text) in [(1_000, "N"), (1_200, "Ne"), (1_500, "New")] {
+            editor.reduce(EditorAction::SetLabel(text.into()), at);
+        }
+        editor.reduce(
+            EditorAction::SetLabel("New!".into()),
+            1_500 + COALESCE_WINDOW_MS + 1,
+        );
+        assert!(editor.undo());
+        assert_eq!(label(&editor), "New", "the lapsed edit is its own step");
+        assert!(editor.undo());
+        assert_eq!(
+            label(&editor),
+            "Notes by topic",
+            "the typed run is one step"
+        );
+        assert!(!editor.can_undo());
+    }
+
+    #[test]
+    fn another_field_or_a_broken_run_starts_a_step() {
+        let mut editor = ProjectionEditor::new(valid_draft());
+        editor.reduce(EditorAction::SetLabel("A".into()), 0);
+        editor.reduce(EditorAction::SetId("a".into()), 1);
+        editor.break_run();
+        editor.reduce(EditorAction::SetId("ab".into()), 2);
+        assert!(editor.undo());
+        assert_eq!(editor.draft().id, "a");
+        assert!(editor.undo());
+        assert_eq!(editor.draft().id, "notes-by-topic");
+        assert!(editor.undo());
+        assert_eq!(label(&editor), "Notes by topic");
+    }
+
+    #[test]
+    fn an_unchanged_value_records_nothing() {
+        let mut editor = ProjectionEditor::new(valid_draft());
+        editor.reduce(EditorAction::SetLabel("Notes by topic".into()), 0);
+        assert!(!editor.can_undo());
+        assert!(!editor.is_dirty());
+    }
+
+    #[test]
+    fn a_save_marks_clean_and_undoing_past_it_reads_dirty() {
+        let mut editor = ProjectionEditor::new(valid_draft());
+        let mut sink = FixtureSink { saved: Vec::new() };
+        assert!(!editor.is_dirty());
+        editor.reduce(EditorAction::SetLabel("Saved".into()), 0);
+        assert!(editor.is_dirty());
+        editor.save(&mut sink).expect("valid draft saves");
+        assert!(!editor.is_dirty());
+        editor.reduce(EditorAction::SetLabel("After".into()), 10_000);
+        assert!(editor.is_dirty());
+        editor.undo();
+        assert!(!editor.is_dirty(), "back at the save");
+        editor.undo();
+        assert!(editor.is_dirty(), "before the save");
+    }
+
     #[test]
     fn reducer_edits_typed_draft_and_panel() {
         let mut editor = ProjectionEditor::new(valid_draft());
         assert_eq!(
-            editor.reduce(EditorAction::SetLabel("Edited".into())),
+            editor.reduce(EditorAction::SetLabel("Edited".into()), 0),
             ReduceResult::Changed
         );
         assert_eq!(
-            editor.reduce(EditorAction::SelectPanel(ProjectionPanel::Preview)),
+            editor.reduce(EditorAction::SelectPanel(ProjectionPanel::Preview), 0),
             ReduceResult::PanelChanged
         );
         assert_eq!(editor.draft().label, "Edited");
@@ -526,7 +691,7 @@ mod tests {
 
     #[test]
     fn save_uses_fixture_sink_and_serialization_is_repeatable() {
-        let editor = ProjectionEditor::new(valid_draft());
+        let mut editor = ProjectionEditor::new(valid_draft());
         let mut sink = FixtureSink { saved: Vec::new() };
         editor.save(&mut sink).expect("valid draft saves");
         assert_eq!(sink.saved[0].id, valid_draft().id);
@@ -540,7 +705,7 @@ mod tests {
     fn invalid_draft_never_reaches_sink() {
         let mut draft = valid_draft();
         draft.id.clear();
-        let editor = ProjectionEditor::new(draft);
+        let mut editor = ProjectionEditor::new(draft);
         let mut sink = FixtureSink { saved: Vec::new() };
         let error = editor
             .save(&mut sink)

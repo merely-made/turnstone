@@ -489,6 +489,8 @@ impl BrowserHost {
             "close-projection-editor" => {
                 self.projection_editor_open = false;
             },
+            "undo-projection" => self.step_projection(true),
+            "redo-projection" => self.step_projection(false),
             "save-projection" => self.save_projection(),
             "reload-projection" => self.reload_projection(),
             "session-local" => {
@@ -562,7 +564,7 @@ impl BrowserHost {
             return;
         };
         self.projection_editor
-            .reduce(EditorAction::SelectPanel(panel));
+            .reduce(EditorAction::SelectPanel(panel), now_ms());
         self.projection_editor_open = true;
         self.projection_editor_status = format!("Editing {}", panel.label());
         self.chrome_dirty = true;
@@ -617,7 +619,7 @@ impl BrowserHost {
                     // would silently persist the previous spacing value.
                     draft.arrangement.spacing = 0;
                     self.projection_editor
-                        .reduce(EditorAction::SetArrangement(draft.arrangement));
+                        .reduce(EditorAction::SetArrangement(draft.arrangement), now_ms());
                     self.recompile_projection();
                     self.projection_editor_status =
                         "Invalid · arrangement.spacing must be a number".to_string();
@@ -649,9 +651,31 @@ impl BrowserHost {
             },
             _ => return,
         };
-        self.projection_editor.reduce(action);
+        self.projection_editor.reduce(action, now_ms());
         self.recompile_projection();
         self.projection_editor_status = format!("Edited · {field}");
+        self.projection_editor_open = true;
+        self.chrome_dirty = true;
+    }
+
+    /// Undo (`back`) or redo one step of the projection editor's history.
+    fn step_projection(&mut self, back: bool) {
+        let stepped = if back {
+            self.projection_editor.undo()
+        } else {
+            self.projection_editor.redo()
+        };
+        let verb = if back { "undo" } else { "redo" };
+        if stepped {
+            self.recompile_projection();
+            self.projection_editor_status = format!(
+                "{} · {}",
+                if back { "Undone" } else { "Redone" },
+                self.projection_editor.panel().label()
+            );
+        } else {
+            self.projection_editor_status = format!("Nothing to {verb}");
+        }
         self.projection_editor_open = true;
         self.chrome_dirty = true;
     }
@@ -918,6 +942,11 @@ thread_local! {
 fn root() -> Result<Element, String> {
     ROOT.with(|slot| slot.borrow().clone())
         .ok_or_else(|| "the component is not mounted".to_string())
+}
+
+/// The host's clock for the projection editor's undo coalescing.
+fn now_ms() -> u64 {
+    js_sys::Date::now() as u64
 }
 
 /// One of the component's parts, by its unprefixed name (`detail-surface`
@@ -1245,6 +1274,28 @@ fn update_projection_editor_semantics(host: &BrowserHost) -> Result<(), String> 
     )?;
     set_projection_input_value("projection-provenance-note", &draft.provenance.note)?;
     set_text("projection-editor-status", &host.projection_editor_status);
+    set_text(
+        "projection-editor-dirty",
+        if host.projection_editor.is_dirty() {
+            "Unsaved changes"
+        } else {
+            "No unsaved changes"
+        },
+    );
+    for (command, enabled) in [
+        ("undo-projection", host.projection_editor.can_undo()),
+        ("redo-projection", host.projection_editor.can_redo()),
+    ] {
+        let button = surface
+            .query_selector(&format!("[data-command=\"{command}\"]"))
+            .map_err(|_| format!("could not find the {command} button"))?
+            .ok_or_else(|| format!("the {command} button is missing"))?;
+        if enabled {
+            let _ = button.remove_attribute("disabled");
+        } else {
+            let _ = button.set_attribute("disabled", "");
+        }
+    }
     set_text(
         "projection-editor-source",
         &format!(
