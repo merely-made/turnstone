@@ -1,7 +1,8 @@
 # The positive control for p6_tree_speed_fast's comparison with 1x (physics
 # catalog plan, ruled 2026-10-06, "Relative to the page's 1x"): the same run
-# with a 500 ms busy-wait planted in every frame at Max, outside physics
-# (tree.html?nodes=300&seed=7&links=none&gpu=off&physics_speed=1&physics_plant_max_frame_ms=500),
+# with a 3000 ms busy-wait planted in every frame at Max, outside physics
+# (tree.html?nodes=300&seed=7&links=none&gpu=off&physics_speed=1&physics_plant_max_frame_ms=3000),
+# long enough to overcome Max's increased tick throughput after warmup;
 # so Max runs fewer ticks a second than the page's 1x: this receipt asserts
 # the comparison misses.
 assert snap ready == true
