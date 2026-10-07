@@ -1,0 +1,37 @@
+{
+  "recorded_utc": "2026-10-07T05:12:44.010389+00:00",
+  "source_label": "all3-pixel-control",
+  "executable_sha256": "ae47dce49bc57f03836b2ea1bc88ac19e37183b6751fb5c540137eebc943c0ea",
+  "native_exit": 0,
+  "timed_out": false,
+  "scenario_result": "RESULT ok",
+  "pixel_scope": "Directly reviewed all3 captures: two distinct Servo pages with red tops/blue bottoms, current WebView2 and CEF pages concurrently; allfour remain visible after pane resize; final content-off placeholders with zero live/cached/view/importer counts. Input/reopen/accessibility not qualified by this mixed control.",
+  "controls_held": "Servo reopenA visualFAIL persists in separate native-servo-reopen-pixels-failed; mixed control does not close it.",
+  "runtime_modules": "Observed root Servo ANGLE hashes D365/9C47, root and live CEF role descendants libcef151.3.24+Chromium151.0.7922.174, rootEmbeddedBrowserWebView156.0.4314.8. Sampling limitations retained; no absent-module inference.",
+  "captures": [
+    {
+      "path": "native-all3-mixed/01_four_simultaneous_native_pages.png",
+      "sha256": "3ec4885de56196ab689fcc2dee7f7863258c658c612519170be8bc693b642059",
+      "dimensions": [
+        2560,
+        1459
+      ]
+    },
+    {
+      "path": "native-all3-mixed/02_four_pages_after_resize.png",
+      "sha256": "84bde02ff7817b9e5073ac9d1fb053840e2d0a4381a160a84d0e5c839f0f36a1",
+      "dimensions": [
+        2560,
+        1459
+      ]
+    },
+    {
+      "path": "native-all3-mixed/03_all_native_producers_closed.png",
+      "sha256": "39c5b40c66085aaf1fa9cc6402586abcbfb7e44e02244999990ab175149382df",
+      "dimensions": [
+        2560,
+        1459
+      ]
+    }
+  ]
+}

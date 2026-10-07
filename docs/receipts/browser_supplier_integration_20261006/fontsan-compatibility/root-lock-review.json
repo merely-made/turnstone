@@ -1,0 +1,53 @@
+[
+  {
+    "repo": "mere",
+    "commit": "edf175f9c0a8645318ac8925adf0af6956f61425",
+    "parent": "db4ee31258b23c86572c429388c5d10bd4de9dc3",
+    "changed_paths": [
+      "Cargo.lock",
+      "Cargo.toml",
+      "design_docs/inker_docs/implementation_strategy/2026-06-15_engine_picker_and_pluggability_plan.md"
+    ],
+    "old_lock_records": 1667,
+    "new_lock_records": 1668,
+    "old_lock_git_bytes_sha256": "78463c7c0ec1c74dcd808b9327787ffc0d4878fcbf55e2e5aa24017a021bc6df",
+    "new_lock_git_bytes_sha256": "a16a11777a17a1a40c807eba76c31bb6fe432251f6089162f391cf81a973a196",
+    "independent_normalized_comparison": "PASS: sole existing fontsan provider edge; exact named removed/added provider tables; all other records, versions, checksums and edges equal",
+    "resolver_and_compile": "pending actual production consumer"
+  },
+  {
+    "repo": "woodshed",
+    "commit": "24f196f46f775704e467b41140588a3f35335a9f",
+    "parent": "b613fc55d2d59e865b6bb04e55a880ee4773b824",
+    "changed_paths": [
+      "design_docs/2026-09-13_redshank_gui_implementation_plan.md",
+      "ports/redshank/Cargo.lock",
+      "ports/redshank/Cargo.toml",
+      "ports/redshank/web/Cargo.toml"
+    ],
+    "old_lock_records": 772,
+    "new_lock_records": 773,
+    "old_lock_git_bytes_sha256": "8bd587d5e6fdddad18d14142fe4741e0ec7732e8677c5fce2112bb21ce781ae4",
+    "new_lock_git_bytes_sha256": "c00567b257db77895bcb3cb648f086eeecf26f9dd16bc27f27d145cac14baa24",
+    "independent_normalized_comparison": "PASS: sole existing fontsan provider edge; exact named removed/added provider tables; all other records, versions, checksums and edges equal",
+    "resolver_and_compile": "pending actual production consumer"
+  },
+  {
+    "repo": "knot-editor",
+    "commit": "211ff57a128f4fdbd5060978a209d6bc0459fce6",
+    "parent": "91cb44a2c00c088f0677956d31f3cdca6828c59e",
+    "changed_paths": [
+      "Cargo.lock",
+      "Cargo.toml",
+      "apps/desktop/Cargo.toml",
+      "crates/knot-document/Cargo.toml",
+      "design_docs/2026-09-01_knot_editor_repository_extraction_plan.md"
+    ],
+    "old_lock_records": 1284,
+    "new_lock_records": 1285,
+    "old_lock_git_bytes_sha256": "37609102a6a6ae111493179537e3af8c9d0fa446304a8b02edac7a2ac48c89e5",
+    "new_lock_git_bytes_sha256": "4c891c97a8c25c2bb14f7d7f23e9a103f91eb9aedbe7cef2a71a584947e8965d",
+    "independent_normalized_comparison": "PASS: sole existing fontsan provider edge; exact named removed/added provider tables; all other records, versions, checksums and edges equal",
+    "resolver_and_compile": "pending actual production consumer"
+  }
+]

@@ -1,0 +1,26 @@
+{
+  "observed_utc": "2026-10-07T03:20:48.518621+00:00",
+  "command": [
+    "cargo",
+    "build",
+    "--locked",
+    "--features",
+    "scry,weld,servo",
+    "--bin",
+    "turnstone",
+    "--target-dir",
+    "C:/t/cargo-targets/turnstone",
+    "-j2"
+  ],
+  "exit_code": 101,
+  "log_sha256": "35f4dcb6b92fe035ade23991f503f16091aa31cbaf5052829eac7fe760dc2fe9",
+  "compiler_failure": {
+    "package": "quinn-proto",
+    "version": "0.11.18",
+    "allocator_message": "memory allocation of 2097152 bytes failed",
+    "exit_status": "0xc0000409 STATUS_STACK_BUFFER_OVERRUN"
+  },
+  "interpretation": "Compilation did not qualify. Allocation failure is observed; its cause is not established. No Servo or Turnstone source API diagnostic was reached.",
+  "toolchain": "1.98.1-x86_64-pc-windows-msvc",
+  "retry_policy": "Serialize after donor build, one Cargo job, BelowNormal priority; preserve this failed log."
+}

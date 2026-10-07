@@ -1,0 +1,166 @@
+{
+  "recorded_utc": "2026-10-07T04:52:45.182610+00:00",
+  "source_manifest": "source-manifest-all3.json",
+  "source_archive": "source-inputs-all3-registration-failed.zip",
+  "source_archive_sha256": "ea356a885e7036927d5537778836865dbfed3bfb9b4fda579b2bcb0a230f2862",
+  "source_files": 174,
+  "executable_sha256": "1562db7cb6f33e38775debae23995ed15fdf0f6358be429d861410d10bdb761a",
+  "negative_control": "native-servo-registration-failed",
+  "original_receipt_directory": "native-servo",
+  "native_exit": 0,
+  "timed_out": false,
+  "scenario_result": "RESULT fail",
+  "reason": "graft.servo dispatched to SessionRegistry before creating any Servo view",
+  "files": [
+    {
+      "path": "01_two_upstream_servo_pages.png",
+      "bytes": 37217,
+      "sha256": "398a35837f8e27986f9480d7956e0f1a65ffaa7256d94fca56f38835d7e81f49"
+    },
+    {
+      "path": "02_a_native_input_and_navigation.png",
+      "bytes": 28607,
+      "sha256": "3c8cc3b119cf6d62d490031e947a72a4f8b8c0ba4e4753a7a4e8d5f347827004"
+    },
+    {
+      "path": "03_b_native_input_and_navigation.png",
+      "bytes": 28607,
+      "sha256": "3c8cc3b119cf6d62d490031e947a72a4f8b8c0ba4e4753a7a4e8d5f347827004"
+    },
+    {
+      "path": "04_resize_and_orientation.png",
+      "bytes": 48740,
+      "sha256": "d8d2d112142b6723af05fb1ce6f66ac11524344b61301df4a752ad74333f7dee"
+    },
+    {
+      "path": "05_a_reader_b_servo.png",
+      "bytes": 149573,
+      "sha256": "e17b8798e4ee3595cc9ff4b87fb53ce2c85d239598ff3818b0f5d6b5b1bf3286"
+    },
+    {
+      "path": "06_a_servo_reconstructed.png",
+      "bytes": 48740,
+      "sha256": "d8d2d112142b6723af05fb1ce6f66ac11524344b61301df4a752ad74333f7dee"
+    },
+    {
+      "path": "07_both_servo_views_closed.png",
+      "bytes": 48740,
+      "sha256": "d8d2d112142b6723af05fb1ce6f66ac11524344b61301df4a752ad74333f7dee"
+    },
+    {
+      "path": "08_reopened_in_same_servo_process.png",
+      "bytes": 48728,
+      "sha256": "f5f899fda8fa7c28d178da2323556e7b1f6fb5ae877d4a7673c3eefb4a39bdc6"
+    },
+    {
+      "path": "09_final_servo_teardown.png",
+      "bytes": 48740,
+      "sha256": "d8d2d112142b6723af05fb1ce6f66ac11524344b61301df4a752ad74333f7dee"
+    },
+    {
+      "path": "diagnostics.json",
+      "bytes": 31615,
+      "sha256": "b63b3f1c0ffeb466c38282c79a9d6886382a1c4812db999ba510f9b2a285b6b3"
+    },
+    {
+      "path": "final-servo-closed.surface-frames.json",
+      "bytes": 124,
+      "sha256": "1bed58cd98da508010f079af827425c0aef7090b11188293058190b994965ac6"
+    },
+    {
+      "path": "final-servo-closed.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "independent-input.surface-frames.json",
+      "bytes": 124,
+      "sha256": "1bed58cd98da508010f079af827425c0aef7090b11188293058190b994965ac6"
+    },
+    {
+      "path": "independent-input.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "loaded-modules.json",
+      "bytes": 4838,
+      "sha256": "bc54dcc85d575da2af7b4f00f6f61b5b3337f48c32fbbc732953a37bb2c80523"
+    },
+    {
+      "path": "process-result.json",
+      "bytes": 1411,
+      "sha256": "46a105305acaeef1027a32bf1d43aed4bf0f4e79d0295af118a6aa56a724b122"
+    },
+    {
+      "path": "run.log",
+      "bytes": 21854,
+      "sha256": "f646c1b51646a7dd27a99184afffacb5a57bdb6a43b2d6242f169a262523fbc3"
+    },
+    {
+      "path": "run.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run.stdout.log",
+      "bytes": 21823,
+      "sha256": "c850bcbcbc8c4b2eb7865ce0d8a62124487ce6bc73f3d6beaf910155d9608759"
+    },
+    {
+      "path": "scenario.done",
+      "bytes": 3507,
+      "sha256": "0156a905ce283ec418523dfd28165e2dea1e79a3c8009471e8b640b894c8b6cb"
+    },
+    {
+      "path": "servo-closed.surface-frames.json",
+      "bytes": 124,
+      "sha256": "1bed58cd98da508010f079af827425c0aef7090b11188293058190b994965ac6"
+    },
+    {
+      "path": "servo-closed.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "servo-reconstructed.surface-frames.json",
+      "bytes": 124,
+      "sha256": "1bed58cd98da508010f079af827425c0aef7090b11188293058190b994965ac6"
+    },
+    {
+      "path": "servo-reconstructed.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "servo-reopened.surface-frames.json",
+      "bytes": 124,
+      "sha256": "1bed58cd98da508010f079af827425c0aef7090b11188293058190b994965ac6"
+    },
+    {
+      "path": "servo-reopened.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "servo-resized.surface-frames.json",
+      "bytes": 124,
+      "sha256": "1bed58cd98da508010f079af827425c0aef7090b11188293058190b994965ac6"
+    },
+    {
+      "path": "servo-resized.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "two-servo-pages.surface-frames.json",
+      "bytes": 124,
+      "sha256": "1bed58cd98da508010f079af827425c0aef7090b11188293058190b994965ac6"
+    },
+    {
+      "path": "two-servo-pages.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    }
+  ]
+}

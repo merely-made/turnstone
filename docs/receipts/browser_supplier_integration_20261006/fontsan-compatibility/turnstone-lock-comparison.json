@@ -1,0 +1,59 @@
+{
+  "schema": "turnstone-fontsan-lock-comparison-v1",
+  "source_revisions": {
+    "edf175f9c0a8645318ac8925adf0af6956f61425": "db4ee31258b23c86572c429388c5d10bd4de9dc3",
+    "679d8314aab4ec9f57a903c79dde244c3c565c1e": "69a2383b2ad777b884a72f31f8f8fb7ece275c0b",
+    "24f196f46f775704e467b41140588a3f35335a9f": "b613fc55d2d59e865b6bb04e55a880ee4773b824",
+    "211ff57a128f4fdbd5060978a209d6bc0459fce6": "91cb44a2c00c088f0677956d31f3cdca6828c59e"
+  },
+  "old_records": 1674,
+  "new_records": 1673,
+  "removed": [
+    {
+      "name": "fontsan-woff2",
+      "version": "0.1.1",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "checksum": "106ebe29445505f3860765d2597ddad20a3e90174d6e8539a10d58253b3e5c0f",
+      "dependencies": [
+        "brotli-decompressor",
+        "cc"
+      ]
+    }
+  ],
+  "added": [],
+  "changed": [
+    {
+      "before": {
+        "name": "fontsan",
+        "version": "0.7.0",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "checksum": "cff76797a10ce7f8439f6e0a5ed06783e26e60d97e28c8c1c623a608ca67cff9",
+        "dependencies": [
+          "cc",
+          "fontsan-woff2",
+          "glob",
+          "libc",
+          "libz-sys",
+          "wuff-capi"
+        ]
+      },
+      "after": {
+        "name": "fontsan",
+        "version": "0.7.0",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "checksum": "cff76797a10ce7f8439f6e0a5ed06783e26e60d97e28c8c1c623a608ca67cff9",
+        "dependencies": [
+          "cc",
+          "glob",
+          "libc",
+          "libz-sys",
+          "wuff-capi"
+        ]
+      }
+    }
+  ],
+  "existing_registry_versions_checksums_and_other_normalized_records": "PASS: identical",
+  "wuff": "Already in pre-fix full3 lock from Servo; retained unchanged",
+  "resolver_compile_native": "Pending real locked production consumer gates",
+  "sha256": "801e44839b5da4046766d0eda70fd3d7e7b98311cc816399c7e2dd35d0a94923"
+}

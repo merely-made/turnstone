@@ -1,0 +1,393 @@
+warning: patch `burn-remote v0.22.0 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)` was not used in the crate graph
+warning: patch `cubecl-runtime v0.11.0 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)` was not used in the crate graph
+warning: patch `p2panda-stream v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.4#0a54ab82)` was not used in the crate graph
+help: Check that the patched package version and available features are compatible
+      with the dependency requirements. If the patch has a different version from
+      what is locked in the Cargo.lock file, run `cargo update` to use the new
+      version. This may also occur with an optional dependency that is not enabled.
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+ Downloading crates ...
+  Downloaded aes-gcm v0.11.1
+  Downloaded blake2 v0.11.0
+  Downloaded headers v0.4.2
+  Downloaded keccak v0.2.2
+  Downloaded ohos-deviceinfo-sys v0.1.8
+  Downloaded wnaf v0.14.1
+  Downloaded wuff v0.2.9
+  Downloaded zerovec-derive v0.10.4
+    Blocking waiting for file lock on package cache
+   Compiling syn v2.0.119
+   Compiling allocator-api2 v0.2.21
+   Compiling stable_deref_trait v1.2.1
+   Compiling hashbrown v0.17.1
+   Compiling windows-sys v0.61.2
+   Compiling zeroize_derive v1.5.0
+   Compiling zeroize v1.9.0
+   Compiling lock_api v0.4.14
+   Compiling indexmap v2.14.2
+   Compiling bitflags v2.13.2
+   Compiling ctutils v0.4.2
+   Compiling hybrid-array v0.4.15
+   Compiling generic-array v0.14.7
+   Compiling yoke v0.8.3
+   Compiling zerovec v0.11.8
+   Compiling crypto-common v0.1.7
+   Compiling crypto-common v0.2.2
+   Compiling tinystr v0.8.4
+   Compiling potential_utf v0.1.6
+   Compiling icu_locale_core v2.3.0
+   Compiling zerotrie v0.2.5
+   Compiling socket2 v0.6.5
+   Compiling icu_provider v2.3.1
+   Compiling icu_collections v2.3.0
+   Compiling mio v1.2.3
+   Compiling icu_properties v2.3.0
+   Compiling tokio v1.53.1
+   Compiling icu_normalizer v2.3.0
+   Compiling block-buffer v0.12.1
+   Compiling zerocopy-derive v0.8.57
+   Compiling zerocopy v0.8.57
+   Compiling parking_lot v0.12.5
+   Compiling tracing-attributes v0.1.31
+   Compiling idna_adapter v1.2.2
+   Compiling idna v1.1.0
+   Compiling url v2.5.8
+   Compiling tracing v0.1.44
+   Compiling block-buffer v0.10.4
+   Compiling digest v0.10.7
+   Compiling spin v0.9.9
+   Compiling serde_json v1.0.151
+   Compiling time-macros v0.2.32
+   Compiling deranged v0.5.8
+   Compiling time-core v0.1.9
+   Compiling const-oid v0.10.2
+   Compiling time v0.3.55
+   Compiling lazy_static v1.5.0
+   Compiling sha2 v0.10.9
+   Compiling gl_generator v0.14.0
+   Compiling encoding_rs v0.8.41
+   Compiling digest v0.11.3
+   Compiling block-padding v0.4.2
+   Compiling inout v0.2.2
+   Compiling png v0.18.1
+   Compiling phf_macros v0.13.1
+   Compiling strum_macros v0.28.0
+   Compiling phf v0.13.1
+   Compiling derive_more-impl v2.1.1
+   Compiling strum v0.28.0
+   Compiling cipher v0.5.2
+   Compiling string_cache v0.9.0
+   Compiling synstructure v0.13.2
+   Compiling kurbo v0.13.1
+   Compiling derive_more v2.1.1
+   Compiling read-fonts v0.41.0
+   Compiling tokio-util v0.7.19
+   Compiling heapless v0.7.17
+   Compiling postcard-derive v0.2.2
+   Compiling windows-interface v0.59.3
+   Compiling windows-implement v0.60.2
+   Compiling postcard v1.1.3
+   Compiling windows-core v0.62.2
+   Compiling web_atoms v0.2.6
+   Compiling chacha20 v0.10.2
+   Compiling tendril v0.5.1
+   Compiling half v2.7.1
+   Compiling skrifa v0.44.0
+   Compiling markup5ever v0.39.0
+   Compiling enumn v0.1.14
+   Compiling windows-future v0.3.2
+   Compiling accesskit v0.24.1
+   Compiling windows-numerics v0.3.1
+   Compiling windows-collections v0.3.2
+   Compiling rustls-pki-types v1.15.1
+   Compiling windows v0.62.2
+   Compiling num-derive v0.4.2
+   Compiling winapi v0.3.9
+   Compiling core_maths v0.1.1
+   Compiling der v0.8.2
+   Compiling rgb v0.8.53
+   Compiling profiling-procmacros v1.0.18
+   Compiling profiling v1.0.18
+   Compiling spki v0.8.0
+   Compiling rand v0.10.3
+   Compiling fs_extra v1.3.0
+   Compiling dunce v1.0.5
+   Compiling aws-lc-sys v0.45.0
+   Compiling winapi-util v0.1.11
+   Compiling yoke-derive v0.7.5
+   Compiling cssparser v0.37.0
+   Compiling yoke v0.7.5
+   Compiling same-file v1.0.6
+   Compiling pkcs8 v0.11.0
+   Compiling zerovec-derive v0.10.4
+   Compiling zerovec v0.10.4
+   Compiling icu_locale_fallback v2.3.0
+   Compiling walkdir v2.5.0
+   Compiling hashbrown v0.16.1
+   Compiling aws-lc-rs v1.18.1
+   Compiling icu_segmenter v2.3.0
+   Compiling num_enum_derive v0.7.6
+   Compiling darling_core v0.20.11
+   Compiling base16ct v1.0.0
+   Compiling darling_macro v0.20.11
+   Compiling num_enum v0.7.6
+   Compiling tinystr v0.7.6
+   Compiling litemap v0.7.5
+   Compiling writeable v0.5.5
+   Compiling icu_locid v1.5.0
+   Compiling darling v0.20.11
+   Compiling wio v0.2.2
+   Compiling sha2 v0.11.0
+   Compiling signature v3.0.0
+   Compiling h2 v0.4.19
+   Compiling curve25519-dalek-derive v0.1.1
+   Compiling thin-vec v0.2.20
+   Compiling hyper v1.11.1
+   Compiling thiserror-impl v1.0.69
+   Compiling rustls v0.23.45
+   Compiling thiserror v1.0.69
+   Compiling selectors v0.40.0
+   Compiling servo_arc v0.4.3
+   Compiling smallbitvec v2.6.1
+   Compiling to_shmem v0.5.0
+   Compiling to_shmem_derive v0.1.0
+   Compiling stylo v0.20.0
+   Compiling malloc_size_of_derive v0.1.3
+   Compiling glslopt v0.1.14
+   Compiling float-cmp v0.9.0
+   Compiling num_cpus v1.17.0
+   Compiling strict-num v0.1.1
+   Compiling rustls-webpki v0.103.15
+   Compiling petgraph v0.8.3
+   Compiling stylo_static_prefs v0.20.0
+   Compiling peek-poke-derive v0.3.0
+   Compiling stylo_atoms v0.20.0
+   Compiling gleam v0.15.1
+   Compiling typeid v1.0.3
+   Compiling arrayref v0.3.9
+   Compiling void v1.0.2
+   Compiling stylo_malloc_size_of v0.20.0
+   Compiling tiny-skia-path v0.12.0
+   Compiling peek-poke v0.3.0
+   Compiling build-parallel v0.1.2
+   Compiling webrender_build v0.70.0
+   Compiling zeitstempel v0.2.2
+   Compiling wr_malloc_size_of v0.2.2
+   Compiling equator-macro v0.4.2
+   Compiling unic-char-range v0.9.0
+   Compiling unic-common v0.9.0
+   Compiling unic-ucd-version v0.9.0
+   Compiling unic-char-property v0.9.0
+   Compiling webrender v0.70.0
+   Compiling equator v0.4.2
+   Compiling webrender_api v0.70.0
+   Compiling dwrote v0.11.5
+   Compiling fontdb v0.24.0
+   Compiling ipc-channel v0.22.0 (https://github.com/merely-made/genet.git?rev=69a2383b2ad777b884a72f31f8f8fb7ece275c0b#69a2383b)
+   Compiling harfrust v0.12.0
+   Compiling svgtypes v0.16.1
+   Compiling ppv-lite86 v0.2.21
+   Compiling block-padding v0.3.3
+   Compiling roxmltree v0.21.1
+   Compiling simplecss v0.2.2
+   Compiling unicode-script v0.5.8
+   Compiling unicode-vo v0.1.0
+   Compiling imagesize v0.15.0
+   Compiling tracy-rs v0.1.2
+   Compiling xmlwriter v0.1.0
+   Compiling pico-args v0.5.0
+   Compiling usvg v0.48.1
+   Compiling wr_glyph_rasterizer v0.70.0
+   Compiling inout v0.1.4
+   Compiling ron v0.12.2
+   Compiling stylo_traits v0.20.0
+   Compiling curve25519-dalek v5.0.0
+   Compiling aligned-vec v0.6.4
+   Compiling unic-ucd-ident v0.9.0
+   Compiling tiny-skia v0.12.0
+   Compiling stylo_dom v0.20.0
+   Compiling stylo_derive v0.20.0
+   Compiling serdect v0.4.3
+   Compiling etagere v0.2.15
+   Compiling plane-split v0.18.0
+   Compiling uluru v3.1.0
+   Compiling bincode v1.3.3
+   Compiling atomic_refcell v0.1.14
+   Compiling topological-sort v0.1.0
+   Compiling ed25519 v3.0.0
+   Compiling resvg v0.48.1
+   Compiling urlpattern v0.3.0
+   Compiling v_frame v0.3.9
+   Compiling cipher v0.4.4
+   Compiling content-security-policy v0.8.2
+   Compiling taffy v0.12.2
+   Compiling keyboard-types v0.8.3
+   Compiling servo-allocator v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+   Compiling as-slice v0.2.1
+   Compiling aligned v0.4.3
+   Compiling ed25519-dalek v3.0.0
+   Compiling arg_enum_proc_macro v0.3.4
+   Compiling av-scenechange v0.14.1
+   Compiling av1-grain v0.2.5
+   Compiling hyper-util v0.1.20
+   Compiling raw-cpuid v11.6.0
+   Compiling pulp v0.22.3
+   Compiling rav1e v0.8.1
+   Compiling universal-hash v0.5.1
+   Compiling tiff v0.11.3
+   Compiling exr v1.74.2
+   Compiling ravif v0.13.0
+   Compiling image v0.25.10
+   Compiling tokio-rustls v0.26.5
+   Compiling polyval v0.6.2
+   Compiling aead v0.5.2
+   Compiling ghash v0.5.1
+   Compiling aes v0.8.4
+   Compiling ctr v0.9.2
+   Compiling servo-config-macro v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+   Compiling servo-config v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+   Compiling aes-gcm v0.10.3
+   Compiling der v0.7.10
+   Compiling icu_provider_macros v1.5.0
+   Compiling icu_provider v1.5.0
+   Compiling rand_chacha v0.3.1
+   Compiling rustls-platform-verifier v0.7.0
+   Compiling hmac v0.12.1
+   Compiling sha1 v0.10.7
+   Compiling rand v0.8.8
+   Compiling sec1 v0.7.3
+   Compiling hkdf v0.12.4
+   Compiling spki v0.7.3
+   Compiling crypto-bigint v0.5.5
+   Compiling signature v2.2.0
+   Compiling webpki-roots v1.0.9
+   Compiling color v0.3.3
+   Compiling serde v1.0.229
+   Compiling icu_segmenter_data v1.5.1
+   Compiling elliptic-curve v0.13.8
+   Compiling peniko v0.6.1
+   Compiling cookie v0.18.2
+   Compiling icu_collections v1.5.0
+   Compiling universal-hash v0.6.1
+   Compiling icu_segmenter v1.5.0
+   Compiling muniment v0.1.2 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+   Compiling rfc6979 v0.4.0
+   Compiling ecdsa v0.16.9
+   Compiling curve25519-dalek v4.1.3
+   Compiling primeorder v0.13.6
+   Compiling hyper-rustls v0.27.9
+   Compiling naga-types v30.0.1
+   Compiling poly1305 v0.8.0
+   Compiling chacha20 v0.9.1
+   Compiling aead v0.6.1
+   Compiling hmac v0.13.0
+   Compiling glutin_wgl_sys v0.6.1
+   Compiling spirv v0.4.0+sdk-1.4.341.0
+   Compiling pin-project-internal v1.1.13
+   Compiling cookie v0.16.2
+   Compiling pin-project v1.1.13
+   Compiling naga v30.0.1
+   Compiling wgpu-types v30.0.1
+   Compiling poly1305 v0.9.1
+   Compiling headers-core v0.3.0
+   Compiling n0-error-macros v1.0.1
+   Compiling spez v0.1.2
+   Compiling gpu-allocator v0.28.0
+   Compiling n0-error v1.0.1
+   Compiling headers v0.4.2
+   Compiling chacha20poly1305 v0.11.0
+   Compiling wgpu-naga-bridge v30.0.1
+   Compiling tower v0.5.3
+   Compiling hkdf v0.13.0
+   Compiling p384 v0.13.1
+   Compiling p256 v0.13.2
+   Compiling libz-sys v1.1.29
+   Compiling pkcs8 v0.10.2
+   Compiling html5ever v0.39.0
+   Compiling http v0.2.12
+   Compiling servo-embedder-traits v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+   Compiling wgpu-hal v30.0.1
+   Compiling webdriver v0.53.0
+   Compiling ssh-encoding v0.2.0
+   Compiling pkcs1 v0.7.5
+   Compiling servo-hyper-serde v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+   Compiling num-bigint-dig v0.8.6
+   Compiling ed25519 v2.2.3
+   Compiling blowfish v0.9.1
+   Compiling cbc v0.1.2
+   Compiling tokio-stream v0.1.19
+   Compiling sharded-slab v0.1.7
+   Compiling pbkdf2 v0.12.2
+   Compiling nu-ansi-term v0.50.3
+   Compiling inventory v0.3.24
+   Compiling bcrypt-pbkdf v0.10.0
+   Compiling tracing-subscriber v0.3.23
+   Compiling ssh-cipher v0.2.0
+   Compiling ed25519-dalek v2.2.0
+   Compiling rsa v0.9.10
+   Compiling ahash v0.8.12
+   Compiling wgpu-core-deps-windows-linux-android v30.0.1
+   Compiling p521 v0.13.3
+   Compiling blake2 v0.10.6
+   Compiling rand_chacha v0.9.0
+   Compiling ssh-key v0.6.7
+   Compiling wgpu-core v30.0.1
+   Compiling n0-future v0.3.2
+   Compiling xml5ever v0.39.0
+   Compiling surfman v0.13.0
+   Compiling secrecy v0.10.3
+   Compiling munge_macro v0.4.7
+   Compiling dashmap v6.2.1
+   Compiling ssh-agent-lib v0.6.0
+   Compiling wgpu v30.0.1
+   Compiling munge v0.4.7
+   Compiling argon2 v0.5.3
+   Compiling insigne v0.0.1 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+   Compiling rkyv v0.8.18
+   Compiling personae v0.2.1 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+   Compiling noq-udp v1.3.0
+   Compiling inker v0.1.1 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+   Compiling tempfile v3.27.0
+   Compiling layout-dom-api v0.1.1 (https://github.com/merely-made/genet.git?rev=69a2383b2ad777b884a72f31f8f8fb7ece275c0b#69a2383b)
+   Compiling chartulary v0.2.2 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+   Compiling quick_cache v0.6.24
+   Compiling tower-http v0.6.11
+   Compiling servo-tracing v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+   Compiling wuff-capi v0.2.0
+   Compiling icu_locid_transform_data v1.5.1
+   Compiling noq-proto v1.3.0
+   Compiling ipconfig v0.3.4
+   Compiling reqwest v0.13.5
+   Compiling iroh-base v1.3.0
+   Compiling iroh-metrics-derive v1.0.1
+   Compiling simple-dns v0.12.0
+   Compiling lru v0.18.4
+   Compiling iroh-metrics v1.0.2
+   Compiling netdev v0.45.1
+   Compiling n0-dns-resolver v0.1.0
+   Compiling noq v1.3.0
+   Compiling n0-watcher v1.0.0
+   Compiling crypto-bigint v0.7.5
+   Compiling wmi v0.18.4
+   Compiling wuff v0.2.9
+   Compiling fontsan v0.7.0
+   Compiling attohttpc v0.30.1
+   Compiling p2panda-core v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.4#0a54ab82)
+   Compiling igd-next v0.17.1
+   Compiling iroh-dns v1.3.0
+   Compiling mere-forme v0.1.0 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+error: failed to run custom build command for `fontsan v0.7.0`
+
+Caused by:
+  process didn't exit successfully: `C:/t/cargo-targets/turnstone\debug\build\fontsan-64ad4101ca4cf673\build-script-build` (exit code: 101)
+  --- stderr
+
+  thread 'main' (36712) panicked at C:\Users\mark_\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\fontsan-0.7.0\build.rs:61:9:
+
+
+  The fontsan crate requires enabling exactly one of its 'woff2' or 'wuff' feature flags. 
+
+
+  note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+warning: build failed, waiting for other jobs to finish...

@@ -1,0 +1,9 @@
+{
+  "started_utc": "2026-10-07T03:24:19.1581613Z",
+  "finished_utc": "2026-10-07T04:21:44.9011692Z",
+  "exit_code": 0,
+  "priority": "BelowNormal",
+  "jobs": 1,
+  "command": "cargo build --offline --locked --features scry,weld,servo --bin turnstone --target-dir C:/t/cargo-targets/turnstone -j1",
+  "log_sha256": "A2AD543D2BF8CC07E24CC96569668B8218E77EF10AD8A341051A04262AD53A10"
+}

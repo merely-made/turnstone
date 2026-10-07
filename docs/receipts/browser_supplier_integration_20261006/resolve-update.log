@@ -1,0 +1,421 @@
+    Updating git repository `https://github.com/merely-made/mere.git`
+    Updating git repository `https://github.com/merely-made/woodshed.git`
+    Updating git repository `https://github.com/merely-made/wgpu-graft.git`
+    Updating git repository `https://github.com/servo/servo`
+    Updating crates.io index
+warning: patch `burn-remote v0.22.0 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)` was not used in the crate graph
+warning: patch `cubecl-runtime v0.11.0 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)` was not used in the crate graph
+warning: patch `p2panda-stream v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.4#0a54ab82)` was not used in the crate graph
+help: Check that the patched package version and available features are compatible
+      with the dependency requirements. If the patch has a different version from
+      what is locked in the Cargo.lock file, run `cargo update` to use the new
+      version. This may also occur with an optional dependency that is not enabled.
+     Locking 367 packages to latest Rust 1.98.1 compatible versions
+      Adding addr2line v0.25.1
+      Adding aead-stream v0.6.0
+      Adding aes-gcm v0.11.1
+      Adding aes-kw v0.3.1
+    Removing app-host v0.0.1 (https://github.com/merely-made/mere.git?rev=3d1cdacc90aa6a0736154d841223a3ae29e23aa5#3d1cdacc)
+      Adding app-host v0.0.1 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+      Adding arboard v3.6.1
+      Adding argon2 v0.6.0-rc.8 (available: v0.6.0)
+      Adding armillary v0.1.1 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+      Adding async-tungstenite v0.35.0
+      Adding atomic_refcell v0.1.14
+    Removing audio-primitives v0.1.0 (https://github.com/merely-made/woodshed.git?rev=9e982b88bf57e41ef4fa846c66ffdd4f05beb91d#9e982b88)
+      Adding audio-primitives v0.1.0 (https://github.com/merely-made/woodshed.git?rev=b613fc55d2d59e865b6bb04e55a880ee4773b824#b613fc55)
+      Adding aws-lc-rs v1.18.1
+      Adding aws-lc-sys v0.45.0
+      Adding backtrace v0.3.76
+      Adding bincode v1.3.3
+      Adding blake2 v0.11.0
+      Adding buf-read-ext v0.4.0
+      Adding build-parallel v0.1.2
+      Adding byte-slice-cast v1.2.3
+      Adding calendrical_calculations v0.1.3
+      Adding cambium v0.3.3 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+    Removing cambium-winit v0.3.0 (https://github.com/merely-made/mere.git?rev=3d1cdacc90aa6a0736154d841223a3ae29e23aa5#3d1cdacc)
+      Adding cambium-winit v0.3.0 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+    Removing castellan v0.0.3 (https://github.com/merely-made/mere.git?rev=3d1cdacc90aa6a0736154d841223a3ae29e23aa5#3d1cdacc)
+      Adding castellan v0.0.3 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+      Adding cgl v0.3.2
+      Adding chardetng v0.1.17
+      Adding chartulary v0.2.2 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+      Adding chirograph v0.0.2 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+    Removing commons-spine v0.0.1 (https://github.com/merely-made/mere.git?rev=3d1cdacc90aa6a0736154d841223a3ae29e23aa5#3d1cdacc)
+      Adding commons-spine v0.0.1 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+      Adding content-security-policy v0.8.2
+      Adding cookie v0.16.2
+      Adding core-text v20.1.0
+      Adding core_maths v0.1.1
+      Adding crypto-bigint v0.7.5
+      Adding crypto-primes v0.7.2
+      Adding cshake v0.2.1
+      Adding ctr v0.10.1
+      Adding darling v0.20.11
+      Adding darling_core v0.20.11
+      Adding darling_macro v0.20.11
+      Adding dbl v0.5.0
+      Adding diplomat v0.8.0
+      Adding diplomat-runtime v0.8.3
+      Adding diplomat_core v0.8.1
+    Removing distillery v0.0.1 (https://github.com/merely-made/mere.git?rev=3d1cdacc90aa6a0736154d841223a3ae29e23aa5#3d1cdacc)
+      Adding distillery v0.0.1 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+    Removing document-canvas v0.1.0 (https://github.com/merely-made/mere.git?rev=3d1cdacc90aa6a0736154d841223a3ae29e23aa5#3d1cdacc)
+      Adding document-canvas v0.1.0 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+      Adding dunce v1.0.5
+      Adding dwrote v0.11.5
+      Adding ecdsa v0.17.0
+      Adding ed448 v0.5.0
+      Adding ed448-goldilocks v0.14.0-pre.15
+      Adding eidetic v0.0.2 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+    Removing eidetic-search v0.0.1 (https://github.com/merely-made/mere.git?rev=3d1cdacc90aa6a0736154d841223a3ae29e23aa5#3d1cdacc)
+      Adding eidetic-search v0.0.1 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+      Adding elliptic-curve v0.14.1
+      Adding encoding_c v0.9.8
+      Adding encoding_c_mem v0.2.6
+      Adding env_filter v2.0.0
+      Adding env_logger v0.11.11
+      Adding errand v0.3.4 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+      Adding esp v0.1.0 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+      Adding etagere v0.2.15
+      Adding fallible-iterator v0.3.0
+      Adding fallible-streaming-iterator v0.1.9
+      Adding fearless_simd v0.4.1
+      Adding ff v0.14.0
+      Adding fixed_decimal v0.5.6
+      Adding float-cmp v0.9.0
+      Adding fontconfig-parser v0.5.8
+      Adding fontdb v0.24.0
+      Adding freetype v0.8.0
+      Adding freetype-sys v0.23.0
+      Adding fs_extra v1.3.0
+      Adding fst v0.4.7
+      Adding gaol v0.2.1
+    Removing gemot v0.1.1 (https://github.com/merely-made/mere.git?rev=3d1cdacc90aa6a0736154d841223a3ae29e23aa5#3d1cdacc)
+      Adding gemot v0.1.1 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+      Adding ghash v0.6.0
+      Adding gimli v0.32.3
+      Adding gleam v0.15.1
+      Adding glifo v0.1.1
+      Adding glslopt v0.1.14
+      Adding graft-engine v0.2.0 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+      Adding grafting v0.6.0 (https://github.com/merely-made/wgpu-graft.git?rev=01f3c9f3d68df3247e6b7ec7f65ffbca57e9b2d4#01f3c9f3)
+    Removing grafting v0.6.0 (https://github.com/merely-made/wgpu-graft.git?rev=403a30c2fab39c573d1eebb57a0995e2c3347ff1#403a30c2)
+      Adding grafting-frame v0.1.0 (https://github.com/merely-made/wgpu-graft.git?rev=01f3c9f3d68df3247e6b7ec7f65ffbca57e9b2d4#01f3c9f3)
+    Removing grafting-frame v0.1.0 (https://github.com/merely-made/wgpu-graft.git?rev=403a30c2fab39c573d1eebb57a0995e2c3347ff1#403a30c2)
+    Removing graphshell v0.0.2 (https://github.com/merely-made/mere.git?rev=3d1cdacc90aa6a0736154d841223a3ae29e23aa5#3d1cdacc)
+      Adding graphshell v0.0.2 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+    Removing graphshell-client v0.0.2 (https://github.com/merely-made/mere.git?rev=3d1cdacc90aa6a0736154d841223a3ae29e23aa5#3d1cdacc)
+      Adding graphshell-client v0.0.2 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+      Adding graphshell-endpoint v0.0.2 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+      Adding group v0.14.0
+      Adding harfbuzz-sys v0.7.0
+      Adding harfrust v0.12.0
+      Adding hash2curve v0.14.0
+      Adding hashlink v0.11.1
+      Adding headers v0.4.2
+      Adding headers-core v0.3.0
+      Adding heck v0.4.1
+      Adding http v0.2.12
+      Adding icu_calendar v1.5.2
+      Adding icu_calendar_data v1.5.1
+      Adding icu_capi v1.5.0 (available: v1.5.1)
+      Adding icu_casemap v1.5.1
+      Adding icu_casemap_data v1.5.1
+      Adding icu_collator v1.5.0
+      Adding icu_collator_data v1.5.1
+      Adding icu_collections v1.5.0
+      Adding icu_datetime v1.5.1
+      Adding icu_datetime_data v1.5.1
+      Adding icu_decimal v1.5.0
+      Adding icu_decimal_data v1.5.1
+      Adding icu_experimental v0.1.0
+      Adding icu_experimental_data v0.1.1
+      Adding icu_list v1.5.0
+      Adding icu_list_data v1.5.1
+      Adding icu_locid v1.5.0
+      Adding icu_locid_transform v1.5.0
+      Adding icu_locid_transform_data v1.5.1
+      Adding icu_normalizer v1.5.0
+      Adding icu_normalizer_data v1.5.1
+      Adding icu_pattern v0.2.0
+      Adding icu_plurals v1.5.0
+      Adding icu_plurals_data v1.5.1
+      Adding icu_properties v1.5.1
+      Adding icu_properties_data v1.5.1
+      Adding icu_provider v1.5.0
+      Adding icu_provider_adapters v1.5.0
+      Adding icu_provider_macros v1.5.0
+      Adding icu_segmenter v1.5.0
+      Adding icu_segmenter_data v1.5.1
+      Adding icu_timezone v1.5.0
+      Adding icu_timezone_data v1.5.1
+      Adding illume v0.0.2 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+      Adding imagesize v0.15.0
+    Removing import v0.0.1 (https://github.com/merely-made/mere.git?rev=3d1cdacc90aa6a0736154d841223a3ae29e23aa5#3d1cdacc)
+      Adding import v0.0.1 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+      Adding imsz v0.4.1
+      Adding incipit v0.2.0 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+      Adding inker v0.1.1 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+      Adding insigne v0.0.1 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+      Adding inventory v0.3.24
+      Adding itertools v0.15.0
+      Adding k12 v0.5.1
+      Adding keccak v0.2.2
+      Adding kem v0.3.0
+      Adding keyboard-types v0.8.3
+      Adding knot-editor-host v0.1.1 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+      Adding libsqlite3-sys v0.36.0
+      Adding litemap v0.7.5
+    Removing luggage v0.1.0 (https://github.com/merely-made/mere.git?rev=3d1cdacc90aa6a0736154d841223a3ae29e23aa5#3d1cdacc)
+      Adding luggage v0.1.0 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+      Adding mach2 v0.6.0
+      Adding malloc_buf v0.0.6
+      Adding malloc_size_of_derive v0.1.3
+    Removing mere v0.0.2 (https://github.com/merely-made/mere.git?rev=3d1cdacc90aa6a0736154d841223a3ae29e23aa5#3d1cdacc)
+      Adding mere v0.0.2 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+      Adding mere-alembic v0.0.1 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+    Removing mere-apparatus v0.0.1 (https://github.com/merely-made/mere.git?rev=3d1cdacc90aa6a0736154d841223a3ae29e23aa5#3d1cdacc)
+      Adding mere-apparatus v0.0.1 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+    Removing mere-athanor v0.0.1 (https://github.com/merely-made/mere.git?rev=3d1cdacc90aa6a0736154d841223a3ae29e23aa5#3d1cdacc)
+      Adding mere-athanor v0.0.1 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+    Removing mere-cartography v0.0.2 (https://github.com/merely-made/mere.git?rev=3d1cdacc90aa6a0736154d841223a3ae29e23aa5#3d1cdacc)
+      Adding mere-cartography v0.0.2 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+    Removing mere-chrome v0.0.1 (https://github.com/merely-made/mere.git?rev=3d1cdacc90aa6a0736154d841223a3ae29e23aa5#3d1cdacc)
+      Adding mere-chrome v0.0.1 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+    Removing mere-document-lanes v0.1.0 (https://github.com/merely-made/mere.git?rev=3d1cdacc90aa6a0736154d841223a3ae29e23aa5#3d1cdacc)
+      Adding mere-document-lanes v0.1.0 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+      Adding mere-fetch v0.0.1 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+      Adding mere-forme v0.1.0 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+      Adding mere-kernel v0.0.2 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+    Removing mere-linked-data v0.0.1 (https://github.com/merely-made/mere.git?rev=3d1cdacc90aa6a0736154d841223a3ae29e23aa5#3d1cdacc)
+      Adding mere-linked-data v0.0.1 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+    Removing mere-mesh v0.0.1 (https://github.com/merely-made/mere.git?rev=3d1cdacc90aa6a0736154d841223a3ae29e23aa5#3d1cdacc)
+      Adding mere-mesh v0.0.1 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+    Removing mere-moot v0.0.1 (https://github.com/merely-made/mere.git?rev=3d1cdacc90aa6a0736154d841223a3ae29e23aa5#3d1cdacc)
+      Adding mere-moot v0.0.1 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+      Adding mere-proofs v0.1.0 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+      Adding mere-surface-api v0.1.0 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+      Adding mere-transport v0.0.2 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+    Removing mere-webrtc-carrier v0.0.1 (https://github.com/merely-made/mere.git?rev=3d1cdacc90aa6a0736154d841223a3ae29e23aa5#3d1cdacc)
+      Adding mere-webrtc-carrier v0.0.1 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+      Adding meristem v0.2.0 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+    Removing mien v0.0.1 (https://github.com/merely-made/mere.git?rev=3d1cdacc90aa6a0736154d841223a3ae29e23aa5#3d1cdacc)
+      Adding mien v0.0.1 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+      Adding ml-dsa v0.1.1
+      Adding ml-kem v0.3.2
+      Adding module-lattice v0.2.3
+    Removing mooting v0.1.0 (https://github.com/merely-made/mere.git?rev=3d1cdacc90aa6a0736154d841223a3ae29e23aa5#3d1cdacc)
+      Adding mooting v0.1.0 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+      Adding mozangle v0.6.0
+      Adding mozjs v0.21.6
+      Adding mozjs_sys v140.14.0-0 (available: v140.14.0-0-lts)
+      Adding muniment v0.1.2 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+      Adding nematic v0.1.1 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+      Adding nom-language v0.1.0
+      Adding nom-rfc8288 v0.4.0
+      Adding notochord v0.1.0 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+      Adding num_cpus v1.17.0
+      Adding num_threads v0.1.7
+      Adding numen v0.2.0 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+      Adding objc v0.2.7
+      Adding object v0.37.3
+      Adding ocb3 v0.2.0-rc.3 (available: v0.2.0)
+      Adding ohos-deviceinfo-sys v0.1.8
+      Adding ohos-media-sys v0.1.2
+      Adding ohos-sys-opaque-types v0.1.12
+      Adding ohos-window-sys v0.1.8
+      Adding ordered-channel v1.2.0
+      Adding p256 v0.14.0
+      Adding p384 v0.14.0
+      Adding p521 v0.14.0
+      Adding pandect v0.1.1 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+      Adding password-hash v0.6.1
+      Adding peek-poke v0.3.0
+      Adding peek-poke-derive v0.3.0
+      Adding personae v0.2.1 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+      Adding phc v0.6.1
+      Adding pico-args v0.5.0
+    Removing pictograph v0.2.0 (https://github.com/merely-made/mere.git?rev=3d1cdacc90aa6a0736154d841223a3ae29e23aa5#3d1cdacc)
+      Adding pictograph v0.2.0 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+      Adding pkcs1 v0.8.0-rc.4 (available: v0.8.0-rc.5)
+      Adding plane-split v0.18.0
+    Removing platen v0.0.1 (https://github.com/merely-made/mere.git?rev=3d1cdacc90aa6a0736154d841223a3ae29e23aa5#3d1cdacc)
+      Adding platen v0.0.1 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+      Adding polyval v0.7.3
+      Adding primefield v0.14.0
+      Adding primeorder v0.14.0
+    Removing redshank-model v0.0.0 (https://github.com/merely-made/woodshed.git?rev=9e982b88bf57e41ef4fa846c66ffdd4f05beb91d#9e982b88)
+      Adding redshank-model v0.0.0 (https://github.com/merely-made/woodshed.git?rev=b613fc55d2d59e865b6bb04e55a880ee4773b824#b613fc55)
+    Removing redshank-playback v0.0.0 (https://github.com/merely-made/woodshed.git?rev=9e982b88bf57e41ef4fa846c66ffdd4f05beb91d#9e982b88)
+      Adding redshank-playback v0.0.0 (https://github.com/merely-made/woodshed.git?rev=b613fc55d2d59e865b6bb04e55a880ee4773b824#b613fc55)
+    Removing redshank-storage v0.0.0 (https://github.com/merely-made/woodshed.git?rev=9e982b88bf57e41ef4fa846c66ffdd4f05beb91d#9e982b88)
+      Adding redshank-storage v0.0.0 (https://github.com/merely-made/woodshed.git?rev=b613fc55d2d59e865b6bb04e55a880ee4773b824#b613fc55)
+    Removing redshank-surfaces v0.0.0 (https://github.com/merely-made/woodshed.git?rev=9e982b88bf57e41ef4fa846c66ffdd4f05beb91d#9e982b88)
+      Adding redshank-surfaces v0.0.0 (https://github.com/merely-made/woodshed.git?rev=b613fc55d2d59e865b6bb04e55a880ee4773b824#b613fc55)
+      Adding regex-automata v0.2.0
+      Adding resvg v0.48.1
+      Adding rfc6979 v0.6.0
+      Adding ron v0.12.2
+      Adding roxmltree v0.20.0
+      Adding rsa v0.10.0-rc.18 (available: v0.10.0-rc.19)
+      Adding rsqlite-vfs v0.1.1
+      Adding rusqlite v0.38.0
+      Adding sceno v0.0.4 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+    Removing scenograph v0.0.4 (https://github.com/merely-made/mere.git?rev=3d1cdacc90aa6a0736154d841223a3ae29e23aa5#3d1cdacc)
+      Adding scenograph v0.0.4 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+    Removing scenomise v0.0.4 (https://github.com/merely-made/mere.git?rev=3d1cdacc90aa6a0736154d841223a3ae29e23aa5#3d1cdacc)
+      Adding scenomise v0.0.4 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+      Adding scenotime v0.0.4 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+    Removing scrying-engine v0.2.0 (https://github.com/merely-made/mere.git?rev=3d1cdacc90aa6a0736154d841223a3ae29e23aa5#3d1cdacc)
+      Adding scrying-engine v0.2.0 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+      Adding sea-query v1.0.2
+      Adding sea-query-derive v1.0.0
+      Adding sea-query-rusqlite v0.8.0
+      Adding sec1 v0.8.1
+    Removing seiche v0.0.5 (https://github.com/merely-made/mere.git?rev=3d1cdacc90aa6a0736154d841223a3ae29e23aa5#3d1cdacc)
+      Adding seiche v0.0.5 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+      Adding selectors v0.40.0
+      Adding seq-macro v0.3.6
+      Adding servitor v0.0.2 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+      Adding servo v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+      Adding servo-allocator v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+      Adding servo-background-hang-monitor v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+      Adding servo-background-hang-monitor-api v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+      Adding servo-base v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+      Adding servo-canvas v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+      Adding servo-canvas-traits v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+      Adding servo-config v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+      Adding servo-config-macro v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+      Adding servo-constellation v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+      Adding servo-constellation-traits v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+      Adding servo-default-resources v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+      Adding servo-deny-public-fields v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+      Adding servo-devtools v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+      Adding servo-devtools-traits v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+      Adding servo-dom-struct v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+      Adding servo-embedder-traits v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+      Adding servo-fonts v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+      Adding servo-fonts-traits v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+      Adding servo-geometry v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+      Adding servo-hyper-serde v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+      Adding servo-jstraceable-derive v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+      Adding servo-layout v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+      Adding servo-layout-api v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+      Adding servo-malloc-size-of v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+      Adding servo-media v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+      Adding servo-media-audio v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+      Adding servo-media-derive v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+      Adding servo-media-dummy v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+      Adding servo-media-ohos v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+      Adding servo-media-player v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+      Adding servo-media-streams v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+      Adding servo-media-thread v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+      Adding servo-media-traits v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+      Adding servo-media-webrtc v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+      Adding servo-metrics v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+      Adding servo-net v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+      Adding servo-net-traits v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+      Adding servo-paint v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+      Adding servo-paint-api v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+      Adding servo-pixels v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+      Adding servo-profile v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+      Adding servo-profile-traits v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+      Adding servo-script v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+      Adding servo-script-bindings v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+      Adding servo-script-traits v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+      Adding servo-storage v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+      Adding servo-storage-traits v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+      Adding servo-timers v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+      Adding servo-tracing v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+      Adding servo-url v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+      Adding servo-wakelock v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+      Adding servo-webgl v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+      Adding servo-webvtt v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+      Adding servo-webxr-api v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+      Adding servo-wgpu-interop-adapter v0.1.0 (https://github.com/merely-made/wgpu-graft.git?rev=01f3c9f3d68df3247e6b7ec7f65ffbca57e9b2d4#01f3c9f3)
+      Adding servo-xpath v0.5.0 (https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd)
+      Adding servo_arc v0.4.3
+      Adding sha3 v0.11.0
+      Adding sha3 v0.12.0
+      Adding shake v0.1.0
+      Adding simplecss v0.2.2
+      Adding smallbitvec v2.6.1
+      Adding speexdsp-resampler v0.1.0
+      Adding sponge-cursor v0.1.0
+      Adding sprigging v0.2.1 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+      Adding sqlite-wasm-rs v0.5.5
+      Adding stickleback v0.1.1 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+      Adding strck v0.1.2
+      Adding strck_ident v0.1.2
+      Adding stylo v0.20.0
+      Adding stylo_atoms v0.20.0
+      Adding stylo_derive v0.20.0
+      Adding stylo_dom v0.20.0
+      Adding stylo_malloc_size_of v0.20.0
+      Adding stylo_static_prefs v0.20.0
+      Adding stylo_traits v0.20.0
+      Adding surfman v0.13.0
+      Adding svgtypes v0.16.1
+      Adding swapper v0.1.0
+      Adding sys-locale v0.3.2
+      Adding tabard v0.0.1 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+      Adding taffy v0.12.2
+      Adding tikv-jemalloc-sys v0.6.1+5.3.0-1-ge13ca993e8ccb9ba9847cc330696e02839f328f7
+      Adding tikv-jemallocator v0.6.1
+    Removing timed-text v0.1.0 (https://github.com/merely-made/woodshed.git?rev=9e982b88bf57e41ef4fa846c66ffdd4f05beb91d#9e982b88)
+      Adding timed-text v0.1.0 (https://github.com/merely-made/woodshed.git?rev=b613fc55d2d59e865b6bb04e55a880ee4773b824#b613fc55)
+      Adding tinct v0.1.2 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+      Adding tiny-skia v0.12.0
+      Adding tiny-skia-path v0.12.0
+      Adding tinystr v0.7.6
+      Adding to_shmem v0.5.0
+      Adding to_shmem_derive v0.1.0
+      Adding topological-sort v0.1.0
+      Adding tracy-rs v0.1.2
+      Adding tungstenite v0.30.0
+      Adding turboshake v0.7.1
+      Adding uluru v3.1.0
+      Adding unic-char-property v0.9.0
+      Adding unic-char-range v0.9.0
+      Adding unic-common v0.9.0
+      Adding unic-ucd-ident v0.9.0
+      Adding unic-ucd-version v0.9.0
+      Adding unicode-properties v0.1.4
+      Adding unicode-script v0.5.8
+      Adding unicode-vo v0.1.0
+      Adding unicode_categories v0.1.1
+      Adding urlpattern v0.3.0
+      Adding usvg v0.48.1
+      Adding utf16_iter v1.0.5
+    Removing uxtree v0.0.2 (https://github.com/merely-made/mere.git?rev=3d1cdacc90aa6a0736154d841223a3ae29e23aa5#3d1cdacc)
+      Adding uxtree v0.0.2 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+      Adding vello_common v0.0.9
+      Adding vello_cpu v0.0.9
+      Adding void v1.0.2
+      Adding webdriver v0.53.0
+      Adding webrender v0.70.0
+      Adding webrender_api v0.70.0
+      Adding webrender_build v0.70.0
+    Removing weld-engine v0.2.0 (https://github.com/merely-made/mere.git?rev=3d1cdacc90aa6a0736154d841223a3ae29e23aa5#3d1cdacc)
+      Adding weld-engine v0.2.0 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+      Adding wnaf v0.14.1
+      Adding workbench v0.1.0 (https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee312)
+      Adding wr_glyph_rasterizer v0.70.0
+      Adding wr_malloc_size_of v0.2.2
+      Adding write16 v1.0.0
+      Adding writeable v0.5.5
+      Adding wuff v0.2.9
+      Adding wuff-capi v0.2.0
+      Adding x448 v0.14.0-pre.12
+      Adding xml v1.4.0
+      Adding xmlwriter v0.1.0
+      Adding yoke v0.7.5
+      Adding yoke-derive v0.7.5
+      Adding yuv v0.8.19
+      Adding zeitstempel v0.2.2
+      Adding zerotrie v0.1.3
+      Adding zerovec v0.10.4
+      Adding zerovec-derive v0.10.4
+note: pass `--verbose` to see 64 unchanged dependencies behind latest

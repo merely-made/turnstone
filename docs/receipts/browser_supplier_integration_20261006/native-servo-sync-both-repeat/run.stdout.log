@@ -1,0 +1,117 @@
+2026-10-07T05:39:28.208030Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:39:28.218041Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:39:29.092740Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:39:29.960354Z  WARN turnstone::gemini_identity: failed to project Gemini client identity error=client identities are only valid for gemini:// or titan:// capsules
+2026-10-07T05:39:30.023721Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:39:30.911116Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:39:30.920395Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:39:32.588813Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:39:33.566429Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:39:35.138271Z  WARN servo_base: couldn't open C:\Users\mark_\Code\repos\turnstone\docs\receipts\browser_supplier_integration_20261006\profile\servo-shared\supplier-b3-sync-both-repeat\auth_cache.json: The system cannot find the file specified. (os error 2)
+2026-10-07T05:39:35.138609Z  WARN servo_base: couldn't open C:\Users\mark_\Code\repos\turnstone\docs\receipts\browser_supplier_integration_20261006\profile\servo-shared\supplier-b3-sync-both-repeat\hsts_list.json: The system cannot find the file specified. (os error 2)
+2026-10-07T05:39:35.138750Z  WARN servo_base: couldn't open C:\Users\mark_\Code\repos\turnstone\docs\receipts\browser_supplier_integration_20261006\profile\servo-shared\supplier-b3-sync-both-repeat\cookie_jar.json: The system cannot find the file specified. (os error 2)
+2026-10-07T05:39:35.138937Z  WARN servo_base: couldn't open C:\Users\mark_\Code\repos\turnstone\docs\receipts\browser_supplier_integration_20261006\profile\servo-shared\supplier-b3-sync-both-repeat\localstorage.json: The system cannot find the file specified. (os error 2)
+2026-10-07T05:39:35.140365Z  WARN servo_base: couldn't open C:\Users\mark_\Code\repos\turnstone\docs\receipts\browser_supplier_integration_20261006\profile\servo-shared\supplier-b3-sync-both-repeat\localstorage.json: The system cannot find the file specified. (os error 2)
+2026-10-07T05:39:35.236562Z  WARN servo_constellation::constellation: Pipeline(1,1): Visibility change for closed pipeline
+2026-10-07T05:39:35.318274Z  WARN script::timers: Resuming an already resumed timer.
+2026-10-07T05:39:35.325649Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:39:35.336004Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:39:35.506820Z  WARN webrender::device::gl: Cropping texture upload Box2D((0, 0), (0, 1)) to None
+2026-10-07T05:39:35.506882Z  WARN webrender::device::gl: Cropping texture upload Box2D((0, 0), (0, 1)) to None
+2026-10-07T05:39:35.507052Z  WARN webrender::device::gl: Cropping texture upload Box2D((0, 0), (0, 1)) to None
+2026-10-07T05:39:36.923230Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:39:38.683081Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:39:38.691852Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:39:40.394435Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:39:42.101269Z  WARN turnstone::gemini_identity: failed to project Gemini client identity error=client identities are only valid for gemini:// or titan:// capsules
+2026-10-07T05:39:42.149879Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:39:42.159177Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:39:43.752920Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:39:44.719665Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:39:44.728885Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:39:46.398996Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:39:46.408085Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:39:48.085235Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:39:48.094969Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:39:48.381001Z  WARN servo_constellation::constellation: Pipeline(1,2): Visibility change for closed pipeline
+2026-10-07T05:39:48.390799Z  WARN script::timers: Resuming an already resumed timer.
+2026-10-07T05:39:48.467425Z  WARN webrender::device::gl: Cropping texture upload Box2D((0, 0), (0, 1)) to None
+2026-10-07T05:39:48.467505Z  WARN webrender::device::gl: Cropping texture upload Box2D((0, 0), (0, 1)) to None
+2026-10-07T05:39:48.467720Z  WARN webrender::device::gl: Cropping texture upload Box2D((0, 0), (0, 1)) to None
+2026-10-07T05:39:49.675679Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:39:49.684389Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:39:51.305412Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:39:53.120986Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:39:54.099134Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:39:54.108116Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:39:55.815841Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:39:56.777720Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:39:56.787357Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:39:57.970478Z  WARN script::timers: Resuming an already resumed timer.
+2026-10-07T05:39:58.373353Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:39:58.382894Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:39:59.924438Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:40:00.007339Z  WARN script::timers: Resuming an already resumed timer.
+2026-10-07T05:40:01.665367Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:40:01.674839Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:40:03.329309Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:40:03.338552Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:40:04.927822Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:40:05.884569Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:40:05.896193Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:40:06.276509Z  WARN turnstone::gemini_identity: failed to project Gemini client identity error=client identities are only valid for gemini:// or titan:// capsules
+2026-10-07T05:40:06.305318Z  WARN turnstone::shell::effects: content spawn failed node=449fdf2d-3991-4417-ad9f-8c2b09744faf url=http://127.0.0.1:43124/result.html?page=A&text=alpha&clicks=1 engine=genet.reader err=unsupported: static fleece extraction found an empty scripted shell; retry over the post-JS DOM
+2026-10-07T05:40:06.305380Z  WARN turnstone::app::updates: content spawn failed node=449fdf2d-3991-4417-ad9f-8c2b09744faf error=unsupported: static fleece extraction found an empty scripted shell; retry over the post-JS DOM (genet.reader)
+2026-10-07T05:40:07.635549Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:40:08.573447Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:40:08.582040Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:40:10.112373Z  WARN servo_constellation::constellation: Pipeline(1,5): Visibility change for closed pipeline
+2026-10-07T05:40:10.117092Z  WARN script::timers: Resuming an already resumed timer.
+2026-10-07T05:40:10.362294Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:40:10.369636Z  WARN webrender::device::gl: Cropping texture upload Box2D((0, 0), (0, 1)) to None
+2026-10-07T05:40:10.369722Z  WARN webrender::device::gl: Cropping texture upload Box2D((0, 0), (0, 1)) to None
+2026-10-07T05:40:10.369942Z  WARN webrender::device::gl: Cropping texture upload Box2D((0, 0), (0, 1)) to None
+2026-10-07T05:40:10.370931Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:40:11.913045Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:40:11.921452Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:40:13.589974Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:40:14.531639Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:40:14.540312Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:40:16.131080Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:40:17.795549Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:40:17.804070Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:40:19.394372Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:40:19.403072Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:40:19.924902Z  WARN servo_constellation::constellation: Pipeline(1,6): Visibility change for closed pipeline
+2026-10-07T05:40:19.949792Z  WARN script::timers: Resuming an already resumed timer.
+2026-10-07T05:40:19.950079Z  WARN webrender::device::gl: Cropping texture upload Box2D((0, 0), (0, 1)) to None
+2026-10-07T05:40:19.950121Z  WARN webrender::device::gl: Cropping texture upload Box2D((0, 0), (0, 1)) to None
+2026-10-07T05:40:19.950280Z  WARN webrender::device::gl: Cropping texture upload Box2D((0, 0), (0, 1)) to None
+2026-10-07T05:40:20.052409Z  WARN webrender::device::gl: Cropping texture upload Box2D((0, 0), (0, 1)) to None
+2026-10-07T05:40:20.052471Z  WARN webrender::device::gl: Cropping texture upload Box2D((0, 0), (0, 1)) to None
+2026-10-07T05:40:20.052760Z  WARN webrender::device::gl: Cropping texture upload Box2D((0, 0), (0, 1)) to None
+2026-10-07T05:40:21.057376Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:40:21.066306Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:40:22.732226Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:40:22.741005Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:40:23.655038Z  WARN servo_constellation::constellation: Pipeline(1,7): Visibility change for closed pipeline
+2026-10-07T05:40:23.660403Z  WARN script::timers: Resuming an already resumed timer.
+2026-10-07T05:40:23.758594Z  WARN webrender::device::gl: Cropping texture upload Box2D((0, 0), (0, 1)) to None
+2026-10-07T05:40:23.758654Z  WARN webrender::device::gl: Cropping texture upload Box2D((0, 0), (0, 1)) to None
+2026-10-07T05:40:23.758832Z  WARN webrender::device::gl: Cropping texture upload Box2D((0, 0), (0, 1)) to None
+2026-10-07T05:40:24.274963Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:40:24.283588Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:40:25.895951Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:40:25.905094Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:40:27.437573Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:40:27.447111Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:40:28.985205Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:40:30.631858Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:40:30.640942Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:40:31.043220Z  WARN profile_traits::mem: Error communicating with the memory profiler thread: Disconnected
+2026-10-07T05:40:31.043220Z  WARN profile_traits::mem: Error communicating with the memory profiler thread: Disconnected
+2026-10-07T05:40:31.043220Z  WARN profile_traits::mem: Error communicating with the memory profiler thread: Disconnected
+2026-10-07T05:40:31.043220Z  WARN profile_traits::mem: Error communicating with the memory profiler thread: Disconnected
+2026-10-07T05:40:31.043231Z  WARN profile_traits::mem: Error communicating with the memory profiler thread: Disconnected
+2026-10-07T05:40:31.044863Z  WARN profile_traits::mem: Error communicating with the memory profiler thread: Disconnected
+2026-10-07T05:40:31.049531Z  WARN profile_traits::mem: Error communicating with the memory profiler thread: Disconnected

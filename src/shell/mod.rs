@@ -23,7 +23,9 @@ mod render;
 mod renderers;
 #[cfg(all(feature = "scry", windows))]
 mod scry;
-#[cfg(all(any(feature = "weld", feature = "scry"), windows))]
+#[cfg(all(feature = "servo", windows))]
+mod servo;
+#[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
 mod surface_frames;
 mod surface_poll;
 #[cfg(all(feature = "weld", windows))]
@@ -136,9 +138,7 @@ pub(crate) fn project_engine_inventory(
         ),
         (
             inker::routing::ENGINE_GRAFT_SERVO,
-            EngineAvailability::Unavailable {
-                reason: "Turnstone has no upstream Servo host factory yet".into(),
-            },
+            servo_construction_availability(),
         ),
         (
             inker::routing::ENGINE_WELD_CHROMIUM,
@@ -155,6 +155,20 @@ pub(crate) fn project_engine_inventory(
         }
     }
     engines
+}
+
+fn servo_construction_availability() -> crate::content::EngineAvailability {
+    use crate::content::EngineAvailability;
+    #[cfg(all(feature = "servo", windows))]
+    {
+        EngineAvailability::OnDemand {
+            detail: "upstream Servo shares the configured named profile across this process's views; native construction is checked when selected".into(),
+        }
+    }
+    #[cfg(not(all(feature = "servo", windows)))]
+    EngineAvailability::Unavailable {
+        reason: "requires a Windows build with the servo feature".into(),
+    }
 }
 
 fn weld_construction_availability() -> crate::content::EngineAvailability {
@@ -281,6 +295,55 @@ fn shared_scenario_from_env() -> Option<taproot::Scenario> {
             taproot::Scenario::parse(&fallback).expect("fallback scenario parses")
         }
     })
+}
+
+/// A launch-selected name identifies Servo's process profile. An explicit
+/// directory overrides its storage location, while keeping that visible name.
+#[cfg(any(test, all(feature = "servo", windows)))]
+fn servo_profile_directory(
+    data_root: &std::path::Path,
+    name: &str,
+    directory: Option<std::path::PathBuf>,
+) -> Result<std::path::PathBuf, String> {
+    let reserved = name.split('.').next().unwrap_or("").to_ascii_uppercase();
+    let device_name = matches!(reserved.as_str(), "CON" | "PRN" | "AUX" | "NUL")
+        || (reserved.len() == 4
+            && (reserved.starts_with("COM") || reserved.starts_with("LPT"))
+            && matches!(reserved.as_bytes()[3], b'1'..=b'9'));
+    if name.is_empty() || name.trim() != name || name.ends_with('.') || device_name
+        || name.chars().any(|c| c.is_control() || "<>:\"/\\|?*".contains(c))
+    {
+        return Err("TURNSTONE_SERVO_PROFILE must be a nonempty profile name usable as one directory component".into());
+    }
+    match directory {
+        Some(path) if path.is_absolute() => Ok(path),
+        Some(_) => Err("TURNSTONE_SERVO_PROFILE_DIR must be an absolute directory".into()),
+        None => Ok(data_root.join("servo").join("profiles").join(name)),
+    }
+}
+
+#[cfg(test)]
+mod servo_profile_tests {
+    use super::servo_profile_directory;
+    use std::path::PathBuf;
+
+    #[test]
+    fn named_process_profile_has_no_node_component_and_can_move() {
+        let root = std::env::current_dir().unwrap();
+        assert_eq!(servo_profile_directory(&root, "Research", None).unwrap(),
+            root.join("servo/profiles/Research"));
+        let location = root.join("custom-browser-data");
+        assert_eq!(servo_profile_directory(&root, "Research", Some(location.clone())).unwrap(), location);
+    }
+
+    #[test]
+    fn ambiguous_or_escaping_profile_bindings_are_refused() {
+        let root = std::env::current_dir().unwrap();
+        for name in ["", " ", ".", "..", "../other", "x\\y", "a:b", "a.", "NUL", "COM1.txt"] {
+            assert!(servo_profile_directory(&root, name, None).is_err(), "{name}");
+        }
+        assert!(servo_profile_directory(&root, "Research", Some(PathBuf::from("relative"))).is_err());
+    }
 }
 
 fn surface_poll_interval_from_env() -> std::time::Duration {
@@ -472,11 +535,13 @@ pub struct Shell {
     /// Exact app request/query identity for progressive hosted find results.
     surface_find_requests: std::collections::HashMap<uuid::Uuid, (u64, String)>,
     page_captures: page_capture::CaptureCorrelation,
-    #[cfg(all(any(feature = "weld", feature = "scry"), windows))]
+    #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
     surface_frames:
         std::collections::HashMap<uuid::Uuid, Option<surface_frames::ImportedSurfaceFrame>>,
     #[cfg(all(feature = "scry", windows))]
     scry_factory: Option<Arc<scry::TurnstoneScryFactory>>,
+    #[cfg(all(feature = "servo", windows))]
+    servo_factory: Option<Arc<servo::TurnstoneServoFactory>>,
     #[cfg(all(feature = "scry", windows))]
     scry_frame_importers:
         std::collections::HashMap<uuid::Uuid, surface_frames::ScryingFrameImporter>,
@@ -847,10 +912,12 @@ impl Shell {
             surface_poll_clock: surface_poll::SurfacePollClock::new(surface_poll_interval_from_env()),
             surface_find_requests: std::collections::HashMap::new(),
             page_captures: page_capture::CaptureCorrelation::default(),
-            #[cfg(all(any(feature = "weld", feature = "scry"), windows))]
+            #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
             surface_frames: std::collections::HashMap::new(),
             #[cfg(all(feature = "scry", windows))]
             scry_factory: None,
+            #[cfg(all(feature = "servo", windows))]
+            servo_factory: None,
             #[cfg(all(feature = "scry", windows))]
             scry_frame_importers: std::collections::HashMap::new(),
             pending_surface_spawns: Vec::new(),
@@ -950,7 +1017,7 @@ impl Shell {
         self.surface_producers.clear();
         self.surface_find_requests.clear();
         self.page_captures.clear_surfaces();
-        #[cfg(all(any(feature = "weld", feature = "scry"), windows))]
+        #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
         self.surface_frames.clear();
         #[cfg(all(feature = "scry", windows))]
         self.scry_frame_importers.clear();
@@ -1025,6 +1092,45 @@ impl Shell {
     #[cfg(not(all(feature = "scry", windows)))]
     fn ensure_scry_engine(&mut self) -> Result<(), String> {
         Err("scrying.web is available only in a Windows build with `--features scry`".into())
+    }
+
+    #[cfg(all(feature = "servo", windows))]
+    fn ensure_servo_engine(&mut self) -> Result<std::path::PathBuf, String> {
+        if let Some(factory) = &self.servo_factory {
+            return Ok(factory.profile_dir().to_owned());
+        }
+        let host = self.host.as_ref()
+            .ok_or_else(|| "the Turnstone wgpu host is not ready".to_owned())?;
+        let profile_name = match std::env::var("TURNSTONE_SERVO_PROFILE") {
+            Ok(name) => name,
+            Err(std::env::VarError::NotPresent) => "Default".into(),
+            Err(std::env::VarError::NotUnicode(_)) => return Err("TURNSTONE_SERVO_PROFILE must be valid UTF-8".into()),
+        };
+        let profile = servo_profile_directory(
+            &self.app.data_root,
+            &profile_name,
+            std::env::var_os("TURNSTONE_SERVO_PROFILE_DIR").map(std::path::PathBuf::from),
+        )?;
+        std::fs::create_dir_all(&profile)
+            .map_err(|error| format!("could not create Servo profile {}: {error}", profile.display()))?;
+        let profile = effects::browser_profile_path(profile.canonicalize()
+            .map_err(|error| format!("could not resolve Servo profile {}: {error}", profile.display()))?)?;
+        let proxy = self.proxy.clone();
+        let factory = Arc::new(servo::TurnstoneServoFactory::new(
+            servo::ServoHostOptions { profile_name, profile_dir: profile.clone() },
+            host.device().clone(),
+            host.queue().clone(),
+            Arc::new(move || { let _ = proxy.send_event(()); }),
+        ).map_err(|error| error.to_string())?);
+        self.surface_engines.register(Box::new(graft_engine::GraftEngine::new(factory.clone())));
+        self.servo_factory = Some(factory);
+        self.publish_engine_inventory();
+        Ok(profile)
+    }
+
+    #[cfg(not(all(feature = "servo", windows)))]
+    fn ensure_servo_engine(&mut self) -> Result<std::path::PathBuf, String> {
+        Err("graft.servo is available only in a Windows build with `--features servo`".into())
     }
 
     /// Poll the value projection after a settings pane persists a write. The

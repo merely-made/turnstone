@@ -1,0 +1,71 @@
+{
+  "reviewed_utc": "2026-10-07T01:47:03.740692+00:00",
+  "phase": "scry-weld",
+  "method": "Direct visual inspection of composed native scenario captures by root agent",
+  "limitations": [
+    "Physical keyboard and OS IME are separate gates",
+    "Cross-engine DPI parity is not established"
+  ],
+  "captures": [
+    {
+      "path": "native-weld-input/01b_independent_weld_input.png",
+      "sha256": "82b6367ca86e4e83d8f28048a84ccab4639134876c3d59defeee29837c212d2f",
+      "finding": "Two current native pages visibly retain alpha/bravo and independent click counts of one."
+    },
+    {
+      "path": "native-weld-input/02_find.png",
+      "sha256": "8623c9ff41ff1ff8cbf2e819cdf125425dbcc32e1225ca0ddb7b39d2b8977745",
+      "finding": "Native find produces the visible matching highlight in page A."
+    },
+    {
+      "path": "native-weld-input/03_zoom.png",
+      "sha256": "5367390325925f981587e9e8e036baf6b73e4371f9ce317fa93a005f3262edb6",
+      "finding": "Page A reports 463 CSS width and DPR 1.1; page B retains 509 CSS width and DPR 1."
+    },
+    {
+      "path": "native-scry-input/02_text_pointer_and_keyboard.png",
+      "sha256": "08598de911c6d0b3e91dc87c03b6cc148b7b09d9df857e18aee4e63aa414496d",
+      "finding": "Current page text and independent input/click results are visible."
+    },
+    {
+      "path": "native-scry-input/02c_a_wheel.png",
+      "sha256": "5d89fa09ebc1fdd33514944a731f4d50468fe59f0e419e9bc6cb6f95be740c12",
+      "finding": "Page A has visibly scrolled while page B retains its own position."
+    },
+    {
+      "path": "native-scry-input/02d_b_wheel.png",
+      "sha256": "3da880284a1efc9335595cb71fe0d80591f65cb5fccd5d79485dd6e66be35da1",
+      "finding": "Page B has visibly scrolled after its own routed wheel input."
+    },
+    {
+      "path": "native-scry-input/04_resized_two_pages.png",
+      "sha256": "78a8f158295b64c6942a59fd1c522d82a98d32cc66b729ee898957a772c555b2",
+      "finding": "Both current native surfaces survive the narrow resized workbench, with viewport geometry reflecting the new size. DPR 2 differs from Weld."
+    },
+    {
+      "path": "native-scry-input/06_a_scry_reconstructed.png",
+      "sha256": "97b5b9133fe9b76e16eff829f239926f617ba05409cb934a02c2626914f1d4d6",
+      "finding": "Switching page A through Reader and back produces a current native surface beside page B."
+    },
+    {
+      "path": "native-scry-input/07_both_closed.png",
+      "sha256": "64d09933e05eafb6c2b367db534d2caccaf8164ee93114d73e2e6fe59c5fbf62",
+      "finding": "Closed views leave the shell content with native surfaces retired; zero producer/cache/importer assertions are in scenario and idle evidence."
+    },
+    {
+      "path": "native-scry-restart/03_restored_b_profile.png",
+      "sha256": "3834d5237a161b6e98865ef30df8415cbd96f2d7d8ef137d4d698fecafe60390",
+      "finding": "After a separate process restart, page B visibly restores bravo and its saved local state."
+    },
+    {
+      "path": "native-weld-permission/01_permission_decision.png",
+      "sha256": "f3f6ac5c07814be5093946513aa677459bd958b048f52c84e6dd7fc8d2aaace3",
+      "finding": "The exact-origin permission decision card is rendered in the host."
+    },
+    {
+      "path": "native-weld-permission/02_permission_answered.png",
+      "sha256": "6d881c7dcf49e379b9a0dc3d73cfb8b17b8825f91bd0297e9501283ad627f443",
+      "finding": "The native page reports Permission callback answered after the host Deny action."
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+
+running 6 tests
+test app::document_find_arms::tests::captured_target_and_request_drop_late_find_results ... ok
+test app::document_find_arms::tests::unsupported_engine_neither_offers_nor_opens_find ... ok
+test chrome_view::tests::document_find_projects_controlled_input_status_and_controls ... ok
+test app::document_find_arms::tests::engine_managed_count_is_observed_without_synthetic_matches ... ok
+test app::document_find_arms::tests::current_match_is_observable_and_accessible ... ok
+test app::document_find_arms::tests::workbench_find_and_zoom_follow_the_browser_page_with_an_independent_graph_cursor ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 677 filtered out; finished in 0.02s
+

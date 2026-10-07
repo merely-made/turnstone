@@ -1,0 +1,175 @@
+# Mixed-runtime coexistence gate on one Windows process and host wgpu device.
+# Reuse the unchanged Servo fixture on 43124 and Scry fixture on 43123.
+# Start two Servo views before creating WebView2 and then CEF. The Scry fixture's
+# page B keeps its Scry B title even when its selected engine is Weld.
+# This checks current simultaneous pixels and teardown. Input is qualified by
+# the separate engine scenarios, not by this mixed-runtime capture.
+settle 30
+key escape
+open ${SERVO_FIXTURE_BASE}/page-a.html
+settle 80
+act Open node in Workbench
+settle 80
+act Open Inspector pane
+settle 10
+click surface:inspector .radio @data-engine-id=graft.servo
+settle 160
+assert row Viewer: graft.servo
+assert snap browser-current-engine == graft.servo
+assert snap browser-current-content == live
+act Close pane
+settle 10
+act Open node in Workbench
+settle 10
+assert wb-cells == 1
+assert snap host-surface-producers == 1
+assert snap host-servo-views == 1
+
+open ${SERVO_FIXTURE_BASE}/page-b.html
+settle 80
+act Open node in Workbench
+settle 80
+act Open Inspector pane
+settle 10
+click surface:inspector .radio @data-engine-id=graft.servo
+settle 160
+assert row Viewer: graft.servo
+assert snap browser-current-engine == graft.servo
+assert snap browser-current-content == live
+act Close pane
+settle 10
+act Open node in Workbench
+settle 10
+assert wb-cells == 2
+assert snap host-surface-producers == 2
+assert snap host-servo-views == 2
+assert snap host-servo-profile == ${TURNSTONE_SERVO_PROFILE}
+
+open ${SCRY_FIXTURE_BASE}/page-a.html
+settle 80
+act Open node in Workbench
+settle 80
+act Open Inspector pane
+settle 10
+click surface:inspector .radio @data-engine-id=scrying.web
+settle 160
+assert row Viewer: scrying.web
+assert snap browser-current-engine == scrying.web
+assert snap browser-current-content == live
+act Close pane
+settle 10
+act Open node in Workbench
+settle 10
+assert wb-cells == 3
+assert snap host-surface-producers == 3
+assert snap host-servo-views == 2
+assert snap host-scry-producers == 1
+assert snap host-scry-imported-pages == 1
+
+open ${SCRY_FIXTURE_BASE}/page-b.html
+settle 80
+act Open node in Workbench
+settle 80
+act Open Inspector pane
+settle 10
+click surface:inspector .radio @data-engine-id=weld.chromium
+settle 160
+assert row Viewer: weld.chromium
+assert snap browser-current-engine == weld.chromium
+assert snap browser-current-content == live
+act Close pane
+settle 10
+act Open node in Workbench
+settle 10
+assert wb-cells == 4
+assert wb-cell Servo A
+assert wb-cell Servo B
+assert wb-cell Scry A
+assert wb-cell Scry B
+assert snap host-surface-producers == 4
+assert snap host-servo-views == 2
+assert snap host-scry-producers == 1
+assert snap host-scry-imported-pages == 1
+act Maximize pane
+settle 60
+assert maximized
+capture 01_four_simultaneous_native_pages
+record-idle four-native-pages
+# Review all four cells' current fixture pixels alongside four producers,
+# two Servo views, and one live Scry importer in the surface-frames receipt.
+
+click surface:workbench .tab Servo A
+settle 20
+assert snap browser-current-engine == graft.servo
+assert snap browser-current-content == live
+assert snap browser-current ~ Servo A
+click surface:workbench .tab Servo B
+settle 20
+assert snap browser-current-engine == graft.servo
+assert snap browser-current-content == live
+assert snap browser-current ~ Servo B
+click surface:workbench .tab Scry A
+settle 20
+assert snap browser-current-engine == scrying.web
+assert snap browser-current-content == live
+assert snap browser-current ~ Scry A
+click surface:workbench .tab Scry B
+settle 20
+assert snap browser-current-engine == weld.chromium
+assert snap browser-current-content == live
+assert snap browser-current ~ Scry B
+assert snap host-surface-producers == 4
+assert snap host-servo-views == 2
+
+# Change pane geometry without relying on fixture input coordinates.
+act Maximize pane
+settle 60
+assert not-maximized
+divider 0.65
+settle 60
+assert wb-cells == 4
+assert snap host-surface-producers == 4
+assert snap host-servo-views == 2
+assert snap host-scry-producers == 1
+capture 02_four_pages_after_resize
+record-idle mixed-resized
+
+# Close CEF, WebView2, and both Servo views through their existing node action.
+click surface:workbench .tab Scry B
+settle 10
+assert snap browser-current-engine == weld.chromium
+act Toggle live content
+settle 60
+assert snap host-surface-producers == 3
+assert snap host-servo-views == 2
+click surface:workbench .tab Scry A
+settle 10
+assert snap browser-current-engine == scrying.web
+act Toggle live content
+settle 60
+assert snap host-surface-producers == 2
+assert snap host-servo-views == 2
+assert snap host-scry-producers == 0
+assert snap host-scry-imported-pages == 0
+click surface:workbench .tab Servo A
+settle 10
+assert snap browser-current-engine == graft.servo
+act Toggle live content
+settle 60
+assert snap host-surface-producers == 1
+assert snap host-servo-views == 1
+click surface:workbench .tab Servo B
+settle 10
+assert snap browser-current-engine == graft.servo
+act Toggle live content
+settle 60
+assert wb-cells == 4
+assert snap host-surface-producers == 0
+assert snap host-servo-views == 0
+assert snap host-scry-producers == 0
+assert snap host-scry-imported-pages == 0
+capture 03_all_native_producers_closed
+record-idle final-mixed-closed
+# Acceptance also requires final-mixed-closed.surface-frames.json cached_frames
+# to be zero, verified from the completed native receipt rather than this log.
+log Mixed runtime: two upstream Servo views, one Scry page and one Weld page share the host device; simultaneous composition, resize and per-node teardown

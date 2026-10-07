@@ -1,0 +1,5 @@
+Command: cargo metadata --offline --locked --format-version 1 --manifest-path ports/redshank/Cargo.toml
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+Exit code: 0

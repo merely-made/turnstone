@@ -1,0 +1,577 @@
+{
+  "recorded_utc": "2026-10-07T01:31:53.205466+00:00",
+  "phase": "scry-weld",
+  "source_label": "scry-weld",
+  "source_manifest": "source-manifest-scry-weld.json",
+  "source_archive": "source-inputs-scry-weld.zip",
+  "source_commit": "a616ece9e16571cd662d34c279d92274f5d8ced2",
+  "features": [
+    "scry",
+    "weld"
+  ],
+  "exe_sha256": "b7bfd160ceab9710810b1993ac1a98eef04984fed670ffa9c9203ad91da861bb",
+  "explicit_completed_selection": [
+    "native-weld-input",
+    "native-scry-input",
+    "native-scry-restart",
+    "native-weld-permission",
+    "dependency-compatibility",
+    "shell-tests.log",
+    "find-tests.log",
+    "chrome-tests.log",
+    "turnstone-scry-weld-build.log",
+    "resolve-aligned-update.log",
+    "resolve-update.log",
+    "permission-server.receipt",
+    "permission-server.ready"
+  ],
+  "explicit_running_log_exclusions": [],
+  "freezer_command": [
+    "C:\\Users\\mark_\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\python.exe",
+    "docs/receipts/browser_supplier_integration_20261006/freeze-artifacts.py",
+    "--phase",
+    "scry-weld",
+    "--source-label",
+    "scry-weld",
+    "--select",
+    "native-weld-input",
+    "--select",
+    "native-scry-input",
+    "--select",
+    "native-scry-restart",
+    "--select",
+    "native-weld-permission",
+    "--select",
+    "dependency-compatibility",
+    "--select",
+    "shell-tests.log",
+    "--select",
+    "find-tests.log",
+    "--select",
+    "chrome-tests.log",
+    "--select",
+    "turnstone-scry-weld-build.log",
+    "--select",
+    "resolve-aligned-update.log",
+    "--select",
+    "resolve-update.log",
+    "--select",
+    "permission-server.receipt",
+    "--select",
+    "permission-server.ready"
+  ],
+  "freezer_python_version": "3.11.14 (main, Jan 14 2026, 19:28:21) [MSC v.1944 64 bit (AMD64)]",
+  "native_gates_validated": [
+    {
+      "directory": "native-scry-input",
+      "native_exit": 0,
+      "scenario_result": "RESULT ok",
+      "executable_hash_fields_verified": [],
+      "hash_limit": "Process receipt has no executable hash; labeled source/executable fingerprint verified before archive"
+    },
+    {
+      "directory": "native-scry-restart",
+      "native_exit": 0,
+      "scenario_result": "RESULT ok",
+      "executable_hash_fields_verified": [],
+      "hash_limit": "Process receipt has no executable hash; labeled source/executable fingerprint verified before archive"
+    },
+    {
+      "directory": "native-weld-input",
+      "native_exit": 0,
+      "scenario_result": "RESULT ok",
+      "executable_hash_fields_verified": [],
+      "hash_limit": "Process receipt has no executable hash; labeled source/executable fingerprint verified before archive"
+    },
+    {
+      "directory": "native-weld-permission",
+      "native_exit": 0,
+      "scenario_result": "RESULT ok",
+      "executable_hash_fields_verified": [],
+      "hash_limit": "Process receipt has no executable hash; labeled source/executable fingerprint verified before archive"
+    }
+  ],
+  "files": [
+    {
+      "path": "chrome-tests.log",
+      "bytes": 14801,
+      "sha256": "1ae8b9e10720c4e5e6990ed23e9849c4029101499c45c8582bbbd04187d6c3e3"
+    },
+    {
+      "path": "dependency-compatibility/knot-editor-git-diff.log",
+      "bytes": 42266,
+      "sha256": "4d9003bee4fada951b08668005b506b3e67d805933efae8297762140210ed54a"
+    },
+    {
+      "path": "dependency-compatibility/knot-root-metadata.log",
+      "bytes": 691,
+      "sha256": "f6fd04b6fe8e19102016679cdd32b3d11d9e3f9dd58ad58b68e174db63477019"
+    },
+    {
+      "path": "dependency-compatibility/knot-root-source-family.json",
+      "bytes": 17664,
+      "sha256": "5295cbd2663184f13f503ed3851107ecd7446eaededcb21b0f230a5080f697ba"
+    },
+    {
+      "path": "dependency-compatibility/mere-adapter-tests.log",
+      "bytes": 3265,
+      "sha256": "dbbd740b57a984daf4f6521a1ed8a697446f71d0bd942ddd3c42004f0e87d5c9"
+    },
+    {
+      "path": "dependency-compatibility/mere-baseline-and-source-equality.log",
+      "bytes": 474,
+      "sha256": "de1f6a7967f2dbd7a4d2ea69563a26baaaf866e148b071374b7fb53bfeab4c8e"
+    },
+    {
+      "path": "dependency-compatibility/mere-git-diff.log",
+      "bytes": 58381,
+      "sha256": "a563aefbdbeb85da80f5fb3d0c66d5baab5c21c3f9c4214ea9b50070260c71d7"
+    },
+    {
+      "path": "dependency-compatibility/README.md",
+      "bytes": 6619,
+      "sha256": "73880fad489b1752d923a98110b269a77697ed0cccedef484b5f5794db0d31b5"
+    },
+    {
+      "path": "dependency-compatibility/redshank-metadata.log",
+      "bytes": 278,
+      "sha256": "90e7ed785c4149d2408991775fabb4ec10c17855969ea3bccf74793b0d4b6fdd"
+    },
+    {
+      "path": "dependency-compatibility/redshank-source-family.json",
+      "bytes": 9599,
+      "sha256": "d6a1fe1019870f49a2ec4f7f53a8b8672fd45685d8c856695f184af22411c12b"
+    },
+    {
+      "path": "dependency-compatibility/turnstone-lock-source-comparison.json",
+      "bytes": 91181,
+      "sha256": "19f9052598716b312e09fcf6de9af4f69b549d87101021ce3fd3f14f850e6695"
+    },
+    {
+      "path": "dependency-compatibility/woodshed-git-diff.log",
+      "bytes": 14440,
+      "sha256": "a6be5310d1aee2b2e19ddbf61ad12c4b13dbafd032115bc6cf5e5d2d53990ec9"
+    },
+    {
+      "path": "find-tests.log",
+      "bytes": 13988,
+      "sha256": "5691aa4cc56af2e176cad11f41bff596b78a1cc306e0e9ec3a911023dc2015a4"
+    },
+    {
+      "path": "freeze-artifacts.py",
+      "bytes": 10371,
+      "sha256": "6d12828414b153d0c52119cc763c819f04d8cd34e1bf5bcc98cd328ce58597c0"
+    },
+    {
+      "path": "native-scry-input/00_b_inspector_after_pin.png",
+      "bytes": 188830,
+      "sha256": "87c2f7df97f74524ab3b968c41badb2b781157df2e8d1aa1b514c60ddad73fec"
+    },
+    {
+      "path": "native-scry-input/00_b_inspector_before_pin.png",
+      "bytes": 186671,
+      "sha256": "baccf2dcecfb7a02e6456e79beaa416d330f2131d501db76eb37a720dd1b281d"
+    },
+    {
+      "path": "native-scry-input/01_two_scry_pages.png",
+      "bytes": 149162,
+      "sha256": "440a1db61576cd0a6bf8bbe643004473430799aad43a8a03e72ae0f7c511e4f7"
+    },
+    {
+      "path": "native-scry-input/02_text_pointer_and_keyboard.png",
+      "bytes": 171519,
+      "sha256": "08598de911c6d0b3e91dc87c03b6cc148b7b09d9df857e18aee4e63aa414496d"
+    },
+    {
+      "path": "native-scry-input/02b_b_reloaded.png",
+      "bytes": 168263,
+      "sha256": "f803cc034b82332828d3f4dd71dff41aa03bb11a4177a22913f8050011462d1b"
+    },
+    {
+      "path": "native-scry-input/02c_a_wheel.png",
+      "bytes": 173856,
+      "sha256": "5d89fa09ebc1fdd33514944a731f4d50468fe59f0e419e9bc6cb6f95be740c12"
+    },
+    {
+      "path": "native-scry-input/02d_b_wheel.png",
+      "bytes": 177787,
+      "sha256": "3da880284a1efc9335595cb71fe0d80591f65cb5fccd5d79485dd6e66be35da1"
+    },
+    {
+      "path": "native-scry-input/02e_both_scroll_reset.png",
+      "bytes": 171660,
+      "sha256": "eafc05d30075da1da2a723296a3f8dfd433cd452fdcda687b09813f03f02972b"
+    },
+    {
+      "path": "native-scry-input/03_find_and_zoom_unavailable.png",
+      "bytes": 171660,
+      "sha256": "eafc05d30075da1da2a723296a3f8dfd433cd452fdcda687b09813f03f02972b"
+    },
+    {
+      "path": "native-scry-input/04_resized_two_pages.png",
+      "bytes": 127755,
+      "sha256": "78a8f158295b64c6942a59fd1c522d82a98d32cc66b729ee898957a772c555b2"
+    },
+    {
+      "path": "native-scry-input/05_a_reader_b_scry.png",
+      "bytes": 170225,
+      "sha256": "47e0567c114c5b9a932ed882921fffcaba3391a2924c1cc8c0b721e6d1dfca4c"
+    },
+    {
+      "path": "native-scry-input/06_a_scry_reconstructed.png",
+      "bytes": 127810,
+      "sha256": "97b5b9133fe9b76e16eff829f239926f617ba05409cb934a02c2626914f1d4d6"
+    },
+    {
+      "path": "native-scry-input/07_both_closed.png",
+      "bytes": 75173,
+      "sha256": "64d09933e05eafb6c2b367db534d2caccaf8164ee93114d73e2e6fe59c5fbf62"
+    },
+    {
+      "path": "native-scry-input/08_ready_for_restart.png",
+      "bytes": 127822,
+      "sha256": "f1c1449e1b344af3f88707619c914598c57ff63e160999ef5f3fb20187364780"
+    },
+    {
+      "path": "native-scry-input/closed.surface-frames.json",
+      "bytes": 124,
+      "sha256": "503f15a53678bf9de7e34ca8b9eb300ae496886f7dd169c918efb739b6b35353"
+    },
+    {
+      "path": "native-scry-input/closed.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "native-scry-input/diagnostics.json",
+      "bytes": 86175,
+      "sha256": "49f954b0586b15e01bb3d91755cca3888f8d8f74639d31d5a4ebd3d90261271b"
+    },
+    {
+      "path": "native-scry-input/input.surface-frames.json",
+      "bytes": 814,
+      "sha256": "4dc33cd9b934d4543651926dc3d8b8b3b249a7610b73d70d4dce27e114eeb831"
+    },
+    {
+      "path": "native-scry-input/input.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "native-scry-input/loaded-modules.json",
+      "bytes": 2356,
+      "sha256": "37f88937ff0797c027359f4988c06860ee731ced1a92907bde70b65e54240b5e"
+    },
+    {
+      "path": "native-scry-input/process-result.json",
+      "bytes": 894,
+      "sha256": "819a2300b24d55fb5dc6c39b842dd581736880b0ee5804b187d60f2fec726955"
+    },
+    {
+      "path": "native-scry-input/reconstructed.surface-frames.json",
+      "bytes": 810,
+      "sha256": "b47a44ef4a9f97d964935d7ccaa4157d0008e7b60476be6311de8db931295369"
+    },
+    {
+      "path": "native-scry-input/reconstructed.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "native-scry-input/reopened.surface-frames.json",
+      "bytes": 804,
+      "sha256": "0e2ffac97c6bd5c66d6f2e99bc8b5a3cbd0cbc501fda85ec3d829cc23019927e"
+    },
+    {
+      "path": "native-scry-input/reopened.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "native-scry-input/resized.surface-frames.json",
+      "bytes": 816,
+      "sha256": "094798950fbf1cd7f42da8e2f40f33f416ed1538b1ea57ff1a2a581a4f2eec15"
+    },
+    {
+      "path": "native-scry-input/resized.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "native-scry-input/run.log",
+      "bytes": 55502,
+      "sha256": "b948aa0c02acf159547c238aa871baf47c709b865e2896eb0031042be7d9c488"
+    },
+    {
+      "path": "native-scry-input/run.stderr.log",
+      "bytes": 1807,
+      "sha256": "0580bd3442a1d787938bdac14c4b4f61585a2b218221ddd27eee15da1a06db3b"
+    },
+    {
+      "path": "native-scry-input/run.stdout.log",
+      "bytes": 53664,
+      "sha256": "9bdef54ab117eeba6f231a1751d389411c6be67d3113bbfd3a05d58a83d4ba02"
+    },
+    {
+      "path": "native-scry-input/scenario.done",
+      "bytes": 505,
+      "sha256": "bffaf263834edb54dc5402e0f094f8bfddc90751d4418b78d9c4c24e5f428d5b"
+    },
+    {
+      "path": "native-scry-input/two-pages.surface-frames.json",
+      "bytes": 811,
+      "sha256": "12a89ec2101c16da8fc4f5ce3c0378ecd07faf1f507214d58439a5befa7e0d31"
+    },
+    {
+      "path": "native-scry-input/two-pages.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "native-scry-input/wheel-reset.surface-frames.json",
+      "bytes": 814,
+      "sha256": "3a64f06b5927c0cc9615ddc25d8d2277b85945f24df46dd3a87f75a4eb0247fb"
+    },
+    {
+      "path": "native-scry-input/wheel-reset.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "native-scry-restart/01_restored_two_pages.png",
+      "bytes": 145213,
+      "sha256": "a05f675264ece5c355af902ddf7b0e9e98f441c01cc814aea1ca19c15da55d9b"
+    },
+    {
+      "path": "native-scry-restart/02_restored_a_profile.png",
+      "bytes": 182952,
+      "sha256": "051b22711bcd85957db4c73984391680a0f4f494098debbe77db12a9a8c39d62"
+    },
+    {
+      "path": "native-scry-restart/03_restored_b_profile.png",
+      "bytes": 182953,
+      "sha256": "3834d5237a161b6e98865ef30df8415cbd96f2d7d8ef137d4d698fecafe60390"
+    },
+    {
+      "path": "native-scry-restart/diagnostics.json",
+      "bytes": 13834,
+      "sha256": "ab90e3fbf3dd4b4d507ef9ba6779e876f5ab77f06467ef9a98c01c3485b3f3f5"
+    },
+    {
+      "path": "native-scry-restart/loaded-modules.json",
+      "bytes": 2357,
+      "sha256": "e1e99e5f3a3f4e7dd523e2b098883304c642c414de1b5ce9a89cf6f660d74fd0"
+    },
+    {
+      "path": "native-scry-restart/process-result.json",
+      "bytes": 913,
+      "sha256": "c9a82b5a98808cf8faa34060b5ae00e378d21f529c76107306bf3d7df55c82b9"
+    },
+    {
+      "path": "native-scry-restart/restored.surface-frames.json",
+      "bytes": 804,
+      "sha256": "5e7dbf48df245d14009aa03d784f563119b7b200213496ffa92109dd2f8850a8"
+    },
+    {
+      "path": "native-scry-restart/restored.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "native-scry-restart/run.log",
+      "bytes": 14421,
+      "sha256": "9a45255bfa8087a0eb1370cec424846acfca2e3e40574c593d1795fde4149460"
+    },
+    {
+      "path": "native-scry-restart/run.stderr.log",
+      "bytes": 858,
+      "sha256": "7706c145ffed8c93a5673cc11fbd4a92f4204f7362e41e3760a3dfd0f3c8a06d"
+    },
+    {
+      "path": "native-scry-restart/run.stdout.log",
+      "bytes": 13532,
+      "sha256": "1c15a330f24f1971b884563db7b55de2ff10eaa82d0aa378a5fdbcb158cc308e"
+    },
+    {
+      "path": "native-scry-restart/scenario.done",
+      "bytes": 191,
+      "sha256": "b4cf844b44a528b47fde8f3daaca18687bb833028abfcb862031bd5f96ae49e6"
+    },
+    {
+      "path": "native-weld-input/00_b_inspector_after_pin.png",
+      "bytes": 207780,
+      "sha256": "3c8694fb8b9c94b9ab164c1c9bab9470ba8d983a34be8add62f4beecbc1129f0"
+    },
+    {
+      "path": "native-weld-input/00_b_inspector_before_pin.png",
+      "bytes": 195510,
+      "sha256": "065f43a9f7d6fb3e0bbaa9564e2390883bb9c1d4f725a98c197b3d89bec0ebc2"
+    },
+    {
+      "path": "native-weld-input/01_two_weld_pages.png",
+      "bytes": 121382,
+      "sha256": "5a6b4fc6c815310579332ac2b48708faa129514ef35c9f56cfa9b80a24e02417"
+    },
+    {
+      "path": "native-weld-input/01b_independent_weld_input.png",
+      "bytes": 121821,
+      "sha256": "82b6367ca86e4e83d8f28048a84ccab4639134876c3d59defeee29837c212d2f"
+    },
+    {
+      "path": "native-weld-input/02_find.png",
+      "bytes": 146623,
+      "sha256": "8623c9ff41ff1ff8cbf2e819cdf125425dbcc32e1225ca0ddb7b39d2b8977745"
+    },
+    {
+      "path": "native-weld-input/03_zoom.png",
+      "bytes": 139203,
+      "sha256": "5367390325925f981587e9e8e036baf6b73e4371f9ce317fa93a005f3262edb6"
+    },
+    {
+      "path": "native-weld-input/04_teardown.png",
+      "bytes": 36369,
+      "sha256": "f706e66e07236a5cdbf836f93af1b4303b1e3ca6299f58f06f2adb62af3d0cd8"
+    },
+    {
+      "path": "native-weld-input/diagnostics.json",
+      "bytes": 33769,
+      "sha256": "89607395537eb94b0befece8f6e42a28ef745583404bd1c34f37183abded484f"
+    },
+    {
+      "path": "native-weld-input/loaded-modules.json",
+      "bytes": 2357,
+      "sha256": "be4b6ee8f63077d6fb480b767850a0ad9ca0a31407c3e4c154a77c3afc8eabb8"
+    },
+    {
+      "path": "native-weld-input/process-result.json",
+      "bytes": 902,
+      "sha256": "1f5cb138bf305d8ff3e5e47970f38bef4ce6566bcf2dfee950e03ddb0eb09986"
+    },
+    {
+      "path": "native-weld-input/run.log",
+      "bytes": 32968,
+      "sha256": "51b0b7c4cec9af30850956d1a6030d8c09faa3011f25b77491846359d42f4e84"
+    },
+    {
+      "path": "native-weld-input/run.stderr.log",
+      "bytes": 1340,
+      "sha256": "bd392b491bb9cd82cd57fa45d6703fb172b7ac4064c85a1272e6d818b337df10"
+    },
+    {
+      "path": "native-weld-input/run.stdout.log",
+      "bytes": 31597,
+      "sha256": "752addeba9610b5f6886162bd7829fdc09eaa068317725152d8f37b81eec7cd8"
+    },
+    {
+      "path": "native-weld-input/scenario.done",
+      "bytes": 276,
+      "sha256": "d4d9a20d373ebca435c8073aa521f1688b60e3164762eddb64c95520fa24cd69"
+    },
+    {
+      "path": "native-weld-input/two-pages.surface-frames.json",
+      "bytes": 500,
+      "sha256": "9f51d3643e008c3e4eef5dd94c4a3a58125cf582cdbb68d8db16036329f18e60"
+    },
+    {
+      "path": "native-weld-input/two-pages.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "native-weld-permission/01_permission_decision.png",
+      "bytes": 50136,
+      "sha256": "f3f6ac5c07814be5093946513aa677459bd958b048f52c84e6dd7fc8d2aaace3"
+    },
+    {
+      "path": "native-weld-permission/02_permission_answered.png",
+      "bytes": 21717,
+      "sha256": "6d881c7dcf49e379b9a0dc3d73cfb8b17b8825f91bd0297e9501283ad627f443"
+    },
+    {
+      "path": "native-weld-permission/03_permission_teardown.png",
+      "bytes": 18445,
+      "sha256": "4a8f81c8d3a7657f08e4cbd0916414dd317f6b51f05cf62b14703cd949e617b2"
+    },
+    {
+      "path": "native-weld-permission/diagnostics.json",
+      "bytes": 12451,
+      "sha256": "bbfbbe9667503cc70d4afdab650f5b494247107efebbd8f151109d71a86aad51"
+    },
+    {
+      "path": "native-weld-permission/loaded-modules.json",
+      "bytes": 2357,
+      "sha256": "4ee4893e8a051ae57f4e6d3aea562435555106d1617e774eb857480a15c486ed"
+    },
+    {
+      "path": "native-weld-permission/process-result.json",
+      "bytes": 898,
+      "sha256": "cf97b4a5b8adc3612931bb1ff5fd0435f3a8820e664220ccac989bf7f2c16837"
+    },
+    {
+      "path": "native-weld-permission/run.log",
+      "bytes": 16880,
+      "sha256": "f4bc798e1aa6b466f268b93c610a6ef815400f94c9198ee71d543f169f895262"
+    },
+    {
+      "path": "native-weld-permission/run.stderr.log",
+      "bytes": 951,
+      "sha256": "37b4449c2232646bc5bff84265dfdf6db4c5a5d76243f7163e5d38f4f918126d"
+    },
+    {
+      "path": "native-weld-permission/run.stdout.log",
+      "bytes": 15898,
+      "sha256": "95e5df47b9d58dd519f471db495c58c77689dbd62526820b6a759a6147361ed6"
+    },
+    {
+      "path": "native-weld-permission/scenario.done",
+      "bytes": 160,
+      "sha256": "a84ad7237b7463d4ded2e908faa2f1bdc41264ed8f48c2006cbbeb2ea7f65ac4"
+    },
+    {
+      "path": "permission-server.ready",
+      "bytes": 22,
+      "sha256": "443bbfd61dd344425de76f06362a696034427ad8393a35a05f7d05a93e8d0304"
+    },
+    {
+      "path": "permission-server.receipt",
+      "bytes": 129,
+      "sha256": "8dd55ecf2858bd92f90cf496a541e3972e60b27fb67005cbd48f16803820d6b1"
+    },
+    {
+      "path": "resolve-aligned-update.log",
+      "bytes": 7250,
+      "sha256": "221eb92056669d3a9fbbde55ee967c1274a37bf415be5167886eeda80d09e6a3"
+    },
+    {
+      "path": "resolve-update.log",
+      "bytes": 31326,
+      "sha256": "469026fd117556d618460f413c33e6a63b4c7617be7e9d45d5f53fa1d407b0e4"
+    },
+    {
+      "path": "shell-tests.log",
+      "bytes": 19197,
+      "sha256": "7679ce2e498e1923fb776788fa080088bf0e135ee538417cbc5cbed2dce676c9"
+    },
+    {
+      "path": "source-inputs-scry-weld.zip",
+      "bytes": 1151877,
+      "sha256": "400c41f5ce99db868f19b38cf30b0bb64ea60462062260784ccbb13d8bf54ad0"
+    },
+    {
+      "path": "source-manifest-scry-weld.json",
+      "bytes": 406952,
+      "sha256": "5cf80f909f84049be24a38d894ea61f5e9524befb73274749a1c212533209357"
+    },
+    {
+      "path": "turnstone-scry-weld-build.log",
+      "bytes": 30187,
+      "sha256": "0f75ce38fee100794272eb806248bfc890eb2625730f6eba8e1861571b502704"
+    }
+  ],
+  "limits": [
+    "Profile bytes excluded",
+    "No applications or builds run by freezer",
+    "Completion of explicitly selected non-native logs is declared by the caller",
+    "Archive verification does not claim later working source or executable remains unchanged"
+  ]
+}

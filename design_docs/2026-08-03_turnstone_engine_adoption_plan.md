@@ -1,7 +1,7 @@
 # Turnstone engine adoption — arbitrary engines, selectable in the app
 
 **Date:** 2026-08-03
-**Status, 2026-10-05:** in progress; the current browser consumer sequence is
+**Status:** in progress, rechecked 2026-10-07; the current browser consumer sequence is
 the October appendix of the [user-agent taxonomy](2026-08-03_user_agent_taxonomy_plan.md).
 This plan retains the engine-specific construction and sandbox evidence.
 The ask: arbitrary selection of engines,
@@ -10,7 +10,7 @@ possible and selectable within the app, including genet with its rungs
 design-to-shape purposes).
 
 **Authority relationship:** the
-[engine picker + pluggability plan](../../mere/design_docs/inker_docs/implementation_strategy/2026-06-15_engine_picker_and_pluggability_plan.md)
+engine picker and pluggability plan (`mere/design_docs/inker_docs/implementation_strategy/2026-06-15_engine_picker_and_pluggability_plan.md`)
 (mere, 2026-06-15) owns the model: three activation levels collapsing to one
 `is_available` predicate, global default + per-session override, cargo
 features as the build tier, no-handler legibility, and the picker/flip
@@ -19,7 +19,7 @@ and meerkat is deleted, so the receipts are gone while the model stands.
 Turnstone independently re-landed the foundation. This plan binds the
 remaining model to Turnstone's actual state; it does not re-decide it.
 
-## Current state (rechecked 2026-10-05)
+## Current state (rechecked 2026-10-06)
 
 - **Routing**: the content lane routes through `inker::EngineRoutePolicy`
   with `pinned_engine` support ([effects.rs](../src/shell/effects.rs)).
@@ -37,7 +37,8 @@ remaining model to Turnstone's actual state; it does not re-decide it.
   producer map, D3D12 transferred-handle import cache, primary-window
   composition and pointer/key routing. The local Windows Scry consumer is
   wired behind `--features scry`; native qualification is recorded below.
-  Servo/Graft remains unconstructed.
+  Servo/Graft construction is now implemented behind `--features servo`;
+  its first three-engine build and native qualification remain in progress.
   [2026-07-18_meerkat_harvest.md](2026-07-18_meerkat_harvest.md) and git
   history are the donors.
 - **Compositor**: the shell already composes per-surface textures via
@@ -47,9 +48,72 @@ remaining model to Turnstone's actual state; it does not re-decide it.
 - **Scripted lane**: `genet_documents::ScriptedSessionEngine` exists;
   Turnstone's `piccolo` feature pulls the script-engine crates but registers
   no scripted content engine.
-- **Features**: `wasm`, `piccolo`, `scry` and `weld`. The Weld producer is constructed
+- **Features**: `wasm`, `piccolo`, `scry`, `weld` and `servo`. The Weld producer is constructed
   lazily on Windows after the host device and CEF runtime path are available.
   A feature build alone is not a successful runtime construction receipt.
+
+### October coordination and accessibility
+
+U2 of the [unusual-protocols plan](2026-10-06_unusual_protocols_browser_plan.md)
+puts accessibility on Windows, macOS and Linux first. The scoped live-pixel
+receipts below do not establish browser content trees or assistive actions.
+U9 holds the final consumer repin for WS4 pushed and a tested set in order:
+Knot, Redshank, then Turnstone. Older compatibility candidates remain useful
+qualification evidence, with current-stack adoption coordinated separately.
+Servo 0.7's new public accessibility-action method makes its coherent
+Surfman/ANGLE migration a practical accessibility dependency.
+
+The [October 7 published-state checkpoint](../docs/receipts/browser_supplier_integration_20261006/current-stack-reconciliation/README.md)
+confirms WS4 R6 and the shared AccessKit helper/E1a on Mere main. The Genet
+decoder repair and matching Knot/Redshank pins still need the ordered tested
+set; human assistive walks and browser semantic/action transport remain open.
+
+### October supplier integration
+
+The [supplier integration receipt](../docs/receipts/browser_supplier_integration_20261006/README.md)
+qualifies the current shared Weld adapter at compatible Mere `db4ee312`,
+Woodshed `b613fc55` and Knot `91cb44a2`, retaining Genet `69a2383b`.
+Turnstone's local CEF mouse/text forwarding bridge is removed. The exact
+two-engine executable passes 83 distinct focused tests and four native runs:
+Weld input/find/zoom, Scry input/resize/reconstruction, Scry process restart
+with retained storage, and Weld's retained permission Deny callback. The
+earlier engine-specific sections below are dated implementation history;
+their old pins and test counts do not describe this current receipt.
+
+The selected Servo profile policy is one explicitly named, configurable
+profile shared by its views in the process. `TURNSTONE_SERVO_PROFILE` selects
+the name, defaulting to `Default`; `TURNSTONE_SERVO_PROFILE_DIR` optionally
+selects an absolute directory. The UI-thread factory retains the process
+root across view closures and session changes. Scry and Weld retain their
+per-node profiles.
+
+Servo B3's qualification candidate uses upstream `1d44e5dd` and tested Graft
+`dec11bbd`, with GPU imports on
+Turnstone's device and queue. Its source includes ordered callbacks, native
+logical-key releases, explicit denial of unsupported permissions, view
+retirement and process shutdown. Basic mouse fields, navigation without a
+stop API, requested zoom and HiDPI scale projection retain explicit limits.
+The older full three-engine set builds successfully with Graft `01f3c9f3`;
+the corrected-swap `dec11bbd` candidate also builds successfully. Its first
+native control fails before creating a view because `graft.servo` reaches
+the document-session dispatcher. The failed source and run remain archived;
+the host dispatcher is repaired and all 64 focused shell tests pass. Its
+native assertions and bounded full shutdown pass, but direct image review
+rejects a white reopened Servo A. The same binary separately qualifies four
+simultaneous Servo/WebView2/CEF pages, resize and cleared teardown, plus fresh
+Scry/Weld input, restart and permission controls with loaded-module evidence.
+The [six-run synchronization comparison](../docs/receipts/browser_supplier_integration_20261006/sync-diagnostic/README.md)
+uses one frozen diagnostic executable: Existing passes once and reproduces a
+white reopened A once; producer-only and normalization-only each pass; Both
+passes twice. All six assertion/exit guards pass, demonstrating why the pixel
+review is required. Its 98 distinct browser tests pass. The association with
+waits does not establish visual causality; production defaults remain unchanged.
+The temporary consumer config is removed and all 175 previous candidate inputs
+are restored exactly, with the diagnostic host and supplier sources archived.
+Default reopen correctness, foreign accessibility and the final U9 set remain
+open. U14 authorizes committing and pushing the tested older candidate's
+Cargo/Rust work first, so S0 starts from it. The final coordinated current
+family and application release acceptance remain open.
 
 ## The model, restated for Turnstone
 
@@ -59,7 +123,7 @@ Three engine kinds, two of them live here today:
 |---|---|---|---|
 | Document | `EngineRegistry` | `EngineDocument` blocks | via nematic lanes (cards/capture) |
 | Session | `SessionRegistry<Scene>` | paint scenes | live: livery, smolweb, knot |
-| Surface | `SurfaceEngineRegistry` | GPU texture stream | Windows Weld behind `weld`, local Windows Scry behind `scry`; Servo/Graft absent |
+| Surface | `SurfaceEngineRegistry` | GPU texture stream | Windows Weld behind `weld`, Windows Scry behind `scry`; Servo/Graft source behind `servo`, native qualification pending |
 
 "Genet with its rungs" means the genet engine's capability ladder is exposed
 as selectable lanes rather than one opaque entry: `genet.livery` (clean-room
@@ -100,7 +164,7 @@ feature.
 
 ### E2. Surface engines (scrying, graft, weld)
 
-One cargo feature per consumer (`scry`, `graft`, `weld`), per the picker
+One cargo feature per consumer (`scry`, `servo`, `weld`), per the picker
 plan's build-tier decision. Work:
 
 1. A `SurfaceEngineRegistry` beside the session registry in the shell.
@@ -123,9 +187,9 @@ the system WebView's texture composited in that node's tile on Windows, and
 a scenario receipt captures it; graft and weld repeat the shape (their
 producers may land later, each behind its feature, disabled rows until then).
 
-#### E2-Scry Windows consumer (local source, cookie/presentation gates open)
+#### E2-Scry Windows consumer (October 5 history, superseded by October 6 receipt)
 
-The optional adapter comes from Turnstone's existing Mere `bd5912fb` pin and
+The initial optional adapter came from Turnstone's Mere `bd5912fb` pin and
 uses published `scrying` 0.7.1 with wgpu 30. Existing family pins stay intact.
 `scrying.web` is constructed lazily on the UI thread against the primary
 window's device and queue. Producers share an owned offscreen composition root;
@@ -152,9 +216,11 @@ owns the two-page, input, resize, engine-switch, teardown and restart evidence.
 The full native script completes without external repaint and fails only four
 cookie assertions; separate-process restoration passes pins, localStorage and
 saved text while failing two cookie assertions. Manual review also finds stale
-post-input images and blank reopened tiles despite live counters. B1 stays
-gated on cookie retention and current pixels. Source compilation and imported
-frame counts do not close B1 or the trio's release gates.
+post-input images and blank reopened tiles despite live counters. That phase
+kept B1 gated on cookie retention and current pixels. The October 6 consumer
+receipt closes those Windows gates with fresh native captures and actual
+cookie restoration; source compilation and frame counts alone did not close
+them. The trio's release gates remain separate.
 
 The pinned adapter's Windows keyboard helper blocks while pumping messages.
 Early native runs stopped advancing, without establishing a blocked native
@@ -165,7 +231,8 @@ normal host polling submits the next command and reports errors or timeouts.
 This preserves command completion order without nesting a Windows message
 loop in the host handler. A retained host deadline restores progression without
 external repaint. Observed CDP Enter/text DOM outcomes are in the receipt;
-current-pixel, physical-keyboard and OS IME acceptance remain open.
+physical-keyboard and OS IME acceptance remain open. The October 6 receipt
+supersedes this phase's current-pixel failures.
 
 #### E2-Weld Windows first cut (implemented, headed receipt 2026-08-14)
 
@@ -193,12 +260,14 @@ the same graph member and appends its per-member lineage. Cursor answers update
 the native winit cursor, including hidden. S1 subsequently added Pointer
 Events-shaped mouse/touch input and HTML DataTransfer-shaped drag/drop. PDF and
 native printing, downloads, cookies, script results, standard automation,
-permissions, auth, popup placement, and snapshots remain unsupported here:
+permissions, auth, popup placement, and snapshots were unsupported in this first cut:
 Weld has many of those operations, but Turnstone has not yet provided their
-shared contract, callback/control UI, or durable policy.
+shared contract, callback/control UI, or durable policy. October 6 subsequently
+qualified the retained native permission Deny callback, find and requested
+zoom; the other operations retain their separate consumer gates.
 
 The tail now follows Genet's
-[web-platform host contract](../../genet/docs/2026-08-14_web_platform_host_contract_plan.md).
+web-platform host contract (`genet/docs/2026-08-14_web_platform_host_contract_plan.md`).
 That contract is standards-derived and shared by Weld, Scry, Graft, Genet's
 rungs, and Smol. Turnstone projects committed resources into graph navigation;
 cookies/permissions/auth into origin/profile registries and associated facets;

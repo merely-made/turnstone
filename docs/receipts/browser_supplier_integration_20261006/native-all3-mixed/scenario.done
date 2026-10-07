@@ -1,0 +1,5 @@
+RESULT ok
+captured 01_four_simultaneous_native_pages
+captured 02_four_pages_after_resize
+captured 03_all_native_producers_closed
+Mixed runtime: two upstream Servo views, one Scry page and one Weld page share the host device; simultaneous composition, resize and per-node teardown

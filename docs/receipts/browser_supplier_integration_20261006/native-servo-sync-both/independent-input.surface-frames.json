@@ -1,0 +1,24 @@
+{
+  "live_producers": 2,
+  "cached_frames": 2,
+  "scry_importers": [],
+  "servo_active_views": 2,
+  "content_surfaces": [
+    {
+      "node": "cafe2c52-46c6-423c-aad1-e65d33f71a4a",
+      "surface_id": 9057573840213223921,
+      "x": 0.0,
+      "y": 30.0,
+      "width": 509.0,
+      "height": 570.0
+    },
+    {
+      "node": "2c85c790-9efe-4a36-baad-b93a6ed25d3b",
+      "surface_id": 12711877082010819649,
+      "x": 515.0,
+      "y": 30.0,
+      "width": 509.0,
+      "height": 570.0
+    }
+  ]
+}

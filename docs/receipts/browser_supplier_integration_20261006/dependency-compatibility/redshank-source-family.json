@@ -1,0 +1,218 @@
+{
+  "command": "cargo metadata --offline --locked --format-version 1 --manifest-path ports/redshank/Cargo.toml",
+  "exitCode": 0,
+  "repository": "woodshed",
+  "revision": "b613fc55d2d59e865b6bb04e55a880ee4773b824",
+  "familyCounts": [
+    {
+      "source": "git+https://github.com/merely-made/genet.git?rev=69a2383b2ad777b884a72f31f8f8fb7ece275c0b#69a2383b2ad777b884a72f31f8f8fb7ece275c0b",
+      "count": 24
+    },
+    {
+      "source": "git+https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee31258b23c86572c429388c5d10bd4de9dc3",
+      "count": 16
+    }
+  ],
+  "packages": [
+    {
+      "name": "buckram",
+      "version": "0.0.3",
+      "source": "git+https://github.com/merely-made/genet.git?rev=69a2383b2ad777b884a72f31f8f8fb7ece275c0b#69a2383b2ad777b884a72f31f8f8fb7ece275c0b"
+    },
+    {
+      "name": "cadency",
+      "version": "0.0.1",
+      "source": "git+https://github.com/merely-made/genet.git?rev=69a2383b2ad777b884a72f31f8f8fb7ece275c0b#69a2383b2ad777b884a72f31f8f8fb7ece275c0b"
+    },
+    {
+      "name": "document-session-api",
+      "version": "0.1.0",
+      "source": "git+https://github.com/merely-made/genet.git?rev=69a2383b2ad777b884a72f31f8f8fb7ece275c0b#69a2383b2ad777b884a72f31f8f8fb7ece275c0b"
+    },
+    {
+      "name": "engine-observables-api",
+      "version": "0.2.0",
+      "source": "git+https://github.com/merely-made/genet.git?rev=69a2383b2ad777b884a72f31f8f8fb7ece275c0b#69a2383b2ad777b884a72f31f8f8fb7ece275c0b"
+    },
+    {
+      "name": "genet-document-resources",
+      "version": "0.2.1",
+      "source": "git+https://github.com/merely-made/genet.git?rev=69a2383b2ad777b884a72f31f8f8fb7ece275c0b#69a2383b2ad777b884a72f31f8f8fb7ece275c0b"
+    },
+    {
+      "name": "genet-fontique",
+      "version": "0.10.0",
+      "source": "git+https://github.com/merely-made/genet.git?rev=69a2383b2ad777b884a72f31f8f8fb7ece275c0b#69a2383b2ad777b884a72f31f8f8fb7ece275c0b"
+    },
+    {
+      "name": "genet-host-api",
+      "version": "0.2.0",
+      "source": "git+https://github.com/merely-made/genet.git?rev=69a2383b2ad777b884a72f31f8f8fb7ece275c0b#69a2383b2ad777b884a72f31f8f8fb7ece275c0b"
+    },
+    {
+      "name": "genet-livery",
+      "version": "0.0.4",
+      "source": "git+https://github.com/merely-made/genet.git?rev=69a2383b2ad777b884a72f31f8f8fb7ece275c0b#69a2383b2ad777b884a72f31f8f8fb7ece275c0b"
+    },
+    {
+      "name": "genet-paint-types",
+      "version": "0.2.0",
+      "source": "git+https://github.com/merely-made/genet.git?rev=69a2383b2ad777b884a72f31f8f8fb7ece275c0b#69a2383b2ad777b884a72f31f8f8fb7ece275c0b"
+    },
+    {
+      "name": "genet-parley",
+      "version": "0.10.0",
+      "source": "git+https://github.com/merely-made/genet.git?rev=69a2383b2ad777b884a72f31f8f8fb7ece275c0b#69a2383b2ad777b884a72f31f8f8fb7ece275c0b"
+    },
+    {
+      "name": "genet-render",
+      "version": "0.2.0",
+      "source": "git+https://github.com/merely-made/genet.git?rev=69a2383b2ad777b884a72f31f8f8fb7ece275c0b#69a2383b2ad777b884a72f31f8f8fb7ece275c0b"
+    },
+    {
+      "name": "genet-render-host",
+      "version": "0.2.0",
+      "source": "git+https://github.com/merely-made/genet.git?rev=69a2383b2ad777b884a72f31f8f8fb7ece275c0b#69a2383b2ad777b884a72f31f8f8fb7ece275c0b"
+    },
+    {
+      "name": "genet-scripted-dom",
+      "version": "0.1.2",
+      "source": "git+https://github.com/merely-made/genet.git?rev=69a2383b2ad777b884a72f31f8f8fb7ece275c0b#69a2383b2ad777b884a72f31f8f8fb7ece275c0b"
+    },
+    {
+      "name": "genet-static-dom",
+      "version": "0.1.1",
+      "source": "git+https://github.com/merely-made/genet.git?rev=69a2383b2ad777b884a72f31f8f8fb7ece275c0b#69a2383b2ad777b884a72f31f8f8fb7ece275c0b"
+    },
+    {
+      "name": "genet-text",
+      "version": "0.1.0",
+      "source": "git+https://github.com/merely-made/genet.git?rev=69a2383b2ad777b884a72f31f8f8fb7ece275c0b#69a2383b2ad777b884a72f31f8f8fb7ece275c0b"
+    },
+    {
+      "name": "genet-winit-host",
+      "version": "0.2.0",
+      "source": "git+https://github.com/merely-made/genet.git?rev=69a2383b2ad777b884a72f31f8f8fb7ece275c0b#69a2383b2ad777b884a72f31f8f8fb7ece275c0b"
+    },
+    {
+      "name": "ipc-channel",
+      "version": "0.22.0",
+      "source": "git+https://github.com/merely-made/genet.git?rev=69a2383b2ad777b884a72f31f8f8fb7ece275c0b#69a2383b2ad777b884a72f31f8f8fb7ece275c0b"
+    },
+    {
+      "name": "layout-dom-api",
+      "version": "0.1.1",
+      "source": "git+https://github.com/merely-made/genet.git?rev=69a2383b2ad777b884a72f31f8f8fb7ece275c0b#69a2383b2ad777b884a72f31f8f8fb7ece275c0b"
+    },
+    {
+      "name": "livery",
+      "version": "0.0.5",
+      "source": "git+https://github.com/merely-made/genet.git?rev=69a2383b2ad777b884a72f31f8f8fb7ece275c0b#69a2383b2ad777b884a72f31f8f8fb7ece275c0b"
+    },
+    {
+      "name": "netfetcher",
+      "version": "0.1.1",
+      "source": "git+https://github.com/merely-made/genet.git?rev=69a2383b2ad777b884a72f31f8f8fb7ece275c0b#69a2383b2ad777b884a72f31f8f8fb7ece275c0b"
+    },
+    {
+      "name": "servo-media-player",
+      "version": "0.2.0",
+      "source": "git+https://github.com/merely-made/genet.git?rev=69a2383b2ad777b884a72f31f8f8fb7ece275c0b#69a2383b2ad777b884a72f31f8f8fb7ece275c0b"
+    },
+    {
+      "name": "servo-media-streams",
+      "version": "0.2.0",
+      "source": "git+https://github.com/merely-made/genet.git?rev=69a2383b2ad777b884a72f31f8f8fb7ece275c0b#69a2383b2ad777b884a72f31f8f8fb7ece275c0b"
+    },
+    {
+      "name": "servo-media-traits",
+      "version": "0.2.0",
+      "source": "git+https://github.com/merely-made/genet.git?rev=69a2383b2ad777b884a72f31f8f8fb7ece275c0b#69a2383b2ad777b884a72f31f8f8fb7ece275c0b"
+    },
+    {
+      "name": "taproot",
+      "version": "0.1.0",
+      "source": "git+https://github.com/merely-made/genet.git?rev=69a2383b2ad777b884a72f31f8f8fb7ece275c0b#69a2383b2ad777b884a72f31f8f8fb7ece275c0b"
+    },
+    {
+      "name": "cambium",
+      "version": "0.3.3",
+      "source": "git+https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee31258b23c86572c429388c5d10bd4de9dc3"
+    },
+    {
+      "name": "cambium-genet-web-host",
+      "version": "0.1.0",
+      "source": "git+https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee31258b23c86572c429388c5d10bd4de9dc3"
+    },
+    {
+      "name": "cambium-genet-winit-host",
+      "version": "0.1.0",
+      "source": "git+https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee31258b23c86572c429388c5d10bd4de9dc3"
+    },
+    {
+      "name": "cambium-rootstock",
+      "version": "0.1.0",
+      "source": "git+https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee31258b23c86572c429388c5d10bd4de9dc3"
+    },
+    {
+      "name": "cambium-winit",
+      "version": "0.3.0",
+      "source": "git+https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee31258b23c86572c429388c5d10bd4de9dc3"
+    },
+    {
+      "name": "cambium-winit-a11y",
+      "version": "0.3.0",
+      "source": "git+https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee31258b23c86572c429388c5d10bd4de9dc3"
+    },
+    {
+      "name": "errand",
+      "version": "0.3.4",
+      "source": "git+https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee31258b23c86572c429388c5d10bd4de9dc3"
+    },
+    {
+      "name": "mere-apparatus",
+      "version": "0.0.1",
+      "source": "git+https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee31258b23c86572c429388c5d10bd4de9dc3"
+    },
+    {
+      "name": "mere-fetch",
+      "version": "0.0.1",
+      "source": "git+https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee31258b23c86572c429388c5d10bd4de9dc3"
+    },
+    {
+      "name": "mere-surface-api",
+      "version": "0.1.0",
+      "source": "git+https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee31258b23c86572c429388c5d10bd4de9dc3"
+    },
+    {
+      "name": "meristem",
+      "version": "0.2.0",
+      "source": "git+https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee31258b23c86572c429388c5d10bd4de9dc3"
+    },
+    {
+      "name": "mesquite",
+      "version": "0.1.0",
+      "source": "git+https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee31258b23c86572c429388c5d10bd4de9dc3"
+    },
+    {
+      "name": "sceno",
+      "version": "0.0.4",
+      "source": "git+https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee31258b23c86572c429388c5d10bd4de9dc3"
+    },
+    {
+      "name": "sprigging",
+      "version": "0.2.1",
+      "source": "git+https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee31258b23c86572c429388c5d10bd4de9dc3"
+    },
+    {
+      "name": "tinct",
+      "version": "0.1.2",
+      "source": "git+https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee31258b23c86572c429388c5d10bd4de9dc3"
+    },
+    {
+      "name": "workbench",
+      "version": "0.1.0",
+      "source": "git+https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee31258b23c86572c429388c5d10bd4de9dc3"
+    }
+  ]
+}

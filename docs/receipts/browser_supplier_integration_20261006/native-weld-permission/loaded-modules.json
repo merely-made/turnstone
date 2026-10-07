@@ -1,0 +1,59 @@
+{
+  "owned_pid": 44072,
+  "sampling_wait_milliseconds": 250,
+  "snapshots_attempted": 254,
+  "observed_modules": [
+    {
+      "module": "d3d12.dll",
+      "path": "C:\\WINDOWS\\SYSTEM32\\d3d12.dll",
+      "sha256": "5f3b4c8ab126c9342c040ad9f268e3a3907242faf141b644cf17a14f4ecbed1b",
+      "first_observed_utc": "2026-10-07T01:30:00.3015860Z",
+      "hash_limitation": null
+    },
+    {
+      "module": "d3d11.dll",
+      "path": "C:\\WINDOWS\\SYSTEM32\\d3d11.dll",
+      "sha256": "d04fd4146b1d07b9b8b377001bb4ffa22bdceb38d5faccf91c9e9a318e0fb0ce",
+      "first_observed_utc": "2026-10-07T01:29:58.8106062Z",
+      "hash_limitation": null
+    },
+    {
+      "module": "dxcompiler.dll",
+      "path": "C:\\t\\cargo-targets\\turnstone\\debug\\dxcompiler.dll",
+      "sha256": "275b31642bf35d0576cc4aa226036fd39977090996b116f32b329ddbf58b185c",
+      "first_observed_utc": "2026-10-07T01:30:00.3161689Z",
+      "hash_limitation": null
+    },
+    {
+      "module": "libcef.dll",
+      "path": "C:\\t\\cargo-targets\\turnstone\\debug\\libcef.dll",
+      "sha256": "5f2ffb8f622bfb50caeb565d0e3ce205a4a64af95a8e3e4d34bf71f94d2650bf",
+      "first_observed_utc": "2026-10-07T01:29:58.8209041Z",
+      "hash_limitation": null
+    },
+    {
+      "module": "D3D12Core.dll",
+      "path": "C:\\WINDOWS\\SYSTEM32\\D3D12Core.dll",
+      "sha256": "0716b255b7da3191ddc27885bdeafc0bf8b6567073cdf167450390ded70470e5",
+      "first_observed_utc": "2026-10-07T01:30:00.3047255Z",
+      "hash_limitation": null
+    },
+    {
+      "module": "opengl32.dll",
+      "path": "C:\\WINDOWS\\SYSTEM32\\opengl32.dll",
+      "sha256": "703d6702361821144155f18e27436608668fa6ccd6a9ad153108201ba08b0e0e",
+      "first_observed_utc": "2026-10-07T01:29:58.8176634Z",
+      "hash_limitation": null
+    },
+    {
+      "module": "dxgi.dll",
+      "path": "C:\\WINDOWS\\SYSTEM32\\dxgi.dll",
+      "sha256": "310f89b07256018034c42c48bcaa0f550c13afe4634be4e00bf1419af35e274c",
+      "first_observed_utc": "2026-10-07T01:29:58.7752079Z",
+      "hash_limitation": null
+    }
+  ],
+  "observer_limitations": [],
+  "scope": "Read-only observations of this owned application process only; child processes are not inspected",
+  "inference_limit": "A module not observed during periodic sampling is not proven absent; no staging-path inference"
+}

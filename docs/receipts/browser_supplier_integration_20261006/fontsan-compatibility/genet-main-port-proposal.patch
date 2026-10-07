@@ -1,0 +1,349 @@
+diff --git a/Cargo.toml b/Cargo.toml
+index 1688ba6263e..3a560527364 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -284,7 +284,7 @@ speexdsp-resampler = "0.1.0"
+ # Font enumeration + family resolution, the same stack parley uses (so the
+ # cascade's font-metrics provider resolves fonts identically to text layout).
+ fontique = { package = "genet-fontique", version = "0.10.0", path = "support/patches/fontique" }
+-fontsan = "0.7.0"
++fontsan = { version = "0.7.0", default-features = false, features = ["libz-sys", "wuff"] }
+ skrifa = "0.42.1"
+ smallvec = { version = "1.15", features = ["serde", "union"] }
+ stacker = "0.1.21"
+diff --git a/components/genet-livery/src/text.rs b/components/genet-livery/src/text.rs
+index 89717be547f..53c7fb2470f 100644
+--- a/components/genet-livery/src/text.rs
++++ b/components/genet-livery/src/text.rs
+@@ -4588,6 +4588,26 @@ mod tests {
+         assert!(normalized_font_bytes(b"wOF2not-a-font".to_vec()).is_none());
+     }
+ 
++    #[cfg(not(target_arch = "wasm32"))]
++    #[test]
++    fn valid_woff2_is_decoded_to_sfnt_with_its_nko_glyph() {
++        use read_fonts::TableProvider;
++
++        let woff2 = include_bytes!("../tests/data/NotoSansNko-regular-webfont.woff2");
++        assert!(woff2.starts_with(b"wOF2"));
++        let sfnt = normalized_font_bytes(woff2.to_vec()).expect("valid WOFF2 must sanitize");
++        assert!(sfnt.starts_with(b"\0\x01\0\0"));
++        let font = read_fonts::FontRef::new(&sfnt).expect("sanitized SFNT must parse");
++        let glyph = font
++            .cmap()
++            .expect("NKo font must have a character map")
++            .map_codepoint(0x07cau32)
++            .expect("NKo letter A must retain its glyph");
++        assert_ne!(glyph.to_u32(), 0);
++        assert!(glyph.to_u32() < u32::from(font.maxp().unwrap().num_glyphs()));
++        assert_eq!(normalized_font_bytes(sfnt.clone()), Some(sfnt));
++    }
++
+     #[cfg(target_arch = "wasm32")]
+     #[test]
+     fn wasm_rejects_woff2_without_native_sanitizer() {
+diff --git a/components/genet-livery/tests/data/LICENSE_OFL.txt b/components/genet-livery/tests/data/LICENSE_OFL.txt
+new file mode 100644
+index 00000000000..61f9f457bc8
+--- /dev/null
++++ b/components/genet-livery/tests/data/LICENSE_OFL.txt
+@@ -0,0 +1,94 @@
++Copyright 2013 Google Inc. All Rights Reserved.
++
++This Font Software is licensed under the SIL Open Font License,
++Version 1.1.
++
++This license is copied below, and is also available with a FAQ at:
++http://scripts.sil.org/OFL
++
++-----------------------------------------------------------
++SIL OPEN FONT LICENSE Version 1.1 - 26 February 2007
++-----------------------------------------------------------
++
++PREAMBLE
++The goals of the Open Font License (OFL) are to stimulate worldwide
++development of collaborative font projects, to support the font
++creation efforts of academic and linguistic communities, and to
++provide a free and open framework in which fonts may be shared and
++improved in partnership with others.
++
++The OFL allows the licensed fonts to be used, studied, modified and
++redistributed freely as long as they are not sold by themselves. The
++fonts, including any derivative works, can be bundled, embedded,
++redistributed and/or sold with any software provided that any reserved
++names are not used by derivative works. The fonts and derivatives,
++however, cannot be released under any other type of license. The
++requirement for fonts to remain under this license does not apply to
++any document created using the fonts or their derivatives.
++
++DEFINITIONS
++"Font Software" refers to the set of files released by the Copyright
++Holder(s) under this license and clearly marked as such. This may
++include source files, build scripts and documentation.
++
++"Reserved Font Name" refers to any names specified as such after the
++copyright statement(s).
++
++"Original Version" refers to the collection of Font Software
++components as distributed by the Copyright Holder(s).
++
++"Modified Version" refers to any derivative made by adding to,
++deleting, or substituting -- in part or in whole -- any of the
++components of the Original Version, by changing formats or by porting
++the Font Software to a new environment.
++
++"Author" refers to any designer, engineer, programmer, technical
++writer or other person who contributed to the Font Software.
++
++PERMISSION & CONDITIONS
++Permission is hereby granted, free of charge, to any person obtaining
++a copy of the Font Software, to use, study, copy, merge, embed,
++modify, redistribute, and sell modified and unmodified copies of the
++Font Software, subject to the following conditions:
++
++1) Neither the Font Software nor any of its individual components, in
++Original or Modified Versions, may be sold by itself.
++
++2) Original or Modified Versions of the Font Software may be bundled,
++redistributed and/or sold with any software, provided that each copy
++contains the above copyright notice and this license. These can be
++included either as stand-alone text files, human-readable headers or
++in the appropriate machine-readable metadata fields within text or
++binary files as long as those fields can be easily viewed by the user.
++
++3) No Modified Version of the Font Software may use the Reserved Font
++Name(s) unless explicit written permission is granted by the
++corresponding Copyright Holder. This restriction only applies to the
++primary font name as presented to the users.
++
++4) The name(s) of the Copyright Holder(s) or the Author(s) of the Font
++Software shall not be used to promote, endorse or advertise any
++Modified Version, except to acknowledge the contribution(s) of the
++Copyright Holder(s) and the Author(s) or with their explicit written
++permission.
++
++5) The Font Software, modified or unmodified, in part or in whole,
++must be distributed entirely under this license, and must not be
++distributed under any other license. The requirement for fonts to
++remain under this license does not apply to any document created using
++the Font Software.
++
++TERMINATION
++This license becomes null and void if any of the above conditions are
++not met.
++
++DISCLAIMER
++THE FONT SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
++EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY WARRANTIES OF
++MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT
++OF COPYRIGHT, PATENT, TRADEMARK, OR OTHER RIGHT. IN NO EVENT SHALL THE
++COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
++INCLUDING ANY GENERAL, SPECIAL, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL
++DAMAGES, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
++FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM
++OTHER DEALINGS IN THE FONT SOFTWARE.
+diff --git a/components/genet-livery/tests/data/NotoSansNko-regular-webfont.woff2 b/components/genet-livery/tests/data/NotoSansNko-regular-webfont.woff2
+new file mode 100644
+index 0000000000000000000000000000000000000000..780661ba1ca55c7ba73a8dabe0716c066b8cc7ca
+GIT binary patch
+literal 7724
+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
+
+literal 0
+HcmV?d00001
+
+diff --git a/components/genet-livery/tests/data/README.md b/components/genet-livery/tests/data/README.md
+new file mode 100644
+index 00000000000..13a85b7c62a
+--- /dev/null
++++ b/components/genet-livery/tests/data/README.md
+@@ -0,0 +1,19 @@
++# WOFF2 sanitizer fixture
++
++`NotoSansNko-regular-webfont.woff2` is an unmodified copy of
++`tests/wpt/tests/fonts/noto/NotoSansNko-regular-webfont.woff2` at Genet commit
++`69a2383b2ad777b884a72f31f8f8fb7ece275c0b`. It is 7,724 bytes with SHA-256
++`d3ede808ce743034e14ff8cdaeb911aa49e50c0b3c94af38745744f57e564db4`.
++
++The font's embedded name table identifies Noto Sans NKo, copyright 2013 Google
++Inc. All Rights Reserved., and the SIL Open Font License, Version 1.1, with
++license URL <http://scripts.sil.org/OFL>. `LICENSE_OFL.txt` contains that
++copyright notice and the OFL 1.1 text already present at
++`tests/wpt/tests/fonts/noto/NotoSansAdlam-hinted/LICENSE_OFL.txt` in the same
++source revision. The font bytes and family name have not been changed.
++
++The native test checks WOFF2 sanitization produces parseable SFNT with a
++nonzero, in-range glyph for U+07CA (NKo letter A). This is a codec acceptance
++test; shaping, platform font discovery, and full-script coverage require
++separate measurements. The existing malformed-WOFF2 rejection and SFNT byte
++identity tests retain their separate contracts.
+diff --git a/design_docs/2026-09-04_common_script_font_fallback_plan.md b/design_docs/2026-09-04_common_script_font_fallback_plan.md
+index e1cdcfdae2b..94bd4c0f11f 100644
+--- a/design_docs/2026-09-04_common_script_font_fallback_plan.md
++++ b/design_docs/2026-09-04_common_script_font_fallback_plan.md
+@@ -287,3 +287,17 @@ no glyph.
+   and Ortet before/after readback. The paired Parley/Fontique source dependency
+   also resolves from a standalone consumer. Product pins, upstream disposition,
+   and other-platform measurements remain open.
++- **2026-10-06.** Bounded browser compatibility revision from qualified Genet
++  `69a2383b2ad777b884a72f31f8f8fb7ece275c0b`: selected fontsan 0.7's supported
++  `libz-sys,wuff` backend with defaults disabled, matching the upstream Servo
++  host's edge. Cargo rejects the former default `woff2` backend when both hosts
++  are linked because fontsan requires exactly one backend. The sanitizer API
++  and `normalized_font_bytes` implementation are unchanged. Native Livery
++  acceptance passed the existing malformed-WOFF2 rejection and SFNT identity
++  tests plus a valid Noto Sans NKo WOFF2 decode with a nonzero, in-range U+07CA
++  glyph. The unchanged package-local font fixture includes its original OFL
++  license and source provenance in `components/genet-livery/tests/data`.
++  The feature witness contains only `libz-sys,wuff`. Standalone tests used a
++  diagnostic resolver lock, not a newly committed dependency-family upgrade.
++  Exact-pin combined-consumer and native browser qualification remain separate
++  gates. This codec slice does not alter the fallback rulings or platform gates.

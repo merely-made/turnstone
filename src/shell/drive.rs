@@ -445,6 +445,13 @@ impl taproot::Automatable for Shell {
                 )
                 .with_field("host-scry-imported-pages", ready.to_string());
         }
+        #[cfg(all(feature = "servo", windows))]
+        {
+            out = out
+                .with_field("host-servo-views", super::servo::active_views().to_string())
+                .with_field("host-servo-profile", self.servo_factory.as_ref()
+                    .map_or("", |factory| factory.profile_name()));
+        }
         if let Some(find) = snap.document_find {
             out = out
                 .with_field("document-find-query", find.query)
@@ -851,19 +858,26 @@ impl Shell {
                         )
                     },
                 )?;
-                #[cfg(all(feature = "scry", windows))]
+                #[cfg(all(any(feature = "scry", feature = "servo"), windows))]
                 {
                     let surfaces = self.surface_plan().into_iter().filter_map(|surface| {
                         let crate::surface::SurfaceKind::Content(node) = surface.kind else { return None; };
                         let rect = surface.rect;
                         Some(serde_json::json!({"node":node,"surface_id":surface.id.0,"x":rect.x,"y":rect.y,"width":rect.w,"height":rect.h}))
                     }).collect::<Vec<_>>();
+                    #[cfg(feature = "scry")]
                     let stats = self.scry_frame_importers.iter().map(|(node, importer)| {
                         let stats = importer.stats();
                         serde_json::json!({"node":node,"fence_handle":importer.fence_handle(),"frames":stats.frames,"imports":stats.imports,"waits":stats.waits})
                     }).collect::<Vec<_>>();
+                    #[cfg(not(feature = "scry"))]
+                    let stats: Vec<serde_json::Value> = Vec::new();
+                    #[cfg(feature = "servo")]
+                    let servo_views = super::servo::active_views();
+                    #[cfg(not(feature = "servo"))]
+                    let servo_views = 0usize;
                     std::fs::write(self.shared_out_dir.join(format!("{name}.surface-frames.json")),
-                        serde_json::to_vec_pretty(&serde_json::json!({"live_producers":self.surface_producers.len(),"cached_frames":self.surface_frames.len(),"scry_importers":stats,"content_surfaces":surfaces})).map_err(|error|error.to_string())?)
+                        serde_json::to_vec_pretty(&serde_json::json!({"live_producers":self.surface_producers.len(),"cached_frames":self.surface_frames.len(),"scry_importers":stats,"servo_active_views":servo_views,"content_surfaces":surfaces})).map_err(|error|error.to_string())?)
                         .map_err(|error|error.to_string())?;
                 }
             },

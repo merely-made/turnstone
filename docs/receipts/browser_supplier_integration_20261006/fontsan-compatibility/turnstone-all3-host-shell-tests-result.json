@@ -1,0 +1,9 @@
+{
+  "started_utc": "2026-10-07T04:57:09.0133583Z",
+  "finished_utc": "2026-10-07T04:59:45.6405962Z",
+  "exit_code": 0,
+  "priority": "BelowNormal",
+  "jobs": 1,
+  "command": "cargo test --offline --locked --features scry,weld,servo --lib shell:: --target-dir C:/t/cargo-targets/turnstone -j1 -- --test-threads=1",
+  "log_sha256": "3882F29C2CB1EEBC2E266311B852D913283D52AEB40C8A07FE0BFE8BBB53388A"
+}

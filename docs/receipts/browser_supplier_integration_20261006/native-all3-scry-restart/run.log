@@ -1,0 +1,33 @@
+=== stdout ===
+2026-10-07T05:14:16.577150Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:14:17.405425Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:14:17.415232Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:14:19.021465Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:14:20.827428Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:14:22.530109Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:14:22.539034Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:14:27.566556Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:14:29.300135Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T05:14:29.309323Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+
+=== stderr ===
+[producer] resize: 1024x600 -> 175x570
+[producer] start_capture: 175x570 ready in 33ms
+[producer] resize: 1024x600 -> 175x570
+[producer] start_capture: 175x570 ready in 27ms
+[producer] resize: 175x570 -> 85x570
+[producer] start_capture: 85x570 ready in 26ms
+[producer] resize: 175x570 -> 85x570
+[producer] start_capture: 85x570 ready in 25ms
+[producer] resize: 85x570 -> 175x570
+[producer] start_capture: 175x570 ready in 24ms
+[producer] resize: 85x570 -> 175x570
+[producer] start_capture: 175x570 ready in 24ms
+[producer] resize: 175x570 -> 85x570
+[producer] start_capture: 85x570 ready in 27ms
+[producer] resize: 175x570 -> 85x570
+[producer] start_capture: 85x570 ready in 26ms
+[producer] resize: 85x570 -> 175x570
+[producer] start_capture: 175x570 ready in 23ms
+[producer] resize: 85x570 -> 175x570
+[producer] start_capture: 175x570 ready in 23ms

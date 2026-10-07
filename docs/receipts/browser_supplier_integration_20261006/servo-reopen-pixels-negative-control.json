@@ -1,0 +1,167 @@
+{
+  "recorded_utc": "2026-10-07T05:03:05.120827+00:00",
+  "source_manifest": "source-manifest-all3-host.json",
+  "source_archive": "source-inputs-all3-host-reopen-pixels-failed.zip",
+  "source_archive_sha256": "1bc27af3512266ccd434c76a50005f16eda38b202fb4d494643c6a25c64465cf",
+  "source_files": 174,
+  "executable_sha256": "ae47dce49bc57f03836b2ea1bc88ac19e37183b6751fb5c540137eebc943c0ea",
+  "negative_control": "native-servo-reopen-pixels-failed",
+  "original_receipt_directory": "native-servo",
+  "native_exit": 0,
+  "timed_out": false,
+  "scenario_result": "RESULT ok",
+  "qualification": "VISUAL FAIL",
+  "reason": "08_reopened_in_same_servo_process.png: Servo A entirely white while title and producer/cache/view counters positive; Servo B current",
+  "files": [
+    {
+      "path": "01_two_upstream_servo_pages.png",
+      "bytes": 64477,
+      "sha256": "4cae91e9a6679f31e8b4c4996177de2674ffe68e3bdba4114d8f294e584ea084"
+    },
+    {
+      "path": "02_a_native_input_and_navigation.png",
+      "bytes": 51166,
+      "sha256": "acb3f57c94fbccdd3e0ed3e3d8f8ed26fbc68b57aa98d4ba869007fb2f548019"
+    },
+    {
+      "path": "03_b_native_input_and_navigation.png",
+      "bytes": 48260,
+      "sha256": "24d69b1dca3896f52b3c93a1cbd7040b577b3a984775ebfb59bf129ca57736c1"
+    },
+    {
+      "path": "04_resize_and_orientation.png",
+      "bytes": 86300,
+      "sha256": "1c93ee79803a013452ff0eb542c27a85b91d3b4e7f2ceb17ae5ec073895685cc"
+    },
+    {
+      "path": "05_a_reader_b_servo.png",
+      "bytes": 145334,
+      "sha256": "148d4c237d964619c1f434fef3aafa0d984ccdfeffd564d9bc4a71a3ccbb4a13"
+    },
+    {
+      "path": "06_a_servo_reconstructed.png",
+      "bytes": 87241,
+      "sha256": "ca66d6879ab2c7027c839acc1117ede20c59146347bba63493f683f450246ca4"
+    },
+    {
+      "path": "07_both_servo_views_closed.png",
+      "bytes": 64583,
+      "sha256": "ead74188f8102fe09eae795d9315a770e59761406cf984b2720cdce1f012d4b8"
+    },
+    {
+      "path": "08_reopened_in_same_servo_process.png",
+      "bytes": 74147,
+      "sha256": "28e99803edb6b08aa8f8fc15cdbd3858aba899cd43ea0657d2f81fc8fa043d14"
+    },
+    {
+      "path": "09_final_servo_teardown.png",
+      "bytes": 64583,
+      "sha256": "ead74188f8102fe09eae795d9315a770e59761406cf984b2720cdce1f012d4b8"
+    },
+    {
+      "path": "diagnostics.json",
+      "bytes": 43002,
+      "sha256": "ad3f612a2fe1852bff379814e4f7f9c05cff737f9bb1870b1abc857d3d58a698"
+    },
+    {
+      "path": "final-servo-closed.surface-frames.json",
+      "bytes": 124,
+      "sha256": "1bed58cd98da508010f079af827425c0aef7090b11188293058190b994965ac6"
+    },
+    {
+      "path": "final-servo-closed.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "independent-input.surface-frames.json",
+      "bytes": 497,
+      "sha256": "487904663530e7d2487f8db170302738405738d2561b695d58f58f3dc68793f0"
+    },
+    {
+      "path": "independent-input.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "loaded-modules.json",
+      "bytes": 5838,
+      "sha256": "7b3679fa64e6c44e08c8786eda90dcc36b40f28427235bcb4f3367e47e3dbb9c"
+    },
+    {
+      "path": "process-result.json",
+      "bytes": 1305,
+      "sha256": "99f93fbda4741d4e1ab1bfe59246d95e7d5131efbbd9203818e87476abd478c1"
+    },
+    {
+      "path": "run.log",
+      "bytes": 21056,
+      "sha256": "6158cec36e475c0f5f64f9ad3812588f4a90281d78398543cc2e55f9fdbf08d1"
+    },
+    {
+      "path": "run.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run.stdout.log",
+      "bytes": 21025,
+      "sha256": "86625192cda7fea2e6b606b63dd47770b63f905f9e0f766c9c789471257a9e16"
+    },
+    {
+      "path": "scenario.done",
+      "bytes": 490,
+      "sha256": "284a542ed7b4aaf2ee052c26db19477299ebaa067f28c99f4bf846af0c9ab2f0"
+    },
+    {
+      "path": "servo-closed.surface-frames.json",
+      "bytes": 124,
+      "sha256": "1bed58cd98da508010f079af827425c0aef7090b11188293058190b994965ac6"
+    },
+    {
+      "path": "servo-closed.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "servo-reconstructed.surface-frames.json",
+      "bytes": 499,
+      "sha256": "f6d8b58e761b098326342433d107053b00309de9b1bfc7c349597ae9b0f97dae"
+    },
+    {
+      "path": "servo-reconstructed.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "servo-reopened.surface-frames.json",
+      "bytes": 499,
+      "sha256": "f6d8b58e761b098326342433d107053b00309de9b1bfc7c349597ae9b0f97dae"
+    },
+    {
+      "path": "servo-reopened.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "servo-resized.surface-frames.json",
+      "bytes": 499,
+      "sha256": "f6d8b58e761b098326342433d107053b00309de9b1bfc7c349597ae9b0f97dae"
+    },
+    {
+      "path": "servo-resized.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "two-servo-pages.surface-frames.json",
+      "bytes": 497,
+      "sha256": "487904663530e7d2487f8db170302738405738d2561b695d58f58f3dc68793f0"
+    },
+    {
+      "path": "two-servo-pages.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    }
+  ]
+}

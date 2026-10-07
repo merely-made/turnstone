@@ -1,0 +1,57 @@
+Command: cargo test --offline --locked -p weld-engine -p graft-engine --features weld-engine/welding-0-15 --target-dir C:/t/cargo-targets/mere -j 2
+    Blocking waiting for file lock on package cache
+warning: patch `boa_engine v1.0.0-dev (https://github.com/mark-ik/boa.git?branch=genet#52cfb6ff)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	https://github.com/mark-ik/boa.git
+warning: patch `boa_gc v1.0.0-dev (https://github.com/mark-ik/boa.git?branch=genet#52cfb6ff)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	https://github.com/mark-ik/boa.git
+warning: patch `iroh-mdns-address-lookup v0.4.0 (https://github.com/mark-ik/iroh-address-lookups.git?branch=mere#1f7cfe85)` was not used in the crate graph
+help: Check that the patched package version and available features are compatible
+      with the dependency requirements. If the patch has a different version from
+      what is locked in the Cargo.lock file, run `cargo update` to use the new
+      version. This may also occur with an optional dependency that is not enabled.
+    Blocking waiting for file lock on package cache
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 34.22s
+     Running unittests src\lib.rs (C:/t/cargo-targets/mere\debug\deps\graft_engine-8e72783a9eccb5f8.exe)
+
+running 4 tests
+test engine::tests::graft_capture_stays_unsupported_until_the_protocol_is_wired ... ok
+test engine::tests::registers_and_spawns_through_registry ... ok
+test engine::tests::producer_retains_host_callback_order_across_event_kinds ... ok
+test engine::tests::factory_failure_surfaces_as_spawn_failed ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running unittests src\lib.rs (C:/t/cargo-targets/mere\debug\deps\weld_engine-329f0e11d42a5c23.exe)
+
+running 11 tests
+test engine::tests::factory_failure_surfaces_as_spawn_failed ... ok
+test engine::tests::registers_and_spawns_through_registry ... ok
+test welding_0_15::tests::pressed_text_is_ordered_after_raw_key_with_character_codes ... ok
+test engine::tests::weld_stub_does_not_claim_document_controls ... ok
+test welding_0_15::tests::completion_mapping_preserves_full_width_request_ids ... ok
+test welding_0_15::tests::input_keeps_the_same_ordered_completion_queue ... ok
+test welding_0_15::tests::permission_mapping_combines_desktop_capture_bits ... ok
+test welding_0_15::tests::rich_mouse_dispatch_keeps_changed_and_held_buttons_through_release ... ok
+test welding_0_15::tests::keyboard_dispatch_stops_at_the_first_rejected_event ... ok
+test welding_0_15::tests::contact_dispatch_and_typed_mouse_refusals_are_preserved ... ok
+test welding_0_15::tests::find_results_retain_the_query_and_convert_the_one_based_ordinal ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+   Doc-tests graft_engine
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests weld_engine
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+Exit code: 0

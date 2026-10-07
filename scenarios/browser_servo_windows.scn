@@ -1,0 +1,163 @@
+# B3 real upstream Servo on the existing Windows host device.
+# Serve fixtures/browser_servo at SERVO_FIXTURE_BASE. Fresh application state,
+# a named shared Servo process profile, and a 1024x600 client area are required.
+# Title/address assertions come from native delegates; script/cookie APIs stay
+# unsupported. Review TOP red/BOTTOM blue pixels and input/result captures.
+settle 30
+key escape
+open ${SERVO_FIXTURE_BASE}/page-a.html
+settle 80
+act Open node in Workbench
+settle 80
+act Open Inspector pane
+settle 10
+click surface:inspector .radio @data-engine-id=graft.servo
+settle 160
+assert row Viewer: graft.servo
+assert snap browser-current-engine == graft.servo
+assert snap browser-current-content == live
+act Close pane
+settle 10
+act Open node in Workbench
+settle 10
+assert wb-cells == 1
+assert snap host-surface-producers == 1
+assert snap host-servo-views == 1
+
+open ${SERVO_FIXTURE_BASE}/page-b.html
+settle 80
+act Open node in Workbench
+settle 80
+act Open Inspector pane
+settle 10
+click surface:inspector .radio @data-engine-id=graft.servo
+settle 160
+assert row Viewer: graft.servo
+assert snap browser-current-engine == graft.servo
+assert snap browser-current-content == live
+act Close pane
+settle 10
+act Open node in Workbench
+settle 10
+assert wb-cells == 2
+assert wb-cell Servo A
+assert wb-cell Servo B
+assert snap host-surface-producers == 2
+assert snap host-servo-views == 2
+assert snap host-servo-profile == ${TURNSTONE_SERVO_PROFILE}
+act Maximize pane
+settle 60
+capture 01_two_upstream_servo_pages
+record-idle two-servo-pages
+
+click surface:workbench .tab Servo A
+settle 10
+click-at 200 150
+type alpx
+key backspace
+settle 40
+assert snap browser-current ~ Servo A | text=alp | clicks=0
+type ha
+settle 40
+assert snap browser-current ~ Servo A | text=alpha | clicks=0
+click-at 200 215
+settle 160
+assert snap browser-current ~ result.html?page=A&text=alpha&clicks=1
+assert snap browser-current ~ Servo A | result=alpha | clicks=1
+assert snap browser-current-engine == graft.servo
+assert snap browser-current-content == live
+capture 02_a_native_input_and_navigation
+
+click surface:workbench .tab Servo B
+settle 10
+assert snap browser-current ~ /page-b.html
+click-at 715 150
+type bravo
+settle 40
+assert snap browser-current ~ Servo B | text=bravo | clicks=0
+click-at 715 215
+settle 160
+assert snap browser-current ~ result.html?page=B&text=bravo&clicks=1
+assert snap browser-current ~ Servo B | result=bravo | clicks=1
+assert snap browser-current-content == live
+capture 03_b_native_input_and_navigation
+record-idle independent-input
+
+assert snap browser-find-capability ~ unavailable
+assert snap browser-zoom-capability ~ partial
+act Maximize pane
+settle 60
+divider 0.65
+settle 60
+assert wb-cells == 2
+assert snap host-surface-producers == 2
+assert snap host-servo-views == 2
+capture 04_resize_and_orientation
+record-idle servo-resized
+
+click surface:workbench .tab Servo A
+settle 20
+act Open Inspector pane
+settle 10
+click surface:inspector .radio @data-engine-id=genet.reader
+settle 100
+assert row Viewer: genet.reader
+assert snap host-surface-producers == 1
+assert snap host-servo-views == 1
+capture 05_a_reader_b_servo
+click surface:inspector .radio @data-engine-id=graft.servo
+settle 160
+assert row Viewer: graft.servo
+assert snap browser-current-engine == graft.servo
+assert snap browser-current-content == live
+assert snap host-surface-producers == 2
+assert snap host-servo-views == 2
+assert snap browser-current ~ Servo A | result=alpha | clicks=1
+act Close pane
+settle 20
+capture 06_a_servo_reconstructed
+record-idle servo-reconstructed
+
+click surface:workbench .tab Servo A
+settle 10
+act Toggle live content
+settle 60
+assert snap host-surface-producers == 1
+assert snap host-servo-views == 1
+click surface:workbench .tab Servo B
+settle 10
+act Toggle live content
+settle 60
+assert snap host-surface-producers == 0
+assert snap host-servo-views == 0
+capture 07_both_servo_views_closed
+record-idle servo-closed
+
+click surface:workbench .tab Servo B
+act Toggle live content
+settle 160
+assert snap host-surface-producers == 1
+assert snap host-servo-views == 1
+assert snap browser-current-engine == graft.servo
+assert snap browser-current ~ Servo B | result=bravo | clicks=1
+click surface:workbench .tab Servo A
+act Toggle live content
+settle 160
+assert snap host-surface-producers == 2
+assert snap host-servo-views == 2
+assert snap browser-current-engine == graft.servo
+assert snap browser-current ~ Servo A | result=alpha | clicks=1
+capture 08_reopened_in_same_servo_process
+record-idle servo-reopened
+
+click surface:workbench .tab Servo A
+act Toggle live content
+settle 60
+click surface:workbench .tab Servo B
+act Toggle live content
+settle 60
+assert snap host-surface-producers == 0
+assert snap host-servo-views == 0
+capture 09_final_servo_teardown
+record-idle final-servo-closed
+log B3 upstream Servo: shared named profile, independent views and input, native navigation, normalized orientation, resize, reconstruction and teardown

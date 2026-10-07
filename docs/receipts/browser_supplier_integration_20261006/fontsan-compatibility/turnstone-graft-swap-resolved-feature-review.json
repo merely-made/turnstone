@@ -1,0 +1,150 @@
+{
+  "observed_utc": "2026-10-07T04:29:18.667434+00:00",
+  "scope": "Locked Windows resolver review; older compatibility set with qualified Graft correction, not final U9 set or native acceptance.",
+  "metadata_exit_code": 0,
+  "cargo_lock_sha256": "7cd795f9f961f928b92e3d5c357a2c01533f3dfbb5d137ee3ee3a6f0583163b3",
+  "fontsan_features": [
+    "libz-sys",
+    "wuff"
+  ],
+  "single_host_wgpu_device_family": "30.0.1",
+  "wgpu_types_27_only_direct_parents": [
+    "bevy_reflect"
+  ],
+  "selected_packages": [
+    {
+      "name": "fontsan",
+      "version": "0.7.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "features": [
+        "libz-sys",
+        "wuff"
+      ]
+    },
+    {
+      "name": "genet-livery",
+      "version": "0.0.4",
+      "source": "git+https://github.com/merely-made/genet.git?rev=679d8314aab4ec9f57a903c79dde244c3c565c1e#679d8314aab4ec9f57a903c79dde244c3c565c1e",
+      "features": []
+    },
+    {
+      "name": "grafting",
+      "version": "0.6.0",
+      "source": "git+https://github.com/merely-made/wgpu-graft.git?rev=dec11bbd2c9c8676e66987fb6ca32cd4ae6310eb#dec11bbd2c9c8676e66987fb6ca32cd4ae6310eb",
+      "features": [
+        "gl",
+        "surfman",
+        "wgpu-30"
+      ]
+    },
+    {
+      "name": "grafting",
+      "version": "0.6.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "features": [
+        "wgpu-30"
+      ]
+    },
+    {
+      "name": "grafting-frame",
+      "version": "0.1.0",
+      "source": "git+https://github.com/merely-made/wgpu-graft.git?rev=dec11bbd2c9c8676e66987fb6ca32cd4ae6310eb#dec11bbd2c9c8676e66987fb6ca32cd4ae6310eb",
+      "features": []
+    },
+    {
+      "name": "inker",
+      "version": "0.1.1",
+      "source": "git+https://github.com/merely-made/mere.git?rev=edf175f9c0a8645318ac8925adf0af6956f61425#edf175f9c0a8645318ac8925adf0af6956f61425",
+      "features": []
+    },
+    {
+      "name": "mere",
+      "version": "0.0.2",
+      "source": "git+https://github.com/merely-made/mere.git?rev=edf175f9c0a8645318ac8925adf0af6956f61425#edf175f9c0a8645318ac8925adf0af6956f61425",
+      "features": [
+        "canvas",
+        "default",
+        "graph",
+        "linked-data",
+        "workbench"
+      ]
+    },
+    {
+      "name": "servo-wgpu-interop-adapter",
+      "version": "0.1.0",
+      "source": "git+https://github.com/merely-made/wgpu-graft.git?rev=dec11bbd2c9c8676e66987fb6ca32cd4ae6310eb#dec11bbd2c9c8676e66987fb6ca32cd4ae6310eb",
+      "features": [
+        "servo",
+        "wgpu-30"
+      ]
+    },
+    {
+      "name": "wgpu",
+      "version": "30.0.1",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "features": [
+        "default",
+        "dx12",
+        "gles",
+        "metal",
+        "parking_lot",
+        "std",
+        "vulkan",
+        "web",
+        "webgpu",
+        "wgsl"
+      ]
+    },
+    {
+      "name": "wgpu-core",
+      "version": "30.0.1",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "features": [
+        "default",
+        "dx12",
+        "gles",
+        "metal",
+        "portable-atomic",
+        "renderdoc",
+        "std",
+        "vulkan",
+        "wgpu-core-deps-apple",
+        "wgpu-core-deps-emscripten",
+        "wgpu-core-deps-windows-linux-android",
+        "wgsl"
+      ]
+    },
+    {
+      "name": "wgpu-hal",
+      "version": "30.0.1",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "features": [
+        "dx12",
+        "gles",
+        "metal",
+        "portable-atomic",
+        "renderdoc",
+        "vulkan"
+      ]
+    },
+    {
+      "name": "wgpu-types",
+      "version": "27.0.1",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "features": [
+        "serde",
+        "std",
+        "thiserror"
+      ]
+    },
+    {
+      "name": "wgpu-types",
+      "version": "30.0.1",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "features": [
+        "std",
+        "web"
+      ]
+    }
+  ]
+}

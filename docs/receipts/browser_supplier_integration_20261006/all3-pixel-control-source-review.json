@@ -1,0 +1,14 @@
+{
+  "source_labels": [
+    "all3-host",
+    "all3-pixel-control"
+  ],
+  "changed_inputs": [
+    "docs/receipts/browser_supplier_integration_20261006/fingerprint.py",
+    "docs/receipts/browser_supplier_integration_20261006/review-servo-pixels.py"
+  ],
+  "compiled_rust_and_cargo_inputs_unchanged": true,
+  "executable_sha256": "ae47dce49bc57f03836b2ea1bc88ac19e37183b6751fb5c540137eebc943c0ea",
+  "build_result": "fontsan-compatibility/turnstone-all3-host-build-result.json",
+  "qualification": "Independent mixed-runtime control; Servo reopen pixels remain failed"
+}

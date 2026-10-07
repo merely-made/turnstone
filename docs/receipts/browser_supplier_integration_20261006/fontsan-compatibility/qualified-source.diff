@@ -1,0 +1,91 @@
+diff --git a/Cargo.toml b/Cargo.toml
+index 1688ba6263e..3a560527364 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -284,7 +284,7 @@ speexdsp-resampler = "0.1.0"
+ # Font enumeration + family resolution, the same stack parley uses (so the
+ # cascade's font-metrics provider resolves fonts identically to text layout).
+ fontique = { package = "genet-fontique", version = "0.10.0", path = "support/patches/fontique" }
+-fontsan = "0.7.0"
++fontsan = { version = "0.7.0", default-features = false, features = ["libz-sys", "wuff"] }
+ skrifa = "0.42.1"
+ smallvec = { version = "1.15", features = ["serde", "union"] }
+ stacker = "0.1.21"
+diff --git a/components/genet-livery/src/text.rs b/components/genet-livery/src/text.rs
+index 89717be547f..53c7fb2470f 100644
+--- a/components/genet-livery/src/text.rs
++++ b/components/genet-livery/src/text.rs
+@@ -4588,6 +4588,26 @@ mod tests {
+         assert!(normalized_font_bytes(b"wOF2not-a-font".to_vec()).is_none());
+     }
+ 
++    #[cfg(not(target_arch = "wasm32"))]
++    #[test]
++    fn valid_woff2_is_decoded_to_sfnt_with_its_nko_glyph() {
++        use read_fonts::TableProvider;
++
++        let woff2 = include_bytes!("../tests/data/NotoSansNko-regular-webfont.woff2");
++        assert!(woff2.starts_with(b"wOF2"));
++        let sfnt = normalized_font_bytes(woff2.to_vec()).expect("valid WOFF2 must sanitize");
++        assert!(sfnt.starts_with(b"\0\x01\0\0"));
++        let font = read_fonts::FontRef::new(&sfnt).expect("sanitized SFNT must parse");
++        let glyph = font
++            .cmap()
++            .expect("NKo font must have a character map")
++            .map_codepoint(0x07cau32)
++            .expect("NKo letter A must retain its glyph");
++        assert_ne!(glyph.to_u32(), 0);
++        assert!(glyph.to_u32() < u32::from(font.maxp().unwrap().num_glyphs()));
++        assert_eq!(normalized_font_bytes(sfnt.clone()), Some(sfnt));
++    }
++
+     #[cfg(target_arch = "wasm32")]
+     #[test]
+     fn wasm_rejects_woff2_without_native_sanitizer() {
+diff --git a/components/genet-livery/tests/data/README.md b/components/genet-livery/tests/data/README.md
+new file mode 100644
+index 00000000000..13a85b7c62a
+--- /dev/null
++++ b/components/genet-livery/tests/data/README.md
+@@ -0,0 +1,19 @@
++# WOFF2 sanitizer fixture
++
++`NotoSansNko-regular-webfont.woff2` is an unmodified copy of
++`tests/wpt/tests/fonts/noto/NotoSansNko-regular-webfont.woff2` at Genet commit
++`69a2383b2ad777b884a72f31f8f8fb7ece275c0b`. It is 7,724 bytes with SHA-256
++`d3ede808ce743034e14ff8cdaeb911aa49e50c0b3c94af38745744f57e564db4`.
++
++The font's embedded name table identifies Noto Sans NKo, copyright 2013 Google
++Inc. All Rights Reserved., and the SIL Open Font License, Version 1.1, with
++license URL <http://scripts.sil.org/OFL>. `LICENSE_OFL.txt` contains that
++copyright notice and the OFL 1.1 text already present at
++`tests/wpt/tests/fonts/noto/NotoSansAdlam-hinted/LICENSE_OFL.txt` in the same
++source revision. The font bytes and family name have not been changed.
++
++The native test checks WOFF2 sanitization produces parseable SFNT with a
++nonzero, in-range glyph for U+07CA (NKo letter A). This is a codec acceptance
++test; shaping, platform font discovery, and full-script coverage require
++separate measurements. The existing malformed-WOFF2 rejection and SFNT byte
++identity tests retain their separate contracts.
+diff --git a/design_docs/2026-09-04_common_script_font_fallback_plan.md b/design_docs/2026-09-04_common_script_font_fallback_plan.md
+index e1cdcfdae2b..94bd4c0f11f 100644
+--- a/design_docs/2026-09-04_common_script_font_fallback_plan.md
++++ b/design_docs/2026-09-04_common_script_font_fallback_plan.md
+@@ -287,3 +287,17 @@ no glyph.
+   and Ortet before/after readback. The paired Parley/Fontique source dependency
+   also resolves from a standalone consumer. Product pins, upstream disposition,
+   and other-platform measurements remain open.
++- **2026-10-06.** Bounded browser compatibility revision from qualified Genet
++  `69a2383b2ad777b884a72f31f8f8fb7ece275c0b`: selected fontsan 0.7's supported
++  `libz-sys,wuff` backend with defaults disabled, matching the upstream Servo
++  host's edge. Cargo rejects the former default `woff2` backend when both hosts
++  are linked because fontsan requires exactly one backend. The sanitizer API
++  and `normalized_font_bytes` implementation are unchanged. Native Livery
++  acceptance passed the existing malformed-WOFF2 rejection and SFNT identity
++  tests plus a valid Noto Sans NKo WOFF2 decode with a nonzero, in-range U+07CA
++  glyph. The unchanged package-local font fixture includes its original OFL
++  license and source provenance in `components/genet-livery/tests/data`.
++  The feature witness contains only `libz-sys,wuff`. Standalone tests used a
++  diagnostic resolver lock, not a newly committed dependency-family upgrade.
++  Exact-pin combined-consumer and native browser qualification remain separate
++  gates. This codec slice does not alter the fallback rulings or platform gates.

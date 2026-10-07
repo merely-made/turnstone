@@ -1,0 +1,176 @@
+{
+  "recorded_utc": "2026-10-07T05:28:05.579272+00:00",
+  "source_label": "all3-pixel-control",
+  "executable_sha256": "ae47dce49bc57f03836b2ea1bc88ac19e37183b6751fb5c540137eebc943c0ea",
+  "held": "Separate Servo reopenedA visualFAIL persists; these four controls and mixed control do not qualify allB3/release/U9/a11y. New local diagnostic source is a different qualification.",
+  "controls": [
+    {
+      "name": "native-all3-weld-input",
+      "process_result_sha256": "3d90a83034f1e64eefde88b79f87cf9726e6fc6137cd16e2e972114c912a91f8",
+      "native_exit": 0,
+      "timed_out": false,
+      "scenario_result": "RESULT ok",
+      "scope": "Directly reviewed alpha/bravo independent native text and click/cookie state, yellow highlighted Page A text with one find match, requested A zoom1.1 visibly larger while B unchanged, and final placeholders. Synthetic input only; physical/IME/DPI/AT not qualified.",
+      "directly_reviewed_captures": [
+        {
+          "path": "native-all3-weld-input/01b_independent_weld_input.png",
+          "sha256": "aaea31346e38d2f802e9ab6d3157274a4e011133ad2c0dfc9d1d4e1a58500ef5",
+          "dimensions": [
+            1024,
+            600
+          ]
+        },
+        {
+          "path": "native-all3-weld-input/02_find.png",
+          "sha256": "59e194cd0050cc3e54721d46dc10cd1f2dec73782f13280d854663247351f4de",
+          "dimensions": [
+            1024,
+            600
+          ]
+        },
+        {
+          "path": "native-all3-weld-input/03_zoom.png",
+          "sha256": "e5e1f7f0a890628278029fe3310babb2c9dd2256bad191134f57d6985c4a01f1",
+          "dimensions": [
+            1024,
+            600
+          ]
+        },
+        {
+          "path": "native-all3-weld-input/04_teardown.png",
+          "sha256": "f706e66e07236a5cdbf836f93af1b4303b1e3ca6299f58f06f2adb62af3d0cd8",
+          "dimensions": [
+            1024,
+            600
+          ]
+        }
+      ]
+    },
+    {
+      "name": "native-all3-scry-input",
+      "process_result_sha256": "b34a111cf9402026fdb0289eda9926707fe76af461c7956b0c5a762883043f70",
+      "native_exit": 0,
+      "timed_out": false,
+      "scenario_result": "RESULT ok",
+      "scope": "Directly reviewed independent alpha/bravo native text and clicks, each wheel scroll285 while peer unchanged, current pages after reconstruction and reopen, closed placeholders. ScryDPR2 differs from WeldDPR1; DPI parity and physical/IME/AT not qualified.",
+      "directly_reviewed_captures": [
+        {
+          "path": "native-all3-scry-input/02_text_pointer_and_keyboard.png",
+          "sha256": "08598de911c6d0b3e91dc87c03b6cc148b7b09d9df857e18aee4e63aa414496d",
+          "dimensions": [
+            1024,
+            600
+          ]
+        },
+        {
+          "path": "native-all3-scry-input/02c_a_wheel.png",
+          "sha256": "3cc220ed299aceb16b946fc803bbf660c4ff32326404b5f91b5b6ca6f8e73930",
+          "dimensions": [
+            1024,
+            600
+          ]
+        },
+        {
+          "path": "native-all3-scry-input/02d_b_wheel.png",
+          "sha256": "3da880284a1efc9335595cb71fe0d80591f65cb5fccd5d79485dd6e66be35da1",
+          "dimensions": [
+            1024,
+            600
+          ]
+        },
+        {
+          "path": "native-all3-scry-input/06_a_scry_reconstructed.png",
+          "sha256": "9764600b5c719f58e0d71e49d69231ad42952eac3df0cf4d0a1612c38a981bbf",
+          "dimensions": [
+            1024,
+            600
+          ]
+        },
+        {
+          "path": "native-all3-scry-input/07_both_closed.png",
+          "sha256": "c4ec114d88af584a9c05d5c52d863052f214b1a037e10e52d6c4c26217aaeacb",
+          "dimensions": [
+            1024,
+            600
+          ]
+        },
+        {
+          "path": "native-all3-scry-input/08_ready_for_restart.png",
+          "sha256": "079e2f563b9c732c70a51c04ddc7e6b345abe4aa0fa9ed658b89870f7169921d",
+          "dimensions": [
+            1024,
+            600
+          ]
+        }
+      ]
+    },
+    {
+      "name": "native-all3-scry-restart",
+      "process_result_sha256": "a7b885c981067f1fb35e3929ea321785c7ae75ca9888f93ae1341cdd93b6b86d",
+      "native_exit": 0,
+      "timed_out": false,
+      "scenario_result": "RESULT ok",
+      "scope": "Directly reviewed restored current pages and each inspector profile after separate-process restart on same existing origin/profile: retained native cookies/storage1 and Scry pins.",
+      "directly_reviewed_captures": [
+        {
+          "path": "native-all3-scry-restart/01_restored_two_pages.png",
+          "sha256": "c9f12aec545b7226cbb06de912ad61307a4cae6831c68af4c4702c1cb6e98bde",
+          "dimensions": [
+            1024,
+            600
+          ]
+        },
+        {
+          "path": "native-all3-scry-restart/02_restored_a_profile.png",
+          "sha256": "efdc70ceace32b8db50168a7d4dbd59a05581056cbe48461cee91160822919e8",
+          "dimensions": [
+            1024,
+            600
+          ]
+        },
+        {
+          "path": "native-all3-scry-restart/03_restored_b_profile.png",
+          "sha256": "8cafd46c344b3cbdba2bf5f85a4b3f3906a706f32f4f88e0db1fbd7abf9b8815",
+          "dimensions": [
+            1024,
+            600
+          ]
+        }
+      ]
+    },
+    {
+      "name": "native-all3-weld-permission",
+      "process_result_sha256": "3ebd42e9cc301024f88669f3873ddf3215b68c720c35e5a4316d7f0a9797db66",
+      "native_exit": 0,
+      "timed_out": false,
+      "scenario_result": "RESULT ok",
+      "scope": "Directly reviewed real127.0.0.1:43107 geolocation Deny card, callback answered result page and final placeholder. Fixture result records2 permission requests1result with no abandoned requests. Other permissions not qualified.",
+      "directly_reviewed_captures": [
+        {
+          "path": "native-all3-weld-permission/01_permission_decision.png",
+          "sha256": "f3f6ac5c07814be5093946513aa677459bd958b048f52c84e6dd7fc8d2aaace3",
+          "dimensions": [
+            1024,
+            600
+          ]
+        },
+        {
+          "path": "native-all3-weld-permission/02_permission_answered.png",
+          "sha256": "6d881c7dcf49e379b9a0dc3d73cfb8b17b8825f91bd0297e9501283ad627f443",
+          "dimensions": [
+            1024,
+            600
+          ]
+        },
+        {
+          "path": "native-all3-weld-permission/03_permission_teardown.png",
+          "sha256": "4a8f81c8d3a7657f08e4cbd0916414dd317f6b51f05cf62b14703cd949e617b2",
+          "dimensions": [
+            1024,
+            600
+          ]
+        }
+      ]
+    }
+  ]
+}

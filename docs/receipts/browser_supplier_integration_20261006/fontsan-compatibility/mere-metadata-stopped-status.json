@@ -1,0 +1,10 @@
+{
+  "command": "cargo metadata --format-version 1",
+  "session": 75354,
+  "state": "Owned invocation interrupted exit1 before metadata completion",
+  "stderr_observed": "Updating git repository `https://github.com/merely-made/genet.git`",
+  "stdout_bytes": 0,
+  "cache_materialization": "New679d831 Cargo-owned immutable checkout incomplete; tests/wpt present, original WPTfont absent atlastread",
+  "agent_cache_mutation": "None",
+  "pending_gate": "Actual locked published consumer resolver/build/native qualification before main integration"
+}

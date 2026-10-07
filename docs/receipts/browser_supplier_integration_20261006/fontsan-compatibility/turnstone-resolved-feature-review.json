@@ -1,0 +1,204 @@
+{
+  "observed_utc": "2026-10-07T03:14:08.293030+00:00",
+  "metadata_exit_code": 0,
+  "metadata_scope": "locked Windows target, features scry,weld,servo; resolver qualification only",
+  "cargo_lock_sha256": "801e44839b5da4046766d0eda70fd3d7e7b98311cc816399c7e2dd35d0a94923",
+  "selected_packages": [
+    {
+      "name": "bevy_reflect",
+      "version": "0.18.1",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "features": [
+        "indexmap",
+        "smallvec",
+        "std"
+      ]
+    },
+    {
+      "name": "fontsan",
+      "version": "0.7.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "features": [
+        "libz-sys",
+        "wuff"
+      ]
+    },
+    {
+      "name": "genet-livery",
+      "version": "0.0.4",
+      "source": "git+https://github.com/merely-made/genet.git?rev=679d8314aab4ec9f57a903c79dde244c3c565c1e#679d8314aab4ec9f57a903c79dde244c3c565c1e",
+      "features": []
+    },
+    {
+      "name": "grafting",
+      "version": "0.6.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "features": [
+        "wgpu-30"
+      ]
+    },
+    {
+      "name": "grafting",
+      "version": "0.6.0",
+      "source": "git+https://github.com/merely-made/wgpu-graft.git?rev=01f3c9f3d68df3247e6b7ec7f65ffbca57e9b2d4#01f3c9f3d68df3247e6b7ec7f65ffbca57e9b2d4",
+      "features": [
+        "gl",
+        "surfman",
+        "wgpu-30"
+      ]
+    },
+    {
+      "name": "inker",
+      "version": "0.1.1",
+      "source": "git+https://github.com/merely-made/mere.git?rev=edf175f9c0a8645318ac8925adf0af6956f61425#edf175f9c0a8645318ac8925adf0af6956f61425",
+      "features": []
+    },
+    {
+      "name": "mere",
+      "version": "0.0.2",
+      "source": "git+https://github.com/merely-made/mere.git?rev=edf175f9c0a8645318ac8925adf0af6956f61425#edf175f9c0a8645318ac8925adf0af6956f61425",
+      "features": [
+        "canvas",
+        "default",
+        "graph",
+        "linked-data",
+        "workbench"
+      ]
+    },
+    {
+      "name": "scrying",
+      "version": "0.7.1",
+      "source": "git+https://github.com/merely-made/wgpu-scry.git?rev=39818a7eddb8bec33f7c61ed144da226bc0a1d04#39818a7eddb8bec33f7c61ed144da226bc0a1d04",
+      "features": [
+        "wgpu-30"
+      ]
+    },
+    {
+      "name": "servo",
+      "version": "0.5.0",
+      "source": "git+https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019",
+      "features": [
+        "baked-in-resources",
+        "bundled_freetype",
+        "clipboard",
+        "default",
+        "js_jit",
+        "no-wgl"
+      ]
+    },
+    {
+      "name": "servo-wgpu-interop-adapter",
+      "version": "0.1.0",
+      "source": "git+https://github.com/merely-made/wgpu-graft.git?rev=01f3c9f3d68df3247e6b7ec7f65ffbca57e9b2d4#01f3c9f3d68df3247e6b7ec7f65ffbca57e9b2d4",
+      "features": [
+        "servo",
+        "wgpu-30"
+      ]
+    },
+    {
+      "name": "welding",
+      "version": "0.15.0",
+      "source": "git+https://github.com/merely-made/wgpu-weld.git?rev=4784d07c4064195c33136b9b91c8231913f08e06#4784d07c4064195c33136b9b91c8231913f08e06",
+      "features": [
+        "cef-runtime",
+        "default",
+        "wgpu-30"
+      ]
+    },
+    {
+      "name": "wgpu",
+      "version": "30.0.1",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "features": [
+        "default",
+        "dx12",
+        "gles",
+        "metal",
+        "parking_lot",
+        "std",
+        "vulkan",
+        "web",
+        "webgpu",
+        "wgsl"
+      ]
+    },
+    {
+      "name": "wgpu-core",
+      "version": "30.0.1",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "features": [
+        "default",
+        "dx12",
+        "gles",
+        "metal",
+        "portable-atomic",
+        "renderdoc",
+        "std",
+        "vulkan",
+        "wgpu-core-deps-apple",
+        "wgpu-core-deps-emscripten",
+        "wgpu-core-deps-windows-linux-android",
+        "wgsl"
+      ]
+    },
+    {
+      "name": "wgpu-hal",
+      "version": "30.0.1",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "features": [
+        "dx12",
+        "gles",
+        "metal",
+        "portable-atomic",
+        "renderdoc",
+        "vulkan"
+      ]
+    },
+    {
+      "name": "wgpu-types",
+      "version": "27.0.1",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "features": [
+        "serde",
+        "std",
+        "thiserror"
+      ]
+    },
+    {
+      "name": "wgpu-types",
+      "version": "30.0.1",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "features": [
+        "std",
+        "web"
+      ]
+    },
+    {
+      "name": "wuff",
+      "version": "0.2.9",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "features": [
+        "brotli"
+      ]
+    },
+    {
+      "name": "wuff-capi",
+      "version": "0.2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "features": []
+    }
+  ],
+  "checks": {
+    "single_fontsan_libz_wuff": true,
+    "no_fontsan_woff2": true,
+    "single_host_wgpu30_inker_mere_genet_livery": true
+  },
+  "additional_type_package": {
+    "name": "wgpu-types",
+    "version": "27.0.1",
+    "direct_dependents": [
+      "bevy_reflect"
+    ],
+    "limitation": "Bevy reflection type dependency; not an additional wgpu, wgpu-core, or wgpu-hal device family."
+  }
+}

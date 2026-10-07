@@ -1,0 +1,64 @@
+Published baseline: ef89a186bbd89edf1761361b345ec524c4ae549e; compatibility: 91cb44a2c00c088f0677956d31f3cdca6828c59e; strategy: ordinary ort merge retaining every latest main source/Cargo/lock/toolchain blob, then bounded plan provenance
+Switched to a new branch 'codex/browser-input-integration'
+Auto-merging Cargo.lock
+CONFLICT (content): Merge conflict in Cargo.lock
+Auto-merging Cargo.toml
+CONFLICT (content): Merge conflict in Cargo.toml
+Auto-merging apps/desktop/Cargo.toml
+CONFLICT (content): Merge conflict in apps/desktop/Cargo.toml
+Auto-merging crates/knot-document/Cargo.toml
+CONFLICT (content): Merge conflict in crates/knot-document/Cargo.toml
+Automatic merge failed; fix conflicts and then commit the result.
+Conflict paths before reviewed current-main resolution:
+Cargo.lock
+Cargo.toml
+apps/desktop/Cargo.toml
+crates/knot-document/Cargo.toml
+Guard passed: current published main source, every Cargo/lock and rust-toolchain blob retained exactly before bounded plan append
+ ...6-09-01_knot_editor_repository_extraction_plan.md | 20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
+diff --git a/design_docs/2026-09-01_knot_editor_repository_extraction_plan.md b/design_docs/2026-09-01_knot_editor_repository_extraction_plan.md
+index 4e65620..118d284 100644
+--- a/design_docs/2026-09-01_knot_editor_repository_extraction_plan.md
++++ b/design_docs/2026-09-01_knot_editor_repository_extraction_plan.md
+@@ -154,3 +154,23 @@ The governing phase and validation receipts live in
+ Validation: `cargo check -p knot-editor --all-targets --all-features` passed
+ on 2026-09-29 with the existing Mere and Genet pins. The lock change is the
+ new direct Insigne dependency only.
++
++## Progress, 2026-10-06: qualified browser compatibility ancestry
++
++The immutable maintenance revision
++`91cb44a2c00c088f0677956d31f3cdca6828c59e` retains Turnstone's qualified
++`92719898` Knot baseline and replaces its Mere `3d1cdacc` references with
++`db4ee312`. It preserves that baseline's Genet `69a2383` family. Root locked
++metadata resolves one Mere family (55 active packages) and one Genet family
++(22 packages); the separate document manifest's diagnostic gate resolved 8
++Mere and 6 Genet packages. Its generated ignored diagnostic lock was removed.
++
++An ordinary two-parent main merge retains this qualified maintenance revision
++as reachable ancestry. Published main's newer source, Cargo manifests, lockfile
++and toolchain remain unchanged, including Mere `e0cea3e0` and Genet `d851a9db`.
++The main merge documents provenance; it does not roll main back to the consumer's
++maintenance dependency family. Turnstone pins the exact maintenance revision
++and records its Scry/Weld native qualification and frozen source archive at
++`turnstone/docs/receipts/browser_supplier_integration_20261006/`.
++The primary checkout's unpublished local documentation and concurrent work
++remain separate from this integration.
+Guard passed: only bounded existing-plan provenance differs; all latest main source/Cargo/lock/toolchain blobs remain exact
+[codex/browser-input-integration 6cb57f1] Merge qualified Knot maintenance ancestry while preserving current main inputs
+6cb57f10a8e82af307bf6c1b854bbc5e7e65e659
+ef89a186bbd89edf1761361b345ec524c4ae549e 91cb44a2c00c088f0677956d31f3cdca6828c59e
+Merge qualified Knot maintenance ancestry while preserving current main inputs
+To https://github.com/merely-made/knot-editor.git
+   ef89a18..6cb57f1  HEAD -> main
+6cb57f10a8e82af307bf6c1b854bbc5e7e65e659	refs/heads/main
+Reachability proof: published merge parentsef89a186+91cb44a2; every main source/Cargo/lock/toolchain blob retained, only20-line existing-plan provenance added
+From https://github.com/merely-made/knot-editor
+ * branch            main       -> FETCH_HEAD
+Verified clean absolute worktree target: C:\Users\mark_\Code\worktrees\knot-editor-browser-input-compat
+To https://github.com/merely-made/knot-editor.git
+ - [deleted]         codex/browser-input-compat
+Deleted branch codex/browser-input-compat (was 91cb44a).
+Deleted branch codex/browser-input-integration (was 6cb57f1).
+Cleanup passed: both owned local branches and provisional remote branch removed after main reachability proof; unpublished primary33cc ref/files untouched

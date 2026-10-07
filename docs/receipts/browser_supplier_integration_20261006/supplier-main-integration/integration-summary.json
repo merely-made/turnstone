@@ -1,0 +1,109 @@
+{
+  "recorded_utc": "2026-10-07T01:42:14.306154+00:00",
+  "authorization": "Root confirmed first Scry/Weld source/evidence archive and authorized bounded supplier ancestry integration after four native gates passed",
+  "integrations": [
+    {
+      "repository": "mere",
+      "baseline_published_main": "6d26f1e4c1a19842d268c88c421d543fe9f3339e",
+      "qualified_consumer_compatibility_revision": "db4ee31258b23c86572c429388c5d10bd4de9dc3",
+      "integration_merge": "392630bb84839500cb44c583cf657502df248113",
+      "merge_parents": [
+        "6d26f1e4c1a19842d268c88c421d543fe9f3339e",
+        "db4ee31258b23c86572c429388c5d10bd4de9dc3"
+      ],
+      "observed_published_main": "392630bb84839500cb44c583cf657502df248113",
+      "compatibility_and_merge_reachable_from_main": true,
+      "tree_policy": "ours ancestry; entire published tree retained except 15-line existing picker-plan provenance",
+      "changed_main_paths": [
+        "design_docs/inker_docs/implementation_strategy/2026-06-15_engine_picker_and_pluggability_plan.md"
+      ],
+      "primary_local_main_preserved": "4e57913e0ee0ed6d6a007cb7754ef6f923403529",
+      "primary_status": [],
+      "owned_worktree_removed": "C:\\Users\\mark_\\Code\\worktrees\\mere-browser-input-compat",
+      "owned_local_branches_removed": [
+        "codex/browser-input-compat",
+        "codex/browser-input-integration"
+      ],
+      "owned_remote_provisional_branch_removed": true,
+      "finished_log": "mere-integration.log",
+      "finished_log_sha256": "a694c54309e948006a8f8071a3d987fef87979bc6740eeca2b5a7b509cc52642"
+    },
+    {
+      "repository": "woodshed",
+      "baseline_published_main": "99ef3b37e171b6d40bdcc68027e271ca596b488e",
+      "qualified_consumer_compatibility_revision": "b613fc55d2d59e865b6bb04e55a880ee4773b824",
+      "integration_merge": "06c2b13ce296c82fafc394e0c90da21458542803",
+      "merge_parents": [
+        "99ef3b37e171b6d40bdcc68027e271ca596b488e",
+        "b613fc55d2d59e865b6bb04e55a880ee4773b824"
+      ],
+      "observed_published_main": "06c2b13ce296c82fafc394e0c90da21458542803",
+      "compatibility_and_merge_reachable_from_main": true,
+      "tree_policy": "ort; exactly four reviewed compatibility file blobs, all other main paths retained",
+      "changed_main_paths": [
+        "design_docs/2026-09-13_redshank_gui_implementation_plan.md",
+        "ports/redshank/Cargo.lock",
+        "ports/redshank/Cargo.toml",
+        "ports/redshank/web/Cargo.toml"
+      ],
+      "primary_local_main_preserved": "cefc903dcd7f506803acfe2ee52cad7693787188",
+      "primary_status": [
+        "M ports/redshank/desktop/src/scenario.rs",
+        " M ports/redshank/scenarios/README.md",
+        " M ports/redshank/scenarios/fixtures/README.md",
+        " M ports/redshank/scenarios/fixtures/make_fixtures.py",
+        " M ports/redshank/spikes/playback/scripts/range_server.py",
+        "?? ports/redshank/scenarios/fixtures/local-transcript/",
+        "?? ports/redshank/scenarios/fixtures/podnews-transcript/",
+        "?? ports/redshank/scenarios/transcript_live.scn",
+        "?? ports/redshank/scenarios/transcript_offline_seed.scn",
+        "?? ports/redshank/scenarios/transcript_offline_verify.scn",
+        "?? ports/redshank/scenarios/transcript_timing.scn"
+      ],
+      "owned_worktree_removed": "C:\\Users\\mark_\\Code\\worktrees\\woodshed-browser-input-compat",
+      "owned_local_branches_removed": [
+        "codex/browser-input-compat",
+        "codex/browser-input-integration"
+      ],
+      "owned_remote_provisional_branch_removed": true,
+      "finished_log": "woodshed-integration.log",
+      "finished_log_sha256": "3c765846a44e006ae10880f6221b79f6236b6122afec72885c6b7d652cef7698"
+    },
+    {
+      "repository": "knot-editor",
+      "baseline_published_main": "ef89a186bbd89edf1761361b345ec524c4ae549e",
+      "qualified_consumer_compatibility_revision": "91cb44a2c00c088f0677956d31f3cdca6828c59e",
+      "integration_merge": "6cb57f10a8e82af307bf6c1b854bbc5e7e65e659",
+      "merge_parents": [
+        "ef89a186bbd89edf1761361b345ec524c4ae549e",
+        "91cb44a2c00c088f0677956d31f3cdca6828c59e"
+      ],
+      "observed_published_main": "6cb57f10a8e82af307bf6c1b854bbc5e7e65e659",
+      "compatibility_and_merge_reachable_from_main": true,
+      "tree_policy": "ort; published main source/Cargo/lock/toolchain retained exactly; 20-line existing extraction-plan provenance",
+      "changed_main_paths": [
+        "design_docs/2026-09-01_knot_editor_repository_extraction_plan.md"
+      ],
+      "primary_local_main_preserved": "33cc855acd881586e454c95046224b0815277a13",
+      "primary_status": [],
+      "owned_worktree_removed": "C:\\Users\\mark_\\Code\\worktrees\\knot-editor-browser-input-compat",
+      "owned_local_branches_removed": [
+        "codex/browser-input-compat",
+        "codex/browser-input-integration"
+      ],
+      "owned_remote_provisional_branch_removed": true,
+      "finished_log": "knot-integration.log",
+      "finished_log_sha256": "131e34dcca679dfaaa41e5f76600b4b386afbd7ac1a1ac8234b051a469e2fb19"
+    }
+  ],
+  "force_pushes": false,
+  "primary_checkouts_merged_or_reset": false,
+  "retained_owned_worktrees": [],
+  "new_cargo_targets_or_homes": [],
+  "paused_graph_semantics_worktree_touched": false,
+  "limitations": [
+    "Supplementary Unicode and OS IME remain separate native/supplier gates",
+    "Ordered Graft library receipt does not stand in for upstream Servo native qualification"
+  ],
+  "frozen_dependency_receipts_or_first_phase_artifacts_modified": false
+}
