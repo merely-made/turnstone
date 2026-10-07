@@ -1137,6 +1137,13 @@ the same record once this lane can push to Mere (U15).
       so its accessibility is Turnstone's. `SmolwebDocument::focus_move`
       wraps at the ends, as Cambium runners did, so a composed smolweb tile
       needs the same edge exit.
+  - U14 is met: the browser session's work reached Turnstone `main` (`2b84e68`,
+    `4e217ef`; merged into this branch as `cb78d44`). Its pins are Mere
+    `edf175f9`, Genet `679d8314`, Knot `211ff57a` and Woodshed `24f196f4`.
+    Mere `edf175f9` sits on Mere branch `codex/browser-input-compat`, not on
+    Mere `main`, so S0's first done-condition (one Mere revision on
+    `origin/main`) needs that branch merged to Mere `main` first, or S0
+    carries its fixes. S0 starts from `cb78d44` once Knot's repin lands.
   - Asked the identity session to report Knot's repin (commit, Mere and
     Genet revisions, S77). Asked the physics session who owns WS4 and the
     stack seams rounds (neither the fidelity plan nor Mere's log names a
