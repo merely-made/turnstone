@@ -1144,6 +1144,17 @@ the same record once this lane can push to Mere (U15).
     Mere `main`, so S0's first done-condition (one Mere revision on
     `origin/main`) needs that branch merged to Mere `main` first, or S0
     carries its fixes. S0 starts from `cb78d44` once Knot's repin lands.
+  - The E1b probe is on Mere `main` (`d041cc69`):
+    `cargo run -p cambium-winit-a11y --example e1b_two_sessions`. It has a
+    host menu and two `ContainedSession` panes joined by `uxtree::graft`,
+    published through AccessKit's own winit adapter. `--omit-a` and
+    `--unboxed` are the controls; `--self-check` runs it without a window. The
+    windowless self-check passes on Linux. The headed walks with Narrator or
+    NVDA, VoiceOver and Orca are Mark's.
+    - Finding for S8's Turnstone half: `genet_winit_host::AccessKitBridge`
+      drops an action's `target_tree` and answers activation with the latest
+      update, a guest's under subtrees. Turnstone and Pelt need that bridge
+      changed in Genet before their trees can graft.
   - Asked the identity session to report Knot's repin (commit, Mere and
     Genet revisions, S77). Asked the physics session who owns WS4 and the
     stack seams rounds (neither the fidelity plan nor Mere's log names a
