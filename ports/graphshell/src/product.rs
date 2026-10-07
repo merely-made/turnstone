@@ -13,12 +13,16 @@ use chirograph::{PortableCardV1, Sha256NamedInformation};
 use mere::canvas::CartographyGeometry;
 use mere::kernel::geometry::PortablePoint;
 use mere::kernel::graph::apply::{GraphDelta, add_node, apply_graph_delta, assert_relation};
+use mere::kernel::graph::capture::{CapturedDelta, replay_captured_deltas_onto};
+use mere::kernel::graph::node_facets::SEMANTIC_PROPERTIES;
+use mere::kernel::graph::predicate_declarations::PREDICATE_DECLARATIONS_FACET;
 use mere::kernel::graph::resource::TAGGED_WITH_IRI;
 use mere::kernel::graph::{
     ArrangementSubKind, ContainmentSubKind, EdgeAssertion, EdgeFamily, Graph, NodeFacetStore,
     RelationKind, SemanticSubKind, import_edits,
 };
 use mere::kernel::persistence::GraphSnapshot;
+use mere::kernel::types::NodeProperty;
 use muniment::Backend;
 use sceno::SourceRef;
 use serde::{Deserialize, Serialize};
@@ -719,15 +723,6 @@ impl<B: Backend> MereHost<B> {
     /// (reservoir plan §7 item 27).
     pub fn import_product_codicil(&mut self, bytes: &[u8]) -> Result<ImportReceipt, ProductError> {
         let codicil = decode_codicil(bytes)?;
-        if !codicil.graph.resources.is_empty()
-            || !codicil.graph.resource_edges.is_empty()
-            || !codicil.graph.shown_resources.is_empty()
-        {
-            return Err(ProductError::InvalidCodicil(
-                "resource-bearing codicils must be opened as a new session; session merging is not supported yet"
-                    .into(),
-            ));
-        }
         let mut known: HashSet<String> = self
             .graph()
             .nodes()
@@ -743,7 +738,7 @@ impl<B: Backend> MereHost<B> {
             relations: codicil.graph.edges.len(),
             facets: codicil.facets.iter().map(|(_, facets)| facets.len()).sum(),
         };
-        let edits = import_edits(self.graph(), &codicil_graph(codicil.graph, codicil.facets)?);
+        let edits = product_import_edits(self.graph(), codicil.graph, codicil.facets)?;
         self.apply_edits(edits)?;
         Ok(receipt)
     }
@@ -774,6 +769,146 @@ fn codicil_graph(snapshot: GraphSnapshot, facets: NodeFacetStore) -> Result<Grap
         .map_err(|error| ProductError::InvalidCodicil(error.to_string()))?;
     *graph.facets_mut() = facets;
     Ok(graph)
+}
+
+fn product_import_edits(
+    live: &Graph,
+    mut snapshot: GraphSnapshot,
+    facets: NodeFacetStore,
+) -> Result<Vec<CapturedDelta>, ProductError> {
+    let current = live.to_snapshot();
+    // C1's missing-source marker is canonical even before raw-handle validation.
+    for edge in snapshot
+        .edges
+        .iter_mut()
+        .chain(&mut snapshot.resource_edges)
+    {
+        for statement in edge
+            .semantic
+            .iter_mut()
+            .flat_map(|semantic| &mut semantic.statements)
+        {
+            statement.provenance_iri.get_or_insert_with(|| {
+                mere::kernel::graph::edge_data::UNKNOWN_LEGACY_ASSERTER_IRI.into()
+            });
+        }
+    }
+    // Validate raw handles before legacy surface materialization can coalesce them.
+    pandect::snapshot_merge::try_merge_snapshots(&current, &snapshot)
+        .map_err(|error| ProductError::InvalidCodicil(error.to_string()))?;
+    let incoming = codicil_graph(snapshot, facets)?;
+    let incoming_snapshot = incoming.to_snapshot();
+    let (joined, _) = pandect::snapshot_merge::try_merge_snapshots(&current, &incoming_snapshot)
+        .map_err(|error| ProductError::InvalidCodicil(error.to_string()))?;
+    let target = Graph::try_from_snapshot(&joined)
+        .map_err(|error| ProductError::InvalidCodicil(error.to_string()))?
+        .to_snapshot();
+
+    // Keep the existing surface-field and incoming-facet import rules.
+    let mut surface_snapshot = incoming_snapshot;
+    surface_snapshot.resources.clear();
+    surface_snapshot.resource_edges.clear();
+    surface_snapshot.shown_resources.clear();
+    let surfaces = codicil_graph(surface_snapshot, incoming.facets().clone())?;
+    let mut edits = import_edits(live, &surfaces);
+    for record in &target.resources {
+        if !current.resources.contains(record) {
+            edits.push(CapturedDelta::ReplaySetResourceRecordById {
+                resource_id: chartulary::resource_id_from_canonical_iri(&record.canonical_iri)
+                    .to_string(),
+                record: Some(record.clone()),
+            });
+        }
+    }
+    let pairs = |snapshot: &GraphSnapshot| {
+        let mut pairs = BTreeMap::<_, Vec<_>>::new();
+        for edge in &snapshot.resource_edges {
+            pairs
+                .entry((edge.from_node_id.clone(), edge.to_node_id.clone()))
+                .or_default()
+                .push(edge.clone());
+        }
+        pairs
+    };
+    let held = pairs(&current);
+    for ((from, to), edges) in pairs(&target) {
+        if held.get(&(from.clone(), to.clone())) != Some(&edges) {
+            edits.push(CapturedDelta::ReplaySetResourceEdgesByIds {
+                from_resource_id: from,
+                to_resource_id: to,
+                edges,
+            });
+        }
+    }
+    for shown in &target.shown_resources {
+        if !current.shown_resources.contains(shown) {
+            edits.push(CapturedDelta::ReplaySetShownResourceById {
+                surface_id: shown.surface_id.clone(),
+                resource_id: Some(shown.resource_id.clone()),
+            });
+        }
+    }
+
+    // Replay setters can refuse input without an error result; prove the whole batch first.
+    let mut scratch = live.clone();
+    if edits.iter().any(|edit| edit.replay_delta().is_none()) {
+        return Err(ProductError::InvalidCodicil(
+            "an import edit cannot be replayed".into(),
+        ));
+    }
+    replay_captured_deltas_onto(&mut scratch, edits.clone());
+    let actual = scratch.to_snapshot();
+    let resources = |snapshot: &GraphSnapshot| {
+        snapshot
+            .resources
+            .iter()
+            .map(|record| (record.canonical_iri.clone(), record.clone()))
+            .collect::<BTreeMap<_, _>>()
+    };
+    if resources(&actual) != resources(&target)
+        || actual.resource_edges != target.resource_edges
+        || actual.shown_resources != target.shown_resources
+    {
+        return Err(ProductError::InvalidCodicil(
+            "the import edits did not preserve the composed resource graph".into(),
+        ));
+    }
+    let same_id = |a: &str, b: &str| match (Uuid::parse_str(a), Uuid::parse_str(b)) {
+        (Ok(a), Ok(b)) => a == b,
+        _ => a == b,
+    };
+    for (resource, expected) in joined
+        .edges
+        .iter()
+        .map(|edge| (false, edge))
+        .chain(joined.resource_edges.iter().map(|edge| (true, edge)))
+    {
+        for claim in expected
+            .semantic
+            .iter()
+            .flat_map(|semantic| &semantic.statements)
+        {
+            let edges = if resource {
+                &actual.resource_edges
+            } else {
+                &actual.edges
+            };
+            if !edges.iter().any(|edge| {
+                same_id(&edge.from_node_id, &expected.from_node_id)
+                    && same_id(&edge.to_node_id, &expected.to_node_id)
+                    && edge
+                        .semantic
+                        .as_ref()
+                        .is_some_and(|semantic| semantic.statements.contains(claim))
+            }) {
+                return Err(ProductError::InvalidCodicil(format!(
+                    "the import edits did not preserve assertion {:?}",
+                    claim.statement_id
+                )));
+            }
+        }
+    }
+    Ok(edits)
 }
 
 fn family_of(kind: RelationKind) -> EdgeFamily {
@@ -858,6 +993,69 @@ fn filtered_snapshot(graph: &Graph, members: &HashSet<Uuid>, exported_at_ms: u64
         .map(|edge| edge.to_node_id.clone())
         .collect();
     resource_ids.extend(tag_targets);
+    let declaration_ids: HashSet<_> = snapshot
+        .resources
+        .iter()
+        .filter(|resource| {
+            resource
+                .facets
+                .iter()
+                .any(|facet| facet.facet == PREDICATE_DECLARATIONS_FACET)
+        })
+        .map(|resource| {
+            chartulary::resource_id_from_canonical_iri(&resource.canonical_iri).to_string()
+        })
+        .collect();
+    resource_ids.extend(
+        members
+            .iter()
+            .filter_map(|id| graph.get_node_key_by_id(*id))
+            .flat_map(|key| graph.node_properties(key).unwrap_or_default())
+            .map(|property| {
+                chartulary::resource_id_from_canonical_iri(&property.predicate).to_string()
+            })
+            .filter(|id| declaration_ids.contains(id)),
+    );
+    loop {
+        let mut needed: Vec<_> = snapshot
+            .edges
+            .iter()
+            .chain(snapshot.resource_edges.iter().filter(|edge| {
+                resource_ids.contains(&edge.from_node_id) && resource_ids.contains(&edge.to_node_id)
+            }))
+            .flat_map(|edge| &edge.semantic)
+            .flat_map(|semantic| &semantic.statements)
+            .map(|statement| {
+                chartulary::resource_id_from_canonical_iri(&statement.predicate).to_string()
+            })
+            .filter(|id| declaration_ids.contains(id))
+            .collect();
+        needed.extend(
+            snapshot
+                .resources
+                .iter()
+                .filter(|resource| {
+                    resource_ids.contains(
+                        &chartulary::resource_id_from_canonical_iri(&resource.canonical_iri)
+                            .to_string(),
+                    )
+                })
+                .flat_map(|resource| &resource.facets)
+                .filter(|facet| facet.facet == SEMANTIC_PROPERTIES)
+                .flat_map(|facet| {
+                    serde_json::from_str::<Vec<NodeProperty>>(&facet.value_json).unwrap_or_default()
+                })
+                .map(|property| {
+                    chartulary::resource_id_from_canonical_iri(&property.predicate).to_string()
+                })
+                .filter(|id| declaration_ids.contains(id)),
+        );
+        let before = resource_ids.len();
+        resource_ids.extend(needed);
+        if resource_ids.len() == before {
+            break;
+        }
+    }
     snapshot.resources.retain(|resource| {
         resource_ids.contains(
             &chartulary::resource_id_from_canonical_iri(&resource.canonical_iri).to_string(),
@@ -1120,6 +1318,225 @@ mod tests {
     }
 
     #[test]
+    fn selection_keeps_statement_and_literal_declarations_to_a_fixed_point() {
+        use mere::kernel::graph::predicate_declarations::{
+            PredicateDeclaration, PredicateDeclarations,
+        };
+        use mere::kernel::graph::{Author, GraphStratum};
+        use mere::kernel::persistence::{PersistedResourceFacet, PersistedResourceRecord};
+
+        const SURFACE: &str = "https://vocab.test/predicates#surface";
+        const RESOURCE: &str = "https://vocab.test/predicates#resource";
+        const CHAIN: &str = "https://vocab.test/predicates#chain";
+        const SURFACE_LITERAL: &str = "https://vocab.test/predicates#surface-literal";
+        const RESOURCE_LITERAL: &str = "https://vocab.test/predicates#resource-literal";
+        const OUTSIDE: &str = "https://vocab.test/predicates#outside";
+        const UNRELATED: &str = "https://vocab.test/predicates#Surface";
+        let id = |iri: &str| chartulary::resource_id_from_canonical_iri(iri).to_string();
+        let (graph, surfaces, exact_tag) = resource_selection_graph();
+        let mut source = graph.to_snapshot();
+        for predicate in [
+            SURFACE,
+            RESOURCE,
+            CHAIN,
+            SURFACE_LITERAL,
+            RESOURCE_LITERAL,
+            OUTSIDE,
+            UNRELATED,
+        ] {
+            let mut declarations = PredicateDeclarations {
+                variants: vec![PredicateDeclaration {
+                    declaration_id: format!("declaration:{predicate}"),
+                    stratum: GraphStratum::Surface,
+                    author: Author::person("persona-a").via("export-control"),
+                    declared_at_ms: Some(29),
+                }],
+                selected: None,
+            };
+            if predicate == SURFACE {
+                declarations.variants.push(PredicateDeclaration {
+                    declaration_id: "conflicting-resource-declaration".into(),
+                    stratum: GraphStratum::Resource,
+                    author: Author::person("persona-b").via("export-control"),
+                    declared_at_ms: Some(31),
+                });
+            }
+            source.resources.push(PersistedResourceRecord {
+                canonical_iri: predicate.into(),
+                facets: vec![PersistedResourceFacet {
+                    facet: PREDICATE_DECLARATIONS_FACET.into(),
+                    value_json: serde_json::to_string(&declarations).unwrap(),
+                }],
+            });
+        }
+        let relation = |from: String, to: String, predicate: &str, handle: &str| {
+            let mut edge = exact_tag.clone();
+            edge.from_node_id = from;
+            edge.to_node_id = to;
+            let semantic = edge.semantic.as_mut().unwrap();
+            semantic.predicate = Some(predicate.into());
+            semantic.statements[0].predicate = predicate.into();
+            semantic.statements[0].statement_id = handle.into();
+            edge
+        };
+        source.edges = vec![
+            relation(
+                surfaces[0].to_string(),
+                surfaces[1].to_string(),
+                SURFACE,
+                "selected-surface-claim",
+            ),
+            relation(
+                surfaces[0].to_string(),
+                surfaces[2].to_string(),
+                OUTSIDE,
+                "outside-surface-claim",
+            ),
+        ];
+        let selected_tag = source
+            .resource_edges
+            .iter_mut()
+            .find(|edge| edge.to_node_id == id("https://vocab.test/#Selected"))
+            .unwrap();
+        let mut resource_claim = selected_tag.semantic.as_ref().unwrap().statements[0].clone();
+        resource_claim.predicate = RESOURCE.into();
+        resource_claim.statement_id = "selected-resource-claim".into();
+        selected_tag
+            .semantic
+            .as_mut()
+            .unwrap()
+            .statements
+            .push(resource_claim);
+        source.resource_edges.push(relation(
+            id(SURFACE),
+            id("https://vocab.test/#Selected"),
+            CHAIN,
+            "induced-declaration-claim",
+        ));
+        let mut resource_literal =
+            NodeProperty::new(RESOURCE_LITERAL.into(), "resource value".into());
+        resource_literal.statement_id = "resource-literal-handle".into();
+        resource_literal.provenance_iri = Some("https://author.test/".into());
+        resource_literal.asserted_at_ms = Some(37);
+        source
+            .resources
+            .iter_mut()
+            .find(|record| record.canonical_iri == "https://selected.test/page")
+            .unwrap()
+            .facets
+            .push(PersistedResourceFacet {
+                facet: SEMANTIC_PROPERTIES.into(),
+                value_json: serde_json::to_string(&vec![resource_literal]).unwrap(),
+            });
+        let mut graph = Graph::try_from_snapshot(&source).unwrap();
+        let mut surface_literal = NodeProperty::new(SURFACE_LITERAL.into(), "surface value".into());
+        surface_literal.statement_id = "surface-literal-handle".into();
+        surface_literal.provenance_iri = Some("https://author.test/".into());
+        surface_literal.asserted_at_ms = Some(41);
+        assert!(graph.append_node_properties(
+            graph.get_node_key_by_id(surfaces[0]).unwrap(),
+            vec![surface_literal],
+        ));
+        assert!(graph.append_node_properties(
+            graph.get_node_key_by_id(surfaces[2]).unwrap(),
+            vec![NodeProperty::new(UNRELATED.into(), "outside value".into())],
+        ));
+        let baseline = graph.to_snapshot();
+        let members = [surfaces[0], surfaces[1]].into_iter().collect();
+        let exported = filtered_snapshot(&graph, &members, 17_000);
+        let wanted = HashSet::from([
+            "https://selected.test/page",
+            "https://vocab.test/#Selected",
+            SURFACE,
+            RESOURCE,
+            CHAIN,
+            SURFACE_LITERAL,
+            RESOURCE_LITERAL,
+        ]);
+        let actual: HashSet<_> = exported
+            .resources
+            .iter()
+            .map(|record| record.canonical_iri.as_str())
+            .collect();
+        assert_eq!(
+            actual, wanted,
+            "unselected and case-distinct declarations stay out"
+        );
+        for record in &exported.resources {
+            assert_eq!(
+                Some(record),
+                baseline
+                    .resources
+                    .iter()
+                    .find(|original| original.canonical_iri == record.canonical_iri),
+                "declaration variants, origins and literal metadata survive unchanged"
+            );
+        }
+        let expected_surface_edges: Vec<_> = baseline
+            .edges
+            .iter()
+            .filter(|edge| {
+                let selected = |id: &str| Uuid::parse_str(id).is_ok_and(|id| members.contains(&id));
+                selected(&edge.from_node_id) && selected(&edge.to_node_id)
+            })
+            .cloned()
+            .collect();
+        assert_eq!(exported.edges, expected_surface_edges);
+        let surface_claims: HashSet<_> = exported
+            .edges
+            .iter()
+            .filter_map(|edge| edge.semantic.as_ref())
+            .flat_map(|semantic| &semantic.statements)
+            .map(|claim| claim.statement_id.as_str())
+            .collect();
+        assert!(surface_claims.contains("selected-surface-claim"));
+        assert!(!surface_claims.contains("outside-surface-claim"));
+        assert!(
+            exported.edges.iter().any(|edge| edge.containment.is_some()),
+            "selected same-host surfaces retain their derived containment"
+        );
+        let retained: HashSet<_> = wanted.into_iter().map(id).collect();
+        let expected_edges: Vec<_> = baseline
+            .resource_edges
+            .iter()
+            .filter(|edge| {
+                retained.contains(&edge.from_node_id) && retained.contains(&edge.to_node_id)
+            })
+            .cloned()
+            .collect();
+        assert_eq!(exported.resource_edges, expected_edges);
+        assert_eq!(
+            exported.resource_edges.len(),
+            2,
+            "induced claims carry their declarations"
+        );
+        assert!(Graph::try_from_snapshot(&exported).is_ok());
+        let property_facet = chartulary::FacetId::new(SEMANTIC_PROPERTIES);
+        let exported_facets = filtered_facets(graph.facets(), &members, false);
+        assert_eq!(
+            exported_facets.get(&surfaces[0], &property_facet),
+            graph.facets().get(&surfaces[0], &property_facet),
+            "literal sidecar travels with its declaration"
+        );
+        assert!(exported_facets.get(&surfaces[2], &property_facet).is_none());
+        let all = surfaces.into_iter().collect();
+        let whole = filtered_snapshot(&graph, &all, 17_000);
+        assert!(
+            whole
+                .resources
+                .iter()
+                .any(|record| record.canonical_iri == OUTSIDE)
+        );
+        assert!(
+            whole
+                .resources
+                .iter()
+                .any(|record| record.canonical_iri == UNRELATED)
+        );
+        assert_eq!(whole.resource_edges, baseline.resource_edges);
+    }
+
+    #[test]
     fn invalid_resource_codicils_fail_before_import_with_valid_control() {
         let (graph, surfaces, _) = resource_selection_graph();
         let mut codicil = ProductCodicilV2 {
@@ -1163,7 +1580,7 @@ mod tests {
     }
 
     #[test]
-    fn resource_codicil_import_refuses_before_mutation_and_new_session_preserves_it() {
+    fn resource_codicil_import_is_one_exact_journaled_union_and_new_session_preserves_it() {
         let (graph, surfaces, _) = resource_selection_graph();
         let mut codicil = ProductCodicilV2 {
             schema: PRODUCT_CODICIL_SCHEMA.into(),
@@ -1174,8 +1591,9 @@ mod tests {
             scene: None,
         };
         let bytes = serde_json::to_vec(&codicil).unwrap();
+        let backend = MemoryBackend::new();
         let mut host = MereHost::empty(
-            MemoryBackend::new(),
+            backend.clone(),
             selected_persona(),
             fixture_handlers(),
             AccessContext {
@@ -1184,21 +1602,71 @@ mod tests {
                 at_ms: 100,
             },
         );
-        host.create_address("https://existing.test/", "Existing")
+        let existing = host
+            .create_address("https://selected.test/page#existing", "Existing")
             .unwrap();
         let mut before = host.graph().to_snapshot();
         before.timestamp_secs = 0;
         let changes_before = host.graph_session().changes().len();
-        let error = host.import_product_codicil(&bytes).unwrap_err();
-        assert!(matches!(error, ProductError::InvalidCodicil(_)));
-        assert!(error.to_string().contains("opened as a new session"));
-        let mut after = host.graph().to_snapshot();
-        after.timestamp_secs = 0;
-        assert_eq!(
-            serde_json::to_value(after).unwrap(),
-            serde_json::to_value(before).unwrap()
+        let journal_before = host.graph_session().journal().entries().len();
+        let receipt = host.import_product_codicil(&bytes).unwrap();
+        assert_eq!(receipt.nodes, codicil.graph.nodes.len());
+        assert_eq!(host.graph().node_count(), codicil.graph.nodes.len() + 1);
+        assert!(host.graph().get_node_by_id(existing).is_some());
+        let after = host.graph().to_snapshot();
+        assert_eq!(after.resources.len(), codicil.graph.resources.len());
+        for record in &codicil.graph.resources {
+            assert!(after.resources.contains(record));
+        }
+        assert_eq!(after.resource_edges, codicil.graph.resource_edges);
+        for shown in &codicil.graph.shown_resources {
+            assert!(after.shown_resources.contains(shown));
+        }
+        assert_eq!(host.graph_session().changes().len(), changes_before + 1);
+        let entries = &host.graph_session().journal().entries()[journal_before..];
+        assert!(entries.iter().any(|entry| matches!(
+            entry.delta,
+            CapturedDelta::ReplaySetResourceRecordById { .. }
+        )));
+        assert!(entries.iter().any(|entry| matches!(
+            entry.delta,
+            CapturedDelta::ReplaySetResourceEdgesByIds { .. }
+        )));
+        assert!(entries.iter().any(|entry| matches!(
+            entry.delta,
+            CapturedDelta::ReplaySetShownResourceById { .. }
+        )));
+        assert!(
+            entries.iter().all(
+                |entry| entry.author == Author::person(FIXTURE_PERSONA_ADDRESS).via(GRAPHSHELL)
+            )
         );
-        assert_eq!(host.graph_session().changes().len(), changes_before);
+        pollster::block_on(async {
+            host.persist(17).await.unwrap();
+            let mut reopened = MereHost::open(
+                backend,
+                selected_persona(),
+                fixture_handlers(),
+                AccessContext {
+                    persona: FIXTURE_PERSONA_ADDRESS.into(),
+                    device: FIXTURE_DEVICE_TWO_ADDRESS.into(),
+                    at_ms: 100,
+                },
+            )
+            .await
+            .unwrap();
+            let loaded = reopened.graph().to_snapshot();
+            assert_eq!(loaded.resources, after.resources);
+            assert_eq!(loaded.resource_edges, after.resource_edges);
+            assert_eq!(loaded.shown_resources, after.shown_resources);
+            assert!(reopened.undo(GRAPHSHELL).await.unwrap().is_some());
+            let mut undone = reopened.graph().to_snapshot();
+            undone.timestamp_secs = 0;
+            assert_eq!(
+                serde_json::to_value(undone).unwrap(),
+                serde_json::to_value(before).unwrap()
+            );
+        });
 
         host.replace_with_product_codicil(&bytes).unwrap();
         let opened = host.graph().to_snapshot();
@@ -1223,6 +1691,240 @@ mod tests {
         let receipt = legacy_host.import_product_codicil(&legacy).unwrap();
         assert_eq!(receipt.nodes, codicil.graph.nodes.len());
         assert_eq!(legacy_host.graph().node_count(), codicil.graph.nodes.len());
+    }
+
+    #[test]
+    fn product_import_preserves_distinct_handles_and_rejects_collisions_atomically() {
+        use mere::kernel::graph::GraphStratum;
+        use mere::kernel::graph::predicate_declarations::{
+            PredicateDeclaration, PredicateDeclarations,
+        };
+        use mere::kernel::persistence::{PersistedResourceFacet, PersistedResourceRecord};
+        const IMPORT_PREDICATE: &str = "https://vocab.test/import#custom";
+        let (graph, surfaces, tag) = resource_selection_graph();
+        let mut codicil = ProductCodicilV2 {
+            schema: PRODUCT_CODICIL_SCHEMA.into(),
+            scope: TransferScope::SelectedSubgraph,
+            exported_at_ms: 17_000,
+            graph: filtered_snapshot(&graph, &surfaces[..2].iter().copied().collect(), 17_000),
+            facets: NodeFacetStore::new(),
+            scene: None,
+        };
+        let mut surface = tag;
+        codicil.graph.edges.clear();
+        surface.from_node_id = surfaces[0].to_string();
+        surface.to_node_id = surfaces[1].to_string();
+        surface.semantic.as_mut().unwrap().predicate = Some(IMPORT_PREDICATE.into());
+        surface.semantic.as_mut().unwrap().statements[0].predicate = IMPORT_PREDICATE.into();
+        surface.semantic.as_mut().unwrap().statements[0].statement_id = "surface-alice".into();
+        codicil.graph.edges.push(surface.clone());
+        let mut parallel = surface.clone();
+        parallel.semantic.as_mut().unwrap().statements[0].statement_id = "surface-bob".into();
+        codicil.graph.edges.push(parallel);
+        let declarations = PredicateDeclarations {
+            variants: vec![PredicateDeclaration {
+                declaration_id: "import-declaration".into(),
+                stratum: GraphStratum::Surface,
+                author: Author::person("source-persona"),
+                declared_at_ms: Some(31),
+            }],
+            selected: Some("import-declaration".into()),
+        };
+        codicil.graph.resources.push(PersistedResourceRecord {
+            canonical_iri: IMPORT_PREDICATE.into(),
+            facets: vec![PersistedResourceFacet {
+                facet: PREDICATE_DECLARATIONS_FACET.into(),
+                value_json: serde_json::to_string(&declarations).unwrap(),
+            }],
+        });
+        let mut host = MereHost::empty(
+            MemoryBackend::new(),
+            selected_persona(),
+            fixture_handlers(),
+            AccessContext {
+                persona: FIXTURE_PERSONA_ADDRESS.into(),
+                device: FIXTURE_DEVICE_TWO_ADDRESS.into(),
+                at_ms: 100,
+            },
+        );
+        let bytes = serde_json::to_vec(&codicil).unwrap();
+        host.import_product_codicil(&bytes).unwrap();
+        let imported = host.graph().to_snapshot();
+        let record = imported
+            .resources
+            .iter()
+            .find(|record| record.canonical_iri == IMPORT_PREDICATE)
+            .unwrap();
+        let resource_id = chartulary::resource_id_from_canonical_iri(IMPORT_PREDICATE);
+        let resource = host.graph().resource(resource_id).unwrap();
+        assert_eq!(resource.id(), resource_id);
+        assert_eq!(resource.canonical_iri(), IMPORT_PREDICATE);
+        assert_eq!(
+            mere::kernel::graph::predicate_declarations::predicate_declarations_from_record(record)
+                .unwrap(),
+            Some(declarations),
+            "all declaration variants, authors, times and selection survive"
+        );
+        let facet_values = |record: &PersistedResourceRecord| {
+            record
+                .facets
+                .iter()
+                .map(|facet| {
+                    (
+                        facet.facet.clone(),
+                        serde_json::from_str::<serde_json::Value>(&facet.value_json).unwrap(),
+                    )
+                })
+                .collect::<BTreeMap<_, _>>()
+        };
+        assert_eq!(
+            facet_values(record),
+            facet_values(codicil.graph.resources.last().unwrap()),
+            "facet keys and every value survive JSON normalization"
+        );
+        let claims = host
+            .graph()
+            .to_snapshot()
+            .edges
+            .into_iter()
+            .filter_map(|edge| edge.semantic)
+            .flat_map(|semantic| semantic.statements)
+            .map(|claim| claim.statement_id)
+            .collect::<HashSet<_>>();
+        assert!(claims.contains("surface-alice") && claims.contains("surface-bob"));
+        let journal = host.graph_session().journal().entries().len();
+        let changes = host.graph_session().changes().len();
+        host.import_product_codicil(&bytes).unwrap();
+        assert_eq!(
+            host.graph_session().journal().entries().len(),
+            journal,
+            "identical carried records add no journal edits"
+        );
+        assert_eq!(host.graph_session().changes().len(), changes);
+
+        let mut payload_collision = codicil.clone();
+        payload_collision.graph.edges[0]
+            .semantic
+            .as_mut()
+            .unwrap()
+            .statements[0]
+            .label = Some("divergent".into());
+        let mut pair_collision = codicil.clone();
+        pair_collision.graph.edges[0].to_node_id = surfaces[0].to_string();
+        let mut store_collision = codicil.clone();
+        store_collision.graph.edges[0]
+            .semantic
+            .as_mut()
+            .unwrap()
+            .statements[0]
+            .statement_id = store_collision.graph.resource_edges[0]
+            .semantic
+            .as_ref()
+            .unwrap()
+            .statements[0]
+            .statement_id
+            .clone();
+        store_collision.graph.resource_edges.clear();
+        let mut source_collision = codicil.clone();
+        let mut duplicate = surface;
+        duplicate.semantic.as_mut().unwrap().statements[0].label =
+            Some("raw source divergence".into());
+        source_collision.graph.edges.push(duplicate);
+        let mut invalid_declaration = codicil.clone();
+        invalid_declaration
+            .graph
+            .resources
+            .last_mut()
+            .unwrap()
+            .facets[0]
+            .value_json = "false".into();
+        let mut fixed_declaration = codicil.clone();
+        fixed_declaration
+            .graph
+            .resources
+            .last_mut()
+            .unwrap()
+            .canonical_iri = TAGGED_WITH_IRI.into();
+        let mut before = host.graph().to_snapshot();
+        before.timestamp_secs = 0;
+        for invalid in [
+            payload_collision,
+            pair_collision,
+            store_collision,
+            source_collision,
+            invalid_declaration,
+            fixed_declaration,
+        ] {
+            assert!(matches!(
+                host.import_product_codicil(&serde_json::to_vec(&invalid).unwrap()),
+                Err(ProductError::InvalidCodicil(_))
+            ));
+            let mut after = host.graph().to_snapshot();
+            after.timestamp_secs = 0;
+            assert_eq!(
+                serde_json::to_value(after).unwrap(),
+                serde_json::to_value(&before).unwrap()
+            );
+            assert_eq!(host.graph_session().journal().entries().len(), journal);
+            assert_eq!(host.graph_session().changes().len(), changes);
+        }
+
+        let mut legacy = codicil.clone();
+        legacy.graph.edges[0].semantic.as_mut().unwrap().statements[0].provenance_iri = None;
+        let mut legacy_host = MereHost::empty(
+            MemoryBackend::new(),
+            selected_persona(),
+            fixture_handlers(),
+            AccessContext {
+                persona: FIXTURE_PERSONA_ADDRESS.into(),
+                device: FIXTURE_DEVICE_TWO_ADDRESS.into(),
+                at_ms: 100,
+            },
+        );
+        let legacy_bytes = serde_json::to_vec(&legacy).unwrap();
+        legacy_host.import_product_codicil(&legacy_bytes).unwrap();
+        let normalized = legacy_host.graph().to_snapshot();
+        let legacy_claim = normalized
+            .edges
+            .iter()
+            .filter_map(|edge| edge.semantic.as_ref())
+            .flat_map(|semantic| &semantic.statements)
+            .find(|claim| claim.statement_id == "surface-alice")
+            .unwrap();
+        assert_eq!(
+            legacy_claim.provenance_iri.as_deref(),
+            Some(mere::kernel::graph::edge_data::UNKNOWN_LEGACY_ASSERTER_IRI)
+        );
+        assert_eq!(legacy_claim.asserted_at_ms, Some(23));
+        let known_claim = normalized
+            .edges
+            .iter()
+            .filter_map(|edge| edge.semantic.as_ref())
+            .flat_map(|semantic| &semantic.statements)
+            .find(|claim| claim.statement_id == "surface-bob")
+            .unwrap();
+        assert_eq!(
+            known_claim.provenance_iri.as_deref(),
+            Some("https://tagger.test/")
+        );
+        let legacy_journal = legacy_host.graph_session().journal().entries().len();
+        legacy_host.import_product_codicil(&legacy_bytes).unwrap();
+        assert_eq!(
+            legacy_host.graph_session().journal().entries().len(),
+            legacy_journal,
+            "missing-source legacy reimport equals its normalized marker"
+        );
+        legacy.graph.edges[0].semantic.as_mut().unwrap().statements[0].label =
+            Some("different legacy claim".into());
+        assert!(
+            legacy_host
+                .import_product_codicil(&serde_json::to_vec(&legacy).unwrap())
+                .is_err()
+        );
+        assert_eq!(
+            legacy_host.graph_session().journal().entries().len(),
+            legacy_journal
+        );
     }
 
     /// A scene saved before the physics catalog carries no law, overlays or kind
