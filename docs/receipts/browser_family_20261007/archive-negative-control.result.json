@@ -1,0 +1,27 @@
+{
+  "command": [
+    "python",
+    "docs/receipts/browser_family_20261007/freeze-current.py",
+    "--label",
+    "deliberately-broken-control",
+    "--verify"
+  ],
+  "cwd": "C:\\Users\\mark_\\Code\\repos\\turnstone",
+  "started_utc": "2026-10-07T10:23:19.593895+00:00",
+  "finished_utc": "2026-10-07T10:23:19.746104+00:00",
+  "elapsed_seconds": 0.14100000000325963,
+  "exit_code": 1,
+  "priority": "BelowNormal",
+  "environment": {
+    "CEF_PATH": null,
+    "LIBCLANG_PATH": "C:\\Users\\mark_\\.rustup\\toolchains\\esp\\xtensa-esp32-elf-clang\\esp-clang\\bin\\libclang.dll",
+    "CMAKE_GENERATOR": null,
+    "CARGO_TARGET_DIR": "C:\\t\\graphshell-target",
+    "CARGO_BUILD_JOBS": null,
+    "CARGO_NET_GIT_FETCH_WITH_CLI": null,
+    "RUSTFLAGS": null,
+    "CARGO_ENCODED_RUSTFLAGS": null,
+    "CARGO_PROFILE_DEV_DEBUG": null,
+    "CARGO_PROFILE_TEST_DEBUG": null
+  }
+}

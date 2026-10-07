@@ -1,0 +1,22 @@
+{
+  "command": [
+    "cargo",
+    "+1.98.1",
+    "test",
+    "-p",
+    "turnstone",
+    "--lib",
+    "--locked",
+    "--features",
+    "scry,weld,servo",
+    "--no-fail-fast",
+    "-j",
+    "2"
+  ],
+  "cwd": "C:\\Users\\mark_\\Code\\repos\\turnstone",
+  "started_utc": "2026-10-07T09:34:12.598689+00:00",
+  "finished_utc": "2026-10-07T09:37:16.386705+00:00",
+  "elapsed_seconds": 183.79699999999139,
+  "exit_code": 0,
+  "priority": "BelowNormal"
+}

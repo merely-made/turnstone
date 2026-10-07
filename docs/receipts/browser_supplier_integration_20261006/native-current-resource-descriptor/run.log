@@ -1,0 +1,101 @@
+=== stdout ===
+2026-10-07T10:29:28.221429Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T10:29:28.230031Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T10:29:29.401433Z  WARN turnstone::gemini_identity: failed to project Gemini client identity error=client identities are only valid for gemini:// or titan:// capsules
+2026-10-07T10:29:29.700845Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T10:29:30.687520Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T10:29:30.700615Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T10:29:32.269576Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T10:29:33.956104Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T10:29:33.970756Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T10:29:35.649940Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T10:29:35.662939Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T10:29:36.226264Z  WARN servo_base: couldn't open C:\Users\mark_\Code\repos\turnstone\docs\receipts\browser_supplier_integration_20261006\profile\servo-shared\current-resource-descriptor\auth_cache.json: The system cannot find the file specified. (os error 2)
+2026-10-07T10:29:36.226549Z  WARN servo_base: couldn't open C:\Users\mark_\Code\repos\turnstone\docs\receipts\browser_supplier_integration_20261006\profile\servo-shared\current-resource-descriptor\hsts_list.json: The system cannot find the file specified. (os error 2)
+2026-10-07T10:29:36.226686Z  WARN servo_base: couldn't open C:\Users\mark_\Code\repos\turnstone\docs\receipts\browser_supplier_integration_20261006\profile\servo-shared\current-resource-descriptor\cookie_jar.json: The system cannot find the file specified. (os error 2)
+2026-10-07T10:29:36.228054Z  WARN servo_base: couldn't open C:\Users\mark_\Code\repos\turnstone\docs\receipts\browser_supplier_integration_20261006\profile\servo-shared\current-resource-descriptor\localstorage.json: The system cannot find the file specified. (os error 2)
+2026-10-07T10:29:36.230040Z  WARN servo_base: couldn't open C:\Users\mark_\Code\repos\turnstone\docs\receipts\browser_supplier_integration_20261006\profile\servo-shared\current-resource-descriptor\localstorage.json: The system cannot find the file specified. (os error 2)
+2026-10-07T10:29:36.535896Z  WARN script::event_loop::timers: Resuming an already resumed timer.
+2026-10-07T10:29:37.221928Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T10:29:38.217183Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T10:29:38.231200Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T10:29:39.895908Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T10:29:39.909437Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T10:29:41.509595Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T10:29:43.250519Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T10:29:43.263448Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T10:29:44.827486Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T10:29:46.701627Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T10:29:46.714679Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T10:29:48.346435Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T10:29:50.168934Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T10:29:50.182355Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T10:29:51.698847Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T10:29:51.711220Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T10:29:53.114245Z  WARN profile_traits::mem: Error communicating with the memory profiler thread: Disconnected
+2026-10-07T10:29:53.114245Z  WARN profile_traits::mem: Error communicating with the memory profiler thread: Disconnected
+2026-10-07T10:29:53.114245Z  WARN profile_traits::mem: Error communicating with the memory profiler thread: Disconnected
+2026-10-07T10:29:53.114245Z  WARN profile_traits::mem: Error communicating with the memory profiler thread: Disconnected
+2026-10-07T10:29:53.114245Z  WARN profile_traits::mem: Error communicating with the memory profiler thread: Disconnected
+2026-10-07T10:29:53.118011Z  WARN profile_traits::mem: Error communicating with the memory profiler thread: Disconnected
+2026-10-07T10:29:53.120797Z  WARN profile_traits::mem: Error communicating with the memory profiler thread: Disconnected
+2026-10-07T10:29:53.289208Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+
+=== stderr ===
+[servo-resize-trace] phase=prepare-for-rendering context=0x167f1df5020 logical=PhysicalSize { width: 1024, height: 600 } actual=Ok(Some((SurfaceID(1545794680624), 1024x600, None)))
+[servo-resize-trace] phase=before-resize context=0x167f1df5020 logical=PhysicalSize { width: 1024, height: 600 } actual=Ok(Some((SurfaceID(1545794680624), 1024x600, None)))
+[servo-resize-trace] resize requested=252x570 result=Ok(()) actual=Ok(Some((SurfaceID(1545955541552), 252x570)))
+[servo-resize-trace] phase=prepare-for-rendering context=0x167f1df5020 logical=PhysicalSize { width: 252, height: 570 } actual=Ok(Some((SurfaceID(1545955541552), 252x570, None)))
+[servo-resize-trace] phase=pre-import context=0x167f1df5020 logical=PhysicalSize { width: 252, height: 570 } actual=Ok(Some((SurfaceID(1545955541552), 252x570, None)))
+[servo-resize-trace] pre-import viewport=[0, 0, 0, 0] scissor=[0, 0, 0, 0] scissor-enabled=0
+[servo-resize-trace] phase=acquire-native context=0x167f1df5020 logical=PhysicalSize { width: 252, height: 570 } actual=Ok(Some((SurfaceID(1545955541552), 252x570, None)))
+[servo-resize-trace] acquisition_generation=1 declared=PhysicalSize { width: 252, height: 570 }
+graft-servo-resize dx12-resource width=252 height=570 flags=0x21 layout=D3D12_TEXTURE_LAYOUT(0) format=DXGI_FORMAT(28) mips=1 samples=1
+[servo-resize-trace] dx12-source requested=PhysicalSize { width: 252, height: 570 } source-fbo=0 actual=Ok(Some((SurfaceID(1545955541552), 252x570, None)))
+[servo-resize-trace] dx12-blit extent=PhysicalSize { width: 252, height: 570 } viewport=[0, 0, 0, 0] scissor=[0, 0, 0, 0] scissor-enabled=false read-fbo=0 draw-fbo=1
+[servo-resize-trace] hook-import generation=1 declared=PhysicalSize { width: 252, height: 570 } texture=(252, 570, 1)
+[servo-resize-trace] swap result=Ok(()) actual=Ok(Some((SurfaceID(1545814191376), 252x570)))
+[servo-resize-trace] handoff generation=1 declared=PhysicalSize { width: 252, height: 570 } texture=(252, 570, 1)
+[servo-resize-trace] phase=prepare-for-rendering context=0x167f1df5020 logical=PhysicalSize { width: 252, height: 570 } actual=Ok(Some((SurfaceID(1545814191376), 252x570, None)))
+[servo-resize-trace] phase=pre-import context=0x167f1df5020 logical=PhysicalSize { width: 252, height: 570 } actual=Ok(Some((SurfaceID(1545814191376), 252x570, None)))
+[servo-resize-trace] pre-import viewport=[0, 0, 252, 570] scissor=[0, 0, 252, 512] scissor-enabled=0
+[servo-resize-trace] phase=acquire-native context=0x167f1df5020 logical=PhysicalSize { width: 252, height: 570 } actual=Ok(Some((SurfaceID(1545814191376), 252x570, None)))
+[servo-resize-trace] acquisition_generation=2 declared=PhysicalSize { width: 252, height: 570 }
+[servo-resize-trace] dx12-source requested=PhysicalSize { width: 252, height: 570 } source-fbo=0 actual=Ok(Some((SurfaceID(1545814191376), 252x570, None)))
+[servo-resize-trace] dx12-blit extent=PhysicalSize { width: 252, height: 570 } viewport=[0, 0, 252, 570] scissor=[0, 0, 252, 512] scissor-enabled=false read-fbo=0 draw-fbo=5
+[servo-resize-trace] hook-import generation=2 declared=PhysicalSize { width: 252, height: 570 } texture=(252, 570, 1)
+[servo-resize-trace] swap result=Ok(()) actual=Ok(Some((SurfaceID(1545955541552), 252x570)))
+[servo-resize-trace] handoff generation=2 declared=PhysicalSize { width: 252, height: 570 } texture=(252, 570, 1)
+[servo-resize-trace] phase=prepare-for-rendering context=0x167f1df5020 logical=PhysicalSize { width: 252, height: 570 } actual=Ok(Some((SurfaceID(1545955541552), 252x570, None)))
+[servo-resize-trace] phase=pre-import context=0x167f1df5020 logical=PhysicalSize { width: 252, height: 570 } actual=Ok(Some((SurfaceID(1545955541552), 252x570, None)))
+[servo-resize-trace] pre-import viewport=[0, 0, 252, 570] scissor=[0, 0, 252, 512] scissor-enabled=0
+[servo-resize-trace] phase=acquire-native context=0x167f1df5020 logical=PhysicalSize { width: 252, height: 570 } actual=Ok(Some((SurfaceID(1545955541552), 252x570, None)))
+[servo-resize-trace] acquisition_generation=3 declared=PhysicalSize { width: 252, height: 570 }
+[servo-resize-trace] dx12-source requested=PhysicalSize { width: 252, height: 570 } source-fbo=0 actual=Ok(Some((SurfaceID(1545955541552), 252x570, None)))
+[servo-resize-trace] dx12-blit extent=PhysicalSize { width: 252, height: 570 } viewport=[0, 0, 252, 570] scissor=[0, 0, 252, 512] scissor-enabled=false read-fbo=0 draw-fbo=5
+[servo-resize-trace] hook-import generation=3 declared=PhysicalSize { width: 252, height: 570 } texture=(252, 570, 1)
+[servo-resize-trace] swap result=Ok(()) actual=Ok(Some((SurfaceID(1545814191376), 252x570)))
+[servo-resize-trace] handoff generation=3 declared=PhysicalSize { width: 252, height: 570 } texture=(252, 570, 1)
+[servo-resize-trace] phase=before-resize context=0x167f1df5020 logical=PhysicalSize { width: 252, height: 570 } actual=Ok(Some((SurfaceID(1545814191376), 252x570, None)))
+[servo-resize-trace] resize requested=509x570 result=Ok(()) actual=Ok(Some((SurfaceID(1546293027040), 509x570)))
+[servo-resize-trace] phase=prepare-for-rendering context=0x167f1df5020 logical=PhysicalSize { width: 509, height: 570 } actual=Ok(Some((SurfaceID(1546293027040), 509x570, None)))
+[servo-resize-trace] phase=pre-import context=0x167f1df5020 logical=PhysicalSize { width: 509, height: 570 } actual=Ok(Some((SurfaceID(1546293027040), 509x570, None)))
+[servo-resize-trace] pre-import viewport=[0, 0, 252, 570] scissor=[0, 0, 252, 512] scissor-enabled=0
+[servo-resize-trace] phase=acquire-native context=0x167f1df5020 logical=PhysicalSize { width: 509, height: 570 } actual=Ok(Some((SurfaceID(1546293027040), 509x570, None)))
+[servo-resize-trace] acquisition_generation=4 declared=PhysicalSize { width: 509, height: 570 }
+graft-servo-resize dx12-resource width=509 height=570 flags=0x21 layout=D3D12_TEXTURE_LAYOUT(0) format=DXGI_FORMAT(28) mips=1 samples=1
+[servo-resize-trace] dx12-source requested=PhysicalSize { width: 509, height: 570 } source-fbo=0 actual=Ok(Some((SurfaceID(1546293027040), 509x570, None)))
+[servo-resize-trace] dx12-blit extent=PhysicalSize { width: 509, height: 570 } viewport=[0, 0, 252, 570] scissor=[0, 0, 252, 512] scissor-enabled=false read-fbo=0 draw-fbo=5
+[servo-resize-trace] hook-import generation=4 declared=PhysicalSize { width: 509, height: 570 } texture=(509, 570, 1)
+[servo-resize-trace] swap result=Ok(()) actual=Ok(Some((SurfaceID(1546293025248), 509x570)))
+[servo-resize-trace] handoff generation=4 declared=PhysicalSize { width: 509, height: 570 } texture=(509, 570, 1)
+[servo-resize-trace] phase=prepare-for-rendering context=0x167f1df5020 logical=PhysicalSize { width: 509, height: 570 } actual=Ok(Some((SurfaceID(1546293025248), 509x570, None)))
+[servo-resize-trace] phase=pre-import context=0x167f1df5020 logical=PhysicalSize { width: 509, height: 570 } actual=Ok(Some((SurfaceID(1546293025248), 509x570, None)))
+[servo-resize-trace] pre-import viewport=[0, 0, 509, 570] scissor=[0, 0, 509, 512] scissor-enabled=0
+[servo-resize-trace] phase=acquire-native context=0x167f1df5020 logical=PhysicalSize { width: 509, height: 570 } actual=Ok(Some((SurfaceID(1546293025248), 509x570, None)))
+[servo-resize-trace] acquisition_generation=5 declared=PhysicalSize { width: 509, height: 570 }
+[servo-resize-trace] dx12-source requested=PhysicalSize { width: 509, height: 570 } source-fbo=0 actual=Ok(Some((SurfaceID(1546293025248), 509x570, None)))
+[servo-resize-trace] dx12-blit extent=PhysicalSize { width: 509, height: 570 } viewport=[0, 0, 509, 570] scissor=[0, 0, 509, 512] scissor-enabled=false read-fbo=0 draw-fbo=5
+[servo-resize-trace] hook-import generation=5 declared=PhysicalSize { width: 509, height: 570 } texture=(509, 570, 1)
+[servo-resize-trace] swap result=Ok(()) actual=Ok(Some((SurfaceID(1546293027040), 509x570)))
+[servo-resize-trace] handoff generation=5 declared=PhysicalSize { width: 509, height: 570 } texture=(509, 570, 1)

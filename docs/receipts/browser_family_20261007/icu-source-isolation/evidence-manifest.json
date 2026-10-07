@@ -1,0 +1,112 @@
+{
+  "recorded_utc": "2026-10-07T08:49:24.193057+00:00",
+  "scope": "Read-only official source research plus permitted evidence writes; no production edits/Cargo/build",
+  "files": [
+    {
+      "path": "capi-source-identity-index.json",
+      "bytes": 448090,
+      "sha256": "68ca35e5e2cf9fa2476deada69e4b3ed2a95053036f84f60ad16ce543a61a746"
+    },
+    {
+      "path": "component-source-identity.json",
+      "bytes": 12731,
+      "sha256": "eccead25c872864159a80696b87e4d7f44351e4d69d4310420a68a5e9e1e4a83"
+    },
+    {
+      "path": "official-Cargo.toml",
+      "bytes": 14119,
+      "sha256": "4aeb983019af3c24aac36960e3417622756f53910aa9b672404b76dadb84ff4a"
+    },
+    {
+      "path": "official-commit.json",
+      "bytes": 6033,
+      "sha256": "54b97537b7348dd85d6178c3753f86e2bb21395c64b67eb2bdcd8c823c8ae904"
+    },
+    {
+      "path": "official-components-calendar-Cargo.toml",
+      "bytes": 2319,
+      "sha256": "93770e7fde059818db19ffdc3668cead2f95b4d4645a118b92e2386a586cf734"
+    },
+    {
+      "path": "official-components-collections-Cargo.toml",
+      "bytes": 1905,
+      "sha256": "963d26428f923ead6ef52219b65549eabcba96bef3e3dcb67279e6fa9c4cef3d"
+    },
+    {
+      "path": "official-components-locale_core-Cargo.toml",
+      "bytes": 1848,
+      "sha256": "9e7ea9f37e569efe3086b0173a771b4635babf86bc64c24250afafc007f1d65e"
+    },
+    {
+      "path": "official-components-normalizer-Cargo.toml",
+      "bytes": 2747,
+      "sha256": "1c8a5ef7cda3f66eb283bae506e5750329376558c29be6fefcbe60979d3fea3b"
+    },
+    {
+      "path": "official-components-properties-Cargo.toml",
+      "bytes": 1745,
+      "sha256": "7eb2195078fecb119b857ef4fad4d574236ec4d8486138d846f044d7a4d25d63"
+    },
+    {
+      "path": "official-components-segmenter-Cargo.toml",
+      "bytes": 2320,
+      "sha256": "ba3978687d0c6289bf2bb2851e7039811bfe7e0c8a2ea02d601434e3b4cb6d8c"
+    },
+    {
+      "path": "official-crate-archive-verification.json",
+      "bytes": 464,
+      "sha256": "5e002218b419087bf346d928f46e3d1b8d44c81271ebdf495d3e1ce8f96cf1ec"
+    },
+    {
+      "path": "official-crates-capi-version.json",
+      "bytes": 3789,
+      "sha256": "b376e644557c5287992c8d7b9a556f196a1e50e4a0a236082a65fdb586dd16d7"
+    },
+    {
+      "path": "official-ffi-capi-Cargo.toml",
+      "bytes": 5603,
+      "sha256": "c53e2f2de3f68a245b55d952715e8872340680d4b393a5cd6145712438cd2bed"
+    },
+    {
+      "path": "official-provider-adapters-Cargo.toml",
+      "bytes": 947,
+      "sha256": "360dfff67b056442e9d4cbacb5ac4bb0e1e723605f77843a68a8fa29b0a45c69"
+    },
+    {
+      "path": "official-provider-core-Cargo.toml",
+      "bytes": 2871,
+      "sha256": "f7cc7f934ec41bce668d25fc3a9c60ce7968c10132439ec11f40f506037ffc85"
+    },
+    {
+      "path": "official-tags.json",
+      "bytes": 34887,
+      "sha256": "855e72b7f6a17f3a9de28c4bf8bb720d16993e5a4391bc826f3aff3e35bb797e"
+    },
+    {
+      "path": "README.md",
+      "bytes": 2747,
+      "sha256": "7dd2b72b10ceda82f7cf064e1bd82fe721b10ec6d8aeb31d96b625206620b4a4"
+    },
+    {
+      "path": "registry-capi-Cargo.toml",
+      "bytes": 6587,
+      "sha256": "02ae5d39662d8d9e48c3fe9df734070f4d006723fbf0131fc69e3ac959f7c17f"
+    },
+    {
+      "path": "registry-capi-Cargo.toml.orig",
+      "bytes": 5603,
+      "sha256": "c53e2f2de3f68a245b55d952715e8872340680d4b393a5cd6145712438cd2bed"
+    },
+    {
+      "path": "registry-capi-cargo_vcs_info.json",
+      "bytes": 102,
+      "sha256": "794242934212564c896b3e909b885436177933358c954a8d1914c73c3c0a7bb8"
+    },
+    {
+      "path": "workspace-path-family-audit.json",
+      "bytes": 24639,
+      "sha256": "d534a736e657cd51f84153cbfe352befbf580ba40718507b5ff2dd0fd3fb9eca"
+    }
+  ],
+  "relative_links": "PASS"
+}

@@ -202,7 +202,10 @@ function Invoke-SupplierReceipt {
             RUST_LOG=$env:RUST_LOG; SCRY_FIXTURE_BASE=$env:SCRY_FIXTURE_BASE;
             SERVO_FIXTURE_BASE=$env:SERVO_FIXTURE_BASE; TURNSTONE_CEF_PATH=$env:TURNSTONE_CEF_PATH;
             TURNSTONE_SERVO_PROFILE=$env:TURNSTONE_SERVO_PROFILE;
-            TURNSTONE_SERVO_PROFILE_DIR=$env:TURNSTONE_SERVO_PROFILE_DIR
+            TURNSTONE_SERVO_PROFILE_DIR=$env:TURNSTONE_SERVO_PROFILE_DIR;
+            GRAFT_SERVO_RESIZE_TRACE=$env:GRAFT_SERVO_RESIZE_TRACE;
+            TURNSTONE_SERVO_GPU_SYNC=$env:TURNSTONE_SERVO_GPU_SYNC;
+            TURNSTONE_SERVO_GPU_SYNC_TIMEOUT_MS=$env:TURNSTONE_SERVO_GPU_SYNC_TIMEOUT_MS
         }
     }
     # Persist executable identity before launch, including when launch fails.
@@ -292,7 +295,7 @@ function Invoke-SupplierReceipt {
         if (-not $timedOut -and $nativeExit -eq 0) {
             $done = Join-Path $out 'scenario.done'
             if (Test-Path -LiteralPath $done) {
-                $record.scenario_result = Get-Content -LiteralPath $done -Encoding UTF8 -First 1
+                $record.scenario_result = [string] (Get-Content -LiteralPath $done -Encoding UTF8 -First 1)
             }
         }
         [System.IO.File]::WriteAllText((Join-Path $out 'process-result.json'),

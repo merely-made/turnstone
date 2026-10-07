@@ -1,0 +1,86 @@
+{
+  "version": {
+    "id": 3424002,
+    "crate": "mozjs",
+    "num": "0.26.8",
+    "dl_path": "/api/v1/crates/mozjs/0.26.8/download",
+    "readme_path": "/api/v1/crates/mozjs/0.26.8/readme",
+    "updated_at": "2026-10-07T07:09:35.375195Z",
+    "created_at": "2026-10-07T07:09:35.375195Z",
+    "downloads": 0,
+    "features": {
+      "crown": [
+        "mozjs_sys/crown"
+      ],
+      "debugmozjs": [
+        "mozjs_sys/debugmozjs"
+      ],
+      "default": [
+        "jit",
+        "libz-sys",
+        "intl"
+      ],
+      "intl": [
+        "mozjs_sys/intl"
+      ],
+      "jit": [
+        "mozjs_sys/jit"
+      ],
+      "jitspew": [
+        "mozjs_sys/jitspew"
+      ],
+      "libz-rs": [
+        "mozjs_sys/libz-rs"
+      ],
+      "libz-sys": [
+        "mozjs_sys/libz-sys"
+      ],
+      "profilemozjs": [
+        "mozjs_sys/profilemozjs"
+      ]
+    },
+    "yanked": false,
+    "yank_message": null,
+    "lib_links": null,
+    "license": "MPL-2.0",
+    "links": {
+      "dependencies": "/api/v1/crates/mozjs/0.26.8/dependencies",
+      "version_downloads": "/api/v1/crates/mozjs/0.26.8/downloads",
+      "authors": "/api/v1/crates/mozjs/0.26.8/authors"
+    },
+    "crate_size": 86277,
+    "published_by": null,
+    "audit_actions": [],
+    "checksum": "66667634d9785f168db7d40f93f4c743e6b5308921a5c07fe922ee57264e09d3",
+    "rust_version": null,
+    "has_lib": true,
+    "bin_names": [],
+    "edition": "2021",
+    "description": "Rust bindings to the Mozilla SpiderMonkey JavaScript engine.",
+    "homepage": null,
+    "documentation": null,
+    "repository": "https://github.com/servo/mozjs/",
+    "trustpub_data": {
+      "provider": "github",
+      "repository": "servo/mozjs",
+      "run_id": "37578518631",
+      "sha": "34ad101f42bafbb197cb27b4b0d343469f7799e7"
+    },
+    "linecounts": {
+      "languages": {
+        "Python": {
+          "code_lines": 127,
+          "comment_lines": 11,
+          "files": 2
+        },
+        "Rust": {
+          "code_lines": 4152,
+          "comment_lines": 188,
+          "files": 18
+        }
+      },
+      "total_code_lines": 4279,
+      "total_comment_lines": 199
+    }
+  }
+}

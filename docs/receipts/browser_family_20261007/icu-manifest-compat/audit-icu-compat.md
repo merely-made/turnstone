@@ -1,0 +1,15 @@
+# Independent ICU compatibility audit, 2026-10-07
+
+Provenance and selected-source checks pass. This read-only audit ran no Cargo or build and changed no compiled input. [Exact audit](audit-icu-compat.json) binds the cached official package archives, preserved API checksums, live source inventories, manifests/lock and successful metadata snapshot.
+
+All 68 published files were checked directly against the two 153.3.0 archives. Only the two normalized manifests differ, at exactly the three declared production `~2.1.1` to `^2.1.1` edges. All 23 Rust files and data/license bytes remain identical; both added provenance notes and all 10 existing evidence-file hashes verify.
+
+The successful all3 Windows metadata selects registry ICU **2.3.x**, including provider/locale 2.3.1 and properties/locale-core 2.3.0. The private 153.3 forks and their glue share those identities. Exact official `icu_capi` 2.1.2 at Git `30120d6a07fc5bb03a6c7647077bd2658b2559de` retains its isolated ICU 2.1 children. Stylo 0.22 also retains a separate registry segmenter/provider/collections 1.5 cohort. Each of the eight owned repository families resolves to one source; no external workspace path override appears. There are four path packages: Turnstone, its sandbox helper and the two vendored forks.
+
+The widened ranges still need behavior qualification. The private baked-provider types explicitly warn that their representation can change in minor versions (`vendor/mozjs-icu-collator/src/provider.rs:46-50`, `vendor/mozjs-icu-normalizer/src/provider.rs:26-30`). `mozjs_collator_glue` 153.3.0 `src/lib.rs:295` unwraps its collator constructor, assuming its baked data is valid. No actual type defect was found in the selected graph. Root reports both private forks completed codegen; complete lib tests/static linking and the Root-owned native Intl scenario remain pending.
+
+The current [Intl fixture](../../../../scenarios/fixtures/browser_servo/intl.js) exercises canonical/non-Latin normalization, ISO/Buddhist calendars, word segmentation and numeric/Swedish collation. Its [scenario](../../../../scenarios/browser_servo_intl_windows.scn) reads the real page title callback, then closes the producer and Servo view. These are useful bounded checks of both ICU lanes. They do not establish full Intl conformance, three-engine coexistence, other-platform native behavior or accessibility acceptance.
+
+The lock comparison covers the entire coordinated Mere/Genet/Knot/Redshank/Servo/CEF adoption; its registry additions/removals must not be attributed solely to three ICU manifest edges. A stale comment at `Cargo.toml:327` says no local paths exist; the two deliberate in-repository vendor paths now contradict it. Correct the comment only after Root releases the compiled-input hold.
+
+Knot source `0096591` and docs `ae3352e`, followed by Redshank `82271df`, are already published. Metadata correctly selects the qualified Knot source `0096591`. All prior failed resolution controls and supplier/native gates retain their earlier scope.

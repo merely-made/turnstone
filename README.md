@@ -49,11 +49,20 @@ commit. A local build and a redirect-free locked build are separate checks.
 The local Windows system-webview implementation is optional:
 `cargo run --features scry`. It requires the WebView2 runtime and a D3D12 host;
 construction failures are reported by the browser. Two-page native qualification
-is gated on cookie retention and current captured pixels, as recorded in the
-[Scry consumer receipt](docs/receipts/browser_scry_windows_20261005/README.md).
+records cookie retention and current captured pixels in the
+[supplier integration receipt](docs/receipts/browser_supplier_integration_20261006/README.md).
 
-The current portable set is Mere `bd5912fb`, Genet `69a2383b`, Knot
-`3dfb70b0`, Woodshed `cefc903d` and Retinue `fa4f9250`. Knot and Redshank
+The published U14 checkpoint (`4e217ef`) pins Mere `edf175f9`, Genet
+`679d8314`, Knot `211ff57a`, Woodshed `24f196f4` and Retinue `fa4f9250`.
+The [October 7 repin](design_docs/2026-08-25_browser_surface_implementation_plan.md)
+updates upstream Servo to 0.7 and CEF to `154.5.0+154.0.34`, then qualifies
+the current coordinated family: Mere `57b4893d`, Genet `965b64e2`, Knot
+`0096591a`, and Redshank/Woodshed `82271df2`. The browser suppliers are Scry
+`2c3ebd24`, Weld `c4dd593b`, and Graft `bb48281b`; upstream Servo is
+`aac43a3f` (0.7.0). The
+[current-family receipt](docs/receipts/browser_family_20261007/README.md)
+records source identity, compatibility changes and exact qualification scope.
+Knot and Redshank
 share the Mere/Genet surface family with Turnstone so retained-surface,
 publishing and projection interfaces have one source identity.
 Sibling mode uses current local Mere/Genet with a separate lock.
@@ -84,17 +93,24 @@ the [place port plan](design_docs/2026-07-28_turnstone_place_port_plan.md).
 
 Current browser work follows the
 [user-agent taxonomy](design_docs/2026-08-03_user_agent_taxonomy_plan.md):
-engine availability and control truth first, then actual Scry and Servo/Graft
-consumers and the remaining hosted browser operations. Local Windows Scry
-source now constructs system webviews with per-node profiles and a shared
-offscreen composition root. Turnstone imports owned frame payloads on its
-existing device, with a dedicated fence per producer and a wait on every
-paint. The two-page scripts exercise DOM input, switching, resource teardown
-and separate-process localStorage/pin restoration. Full acceptance remains
-gated on lost native cookies and stale or blank captured pixels. Typed
-find/zoom, OS IME, lenses and native rehosting remain gates;
-Servo/Graft is not yet constructed. Independent trio release receipts do not
-qualify application integration here.
+registry-derived engine choices and optional Windows Scry, Weld and
+Servo/Graft hosts on the existing wgpu device. Scry and Weld use per-node
+profiles; Servo shares one explicitly named, configurable process profile
+across its views. The [integration receipt](docs/receipts/browser_supplier_integration_20261006/README.md)
+records scoped Scry/Weld input, persistence, permission and teardown controls,
+and mixed-runtime pixels. Servo's default reopen can still produce a white
+frame. Those captures qualify their recorded binaries; the upstream repin
+requires fresh native checks. Current-family resize probes also expose stale
+Servo pixels after the page has received its new viewport. Explicit GPU
+completion diagnostics have positive and negative controls; reliable default
+ordering remains a Graft release gate. Foreign accessibility, OS IME, lenses and
+native rehosting remain separate gates.
+
+The portable source includes two published Mozilla private ICU packages with
+three dependency ranges widened; their Rust, data and license bytes are
+preserved. An exact official ICU CAPI release source isolates its FFI-facing
+2.1 family from Genet's newer Rust ICU family. Provenance, resolver controls
+and seven page-native Intl/normalization probes are in the current receipt.
 
 The local October engine-picker patch derives choices from actual registries,
 uses human labels, and keeps unavailable saved pins visible with reasons. Its

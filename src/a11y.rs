@@ -82,7 +82,7 @@ fn project_app_capturing(
         PaneContent::Registered(kind) if kind.as_str() == crate::panes::kind::FROZEN_PROJECTION => {
             Some(project_frozen_projection(app))
         },
-        // Only the promoted read-only Diagnostics rows contribute here;
+        // Promoted read-only Diagnostics rows and Arrange refusal status contribute here;
         // active built-in controls retain their separate qualification gate.
         PaneContent::Gloss(_) | PaneContent::Registered(_) => contribution(id),
         _ => None,

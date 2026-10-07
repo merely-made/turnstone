@@ -80,6 +80,43 @@ impl Drop for EndpointAuthorRestore {
 const FIT_INTENT: &str = "turnstone.fit-view";
 const OPEN_INTENT: &str = "turnstone.open-address";
 
+/// Typed refusals at the projection boundary. Version mismatch is checked
+/// before scene/resource state is changed.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum ProjectionRefusal {
+    WrongSession,
+    UnsupportedProtocol,
+    UnsupportedScore { received: u16, supported: u16 },
+    UnsupportedArrangement,
+    InvalidScene(String),
+    Presentation(String),
+}
+
+impl std::fmt::Display for ProjectionRefusal {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::WrongSession => f.write_str("projection request names the wrong session"),
+            Self::UnsupportedProtocol => {
+                f.write_str("projection request uses an unsupported protocol")
+            },
+            Self::UnsupportedScore {
+                received,
+                supported,
+            } => write!(
+                f,
+                "projection score version {received} is unsupported; expected {supported}"
+            ),
+            Self::UnsupportedArrangement => {
+                f.write_str("G3 Turnstone endpoint currently accepts Spiral arrangements")
+            },
+            Self::InvalidScene(reason) => write!(f, "invalid disclosed scene: {reason}"),
+            Self::Presentation(reason) => f.write_str(reason),
+        }
+    }
+}
+
+impl std::error::Error for ProjectionRefusal {}
+
 /// The product endpoint. Its default card extent can be replaced by the host
 /// once a real retained card has measured itself.
 pub struct TurnstoneEndpoint {
@@ -372,20 +409,23 @@ pub(crate) fn disclose_scene(
 }
 
 impl ProjectionSource for TurnstoneEndpoint {
-    type Error = String;
+    type Error = ProjectionRefusal;
 
     fn snapshot(&mut self, request: ProjectionRequest) -> Result<ProjectionSnapshot, Self::Error> {
         if request.session != self.session {
-            return Err("projection request names the wrong session".into());
+            return Err(ProjectionRefusal::WrongSession);
         }
         if request.version.major != ProtocolVersion::V1.major {
-            return Err("projection request uses an unsupported protocol".into());
+            return Err(ProjectionRefusal::UnsupportedProtocol);
         }
         if request.score.version != sceno::SCORE_VERSION {
-            return Err("projection request uses an unsupported score".into());
+            return Err(ProjectionRefusal::UnsupportedScore {
+                received: request.score.version,
+                supported: sceno::SCORE_VERSION,
+            });
         }
         let Arrangement::Spiral(spiral) = request.score.arrangement else {
-            return Err("G3 Turnstone endpoint currently accepts Spiral arrangements".into());
+            return Err(ProjectionRefusal::UnsupportedArrangement);
         };
 
         let graph = self.app.graph_runtimes.graph();
@@ -398,9 +438,11 @@ impl ProjectionSource for TurnstoneEndpoint {
 
         let revision = Revision(graph.revision().max(1));
         let scene = SceneSnapshot::from_dense(SceneEpoch(1), revision, scene)
-            .map_err(|error| format!("invalid disclosed scene: {error:?}"))?;
+            .map_err(|error| ProjectionRefusal::InvalidScene(format!("{error:?}")))?;
         self.resources.clear();
-        let presentation = self.presentation(&scene)?;
+        let presentation = self
+            .presentation(&scene)
+            .map_err(ProjectionRefusal::Presentation)?;
         let snapshot = ProjectionSnapshot {
             version: ProtocolVersion::V1,
             session: self.session.clone(),
@@ -548,7 +590,9 @@ pub fn run_g3_canary() -> Result<G3Run, String> {
         session: session.clone(),
         score: Score::new(Arrangement::Spiral(Spiral::default())),
     };
-    let snapshot = endpoint.snapshot(request)?;
+    let snapshot = endpoint
+        .snapshot(request)
+        .map_err(|error| error.to_string())?;
     let layout = graphshell::view::ProjectionLayoutView::from_scene(&snapshot.scene);
     let graph_revision_before = endpoint.app().graph_runtimes.graph().revision();
     let graph_nodes_before = endpoint.app().graph_runtimes.graph().nodes().count();
@@ -711,6 +755,38 @@ pub fn render_g3_receipt() -> Result<String, String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn score_five_accepts_and_score_four_refuses_without_replacing_snapshot() {
+        assert_eq!(
+            sceno::SCORE_VERSION,
+            5,
+            "this repin qualifies the version-five family"
+        );
+        let mut endpoint = TurnstoneEndpoint::new(App::projection_fixture()).unwrap();
+        let request = ProjectionRequest {
+            version: ProtocolVersion::V1,
+            session: endpoint.session().clone(),
+            score: Score::new(Arrangement::Spiral(Spiral::default())),
+        };
+        endpoint.snapshot(request.clone()).unwrap();
+        let prior_revision = endpoint.snapshot.as_ref().unwrap().scene.revision;
+        let prior_resources = endpoint.resources.clone();
+        let mut legacy = request;
+        legacy.score.version = 4;
+        assert!(matches!(
+            endpoint.snapshot(legacy),
+            Err(ProjectionRefusal::UnsupportedScore {
+                received: 4,
+                supported: 5
+            })
+        ));
+        assert_eq!(
+            endpoint.snapshot.as_ref().unwrap().scene.revision,
+            prior_revision
+        );
+        assert_eq!(endpoint.resources, prior_resources);
+    }
 
     /// The endpoint's authority is DELEGATED by the user, not self-issued.
     /// Before the capability-model audit its subject was `blake3(session

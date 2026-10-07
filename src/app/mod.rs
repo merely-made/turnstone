@@ -248,6 +248,8 @@ pub struct App {
     /// the `scene.physics_damping` container facet (it left the app-wide
     /// settings store, being scene-scoped, not app-scoped).
     pub physics_damping: f32,
+    /// Latest typed refusal for one graph's physics controls, not persisted.
+    physics_refusal: Option<(GraphId, mere::canvas::OverlayRefusal)>,
     /// A maximized pane takes the whole pane area (a host view state; frisket
     /// has no maximize op). Not persisted; resets on restart.
     pub maximized: Option<PaneId>,
@@ -830,6 +832,22 @@ impl App {
         std::mem::take(&mut self.events)
     }
 
+    pub fn physics_refusal(&self) -> Option<&mere::canvas::OverlayRefusal> {
+        self.physics_refusal.as_ref().and_then(|(graph, refusal)| {
+            (*graph == self.graph_runtimes.active_graph()).then_some(refusal)
+        })
+    }
+
+    fn record_physics_result(&mut self, result: Result<(), mere::canvas::OverlayRefusal>) {
+        self.physics_refusal = match result {
+            Ok(()) => None,
+            Err(refusal) => {
+                self.events.push(AppEvent::PhysicsRefused(refusal.clone()));
+                Some((self.graph_runtimes.active_graph(), refusal))
+            },
+        };
+    }
+
     /// The events the behavior drain has not considered yet.
     pub(crate) fn unseen_events(&self) -> &[AppEvent] {
         let seen = self.events_seen.min(self.events.len());
@@ -1154,7 +1172,8 @@ impl App {
             Action::SetLayoutStrategy(id) => self.set_layout_strategy(id),
             Action::SetPhysicsLaw(id) => {
                 if let Some(law) = mere::canvas::PhysicsLaw::parse(id) {
-                    self.graph_runtimes.set_physics_law(law);
+                    let result = self.graph_runtimes.set_physics_law(law);
+                    self.record_physics_result(result);
                 }
                 vec![Effect::Redraw]
             }
@@ -1165,7 +1184,8 @@ impl App {
                     if on {
                         overlays.push(overlay);
                     }
-                    self.graph_runtimes.set_physics_overlays(overlays);
+                    let result = self.graph_runtimes.set_physics_overlays(overlays);
+                    self.record_physics_result(result);
                 }
                 vec![Effect::Redraw]
             }
@@ -1188,7 +1208,9 @@ impl App {
                 vec![Effect::Redraw]
             }
             Action::ApplyPhysicsProfile(id) => {
-                self.graph_runtimes.apply_physics_profile(id);
+                if self.graph_runtimes.apply_physics_profile(id) {
+                    self.physics_refusal = None;
+                }
                 vec![Effect::Redraw]
             }
             Action::ToggleIsometric => {

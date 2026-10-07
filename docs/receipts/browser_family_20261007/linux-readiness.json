@@ -1,0 +1,139 @@
+{
+  "recorded_utc": "2026-10-07T09:25:13.751617+00:00",
+  "scope": "Read-only SSH readiness inventory. No fetch, ref update, build, tests, apps or remote file writes.",
+  "host": "thinkpad-l14-f",
+  "repo": "/home/markik/Code/repos/turnstone",
+  "branch": {
+    "exit": 0,
+    "stdout": "main",
+    "stderr": ""
+  },
+  "head": {
+    "exit": 0,
+    "stdout": "769a131786d3c8761fad7e8cdede26ea6a32a5ea",
+    "stderr": ""
+  },
+  "cached_origin_main": {
+    "exit": 0,
+    "stdout": "769a131786d3c8761fad7e8cdede26ea6a32a5ea",
+    "stderr": ""
+  },
+  "status": {
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "rust": {
+    "exit": 0,
+    "stdout": "rustc 1.98.1 (48a229cea 2026-09-01)\nbinary: rustc\ncommit-hash: 48a229ceaefd4985c50990b14116b6d856af0985\ncommit-date: 2026-09-01\nhost: x86_64-unknown-linux-gnu\nrelease: 1.98.1\nLLVM version: 22.1.8",
+    "stderr": ""
+  },
+  "target": {
+    "path": "/home/markik/Code/target",
+    "marker_sha256": "6d9d1d216e0f83abc5e5662ca62c92b4f23009466b54fa27321a69acdb778bb2",
+    "marker": "Signature: 8a477f597d28d172789f06886806bc55\n# This file is a cache directory tag created by cargo.\n# For information about cache directory tags see https://bford.info/cachedir/\n",
+    "lock_owners": {
+      "exit": 1,
+      "stdout": "",
+      "stderr": ""
+    }
+  },
+  "active_known_compiler_app_owners": [],
+  "observer_limitations": "Instantaneous accessible /proc inventory of named compilers/apps plus target lock fuser; cannot guarantee later availability or identify every arbitrary process. Recheck before launching. Cached origin/main was not refreshed.",
+  "pkg_config": {
+    "freetype2": {
+      "exit": 0,
+      "stdout": "26.6.20",
+      "stderr": ""
+    },
+    "fontconfig": {
+      "exit": 0,
+      "stdout": "2.17.0",
+      "stderr": ""
+    },
+    "openssl": {
+      "exit": 0,
+      "stdout": "3.5.9",
+      "stderr": ""
+    },
+    "libudev": {
+      "exit": 0,
+      "stdout": "259",
+      "stderr": ""
+    },
+    "dbus-1": {
+      "exit": 0,
+      "stdout": "1.16.2",
+      "stderr": ""
+    },
+    "x11": {
+      "exit": 0,
+      "stdout": "1.8.13",
+      "stderr": ""
+    },
+    "xcb": {
+      "exit": 0,
+      "stdout": "1.17.0",
+      "stderr": ""
+    },
+    "xrandr": {
+      "exit": 0,
+      "stdout": "1.5.4",
+      "stderr": ""
+    },
+    "xi": {
+      "exit": 0,
+      "stdout": "1.8.3",
+      "stderr": ""
+    },
+    "xcursor": {
+      "exit": 0,
+      "stdout": "1.2.3",
+      "stderr": ""
+    },
+    "xkbcommon": {
+      "exit": 0,
+      "stdout": "1.13.1",
+      "stderr": ""
+    },
+    "wayland-client": {
+      "exit": 0,
+      "stdout": "1.26.0",
+      "stderr": ""
+    },
+    "wayland-egl": {
+      "exit": 0,
+      "stdout": "18.1.0",
+      "stderr": ""
+    },
+    "egl": {
+      "exit": 0,
+      "stdout": "1.5",
+      "stderr": ""
+    },
+    "gl": {
+      "exit": 0,
+      "stdout": "1.2",
+      "stderr": ""
+    }
+  },
+  "build_tools": {
+    "cc": "/usr/bin/cc",
+    "c++": "/usr/bin/c++",
+    "clang": "/usr/bin/clang",
+    "clang++": "/usr/bin/clang++",
+    "cmake": "/usr/bin/cmake",
+    "ninja": "/home/markik/.local/bin/ninja",
+    "pkg-config": "/usr/bin/pkg-config",
+    "python3": "/usr/bin/python3",
+    "git": "/usr/bin/git"
+  },
+  "libclang_inventory": [
+    "libclang.so.22.1 (libc6,x86-64) => /lib64/libclang.so.22.1",
+    "libclang.so (libc6,x86-64) => /lib64/libclang.so",
+    "libclang-cpp.so.22.1 (libc6,x86-64) => /lib64/libclang-cpp.so.22.1",
+    "libclang-cpp.so (libc6,x86-64) => /lib64/libclang-cpp.so"
+  ],
+  "cargo_build_config_only": [],
+  "qualification_scope": "Future exact published family default Linux locked check/tests only. Windows-only all3 producer registration is not foreign native Linux acceptance."
+}

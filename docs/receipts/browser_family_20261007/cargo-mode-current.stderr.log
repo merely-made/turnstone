@@ -1,0 +1,196 @@
+error: invalid type: boolean `true`, expected a map
+ --> ..\..\..\.cargo\git\checkouts\servo-e53a6e7b994a25fe\aac43a3\python\tidy\tests\lints-configuration\no-workspace\Cargo.toml:8:7
+  |
+8 | foo = true
+  |       ^^^^
+warning: patch `burn-remote v0.22.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)` was not used in the crate graph
+warning: patch `cubecl-runtime v0.11.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)` was not used in the crate graph
+warning: patch `p2panda-stream v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5#1bec457e)` was not used in the crate graph
+help: Check that the patched package version and available features are compatible
+      with the dependency requirements. If the patch has a different version from
+      what is locked in the Cargo.lock file, run `cargo update` to use the new
+      version. This may also occur with an optional dependency that is not enabled.
+error: invalid type: boolean `true`, expected a map
+ --> ..\..\..\.cargo\git\checkouts\servo-e53a6e7b994a25fe\aac43a3\python\tidy\tests\lints-configuration\no-workspace\Cargo.toml:8:7
+  |
+8 | foo = true
+  |       ^^^^
+warning: patch `burn-remote v0.22.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)` was not used in the crate graph
+warning: patch `cubecl-runtime v0.11.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)` was not used in the crate graph
+warning: patch `p2panda-stream v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5#1bec457e)` was not used in the crate graph
+help: Check that the patched package version and available features are compatible
+      with the dependency requirements. If the patch has a different version from
+      what is locked in the Cargo.lock file, run `cargo update` to use the new
+      version. This may also occur with an optional dependency that is not enabled.
+    Checking icu_properties v2.3.0
+    Checking idna_adapter v1.2.2
+    Checking idna v1.1.0
+    Checking uuid v1.27.0
+    Checking url v2.5.8
+    Checking ring v0.17.14
+    Checking blake3 v1.8.7
+    Checking windows v0.62.2
+    Checking chacha20 v0.10.2
+    Checking rustls-webpki v0.103.15
+    Checking rustls v0.23.45
+    Checking rand v0.10.3
+    Checking tokio-rustls v0.26.5
+    Checking accesskit v0.24.1
+    Checking muniment v0.1.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking rustls-platform-verifier v0.7.0
+    Checking naga v30.0.1
+    Checking wgpu-types v30.0.1
+    Checking hyper-rustls v0.27.9
+    Checking gpu-allocator v0.28.0
+    Checking wgpu-naga-bridge v30.0.1
+    Checking document-session-api v0.1.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+    Checking wgpu-hal v30.0.1
+    Checking chacha20poly1305 v0.11.0
+    Checking argon2 v0.5.3
+    Checking insigne v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking personae v0.2.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking wgpu-core-deps-windows-linux-android v30.0.1
+    Checking layout-dom-api v0.1.1 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+    Checking tower-http v0.6.11
+    Checking wgpu-core v30.0.1
+    Checking chartulary v0.2.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking noq-proto v1.3.0
+    Checking iroh-base v1.3.0
+    Checking wgpu v30.0.1
+    Checking reqwest v0.13.5
+    Checking inker v0.1.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking sceno v0.0.4 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking iroh-metrics v1.0.2
+    Checking wmi v0.18.4
+    Checking n0-dns-resolver v0.1.0
+    Checking noq v1.3.0
+    Checking brotli-decompressor v5.0.3
+    Checking attohttpc v0.30.1
+    Checking p2panda-core v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5#1bec457e)
+    Checking igd-next v0.17.1
+    Checking iroh-dns v1.3.0
+    Checking genet-static-dom v0.1.1 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+    Checking netwatch v0.19.3
+    Checking mere-forme v0.1.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking tokio-websockets v0.13.3
+    Checking numen v0.2.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking cfb v0.7.3
+    Checking infer v0.19.0
+    Checking iroh-relay v1.3.0
+    Checking portmapper v0.19.3
+    Checking iroh v1.3.0
+    Checking mere-kernel v0.0.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking genet-paint-types v0.2.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+    Checking rcgen v0.14.10
+    Checking tinct v0.1.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking jsonschema v0.18.3
+    Checking irpc v0.17.0
+    Checking vello_shaders v0.10.0
+    Checking libcrux-traits v0.0.8
+    Checking engine-observables-api v0.2.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+    Checking p2panda-store v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5#1bec457e)
+    Checking hickory-proto v0.26.3
+    Checking hpke-rs-crypto v0.7.0
+    Checking libcrux-sha3 v0.0.10
+    Checking netrender-vello v0.10.1
+    Checking swarm-discovery v0.6.3
+    Checking genet-scripted-dom v0.1.2 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+    Checking bon v3.10.2
+    Checking eidetic v0.0.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking netrender_device v0.1.2 (https://github.com/merely-made/netrender.git?rev=9607d16f1907f6c2085648ae96abcaa30d7c3d41#9607d16f)
+    Checking genet-host-api v0.2.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+    Checking genet-fontique v0.10.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+    Checking rcgen v0.13.2
+    Checking hpke-rs-rust-crypto v0.7.0
+    Checking iroh-gossip v0.101.0
+    Checking netrender v0.1.2 (https://github.com/merely-made/netrender.git?rev=9607d16f1907f6c2085648ae96abcaa30d7c3d41#9607d16f)
+    Checking ractor v0.16.5
+    Checking iroh-mdns-address-lookup v0.6.0
+    Checking hpke-rs v0.7.0
+    Checking p2panda-sync v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5#1bec457e)
+    Checking p2panda-discovery v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5#1bec457e)
+    Checking tabard v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking gemini-protocol v0.1.7 (https://github.com/merely-made/smolweb.git?rev=882baeb1b59bbdbb305e475f6675f69af997c4f4#882baeb1)
+    Checking parley_data v0.10.0
+    Checking workbench v0.1.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking genet-parley v0.10.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+    Checking scroll-protocol v0.1.0
+    Checking mere-p2panda-net v0.7.5 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5#1bec457e)
+    Checking p2panda-encryption v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5#1bec457e)
+    Checking misfin v0.0.4
+    Checking zstd-sys v2.1.0+zstd.1.5.7
+    Checking genet-text v0.1.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+    Checking mere-proofs v0.1.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking guppy-protocol v0.1.1
+    Checking spartan-protocol v0.1.1
+    Checking gopher-protocol v0.2.0
+    Checking finger-protocol v0.1.1
+    Checking nex-protocol v0.1.1
+    Checking errand v0.4.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking stickleback v0.1.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking zstd-safe v8.0.0
+    Checking scenotime v0.0.4 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking notochord v0.1.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking chirograph v0.0.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking psm v0.1.32
+    Checking zstd v0.14.0
+   Compiling livery v0.0.5 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+    Checking paint_list_render v0.1.2 (https://github.com/merely-made/netrender.git?rev=9607d16f1907f6c2085648ae96abcaa30d7c3d41#9607d16f)
+    Checking mere-alembic v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking wuff v0.2.9
+    Checking brotli v8.0.4
+    Checking scenograph v0.0.4 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking quinn-proto v0.11.18
+    Checking incipit v0.2.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking meristem v0.2.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking compression-codecs v0.4.43
+    Checking pandect v0.1.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking tungstenite v0.29.0
+    Checking quinn v0.11.12
+    Checking scenomise v0.0.4 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking wuff-capi v0.2.0
+    Checking stacker v0.1.25
+    Checking sprigging v0.2.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking cadency v0.0.1 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling fontsan v0.7.0
+    Checking libz-sys v1.1.29
+    Checking mere-surface-api v0.1.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking genet-taffy v0.14.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling download-cef v3.0.0
+    Checking buckram v0.0.3 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+    Checking h3-quinn v0.0.10
+    Checking tokio-tungstenite v0.29.0
+    Checking cambium v0.3.3 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking nematic v0.1.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking async-compression v0.4.48
+    Checking genet-document-resources v0.2.1 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+    Checking armillary v0.1.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking genet-livery v0.0.4 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+    Checking fleece v0.5.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling cef-dll-sys v154.5.0+154.0.34
+    Checking bao-tree v0.16.1
+    Checking netfetcher v0.1.1 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+    Checking iroh-util v0.6.0
+    Checking uxtree v0.0.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking iroh-tickets v1.0.0
+    Checking reflink-copy v0.1.30
+    Checking esp v0.1.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Checking iroh-blobs v0.103.0
+    Checking snow v0.10.0
+error: failed to run custom build command for `cef-dll-sys v154.5.0+154.0.34`
+
+Caused by:
+  process didn't exit successfully: `C:/t/cargo-targets/turnstone\debug\build\cef-dll-sys-7ef613adc1af8a47\build-script-build` (exit code: 1)
+  --- stdout
+  cargo::rerun-if-changed=build.rs
+  cargo::rerun-if-env-changed=FLATPAK
+  cargo::rerun-if-env-changed=NIX_CEF_BINARY
+  cargo::rerun-if-env-changed=CEF_PATH
+  cargo::rerun-if-changed=C:/t/cargo-targets/turnstone\debug\build\cef-dll-sys-fd8dc030389d5b51\out\cef_windows_x86_64
+  cargo::metadata=CEF_DIR=C:/t/cargo-targets/turnstone\debug\build\cef-dll-sys-fd8dc030389d5b51\out\cef_windows_x86_64
+  cargo::rustc-link-search=native=C:/t/cargo-targets/turnstone\debug\build\cef-dll-sys-fd8dc030389d5b51\out\cef_windows_x86_64
+  cargo::metadata=CEF_API_VERSION=15400
+
+  --- stderr
+  Error: Access is denied. (os error 5)
+cargo_mode: Command '['cargo', 'check', '--workspace', '--locked']' returned non-zero exit status 101.

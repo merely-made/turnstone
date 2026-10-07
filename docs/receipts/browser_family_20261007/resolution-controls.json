@@ -1,0 +1,7 @@
+{
+  "failed_manifest_provenance": "Reconstructed after resolution by reversing only the eight tag rows and their matching comment. All other inputs unchanged; not an at-run snapshot.",
+  "failed_manifest_sha256": "9921057ced7ef7a79b2bcb0ae98ee460232e6ac21a3282d9d71163cc1e2d730b",
+  "retry_manifest_sha256": "7ac054835f382c27f75e68abcb6f4195d1691a1f81c19b2061d1f7a9cd17a6dc",
+  "p2panda_075_tag": "6be5a3ef6d5a2a758e547fb9edd6dcce1bb08a22",
+  "p2panda_075_commit": "1bec457efe7df4dd85f657902f7333ce857620d8"
+}

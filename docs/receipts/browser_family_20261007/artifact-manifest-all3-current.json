@@ -1,0 +1,618 @@
+{
+  "recorded_utc": "2026-10-07T09:46:20.036036+00:00",
+  "label": "all3-current",
+  "source_manifest": "docs/receipts/browser_supplier_integration_20261006/source-manifest-all3-current.json",
+  "source_archive": "docs/receipts/browser_family_20261007/source-inputs-all3-current.zip",
+  "features": [
+    "scry",
+    "weld",
+    "servo"
+  ],
+  "exe_sha256": "d9a5d1a30821e15d265b3f4b1cc800fc726566210ce7bb82fbc41f48d462dae2",
+  "explicit_completed_selection": [
+    "docs/receipts/browser_family_20261007/all3-current-lib-tests-accesskit-fix.result.json",
+    "docs/receipts/browser_family_20261007/all3-current-lib-tests-accesskit-fix.stderr.log",
+    "docs/receipts/browser_family_20261007/all3-current-lib-tests-accesskit-fix.stdout.log",
+    "docs/receipts/browser_family_20261007/all3-current-lib-tests-painted-env-fix.result.json",
+    "docs/receipts/browser_family_20261007/all3-current-lib-tests-painted-env-fix.stderr.log",
+    "docs/receipts/browser_family_20261007/all3-current-lib-tests-painted-env-fix.stdout.log",
+    "docs/receipts/browser_family_20261007/all3-current-lib-tests.result.json",
+    "docs/receipts/browser_family_20261007/all3-current-lib-tests.stderr.log",
+    "docs/receipts/browser_family_20261007/all3-current-lib-tests.stdout.log",
+    "docs/receipts/browser_family_20261007/all3-current-native-build.result.json",
+    "docs/receipts/browser_family_20261007/all3-current-native-build.stderr.log",
+    "docs/receipts/browser_family_20261007/all3-current-native-build.stdout.log",
+    "docs/receipts/browser_family_20261007/graft-current-ci.json",
+    "docs/receipts/browser_family_20261007/linux-readiness.json",
+    "docs/receipts/browser_family_20261007/native-build-binding.json",
+    "docs/receipts/browser_family_20261007/native-intl-pixels.json",
+    "docs/receipts/browser_family_20261007/pre-current-Cargo.lock",
+    "docs/receipts/browser_family_20261007/pre-native-inputs.json",
+    "docs/receipts/browser_family_20261007/resolve-current-input-Cargo.toml",
+    "docs/receipts/browser_family_20261007/resolve-current.result.json",
+    "docs/receipts/browser_family_20261007/resolve-current.stderr.log",
+    "docs/receipts/browser_family_20261007/resolve-current.stdout.log",
+    "docs/receipts/browser_family_20261007/resolve-icu-compat-input-Cargo.toml",
+    "docs/receipts/browser_family_20261007/resolve-icu-compat.result.json",
+    "docs/receipts/browser_family_20261007/resolve-icu-compat.stderr.log",
+    "docs/receipts/browser_family_20261007/resolve-icu-compat.stdout.log",
+    "docs/receipts/browser_family_20261007/resolve-icu-input-Cargo.toml",
+    "docs/receipts/browser_family_20261007/resolve-icu-isolated.result.json",
+    "docs/receipts/browser_family_20261007/resolve-icu-isolated.stderr.log",
+    "docs/receipts/browser_family_20261007/resolve-icu-isolated.stdout.log",
+    "docs/receipts/browser_family_20261007/resolve-p2p075-input-Cargo.toml",
+    "docs/receipts/browser_family_20261007/resolve-p2p075.result.json",
+    "docs/receipts/browser_family_20261007/resolve-p2p075.stderr.log",
+    "docs/receipts/browser_family_20261007/resolve-p2p075.stdout.log",
+    "docs/receipts/browser_family_20261007/upstream-freshness-20261007-evidence-manifest.json",
+    "docs/receipts/browser_family_20261007/upstream-freshness-20261007-mozjs-0.26.4-Cargo.toml",
+    "docs/receipts/browser_family_20261007/upstream-freshness-20261007-mozjs-0.26.4-registry.json",
+    "docs/receipts/browser_family_20261007/upstream-freshness-20261007-mozjs-0.26.4-vcs.json",
+    "docs/receipts/browser_family_20261007/upstream-freshness-20261007-mozjs-0.26.7-Cargo.toml",
+    "docs/receipts/browser_family_20261007/upstream-freshness-20261007-mozjs-0.26.7-registry.json",
+    "docs/receipts/browser_family_20261007/upstream-freshness-20261007-mozjs-0.26.7-vcs.json",
+    "docs/receipts/browser_family_20261007/upstream-freshness-20261007-mozjs-0.26.8-Cargo.toml",
+    "docs/receipts/browser_family_20261007/upstream-freshness-20261007-mozjs-0.26.8-registry.json",
+    "docs/receipts/browser_family_20261007/upstream-freshness-20261007-mozjs-0.26.8-vcs.json",
+    "docs/receipts/browser_family_20261007/upstream-freshness-20261007-mozjs-security-Cargo.toml",
+    "docs/receipts/browser_family_20261007/upstream-freshness-20261007-mozjs-security-commit.json",
+    "docs/receipts/browser_family_20261007/upstream-freshness-20261007-mozjs-sys-security-Cargo.toml",
+    "docs/receipts/browser_family_20261007/upstream-freshness-20261007-mozjs_sys-153.4.0-0-registry.json",
+    "docs/receipts/browser_family_20261007/upstream-freshness-20261007-note.md",
+    "docs/receipts/browser_family_20261007/upstream-freshness-20261007-servo-main-Cargo.toml",
+    "docs/receipts/browser_family_20261007/upstream-freshness-20261007-servo-main-commit.json",
+    "docs/receipts/browser_family_20261007/upstream-freshness-20261007-servo-release-Cargo.toml",
+    "docs/receipts/browser_family_20261007/upstream-freshness-20261007-servo-release.json",
+    "docs/receipts/browser_family_20261007/upstream-freshness-20261007-servo-tag.json",
+    "docs/receipts/browser_family_20261007/upstream-freshness-20261007-summary.json",
+    "docs/receipts/browser_family_20261007/icu-source-isolation",
+    "docs/receipts/browser_family_20261007/icu-manifest-compat",
+    "docs/receipts/browser_family_20261007/resolution-controls.json",
+    "docs/receipts/browser_supplier_integration_20261006/native-current-family-intl-intl"
+  ],
+  "native_completion": [
+    {
+      "directory": "docs/receipts/browser_supplier_integration_20261006/native-current-family-intl-intl",
+      "native_exit": 0,
+      "scenario_result": "RESULT ok"
+    }
+  ],
+  "files": [
+    {
+      "path": "docs/receipts/browser_family_20261007/all3-current-lib-tests-accesskit-fix.result.json",
+      "bytes": 450,
+      "sha256": "38e86a07bd23bddabae2dc20041a3670610b8ac69071758fba779bdf4a726075"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/all3-current-lib-tests-accesskit-fix.stderr.log",
+      "bytes": 16146,
+      "sha256": "0d75afda2246d437f312c8ef45b4c147f76612f1903263e44c0075f04b0b59bb"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/all3-current-lib-tests-accesskit-fix.stdout.log",
+      "bytes": 515692,
+      "sha256": "f79e11a9b2db728dfb4b7d4b1e3a25eb148214e978fe3971cc1989d695dc655f"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/all3-current-lib-tests-painted-env-fix.result.json",
+      "bytes": 448,
+      "sha256": "c06898350a8233c08f98a49cb4cd5b593b635dc41ee7a787d5db6067827e05f5"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/all3-current-lib-tests-painted-env-fix.stderr.log",
+      "bytes": 16042,
+      "sha256": "c80abc0829f18c47d7d795ad6f1633bafad49ebab018a3d1f667b438b37acb90"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/all3-current-lib-tests-painted-env-fix.stdout.log",
+      "bytes": 501947,
+      "sha256": "970b2ca0492a6b110a8a3aa2aa5e14b96c8efe950d63b1b9b19e23131f0491c6"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/all3-current-lib-tests.result.json",
+      "bytes": 449,
+      "sha256": "74d371a11ffeb9ea4ecddecd4c0b9099520a28361e7af43b10251ddd4ad5b59f"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/all3-current-lib-tests.stderr.log",
+      "bytes": 47131,
+      "sha256": "ea211232344cd43f55fd9291fbe36530f05ef42476e9921c1f9ca1d46510b772"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/all3-current-lib-tests.stdout.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/all3-current-native-build.result.json",
+      "bytes": 453,
+      "sha256": "c9485e1ac4e97380a4896aab9791a85df9f8a5b16516d5fad47eb9e04c0734d7"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/all3-current-native-build.stderr.log",
+      "bytes": 22602,
+      "sha256": "3eaaf1cf8b931a6a1ccb393f0760d8b6dde926101010645dae7fea5a18c50c37"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/all3-current-native-build.stdout.log",
+      "bytes": 1306567,
+      "sha256": "5ffca5ba21302ff6f420f287414d6ba1123c0c4ee30e2aa378b2a1c2bd507bb5"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/freeze-current.py",
+      "bytes": 6169,
+      "sha256": "1efd977345aebc38e49a0fa5977efa8ba5bc8a29a9ebc54230cc80b9f7af7dc4"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/graft-current-ci.json",
+      "bytes": 14774,
+      "sha256": "bd29f96fc9961d80525d8962adc82bb7aa5109ea7b9cf1fa57e2e137ba7100fa"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/icu-manifest-compat/audit-icu-compat.json",
+      "bytes": 70188,
+      "sha256": "fff9b270edd4f35b5ed3771ce8353789d082f91a192123525781f03c8a573301"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/icu-manifest-compat/audit-icu-compat.md",
+      "bytes": 3026,
+      "sha256": "c1a5c00b6005719e79635022eb046cf0f65a1d4ccaf273de9a283f2a0ffcc6b7"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/icu-manifest-compat/candidate-summary.json",
+      "bytes": 2764,
+      "sha256": "cd92bba66668046eaef842cc3e1e0d8f86b261fbff145ffd08779ee82dbdce3f"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/icu-manifest-compat/evidence-manifest.json",
+      "bytes": 2525,
+      "sha256": "8382c44e52e52795c0dcedf20250a24379aba2d767782959e89770ef02c93484"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/icu-manifest-compat/mozjs-icu-collator-inventory.json",
+      "bytes": 9315,
+      "sha256": "db7c1eb289925e23f48f40693749a8120d2db60b4c26f15d0e72c907b7bdc478"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/icu-manifest-compat/mozjs-icu-collator-manifest.diff",
+      "bytes": 446,
+      "sha256": "11425d05beb2a6201b5db03118b4cdf79218f4d2549137a332227f49e1f405c3"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/icu-manifest-compat/mozjs-icu-collator-official-version.json",
+      "bytes": 1770,
+      "sha256": "864b799176d6673f9677aa0525fab91909d619388a4e7b290efa1fbe5b422689"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/icu-manifest-compat/mozjs-icu-collator-original-Cargo.toml",
+      "bytes": 3752,
+      "sha256": "5f782c09054ec0d893d3edbf3897d9d7da965cfecb6a489ffa3f4618f295baaf"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/icu-manifest-compat/mozjs-icu-normalizer-inventory.json",
+      "bytes": 12889,
+      "sha256": "9f221374487f1757f87bc7799cb5183585e40a1ed4af68fb307c2078e0aaa76b"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/icu-manifest-compat/mozjs-icu-normalizer-manifest.diff",
+      "bytes": 274,
+      "sha256": "3a39e79f0e9a0f286af358d83382a988b29769fe16c2de12566421ea744eb5bb"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/icu-manifest-compat/mozjs-icu-normalizer-official-version.json",
+      "bytes": 1884,
+      "sha256": "ea9c3be408d96c06a0e42419f6dd978fa4ca34db2ccc0da5a3d6cca4d8bd69f0"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/icu-manifest-compat/mozjs-icu-normalizer-original-Cargo.toml",
+      "bytes": 4615,
+      "sha256": "637362090a1dcfe0c43ebce1ad05acf9e0802d70f576a50c5f6276b74d04d156"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/icu-manifest-compat/README.md",
+      "bytes": 3173,
+      "sha256": "a987da14e9e37acc663989cbc7754812a0ce60fa018f1f12451d2b23e7d5d8b8"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/icu-source-isolation/capi-source-identity-index.json",
+      "bytes": 448090,
+      "sha256": "68ca35e5e2cf9fa2476deada69e4b3ed2a95053036f84f60ad16ce543a61a746"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/icu-source-isolation/component-source-identity.json",
+      "bytes": 12731,
+      "sha256": "eccead25c872864159a80696b87e4d7f44351e4d69d4310420a68a5e9e1e4a83"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/icu-source-isolation/evidence-manifest.json",
+      "bytes": 3826,
+      "sha256": "74aac78966a23c2589e1a6e54221fff79826e880323c26fe89ca5354530e372c"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/icu-source-isolation/official-Cargo.toml",
+      "bytes": 14119,
+      "sha256": "4aeb983019af3c24aac36960e3417622756f53910aa9b672404b76dadb84ff4a"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/icu-source-isolation/official-commit.json",
+      "bytes": 6033,
+      "sha256": "54b97537b7348dd85d6178c3753f86e2bb21395c64b67eb2bdcd8c823c8ae904"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/icu-source-isolation/official-components-calendar-Cargo.toml",
+      "bytes": 2319,
+      "sha256": "93770e7fde059818db19ffdc3668cead2f95b4d4645a118b92e2386a586cf734"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/icu-source-isolation/official-components-collections-Cargo.toml",
+      "bytes": 1905,
+      "sha256": "963d26428f923ead6ef52219b65549eabcba96bef3e3dcb67279e6fa9c4cef3d"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/icu-source-isolation/official-components-locale_core-Cargo.toml",
+      "bytes": 1848,
+      "sha256": "9e7ea9f37e569efe3086b0173a771b4635babf86bc64c24250afafc007f1d65e"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/icu-source-isolation/official-components-normalizer-Cargo.toml",
+      "bytes": 2747,
+      "sha256": "1c8a5ef7cda3f66eb283bae506e5750329376558c29be6fefcbe60979d3fea3b"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/icu-source-isolation/official-components-properties-Cargo.toml",
+      "bytes": 1745,
+      "sha256": "7eb2195078fecb119b857ef4fad4d574236ec4d8486138d846f044d7a4d25d63"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/icu-source-isolation/official-components-segmenter-Cargo.toml",
+      "bytes": 2320,
+      "sha256": "ba3978687d0c6289bf2bb2851e7039811bfe7e0c8a2ea02d601434e3b4cb6d8c"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/icu-source-isolation/official-crate-archive-verification.json",
+      "bytes": 464,
+      "sha256": "5e002218b419087bf346d928f46e3d1b8d44c81271ebdf495d3e1ce8f96cf1ec"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/icu-source-isolation/official-crates-capi-version.json",
+      "bytes": 3789,
+      "sha256": "b376e644557c5287992c8d7b9a556f196a1e50e4a0a236082a65fdb586dd16d7"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/icu-source-isolation/official-ffi-capi-Cargo.toml",
+      "bytes": 5603,
+      "sha256": "c53e2f2de3f68a245b55d952715e8872340680d4b393a5cd6145712438cd2bed"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/icu-source-isolation/official-provider-adapters-Cargo.toml",
+      "bytes": 947,
+      "sha256": "360dfff67b056442e9d4cbacb5ac4bb0e1e723605f77843a68a8fa29b0a45c69"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/icu-source-isolation/official-provider-core-Cargo.toml",
+      "bytes": 2871,
+      "sha256": "f7cc7f934ec41bce668d25fc3a9c60ce7968c10132439ec11f40f506037ffc85"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/icu-source-isolation/official-tags.json",
+      "bytes": 34887,
+      "sha256": "855e72b7f6a17f3a9de28c4bf8bb720d16993e5a4391bc826f3aff3e35bb797e"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/icu-source-isolation/README.md",
+      "bytes": 2747,
+      "sha256": "7dd2b72b10ceda82f7cf064e1bd82fe721b10ec6d8aeb31d96b625206620b4a4"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/icu-source-isolation/registry-capi-Cargo.toml",
+      "bytes": 6587,
+      "sha256": "02ae5d39662d8d9e48c3fe9df734070f4d006723fbf0131fc69e3ac959f7c17f"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/icu-source-isolation/registry-capi-Cargo.toml.orig",
+      "bytes": 5603,
+      "sha256": "c53e2f2de3f68a245b55d952715e8872340680d4b393a5cd6145712438cd2bed"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/icu-source-isolation/registry-capi-cargo_vcs_info.json",
+      "bytes": 102,
+      "sha256": "794242934212564c896b3e909b885436177933358c954a8d1914c73c3c0a7bb8"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/icu-source-isolation/workspace-path-family-audit.json",
+      "bytes": 24639,
+      "sha256": "d534a736e657cd51f84153cbfe352befbf580ba40718507b5ff2dd0fd3fb9eca"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/linux-readiness.json",
+      "bytes": 3724,
+      "sha256": "6183e6e2b669c2f8b28f01eb7b33ee7a66050e13bbac700e22cd36a0d2e906bc"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/native-build-binding.json",
+      "bytes": 4028,
+      "sha256": "e14ea18821b80d2f08d0989d4914cb95e385b43afdd40e90006326dfb3fa5414"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/native-intl-pixels.json",
+      "bytes": 1745,
+      "sha256": "9b8e7cf71f546b2ad41b167f20888e980cab8eafeabb4e084e536d86a8fc800d"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/pre-current-Cargo.lock",
+      "bytes": 469026,
+      "sha256": "7cd795f9f961f928b92e3d5c357a2c01533f3dfbb5d137ee3ee3a6f0583163b3"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/pre-native-inputs.json",
+      "bytes": 38062,
+      "sha256": "2fb809d53de0ea4b05e18a223c4746753efbc904379c678e3e02a589fac36725"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/resolution-controls.json",
+      "bytes": 510,
+      "sha256": "401a8e4fddecd8926a6f524d541e04bc4a714a96f0a0a374a06796470655ef21"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/resolve-current-input-Cargo.toml",
+      "bytes": 30912,
+      "sha256": "9921057ced7ef7a79b2bcb0ae98ee460232e6ac21a3282d9d71163cc1e2d730b"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/resolve-current.result.json",
+      "bytes": 444,
+      "sha256": "f32fa12459d4a34145971929a2b2b4f63e8fb50afe5fec9b24b07797273be97c"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/resolve-current.stderr.log",
+      "bytes": 1924,
+      "sha256": "75a8e10b1f40acd2d34438e546619673ec0503db28085d244489174c54e325b3"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/resolve-current.stdout.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/resolve-icu-compat-input-Cargo.toml",
+      "bytes": 31775,
+      "sha256": "1eb3d429190bb9c83da18e594f989b3fab033b6b05c924914b359c9a3194e36e"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/resolve-icu-compat.result.json",
+      "bytes": 443,
+      "sha256": "017208fb9b1bdc7af4110a2c355503a1bde97c7ba35aef969773c6817cfcb978"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/resolve-icu-compat.stderr.log",
+      "bytes": 34531,
+      "sha256": "bb8faeb18879aafd18f923c6696aca74cb5d2328679658900844782b66b54001"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/resolve-icu-compat.stdout.log",
+      "bytes": 6956600,
+      "sha256": "c013155f7bfcf4163ae1b29f686cbc5af00e76197a72eb59497560410a1d58bc"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/resolve-icu-input-Cargo.toml",
+      "bytes": 31354,
+      "sha256": "6e83200d90d79752beef3f27f5ef8e74e579a3ded7e4d64ce5082c1d35fb586c"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/resolve-icu-isolated.result.json",
+      "bytes": 444,
+      "sha256": "a0f2174b421e686a1edab4e9b768fa995130c451f2ac63e6937273f9e93fe906"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/resolve-icu-isolated.stderr.log",
+      "bytes": 3153,
+      "sha256": "ed1470466552defe6fbc0ae7ffc6aa69db5e64b32cd7e561a925db3b1e148fdc"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/resolve-icu-isolated.stdout.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/resolve-p2p075-input-Cargo.toml",
+      "bytes": 30912,
+      "sha256": "7ac054835f382c27f75e68abcb6f4195d1691a1f81c19b2061d1f7a9cd17a6dc"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/resolve-p2p075.result.json",
+      "bytes": 433,
+      "sha256": "09d4b65e7544e0f22f386703f76d329a6c1ef368d2a3aebf378d50dbf0ae8db5"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/resolve-p2p075.stderr.log",
+      "bytes": 2761,
+      "sha256": "81dd6d8db423351ac93b2ba653745426d0cb0359e75723e94b4222e4e564c0bf"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/resolve-p2p075.stdout.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/source-inputs-all3-current.zip",
+      "bytes": 2604088,
+      "sha256": "52a3208027da4df0b7885f1ad4c787986d4abf04da57a868c6f55b3abcf913a9"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/upstream-freshness-20261007-evidence-manifest.json",
+      "bytes": 3777,
+      "sha256": "1e0c82a4f7bc20af3fbee678dfa60f00fd19c4231485421682f7b392ae647c5b"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/upstream-freshness-20261007-mozjs-0.26.4-Cargo.toml",
+      "bytes": 3657,
+      "sha256": "d088bcf64116d753eca43299dccdfdaf7c6d14dba24e0cc1bffb79a67f25c7a0"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/upstream-freshness-20261007-mozjs-0.26.4-registry.json",
+      "bytes": 2136,
+      "sha256": "2a0525750ea4155e642a2719a64855cda537cee6a50b7327c08d58f6216d63cc"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/upstream-freshness-20261007-mozjs-0.26.4-vcs.json",
+      "bytes": 99,
+      "sha256": "4b89858c6e3d4e24e8fa8a821e89a56e052f290d81b84fa35b9a426f7443e421"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/upstream-freshness-20261007-mozjs-0.26.7-Cargo.toml",
+      "bytes": 3657,
+      "sha256": "34df2a7b9c470e500c36d938478c920e7dbd8f245a0e5aa6840575cd322e53ab"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/upstream-freshness-20261007-mozjs-0.26.7-registry.json",
+      "bytes": 2136,
+      "sha256": "b152e5a067be0d2472e0ceab47133015372af84d72099d34861385fe10d4b585"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/upstream-freshness-20261007-mozjs-0.26.7-vcs.json",
+      "bytes": 99,
+      "sha256": "4522a8f6a02075be9ddafd1713c88b98584296934cb155d181f14cad00453ec9"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/upstream-freshness-20261007-mozjs-0.26.8-Cargo.toml",
+      "bytes": 3657,
+      "sha256": "3e04de846dbf52cf685bc3c9f647923e1c7085403ed1194ec27b4b585cb33ea3"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/upstream-freshness-20261007-mozjs-0.26.8-registry.json",
+      "bytes": 2133,
+      "sha256": "d7f1ed4cbe0bf9ca42b73732b62926abc789b12e8099cb506f42cea6afd3523a"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/upstream-freshness-20261007-mozjs-0.26.8-vcs.json",
+      "bytes": 99,
+      "sha256": "fc94f714ce22f21a0c2dde8192d209eed249f2d39dafc380217aab0648c54770"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/upstream-freshness-20261007-mozjs-security-Cargo.toml",
+      "bytes": 1168,
+      "sha256": "23b184e9292207f80d2a751ecfb1b92f10bee78df1735fd573776806dc38c901"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/upstream-freshness-20261007-mozjs-security-commit.json",
+      "bytes": 10999,
+      "sha256": "94f0c26ab113d6cff8c7feff9a3719bc98d59b3d8167e65e63ee2de5801c3793"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/upstream-freshness-20261007-mozjs-sys-security-Cargo.toml",
+      "bytes": 2182,
+      "sha256": "928bcf3e5b853b636b4a932af14c0c7a475d9bbd450440c3d50fcf7db07b5b13"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/upstream-freshness-20261007-mozjs_sys-153.4.0-0-registry.json",
+      "bytes": 4892,
+      "sha256": "ace3fbbb973426e399ef2024cc60e3dd469f2cb00c59cfd563aa0deffaf22d10"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/upstream-freshness-20261007-note.md",
+      "bytes": 3186,
+      "sha256": "a8b93fc9c63f514bbdcc1ef4428c8a4080fdfc56537a548a0689972df0d5adf3"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/upstream-freshness-20261007-servo-main-Cargo.toml",
+      "bytes": 20997,
+      "sha256": "707f32a3a83c6864289d3e5aeafbd95e7f2540c86ba4a7e821c88201256a8d2c"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/upstream-freshness-20261007-servo-main-commit.json",
+      "bytes": 3155,
+      "sha256": "5644d188093aee7a48abf77ab0621fd9f63f9d207c448dbc85128887e5f9c256"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/upstream-freshness-20261007-servo-release-Cargo.toml",
+      "bytes": 20382,
+      "sha256": "92426b024b77f71eff879a164c3850309bf2fd1a6dcdc8e5ea7c2d1833540862"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/upstream-freshness-20261007-servo-release.json",
+      "bytes": 356,
+      "sha256": "fd243e87cc0fbe7da4f7978d8a0a55c6abb7f21efd968eab261712673a1641ad"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/upstream-freshness-20261007-servo-tag.json",
+      "bytes": 366,
+      "sha256": "8466b65c3561627e970ecdfcfe2ca9da1276cf03dd14e4d1259deff710d1bbba"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/upstream-freshness-20261007-summary.json",
+      "bytes": 9198,
+      "sha256": "818dcd492705e5a0387602b449bb68f3fdc3c3d24748815321114dc3bb75f56b"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-family-intl-intl/01_native_intl_bridge.png",
+      "bytes": 68222,
+      "sha256": "e97bf0d9f91f8ac23360a3b3b85b6827997ab7f6edfb2de74a23c431bafc8966"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-family-intl-intl/diagnostics.json",
+      "bytes": 11117,
+      "sha256": "60613b938f59ed507eecc2169f7fbea06f60d77900114d34c56254afd535eb9a"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-family-intl-intl/intl-servo-closed.surface-frames.json",
+      "bytes": 124,
+      "sha256": "1bed58cd98da508010f079af827425c0aef7090b11188293058190b994965ac6"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-family-intl-intl/intl-servo-closed.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-family-intl-intl/intl-servo-live.surface-frames.json",
+      "bytes": 313,
+      "sha256": "85c30d664c9fb67a1371d4cf621042d3d18b235a0f86637d04a490de273802ec"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-family-intl-intl/intl-servo-live.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-family-intl-intl/loaded-modules.json",
+      "bytes": 5835,
+      "sha256": "bc76080d9de3173cb2c0960d061b7870216687fad186d2487d603f8e378ce94f"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-family-intl-intl/process-result.json",
+      "bytes": 1365,
+      "sha256": "7d156c132cbcc46d644090442b9bf8e4c9482be76a0ad2dcc31e65aa22c8fdc0"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-family-intl-intl/run.log",
+      "bytes": 7639,
+      "sha256": "7c635761bad4459a85c5e4ce25f68ccc6428e5a3e75c7e628613690b5f697699"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-family-intl-intl/run.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-family-intl-intl/run.stdout.log",
+      "bytes": 7608,
+      "sha256": "faa1d0c41cbe3064f5ef7a812ad41342f9a8adc65091027441d6c21e5f211f13"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-family-intl-intl/scenario.done",
+      "bytes": 137,
+      "sha256": "8c2a85de05726edd732c2fa6561374b860cc2bf019e4c927acc996e4d3f744e4"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/source-manifest-all3-current.json",
+      "bytes": 430218,
+      "sha256": "8577851e707c997a86fc3efef71dda4e87f83cd0101e1d2a3e91b565d2cd79b6"
+    }
+  ],
+  "limits": [
+    "Profiles excluded",
+    "Native sentinel does not prove pixels or accessibility",
+    "Failed controls may be retained; their actual result determines scope",
+    "Verification of archived inputs does not qualify later source or executables"
+  ]
+}

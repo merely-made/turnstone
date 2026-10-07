@@ -196,7 +196,13 @@ enum SandboxPreference {
 }
 
 fn requested_sandbox_preference() -> Result<Option<SandboxPreference>, String> {
-    match std::env::var("TURNSTONE_WELD_SANDBOX") {
+    parse_sandbox_preference(std::env::var("TURNSTONE_WELD_SANDBOX"))
+}
+
+fn parse_sandbox_preference(
+    value: Result<String, std::env::VarError>,
+) -> Result<Option<SandboxPreference>, String> {
+    match value {
         Ok(value) => match value.as_str() {
             "sandboxed" => Ok(Some(SandboxPreference::Sandboxed)),
             "unsandboxed" => Ok(Some(SandboxPreference::Unsandboxed)),
@@ -217,26 +223,39 @@ mod sandbox_preference_tests {
 
     #[test]
     fn unset_is_no_preference() {
-        // SAFETY: test-only env mutation; this crate's test binary does not
-        // run these tests concurrently with anything else reading this var.
-        unsafe {
-            std::env::remove_var("TURNSTONE_WELD_SANDBOX");
-        }
-        assert!(matches!(requested_sandbox_preference(), Ok(None)));
+        assert!(matches!(
+            parse_sandbox_preference(Err(std::env::VarError::NotPresent)),
+            Ok(None)
+        ));
+    }
+
+    #[test]
+    fn explicit_modes_preserve_the_requested_sandbox_preference() {
+        assert!(matches!(
+            parse_sandbox_preference(Ok("sandboxed".into())),
+            Ok(Some(SandboxPreference::Sandboxed))
+        ));
+        assert!(matches!(
+            parse_sandbox_preference(Ok("unsandboxed".into())),
+            Ok(Some(SandboxPreference::Unsandboxed))
+        ));
     }
 
     #[test]
     fn unrecognized_value_is_a_clear_error_not_a_silent_default() {
-        // SAFETY: see `unset_is_no_preference`.
-        unsafe {
-            std::env::set_var("TURNSTONE_WELD_SANDBOX", "yolo");
-        }
-        let error = requested_sandbox_preference().unwrap_err();
+        let error = parse_sandbox_preference(Ok("yolo".into())).unwrap_err();
         assert!(error.contains("TURNSTONE_WELD_SANDBOX"));
-        // SAFETY: see `unset_is_no_preference`.
-        unsafe {
-            std::env::remove_var("TURNSTONE_WELD_SANDBOX");
-        }
+        assert!(error.contains("yolo"));
+    }
+
+    #[test]
+    fn non_unicode_value_is_an_explicit_error() {
+        use std::os::windows::ffi::OsStringExt;
+        let invalid = std::ffi::OsString::from_wide(&[0xD800]);
+        assert!(invalid.to_str().is_none());
+        let error = parse_sandbox_preference(Err(std::env::VarError::NotUnicode(invalid)))
+            .unwrap_err();
+        assert_eq!(error, "TURNSTONE_WELD_SANDBOX is not valid UTF-8");
     }
 }
 
@@ -244,7 +263,7 @@ struct TurnstoneWeldSurface {
     inner: weld_engine::WeldingSurface,
 }
 
-const WELD_DEVTOOLS_UNAVAILABLE: &str = "CEF 151 native DevTools windows are unsafe for accelerated off-screen browsers; Weld refuses them, and Turnstone has not exposed the separate CDP channel";
+const WELD_DEVTOOLS_UNAVAILABLE: &str = "CEF native DevTools windows are unsafe for accelerated off-screen browsers; Weld refuses them, and Turnstone has not exposed the separate CDP channel";
 
 impl WeldSurface for TurnstoneWeldSurface {
     fn resize(&mut self, width: u32, height: u32) -> Result<(), SurfaceError> {
@@ -401,7 +420,7 @@ fn host_capabilities(mut capabilities: WebSurfaceCapabilities) -> WebSurfaceCapa
         detail: "page drags are observable; Turnstone has no native winit drag loop".into(),
     };
     capabilities.auth = WebFeatureStatus::Partial {
-        detail: "answers are wired; CEF 151 did not emit a top-level authentication challenge, and proxy authentication is untested".into(),
+        detail: "answers are wired; native top-level and proxy authentication challenge delivery remain unqualified for the current CEF runtime".into(),
     };
     capabilities.degradation_reasons.push(
         "popups, downloads, native drag loops and correlated snapshots await product controls"

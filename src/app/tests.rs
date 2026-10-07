@@ -9,6 +9,45 @@
 
 use super::*;
 
+#[test]
+fn session_restore_applies_law_before_overlays_and_records_refusal() {
+    let dir = tempfile::tempdir().unwrap();
+    let mut app = App::test_stub();
+    app.data_root = dir.path().to_path_buf();
+    let session_id = app.session_id;
+    let session_dir = session::session_dir(dir.path(), session_id);
+    let mut intent = session::ViewIntentV1 {
+        physics_law: Some(mere::canvas::PhysicsLaw::Density.id().to_string()),
+        physics_overlays: vec![mere::canvas::PhysicsOverlay::GridSnap.id().to_string()],
+        ..Default::default()
+    };
+    session::save_view_intent(&session_dir, &intent);
+    app.adopt_session(session_id);
+    assert_eq!(
+        app.graph_runtimes.physics_law(),
+        mere::canvas::PhysicsLaw::Density
+    );
+    assert!(app.graph_runtimes.physics_overlays().is_empty());
+    assert_eq!(
+        app.physics_refusal().unwrap().refused,
+        vec![mere::canvas::PhysicsOverlay::GridSnap]
+    );
+    assert!(
+        app.take_events()
+            .iter()
+            .any(|event| matches!(event, AppEvent::PhysicsRefused(_)))
+    );
+
+    intent.physics_law = Some(mere::canvas::PhysicsLaw::Springs.id().to_string());
+    session::save_view_intent(&session_dir, &intent);
+    app.adopt_session(session_id);
+    assert_eq!(
+        app.graph_runtimes.physics_overlays(),
+        &[mere::canvas::PhysicsOverlay::GridSnap]
+    );
+    assert!(app.physics_refusal().is_none());
+}
+
 #[cfg(any(feature = "piccolo", feature = "wasm"))]
 fn participant_author(resident: &crate::denizen::Resident) -> mere::kernel::graph::Author {
     mere::kernel::graph::Author::script(

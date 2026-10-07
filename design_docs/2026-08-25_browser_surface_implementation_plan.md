@@ -24,6 +24,40 @@ remains useful as research and acceptance evidence.
 
 ## Authority and order
 
+### Current upstream and coordinated repin, 2026-10-07
+
+**Status:** in progress, explicitly authorized after the U14 checkpoint.
+The user requests current Servo and CEF first, then the coordinated repin,
+with its previous assumptions rechecked against published source.
+
+1. Graft updates its Servo adapter and demonstrations to upstream Servo 0.7
+   (`aac43a3f`), with its Surfman/ANGLE/ipc type family. Weld updates to CEF
+   `154.5.0+154.0.34`, published October 7, and the matching native SDK.
+   This supersedes the earlier October 3 currency snapshot. Qualify source checks and
+   actual imported-frame/native behavior before consumer adoption.
+2. Turnstone adopts the published supplier revisions and coherent runtime
+   dependencies. Run its locked three-engine build, relevant browser tests,
+   and native pixel/input/resize/reopen/teardown controls on the new executable.
+3. Refresh Mere/Genet, Knot's S77 preview handling and source rows, and standalone/nested
+   Redshank. Integrate required shared fixes into a published main revision;
+   use one tested Mere/Genet family in Knot, Redshank and Turnstone, in that
+   order. Preserve concurrent primary-checkout work.
+
+The separate identity session's seed/vault repair is not yet a published
+baseline. This repin carries the required preview compatibility change and
+does not infer that the seed repair has landed. The old compatibility Mere
+branch contains only an older Genet pin beyond current main; current main
+already carries the shared Weld input and ordered Graft contracts. Adopt
+those current contracts rather than replaying the old source wholesale.
+
+Done when the selected upstream engines and native SDK identities are recorded,
+the combined consumer and pixel checks qualify their exact source, each direct
+and nested sibling uses the coherent published family, and S0's locked suite,
+typed refusal/version checks, cargo-mode verification and pin documentation
+pass. The previous qualified captures remain evidence for their old binaries.
+Foreign accessibility and physical three-platform assistive-technology gates
+remain separate. An upgrade alone does not certify the intermittent reopen fix.
+
 ### Windows Scry B1 qualification, 2026-10-06
 
 The October [user-agent taxonomy](2026-08-03_user_agent_taxonomy_plan.md) owns
@@ -105,9 +139,9 @@ claim the newer coordinated tested set or application release acceptance.
 
 The dated [dependency currency snapshot](../docs/receipts/browser_supplier_integration_20261006/dependency-currency/README.md)
 records Servo 0.7.0 released October 5 and CEF 154 bindings released October 3.
-The current Servo pin `1d44e5dd` belongs to the August 15 0.5 release branch;
+That checkpoint's Servo pin `1d44e5dd` belongs to the August 15 0.5 release branch;
 its later migration changes Surfman, mozangle and ipc-channel, including types
-exposed by Graft's adapter. Turnstone currently selects CEF
+exposed by Graft's adapter. That checkpoint selects CEF
 `151.8.1+151.3.24`. Both upgrades need explicit adapter/SDK and native
 qualification. Servo 0.7 retains the same fontsan decoder edge, so a repin
 alone does not resolve the failed build. The selected wgpu 30.0.1 line is
@@ -133,22 +167,24 @@ actions. Idle semantic publication, focus handoff, bounds and stale-generation
 rejection are part of this slice. The later published Mere composition brief
 records AC1–AC5 and the shared helper/E1 assignment to the unusual-protocols
 lane (U15); its smolweb plan records that lane's U16 ownership of Smolweb and
-Micron accessibility projections. Published Turnstone `032463a` has not yet
-received those records. This browser lane consumes that helper and supplies
-foreign browser semantics/actions; AC6 cross-process transport remains research.
+Micron accessibility projections. Published Turnstone `aafa78d` now records
+those assignments and the E1b bridge probe. That lane owns shared helper
+qualification. This browser lane supplies foreign browser semantics/actions;
+AC6 cross-process transport remains research.
 
-The selected Servo 0.5 API exposes a read-only tree exporter without the public
-typed content-action bridge found in Servo 0.7's
+The previous Servo 0.5 API exposed a read-only tree exporter. The October 7
+repin selects Servo 0.7's public typed content-action bridge,
 [`Servo::forward_accessibility_action`](https://github.com/servo/servo/blob/aac43a3f31a259f04a574f5ec4e959c943ad7cc7/components/servo/servo.rs#L1120-L1131).
-That release difference makes a coherent Servo/Graft migration a priority
-under U2. Its traced DOM handler implements only Click; Focus, text/value,
+The new source API is a prerequisite under U2. Its traced DOM handler
+implements only Click; Focus, text/value,
 selection and scrolling remain missing. Adapter types and native assistive
 behavior still need qualification. Its producer chain also initializes empty
 AccessKit action masks and never advertises Click or child actions, so the
 public forwarding method alone does not expose native invocability. Action
 advertisement and delivery need separate checks. CEF callback export and Scry's WebView2/WKWebView/WebKit
 bridges remain owner-specific work; their current consumer capabilities stay
-Unsupported. No automatic dependency repin is implied.
+Unsupported. The explicitly authorized upstream repin does not close these
+accessibility admission and action gates.
 
 Done-conditions include a portable joined-tree/action check with deliberate
 identity and lifecycle refusal controls, followed by real joined-tree walks
@@ -161,9 +197,40 @@ supplier package gates remain separate.
 
 The [October 7 remote checkpoint](../docs/receipts/browser_supplier_integration_20261006/current-stack-reconciliation/README.md)
 confirms R6 and the shared helper/E1a on published Mere `a59e4c47`. The WS4
-publication prerequisite is satisfied. Mere's selected Genet still lacks the
-published decoder repair; Knot main and nested Redshank retain older Mere
-pins. Matching pins and exact-source qualification remain the final U9 gate.
+publication prerequisite is satisfied. The subsequent Mere prerequisite
+`57b4893d` selects Genet `965b64e2`, including its published decoder repair,
+and Weld `c4dd593b` with CEF 154.5.0/SDK 154.0.34. Its neutral all-targets
+check and seven adapter tests pass. Scry origin `2c3ebd24` includes the
+macOS pending-frame retention fix and Linux WPE main-thread refusal; the
+refreshed Turnstone family selects that published source. Those changes do
+not establish macOS capture or Linux headed acceptance. Knot `0096591a` and
+nested Redshank `82271df2` are now published in U9 order, with their Windows
+and Redshank wasm qualification. Graft `7907ff29` qualifies current Servo
+`aac43a3f` through eleven Windows typed rows and a native GPU pixel/click/resize
+smoke. Subsequent opt-in resize and resource-descriptor diagnostics are published
+as `bb48281b`; Turnstone selects that source with the same Servo revision and
+default synchronization policy.
+The final consumer resolution also requires Mere's p2panda 0.7.5 patch set and
+has exposed a separate ICU compatibility conflict: Servo's CAPI requires
+~2.1 while Genet's calendar/layout family intentionally requires ^2.2.
+The official CAPI 2.1.2 Git release source and two vendored Mozilla private ICU
+packages resolve the conflict. Only three production manifest ranges change;
+Rust/data/license bytes are preserved. The combined locked build and initial
+library suite pass (679 passed, zero failed, nine ignored), and all seven normal
+page-native Intl/normalization probes pass. The sequential cargo-mode verification
+and Linux pre-repin all-targets baseline pass. Final clean-source S0 gates remain
+in progress.
+
+The [current-family receipt](../docs/receipts/browser_family_20261007/README.md)
+preserves resize failures despite successful scenario/title/teardown assertions.
+Actual Surfman resize and imported texture extents reach 509 pixels, while the
+painted page can remain at its old 252-pixel width. On the same executable,
+normalization-only completion fails both Intl and viewport pixels; both-waits
+passes both. Existing and producer-only passes have additional frame handoffs,
+so these controls do not establish producer-only sufficiency. Producer readiness,
+source reuse, resource-state handback and resource/fence lifetime are explicit
+Graft release gates. Diagnostic positives do not qualify default B3 correctness.
+Matching pins and exact-source qualification remain the final U9 gate.
 Windowless E1a checks do not qualify E1b human walks or foreign-browser actions.
 
 ### Terminology amendment, 2026-09-20

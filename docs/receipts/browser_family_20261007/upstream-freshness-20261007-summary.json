@@ -1,0 +1,245 @@
+{
+  "observed_at_utc": "2026-10-07T09:19:06.523827+00:00",
+  "scope": "Read-only official upstream freshness audit. Selected release remains AAC. No Cargo/source change or build.",
+  "selected_servo": {
+    "version": "0.7.0",
+    "sha": "aac43a3f31a259f04a574f5ec4e959c943ad7cc7",
+    "published_at": "2026-10-05T18:32:02Z",
+    "mozjs": "0.26.4",
+    "mozjs_sys": "153.3.0-1"
+  },
+  "observed_servo_main": {
+    "sha": "3058b7ab31a81958260dbce31abae4aad77fd03d",
+    "committer_date": "2026-10-07T08:26:22Z",
+    "mozjs": "0.26.7",
+    "mozjs_sys": "153.3.0-3"
+  },
+  "published_mozjs_security": {
+    "sha": "34ad101f42bafbb197cb27b4b0d343469f7799e7",
+    "committer_date": "2026-10-07T05:52:48Z",
+    "message": "Security bump SpiderMonkey to 153.4.0 (#829)\n\nBump SpiderMonkey to 153.4.0 (changeset:\n[ec9c1cc8a5cb6fac9d4d17e4f141fb42a8089b4c](https://github.com/servo/mozjs/releases/mozjs-source-ec9c1cc8a5cb6fac9d4d17e4f141fb42a8089b4c))\n\nClose and reopen this PR to trigger CI.\n\n---------\n\nSigned-off-by: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>\nCo-authored-by: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>",
+    "mozjs": "0.26.8",
+    "mozjs_sys": "153.4.0-0"
+  },
+  "manifest_rows": {
+    "servo-release": {
+      "url": "https://raw.githubusercontent.com/servo/servo/aac43a3f31a259f04a574f5ec4e959c943ad7cc7/Cargo.toml",
+      "sha256": "92426b024b77f71eff879a164c3850309bf2fd1a6dcdc8e5ea7c2d1833540862",
+      "js": {
+        "package": "mozjs",
+        "version": "=0.26.4",
+        "default-features": false,
+        "features": [
+          "intl",
+          "libz-sys"
+        ]
+      }
+    },
+    "servo-main": {
+      "url": "https://raw.githubusercontent.com/servo/servo/3058b7ab31a81958260dbce31abae4aad77fd03d/Cargo.toml",
+      "sha256": "707f32a3a83c6864289d3e5aeafbd95e7f2540c86ba4a7e821c88201256a8d2c",
+      "js": {
+        "package": "mozjs",
+        "version": "=0.26.7",
+        "default-features": false,
+        "features": [
+          "intl",
+          "libz-sys"
+        ]
+      }
+    },
+    "mozjs-security": {
+      "url": "https://raw.githubusercontent.com/servo/mozjs/34ad101f42bafbb197cb27b4b0d343469f7799e7/mozjs/Cargo.toml",
+      "sha256": "23b184e9292207f80d2a751ecfb1b92f10bee78df1735fd573776806dc38c901",
+      "mozjs_sys": {
+        "version": "=153.4.0-0",
+        "path": "../mozjs-sys"
+      }
+    },
+    "mozjs-sys-security": {
+      "url": "https://raw.githubusercontent.com/servo/mozjs/34ad101f42bafbb197cb27b4b0d343469f7799e7/mozjs-sys/Cargo.toml",
+      "sha256": "928bcf3e5b853b636b4a932af14c0c7a475d9bbd450440c3d50fcf7db07b5b13",
+      "icu_capi": {
+        "version": "=2.1.2",
+        "default-features": false,
+        "features": [
+          "any_provider",
+          "compiled_data",
+          "segmenter",
+          "calendar"
+        ],
+        "optional": true
+      }
+    }
+  },
+  "versions": {
+    "mozjs-0.26.4": {
+      "metadata_url": "https://crates.io/api/v1/crates/mozjs/0.26.4",
+      "crate": "mozjs",
+      "num": "0.26.4",
+      "created_at": "2026-09-25T21:30:44.329610Z",
+      "updated_at": "2026-09-25T21:30:44.329610Z",
+      "checksum": "1f01469a5a27ea686861fdf9137ed5c8516c2eb2bc7a44b434d13d24464206e6",
+      "yanked": false,
+      "dl_path": "/api/v1/crates/mozjs/0.26.4/download",
+      "archive_sha256_verified": true,
+      "mozjs_sys": {
+        "version": "=153.3.0-1"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "98832ad671bfbc091938dad48eccf8f10cb1c9f1"
+        },
+        "path_in_vcs": "mozjs"
+      }
+    },
+    "mozjs-0.26.7": {
+      "metadata_url": "https://crates.io/api/v1/crates/mozjs/0.26.7",
+      "crate": "mozjs",
+      "num": "0.26.7",
+      "created_at": "2026-10-02T07:25:35.151752Z",
+      "updated_at": "2026-10-02T07:25:35.151752Z",
+      "checksum": "3094c4ce633d65619a09165a480e3a14f70fc51347903422a5e10c0fcbf14dea",
+      "yanked": false,
+      "dl_path": "/api/v1/crates/mozjs/0.26.7/download",
+      "archive_sha256_verified": true,
+      "mozjs_sys": {
+        "version": "=153.3.0-3"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "c2429cbe955a58e53d64a66f4b066431f5e4a2ea"
+        },
+        "path_in_vcs": "mozjs"
+      }
+    },
+    "mozjs-0.26.8": {
+      "metadata_url": "https://crates.io/api/v1/crates/mozjs/0.26.8",
+      "crate": "mozjs",
+      "num": "0.26.8",
+      "created_at": "2026-10-07T07:09:35.375195Z",
+      "updated_at": "2026-10-07T07:09:35.375195Z",
+      "checksum": "66667634d9785f168db7d40f93f4c743e6b5308921a5c07fe922ee57264e09d3",
+      "yanked": false,
+      "dl_path": "/api/v1/crates/mozjs/0.26.8/download",
+      "archive_sha256_verified": true,
+      "mozjs_sys": {
+        "version": "=153.4.0-0"
+      },
+      "vcs": {
+        "git": {
+          "sha1": "34ad101f42bafbb197cb27b4b0d343469f7799e7"
+        },
+        "path_in_vcs": "mozjs"
+      }
+    },
+    "mozjs_sys-153.4.0-0": {
+      "metadata_url": "https://crates.io/api/v1/crates/mozjs_sys/153.4.0-0",
+      "crate": "mozjs_sys",
+      "num": "153.4.0-0",
+      "created_at": "2026-10-07T07:08:59.853147Z",
+      "updated_at": "2026-10-07T07:08:59.853147Z",
+      "checksum": "5b2910cc17088e786c22578920c795bd7378eea8bea75f7af5e76fbd5bf6dcd6",
+      "yanked": false,
+      "dl_path": "/api/v1/crates/mozjs_sys/153.4.0-0/download"
+    }
+  },
+  "cautions": [
+    "Latest stable Servo and current Servo main are distinct from the newer published mozjs security packages.",
+    "The security commit includes engine and private ICU source changes; it is not a manifest-only substitute.",
+    "No security severity/CVE assessment or compatibility/runtime qualification for 153.4 is claimed.",
+    "This audit does not update the selected immutable Servo release or qualify the vendored ICU compatibility candidate."
+  ],
+  "artifacts": [
+    {
+      "path": "upstream-freshness-20261007-servo-release.json",
+      "bytes": 356,
+      "sha256": "fd243e87cc0fbe7da4f7978d8a0a55c6abb7f21efd968eab261712673a1641ad"
+    },
+    {
+      "path": "upstream-freshness-20261007-servo-tag.json",
+      "bytes": 366,
+      "sha256": "8466b65c3561627e970ecdfcfe2ca9da1276cf03dd14e4d1259deff710d1bbba"
+    },
+    {
+      "path": "upstream-freshness-20261007-servo-main-commit.json",
+      "bytes": 3155,
+      "sha256": "5644d188093aee7a48abf77ab0621fd9f63f9d207c448dbc85128887e5f9c256"
+    },
+    {
+      "path": "upstream-freshness-20261007-mozjs-security-commit.json",
+      "bytes": 10999,
+      "sha256": "94f0c26ab113d6cff8c7feff9a3719bc98d59b3d8167e65e63ee2de5801c3793"
+    },
+    {
+      "path": "upstream-freshness-20261007-servo-release-Cargo.toml",
+      "bytes": 20382,
+      "sha256": "92426b024b77f71eff879a164c3850309bf2fd1a6dcdc8e5ea7c2d1833540862"
+    },
+    {
+      "path": "upstream-freshness-20261007-servo-main-Cargo.toml",
+      "bytes": 20997,
+      "sha256": "707f32a3a83c6864289d3e5aeafbd95e7f2540c86ba4a7e821c88201256a8d2c"
+    },
+    {
+      "path": "upstream-freshness-20261007-mozjs-security-Cargo.toml",
+      "bytes": 1168,
+      "sha256": "23b184e9292207f80d2a751ecfb1b92f10bee78df1735fd573776806dc38c901"
+    },
+    {
+      "path": "upstream-freshness-20261007-mozjs-sys-security-Cargo.toml",
+      "bytes": 2182,
+      "sha256": "928bcf3e5b853b636b4a932af14c0c7a475d9bbd450440c3d50fcf7db07b5b13"
+    },
+    {
+      "path": "upstream-freshness-20261007-mozjs-0.26.4-registry.json",
+      "bytes": 2136,
+      "sha256": "2a0525750ea4155e642a2719a64855cda537cee6a50b7327c08d58f6216d63cc"
+    },
+    {
+      "path": "upstream-freshness-20261007-mozjs-0.26.4-Cargo.toml",
+      "bytes": 3657,
+      "sha256": "d088bcf64116d753eca43299dccdfdaf7c6d14dba24e0cc1bffb79a67f25c7a0"
+    },
+    {
+      "path": "upstream-freshness-20261007-mozjs-0.26.4-vcs.json",
+      "bytes": 99,
+      "sha256": "4b89858c6e3d4e24e8fa8a821e89a56e052f290d81b84fa35b9a426f7443e421"
+    },
+    {
+      "path": "upstream-freshness-20261007-mozjs-0.26.7-registry.json",
+      "bytes": 2136,
+      "sha256": "b152e5a067be0d2472e0ceab47133015372af84d72099d34861385fe10d4b585"
+    },
+    {
+      "path": "upstream-freshness-20261007-mozjs-0.26.7-Cargo.toml",
+      "bytes": 3657,
+      "sha256": "34df2a7b9c470e500c36d938478c920e7dbd8f245a0e5aa6840575cd322e53ab"
+    },
+    {
+      "path": "upstream-freshness-20261007-mozjs-0.26.7-vcs.json",
+      "bytes": 99,
+      "sha256": "4522a8f6a02075be9ddafd1713c88b98584296934cb155d181f14cad00453ec9"
+    },
+    {
+      "path": "upstream-freshness-20261007-mozjs-0.26.8-registry.json",
+      "bytes": 2133,
+      "sha256": "d7f1ed4cbe0bf9ca42b73732b62926abc789b12e8099cb506f42cea6afd3523a"
+    },
+    {
+      "path": "upstream-freshness-20261007-mozjs-0.26.8-Cargo.toml",
+      "bytes": 3657,
+      "sha256": "3e04de846dbf52cf685bc3c9f647923e1c7085403ed1194ec27b4b585cb33ea3"
+    },
+    {
+      "path": "upstream-freshness-20261007-mozjs-0.26.8-vcs.json",
+      "bytes": 99,
+      "sha256": "fc94f714ce22f21a0c2dde8192d209eed249f2d39dafc380217aab0648c54770"
+    },
+    {
+      "path": "upstream-freshness-20261007-mozjs_sys-153.4.0-0-registry.json",
+      "bytes": 4892,
+      "sha256": "ace3fbbb973426e399ef2024cc60e3dd469f2cb00c59cfd563aa0deffaf22d10"
+    }
+  ]
+}

@@ -1,0 +1,3 @@
+RESULT ok
+captured 01_native_intl_bridge
+Native Servo ICU bridge: normalization, ISO calendar date, word segmentation, numeric collation

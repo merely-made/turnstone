@@ -1,0 +1,36 @@
+{
+  "command": [
+    "nice",
+    "-n",
+    "10",
+    "cargo",
+    "+1.98.1",
+    "check",
+    "--workspace",
+    "--all-targets",
+    "--locked",
+    "-j1"
+  ],
+  "cwd": "/home/markik/Code/repos/turnstone",
+  "environment": {
+    "CARGO_TARGET_DIR": "/home/markik/Code/target",
+    "CARGO_BUILD_JOBS": "1"
+  },
+  "source_sha": "aafa78df71170c83df9838c6fc207117bedc45ec",
+  "started_utc": "2026-10-07T10:09:02.528561+00:00",
+  "scope": "Pre-repin baseline default Linux workspace all-targets check, not browser native or AT proof.",
+  "actual_exit_code": 0,
+  "owned_pid": 201937,
+  "finished_utc": "2026-10-07T10:18:53.582732+00:00",
+  "elapsed_seconds": 591.054,
+  "final_source_sha": "aafa78df71170c83df9838c6fc207117bedc45ec",
+  "tracked_diff_after": [],
+  "input_hash_changes": [],
+  "output_hashes": {
+    "linux-baseline-inputs.json": "c96262541be8c5da92dc5c82529c4c84e9d1ae89aa678e1473c4d751ccbfcbcb",
+    "linux-baseline-Cargo.toml": "83f0e351c4d0300e3b3f5a424b613526ac9f63ea855508761787d8d279de5452",
+    "linux-baseline-Cargo.lock": "7cd795f9f961f928b92e3d5c357a2c01533f3dfbb5d137ee3ee3a6f0583163b3",
+    "linux-baseline.stdout.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "linux-baseline.stderr.log": "6298b46dee70fbcf0beae157331067f4073fae6368b4d92acd8009ff61e79a93"
+  }
+}

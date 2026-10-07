@@ -1,0 +1,285 @@
+{
+  "official_revision": "30120d6a07fc5bb03a6c7647077bd2658b2559de",
+  "results": [
+    {
+      "crate": "icu_normalizer-2.1.1",
+      "published_vcs_info": {
+        "git": {
+          "sha1": "38a49da495248dd1ded84cf306e4ca42e64d5bb3"
+        },
+        "path_in_vcs": "components/normalizer"
+      },
+      "matched_files": 5,
+      "mismatches": [],
+      "scope": "src and original manifest; generated data and all other workspace utilities are not covered by this comparison",
+      "files": [
+        {
+          "crate_path": "Cargo.toml.orig",
+          "official_path": "components/normalizer/Cargo.toml",
+          "sha256": "1c8a5ef7cda3f66eb283bae506e5750329376558c29be6fefcbe60979d3fea3b",
+          "git_blob_sha1": "e41f5662eebd0f5326e29de64ca9dfb57bda6c08",
+          "byte_identical": true
+        },
+        {
+          "crate_path": "src/lib.rs",
+          "official_path": "components/normalizer/src/lib.rs",
+          "sha256": "46ea272d5821a752e29f6622b23b5549bf1b008775a0eb6c38bebdbe9c6191eb",
+          "git_blob_sha1": "eb921a35f8b416c40b7a09ea0de88af634300dd0",
+          "byte_identical": true
+        },
+        {
+          "crate_path": "src/properties.rs",
+          "official_path": "components/normalizer/src/properties.rs",
+          "sha256": "d4dcba8900c68ee08db4b00695edfbf83a7e325fb7f970bb96c40ff26afc3d80",
+          "git_blob_sha1": "a36a743fc5c42676252d428a9dd8909d394a2d36",
+          "byte_identical": true
+        },
+        {
+          "crate_path": "src/provider.rs",
+          "official_path": "components/normalizer/src/provider.rs",
+          "sha256": "5850afc7ae842c7af74ce029be256944c64f5d0b51d95725a8366f5af22163e9",
+          "git_blob_sha1": "9502f0164aa0f6c6f78cedcfaf749ade4b1c6012",
+          "byte_identical": true
+        },
+        {
+          "crate_path": "src/uts46.rs",
+          "official_path": "components/normalizer/src/uts46.rs",
+          "sha256": "de86f63076dba6e5f95dfc99865db8ce84820190d54185b0380c737b8758247a",
+          "git_blob_sha1": "fe7ca8ac98ee7c4df6674118066431fbb9f7dd5d",
+          "byte_identical": true
+        }
+      ]
+    },
+    {
+      "crate": "icu_properties-2.1.2",
+      "published_vcs_info": {
+        "git": {
+          "sha1": "323738440f7ff810b8130b7881322466015f7fec"
+        },
+        "path_in_vcs": "components/properties"
+      },
+      "matched_files": 13,
+      "mismatches": [],
+      "scope": "src and original manifest; generated data and all other workspace utilities are not covered by this comparison",
+      "files": [
+        {
+          "crate_path": "Cargo.toml.orig",
+          "official_path": "components/properties/Cargo.toml",
+          "sha256": "7eb2195078fecb119b857ef4fad4d574236ec4d8486138d846f044d7a4d25d63",
+          "git_blob_sha1": "c8c2b92e9a5ddb62a155b8e39e0baa5d23ff8d69",
+          "byte_identical": true
+        },
+        {
+          "crate_path": "src/bidi.rs",
+          "official_path": "components/properties/src/bidi.rs",
+          "sha256": "57e057d672c435b32e324084f04d1c7b04841c716fa00c52462fe79b62f1aa4b",
+          "git_blob_sha1": "231c054d851409c353ba597916afea5f88c7177f",
+          "byte_identical": true
+        },
+        {
+          "crate_path": "src/code_point_map.rs",
+          "official_path": "components/properties/src/code_point_map.rs",
+          "sha256": "d713ad1cea186807b61394f4b23ff1e52af9bb2b1aeefc06f21ef3d3891b1daf",
+          "git_blob_sha1": "f3354b3ab55ac291442d38119780a517dbd622e7",
+          "byte_identical": true
+        },
+        {
+          "crate_path": "src/code_point_set.rs",
+          "official_path": "components/properties/src/code_point_set.rs",
+          "sha256": "1c773ac0bc264ea020b47ddef4efa8be56bb6d49a26e74d77d7dd4704c611ed6",
+          "git_blob_sha1": "67057208890c6e9fdb91b7015b54027a096ed53e",
+          "byte_identical": true
+        },
+        {
+          "crate_path": "src/emoji.rs",
+          "official_path": "components/properties/src/emoji.rs",
+          "sha256": "c8367d2439f919f5b7f6dbe1d9f59e63fcae0d7ba72deb5cf7bbe4c9a0afba97",
+          "git_blob_sha1": "68607e4ea7175464485517562015d21375703ef1",
+          "byte_identical": true
+        },
+        {
+          "crate_path": "src/lib.rs",
+          "official_path": "components/properties/src/lib.rs",
+          "sha256": "cc7ad2a642798f4c70d25b5abe49bfcaa2bedcb6b7da337f57e63c14cf9ea227",
+          "git_blob_sha1": "e980b2fbfce4b1df0f873c6be368a0db386b7071",
+          "byte_identical": true
+        },
+        {
+          "crate_path": "src/names.rs",
+          "official_path": "components/properties/src/names.rs",
+          "sha256": "9906ba5c7fd0147779a47dd76ad51d2b0eb15c8f491d4960ba4ef0a006dd0396",
+          "git_blob_sha1": "0ca7971e2f07b6d5fa76d68fe95aa64bb7ff7088",
+          "byte_identical": true
+        },
+        {
+          "crate_path": "src/props.rs",
+          "official_path": "components/properties/src/props.rs",
+          "sha256": "2e98eecf61b1b7856bd4dc271cc6d503e4061ed04553744de622c09d248be361",
+          "git_blob_sha1": "759826f6080cfec2fa8ea4b6bb99695940260109",
+          "byte_identical": true
+        },
+        {
+          "crate_path": "src/provider/names.rs",
+          "official_path": "components/properties/src/provider/names.rs",
+          "sha256": "52be067a469f7b3e6fc0c9be1cddb93f591dcb9b325405a105c7d99114fb64f9",
+          "git_blob_sha1": "688e1a1fa7d540c122312a3fee05ba0403ac47d7",
+          "byte_identical": true
+        },
+        {
+          "crate_path": "src/provider.rs",
+          "official_path": "components/properties/src/provider.rs",
+          "sha256": "2a1ff29be1dc5e33ee7f480016668beba708b5dd85128e38b481c09aa3e95d85",
+          "git_blob_sha1": "0cce1652de7f5f16cbff09ec8e415a5d1d0e6a58",
+          "byte_identical": true
+        },
+        {
+          "crate_path": "src/runtime.rs",
+          "official_path": "components/properties/src/runtime.rs",
+          "sha256": "b50648c69e980e1f77508974c007585ee0e71972c7c3ee3ccfa5792c3946e09a",
+          "git_blob_sha1": "e27b82d022864b6b3dabe18249a534d1433fe974",
+          "byte_identical": true
+        },
+        {
+          "crate_path": "src/script.rs",
+          "official_path": "components/properties/src/script.rs",
+          "sha256": "9dd7ef15970fcf9619b0b6fa2ce4b391b0d275e8c67f2afe21a863e408e96183",
+          "git_blob_sha1": "f15ca148efe4c8d83edf4a7aa8662e79d40fbc99",
+          "byte_identical": true
+        },
+        {
+          "crate_path": "src/trievalue.rs",
+          "official_path": "components/properties/src/trievalue.rs",
+          "sha256": "2b91b48017a2f2c522f463c636419257b0f3ab26ade4026750ab1a0ff0e935eb",
+          "git_blob_sha1": "9b19d8a639038f87974be04fc20f2bd72de08cdc",
+          "byte_identical": true
+        }
+      ]
+    },
+    {
+      "crate": "icu_segmenter-2.1.2",
+      "published_vcs_info": {
+        "git": {
+          "sha1": "ad755049ef946bee7f6e3a4579ddec0ccfc74506"
+        },
+        "path_in_vcs": "components/segmenter"
+      },
+      "matched_files": 16,
+      "mismatches": [],
+      "scope": "src and original manifest; generated data and all other workspace utilities are not covered by this comparison",
+      "files": [
+        {
+          "crate_path": "Cargo.toml.orig",
+          "official_path": "components/segmenter/Cargo.toml",
+          "sha256": "ba3978687d0c6289bf2bb2851e7039811bfe7e0c8a2ea02d601434e3b4cb6d8c",
+          "git_blob_sha1": "a9b36efd335648a5e3068b0485e8a592293dc33b",
+          "byte_identical": true
+        },
+        {
+          "crate_path": "src/complex/dictionary.rs",
+          "official_path": "components/segmenter/src/complex/dictionary.rs",
+          "sha256": "4ee3ddf76e2b2c08d9fab2267a62748229af8a0523dfa6ad18a152ad25bfb46a",
+          "git_blob_sha1": "468d5b9b6f0d65864587dd3d5267981a8215838e",
+          "byte_identical": true
+        },
+        {
+          "crate_path": "src/complex/language.rs",
+          "official_path": "components/segmenter/src/complex/language.rs",
+          "sha256": "a92af9aca5d9185f9f42554553e32cfb18387f937d18517c4a67097335bd4755",
+          "git_blob_sha1": "327eea5e20b921b9487c72d861161f5dc749d0a2",
+          "byte_identical": true
+        },
+        {
+          "crate_path": "src/complex/lstm/matrix.rs",
+          "official_path": "components/segmenter/src/complex/lstm/matrix.rs",
+          "sha256": "747b0e378aa436109ad8fec5286aa557bcebd36371e512d637797132ce83e0a8",
+          "git_blob_sha1": "0fea3b41251802d57702d766c8cd2a4004ee2d93",
+          "byte_identical": true
+        },
+        {
+          "crate_path": "src/complex/lstm/mod.rs",
+          "official_path": "components/segmenter/src/complex/lstm/mod.rs",
+          "sha256": "4a1ece989923a235954e9afd26f811032e151d857bba4106b6ce250a53fbe568",
+          "git_blob_sha1": "cf8f1fd97d3ca495f5303b6e741a97cd44ece3e0",
+          "byte_identical": true
+        },
+        {
+          "crate_path": "src/complex/mod.rs",
+          "official_path": "components/segmenter/src/complex/mod.rs",
+          "sha256": "a765446329b4084981d9a9492abe936d47e82473000de6be854f8c631a4c064d",
+          "git_blob_sha1": "a4bb79ccc36a6e6c8c630db31aeafa052ec62de5",
+          "byte_identical": true
+        },
+        {
+          "crate_path": "src/grapheme.rs",
+          "official_path": "components/segmenter/src/grapheme.rs",
+          "sha256": "6c8230eaee035e22cde97bd00f0a9c5cdc5c42556ee075dc08d01b477c3b468a",
+          "git_blob_sha1": "cf1bac5b08182517d96f8caf6802d4d625ef9073",
+          "byte_identical": true
+        },
+        {
+          "crate_path": "src/indices.rs",
+          "official_path": "components/segmenter/src/indices.rs",
+          "sha256": "f611f6e186bc02a256ded04977b550f04423a03d40983868ace0d692ddc2a1f0",
+          "git_blob_sha1": "89e4d3233e7d87260788c331ca5fdde9579d4d5a",
+          "byte_identical": true
+        },
+        {
+          "crate_path": "src/iterator_helpers.rs",
+          "official_path": "components/segmenter/src/iterator_helpers.rs",
+          "sha256": "da7e165ec7a98fd2c91fa1417d85c7b65bf5d2ff37b0eecab9a79ff6dd1b0b51",
+          "git_blob_sha1": "aaecc34fb63a23b03e5a4bea08017b681d362f1d",
+          "byte_identical": true
+        },
+        {
+          "crate_path": "src/lib.rs",
+          "official_path": "components/segmenter/src/lib.rs",
+          "sha256": "a721681a118291af2136175c510fa3a5623e7bc6303dd4b16e43a91e6bb93d7a",
+          "git_blob_sha1": "0d1be62dfb993bb97abe90173fcbdaa615d56878",
+          "byte_identical": true
+        },
+        {
+          "crate_path": "src/line.rs",
+          "official_path": "components/segmenter/src/line.rs",
+          "sha256": "08351143911687809801ab86c1c806bca963450c39e6eb6c89872e5ed928d28e",
+          "git_blob_sha1": "05975a1cfdff6455f16df312e04c5bdd80f5a5dd",
+          "byte_identical": true
+        },
+        {
+          "crate_path": "src/provider/lstm.rs",
+          "official_path": "components/segmenter/src/provider/lstm.rs",
+          "sha256": "23df2bf1bda3b9c66d23251a837e89ba976afae2dac3efc2aa52b30853b3d522",
+          "git_blob_sha1": "77e94926f9a272b6ab3103f0f70215f046be9d97",
+          "byte_identical": true
+        },
+        {
+          "crate_path": "src/provider/mod.rs",
+          "official_path": "components/segmenter/src/provider/mod.rs",
+          "sha256": "6745424030508c4db32123e6e7b119b506e27b6afd86e683c39a10fe7fd55ac6",
+          "git_blob_sha1": "5a9d1d600ec5108bc3f7054a05f1e8cd5caa37be",
+          "byte_identical": true
+        },
+        {
+          "crate_path": "src/rule_segmenter.rs",
+          "official_path": "components/segmenter/src/rule_segmenter.rs",
+          "sha256": "c60dd524e60fbf2c4972a02da786d94b92ddeb10f4f91aebf3aea89fb6292b92",
+          "git_blob_sha1": "a8790891f3b7cbc580ea146017fb11d20a06394d",
+          "byte_identical": true
+        },
+        {
+          "crate_path": "src/sentence.rs",
+          "official_path": "components/segmenter/src/sentence.rs",
+          "sha256": "860d4fd9d38b6278b17a389d454b7c87661af81ede0fa92a652587bcd29a279b",
+          "git_blob_sha1": "cba4df644306e4c6f5fa24819792821dc0ce7f24",
+          "byte_identical": true
+        },
+        {
+          "crate_path": "src/word.rs",
+          "official_path": "components/segmenter/src/word.rs",
+          "sha256": "dfbe7efb8269049ac2ddb2c1df64eb1b730b532d37477f0430364c8dc99c1be1",
+          "git_blob_sha1": "5b4d062ae35a7c6c749c85e5d2a60d74cb1b891d",
+          "byte_identical": true
+        }
+      ]
+    }
+  ]
+}

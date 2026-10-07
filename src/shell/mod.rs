@@ -501,6 +501,8 @@ pub struct Shell {
     /// obligation, because the projection walks the graph and freezes the
     /// disclosed scene, which is not a per-frame cost worth paying.
     a11y_frames_since_push: u32,
+    /// Refusal included in the last tree; changes publish on the next paint.
+    a11y_physics_refusal_last_projected: Option<mere::canvas::OverlayRefusal>,
     /// Where an assistive action on each projected node lands, rebuilt with
     /// every pushed tree so the table and the tree can never disagree for
     /// longer than one cadence.
@@ -532,6 +534,8 @@ pub struct Shell {
     surface_producers: std::collections::HashMap<uuid::Uuid, Box<dyn inker::SurfaceProducer>>,
     /// Mailbox fallback cadence until producers expose an event-loop wake hook.
     surface_poll_clock: surface_poll::SurfacePollClock,
+    /// Last monitor-rate observation on the existing event/render cadence.
+    physics_display_rate_last_observed: Option<std::time::Instant>,
     /// Exact app request/query identity for progressive hosted find results.
     surface_find_requests: std::collections::HashMap<uuid::Uuid, (u64, String)>,
     page_captures: page_capture::CaptureCorrelation,
@@ -899,6 +903,7 @@ impl Shell {
             a11y_adapter: None,
             a11y_shared: std::sync::Arc::new(std::sync::Mutex::new(None)),
             a11y_frames_since_push: u32::MAX / 2,
+            a11y_physics_refusal_last_projected: None,
             a11y_routes: crate::a11y::A11yRoutes::new(),
             a11y_actions: std::sync::Arc::new(std::sync::Mutex::new(Vec::new())),
             host: None,
@@ -910,6 +915,7 @@ impl Shell {
             surface_engines: inker::SurfaceEngineRegistry::new(),
             surface_producers: std::collections::HashMap::new(),
             surface_poll_clock: surface_poll::SurfacePollClock::new(surface_poll_interval_from_env()),
+            physics_display_rate_last_observed: None,
             surface_find_requests: std::collections::HashMap::new(),
             page_captures: page_capture::CaptureCorrelation::default(),
             #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
@@ -1639,6 +1645,12 @@ impl Shell {
         let contributed_focus = contributed.focus;
         let mut trees = contributed.trees;
         for (&pane, &rect) in &pane_rects {
+            if matches!(self.pane_content(pane), Some(PaneContent::Registered(kind))
+                if kind.as_str() == crate::panes::kind::ARRANGE)
+                && let Some(tree) = crate::arrange_pane::physics_refusal_tree(&self.app, pane, rect)
+            {
+                trees.insert(pane, tree);
+            }
             if matches!(self.pane_content(pane), Some(PaneContent::Gloss(config))
                 if config.sections.iter().any(|id| id == "diagnostics"))
                 && let Some(tree) = self.renderers.gloss.get(&pane)
@@ -1668,18 +1680,24 @@ impl Shell {
     ///
     /// Thirty frames is about half a second at sixty; the projection walks
     /// the graph and re-freezes the disclosed scene, so per-frame would be
-    /// paying a solve for readers that poll far slower than that.
+    /// paying a solve for readers that poll far slower than that. A changed
+    /// refusal bypasses that cadence so its appearance or clearing is published
+    /// even when the interaction is followed by an idle window.
     fn push_a11y_tree(&mut self) {
         const CADENCE_FRAMES: u32 = 30;
         if self.a11y_adapter.is_none() {
             return;
         }
         self.a11y_frames_since_push = self.a11y_frames_since_push.saturating_add(1);
-        if self.a11y_frames_since_push < CADENCE_FRAMES {
+        let refusal = self.app.physics_refusal().cloned();
+        if self.a11y_frames_since_push < CADENCE_FRAMES
+            && refusal == self.a11y_physics_refusal_last_projected
+        {
             return;
         }
         self.a11y_frames_since_push = 0;
         let (tree, routes, focus) = self.projected_a11y_tree();
+        self.a11y_physics_refusal_last_projected = refusal;
         self.a11y_routes = routes;
         let mut update = tree.to_tree_update(focus);
         // Narrator refuses to walk past a node without a bounding rectangle:

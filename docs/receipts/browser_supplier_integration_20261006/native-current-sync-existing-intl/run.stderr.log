@@ -1,0 +1,65 @@
+[servo-resize-trace] phase=prepare-for-rendering context=0x250fee13c20 logical=PhysicalSize { width: 1024, height: 600 } actual=Ok(Some((SurfaceID(2546901166384), 1024x600, None)))
+[servo-resize-trace] phase=before-resize context=0x250fee13c20 logical=PhysicalSize { width: 1024, height: 600 } actual=Ok(Some((SurfaceID(2546901166384), 1024x600, None)))
+[servo-resize-trace] resize requested=252x570 result=Ok(()) actual=Ok(Some((SurfaceID(2545209435536), 252x570)))
+[servo-resize-trace] phase=prepare-for-rendering context=0x250fee13c20 logical=PhysicalSize { width: 252, height: 570 } actual=Ok(Some((SurfaceID(2545209435536), 252x570, None)))
+[servo-resize-trace] phase=pre-import context=0x250fee13c20 logical=PhysicalSize { width: 252, height: 570 } actual=Ok(Some((SurfaceID(2545209435536), 252x570, None)))
+[servo-resize-trace] pre-import viewport=[0, 0, 0, 0] scissor=[0, 0, 0, 0] scissor-enabled=0
+[servo-resize-trace] phase=acquire-native context=0x250fee13c20 logical=PhysicalSize { width: 252, height: 570 } actual=Ok(Some((SurfaceID(2545209435536), 252x570, None)))
+[servo-resize-trace] acquisition_generation=1 declared=PhysicalSize { width: 252, height: 570 }
+[servo-resize-trace] dx12-source requested=PhysicalSize { width: 252, height: 570 } source-fbo=0 actual=Ok(Some((SurfaceID(2545209435536), 252x570, None)))
+[servo-resize-trace] dx12-blit extent=PhysicalSize { width: 252, height: 570 } viewport=[0, 0, 0, 0] scissor=[0, 0, 0, 0] scissor-enabled=false read-fbo=0 draw-fbo=1
+[servo-resize-trace] hook-import generation=1 declared=PhysicalSize { width: 252, height: 570 } texture=(252, 570, 1)
+[servo-resize-trace] swap result=Ok(()) actual=Ok(Some((SurfaceID(2545215418080), 252x570)))
+[servo-resize-trace] handoff generation=1 declared=PhysicalSize { width: 252, height: 570 } texture=(252, 570, 1)
+[servo-resize-trace] phase=prepare-for-rendering context=0x250fee13c20 logical=PhysicalSize { width: 252, height: 570 } actual=Ok(Some((SurfaceID(2545215418080), 252x570, None)))
+[servo-resize-trace] phase=pre-import context=0x250fee13c20 logical=PhysicalSize { width: 252, height: 570 } actual=Ok(Some((SurfaceID(2545215418080), 252x570, None)))
+[servo-resize-trace] pre-import viewport=[0, 0, 252, 570] scissor=[0, 0, 374, 512] scissor-enabled=0
+[servo-resize-trace] phase=acquire-native context=0x250fee13c20 logical=PhysicalSize { width: 252, height: 570 } actual=Ok(Some((SurfaceID(2545215418080), 252x570, None)))
+[servo-resize-trace] acquisition_generation=2 declared=PhysicalSize { width: 252, height: 570 }
+[servo-resize-trace] dx12-source requested=PhysicalSize { width: 252, height: 570 } source-fbo=0 actual=Ok(Some((SurfaceID(2545215418080), 252x570, None)))
+[servo-resize-trace] dx12-blit extent=PhysicalSize { width: 252, height: 570 } viewport=[0, 0, 252, 570] scissor=[0, 0, 374, 512] scissor-enabled=false read-fbo=0 draw-fbo=5
+[servo-resize-trace] hook-import generation=2 declared=PhysicalSize { width: 252, height: 570 } texture=(252, 570, 1)
+[servo-resize-trace] swap result=Ok(()) actual=Ok(Some((SurfaceID(2545209435536), 252x570)))
+[servo-resize-trace] handoff generation=2 declared=PhysicalSize { width: 252, height: 570 } texture=(252, 570, 1)
+[servo-resize-trace] phase=prepare-for-rendering context=0x250fee13c20 logical=PhysicalSize { width: 252, height: 570 } actual=Ok(Some((SurfaceID(2545209435536), 252x570, None)))
+[servo-resize-trace] phase=pre-import context=0x250fee13c20 logical=PhysicalSize { width: 252, height: 570 } actual=Ok(Some((SurfaceID(2545209435536), 252x570, None)))
+[servo-resize-trace] pre-import viewport=[0, 0, 252, 570] scissor=[0, 0, 410, 512] scissor-enabled=0
+[servo-resize-trace] phase=acquire-native context=0x250fee13c20 logical=PhysicalSize { width: 252, height: 570 } actual=Ok(Some((SurfaceID(2545209435536), 252x570, None)))
+[servo-resize-trace] acquisition_generation=3 declared=PhysicalSize { width: 252, height: 570 }
+[servo-resize-trace] dx12-source requested=PhysicalSize { width: 252, height: 570 } source-fbo=0 actual=Ok(Some((SurfaceID(2545209435536), 252x570, None)))
+[servo-resize-trace] dx12-blit extent=PhysicalSize { width: 252, height: 570 } viewport=[0, 0, 252, 570] scissor=[0, 0, 410, 512] scissor-enabled=false read-fbo=0 draw-fbo=5
+[servo-resize-trace] hook-import generation=3 declared=PhysicalSize { width: 252, height: 570 } texture=(252, 570, 1)
+[servo-resize-trace] swap result=Ok(()) actual=Ok(Some((SurfaceID(2545215418080), 252x570)))
+[servo-resize-trace] handoff generation=3 declared=PhysicalSize { width: 252, height: 570 } texture=(252, 570, 1)
+[servo-resize-trace] phase=before-resize context=0x250fee13c20 logical=PhysicalSize { width: 252, height: 570 } actual=Ok(Some((SurfaceID(2545215418080), 252x570, None)))
+[servo-resize-trace] resize requested=509x570 result=Ok(()) actual=Ok(Some((SurfaceID(2545223886448), 509x570)))
+[servo-resize-trace] phase=prepare-for-rendering context=0x250fee13c20 logical=PhysicalSize { width: 509, height: 570 } actual=Ok(Some((SurfaceID(2545223886448), 509x570, None)))
+[servo-resize-trace] phase=pre-import context=0x250fee13c20 logical=PhysicalSize { width: 509, height: 570 } actual=Ok(Some((SurfaceID(2545223886448), 509x570, None)))
+[servo-resize-trace] pre-import viewport=[0, 0, 252, 570] scissor=[0, 0, 410, 512] scissor-enabled=0
+[servo-resize-trace] phase=acquire-native context=0x250fee13c20 logical=PhysicalSize { width: 509, height: 570 } actual=Ok(Some((SurfaceID(2545223886448), 509x570, None)))
+[servo-resize-trace] acquisition_generation=4 declared=PhysicalSize { width: 509, height: 570 }
+[servo-resize-trace] dx12-source requested=PhysicalSize { width: 509, height: 570 } source-fbo=0 actual=Ok(Some((SurfaceID(2545223886448), 509x570, None)))
+[servo-resize-trace] dx12-blit extent=PhysicalSize { width: 509, height: 570 } viewport=[0, 0, 252, 570] scissor=[0, 0, 410, 512] scissor-enabled=false read-fbo=0 draw-fbo=5
+[servo-resize-trace] hook-import generation=4 declared=PhysicalSize { width: 509, height: 570 } texture=(509, 570, 1)
+[servo-resize-trace] swap result=Ok(()) actual=Ok(Some((SurfaceID(2545223881520), 509x570)))
+[servo-resize-trace] handoff generation=4 declared=PhysicalSize { width: 509, height: 570 } texture=(509, 570, 1)
+[servo-resize-trace] phase=prepare-for-rendering context=0x250fee13c20 logical=PhysicalSize { width: 509, height: 570 } actual=Ok(Some((SurfaceID(2545223881520), 509x570, None)))
+[servo-resize-trace] phase=pre-import context=0x250fee13c20 logical=PhysicalSize { width: 509, height: 570 } actual=Ok(Some((SurfaceID(2545223881520), 509x570, None)))
+[servo-resize-trace] pre-import viewport=[0, 0, 509, 570] scissor=[0, 0, 509, 512] scissor-enabled=0
+[servo-resize-trace] phase=acquire-native context=0x250fee13c20 logical=PhysicalSize { width: 509, height: 570 } actual=Ok(Some((SurfaceID(2545223881520), 509x570, None)))
+[servo-resize-trace] acquisition_generation=5 declared=PhysicalSize { width: 509, height: 570 }
+[servo-resize-trace] dx12-source requested=PhysicalSize { width: 509, height: 570 } source-fbo=0 actual=Ok(Some((SurfaceID(2545223881520), 509x570, None)))
+[servo-resize-trace] dx12-blit extent=PhysicalSize { width: 509, height: 570 } viewport=[0, 0, 509, 570] scissor=[0, 0, 509, 512] scissor-enabled=false read-fbo=0 draw-fbo=8
+[servo-resize-trace] hook-import generation=5 declared=PhysicalSize { width: 509, height: 570 } texture=(509, 570, 1)
+[servo-resize-trace] swap result=Ok(()) actual=Ok(Some((SurfaceID(2545223886448), 509x570)))
+[servo-resize-trace] handoff generation=5 declared=PhysicalSize { width: 509, height: 570 } texture=(509, 570, 1)
+[servo-resize-trace] phase=prepare-for-rendering context=0x250fee13c20 logical=PhysicalSize { width: 509, height: 570 } actual=Ok(Some((SurfaceID(2545223886448), 509x570, None)))
+[servo-resize-trace] phase=pre-import context=0x250fee13c20 logical=PhysicalSize { width: 509, height: 570 } actual=Ok(Some((SurfaceID(2545223886448), 509x570, None)))
+[servo-resize-trace] pre-import viewport=[0, 0, 509, 570] scissor=[0, 0, 509, 512] scissor-enabled=0
+[servo-resize-trace] phase=acquire-native context=0x250fee13c20 logical=PhysicalSize { width: 509, height: 570 } actual=Ok(Some((SurfaceID(2545223886448), 509x570, None)))
+[servo-resize-trace] acquisition_generation=6 declared=PhysicalSize { width: 509, height: 570 }
+[servo-resize-trace] dx12-source requested=PhysicalSize { width: 509, height: 570 } source-fbo=0 actual=Ok(Some((SurfaceID(2545223886448), 509x570, None)))
+[servo-resize-trace] dx12-blit extent=PhysicalSize { width: 509, height: 570 } viewport=[0, 0, 509, 570] scissor=[0, 0, 509, 512] scissor-enabled=false read-fbo=0 draw-fbo=8
+[servo-resize-trace] hook-import generation=6 declared=PhysicalSize { width: 509, height: 570 } texture=(509, 570, 1)
+[servo-resize-trace] swap result=Ok(()) actual=Ok(Some((SurfaceID(2545223881520), 509x570)))
+[servo-resize-trace] handoff generation=6 declared=PhysicalSize { width: 509, height: 570 } texture=(509, 570, 1)

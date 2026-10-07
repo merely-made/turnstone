@@ -1,0 +1,337 @@
+    Updating git repository `https://github.com/merely-made/mere.git`
+    Updating git repository `https://github.com/merely-made/genet.git`
+    Updating git repository `https://github.com/unicode-org/icu4x`
+    Updating git repository `https://github.com/mark-ik/p2panda.git`
+    Updating git repository `https://github.com/merely-made/wgpu-scry.git`
+    Updating git repository `https://github.com/merely-made/knot-editor.git`
+    Updating git repository `https://github.com/merely-made/woodshed.git`
+    Updating git repository `https://github.com/merely-made/wgpu-graft.git`
+    Updating git repository `https://github.com/servo/servo`
+error: invalid type: boolean `true`, expected a map
+ --> ..\..\..\.cargo\git\checkouts\servo-e53a6e7b994a25fe\aac43a3\python\tidy\tests\lints-configuration\no-workspace\Cargo.toml:8:7
+  |
+8 | foo = true
+  |       ^^^^
+    Updating git repository `https://github.com/merely-made/wgpu-weld.git`
+    Updating crates.io index
+warning: patch `burn-remote v0.22.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)` was not used in the crate graph
+warning: patch `cubecl-runtime v0.11.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)` was not used in the crate graph
+warning: patch `p2panda-stream v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5#1bec457e)` was not used in the crate graph
+help: Check that the patched package version and available features are compatible
+      with the dependency requirements. If the patch has a different version from
+      what is locked in the Cargo.lock file, run `cargo update` to use the new
+      version. This may also occur with an optional dependency that is not enabled.
+     Locking 313 packages to latest Rust 1.98.1 compatible versions
+      Adding app-host v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding armillary v0.1.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding arraystring v0.3.0
+      Adding audio-primitives v0.1.0 (https://github.com/merely-made/woodshed.git?rev=82271df20927d41a4cbb79c56a09fef5bbb38cde#82271df2)
+      Adding browsing-context-api v0.1.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+      Adding bs58 v0.5.1
+      Adding buckram v0.0.3 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+      Adding cadency v0.0.1 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+      Adding calendrical_calculations v0.2.3 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+      Adding cambium v0.3.3 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding cambium-rootstock v0.1.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding cambium-winit v0.3.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding castellan v0.0.3 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding cbindgen v0.29.4
+    Updating cef v151.8.1+151.3.24 -> v154.5.0+154.0.34
+    Updating cef-dll-sys v151.8.1+151.3.24 -> v154.5.0+154.0.34
+    Updating chardetng v0.1.17 -> v1.0.0
+      Adding chartulary v0.2.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding chatelaine v0.0.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding chirograph v0.0.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding commons-spine v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Updating content-security-policy v0.8.2 -> v0.9.0
+      Adding cssparser v0.38.0
+    Updating diplomat v0.8.0 -> v0.14.0
+    Updating diplomat-runtime v0.8.3 -> v0.14.0
+    Updating diplomat_core v0.8.1 -> v0.14.0
+      Adding distillery v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding document-canvas v0.1.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding document-session-api v0.1.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+    Updating download-cef v2.3.2 -> v3.0.0
+      Adding dyn-clone v1.0.20
+      Adding eidetic v0.0.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding eidetic-search v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding engine-observables-api v0.2.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+      Adding errand v0.4.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding esp v0.1.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding fixed_decimal v0.7.1 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+      Adding fleece v0.5.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+      Adding gemot v0.1.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding genet-clipboard v0.1.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+      Adding genet-document-resources v0.2.1 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+      Adding genet-documents v0.1.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+      Adding genet-fontique v0.10.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+      Adding genet-host-api v0.2.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+      Adding genet-livery v0.0.4 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+      Adding genet-paint-types v0.2.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+      Adding genet-parley v0.10.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+      Adding genet-render v0.2.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+      Adding genet-render-host v0.2.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+      Adding genet-scripted-dom v0.1.2 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+      Adding genet-static-dom v0.1.1 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+      Adding genet-taffy v0.14.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+      Adding genet-text v0.1.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+      Adding genet-winit-host v0.2.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+    Updating glifo v0.1.1 -> v0.3.0
+    Updating gopher-protocol v0.1.1 -> v0.2.0
+      Adding graft-engine v0.2.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding grafting v0.6.0 (https://github.com/merely-made/wgpu-graft.git?rev=7907ff295da2c20c2a791419e6658d1c05350345#7907ff29)
+      Adding grafting-frame v0.1.0 (https://github.com/merely-made/wgpu-graft.git?rev=7907ff295da2c20c2a791419e6658d1c05350345#7907ff29)
+      Adding graphshell v0.0.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding graphshell-client v0.0.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding graphshell-endpoint v0.0.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Updating harfbuzz-sys v0.7.0 -> v0.8.0
+      Adding hashbrown v0.12.3
+      Adding html5ever v0.40.1
+      Adding icu_calendar v2.1.1 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+      Adding icu_calendar_data v2.1.1 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+      Adding icu_capi v2.1.2 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+    Updating icu_casemap v1.5.1 -> v2.3.0
+      Adding icu_casemap v2.1.1 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+    Updating icu_casemap_data v1.5.1 -> v2.3.0
+      Adding icu_casemap_data v2.1.1 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+      Adding icu_collator v2.1.1 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+      Adding icu_collator_data v2.1.1 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+      Adding icu_collections v2.1.1 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+      Adding icu_datetime v2.1.1 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+      Adding icu_datetime_data v2.1.2 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+      Adding icu_decimal v2.1.1 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+      Adding icu_decimal_data v2.1.1 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+      Adding icu_experimental v0.4.0 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+      Adding icu_experimental_data v0.4.1 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+      Adding icu_list v2.1.1 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+      Adding icu_list_data v2.1.1 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+      Adding icu_locale v2.3.1
+      Adding icu_locale v2.1.1 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+      Adding icu_locale_core v2.1.1 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+      Adding icu_locale_data v2.3.0
+      Adding icu_locale_data v2.1.2 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+      Adding icu_normalizer v2.1.1 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+      Adding icu_normalizer_data v2.1.1 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+      Adding icu_pattern v0.4.1 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+      Adding icu_plurals v2.1.1 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+      Adding icu_plurals_data v2.1.1 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+      Adding icu_properties v2.1.2 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+      Adding icu_properties_data v2.1.2 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+      Adding icu_provider v2.1.1 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+      Adding icu_provider_adapters v2.1.1 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+      Adding icu_segmenter v2.1.2 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+      Adding icu_segmenter_data v2.1.1 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+      Adding icu_time v2.1.1 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+      Adding icu_time_data v2.1.1 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+      Adding illume v0.0.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding import v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding incipit v0.2.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding indexmap v1.9.3
+      Adding inker v0.1.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding insigne v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding ipc-channel v0.23.0
+      Adding ipc-channel v0.22.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+    Updating iroh-mdns-address-lookup v0.5.0 -> v0.6.0
+      Adding ixdtf v0.6.4 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+      Adding knot-capture v0.0.1 (https://github.com/merely-made/knot-editor.git?rev=0096591a0af98bf4777d8bfe718c0423dea9fc90#0096591a)
+      Adding knot-composition v0.0.1 (https://github.com/merely-made/knot-editor.git?rev=0096591a0af98bf4777d8bfe718c0423dea9fc90#0096591a)
+      Adding knot-document v0.0.1 (https://github.com/merely-made/knot-editor.git?rev=0096591a0af98bf4777d8bfe718c0423dea9fc90#0096591a)
+      Adding knot-editor v0.0.3 (https://github.com/merely-made/knot-editor.git?rev=0096591a0af98bf4777d8bfe718c0423dea9fc90#0096591a)
+      Adding knot-editor-host v0.1.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding knot-file-catalog v0.0.1 (https://github.com/merely-made/knot-editor.git?rev=0096591a0af98bf4777d8bfe718c0423dea9fc90#0096591a)
+      Adding layout-dom-api v0.1.1 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+      Adding litemap v0.8.1 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+      Adding livery v0.0.5 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+      Adding luggage v0.1.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Updating mach2 v0.6.0 -> v0.7.0
+      Adding markup5ever v0.40.0
+      Adding mere v0.0.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding mere-alembic v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding mere-apparatus v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding mere-athanor v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding mere-cartography v0.0.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding mere-chrome v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding mere-document-lanes v0.1.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding mere-fetch v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding mere-forme v0.1.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding mere-kernel v0.0.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding mere-linked-data v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding mere-mesh v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding mere-moot v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding mere-p2panda-net v0.7.5 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5#1bec457e)
+      Adding mere-proofs v0.1.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding mere-surface-api v0.1.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding mere-transport v0.0.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding mere-webrtc-carrier v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding meristem v0.2.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding mien v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding mooting v0.1.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding mora-cmudict v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Updating mozangle v0.6.0 -> v0.7.1
+    Updating mozjs v0.21.6 -> v0.26.4 (available: v0.26.8)
+      Adding mozjs_collator_glue v153.3.0 (available: v153.4.0)
+      Adding mozjs_icu_collator v153.3.0 (C:\Users\mark_\Code\repos\turnstone\vendor\mozjs-icu-collator)
+      Adding mozjs_icu_collator_data v153.3.0 (available: v153.4.0)
+      Adding mozjs_icu_collections v153.3.0 (available: v153.4.0)
+      Adding mozjs_icu_normalizer v153.3.0 (C:\Users\mark_\Code\repos\turnstone\vendor\mozjs-icu-normalizer)
+      Adding mozjs_icu_normalizer_data v153.3.0 (available: v153.4.0)
+      Adding mozjs_locale_glue v153.3.0 (available: v153.4.0)
+      Adding mozjs_normalizer_glue v153.3.0 (available: v153.4.0)
+      Adding mozjs_properties_glue v153.3.0 (available: v153.4.0)
+    Updating mozjs_sys v140.14.0-0 -> v153.3.0-1 (available: v153.3.0-3)
+      Adding mozjs_unicode_bidi_ffi v153.3.0 (available: v153.4.0)
+      Adding mozjs_utf16_iter v153.3.0 (available: v153.4.0)
+      Adding mozjs_utf8_iter v153.3.0 (available: v153.4.0)
+      Adding muniment v0.1.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding nematic v0.1.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding netfetcher v0.1.1 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+      Adding notochord v0.1.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding numen v0.2.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding ohos-deviceinfo v0.1.0
+      Adding ohos-pasteboard v0.1.0
+      Adding ohos-pasteboard-sys v0.1.6
+      Adding os_pipe v1.2.3
+      Adding p2panda-auth v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5#1bec457e)
+      Adding p2panda-core v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5#1bec457e)
+      Adding p2panda-discovery v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5#1bec457e)
+      Adding p2panda-encryption v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5#1bec457e)
+      Adding p2panda-store v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5#1bec457e)
+      Adding p2panda-sync v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5#1bec457e)
+      Adding pandect v0.1.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding personae v0.2.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding phf v0.14.0
+      Adding phf_codegen v0.14.0
+      Adding phf_generator v0.14.0
+      Adding phf_macros v0.14.0
+      Adding phf_shared v0.14.0
+      Adding pictograph v0.2.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding platen v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding potential_utf v0.1.4 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+      Adding quick_cache v0.7.0
+      Adding read-fonts v0.43.3
+      Adding redshank-model v0.0.0 (https://github.com/merely-made/woodshed.git?rev=82271df20927d41a4cbb79c56a09fef5bbb38cde#82271df2)
+      Adding redshank-playback v0.0.0 (https://github.com/merely-made/woodshed.git?rev=82271df20927d41a4cbb79c56a09fef5bbb38cde#82271df2)
+      Adding redshank-storage v0.0.0 (https://github.com/merely-made/woodshed.git?rev=82271df20927d41a4cbb79c56a09fef5bbb38cde#82271df2)
+      Adding redshank-surfaces v0.0.0 (https://github.com/merely-made/woodshed.git?rev=82271df20927d41a4cbb79c56a09fef5bbb38cde#82271df2)
+      Adding reference-data v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding sceno v0.0.4 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding scenograph v0.0.4 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding scenomise v0.0.4 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding scenotime v0.0.4 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding schemars v0.9.0
+      Adding schemars v1.2.2
+      Adding script-engine-api v0.1.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+      Adding script-engine-piccolo v0.0.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+      Adding script-rhai v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding scrying v0.7.1 (https://github.com/merely-made/wgpu-scry.git?rev=2c3ebd24118851cf6125cfb193f55aab20e3ad67#2c3ebd24)
+      Adding scrying-engine v0.2.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding seiche v0.0.6 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Updating selectors v0.40.0 -> v0.41.0
+      Adding serde_urlencoded v0.7.1
+      Adding serde_with v3.24.0
+      Adding serde_with_macros v3.24.0
+      Adding servitor v0.0.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding servo v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+      Adding servo-allocator v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+      Adding servo-background-hang-monitor v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+      Adding servo-background-hang-monitor-api v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+      Adding servo-base v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+      Adding servo-canvas v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+      Adding servo-canvas-traits v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+      Adding servo-config v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+      Adding servo-config-macro v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+      Adding servo-constellation v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+      Adding servo-constellation-traits v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+      Adding servo-default-resources v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+      Adding servo-deny-public-fields v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+      Adding servo-devtools v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+      Adding servo-devtools-traits v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+      Adding servo-dom-struct v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+      Adding servo-embedder-traits v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+      Adding servo-fonts v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+      Adding servo-fonts-traits v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+      Adding servo-geometry v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+      Adding servo-hyper-serde v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+      Adding servo-jstraceable-derive v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+      Adding servo-layout v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+      Adding servo-layout-api v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+      Adding servo-malloc-size-of v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+      Adding servo-media v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+      Adding servo-media-audio v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+      Adding servo-media-derive v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+      Adding servo-media-dummy v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+      Adding servo-media-ohos v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+      Adding servo-media-player v0.2.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+      Adding servo-media-player v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+      Adding servo-media-streams v0.2.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+      Adding servo-media-streams v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+      Adding servo-media-thread v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+      Adding servo-media-traits v0.2.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+      Adding servo-media-traits v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+      Adding servo-media-webrtc v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+      Adding servo-metrics v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+      Adding servo-net v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+      Adding servo-net-traits v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+      Adding servo-paint v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+      Adding servo-paint-api v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+      Adding servo-pixels v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+      Adding servo-profile v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+      Adding servo-profile-traits v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+      Adding servo-script v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+      Adding servo-script-bindings v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+      Adding servo-script-traits v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+      Adding servo-storage v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+      Adding servo-storage-traits v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+      Adding servo-timers v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+      Adding servo-tracing v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+      Adding servo-url v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+      Adding servo-wakelock v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+      Adding servo-webvtt v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+      Adding servo-webxr-api v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+      Adding servo-wgpu-interop-adapter v0.1.0 (https://github.com/merely-made/wgpu-graft.git?rev=7907ff295da2c20c2a791419e6658d1c05350345#7907ff29)
+      Adding servo-xpath v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+    Updating servo_arc v0.4.3 -> v0.5.0
+      Adding skrifa v0.46.2
+      Adding sprigging v0.2.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding stickleback v0.1.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Updating strck v0.1.2 -> v1.0.0
+      Adding string_cache v0.11.0
+      Adding string_cache_codegen v0.11.2
+    Updating stylo v0.20.0 -> v0.22.0
+    Updating stylo_atoms v0.20.0 -> v0.22.0
+    Updating stylo_derive v0.20.0 -> v0.22.0
+    Updating stylo_dom v0.20.0 -> v0.22.0
+    Updating stylo_malloc_size_of v0.20.0 -> v0.22.0
+    Updating stylo_static_prefs v0.20.0 -> v0.22.0
+    Updating stylo_traits v0.20.0 -> v0.22.0
+    Updating surfman v0.13.0 -> v0.14.0
+      Adding tabard v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Updating taffy v0.12.2 -> v0.14.0
+      Adding taproot v0.1.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+      Adding timed-text v0.1.0 (https://github.com/merely-made/woodshed.git?rev=82271df20927d41a4cbb79c56a09fef5bbb38cde#82271df2)
+      Adding tinct v0.1.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding tinystr v0.8.2 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+    Updating to_shmem v0.5.0 -> v0.6.0
+    Updating to_shmem_derive v0.1.0 -> v0.2.0
+      Adding tree_magic_mini v3.2.2
+      Adding udmf v0.1.1
+      Adding udmf-sys v0.1.5
+      Adding uxtree v0.0.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+    Updating vello_common v0.0.9 -> v0.2.0
+    Updating vello_cpu v0.0.9 -> v0.2.0
+      Adding warp v0.4.3
+      Adding web_atoms v0.3.0
+    Updating webdriver v0.53.0 -> v0.54.0
+      Adding weld-engine v0.2.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding welding v0.15.0 (https://github.com/merely-made/wgpu-weld.git?rev=c4dd593b7a730acb4aa6ffab0fe2edf8a0584083#c4dd593b)
+      Adding wl-clipboard-rs v0.9.4
+      Adding workbench v0.1.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+      Adding writeable v0.6.2 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+      Adding xml5ever v0.40.0
+      Adding yoke v0.8.1 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+      Adding yoke-derive v0.8.1 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+      Adding zerofrom v0.1.6 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+      Adding zerofrom-derive v0.1.6 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+      Adding zerotrie v0.2.3 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+      Adding zerovec v0.11.5 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+      Adding zerovec-derive v0.11.2 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)

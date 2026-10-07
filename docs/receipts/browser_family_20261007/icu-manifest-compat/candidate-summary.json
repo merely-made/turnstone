@@ -1,0 +1,78 @@
+{
+  "recorded_utc": "2026-10-07T09:07:22.024431+00:00",
+  "scope": "Root-owned candidate vendor preparation; two official published bundles, exactly three production ranges changed, no Rust edits/Cargo invocation",
+  "status": "UNQUALIFIED",
+  "total_files": 68,
+  "total_published_bytes": 6311826,
+  "total_manifest_edges": 3,
+  "results": [
+    {
+      "package": "mozjs_icu_collator",
+      "version": "153.3.0",
+      "vendor_path": "vendor/mozjs-icu-collator",
+      "archive_sha256": "e483fdb5592a4f52c2d0e3c419935acfb98a5b578154b93999b92dedbf170e0d",
+      "official_checksum": "e483fdb5592a4f52c2d0e3c419935acfb98a5b578154b93999b92dedbf170e0d",
+      "official_metadata_url": "https://crates.io/api/v1/crates/mozjs_icu_collator/153.3.0",
+      "published_at": "2026-09-21T14:59:25.735483Z",
+      "published_vcs_info": {
+        "git": {
+          "sha1": "f295442b3eb803b06674790d338b8151d9ca9980"
+        },
+        "path_in_vcs": "mozjs-extracted-crates/icu_collator"
+      },
+      "files": 28,
+      "published_bytes": 5876256,
+      "production_ranges_changed": {
+        "icu_locale": {
+          "before": "~2.1.1",
+          "after": "^2.1.1"
+        },
+        "icu_properties": {
+          "before": "~2.1.1",
+          "after": "^2.1.1"
+        }
+      },
+      "unchanged_file_count": 27,
+      "changed_files": [
+        "Cargo.toml"
+      ],
+      "license_files": [
+        "LICENSE"
+      ],
+      "license_expression": "Unicode-3.0",
+      "status": "UNQUALIFIED manifest-only candidate; no Cargo/build/native acceptance"
+    },
+    {
+      "package": "mozjs_icu_normalizer",
+      "version": "153.3.0",
+      "vendor_path": "vendor/mozjs-icu-normalizer",
+      "archive_sha256": "362f589e9c5f836baade5fe90d587ffcab715c4e6bc01d6e2f266f939529876d",
+      "official_checksum": "362f589e9c5f836baade5fe90d587ffcab715c4e6bc01d6e2f266f939529876d",
+      "official_metadata_url": "https://crates.io/api/v1/crates/mozjs_icu_normalizer/153.3.0",
+      "published_at": "2026-09-21T14:58:51.880309Z",
+      "published_vcs_info": {
+        "git": {
+          "sha1": "f295442b3eb803b06674790d338b8151d9ca9980"
+        },
+        "path_in_vcs": "mozjs-extracted-crates/icu_normalizer"
+      },
+      "files": 40,
+      "published_bytes": 435570,
+      "production_ranges_changed": {
+        "icu_properties": {
+          "before": "~2.1.1",
+          "after": "^2.1.1"
+        }
+      },
+      "unchanged_file_count": 39,
+      "changed_files": [
+        "Cargo.toml"
+      ],
+      "license_files": [
+        "LICENSE"
+      ],
+      "license_expression": "Unicode-3.0",
+      "status": "UNQUALIFIED manifest-only candidate; no Cargo/build/native acceptance"
+    }
+  ]
+}

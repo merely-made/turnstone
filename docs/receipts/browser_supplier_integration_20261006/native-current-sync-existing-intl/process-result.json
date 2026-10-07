@@ -1,0 +1,30 @@
+{
+  "executable": "C:\\t\\cargo-targets\\turnstone\\debug\\turnstone.exe",
+  "executable_sha256": "36b8cd6e0a81b87a74a216eb5db632ddf2ff08e0bd5c0b80ada427ab3bab78a6",
+  "executable_hashed_utc": "2026-10-07T10:14:51.2970291Z",
+  "scenario": "C:\\Users\\mark_\\Code\\repos\\turnstone\\scenarios\\browser_servo_intl_windows.scn",
+  "profile": "C:\\Users\\mark_\\Code\\repos\\turnstone\\docs\\receipts\\browser_supplier_integration_20261006\\profile\\current-sync-existing-intl",
+  "phase_prefix": "current-sync-existing",
+  "owned_pid": 43280,
+  "started_utc": "2026-10-07T10:14:51.9178326Z",
+  "finished_utc": "2026-10-07T10:15:14.9409499Z",
+  "timeout_seconds": 600,
+  "timed_out": false,
+  "native_exit": 0,
+  "module_evidence": "loaded-modules.json",
+  "scenario_result": "RESULT ok",
+  "runner_error": null,
+  "cleanup_attempted": false,
+  "cleanup_error": null,
+  "environment": {
+    "RUST_LOG": "warn",
+    "SCRY_FIXTURE_BASE": "http://127.0.0.1:43123",
+    "SERVO_FIXTURE_BASE": "http://127.0.0.1:43124",
+    "TURNSTONE_CEF_PATH": "C:/Users/mark_/Code/cef-cache/wgpu-weld/154.0.34/cef_windows_x86_64",
+    "TURNSTONE_SERVO_PROFILE": "current-sync-existing",
+    "TURNSTONE_SERVO_PROFILE_DIR": "C:\\Users\\mark_\\Code\\repos\\turnstone\\docs\\receipts\\browser_supplier_integration_20261006\\profile\\servo-shared\\current-sync-existing",
+    "GRAFT_SERVO_RESIZE_TRACE": "1",
+    "TURNSTONE_SERVO_GPU_SYNC": "existing",
+    "TURNSTONE_SERVO_GPU_SYNC_TIMEOUT_MS": "5000"
+  }
+}

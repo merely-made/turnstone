@@ -1,0 +1,83 @@
+{
+  "recorded_utc": "2026-10-07T10:20:26.802901+00:00",
+  "scope": "New pre-repin baseline receipt only; prior current-family and other evidence untouched.",
+  "source_sha": "aafa78df71170c83df9838c6fc207117bedc45ec",
+  "artifacts": [
+    {
+      "path": "linux-baseline-Cargo.lock",
+      "bytes": 469026,
+      "sha256": "7cd795f9f961f928b92e3d5c357a2c01533f3dfbb5d137ee3ee3a6f0583163b3"
+    },
+    {
+      "path": "linux-baseline-Cargo.toml",
+      "bytes": 30989,
+      "sha256": "83f0e351c4d0300e3b3f5a424b613526ac9f63ea855508761787d8d279de5452"
+    },
+    {
+      "path": "linux-baseline-guard.json",
+      "bytes": 614,
+      "sha256": "831276d9110ed7c30d3e2e7df32bda48cd5ecb188471657d1b9ba5742f9ce2bb"
+    },
+    {
+      "path": "linux-baseline-inputs.json",
+      "bytes": 454463,
+      "sha256": "c96262541be8c5da92dc5c82529c4c84e9d1ae89aa678e1473c4d751ccbfcbcb"
+    },
+    {
+      "path": "linux-baseline-post-state.json",
+      "bytes": 866,
+      "sha256": "abb659ec360379991baa73c09ef1db42252e668f13ff92611b44c8565439baea"
+    },
+    {
+      "path": "linux-baseline-README.md",
+      "bytes": 2026,
+      "sha256": "c090da06c9b98e26534ed85997f541e2008e3b0b9961ff4cdc4cd93413207c39"
+    },
+    {
+      "path": "linux-baseline-result.json",
+      "bytes": 1318,
+      "sha256": "5aa242bce2b4746f984bd516551d11eb54738ff6faf6cd87f2ec8dda8ebba743"
+    },
+    {
+      "path": "linux-baseline-runner.py",
+      "bytes": 4187,
+      "sha256": "10948cafeb6e175ce4f4c09822c6c4c21d7b018a749cdb6697a3a2f9e41d703a"
+    },
+    {
+      "path": "linux-baseline.stderr.log",
+      "bytes": 66358,
+      "sha256": "6298b46dee70fbcf0beae157331067f4073fae6368b4d92acd8009ff61e79a93"
+    },
+    {
+      "path": "linux-baseline.stdout.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "selected_family_heads": {
+    "mere": [
+      "edf175f9c0a8645318ac8925adf0af6956f61425"
+    ],
+    "woodshed": [
+      "24f196f46f775704e467b41140588a3f35335a9f"
+    ],
+    "genet": [
+      "679d8314aab4ec9f57a903c79dde244c3c565c1e"
+    ],
+    "wgpu-graft": [
+      "dec11bbd2c9c8676e66987fb6ca32cd4ae6310eb"
+    ],
+    "knot-editor": [
+      "211ff57a128f4fdbd5060978a209d6bc0459fce6"
+    ],
+    "wgpu-scry": [
+      "39818a7eddb8bec33f7c61ed144da226bc0a1d04"
+    ],
+    "servo": [
+      "1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019"
+    ],
+    "wgpu-weld": [
+      "4784d07c4064195c33136b9b91c8231913f08e06"
+    ]
+  }
+}

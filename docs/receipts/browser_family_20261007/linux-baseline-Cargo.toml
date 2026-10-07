@@ -1,0 +1,398 @@
+[workspace]
+# `sandbox_bootstrap_win` is the cdylib CEF's Windows sandbox bootstrap.exe
+# loads (see design_docs/2026-08-03_turnstone_engine_adoption_plan.md,
+# "E2-Weld Windows sandbox bootstrap"). It is a separate crate rather than a
+# second crate-type on this package's own `[lib]`, which would give the
+# cdylib and the `turnstone` `[[bin]]` the same output name and collide on
+# `turnstone.pdb` in the shared target directory (cargo#6313).
+members = [".", "sandbox_bootstrap_win"]
+
+[package]
+name = "turnstone"
+version = "0.1.0"
+edition = "2024"
+license = "MPL-2.0"
+description = "A local-first browser for shared, addressable places, built on the Mere graph platform."
+repository = "https://github.com/merely-made/turnstone"
+keywords = ["browser", "peer-to-peer", "graph", "collaboration", "local-first"]
+categories = ["gui"]
+
+[[bin]]
+name = "turnstone"
+path = "src/main.rs"
+
+[dependencies]
+# Product-redacted, bounded observations; no renderer dependency in the store.
+apparatus = { package = "mere-apparatus", git = "https://github.com/merely-made/mere.git", rev = "edf175f9c0a8645318ac8925adf0af6956f61425", default-features = false, features = ["serde", "projection"] }
+# Presentable proof data/checks; Personae retains keys and issuing.
+insigne = { git = "https://github.com/merely-made/mere.git", rev = "edf175f9c0a8645318ac8925adf0af6956f61425", features = ["verify"] }
+athanor = { package = "mere-athanor", git = "https://github.com/merely-made/mere.git", rev = "edf175f9c0a8645318ac8925adf0af6956f61425" }
+tabard = { git = "https://github.com/merely-made/mere.git", rev = "edf175f9c0a8645318ac8925adf0af6956f61425" }
+# The library this app is the reference host for: graph truth + the
+# composition tier, consumed through the `mere` facade (kernel, canvas,
+# forme, platen, glossary, ...). Git sibling per workspace convention; a
+# local checkout is picked up via the gitignored `.cargo/config.toml`
+# patches (mirrors mere's own sibling handling). Of the facade's twelve
+# re-exports only two are compatibility scaffolding, `platen` and
+# `workbench`: those move INTO this repo as the port proceeds. Canvas
+# STAYS in mere (the 2026-07-09 amendment reversed its move); the crate
+# was called `orrery` at turnstone's founding. Boundary pass plan, 2026-07-09.
+mere = { git = "https://github.com/merely-made/mere.git", rev = "edf175f9c0a8645318ac8925adf0af6956f61425" }
+# Mere's graph-to-Scenograph adapter remains kernel-aware and product-owned.
+# G3 consumes its existing score + scene lowering directly.
+cartography = { package = "mere-cartography", git = "https://github.com/merely-made/mere.git", rev = "edf175f9c0a8645318ac8925adf0af6956f61425" }
+# The fetch actor (armillary + netfetcher/errand + the cookie jar): turnstone's
+# web lane, consumed as an individual crate from mere's workspace while it
+# still lives there — per the boundary pass, fetch is app-side material that
+# moves into this repo with the port.
+fetch = { package = "mere-fetch", git = "https://github.com/merely-made/mere.git", rev = "edf175f9c0a8645318ac8925adf0af6956f61425" }
+# Session persistence: the flat single-session `graph.json` beside the data
+# root (session_graph_store's blessed single-session shape). App-side
+# material that moves here with the port, like fetch.
+pandect = { git = "https://github.com/merely-made/mere.git", rev = "edf175f9c0a8645318ac8925adf0af6956f61425" }
+# Host-neutral semantic clip lowering. Knot still owns mutation and recorded
+# provenance.
+mere-import = { package = "import", git = "https://github.com/merely-made/mere.git", rev = "edf175f9c0a8645318ac8925adf0af6956f61425" }
+# Participant residency (participant gate B1): the authority gate over a participant's
+# nested chartulary graph, plus the substrate types the host speaks to it in.
+servitor = { git = "https://github.com/merely-made/mere.git", rev = "edf175f9c0a8645318ac8925adf0af6956f61425" }
+# The profile's root identity: install is a delegation SIGNED by the user's
+# personae master key (capability-model OQ2). The sealed vault implements the
+# same IdentityProvider trait, so it swaps in without touching consumers.
+identity = { package = "personae", git = "https://github.com/merely-made/mere.git", rev = "edf175f9c0a8645318ac8925adf0af6956f61425" }
+# Self-signed Gemini client certificates projected from capsule-scoped
+# Personae-derived Ed25519 keys. The private key stays transient.
+rcgen = "0.14"
+# Shared-place domains. Turnstone owns their worker composition while Gemot,
+# Commons, Stickleback, and Muniment retain their own wire, authority, crypto,
+# and durable-store contracts.
+commons = { package = "commons-spine", git = "https://github.com/merely-made/mere.git", rev = "edf175f9c0a8645318ac8925adf0af6956f61425" }
+# The live-lane carrier: ticket import, overlay tagging, and the sync parts
+# the domain join helpers take. The place worker owns the handles; sessions
+# are assembled by stickleback's JoinedSpace inside the domain crates.
+transport = { package = "mere-transport", git = "https://github.com/merely-made/mere.git", rev = "edf175f9c0a8645318ac8925adf0af6956f61425" }
+# The place worker's lane runtime: transport binding and JoinedSpace tasks
+# need a reactor. Scoped to the worker thread; the app and panes stay sync.
+tokio = { version = "1", features = ["rt-multi-thread", "sync", "time"] }
+gemot = { git = "https://github.com/merely-made/mere.git", rev = "edf175f9c0a8645318ac8925adf0af6956f61425" }
+# Optional Mere port surface enabled only for the captured-page projection.
+# Turnstone keeps the resulting cache in app-owned vocabulary below the
+# shell-owned place worker.
+moot-port = { package = "mere-moot", git = "https://github.com/merely-made/mere.git", rev = "edf175f9c0a8645318ac8925adf0af6956f61425", features = ["captured-web"] }
+stickleback = { git = "https://github.com/merely-made/mere.git", rev = "edf175f9c0a8645318ac8925adf0af6956f61425" }
+muniment = { git = "https://github.com/merely-made/mere.git", rev = "edf175f9c0a8645318ac8925adf0af6956f61425", features = ["redb"] }
+proofs = { package = "mere-proofs", git = "https://github.com/merely-made/mere.git", rev = "edf175f9c0a8645318ac8925adf0af6956f61425" }
+chartulary = { git = "https://github.com/merely-made/mere.git", rev = "edf175f9c0a8645318ac8925adf0af6956f61425" }
+# Participant subjects are content-derived: blake3(source) is the 32-byte keyholder.
+blake3 = "1"
+
+# The portable projection score stored beside a Turnstone session. The app maps
+# browser graph truth into it; Scenograph itself stays product-free.
+sceno = { git = "https://github.com/merely-made/mere.git", rev = "edf175f9c0a8645318ac8925adf0af6956f61425" }
+scenomise = { git = "https://github.com/merely-made/mere.git", rev = "edf175f9c0a8645318ac8925adf0af6956f61425" }
+scenotime = { git = "https://github.com/merely-made/mere.git", rev = "edf175f9c0a8645318ac8925adf0af6956f61425" }
+# Graphshell's portable client/endpoint contracts and native receipt view.
+# The committed Git sources are authoritative. The gitignored Cargo config
+# redirects them to a sibling checkout during cross-repository development.
+graphshell = { git = "https://github.com/merely-made/mere.git", rev = "edf175f9c0a8645318ac8925adf0af6956f61425" }
+notochord = { git = "https://github.com/merely-made/mere.git", rev = "edf175f9c0a8645318ac8925adf0af6956f61425" }
+# The in-process carrier and the Knot endpoint it hosts. Turnstone embeds the
+# endpoint rather than spawning it: a subprocess is unshippable in a browser
+# tab or an iOS app, so the spawn path cannot be the only one.
+knot = { package = "knot-editor", git = "https://github.com/merely-made/knot-editor.git", rev = "211ff57a128f4fdbd5060978a209d6bc0459fce6" }
+# The reusable one-document product surface. This stays separate from the
+# broad Knot port graph used by publishing and endpoint composition above.
+knot-document = { git = "https://github.com/merely-made/knot-editor.git", rev = "211ff57a128f4fdbd5060978a209d6bc0459fce6" }
+# The installed Distillery projection surface: the independent second provider
+# proving the contributed-surface seam (Knot shared-surface plan P0).
+distillery = { git = "https://github.com/merely-made/mere.git", rev = "edf175f9c0a8645318ac8925adf0af6956f61425" }
+graphshell-client = { git = "https://github.com/merely-made/mere.git", rev = "edf175f9c0a8645318ac8925adf0af6956f61425", features = ["accesskit"] }
+graphshell-endpoint = { git = "https://github.com/merely-made/mere.git", rev = "edf175f9c0a8645318ac8925adf0af6956f61425", features = ["local", "stdio"] }
+chirograph = { git = "https://github.com/merely-made/mere.git", rev = "edf175f9c0a8645318ac8925adf0af6956f61425" }
+# The pane model (rung 5 slice C) is no longer a dependency at all: it folded
+# into `src/panes` on 2026-07-25. One consumer wants no package, and the name
+# `frisket` went to `cambium::frisket`, the shared pane frame this app consumes.
+# The a11y/automation tree vocabulary (rung 5 slice F): UxTree + stitch +
+# stable path-derived ids. Not facade-re-exported by mere (a named facade
+# gap), so a direct git dep.
+uxtree = { git = "https://github.com/merely-made/mere.git", rev = "edf175f9c0a8645318ac8925adf0af6956f61425" }
+# Navigation vocabulary (the r3-owed Back/Forward/Reload): chrome's History
+# is the cursor over visited addresses. Not facade-re-exported; direct dep
+# like uxtree.
+chrome = { package = "mere-chrome", git = "https://github.com/merely-made/mere.git", rev = "edf175f9c0a8645318ac8925adf0af6956f61425" }
+# AccessKit node vocabulary for the projection (matches mere's 0.24 pin).
+accesskit = "0.24"
+# 0.32 on purpose: genet-winit-host pins accesskit_windows 0.32, and two
+# platform adapter stacks in one process is two UIA providers and one
+# oversized PDB. Both ride the same core accesskit 0.24 either way.
+accesskit_winit = "0.32"
+# The actor-kernel runtime: the physics + fetch actors wake this shell's
+# event loop through an `armillary::Wake`.
+armillary = { git = "https://github.com/merely-made/mere.git", rev = "edf175f9c0a8645318ac8925adf0af6956f61425" }
+# The recycle bin (design_docs/2026-07-20_recycle_bin_athanor.md): the eidetic
+# deleted-node bin behind an armillary actor. the eidetic fjall backend persists it at
+# sessions/<id>/bin; pollster drives the store's async ops on the actor thread
+# (serial disk IO wants no runtime).
+eidetic = { git = "https://github.com/merely-made/mere.git", rev = "edf175f9c0a8645318ac8925adf0af6956f61425", features = ["fjall"] }
+# The omnibar's recall lane (mere's search surface wiring plan, W2): BM25 over
+# the BrowsingTrace corpus the trail actor captures. Derived state — the index
+# is re-minted from the corpus, never repaired.
+eidetic-search = { git = "https://github.com/merely-made/mere.git", rev = "edf175f9c0a8645318ac8925adf0af6956f61425" }
+pollster = "0.4"
+# The per-user data root (`<data_dir>/turnstone`), TURNSTONE_ROOT-overridable for
+# scratch profiles (the meerkat MERE_ROOT convention).
+dirs = "6"
+# Native file authority stays in the shell. The app only sees a typed effect
+# and the contributed surface only sees the path the user selected.
+rfd = "0.17.2"
+# Render-free static-parse page extraction: the fetched body's `<title>`
+# (and later description/OpenGraph) enriches the page's graph node.
+# The engine contracts + the content lanes as session engines (session-engines
+# plan phase 4: turnstone's content port spawns through the registry; the static
+# lane's netfetch feature gives LocalFetcher its https branch).
+inker = { git = "https://github.com/merely-made/mere.git", rev = "edf175f9c0a8645318ac8925adf0af6956f61425" }
+genet-documents = { git = "https://github.com/merely-made/genet.git", rev = "679d8314aab4ec9f57a903c79dde244c3c565c1e", features = ["livery"] }
+# The Mere half of the former `genet-documents` (boundary plan P1): the
+# reader and smolweb lanes, and the remote fetcher that supplies the http(s)
+# schemes Genet's `LocalFetcher` no longer branches on. The two compose at
+# `LocalFetcher::with_fallback`, which is the seam the split introduced.
+mere-document-lanes = { git = "https://github.com/merely-made/mere.git", rev = "edf175f9c0a8645318ac8925adf0af6956f61425", features = ["netfetch", "smolweb", "eidetic-bridge"] }
+# The source-preserving Micron native projection. Turnstone adapts
+# its portable EngineDocument into the existing retained document session.
+nematic = { git = "https://github.com/merely-made/mere.git", rev = "edf175f9c0a8645318ac8925adf0af6956f61425" }
+# Native Reticulum page transport.  The NomadNet adapter owns only the public
+# destination and opaque page bytes; Turnstone owns navigation and rendering.
+retinue = { git = "https://github.com/merely-made/retinue.git", rev = "fa4f925059cc698058cb21fecc1c825d095741a9" }
+# An ephemeral Reticulum client identity is generated per NomadNet page fetch;
+# it is never persisted as a browsing preference or discovery record.
+getrandom = "0.2"
+# Protocol-faithful RSS/Atom parsing for the graph-native feed subscription
+# loop. Gemini feed discovery remains gemtext-native in Turnstone; errand owns
+# the shared XML grammar already used by Nematic.
+errand = { git = "https://github.com/merely-made/mere.git", rev = "edf175f9c0a8645318ac8925adf0af6956f61425" }
+# Optional app-control scripting. Piccolo is a Turnstone mod/workflow backend,
+# not a browser-page engine; Vano/Boa remain the JavaScript lanes.
+script-engine-api = { git = "https://github.com/merely-made/genet.git", rev = "679d8314aab4ec9f57a903c79dde244c3c565c1e", optional = true }
+script-engine-piccolo = { git = "https://github.com/merely-made/genet.git", rev = "679d8314aab4ec9f57a903c79dde244c3c565c1e", optional = true }
+# The app-core component host (mere): instantiates the envelope world and
+# backs `emit` with turnstone's ring gate. Optional — the `wasm` feature.
+app-host = { git = "https://github.com/merely-made/mere.git", rev = "edf175f9c0a8645318ac8925adf0af6956f61425", optional = true }
+# Store limits for a component instance (the same wasmtime the host uses).
+wasmtime = { version = "45", optional = true }
+fleece = { version = "0.5.0", git = "https://github.com/merely-made/genet.git", rev = "679d8314aab4ec9f57a903c79dde244c3c565c1e" }
+genet-static-dom = { git = "https://github.com/merely-made/genet.git", rev = "679d8314aab4ec9f57a903c79dde244c3c565c1e" }
+# Turnstone owns pane retention and composition; Genet supplies the clean-room
+# Livery cascade/Buckram layout state.
+# Portable Git/lock retain 0.0.3; explicit sibling mode also accepts tested 0.0.4.
+genet-livery = { version = ">=0.0.3, <0.0.5", git = "https://github.com/merely-made/genet.git", rev = "679d8314aab4ec9f57a903c79dde244c3c565c1e" }
+# The retained pane accessibility projection is owned beside Livery's
+# fragments in Genet; Turnstone only namespaces and places the returned tree.
+document-session-api = { git = "https://github.com/merely-made/genet.git", rev = "679d8314aab4ec9f57a903c79dde244c3c565c1e" }
+genet-render = { git = "https://github.com/merely-made/genet.git", rev = "679d8314aab4ec9f57a903c79dde244c3c565c1e" }
+# The chrome layer's document substrate + name types + paint vocabulary
+# (rung 3: the omnibar is turnstone's first DOM surface, composited above the
+# canvas by the layered present).
+genet-scripted-dom = { git = "https://github.com/merely-made/genet.git", rev = "679d8314aab4ec9f57a903c79dde244c3c565c1e" }
+taproot = { version = "0.1.0", git = "https://github.com/merely-made/genet.git", rev = "679d8314aab4ec9f57a903c79dde244c3c565c1e" }
+# The shared clipboard service. The system backend lives behind the shell so
+# neither the app nor the place worker ever holds a clipboard handle.
+genet-clipboard = { git = "https://github.com/merely-made/genet.git", rev = "679d8314aab4ec9f57a903c79dde244c3c565c1e" }
+layout-dom-api = { version = "=0.1.1", git = "https://github.com/merely-made/genet.git", rev = "679d8314aab4ec9f57a903c79dde244c3c565c1e" }
+paint_list_api = { git = "https://github.com/merely-made/netrender.git", rev = "9607d16f1907f6c2085648ae96abcaa30d7c3d41" }
+paint_list_render = { git = "https://github.com/merely-made/netrender.git", rev = "9607d16f1907f6c2085648ae96abcaa30d7c3d41" }
+# Suggestion rows key node identity by the graph's stable UUIDs.
+uuid = "1"
+# Resolve a declared icon href (or the /favicon.ico fallback) against the page URL.
+url = "2.5"
+# Rasterize + composite the canvas Scene through the shared present stack.
+netrender = { git = "https://github.com/merely-made/netrender.git", rev = "9607d16f1907f6c2085648ae96abcaa30d7c3d41" }
+genet-winit-host = { git = "https://github.com/merely-made/genet.git", rev = "679d8314aab4ec9f57a903c79dde244c3c565c1e" }
+# The view toolkit (rung 5 slice D, the toolkit adoption): cambium (the xilem
+# fork) + sprigging (its custom-paint leaves, incl. the data_grid and GraphCanvas
+# a Roster grid and a Gloss minimap swatch need). Git dep on cambium.git so the
+# gitignored local patch applies, like genet. Rung 3's hand-built ScriptedDom
+# chrome migrates onto this over time; panes that need a grid or a paint leaf
+# adopt it first.
+cambium = { git = "https://github.com/merely-made/mere.git", rev = "edf175f9c0a8645318ac8925adf0af6956f61425" }
+cambium-winit = { git = "https://github.com/merely-made/mere.git", rev = "edf175f9c0a8645318ac8925adf0af6956f61425" }
+# Authority-free source buffer plus Knot highlighting/outline/folds/preview.
+# Storage, sync, grants, and keys stay in the endpoint process.
+knot-editor-host = { git = "https://github.com/merely-made/mere.git", rev = "edf175f9c0a8645318ac8925adf0af6956f61425" }
+sprigging = { git = "https://github.com/merely-made/mere.git", rev = "edf175f9c0a8645318ac8925adf0af6956f61425" }
+# The application half of the former `genet-host-api`: the settings projection
+# and the product-surface admission vocabulary. The boundary plan (P1) split
+# that crate by authority; every one of turnstone's uses was this half, so the
+# raw Genet remainder is no longer a dependency at all.
+mere-surface-api = { git = "https://github.com/merely-made/mere.git", rev = "edf175f9c0a8645318ac8925adf0af6956f61425" }
+# The extracted split/tab contract. It now carries the tile seam turnstone
+# names for splits and settings refs, and moved to mere with Cambium (P3).
+workbench = { git = "https://github.com/merely-made/mere.git", rev = "edf175f9c0a8645318ac8925adf0af6956f61425" }
+# Chromium surface-engine adapter. `weld-engine` is the neutral inker bridge;
+# the CEF runtime remains opt-in because it carries a bundled browser runtime.
+weld-engine = { git = "https://github.com/merely-made/mere.git", rev = "edf175f9c0a8645318ac8925adf0af6956f61425", features = ["welding-0-15"], optional = true }
+# Pins match mere's workspace so the shared subtrees unify.
+winit = "0.30.13"
+# PNG encode for the scenario lane's GPU self-capture (composed-frame
+# readback -> receipt).
+image = { version = "0.25", default-features = false, features = ["avif", "bmp", "gif", "ico", "jpeg", "png", "webp"] }
+# The dropped-sprite data-URI (file drop -> node face).
+base64 = "0.22"
+wgpu = { version = "30", default-features = false, features = ["std", "wgsl"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+# The pane model (src/panes) persists its layout, and `incipit` supplies the
+# workspace ids its leaves carry. Both arrived with the folded frisket crate,
+# which had carried them itself.
+serde = { version = "1", features = ["derive"] }
+incipit = { git = "https://github.com/merely-made/mere.git", rev = "edf175f9c0a8645318ac8925adf0af6956f61425" }
+serde_json = { version = "1", features = ["float_roundtrip"] }
+# T5a's civil-day boundary is application policy. Jiff supplies civil types
+# and IANA-zone rules needed to distinguish 23-, 24-, and 25-hour local dates.
+jiff = "0.2"
+# T5a is an acceptance consumer of this exact Turquet 0.13.0 source revision.
+turquet = { version = "=0.13.0", git = "https://github.com/merely-made/turquet.git", rev = "bc3c454f755d0bfd70ab48bd9556a1cda2213d41" }
+
+# Atomic replacement of the local captured-search selection sidecar.
+tempfile = "3"
+
+# Redshank, the listening and annotation port incubated in woodshed. Turnstone
+# is its second host (port plan Phase 7): it admits the port's own compact dock
+# through the contributed-surface seam instead of copying one, and owns the ONE
+# Firewheel/CPAL output authority the tile shares. Redshank's crates live in a
+# NESTED workspace (`ports/redshank`), excluded from woodshed's root workspace;
+# cargo's git source reads packages anywhere in the repo, so the path is a
+# dependency detail, not a second source.
+#
+# The stable Burn follow-up preserves cefc903's API baseline and aligns
+# Redshank with the bounded Mere edf175f9 browser-input/font revision, based on
+# the qualified 3d1cdacc graph; Genet remains
+# 679d8314: qualified persistence/capture diagnostics, guarded note opens,
+# exact cue seeks, listener capture settings, and
+# the compact surface API. The gitignored `.cargo/config.toml` may redirect
+# these four packages to the sibling checkout for the cross-repo edit loop, as
+# it does for netrender and the wgpu family; a clean checkout resolves them
+# from GitHub at this rev.
+redshank-surfaces = { git = "https://github.com/merely-made/woodshed.git", rev = "24f196f46f775704e467b41140588a3f35335a9f" }
+redshank-model = { git = "https://github.com/merely-made/woodshed.git", rev = "24f196f46f775704e467b41140588a3f35335a9f" }
+# The one audio-device authority: Symphonia decode, a WSOLA retiming stage, and
+# a Firewheel graph over CPAL. Owned by the app, shared by every episode tile.
+redshank-playback = { git = "https://github.com/merely-made/woodshed.git", rev = "24f196f46f775704e467b41140588a3f35335a9f" }
+# The listening model's crash-tolerant generation store, rooted under
+# Turnstone's own session directory.
+redshank-storage = { git = "https://github.com/merely-made/woodshed.git", rev = "24f196f46f775704e467b41140588a3f35335a9f" }
+
+[dev-dependencies]
+mien = { git = "https://github.com/merely-made/mere.git", rev = "edf175f9c0a8645318ac8925adf0af6956f61425" }
+# The cookie custody test speaks the jar's own types. Same Genet revision as
+# every other genet.git row here, so it adds no package to the graph.
+netfetcher = { git = "https://github.com/merely-made/genet.git", rev = "679d8314aab4ec9f57a903c79dde244c3c565c1e" }
+
+[features]
+default = []
+# The wasm participant lane (participant gate B3): an `app-core` component acts
+# through the action envelope, ring-gated per emission. Opt-in like piccolo
+# so an ordinary browser build carries no wasm runtime.
+wasm = ["dep:app-host", "dep:wasmtime"]
+# Piccolo drives Turnstone's capability-scoped control scripts. It is kept
+# opt-in so the browser host's ordinary build carries no scripting runtime.
+piccolo = ["dep:script-engine-api", "dep:script-engine-piccolo"]
+# Bundled Chromium in an accelerated OSR tile. Windows is the first Turnstone
+# host because it has the live D3D12 shared-handle receipt; the feature stays
+# compile-visible elsewhere but registers no platform producer there yet.
+weld = ["dep:weld-engine", "dep:welding", "dep:grafting", "dep:windows"]
+# System WebView2 pages captured into the host's existing D3D12 device.
+# Runtime construction and per-node profiles remain host-owned.
+scry = ["dep:scrying-engine", "dep:windows", "dep:webview2-com"]
+# Upstream Servo views share one named process profile and import through Graft
+# on the existing host device. The first native host is Windows/D3D12.
+servo = ["dep:graft-engine", "dep:servo", "dep:servo-wgpu-interop-adapter", "dep:grafting", "dep:windows", "dep:rustls"]
+
+[target.'cfg(windows)'.dependencies]
+scrying-engine = { git = "https://github.com/merely-made/mere.git", rev = "edf175f9c0a8645318ac8925adf0af6956f61425", optional = true }
+graft-engine = { git = "https://github.com/merely-made/mere.git", rev = "edf175f9c0a8645318ac8925adf0af6956f61425", optional = true }
+servo = { git = "https://github.com/servo/servo", rev = "1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019", features = ["no-wgl"], optional = true }
+# Select a process crypto provider before Servo network construction.
+rustls = { version = "0.23.37", features = ["aws_lc_rs"], optional = true }
+servo-wgpu-interop-adapter = { git = "https://github.com/merely-made/wgpu-graft.git", rev = "dec11bbd2c9c8676e66987fb6ca32cd4ae6310eb", default-features = false, features = ["wgpu-30", "servo"], optional = true }
+webview2-com = { version = "=0.39.1", optional = true }
+# Weld owns CEF's callback-time copy; Grafting owns the generic DX12 shared
+# handle import on Turnstone's existing wgpu device.
+welding = { git = "https://github.com/merely-made/wgpu-weld.git", rev = "4784d07c4064195c33136b9b91c8231913f08e06", features = ["cef-runtime"], optional = true }
+grafting = { git = "https://github.com/merely-made/wgpu-graft.git", rev = "dec11bbd2c9c8676e66987fb6ca32cd4ae6310eb", default-features = false, features = ["wgpu-30"], optional = true }
+windows = { version = "0.62", features = ["Win32_Foundation"], optional = true }
+
+# Registry patches mirrored from mere's workspace manifest: a `[patch]` lives
+# in the top-level manifest of whoever builds, so a standalone consumer of
+# mere must restate them. Owned sources are pinned to immutable revisions or
+# release tags; no local paths appear here, so a clean checkout compiles anywhere.
+[patch.crates-io]
+# Pin queued-capture repair to its native-qualified immutable source.
+scrying = { git = "https://github.com/merely-made/wgpu-scry.git", rev = "39818a7eddb8bec33f7c61ed144da226bc0a1d04" }
+# Match Distillery's stable Burn graph; root patches are not inherited.
+cubecl-runtime = { git = "https://github.com/merely-made/mere.git", rev = "edf175f9c0a8645318ac8925adf0af6956f61425" }
+burn-remote = { git = "https://github.com/merely-made/mere.git", rev = "edf175f9c0a8645318ac8925adf0af6956f61425" }
+gemini-protocol = { git = "https://github.com/merely-made/smolweb.git", rev = "882baeb1b59bbdbb305e475f6675f69af997c4f4" }
+# No Stylo-family patch: Genet's live route is Livery/Buckram. The surviving
+# `stylo_malloc_size_of` utility is independent and does not link a CSS engine.
+#
+# Published Cambium and Netrender crates still name these shared Genet seams by
+# registry version. Keep a clean Turnstone consumer on the same Git type family
+# as its direct Genet dependencies instead of resolving the retired registry
+# paint/observable chain.
+engine-observables-api = { git = "https://github.com/merely-made/genet.git", rev = "679d8314aab4ec9f57a903c79dde244c3c565c1e" }
+genet-paint-types = { git = "https://github.com/merely-made/genet.git", rev = "679d8314aab4ec9f57a903c79dde244c3c565c1e" }
+genet-livery = { version = ">=0.0.3, <0.0.5", git = "https://github.com/merely-made/genet.git", rev = "679d8314aab4ec9f57a903c79dde244c3c565c1e" }
+genet-scripted-dom = { git = "https://github.com/merely-made/genet.git", rev = "679d8314aab4ec9f57a903c79dde244c3c565c1e" }
+genet-static-dom = { git = "https://github.com/merely-made/genet.git", rev = "679d8314aab4ec9f57a903c79dde244c3c565c1e" }
+layout-dom-api = { version = "=0.1.1", git = "https://github.com/merely-made/genet.git", rev = "679d8314aab4ec9f57a903c79dde244c3c565c1e" }
+# The renderer family is published, but Turnstone also consumes its current git
+# surface directly. Patch the four runtime crates together so Mere Canvas and
+# the host cannot receive source-distinct `Scene` or paint vocabulary types.
+# `netrender_text` is only Netrender's dev-only Parley adapter, so it does not
+# reach this application graph and must not add an unused root patch.
+netrender = { git = "https://github.com/merely-made/netrender.git", rev = "9607d16f1907f6c2085648ae96abcaa30d7c3d41" }
+netrender_device = { git = "https://github.com/merely-made/netrender.git", rev = "9607d16f1907f6c2085648ae96abcaa30d7c3d41" }
+paint_list_api = { git = "https://github.com/merely-made/netrender.git", rev = "9607d16f1907f6c2085648ae96abcaa30d7c3d41" }
+paint_list_render = { git = "https://github.com/merely-made/netrender.git", rev = "9607d16f1907f6c2085648ae96abcaa30d7c3d41" }
+#
+# The tagged `mere-p2panda-net =0.7.4` source owns the exact-ALPN net crate.
+# It resolves through this root patch until its crates.io release is available.
+# Its seven sibling packages remain on the owned dalek-3 fork and move together
+# at the matching immutable release tag.
+mere-p2panda-net = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.4" }
+p2panda-auth = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.4" }
+p2panda-core = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.4" }
+p2panda-discovery = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.4" }
+p2panda-encryption = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.4" }
+p2panda-store = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.4" }
+p2panda-stream = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.4" }
+p2panda-sync = { git = "https://github.com/mark-ik/p2panda.git", tag = "mere-p2panda-net-0.7.4" }
+# Livery/Buckram require Genet's current taffy fork.
+taffy = { package = "genet-taffy", version = "=0.14.0", git = "https://github.com/merely-made/genet.git", rev = "679d8314aab4ec9f57a903c79dde244c3c565c1e" }
+# No parley/fontique patch rows: as of genet 5ae30cad the text forks are
+# published as `genet-parley` and `genet-fontique` (lib names unchanged), so
+# nothing in genet answers to the name `parley` and a patch row here would
+# match no package and fail resolution. genet-livery reaches the fork by path
+# inside the git checkout, so the last-line-alignment and tab-size APIs still
+# resolve to the fork.
+# ipc-channel: in-process fork vendored in genet (single-process default,
+# unifies gpu-allocator's windows pin with wgpu-hal's).
+ipc-channel = { git = "https://github.com/merely-made/genet.git", rev = "679d8314aab4ec9f57a903c79dde244c3c565c1e" }
+
+# Vello on wgpu 30. Upstream vello 0.10 still requires wgpu 29, so netrender
+# (and through it this app's render path) takes vello from the owned fork:
+# the v0.10.0 tag plus exactly the API changes in linebender/vello#1754.
+# `[patch]` applies only from the top-level manifest and is NOT inherited
+# from genet or netrender, so every app workspace restates it. Retires by
+# deletion when upstream ships a wgpu-30 vello.
+vello = { git = "https://github.com/mark-ik/vello.git", tag = "vello-0.10.0" }
+
+[profile.dev]
+# line-tables-only, because full debug info no longer fits: the dependency
+# graph crossed MSVC's program-database limit (LNK1140) the day the livery
+# cutover landed, and a test binary that cannot link is worth more than local
+# variables in a debugger. Backtraces keep file and line.
+# debug = 0 outright, not even line tables: 16K PDB pages still overflowed
+# under the VS 18 Insiders linker, and a red/green verdict does not need line
+# numbers. Restore line-tables-only when the toolchain stops being a preview.
+debug = 0

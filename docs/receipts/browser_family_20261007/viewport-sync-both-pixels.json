@@ -1,0 +1,62 @@
+{
+  "recorded_utc": "2026-10-07T10:23:19.192164+00:00",
+  "directory": "C:/Users/mark_/Code/repos/turnstone/docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-both",
+  "helper_sha256": "3546f8fc1063b28fc0dc45f9b1e4e47e3f12cd078662a7c91729152aab1b110a",
+  "method": {
+    "fixture": "viewport",
+    "expected_rgb": [
+      23,
+      109,
+      53
+    ],
+    "channel_tolerance": 8,
+    "minimum_green_fraction": 0.75,
+    "minimum_region_pixels": 4096,
+    "content_edge_inset_pixels": 4,
+    "required_live_producers_cached_frames_servo_active_views": 1
+  },
+  "limits": "Fixture-specific imported-body check. Native title assertions qualify page APIs separately. This does not establish text correctness, accessibility, arbitrary page correctness or native teardown.",
+  "inputs": [
+    {
+      "path": "02_inspector_closed_viewport.png",
+      "bytes": 57013,
+      "sha256": "98f7c6bf125848496bb3922d3cf932238fa239a8ec507f099947eecccf7c66b0"
+    },
+    {
+      "path": "viewport-inspector-closed.surface-frames.json",
+      "bytes": 314,
+      "sha256": "40d5e80335f189fa43309fc155cb98530adbcc6f50467f470f0115e41313ca99"
+    }
+  ],
+  "failures": [],
+  "counts": {
+    "live_producers": 1,
+    "cached_frames": 1,
+    "servo_active_views": 1
+  },
+  "surface": {
+    "node": "62587b8f-ded3-45a3-b238-e21c705dd155",
+    "recorded_rectangle": {
+      "x": 515.0,
+      "y": 30.0,
+      "width": 509.0,
+      "height": 570.0
+    }
+  },
+  "capture_size": [
+    1024,
+    600
+  ],
+  "pixels": {
+    "sample_box": [
+      519,
+      34,
+      1020,
+      596
+    ],
+    "sampled_pixels": 281562,
+    "matched_green_pixels": 275460,
+    "matched_green_fraction": 0.9783280414260447
+  },
+  "passed": true
+}

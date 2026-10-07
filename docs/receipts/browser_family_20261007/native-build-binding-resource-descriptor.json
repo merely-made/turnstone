@@ -1,0 +1,94 @@
+{
+  "recorded_utc": "2026-10-07T10:29:24.199428+00:00",
+  "completed_build": {
+    "command": [
+      "cargo",
+      "+1.98.1",
+      "build",
+      "--workspace",
+      "--locked",
+      "--features",
+      "scry,weld,servo",
+      "-j",
+      "2",
+      "--message-format=json-render-diagnostics"
+    ],
+    "cwd": "C:\\Users\\mark_\\Code\\repos\\turnstone",
+    "started_utc": "2026-10-07T10:26:55.678873+00:00",
+    "finished_utc": "2026-10-07T10:28:29.478473+00:00",
+    "elapsed_seconds": 93.81299999999464,
+    "exit_code": 0,
+    "priority": "BelowNormal",
+    "environment": {
+      "CEF_PATH": "C:/Users/mark_/Code/cef-cache/wgpu-weld/154.0.34/cef_windows_x86_64",
+      "LIBCLANG_PATH": "C:/Program Files/LLVM/bin",
+      "CMAKE_GENERATOR": "Visual Studio 17 2022",
+      "CARGO_TARGET_DIR": "C:/t/cargo-targets/turnstone",
+      "CARGO_BUILD_JOBS": null,
+      "CARGO_NET_GIT_FETCH_WITH_CLI": "true",
+      "RUSTFLAGS": null,
+      "CARGO_ENCODED_RUSTFLAGS": null,
+      "CARGO_PROFILE_DEV_DEBUG": null,
+      "CARGO_PROFILE_TEST_DEBUG": null
+    }
+  },
+  "build_log_sha256": "b43558ac3244c14013387bf67f3a666cdbe4a10a5817f6087846fdd2431afd65",
+  "pre_native_source_comparison": "PASS",
+  "pre_native_input_count": 220,
+  "mozangle_build_event": {
+    "reason": "build-script-executed",
+    "package_id": "registry+https://github.com/rust-lang/crates.io-index#mozangle@0.7.1",
+    "linked_libs": [
+      "static=translator",
+      "static=preprocessor",
+      "static=angle_common",
+      "static=glslang_glue",
+      "static=angle_gpu_info_util",
+      "dxgi",
+      "setupapi",
+      "static=angle_image_util",
+      "static=compression_utils_portable",
+      "libEGL"
+    ],
+    "linked_paths": [
+      "native=C:\\Program Files\\Microsoft Visual Studio\\18\\Insiders\\VC\\Tools\\MSVC\\14.51.36231\\atlmfc\\lib\\x64",
+      "native=C:/t/cargo-targets/turnstone\\debug\\build\\mozangle-a4d4d55d91eeaf82\\out",
+      "native=C:\\Program Files\\Microsoft Visual Studio\\18\\Insiders\\VC\\Tools\\MSVC\\14.51.36231\\atlmfc\\lib\\x64",
+      "native=C:/t/cargo-targets/turnstone\\debug\\build\\mozangle-a4d4d55d91eeaf82\\out",
+      "native=C:\\Program Files\\Microsoft Visual Studio\\18\\Insiders\\VC\\Tools\\MSVC\\14.51.36231\\atlmfc\\lib\\x64",
+      "native=C:/t/cargo-targets/turnstone\\debug\\build\\mozangle-a4d4d55d91eeaf82\\out",
+      "native=C:\\Program Files\\Microsoft Visual Studio\\18\\Insiders\\VC\\Tools\\MSVC\\14.51.36231\\atlmfc\\lib\\x64",
+      "native=C:/t/cargo-targets/turnstone\\debug\\build\\mozangle-a4d4d55d91eeaf82\\out",
+      "native=C:\\Program Files\\Microsoft Visual Studio\\18\\Insiders\\VC\\Tools\\MSVC\\14.51.36231\\atlmfc\\lib\\x64",
+      "native=C:/t/cargo-targets/turnstone\\debug\\build\\mozangle-a4d4d55d91eeaf82\\out",
+      "native=C:\\Program Files\\Microsoft Visual Studio\\18\\Insiders\\VC\\Tools\\MSVC\\14.51.36231\\atlmfc\\lib\\x64",
+      "native=C:/t/cargo-targets/turnstone\\debug\\build\\mozangle-a4d4d55d91eeaf82\\out",
+      "native=C:\\Program Files\\Microsoft Visual Studio\\18\\Insiders\\VC\\Tools\\MSVC\\14.51.36231\\atlmfc\\lib\\x64",
+      "native=C:/t/cargo-targets/turnstone\\debug\\build\\mozangle-a4d4d55d91eeaf82\\out",
+      "C:/t/cargo-targets/turnstone\\debug\\build\\mozangle-a4d4d55d91eeaf82\\out"
+    ],
+    "cfgs": [],
+    "env": [],
+    "out_dir": "C:/t/cargo-targets/turnstone\\debug\\build\\mozangle-a4d4d55d91eeaf82\\out"
+  },
+  "dlls": [
+    {
+      "name": "libEGL.dll",
+      "source": "C:\\t\\cargo-targets\\turnstone\\debug\\build\\mozangle-a4d4d55d91eeaf82\\out\\libEGL.dll",
+      "staged": "C:\\t\\cargo-targets\\turnstone\\debug\\libEGL.dll",
+      "sha256": "7463ac0d8d6030b21552476d847061a54e488151dbf02e7ba06893a16c4d223c",
+      "previous_staged_sha256": "7463ac0d8d6030b21552476d847061a54e488151dbf02e7ba06893a16c4d223c"
+    },
+    {
+      "name": "libGLESv2.dll",
+      "source": "C:\\t\\cargo-targets\\turnstone\\debug\\build\\mozangle-a4d4d55d91eeaf82\\out\\libGLESv2.dll",
+      "staged": "C:\\t\\cargo-targets\\turnstone\\debug\\libGLESv2.dll",
+      "sha256": "b9df0e9de4e3d827a7aa2eb5d6b6324061e8eca5070033b109ffeeb8cabd29e0",
+      "previous_staged_sha256": "b9df0e9de4e3d827a7aa2eb5d6b6324061e8eca5070033b109ffeeb8cabd29e0"
+    }
+  ],
+  "cef_source": "C:\\Users\\mark_\\Code\\cef-cache\\wgpu-weld\\154.0.34\\cef_windows_x86_64\\libcef.dll",
+  "cef_sha256": "e3da6707a840a8f33f565e011542169fd51aaa5218603eb7a89039fb16d79ae7",
+  "exe": "C:\\t\\cargo-targets\\turnstone\\debug\\turnstone.exe",
+  "exe_sha256": "61a81cb0864635a337e4db7ca7ded22f77d8076059fe72378b17f230f713c39a"
+}

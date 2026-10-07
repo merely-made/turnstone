@@ -15,3 +15,9 @@ Assertions read normal title/address callbacks. They do not request host script
 evaluation. Red TOP and blue BOTTOM strips make GL orientation visible before
 and after resize, navigation and reconstruction. Captures must be reviewed;
 frame counters alone cannot prove correct pixels or orientation.
+
+`browser_servo_intl_windows.scn` uses the separate `intl.html` fixture to check
+native-page normalization, calendar date formatting, word segmentation and
+numeric collation through SpiderMonkey's ICU boundary. The title reports the
+combined result, and the capture shows each individual result. It does not use
+host script evaluation or change the existing input/orientation fixture.

@@ -9,7 +9,7 @@
 //! queue. The shell must release producers and cached frames before shutdown.
 
 use graft_engine::{GraftFrame, GraftProducerFactory, GraftSurface};
-use grafting::{ImportedTexture, TextureOrigin};
+use grafting::{DiagnosticGpuSync, ImportedTexture, TextureOrigin};
 use inker::{
     CursorShape, DragEvent, DragOperationSet, FocusReason, KeyboardEvent, MouseButton, MouseEvent,
     MouseEventKind, NativeTextureHandle, NavigationEvent, OwnedSurfaceFrame, PhysicalPosition,
@@ -207,10 +207,11 @@ impl GraftProducerFactory for TurnstoneServoFactory {
             ));
         }
         let url = Url::parse(&request.url).map_err(|error| spawn_error(error.to_string()))?;
-        let interop = ServoWgpuInteropAdapter::new(
+        let interop = ServoWgpuInteropAdapter::new_with_diagnostic_sync(
             self.device.clone(),
             self.queue.clone(),
             PhysicalSize::new(request.width.max(1), request.height.max(1)),
+            requested_gpu_sync()?,
         )
         .map_err(|error| spawn_error(error.to_string()))?;
         let delegate = Rc::new(Delegate {
@@ -355,7 +356,8 @@ impl GraftSurface for TurnstoneServoSurface {
             .interop
             .as_ref()
             .unwrap()
-            .take_imported_texture()
+            .take_imported_texture_result()
+            .map_err(|error| SurfaceError::FrameAcquisitionFailed(error.to_string()))?
             .ok_or_else(|| {
                 SurfaceError::FrameAcquisitionFailed(
                     "Servo pre-present import produced no frame".into(),
@@ -442,9 +444,9 @@ impl GraftSurface for TurnstoneServoSurface {
                 let button = match event.button.ok_or_else(|| {
                     SurfaceError::InputFailed("Servo mouse button is absent".into())
                 })? {
-                    MouseButton::Left => servo::MouseButton::Left,
-                    MouseButton::Middle => servo::MouseButton::Middle,
-                    MouseButton::Right => servo::MouseButton::Right,
+                    MouseButton::Left => servo::MouseButton::Primary,
+                    MouseButton::Middle => servo::MouseButton::Auxiliary,
+                    MouseButton::Right => servo::MouseButton::Secondary,
                     MouseButton::Back => servo::MouseButton::Back,
                     MouseButton::Forward => servo::MouseButton::Forward,
                 };
@@ -533,7 +535,7 @@ impl GraftSurface for TurnstoneServoSurface {
         Ok(())
     }
     fn focus(&mut self, _: FocusReason) -> Result<(), SurfaceError> {
-        self.view().focus();
+        self.view().set_focused(true);
         Ok(())
     }
     fn poll_navigation_event(&mut self) -> Option<NavigationEvent> {
@@ -639,6 +641,48 @@ fn require_owner(owner: ThreadId) -> Result<(), SurfaceError> {
 fn spawn_error(detail: impl Into<String>) -> SurfaceError {
     SurfaceError::SpawnFailed(detail.into())
 }
+
+fn requested_gpu_sync() -> Result<DiagnosticGpuSync, SurfaceError> {
+    fn option(name: &str) -> Result<Option<String>, SurfaceError> {
+        match std::env::var(name) {
+            Ok(value) => Ok(Some(value)),
+            Err(std::env::VarError::NotPresent) => Ok(None),
+            Err(_) => Err(spawn_error(format!("{name} must be Unicode"))),
+        }
+    }
+    let mode = option("TURNSTONE_SERVO_GPU_SYNC")?;
+    let timeout = option("TURNSTONE_SERVO_GPU_SYNC_TIMEOUT_MS")?
+        .map(|value| value.parse::<u64>())
+        .transpose()
+        .map_err(|_| spawn_error("Servo GPU diagnostic timeout must be positive milliseconds"))?
+        .unwrap_or(5000);
+    if timeout == 0 {
+        return Err(spawn_error(
+            "Servo GPU diagnostic timeout must be positive milliseconds",
+        ));
+    }
+    parse_gpu_sync(
+        mode.as_deref().unwrap_or("existing"),
+        std::time::Duration::from_millis(timeout),
+    )
+}
+
+fn parse_gpu_sync(
+    mode: &str,
+    timeout: std::time::Duration,
+) -> Result<DiagnosticGpuSync, SurfaceError> {
+    // These explicit diagnostics preserve the existing production policy.
+    // Native runners guard the process because GL producer completion has no timeout.
+    match mode {
+        "existing" => Ok(DiagnosticGpuSync::Existing),
+        "producer" => Ok(DiagnosticGpuSync::ProducerCompletion),
+        "normalization" => Ok(DiagnosticGpuSync::NormalizationCompletion { timeout }),
+        "both" => Ok(DiagnosticGpuSync::Both { timeout }),
+        _ => Err(spawn_error(
+            "TURNSTONE_SERVO_GPU_SYNC must be existing, producer, normalization or both",
+        )),
+    }
+}
 fn unsupported(operation: &str) -> SurfaceError {
     SurfaceError::Unsupported(format!("Servo host does not support {operation}"))
 }
@@ -646,6 +690,28 @@ fn unsupported(operation: &str) -> SurfaceError {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn gpu_diagnostics_select_the_requested_wait_and_refuse_unknown_modes() {
+        let timeout = std::time::Duration::from_millis(137);
+        assert_eq!(
+            parse_gpu_sync("existing", timeout).unwrap(),
+            DiagnosticGpuSync::Existing
+        );
+        assert_eq!(
+            parse_gpu_sync("producer", timeout).unwrap(),
+            DiagnosticGpuSync::ProducerCompletion
+        );
+        assert_eq!(
+            parse_gpu_sync("normalization", timeout).unwrap(),
+            DiagnosticGpuSync::NormalizationCompletion { timeout }
+        );
+        assert_eq!(
+            parse_gpu_sync("both", timeout).unwrap(),
+            DiagnosticGpuSync::Both { timeout }
+        );
+        assert!(parse_gpu_sync("unknown", timeout).is_err());
+    }
 
     fn event(key_code: u32, pressed: bool, text: Option<&str>) -> KeyboardEvent {
         KeyboardEvent {

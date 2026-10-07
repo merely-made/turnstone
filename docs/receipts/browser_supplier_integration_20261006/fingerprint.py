@@ -48,19 +48,28 @@ def input_paths():
     # An ignored local Cargo config can affect the actual command too.
     paths.update(path for path in (root / ".cargo/config", root / ".cargo/config.toml") if path.is_file())
     for name in (
+        ".gitattributes",
+        "docs/receipts/g3_turnstone_endpoint.html",
+        "docs/receipts/browser_family_20261007/run-gate.py",
+        "docs/receipts/browser_family_20261007/freeze-current.py",
+        "docs/receipts/browser_family_20261007/review-intl-pixels.py",
+        "docs/receipts/browser_family_20261007/bind-native-build.py",
         "scenarios/browser_scry_windows.scn",
         "scenarios/browser_weld_direct_windows.scn",
         "scenarios/browser_weld_permission_direct_windows.scn",
         "scenarios/browser_servo_windows.scn",
+        "scenarios/browser_servo_intl_windows.scn",
+        "scenarios/browser_servo_viewport_windows.scn",
         "scenarios/browser_trio_windows.scn",
         "scenarios/fixtures/browser_decisions_server.ps1",
     ):
         paths.add(root / name)
-    for name in ("scenarios/fixtures/browser_scry", "scenarios/fixtures/browser_servo"):
+    for name in ("scenarios/fixtures/browser_scry", "scenarios/fixtures/browser_servo",
+                 "vendor/mozjs-icu-collator", "vendor/mozjs-icu-normalizer"):
         paths.update(path for path in (root / name).rglob("*") if path.is_file())
     # The runner itself determines environment, profile reuse and pass/fail gates.
     paths.update(receipt / name for name in (
-        "fingerprint.py", "native-runner.ps1", "run-current.ps1", "run-permission.ps1", "run-servo.ps1", "run-mixed.ps1", "review-servo-pixels.py",
+        "fingerprint.py", "native-runner.ps1", "run-current.ps1", "run-permission.ps1", "run-servo.ps1", "run-mixed.ps1", "run-upstream.ps1", "review-servo-pixels.py",
     ))
     return sorted(paths)
 
@@ -100,7 +109,7 @@ else:
         "dirty_status": command(["git", "status", "--short"]),
         "features": features,
         "actual_build_command": args.build_command,
-        "build_environment": {name: os.environ.get(name) for name in (
+        "freeze_environment": {name: os.environ.get(name) for name in (
             "CEF_PATH", "RUSTFLAGS", "CARGO_ENCODED_RUSTFLAGS", "RUSTC", "CARGO_TARGET_DIR",
             "CARGO_PROFILE_DEV_DEBUG", "CARGO_PROFILE_TEST_DEBUG",
             "LIBCLANG_PATH", "CMAKE_GENERATOR", "CC", "CXX",

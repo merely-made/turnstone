@@ -1,0 +1,11 @@
+--- mozjs_icu_normalizer-153.3.0/Cargo.toml.published
++++ vendor/mozjs-icu-normalizer/Cargo.toml
+@@ -151,7 +151,7 @@
+ package = "mozjs_icu_normalizer_data"
+ 
+ [dependencies.icu_properties]
+-version = "~2.1.1"
++version = "^2.1.1"
+ optional = true
+ default-features = false
+ 

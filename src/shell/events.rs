@@ -31,6 +31,7 @@ use super::Shell;
 
 impl ApplicationHandler for Shell {
     fn new_events(&mut self, _event_loop: &ActiveEventLoop, _cause: StartCause) {
+        self.observe_physics_display_rate(false);
         #[cfg(all(feature = "servo", windows))]
         if let Err(error) = super::servo::pump() {
             tracing::warn!(%error, "Servo process event pump failed");
@@ -113,6 +114,12 @@ impl ApplicationHandler for Shell {
         self.width = size.width.max(1);
         self.height = size.height.max(1);
         self.app.graph_runtimes.resize(self.width, self.height);
+        self.app.graph_runtimes.set_physics_display_rate(
+            window
+                .current_monitor()
+                .and_then(|monitor| monitor.refresh_rate_millihertz()),
+        );
+        self.physics_display_rate_last_observed = Some(std::time::Instant::now());
         self.app.viewport = (self.width as f32, self.height as f32);
         self.app.reflow_omnibar();
         // Frame the content, not the origin: a restored session's persisted
@@ -264,6 +271,9 @@ impl ApplicationHandler for Shell {
             return;
         }
         match event {
+            WindowEvent::Moved(_) | WindowEvent::ScaleFactorChanged { .. } => {
+                self.observe_physics_display_rate(true);
+            },
             WindowEvent::CloseRequested => {
                 self.act(Action::SaveSession);
                 self.release_place_worker();
@@ -397,6 +407,7 @@ impl ApplicationHandler for Shell {
                 }
             }
             WindowEvent::RedrawRequested => {
+                self.observe_physics_display_rate(false);
                 tracing::debug!(target: "turnstone::selfdrive", "begin render");
                 self.render();
                 tracing::debug!(target: "turnstone::selfdrive", "finished render; begin accessibility update");
@@ -412,6 +423,29 @@ impl ApplicationHandler for Shell {
 }
 
 impl Shell {
+    /// Refresh changes need not move the window or change its scale. Sample
+    /// on the existing host cadence, with unchanged rates suppressed by the
+    /// runtime pool. No extra event-loop wake is needed while the host is idle.
+    fn observe_physics_display_rate(&mut self, force: bool) {
+        let Some(window) = self.window.as_ref() else {
+            return;
+        };
+        let now = std::time::Instant::now();
+        if !force
+            && self.physics_display_rate_last_observed.is_some_and(|last| {
+                now.duration_since(last) < std::time::Duration::from_secs(1)
+            })
+        {
+            return;
+        }
+        self.physics_display_rate_last_observed = Some(now);
+        self.app.graph_runtimes.set_physics_display_rate(
+            window
+                .current_monitor()
+                .and_then(|monitor| monitor.refresh_rate_millihertz()),
+        );
+    }
+
     /// The Redshank command loop, one turn per event batch: take what the
     /// mounted docks issued, apply it through the app's one listening
     /// authority, then show every dock what the model and runtime now say.

@@ -1,0 +1,21 @@
+{
+  "observed_utc": "2026-10-07T10:19:58.038513+00:00",
+  "head": "aafa78df71170c83df9838c6fc207117bedc45ec",
+  "branch": "main",
+  "tracked_diff": [],
+  "untracked_receipts": [
+    "docs/receipts/browser_family_20261007/linux-baseline-Cargo.lock",
+    "docs/receipts/browser_family_20261007/linux-baseline-Cargo.toml",
+    "docs/receipts/browser_family_20261007/linux-baseline-inputs.json",
+    "docs/receipts/browser_family_20261007/linux-baseline-result.json",
+    "docs/receipts/browser_family_20261007/linux-baseline.stderr.log",
+    "docs/receipts/browser_family_20261007/linux-baseline.stdout.log"
+  ],
+  "observed_named_owners": [],
+  "target_lock_observer": {
+    "exit": 1,
+    "stdout": "",
+    "stderr": ""
+  },
+  "limitations": "Point-in-time accessible named-process inventory and Cargo target lock observation; no guarantee of future availability."
+}

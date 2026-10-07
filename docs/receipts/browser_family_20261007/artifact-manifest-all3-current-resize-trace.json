@@ -1,0 +1,187 @@
+{
+  "recorded_utc": "2026-10-07T10:12:13.274802+00:00",
+  "label": "all3-current-resize-trace",
+  "source_manifest": "docs/receipts/browser_supplier_integration_20261006/source-manifest-all3-current-resize-trace.json",
+  "source_archive": "docs/receipts/browser_family_20261007/source-inputs-all3-current-resize-trace.zip",
+  "features": [
+    "scry",
+    "weld",
+    "servo"
+  ],
+  "exe_sha256": "ab68d1f6a293d4bb210ac2cc9666422433b21c80be99f0b6b826073e5425d72d",
+  "explicit_completed_selection": [
+    "docs/receipts/browser_supplier_integration_20261006/source-manifest-all3-current-resize-trace.json",
+    "docs/receipts/browser_supplier_integration_20261006/native-current-family-resize-trace",
+    "docs/receipts/browser_family_20261007/pre-resize-trace-inputs.json",
+    "docs/receipts/browser_family_20261007/native-build-binding-resize-trace.json",
+    "docs/receipts/browser_family_20261007/all3-resize-trace-native-build.result.json",
+    "docs/receipts/browser_family_20261007/all3-resize-trace-native-build.stdout.log",
+    "docs/receipts/browser_family_20261007/all3-resize-trace-native-build.stderr.log",
+    "docs/receipts/browser_family_20261007/resolve-resize-trace.result.json",
+    "docs/receipts/browser_family_20261007/resolve-resize-trace.stdout.log",
+    "docs/receipts/browser_family_20261007/resolve-resize-trace.stderr.log",
+    "docs/receipts/browser_family_20261007/cargo-mode-current-sequential.result.json",
+    "docs/receipts/browser_family_20261007/cargo-mode-current-sequential.stdout.log",
+    "docs/receipts/browser_family_20261007/cargo-mode-current-sequential.stderr.log"
+  ],
+  "native_completion": [
+    {
+      "directory": "docs/receipts/browser_supplier_integration_20261006/native-current-family-resize-trace",
+      "native_exit": 0,
+      "scenario_result": "RESULT ok"
+    }
+  ],
+  "files": [
+    {
+      "path": "docs/receipts/browser_family_20261007/all3-resize-trace-native-build.result.json",
+      "bytes": 927,
+      "sha256": "180e76b79f427dcb63b8f368763ac7be51c6bba1b04c576b295bd8af2bc703ba"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/all3-resize-trace-native-build.stderr.log",
+      "bytes": 23277,
+      "sha256": "64bb7fc3f373881d3d85f2e1a0aad392f3f3077db47d2c78f3740a305da4a810"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/all3-resize-trace-native-build.stdout.log",
+      "bytes": 1306573,
+      "sha256": "5bb7ed292b48be83fbf267cca5ddae3ec30e359e1ff453c577a39ec61b10f726"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/cargo-mode-current-sequential.result.json",
+      "bytes": 327,
+      "sha256": "574958bd28a977fa0d556ac8ade3283b38f00e4a458c3c2f97d30f52f2427e01"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/cargo-mode-current-sequential.stderr.log",
+      "bytes": 29356,
+      "sha256": "b8da1f53c19ec085952580715a5b46dd98ac289c133a2ff807acc538a4d96029"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/cargo-mode-current-sequential.stdout.log",
+      "bytes": 176,
+      "sha256": "08cd1b3679008dae48810cbd330c7e4115b11b07ed96ec7abaa7cc435114c62e"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/freeze-current.py",
+      "bytes": 6411,
+      "sha256": "67cdc015f1a8c88add448e613bee166464141ffee69acc0387d64b4467357912"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/native-build-binding-resize-trace.json",
+      "bytes": 4586,
+      "sha256": "e73ce9a821f34a4f278a8ba52079f2357594d2e62601fa48531bc4e6dc4e6ee1"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/pre-resize-trace-inputs.json",
+      "bytes": 36967,
+      "sha256": "7cb46515b4853d6137ba61c2a81c3f116c3e4f7dab5b11d802aa0508f992a48f"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/resolve-resize-trace.result.json",
+      "bytes": 387,
+      "sha256": "5471613ad5b19a2316e6992190e691069a84343db592e994ccd9afc90341bf77"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/resolve-resize-trace.stderr.log",
+      "bytes": 2397,
+      "sha256": "88573890cb5e360ab3c739f593755788bcdb8f66c6ed896eee0fcf2d253683b1"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/resolve-resize-trace.stdout.log",
+      "bytes": 8553617,
+      "sha256": "d640633635bf3c2443d1c7984669a6aac9e5cf21e6ec72a7a676c421f39ea589"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/source-inputs-all3-current-resize-trace.zip",
+      "bytes": 2607452,
+      "sha256": "1df4086192451b626c4a1b6af1bc9e1a3addb2a3a1bd622a1e4c10441f181131"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-family-resize-trace/01_inspector_open_viewport.png",
+      "bytes": 150350,
+      "sha256": "955a9645340782c549b6cd80400f2e5904bfbf79b7610e4135abfb9f14cfdc5e"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-family-resize-trace/02_inspector_closed_viewport.png",
+      "bytes": 59511,
+      "sha256": "04ae396421cdd953baf01475271949a6ff32c28f519307a0e42735fd884a51f4"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-family-resize-trace/diagnostics.json",
+      "bytes": 11782,
+      "sha256": "608573815532bc9131716e8a10bd86416d596bf82423325f380bd75da6a51409"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-family-resize-trace/loaded-modules.json",
+      "bytes": 5835,
+      "sha256": "284442c829e54207c700430793f524e0352d6f1d9cdecefcb4bb9717babe401e"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-family-resize-trace/process-result.json",
+      "bytes": 1382,
+      "sha256": "979989d99071cb66b5ec6cc12059d24d73a437fc81d35423b4d1af7cd5ed9f0a"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-family-resize-trace/run.log",
+      "bytes": 15632,
+      "sha256": "63d2953dfa670321bc154bb5a97786774cee5fcd9e69ddd3f72baa240233cedc"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-family-resize-trace/run.stderr.log",
+      "bytes": 7590,
+      "sha256": "9d9bb3e5ad99d8eca7298e6042a32010a41d40d53775e3b1a0408ff24b898e40"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-family-resize-trace/run.stdout.log",
+      "bytes": 8011,
+      "sha256": "f8251a330daf91df774f270dfb1201ff83d8d5977b99adcdcaaf47dc0d9e5594"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-family-resize-trace/scenario.done",
+      "bytes": 84,
+      "sha256": "8f5b02d52a735e6a75c32be130e2961f202138ed554c1fdac675890519c2d4dd"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-family-resize-trace/viewport-inspector-closed.surface-frames.json",
+      "bytes": 313,
+      "sha256": "1f1ad6c7c5cb3b413c4f3536faedf5b1b37abe03e171bbe5552795f9bcc2e7a9"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-family-resize-trace/viewport-inspector-closed.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-family-resize-trace/viewport-inspector-open.surface-frames.json",
+      "bytes": 313,
+      "sha256": "3e068e4afc21ad441eda28a9f9497d2e9e36af4caca51e345aa272a9684b344b"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-family-resize-trace/viewport-inspector-open.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-family-resize-trace/viewport-servo-closed.surface-frames.json",
+      "bytes": 124,
+      "sha256": "1bed58cd98da508010f079af827425c0aef7090b11188293058190b994965ac6"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-family-resize-trace/viewport-servo-closed.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/source-manifest-all3-current-resize-trace.json",
+      "bytes": 431860,
+      "sha256": "a6e85ea86d9413a628422d03ec831e9d07b57dde9a0b3415206de8f60577d561"
+    }
+  ],
+  "limits": [
+    "Profiles excluded",
+    "Native sentinel does not prove pixels or accessibility",
+    "Failed controls may be retained; their actual result determines scope",
+    "Verification of archived inputs does not qualify later source or executables"
+  ]
+}

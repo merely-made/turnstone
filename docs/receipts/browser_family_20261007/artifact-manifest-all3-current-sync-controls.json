@@ -1,0 +1,681 @@
+{
+  "recorded_utc": "2026-10-07T10:22:12.383461+00:00",
+  "label": "all3-current-sync-controls",
+  "source_manifest": "docs/receipts/browser_supplier_integration_20261006/source-manifest-all3-current-sync-controls.json",
+  "source_archive": "docs/receipts/browser_family_20261007/source-inputs-all3-current-sync-controls.zip",
+  "features": [
+    "scry",
+    "weld",
+    "servo"
+  ],
+  "exe_sha256": "36b8cd6e0a81b87a74a216eb5db632ddf2ff08e0bd5c0b80ada427ab3bab78a6",
+  "explicit_completed_selection": [
+    "docs/receipts/browser_supplier_integration_20261006/native-current-sync-existing-intl",
+    "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-existing",
+    "docs/receipts/browser_family_20261007/sync-existing-pixels.json",
+    "docs/receipts/browser_supplier_integration_20261006/native-current-sync-producer-intl",
+    "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-producer",
+    "docs/receipts/browser_family_20261007/sync-producer-pixels.json",
+    "docs/receipts/browser_supplier_integration_20261006/native-current-sync-normalization-intl",
+    "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-normalization",
+    "docs/receipts/browser_family_20261007/sync-normalization-pixels.json",
+    "docs/receipts/browser_supplier_integration_20261006/native-current-sync-both-intl",
+    "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-both",
+    "docs/receipts/browser_family_20261007/sync-both-pixels.json",
+    "docs/receipts/browser_family_20261007/pre-sync-controls-inputs.json",
+    "docs/receipts/browser_family_20261007/native-build-binding-sync-controls.json",
+    "docs/receipts/browser_family_20261007/all3-sync-controls-native-build.result.json",
+    "docs/receipts/browser_family_20261007/all3-sync-controls-native-build.stdout.log",
+    "docs/receipts/browser_family_20261007/all3-sync-controls-native-build.stderr.log"
+  ],
+  "native_completion": [
+    {
+      "directory": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-existing-intl",
+      "native_exit": 0,
+      "scenario_result": "RESULT ok"
+    },
+    {
+      "directory": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-existing",
+      "native_exit": 0,
+      "scenario_result": "RESULT ok"
+    },
+    {
+      "directory": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-producer-intl",
+      "native_exit": 0,
+      "scenario_result": "RESULT ok"
+    },
+    {
+      "directory": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-producer",
+      "native_exit": 0,
+      "scenario_result": "RESULT ok"
+    },
+    {
+      "directory": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-normalization-intl",
+      "native_exit": 0,
+      "scenario_result": "RESULT ok"
+    },
+    {
+      "directory": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-normalization",
+      "native_exit": 0,
+      "scenario_result": "RESULT ok"
+    },
+    {
+      "directory": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-both-intl",
+      "native_exit": 0,
+      "scenario_result": "RESULT ok"
+    },
+    {
+      "directory": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-both",
+      "native_exit": 0,
+      "scenario_result": "RESULT ok"
+    }
+  ],
+  "files": [
+    {
+      "path": "docs/receipts/browser_family_20261007/all3-sync-controls-native-build.result.json",
+      "bytes": 926,
+      "sha256": "d7fff706d32b463728c6c407c60a5eb49f60a1d2c53826cd27aeb4f83b84d6f6"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/all3-sync-controls-native-build.stderr.log",
+      "bytes": 22602,
+      "sha256": "9a366b754aec2c552bbf3b01f7ba2a13c32c6ce88696091ae6d3f5ee15134ae1"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/all3-sync-controls-native-build.stdout.log",
+      "bytes": 1306567,
+      "sha256": "c59d634d69b2c69527a7cc8fcd9bc71bdd8f4a0720175405b0b2f702209a6949"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/freeze-current.py",
+      "bytes": 6411,
+      "sha256": "67cdc015f1a8c88add448e613bee166464141ffee69acc0387d64b4467357912"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/native-build-binding-sync-controls.json",
+      "bytes": 4585,
+      "sha256": "a992a60c0e45847f66cad26176e29eb7844324fa464fcfdd20acf6418f3b9614"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/pre-sync-controls-inputs.json",
+      "bytes": 36968,
+      "sha256": "76486970b9e34c05e2eaed0405e98c1f62d89b8f48973dc0b75fa979d1d1b314"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/source-inputs-all3-current-sync-controls.zip",
+      "bytes": 2608110,
+      "sha256": "52720aef68fa67e9544e2ad6adcde171332f601aea91f63e55e5d1d3a7f19e12"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/sync-both-pixels.json",
+      "bytes": 1682,
+      "sha256": "46baa1c6486c7bc8eff7099a5724043c90cb4e820ac08acf494eb737477e6264"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/sync-existing-pixels.json",
+      "bytes": 1686,
+      "sha256": "3577aa5cc137a1b253c76ce8aceada9a4dfbb067b687360ff501fff1655843fa"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/sync-normalization-pixels.json",
+      "bytes": 1752,
+      "sha256": "975287cdf0ab726cbcee3ebe216c377afc77159500b35876ba638d1bff19a95c"
+    },
+    {
+      "path": "docs/receipts/browser_family_20261007/sync-producer-pixels.json",
+      "bytes": 1686,
+      "sha256": "74d77507678f79c35ed780e76a1b4a7aa0b56b8bc319954a7ae4875b5d874194"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-both-intl/01_native_intl_bridge.png",
+      "bytes": 78029,
+      "sha256": "3c7b12503ffa0bd69955531abcc43cf00cb2a55bee0610ab529f1ddb5389911b"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-both-intl/diagnostics.json",
+      "bytes": 11115,
+      "sha256": "634fccef10e222b938c29d48c995cde5648d1dd3bad82e3114244d90916de87c"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-both-intl/intl-servo-closed.surface-frames.json",
+      "bytes": 124,
+      "sha256": "1bed58cd98da508010f079af827425c0aef7090b11188293058190b994965ac6"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-both-intl/intl-servo-closed.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-both-intl/intl-servo-live.surface-frames.json",
+      "bytes": 314,
+      "sha256": "e7309b2cbcf567501e3d439ea82d739b9fce7cff0c3c9d585556ea99f7b78eaf"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-both-intl/intl-servo-live.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-both-intl/loaded-modules.json",
+      "bytes": 5835,
+      "sha256": "65d25ee6707dbc8da16fbffe7bb7a43c517908fca8406008911af38f47fb3053"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-both-intl/process-result.json",
+      "bytes": 1488,
+      "sha256": "c2b75745fafdbc822a43d906c2be11a67a7a14cf2b6e171f6b16bcc08c1a22f0"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-both-intl/run.log",
+      "bytes": 14821,
+      "sha256": "3ab45fef085a3e625020391129d9584f071df79e89f0afb9795fd51172f93e8d"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-both-intl/run.stderr.log",
+      "bytes": 7590,
+      "sha256": "e239bea0cff884a1a4169981845c0cbe97a1eab77b381eb4a7734f7193a6eb93"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-both-intl/run.stdout.log",
+      "bytes": 7200,
+      "sha256": "f649d5b187658e5ef63f10b42b64c6473448234d3dc7bdebf2ede5370d22f608"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-both-intl/scenario.done",
+      "bytes": 137,
+      "sha256": "8c2a85de05726edd732c2fa6561374b860cc2bf019e4c927acc996e4d3f744e4"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-existing-intl/01_native_intl_bridge.png",
+      "bytes": 77542,
+      "sha256": "48e71c4a7f0755a9adba0c959f44e456461a97133f4264ced14d5ffcd5dc11dc"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-existing-intl/diagnostics.json",
+      "bytes": 11113,
+      "sha256": "99fb821a9df6b9081df7bb819e061a53e652c00c77208be0eeba04ffbae1cdaa"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-existing-intl/intl-servo-closed.surface-frames.json",
+      "bytes": 124,
+      "sha256": "1bed58cd98da508010f079af827425c0aef7090b11188293058190b994965ac6"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-existing-intl/intl-servo-closed.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-existing-intl/intl-servo-live.surface-frames.json",
+      "bytes": 314,
+      "sha256": "6e8386507d7031c2d2a530d095a552c552ad963c85950eaa0da06eb8fe46920c"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-existing-intl/intl-servo-live.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-existing-intl/loaded-modules.json",
+      "bytes": 5835,
+      "sha256": "5bafde92cd16a3b2b013154a0b35e75e5cbb61d975a9ae3d34953859bddb731a"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-existing-intl/process-result.json",
+      "bytes": 1508,
+      "sha256": "357d33a3bdd885eb6cd0155d4789603f374d53334068ecb03d467b81710119d5"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-existing-intl/run.log",
+      "bytes": 15814,
+      "sha256": "0a938ee0f48eb115ac6b44281a882a208c3e4eb68e6b5bdfc35781fd90a2a5a7"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-existing-intl/run.stderr.log",
+      "bytes": 8961,
+      "sha256": "936d9b8388df4b0f9d9c912a2deda84196edb1e1db4a8c213dde156ec90183af"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-existing-intl/run.stdout.log",
+      "bytes": 6822,
+      "sha256": "19ca7a6c62e3a4600a615fb5e0664bde3b5a86a736f8faae1abc632498d05776"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-existing-intl/scenario.done",
+      "bytes": 137,
+      "sha256": "8c2a85de05726edd732c2fa6561374b860cc2bf019e4c927acc996e4d3f744e4"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-normalization-intl/01_native_intl_bridge.png",
+      "bytes": 69395,
+      "sha256": "d1cb2784c464222e3420a575fecef0e27bf435695ee3cdabbe7b53c0abeea34e"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-normalization-intl/diagnostics.json",
+      "bytes": 11116,
+      "sha256": "f16c1341d014f6f2635552e5f9ed14939de3617f9096e2e2c216c8c127f1f8c9"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-normalization-intl/intl-servo-closed.surface-frames.json",
+      "bytes": 124,
+      "sha256": "1bed58cd98da508010f079af827425c0aef7090b11188293058190b994965ac6"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-normalization-intl/intl-servo-closed.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-normalization-intl/intl-servo-live.surface-frames.json",
+      "bytes": 314,
+      "sha256": "822301a39801ad2ab0a27090d928df7d976e9e7ff06bc564f4eac12d7d50dc2f"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-normalization-intl/intl-servo-live.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-normalization-intl/loaded-modules.json",
+      "bytes": 5835,
+      "sha256": "eac9a1a3f70e2a0985a803f3c2b1c59f3856ab78865fd0d423f7062f8ab4d033"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-normalization-intl/process-result.json",
+      "bytes": 1533,
+      "sha256": "96fa55aef54ea5359581db6686c93b490bc405d6ae8275406f7e11960a862d28"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-normalization-intl/run.log",
+      "bytes": 15463,
+      "sha256": "6827d103cad3ea46270b211e6da9d863bf6d69f84fec9530a97488d32400ba15"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-normalization-intl/run.stderr.log",
+      "bytes": 7590,
+      "sha256": "f8a0d27313b1e3fa844d30106bf890cf6ad0ce55fc9ccbd75aeeaba646b216c4"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-normalization-intl/run.stdout.log",
+      "bytes": 7842,
+      "sha256": "e85d3606a0e63a7301efa9d5a5d9d44858cfab3474bbca8309b56527b16317ab"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-normalization-intl/scenario.done",
+      "bytes": 137,
+      "sha256": "8c2a85de05726edd732c2fa6561374b860cc2bf019e4c927acc996e4d3f744e4"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-producer-intl/01_native_intl_bridge.png",
+      "bytes": 78029,
+      "sha256": "3c7b12503ffa0bd69955531abcc43cf00cb2a55bee0610ab529f1ddb5389911b"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-producer-intl/diagnostics.json",
+      "bytes": 11115,
+      "sha256": "53724c73caa9515be9568895c8112ee40ae1c1b6ae1588950c21d372852520fd"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-producer-intl/intl-servo-closed.surface-frames.json",
+      "bytes": 124,
+      "sha256": "1bed58cd98da508010f079af827425c0aef7090b11188293058190b994965ac6"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-producer-intl/intl-servo-closed.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-producer-intl/intl-servo-live.surface-frames.json",
+      "bytes": 314,
+      "sha256": "c37e9f738932676dd193a3cba708a30b94ad295d2e1adcd0da6982af94c1c2a9"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-producer-intl/intl-servo-live.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-producer-intl/loaded-modules.json",
+      "bytes": 5835,
+      "sha256": "0bdcdd5dbc58b80c16423b7a69ac399160c89f8eb75db351fc34f4b7a41df6dc"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-producer-intl/process-result.json",
+      "bytes": 1508,
+      "sha256": "af4eae4484339e1870d94050e5df394a5063544b6822bde33dcdaa10eb868cfe"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-producer-intl/run.log",
+      "bytes": 16013,
+      "sha256": "dd9f9ea1318977573970b29e4821534e2d4ebfabbeb710cfe6697c327d13e216"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-producer-intl/run.stderr.log",
+      "bytes": 8961,
+      "sha256": "cfcbe26a89fa745db00c9db582ebdbbf524647b9b1be988afd88fef4bb535e9b"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-producer-intl/run.stdout.log",
+      "bytes": 7021,
+      "sha256": "9c02f5ea9e9be998fdc421ac7cc4caba594564b0bce19862a9643eba6ae293b9"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-producer-intl/scenario.done",
+      "bytes": 137,
+      "sha256": "8c2a85de05726edd732c2fa6561374b860cc2bf019e4c927acc996e4d3f744e4"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-both/01_inspector_open_viewport.png",
+      "bytes": 148515,
+      "sha256": "6ed31d1f459b154fd46ffa32640fbb03461e7a0a7ef5a1fd339d0f9fa0c89fe5"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-both/02_inspector_closed_viewport.png",
+      "bytes": 57013,
+      "sha256": "98f7c6bf125848496bb3922d3cf932238fa239a8ec507f099947eecccf7c66b0"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-both/diagnostics.json",
+      "bytes": 11783,
+      "sha256": "5cb8298ad69004f64f62e351073e03773dd554ac492b6c4b14ebd73415899bbd"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-both/loaded-modules.json",
+      "bytes": 5835,
+      "sha256": "4215d0b6d55e927903458027348fa67b9d5c4453ab460dfd9f50fb687a3f5482"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-both/process-result.json",
+      "bytes": 1486,
+      "sha256": "f18634eafa1e1fbe4641b98658d8481bbc1a6ed44fa22e06c82ba05a303f8406"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-both/run.log",
+      "bytes": 16060,
+      "sha256": "131a72041038a24420e2909c49cd9260b328d899ba142490618d5aa6367cd74e"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-both/run.stderr.log",
+      "bytes": 7590,
+      "sha256": "9d719ec882f0be4cf6e99559c43b9c29d0d98c384b1b2f8a9c07c750d724346e"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-both/run.stdout.log",
+      "bytes": 8439,
+      "sha256": "683244c71a12cebed95d2ffc8d0597d6f20a4cd3abf1bdfd3131dfb32c5990f6"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-both/scenario.done",
+      "bytes": 84,
+      "sha256": "8f5b02d52a735e6a75c32be130e2961f202138ed554c1fdac675890519c2d4dd"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-both/viewport-inspector-closed.surface-frames.json",
+      "bytes": 314,
+      "sha256": "40d5e80335f189fa43309fc155cb98530adbcc6f50467f470f0115e41313ca99"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-both/viewport-inspector-closed.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-both/viewport-inspector-open.surface-frames.json",
+      "bytes": 314,
+      "sha256": "42a97eb8895a5e4f4a9a2eb6591063622c637e043400a8481af61bed02b3ccf6"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-both/viewport-inspector-open.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-both/viewport-servo-closed.surface-frames.json",
+      "bytes": 124,
+      "sha256": "1bed58cd98da508010f079af827425c0aef7090b11188293058190b994965ac6"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-both/viewport-servo-closed.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-existing/01_inspector_open_viewport.png",
+      "bytes": 149926,
+      "sha256": "ba0c055889aeacae20b229c8ef613ee8d23b000a003f02248ba5232ea9df8d07"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-existing/02_inspector_closed_viewport.png",
+      "bytes": 58876,
+      "sha256": "c6149d7986641039debcf0974ffc1cbd00511e1987516ac4b9a74e314123e5bb"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-existing/diagnostics.json",
+      "bytes": 11781,
+      "sha256": "fe61db729748ebe41cb50b914dea160ae00ecc3a884947c47e253e664b71ec57"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-existing/loaded-modules.json",
+      "bytes": 5835,
+      "sha256": "c142331d5e9eeea23ae97a6272674cf1f0dcb661a1f196324ec98e6689f8422a"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-existing/process-result.json",
+      "bytes": 1502,
+      "sha256": "7b946c2467b95c9586c59602b76f821c941fd17084eec0ee0dbe678d076ec570"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-existing/run.log",
+      "bytes": 14886,
+      "sha256": "92f2df832fe5c0d6aedf270266e4ae2bda504a387970d634ab91bbdf41d65422"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-existing/run.stderr.log",
+      "bytes": 7590,
+      "sha256": "edbdbe661c3df1c4c95396544103ae723b3c7d6da8628c76956ea03543722bc8"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-existing/run.stdout.log",
+      "bytes": 7265,
+      "sha256": "4523dbd4a07d56780c8fa50fca6b2dbe42e3f7d17d39c8400a29d6703ba81845"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-existing/scenario.done",
+      "bytes": 84,
+      "sha256": "8f5b02d52a735e6a75c32be130e2961f202138ed554c1fdac675890519c2d4dd"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-existing/viewport-inspector-closed.surface-frames.json",
+      "bytes": 314,
+      "sha256": "9c627b80407c95cf8b2a3a839c2f43c53a13c4fe17cd9b9065f365cd09b65d51"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-existing/viewport-inspector-closed.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-existing/viewport-inspector-open.surface-frames.json",
+      "bytes": 314,
+      "sha256": "19d674d5d5a7b2f89d064cb1d3fd71469758b54965d8ebe089123157a2344d61"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-existing/viewport-inspector-open.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-existing/viewport-servo-closed.surface-frames.json",
+      "bytes": 124,
+      "sha256": "1bed58cd98da508010f079af827425c0aef7090b11188293058190b994965ac6"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-existing/viewport-servo-closed.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-normalization/01_inspector_open_viewport.png",
+      "bytes": 149926,
+      "sha256": "125401d688dc418fd2aaa026f5998edafd6379f8531d4e57468e16f31977c818"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-normalization/02_inspector_closed_viewport.png",
+      "bytes": 59129,
+      "sha256": "a3bd10f4e4b8512297ba699386e79b8da02e524e8b153f866fa25c695ea374ab"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-normalization/diagnostics.json",
+      "bytes": 11779,
+      "sha256": "3b9f70e62b9d7f8f1ae3964e6d0613b5838ebb3d5e9c993bf74d5d290597ed48"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-normalization/loaded-modules.json",
+      "bytes": 5835,
+      "sha256": "e41034349c08a36a08228da2c2138559eae57b84e7672952e17f35a15e3bf826"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-normalization/process-result.json",
+      "bytes": 1522,
+      "sha256": "e068088d5500865d648c3535d850cb0533e313b0b8c91f449433346bd40f3f4a"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-normalization/run.log",
+      "bytes": 16304,
+      "sha256": "a459512cf2683d931b02a3c76a5f99da816fc4c593a25446beb56cfd0e9d902d"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-normalization/run.stderr.log",
+      "bytes": 7590,
+      "sha256": "45d4b3b2be27ebf537d58aa477fc9234b1277de189aaa84be071f1bc12b8b535"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-normalization/run.stdout.log",
+      "bytes": 8683,
+      "sha256": "590d1a07c5d721e55599c9582181cbf4d2de762c6149f71be171c42a7afac81b"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-normalization/scenario.done",
+      "bytes": 84,
+      "sha256": "8f5b02d52a735e6a75c32be130e2961f202138ed554c1fdac675890519c2d4dd"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-normalization/viewport-inspector-closed.surface-frames.json",
+      "bytes": 313,
+      "sha256": "d5d4dedc240577de06dda4043a5556432c1791b3d85a6d760dfec208f4a66159"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-normalization/viewport-inspector-closed.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-normalization/viewport-inspector-open.surface-frames.json",
+      "bytes": 313,
+      "sha256": "44b90ce4436b99b28d38d82e7f3eaa2f8cf7186389f3531c28792c7cb6f6025c"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-normalization/viewport-inspector-open.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-normalization/viewport-servo-closed.surface-frames.json",
+      "bytes": 124,
+      "sha256": "1bed58cd98da508010f079af827425c0aef7090b11188293058190b994965ac6"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-normalization/viewport-servo-closed.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-producer/01_inspector_open_viewport.png",
+      "bytes": 149926,
+      "sha256": "ba0c055889aeacae20b229c8ef613ee8d23b000a003f02248ba5232ea9df8d07"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-producer/02_inspector_closed_viewport.png",
+      "bytes": 58876,
+      "sha256": "c6149d7986641039debcf0974ffc1cbd00511e1987516ac4b9a74e314123e5bb"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-producer/diagnostics.json",
+      "bytes": 11783,
+      "sha256": "130eeb4e352144ea219990fc4685106bc7300880c768d40f005086b27c3d81e0"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-producer/loaded-modules.json",
+      "bytes": 5835,
+      "sha256": "4d6c7227a656159df4c84d6d226f4466305b7fce4bd8bc7ad6260167a42a748e"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-producer/process-result.json",
+      "bytes": 1502,
+      "sha256": "057a72aeb24236bcf853e1ca354f19ee4b56255a671b4ca66384649fe58a8df8"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-producer/run.log",
+      "bytes": 16677,
+      "sha256": "78fc50bf04ee6626e53bdf253932e7555997e90dd0b222d26b3e96766f7d96e6"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-producer/run.stderr.log",
+      "bytes": 7590,
+      "sha256": "4fcfff9a5aeb5e73fbb6b5b1bf26cc4cc48db29cb592ae51651253dae75ed633"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-producer/run.stdout.log",
+      "bytes": 9056,
+      "sha256": "864d5a71754a98911b8bbc379d9abe1ab8b8bfa3fbf84e99b2186bb0ef8fcc0e"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-producer/scenario.done",
+      "bytes": 84,
+      "sha256": "8f5b02d52a735e6a75c32be130e2961f202138ed554c1fdac675890519c2d4dd"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-producer/viewport-inspector-closed.surface-frames.json",
+      "bytes": 313,
+      "sha256": "21a72fddf4296ed2333894a79b08ed6b0a2dd01f3c4b6e6189f5cccfb02263ad"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-producer/viewport-inspector-closed.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-producer/viewport-inspector-open.surface-frames.json",
+      "bytes": 313,
+      "sha256": "f7f16e5f33d46031845b130b6da64318413ffa5ffc2858ae54d60332b558632d"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-producer/viewport-inspector-open.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-producer/viewport-servo-closed.surface-frames.json",
+      "bytes": 124,
+      "sha256": "1bed58cd98da508010f079af827425c0aef7090b11188293058190b994965ac6"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-sync-viewport-producer/viewport-servo-closed.txt",
+      "bytes": 110,
+      "sha256": "4215e9cdefc6c444014403c42e3c5a563a7d45163c851d7a97e4444918458dd3"
+    },
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/source-manifest-all3-current-sync-controls.json",
+      "bytes": 432056,
+      "sha256": "bbd8ad0bd1cb886fda34b5ae768c631dfbf45b01f39cd0932b4b11e665f05960"
+    }
+  ],
+  "limits": [
+    "Profiles excluded",
+    "Native sentinel does not prove pixels or accessibility",
+    "Failed controls may be retained; their actual result determines scope",
+    "Verification of archived inputs does not qualify later source or executables"
+  ]
+}

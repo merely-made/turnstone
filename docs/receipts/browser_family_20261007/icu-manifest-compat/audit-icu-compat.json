@@ -1,0 +1,2782 @@
+{
+  "recorded_utc": "2026-10-07T09:20:29.372662+00:00",
+  "scope": "Independent read-only vendor/source/metadata audit; no Cargo/build/source edits. Checks package archives against preserved official API responses, not a fresh registry request.",
+  "vendor_verification": [
+    {
+      "package": "mozjs_icu_collator",
+      "version": "153.3.0",
+      "published_files_verified": 28,
+      "unchanged_rust_files": 8,
+      "only_changed_file": "Cargo.toml",
+      "exact_production_changes": {
+        "icu_locale": {
+          "before": "~2.1.1",
+          "after": "^2.1.1"
+        },
+        "icu_properties": {
+          "before": "~2.1.1",
+          "after": "^2.1.1"
+        }
+      },
+      "archive_sha256": "e483fdb5592a4f52c2d0e3c419935acfb98a5b578154b93999b92dedbf170e0d",
+      "matches_preserved_official_API_checksum": true,
+      "vcs": {
+        "git": {
+          "sha1": "f295442b3eb803b06674790d338b8151d9ca9980"
+        },
+        "path_in_vcs": "mozjs-extracted-crates/icu_collator"
+      },
+      "api_source": "https://crates.io/api/v1/crates/mozjs_icu_collator/153.3.0"
+    },
+    {
+      "package": "mozjs_icu_normalizer",
+      "version": "153.3.0",
+      "published_files_verified": 40,
+      "unchanged_rust_files": 15,
+      "only_changed_file": "Cargo.toml",
+      "exact_production_changes": {
+        "icu_properties": {
+          "before": "~2.1.1",
+          "after": "^2.1.1"
+        }
+      },
+      "archive_sha256": "362f589e9c5f836baade5fe90d587ffcab715c4e6bc01d6e2f266f939529876d",
+      "matches_preserved_official_API_checksum": true,
+      "vcs": {
+        "git": {
+          "sha1": "f295442b3eb803b06674790d338b8151d9ca9980"
+        },
+        "path_in_vcs": "mozjs-extracted-crates/icu_normalizer"
+      },
+      "api_source": "https://crates.io/api/v1/crates/mozjs_icu_normalizer/153.3.0"
+    }
+  ],
+  "receipt_hashes_verified": 10,
+  "vendor_note_hashes_verified": 2,
+  "metadata": {
+    "file": "../resolve-icu-compat.stdout.log",
+    "sha256": "c013155f7bfcf4163ae1b29f686cbc5af00e76197a72eb59497560410a1d58bc",
+    "exit_code": 0,
+    "command": [
+      "cargo",
+      "+1.98.1",
+      "metadata",
+      "--format-version",
+      "1",
+      "--features",
+      "scry,weld,servo",
+      "--filter-platform",
+      "x86_64-pc-windows-msvc"
+    ],
+    "families": {
+      "mere": [
+        "git+https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893db6909d5ed9c4ccae30216f0d8164201a"
+      ],
+      "woodshed": [
+        "git+https://github.com/merely-made/woodshed.git?rev=82271df20927d41a4cbb79c56a09fef5bbb38cde#82271df20927d41a4cbb79c56a09fef5bbb38cde"
+      ],
+      "genet": [
+        "git+https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e206a47d1c8808472de9aa461233638768"
+      ],
+      "wgpu-graft": [
+        "git+https://github.com/merely-made/wgpu-graft.git?rev=7907ff295da2c20c2a791419e6658d1c05350345#7907ff295da2c20c2a791419e6658d1c05350345"
+      ],
+      "knot-editor": [
+        "git+https://github.com/merely-made/knot-editor.git?rev=0096591a0af98bf4777d8bfe718c0423dea9fc90#0096591a0af98bf4777d8bfe718c0423dea9fc90"
+      ],
+      "wgpu-scry": [
+        "git+https://github.com/merely-made/wgpu-scry.git?rev=2c3ebd24118851cf6125cfb193f55aab20e3ad67#2c3ebd24118851cf6125cfb193f55aab20e3ad67"
+      ],
+      "servo": [
+        "git+https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f31a259f04a574f5ec4e959c943ad7cc7"
+      ],
+      "wgpu-weld": [
+        "git+https://github.com/merely-made/wgpu-weld.git?rev=c4dd593b7a730acb4aa6ffab0fe2edf8a0584083#c4dd593b7a730acb4aa6ffab0fe2edf8a0584083"
+      ]
+    },
+    "selected_icu_packages": [
+      {
+        "name": "icu_calendar",
+        "version": "2.1.1",
+        "source": "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de",
+        "features": [
+          "alloc",
+          "compiled_data",
+          "ixdtf"
+        ]
+      },
+      {
+        "name": "icu_calendar_data",
+        "version": "2.1.1",
+        "source": "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de",
+        "features": []
+      },
+      {
+        "name": "icu_capi",
+        "version": "2.1.2",
+        "source": "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de",
+        "features": [
+          "any_provider",
+          "calendar",
+          "compiled_data",
+          "segmenter"
+        ]
+      },
+      {
+        "name": "icu_casemap",
+        "version": "2.1.1",
+        "source": "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de",
+        "features": [
+          "compiled_data"
+        ]
+      },
+      {
+        "name": "icu_casemap",
+        "version": "2.3.0",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "features": [
+          "compiled_data",
+          "default"
+        ]
+      },
+      {
+        "name": "icu_casemap_data",
+        "version": "2.1.1",
+        "source": "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de",
+        "features": []
+      },
+      {
+        "name": "icu_casemap_data",
+        "version": "2.3.0",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "features": []
+      },
+      {
+        "name": "icu_collator",
+        "version": "2.1.1",
+        "source": "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de",
+        "features": [
+          "compiled_data"
+        ]
+      },
+      {
+        "name": "icu_collator_data",
+        "version": "2.1.1",
+        "source": "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de",
+        "features": []
+      },
+      {
+        "name": "icu_collections",
+        "version": "1.5.0",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "features": []
+      },
+      {
+        "name": "icu_collections",
+        "version": "2.1.1",
+        "source": "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de",
+        "features": [
+          "alloc"
+        ]
+      },
+      {
+        "name": "icu_collections",
+        "version": "2.3.0",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "features": [
+          "alloc"
+        ]
+      },
+      {
+        "name": "icu_datetime",
+        "version": "2.1.1",
+        "source": "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de",
+        "features": [
+          "compiled_data"
+        ]
+      },
+      {
+        "name": "icu_datetime_data",
+        "version": "2.1.2",
+        "source": "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de",
+        "features": []
+      },
+      {
+        "name": "icu_decimal",
+        "version": "2.1.1",
+        "source": "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de",
+        "features": [
+          "compiled_data"
+        ]
+      },
+      {
+        "name": "icu_decimal_data",
+        "version": "2.1.1",
+        "source": "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de",
+        "features": []
+      },
+      {
+        "name": "icu_experimental",
+        "version": "0.4.0",
+        "source": "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de",
+        "features": [
+          "compiled_data"
+        ]
+      },
+      {
+        "name": "icu_experimental_data",
+        "version": "0.4.1",
+        "source": "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de",
+        "features": []
+      },
+      {
+        "name": "icu_list",
+        "version": "2.1.1",
+        "source": "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de",
+        "features": [
+          "compiled_data"
+        ]
+      },
+      {
+        "name": "icu_list_data",
+        "version": "2.1.1",
+        "source": "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de",
+        "features": []
+      },
+      {
+        "name": "icu_locale",
+        "version": "2.1.1",
+        "source": "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de",
+        "features": [
+          "compiled_data"
+        ]
+      },
+      {
+        "name": "icu_locale",
+        "version": "2.3.1",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "features": [
+          "compiled_data",
+          "default"
+        ]
+      },
+      {
+        "name": "icu_locale_core",
+        "version": "2.1.1",
+        "source": "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de",
+        "features": [
+          "alloc",
+          "zerovec"
+        ]
+      },
+      {
+        "name": "icu_locale_core",
+        "version": "2.3.0",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "features": [
+          "alloc",
+          "zerovec"
+        ]
+      },
+      {
+        "name": "icu_locale_data",
+        "version": "2.1.2",
+        "source": "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de",
+        "features": []
+      },
+      {
+        "name": "icu_locale_data",
+        "version": "2.3.0",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "features": []
+      },
+      {
+        "name": "icu_locale_fallback",
+        "version": "2.3.0",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "features": [
+          "compiled_data"
+        ]
+      },
+      {
+        "name": "icu_locale_fallback_data",
+        "version": "2.3.0",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "features": []
+      },
+      {
+        "name": "icu_locid",
+        "version": "1.5.0",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "features": []
+      },
+      {
+        "name": "icu_normalizer",
+        "version": "2.1.1",
+        "source": "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de",
+        "features": [
+          "compiled_data",
+          "utf16_iter",
+          "utf8_iter"
+        ]
+      },
+      {
+        "name": "icu_normalizer",
+        "version": "2.3.0",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "features": [
+          "compiled_data"
+        ]
+      },
+      {
+        "name": "icu_normalizer_data",
+        "version": "2.1.1",
+        "source": "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de",
+        "features": []
+      },
+      {
+        "name": "icu_normalizer_data",
+        "version": "2.3.0",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "features": []
+      },
+      {
+        "name": "icu_pattern",
+        "version": "0.4.1",
+        "source": "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de",
+        "features": [
+          "alloc",
+          "yoke",
+          "zerovec"
+        ]
+      },
+      {
+        "name": "icu_plurals",
+        "version": "2.1.1",
+        "source": "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de",
+        "features": [
+          "compiled_data"
+        ]
+      },
+      {
+        "name": "icu_plurals_data",
+        "version": "2.1.1",
+        "source": "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de",
+        "features": []
+      },
+      {
+        "name": "icu_properties",
+        "version": "2.1.2",
+        "source": "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de",
+        "features": [
+          "alloc",
+          "compiled_data",
+          "unicode_bidi"
+        ]
+      },
+      {
+        "name": "icu_properties",
+        "version": "2.3.0",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "features": [
+          "compiled_data",
+          "default",
+          "unicode_bidi"
+        ]
+      },
+      {
+        "name": "icu_properties_data",
+        "version": "2.1.2",
+        "source": "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de",
+        "features": []
+      },
+      {
+        "name": "icu_properties_data",
+        "version": "2.3.0",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "features": []
+      },
+      {
+        "name": "icu_provider",
+        "version": "1.5.0",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "features": [
+          "macros"
+        ]
+      },
+      {
+        "name": "icu_provider",
+        "version": "2.1.1",
+        "source": "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de",
+        "features": [
+          "alloc",
+          "baked"
+        ]
+      },
+      {
+        "name": "icu_provider",
+        "version": "2.3.1",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "features": [
+          "alloc",
+          "baked"
+        ]
+      },
+      {
+        "name": "icu_provider_adapters",
+        "version": "2.1.1",
+        "source": "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de",
+        "features": [
+          "serde"
+        ]
+      },
+      {
+        "name": "icu_provider_macros",
+        "version": "1.5.0",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "features": []
+      },
+      {
+        "name": "icu_segmenter",
+        "version": "1.5.0",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "features": [
+          "auto",
+          "compiled_data",
+          "lstm"
+        ]
+      },
+      {
+        "name": "icu_segmenter",
+        "version": "2.1.2",
+        "source": "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de",
+        "features": [
+          "auto",
+          "compiled_data",
+          "lstm"
+        ]
+      },
+      {
+        "name": "icu_segmenter",
+        "version": "2.3.0",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "features": [
+          "auto",
+          "compiled_data",
+          "default",
+          "lstm"
+        ]
+      },
+      {
+        "name": "icu_segmenter_data",
+        "version": "1.5.1",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "features": []
+      },
+      {
+        "name": "icu_segmenter_data",
+        "version": "2.1.1",
+        "source": "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de",
+        "features": []
+      },
+      {
+        "name": "icu_segmenter_data",
+        "version": "2.3.0",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "features": []
+      },
+      {
+        "name": "icu_time",
+        "version": "2.1.1",
+        "source": "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de",
+        "features": [
+          "alloc",
+          "compiled_data",
+          "ixdtf"
+        ]
+      },
+      {
+        "name": "icu_time_data",
+        "version": "2.1.1",
+        "source": "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de",
+        "features": []
+      }
+    ],
+    "selected_icu_crossings": {
+      "icu_capi": {
+        "package": {
+          "name": "icu_capi",
+          "version": "2.1.2",
+          "source": "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de",
+          "features": [
+            "any_provider",
+            "calendar",
+            "compiled_data",
+            "segmenter"
+          ]
+        },
+        "icu_edges": [
+          {
+            "alias": "icu_calendar",
+            "name": "icu_calendar",
+            "version": "2.1.1",
+            "source": "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de",
+            "features": [
+              "alloc",
+              "compiled_data",
+              "ixdtf"
+            ]
+          },
+          {
+            "alias": "icu_casemap",
+            "name": "icu_casemap",
+            "version": "2.1.1",
+            "source": "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de",
+            "features": [
+              "compiled_data"
+            ]
+          },
+          {
+            "alias": "icu_collator",
+            "name": "icu_collator",
+            "version": "2.1.1",
+            "source": "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de",
+            "features": [
+              "compiled_data"
+            ]
+          },
+          {
+            "alias": "icu_datetime",
+            "name": "icu_datetime",
+            "version": "2.1.1",
+            "source": "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de",
+            "features": [
+              "compiled_data"
+            ]
+          },
+          {
+            "alias": "icu_decimal",
+            "name": "icu_decimal",
+            "version": "2.1.1",
+            "source": "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de",
+            "features": [
+              "compiled_data"
+            ]
+          },
+          {
+            "alias": "icu_experimental",
+            "name": "icu_experimental",
+            "version": "0.4.0",
+            "source": "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de",
+            "features": [
+              "compiled_data"
+            ]
+          },
+          {
+            "alias": "icu_list",
+            "name": "icu_list",
+            "version": "2.1.1",
+            "source": "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de",
+            "features": [
+              "compiled_data"
+            ]
+          },
+          {
+            "alias": "icu_locale",
+            "name": "icu_locale",
+            "version": "2.1.1",
+            "source": "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de",
+            "features": [
+              "compiled_data"
+            ]
+          },
+          {
+            "alias": "icu_locale_core",
+            "name": "icu_locale_core",
+            "version": "2.1.1",
+            "source": "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de",
+            "features": [
+              "alloc",
+              "zerovec"
+            ]
+          },
+          {
+            "alias": "icu_normalizer",
+            "name": "icu_normalizer",
+            "version": "2.1.1",
+            "source": "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de",
+            "features": [
+              "compiled_data",
+              "utf16_iter",
+              "utf8_iter"
+            ]
+          },
+          {
+            "alias": "icu_plurals",
+            "name": "icu_plurals",
+            "version": "2.1.1",
+            "source": "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de",
+            "features": [
+              "compiled_data"
+            ]
+          },
+          {
+            "alias": "icu_properties",
+            "name": "icu_properties",
+            "version": "2.1.2",
+            "source": "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de",
+            "features": [
+              "alloc",
+              "compiled_data",
+              "unicode_bidi"
+            ]
+          },
+          {
+            "alias": "icu_provider",
+            "name": "icu_provider",
+            "version": "2.1.1",
+            "source": "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de",
+            "features": [
+              "alloc",
+              "baked"
+            ]
+          },
+          {
+            "alias": "icu_provider_adapters",
+            "name": "icu_provider_adapters",
+            "version": "2.1.1",
+            "source": "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de",
+            "features": [
+              "serde"
+            ]
+          },
+          {
+            "alias": "icu_segmenter",
+            "name": "icu_segmenter",
+            "version": "2.1.2",
+            "source": "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de",
+            "features": [
+              "auto",
+              "compiled_data",
+              "lstm"
+            ]
+          },
+          {
+            "alias": "icu_time",
+            "name": "icu_time",
+            "version": "2.1.1",
+            "source": "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de",
+            "features": [
+              "alloc",
+              "compiled_data",
+              "ixdtf"
+            ]
+          }
+        ]
+      },
+      "mozjs_collator_glue": {
+        "package": {
+          "name": "mozjs_collator_glue",
+          "version": "153.3.0",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "features": []
+        },
+        "icu_edges": [
+          {
+            "alias": "icu_locale_core",
+            "name": "icu_locale_core",
+            "version": "2.3.0",
+            "source": "registry+https://github.com/rust-lang/crates.io-index",
+            "features": [
+              "alloc",
+              "zerovec"
+            ]
+          },
+          {
+            "alias": "icu_collator",
+            "name": "mozjs_icu_collator",
+            "version": "153.3.0",
+            "source": null,
+            "features": [
+              "compiled_data",
+              "default",
+              "latin1",
+              "unstable"
+            ]
+          }
+        ]
+      },
+      "mozjs_icu_collator": {
+        "package": {
+          "name": "mozjs_icu_collator",
+          "version": "153.3.0",
+          "source": null,
+          "features": [
+            "compiled_data",
+            "default",
+            "latin1",
+            "unstable"
+          ]
+        },
+        "icu_edges": [
+          {
+            "alias": "icu_locale",
+            "name": "icu_locale",
+            "version": "2.3.1",
+            "source": "registry+https://github.com/rust-lang/crates.io-index",
+            "features": [
+              "compiled_data",
+              "default"
+            ]
+          },
+          {
+            "alias": "icu_locale_core",
+            "name": "icu_locale_core",
+            "version": "2.3.0",
+            "source": "registry+https://github.com/rust-lang/crates.io-index",
+            "features": [
+              "alloc",
+              "zerovec"
+            ]
+          },
+          {
+            "alias": "icu_properties",
+            "name": "icu_properties",
+            "version": "2.3.0",
+            "source": "registry+https://github.com/rust-lang/crates.io-index",
+            "features": [
+              "compiled_data",
+              "default",
+              "unicode_bidi"
+            ]
+          },
+          {
+            "alias": "icu_provider",
+            "name": "icu_provider",
+            "version": "2.3.1",
+            "source": "registry+https://github.com/rust-lang/crates.io-index",
+            "features": [
+              "alloc",
+              "baked"
+            ]
+          },
+          {
+            "alias": "icu_collator_data",
+            "name": "mozjs_icu_collator_data",
+            "version": "153.3.0",
+            "source": "registry+https://github.com/rust-lang/crates.io-index",
+            "features": []
+          },
+          {
+            "alias": "icu_collections",
+            "name": "mozjs_icu_collections",
+            "version": "153.3.0",
+            "source": "registry+https://github.com/rust-lang/crates.io-index",
+            "features": [
+              "alloc"
+            ]
+          },
+          {
+            "alias": "icu_normalizer",
+            "name": "mozjs_icu_normalizer",
+            "version": "153.3.0",
+            "source": null,
+            "features": [
+              "compiled_data",
+              "default",
+              "latin1",
+              "utf16_iter",
+              "utf8_iter"
+            ]
+          }
+        ]
+      },
+      "mozjs_icu_normalizer": {
+        "package": {
+          "name": "mozjs_icu_normalizer",
+          "version": "153.3.0",
+          "source": null,
+          "features": [
+            "compiled_data",
+            "default",
+            "latin1",
+            "utf16_iter",
+            "utf8_iter"
+          ]
+        },
+        "icu_edges": [
+          {
+            "alias": "icu_properties",
+            "name": "icu_properties",
+            "version": "2.3.0",
+            "source": "registry+https://github.com/rust-lang/crates.io-index",
+            "features": [
+              "compiled_data",
+              "default",
+              "unicode_bidi"
+            ]
+          },
+          {
+            "alias": "icu_provider",
+            "name": "icu_provider",
+            "version": "2.3.1",
+            "source": "registry+https://github.com/rust-lang/crates.io-index",
+            "features": [
+              "alloc",
+              "baked"
+            ]
+          },
+          {
+            "alias": "icu_collections",
+            "name": "mozjs_icu_collections",
+            "version": "153.3.0",
+            "source": "registry+https://github.com/rust-lang/crates.io-index",
+            "features": [
+              "alloc"
+            ]
+          },
+          {
+            "alias": "icu_normalizer_data",
+            "name": "mozjs_icu_normalizer_data",
+            "version": "153.3.0",
+            "source": "registry+https://github.com/rust-lang/crates.io-index",
+            "features": []
+          }
+        ]
+      },
+      "mozjs_locale_glue": {
+        "package": {
+          "name": "mozjs_locale_glue",
+          "version": "153.3.0",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "features": []
+        },
+        "icu_edges": [
+          {
+            "alias": "icu_locale",
+            "name": "icu_locale",
+            "version": "2.3.1",
+            "source": "registry+https://github.com/rust-lang/crates.io-index",
+            "features": [
+              "compiled_data",
+              "default"
+            ]
+          }
+        ]
+      },
+      "mozjs_normalizer_glue": {
+        "package": {
+          "name": "mozjs_normalizer_glue",
+          "version": "153.3.0",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "features": []
+        },
+        "icu_edges": [
+          {
+            "alias": "icu_normalizer",
+            "name": "mozjs_icu_normalizer",
+            "version": "153.3.0",
+            "source": null,
+            "features": [
+              "compiled_data",
+              "default",
+              "latin1",
+              "utf16_iter",
+              "utf8_iter"
+            ]
+          }
+        ]
+      },
+      "mozjs_properties_glue": {
+        "package": {
+          "name": "mozjs_properties_glue",
+          "version": "153.3.0",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "features": []
+        },
+        "icu_edges": [
+          {
+            "alias": "icu_casemap",
+            "name": "icu_casemap",
+            "version": "2.3.0",
+            "source": "registry+https://github.com/rust-lang/crates.io-index",
+            "features": [
+              "compiled_data",
+              "default"
+            ]
+          },
+          {
+            "alias": "icu_properties",
+            "name": "icu_properties",
+            "version": "2.3.0",
+            "source": "registry+https://github.com/rust-lang/crates.io-index",
+            "features": [
+              "compiled_data",
+              "default",
+              "unicode_bidi"
+            ]
+          },
+          {
+            "alias": "icu_collections",
+            "name": "mozjs_icu_collections",
+            "version": "153.3.0",
+            "source": "registry+https://github.com/rust-lang/crates.io-index",
+            "features": [
+              "alloc"
+            ]
+          }
+        ]
+      },
+      "mozjs_sys": {
+        "package": {
+          "name": "mozjs_sys",
+          "version": "153.3.0-1",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "features": [
+            "intl",
+            "jit",
+            "libz-sys"
+          ]
+        },
+        "icu_edges": [
+          {
+            "alias": "icu_capi",
+            "name": "icu_capi",
+            "version": "2.1.2",
+            "source": "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de",
+            "features": [
+              "any_provider",
+              "calendar",
+              "compiled_data",
+              "segmenter"
+            ]
+          }
+        ]
+      },
+      "mozjs_unicode_bidi_ffi": {
+        "package": {
+          "name": "mozjs_unicode_bidi_ffi",
+          "version": "153.3.0",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "features": []
+        },
+        "icu_edges": [
+          {
+            "alias": "icu_properties",
+            "name": "icu_properties",
+            "version": "2.3.0",
+            "source": "registry+https://github.com/rust-lang/crates.io-index",
+            "features": [
+              "compiled_data",
+              "default",
+              "unicode_bidi"
+            ]
+          }
+        ]
+      }
+    },
+    "path_packages": [
+      {
+        "name": "mozjs_icu_collator",
+        "manifest_path": "C:\\Users\\mark_\\Code\\repos\\turnstone\\vendor\\mozjs-icu-collator\\Cargo.toml"
+      },
+      {
+        "name": "mozjs_icu_normalizer",
+        "manifest_path": "C:\\Users\\mark_\\Code\\repos\\turnstone\\vendor\\mozjs-icu-normalizer\\Cargo.toml"
+      },
+      {
+        "name": "turnstone",
+        "manifest_path": "C:\\Users\\mark_\\Code\\repos\\turnstone\\Cargo.toml"
+      },
+      {
+        "name": "turnstone-sandbox-bootstrap-win",
+        "manifest_path": "C:\\Users\\mark_\\Code\\repos\\turnstone\\sandbox_bootstrap_win\\Cargo.toml"
+      }
+    ],
+    "fontsan": [
+      {
+        "name": "fontsan",
+        "version": "0.7.0",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "features": [
+          "libz-sys",
+          "wuff"
+        ]
+      }
+    ]
+  },
+  "input_hashes": {
+    "Cargo.toml": "1eb3d429190bb9c83da18e594f989b3fab033b6b05c924914b359c9a3194e36e",
+    "Cargo.lock": "814b7e13e183986745fead64b987636dee6874420fbf44628c9375a48d780dd6",
+    "docs\\receipts\\browser_family_20261007\\pre-current-Cargo.lock": "7cd795f9f961f928b92e3d5c357a2c01533f3dfbb5d137ee3ee3a6f0583163b3",
+    "docs\\receipts\\browser_family_20261007\\resolve-icu-compat-input-Cargo.toml": "1eb3d429190bb9c83da18e594f989b3fab033b6b05c924914b359c9a3194e36e"
+  },
+  "lock_delta": {
+    "baseline": "../pre-current-Cargo.lock; complete family+Servo+CEF repin, not attribution to three ICU edges alone",
+    "registry_added": 83,
+    "registry_removed": 113,
+    "registry_version_set_changes": [
+      {
+        "name": "aead-stream",
+        "before": [
+          "0.6.0"
+        ],
+        "after": []
+      },
+      {
+        "name": "aes-gcm",
+        "before": [
+          "0.10.3",
+          "0.11.1"
+        ],
+        "after": [
+          "0.10.3"
+        ]
+      },
+      {
+        "name": "aes-kw",
+        "before": [
+          "0.3.1"
+        ],
+        "after": []
+      },
+      {
+        "name": "argon2",
+        "before": [
+          "0.5.3",
+          "0.6.0-rc.8"
+        ],
+        "after": [
+          "0.5.3"
+        ]
+      },
+      {
+        "name": "arraystring",
+        "before": [],
+        "after": [
+          "0.3.0"
+        ]
+      },
+      {
+        "name": "blake2",
+        "before": [
+          "0.10.6",
+          "0.11.0"
+        ],
+        "after": [
+          "0.10.6"
+        ]
+      },
+      {
+        "name": "bs58",
+        "before": [],
+        "after": [
+          "0.5.1"
+        ]
+      },
+      {
+        "name": "calendrical_calculations",
+        "before": [
+          "0.1.3"
+        ],
+        "after": []
+      },
+      {
+        "name": "cbindgen",
+        "before": [],
+        "after": [
+          "0.29.4"
+        ]
+      },
+      {
+        "name": "cef",
+        "before": [
+          "151.8.1+151.3.24"
+        ],
+        "after": [
+          "154.5.0+154.0.34"
+        ]
+      },
+      {
+        "name": "cef-dll-sys",
+        "before": [
+          "151.8.1+151.3.24"
+        ],
+        "after": [
+          "154.5.0+154.0.34"
+        ]
+      },
+      {
+        "name": "chardetng",
+        "before": [
+          "0.1.17"
+        ],
+        "after": [
+          "1.0.0"
+        ]
+      },
+      {
+        "name": "content-security-policy",
+        "before": [
+          "0.8.2"
+        ],
+        "after": [
+          "0.9.0"
+        ]
+      },
+      {
+        "name": "crypto-primes",
+        "before": [
+          "0.7.2"
+        ],
+        "after": []
+      },
+      {
+        "name": "cshake",
+        "before": [
+          "0.2.1"
+        ],
+        "after": []
+      },
+      {
+        "name": "cssparser",
+        "before": [
+          "0.37.0"
+        ],
+        "after": [
+          "0.37.0",
+          "0.38.0"
+        ]
+      },
+      {
+        "name": "ctr",
+        "before": [
+          "0.10.1",
+          "0.9.2"
+        ],
+        "after": [
+          "0.9.2"
+        ]
+      },
+      {
+        "name": "dbl",
+        "before": [
+          "0.5.0"
+        ],
+        "after": []
+      },
+      {
+        "name": "diplomat",
+        "before": [
+          "0.8.0"
+        ],
+        "after": [
+          "0.14.0"
+        ]
+      },
+      {
+        "name": "diplomat-runtime",
+        "before": [
+          "0.8.3"
+        ],
+        "after": [
+          "0.14.0"
+        ]
+      },
+      {
+        "name": "diplomat_core",
+        "before": [
+          "0.8.1"
+        ],
+        "after": [
+          "0.14.0"
+        ]
+      },
+      {
+        "name": "download-cef",
+        "before": [
+          "2.3.2"
+        ],
+        "after": [
+          "3.0.0"
+        ]
+      },
+      {
+        "name": "dyn-clone",
+        "before": [],
+        "after": [
+          "1.0.20"
+        ]
+      },
+      {
+        "name": "ecdsa",
+        "before": [
+          "0.16.9",
+          "0.17.0"
+        ],
+        "after": [
+          "0.16.9"
+        ]
+      },
+      {
+        "name": "ed448",
+        "before": [
+          "0.5.0"
+        ],
+        "after": []
+      },
+      {
+        "name": "ed448-goldilocks",
+        "before": [
+          "0.14.0-pre.15"
+        ],
+        "after": []
+      },
+      {
+        "name": "elliptic-curve",
+        "before": [
+          "0.13.8",
+          "0.14.1"
+        ],
+        "after": [
+          "0.13.8"
+        ]
+      },
+      {
+        "name": "ff",
+        "before": [
+          "0.13.1",
+          "0.14.0"
+        ],
+        "after": [
+          "0.13.1"
+        ]
+      },
+      {
+        "name": "fixed_decimal",
+        "before": [
+          "0.5.6"
+        ],
+        "after": []
+      },
+      {
+        "name": "ghash",
+        "before": [
+          "0.5.1",
+          "0.6.0"
+        ],
+        "after": [
+          "0.5.1"
+        ]
+      },
+      {
+        "name": "glifo",
+        "before": [
+          "0.1.1"
+        ],
+        "after": [
+          "0.3.0"
+        ]
+      },
+      {
+        "name": "gopher-protocol",
+        "before": [
+          "0.1.1"
+        ],
+        "after": [
+          "0.2.0"
+        ]
+      },
+      {
+        "name": "group",
+        "before": [
+          "0.13.0",
+          "0.14.0"
+        ],
+        "after": [
+          "0.13.0"
+        ]
+      },
+      {
+        "name": "harfbuzz-sys",
+        "before": [
+          "0.7.0"
+        ],
+        "after": [
+          "0.8.0"
+        ]
+      },
+      {
+        "name": "hash2curve",
+        "before": [
+          "0.14.0"
+        ],
+        "after": []
+      },
+      {
+        "name": "hashbrown",
+        "before": [
+          "0.14.5",
+          "0.15.5",
+          "0.16.1",
+          "0.17.1"
+        ],
+        "after": [
+          "0.12.3",
+          "0.14.5",
+          "0.15.5",
+          "0.16.1",
+          "0.17.1"
+        ]
+      },
+      {
+        "name": "html5ever",
+        "before": [
+          "0.39.0"
+        ],
+        "after": [
+          "0.39.0",
+          "0.40.1"
+        ]
+      },
+      {
+        "name": "http",
+        "before": [
+          "0.2.12",
+          "1.5.0"
+        ],
+        "after": [
+          "1.5.0"
+        ]
+      },
+      {
+        "name": "icu_calendar",
+        "before": [
+          "1.5.2"
+        ],
+        "after": []
+      },
+      {
+        "name": "icu_calendar_data",
+        "before": [
+          "1.5.1"
+        ],
+        "after": []
+      },
+      {
+        "name": "icu_capi",
+        "before": [
+          "1.5.0"
+        ],
+        "after": []
+      },
+      {
+        "name": "icu_casemap",
+        "before": [
+          "1.5.1"
+        ],
+        "after": [
+          "2.3.0"
+        ]
+      },
+      {
+        "name": "icu_casemap_data",
+        "before": [
+          "1.5.1"
+        ],
+        "after": [
+          "2.3.0"
+        ]
+      },
+      {
+        "name": "icu_collator",
+        "before": [
+          "1.5.0"
+        ],
+        "after": []
+      },
+      {
+        "name": "icu_collator_data",
+        "before": [
+          "1.5.1"
+        ],
+        "after": []
+      },
+      {
+        "name": "icu_datetime",
+        "before": [
+          "1.5.1"
+        ],
+        "after": []
+      },
+      {
+        "name": "icu_datetime_data",
+        "before": [
+          "1.5.1"
+        ],
+        "after": []
+      },
+      {
+        "name": "icu_decimal",
+        "before": [
+          "1.5.0"
+        ],
+        "after": []
+      },
+      {
+        "name": "icu_decimal_data",
+        "before": [
+          "1.5.1"
+        ],
+        "after": []
+      },
+      {
+        "name": "icu_experimental",
+        "before": [
+          "0.1.0"
+        ],
+        "after": []
+      },
+      {
+        "name": "icu_experimental_data",
+        "before": [
+          "0.1.1"
+        ],
+        "after": []
+      },
+      {
+        "name": "icu_list",
+        "before": [
+          "1.5.0"
+        ],
+        "after": []
+      },
+      {
+        "name": "icu_list_data",
+        "before": [
+          "1.5.1"
+        ],
+        "after": []
+      },
+      {
+        "name": "icu_locale",
+        "before": [],
+        "after": [
+          "2.3.1"
+        ]
+      },
+      {
+        "name": "icu_locale_data",
+        "before": [],
+        "after": [
+          "2.3.0"
+        ]
+      },
+      {
+        "name": "icu_locid_transform",
+        "before": [
+          "1.5.0"
+        ],
+        "after": []
+      },
+      {
+        "name": "icu_locid_transform_data",
+        "before": [
+          "1.5.1"
+        ],
+        "after": []
+      },
+      {
+        "name": "icu_normalizer",
+        "before": [
+          "1.5.0",
+          "2.3.0"
+        ],
+        "after": [
+          "2.3.0"
+        ]
+      },
+      {
+        "name": "icu_normalizer_data",
+        "before": [
+          "1.5.1",
+          "2.3.0"
+        ],
+        "after": [
+          "2.3.0"
+        ]
+      },
+      {
+        "name": "icu_pattern",
+        "before": [
+          "0.2.0"
+        ],
+        "after": []
+      },
+      {
+        "name": "icu_plurals",
+        "before": [
+          "1.5.0"
+        ],
+        "after": []
+      },
+      {
+        "name": "icu_plurals_data",
+        "before": [
+          "1.5.1"
+        ],
+        "after": []
+      },
+      {
+        "name": "icu_properties",
+        "before": [
+          "1.5.1",
+          "2.3.0"
+        ],
+        "after": [
+          "2.3.0"
+        ]
+      },
+      {
+        "name": "icu_properties_data",
+        "before": [
+          "1.5.1",
+          "2.3.0"
+        ],
+        "after": [
+          "2.3.0"
+        ]
+      },
+      {
+        "name": "icu_provider_adapters",
+        "before": [
+          "1.5.0"
+        ],
+        "after": []
+      },
+      {
+        "name": "icu_timezone",
+        "before": [
+          "1.5.0"
+        ],
+        "after": []
+      },
+      {
+        "name": "icu_timezone_data",
+        "before": [
+          "1.5.1"
+        ],
+        "after": []
+      },
+      {
+        "name": "indexmap",
+        "before": [
+          "2.14.2"
+        ],
+        "after": [
+          "1.9.3",
+          "2.14.2"
+        ]
+      },
+      {
+        "name": "ipc-channel",
+        "before": [],
+        "after": [
+          "0.23.0"
+        ]
+      },
+      {
+        "name": "iroh-mdns-address-lookup",
+        "before": [
+          "0.5.0"
+        ],
+        "after": [
+          "0.6.0"
+        ]
+      },
+      {
+        "name": "k12",
+        "before": [
+          "0.5.1"
+        ],
+        "after": []
+      },
+      {
+        "name": "keccak",
+        "before": [
+          "0.2.2"
+        ],
+        "after": []
+      },
+      {
+        "name": "kem",
+        "before": [
+          "0.3.0"
+        ],
+        "after": []
+      },
+      {
+        "name": "mach2",
+        "before": [
+          "0.4.3",
+          "0.5.0",
+          "0.6.0"
+        ],
+        "after": [
+          "0.4.3",
+          "0.5.0",
+          "0.7.0"
+        ]
+      },
+      {
+        "name": "markup5ever",
+        "before": [
+          "0.39.0"
+        ],
+        "after": [
+          "0.39.0",
+          "0.40.0"
+        ]
+      },
+      {
+        "name": "ml-dsa",
+        "before": [
+          "0.1.1"
+        ],
+        "after": []
+      },
+      {
+        "name": "ml-kem",
+        "before": [
+          "0.3.2"
+        ],
+        "after": []
+      },
+      {
+        "name": "module-lattice",
+        "before": [
+          "0.2.3"
+        ],
+        "after": []
+      },
+      {
+        "name": "mozangle",
+        "before": [
+          "0.6.0"
+        ],
+        "after": [
+          "0.7.1"
+        ]
+      },
+      {
+        "name": "mozjs",
+        "before": [
+          "0.21.6"
+        ],
+        "after": [
+          "0.26.4"
+        ]
+      },
+      {
+        "name": "mozjs_collator_glue",
+        "before": [],
+        "after": [
+          "153.3.0"
+        ]
+      },
+      {
+        "name": "mozjs_icu_collator_data",
+        "before": [],
+        "after": [
+          "153.3.0"
+        ]
+      },
+      {
+        "name": "mozjs_icu_collections",
+        "before": [],
+        "after": [
+          "153.3.0"
+        ]
+      },
+      {
+        "name": "mozjs_icu_normalizer_data",
+        "before": [],
+        "after": [
+          "153.3.0"
+        ]
+      },
+      {
+        "name": "mozjs_locale_glue",
+        "before": [],
+        "after": [
+          "153.3.0"
+        ]
+      },
+      {
+        "name": "mozjs_normalizer_glue",
+        "before": [],
+        "after": [
+          "153.3.0"
+        ]
+      },
+      {
+        "name": "mozjs_properties_glue",
+        "before": [],
+        "after": [
+          "153.3.0"
+        ]
+      },
+      {
+        "name": "mozjs_sys",
+        "before": [
+          "140.14.0-0"
+        ],
+        "after": [
+          "153.3.0-1"
+        ]
+      },
+      {
+        "name": "mozjs_unicode_bidi_ffi",
+        "before": [],
+        "after": [
+          "153.3.0"
+        ]
+      },
+      {
+        "name": "mozjs_utf16_iter",
+        "before": [],
+        "after": [
+          "153.3.0"
+        ]
+      },
+      {
+        "name": "mozjs_utf8_iter",
+        "before": [],
+        "after": [
+          "153.3.0"
+        ]
+      },
+      {
+        "name": "ocb3",
+        "before": [
+          "0.2.0-rc.3"
+        ],
+        "after": []
+      },
+      {
+        "name": "ohos-deviceinfo",
+        "before": [],
+        "after": [
+          "0.1.0"
+        ]
+      },
+      {
+        "name": "ohos-pasteboard",
+        "before": [],
+        "after": [
+          "0.1.0"
+        ]
+      },
+      {
+        "name": "ohos-pasteboard-sys",
+        "before": [],
+        "after": [
+          "0.1.6"
+        ]
+      },
+      {
+        "name": "os_pipe",
+        "before": [],
+        "after": [
+          "1.2.3"
+        ]
+      },
+      {
+        "name": "p256",
+        "before": [
+          "0.13.2",
+          "0.14.0"
+        ],
+        "after": [
+          "0.13.2"
+        ]
+      },
+      {
+        "name": "p384",
+        "before": [
+          "0.13.1",
+          "0.14.0"
+        ],
+        "after": [
+          "0.13.1"
+        ]
+      },
+      {
+        "name": "p521",
+        "before": [
+          "0.13.3",
+          "0.14.0"
+        ],
+        "after": [
+          "0.13.3"
+        ]
+      },
+      {
+        "name": "password-hash",
+        "before": [
+          "0.5.0",
+          "0.6.1"
+        ],
+        "after": [
+          "0.5.0"
+        ]
+      },
+      {
+        "name": "phc",
+        "before": [
+          "0.6.1"
+        ],
+        "after": []
+      },
+      {
+        "name": "phf",
+        "before": [
+          "0.13.1"
+        ],
+        "after": [
+          "0.13.1",
+          "0.14.0"
+        ]
+      },
+      {
+        "name": "phf_codegen",
+        "before": [
+          "0.13.1"
+        ],
+        "after": [
+          "0.13.1",
+          "0.14.0"
+        ]
+      },
+      {
+        "name": "phf_generator",
+        "before": [
+          "0.13.1"
+        ],
+        "after": [
+          "0.13.1",
+          "0.14.0"
+        ]
+      },
+      {
+        "name": "phf_macros",
+        "before": [
+          "0.13.1"
+        ],
+        "after": [
+          "0.13.1",
+          "0.14.0"
+        ]
+      },
+      {
+        "name": "phf_shared",
+        "before": [
+          "0.13.1"
+        ],
+        "after": [
+          "0.13.1",
+          "0.14.0"
+        ]
+      },
+      {
+        "name": "pkcs1",
+        "before": [
+          "0.7.5",
+          "0.8.0-rc.4"
+        ],
+        "after": [
+          "0.7.5"
+        ]
+      },
+      {
+        "name": "polyval",
+        "before": [
+          "0.6.2",
+          "0.7.3"
+        ],
+        "after": [
+          "0.6.2"
+        ]
+      },
+      {
+        "name": "primefield",
+        "before": [
+          "0.14.0"
+        ],
+        "after": []
+      },
+      {
+        "name": "primeorder",
+        "before": [
+          "0.13.6",
+          "0.14.0"
+        ],
+        "after": [
+          "0.13.6"
+        ]
+      },
+      {
+        "name": "quick_cache",
+        "before": [
+          "0.6.24"
+        ],
+        "after": [
+          "0.6.24",
+          "0.7.0"
+        ]
+      },
+      {
+        "name": "read-fonts",
+        "before": [
+          "0.39.2",
+          "0.41.0"
+        ],
+        "after": [
+          "0.39.2",
+          "0.41.0",
+          "0.43.3"
+        ]
+      },
+      {
+        "name": "regex-automata",
+        "before": [
+          "0.2.0",
+          "0.4.18"
+        ],
+        "after": [
+          "0.4.18"
+        ]
+      },
+      {
+        "name": "rfc6979",
+        "before": [
+          "0.4.0",
+          "0.6.0"
+        ],
+        "after": [
+          "0.4.0"
+        ]
+      },
+      {
+        "name": "ron",
+        "before": [
+          "0.12.2"
+        ],
+        "after": []
+      },
+      {
+        "name": "rsa",
+        "before": [
+          "0.10.0-rc.18",
+          "0.9.10"
+        ],
+        "after": [
+          "0.9.10"
+        ]
+      },
+      {
+        "name": "schemars",
+        "before": [],
+        "after": [
+          "0.9.0",
+          "1.2.2"
+        ]
+      },
+      {
+        "name": "sec1",
+        "before": [
+          "0.7.3",
+          "0.8.1"
+        ],
+        "after": [
+          "0.7.3"
+        ]
+      },
+      {
+        "name": "selectors",
+        "before": [
+          "0.40.0"
+        ],
+        "after": [
+          "0.41.0"
+        ]
+      },
+      {
+        "name": "seq-macro",
+        "before": [
+          "0.3.6"
+        ],
+        "after": []
+      },
+      {
+        "name": "serde_urlencoded",
+        "before": [],
+        "after": [
+          "0.7.1"
+        ]
+      },
+      {
+        "name": "serde_with",
+        "before": [],
+        "after": [
+          "3.24.0"
+        ]
+      },
+      {
+        "name": "serde_with_macros",
+        "before": [],
+        "after": [
+          "3.24.0"
+        ]
+      },
+      {
+        "name": "servo_arc",
+        "before": [
+          "0.4.3"
+        ],
+        "after": [
+          "0.5.0"
+        ]
+      },
+      {
+        "name": "sha3",
+        "before": [
+          "0.11.0",
+          "0.12.0"
+        ],
+        "after": []
+      },
+      {
+        "name": "shake",
+        "before": [
+          "0.1.0"
+        ],
+        "after": []
+      },
+      {
+        "name": "skrifa",
+        "before": [
+          "0.42.1",
+          "0.44.0"
+        ],
+        "after": [
+          "0.42.1",
+          "0.44.0",
+          "0.46.2"
+        ]
+      },
+      {
+        "name": "sponge-cursor",
+        "before": [
+          "0.1.0"
+        ],
+        "after": []
+      },
+      {
+        "name": "strck",
+        "before": [
+          "0.1.2"
+        ],
+        "after": [
+          "1.0.0"
+        ]
+      },
+      {
+        "name": "strck_ident",
+        "before": [
+          "0.1.2"
+        ],
+        "after": []
+      },
+      {
+        "name": "string_cache",
+        "before": [
+          "0.9.0"
+        ],
+        "after": [
+          "0.11.0",
+          "0.9.0"
+        ]
+      },
+      {
+        "name": "string_cache_codegen",
+        "before": [
+          "0.6.1"
+        ],
+        "after": [
+          "0.11.2",
+          "0.6.1"
+        ]
+      },
+      {
+        "name": "stylo",
+        "before": [
+          "0.20.0"
+        ],
+        "after": [
+          "0.22.0"
+        ]
+      },
+      {
+        "name": "stylo_atoms",
+        "before": [
+          "0.20.0"
+        ],
+        "after": [
+          "0.22.0"
+        ]
+      },
+      {
+        "name": "stylo_derive",
+        "before": [
+          "0.20.0"
+        ],
+        "after": [
+          "0.22.0"
+        ]
+      },
+      {
+        "name": "stylo_dom",
+        "before": [
+          "0.20.0"
+        ],
+        "after": [
+          "0.22.0"
+        ]
+      },
+      {
+        "name": "stylo_malloc_size_of",
+        "before": [
+          "0.20.0"
+        ],
+        "after": [
+          "0.22.0"
+        ]
+      },
+      {
+        "name": "stylo_static_prefs",
+        "before": [
+          "0.20.0"
+        ],
+        "after": [
+          "0.22.0"
+        ]
+      },
+      {
+        "name": "stylo_traits",
+        "before": [
+          "0.20.0"
+        ],
+        "after": [
+          "0.22.0"
+        ]
+      },
+      {
+        "name": "surfman",
+        "before": [
+          "0.13.0"
+        ],
+        "after": [
+          "0.14.0"
+        ]
+      },
+      {
+        "name": "taffy",
+        "before": [
+          "0.11.0-experimental-cache-fix.3",
+          "0.12.2"
+        ],
+        "after": [
+          "0.11.0-experimental-cache-fix.3",
+          "0.14.0"
+        ]
+      },
+      {
+        "name": "tikv-jemalloc-sys",
+        "before": [
+          "0.6.1+5.3.0-1-ge13ca993e8ccb9ba9847cc330696e02839f328f7"
+        ],
+        "after": []
+      },
+      {
+        "name": "tikv-jemallocator",
+        "before": [
+          "0.6.1"
+        ],
+        "after": []
+      },
+      {
+        "name": "to_shmem",
+        "before": [
+          "0.5.0"
+        ],
+        "after": [
+          "0.6.0"
+        ]
+      },
+      {
+        "name": "to_shmem_derive",
+        "before": [
+          "0.1.0"
+        ],
+        "after": [
+          "0.2.0"
+        ]
+      },
+      {
+        "name": "tree_magic_mini",
+        "before": [],
+        "after": [
+          "3.2.2"
+        ]
+      },
+      {
+        "name": "turboshake",
+        "before": [
+          "0.7.1"
+        ],
+        "after": []
+      },
+      {
+        "name": "udmf",
+        "before": [],
+        "after": [
+          "0.1.1"
+        ]
+      },
+      {
+        "name": "udmf-sys",
+        "before": [],
+        "after": [
+          "0.1.5"
+        ]
+      },
+      {
+        "name": "vello_common",
+        "before": [
+          "0.0.9"
+        ],
+        "after": [
+          "0.2.0"
+        ]
+      },
+      {
+        "name": "vello_cpu",
+        "before": [
+          "0.0.9"
+        ],
+        "after": [
+          "0.2.0"
+        ]
+      },
+      {
+        "name": "warp",
+        "before": [],
+        "after": [
+          "0.4.3"
+        ]
+      },
+      {
+        "name": "web_atoms",
+        "before": [
+          "0.2.6"
+        ],
+        "after": [
+          "0.2.6",
+          "0.3.0"
+        ]
+      },
+      {
+        "name": "webdriver",
+        "before": [
+          "0.53.0"
+        ],
+        "after": [
+          "0.54.0"
+        ]
+      },
+      {
+        "name": "wl-clipboard-rs",
+        "before": [],
+        "after": [
+          "0.9.4"
+        ]
+      },
+      {
+        "name": "wnaf",
+        "before": [
+          "0.14.1"
+        ],
+        "after": []
+      },
+      {
+        "name": "x448",
+        "before": [
+          "0.14.0-pre.12"
+        ],
+        "after": []
+      },
+      {
+        "name": "xml5ever",
+        "before": [
+          "0.39.0"
+        ],
+        "after": [
+          "0.39.0",
+          "0.40.0"
+        ]
+      },
+      {
+        "name": "zerotrie",
+        "before": [
+          "0.1.3",
+          "0.2.5"
+        ],
+        "after": [
+          "0.2.5"
+        ]
+      }
+    ],
+    "icu_or_mozjs_added": [
+      [
+        "icu_calendar",
+        "2.1.1",
+        "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de"
+      ],
+      [
+        "icu_calendar_data",
+        "2.1.1",
+        "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de"
+      ],
+      [
+        "icu_capi",
+        "2.1.2",
+        "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de"
+      ],
+      [
+        "icu_casemap",
+        "2.1.1",
+        "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de"
+      ],
+      [
+        "icu_casemap",
+        "2.3.0",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      [
+        "icu_casemap_data",
+        "2.1.1",
+        "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de"
+      ],
+      [
+        "icu_casemap_data",
+        "2.3.0",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      [
+        "icu_collator",
+        "2.1.1",
+        "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de"
+      ],
+      [
+        "icu_collator_data",
+        "2.1.1",
+        "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de"
+      ],
+      [
+        "icu_collections",
+        "2.1.1",
+        "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de"
+      ],
+      [
+        "icu_datetime",
+        "2.1.1",
+        "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de"
+      ],
+      [
+        "icu_datetime_data",
+        "2.1.2",
+        "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de"
+      ],
+      [
+        "icu_decimal",
+        "2.1.1",
+        "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de"
+      ],
+      [
+        "icu_decimal_data",
+        "2.1.1",
+        "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de"
+      ],
+      [
+        "icu_experimental",
+        "0.4.0",
+        "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de"
+      ],
+      [
+        "icu_experimental_data",
+        "0.4.1",
+        "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de"
+      ],
+      [
+        "icu_list",
+        "2.1.1",
+        "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de"
+      ],
+      [
+        "icu_list_data",
+        "2.1.1",
+        "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de"
+      ],
+      [
+        "icu_locale",
+        "2.1.1",
+        "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de"
+      ],
+      [
+        "icu_locale",
+        "2.3.1",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      [
+        "icu_locale_core",
+        "2.1.1",
+        "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de"
+      ],
+      [
+        "icu_locale_data",
+        "2.1.2",
+        "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de"
+      ],
+      [
+        "icu_locale_data",
+        "2.3.0",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      [
+        "icu_normalizer",
+        "2.1.1",
+        "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de"
+      ],
+      [
+        "icu_normalizer_data",
+        "2.1.1",
+        "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de"
+      ],
+      [
+        "icu_pattern",
+        "0.4.1",
+        "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de"
+      ],
+      [
+        "icu_plurals",
+        "2.1.1",
+        "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de"
+      ],
+      [
+        "icu_plurals_data",
+        "2.1.1",
+        "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de"
+      ],
+      [
+        "icu_properties",
+        "2.1.2",
+        "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de"
+      ],
+      [
+        "icu_properties_data",
+        "2.1.2",
+        "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de"
+      ],
+      [
+        "icu_provider",
+        "2.1.1",
+        "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de"
+      ],
+      [
+        "icu_provider_adapters",
+        "2.1.1",
+        "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de"
+      ],
+      [
+        "icu_segmenter",
+        "2.1.2",
+        "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de"
+      ],
+      [
+        "icu_segmenter_data",
+        "2.1.1",
+        "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de"
+      ],
+      [
+        "icu_time",
+        "2.1.1",
+        "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de"
+      ],
+      [
+        "icu_time_data",
+        "2.1.1",
+        "git+https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a07fc5bb03a6c7647077bd2658b2559de"
+      ],
+      [
+        "mozjs",
+        "0.26.4",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      [
+        "mozjs_collator_glue",
+        "153.3.0",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      [
+        "mozjs_icu_collator",
+        "153.3.0",
+        "path"
+      ],
+      [
+        "mozjs_icu_collator_data",
+        "153.3.0",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      [
+        "mozjs_icu_collections",
+        "153.3.0",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      [
+        "mozjs_icu_normalizer",
+        "153.3.0",
+        "path"
+      ],
+      [
+        "mozjs_icu_normalizer_data",
+        "153.3.0",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      [
+        "mozjs_locale_glue",
+        "153.3.0",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      [
+        "mozjs_normalizer_glue",
+        "153.3.0",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      [
+        "mozjs_properties_glue",
+        "153.3.0",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      [
+        "mozjs_sys",
+        "153.3.0-1",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      [
+        "mozjs_unicode_bidi_ffi",
+        "153.3.0",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      [
+        "mozjs_utf16_iter",
+        "153.3.0",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      [
+        "mozjs_utf8_iter",
+        "153.3.0",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ]
+    ],
+    "icu_or_mozjs_removed": [
+      [
+        "icu_calendar",
+        "1.5.2",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      [
+        "icu_calendar_data",
+        "1.5.1",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      [
+        "icu_capi",
+        "1.5.0",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      [
+        "icu_casemap",
+        "1.5.1",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      [
+        "icu_casemap_data",
+        "1.5.1",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      [
+        "icu_collator",
+        "1.5.0",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      [
+        "icu_collator_data",
+        "1.5.1",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      [
+        "icu_datetime",
+        "1.5.1",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      [
+        "icu_datetime_data",
+        "1.5.1",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      [
+        "icu_decimal",
+        "1.5.0",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      [
+        "icu_decimal_data",
+        "1.5.1",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      [
+        "icu_experimental",
+        "0.1.0",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      [
+        "icu_experimental_data",
+        "0.1.1",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      [
+        "icu_list",
+        "1.5.0",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      [
+        "icu_list_data",
+        "1.5.1",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      [
+        "icu_locid_transform",
+        "1.5.0",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      [
+        "icu_locid_transform_data",
+        "1.5.1",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      [
+        "icu_normalizer",
+        "1.5.0",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      [
+        "icu_normalizer_data",
+        "1.5.1",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      [
+        "icu_pattern",
+        "0.2.0",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      [
+        "icu_plurals",
+        "1.5.0",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      [
+        "icu_plurals_data",
+        "1.5.1",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      [
+        "icu_properties",
+        "1.5.1",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      [
+        "icu_properties_data",
+        "1.5.1",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      [
+        "icu_provider_adapters",
+        "1.5.0",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      [
+        "icu_timezone",
+        "1.5.0",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      [
+        "icu_timezone_data",
+        "1.5.1",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      [
+        "mozjs",
+        "0.21.6",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ],
+      [
+        "mozjs_sys",
+        "140.14.0-0",
+        "registry+https://github.com/rust-lang/crates.io-index"
+      ]
+    ]
+  },
+  "findings": [
+    {
+      "kind": "confirmed provenance",
+      "text": "68 published files verified, 66 unchanged; all23Rust plus data/license bytes retained; only three production manifest edges changed."
+    },
+    {
+      "kind": "actual selected source",
+      "text": "Private Mozilla forks/glue share registry ICU2.3.x provider/locale/properties. Exact CAPI2.1.2 and ICU2.1 children are isolated at official Git30120. Stylo0.22 independently retains registry segmenter/provider/collections1.5; do not claim one global ICU version."
+    },
+    {
+      "kind": "pending behavior gate",
+      "text": "Private collator/normalizer baked-provider representations explicitly unstable across minor versions. Typed fork+glue compilation, final combined staticlink and native Intl scenario are required. Root reports codegen has progressed past both vendored forks; finaltest/nativegate pending."
+    },
+    {
+      "kind": "existing constructor failure hazard",
+      "text": "mozjs_collator_glue153.3 src/lib.rs295 unwraps try_new, relying on correctlygenerated bakeddata. Source/cohort coherence does not prove that runtime promise. Existing native fixture exercises numeric+Swedish collators, canonical/nonLatin normalization, ISO+Buddhist calendar dates, wordsegmentation."
+    },
+    {
+      "kind": "precision",
+      "text": "Cargo.toml327 no-local-paths comment is stale: there are exactly two intentional inrepo vendor path patches. Metadata has only root,sandboxhelper,and those two vendor paths; no external workspace path override."
+    },
+    {
+      "kind": "acceptance scope",
+      "text": "Metadata filtered Windows/all3 does not establish Linux/macOS native compatibility, fullIntl conformance, simultaneous3engine coexistence orAT acceptance."
+    }
+  ],
+  "source_order": {
+    "Knot_qualified_source": "0096591a0af98bf4777d8bfe718c0423dea9fc90",
+    "Knot_docs_followup": "ae3352e818977be2bf4cd56875b868874ab84fd7",
+    "Redshank_published": "82271df20927d41a4cbb79c56a09fef5bbb38cde"
+  },
+  "confirmed_type_defect": null
+}

@@ -1,0 +1,27 @@
+    Updating git repository `https://github.com/merely-made/mere.git`
+    Updating git repository `https://github.com/merely-made/genet.git`
+    Updating git repository `https://github.com/merely-made/wgpu-scry.git`
+From https://github.com/merely-made/wgpu-scry
+ * [new ref]         2c3ebd24118851cf6125cfb193f55aab20e3ad67 -> refs/commit/2c3ebd24118851cf6125cfb193f55aab20e3ad67
+    Updating git repository `https://github.com/merely-made/knot-editor.git`
+From https://github.com/merely-made/knot-editor
+ * [new ref]         0096591a0af98bf4777d8bfe718c0423dea9fc90 -> refs/commit/0096591a0af98bf4777d8bfe718c0423dea9fc90
+    Updating git repository `https://github.com/merely-made/woodshed.git`
+From https://github.com/merely-made/woodshed
+ * [new ref]         82271df20927d41a4cbb79c56a09fef5bbb38cde -> refs/commit/82271df20927d41a4cbb79c56a09fef5bbb38cde
+    Updating git repository `https://github.com/merely-made/wgpu-graft.git`
+From https://github.com/merely-made/wgpu-graft
+ * [new ref]         7907ff295da2c20c2a791419e6658d1c05350345 -> refs/commit/7907ff295da2c20c2a791419e6658d1c05350345
+    Updating git repository `https://github.com/servo/servo`
+error: invalid type: boolean `true`, expected a map
+ --> ..\..\..\.cargo\git\checkouts\servo-e53a6e7b994a25fe\aac43a3\python\tidy\tests\lints-configuration\no-workspace\Cargo.toml:8:7
+  |
+8 | foo = true
+  |       ^^^^
+    Updating git repository `https://github.com/merely-made/wgpu-weld.git`
+    Updating crates.io index
+error: failed to select a version for the requirement `mere-p2panda-net = "=0.7.5"`
+candidate versions found which didn't match: 0.7.4, 0.7.2, 0.7.1
+location searched: crates.io index
+required by package `commons-spine v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)`
+    ... which satisfies git dependency `commons` of package `turnstone v0.1.0 (C:\Users\mark_\Code\repos\turnstone)`

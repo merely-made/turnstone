@@ -1,0 +1,34 @@
+    Updating git repository `https://github.com/merely-made/mere.git`
+    Updating git repository `https://github.com/merely-made/genet.git`
+    Updating git repository `https://github.com/mark-ik/p2panda.git`
+    Updating git repository `https://github.com/merely-made/wgpu-scry.git`
+    Updating git repository `https://github.com/merely-made/knot-editor.git`
+    Updating git repository `https://github.com/merely-made/woodshed.git`
+    Updating git repository `https://github.com/merely-made/wgpu-graft.git`
+    Updating git repository `https://github.com/servo/servo`
+error: invalid type: boolean `true`, expected a map
+ --> ..\..\..\.cargo\git\checkouts\servo-e53a6e7b994a25fe\aac43a3\python\tidy\tests\lints-configuration\no-workspace\Cargo.toml:8:7
+  |
+8 | foo = true
+  |       ^^^^
+    Updating git repository `https://github.com/merely-made/wgpu-weld.git`
+    Updating crates.io index
+error: failed to select a version for `icu_normalizer`.
+    ... required by package `icu_capi v2.1.2`
+    ... which satisfies dependency `icu_capi = "=2.1.2"` of package `mozjs_sys v153.3.0-1`
+    ... which satisfies dependency `mozjs_sys = "=153.3.0-1"` of package `mozjs v0.26.4`
+    ... which satisfies dependency `js = "=0.26.4"` of package `servo-script v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)`
+    ... which satisfies git dependency `script` of package `servo v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)`
+    ... which satisfies git dependency `servo` of package `turnstone v0.1.0 (C:\Users\mark_\Code\repos\turnstone)`
+    ... which satisfies path dependency `turnstone` (locked to 0.1.0) of package `turnstone-sandbox-bootstrap-win v0.1.0 (C:\Users\mark_\Code\repos\turnstone\sandbox_bootstrap_win)`
+versions that meet the requirements `~2.1.1` are: 2.1.1
+
+all possible versions conflict with previously selected packages
+
+  previously selected package `icu_normalizer v2.3.0`
+    ... which satisfies dependency `icu_normalizer = "^2.1.1"` (locked to 2.3.0) of package `genet-parley v0.10.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)`
+    ... which satisfies git dependency `parley` of package `genet-livery v0.0.4 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)`
+    ... which satisfies git dependency `genet-livery` of package `turnstone v0.1.0 (C:\Users\mark_\Code\repos\turnstone)`
+    ... which satisfies path dependency `turnstone` (locked to 0.1.0) of package `turnstone-sandbox-bootstrap-win v0.1.0 (C:\Users\mark_\Code\repos\turnstone\sandbox_bootstrap_win)`
+
+failed to select a version for `icu_normalizer` which could resolve this conflict

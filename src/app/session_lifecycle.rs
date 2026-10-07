@@ -116,6 +116,7 @@ impl App {
             active_pane: None,
             browser: pandect::browser_node_state::BrowserNodeStates::new(),
             physics_damping: pandect::DEFAULT_PHYSICS_DAMPING,
+            physics_refusal: None,
             maximized: None,
             window_count: 1,
             viewport: super::DEFAULT_VIEWPORT,
@@ -902,6 +903,7 @@ impl App {
     /// (omnibar, active pane, maximize) resets.
     pub fn adopt_session(&mut self, id: crate::panes::SessionId) -> Vec<Effect> {
         self.session_id = id;
+        self.physics_refusal = None;
         let graph = self
             .sessions
             .get(id)
@@ -1023,7 +1025,7 @@ impl App {
             self.graph_runtimes
                 .set_layout_strategy(intent.layout_strategy);
             // The physics choice rides the same sidecar: sources first, so
-            // the law's build reads them, then the overlays, then the law.
+            // the law's build reads them, then the law, then its overlays.
             // An unknown id (a newer catalog) falls back to the default
             // rather than failing the open. (Physics catalog — P2.)
             if let Some(source) = intent
@@ -1047,20 +1049,22 @@ impl App {
             {
                 self.graph_runtimes.set_physics_depth_source(source);
             }
-            self.graph_runtimes.set_physics_overlays(
+            if let Some(law) = intent
+                .physics_law
+                .as_deref()
+                .and_then(mere::canvas::PhysicsLaw::parse)
+            {
+                let result = self.graph_runtimes.set_physics_law(law);
+                self.record_physics_result(result);
+            }
+            let result = self.graph_runtimes.set_physics_overlays(
                 intent
                     .physics_overlays
                     .iter()
                     .filter_map(|id| mere::canvas::PhysicsOverlay::parse(id))
                     .collect(),
             );
-            if let Some(law) = intent
-                .physics_law
-                .as_deref()
-                .and_then(mere::canvas::PhysicsLaw::parse)
-            {
-                self.graph_runtimes.set_physics_law(law);
-            }
+            self.record_physics_result(result);
         }
         // Preview imagery lives out of the graph now. The first paint queues
         // only visible cache misses; the shell resolves those after the frame,

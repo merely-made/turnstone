@@ -464,36 +464,27 @@ fn engine_inventory_saved_unknown_is_selected_disabled_and_refuses_click() {
     );
     let selected = pane.runner.state().radio.selected;
     assert_ne!(selected, 0);
-    let (x, y) = {
-        let dom = pane.dom.borrow();
-        let surfaces = [taproot::ProbeSurface {
-            name: "inspector",
-            dom: &dom,
-            rect: [0.0, 0.0, 400.0, 2000.0],
-            sheet: crate::ui::CAMBIUM_SHEET,
-        }];
-        // A Selector has one attribute constraint. Check identity and each
-        // accessibility state separately against the same unknown row.
-        let points: Vec<_> = [
-            ("data-engine-id", "unknown.lane"),
-            ("aria-checked", "true"),
-            ("aria-disabled", "true"),
-        ]
-        .iter()
-        .map(|(name, value)| {
-            taproot::resolve(
-                &surfaces,
-                &taproot::Selector::class("radio")
-                    .with_attr(*name, *value)
-                    .containing("unknown.lane"),
-            )
-            .expect("saved unknown selection stays accessible with an explicit refusal")
-            .point
-        })
-        .collect();
-        assert!(points.iter().all(|point| *point == points[0]));
-        points[0]
-    };
+    let _ = pane.scene(400, 2000);
+    // Match identity and both accessibility states against the same painted
+    // row. Estimated probe geometry can land on a different engine option.
+    let points: Vec<_> = [
+        ("data-engine-id", "unknown.lane"),
+        ("aria-checked", "true"),
+        ("aria-disabled", "true"),
+    ]
+    .iter()
+    .map(|(name, value)| {
+        pane.selector_point(
+            &taproot::Selector::class("radio")
+                .with_attr(*name, *value)
+                .containing("unknown.lane"),
+        )
+        .expect("saved unknown row is unambiguous")
+        .expect("saved unknown selection stays visible with an explicit refusal")
+    })
+    .collect();
+    assert!(points.iter().all(|point| *point == points[0]));
+    let (x, y) = points[0];
     assert!(pane.click(x, y, 400, 2000).is_empty());
     assert_eq!(pane.runner.state().radio.selected, selected);
     assert_eq!(
@@ -530,22 +521,15 @@ fn engine_inventory_human_label_keeps_engine_id_scenario_target() {
         false,
         "unconfigured",
     );
-    let (x, y) = {
-        let dom = pane.dom.borrow();
-        taproot::resolve(
-            &[taproot::ProbeSurface {
-                name: "inspector",
-                dom: &dom,
-                rect: [0.0, 0.0, 400.0, 2000.0],
-                sheet: crate::ui::CAMBIUM_SHEET,
-            }],
+    let _ = pane.scene(400, 2000);
+    let (x, y) = pane
+        .selector_point(
             &taproot::Selector::class("radio")
                 .with_attr("data-engine-id", "genet.reader")
                 .containing("Reader"),
         )
-        .expect("the compatibility engine id resolves the plain label")
-        .point
-    };
+        .expect("Reader row is unambiguous")
+        .expect("the compatibility engine id resolves the painted plain label");
     assert_eq!(
         pane.click(x, y, 400, 2000),
         vec![InspectorIntent::SetViewer {
@@ -553,20 +537,15 @@ fn engine_inventory_human_label_keeps_engine_id_scenario_target() {
             viewer: Some("genet.reader".into()),
         }]
     );
-    let (x, y) = {
-        let dom = pane.dom.borrow();
-        taproot::resolve(
-            &[taproot::ProbeSurface {
-                name: "inspector",
-                dom: &dom,
-                rect: [0.0, 0.0, 400.0, 2000.0],
-                sheet: crate::ui::CAMBIUM_SHEET,
-            }],
+    // The first click mutated the retained DOM. Repaint before targeting the
+    // unavailable row so the test follows the current presented geometry.
+    let _ = pane.scene(400, 2000);
+    let (x, y) = pane
+        .selector_point(
             &taproot::Selector::class("radio").with_attr("data-engine-id", "scrying.web"),
         )
-        .unwrap()
-        .point
-    };
+        .expect("System webview row is unambiguous")
+        .expect("unavailable System webview row remains painted");
     assert!(
         pane.click(x, y, 400, 2000).is_empty(),
         "an unavailable row cannot repeat an earlier unsynced selection"

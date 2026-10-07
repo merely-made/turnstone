@@ -1,0 +1,350 @@
+{
+  "sha": "34ad101f42bafbb197cb27b4b0d343469f7799e7",
+  "html_url": "https://github.com/servo/mozjs/commit/34ad101f42bafbb197cb27b4b0d343469f7799e7",
+  "commit": {
+    "author": {
+      "name": "github-actions[bot]",
+      "email": "41898282+github-actions[bot]@users.noreply.github.com",
+      "date": "2026-10-07T05:52:48Z"
+    },
+    "committer": {
+      "name": "GitHub",
+      "email": "noreply@github.com",
+      "date": "2026-10-07T05:52:48Z"
+    },
+    "message": "Security bump SpiderMonkey to 153.4.0 (#829)\n\nBump SpiderMonkey to 153.4.0 (changeset:\n[ec9c1cc8a5cb6fac9d4d17e4f141fb42a8089b4c](https://github.com/servo/mozjs/releases/mozjs-source-ec9c1cc8a5cb6fac9d4d17e4f141fb42a8089b4c))\n\nClose and reopen this PR to trigger CI.\n\n---------\n\nSigned-off-by: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>\nCo-authored-by: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>",
+    "tree": {
+      "sha": "6fd0301adf2955690e8b9dd738e26f9158e779aa",
+      "url": "https://api.github.com/repos/servo/mozjs/git/trees/6fd0301adf2955690e8b9dd738e26f9158e779aa"
+    },
+    "url": "https://api.github.com/repos/servo/mozjs/git/commits/34ad101f42bafbb197cb27b4b0d343469f7799e7",
+    "comment_count": 0,
+    "verification": {
+      "verified": true,
+      "reason": "valid",
+      "signature": "-----BEGIN PGP SIGNATURE-----\n\nwsFcBAABCAAQBQJqxd4wCRC1aQ7uu5UhlAAAivUQAHAICflMJhbjh7WGTX4u/iFc\ny8VX/+I6HbI7jLeQwAo2X2nQuRYlDzCNLOH5hRoYuSWNrKFpc18+QbJoO9B3Irji\nUyzAC6Ce62A8H3rbdJ6+3aMANtMT24jJrsT9GORfYSsuVVbxDCjoGZc/rS8Vr2J1\nkQDGT999ugD66i/wSB5S1V4/QDmlMmTz29zvQlbVmianFrpRm9Y8VBhcFWqJaMRn\nMkg67BfAQvan/kj+mK/6g5lza+F0uo5P6QRQL4RxOS9y3T+XXlq781S5H6SBV4RI\nyfbvwKhvN+R89QtspBoclL0m5yAKD2V6tHQu8u+u/dQDrXqqd41K1mqIySdtr3LR\nw2bkC/xzfYZZ4/AjZX3AsdBq/5tUM0nxNv9IyQsLKHrf2Qo6dUOwAcG8ZsQsz7q5\n+1dwXpMCI6/weINyzezwDxWk6nQ2t6LC6tp6FfZIyld8tlTEW94nfTajz/SrzAIg\nrYY67/A6jQ6IHGxw721byJ+PWMVT674Mr5Vfdk2fYWxFQtjhvqsRuD9NgesTHmi8\nCBKEL8ZUDxo6O7ebqWEnnoJFwvPQOIswelAT/mUCD6Mn1iPZ5WGJ5FJSKW0hdM3a\nxk9wRsbBtfowrEAsXIdKlhjY8m1W5IqHe9vv03AYaZ2gOKv+4gHLSckib+RZZkyL\nOo6wvN/bVy89fci1iI/U\n=RvHv\n-----END PGP SIGNATURE-----\n",
+      "payload": "tree 6fd0301adf2955690e8b9dd738e26f9158e779aa\nparent c2429cbe955a58e53d64a66f4b066431f5e4a2ea\nauthor github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com> 1791352368 +0200\ncommitter GitHub <noreply@github.com> 1791352368 +0200\n\nSecurity bump SpiderMonkey to 153.4.0 (#829)\n\nBump SpiderMonkey to 153.4.0 (changeset:\n[ec9c1cc8a5cb6fac9d4d17e4f141fb42a8089b4c](https://github.com/servo/mozjs/releases/mozjs-source-ec9c1cc8a5cb6fac9d4d17e4f141fb42a8089b4c))\n\nClose and reopen this PR to trigger CI.\n\n---------\n\nSigned-off-by: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>\nCo-authored-by: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>",
+      "verified_at": "2026-10-07T05:52:49Z"
+    }
+  },
+  "files": [
+    {
+      "filename": "mozjs-extracted-crates/collator_glue/Cargo.toml",
+      "status": "modified",
+      "additions": 2,
+      "deletions": 2
+    },
+    {
+      "filename": "mozjs-extracted-crates/icu_collator/Cargo.toml",
+      "status": "modified",
+      "additions": 6,
+      "deletions": 6
+    },
+    {
+      "filename": "mozjs-extracted-crates/icu_collator/src/comparison.rs",
+      "status": "modified",
+      "additions": 69,
+      "deletions": 80
+    },
+    {
+      "filename": "mozjs-extracted-crates/icu_collator/src/elements.rs",
+      "status": "modified",
+      "additions": 98,
+      "deletions": 53
+    },
+    {
+      "filename": "mozjs-extracted-crates/icu_collator/src/provider.rs",
+      "status": "modified",
+      "additions": 17,
+      "deletions": 0
+    },
+    {
+      "filename": "mozjs-extracted-crates/icu_collator_data/Cargo.toml",
+      "status": "modified",
+      "additions": 1,
+      "deletions": 1
+    },
+    {
+      "filename": "mozjs-extracted-crates/icu_collator_data/data/collation_root_v1.rs.data",
+      "status": "modified",
+      "additions": 1,
+      "deletions": 1
+    },
+    {
+      "filename": "mozjs-extracted-crates/icu_collator_data/data/collation_tailoring_v1.rs.data",
+      "status": "modified",
+      "additions": 1,
+      "deletions": 1
+    },
+    {
+      "filename": "mozjs-extracted-crates/icu_collections/Cargo.toml",
+      "status": "modified",
+      "additions": 1,
+      "deletions": 1
+    },
+    {
+      "filename": "mozjs-extracted-crates/icu_normalizer/Cargo.toml",
+      "status": "modified",
+      "additions": 5,
+      "deletions": 5
+    },
+    {
+      "filename": "mozjs-extracted-crates/icu_normalizer_data/Cargo.toml",
+      "status": "modified",
+      "additions": 1,
+      "deletions": 1
+    },
+    {
+      "filename": "mozjs-extracted-crates/locale_glue/Cargo.toml",
+      "status": "modified",
+      "additions": 1,
+      "deletions": 1
+    },
+    {
+      "filename": "mozjs-extracted-crates/normalizer_glue/Cargo.toml",
+      "status": "modified",
+      "additions": 3,
+      "deletions": 3
+    },
+    {
+      "filename": "mozjs-extracted-crates/properties_glue/Cargo.toml",
+      "status": "modified",
+      "additions": 2,
+      "deletions": 2
+    },
+    {
+      "filename": "mozjs-extracted-crates/unicode_bidi_ffi/Cargo.toml",
+      "status": "modified",
+      "additions": 1,
+      "deletions": 1
+    },
+    {
+      "filename": "mozjs-extracted-crates/utf16_iter/Cargo.toml",
+      "status": "modified",
+      "additions": 2,
+      "deletions": 2
+    },
+    {
+      "filename": "mozjs-extracted-crates/utf8_iter/Cargo.toml",
+      "status": "modified",
+      "additions": 2,
+      "deletions": 2
+    },
+    {
+      "filename": "mozjs-sys/Cargo.toml",
+      "status": "modified",
+      "additions": 6,
+      "deletions": 6
+    },
+    {
+      "filename": "mozjs-sys/etc/COMMIT",
+      "status": "modified",
+      "additions": 1,
+      "deletions": 1
+    },
+    {
+      "filename": "mozjs-sys/mozjs/Cargo.lock",
+      "status": "modified",
+      "additions": 60,
+      "deletions": 10
+    },
+    {
+      "filename": "mozjs-sys/mozjs/config/milestone.txt",
+      "status": "modified",
+      "additions": 1,
+      "deletions": 1
+    },
+    {
+      "filename": "mozjs-sys/mozjs/js/src/builtin/ModuleObject.cpp",
+      "status": "modified",
+      "additions": 12,
+      "deletions": 0
+    },
+    {
+      "filename": "mozjs-sys/mozjs/js/src/frontend/EmitterScope.h",
+      "status": "modified",
+      "additions": 2,
+      "deletions": 0
+    },
+    {
+      "filename": "mozjs-sys/mozjs/js/src/frontend/ForOfLoopControl.cpp",
+      "status": "modified",
+      "additions": 14,
+      "deletions": 8
+    },
+    {
+      "filename": "mozjs-sys/mozjs/js/src/frontend/UsingEmitter.cpp",
+      "status": "modified",
+      "additions": 4,
+      "deletions": 13
+    },
+    {
+      "filename": "mozjs-sys/mozjs/js/src/jit/BaselineIC.cpp",
+      "status": "modified",
+      "additions": 6,
+      "deletions": 1
+    },
+    {
+      "filename": "mozjs-sys/mozjs/js/src/jit/CacheIR.cpp",
+      "status": "modified",
+      "additions": 3,
+      "deletions": 1
+    },
+    {
+      "filename": "mozjs-sys/mozjs/js/src/jit/CacheIRWriter.h",
+      "status": "modified",
+      "additions": 7,
+      "deletions": 1
+    },
+    {
+      "filename": "mozjs-sys/mozjs/js/src/jit/CodeGenerator.cpp",
+      "status": "modified",
+      "additions": 9,
+      "deletions": 6
+    },
+    {
+      "filename": "mozjs-sys/mozjs/js/src/jit/JitFrames.cpp",
+      "status": "modified",
+      "additions": 12,
+      "deletions": 5
+    },
+    {
+      "filename": "mozjs-sys/mozjs/js/src/jit/MIR-wasm.cpp",
+      "status": "modified",
+      "additions": 1,
+      "deletions": 1
+    },
+    {
+      "filename": "mozjs-sys/mozjs/js/src/jit/MIR.cpp",
+      "status": "modified",
+      "additions": 43,
+      "deletions": 40
+    },
+    {
+      "filename": "mozjs-sys/mozjs/js/src/vm/GeneratorObject.cpp",
+      "status": "modified",
+      "additions": 36,
+      "deletions": 8
+    },
+    {
+      "filename": "mozjs-sys/mozjs/js/src/vm/GeneratorObject.h",
+      "status": "modified",
+      "additions": 8,
+      "deletions": 0
+    },
+    {
+      "filename": "mozjs-sys/mozjs/js/src/vm/JitActivation.cpp",
+      "status": "modified",
+      "additions": 8,
+      "deletions": 0
+    },
+    {
+      "filename": "mozjs-sys/mozjs/js/src/vm/ObjectFuse.cpp",
+      "status": "modified",
+      "additions": 9,
+      "deletions": 2
+    },
+    {
+      "filename": "mozjs-sys/mozjs/js/src/vm/ObjectFuse.h",
+      "status": "modified",
+      "additions": 1,
+      "deletions": 0
+    },
+    {
+      "filename": "mozjs-sys/mozjs/js/src/vm/PortableBaselineInterpret.cpp",
+      "status": "modified",
+      "additions": 2,
+      "deletions": 8
+    },
+    {
+      "filename": "mozjs-sys/mozjs/js/src/vm/Shape.cpp",
+      "status": "modified",
+      "additions": 4,
+      "deletions": 0
+    },
+    {
+      "filename": "mozjs-sys/mozjs/js/src/vm/Watchtower.cpp",
+      "status": "modified",
+      "additions": 9,
+      "deletions": 0
+    },
+    {
+      "filename": "mozjs-sys/mozjs/js/src/vm/Watchtower.h",
+      "status": "modified",
+      "additions": 2,
+      "deletions": 0
+    },
+    {
+      "filename": "mozjs-sys/mozjs/js/src/wasm/WasmFrameIter.cpp",
+      "status": "modified",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "filename": "mozjs-sys/mozjs/js/src/wasm/WasmFrameIter.h",
+      "status": "modified",
+      "additions": 9,
+      "deletions": 0
+    },
+    {
+      "filename": "mozjs-sys/mozjs/js/src/wasm/WasmStacks.cpp",
+      "status": "modified",
+      "additions": 3,
+      "deletions": 0
+    },
+    {
+      "filename": "mozjs-sys/mozjs/js/src/wasm/WasmStubs.cpp",
+      "status": "modified",
+      "additions": 4,
+      "deletions": 0
+    },
+    {
+      "filename": "mozjs-sys/mozjs/js/src/wasm/WasmTypeDef.h",
+      "status": "modified",
+      "additions": 7,
+      "deletions": 7
+    },
+    {
+      "filename": "mozjs-sys/mozjs/js/src/wasm/WasmValType.h",
+      "status": "modified",
+      "additions": 21,
+      "deletions": 14
+    },
+    {
+      "filename": "mozjs-sys/mozjs/modules/libpref/init/StaticPrefList.yaml",
+      "status": "modified",
+      "additions": 6,
+      "deletions": 0
+    },
+    {
+      "filename": "mozjs-sys/mozjs/mozglue/misc/NativeNt.h",
+      "status": "modified",
+      "additions": 52,
+      "deletions": 0
+    },
+    {
+      "filename": "mozjs-sys/mozjs/mozglue/misc/WindowsUserHandleValidation.h",
+      "status": "added",
+      "additions": 99,
+      "deletions": 0
+    },
+    {
+      "filename": "mozjs-sys/mozjs/mozglue/misc/moz.build",
+      "status": "modified",
+      "additions": 1,
+      "deletions": 0
+    },
+    {
+      "filename": "mozjs-sys/mozjs/python/mozbuild/mozbuild/test/configure/test_toolchain_configure.py",
+      "status": "modified",
+      "additions": 15,
+      "deletions": 0
+    },
+    {
+      "filename": "mozjs/Cargo.toml",
+      "status": "modified",
+      "additions": 2,
+      "deletions": 2
+    }
+  ]
+}

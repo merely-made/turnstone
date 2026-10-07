@@ -1,0 +1,12 @@
+{
+  "purpose": "INTENTIONALLY BROKEN native capture hash; archive verifier must reject",
+  "source_manifest": "docs/receipts/browser_supplier_integration_20261006/source-manifest-all3-current-viewport.json",
+  "source_archive": "docs/receipts/browser_family_20261007/source-inputs-all3-current-viewport.zip",
+  "files": [
+    {
+      "path": "docs/receipts/browser_supplier_integration_20261006/native-current-family-viewport/02_inspector_closed_viewport.png",
+      "bytes": 58816,
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    }
+  ]
+}

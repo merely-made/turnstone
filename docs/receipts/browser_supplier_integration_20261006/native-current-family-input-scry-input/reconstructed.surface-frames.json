@@ -1,0 +1,39 @@
+{
+  "live_producers": 2,
+  "cached_frames": 2,
+  "scry_importers": [
+    {
+      "node": "aba7d4d9-0b8a-4a77-973f-9d13e905f570",
+      "fence_handle": 3532,
+      "frames": 3,
+      "imports": 3,
+      "waits": 3
+    },
+    {
+      "node": "686054b4-55e0-4b8c-8dd1-b9dcaee5e986",
+      "fence_handle": 2636,
+      "frames": 222,
+      "imports": 222,
+      "waits": 222
+    }
+  ],
+  "servo_active_views": 0,
+  "content_surfaces": [
+    {
+      "node": "aba7d4d9-0b8a-4a77-973f-9d13e905f570",
+      "surface_id": 6347181777171281571,
+      "x": 668.0,
+      "y": 30.0,
+      "width": 175.0,
+      "height": 570.0
+    },
+    {
+      "node": "686054b4-55e0-4b8c-8dd1-b9dcaee5e986",
+      "surface_id": 7018989818857449905,
+      "x": 849.0,
+      "y": 30.0,
+      "width": 175.0,
+      "height": 570.0
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+[
+  {
+    "started_utc": "2026-10-07T09:39:47.8802656Z",
+    "port": 43123,
+    "fixture_directory": "C:\\Users\\mark_\\Code\\repos\\turnstone\\scenarios\\fixtures\\browser_scry",
+    "pid": 32208,
+    "executable": "C:\\Users\\mark_\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\python.exe",
+    "kind": "scry"
+  },
+  {
+    "started_utc": "2026-10-07T09:39:47.8999823Z",
+    "port": 43124,
+    "fixture_directory": "C:\\Users\\mark_\\Code\\repos\\turnstone\\scenarios\\fixtures\\browser_servo",
+    "pid": 40336,
+    "executable": "C:\\Users\\mark_\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\python.exe",
+    "kind": "servo"
+  }
+]

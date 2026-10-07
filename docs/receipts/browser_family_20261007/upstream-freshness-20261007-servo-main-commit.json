@@ -1,0 +1,38 @@
+{
+  "sha": "3058b7ab31a81958260dbce31abae4aad77fd03d",
+  "html_url": "https://github.com/servo/servo/commit/3058b7ab31a81958260dbce31abae4aad77fd03d",
+  "commit": {
+    "author": {
+      "name": "TTyChud",
+      "email": "100087133+TTyChud@users.noreply.github.com",
+      "date": "2026-10-07T08:26:22Z"
+    },
+    "committer": {
+      "name": "GitHub",
+      "email": "noreply@github.com",
+      "date": "2026-10-07T08:26:22Z"
+    },
+    "message": "ohos: Write the font cache atomically (#48542)\n\nWrites the OHOS font cache to a temporary file that is then renamed into\nplace.\n\nTesting: No automated tests for OHOS; type-checked under `--cfg\nohos_mock` and exercised the write, read and cleanup paths in a local\nharness.\n\nFixes: #48501\n\n---------\n\nSigned-off-by: TTyChud <himanshujha1218@gmail.com>\nSigned-off-by: Jonathan Schwender <schwenderjonathan@gmail.com>\nCo-authored-by: Jonathan Schwender <schwenderjonathan@gmail.com>",
+    "tree": {
+      "sha": "71991d5d7ecf7e6b3e1e271387a34e05b074315f",
+      "url": "https://api.github.com/repos/servo/servo/git/trees/71991d5d7ecf7e6b3e1e271387a34e05b074315f"
+    },
+    "url": "https://api.github.com/repos/servo/servo/git/commits/3058b7ab31a81958260dbce31abae4aad77fd03d",
+    "comment_count": 0,
+    "verification": {
+      "verified": true,
+      "reason": "valid",
+      "signature": "-----BEGIN PGP SIGNATURE-----\n\nwsFcBAABCAAQBQJqxgI+CRC1aQ7uu5UhlAAAanAQAI/SVc+oUrwZH5MxEB7pBnpV\nQyQ9gsaOJfenprkBV3pCmLbEzFOP0wS5a65KaSX+ShVpnO0tJ3MVGZaISK6sFJqQ\ndVneTu7nvPCYsNdrBrhPbdFj5Ekt5t+Amj5o2d695Kz7phh2uXpitolqsZZUXU6m\nm11HzAUSt0MOcFmUFBrJULgZ91PN0ubT5yZAbi/uoxRDgru3tArrCi+fQ9u8+/hH\ngd4XTejj8M9rI543t6vgvRSFObKc7Up0X8B7YFB0TYqtk6FlRNP0PTKI/OI59wMu\nxrkIHmm7k7sI88Lp4qWidynUPAWHfTzjOCirg1y14IGaFxiBR8JSF9DbraY3IlAf\nJvTmllmGMEEOl5JrrToWaRaMs+GdStnbOh8t7n9CQhoGTkyMFnW0J5dKoDWYpYiv\nQesQumbZyxVB/oAMMd6L2ihsXQ8eNIqQBTDVczJVApXYhLrupcydhmHuqi49fhGm\n0pgEkzg3+g9r4MggdtAOCSpA22cDp7hgu1ISu9QtPuFFeMbapNRB4ZfpdYx6gCAH\nms3y+rS7PXs4FxBOR/43kGaEU5C/IHjRdOGHSRl/i5QLKCn1uFevyxAq0cweNyuz\n5z01tlAfhevSE3+Rd/BAapB+M0iUvhqbW3KZSkDL2K5OQpedFS6WPhVLVjYVar5u\nipJt2OvL5OECGRAZJba+\n=ETBm\n-----END PGP SIGNATURE-----\n",
+      "payload": "tree 71991d5d7ecf7e6b3e1e271387a34e05b074315f\nparent 26ceca6901e555cea6ccac28024d6b31cc8aab0f\nauthor TTyChud <100087133+TTyChud@users.noreply.github.com> 1791361582 +0000\ncommitter GitHub <noreply@github.com> 1791361582 +0000\n\nohos: Write the font cache atomically (#48542)\n\nWrites the OHOS font cache to a temporary file that is then renamed into\nplace.\n\nTesting: No automated tests for OHOS; type-checked under `--cfg\nohos_mock` and exercised the write, read and cleanup paths in a local\nharness.\n\nFixes: #48501\n\n---------\n\nSigned-off-by: TTyChud <himanshujha1218@gmail.com>\nSigned-off-by: Jonathan Schwender <schwenderjonathan@gmail.com>\nCo-authored-by: Jonathan Schwender <schwenderjonathan@gmail.com>",
+      "verified_at": "2026-10-07T08:26:39Z"
+    }
+  },
+  "files": [
+    {
+      "filename": "components/fonts/platform/freetype/ohos/font_cache.rs",
+      "status": "modified",
+      "additions": 36,
+      "deletions": 14
+    }
+  ]
+}

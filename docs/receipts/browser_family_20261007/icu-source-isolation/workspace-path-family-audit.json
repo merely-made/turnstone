@@ -1,0 +1,954 @@
+{
+  "recorded_utc": "2026-10-07T08:47:36.519388+00:00",
+  "official_revision": "30120d6a07fc5bb03a6c7647077bd2658b2559de",
+  "published_capi_vcs_revision": "30120d6a07fc5bb03a6c7647077bd2658b2559de",
+  "capi_version": "2.1.2",
+  "workspace_package_version": "2.1.1",
+  "workspace_path_dependencies": {
+    "icu_locale_core": {
+      "version": "2.1.1",
+      "path": "components/locale_core",
+      "default-features": false
+    },
+    "icu_provider": {
+      "version": "2.1.1",
+      "path": "provider/core",
+      "default-features": false
+    },
+    "icu_pattern": {
+      "version": "0.4.1",
+      "path": "components/pattern",
+      "default-features": false
+    },
+    "icu": {
+      "version": "~2.1.1",
+      "path": "components/icu",
+      "default-features": false
+    },
+    "icu_calendar": {
+      "version": "~2.1.1",
+      "path": "components/calendar",
+      "default-features": false
+    },
+    "icu_casemap": {
+      "version": "~2.1.1",
+      "path": "components/casemap",
+      "default-features": false
+    },
+    "icu_collator": {
+      "version": "~2.1.1",
+      "path": "components/collator",
+      "default-features": false
+    },
+    "icu_collections": {
+      "version": "~2.1.1",
+      "path": "components/collections",
+      "default-features": false
+    },
+    "icu_codepointtrie_builder": {
+      "version": "~0.5.0",
+      "path": "components/collections/codepointtrie_builder",
+      "default-features": false
+    },
+    "icu_datetime": {
+      "version": "~2.1.1",
+      "path": "components/datetime",
+      "default-features": false
+    },
+    "icu_decimal": {
+      "version": "~2.1.1",
+      "path": "components/decimal",
+      "default-features": false
+    },
+    "icu_experimental": {
+      "version": "~0.4.0",
+      "path": "components/experimental",
+      "default-features": false
+    },
+    "icu_list": {
+      "version": "~2.1.1",
+      "path": "components/list",
+      "default-features": false
+    },
+    "icu_locale": {
+      "version": "~2.1.1",
+      "path": "components/locale",
+      "default-features": false
+    },
+    "icu_normalizer": {
+      "version": "~2.1.1",
+      "path": "components/normalizer",
+      "default-features": false
+    },
+    "icu_plurals": {
+      "version": "~2.1.1",
+      "path": "components/plurals",
+      "default-features": false
+    },
+    "icu_properties": {
+      "version": "~2.1.1",
+      "path": "components/properties",
+      "default-features": false
+    },
+    "icu_segmenter": {
+      "version": "~2.1.1",
+      "path": "components/segmenter",
+      "default-features": false
+    },
+    "icu_time": {
+      "version": "~2.1.1",
+      "path": "components/time",
+      "default-features": false
+    },
+    "icu_capi": {
+      "version": "~2.1.1",
+      "path": "ffi/capi",
+      "default-features": false
+    },
+    "icu_provider_export": {
+      "version": "~2.1.1",
+      "path": "provider/export",
+      "default-features": false
+    },
+    "icu_provider_source": {
+      "version": "~2.1.1",
+      "path": "provider/source",
+      "default-features": false
+    },
+    "icu_provider_adapters": {
+      "version": "~2.1.1",
+      "path": "provider/adapters",
+      "default-features": false
+    },
+    "icu_provider_baked": {
+      "version": "~2.1.1",
+      "path": "provider/baked",
+      "default-features": false
+    },
+    "icu_provider_blob": {
+      "version": "~2.1.1",
+      "path": "provider/blob",
+      "default-features": false
+    },
+    "icu_provider_fs": {
+      "version": "~2.1.1",
+      "path": "provider/fs",
+      "default-features": false
+    },
+    "icu_provider_registry": {
+      "version": "~2.1.2",
+      "path": "provider/registry",
+      "default-features": false
+    },
+    "icu_calendar_data": {
+      "version": "~2.1.1",
+      "path": "provider/data/calendar",
+      "default-features": false
+    },
+    "icu_casemap_data": {
+      "version": "~2.1.1",
+      "path": "provider/data/casemap",
+      "default-features": false
+    },
+    "icu_collator_data": {
+      "version": "~2.1.1",
+      "path": "provider/data/collator",
+      "default-features": false
+    },
+    "icu_datetime_data": {
+      "version": "~2.1.1",
+      "path": "provider/data/datetime",
+      "default-features": false
+    },
+    "icu_decimal_data": {
+      "version": "~2.1.1",
+      "path": "provider/data/decimal",
+      "default-features": false
+    },
+    "icu_list_data": {
+      "version": "~2.1.1",
+      "path": "provider/data/list",
+      "default-features": false
+    },
+    "icu_locale_data": {
+      "version": "~2.1.1",
+      "path": "provider/data/locale",
+      "default-features": false
+    },
+    "icu_normalizer_data": {
+      "version": "~2.1.1",
+      "path": "provider/data/normalizer",
+      "default-features": false
+    },
+    "icu_plurals_data": {
+      "version": "~2.1.1",
+      "path": "provider/data/plurals",
+      "default-features": false
+    },
+    "icu_properties_data": {
+      "version": "~2.1.2",
+      "path": "provider/data/properties",
+      "default-features": false
+    },
+    "icu_segmenter_data": {
+      "version": "~2.1.1",
+      "path": "provider/data/segmenter",
+      "default-features": false
+    },
+    "icu_time_data": {
+      "version": "~2.1.1",
+      "path": "provider/data/time",
+      "default-features": false
+    },
+    "icu_experimental_data": {
+      "version": "~0.4.0",
+      "path": "provider/data/experimental",
+      "default-features": false
+    },
+    "bies": {
+      "version": "0.2.2",
+      "path": "utils/bies",
+      "default-features": false
+    },
+    "calendrical_calculations": {
+      "version": "0.2.3",
+      "path": "utils/calendrical_calculations",
+      "default-features": false
+    },
+    "crlify": {
+      "version": "1.0.4",
+      "path": "utils/crlify",
+      "default-features": false
+    },
+    "databake": {
+      "version": "0.2.0",
+      "path": "utils/databake",
+      "default-features": false
+    },
+    "databake-derive": {
+      "version": "0.2.0",
+      "path": "utils/databake/derive",
+      "default-features": false
+    },
+    "fixed_decimal": {
+      "version": "0.7.0",
+      "path": "utils/fixed_decimal",
+      "default-features": false
+    },
+    "ixdtf": {
+      "version": "0.6.0",
+      "path": "utils/ixdtf",
+      "default-features": false
+    },
+    "litemap": {
+      "version": "0.8.0",
+      "path": "utils/litemap",
+      "default-features": false
+    },
+    "potential_utf": {
+      "version": "0.1.3",
+      "path": "utils/potential_utf",
+      "default-features": false
+    },
+    "resb": {
+      "version": "0.1.0",
+      "path": "utils/resb",
+      "default-features": false
+    },
+    "tzif": {
+      "version": "0.4.0",
+      "path": "utils/tzif",
+      "default-features": false
+    },
+    "tinystr": {
+      "version": "0.8.0",
+      "path": "utils/tinystr",
+      "default-features": false
+    },
+    "writeable": {
+      "version": "0.6.0",
+      "path": "utils/writeable",
+      "default-features": false
+    },
+    "yoke": {
+      "version": "0.8.0",
+      "path": "utils/yoke",
+      "default-features": false
+    },
+    "yoke-derive": {
+      "version": "0.8.0",
+      "path": "utils/yoke/derive",
+      "default-features": false
+    },
+    "zerofrom": {
+      "version": "0.1.3",
+      "path": "utils/zerofrom",
+      "default-features": false
+    },
+    "zerofrom-derive": {
+      "version": "0.1.3",
+      "path": "utils/zerofrom/derive",
+      "default-features": false
+    },
+    "zerotrie": {
+      "version": "0.2.0",
+      "path": "utils/zerotrie",
+      "default-features": false
+    },
+    "zerovec": {
+      "version": "0.11.3",
+      "path": "utils/zerovec",
+      "default-features": false
+    },
+    "zerovec-derive": {
+      "version": "0.11.1",
+      "path": "utils/zerovec/derive",
+      "default-features": false
+    },
+    "zoneinfo64": {
+      "version": "0.2.0",
+      "path": "utils/zoneinfo64",
+      "default-features": false
+    },
+    "icu_benchmark_macros": {
+      "path": "tools/benchmark/macros"
+    }
+  },
+  "component_packages": {
+    "ffi/capi/Cargo.toml": {
+      "name": "icu_capi",
+      "version": "2.1.2",
+      "links": null,
+      "dependencies": {
+        "icu_locale_core": {
+          "workspace": true,
+          "features": [
+            "alloc"
+          ]
+        },
+        "icu_provider": {
+          "workspace": true
+        },
+        "writeable": {
+          "workspace": true
+        },
+        "diplomat": {
+          "workspace": true
+        },
+        "diplomat-runtime": {
+          "workspace": true
+        },
+        "fixed_decimal": {
+          "workspace": true,
+          "features": [
+            "ryu"
+          ],
+          "optional": true
+        },
+        "icu_calendar": {
+          "workspace": true,
+          "features": [
+            "alloc",
+            "ixdtf"
+          ],
+          "optional": true
+        },
+        "icu_casemap": {
+          "workspace": true,
+          "optional": true
+        },
+        "icu_collator": {
+          "workspace": true,
+          "optional": true
+        },
+        "icu_collections": {
+          "workspace": true,
+          "optional": true
+        },
+        "icu_datetime": {
+          "workspace": true,
+          "optional": true
+        },
+        "icu_decimal": {
+          "workspace": true,
+          "optional": true
+        },
+        "icu_list": {
+          "workspace": true,
+          "optional": true
+        },
+        "icu_locale": {
+          "workspace": true,
+          "optional": true
+        },
+        "icu_normalizer": {
+          "workspace": true,
+          "optional": true
+        },
+        "icu_plurals": {
+          "workspace": true,
+          "optional": true
+        },
+        "icu_properties": {
+          "workspace": true,
+          "features": [
+            "alloc",
+            "unicode_bidi"
+          ],
+          "optional": true
+        },
+        "icu_segmenter": {
+          "workspace": true,
+          "features": [
+            "auto"
+          ],
+          "optional": true
+        },
+        "icu_time": {
+          "workspace": true,
+          "features": [
+            "alloc",
+            "ixdtf"
+          ],
+          "optional": true
+        },
+        "icu_experimental": {
+          "workspace": true,
+          "optional": true
+        },
+        "icu_provider_adapters": {
+          "workspace": true,
+          "features": [
+            "serde"
+          ]
+        },
+        "icu_provider_blob": {
+          "workspace": true,
+          "features": [
+            "alloc"
+          ],
+          "optional": true
+        },
+        "potential_utf": {
+          "workspace": true,
+          "features": [
+            "writeable"
+          ],
+          "optional": true
+        },
+        "tinystr": {
+          "workspace": true,
+          "optional": true
+        },
+        "unicode-bidi": {
+          "workspace": true,
+          "optional": true
+        },
+        "zerovec": {
+          "workspace": true,
+          "optional": true
+        }
+      }
+    },
+    "components/properties/Cargo.toml": {
+      "name": "icu_properties",
+      "version": "2.1.2",
+      "links": null,
+      "dependencies": {
+        "icu_collections": {
+          "workspace": true
+        },
+        "icu_provider": {
+          "workspace": true
+        },
+        "zerovec": {
+          "workspace": true,
+          "features": [
+            "derive",
+            "yoke"
+          ]
+        },
+        "zerotrie": {
+          "workspace": true,
+          "features": [
+            "yoke",
+            "zerofrom"
+          ]
+        },
+        "databake": {
+          "workspace": true,
+          "features": [
+            "derive"
+          ],
+          "optional": true
+        },
+        "serde": {
+          "workspace": true,
+          "features": [
+            "derive"
+          ],
+          "optional": true
+        },
+        "icu_locale_core": {
+          "workspace": true,
+          "features": [
+            "zerovec"
+          ]
+        },
+        "unicode-bidi": {
+          "workspace": true,
+          "optional": true
+        },
+        "icu_properties_data": {
+          "workspace": true,
+          "optional": true
+        }
+      }
+    },
+    "components/segmenter/Cargo.toml": {
+      "name": "icu_segmenter",
+      "version": "2.1.2",
+      "links": null,
+      "dependencies": {
+        "icu_collections": {
+          "workspace": true
+        },
+        "icu_provider": {
+          "workspace": true
+        },
+        "utf8_iter": {
+          "workspace": true
+        },
+        "zerovec": {
+          "workspace": true,
+          "features": [
+            "alloc",
+            "yoke"
+          ]
+        },
+        "databake": {
+          "workspace": true,
+          "optional": true,
+          "features": [
+            "derive"
+          ]
+        },
+        "serde": {
+          "workspace": true,
+          "features": [
+            "derive",
+            "alloc"
+          ],
+          "optional": true
+        },
+        "potential_utf": {
+          "workspace": true,
+          "features": [
+            "alloc",
+            "zerovec"
+          ]
+        },
+        "core_maths": {
+          "workspace": true,
+          "optional": true
+        },
+        "icu_segmenter_data": {
+          "workspace": true,
+          "optional": true
+        },
+        "icu_locale": {
+          "workspace": true,
+          "optional": true
+        }
+      }
+    },
+    "components/normalizer/Cargo.toml": {
+      "name": "icu_normalizer",
+      "version": {
+        "workspace": true
+      },
+      "links": null,
+      "dependencies": {
+        "icu_collections": {
+          "workspace": true
+        },
+        "icu_properties": {
+          "workspace": true,
+          "optional": true
+        },
+        "icu_provider": {
+          "workspace": true
+        },
+        "smallvec": {
+          "workspace": true
+        },
+        "utf16_iter": {
+          "workspace": true,
+          "optional": true
+        },
+        "utf8_iter": {
+          "workspace": true,
+          "optional": true
+        },
+        "write16": {
+          "workspace": true,
+          "features": [
+            "alloc"
+          ],
+          "optional": true
+        },
+        "zerovec": {
+          "workspace": true
+        },
+        "databake": {
+          "workspace": true,
+          "features": [
+            "derive"
+          ],
+          "optional": true
+        },
+        "serde": {
+          "workspace": true,
+          "features": [
+            "derive",
+            "alloc"
+          ],
+          "optional": true
+        },
+        "icu_normalizer_data": {
+          "workspace": true,
+          "optional": true
+        }
+      }
+    },
+    "components/calendar/Cargo.toml": {
+      "name": "icu_calendar",
+      "version": {
+        "workspace": true
+      },
+      "links": null,
+      "dependencies": {
+        "calendrical_calculations": {
+          "workspace": true
+        },
+        "displaydoc": {
+          "workspace": true
+        },
+        "icu_provider": {
+          "workspace": true
+        },
+        "icu_locale_core": {
+          "workspace": true
+        },
+        "ixdtf": {
+          "workspace": true,
+          "optional": true
+        },
+        "tinystr": {
+          "workspace": true,
+          "features": [
+            "zerovec"
+          ]
+        },
+        "zerovec": {
+          "workspace": true,
+          "features": [
+            "derive"
+          ]
+        },
+        "databake": {
+          "workspace": true,
+          "features": [
+            "derive"
+          ],
+          "optional": true
+        },
+        "serde": {
+          "workspace": true,
+          "features": [
+            "derive"
+          ],
+          "optional": true
+        },
+        "icu_calendar_data": {
+          "workspace": true,
+          "optional": true
+        },
+        "icu_locale": {
+          "workspace": true,
+          "optional": true
+        }
+      }
+    },
+    "components/locale_core/Cargo.toml": {
+      "name": "icu_locale_core",
+      "version": {
+        "workspace": true
+      },
+      "links": null,
+      "dependencies": {
+        "displaydoc": {
+          "workspace": true
+        },
+        "litemap": {
+          "workspace": true
+        },
+        "tinystr": {
+          "workspace": true
+        },
+        "writeable": {
+          "workspace": true
+        },
+        "databake": {
+          "workspace": true,
+          "features": [
+            "derive"
+          ],
+          "optional": true
+        },
+        "serde": {
+          "workspace": true,
+          "optional": true
+        },
+        "zerovec": {
+          "workspace": true,
+          "optional": true
+        }
+      }
+    },
+    "components/collections/Cargo.toml": {
+      "name": "icu_collections",
+      "version": {
+        "workspace": true
+      },
+      "links": null,
+      "dependencies": {
+        "displaydoc": {
+          "workspace": true
+        },
+        "yoke": {
+          "workspace": true,
+          "features": [
+            "derive"
+          ]
+        },
+        "zerofrom": {
+          "workspace": true,
+          "features": [
+            "derive"
+          ]
+        },
+        "zerovec": {
+          "workspace": true,
+          "features": [
+            "derive",
+            "yoke"
+          ]
+        },
+        "potential_utf": {
+          "workspace": true,
+          "features": [
+            "zerovec"
+          ]
+        },
+        "serde": {
+          "workspace": true,
+          "features": [
+            "derive"
+          ],
+          "optional": true
+        },
+        "databake": {
+          "workspace": true,
+          "features": [
+            "derive"
+          ],
+          "optional": true
+        }
+      }
+    },
+    "provider/core/Cargo.toml": {
+      "name": "icu_provider",
+      "version": {
+        "workspace": true
+      },
+      "links": null,
+      "dependencies": {
+        "displaydoc": {
+          "workspace": true
+        },
+        "icu_locale_core": {
+          "workspace": true
+        },
+        "stable_deref_trait": {
+          "workspace": true,
+          "optional": true
+        },
+        "writeable": {
+          "workspace": true,
+          "optional": true
+        },
+        "yoke": {
+          "workspace": true,
+          "features": [
+            "derive"
+          ]
+        },
+        "zerofrom": {
+          "workspace": true,
+          "features": [
+            "derive"
+          ]
+        },
+        "zerovec": {
+          "workspace": true,
+          "features": [
+            "derive"
+          ]
+        },
+        "zerotrie": {
+          "workspace": true,
+          "optional": true
+        },
+        "log": {
+          "workspace": true,
+          "optional": true
+        },
+        "bincode": {
+          "workspace": true,
+          "optional": true
+        },
+        "postcard": {
+          "workspace": true,
+          "optional": true
+        },
+        "serde": {
+          "workspace": true,
+          "features": [
+            "derive"
+          ],
+          "optional": true
+        },
+        "serde_json": {
+          "workspace": true,
+          "optional": true
+        },
+        "erased-serde": {
+          "workspace": true,
+          "optional": true
+        },
+        "databake": {
+          "workspace": true,
+          "optional": true,
+          "features": [
+            "derive"
+          ]
+        }
+      }
+    },
+    "provider/adapters/Cargo.toml": {
+      "name": "icu_provider_adapters",
+      "version": {
+        "workspace": true
+      },
+      "links": null,
+      "dependencies": {
+        "icu_locale": {
+          "workspace": true
+        },
+        "icu_provider": {
+          "workspace": true,
+          "features": [
+            "alloc"
+          ]
+        }
+      }
+    }
+  },
+  "manifests": [
+    {
+      "source_path": "Cargo.toml",
+      "evidence_file": "official-Cargo.toml",
+      "sha256": "4aeb983019af3c24aac36960e3417622756f53910aa9b672404b76dadb84ff4a",
+      "github_blob_sha1": "7fe9e12a5a12f09b055f0f11f2426b650c82b24c",
+      "url": "https://github.com/unicode-org/icu4x/blob/30120d6a07fc5bb03a6c7647077bd2658b2559de/Cargo.toml"
+    },
+    {
+      "source_path": "ffi/capi/Cargo.toml",
+      "evidence_file": "official-ffi-capi-Cargo.toml",
+      "sha256": "c53e2f2de3f68a245b55d952715e8872340680d4b393a5cd6145712438cd2bed",
+      "github_blob_sha1": "9d82e9506d438a2683994649302feae7df478f14",
+      "url": "https://github.com/unicode-org/icu4x/blob/30120d6a07fc5bb03a6c7647077bd2658b2559de/ffi/capi/Cargo.toml"
+    },
+    {
+      "source_path": "components/properties/Cargo.toml",
+      "evidence_file": "official-components-properties-Cargo.toml",
+      "sha256": "7eb2195078fecb119b857ef4fad4d574236ec4d8486138d846f044d7a4d25d63",
+      "github_blob_sha1": "c8c2b92e9a5ddb62a155b8e39e0baa5d23ff8d69",
+      "url": "https://github.com/unicode-org/icu4x/blob/30120d6a07fc5bb03a6c7647077bd2658b2559de/components/properties/Cargo.toml"
+    },
+    {
+      "source_path": "components/segmenter/Cargo.toml",
+      "evidence_file": "official-components-segmenter-Cargo.toml",
+      "sha256": "ba3978687d0c6289bf2bb2851e7039811bfe7e0c8a2ea02d601434e3b4cb6d8c",
+      "github_blob_sha1": "a9b36efd335648a5e3068b0485e8a592293dc33b",
+      "url": "https://github.com/unicode-org/icu4x/blob/30120d6a07fc5bb03a6c7647077bd2658b2559de/components/segmenter/Cargo.toml"
+    },
+    {
+      "source_path": "components/normalizer/Cargo.toml",
+      "evidence_file": "official-components-normalizer-Cargo.toml",
+      "sha256": "1c8a5ef7cda3f66eb283bae506e5750329376558c29be6fefcbe60979d3fea3b",
+      "github_blob_sha1": "e41f5662eebd0f5326e29de64ca9dfb57bda6c08",
+      "url": "https://github.com/unicode-org/icu4x/blob/30120d6a07fc5bb03a6c7647077bd2658b2559de/components/normalizer/Cargo.toml"
+    },
+    {
+      "source_path": "components/calendar/Cargo.toml",
+      "evidence_file": "official-components-calendar-Cargo.toml",
+      "sha256": "93770e7fde059818db19ffdc3668cead2f95b4d4645a118b92e2386a586cf734",
+      "github_blob_sha1": "1567ce4a40b65b07732b30fc0cf9de089f0fb323",
+      "url": "https://github.com/unicode-org/icu4x/blob/30120d6a07fc5bb03a6c7647077bd2658b2559de/components/calendar/Cargo.toml"
+    },
+    {
+      "source_path": "components/locale_core/Cargo.toml",
+      "evidence_file": "official-components-locale_core-Cargo.toml",
+      "sha256": "9e7ea9f37e569efe3086b0173a771b4635babf86bc64c24250afafc007f1d65e",
+      "github_blob_sha1": "b1590af52aa1b2897ea3618dbacff219042d0b88",
+      "url": "https://github.com/unicode-org/icu4x/blob/30120d6a07fc5bb03a6c7647077bd2658b2559de/components/locale_core/Cargo.toml"
+    },
+    {
+      "source_path": "components/collections/Cargo.toml",
+      "evidence_file": "official-components-collections-Cargo.toml",
+      "sha256": "963d26428f923ead6ef52219b65549eabcba96bef3e3dcb67279e6fa9c4cef3d",
+      "github_blob_sha1": "5e93a0cd333c535df2072f16e9eb9c81beb62d30",
+      "url": "https://github.com/unicode-org/icu4x/blob/30120d6a07fc5bb03a6c7647077bd2658b2559de/components/collections/Cargo.toml"
+    },
+    {
+      "source_path": "provider/core/Cargo.toml",
+      "evidence_file": "official-provider-core-Cargo.toml",
+      "sha256": "f7cc7f934ec41bce668d25fc3a9c60ce7968c10132439ec11f40f506037ffc85",
+      "github_blob_sha1": "73c8043ad7d0bc2e91fed1f799a2f3e88c82a991",
+      "url": "https://github.com/unicode-org/icu4x/blob/30120d6a07fc5bb03a6c7647077bd2658b2559de/provider/core/Cargo.toml"
+    },
+    {
+      "source_path": "provider/adapters/Cargo.toml",
+      "evidence_file": "official-provider-adapters-Cargo.toml",
+      "sha256": "360dfff67b056442e9d4cbacb5ac4bb0e1e723605f77843a68a8fa29b0a45c69",
+      "github_blob_sha1": "d1732312270a990d7b745e53650cd611b9f512fa",
+      "url": "https://github.com/unicode-org/icu4x/blob/30120d6a07fc5bb03a6c7647077bd2658b2559de/provider/adapters/Cargo.toml"
+    }
+  ],
+  "metadata_resolution": "Not run in research lane; Root owns actual production metadata",
+  "proposed_root_patch": {
+    "icu_capi": {
+      "git": "https://github.com/unicode-org/icu4x",
+      "rev": "30120d6a07fc5bb03a6c7647077bd2658b2559de"
+    }
+  },
+  "cautions": [
+    "Patch only icu_capi, not all ICU children globally.",
+    "No icu_capi2.1.2 direct tag found; use published crate VCS fullSHA.",
+    "Source identity proves unchanged published CAPI/bindings; compilation/native acceptance remains required.",
+    "mozjs bundled headers already differ from published CAPI in four of329 files; exactGitCAPI does not introduce that pairing.",
+    "Git workspace paths select coherent Git ICU2.1 source family; host registry ICU2.2 minima stay unchanged."
+  ]
+}

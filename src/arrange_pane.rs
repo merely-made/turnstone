@@ -111,6 +111,7 @@ struct Choice {
     mass: String,
     depth: String,
     profile: String,
+    refusal: Option<String>,
 }
 
 impl Choice {
@@ -134,6 +135,7 @@ impl Choice {
                 .physics_profile_id()
                 .unwrap_or(CUSTOM_PROFILE_ID)
                 .to_string(),
+            refusal: app.physics_refusal().map(ToString::to_string),
         }
     }
 }
@@ -169,7 +171,7 @@ pub fn arrange_rows(app: &App) -> Vec<String> {
         .find(|profile| profile.id == choice.profile)
         .map(|profile| profile.label.to_string())
         .unwrap_or_else(|| CUSTOM_PROFILE_ID.to_string());
-    vec![
+    let mut rows = vec![
         format!("Arrangement: {layout}"),
         format!("Physics: {}", label(CANVAS_PHYSICS_LAWS, &choice.law)),
         format!("Overlays: {overlays}"),
@@ -183,7 +185,11 @@ pub fn arrange_rows(app: &App) -> Vec<String> {
             label(CANVAS_PHYSICS_DEPTH_SOURCES, &choice.depth)
         ),
         format!("Profile: {profile}"),
-    ]
+    ];
+    if let Some(refusal) = choice.refusal {
+        rows.push(format!("Physics refused: {refusal}"));
+    }
+    rows
 }
 
 struct ArrangeState {
@@ -310,6 +316,12 @@ fn arrange_view(state: &ArrangeState) -> ArrangeView {
                     ArrangeIntent::SetLayout,
                 ),
                 section("Physics"),
+                el::<_, ArrangeState, ArrangeIntent>(
+                    "div",
+                    choice.refusal.clone().unwrap_or_default(),
+                )
+                .attr("role", "status")
+                .attr("aria-live", "polite"),
                 choice_row(
                     "physics.law",
                     "Law",
@@ -361,6 +373,30 @@ fn arrange_view(state: &ArrangeState) -> ArrangeView {
     )
 }
 
+/// The current app-owned refusal, independent of the retained DOM's last sync.
+/// This read-only status uses pane bounds; Arrange controls remain unqualified.
+pub(crate) fn physics_refusal_tree(
+    app: &App,
+    pane: crate::panes::PaneId,
+    placement: crate::surface::Rect,
+) -> Option<uxtree::UxTree> {
+    let refusal = app.physics_refusal()?;
+    let id = uxtree::node_id_for_path(&format!("turnstone/arrange/{}/physics-refusal", pane.0));
+    let mut node = accesskit::Node::new(accesskit::Role::Status);
+    node.set_label(format!("Physics refused: {refusal}"));
+    node.set_live(accesskit::Live::Polite);
+    node.set_bounds(accesskit::Rect::new(
+        f64::from(placement.x),
+        f64::from(placement.y),
+        f64::from(placement.x + placement.w),
+        f64::from(placement.y + placement.h),
+    ));
+    Some(uxtree::UxTree {
+        root: id,
+        nodes: vec![(id, node)],
+    })
+}
+
 /// The Arrange pane: a retained cambium runner over the active canvas's
 /// arrangement and physics choice. Held by the shell like the other panes.
 pub struct ArrangePane {
@@ -388,6 +424,7 @@ impl ArrangePane {
                 mass: PhysicsMassSource::Degree.id().to_string(),
                 depth: PhysicsDepthSource::Roots.id().to_string(),
                 profile: CUSTOM_PROFILE_ID.to_string(),
+                refusal: None,
             },
             viewport_w: 0.0,
             viewport_h: 0.0,
@@ -463,6 +500,121 @@ impl ArrangePane {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn refused_overlays_are_visible_and_keep_the_applied_law() {
+        let mut app = App::test_stub();
+        app.update(Action::SetPhysicsOverlay(
+            PhysicsOverlay::GridSnap.id(),
+            true,
+        ));
+        app.update(Action::SetPhysicsLaw(PhysicsLaw::Density.id()));
+        let refusal = app
+            .physics_refusal()
+            .expect("Density refused the existing overlay");
+        assert_eq!(refusal.law, PhysicsLaw::Density);
+        assert_eq!(refusal.refused, vec![PhysicsOverlay::GridSnap]);
+        assert_eq!(app.graph_runtimes.physics_law(), PhysicsLaw::Density);
+        assert!(app.graph_runtimes.physics_overlays().is_empty());
+        assert!(
+            arrange_rows(&app)
+                .iter()
+                .any(|row| row.starts_with("Physics refused:"))
+        );
+        assert!(app.take_events().iter().any(|event| matches!(event,
+            crate::observe::AppEvent::PhysicsRefused(refusal)
+                if refusal.law == PhysicsLaw::Density
+        )));
+
+        app.update(Action::SetPhysicsOverlay(
+            PhysicsOverlay::Skeleton.id(),
+            true,
+        ));
+        assert!(app.graph_runtimes.physics_overlays().is_empty());
+        assert_eq!(
+            app.physics_refusal().unwrap().refused,
+            vec![PhysicsOverlay::Skeleton]
+        );
+        app.update(Action::ApplyPhysicsProfile("crystal"));
+        assert!(app.physics_refusal().is_none());
+        assert!(
+            !arrange_rows(&app)
+                .iter()
+                .any(|row| row.starts_with("Physics refused:"))
+        );
+    }
+
+    #[test]
+    fn current_refusal_attaches_to_the_platform_tree_and_clears_without_dom_sync() {
+        use crate::panes::{PaneContent, PaneKindId, kind};
+        use std::collections::HashMap;
+
+        let mut app = App::test_stub();
+        app.update(Action::SummonPane(PaneKindId::new(kind::ARRANGE)));
+        let pane = app.frisket.iter_leaves().find_map(|(pane, content, _)| {
+            matches!(content, PaneContent::Registered(kind) if kind.as_str() == crate::panes::kind::ARRANGE)
+                .then_some(pane)
+        }).expect("Arrange pane");
+        app.update(Action::SetPhysicsOverlay(
+            PhysicsOverlay::GridSnap.id(),
+            true,
+        ));
+        app.update(Action::SetPhysicsLaw(PhysicsLaw::Density.id()));
+        let bounds = crate::surface::Rect::new(100.0, 40.0, 480.0, 400.0);
+        let contribution = physics_refusal_tree(&app, pane, bounds).unwrap();
+        let status_id = contribution.root;
+        assert_ne!(
+            status_id,
+            physics_refusal_tree(&app, crate::panes::PaneId(pane.0 + 1), bounds)
+                .unwrap()
+                .root,
+            "each pane owns a distinct stable identity"
+        );
+        let (tree, routes) = crate::a11y::project_app_with_routes_and_contributions(
+            &app,
+            HashMap::from([(pane, contribution)]),
+        );
+        let status = &tree
+            .nodes
+            .iter()
+            .find(|(id, _)| *id == status_id)
+            .unwrap()
+            .1;
+        assert_eq!(status.role(), accesskit::Role::Status);
+        assert_eq!(status.live(), Some(accesskit::Live::Polite));
+        assert_eq!(
+            status.bounds(),
+            Some(accesskit::Rect::new(100.0, 40.0, 580.0, 440.0))
+        );
+        let label = format!("Physics refused: {}", app.physics_refusal().unwrap());
+        assert_eq!(status.label(), Some(label.as_str()));
+        assert!(
+            tree.nodes
+                .iter()
+                .any(|(_, node)| node.children().contains(&status_id))
+        );
+        assert!(
+            !routes.contains_key(&status_id),
+            "read-only status has no action route"
+        );
+
+        app.update(Action::SetPhysicsOverlay(
+            PhysicsOverlay::Skeleton.id(),
+            true,
+        ));
+        assert_eq!(
+            physics_refusal_tree(&app, pane, bounds).unwrap().root,
+            status_id
+        );
+        app.update(Action::ApplyPhysicsProfile("crystal"));
+        let contributions = physics_refusal_tree(&app, pane, bounds)
+            .map(|tree| HashMap::from([(pane, tree)]))
+            .unwrap_or_default();
+        let (cleared, routes) =
+            crate::a11y::project_app_with_routes_and_contributions(&app, contributions);
+        assert!(!cleared.nodes.iter().any(|(id, _)| *id == status_id));
+        assert!(!routes.contains_key(&status_id));
+    }
 
     #[test]
     fn intents_lower_to_the_palette_actions_by_id() {

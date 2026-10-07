@@ -1,0 +1,24 @@
+# Same-executable viewport diagnosis; page metrics use normal title callbacks.
+settle 30
+key escape
+open ${SERVO_FIXTURE_BASE}/viewport.html
+settle 80
+act Open node in Workbench
+settle 80
+act Open Inspector pane
+settle 10
+click surface:inspector .radio @data-engine-id=graft.servo
+settle 160
+assert snap browser-current-engine == graft.servo
+assert snap browser-current ~ Servo viewport | w=
+record-idle viewport-inspector-open
+capture 01_inspector_open_viewport
+act Close pane
+settle 160
+record-idle viewport-inspector-closed
+capture 02_inspector_closed_viewport
+act Toggle live content
+settle 60
+assert snap host-surface-producers == 0
+assert snap host-servo-views == 0
+record-idle viewport-servo-closed

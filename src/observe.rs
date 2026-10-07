@@ -207,6 +207,9 @@ pub struct UserAgentDecisionView {
 /// later consumers (diagnostics, automation) subscribe at the same drain.
 #[derive(Clone, Debug, PartialEq)]
 pub enum AppEvent {
+    /// A physics law applied while refusing overlays, or an overlay request
+    /// was refused without changing the force set.
+    PhysicsRefused(mere::canvas::OverlayRefusal),
     AddressOpened(String),
     /// A live navigable committed a new resource in the same graph member.
     ContentNavigated {
@@ -512,6 +515,17 @@ impl AppEvent {
     /// A grep-friendly one-line rendering (what `assert event` matches).
     pub fn describe(&self) -> String {
         match self {
+            AppEvent::PhysicsRefused(refusal) => format!(
+                "physics-refused {} {}: {}",
+                refusal.law.id(),
+                refusal
+                    .refused
+                    .iter()
+                    .map(|overlay| overlay.id())
+                    .collect::<Vec<_>>()
+                    .join(","),
+                refusal.reason,
+            ),
             AppEvent::AddressOpened(url) => format!("address-opened {url}"),
             AppEvent::ContentNavigated { node, url } => {
                 format!("content-navigated {node} {url}")

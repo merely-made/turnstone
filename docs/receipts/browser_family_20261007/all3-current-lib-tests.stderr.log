@@ -1,0 +1,760 @@
+error: invalid type: boolean `true`, expected a map
+ --> ..\..\..\.cargo\git\checkouts\servo-e53a6e7b994a25fe\aac43a3\python\tidy\tests\lints-configuration\no-workspace\Cargo.toml:8:7
+  |
+8 | foo = true
+  |       ^^^^
+warning: patch `burn-remote v0.22.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)` was not used in the crate graph
+warning: patch `cubecl-runtime v0.11.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)` was not used in the crate graph
+warning: patch `p2panda-stream v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5#1bec457e)` was not used in the crate graph
+help: Check that the patched package version and available features are compatible
+      with the dependency requirements. If the patch has a different version from
+      what is locked in the Cargo.lock file, run `cargo update` to use the new
+      version. This may also occur with an optional dependency that is not enabled.
+   Compiling foldhash v0.2.0
+   Compiling icu_collections v2.3.0
+   Compiling hashbrown v0.17.1
+   Compiling indexmap v2.14.2
+   Compiling unicode-bidi v0.3.18
+   Compiling tokio v1.53.1
+   Compiling icu_properties v2.3.0
+   Compiling icu_normalizer v2.3.0
+   Compiling form_urlencoded v1.2.2
+   Compiling idna_adapter v1.2.2
+   Compiling idna v1.1.0
+   Compiling url v2.5.8
+   Compiling windows v0.62.2
+   Compiling serde_json v1.0.151
+   Compiling tokio-util v0.7.19
+   Compiling read-fonts v0.41.0
+   Compiling skrifa v0.44.0
+   Compiling chacha20 v0.10.2
+   Compiling phf_shared v0.14.0
+   Compiling phf_generator v0.14.0
+   Compiling rand v0.10.3
+   Compiling hashbrown v0.16.1
+   Compiling phf_macros v0.14.0
+   Compiling phf v0.14.0
+   Compiling h2 v0.4.19
+   Compiling string_cache_codegen v0.11.2
+   Compiling string_cache v0.11.0
+   Compiling hyper v1.11.1
+   Compiling phf_codegen v0.14.0
+   Compiling hyper-util v0.1.20
+   Compiling web_atoms v0.3.0
+   Compiling cssparser v0.38.0
+   Compiling servo_arc v0.5.0
+   Compiling to_shmem v0.6.0
+   Compiling petgraph v0.8.3
+   Compiling to_shmem_derive v0.2.0
+   Compiling stylo v0.22.0
+   Compiling selectors v0.41.0
+   Compiling stylo_atoms v0.22.0
+   Compiling stylo_static_prefs v0.22.0
+   Compiling tinystr v0.7.6
+   Compiling icu_locid v1.5.0
+   Compiling stylo_malloc_size_of v0.22.0
+   Compiling markup5ever v0.40.0
+   Compiling vello_common v0.2.0
+   Compiling icu_provider v1.5.0
+   Compiling webrender_api v0.70.0
+   Compiling webrender v0.70.0
+   Compiling harfrust v0.12.0
+   Compiling wr_glyph_rasterizer v0.70.0
+   Compiling icu_segmenter v1.5.0
+   Compiling stylo_traits v0.22.0
+   Compiling usvg v0.48.1
+   Compiling glifo v0.3.0
+   Compiling stylo_dom v0.22.0
+   Compiling stylo_derive v0.22.0
+   Compiling etagere v0.2.15
+   Compiling vello_cpu v0.2.0
+   Compiling der v0.8.2
+   Compiling resvg v0.48.1
+   Compiling urlpattern v0.3.0
+   Compiling ipc-channel v0.23.0
+   Compiling content-security-policy v0.9.0
+   Compiling servo-allocator v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+   Compiling taffy v0.14.0
+   Compiling spki v0.8.0
+   Compiling pkcs8 v0.11.0
+   Compiling curve25519-dalek v5.0.0
+   Compiling ed25519 v3.0.0
+   Compiling ed25519-dalek v3.0.0
+   Compiling tokio-rustls v0.26.5
+   Compiling servo-config-macro v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+   Compiling servo-config v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+   Compiling icu_segmenter v2.3.0
+   Compiling phf_generator v0.13.1
+   Compiling toml_datetime v0.7.5+spec-1.1.0
+   Compiling muniment v0.1.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling phf_macros v0.13.1
+   Compiling phf v0.13.1
+   Compiling hyper-rustls v0.27.9
+   Compiling naga-types v30.0.1
+   Compiling phf_codegen v0.13.1
+   Compiling string_cache_codegen v0.6.1
+   Compiling naga v30.0.1
+   Compiling web_atoms v0.2.6
+   Compiling wgpu-types v30.0.1
+   Compiling serde_urlencoded v0.7.1
+   Compiling fastbloom v0.17.0
+   Compiling scoped-tls v1.0.1
+   Compiling gpu-allocator v0.28.0
+   Compiling warp v0.4.3
+   Compiling wgpu-naga-bridge v30.0.1
+   Compiling tower v0.5.3
+   Compiling string_cache v0.9.0
+   Compiling servo-embedder-traits v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+   Compiling wgpu-hal v30.0.1
+   Compiling webdriver v0.54.0
+   Compiling servo-hyper-serde v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+   Compiling tokio-stream v0.1.19
+   Compiling document-session-api v0.1.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling cbindgen v0.29.4
+   Compiling wgpu-core-deps-windows-linux-android v30.0.1
+   Compiling markup5ever v0.39.0
+   Compiling toml v0.9.12+spec-1.1.0
+   Compiling tempfile v3.27.0
+   Compiling n0-future v0.3.2
+   Compiling wgpu-core v30.0.1
+   Compiling surfman v0.14.0
+   Compiling ssh-agent-lib v0.6.0
+   Compiling chacha20poly1305 v0.11.0
+   Compiling argon2 v0.5.3
+   Compiling wgpu v30.0.1
+   Compiling insigne v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling zerofrom-derive v0.1.6 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+   Compiling rkyv v0.8.18
+   Compiling zerofrom v0.1.6 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+   Compiling personae v0.2.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling layout-dom-api v0.1.1 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling inker v0.1.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling yoke-derive v0.8.1 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+   Compiling yoke v0.8.1 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+   Compiling chartulary v0.2.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling tower-http v0.6.11
+   Compiling servo-tracing v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+   Compiling noq-proto v1.3.0
+   Compiling reqwest v0.13.5
+   Compiling iroh-base v1.3.0
+   Compiling serde_with_macros v3.24.0
+   Compiling sceno v0.0.4 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling lru v0.18.4
+   Compiling zerovec-derive v0.11.2 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+   Compiling zerovec v0.11.5 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+   Compiling n0-dns-resolver v0.1.0
+   Compiling serde_with v3.24.0
+   Compiling noq v1.3.0
+   Compiling n0-watcher v1.0.0
+   Compiling xml5ever v0.39.0
+   Compiling html5ever v0.39.0
+   Compiling wmi v0.18.4
+   Compiling read-fonts v0.43.3
+   Compiling attohttpc v0.30.1
+   Compiling icu_casemap_data v2.3.0
+   Compiling p2panda-core v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5#1bec457e)
+   Compiling iroh-dns v1.3.0
+   Compiling igd-next v0.17.1
+   Compiling netwatch v0.19.3
+   Compiling genet-static-dom v0.1.1 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling mere-forme v0.1.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling tokio-websockets v0.13.3
+   Compiling numen v0.2.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling writeable v0.6.2 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+   Compiling iroh-relay v1.3.0
+   Compiling portmapper v0.19.3
+   Compiling backon v1.6.0
+   Compiling icu_casemap v2.3.0
+   Compiling iroh v1.3.0
+   Compiling mere-kernel v0.0.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling tinystr v0.8.2 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+   Compiling quick_cache v0.6.24
+   Compiling icu_locale_data v2.1.2 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+   Compiling litemap v0.8.1 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+   Compiling lsm-tree v2.10.4
+   Compiling icu_locale_core v2.1.1 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+   Compiling mozjs_icu_collections v153.3.0
+   Compiling potential_utf v0.1.4 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+   Compiling zerotrie v0.2.3 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+   Compiling genet-paint-types v0.2.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling vello_encoding v0.10.0
+   Compiling tinct v0.1.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling fjall v2.11.2
+   Compiling jsonschema v0.18.3
+   Compiling acto v0.8.2
+   Compiling irpc v0.17.0
+   Compiling vello_shaders v0.10.0
+   Compiling engine-observables-api v0.2.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling icu_provider v2.1.1 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+   Compiling libcrux-traits v0.0.8
+   Compiling icu_collections v2.1.1 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+   Compiling p2panda-store v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5#1bec457e)
+   Compiling hickory-proto v0.26.3
+   Compiling hpke-rs-crypto v0.7.0
+   Compiling servo-media-derive v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+   Compiling icu_locale_data v2.3.0
+   Compiling mozjs_icu_normalizer_data v153.3.0
+   Compiling libcrux-sha3 v0.0.10
+   Compiling netrender-vello v0.10.1
+   Compiling swarm-discovery v0.6.3
+   Compiling icu_locale v2.1.1 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+   Compiling genet-scripted-dom v0.1.2 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling eidetic v0.0.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling netrender_device v0.1.2 (https://github.com/merely-made/netrender.git?rev=9607d16f1907f6c2085648ae96abcaa30d7c3d41#9607d16f)
+   Compiling x25519-dalek v3.0.0
+   Compiling harfbuzz-sys v0.8.0
+   Compiling genet-host-api v0.2.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling icu_calendar_data v2.1.1 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+   Compiling genet-fontique v0.10.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling hpke-rs-rust-crypto v0.7.0
+   Compiling iroh-gossip v0.101.0
+   Compiling netrender v0.1.2 (https://github.com/merely-made/netrender.git?rev=9607d16f1907f6c2085648ae96abcaa30d7c3d41#9607d16f)
+   Compiling ractor v0.16.5
+   Compiling iroh-mdns-address-lookup v0.6.0
+   Compiling hpke-rs v0.7.0
+   Compiling async-compression v0.4.48
+   Compiling p2panda-discovery v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5#1bec457e)
+   Compiling p2panda-sync v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5#1bec457e)
+   Compiling tabard v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling mozjs_utf16_iter v153.3.0
+   Compiling mozjs_utf8_iter v153.3.0
+   Compiling gemini-protocol v0.1.7 (https://github.com/merely-made/smolweb.git?rev=882baeb1b59bbdbb305e475f6675f69af997c4f4#882baeb1)
+   Compiling parley_data v0.10.0
+   Compiling write16 v1.0.0
+   Compiling icu_time_data v2.1.1 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+   Compiling mozjs_icu_collator_data v153.3.0
+   Compiling workbench v0.1.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling icu_segmenter_data v2.1.1 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+   Compiling mozjs_icu_normalizer v153.3.0 (C:\Users\mark_\Code\repos\turnstone\vendor\mozjs-icu-normalizer)
+   Compiling ohos-deviceinfo v0.1.0
+   Compiling genet-parley v0.10.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling scroll-protocol v0.1.0
+   Compiling mere-p2panda-net v0.7.5 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5#1bec457e)
+   Compiling icu_locale v2.3.1
+   Compiling p2panda-encryption v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5#1bec457e)
+   Compiling misfin v0.0.4
+   Compiling skrifa v0.46.2
+   Compiling mozjs_properties_glue v153.3.0
+   Compiling mozjs_locale_glue v153.3.0
+   Compiling mozjs_normalizer_glue v153.3.0
+   Compiling mozjs_collator_glue v153.3.0
+   Compiling mozjs_unicode_bidi_ffi v153.3.0
+   Compiling mere-proofs v0.1.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling calendrical_calculations v0.2.3 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+   Compiling genet-text v0.1.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling finger-protocol v0.1.1
+   Compiling nex-protocol v0.1.1
+   Compiling gopher-protocol v0.2.0
+   Compiling guppy-protocol v0.1.1
+   Compiling spartan-protocol v0.1.1
+   Compiling strck v1.0.0
+   Compiling ixdtf v0.6.4 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+   Compiling diplomat_core v0.14.0
+   Compiling icu_calendar v2.1.1 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+   Compiling errand v0.4.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling stickleback v0.1.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling scenotime v0.0.4 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling notochord v0.1.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling vello_encoding v0.10.0 (https://github.com/mark-ik/vello.git?tag=vello-0.10.0#4354955e)
+   Compiling icu_capi v2.1.2 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+   Compiling vello v0.10.0 (https://github.com/mark-ik/vello.git?tag=vello-0.10.0#4354955e)
+   Compiling chirograph v0.0.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling icu_segmenter v2.1.2 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+   Compiling mozjs_icu_collator v153.3.0 (C:\Users\mark_\Code\repos\turnstone\vendor\mozjs-icu-collator)
+warning: use of deprecated associated function `icu_properties::props::CanonicalCombiningClass::from_icu4c_value`: please comment on https://github.com/unicode-org/icu4x/issues/6067 if you need this
+   --> vendor\mozjs-icu-collator\src\elements.rs:159:34
+    |
+159 |         CanonicalCombiningClass::from_icu4c_value(trie_value as u8)
+    |                                  ^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(deprecated)]` on by default
+
+warning: use of deprecated method `icu_properties::props::CanonicalCombiningClass::to_icu4c_value`: please comment on https://github.com/unicode-org/icu4x/issues/6067 if you need this
+   --> vendor\mozjs-icu-collator\src\elements.rs:821:46
+    |
+821 |             trie_val: 0xD800 | u32::from(ccc.to_icu4c_value()),
+    |                                              ^^^^^^^^^^^^^^
+
+warning: use of deprecated associated function `icu_properties::props::CanonicalCombiningClass::from_icu4c_value`: please comment on https://github.com/unicode-org/icu4x/issues/6067 if you need this
+   --> vendor\mozjs-icu-collator\src\elements.rs:841:77
+    |
+841 |                 c_and_c: CharacterAndClass::new(c, CanonicalCombiningClass::from_icu4c_value(0xFF)),
+    |                                                                             ^^^^^^^^^^^^^^^^
+
+warning: use of deprecated associated function `icu_properties::props::CanonicalCombiningClass::from_icu4c_value`: please comment on https://github.com/unicode-org/icu4x/issues/6067 if you need this
+   --> vendor\mozjs-icu-collator\src\elements.rs:857:56
+    |
+857 |         debug_assert_ne!(ret, CanonicalCombiningClass::from_icu4c_value(0xFF));
+    |                                                        ^^^^^^^^^^^^^^^^
+
+warning: use of deprecated method `icu_properties::props::CanonicalCombiningClass::to_icu4c_value`: please comment on https://github.com/unicode-org/icu4x/issues/6067 if you need this
+   --> vendor\mozjs-icu-collator\src\elements.rs:892:57
+    |
+892 |         CharacterAndClass(u32::from(c) | (u32::from(ccc.to_icu4c_value()) << 24))
+    |                                                         ^^^^^^^^^^^^^^
+
+warning: use of deprecated associated function `icu_properties::props::CanonicalCombiningClass::from_icu4c_value`: please comment on https://github.com/unicode-org/icu4x/issues/6067 if you need this
+   --> vendor\mozjs-icu-collator\src\elements.rs:909:34
+    |
+909 |         CanonicalCombiningClass::from_icu4c_value((self.0 >> 24) as u8)
+    |                                  ^^^^^^^^^^^^^^^^
+
+warning: use of deprecated method `icu_properties::props::CanonicalCombiningClass::to_icu4c_value`: please comment on https://github.com/unicode-org/icu4x/issues/6067 if you need this
+   --> vendor\mozjs-icu-collator\src\elements.rs:924:61
+    |
+924 |         self.0 = ((ccc_from_trie_value(trie.scalar(scalar)).to_icu4c_value() as u32) << 24)
+    |                                                             ^^^^^^^^^^^^^^
+
+   Compiling icu_time v2.1.1 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+   Compiling diplomat v0.14.0
+   Compiling paint_list_render v0.1.2 (https://github.com/merely-made/netrender.git?rev=9607d16f1907f6c2085648ae96abcaa30d7c3d41#9607d16f)
+warning: `mozjs_icu_collator` (lib) generated 7 warnings
+   Compiling icu_provider_adapters v2.1.1 (https://github.com/unicode-org/icu4x?rev=30120d6a07fc5bb03a6c7647077bd2658b2559de#30120d6a)
+   Compiling mozjs_sys v153.3.0-1
+   Compiling mere-alembic v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling scenograph v0.0.4 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling quinn-proto v0.11.18
+   Compiling cssparser v0.37.0
+   Compiling toml_edit v0.23.10+spec-1.0.0
+   Compiling html5ever v0.40.1
+   Compiling livery v0.0.5 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling hashlink v0.11.1
+   Compiling incipit v0.2.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling arraystring v0.3.0
+   Compiling diplomat-runtime v0.14.0
+   Compiling rusqlite v0.38.0
+   Compiling meristem v0.2.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling pandect v0.1.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling quinn v0.11.12
+   Compiling bevy_macro_utils v0.18.1
+   Compiling cadency v0.0.1 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling scenomise v0.0.4 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling sprigging v0.2.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling mere-surface-api v0.1.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling bevy_platform v0.18.1
+   Compiling servo-script-bindings v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+   Compiling h3 v0.0.8
+   Compiling genet-taffy v0.14.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling h3-quinn v0.0.10
+   Compiling buckram v0.0.3 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling tokio-tungstenite v0.29.0
+   Compiling rtgc v0.3.0
+   Compiling cambium v0.3.3 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling sea-query-rusqlite v0.8.0
+   Compiling nematic v0.1.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling download-cef v3.0.0
+   Compiling firewheel-macros v0.10.0
+   Compiling tungstenite v0.30.0
+   Compiling genet-document-resources v0.2.1 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling iroh-io v0.6.2
+   Compiling armillary v0.1.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling firewheel-core v0.10.1
+   Compiling bao-tree v0.16.1
+   Compiling async-tungstenite v0.35.0
+   Compiling genet-livery v0.0.4 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling servo-dom-struct v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+   Compiling cef-dll-sys v154.5.0+154.0.34
+   Compiling netfetcher v0.1.1 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling mozjs v0.26.4
+   Compiling iroh-util v0.6.0
+   Compiling iroh-tickets v1.0.0
+   Compiling uxtree v0.0.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling fleece v0.5.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling xml5ever v0.40.0
+   Compiling reflink-copy v0.1.30
+   Compiling servo-jstraceable-derive v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+   Compiling servo-deny-public-fields v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+   Compiling quick_cache v0.7.0
+   Compiling esp v0.1.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling servo-script v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+   Compiling parry2d v0.28.0
+   Compiling iroh-blobs v0.103.0
+   Compiling servo-devtools v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+   Compiling grafting v0.6.0
+   Compiling crypto-bigint v0.7.5
+   Compiling servo-webvtt v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+   Compiling document-canvas v0.1.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling mozangle v0.7.1
+   Compiling servitor v0.0.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling chardetng v1.0.0
+   Compiling cpal v0.17.3
+   Compiling cargo_metadata v0.23.1
+   Compiling firewheel-graph v0.10.2
+   Compiling mere-transport v0.0.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling illume v0.0.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling rapier2d v0.33.0
+   Compiling webview2-com-sys v0.39.1
+   Compiling graphshell-endpoint v0.0.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling mien v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling mooting v0.1.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling p2panda-auth v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5#1bec457e)
+   Compiling knot-file-catalog v0.0.1 (https://github.com/merely-made/knot-editor.git?rev=0096591a0af98bf4777d8bfe718c0423dea9fc90#0096591a)
+   Compiling scrying v0.7.1 (https://github.com/merely-made/wgpu-scry.git?rev=2c3ebd24118851cf6125cfb193f55aab20e3ad67#2c3ebd24)
+   Compiling accesskit_consumer v0.35.0
+   Compiling grafting v0.6.0 (https://github.com/merely-made/wgpu-graft.git?rev=7907ff295da2c20c2a791419e6658d1c05350345#7907ff29)
+   Compiling redshank-model v0.0.0 (https://github.com/merely-made/woodshed.git?rev=82271df20927d41a4cbb79c56a09fef5bbb38cde#82271df2)
+   Compiling welding v0.15.0 (https://github.com/merely-made/wgpu-weld.git?rev=c4dd593b7a730acb4aa6ffab0fe2edf8a0584083#c4dd593b)
+   Compiling webview2-com v0.39.1
+   Compiling accesskit_windows v0.32.1
+   Compiling knot-capture v0.0.1 (https://github.com/merely-made/knot-editor.git?rev=0096591a0af98bf4777d8bfe718c0423dea9fc90#0096591a)
+   Compiling gemot v0.1.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling seiche v0.0.6 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling knot-editor-host v0.1.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling cef v154.5.0+154.0.34
+   Compiling firewheel-cpal v0.10.0
+   Compiling firewheel-nodes v0.10.0
+   Compiling mere-fetch v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling arboard v3.6.1
+   Compiling luggage v0.1.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling mere-cartography v0.0.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling grafting-frame v0.1.0 (https://github.com/merely-made/wgpu-graft.git?rev=7907ff295da2c20c2a791419e6658d1c05350345#7907ff29)
+   Compiling reference-data v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling ipc-channel v0.22.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling servo-media-streams v0.2.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling chatelaine v0.0.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling servo-media-traits v0.2.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling mora-cmudict v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling pictograph v0.2.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling servo-media-player v0.2.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling castellan v0.0.3 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling knot-composition v0.0.1 (https://github.com/merely-made/knot-editor.git?rev=0096591a0af98bf4777d8bfe718c0423dea9fc90#0096591a)
+   Compiling mere-webrtc-carrier v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling mere-linked-data v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling firewheel v0.10.0
+   Compiling knot-document v0.0.1 (https://github.com/merely-made/knot-editor.git?rev=0096591a0af98bf4777d8bfe718c0423dea9fc90#0096591a)
+   Compiling script-rhai v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling platen v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling mere-document-lanes v0.1.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling mere-mesh v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling graphshell-client v0.0.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling mere-apparatus v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling genet-render v0.2.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling eidetic-search v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling genet-render-host v0.2.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling audio-primitives v0.1.0 (https://github.com/merely-made/woodshed.git?rev=82271df20927d41a4cbb79c56a09fef5bbb38cde#82271df2)
+   Compiling browsing-context-api v0.1.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling timed-text v0.1.0 (https://github.com/merely-made/woodshed.git?rev=82271df20927d41a4cbb79c56a09fef5bbb38cde#82271df2)
+   Compiling redshank-surfaces v0.0.0 (https://github.com/merely-made/woodshed.git?rev=82271df20927d41a4cbb79c56a09fef5bbb38cde#82271df2)
+   Compiling genet-documents v0.1.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling redshank-playback v0.0.0 (https://github.com/merely-made/woodshed.git?rev=82271df20927d41a4cbb79c56a09fef5bbb38cde#82271df2)
+   Compiling knot-editor v0.0.3 (https://github.com/merely-made/knot-editor.git?rev=0096591a0af98bf4777d8bfe718c0423dea9fc90#0096591a)
+   Compiling graphshell v0.0.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling retinue v0.2.0 (https://github.com/merely-made/retinue.git?rev=fa4f925059cc698058cb21fecc1c825d095741a9#fa4f9250)
+   Compiling genet-winit-host v0.2.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling mere-moot v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling genet-clipboard v0.1.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling mere v0.0.2 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling distillery v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling scrying-engine v0.2.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling weld-engine v0.2.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling commons-spine v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling accesskit_winit v0.32.2
+   Compiling redshank-storage v0.0.0 (https://github.com/merely-made/woodshed.git?rev=82271df20927d41a4cbb79c56a09fef5bbb38cde#82271df2)
+   Compiling cambium-winit v0.3.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling import v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling taproot v0.1.0 (https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e2)
+   Compiling mere-athanor v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling mere-chrome v0.0.1 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling graft-engine v0.2.0 (https://github.com/merely-made/mere.git?rev=57b4893db6909d5ed9c4ccae30216f0d8164201a#57b4893d)
+   Compiling servo-malloc-size-of v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+   Compiling servo-base v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+   Compiling servo-url v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+   Compiling servo-profile-traits v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+   Compiling servo-pixels v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+   Compiling servo-geometry v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+   Compiling servo-paint-api v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+   Compiling servo-net-traits v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+   Compiling servo-fonts-traits v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+   Compiling servo-media-streams v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+   Compiling servo-media-traits v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+   Compiling servo-media-player v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+   Compiling servo-devtools-traits v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+   Compiling servo-webxr-api v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+   Compiling servo-canvas-traits v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+   Compiling servo-media-audio v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+   Compiling servo-media-webrtc v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+   Compiling servo-storage-traits v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+   Compiling servo-media v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+   Compiling servo-constellation-traits v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+   Compiling servo-media-thread v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+   Compiling servo-fonts v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+   Compiling servo-script-traits v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+   Compiling servo-background-hang-monitor-api v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+   Compiling servo-layout-api v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+   Compiling servo-timers v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+   Compiling servo-metrics v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+   Compiling servo-net v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+   Compiling servo-xpath v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+   Compiling servo-background-hang-monitor v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+   Compiling servo-canvas v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+   Compiling servo-constellation v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+   Compiling servo-layout v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+   Compiling servo-paint v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+   Compiling servo-media-dummy v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+   Compiling servo-storage v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+   Compiling servo-default-resources v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+   Compiling servo-wakelock v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+   Compiling servo-profile v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+   Compiling servo v0.7.0 (https://github.com/servo/servo?rev=aac43a3f31a259f04a574f5ec4e959c943ad7cc7#aac43a3f)
+   Compiling servo-wgpu-interop-adapter v0.1.0 (https://github.com/merely-made/wgpu-graft.git?rev=7907ff295da2c20c2a791419e6658d1c05350345#7907ff29)
+   Compiling turnstone v0.1.0 (C:\Users\mark_\Code\repos\turnstone)
+warning: unused imports: `Suggestion` and `normalize_address`
+  --> src\app\mod.rs:20:31
+   |
+20 | use crate::ui::{OmnibarState, Suggestion, normalize_address};
+   |                               ^^^^^^^^^^  ^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `browse`
+  --> src\app\mod.rs:26:13
+   |
+26 | use crate::{browse, session};
+   |             ^^^^^^
+
+warning: unused import: `crate::panes::PaneContent`
+  --> src\app\node_arms.rs:16:5
+   |
+16 | use crate::panes::PaneContent;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `CaretMove`
+  --> src\app\omnibar_arms.rs:12:29
+   |
+12 | use crate::action::{Action, CaretMove, Effect};
+   |                             ^^^^^^^^^
+
+warning: unused import: `crate::panes::PaneContent`
+  --> src\app\palette.rs:16:5
+   |
+16 | use crate::panes::PaneContent;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `uuid::Uuid`
+  --> src\app\session_lifecycle.rs:17:5
+   |
+17 | use uuid::Uuid;
+   |     ^^^^^^^^^^
+
+warning: unused import: `PaneContent`
+  --> src\app\session_lifecycle.rs:22:44
+   |
+22 | use crate::panes::{FrisketLayout, GraphId, PaneContent, SessionId};
+   |                                            ^^^^^^^^^^^
+
+warning: unused imports: `MOOT_ACT_ACTION` and `MOOT_DELEGATION_DOMAIN`
+    --> src\place\worker.rs:2663:44
+     |
+2663 |         CollectionChange, ContributionRef, MOOT_ACT_ACTION, MOOT_DELEGATION_DOMAIN,
+     |                                            ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `CapabilityScope`, `DelegationCertificate`, `DelegationParent`, and `delegation_signing_salt`
+    --> src\place\worker.rs:2677:9
+     |
+2677 |         CapabilityScope, DelegationCertificate, DelegationParent, DelegationRevocation,
+     |         ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^
+2678 |         SignedDelegationCertificate, SignedDelegationRevocation, delegation_signing_salt,
+     |                                                                  ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::action::CaretMove`
+   --> src\shell\drive.rs:692:13
+    |
+692 |         use crate::action::CaretMove;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::sync::mpsc::Receiver`
+  --> src\shell\effects.rs:13:5
+   |
+13 | use std::sync::mpsc::Receiver;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `FetchCommand` and `FetchUpdate`
+  --> src\shell\effects.rs:15:13
+   |
+15 | use fetch::{FetchCommand, FetchUpdate};
+   |             ^^^^^^^^^^^^  ^^^^^^^^^^^
+
+warning: unused import: `SessionClick`
+  --> src\shell\effects.rs:17:46
+   |
+17 |     DocumentFindQuery, EngineProfileBinding, SessionClick, SessionSpawnRequest, SurfaceSpawnRequest,
+   |                                              ^^^^^^^^^^^^
+
+warning: unused import: `crate::panes::PaneContent`
+  --> src\shell\effects.rs:22:5
+   |
+22 | use crate::panes::PaneContent;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::surface::SurfaceKind`
+  --> src\shell\render.rs:25:5
+   |
+25 | use crate::surface::SurfaceKind;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `PhysicalPosition`
+  --> src\shell\lens.rs:19:18
+   |
+19 | use winit::dpi::{PhysicalPosition, PhysicalSize};
+   |                  ^^^^^^^^^^^^^^^^
+
+warning: unused imports: `Key as WinitKey` and `NamedKey as WinitNamedKey`
+  --> src\shell\input.rs:16:23
+   |
+16 | use winit::keyboard::{Key as WinitKey, NamedKey as WinitNamedKey};
+   |                       ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `SessionScrollKey`
+  --> src\shell\input.rs:20:27
+   |
+20 | use inker::{SessionClick, SessionScrollKey};
+   |                           ^^^^^^^^^^^^^^^^
+
+warning: unused import: `CaretMove`
+  --> src\shell\input.rs:24:29
+   |
+24 | use crate::action::{Action, CaretMove};
+   |                             ^^^^^^^^^
+
+warning: unused import: `decode_sprite`
+  --> src\shell\input.rs:27:20
+   |
+27 | use super::{Shell, decode_sprite};
+   |                    ^^^^^^^^^^^^^
+
+warning: unused import: `input::pointer_button`
+  --> src\shell\mod.rs:37:5
+   |
+37 | use input::pointer_button;
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::path::Path`
+  --> src\shell\mod.rs:40:5
+   |
+40 | use std::path::Path;
+   |     ^^^^^^^^^^^^^^^
+
+warning: unused import: `image::ImageEncoder`
+  --> src\shell\mod.rs:47:5
+   |
+47 | use image::ImageEncoder;
+   |     ^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `mere::canvas::WHEEL_PAN_SCALE`
+  --> src\shell\mod.rs:49:5
+   |
+49 | use mere::canvas::WHEEL_PAN_SCALE;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `ColorLoad` and `NetrenderOptions`
+  --> src\shell\mod.rs:55:17
+   |
+55 | use netrender::{ColorLoad, NetrenderOptions};
+   |                 ^^^^^^^^^  ^^^^^^^^^^^^^^^^
+
+warning: unused import: `winit::application::ApplicationHandler`
+  --> src\shell\mod.rs:56:5
+   |
+56 | use winit::application::ApplicationHandler;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `PhysicalPosition` and `PhysicalSize`
+  --> src\shell\mod.rs:57:18
+   |
+57 | use winit::dpi::{PhysicalPosition, PhysicalSize};
+   |                  ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^
+
+warning: unused imports: `ElementState`, `Ime`, `MouseButton`, `MouseScrollDelta`, and `WindowEvent`
+  --> src\shell\mod.rs:58:20
+   |
+58 | use winit::event::{ElementState, Ime, MouseButton, MouseScrollDelta, WindowEvent};
+   |                    ^^^^^^^^^^^^  ^^^  ^^^^^^^^^^^  ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^
+
+warning: unused imports: `Key as WinitKey` and `NamedKey as WinitNamedKey`
+  --> src\shell\mod.rs:60:23
+   |
+60 | use winit::keyboard::{Key as WinitKey, NamedKey as WinitNamedKey};
+   |                       ^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `Effect`
+  --> src\shell\mod.rs:69:29
+   |
+69 | use crate::action::{Action, Effect, Update};
+   |                             ^^^^^^
+
+warning: unused import: `session`
+  --> src\shell\mod.rs:72:21
+   |
+72 | use crate::{browse, session};
+   |                     ^^^^^^^
+
+warning: unused import: `mere::canvas::palette`
+  --> src\swatch_pane\mod.rs:32:5
+   |
+32 | use mere::canvas::palette;
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `ColorF`
+  --> src\swatch_pane\mod.rs:33:17
+   |
+33 | use sprigging::{ColorF, LeafRegistry, RenderedLeaves};
+   |                 ^^^^^^
+
+warning: unused import: `crate::content::NodeContent`
+  --> src\swatch_pane\mod.rs:37:5
+   |
+37 | use crate::content::NodeContent;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::overmap`
+  --> src\swatch_pane\mod.rs:38:5
+   |
+38 | use crate::overmap;
+   |     ^^^^^^^^^^^^^^
+
+error[E0308]: mismatched types
+   --> src\arrange_pane.rs:584:35
+    |
+584 |         assert_eq!(status.live(), accesskit::Live::Polite);
+    |                                   ^^^^^^^^^^^^^^^^^^^^^^^ expected `Option<Live>`, found `Live`
+    |
+    = note: expected enum `std::option::Option<accesskit::Live>`
+               found enum `accesskit::Live`
+help: try wrapping the expression in `Some`
+    |
+584 |         assert_eq!(status.live(), Some(accesskit::Live::Polite));
+    |                                   +++++                       +
+
+warning: unused import: `genet_clipboard::TextClipboard`
+   --> src\shell\effects.rs:815:25
+    |
+815 |                     use genet_clipboard::TextClipboard as _;
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: variable does not need to be mutable
+    --> src\place\worker.rs:3821:13
+     |
+3821 |         let mut welcome = |open: &mut OpenPlace, seed: u8| {
+     |             ----^^^^^^^
+     |             |
+     |             help: remove this `mut`
+     |
+     = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `caption`
+   --> src\shell\render.rs:754:13
+    |
+754 |         let caption = self
+    |             ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_caption`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `ok`
+    --> src\shell\render.rs:1017:17
+     |
+1017 |             let ok = capture_composed(host, &layers, w, h, &path);
+     |                 ^^ help: if this is intentional, prefix it with an underscore: `_ok`
+
+For more information about this error, try `rustc --explain E0308`.
+warning: `turnstone` (lib test) generated 39 warnings
+error: could not compile `turnstone` (lib test) due to 1 previous error; 39 warnings emitted

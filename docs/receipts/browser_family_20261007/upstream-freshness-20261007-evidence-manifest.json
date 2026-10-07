@@ -1,0 +1,105 @@
+{
+  "observed_at_utc": "2026-10-07T09:19:06.523827+00:00",
+  "artifacts": [
+    {
+      "path": "upstream-freshness-20261007-servo-release.json",
+      "bytes": 356,
+      "sha256": "fd243e87cc0fbe7da4f7978d8a0a55c6abb7f21efd968eab261712673a1641ad"
+    },
+    {
+      "path": "upstream-freshness-20261007-servo-tag.json",
+      "bytes": 366,
+      "sha256": "8466b65c3561627e970ecdfcfe2ca9da1276cf03dd14e4d1259deff710d1bbba"
+    },
+    {
+      "path": "upstream-freshness-20261007-servo-main-commit.json",
+      "bytes": 3155,
+      "sha256": "5644d188093aee7a48abf77ab0621fd9f63f9d207c448dbc85128887e5f9c256"
+    },
+    {
+      "path": "upstream-freshness-20261007-mozjs-security-commit.json",
+      "bytes": 10999,
+      "sha256": "94f0c26ab113d6cff8c7feff9a3719bc98d59b3d8167e65e63ee2de5801c3793"
+    },
+    {
+      "path": "upstream-freshness-20261007-servo-release-Cargo.toml",
+      "bytes": 20382,
+      "sha256": "92426b024b77f71eff879a164c3850309bf2fd1a6dcdc8e5ea7c2d1833540862"
+    },
+    {
+      "path": "upstream-freshness-20261007-servo-main-Cargo.toml",
+      "bytes": 20997,
+      "sha256": "707f32a3a83c6864289d3e5aeafbd95e7f2540c86ba4a7e821c88201256a8d2c"
+    },
+    {
+      "path": "upstream-freshness-20261007-mozjs-security-Cargo.toml",
+      "bytes": 1168,
+      "sha256": "23b184e9292207f80d2a751ecfb1b92f10bee78df1735fd573776806dc38c901"
+    },
+    {
+      "path": "upstream-freshness-20261007-mozjs-sys-security-Cargo.toml",
+      "bytes": 2182,
+      "sha256": "928bcf3e5b853b636b4a932af14c0c7a475d9bbd450440c3d50fcf7db07b5b13"
+    },
+    {
+      "path": "upstream-freshness-20261007-mozjs-0.26.4-registry.json",
+      "bytes": 2136,
+      "sha256": "2a0525750ea4155e642a2719a64855cda537cee6a50b7327c08d58f6216d63cc"
+    },
+    {
+      "path": "upstream-freshness-20261007-mozjs-0.26.4-Cargo.toml",
+      "bytes": 3657,
+      "sha256": "d088bcf64116d753eca43299dccdfdaf7c6d14dba24e0cc1bffb79a67f25c7a0"
+    },
+    {
+      "path": "upstream-freshness-20261007-mozjs-0.26.4-vcs.json",
+      "bytes": 99,
+      "sha256": "4b89858c6e3d4e24e8fa8a821e89a56e052f290d81b84fa35b9a426f7443e421"
+    },
+    {
+      "path": "upstream-freshness-20261007-mozjs-0.26.7-registry.json",
+      "bytes": 2136,
+      "sha256": "b152e5a067be0d2472e0ceab47133015372af84d72099d34861385fe10d4b585"
+    },
+    {
+      "path": "upstream-freshness-20261007-mozjs-0.26.7-Cargo.toml",
+      "bytes": 3657,
+      "sha256": "34df2a7b9c470e500c36d938478c920e7dbd8f245a0e5aa6840575cd322e53ab"
+    },
+    {
+      "path": "upstream-freshness-20261007-mozjs-0.26.7-vcs.json",
+      "bytes": 99,
+      "sha256": "4522a8f6a02075be9ddafd1713c88b98584296934cb155d181f14cad00453ec9"
+    },
+    {
+      "path": "upstream-freshness-20261007-mozjs-0.26.8-registry.json",
+      "bytes": 2133,
+      "sha256": "d7f1ed4cbe0bf9ca42b73732b62926abc789b12e8099cb506f42cea6afd3523a"
+    },
+    {
+      "path": "upstream-freshness-20261007-mozjs-0.26.8-Cargo.toml",
+      "bytes": 3657,
+      "sha256": "3e04de846dbf52cf685bc3c9f647923e1c7085403ed1194ec27b4b585cb33ea3"
+    },
+    {
+      "path": "upstream-freshness-20261007-mozjs-0.26.8-vcs.json",
+      "bytes": 99,
+      "sha256": "fc94f714ce22f21a0c2dde8192d209eed249f2d39dafc380217aab0648c54770"
+    },
+    {
+      "path": "upstream-freshness-20261007-mozjs_sys-153.4.0-0-registry.json",
+      "bytes": 4892,
+      "sha256": "ace3fbbb973426e399ef2024cc60e3dd469f2cb00c59cfd563aa0deffaf22d10"
+    },
+    {
+      "path": "upstream-freshness-20261007-summary.json",
+      "bytes": 9198,
+      "sha256": "818dcd492705e5a0387602b449bb68f3fdc3c3d24748815321114dc3bb75f56b"
+    },
+    {
+      "path": "upstream-freshness-20261007-note.md",
+      "bytes": 3186,
+      "sha256": "a8b93fc9c63f514bbdcc1ef4428c8a4080fdfc56537a548a0689972df0d5adf3"
+    }
+  ]
+}

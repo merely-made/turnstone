@@ -1,0 +1,63 @@
+{
+  "recorded_utc": "2026-10-07T09:41:58.831136+00:00",
+  "directory": "C:/Users/mark_/Code/repos/turnstone/docs/receipts/browser_supplier_integration_20261006/native-current-family-intl-intl",
+  "helper_sha256": "3f65221c32b2cfcd621053341ff2682bece636a25b3b7272a6684e387e56be13",
+  "method": {
+    "expected_rgb": [
+      23,
+      109,
+      53
+    ],
+    "channel_tolerance": 8,
+    "minimum_green_fraction": 0.75,
+    "minimum_region_pixels": 4096,
+    "content_edge_inset_pixels": 4,
+    "required_live_producers_cached_frames_servo_active_views": 1
+  },
+  "limits": "Fixture-specific imported-body check. Native title assertions qualify page APIs separately. This does not establish text correctness, accessibility, arbitrary page correctness or native teardown.",
+  "inputs": [
+    {
+      "path": "01_native_intl_bridge.png",
+      "bytes": 68222,
+      "sha256": "e97bf0d9f91f8ac23360a3b3b85b6827997ab7f6edfb2de74a23c431bafc8966"
+    },
+    {
+      "path": "intl-servo-live.surface-frames.json",
+      "bytes": 313,
+      "sha256": "85c30d664c9fb67a1371d4cf621042d3d18b235a0f86637d04a490de273802ec"
+    }
+  ],
+  "failures": [
+    "Green body coverage is below the required fraction"
+  ],
+  "counts": {
+    "live_producers": 1,
+    "cached_frames": 1,
+    "servo_active_views": 1
+  },
+  "surface": {
+    "node": "f42cb22a-1ab8-4e4a-9c24-e6ceffc33108",
+    "recorded_rectangle": {
+      "x": 515.0,
+      "y": 30.0,
+      "width": 509.0,
+      "height": 570.0
+    }
+  },
+  "capture_size": [
+    1024,
+    600
+  ],
+  "pixels": {
+    "sample_box": [
+      519,
+      34,
+      1020,
+      596
+    ],
+    "sampled_pixels": 281562,
+    "matched_green_pixels": 125453,
+    "matched_green_fraction": 0.4455608356241254
+  },
+  "passed": false
+}

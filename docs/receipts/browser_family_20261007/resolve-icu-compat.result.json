@@ -1,0 +1,19 @@
+{
+  "command": [
+    "cargo",
+    "+1.98.1",
+    "metadata",
+    "--format-version",
+    "1",
+    "--features",
+    "scry,weld,servo",
+    "--filter-platform",
+    "x86_64-pc-windows-msvc"
+  ],
+  "cwd": "C:\\Users\\mark_\\Code\\repos\\turnstone",
+  "started_utc": "2026-10-07T09:10:26.088926+00:00",
+  "finished_utc": "2026-10-07T09:10:53.012844+00:00",
+  "elapsed_seconds": 26.921999999991385,
+  "exit_code": 0,
+  "priority": "BelowNormal"
+}

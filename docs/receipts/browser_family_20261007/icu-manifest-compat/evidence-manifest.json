@@ -1,0 +1,76 @@
+{
+  "recorded_utc": "2026-10-07T09:09:01.624159+00:00",
+  "unchanged_published_files": 66,
+  "unchanged_published_rust_files": 23,
+  "changed_package_files": 2,
+  "production_range_changes": 3,
+  "license": "Unicode-3.0",
+  "candidate_status": "UNQUALIFIED",
+  "relative_links": "PASS",
+  "vendor_notes": [
+    {
+      "path": "vendor/mozjs-icu-collator/VENDOR_README.md",
+      "bytes": 930,
+      "sha256": "2479ad70e1d7ad5a1cb48dd3ca3785d4f8d649ae86c975a6eeafd19fce469460",
+      "not_published_package_file": true
+    },
+    {
+      "path": "vendor/mozjs-icu-normalizer/VENDOR_README.md",
+      "bytes": 924,
+      "sha256": "3db8e2595df0dea1c66dca662274968e1d7f5ab383b892f670b005a7126e6cca",
+      "not_published_package_file": true
+    }
+  ],
+  "receipt_files": [
+    {
+      "path": "candidate-summary.json",
+      "bytes": 2764,
+      "sha256": "cd92bba66668046eaef842cc3e1e0d8f86b261fbff145ffd08779ee82dbdce3f"
+    },
+    {
+      "path": "mozjs-icu-collator-inventory.json",
+      "bytes": 9315,
+      "sha256": "db7c1eb289925e23f48f40693749a8120d2db60b4c26f15d0e72c907b7bdc478"
+    },
+    {
+      "path": "mozjs-icu-collator-manifest.diff",
+      "bytes": 446,
+      "sha256": "11425d05beb2a6201b5db03118b4cdf79218f4d2549137a332227f49e1f405c3"
+    },
+    {
+      "path": "mozjs-icu-collator-official-version.json",
+      "bytes": 1770,
+      "sha256": "864b799176d6673f9677aa0525fab91909d619388a4e7b290efa1fbe5b422689"
+    },
+    {
+      "path": "mozjs-icu-collator-original-Cargo.toml",
+      "bytes": 3752,
+      "sha256": "5f782c09054ec0d893d3edbf3897d9d7da965cfecb6a489ffa3f4618f295baaf"
+    },
+    {
+      "path": "mozjs-icu-normalizer-inventory.json",
+      "bytes": 12889,
+      "sha256": "9f221374487f1757f87bc7799cb5183585e40a1ed4af68fb307c2078e0aaa76b"
+    },
+    {
+      "path": "mozjs-icu-normalizer-manifest.diff",
+      "bytes": 274,
+      "sha256": "3a39e79f0e9a0f286af358d83382a988b29769fe16c2de12566421ea744eb5bb"
+    },
+    {
+      "path": "mozjs-icu-normalizer-official-version.json",
+      "bytes": 1884,
+      "sha256": "ea9c3be408d96c06a0e42419f6dd978fa4ca34db2ccc0da5a3d6cca4d8bd69f0"
+    },
+    {
+      "path": "mozjs-icu-normalizer-original-Cargo.toml",
+      "bytes": 4615,
+      "sha256": "637362090a1dcfe0c43ebce1ad05acf9e0802d70f576a50c5f6276b74d04d156"
+    },
+    {
+      "path": "README.md",
+      "bytes": 3173,
+      "sha256": "a987da14e9e37acc663989cbc7754812a0ce60fa018f1f12451d2b23e7d5d8b8"
+    }
+  ]
+}

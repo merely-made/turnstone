@@ -71,6 +71,7 @@ impl App {
             active_pane: None,
             browser: pandect::browser_node_state::BrowserNodeStates::new(),
             physics_damping: pandect::DEFAULT_PHYSICS_DAMPING,
+            physics_refusal: None,
             maximized: None,
             window_count: 1,
             viewport: crate::app::DEFAULT_VIEWPORT,

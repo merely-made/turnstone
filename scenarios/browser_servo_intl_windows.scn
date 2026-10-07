@@ -1,0 +1,27 @@
+# Native page APIs qualify the exact SpiderMonkey C API source-family boundary.
+# Assertions read normal upstream title callbacks, with no host evaluation.
+settle 30
+key escape
+open ${SERVO_FIXTURE_BASE}/intl.html
+settle 80
+act Open node in Workbench
+settle 80
+act Open Inspector pane
+settle 10
+click surface:inspector .radio @data-engine-id=graft.servo
+settle 160
+assert snap browser-current-engine == graft.servo
+assert snap browser-current-content == live
+assert snap browser-current ~ ICU bridge | intl=pass
+assert snap host-servo-views == 1
+act Close pane
+act Maximize pane
+settle 40
+record-idle intl-servo-live
+capture 01_native_intl_bridge
+act Toggle live content
+settle 60
+assert snap host-surface-producers == 0
+assert snap host-servo-views == 0
+record-idle intl-servo-closed
+log Native Servo ICU bridge: normalization, ISO calendar date, word segmentation, numeric collation

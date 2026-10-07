@@ -51,6 +51,7 @@ impl GraphRuntime {
 pub struct GraphRuntimePool {
     runtimes: HashMap<GraphId, GraphRuntime>,
     active: GraphId,
+    display_rate: Option<Option<u32>>,
 }
 
 impl GraphRuntimePool {
@@ -61,11 +62,24 @@ impl GraphRuntimePool {
         Self {
             runtimes,
             active: graph,
+            display_rate: None,
         }
     }
 
     pub fn active_graph(&self) -> GraphId {
         self.active
+    }
+
+    /// Primary native host's display budget, including an explicit unknown
+    /// rate. New/reopened graph runtimes inherit it.
+    pub fn set_physics_display_rate(&mut self, millihertz: Option<u32>) {
+        if self.display_rate == Some(millihertz) {
+            return;
+        }
+        self.display_rate = Some(millihertz);
+        for runtime in self.runtimes.values_mut() {
+            runtime.canvas.set_physics_display_rate(millihertz);
+        }
     }
 
     pub fn contains(&self, graph: GraphId) -> bool {
@@ -113,8 +127,11 @@ impl GraphRuntimePool {
         &mut self,
         graph: GraphId,
         session: Option<SessionId>,
-        canvas: Canvas,
+        mut canvas: Canvas,
     ) -> &mut GraphRuntime {
+        if let Some(rate) = self.display_rate {
+            canvas.set_physics_display_rate(rate);
+        }
         self.runtimes
             .insert(graph, GraphRuntime::new(graph, session, canvas));
         self.active = graph;
@@ -297,6 +314,29 @@ mod tests {
 
     fn graph(n: u128) -> GraphId {
         GraphId::from_uuid(uuid::Uuid::from_u128(n))
+    }
+
+    #[test]
+    fn display_budget_survives_graph_replacement_and_unknown_rate() {
+        let a = graph(901);
+        let b = graph(902);
+        let assert_budget = |pool: &GraphRuntimePool, id, rate| {
+            let actual = pool.canvas(id).unwrap().physics_step_budget().unwrap();
+            let expected = mere::canvas::StepBudget::for_display(rate);
+            assert_eq!(actual.per_frame, expected.per_frame);
+            assert_eq!(actual.margin, expected.margin);
+        };
+        let mut pool = GraphRuntimePool::new(a, None, Canvas::new());
+        pool.set_physics_display_rate(Some(144_000));
+        pool.activate_or_insert(b, None, Canvas::new());
+        assert_budget(&pool, a, Some(144_000));
+        assert_budget(&pool, b, Some(144_000));
+        pool.activate_or_insert(a, None, Canvas::new());
+        assert_budget(&pool, a, Some(144_000));
+        pool.set_physics_display_rate(None);
+        for id in [a, b] {
+            assert_budget(&pool, id, None);
+        }
     }
 
     #[test]
