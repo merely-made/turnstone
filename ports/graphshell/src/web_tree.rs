@@ -126,10 +126,11 @@ struct Shared {
     reached: RefCell<crate::web_speed::ReachedNote>,
     /// The step budget, a share of the measured frame interval.
     frame_budget: RefCell<crate::web_speed::FrameBudget>,
+    period_worker: crate::web_period_worker::PeriodWorker,
     gpu_options: controls::GpuOptions,
     /// The page's device for the canvas's and the board's repulsion, built
     /// once from the host's render core on the producer's first frame.
-    physics_device: RefCell<Option<mere::canvas::PhysicsDevice>>,
+    physics_device: RefCell<Option<PhysicsDevice>>,
     visibility: Option<RefCell<visibility::Visibility>>,
     /// A released drag's drop point, canvas-local px, until the first frame
     /// that executes a physics step after the release.
@@ -181,6 +182,7 @@ impl TextureProducer for CanvasProducer {
         if shared.gpu.borrow().is_none() {
             *shared.gpu.borrow_mut() = Some((cx.device.clone(), cx.queue.clone()));
             let options = shared.gpu_options;
+            #[cfg(feature = "canvas-gpu")]
             if options.enabled {
                 // The host's own device, never one of ours: the render core's
                 // handles are the ones every producer on this page draws with.
@@ -215,8 +217,20 @@ impl TextureProducer for CanvasProducer {
             .frame
             .timestamp
             .map_or_else(now_ms, |timestamp| timestamp.as_secs_f64() * 1000.0);
+        shared
+            .period_worker
+            .feed(&mut shared.frame_budget.borrow_mut(), frame_ms);
         let budget = shared.frame_budget.borrow_mut().frame(frame_ms);
         canvas.set_physics_step_budget(Some(budget));
+        crate::web_speed::plant_max_frame(&canvas, shared.speed.plant_max_frame);
+        let physics_config = crate::web_speed::planted_owed(
+            shared.physics_config,
+            canvas.physics_speed(),
+            std::time::Duration::from_secs_f64(
+                shared.frame_budget.borrow().last_interval_ms() / 1000.0,
+            ),
+            shared.speed.plant_owed,
+        );
         let profile = shared.timing.borrow().active();
         if shared.remote_shown.get() {
             // One leaf, the producer picks the scene: the board, mirroring
@@ -271,7 +285,7 @@ impl TextureProducer for CanvasProducer {
                     size.0,
                     size.1,
                     timestamp,
-                    shared.physics_config,
+                    physics_config,
                     now_ms,
                 ),
                 None => canvas.frame_profiled(size.0, size.1, now_ms),
@@ -291,7 +305,7 @@ impl TextureProducer for CanvasProducer {
         } else {
             match cx.frame.timestamp {
                 Some(timestamp) => {
-                    canvas.frame_at(size.0, size.1, timestamp, shared.physics_config)
+                    canvas.frame_at(size.0, size.1, timestamp, physics_config)
                 },
                 None => canvas.frame(size.0, size.1),
             }
@@ -624,10 +638,18 @@ pub(crate) fn mounted() -> bool {
     TREE.with(|tree| tree.borrow().is_some())
 }
 
+/// Whether the H5 reference host already owns this page.
+fn main_page_mounted() -> bool {
+    #[cfg(feature = "main-page")]
+    return web_scenario::host().is_some();
+    #[cfg(not(feature = "main-page"))]
+    false
+}
+
 /// Mount the one-tree page into `root`.
 #[wasm_bindgen]
 pub fn mount_tree(root: Element) -> Result<(), JsValue> {
-    if mounted() || web_scenario::host().is_some() {
+    if mounted() || main_page_mounted() {
         return Err(JsValue::from_str(
             "Graphshell is already mounted on this page",
         ));
@@ -683,9 +705,12 @@ async fn boot(root: Element) -> Result<(), String> {
         timing: RefCell::new(FrameTiming::default()),
         physics_config: controls::physics_config()?,
         speed: speed_options,
-        pace: RefCell::new(speed::PaceWindow::default()),
+        pace: RefCell::new(speed::PaceWindow::with_grain(
+            speed_options.grain.as_micros() as i64,
+        )),
         reached: RefCell::new(crate::web_speed::ReachedNote::default()),
         frame_budget: RefCell::new(crate::web_speed::frame_budget(speed_options)),
+        period_worker: crate::web_period_worker::PeriodWorker::start(speed_options.period_source),
         gpu_options: controls::gpu_options()?,
         physics_device: RefCell::new(None),
         visibility: visibility::requested()?,
@@ -940,10 +965,63 @@ fn publish(ok: bool, text: &str, shared: &Shared, saved: Option<serde_json::Valu
     }
 }
 
+#[cfg(feature = "canvas-gpu")]
+use mere::canvas::PhysicsDevice;
+
+/// Without `canvas-gpu` the page never has a physics device.
+#[cfg(not(feature = "canvas-gpu"))]
+enum PhysicsDevice {}
+
+#[cfg(not(feature = "canvas-gpu"))]
+impl PhysicsDevice {
+    fn answers(&self) -> u64 {
+        match *self {}
+    }
+
+    fn threshold(&self) -> usize {
+        match *self {}
+    }
+}
+
+/// Without `canvas-gpu` there is no lagged repulsion lane, so its counts stay
+/// zero; the fields are seiche's `LaggedStats`.
+#[cfg(not(feature = "canvas-gpu"))]
+#[derive(Clone, Copy, Debug, Default)]
+struct RepulsionStats {
+    device_steps: u64,
+    cpu_steps: u64,
+    submissions: u64,
+    failures: u64,
+    mismatched: u64,
+    waiting: u64,
+    stale: u64,
+    last_age: u64,
+}
+
+#[cfg(not(feature = "canvas-gpu"))]
+trait NoRepulsionLane {
+    fn repulsion_stats(&self) -> Option<RepulsionStats>;
+}
+
+#[cfg(not(feature = "canvas-gpu"))]
+impl NoRepulsionLane for mere::canvas::Canvas {
+    fn repulsion_stats(&self) -> Option<RepulsionStats> {
+        None
+    }
+}
+
 mod controls;
 mod lane;
 mod physics;
+#[cfg(feature = "product")]
 mod product;
+#[cfg(not(feature = "product"))]
+#[path = "web_tree/product_off.rs"]
+mod product;
+#[cfg(feature = "remote")]
+mod remote;
+#[cfg(not(feature = "remote"))]
+#[path = "web_tree/remote_off.rs"]
 mod remote;
 mod speed;
 mod visibility;

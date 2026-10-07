@@ -1,4 +1,7 @@
 // Copyright 2026 Mark Alan Boykin
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // SPDX-License-Identifier: MPL-2.0
 
 //! Product observations and actions for Mesquite on the tree page.
@@ -759,6 +762,17 @@ impl Product for TreeLane {
             // window's worst frame into the receipt.
             "log-pace" => {
                 let line = super::speed::pace_line(
+                    rest.trim(),
+                    &self.shared.canvas.borrow(),
+                    &self.shared,
+                );
+                self.shared.physics_log.borrow_mut().push(line);
+                Ok(())
+            },
+            // `mark-pace <label>`: the effective speed now, for a later
+            // comparison on the same page.
+            "mark-pace" => {
+                let line = super::speed::mark_line(
                     rest.trim(),
                     &self.shared.canvas.borrow(),
                     &self.shared,

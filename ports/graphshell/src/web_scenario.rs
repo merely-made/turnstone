@@ -52,12 +52,16 @@ use web_sys::{
     KeyboardEventInit, PointerEvent, PointerEventInit,
 };
 
-use super::{BrowserHost, document, element, root};
+use super::document;
+#[cfg(feature = "main-page")]
+use super::{BrowserHost, element, root};
 
+#[cfg(feature = "main-page")]
 thread_local! {
     static HOST: RefCell<Option<Rc<RefCell<BrowserHost>>>> = const { RefCell::new(None) };
 }
 
+#[cfg(feature = "main-page")]
 /// A scenario in flight on the host, pumped by [`tick`].
 pub(crate) struct ScenarioRun {
     scenario: Scenario,
@@ -65,16 +69,19 @@ pub(crate) struct ScenarioRun {
     frames: u32,
 }
 
+#[cfg(feature = "main-page")]
 /// Remember the host so [`run_scenario`] can reach it from JavaScript.
 pub(super) fn install(state: &Rc<RefCell<BrowserHost>>) {
     HOST.with(|slot| *slot.borrow_mut() = Some(state.clone()));
 }
 
+#[cfg(feature = "main-page")]
 /// The booted host, for the other JavaScript entries.
 pub(super) fn host() -> Option<Rc<RefCell<BrowserHost>>> {
     HOST.with(|slot| slot.borrow().clone())
 }
 
+#[cfg(feature = "main-page")]
 /// Parse and arm a scenario. The frame pump runs it from the next frame.
 #[wasm_bindgen]
 pub fn run_scenario(text: &str) -> Result<(), JsValue> {
@@ -105,6 +112,7 @@ pub fn run_scenario(text: &str) -> Result<(), JsValue> {
     Ok(())
 }
 
+#[cfg(feature = "main-page")]
 /// One frame's worth of scenario: called by the frame pump after the frame is
 /// rendered and the semantics are mirrored, so an assertion sees the DOM as
 /// it stands.
@@ -178,6 +186,7 @@ pub(super) fn mark(
     Ok(())
 }
 
+#[cfg(feature = "main-page")]
 fn js(error: String) -> JsValue {
     JsValue::from_str(&error)
 }
@@ -236,6 +245,7 @@ pub(super) fn publish_capture(
     Ok(())
 }
 
+#[cfg(feature = "main-page")]
 /// Parse exactly `count` whitespace-separated numbers from a verb's arguments.
 fn numbers(rest: &str, count: usize) -> Result<Vec<f32>, String> {
     let parsed: Vec<f32> = rest
@@ -249,11 +259,13 @@ fn numbers(rest: &str, count: usize) -> Result<Vec<f32>, String> {
     }
 }
 
+#[cfg(feature = "main-page")]
 /// The host as the shared driver sees it.
 struct Probe<'a> {
     host: &'a mut BrowserHost,
 }
 
+#[cfg(feature = "main-page")]
 impl Probe<'_> {
     /// Queue a pointer event for the canvas. Queued, not dispatched: see
     /// [`DomAction`].
@@ -508,6 +520,7 @@ impl Probe<'_> {
     }
 }
 
+#[cfg(feature = "main-page")]
 impl Automatable for Probe<'_> {
     /// The page retains no cambium surface: the chrome scene is rebuilt from a
     /// model each frame and the DOM mirror is where the semantics live. So the
@@ -602,6 +615,7 @@ impl Automatable for Probe<'_> {
     }
 }
 
+#[cfg(feature = "main-page")]
 impl Driveable for Probe<'_> {
     /// Arm a capture: the next rendered frame composes and reads it back, and
     /// `wait` holds until it lands (see `busy`).
@@ -618,6 +632,7 @@ impl Driveable for Probe<'_> {
     }
 }
 
+#[cfg(feature = "main-page")]
 fn find(css: &str) -> Result<Element, String> {
     document()?
         .query_selector(css)
@@ -625,12 +640,14 @@ fn find(css: &str) -> Result<Element, String> {
         .ok_or_else(|| format!("'{css}' matches nothing"))
 }
 
+#[cfg(feature = "main-page")]
 fn html_element(css: &str) -> Result<HtmlElement, String> {
     find(css)?
         .dyn_into::<HtmlElement>()
         .map_err(|_| format!("'{css}' is not an HTML element"))
 }
 
+#[cfg(feature = "main-page")]
 /// A DOM event a verb asked for, dispatched by the frame pump *after* the
 /// tick has released its borrow of the host.
 ///
@@ -666,6 +683,7 @@ pub(crate) enum DomAction {
     },
 }
 
+#[cfg(feature = "main-page")]
 /// A parsed key chord: modifiers and the `KeyboardEvent.key` value.
 pub(crate) struct KeySpec {
     key: String,
@@ -675,6 +693,7 @@ pub(crate) struct KeySpec {
     meta: bool,
 }
 
+#[cfg(feature = "main-page")]
 /// Dispatch queued actions. Returns event-stream lines for anything that
 /// could not be dispatched, so a scenario can assert on the failure rather
 /// than lose it.
@@ -688,6 +707,7 @@ pub(super) fn run_deferred(actions: Vec<DomAction>) -> Vec<String> {
     events
 }
 
+#[cfg(feature = "main-page")]
 fn dispatch(action: DomAction) -> Result<(), String> {
     match action {
         DomAction::Pointer { kind, x, y } => {
@@ -788,6 +808,7 @@ fn dispatch(action: DomAction) -> Result<(), String> {
     }
 }
 
+#[cfg(feature = "main-page")]
 /// `ctrl+shift+enter`: modifiers then one key. A chord of `plus` is spelled
 /// by name because `+` is the separator.
 fn parse_chord(chord: &str) -> Result<KeySpec, String> {
@@ -821,6 +842,7 @@ fn parse_chord(chord: &str) -> Result<KeySpec, String> {
     Ok(spec)
 }
 
+#[cfg(feature = "main-page")]
 fn key_name(lower: &str, verbatim: &str) -> String {
     match lower {
         "enter" | "return" => "Enter",
@@ -844,6 +866,7 @@ fn key_name(lower: &str, verbatim: &str) -> String {
     .to_string()
 }
 
+#[cfg(feature = "main-page")]
 fn split_first(line: &str) -> (&str, &str) {
     match line.trim().split_once(char::is_whitespace) {
         Some((head, tail)) => (head, tail.trim()),

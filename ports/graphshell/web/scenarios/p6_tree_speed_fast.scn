@@ -3,14 +3,18 @@
 # "Target + Max, budget as frame share", "The display's frame"), never more
 # than half of 1/60 s on the web ("Known rate, else capped"), the gate keeping
 # 200 us past the forecast tick ("Gate keeps a forecast margin").
-# tree.html?nodes=300&seed=7&links=none&gpu=off&physics_speed=max runs as fast
-# as the budget allows, so the budget binds every frame, the canvas reports
-# the speed it reached, and stepping stays inside each frame's own budget.
+# tree.html?nodes=300&seed=7&links=none&gpu=off&physics_speed=1 runs at 1x
+# first and marks the speed it reaches, then at Max, as fast as the budget
+# allows: the budget binds every frame, Max reaches at least the same page's
+# 1x (ruled 2026-10-06, "Relative to the page's 1x"; on a panel the page
+# cannot keep up with, half its frame is too little for 1x itself), and
+# stepping stays inside each frame's own budget.
 # p6_tree_speed_fast_control is 50x at 24 nodes; p6_tree_speed_fast_planted
 # is this receipt with a stall planted in the budget's clock, which must fail
-# the bound.
+# the bound; p6_tree_speed_fast_slow_max plants a busy-wait in every Max frame,
+# which must fail the comparison with 1x.
 assert snap ready == true
-assert snap physics-speed == max
+assert snap physics-speed == 1
 assert snap physics-budget-share == 0.5
 assert snap physics-budget-margin-us == 200
 click role:button Play physics
@@ -23,14 +27,23 @@ settle 1
 click role:button Apply arrangement
 settle 1
 assert snap layout == free
-settle 10
+# Fill the 32-frame effective-speed meter at 1x before marking it.
+settle 32
+mark-pace one-x
+assert snap physics-effective-marked >= 0.001
+click role:combobox Speed
+settle 1
+click role:option Max
+# Replace the meter's 1x frames before testing the selected speed.
+settle 32
+assert snap physics-speed == max
 timing start speed-fast
 settle 30
 timing stop
 log-physics fast
 log-pace fast
 assert snap physics-budget-bound == true
-assert snap physics-effective-speed >= 1
+assert snap physics-effective-over-marked >= 1
 assert snap pace-frames == 30
 # The 300-node page is far slower than its display: the period is capped.
 assert snap display-period-ms <= 16.7
