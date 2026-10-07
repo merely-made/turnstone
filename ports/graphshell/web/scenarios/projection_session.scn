@@ -1,0 +1,51 @@
+# Saving into the mere session, the editor's Undo save, and Graphshell's
+# session Undo (Scenograph editor plan, E2b; SE14 to SE22). A save is stored
+# by the frame pump without holding the host across the write; `settle 6`
+# gives the write its frames before the store state is read.
+assert title GRAPHSHELL H3 READY
+act open-projection-editor
+settle 2
+dom click [data-projection-panel="preview"]
+settle 2
+type #gs-projection-appearance-title Stored one
+settle 2
+act save-projection
+settle 6
+assert dom #gs-projection-editor-status Saved
+assert snap session-store == stored
+type #gs-projection-appearance-title Stored two
+settle 2
+act save-projection
+settle 6
+assert snap session-store == stored
+assert dom #gs-projection-editor-dirty No unsaved changes
+act undo-projection-save
+settle 6
+assert dom #gs-projection-editor-status Undid save · Graphshell reference projection
+assert dom #gs-projection-editor-preview Stored one ·
+assert dom #gs-projection-editor-dirty No unsaved changes
+assert snap session-store == stored
+# The stored definition came back as one step on the draft's own history.
+act undo-projection
+settle 2
+assert dom #gs-projection-editor-preview Stored two ·
+act redo-projection
+settle 2
+assert dom #gs-projection-editor-preview Stored one ·
+act redo-projection-save
+settle 6
+assert dom #gs-projection-editor-status Redid save
+assert dom #gs-projection-editor-preview Stored two ·
+# Graphshell's session Undo reaches its own change, never the editor's save.
+type #gs-address-input https://example.net/session-undo-probe
+settle 2
+act add-address
+settle 2
+act session-undo
+settle 6
+assert dom #gs-product-status Undid Graphshell's last change
+assert dom #gs-projection-editor-preview Stored two ·
+assert snap session-store == stored
+capture projection_session
+wait
+log projection session save and undo proof complete

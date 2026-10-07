@@ -166,6 +166,8 @@ fn chrome_view(model: ChromeModel) -> impl View<(), (), GenetCtx, Element = Gene
                         (
                             pill("Local Mere".into(), model.local_active),
                             pill("Remote mount".into(), !model.local_active),
+                            el("div", text("Undo change")).attr("class", "pill step"),
+                            el("div", text("Redo change")).attr("class", "pill step"),
                         ),
                     )
                     .attr("class", "sessions"),
@@ -272,6 +274,7 @@ fn stylesheet(width: u32, height: u32) -> String {
 .pill {{ padding: 8px 13px; margin-right: 8px; border-radius: 16px;
   background-color: #17242c; color: #8da2a9; }}
 .pill.active {{ background-color: #294b52; color: #f4dfae; }}
+.pill.step {{ width: 116px; box-sizing: border-box; text-align: center; }}
 .remote-cards {{ position: absolute; left: 300px; right: 18px; top: 82px;
   bottom: 58px; display: flex; flex-direction: column; align-items: center;
   gap: 24px; overflow: hidden; pointer-events: none; }}

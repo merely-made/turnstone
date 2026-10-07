@@ -39,6 +39,8 @@ mod web_remote;
 #[cfg(feature = "remote")]
 mod web_rtc_link;
 mod web_scenario;
+#[cfg(feature = "main-page")]
+mod web_session;
 mod web_speed;
 mod web_timing;
 mod web_tree;
