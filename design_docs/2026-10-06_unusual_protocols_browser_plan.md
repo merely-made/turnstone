@@ -728,6 +728,43 @@ trust, and the WS4 tail.
 - (b) Every visit becomes a source capture under the page capture plan.
 - (c) No offline reading in the bar.
 
+### Rulings (2026-10-06, first round)
+
+- **U1, who "you" is.** Options: a person who downloads a Windows package;
+  source builders only; all three operating systems. Mark: **"All three
+  operating systems"**. *Follows:* S9's packages and updater cover Windows,
+  macOS and Linux.
+- **U2, the protocols in the bar.** Options: every wired lane, with Misfin
+  shown as not offered; that plus a Misfin composer; that plus Gemini over
+  Reticulum. Mark answered in his own words: **"misfin work from the comms
+  work does exist already. gemini over reticulum doesn't seem too bad. i am
+  curious about accessibility in nomadnet; meshchatx is rough for linux users
+  with a screen reader, my friend told me. so i would not like to repeat that
+  characteristic if possible"**. *Reading, not ruled (put back for
+  confirmation):*
+  - Misfin enters the bar through mere's existing comms and errand Misfin
+    work;
+  - Gemini over Reticulum enters too;
+  - NomadNet pages must be usable with a screen reader on Linux (AT-SPI,
+    Orca), a requirement of S5 and S8, so as not to repeat MeshChatX's
+    reported weakness.
+- **U4, stage order.** Options: reading correctness first; NomadNet first;
+  packaging first. Mark: **"Reading correctness first (Recommended)"**.
+- **U8, composition.** Options: crate panes and session projections
+  alongside the bar work; wait until the bar is met; also a live-pixel
+  research lane now. Mark: **"start the live-pixel research lane but don't
+  start integration yet... if somehow the forest dom can accommodate as long
+  as the app is built on cambium... that would be pretty nice"**.
+  *Follows:* a research lane only, with no integration. It weighs live
+  pixels from another process against composition at the tree level: a
+  Cambium app's tree mounted into another Cambium host's forest document
+  (stack seams P2, `cambium-rootstock/src/multi_host.rs`). Mark also pointed
+  it at the archived tear-out plans: mere
+  `archive_docs/2026-07-04_completed_plans/2026-06-19_tearout_composability_plan.md`
+  (C2's external-texture bridge, C3's cross-window pane resolution, C4's
+  cross-graph composition) and
+  `archive_docs/2026-10-06_completed_plans/2026-06-24_tearout_gestures_plan.md`.
+
 ## Progress
 
 - **2026-10-06:**
