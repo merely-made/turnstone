@@ -1086,6 +1086,26 @@ the same record once this lane can push to Mere (U15).
     `032463a`'s pins (Mere `3d1cdacc`) finished clean on Linux with 82
     warnings in `turnstone`'s lib. This is Turnstone's first Linux compile
     evidence (U1); tests were not run.
+  - The session seam (U15) and E1a, on Mere branch `turnstone-session-seam`
+    from `fde06dc`:
+    - `uxtree::graft`: AC2's subtree helper. It checks a frame against the
+      rules the AccessKit consumer enforces by panicking, routes actions by
+      tree, and orders updates so focus entering a guest is one move.
+    - Cambium focus exits: Tab leaves a session at its edges through
+      `SurfaceEffect::FocusExit`, opt-in per session.
+    - `ContainedSession` (AC4): a guest's panic retires it as
+      `Unavailable(Unhealthy)`.
+    - Per-session leaf registries (U17) and a public `OwnedLayout::new`.
+    - E1a passes windowless against `accesskit_consumer` 0.35, 0.36 and 0.38:
+      27 tree-half checks and 18 session-half checks, with the controls
+      failing as they must. `uxtree` (19 unit tests) and `cambium`'s library
+      (249) pass; clippy is clean on the changed files.
+    - Findings: two focus-ordering gaps in the first `Grafts`, each caught by
+      a test before the fix; in-process Genet sessions never share AccessKit
+      ids (the brief's reading corrected); the seam cannot name
+      `ProducerRegistry`.
+    - E1b, the headed walks on Windows, macOS and Linux, is next. SC and S8
+      build on this seam.
   - Asked the identity session to report Knot's repin (commit, Mere and
     Genet revisions, S77). Asked the physics session who owns WS4 and the
     stack seams rounds (neither the fidelity plan nor Mere's log names a
