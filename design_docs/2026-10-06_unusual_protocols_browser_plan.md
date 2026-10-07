@@ -1,7 +1,7 @@
 # Unusual-protocols browser plan
 
 **Date:** 2026-10-06
-**Status (2026-10-06):** proposed. First-round forks ruled the same day (U1, U4 and U8; U2 as read, pending confirmation); the rest are with Mark. An assessment lane wrote
+**Status (2026-10-06):** proposed. Ruled the same day: U1, U2 (accessibility on all three operating systems comes first), U3, U4, U5, U8 and U9. U6, U7 and U10 are with Mark. An assessment lane wrote
 this plan. No code changed, and nothing was built or run (see "Evidence and
 limits"). Stages S0 to S11 wait on the forks in §7.
 
@@ -764,6 +764,38 @@ trust, and the WS4 tail.
   (C2's external-texture bridge, C3's cross-window pane resolution, C4's
   cross-graph composition) and
   `archive_docs/2026-10-06_completed_plans/2026-06-24_tearout_gestures_plan.md`.
+
+### Rulings (2026-10-06, second round)
+
+- **U2, confirmed and reshaped.** Asked to confirm the reading above (Misfin
+  through mere's comms work; Gemini over Reticulum; NomadNet usable with a
+  Linux screen reader), Mark: **"oh. i would hope we could meet the
+  accessibility bar on all platforms. i would prioritize that over pretty much
+  anything, because that's the difference between a browser that works and one
+  that doesn't for real folks, no matter the protocol. misfin and
+  gemini/reticulum (and probably other stuff tbh) should come after that."**
+  *Follows:*
+  - **Accessibility on all three operating systems is the bar's first
+    requirement**, for every protocol's pages: AccessKit's adapters on
+    Windows (UIA), macOS (NSAccessibility) and Linux (AT-SPI), checked with
+    Narrator or NVDA, VoiceOver and Orca.
+  - S8 is no longer a late stage. It leads, together with S2's keyboard and
+    focus path, which a screen reader needs.
+  - Misfin (through mere's comms and errand work) and Gemini over Reticulum
+    come after the accessibility bar is met, as does "probably other
+    stuff".
+  - *Reading, not ruled:* this outranks U4's "Reading correctness first"
+    where the two compete. S1 (text documents open) still comes first,
+    because a page that doesn't open can't be read by anyone.
+- **U3, the mere halves of S1 to S4.** Mark: **"Mere's smolweb fidelity lane
+  (Recommended)"**: mere's smolweb fidelity plan owns them, with Turnstone as
+  the forcing consumer and one dated note in each plan.
+- **U5, NomadNet's interface and identity.** Mark: **"In Turnstone for now
+  (Recommended)"**: settings and a persona-derived identity in Turnstone,
+  shaped to move into a device-resident Reticulum service later.
+- **U9, repin timing.** Mark: **"S0 once WS4 is pushed (Recommended)"**: a
+  tested set (Knot, then Redshank, then Turnstone), coordinated with the
+  browser session that owns the dirty tree.
 
 ## Progress
 
