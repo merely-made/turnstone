@@ -1,9 +1,12 @@
 # Unusual-protocols browser plan
 
 **Date:** 2026-10-06
-**Status (2026-10-06):** proposed. Ruled the same day: U1, U2 (accessibility on all three operating systems comes first), U3, U4, U5, U8 and U9. U6, U7 and U10 are with Mark. An assessment lane wrote
-this plan. No code changed, and nothing was built or run (see "Evidence and
-limits"). Stages S0 to S11 wait on the forks in §7.
+**Status (2026-10-07):** ruled. U1 to U10 are ruled: U1, U2 (accessibility
+on all three operating systems comes first), U3, U4, U5, U8 and U9 on
+2026-10-06, and U6, U7 and U10 on 2026-10-07 (§7). U11 is open. The stage
+order is in "Stage order (2026-10-07)" under §6. S0 is next. A cloud
+session owns the plan from 2026-10-07; an assessment lane wrote it, and no
+code has changed (see "Evidence and limits").
 
 ## The bar
 
@@ -399,6 +402,24 @@ is pushed:
 Each stage stops at its done-conditions. Where a stage needs a Mere change,
 that half is Mere's work (U3), and Turnstone is the forcing consumer.
 
+### Stage order (2026-10-07)
+
+From U2 (second round), U4, U7 and U8:
+
+1. **S0**, the tested-set repin.
+2. **S1**, every text document opens. *Reading, not ruled:* S1 stays ahead
+   of SC because a page that doesn't open can't be read, and its Turnstone
+   half (two engine registrations and filtered routing) is small enough to
+   move with SC.
+3. **SC**, one browsing controller in `pelt-core` (U7: before S2 and S8).
+4. **S2 and S8 together**, keyboard, focus and page accessibility on
+   Windows, macOS and Linux. This is the bar's first requirement (U2).
+5. **S3, S4, S5**, then **S6, S7, S9 and S10**.
+6. **Misfin, then Gemini over Reticulum**, after the accessibility bar is
+   met (U2). Neither has a stage yet.
+7. **S11** is research only (U8). S11a and S11b are not started; S11c
+   became SC.
+
 ### S0. Repin as one tested set
 
 **Depends on:** U9. It comes before any stage that needs a Mere change.
@@ -444,6 +465,39 @@ that half is Mere's work (U3), and Turnstone is the forcing consumer.
 - A headed local receipt shows a fixture Gopher server's menu opening a text
   file.
 - The receipt also records each engine id chosen.
+
+### SC. One browsing controller
+
+**Depends on:** U7 (ruled: before S2 and S8); U11 (who does the `pelt-core`
+half).
+
+`pelt-core` already has what the accessibility stages need from a
+controller: page zoom, the session's accessibility projection, click-target
+revalidation and accessibility action dispatch (`mere/ports/pelt/core/src/lib.rs`,
+lines 253-305 at `ea74604b`). Turnstone's content port has what Pelt lacks
+(§3).
+
+**Work:**
+
+- Inventory Turnstone's content port against `PeltController`, piece by
+  piece, and record which side each piece comes from. Whether Turnstone's
+  Workbench drives one `PeltController` per node tile, or adopts
+  `PeltWorkspace`, is settled by the inventory and put to Mark if both are
+  viable.
+- Move into `pelt-core` what Turnstone has and Pelt lacks: exact request
+  identity, Stop and Reload, input and trust conversations, downloads,
+  inline images, streaming and per-node lineage.
+- Turnstone's content port drives document tiles through `PeltController`
+  and keeps no controller copy of its own.
+
+**Done when:**
+
+- Turnstone and Pelt drive document tiles through one controller.
+- Turnstone's existing smolweb, NomadNet, capture and recovery tests and
+  scenarios pass through it, with the same exact Stop and Reload identities.
+- Pelt's scenario suites, including its accessibility receipts
+  (`ports/pelt/desktop/workspace_viewer/receipts/a11y.rs`), pass.
+- S1's five cases still pass.
 
 ### S2. Reading basics on every smolweb page
 
@@ -546,7 +600,9 @@ sign-off.
   provider.
 - Add reading settings: body face, size, measure, hard breaks and
   per-protocol theme.
-- Build a home pane from graph truth:
+- Add a start-view setting (U6) with three values: the home pane (default),
+  a home address (a capsule or a local `.gmi` file), or the canvas.
+- Build the home pane from graph truth, as an accessible list-shaped pane:
   - kept capsules;
   - subscriptions with unread counts;
   - the recent trail;
@@ -557,37 +613,64 @@ sign-off.
 - Every moved setting changes live and persists, and the environment only
   overrides.
 - First launch on a fresh profile shows the home pane.
+- Switching the start view to a home address, then to the canvas, takes
+  effect on the next start and persists.
+- The home pane's entries are reachable and named by keyboard and screen
+  reader (an `assert a11y` scenario lists them).
 - Non-address text offers "search with <capsule>" in the omnibar.
 
 ### S7. Offline and revisits
 
-**Depends on:** U10.
+**Depends on:** U10 (ruled: memory plus capture); the page capture plan's
+offline replay.
 
 **Work:**
 
-- Keep the last body of each visited smolweb address, in a bounded store.
-- Back and Forward show the kept body, then refresh by policy.
-- An offline visit shows the kept body, marked stale.
+- Hold the last body of each smolweb address visited in this run, in a
+  bounded in-memory store. Nothing from it reaches disk, so page lifecycle
+  L1 and the shallows hold.
+- Back and Forward show the held body, then refresh by a configurable
+  policy.
+- A visit with the network down shows the held body, marked stale.
+- Across restarts, offline reading comes from capture: a captured page
+  opens from its latest capture through the capture plan's offline replay.
 
 **Done when:**
 
-- With the network disabled, previously visited Gemini, Gopher and NomadNet
-  pages open and read.
-- The stale marker shows.
-- The store stays within its configured bound.
+- With the network disabled, Gemini, Gopher and NomadNet pages visited
+  earlier in the same run open and read, marked stale.
+- After a restart with the network disabled, captured pages open from their
+  captures, and unkept pages say they need the network.
+- No body of an unkept page is written to disk (a test inspects the
+  profile).
+- The memory store stays within its configured bound.
 
 ### S8. Accessibility of pages
 
-**Work:**
+**Runs with S2, after SC** (U2, U7).
 
-- Smolweb sessions publish their content into the stitched AccessKit tree
-  (headings, paragraphs, links and fields), not just an outline.
+**Mere half:**
+
+- Smolweb and Micron sessions implement `accessibility_projection`
+  (headings, paragraphs, links and fields), as the Reader session already
+  does (`document-lanes/src/reader.rs:608` at `ea74604b`; it is the only
+  document-lanes session that does).
+
+**Turnstone half:**
+
+- Content-port tiles publish the session's projection, through SC's
+  controller, into the stitched AccessKit tree, in place of the `Partial`
+  outline. Today Turnstone publishes a `DocumentA11yProjection` only for
+  contributed surfaces (`src/contributed_surface.rs:384`, `src/ui.rs:1659`).
+- Accessibility actions on a link or field route to the owning session.
 
 **Done when:**
 
-- An `assert a11y` scenario lists link names in document order.
-- Mark, at the machine with Narrator, reads a Gemini page and a Gopher menu,
-  follows a link by keyboard, and the receipt records it.
+- An `assert a11y` scenario lists link names in document order for a Gemini
+  page, a Gopher menu and a NomadNet page.
+- On each of Windows (Narrator or NVDA), macOS (VoiceOver) and Linux (Orca),
+  a person reads a Gemini page, a Gopher menu and a NomadNet page, follows a
+  link and submits a field by keyboard, and a dated receipt records it.
 
 ### S9. Distribution and resilience
 
@@ -636,9 +719,8 @@ This stage runs independently of S1 to S10, per U8. Three independent parts:
     device.
   - Done when a staged practice Set renders beside a page and its Rehearsal
     plays. The same surface also runs in `woodshed-genet`.
-- **S11c, Pelt convergence (per U7).**
-  - Done when Turnstone and Pelt drive document tiles through one
-    controller, and both hosts' scenario suites pass.
+- **S11c, Pelt convergence (per U7).** Moved to SC on 2026-10-07, ahead of
+  S2 and S8.
 
 ## 7. Forks for Mark
 
@@ -797,6 +879,41 @@ trust, and the WS4 tail.
   tested set (Knot, then Redshank, then Turnstone), coordinated with the
   browser session that owns the dirty tree.
 
+### Rulings (2026-10-07, third round)
+
+- **U6, what Turnstone shows at start.** Options: the start view is a
+  setting (home pane by default, or a home address, or the canvas); a home
+  address only; no home. Mark: **"Start view is a setting (Recommended)"**.
+  *Follows:* S6 adds the start-view setting with the home pane as its
+  default. The pane is list-shaped, which also makes it the easiest first
+  surface for a screen reader.
+- **U7, Pelt and Turnstone's browsing loop.** Asked with the finding that
+  `pelt-core`'s controller already has page zoom, the document
+  accessibility projection and accessibility action dispatch, while
+  Turnstone's is ahead on request identity, Stop and Reload, prompts,
+  downloads, inline images, streaming and lineage. Options: converge after
+  S4; converge first, before S2 and S8, so keyboard and accessibility code
+  is written once; Turnstone's content port owns browsing and Pelt stays a
+  reference viewer. Mark: **"Converge first"**. *Follows:* stage SC, between
+  S1 and S2. Who does its `pelt-core` half is U11.
+- **U10, what keeps a visited page's body.** The plan's options (a) and (b)
+  collided with page lifecycle rulings: L1 ("History remembers where you
+  went, never what you saw"; content exists only past Keep), L2 (a capture
+  is a Keep, so "every visit is a capture" would keep every visit) and L3
+  (Keep is a bookmark, with no bytes). They were reframed before asking:
+  memory for this run plus capture; kept pages also keep their last body
+  (reverses L3); a durable cache of every visit as a setting, off by
+  default (reverses L1 while on); no offline reading. Mark: **"Memory +
+  capture (Recommended)"**. *Follows:* S7 holds bodies in memory for the
+  running process only, and offline reading across restarts comes from
+  capture. L1 to L3 stand.
+
+### Open forks (2026-10-07)
+
+**U11. Who does SC's `pelt-core` half?** `pelt-core` lives in Mere
+(`ports/pelt/core`). U3 gave the Mere halves of S1 to S4 to Mere's smolweb
+fidelity lane and did not cover SC.
+
 ## Progress
 
 - **2026-10-06:**
@@ -805,6 +922,23 @@ trust, and the WS4 tail.
     `392630bb` and `b4f14f2c`, Genet `69a2383b`, Knot `92719898`, `ef89a186`
     and `33cc855`, and Woodshed `9e982b88`.
   - No code changed, and nothing was built or run.
+- **2026-10-07:**
+  - A cloud session took the plan over from the physics coordinator
+    session. The four local plan commits were not on origin, so the text
+    came in by paste.
+  - WS4 is on Mere `origin/main`: `b4f14f2c` (R0 to R5), recorded by
+    `4e57913e`. The head, `ea74604b`, opens stack seams S76: publish
+    `gopher-protocol` 0.2.0, then repin. U9's trigger has fired. S0 waits
+    on the identity session's Knot repin.
+  - Read at Mere `ea74604b`: Pelt's desktop viewer owns one combined
+    AccessKit tree. Each focused document lane contributes a namespaced
+    child subtree, and typed actions route to one tile
+    (`ports/pelt/desktop/workspace_viewer/accessibility.rs`, 1,215 lines;
+    receipts in `.../receipts/a11y.rs`, 1,131 lines). Only the Reader
+    session implements `accessibility_projection`, so for small-web pages
+    both hosts wait on S8's Mere half.
+  - U6, U7 and U10 ruled (third round). U11 opened.
+  - Nothing was built or run.
 
 ## Cross-references
 
