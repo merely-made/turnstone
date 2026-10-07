@@ -1,0 +1,186 @@
+    Blocking waiting for file lock on package cache
+    Updating crates.io index
+    Blocking waiting for file lock on package cache
+     Locking 19 packages to latest compatible versions
+      Adding boa_ast v1.0.0-dev (C:\Users\mark_\Code\crates\boa\core\ast)
+      Adding boa_engine v1.0.0-dev (C:\Users\mark_\Code\crates\boa\core\engine)
+      Adding boa_gc v1.0.0-dev (C:\Users\mark_\Code\crates\boa\core\gc)
+      Adding boa_interner v1.0.0-dev (C:\Users\mark_\Code\crates\boa\core\interner)
+      Adding boa_macros v1.0.0-dev (C:\Users\mark_\Code\crates\boa\core\macros)
+      Adding boa_parser v1.0.0-dev (C:\Users\mark_\Code\crates\boa\core\parser)
+      Adding boa_string v1.0.0-dev (C:\Users\mark_\Code\crates\boa\core\string)
+      Adding ecmascript_atomics v0.2.3 (C:\Users\mark_\Code\crates\vano\support\ecmascript_atomics)
+      Adding netrender v0.1.2 (C:\Users\mark_\Code\repos\netrender\netrender)
+      Adding netrender_device v0.1.2 (C:\Users\mark_\Code\repos\netrender\netrender_device)
+      Adding nova_vm v1.0.0 (C:\Users\mark_\Code\crates\vano\nova_vm)
+      Adding paint_list_api v0.1.2 (C:\Users\mark_\Code\repos\netrender\paint_list_api)
+      Adding paint_list_render v0.1.2 (C:\Users\mark_\Code\repos\netrender\paint_list_render)
+      Adding piccolo v0.3.3 (C:\Users\mark_\Code\crates\piccolo)
+      Adding small_btree v0.1.0 (C:\Users\mark_\Code\crates\boa\utils\small_btree)
+      Adding small_string v1.0.0 (C:\Users\mark_\Code\crates\vano\small_string)
+      Adding tag_ptr v0.1.0 (C:\Users\mark_\Code\crates\boa\utils\tag_ptr)
+      Adding wuff v0.2.9
+      Adding wuff-capi v0.2.0
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+   Compiling proc-macro2 v1.0.106
+   Compiling quote v1.0.45
+   Compiling unicode-ident v1.0.24
+   Compiling cfg-if v1.0.4
+   Compiling siphasher v1.0.3
+   Compiling smallvec v1.15.2
+   Compiling fastrand v2.4.1
+   Compiling getrandom v0.3.4
+   Compiling serde_core v1.0.228
+   Compiling serde v1.0.228
+   Compiling memchr v2.8.2
+   Compiling find-msvc-tools v0.1.9
+   Compiling log v0.4.32
+   Compiling crossbeam-utils v0.8.21
+   Compiling parking_lot_core v0.9.12
+   Compiling writeable v0.6.3
+   Compiling phf_shared v0.13.1
+   Compiling libc v0.2.186
+   Compiling arrayvec v0.7.6
+   Compiling utf-8 v0.7.6
+   Compiling parking_lot v0.12.5
+   Compiling phf_generator v0.13.1
+   Compiling litemap v0.8.2
+   Compiling string_cache v0.9.0
+   Compiling thiserror v2.0.18
+   Compiling tendril v0.5.0
+   Compiling phf_codegen v0.13.1
+   Compiling num-integer v0.1.46
+   Compiling anyhow v1.0.102
+   Compiling either v1.16.0
+   Compiling object v0.39.1
+   Compiling crc32fast v1.5.0
+   Compiling winnow v1.0.3
+   Compiling jobserver v0.1.34
+   Compiling num-bigint v0.4.6
+   Compiling pkg-config v0.3.33
+   Compiling crossbeam-epoch v0.9.18
+   Compiling cc v1.2.65
+   Compiling crossbeam-deque v0.8.6
+   Compiling syn v2.0.118
+   Compiling string_cache_codegen v0.6.1
+   Compiling rayon-core v1.13.0
+   Compiling num-rational v0.4.2
+   Compiling simd-adler32 v0.3.9
+   Compiling toml_parser v1.1.2+spec-1.1.0
+   Compiling no_std_io2 v0.9.4
+   Compiling nom v8.0.0
+   Compiling bitflags v2.13.0
+   Compiling toml_writer v1.1.1+spec-1.1.0
+   Compiling rayon v1.12.0
+   Compiling web_atoms v0.2.5
+   Compiling simd_helpers v0.1.0
+   Compiling bitstream-io v4.10.0
+   Compiling miniz_oxide v0.8.9
+   Compiling itertools v0.14.0
+   Compiling imgref v1.12.2
+   Compiling bytes v1.12.0
+   Compiling fdeflate v0.3.7
+   Compiling loop9 v0.1.5
+   Compiling serde_spanned v1.1.1
+   Compiling toml_datetime v1.1.1+spec-1.1.0
+   Compiling avif-serialize v0.8.9
+   Compiling flate2 v1.1.9
+   Compiling wuff v0.2.9
+   Compiling toml v1.1.2+spec-1.1.0
+   Compiling memmap2 v0.9.10
+   Compiling zune-core v0.5.1
+   Compiling pxfm v0.1.29
+   Compiling png v0.18.1
+   Compiling wuff-capi v0.2.0
+   Compiling genet-taffy v0.14.0 (C:\Users\mark_\Code\repos\genet\support\patches\taffy)
+   Compiling zune-jpeg v0.5.15
+   Compiling libz-sys v1.1.29
+   Compiling stacker v0.1.25
+   Compiling fontsan v0.7.0
+   Compiling ar_archive_writer v0.5.3
+   Compiling maybe-rayon v0.1.1
+   Compiling psm v0.1.32
+   Compiling buckram v0.0.3 (C:\Users\mark_\Code\repos\genet\components\buckram)
+   Compiling synstructure v0.13.2
+   Compiling serde_derive v1.0.228
+   Compiling zerofrom-derive v0.1.7
+   Compiling yoke-derive v0.8.2
+   Compiling zerovec-derive v0.11.3
+   Compiling phf_macros v0.13.1
+   Compiling displaydoc v0.2.6
+   Compiling bytemuck_derive v1.10.2
+   Compiling equator-macro v0.4.2
+   Compiling thiserror-impl v2.0.18
+   Compiling windows-implement v0.60.2
+   Compiling windows-interface v0.59.3
+   Compiling arg_enum_proc_macro v0.3.4
+   Compiling profiling-procmacros v1.0.18
+   Compiling num-derive v0.4.2
+   Compiling cssparser-macros v0.7.0
+   Compiling bytemuck v1.25.0
+   Compiling equator v0.4.2
+   Compiling aligned-vec v0.6.4
+   Compiling font-types v0.11.3
+   Compiling v_frame v0.3.9
+   Compiling moxcms v0.8.1
+   Compiling phf v0.13.1
+   Compiling cobs v0.3.0
+   Compiling read-fonts v0.39.2
+   Compiling av-scenechange v0.14.1
+   Compiling av1-grain v0.2.5
+   Compiling markup5ever v0.39.0
+   Compiling xml5ever v0.39.0
+   Compiling html5ever v0.39.0
+   Compiling zerofrom v0.1.8
+   Compiling windows-core v0.62.2
+   Compiling yoke v0.8.3
+   Compiling profiling v1.0.18
+   Compiling zerovec v0.11.6
+   Compiling zerotrie v0.2.4
+   Compiling windows-future v0.3.2
+   Compiling windows-collections v0.3.2
+   Compiling windows-numerics v0.3.1
+   Compiling rav1e v0.8.1
+   Compiling windows v0.62.2
+   Compiling euclid v0.22.14
+   Compiling layout-dom-api v0.1.1 (C:\Users\mark_\Code\repos\genet\components\shared\layout-dom)
+   Compiling tinystr v0.8.3
+   Compiling potential_utf v0.1.5
+   Compiling app_units v0.7.8
+   Compiling livery v0.0.5 (C:\Users\mark_\Code\repos\genet\components\livery)
+   Compiling icu_locale_core v2.2.0
+   Compiling icu_collections v2.2.0
+   Compiling cssparser v0.37.0
+   Compiling genet-static-dom v0.1.1 (C:\Users\mark_\Code\repos\genet\components\genet-static-dom)
+   Compiling skrifa v0.42.1
+   Compiling harfrust v0.8.4
+   Compiling icu_provider v2.2.0
+   Compiling cadency v0.0.1 (C:\Users\mark_\Code\repos\genet\components\cadency)
+   Compiling ravif v0.13.0
+   Compiling icu_properties v2.2.0
+   Compiling genet-paint-types v0.2.0 (C:\Users\mark_\Code\repos\genet\components\shared\paint-types)
+   Compiling icu_locale v2.2.0
+   Compiling parley_data v0.10.0
+   Compiling engine-observables-api v0.2.0 (C:\Users\mark_\Code\repos\genet\components\shared\engine-observables-api)
+   Compiling icu_segmenter v2.2.0
+   Compiling icu_normalizer v2.2.0
+   Compiling heapless v0.7.17
+   Compiling genet-scripted-dom v0.1.2 (C:\Users\mark_\Code\repos\genet\components\genet-scripted-dom)
+   Compiling paint_list_api v0.1.2 (C:\Users\mark_\Code\repos\netrender\paint_list_api)
+   Compiling image v0.25.10
+   Compiling genet-document-resources v0.2.1 (C:\Users\mark_\Code\repos\genet\components\genet-document-resources)
+   Compiling genet-fontique v0.10.0 (C:\Users\mark_\Code\repos\genet\support\patches\fontique)
+   Compiling postcard v1.1.3
+   Compiling genet-parley v0.10.0 (C:\Users\mark_\Code\repos\genet\support\patches\parley)
+   Compiling genet-livery v0.0.4 (C:\Users\mark_\Code\repos\genet\components\genet-livery)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 25m 34s
+     Running unittests src\lib.rs (C:/t/cargo-targets/genet\debug\deps\genet_livery-51cc12be023da974.exe)
+
+running 2 tests
+test text::tests::malformed_woff2_is_rejected_before_font_registration ... ok
+test text::tests::valid_woff2_is_decoded_to_sfnt_with_its_nko_glyph ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 316 filtered out; finished in 0.02s
+

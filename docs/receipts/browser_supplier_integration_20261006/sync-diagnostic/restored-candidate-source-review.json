@@ -1,0 +1,11 @@
+{
+  "scope": "Restored portable qualification candidate. CompilePASS only; no new native or defaultB3 acceptance. FinalU9 still held.",
+  "exact_prior175_input_and_1673_dependency_records_match": true,
+  "source_manifest": "source-manifest-all3-held-candidate.json",
+  "raw_archive": "source-inputs-all3-pixel-control.zip",
+  "raw_archive_sha256": "545a23bdbfe26e9f5fe8f0bebfbbb43985bbfede9c7a3659e2954d31e701f9c8",
+  "executable_sha256": "273b8a96f9d80c1de4c1dbad19c1b13524e9cf99f19ba0758b12c1da2ab4a8e5",
+  "previous_native_binary_sha256": "ae47dce49bc57f03836b2ea1bc88ac19e37183b6751fb5c540137eebc943c0ea",
+  "diagnostic_binary_sha256": "ddfd7939c8ef5b761cfd127f2d83dfb9afe03f7ca3c5bb3da13fee241d9f682b",
+  "temp_config_absent": true
+}

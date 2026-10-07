@@ -1,0 +1,41 @@
+{
+  "schema": "genet-main-font-port-inputs-v1",
+  "baseline": "90c5ef507db943204d5493a1a7dd817695557cda",
+  "state": "Six reviewed files applied; modern main test queued behind actual shared cache",
+  "files": [
+    {
+      "path": "Cargo.toml",
+      "bytes": 24949,
+      "sha256": "cf4a9bac3d78e66b8efb20f1842330eed800ea1b00925c990fce689e4d0626e0"
+    },
+    {
+      "path": "components/genet-livery/src/text.rs",
+      "bytes": 289146,
+      "sha256": "90e1ea081dfe475418a74c4175bc795a5c81e384fc4971214d4aad5bd07b2592"
+    },
+    {
+      "path": "components/genet-livery/tests/data/NotoSansNko-regular-webfont.woff2",
+      "bytes": 7724,
+      "sha256": "d3ede808ce743034e14ff8cdaeb911aa49e50c0b3c94af38745744f57e564db4"
+    },
+    {
+      "path": "components/genet-livery/tests/data/LICENSE_OFL.txt",
+      "bytes": 4350,
+      "sha256": "071b7ca6edcd1da45554e6cda92cc2d23effc24c10d0dec134c5f09d25287b6c"
+    },
+    {
+      "path": "components/genet-livery/tests/data/README.md",
+      "bytes": 1095,
+      "sha256": "84852fe30ad661c8ce978c8c7e5d9e2ddb597b37b20017aa8867a9c47b9c5e6f"
+    },
+    {
+      "path": "design_docs/2026-09-04_common_script_font_fallback_plan.md",
+      "bytes": 17661,
+      "sha256": "1ed996db1a3d083cb3033647ad7cb79b13a75b05fb2ae1f33f85ea0f79f99d9c"
+    }
+  ],
+  "source_scope": "All other tracked primary source remains baseline90c5; Git diff guards required after tests",
+  "command": "cargo test -p genet-livery --lib woff2 --target-dir C:/t/cargo-targets/genet",
+  "session": 31024,
+  "config_note": "Primary .cargo/config.toml and generated lock are local tooling; production immutable consumer qualification remains separate"
+}

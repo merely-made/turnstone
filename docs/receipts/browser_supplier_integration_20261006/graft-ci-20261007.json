@@ -1,0 +1,47 @@
+{
+  "observed_utc": "2026-10-07T05:18:10.7535984Z",
+  "head_sha": "1fd089638258148aa56e3405900d7727367e5ed1",
+  "status": "completed",
+  "conclusion": "success",
+  "url": "https://github.com/merely-made/wgpu-graft/actions/runs/37570164940",
+  "source_revision": "dec11bbd2c9c8676e66987fb6ca32cd4ae6310eb",
+  "source_equality": "Committed source/manifests equal dec11 through docs-only79261674 and1fd08963; new uncommitted diagnostic synchronization changes are outside this CI scope",
+  "jobs": [
+    {
+      "name": "Check core (Windows / Vulkan + D3D)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/merely-made/wgpu-graft/actions/runs/37570164940/job/112626765844"
+    },
+    {
+      "name": "Check Iced Servo demo (Windows / DX12)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/merely-made/wgpu-graft/actions/runs/37570164940/job/112626765988"
+    },
+    {
+      "name": "Check Servo demos (Windows)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/merely-made/wgpu-graft/actions/runs/37570164940/job/112626766024"
+    },
+    {
+      "name": "Check (macOS / Metal)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/merely-made/wgpu-graft/actions/runs/37570164940/job/112626766039"
+    },
+    {
+      "name": "Check and test (Linux)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/merely-made/wgpu-graft/actions/runs/37570164940/job/112626766152"
+    },
+    {
+      "name": "Check (Windows / Vulkan + D3D)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/merely-made/wgpu-graft/actions/runs/37570164940/job/112641875764"
+    }
+  ]
+}

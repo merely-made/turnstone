@@ -1,0 +1,873 @@
+Baseline: 3d1cdacc90aa6a0736154d841223a3ae29e23aa5
+Compatibility: db4ee31258b23c86572c429388c5d10bd4de9dc3
+ crates/inker/engines/graft-engine/src/engine.rs    |  50 ++-
+ crates/inker/engines/graft-engine/src/producer.rs  |  52 ++-
+ .../inker/engines/weld-engine/src/welding_0_15.rs  | 360 ++++++++++++++++++++-
+ ...26-06-15_engine_picker_and_pluggability_plan.md | 133 +++++---
+ 4 files changed, 517 insertions(+), 78 deletions(-)
+Diff check: passed
+diff --git a/crates/inker/engines/graft-engine/src/engine.rs b/crates/inker/engines/graft-engine/src/engine.rs
+index 0333ccea..1c62feda 100644
+--- a/crates/inker/engines/graft-engine/src/engine.rs
++++ b/crates/inker/engines/graft-engine/src/engine.rs
+@@ -87,7 +87,10 @@ mod tests {
+ 
+     /// Minimal surface stub: navigable, no frames, no events. Drives the spawn
+     /// pipeline through the registry without a Servo instance.
+-    struct StubSurface;
++    #[derive(Default)]
++    struct StubSurface {
++        ordered_events: Option<std::collections::VecDeque<inker::WebSurfaceEvent>>,
++    }
+ 
+     impl GraftSurface for StubSurface {
+         fn resize(&mut self, _: u32, _: u32) -> Result<(), SurfaceError> {
+@@ -143,14 +146,27 @@ mod tests {
+             Ok(())
+         }
+         fn poll_navigation_event(&mut self) -> Option<NavigationEvent> {
++            assert!(
++                self.ordered_events.is_none(),
++                "ordered host must not be split into legacy queues"
++            );
+             None
+         }
+         fn poll_cursor_shape(&mut self) -> Option<CursorShape> {
+             None
+         }
+         fn poll_web_message(&mut self) -> Option<WebMessage> {
++            assert!(
++                self.ordered_events.is_none(),
++                "ordered host must not be split into legacy queues"
++            );
+             None
+         }
++        fn poll_web_event(&mut self) -> Option<inker::WebSurfaceEvent> {
++            self.ordered_events
++                .as_mut()
++                .and_then(|events| events.pop_front())
++        }
+         fn apply_settings(&mut self, _: &SurfaceSettings) -> Result<(), SurfaceError> {
+             Ok(())
+         }
+@@ -159,7 +175,7 @@ mod tests {
+     struct StubFactory;
+     impl GraftProducerFactory for StubFactory {
+         fn build(&self, _: &SurfaceSpawnRequest) -> Result<Box<dyn GraftSurface>, SurfaceError> {
+-            Ok(Box::new(StubSurface))
++            Ok(Box::new(StubSurface::default()))
+         }
+     }
+ 
+@@ -211,7 +227,7 @@ mod tests {
+ 
+     #[test]
+     fn graft_capture_stays_unsupported_until_the_protocol_is_wired() {
+-        let caps = StubSurface.web_capabilities().document;
++        let caps = StubSurface::default().web_capabilities().document;
+         assert!(matches!(
+             caps.find_in_page,
+             CapabilityStatus::Unsupported { .. }
+@@ -230,4 +246,32 @@ mod tests {
+         let result = engine.spawn(&stub_request());
+         assert!(matches!(result, Err(SurfaceError::SpawnFailed(_))));
+     }
++
++    #[test]
++    fn producer_retains_host_callback_order_across_event_kinds() {
++        use inker::{WebRequestId, WebSurface, WebSurfaceEvent};
++        let events = [
++            WebSurfaceEvent::TitleChanged {
++                title: "first".into(),
++            },
++            WebSurfaceEvent::ScriptCompleted {
++                id: WebRequestId::new(7),
++                result: Ok("second".into()),
++            },
++            WebSurfaceEvent::Navigation(NavigationEvent::Finished {
++                url: "https://servo.org/".into(),
++                title: Some("third".into()),
++            }),
++            WebSurfaceEvent::AddressChanged {
++                url: "https://servo.org/#fourth".into(),
++            },
++        ];
++        let mut producer = GraftProducer::new(Box::new(StubSurface {
++            ordered_events: Some(events.clone().into()),
++        }));
++        for expected in events {
++            assert_eq!(producer.poll_web_event(), Some(expected));
++        }
++        assert_eq!(producer.poll_web_event(), None);
++    }
+ }
+diff --git a/crates/inker/engines/graft-engine/src/producer.rs b/crates/inker/engines/graft-engine/src/producer.rs
+index a2ad3dde..ce2ac2b3 100644
+--- a/crates/inker/engines/graft-engine/src/producer.rs
++++ b/crates/inker/engines/graft-engine/src/producer.rs
+@@ -19,19 +19,19 @@ use inker::{
+ /// A frame produced by a [`GraftSurface`]: the shared GPU texture handle the host
+ /// imports, plus the `resource_epoch` it maps straight onto `inker::SurfaceFrame`.
+ pub struct GraftFrame {
+-    /// The platform shared-texture handle (Windows: a DX12 shared HANDLE from the
+-    /// adapter's `current_dx12_shared_texture()`; Linux: a DMA-BUF fd; macOS: an
+-    /// IOSurface ref). The host imports this on its own wgpu device.
++    /// A platform handle or owned payload paired with the host's importer.
++    /// Owned payloads retain native custody, or a texture already imported on
++    /// the host device. The host validates the concrete engine payload.
+     pub texture: NativeTextureHandle,
+     pub sync: SurfaceSyncHandle,
+     pub width: u32,
+     pub height: u32,
+     pub format: SurfaceTextureFormat,
+-    /// Monotonic generation of the underlying shared allocation (from grafting's
+-    /// `ImportedTexture::generation`): bumps on (re)allocation (first frame / resize
+-    /// / context restart), constant while graft overwrites the same allocation in
+-    /// place. Maps straight to `inker::SurfaceFrame::resource_epoch`, so the host's
+-    /// import cache re-imports only when it changes — no escape hatch needed.
++    /// Identity of the underlying allocation, following SurfaceFrame's epoch
++    /// contract. A host which returns a fresh normalized texture each paint
++    /// advances this every paint. Grafting's content generation alone is not
++    /// proof that a shared allocation was replaced; producer/importer pairing
++    /// owns that distinction and synchronization is required for every paint.
+     pub resource_epoch: u64,
+ }
+ 
+@@ -41,10 +41,12 @@ pub struct GraftFrame {
+ /// and the host wires it. The live grafting/Servo calls each method maps to,
+ /// when the Servo lane is built:
+ ///
+-/// - [`resize`](GraftSurface::resize) → adapter + `WebView` resize.
++/// - [`resize`](GraftSurface::resize) → `WebView::resize`, which owns the
++///   rendering-context resize as well as the document viewport update.
+ /// - [`acquire_frame`](GraftSurface::acquire_frame) → `Servo::spin_event_loop()`,
+-///   then the adapter's `current_dx12_shared_texture()` (Windows shared-handle
+-///   path) / `import_current_frame_default()` / `read_full_frame()`.
++///   then `WebView::paint()` and the adapter's pre-present
++///   `take_imported_texture()` path. Importing the GL buffer after its swap can
++///   select stale content. CPU readback is a separately reported transport.
+ /// - [`load_url`](GraftSurface::load_url) / [`load_html`](GraftSurface::load_html)
+ ///   → `WebViewBuilder` / `WebView::load`.
+ /// - `go_back` / `go_forward` → `WebView::go_back` / `go_forward`.
+@@ -52,7 +54,7 @@ pub struct GraftFrame {
+ /// - `poll_*` → drained from the `WebViewDelegate` callbacks the host registers.
+ ///
+ /// Not `Send`: a graft surface owns Servo's non-`Send` GL context; the host
+-/// drives it from one thread per surface (the `inker::SurfaceProducer` contract).
++/// drives all views sharing one process-owned Servo instance on its UI thread.
+ pub trait GraftSurface {
+     fn resize(&mut self, width: u32, height: u32) -> Result<(), SurfaceError>;
+ 
+@@ -84,6 +86,16 @@ pub trait GraftSurface {
+     fn poll_cursor_shape(&mut self) -> Option<CursorShape>;
+     fn poll_web_message(&mut self) -> Option<WebMessage>;
+ 
++    /// Drain one event in the producer's callback order. Hosts with a single
++    /// delegate queue override this method to retain ordering across navigation,
++    /// title/address changes, messages, and correlated completions. The default
++    /// preserves the legacy separate-queue behavior for existing implementers.
++    fn poll_web_event(&mut self) -> Option<WebSurfaceEvent> {
++        self.poll_navigation_event()
++            .map(WebSurfaceEvent::Navigation)
++            .or_else(|| self.poll_web_message().map(WebSurfaceEvent::WebMessage))
++    }
++
+     fn web_capabilities(&self) -> WebSurfaceCapabilities {
+         let mut caps = WebSurfaceCapabilities {
+             backend_name: "graft.servo".into(),
+@@ -295,20 +307,6 @@ impl WebSurface for GraftProducer {
+     }
+ 
+     fn poll_web_event(&mut self) -> Option<WebSurfaceEvent> {
+-        if let Some(event) = self.inner.poll_navigation_event().map(nav_to_web_event) {
+-            return Some(event);
+-        }
+-        self.inner
+-            .poll_web_message()
+-            .map(WebSurfaceEvent::WebMessage)
+-    }
+-}
+-
+-fn nav_to_web_event(event: NavigationEvent) -> WebSurfaceEvent {
+-    match event {
+-        NavigationEvent::Started { .. }
+-        | NavigationEvent::Committed { .. }
+-        | NavigationEvent::Finished { .. }
+-        | NavigationEvent::Failed { .. } => WebSurfaceEvent::Navigation(event),
++        self.inner.poll_web_event()
+     }
+ }
+diff --git a/crates/inker/engines/weld-engine/src/welding_0_15.rs b/crates/inker/engines/weld-engine/src/welding_0_15.rs
+index d1c1d82d..6ba41ada 100644
+--- a/crates/inker/engines/weld-engine/src/welding_0_15.rs
++++ b/crates/inker/engines/weld-engine/src/welding_0_15.rs
+@@ -15,7 +15,7 @@ use inker::{
+     HttpAuthenticationChallenge, HttpProtectionSpace, KeyboardEvent, KeyboardModifiers,
+     MouseButton as InkerMouseButton, MouseEvent as InkerMouseEvent, MouseEventKind,
+     NativeTextureHandle, NavigationEvent, OwnedSurfaceFrame, PermissionAnswer,
+-    PermissionDescriptor, PermissionRequest, PhysicalPosition, PointerEvent,
++    PermissionDescriptor, PermissionRequest, PhysicalPosition, PointerButtons, PointerEvent,
+     PointerInputCapabilities, PointerPhase, PointerType, SameSite as InkerSameSite,
+     ScriptCapabilities, SurfaceError, SurfaceFrame, SurfaceSettings, SurfaceTextureFormat,
+     UserAgentRequestId, WebFeatureStatus, WebFrameTransportMode, WebMessage, WebRequestId,
+@@ -202,6 +202,12 @@ impl WeldSurface for WeldingSurface {
+     }
+ 
+     fn notify_pointer(&mut self, event: PointerEvent) -> Result<(), SurfaceError> {
++        if event.pointer_type == PointerType::Mouse {
++            return self
++                .producer
++                .send_mouse_input(map_mouse_pointer(event)?)
++                .map_err(map_error);
++        }
+         self.producer
+             .send_touch_input(map_pointer(event)?)
+             .map_err(map_error)
+@@ -229,8 +235,16 @@ impl WeldSurface for WeldingSurface {
+ 
+     fn notify_keyboard(&mut self, event: KeyboardEvent) -> Result<(), SurfaceError> {
+         self.producer
+-            .send_keyboard_input(map_keyboard(event))
+-            .map_err(map_error)
++            .send_keyboard_input(map_keyboard(event.clone()))
++            .map_err(map_error)?;
++        if event.pressed {
++            for character in event.text.as_deref().unwrap_or("").chars() {
++                self.producer
++                    .send_keyboard_input(map_character(&event, character))
++                    .map_err(map_error)?;
++            }
++        }
++        Ok(())
+     }
+ 
+     fn focus(&mut self, reason: FocusReason) -> Result<(), SurfaceError> {
+@@ -472,6 +486,40 @@ pub fn map_mouse(event: InkerMouseEvent) -> Result<WeldingMouseEvent, SurfaceErr
+     })
+ }
+ 
++/// Preserve richer host mouse input without lowering through legacy MouseEvent.
++pub fn map_mouse_pointer(event: PointerEvent) -> Result<WeldingMouseEvent, SurfaceError> {
++    if event.pointer_type != PointerType::Mouse {
++        return Err(SurfaceError::Unsupported(
++            "Welding mouse input requires a mouse pointer".into(),
++        ));
++    }
++    let button = match event.button.unwrap_or(InkerMouseButton::Left) {
++        InkerMouseButton::Left => WeldingMouseButton::Left,
++        InkerMouseButton::Middle => WeldingMouseButton::Middle,
++        InkerMouseButton::Right => WeldingMouseButton::Right,
++        InkerMouseButton::Back | InkerMouseButton::Forward => {
++            return Err(SurfaceError::Unsupported(
++                "Welding's mouse vocabulary has no browser-button variant".into(),
++            ));
++        },
++    };
++    let mut modifiers = map_modifiers(event.modifiers);
++    modifiers.left_mouse_button = event.buttons.contains(PointerButtons::PRIMARY);
++    modifiers.middle_mouse_button = event.buttons.contains(PointerButtons::AUXILIARY);
++    modifiers.right_mouse_button = event.buttons.contains(PointerButtons::SECONDARY);
++    Ok(WeldingMouseEvent {
++        x: event.position.x.round() as i32,
++        y: event.position.y.round() as i32,
++        button,
++        action: match event.phase {
++            PointerPhase::Down => MouseAction::Pressed,
++            PointerPhase::Move => MouseAction::Moved,
++            PointerPhase::Up | PointerPhase::Cancel => MouseAction::Released,
++        },
++        modifiers,
++    })
++}
++
+ pub fn map_pointer(event: PointerEvent) -> Result<TouchInput, SurfaceError> {
+     let device = match event.pointer_type {
+         PointerType::Touch => ContactDevice::Touch,
+@@ -518,7 +566,20 @@ pub fn map_keyboard(event: KeyboardEvent) -> KeyEvent {
+         },
+         windows_key_code: event.key_code as i32,
+         native_key_code: event.scan_code as i32,
+-        character: event.text.as_deref().and_then(|text| text.chars().next()),
++        // Composed text is dispatched separately as CHAR after raw key down.
++        character: None,
++        modifiers: map_modifiers(event.modifiers),
++    }
++}
++
++fn map_character(event: &KeyboardEvent, character: char) -> KeyEvent {
++    KeyEvent {
++        kind: KeyEventKind::Char,
++        // CEF CHAR uses the character code. Virtual A (65) would insert "A"
++        // even when the host supplied lowercase "a".
++        windows_key_code: character as i32,
++        native_key_code: event.scan_code as i32,
++        character: Some(character),
+         modifiers: map_modifiers(event.modifiers),
+     }
+ }
+@@ -978,6 +1039,297 @@ fn map_feature_status(status: BrowserFeatureStatus) -> WebFeatureStatus {
+ #[cfg(test)]
+ mod tests {
+     use super::*;
++    use std::{cell::RefCell, collections::VecDeque, rc::Rc};
++
++    #[derive(Default)]
++    struct InputLog {
++        keys: Vec<KeyEvent>,
++        mice: Vec<WeldingMouseEvent>,
++        touches: Vec<TouchInput>,
++        fail_key_call: Option<usize>,
++        events: VecDeque<CefSurfaceEvent>,
++    }
++
++    struct RecordingProducer(Rc<RefCell<InputLog>>);
++
++    // Required non-input methods refuse use so this fixture cannot accidentally
++    // simulate successful navigation, frame import, or script execution.
++    macro_rules! unused_operation {
++        ($($name:ident($($arg:ident: $ty:ty),*);)*) => {$ (
++            fn $name(&mut self, $($arg: $ty),*) -> Result<(), WeldError> {
++                $(let _ = $arg;)*
++                Err(WeldError::PlatformUnsupported("not part of the input fixture"))
++            }
++        )*};
++    }
++
++    impl CefSurfaceProducer for RecordingProducer {
++        fn open_devtools(&self) -> Result<(), WeldError> {
++            Err(WeldError::PlatformUnsupported(
++                "not part of the input fixture",
++            ))
++        }
++        fn browser_id(&self) -> i32 {
++            1
++        }
++        fn surface_mode(&self) -> CefSurfaceMode {
++            CefSurfaceMode::AcceleratedPaint
++        }
++        fn acquire_native_frame(&mut self) -> Option<NativeFrame> {
++            None
++        }
++        fn acquire_frame(
++            &mut self,
++            _: &welding_0_15::HostWgpuContext,
++        ) -> Result<Option<welding_0_15::ImportedTexture>, WeldError> {
++            Ok(None)
++        }
++        unused_operation! {
++            resize(size: dpi::PhysicalSize<u32>);
++            navigate_to_url(url: &str);
++            navigate_to_string(content: &str, mime_type: &str);
++            reload(); stop(); go_back(); go_forward(); close();
++            move_focus(direction: FocusDirection);
++            post_web_message(message: &str);
++            execute_script(script: &str, source_url: &str);
++        }
++        fn send_mouse_input(&mut self, event: WeldingMouseEvent) -> Result<(), WeldError> {
++            self.0.borrow_mut().mice.push(event);
++            Ok(())
++        }
++        fn send_touch_input(&mut self, event: TouchInput) -> Result<(), WeldError> {
++            self.0.borrow_mut().touches.push(event);
++            Ok(())
++        }
++        fn send_keyboard_input(&mut self, event: KeyEvent) -> Result<(), WeldError> {
++            let mut log = self.0.borrow_mut();
++            log.keys.push(event);
++            if log.fail_key_call == Some(log.keys.len()) {
++                return Err(WeldError::BrowserOp("input rejected".into()));
++            }
++            Ok(())
++        }
++        fn poll_web_event(&mut self) -> Option<CefSurfaceEvent> {
++            self.0.borrow_mut().events.pop_front()
++        }
++    }
++
++    fn recording_surface() -> (WeldingSurface, Rc<RefCell<InputLog>>) {
++        let log = Rc::new(RefCell::new(InputLog::default()));
++        let surface = WeldingSurface::new(
++            Box::new(RecordingProducer(log.clone())),
++            &CefSurfaceConfig::default(),
++        );
++        (surface, log)
++    }
++
++    fn keyboard(pressed: bool, text: Option<&str>) -> KeyboardEvent {
++        KeyboardEvent {
++            key_code: 65,
++            scan_code: 30,
++            modifiers: KeyboardModifiers {
++                shift: true,
++                ctrl: true,
++                alt: true,
++                meta: true,
++            },
++            pressed,
++            text: text.map(str::to_owned),
++        }
++    }
++
++    fn pointer() -> PointerEvent {
++        PointerEvent {
++            pointer_id: 7,
++            pointer_type: PointerType::Mouse,
++            is_primary: true,
++            phase: PointerPhase::Down,
++            position: PhysicalPosition { x: 12.6, y: 20.4 },
++            button: Some(InkerMouseButton::Right),
++            buttons: PointerButtons::PRIMARY
++                | PointerButtons::SECONDARY
++                | PointerButtons::AUXILIARY,
++            width: 1.0,
++            height: 1.0,
++            pressure: None,
++            tangential_pressure: None,
++            tilt_x: None,
++            tilt_y: None,
++            twist: None,
++            altitude_angle: None,
++            azimuth_angle: None,
++            modifiers: KeyboardModifiers {
++                shift: true,
++                ctrl: true,
++                alt: true,
++                meta: true,
++            },
++        }
++    }
++
++    #[test]
++    fn pressed_text_is_ordered_after_raw_key_with_character_codes() {
++        let (mut surface, log) = recording_surface();
++        surface.notify_keyboard(keyboard(true, Some("aé"))).unwrap();
++        surface
++            .notify_keyboard(keyboard(false, Some("ignored")))
++            .unwrap();
++        surface.notify_keyboard(keyboard(true, None)).unwrap();
++        let log = log.borrow();
++        assert_eq!(
++            log.keys.iter().map(|key| key.kind).collect::<Vec<_>>(),
++            vec![
++                KeyEventKind::RawKeyDown,
++                KeyEventKind::Char,
++                KeyEventKind::Char,
++                KeyEventKind::KeyUp,
++                KeyEventKind::RawKeyDown
++            ]
++        );
++        assert_eq!(
++            log.keys
++                .iter()
++                .map(|key| key.windows_key_code)
++                .collect::<Vec<_>>(),
++            vec![65, 97, 233, 65, 65]
++        );
++        assert_eq!(
++            log.keys.iter().map(|key| key.character).collect::<Vec<_>>(),
++            vec![None, Some('a'), Some('é'), None, None]
++        );
++        for key in &log.keys {
++            assert_eq!(key.native_key_code, 30);
++            assert!(
++                key.modifiers.shift
++                    && key.modifiers.ctrl
++                    && key.modifiers.alt
++                    && key.modifiers.meta
++            );
++        }
++    }
++
++    #[test]
++    fn keyboard_dispatch_stops_at_the_first_rejected_event() {
++        for rejected_call in [1, 2] {
++            let (mut surface, log) = recording_surface();
++            log.borrow_mut().fail_key_call = Some(rejected_call);
++            assert!(
++                matches!(surface.notify_keyboard(keyboard(true, Some("ab"))), Err(SurfaceError::NavigationFailed(reason)) if reason == "input rejected")
++            );
++            assert_eq!(log.borrow().keys.len(), rejected_call);
++        }
++    }
++
++    #[test]
++    fn rich_mouse_dispatch_keeps_changed_and_held_buttons_through_release() {
++        let (mut surface, log) = recording_surface();
++        let mut event = pointer();
++        surface.notify_pointer(event.clone()).unwrap();
++        event.phase = PointerPhase::Move;
++        event.button = None;
++        surface.notify_pointer(event.clone()).unwrap();
++        event.phase = PointerPhase::Up;
++        event.button = Some(InkerMouseButton::Right);
++        event.buttons = PointerButtons::PRIMARY;
++        surface.notify_pointer(event.clone()).unwrap();
++        event.phase = PointerPhase::Cancel;
++        event.buttons = PointerButtons::NONE;
++        surface.notify_pointer(event).unwrap();
++        let log = log.borrow();
++        assert!(log.touches.is_empty());
++        assert_eq!(
++            log.mice
++                .iter()
++                .map(|mouse| mouse.action)
++                .collect::<Vec<_>>(),
++            vec![
++                MouseAction::Pressed,
++                MouseAction::Moved,
++                MouseAction::Released,
++                MouseAction::Released
++            ]
++        );
++        assert_eq!(log.mice[0].button, WeldingMouseButton::Right);
++        assert_eq!(log.mice[2].button, WeldingMouseButton::Right);
++        for mouse in &log.mice {
++            assert_eq!((mouse.x, mouse.y), (13, 20));
++            assert!(
++                mouse.modifiers.shift
++                    && mouse.modifiers.ctrl
++                    && mouse.modifiers.alt
++                    && mouse.modifiers.meta
++            );
++        }
++        for mouse in &log.mice[..2] {
++            assert!(
++                mouse.modifiers.left_mouse_button
++                    && mouse.modifiers.middle_mouse_button
++                    && mouse.modifiers.right_mouse_button
++            );
++        }
++        assert!(log.mice[2].modifiers.left_mouse_button);
++        assert!(
++            !log.mice[2].modifiers.right_mouse_button && !log.mice[2].modifiers.middle_mouse_button
++        );
++        assert!(
++            !log.mice[3].modifiers.left_mouse_button && !log.mice[3].modifiers.right_mouse_button
++        );
++    }
++
++    #[test]
++    fn contact_dispatch_and_typed_mouse_refusals_are_preserved() {
++        let (mut surface, log) = recording_surface();
++        for device in [PointerType::Touch, PointerType::Pen] {
++            let mut event = pointer();
++            event.pointer_type = device;
++            surface.notify_pointer(event).unwrap();
++        }
++        for button in [InkerMouseButton::Back, InkerMouseButton::Forward] {
++            let mut event = pointer();
++            event.button = Some(button);
++            assert!(matches!(
++                surface.notify_pointer(event),
++                Err(SurfaceError::Unsupported(_))
++            ));
++        }
++        let mut unknown = pointer();
++        unknown.pointer_type = PointerType::Unknown;
++        assert!(matches!(
++            surface.notify_pointer(unknown),
++            Err(SurfaceError::Unsupported(_))
++        ));
++        assert!(log.borrow().mice.is_empty());
++        assert_eq!(log.borrow().touches.len(), 2);
++        assert!(matches!(
++            log.borrow().touches[0].device,
++            ContactDevice::Touch
++        ));
++        assert!(matches!(log.borrow().touches[1].device, ContactDevice::Pen));
++    }
++
++    #[test]
++    fn input_keeps_the_same_ordered_completion_queue() {
++        let (mut surface, log) = recording_surface();
++        log.borrow_mut().events.extend([
++            CefSurfaceEvent::ScriptCompleted {
++                id: welding_0_15::WebRequestId::new(9),
++                result: Ok("42".into()),
++            },
++            CefSurfaceEvent::CookiesCompleted {
++                id: welding_0_15::WebRequestId::new(3),
++                result: Ok(vec![]),
++            },
++        ]);
++        surface.notify_pointer(pointer()).unwrap();
++        surface.notify_keyboard(keyboard(true, Some("a"))).unwrap();
++        assert!(
++            matches!(surface.poll_web_event(), Some(WebSurfaceEvent::ScriptCompleted { id, .. }) if id.get() == 9)
++        );
++        assert!(
++            matches!(surface.poll_web_event(), Some(WebSurfaceEvent::CookiesCompleted { id, .. }) if id.get() == 3)
++        );
++        assert!(surface.poll_web_event().is_none());
++    }
+ 
+     #[test]
+     fn completion_mapping_preserves_full_width_request_ids() {
+diff --git a/design_docs/inker_docs/implementation_strategy/2026-06-15_engine_picker_and_pluggability_plan.md b/design_docs/inker_docs/implementation_strategy/2026-06-15_engine_picker_and_pluggability_plan.md
+index 465573e1..2de382e9 100644
+--- a/design_docs/inker_docs/implementation_strategy/2026-06-15_engine_picker_and_pluggability_plan.md
++++ b/design_docs/inker_docs/implementation_strategy/2026-06-15_engine_picker_and_pluggability_plan.md
+@@ -1,12 +1,12 @@
+-# Engine picker + pluggability — implementation plan
++# Engine picker + pluggability â€” implementation plan
+ 
+ **Date**: 2026-06-15
+-**Status**: **Phases 0–3 shipped + verified** (route → activate → manage → pick):
++**Status**: **Phases 0â€“3 shipped + verified** (route â†’ activate â†’ manage â†’ pick):
+ meerkat now routes both altitudes through `EngineRoutePolicy` (0a/0b), and the
+ activation model (global default + per-session override), the apparatus engine
+ manager, and the per-node picker all landed. **Remaining:** Phase 4 (no-handler UX +
+ local-file sniff), Phase 2b (per-host overrides + per-session toggle), Phase 5
+-(verso flip), and the register-viewer harvest. *(The §2 "Findings" below are the
++(verso flip), and the register-viewer harvest. *(The Â§2 "Findings" below are the
+ point-in-time pre-Phase-0 state; the "gap" it names is now closed, see the Progress
+ log.)*
+ **Page capture P1 (2026-08-30): landed at the Inker boundary.** The shared
+@@ -22,11 +22,11 @@ sequenced here as the final phase.
+ 
+ **Related**:
+ 
+-- [verso compatibility-view charter](../../verso_docs/technical_architecture/2026-06-10_compatibility_view_charter.md) — ownership split (picker = inker, flip = verso), one-hop invariant, sequencing gate. This plan is the picker half of that charter's step 2.
+-- engine profile boundary plan (`mere/design_docs/mere_docs/implementation_strategy/2026-05-14_engine_profile_boundary_plan.md`) — `EngineProfileBinding` (Persona/Session/Graph scoping). The activation model here mirrors that tiering.
+-- browser multiplexer framing (`mere/design_docs/mere_docs/research/2026-05-11_browser_multiplexer_framing.md`) §5.4, §7, §8 — engines as replaceable producers; "engine route override" capability; `engine.route_chosen` / `engine.route_degraded` diagnostics.
+-- modular integration plan (`mere/design_docs/mere_docs/implementation_strategy/2026-06-02_modular_integration_plan.md`) §1.9, §6 — the `register-viewer` vs `inker::routing` dual-routing reconcile, gated on "meerkat first routes >1 content engine."
+-- engine peers + scrying library brief (`mere/design_docs/mere_docs/research/2026-05-11_engine_peers_and_scrying_library_brief.md`) — `scrying.web` / `wry.web` as opt-in engines.
++- [verso compatibility-view charter](../../verso_docs/technical_architecture/2026-06-10_compatibility_view_charter.md) â€” ownership split (picker = inker, flip = verso), one-hop invariant, sequencing gate. This plan is the picker half of that charter's step 2.
++- engine profile boundary plan (`mere/design_docs/mere_docs/implementation_strategy/2026-05-14_engine_profile_boundary_plan.md`) â€” `EngineProfileBinding` (Persona/Session/Graph scoping). The activation model here mirrors that tiering.
++- browser multiplexer framing (`mere/design_docs/mere_docs/research/2026-05-11_browser_multiplexer_framing.md`) Â§5.4, Â§7, Â§8 â€” engines as replaceable producers; "engine route override" capability; `engine.route_chosen` / `engine.route_degraded` diagnostics.
++- modular integration plan (`mere/design_docs/mere_docs/implementation_strategy/2026-06-02_modular_integration_plan.md`) Â§1.9, Â§6 â€” the `register-viewer` vs `inker::routing` dual-routing reconcile, gated on "meerkat first routes >1 content engine."
++- engine peers + scrying library brief (`mere/design_docs/mere_docs/research/2026-05-11_engine_peers_and_scrying_library_brief.md`) â€” `scrying.web` / `wry.web` as opt-in engines.
+ 
+ ---
+ 
+@@ -40,23 +40,23 @@ Three owners, held to the verso charter:
+ 
+ - **Picking** an engine = `inker` routing ([routing.rs](../../../crates/inker/inker/src/routing.rs)). The picker UI writes pins / overrides into that policy.
+ - **Texture plumbing** = scry / graft / weld + netrender compose + constellation actors. Untouched by this plan.
+-- **The flip** (live state carried across an engine swap) = `verso`. Phase 5 only; minted at the first genet→scrying flip per the charter.
++- **The flip** (live state carried across an engine swap) = `verso`. Phase 5 only; minted at the first genetâ†’scrying flip per the charter.
+ 
+ In-product vocabulary stays plain: "compatibility view", "flip", "open in
+ \<engine\>". `verso` / `inker` are crate names, not UI words.
+ 
+-## 2. Findings — what already exists
++## 2. Findings â€” what already exists
+ 
+ The routing backend is substantially built; meerkat just does not consume it.
+ 
+-**Routing (live, canonical).** [`EngineRoutePolicy::route_filtered`](../../../crates/inker/inker/src/routing.rs) decides by precedence **pinned_engine → content-type → per-host override → scheme → fallback**, and `route_filtered(is_available)` skips any engine the host lacks, walking to the next rule. `EngineRouteRequest` already carries `pinned_engine: Option<String>` and the policy carries `per_host_overrides: HashMap<host, engine_id>`. Unhandled schemes fall to `ENGINE_EXTERNAL_PROTOCOL` (`host.external-protocol`, Headless). `scrying.web` / `wry.web` are defined but deliberately out of the default policy (opt-in via pin / override).
++**Routing (live, canonical).** [`EngineRoutePolicy::route_filtered`](../../../crates/inker/inker/src/routing.rs) decides by precedence **pinned_engine â†’ content-type â†’ per-host override â†’ scheme â†’ fallback**, and `route_filtered(is_available)` skips any engine the host lacks, walking to the next rule. `EngineRouteRequest` already carries `pinned_engine: Option<String>` and the policy carries `per_host_overrides: HashMap<host, engine_id>`. Unhandled schemes fall to `ENGINE_EXTERNAL_PROTOCOL` (`host.external-protocol`, Headless). `scrying.web` / `wry.web` are defined but deliberately out of the default policy (opt-in via pin / override).
+ 
+ **Two registries = two tiers (the key structural fact).** The tier split the user described is already the two registries, and it is the same axis as the charter's glass-box / black-box fidelity axis and the wasm/native build axis:
+ 
+ | Tier | Seam | Output | Fidelity | Build | Engines |
+ |------|------|--------|----------|-------|---------|
+-| 1 — web platform | [`Engine`](../../../crates/inker/inker/src/engine.rs) → `EngineRegistry` | portable `EngineDocument` | glass-box (full export → good verso donor) | wasm32-safe, always in | `nematic.*`, `genet.web` |
+-| 2 — native | [`SurfaceEngine`](../../../crates/inker/inker/src/surface_engine.rs) → `SurfaceEngineRegistry` | GPU `SurfaceFrame` texture | black-box (inject most, extract little) | native only, vendored | `scrying.web` (live), `weld`, `graft` |
++| 1 â€” web platform | [`Engine`](../../../crates/inker/inker/src/engine.rs) â†’ `EngineRegistry` | portable `EngineDocument` | glass-box (full export â†’ good verso donor) | wasm32-safe, always in | `nematic.*`, `genet.web` |
++| 2 â€” native | [`SurfaceEngine`](../../../crates/inker/inker/src/surface_engine.rs) â†’ `SurfaceEngineRegistry` | GPU `SurfaceFrame` texture | black-box (inject most, extract little) | native only, vendored | `scrying.web` (live), `weld`, `graft` |
+ 
+ The scry tier-2 engine is real: [`ScryingTileEngine`](../../../crates/inker/engines/scrying-engine/src/engine.rs) implements `SurfaceEngine` (id `scrying.web`) over a host-supplied `ProducerFactory`.
+ 
+@@ -64,14 +64,14 @@ The scry tier-2 engine is real: [`ScryingTileEngine`](../../../crates/inker/engi
+ 
+ **The gap.** *(Closed by Phase 0, shipped 2026-06-15; this paragraph is the
+ pre-Phase-0 record, kept for the Findings narrative.)* meerkat does **not** route
+-through `EngineRoutePolicy` at all. It registers `nematic::engines()` only for snapshot cards, drives live content through the constellation, and runs scry through an ad-hoc `compat_pins: HashSet<GraphMemberId>` bool (the path the 2026-06-15 multi-tile work extended). The modular integration plan §6 (`mere/design_docs/mere_docs/implementation_strategy/2026-06-02_modular_integration_plan.md`) names the same gap: `register-viewer` (mime→viewer) duplicates `inker::routing`; reconcile when meerkat first routes >1 content engine. That moment is Phase 0.
++through `EngineRoutePolicy` at all. It registers `nematic::engines()` only for snapshot cards, drives live content through the constellation, and runs scry through an ad-hoc `compat_pins: HashSet<GraphMemberId>` bool (the path the 2026-06-15 multi-tile work extended). The modular integration plan Â§6 (`mere/design_docs/mere_docs/implementation_strategy/2026-06-02_modular_integration_plan.md`) names the same gap: `register-viewer` (mimeâ†’viewer) duplicates `inker::routing`; reconcile when meerkat first routes >1 content engine. That moment is Phase 0.
+ 
+ ## 3. Architecture decisions
+ 
+ 1. **Three activation levels collapse to one predicate.** `is_available(id) = registry.contains(id) && enabled(id)`.
+-   - *Not in build* → not registered (cargo feature off / not vendored).
+-   - *In build, deactivated* → registered but `enabled(id) == false`: routing never picks it, no actor / producer spawns, the binary still carries it.
+-   - *Active* → registered + enabled.
++   - *Not in build* â†’ not registered (cargo feature off / not vendored).
++   - *In build, deactivated* â†’ registered but `enabled(id) == false`: routing never picks it, no actor / producer spawns, the binary still carries it.
++   - *Active* â†’ registered + enabled.
+    The routing already takes the `is_available` closure; only the enable set is new.
+ 2. **Activation scope = global default + per-session override** (user decision, 2026-06-15). A global `EngineEnableSet` (app setting) is the default; a session manifest field overrides per engine id. Mirrors `EngineProfileBinding`'s persona/session tiering. Graph scope is reserved, not built.
+ 3. **Build tier via cargo features.** Tier 1 (`Engine` document engines) is the always-present portable baseline (ships to wasm/PWA). Tier 2 (`SurfaceEngine`) crates are feature-gated and vendored per platform; absent on wasm, where the no-handler fallback covers the hole. One feature per surface-engine crate (`scrying`, `weld`, `graft`).
+@@ -83,13 +83,13 @@ through `EngineRoutePolicy` at all. It registers `nematic::engines()` only for s
+ 
+ Done-conditions, not dates (per house rule).
+ 
+-**Phase 0 — routing reconcile + meerkat onto `EngineRoutePolicy`** *(foundation; unblocks all)*
++**Phase 0 â€” routing reconcile + meerkat onto `EngineRoutePolicy`** *(foundation; unblocks all)*
+ 
+ Routing in meerkat is genuinely **two-altitude**, and the policy was already
+ designed for exactly that (its comment: "the same address can re-route after the
+ host learns the MIME type from a response"). So Phase 0 splits:
+ 
+-- **0a — UI-thread tier decision (DONE, d4a1350).** At nav time the host knows the
++- **0a â€” UI-thread tier decision (DONE, d4a1350).** At nav time the host knows the
+   url (scheme) and the node's pin but not yet the content-type. `compat_pins:
+   HashSet<member>` became `engine_pins: HashMap<member, engine_id>`; the host holds
+   a `route_policy`; each node routes via `route_filtered(request{pinned_engine},
+@@ -98,13 +98,13 @@ host learns the MIME type from a response"). So Phase 0 splits:
+   `inker::routing::is_surface_engine` as the canonical tier-2 classifier.
+   *Verified:* a `>compat_view` node renders through WebView2 via the route (producer
+   spawns, no `EngineNotFound`); normal http/gemini unchanged.
+-- **0b — actor content-type pass (DONE, 1966183).** `render_content_scene` now
+-  routes through the policy (`route_document_engine` → `genet.web` html lane vs a
++- **0b â€” actor content-type pass (DONE, 1966183).** `render_content_scene` now
++  routes through the policy (`route_document_engine` â†’ `genet.web` html lane vs a
+   registered nematic engine); `engine_id_for`, `is_html`, `base_type` deleted. The
+   canonical `EngineRoutePolicy::default` was made a **superset** of the old match: a
+   `titan` scheme rule + `ENGINE_NEMATIC_TITAN`, and content-type rules for
+-  `text/html`/`application/xhtml+xml` → `genet.web` (HTML → genet regardless of
+-  scheme, so a local `file://` HTML page lands on the web engine — Phase 4 arriving
++  `text/html`/`application/xhtml+xml` â†’ `genet.web` (HTML â†’ genet regardless of
++  scheme, so a local `file://` HTML page lands on the web engine â€” Phase 4 arriving
+   early) plus the smolweb refinements. *Verified:* inker routing 25/25, card 10/10;
+   headed, https HTML renders via genet and a gemini capsule via nematic.gemtext,
+   both via the one policy.
+@@ -114,70 +114,102 @@ host learns the MIME type from a response"). So Phase 0 splits:
+ - *Phase 0 done (both shipped):* both altitudes consult one `route_policy`; the
+   bespoke selectors (`compat_pins`, `engine_id_for`, `is_html`) are gone.
+ 
+-**Phase 1 — activation model (DONE, e90825e).** `engine_available` split into
++**Phase 1 â€” activation model (DONE, e90825e).** `engine_available` split into
+ `engine_present` (host capability) AND `engine_active` (not deactivated), so the
+ policy walks past a deactivated engine like an absent one. `EngineActivation` holds
+ two layers (per-session override wins over global default): `global_disabled` from
+ the app-wide `settings.json` `disabled_engines` (new field), `session_override`
+ in memory for the Phase 2 toggle. Host lanes (internal / external / ingest) are
+-structural, not deactivatable. Deactivation needs no explicit reap — a no-longer-
++structural, not deactivatable. Deactivation needs no explicit reap â€” a no-longer-
+ surface node drops out of `scrying_surfaces`, and the per-frame `retain` tears its
+ producer down. *Verified:* engine_activation 4/4, settings_store 7/7; headed, with
+ `scrying.web` disabled a `>compat_view` node falls back to genet with no producer,
+ and re-enabling spawns it again.
+ - **Phase 1b (DONE, b4706c6):** the constellation carries the deactivated-engine set
+   (`set_disabled_engines`, seeded from settings) and passes it to each spawned actor,
+-  which registers only the engines outside it — so a deactivated *document* engine is
++  which registers only the engines outside it â€” so a deactivated *document* engine is
+   routed past by `route_document_engine` and falls to the synthesized card. Snapshot
+   at spawn time; the Phase 2 live toggle reaps affected actors. *Verified:* with
+   `nematic.gemtext` disabled, a gemini capsule renders the synthesized fallback (raw
+   `#`/`##` text) instead of the formatted gemtext document.
+ - **Per-session persistence:** `session_override` is in memory; it persists when the
+-  session manifest is wired (multiplexer §3).
++  session manifest is wired (multiplexer Â§3).
+ 
+-**Phase 2 — engine manager (apparatus pane) (DONE, a7e609e).** The apparatus pane
++**Phase 2 â€” engine manager (apparatus pane) (DONE, a7e609e).** The apparatus pane
+ gained an "Engines" section: every present user-facing engine (Genet + System
+ WebView headline, then the nematic document engines) as an active/off toggle button,
+ active ones highlighted. Clicking flips the engine's **global** activation
+-(`engine:toggle:<id>` → `toggle_engine`), pushes the deactivated set to the actor
++(`engine:toggle:<id>` â†’ `toggle_engine`), pushes the deactivated set to the actor
+ pool, and persists to `settings.json`. *Verified:* toggling System WebView off writes
+ `disabled_engines:["scrying.web"]`, toggling on clears it.
+ - **Phase 2b (deferred):** the `per_host_overrides` editor (host text field + engine
+   choice) and a per-session toggle (vs the global one this ships). Absent engines are
+   simply not listed; an explicit "in build / absent" row is cosmetic, deferred.
+ 
+-**Phase 3 — per-node picker (DONE, c5f63d8).** The single-node context menu offers
++**Phase 3 â€” per-node picker (DONE, c5f63d8).** The single-node context menu offers
+ "Auto (default engine)" + "Open in \<engine\>" for each pickable web/surface engine
+-that is `engine_available`, the current choice ✓-marked; picking writes `engine_pins`
++that is `engine_available`, the current choice âœ“-marked; picking writes `engine_pins`
+ (Auto clears it). `ContextAction::PinEngine(&'static str)` + `AutoEngine`. *Verified:*
+-menu shows Auto ✓ / Genet / System WebView (Wry filtered out); clicking System
++menu shows Auto âœ“ / Genet / System WebView (Wry filtered out); clicking System
+ WebView flips the node from genet to a live WebView2.
+ 
+-**Phase 4 — no-handler UX + local files**
++**Phase 4 â€” no-handler UX + local files**
+ - Surface `route_degraded` in the picker; "open externally" affordance. Content-sniffer for `file://` feeding `content_type`; genet as the web-standard default for local files.
+ - *Done when:* opening a local `.md` routes to nematic.markdown, a local `.html` to genet, and an unhandled scheme shows the explicit "no engine / open externally" state.
+ 
+-**Phase 5 — verso flip** *(charter step 3; separate doc owns detail)*
+-- Mint `verso` at the first genet→scrying flip: one carrier, flip choreography on one tile, state carried (URL, scroll, cookies, snapshot), tile identity + lineage intact, one-hop invariant enforced.
+-- This plan's Phases 0–4 are the prerequisite (engines must be user-visible and pinnable before a flip means anything). Detail lives in a verso_docs plan when minted.
++**Phase 5 â€” verso flip** *(charter step 3; separate doc owns detail)*
++- Mint `verso` at the first genetâ†’scrying flip: one carrier, flip choreography on one tile, state carried (URL, scroll, cookies, snapshot), tile identity + lineage intact, one-hop invariant enforced.
++- This plan's Phases 0â€“4 are the prerequisite (engines must be user-visible and pinnable before a flip means anything). Detail lives in a verso_docs plan when minted.
+ 
+ **Build-tier track (parallel).** Feature-gate the tier-2 engine crates; confirm a tier-1-only build (no scry/weld/graft) compiles and runs, routing tier-2 schemes to the fallback. This is the wasm/PWA shape proven on the desktop build.
+ 
+ ## 5. Background / dependencies
+ 
+ - Phase 0 is the gate the integration plan already named ("resolve when meerkat first routes >1 content engine"). It is also the honest home for the multi-tile scry path: that work is correct but lives outside routing, and Phase 0 is where it rejoins.
+-- The picker (Phases 2–3) depends only on Phase 0–1, not on verso. Verso (Phase 5) depends on the picker existing.
++- The picker (Phases 2â€“3) depends only on Phase 0â€“1, not on verso. Verso (Phase 5) depends on the picker existing.
+ - weld (CEF) and graft (Servo) producers are tier-2 `SurfaceEngine` impls parallel to `ScryingTileEngine`; their build-out is tracked separately but slots into this model as additional registered ids with feature gates. They do not block the picker.
+-- Activation reaping must route through the capability-gated action bus when that lands (multiplexer §7: "engine route override" and "profile escalation" are gated actions); until then it is a direct host op with a diagnostic.
++- Activation reaping must route through the capability-gated action bus when that lands (multiplexer Â§7: "engine route override" and "profile escalation" are gated actions); until then it is a direct host op with a diagnostic.
+ 
+ ## Findings
+ 
++- 2026-10-06: Turnstone's direct Welding 0.15 consumer exposed two input gaps
++  in `crates/inker/engines/weld-engine/src/welding_0_15.rs`: mouse
++  `PointerEvent` always entered the touch-only mapper, and raw key events did
++  not deliver composed text through CEF's separate CHAR path. Native lowercase
++  input needs the character code in CHAR's `windows_key_code`; virtual A (65)
++  inserts uppercase A even when the supplied text is lowercase a.
++
+ - 2026-06-15: Routing precedence, `pinned_engine`, `per_host_overrides`, `route_filtered`, and the `host.external-protocol` fallback are all already implemented in [routing.rs](../../../crates/inker/inker/src/routing.rs). The two registries ([engine.rs](../../../crates/inker/inker/src/engine.rs), [surface_engine.rs](../../../crates/inker/inker/src/surface_engine.rs)) cleanly encode the user's two-tier model, and that split coincides with the charter's glass/black-box fidelity axis and the wasm/native build axis. The single missing piece for a picker is consumption: meerkat routes nothing through the policy today.
+ - 2026-06-15: The verso charter (Mark, 2026-06-10) already assigns the picker to inker and reserves verso for the flip. The user's "verso = engine switcher" framing resolves to picker (inker) + flip (verso) composed.
+ - 2026-06-15: meerkat's content routing is **two-altitude**, and that is inherent, not accidental: at nav time the host has the url (scheme + pin) but not the content-type, which only the off-thread actor learns post-fetch. The policy is built for this (scheme/pin first pass, content-type second pass), so Phase 0 splits cleanly into 0a (UI-thread tier + pin) and 0b (actor content-type), both consulting one `route_policy`. The `is_available` closure must report *true* for the lanes meerkat handles without a document-registry entry (genet html, mere:// internal, external-protocol, linked-data) or an http node would wrongly fall through to the OS hand-off.
+ 
+ ## Progress
+ 
++- **2026-10-06, shared Weld input follow-up, in progress.** The direct adapter
++  routes mouse pointers through `send_mouse_input`, retaining changed buttons,
++  keyboard modifiers and the held primary/secondary/auxiliary button mask.
++  Touch/pen retain their native contact route. Raw down/up keep virtual and
++  scan codes; pressed composed text follows raw down as separate CHAR events
++  in string order. A producer failure stops the remaining input sequence.
++  Ordered browser completions and owned native-frame custody are unchanged.
++  Library validation: `cargo test --offline --locked -p weld-engine --features
++  welding-0-15 --target-dir C:/t/cargo-targets/mere` passed 11 tests and zero
++  doctests. The five new dispatch tests cover lowercase/BMP text,
++  down/up ordering, failures, rich mouse input, contact routing and the same
++  ordered completion queue. The feature-disabled package's three tests passed
++  too. The full active-doc audit retains 55 missing known-root paths and seven
++  stale historical annotations elsewhere; focused HEAD/working audits of this
++  plan both report zero findings. Consumer done-condition: immutable adapter source
++  adoption with one Inker type identity passes Turnstone's real two-page
++  input/find/zoom, permission and teardown scenarios before removing its host
++  bridge. Broader Mere/Genet repins remain a separate integration decision.
++  Supplementary Unicode is not qualified: pinned Welding's
++  `cef_input::send_key` casts a Rust scalar directly to `u16`; native UTF-16
++  delivery and OS IME require separate supplier/host work. Native consumer
++  evidence lives at
++  `turnstone/docs/receipts/browser_scry_windows_20261006/`; this library pass
++  does not extend those receipts to its new source.
++
+ - 2026-08-30: **Page capture P1 contract landed.** Removed the old synchronous
+   `SurfaceProducer::capture_snapshot_png` seam without a compatibility shim.
+   Hosted surfaces now accept `PageCaptureRequest { id, scope: Viewport }` and
+@@ -191,10 +223,23 @@ WebView flips the node from genet to a live WebView2.
+   scale. Requested page scale and host provenance remain host-owned. No
+   existing engine capability was promoted.
+ 
+-- 2026-06-15: scry-in-tile (single focused tile) shipped + verified (meerkat 0adca6e); multi-tile scry shipped + verified (06b6ac7) — two independent WebView2 panes on one shared `CompositionRoot`, per-pane input. This advances the verso charter's P4 (scrying tile as a live, interactive actor) but through the ad-hoc `compat_pins` path; Phase 0 folds it into routing.
++- 2026-06-15: scry-in-tile (single focused tile) shipped + verified (meerkat 0adca6e); multi-tile scry shipped + verified (06b6ac7) â€” two independent WebView2 panes on one shared `CompositionRoot`, per-pane input. This advances the verso charter's P4 (scrying tile as a live, interactive actor) but through the ad-hoc `compat_pins` path; Phase 0 folds it into routing.
+ - 2026-06-15: Plan authored from a read of routing.rs, engine.rs, surface_engine.rs, scrying-engine, the verso charter, the engine-profile-boundary plan, the browser-multiplexer framing, and the modular-integration plan. Activation scope decided: global default + per-session override.
+-- 2026-06-15: **Phase 0a shipped + verified (meerkat d4a1350).** `compat_pins` retired into `engine_pins: HashMap<member, engine_id>` + a host `route_policy`; the UI-thread tier decision routes via `route_filtered(request{pinned_engine}, is_available)` → `is_surface_engine` picks the scrying lane. Added `inker::routing::is_surface_engine`. `>compat_view` is now a pin to `scrying.web`. Headed-verified: pinned node renders through WebView2 via the route (producer spawns, no `EngineNotFound`); http/gemini nodes render unchanged through the constellation.
+-- 2026-06-15: **Phase 0b shipped + verified (meerkat 1966183). Phase 0 complete.** `render_content_scene` routes through the policy (`route_document_engine`); `engine_id_for` / `is_html` / `base_type` deleted; the canonical `EngineRoutePolicy::default` made a superset (titan scheme rule + `ENGINE_NEMATIC_TITAN`, `text/html` → `genet.web`, smolweb content-type refinements). Both routing altitudes (UI-thread tier, actor content-type) now consult one policy; all three bespoke selectors are gone. Verified: inker routing 25/25, card 10/10; headed, https HTML → genet and a gemini capsule → nematic.gemtext via the one policy.
+-- 2026-06-15: **Phase 1 shipped + verified (meerkat e90825e).** `engine_available` = `engine_present && engine_active`; `EngineActivation` (global default from `settings.json` `disabled_engines` + in-memory per-session override); host lanes exempt. Verified: engine_activation 4/4, settings_store 7/7; headed, `scrying.web` disabled → `>compat_view` node falls back to genet with no producer, re-enable spawns it again.
+-- 2026-06-15: **Phases 1b / 3 / 2 shipped + verified (b4706c6, c5f63d8, a7e609e).** 1b: the constellation passes its deactivated set to each spawned actor, which registers only enabled engines (disabled `nematic.gemtext` → synthesized fallback). 3: the single-node context menu offers Auto + "Open in \<engine\>" (✓-marked), writing `engine_pins`; clicking System WebView flips a node to a live WebView2. 2: the apparatus "Engines" section toggles each engine's global activation, persisted to `settings.json`. **The whole picker arc (route → activate → manage → pick) is in and verified. Remaining: Phase 4 (no-handler / local files), Phase 5 (weld/graft + verso flip), Phase 2b (per-host overrides + per-session toggle), register-viewer harvest.**
+-- 2026-06-24: the cross-repo grand audit (`genet/docs/2026-06-24_grand_audit.md`) (§5 sidequest 4) endorses registering graft(Servo) + weld(CEF) as tier-2 `SurfaceEngine` impls over the existing `wgpu-graft` / `wgpu-weld` texture-import producers — this is **Phase 5** here (weld/graft, distinct from the verso flip). The audit also re-confirms a still-open item the picker's Phase 0 did *not* close: meerkat's shipped scry pool routes its *pin* through the policy (Phase 0a/0b) but still binds `PlatformWebSurfaceProducer` **concretely** for frame transport, bypassing the `SurfaceEngine` registry (the WebView2 handle-handoff protocol the type-erased lane drops). Folding the producer construction into the registry is the natural Phase-5 companion to graft/weld.
++- 2026-06-15: **Phase 0a shipped + verified (meerkat d4a1350).** `compat_pins` retired into `engine_pins: HashMap<member, engine_id>` + a host `route_policy`; the UI-thread tier decision routes via `route_filtered(request{pinned_engine}, is_available)` â†’ `is_surface_engine` picks the scrying lane. Added `inker::routing::is_surface_engine`. `>compat_view` is now a pin to `scrying.web`. Headed-verified: pinned node renders through WebView2 via the route (producer spawns, no `EngineNotFound`); http/gemini nodes render unchanged through the constellation.
++- 2026-06-15: **Phase 0b shipped + verified (meerkat 1966183). Phase 0 complete.** `render_content_scene` routes through the policy (`route_document_engine`); `engine_id_for` / `is_html` / `base_type` deleted; the canonical `EngineRoutePolicy::default` made a superset (titan scheme rule + `ENGINE_NEMATIC_TITAN`, `text/html` â†’ `genet.web`, smolweb content-type refinements). Both routing altitudes (UI-thread tier, actor content-type) now consult one policy; all three bespoke selectors are gone. Verified: inker routing 25/25, card 10/10; headed, https HTML â†’ genet and a gemini capsule â†’ nematic.gemtext via the one policy.
++- 2026-06-15: **Phase 1 shipped + verified (meerkat e90825e).** `engine_available` = `engine_present && engine_active`; `EngineActivation` (global default from `settings.json` `disabled_engines` + in-memory per-session override); host lanes exempt. Verified: engine_activation 4/4, settings_store 7/7; headed, `scrying.web` disabled â†’ `>compat_view` node falls back to genet with no producer, re-enable spawns it again.
++- 2026-06-15: **Phases 1b / 3 / 2 shipped + verified (b4706c6, c5f63d8, a7e609e).** 1b: the constellation passes its deactivated set to each spawned actor, which registers only enabled engines (disabled `nematic.gemtext` â†’ synthesized fallback). 3: the single-node context menu offers Auto + "Open in \<engine\>" (âœ“-marked), writing `engine_pins`; clicking System WebView flips a node to a live WebView2. 2: the apparatus "Engines" section toggles each engine's global activation, persisted to `settings.json`. **The whole picker arc (route â†’ activate â†’ manage â†’ pick) is in and verified. Remaining: Phase 4 (no-handler / local files), Phase 5 (weld/graft + verso flip), Phase 2b (per-host overrides + per-session toggle), register-viewer harvest.**
++- 2026-06-24: the cross-repo grand audit (`genet/docs/2026-06-24_grand_audit.md`) (Â§5 sidequest 4) endorses registering graft(Servo) + weld(CEF) as tier-2 `SurfaceEngine` impls over the existing `wgpu-graft` / `wgpu-weld` texture-import producers â€” this is **Phase 5** here (weld/graft, distinct from the verso flip). The audit also re-confirms a still-open item the picker's Phase 0 did *not* close: meerkat's shipped scry pool routes its *pin* through the policy (Phase 0a/0b) but still binds `PlatformWebSurfaceProducer` **concretely** for frame transport, bypassing the `SurfaceEngine` registry (the WebView2 handle-handoff protocol the type-erased lane drops). Folding the producer construction into the registry is the natural Phase-5 companion to graft/weld.
++
++- **2026-10-06 Graft ordered host events.** `GraftSurface::poll_web_event`
++  now permits a host's single delegate queue to preserve ordering across
++  navigation, title/address changes, messages and correlated completions.
++  `GraftProducer` forwards that queue directly. The default retains the old
++  separate navigation/message polling behavior for existing implementers.
++  Four focused Graft library tests pass, including a mixed-kind ordering
++  regression whose legacy queue hooks reject accidental splitting.
++  The frame seam now describes owned payload custody, per-paint synchronization,
++  content generation versus allocation identity, and WebView-owned resize.
++  This is a shared adapter qualification, not an upstream Servo construction
++  or headed consumer receipt. Turnstone's process-owned Servo host and native
++  page/input/resize/teardown gates remain separate implementation work.
+db4ee31258b23c86572c429388c5d10bd4de9dc3	refs/heads/codex/browser-input-compat

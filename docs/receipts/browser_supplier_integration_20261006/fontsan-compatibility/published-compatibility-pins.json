@@ -1,0 +1,23 @@
+{
+  "schema": "browser-font-compatibility-pins-v1",
+  "publication": "Normal provisional branch pushes; refs independently confirmed by git ls-remote",
+  "pins": {
+    "genet": "679d8314aab4ec9f57a903c79dde244c3c565c1e",
+    "mere": "edf175f9c0a8645318ac8925adf0af6956f61425",
+    "woodshed": "24f196f46f775704e467b41140588a3f35335a9f",
+    "knot": "211ff57a128f4fdbd5060978a209d6bc0459fce6"
+  },
+  "branches": {
+    "genet": "codex/browser-fonts",
+    "other_suppliers": "codex/browser-input-compat"
+  },
+  "qualification": "Genet baseline 3 native font tests passed; actual published-source Turnstone locked resolver/full3build/native gates pending",
+  "scope": "Focused Turnstone/Redshank browser compatibility; other Woodshed/Hocket/main source families preserved",
+  "worktrees": [
+    "C:/Users/mark_/Code/worktrees/genet-browser-fonts",
+    "C:/Users/mark_/Code/worktrees/mere-browser-input-compat",
+    "C:/Users/mark_/Code/worktrees/woodshed-browser-input-compat",
+    "C:/Users/mark_/Code/worktrees/knot-editor-browser-input-compat"
+  ],
+  "retention": "Keep approved compatibility worktrees/branches until consumer qualification and ordinary ancestry integration; no cleanup or main push yet"
+}

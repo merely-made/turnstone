@@ -1,7 +1,15 @@
 # Browser surfaces implementation plan
 
-**Status, 2026-10-05:** in progress. Optional Windows Scry B1 source is present;
-full native acceptance is gated on cookies and current captured pixels.
+**Status:** in progress, rechecked 2026-10-07. The bounded Windows Scry/Weld consumer
+phase qualifies native cookies, current captured pixels and removal of
+Turnstone's local Weld mouse/CHAR bridge. Its exact executable, source archive
+and four native scenarios are recorded in the
+[supplier integration receipt](../docs/receipts/browser_supplier_integration_20261006/README.md).
+Optional Windows Servo B3 candidate source is present; the locked three-engine
+build passes. The preserved host dispatch failure is repaired, and native
+assertion/exit guards pass. Pixel review still rejects intermittent white
+reopened A. Default B3 correctness, foreign accessibility and the coordinated
+U9 dependency set remain open.
 T0 contributed document surfaces, K0
 one-gesture Keep, F0 retained find, the D0 host decision surface, E0.1 engine
 capability disclosure, and E0.2 per-node page zoom are landed. Captured-page
@@ -16,14 +24,15 @@ remains useful as research and acceptance evidence.
 
 ## Authority and order
 
-### Windows Scry B1, 2026-10-05
+### Windows Scry B1 qualification, 2026-10-06
 
 The October [user-agent taxonomy](2026-08-03_user_agent_taxonomy_plan.md) owns
 the current browser-engine adoption sequence. B0's registry-derived inventory
-and refusal behavior retain their separate qualified receipt. B1 local source
-adds `--features scry` at the existing Mere `bd5912fb` pin, consuming the
-adapter's registry `scrying` 0.7.1/wgpu 30 row. Existing repository pins are
-unchanged; the optional dependency adds lock identities.
+and refusal behavior retain their separate qualified receipt. The current
+qualified Scry/Weld phase uses Mere `db4ee312`, Scry's immutable queue repair
+`39818a7`, direct Weld `4784d07` and Graft `01f3c9f` on the existing wgpu 30
+device. The shared Mere Weld adapter owns mouse and actual-character-code
+dispatch; Turnstone's local bridge is removed.
 
 The host shares an owned offscreen composition root, preserves explicit
 per-node profiles, and imports owned payloads on Turnstone's existing device.
@@ -33,23 +42,132 @@ import failures retire the producer and report failed content. The current
 qualification scope is two distinct pages in the primary Workbench, with
 independent input, primary-pane resize, switching, profile restart and teardown.
 
-The [Windows Scry consumer receipt](../docs/receipts/browser_scry_windows_20261005/README.md)
-records the full run and separate-process restoration. DOM input, owner-correct
-commands, resize/switch, zero-resource close and restored pins/localStorage/text
-pass. Four full-run and two restart cookie assertions fail. Visual review also
-finds stale post-input images and blank reopened tiles despite live counters.
-Full B1 acceptance remains gated on cookie retention and current pixels.
-CDP key/text delivery does not certify physical keyboard or OS IME. Typed
-find/zoom, permission/auth answers, correlated capture/PDF, DevTools opening
-and accessibility projection remain unavailable through the pinned adapter.
+The [supplier integration receipt](../docs/receipts/browser_supplier_integration_20261006/README.md)
+records a passing locked `scry,weld` build and four native scenarios on executable
+SHA-256 `b7bfd160ceab9710810b1993ac1a98eef04984fed670ffa9c9203ad91da861bb`.
+Each finishes with `RESULT ok`, native exit zero and no timeout. Direct captures
+qualify current Scry input/scroll pixels, independent native cookies,
+resize/switch/reconstruction, same-profile separate-process restoration and
+zero producer/cache/importer close. The same executable qualifies direct Weld
+input/find/requested zoom and the native permission-denial callback. The receipt
+archives 172 exact source input paths and hashes 95 finished evidence files;
+later Servo source or executables do not extend that frozen proof.
+
+**Historical control, 2026-10-05:** the
+[earlier Windows Scry receipt](../docs/receipts/browser_scry_windows_20261005/README.md)
+retains four full-run and two restart cookie assertion failures, stale
+post-input images and blank reopened tiles despite positive import counters.
+Those failures remain evidence for that source/executable; the October 6
+qualified phase closes their cookie/current-pixel gates within its stated scope.
+CDP key/text delivery does not certify physical keyboard or OS IME. Scry's
+pinned adapter still lacks typed find/zoom, permission/auth answers, correlated
+capture/PDF, DevTools opening and accessibility projection.
 OS IME, actual window resize/DPI, lenses, native rehosting and different-size
 appearances of one node retain separate acceptance gates. This source slice
 does not close the trio's hardware or release qualification.
 
+### Combined Servo build and dependency currency, 2026-10-06
+
+The [first three-engine build](../docs/receipts/browser_supplier_integration_20261006/turnstone-all3-build.log)
+failed fontsan 0.7's exactly-one-decoder guard. Genet `69a2383b` enabled the
+default `woff2` decoder while upstream Servo enabled `libz-sys,wuff`; the
+[inverse feature tree](../docs/receipts/browser_supplier_integration_20261006/fontsan-conflict-tree.log)
+records their additive collision. This failed control remains preserved.
+
+Genet `679d8314aab4ec9f57a903c79dde244c3c565c1e` aligns the dependency edge
+with Servo's `wuff` backend while retaining the existing sanitizer function.
+Its [qualification summary](../docs/receipts/browser_supplier_integration_20261006/fontsan-compatibility/qualification-summary.json)
+records three passing exact tests: valid WOFF2 decoding with the NKo glyph
+retained, malformed WOFF2 rejection and unchanged SFNT identity. This qualifies
+the supplier repair. The coherent older consumer family's resolved feature
+graph and locked three-engine serial build pass. Graft's corrected swap also
+passes its separate native GPU smoke. Turnstone's qualification candidate now
+selects tested Graft `dec11bbd`; its rebuild passes. The first native control
+exposes a missing Servo branch in the host spawn dispatcher before any view
+is created. Its exact source archive and failed run remain separate from
+the repaired host's next qualification and the final U9 set. That host passes
+64 focused shell tests and full native assertion/exit guards; direct review
+rejects its white reopened Servo A. Separate unchanged-binary controls pass
+four simultaneous Servo/WebView2/CEF pages, resize/zero teardown and fresh
+Scry/Weld input, process restart and permission callbacks with observed runtime
+modules. The [six-run synchronization comparison](../docs/receipts/browser_supplier_integration_20261006/sync-diagnostic/README.md)
+preserves 176 root and 38 supplier inputs. Existing passes once and reproduces
+white reopened A once on the same executable; producer-only and normalization-only
+each pass, Both passes twice. All six assertion/exit guards pass, but one pixel
+review fails. Its 98 distinct browser tests pass. The small sample does not
+prove visual causality or a production fix; defaults remain unchanged. The
+temporary config is removed and the prior 175 candidate inputs restored exactly.
+The diagnostic sources remain archived. Default reopen correctness, foreign
+accessibility and final U9 adoption remain open; this docs/receipt checkpoint
+does not land the candidate Cargo/Rust work.
+
+The dated [dependency currency snapshot](../docs/receipts/browser_supplier_integration_20261006/dependency-currency/README.md)
+records Servo 0.7.0 released October 5 and CEF 154 bindings released October 3.
+The current Servo pin `1d44e5dd` belongs to the August 15 0.5 release branch;
+its later migration changes Surfman, mozangle and ipc-channel, including types
+exposed by Graft's adapter. Turnstone currently selects CEF
+`151.8.1+151.3.24`. Both upgrades need explicit adapter/SDK and native
+qualification. Servo 0.7 retains the same fontsan decoder edge, so a repin
+alone does not resolve the failed build. The selected wgpu 30.0.1 line is
+current; the trio's wgpu 28/29/30 rows retain intentional host compatibility.
+These currency findings do not extend the frozen Scry/Weld proof or close
+package, registry-only consumer and remaining hardware release gates.
+
+### Accessibility first and coordinated landing, 2026-10-06
+
+U2 in the [unusual-protocols plan](2026-10-06_unusual_protocols_browser_plan.md)
+puts accessibility on Windows, macOS and Linux first, together with keyboard
+and focus behavior. The [accessibility reconciliation receipt](../docs/receipts/browser_supplier_integration_20261006/accessibility-reconciliation/README.md)
+records current owner seams and acceptance gates. Qualified live pixels,
+cookies and input retain their scope; they do not qualify foreign-page
+accessibility.
+
+AccessKit 0.24.1 already supports independent TreeId subtrees. Current
+Turnstone stitches retained contributed content into its root tree but lacks
+foreign browser-tree admission, ordered updates and full tree-aware action
+routing. The reusable identity/lifecycle/action helper belongs in Mere;
+supplier owners must export real semantics and deliver their supported typed
+actions. Idle semantic publication, focus handoff, bounds and stale-generation
+rejection are part of this slice. The later published Mere composition brief
+records AC1–AC5 and the shared helper/E1 assignment to the unusual-protocols
+lane (U15); its smolweb plan records that lane's U16 ownership of Smolweb and
+Micron accessibility projections. Published Turnstone `032463a` has not yet
+received those records. This browser lane consumes that helper and supplies
+foreign browser semantics/actions; AC6 cross-process transport remains research.
+
+The selected Servo 0.5 API exposes a read-only tree exporter without the public
+typed content-action bridge found in Servo 0.7's
+[`Servo::forward_accessibility_action`](https://github.com/servo/servo/blob/aac43a3f31a259f04a574f5ec4e959c943ad7cc7/components/servo/servo.rs#L1120-L1131).
+That release difference makes a coherent Servo/Graft migration a priority
+under U2. Its traced DOM handler implements only Click; Focus, text/value,
+selection and scrolling remain missing. Adapter types and native assistive
+behavior still need qualification. Its producer chain also initializes empty
+AccessKit action masks and never advertises Click or child actions, so the
+public forwarding method alone does not expose native invocability. Action
+advertisement and delivery need separate checks. CEF callback export and Scry's WebView2/WKWebView/WebKit
+bridges remain owner-specific work; their current consumer capabilities stay
+Unsupported. No automatic dependency repin is implied.
+
+Done-conditions include a portable joined-tree/action check with deliberate
+identity and lifecycle refusal controls, followed by real joined-tree walks
+with Narrator or NVDA, VoiceOver and Orca. The receipt lists per-platform
+focus, editing, scrolling, update and teardown gates; none is closed by this
+source inventory. U9 holds final landing for the coordinated current tested
+set after WS4 is pushed: Knot, then Redshank, then Turnstone, coordinated with
+the browser session owning the dirty tree. The three-engine build/native and
+supplier package gates remain separate.
+
+The [October 7 remote checkpoint](../docs/receipts/browser_supplier_integration_20261006/current-stack-reconciliation/README.md)
+confirms R6 and the shared helper/E1a on published Mere `a59e4c47`. The WS4
+publication prerequisite is satisfied. Mere's selected Genet still lacks the
+published decoder repair; Knot main and nested Redshank retain older Mere
+pins. Matching pins and exact-source qualification remain the final U9 gate.
+Windowless E1a checks do not qualify E1b human walks or foreign-browser actions.
+
 ### Terminology amendment, 2026-09-20
 
 **Status:** terminology and display-text edits applied; Cargo checks held at
-the user's request. Mere's `design_docs/TERMINOLOGY.md` assigns **denizen** to
+the user's request. Mere's terminology (`mere/design_docs/TERMINOLOGY.md`) assigns **denizen** to
 the Isometry simulation family and restores **participant** for platform
 admission. **Servitor** remains the resident helper.
 
@@ -72,7 +190,7 @@ of the amendment.
 **Status:** source implementation with static review. Cargo, runtime and
 headed validation remain held at the user's request. This is a separate
 behavior change from the terminology amendment above. Mere's canonical
-`design_docs/mere_docs/implementation_strategy/2026-08-13_graph_behaviors_plan.md`,
+graph behaviors plan (`mere/design_docs/mere_docs/implementation_strategy/2026-08-13_graph_behaviors_plan.md`),
 sections 8.5 and 8.6, owns the redesign and subsequent slices.
 
 Turnstone consumes Servitor's portable binding and admission contract, using
@@ -115,7 +233,7 @@ focused scenario receipt is still pending.
 ### Resident run outcomes R1b, 2026-09-20
 
 **Status:** source implementation with static review; execution remains held. Mere's
-`design_docs/mere_docs/implementation_strategy/2026-08-13_graph_behaviors_plan.md`,
+graph behaviors plan (`mere/design_docs/mere_docs/implementation_strategy/2026-08-13_graph_behaviors_plan.md`),
 section 8.7, owns the run contract and acceptance boundaries.
 
 The host records the admitted ticket and ordered run events in

@@ -1,0 +1,9 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+fontsan v0.7.0
+├── fontsan feature "libz-sys"
+│   └── genet-livery v0.0.4 (C:\Users\mark_\Code\worktrees\genet-browser-fonts\components\genet-livery)
+│       └── genet-livery feature "default" (command-line)
+└── fontsan feature "wuff"
+    └── genet-livery v0.0.4 (C:\Users\mark_\Code\worktrees\genet-browser-fonts\components\genet-livery) (*)

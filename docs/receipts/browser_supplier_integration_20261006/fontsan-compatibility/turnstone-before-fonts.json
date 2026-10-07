@@ -1,0 +1,18 @@
+{
+  "recorded_utc": "2026-10-07T02:36:59.011754+00:00",
+  "state": "Before coherent font-decoder compatibility repin; preserves failed full3 resolver inputs",
+  "files": [
+    {
+      "path": "Cargo.toml",
+      "bytes": 30984,
+      "sha256": "0b5ef2159bc5d9b61d0ece400e2a86c8a60802dc845a9bbcf3da6d248eb17ede",
+      "copy": "turnstone-before-fonts.Cargo.toml"
+    },
+    {
+      "path": "Cargo.lock",
+      "bytes": 469291,
+      "sha256": "c97eda0727fcba753d4cb4ee465c4655ebbbbf7dc4bc894c58710b5403365323",
+      "copy": "turnstone-before-fonts.Cargo.lock"
+    }
+  ]
+}

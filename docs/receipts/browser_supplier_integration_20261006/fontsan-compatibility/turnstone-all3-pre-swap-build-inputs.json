@@ -1,0 +1,22 @@
+{
+  "observed_utc": "2026-10-07T04:23:40.418989+00:00",
+  "scope": "Completed serial compilation of older compatibility set with Graft 01f3c9f. Not a native result or final U9 repin.",
+  "inputs": [
+    {
+      "path": "src/shell/servo.rs",
+      "sha256": "3FBCEFD1DE32BDDF31839A4EB0BEB9FA5CCA9176F32F240B18BB086A00BACA37"
+    },
+    {
+      "path": "Cargo.toml",
+      "sha256": "38F4195D3B4B443846372F5E77CF39D2039C91B56F3030267532D1F30FA16641"
+    },
+    {
+      "path": "Cargo.lock",
+      "sha256": "801E44839B5DA4046766D0EDA70FD3D7E7B98311CC816399C7E2DD35D0A94923"
+    },
+    {
+      "path": "C:\\t\\cargo-targets\\turnstone\\debug\\turnstone.exe",
+      "sha256": "6B736B987FB95AF282421C85CEB8C03649284476F335CDAE1DB91447ED04AB50"
+    }
+  ]
+}

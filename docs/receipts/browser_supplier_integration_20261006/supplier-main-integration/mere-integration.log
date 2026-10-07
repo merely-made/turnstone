@@ -1,0 +1,46 @@
+Published baseline: 6d26f1e4c1a19842d268c88c421d543fe9f3339e; compatibility: db4ee31258b23c86572c429388c5d10bd4de9dc3; strategy: tree-preserving ours ancestry with bounded plan provenance
+Switched to a new branch 'codex/browser-input-integration'
+Automatic merge went well; stopped before committing as requested
+Guard passed: pending merge tree exactly equals published main before provenance append
+ .../2026-06-15_engine_picker_and_pluggability_plan.md     | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
+diff --git a/design_docs/inker_docs/implementation_strategy/2026-06-15_engine_picker_and_pluggability_plan.md b/design_docs/inker_docs/implementation_strategy/2026-06-15_engine_picker_and_pluggability_plan.md
+index a15b6939..f67b0b64 100644
+--- a/design_docs/inker_docs/implementation_strategy/2026-06-15_engine_picker_and_pluggability_plan.md
++++ b/design_docs/inker_docs/implementation_strategy/2026-06-15_engine_picker_and_pluggability_plan.md
+@@ -273,3 +273,18 @@ reads.
+   This is a shared adapter qualification, not an upstream Servo construction
+   or headed consumer receipt. Turnstone's process-owned Servo host and native
+   page/input/resize/teardown gates remain separate implementation work.
++
++- **2026-10-06, qualified browser compatibility ancestry.** The immutable Mere
++  `db4ee31258b23c86572c429388c5d10bd4de9dc3` revision retains Turnstone's
++  qualified `3d1cdacc` dependency family and carries only the reviewed Weld
++  input and ordered Graft adapter fixes with their existing-plan progress.
++  A two-parent ancestry merge makes that maintenance revision reachable from
++  published main while preserving current main's source and dependency graph;
++  the three adapter source blobs already match. This deliberately preserves
++  unrelated newer main work rather than replaying the maintenance baseline.
++  Turnstone's exact-source Scry/Weld production executable passed the four
++  Windows input, Scry restart and CEF permission gates with native exit zero
++  and `RESULT ok`. Its frozen source/archive evidence is owned by
++  `turnstone/docs/receipts/browser_supplier_integration_20261006/`.
++  The ordered Graft host contract remains library-qualified; the upstream
++  Servo native consumer and supplementary Unicode/OS IME gates are separate.
+Guard passed: only bounded existing-plan provenance differs from published main; all source and Cargo blobs unchanged
+[codex/browser-input-integration 392630bb] Merge qualified browser adapter maintenance ancestry without reverting main
+392630bb84839500cb44c583cf657502df248113
+6d26f1e4c1a19842d268c88c421d543fe9f3339e db4ee31258b23c86572c429388c5d10bd4de9dc3
+Merge qualified browser adapter maintenance ancestry without reverting main
+To https://github.com/merely-made/mere.git
+   6d26f1e4..392630bb  HEAD -> main
+392630bb84839500cb44c583cf657502df248113	refs/heads/main
+Reachability proof: published merge parents6d26f1e4+db4ee312; all published tree paths except15-line existing-plan provenance preserved
+From https://github.com/merely-made/mere
+ * branch              main       -> FETCH_HEAD
+Verified clean absolute worktree target: C:\Users\mark_\Code\worktrees\mere-browser-input-compat
+To https://github.com/merely-made/mere.git
+ - [deleted]           codex/browser-input-compat
+Deleted branch codex/browser-input-compat (was db4ee312).
+Deleted branch codex/browser-input-integration (was 392630bb).
+Cleanup passed: both owned local branches and provisional remote branch removed after main reachability proof; primary concurrent main source/ref untouched

@@ -1,0 +1,32 @@
+
+running 27 tests
+test chrome_view::tests::authentication_card_debug_withholds_credential_fields ... ok
+test app::tests::live_settings_snapshot_reconfigures_the_running_chrome_value_once ... ok
+test chrome_view::tests::authentication_card_masks_password_and_a11y_withholds_credentials ... ok
+test chrome_view::tests::document_find_projects_controlled_input_status_and_controls ... ok
+test panes::blueprint_tests::a_named_layout_carries_a_non_default_chrome_composition ... ok
+test panes::tests::graph_bound_panes_are_classified_apart_from_window_chrome ... ok
+test settings_pane::tests::snapshot_projects_every_live_application_axis_to_chrome ... ok
+test surface::tests::chrome_swallows_input_only_when_focused ... ok
+test surface::tests::content_and_chrome_ids_do_not_alias_the_reserved_ones ... ok
+test surface::tests::z_order_is_canvas_then_content_then_chrome ... ok
+test chrome_view::tests::hidden_shellbar_is_removed_from_the_chrome_and_a11y_projections ... ok
+test chrome_view::tests::the_caret_split_mirrors_omnibar_state ... ok
+test ui::tests::live_appearance_changes_chrome_and_settings_paint_styles ... ok
+test ui::tests::chrome_absolute_siblings_all_paint ... ok
+test chrome_view::tests::browser_strip_targets_the_workbench_member_without_moving_graph_selection ... ok
+test chrome_view::tests::live_appearance_is_applied_to_the_retained_chrome_surface ... ok
+test chrome_view::tests::permission_decision_projects_origin_choices_and_accessibility ... ok
+test chrome_view::tests::a_press_hit_tests_without_cascading_again ... ok
+test chrome_view::tests::browser_strip_routes_per_node_back_forward_and_reload ... ok
+test chrome_view::tests::active_fetch_switches_reload_to_stop_and_projects_link_preview ... ok
+test chrome_view::tests::chrome_windows_are_forest_siblings_with_scoped_layout ... ok
+test chrome_view::tests::an_unchanged_chrome_paints_without_cascading_again ... ok
+test chrome_view::tests::a_changed_chrome_cascades_again ... ok
+test chrome_view::tests::one_mutation_invalidates_every_window_root ... ok
+test chrome_view::tests::clicking_a_suggestion_row_bubbles_its_index ... ok
+test chrome_view::tests::keep_button_targets_the_member_then_projects_kept_state ... ok
+test chrome_view::tests::install_review_wraps_intact_and_keeps_card_and_click_geometry ... ok
+
+test result: ok. 27 passed; 0 failed; 0 ignored; 0 measured; 656 filtered out; finished in 0.46s
+

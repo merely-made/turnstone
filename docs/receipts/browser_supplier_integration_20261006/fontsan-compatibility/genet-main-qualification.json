@@ -1,0 +1,22 @@
+{
+  "schema": "genet-modern-main-font-qualification-v1",
+  "baseline": "90c5ef507db943204d5493a1a7dd817695557cda",
+  "state": "Reviewed six-file port applied, not committed or pushed",
+  "Cargo_woff2_gate": "exit0; 2passed; 25m34s including shared cachewait",
+  "exact_sfnt_gate": "exit0; 1passed",
+  "test_executable": "C:/t/cargo-targets/genet/debug/deps/genet_livery-51cc12be023da974.exe",
+  "executable_sha256": "d0c20829dac676240af93b974f741e972c8198cc2d721584e46864aec5a26990",
+  "six_input_hashes_before_after": "PASS",
+  "tracked_delta_guard": "Only Cargo row, 20test lines,14plan lines",
+  "fixture_delta": "3new package-local licensed fixture files",
+  "runtime_normalizer_equality": "PASS: exact against baseline90 after line-ending normalization",
+  "rustfmt": "PASS",
+  "git_diff_check": "PASS",
+  "provider_versions": {
+    "wuff_capi": "0.2.0",
+    "wuff": "0.2.9",
+    "fontsan": "0.7.0"
+  },
+  "scope": "Native codec acceptance on modern source in existing developer config; local path patches and generated lock remain developer tooling, not production immutable consumer evidence",
+  "proposed_next": "Commit exact reviewed repair, then ordinary noff compatibility679 merge with source tree/parents guarded, pendingrootreview"
+}

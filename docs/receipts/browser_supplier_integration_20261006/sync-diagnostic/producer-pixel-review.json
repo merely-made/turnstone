@@ -1,0 +1,243 @@
+{
+  "recorded_utc": "2026-10-07T05:37:59.634470+00:00",
+  "directory": "docs/receipts/browser_supplier_integration_20261006/native-servo-sync-producer",
+  "method": "Each of two recorded live content rectangles must show the fixture's red top and blue bottom, 16 pixels each within RGB channel tolerance 8. Samples avoid text and the host toolbar.",
+  "limits": "Fixture-specific orientation/blank-page check; does not prove text, accessibility, physical input, DPI or arbitrary page correctness. Reader refusal and closed-view captures are reviewed separately.",
+  "checks": [
+    {
+      "capture": "01_two_upstream_servo_pages.png",
+      "capture_sha256": "75edc1fa76831cb559102039d6444acd1b5e7051074b9cb3d5ed1c591d2c6e9c",
+      "geometry": "two-servo-pages.surface-frames.json",
+      "geometry_sha256": "80d481edbe76a59b0abee350c4fa5bb19d0276d06dbd5386cf3c19ddae337bb3",
+      "surfaces": [
+        {
+          "node": "4f8931da-5635-4445-8c15-6556974000e5",
+          "bands": [
+            {
+              "band": "top",
+              "matched_pixels": 16,
+              "required_pixels": 16
+            },
+            {
+              "band": "bottom",
+              "matched_pixels": 16,
+              "required_pixels": 16
+            }
+          ]
+        },
+        {
+          "node": "1e368ee4-5cfc-470a-a869-4d5a330b9956",
+          "bands": [
+            {
+              "band": "top",
+              "matched_pixels": 16,
+              "required_pixels": 16
+            },
+            {
+              "band": "bottom",
+              "matched_pixels": 16,
+              "required_pixels": 16
+            }
+          ]
+        }
+      ],
+      "passed": true
+    },
+    {
+      "capture": "02_a_native_input_and_navigation.png",
+      "capture_sha256": "2148d14300204fad1fe2e10850ad59e0a83220423e3df9919ced16b49d3a0efe",
+      "geometry": "independent-input.surface-frames.json",
+      "geometry_sha256": "80d481edbe76a59b0abee350c4fa5bb19d0276d06dbd5386cf3c19ddae337bb3",
+      "surfaces": [
+        {
+          "node": "4f8931da-5635-4445-8c15-6556974000e5",
+          "bands": [
+            {
+              "band": "top",
+              "matched_pixels": 16,
+              "required_pixels": 16
+            },
+            {
+              "band": "bottom",
+              "matched_pixels": 16,
+              "required_pixels": 16
+            }
+          ]
+        },
+        {
+          "node": "1e368ee4-5cfc-470a-a869-4d5a330b9956",
+          "bands": [
+            {
+              "band": "top",
+              "matched_pixels": 16,
+              "required_pixels": 16
+            },
+            {
+              "band": "bottom",
+              "matched_pixels": 16,
+              "required_pixels": 16
+            }
+          ]
+        }
+      ],
+      "passed": true
+    },
+    {
+      "capture": "03_b_native_input_and_navigation.png",
+      "capture_sha256": "7a80bfcecd388b0cbaacdbfbf1f8d9a70afd69bede6ddd7965e70a8770207be3",
+      "geometry": "independent-input.surface-frames.json",
+      "geometry_sha256": "80d481edbe76a59b0abee350c4fa5bb19d0276d06dbd5386cf3c19ddae337bb3",
+      "surfaces": [
+        {
+          "node": "4f8931da-5635-4445-8c15-6556974000e5",
+          "bands": [
+            {
+              "band": "top",
+              "matched_pixels": 16,
+              "required_pixels": 16
+            },
+            {
+              "band": "bottom",
+              "matched_pixels": 16,
+              "required_pixels": 16
+            }
+          ]
+        },
+        {
+          "node": "1e368ee4-5cfc-470a-a869-4d5a330b9956",
+          "bands": [
+            {
+              "band": "top",
+              "matched_pixels": 16,
+              "required_pixels": 16
+            },
+            {
+              "band": "bottom",
+              "matched_pixels": 16,
+              "required_pixels": 16
+            }
+          ]
+        }
+      ],
+      "passed": true
+    },
+    {
+      "capture": "04_resize_and_orientation.png",
+      "capture_sha256": "bfcfe5ca5e0740586bc030cf950ca71233493275f140aaa987df6126adce5d8e",
+      "geometry": "servo-resized.surface-frames.json",
+      "geometry_sha256": "395ee6c6e43f7c4b7eb3a02486250549368e8a8f8be7cfcd050857835b76ffb4",
+      "surfaces": [
+        {
+          "node": "4f8931da-5635-4445-8c15-6556974000e5",
+          "bands": [
+            {
+              "band": "top",
+              "matched_pixels": 16,
+              "required_pixels": 16
+            },
+            {
+              "band": "bottom",
+              "matched_pixels": 16,
+              "required_pixels": 16
+            }
+          ]
+        },
+        {
+          "node": "1e368ee4-5cfc-470a-a869-4d5a330b9956",
+          "bands": [
+            {
+              "band": "top",
+              "matched_pixels": 16,
+              "required_pixels": 16
+            },
+            {
+              "band": "bottom",
+              "matched_pixels": 16,
+              "required_pixels": 16
+            }
+          ]
+        }
+      ],
+      "passed": true
+    },
+    {
+      "capture": "06_a_servo_reconstructed.png",
+      "capture_sha256": "bfcfe5ca5e0740586bc030cf950ca71233493275f140aaa987df6126adce5d8e",
+      "geometry": "servo-reconstructed.surface-frames.json",
+      "geometry_sha256": "395ee6c6e43f7c4b7eb3a02486250549368e8a8f8be7cfcd050857835b76ffb4",
+      "surfaces": [
+        {
+          "node": "4f8931da-5635-4445-8c15-6556974000e5",
+          "bands": [
+            {
+              "band": "top",
+              "matched_pixels": 16,
+              "required_pixels": 16
+            },
+            {
+              "band": "bottom",
+              "matched_pixels": 16,
+              "required_pixels": 16
+            }
+          ]
+        },
+        {
+          "node": "1e368ee4-5cfc-470a-a869-4d5a330b9956",
+          "bands": [
+            {
+              "band": "top",
+              "matched_pixels": 16,
+              "required_pixels": 16
+            },
+            {
+              "band": "bottom",
+              "matched_pixels": 16,
+              "required_pixels": 16
+            }
+          ]
+        }
+      ],
+      "passed": true
+    },
+    {
+      "capture": "08_reopened_in_same_servo_process.png",
+      "capture_sha256": "83e3997e8c9c3b6d81fa2ba35a6634441198f9ab3c86031d2eedb3e43ed09377",
+      "geometry": "servo-reopened.surface-frames.json",
+      "geometry_sha256": "395ee6c6e43f7c4b7eb3a02486250549368e8a8f8be7cfcd050857835b76ffb4",
+      "surfaces": [
+        {
+          "node": "4f8931da-5635-4445-8c15-6556974000e5",
+          "bands": [
+            {
+              "band": "top",
+              "matched_pixels": 16,
+              "required_pixels": 16
+            },
+            {
+              "band": "bottom",
+              "matched_pixels": 16,
+              "required_pixels": 16
+            }
+          ]
+        },
+        {
+          "node": "1e368ee4-5cfc-470a-a869-4d5a330b9956",
+          "bands": [
+            {
+              "band": "top",
+              "matched_pixels": 16,
+              "required_pixels": 16
+            },
+            {
+              "band": "bottom",
+              "matched_pixels": 16,
+              "required_pixels": 16
+            }
+          ]
+        }
+      ],
+      "passed": true
+    }
+  ],
+  "passed": true
+}

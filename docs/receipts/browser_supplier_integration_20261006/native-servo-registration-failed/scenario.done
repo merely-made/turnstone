@@ -1,0 +1,51 @@
+RESULT fail
+FAIL: assert snap browser-current-engine: no such field
+FAIL: assert snap browser-current-content Eq 'live': got 'failed'
+FAIL: assert snap host-surface-producers Eq '1': got '0'
+FAIL: assert snap host-servo-views Eq '1': got '0'
+FAIL: assert snap browser-current-engine: no such field
+FAIL: assert snap browser-current-content Eq 'live': got 'failed'
+FAIL: assert snap host-surface-producers Eq '2': got '0'
+FAIL: assert snap host-servo-views Eq '2': got '0'
+FAIL: assert snap host-servo-profile Eq 'supplier-b3-shared': got ''
+captured 01_two_upstream_servo_pages
+FAIL: assert snap browser-current Contains 'Servo A | text=alp | clicks=0': got 'Servo A  http://127.0.0.1:43124/page-a.html'
+FAIL: assert snap browser-current Contains 'Servo A | text=alpha | clicks=0': got 'Servo A  http://127.0.0.1:43124/page-a.html'
+FAIL: assert snap browser-current Contains 'result.html?page=A&text=alpha&clicks=1': got 'Servo A  http://127.0.0.1:43124/page-a.html'
+FAIL: assert snap browser-current Contains 'Servo A | result=alpha | clicks=1': got 'Servo A  http://127.0.0.1:43124/page-a.html'
+FAIL: assert snap browser-current-engine: no such field
+FAIL: assert snap browser-current-content Eq 'live': got 'failed'
+captured 02_a_native_input_and_navigation
+FAIL: assert snap browser-current Contains 'Servo B | text=bravo | clicks=0': got 'Servo B  http://127.0.0.1:43124/page-b.html'
+FAIL: assert snap browser-current Contains 'result.html?page=B&text=bravo&clicks=1': got 'Servo B  http://127.0.0.1:43124/page-b.html'
+FAIL: assert snap browser-current Contains 'Servo B | result=bravo | clicks=1': got 'Servo B  http://127.0.0.1:43124/page-b.html'
+FAIL: assert snap browser-current-content Eq 'live': got 'failed'
+captured 03_b_native_input_and_navigation
+FAIL: assert snap browser-find-capability: no such field
+FAIL: assert snap browser-zoom-capability: no such field
+FAIL: assert snap host-surface-producers Eq '2': got '0'
+FAIL: assert snap host-servo-views Eq '2': got '0'
+captured 04_resize_and_orientation
+FAIL: assert snap host-surface-producers Eq '1': got '0'
+FAIL: assert snap host-servo-views Eq '1': got '0'
+captured 05_a_reader_b_servo
+FAIL: assert snap browser-current-engine: no such field
+FAIL: assert snap browser-current-content Eq 'live': got 'failed'
+FAIL: assert snap host-surface-producers Eq '2': got '0'
+FAIL: assert snap host-servo-views Eq '2': got '0'
+FAIL: assert snap browser-current Contains 'Servo A | result=alpha | clicks=1': got 'Servo A  http://127.0.0.1:43124/page-a.html'
+captured 06_a_servo_reconstructed
+FAIL: assert snap host-surface-producers Eq '1': got '0'
+FAIL: assert snap host-servo-views Eq '1': got '0'
+captured 07_both_servo_views_closed
+FAIL: assert snap host-surface-producers Eq '1': got '0'
+FAIL: assert snap host-servo-views Eq '1': got '0'
+FAIL: assert snap browser-current-engine: no such field
+FAIL: assert snap browser-current Contains 'Servo B | result=bravo | clicks=1': got 'Servo B  http://127.0.0.1:43124/page-b.html'
+FAIL: assert snap host-surface-producers Eq '2': got '0'
+FAIL: assert snap host-servo-views Eq '2': got '0'
+FAIL: assert snap browser-current-engine: no such field
+FAIL: assert snap browser-current Contains 'Servo A | result=alpha | clicks=1': got 'Servo A  http://127.0.0.1:43124/page-a.html'
+captured 08_reopened_in_same_servo_process
+captured 09_final_servo_teardown
+B3 upstream Servo: shared named profile, independent views and input, native navigation, normalized orientation, resize, reconstruction and teardown

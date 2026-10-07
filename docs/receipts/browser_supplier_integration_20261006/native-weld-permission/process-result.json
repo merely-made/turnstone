@@ -1,0 +1,21 @@
+{
+  "executable": "C:\\t\\cargo-targets\\turnstone\\debug\\turnstone.exe",
+  "scenario": "C:\\Users\\mark_\\Code\\repos\\turnstone\\scenarios\\browser_weld_permission_direct_windows.scn",
+  "profile": "C:\\Users\\mark_\\Code\\repos\\turnstone\\docs\\receipts\\browser_supplier_integration_20261006\\profile\\weld-permission",
+  "owned_pid": 44072,
+  "started_utc": "2026-10-07T01:29:58.3951410Z",
+  "finished_utc": "2026-10-07T01:31:19.8480258Z",
+  "timeout_seconds": 600,
+  "timed_out": false,
+  "native_exit": 0,
+  "module_evidence": "loaded-modules.json",
+  "scenario_result": "RESULT ok",
+  "environment": {
+    "RUST_LOG": "warn",
+    "SCRY_FIXTURE_BASE": null,
+    "SERVO_FIXTURE_BASE": null,
+    "TURNSTONE_CEF_PATH": "C:/Users/mark_/Code/cef-cache/wgpu-weld/151.3.24/cef_windows_x86_64",
+    "TURNSTONE_SERVO_PROFILE": null,
+    "TURNSTONE_SERVO_PROFILE_DIR": null
+  }
+}

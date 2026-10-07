@@ -1,0 +1,25 @@
+Published baseline: 99ef3b37e171b6d40bdcc68027e271ca596b488e; compatibility: b613fc55d2d59e865b6bb04e55a880ee4773b824
+Switched to a new branch 'codex/browser-input-integration'
+Automatic merge went well; stopped before committing as requested
+ .../2026-09-13_redshank_gui_implementation_plan.md | 20 ++++++++++++++
+ ports/redshank/Cargo.lock                          | 32 +++++++++++-----------
+ ports/redshank/Cargo.toml                          | 16 +++++------
+ ports/redshank/web/Cargo.toml                      |  6 ++--
+ 4 files changed, 47 insertions(+), 27 deletions(-)
+Guards passed: exact four compatibility file blobs; every other published-main path unchanged
+[codex/browser-input-integration 06c2b13] Merge qualified Redshank browser-input compatibility ancestry
+06c2b13ce296c82fafc394e0c90da21458542803
+99ef3b37e171b6d40bdcc68027e271ca596b488e b613fc55d2d59e865b6bb04e55a880ee4773b824
+Merge qualified Redshank browser-input compatibility ancestry
+To https://github.com/merely-made/woodshed.git
+   99ef3b3..06c2b13  HEAD -> main
+06c2b13ce296c82fafc394e0c90da21458542803	refs/heads/main
+Reachability proof: published main has parents99ef3b37+b613fc55; compatibility is an ancestor
+From https://github.com/merely-made/woodshed
+ * branch            main       -> FETCH_HEAD
+Verified clean absolute worktree target: C:\Users\mark_\Code\worktrees\woodshed-browser-input-compat
+To https://github.com/merely-made/woodshed.git
+ - [deleted]         codex/browser-input-compat
+Deleted branch codex/browser-input-compat (was b613fc5).
+Deleted branch codex/browser-input-integration (was 06c2b13).
+Cleanup passed: both owned local branches and provisional remote branch removed after reachable-main proof; primary dirty checkout untouched

@@ -1,0 +1,19 @@
+{
+  "observed_utc": "2026-10-07T04:38:49.3440627Z",
+  "scope": "Turnstone own native ANGLE staging. Runtime loaded-module qualification remains pending.",
+  "files": [
+    {
+      "source": "C:\\t\\cargo-targets\\turnstone\\debug\\build\\mozangle-48ae35774f2850b9\\out\\libEGL.dll",
+      "destination": "C:\\t\\cargo-targets\\turnstone\\debug\\libEGL.dll",
+      "sha256": "D3657207EA53F968552E99D9E1EDB782143862D0A6A5430D0F8951A69DBE577C",
+      "previous_destination_sha256": "F644839720EC461DB74E0A0C29416D48EF7EB7721D68AA2D2C3B77F7CC640926"
+    },
+    {
+      "source": "C:\\t\\cargo-targets\\turnstone\\debug\\build\\mozangle-48ae35774f2850b9\\out\\libGLESv2.dll",
+      "destination": "C:\\t\\cargo-targets\\turnstone\\debug\\libGLESv2.dll",
+      "sha256": "9C473D47B82898AAC20DBE18B4598677528393E72C6524A1AA55DD6ABE6BA2A4",
+      "previous_destination_sha256": "FB5135A2F708DB0AFF56C6C008A2DCF8B87662CF9340ECE336861D9D89B045B3"
+    }
+  ],
+  "executable_sha256": "1562DB7CB6F33E38775DEBAE23995ED15FDF0F6358BE429D861410D10BDB761A"
+}

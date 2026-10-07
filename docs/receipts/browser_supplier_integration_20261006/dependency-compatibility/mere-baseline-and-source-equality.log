@@ -1,0 +1,5 @@
+Baseline Cargo.toml/Cargo.lock diff:
+Expected: empty diff. Adapter equality against main Graft commit 69cb39214d5fedb5bfb665383393c383f01aaa45:
+crates/inker/engines/weld-engine/src/welding_0_15.rs = 6ba41ada2f1cc46ea583f41f2947f5cfd39f57cf (both commits)
+crates/inker/engines/graft-engine/src/engine.rs = 1c62fedab46d79f7fb4c57a39bf1c088f3a80643 (both commits)
+crates/inker/engines/graft-engine/src/producer.rs = ce2ac2b35432f3edb91bd510a7bbe3434101f794 (both commits)

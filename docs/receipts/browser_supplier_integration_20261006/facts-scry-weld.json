@@ -1,0 +1,129 @@
+{
+  "features": [
+    "scry",
+    "weld"
+  ],
+  "executable_sha256": "b7bfd160ceab9710810b1993ac1a98eef04984fed670ffa9c9203ad91da861bb",
+  "test_invocations": {
+    "shell-tests.log": [
+      [
+        "60",
+        "0"
+      ]
+    ],
+    "find-tests.log": [
+      [
+        "6",
+        "0"
+      ]
+    ],
+    "chrome-tests.log": [
+      [
+        "18",
+        "0"
+      ]
+    ]
+  },
+  "distinct_test_count": 83,
+  "passing_test_executions": 84,
+  "native_gates": {
+    "native-weld-input": {
+      "executable": "C:\\t\\cargo-targets\\turnstone\\debug\\turnstone.exe",
+      "scenario": "C:\\Users\\mark_\\Code\\repos\\turnstone\\scenarios\\browser_weld_direct_windows.scn",
+      "profile": "C:\\Users\\mark_\\Code\\repos\\turnstone\\docs\\receipts\\browser_supplier_integration_20261006\\profile\\weld-input",
+      "owned_pid": 10180,
+      "started_utc": "2026-10-07T01:20:46.2006413Z",
+      "finished_utc": "2026-10-07T01:23:11.3368043Z",
+      "timeout_seconds": 600,
+      "timed_out": false,
+      "native_exit": 0,
+      "module_evidence": "loaded-modules.json",
+      "scenario_result": "RESULT ok",
+      "environment": {
+        "RUST_LOG": "warn",
+        "SCRY_FIXTURE_BASE": "http://127.0.0.1:43123",
+        "SERVO_FIXTURE_BASE": null,
+        "TURNSTONE_CEF_PATH": "C:/Users/mark_/Code/cef-cache/wgpu-weld/151.3.24/cef_windows_x86_64",
+        "TURNSTONE_SERVO_PROFILE": null,
+        "TURNSTONE_SERVO_PROFILE_DIR": null
+      }
+    },
+    "native-scry-input": {
+      "executable": "C:\\t\\cargo-targets\\turnstone\\debug\\turnstone.exe",
+      "scenario": "C:\\Users\\mark_\\Code\\repos\\turnstone\\scenarios\\browser_scry_windows.scn",
+      "profile": "C:\\Users\\mark_\\Code\\repos\\turnstone\\docs\\receipts\\browser_supplier_integration_20261006\\profile\\scry-input",
+      "owned_pid": 3848,
+      "started_utc": "2026-10-07T01:23:11.3743925Z",
+      "finished_utc": "2026-10-07T01:27:07.8575966Z",
+      "timeout_seconds": 600,
+      "timed_out": false,
+      "native_exit": 0,
+      "module_evidence": "loaded-modules.json",
+      "scenario_result": "RESULT ok",
+      "environment": {
+        "RUST_LOG": "warn",
+        "SCRY_FIXTURE_BASE": "http://127.0.0.1:43123",
+        "SERVO_FIXTURE_BASE": null,
+        "TURNSTONE_CEF_PATH": "C:/Users/mark_/Code/cef-cache/wgpu-weld/151.3.24/cef_windows_x86_64",
+        "TURNSTONE_SERVO_PROFILE": null,
+        "TURNSTONE_SERVO_PROFILE_DIR": null
+      }
+    },
+    "native-scry-restart": {
+      "executable": "C:\\t\\cargo-targets\\turnstone\\debug\\turnstone.exe",
+      "scenario": "C:\\Users\\mark_\\Code\\repos\\turnstone\\scenarios\\fixtures\\browser_scry\\restart_verify.scn",
+      "profile": "C:\\Users\\mark_\\Code\\repos\\turnstone\\docs\\receipts\\browser_supplier_integration_20261006\\profile\\scry-input",
+      "owned_pid": 24720,
+      "started_utc": "2026-10-07T01:27:07.8868740Z",
+      "finished_utc": "2026-10-07T01:28:09.5507280Z",
+      "timeout_seconds": 600,
+      "timed_out": false,
+      "native_exit": 0,
+      "module_evidence": "loaded-modules.json",
+      "scenario_result": "RESULT ok",
+      "environment": {
+        "RUST_LOG": "warn",
+        "SCRY_FIXTURE_BASE": "http://127.0.0.1:43123",
+        "SERVO_FIXTURE_BASE": null,
+        "TURNSTONE_CEF_PATH": "C:/Users/mark_/Code/cef-cache/wgpu-weld/151.3.24/cef_windows_x86_64",
+        "TURNSTONE_SERVO_PROFILE": null,
+        "TURNSTONE_SERVO_PROFILE_DIR": null
+      }
+    },
+    "native-weld-permission": {
+      "executable": "C:\\t\\cargo-targets\\turnstone\\debug\\turnstone.exe",
+      "scenario": "C:\\Users\\mark_\\Code\\repos\\turnstone\\scenarios\\browser_weld_permission_direct_windows.scn",
+      "profile": "C:\\Users\\mark_\\Code\\repos\\turnstone\\docs\\receipts\\browser_supplier_integration_20261006\\profile\\weld-permission",
+      "owned_pid": 44072,
+      "started_utc": "2026-10-07T01:29:58.3951410Z",
+      "finished_utc": "2026-10-07T01:31:19.8480258Z",
+      "timeout_seconds": 600,
+      "timed_out": false,
+      "native_exit": 0,
+      "module_evidence": "loaded-modules.json",
+      "scenario_result": "RESULT ok",
+      "environment": {
+        "RUST_LOG": "warn",
+        "SCRY_FIXTURE_BASE": null,
+        "SERVO_FIXTURE_BASE": null,
+        "TURNSTONE_CEF_PATH": "C:/Users/mark_/Code/cef-cache/wgpu-weld/151.3.24/cef_windows_x86_64",
+        "TURNSTONE_SERVO_PROFILE": null,
+        "TURNSTONE_SERVO_PROFILE_DIR": null
+      }
+    }
+  },
+  "subsequent_provider_lock_delta": {
+    "added_identities": [],
+    "removed_identities": [],
+    "changed_existing_records": [
+      [
+        "turnstone",
+        "0.1.0",
+        null
+      ]
+    ],
+    "rustls_versions": [
+      "0.23.45"
+    ]
+  }
+}

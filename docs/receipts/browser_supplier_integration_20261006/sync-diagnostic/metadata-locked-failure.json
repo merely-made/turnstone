@@ -1,0 +1,10 @@
+{
+  "recorded_utc": "2026-10-07T05:53:54.240238+00:00",
+  "scope": "Initial manual local-source lock metadata control failed before any build; offline correction subsequently reviewed.",
+  "cargo_exit_code": 101,
+  "stderr_log": "metadata.log",
+  "stderr_sha256": "5b2591aa32caf03f32f76d1bc32029d4417d4726130b82c6556000ee62deb9a2",
+  "empty_stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "unused_empty_stdout_removed": true,
+  "owner_closed": "Original Cargo metadata session66853 returned failure and completed before subsequent resolution/build/native controls; no live owner remains."
+}

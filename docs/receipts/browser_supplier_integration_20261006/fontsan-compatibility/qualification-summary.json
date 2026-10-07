@@ -1,0 +1,54 @@
+{
+  "schema": "genet-fontsan-compatibility-v1",
+  "baseline": "69a2383b2ad777b884a72f31f8f8fb7ece275c0b",
+  "qualified_commit": "679d8314aab4ec9f57a903c79dde244c3c565c1e",
+  "current_main_assessed": "90c5ef507db943204d5493a1a7dd817695557cda",
+  "owner_worktree": "C:/Users/mark_/Code/worktrees/genet-browser-fonts",
+  "isolation_reason": "Exact consumer baseline maintenance while primary main has newer independent source/layout/dependencies",
+  "target": "C:/t/cargo-targets/genet",
+  "build_command": "cargo test -p genet-livery --lib woff2 --target-dir C:/t/cargo-targets/genet",
+  "build_result": "exit0;2tests passed;3m59s",
+  "exact_test_commands": [
+    "genet_livery-1e0eb7d29f748682.exe --exact text::tests::malformed_woff2_is_rejected_before_font_registration",
+    "genet_livery-1e0eb7d29f748682.exe --exact text::tests::valid_woff2_is_decoded_to_sfnt_with_its_nko_glyph",
+    "genet_livery-1e0eb7d29f748682.exe --exact text::tests::sfnt_font_bytes_keep_their_existing_identity"
+  ],
+  "exact_tests": "3pass; each exit0",
+  "test_executable": "C:/t/cargo-targets/genet/debug/deps/genet_livery-1e0eb7d29f748682.exe",
+  "test_executable_sha256": "343e79edd0eef12f718c2a8ab653e3f8a533b9606b263df3b63cedec064999e1",
+  "runtime_function": "normalized_font_bytes",
+  "runtime_change": "none; baseline and assessed main function exactly equal after CRLF normalization",
+  "dependency_change": {
+    "removed_provider": "fontsan-woff2",
+    "new_features": [
+      "libz-sys",
+      "wuff"
+    ],
+    "package": "fontsan",
+    "version": "0.7.0",
+    "added_provider": "wuff-capi0.2.0->wuff0.2.9 (standalone diagnostic lock)",
+    "fontsan_checksum": "cff76797a10ce7f8439f6e0a5ed06783e26e60d97e28c8c1c623a608ca67cff9",
+    "old_features": [
+      "default",
+      "libz-sys",
+      "woff2"
+    ]
+  },
+  "fixture": {
+    "sha256": "d3ede808ce743034e14ff8cdaeb911aa49e50c0b3c94af38745744f57e564db4",
+    "copyright": "2013 Google Inc. All Rights Reserved.",
+    "license": "SIL OFL1.1; embedded name13/14 license declaration",
+    "original_path": "tests/wpt/tests/fonts/noto/NotoSansNko-regular-webfont.woff2",
+    "font": "Noto Sans NKo",
+    "bytes": 7724
+  },
+  "qualification_limitations": [
+    "Standalone workspace has no tracked Cargo.lock; diagnostic lock is recorded but not committed",
+    "Exact production consumer resolver/backend version graph and full3build/native gates remain separate",
+    "No wasm native sanitizer or full-script/shaping/platform fallback coverage claimed"
+  ],
+  "edited_source_rustfmt": "PASS",
+  "diff_check": "PASS",
+  "broad_fmt": "Existing unrelated baseline differences; stopped without edits",
+  "stopped_diagnostic": "woff2-rerun-cache-wait-stopped.log: original cache-wait bytes preserved; owned duplicate Cargo rerun session42074 interrupted exit1 before executing tests; not a gate"
+}

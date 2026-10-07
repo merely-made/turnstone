@@ -1,0 +1,3807 @@
+{
+  "recorded_utc": "2026-10-07T01:10:14.001108+00:00",
+  "baseline_head": "a616ece9e16571cd662d34c279d92274f5d8ced2",
+  "baseline_lock_blob": "91ec337c1b397d5557bb480eceadb70704009dc6",
+  "baseline_lock_sha256": "972bd78a85a7a2ef17e22e93b2efa9a838f0bd648752d8a8c3b81ddc16a2a39b",
+  "current_lock_sha256": "5cb2687e9514d0db0d777de68cb4e15c1dac5b16466c5d99a0521df4308b1450",
+  "baseline_package_count": 1382,
+  "current_package_count": 1674,
+  "baseline_git_families": [
+    {
+      "source": "git+https://github.com/kyren/gc-arena?rev=5a7534b883b703f23cfb8c3cfdf033460aa77ea9#5a7534b883b703f23cfb8c3cfdf033460aa77ea9",
+      "count": 2,
+      "packages": [
+        {
+          "name": "gc-arena",
+          "version": "0.5.3"
+        },
+        {
+          "name": "gc-arena-derive",
+          "version": "0.5.3"
+        }
+      ]
+    },
+    {
+      "source": "git+https://github.com/mark-ik/arboard.git?branch=custom-formats#57a68d037e51eff34974928f56b434c87b827fb8",
+      "count": 1,
+      "packages": [
+        {
+          "name": "arboard",
+          "version": "3.6.1"
+        }
+      ]
+    },
+    {
+      "source": "git+https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.4#0a54ab825f6012dc9e04fd505a247daf3c698d18",
+      "count": 7,
+      "packages": [
+        {
+          "name": "mere-p2panda-net",
+          "version": "0.7.4"
+        },
+        {
+          "name": "p2panda-auth",
+          "version": "0.7.1"
+        },
+        {
+          "name": "p2panda-core",
+          "version": "0.7.1"
+        },
+        {
+          "name": "p2panda-discovery",
+          "version": "0.7.1"
+        },
+        {
+          "name": "p2panda-encryption",
+          "version": "0.7.1"
+        },
+        {
+          "name": "p2panda-store",
+          "version": "0.7.1"
+        },
+        {
+          "name": "p2panda-sync",
+          "version": "0.7.1"
+        }
+      ]
+    },
+    {
+      "source": "git+https://github.com/mark-ik/piccolo?branch=master#e77309c648b91d59c1ded9b20e54999ae8b19741",
+      "count": 1,
+      "packages": [
+        {
+          "name": "piccolo",
+          "version": "0.3.3"
+        }
+      ]
+    },
+    {
+      "source": "git+https://github.com/mark-ik/vello.git?tag=vello-0.10.0#4354955e9d8637f32b7c78b20af2a58f842ba39e",
+      "count": 2,
+      "packages": [
+        {
+          "name": "vello",
+          "version": "0.10.0"
+        },
+        {
+          "name": "vello_encoding",
+          "version": "0.10.0"
+        }
+      ]
+    },
+    {
+      "source": "git+https://github.com/merely-made/genet.git?rev=69a2383b2ad777b884a72f31f8f8fb7ece275c0b#69a2383b2ad777b884a72f31f8f8fb7ece275c0b",
+      "count": 31,
+      "packages": [
+        {
+          "name": "browsing-context-api",
+          "version": "0.1.0"
+        },
+        {
+          "name": "buckram",
+          "version": "0.0.3"
+        },
+        {
+          "name": "cadency",
+          "version": "0.0.1"
+        },
+        {
+          "name": "document-session-api",
+          "version": "0.1.0"
+        },
+        {
+          "name": "engine-observables-api",
+          "version": "0.2.0"
+        },
+        {
+          "name": "fleece",
+          "version": "0.5.0"
+        },
+        {
+          "name": "genet-clipboard",
+          "version": "0.1.0"
+        },
+        {
+          "name": "genet-document-resources",
+          "version": "0.2.1"
+        },
+        {
+          "name": "genet-documents",
+          "version": "0.1.0"
+        },
+        {
+          "name": "genet-fontique",
+          "version": "0.10.0"
+        },
+        {
+          "name": "genet-host-api",
+          "version": "0.2.0"
+        },
+        {
+          "name": "genet-livery",
+          "version": "0.0.4"
+        },
+        {
+          "name": "genet-paint-types",
+          "version": "0.2.0"
+        },
+        {
+          "name": "genet-parley",
+          "version": "0.10.0"
+        },
+        {
+          "name": "genet-render",
+          "version": "0.2.0"
+        },
+        {
+          "name": "genet-render-host",
+          "version": "0.2.0"
+        },
+        {
+          "name": "genet-scripted-dom",
+          "version": "0.1.2"
+        },
+        {
+          "name": "genet-static-dom",
+          "version": "0.1.1"
+        },
+        {
+          "name": "genet-taffy",
+          "version": "0.14.0"
+        },
+        {
+          "name": "genet-text",
+          "version": "0.1.0"
+        },
+        {
+          "name": "genet-winit-host",
+          "version": "0.2.0"
+        },
+        {
+          "name": "ipc-channel",
+          "version": "0.22.0"
+        },
+        {
+          "name": "layout-dom-api",
+          "version": "0.1.1"
+        },
+        {
+          "name": "livery",
+          "version": "0.0.5"
+        },
+        {
+          "name": "netfetcher",
+          "version": "0.1.1"
+        },
+        {
+          "name": "script-engine-api",
+          "version": "0.1.0"
+        },
+        {
+          "name": "script-engine-piccolo",
+          "version": "0.0.0"
+        },
+        {
+          "name": "servo-media-player",
+          "version": "0.2.0"
+        },
+        {
+          "name": "servo-media-streams",
+          "version": "0.2.0"
+        },
+        {
+          "name": "servo-media-traits",
+          "version": "0.2.0"
+        },
+        {
+          "name": "taproot",
+          "version": "0.1.0"
+        }
+      ]
+    },
+    {
+      "source": "git+https://github.com/merely-made/knot-editor.git?rev=92719898b7101c1601f79183874debcdcf54d24f#92719898b7101c1601f79183874debcdcf54d24f",
+      "count": 4,
+      "packages": [
+        {
+          "name": "knot-capture",
+          "version": "0.0.1"
+        },
+        {
+          "name": "knot-document",
+          "version": "0.0.1"
+        },
+        {
+          "name": "knot-editor",
+          "version": "0.0.3"
+        },
+        {
+          "name": "knot-file-catalog",
+          "version": "0.0.1"
+        }
+      ]
+    },
+    {
+      "source": "git+https://github.com/merely-made/mere.git?rev=3d1cdacc90aa6a0736154d841223a3ae29e23aa5#3d1cdacc90aa6a0736154d841223a3ae29e23aa5",
+      "count": 69,
+      "packages": [
+        {
+          "name": "app-host",
+          "version": "0.0.1"
+        },
+        {
+          "name": "armillary",
+          "version": "0.1.1"
+        },
+        {
+          "name": "cambium",
+          "version": "0.3.3"
+        },
+        {
+          "name": "cambium-winit",
+          "version": "0.3.0"
+        },
+        {
+          "name": "castellan",
+          "version": "0.0.3"
+        },
+        {
+          "name": "chartulary",
+          "version": "0.2.2"
+        },
+        {
+          "name": "chirograph",
+          "version": "0.0.2"
+        },
+        {
+          "name": "commons-spine",
+          "version": "0.0.1"
+        },
+        {
+          "name": "distillery",
+          "version": "0.0.1"
+        },
+        {
+          "name": "document-canvas",
+          "version": "0.1.0"
+        },
+        {
+          "name": "eidetic",
+          "version": "0.0.2"
+        },
+        {
+          "name": "eidetic-search",
+          "version": "0.0.1"
+        },
+        {
+          "name": "errand",
+          "version": "0.3.4"
+        },
+        {
+          "name": "esp",
+          "version": "0.1.0"
+        },
+        {
+          "name": "gemot",
+          "version": "0.1.1"
+        },
+        {
+          "name": "graphshell",
+          "version": "0.0.2"
+        },
+        {
+          "name": "graphshell-client",
+          "version": "0.0.2"
+        },
+        {
+          "name": "graphshell-endpoint",
+          "version": "0.0.2"
+        },
+        {
+          "name": "illume",
+          "version": "0.0.2"
+        },
+        {
+          "name": "import",
+          "version": "0.0.1"
+        },
+        {
+          "name": "incipit",
+          "version": "0.2.0"
+        },
+        {
+          "name": "inker",
+          "version": "0.1.1"
+        },
+        {
+          "name": "insigne",
+          "version": "0.0.1"
+        },
+        {
+          "name": "knot-editor-host",
+          "version": "0.1.1"
+        },
+        {
+          "name": "luggage",
+          "version": "0.1.0"
+        },
+        {
+          "name": "mere",
+          "version": "0.0.2"
+        },
+        {
+          "name": "mere-alembic",
+          "version": "0.0.1"
+        },
+        {
+          "name": "mere-apparatus",
+          "version": "0.0.1"
+        },
+        {
+          "name": "mere-athanor",
+          "version": "0.0.1"
+        },
+        {
+          "name": "mere-cartography",
+          "version": "0.0.2"
+        },
+        {
+          "name": "mere-chrome",
+          "version": "0.0.1"
+        },
+        {
+          "name": "mere-document-lanes",
+          "version": "0.1.0"
+        },
+        {
+          "name": "mere-fetch",
+          "version": "0.0.1"
+        },
+        {
+          "name": "mere-forme",
+          "version": "0.1.0"
+        },
+        {
+          "name": "mere-kernel",
+          "version": "0.0.2"
+        },
+        {
+          "name": "mere-linked-data",
+          "version": "0.0.1"
+        },
+        {
+          "name": "mere-mesh",
+          "version": "0.0.1"
+        },
+        {
+          "name": "mere-moot",
+          "version": "0.0.1"
+        },
+        {
+          "name": "mere-proofs",
+          "version": "0.1.0"
+        },
+        {
+          "name": "mere-surface-api",
+          "version": "0.1.0"
+        },
+        {
+          "name": "mere-transport",
+          "version": "0.0.2"
+        },
+        {
+          "name": "mere-webrtc-carrier",
+          "version": "0.0.1"
+        },
+        {
+          "name": "meristem",
+          "version": "0.2.0"
+        },
+        {
+          "name": "mien",
+          "version": "0.0.1"
+        },
+        {
+          "name": "mooting",
+          "version": "0.1.0"
+        },
+        {
+          "name": "mora-cmudict",
+          "version": "0.0.1"
+        },
+        {
+          "name": "muniment",
+          "version": "0.1.2"
+        },
+        {
+          "name": "nematic",
+          "version": "0.1.1"
+        },
+        {
+          "name": "notochord",
+          "version": "0.1.0"
+        },
+        {
+          "name": "numen",
+          "version": "0.2.0"
+        },
+        {
+          "name": "pandect",
+          "version": "0.1.1"
+        },
+        {
+          "name": "personae",
+          "version": "0.2.1"
+        },
+        {
+          "name": "pictograph",
+          "version": "0.2.0"
+        },
+        {
+          "name": "platen",
+          "version": "0.0.1"
+        },
+        {
+          "name": "sceno",
+          "version": "0.0.4"
+        },
+        {
+          "name": "scenograph",
+          "version": "0.0.4"
+        },
+        {
+          "name": "scenomise",
+          "version": "0.0.4"
+        },
+        {
+          "name": "scenotime",
+          "version": "0.0.4"
+        },
+        {
+          "name": "script-rhai",
+          "version": "0.0.1"
+        },
+        {
+          "name": "scrying-engine",
+          "version": "0.2.0"
+        },
+        {
+          "name": "seiche",
+          "version": "0.0.5"
+        },
+        {
+          "name": "servitor",
+          "version": "0.0.2"
+        },
+        {
+          "name": "sprigging",
+          "version": "0.2.1"
+        },
+        {
+          "name": "stickleback",
+          "version": "0.1.1"
+        },
+        {
+          "name": "tabard",
+          "version": "0.0.1"
+        },
+        {
+          "name": "tinct",
+          "version": "0.1.2"
+        },
+        {
+          "name": "uxtree",
+          "version": "0.0.2"
+        },
+        {
+          "name": "weld-engine",
+          "version": "0.2.0"
+        },
+        {
+          "name": "workbench",
+          "version": "0.1.0"
+        }
+      ]
+    },
+    {
+      "source": "git+https://github.com/merely-made/netrender.git?rev=9607d16f1907f6c2085648ae96abcaa30d7c3d41#9607d16f1907f6c2085648ae96abcaa30d7c3d41",
+      "count": 4,
+      "packages": [
+        {
+          "name": "netrender",
+          "version": "0.1.2"
+        },
+        {
+          "name": "netrender_device",
+          "version": "0.1.2"
+        },
+        {
+          "name": "paint_list_api",
+          "version": "0.1.2"
+        },
+        {
+          "name": "paint_list_render",
+          "version": "0.1.2"
+        }
+      ]
+    },
+    {
+      "source": "git+https://github.com/merely-made/retinue.git?rev=fa4f925059cc698058cb21fecc1c825d095741a9#fa4f925059cc698058cb21fecc1c825d095741a9",
+      "count": 1,
+      "packages": [
+        {
+          "name": "retinue",
+          "version": "0.2.0"
+        }
+      ]
+    },
+    {
+      "source": "git+https://github.com/merely-made/smolweb.git?rev=882baeb1b59bbdbb305e475f6675f69af997c4f4#882baeb1b59bbdbb305e475f6675f69af997c4f4",
+      "count": 1,
+      "packages": [
+        {
+          "name": "gemini-protocol",
+          "version": "0.1.7"
+        }
+      ]
+    },
+    {
+      "source": "git+https://github.com/merely-made/turquet.git?rev=bc3c454f755d0bfd70ab48bd9556a1cda2213d41#bc3c454f755d0bfd70ab48bd9556a1cda2213d41",
+      "count": 1,
+      "packages": [
+        {
+          "name": "turquet",
+          "version": "0.13.0"
+        }
+      ]
+    },
+    {
+      "source": "git+https://github.com/merely-made/wgpu-graft.git?rev=403a30c2fab39c573d1eebb57a0995e2c3347ff1#403a30c2fab39c573d1eebb57a0995e2c3347ff1",
+      "count": 2,
+      "packages": [
+        {
+          "name": "grafting",
+          "version": "0.6.0"
+        },
+        {
+          "name": "grafting-frame",
+          "version": "0.1.0"
+        }
+      ]
+    },
+    {
+      "source": "git+https://github.com/merely-made/wgpu-scry.git?rev=39818a7eddb8bec33f7c61ed144da226bc0a1d04#39818a7eddb8bec33f7c61ed144da226bc0a1d04",
+      "count": 1,
+      "packages": [
+        {
+          "name": "scrying",
+          "version": "0.7.1"
+        }
+      ]
+    },
+    {
+      "source": "git+https://github.com/merely-made/wgpu-weld.git?rev=4784d07c4064195c33136b9b91c8231913f08e06#4784d07c4064195c33136b9b91c8231913f08e06",
+      "count": 1,
+      "packages": [
+        {
+          "name": "welding",
+          "version": "0.15.0"
+        }
+      ]
+    },
+    {
+      "source": "git+https://github.com/merely-made/woodshed.git?rev=9e982b88bf57e41ef4fa846c66ffdd4f05beb91d#9e982b88bf57e41ef4fa846c66ffdd4f05beb91d",
+      "count": 6,
+      "packages": [
+        {
+          "name": "audio-primitives",
+          "version": "0.1.0"
+        },
+        {
+          "name": "redshank-model",
+          "version": "0.0.0"
+        },
+        {
+          "name": "redshank-playback",
+          "version": "0.0.0"
+        },
+        {
+          "name": "redshank-storage",
+          "version": "0.0.0"
+        },
+        {
+          "name": "redshank-surfaces",
+          "version": "0.0.0"
+        },
+        {
+          "name": "timed-text",
+          "version": "0.1.0"
+        }
+      ]
+    }
+  ],
+  "current_git_families": [
+    {
+      "source": "git+https://github.com/kyren/gc-arena?rev=5a7534b883b703f23cfb8c3cfdf033460aa77ea9#5a7534b883b703f23cfb8c3cfdf033460aa77ea9",
+      "count": 2,
+      "packages": [
+        {
+          "name": "gc-arena",
+          "version": "0.5.3"
+        },
+        {
+          "name": "gc-arena-derive",
+          "version": "0.5.3"
+        }
+      ]
+    },
+    {
+      "source": "git+https://github.com/mark-ik/arboard.git?branch=custom-formats#57a68d037e51eff34974928f56b434c87b827fb8",
+      "count": 1,
+      "packages": [
+        {
+          "name": "arboard",
+          "version": "3.6.1"
+        }
+      ]
+    },
+    {
+      "source": "git+https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.4#0a54ab825f6012dc9e04fd505a247daf3c698d18",
+      "count": 7,
+      "packages": [
+        {
+          "name": "mere-p2panda-net",
+          "version": "0.7.4"
+        },
+        {
+          "name": "p2panda-auth",
+          "version": "0.7.1"
+        },
+        {
+          "name": "p2panda-core",
+          "version": "0.7.1"
+        },
+        {
+          "name": "p2panda-discovery",
+          "version": "0.7.1"
+        },
+        {
+          "name": "p2panda-encryption",
+          "version": "0.7.1"
+        },
+        {
+          "name": "p2panda-store",
+          "version": "0.7.1"
+        },
+        {
+          "name": "p2panda-sync",
+          "version": "0.7.1"
+        }
+      ]
+    },
+    {
+      "source": "git+https://github.com/mark-ik/piccolo?branch=master#e77309c648b91d59c1ded9b20e54999ae8b19741",
+      "count": 1,
+      "packages": [
+        {
+          "name": "piccolo",
+          "version": "0.3.3"
+        }
+      ]
+    },
+    {
+      "source": "git+https://github.com/mark-ik/vello.git?tag=vello-0.10.0#4354955e9d8637f32b7c78b20af2a58f842ba39e",
+      "count": 2,
+      "packages": [
+        {
+          "name": "vello",
+          "version": "0.10.0"
+        },
+        {
+          "name": "vello_encoding",
+          "version": "0.10.0"
+        }
+      ]
+    },
+    {
+      "source": "git+https://github.com/merely-made/genet.git?rev=69a2383b2ad777b884a72f31f8f8fb7ece275c0b#69a2383b2ad777b884a72f31f8f8fb7ece275c0b",
+      "count": 31,
+      "packages": [
+        {
+          "name": "browsing-context-api",
+          "version": "0.1.0"
+        },
+        {
+          "name": "buckram",
+          "version": "0.0.3"
+        },
+        {
+          "name": "cadency",
+          "version": "0.0.1"
+        },
+        {
+          "name": "document-session-api",
+          "version": "0.1.0"
+        },
+        {
+          "name": "engine-observables-api",
+          "version": "0.2.0"
+        },
+        {
+          "name": "fleece",
+          "version": "0.5.0"
+        },
+        {
+          "name": "genet-clipboard",
+          "version": "0.1.0"
+        },
+        {
+          "name": "genet-document-resources",
+          "version": "0.2.1"
+        },
+        {
+          "name": "genet-documents",
+          "version": "0.1.0"
+        },
+        {
+          "name": "genet-fontique",
+          "version": "0.10.0"
+        },
+        {
+          "name": "genet-host-api",
+          "version": "0.2.0"
+        },
+        {
+          "name": "genet-livery",
+          "version": "0.0.4"
+        },
+        {
+          "name": "genet-paint-types",
+          "version": "0.2.0"
+        },
+        {
+          "name": "genet-parley",
+          "version": "0.10.0"
+        },
+        {
+          "name": "genet-render",
+          "version": "0.2.0"
+        },
+        {
+          "name": "genet-render-host",
+          "version": "0.2.0"
+        },
+        {
+          "name": "genet-scripted-dom",
+          "version": "0.1.2"
+        },
+        {
+          "name": "genet-static-dom",
+          "version": "0.1.1"
+        },
+        {
+          "name": "genet-taffy",
+          "version": "0.14.0"
+        },
+        {
+          "name": "genet-text",
+          "version": "0.1.0"
+        },
+        {
+          "name": "genet-winit-host",
+          "version": "0.2.0"
+        },
+        {
+          "name": "ipc-channel",
+          "version": "0.22.0"
+        },
+        {
+          "name": "layout-dom-api",
+          "version": "0.1.1"
+        },
+        {
+          "name": "livery",
+          "version": "0.0.5"
+        },
+        {
+          "name": "netfetcher",
+          "version": "0.1.1"
+        },
+        {
+          "name": "script-engine-api",
+          "version": "0.1.0"
+        },
+        {
+          "name": "script-engine-piccolo",
+          "version": "0.0.0"
+        },
+        {
+          "name": "servo-media-player",
+          "version": "0.2.0"
+        },
+        {
+          "name": "servo-media-streams",
+          "version": "0.2.0"
+        },
+        {
+          "name": "servo-media-traits",
+          "version": "0.2.0"
+        },
+        {
+          "name": "taproot",
+          "version": "0.1.0"
+        }
+      ]
+    },
+    {
+      "source": "git+https://github.com/merely-made/knot-editor.git?rev=91cb44a2c00c088f0677956d31f3cdca6828c59e#91cb44a2c00c088f0677956d31f3cdca6828c59e",
+      "count": 4,
+      "packages": [
+        {
+          "name": "knot-capture",
+          "version": "0.0.1"
+        },
+        {
+          "name": "knot-document",
+          "version": "0.0.1"
+        },
+        {
+          "name": "knot-editor",
+          "version": "0.0.3"
+        },
+        {
+          "name": "knot-file-catalog",
+          "version": "0.0.1"
+        }
+      ]
+    },
+    {
+      "source": "git+https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee31258b23c86572c429388c5d10bd4de9dc3",
+      "count": 70,
+      "packages": [
+        {
+          "name": "app-host",
+          "version": "0.0.1"
+        },
+        {
+          "name": "armillary",
+          "version": "0.1.1"
+        },
+        {
+          "name": "cambium",
+          "version": "0.3.3"
+        },
+        {
+          "name": "cambium-winit",
+          "version": "0.3.0"
+        },
+        {
+          "name": "castellan",
+          "version": "0.0.3"
+        },
+        {
+          "name": "chartulary",
+          "version": "0.2.2"
+        },
+        {
+          "name": "chirograph",
+          "version": "0.0.2"
+        },
+        {
+          "name": "commons-spine",
+          "version": "0.0.1"
+        },
+        {
+          "name": "distillery",
+          "version": "0.0.1"
+        },
+        {
+          "name": "document-canvas",
+          "version": "0.1.0"
+        },
+        {
+          "name": "eidetic",
+          "version": "0.0.2"
+        },
+        {
+          "name": "eidetic-search",
+          "version": "0.0.1"
+        },
+        {
+          "name": "errand",
+          "version": "0.3.4"
+        },
+        {
+          "name": "esp",
+          "version": "0.1.0"
+        },
+        {
+          "name": "gemot",
+          "version": "0.1.1"
+        },
+        {
+          "name": "graft-engine",
+          "version": "0.2.0"
+        },
+        {
+          "name": "graphshell",
+          "version": "0.0.2"
+        },
+        {
+          "name": "graphshell-client",
+          "version": "0.0.2"
+        },
+        {
+          "name": "graphshell-endpoint",
+          "version": "0.0.2"
+        },
+        {
+          "name": "illume",
+          "version": "0.0.2"
+        },
+        {
+          "name": "import",
+          "version": "0.0.1"
+        },
+        {
+          "name": "incipit",
+          "version": "0.2.0"
+        },
+        {
+          "name": "inker",
+          "version": "0.1.1"
+        },
+        {
+          "name": "insigne",
+          "version": "0.0.1"
+        },
+        {
+          "name": "knot-editor-host",
+          "version": "0.1.1"
+        },
+        {
+          "name": "luggage",
+          "version": "0.1.0"
+        },
+        {
+          "name": "mere",
+          "version": "0.0.2"
+        },
+        {
+          "name": "mere-alembic",
+          "version": "0.0.1"
+        },
+        {
+          "name": "mere-apparatus",
+          "version": "0.0.1"
+        },
+        {
+          "name": "mere-athanor",
+          "version": "0.0.1"
+        },
+        {
+          "name": "mere-cartography",
+          "version": "0.0.2"
+        },
+        {
+          "name": "mere-chrome",
+          "version": "0.0.1"
+        },
+        {
+          "name": "mere-document-lanes",
+          "version": "0.1.0"
+        },
+        {
+          "name": "mere-fetch",
+          "version": "0.0.1"
+        },
+        {
+          "name": "mere-forme",
+          "version": "0.1.0"
+        },
+        {
+          "name": "mere-kernel",
+          "version": "0.0.2"
+        },
+        {
+          "name": "mere-linked-data",
+          "version": "0.0.1"
+        },
+        {
+          "name": "mere-mesh",
+          "version": "0.0.1"
+        },
+        {
+          "name": "mere-moot",
+          "version": "0.0.1"
+        },
+        {
+          "name": "mere-proofs",
+          "version": "0.1.0"
+        },
+        {
+          "name": "mere-surface-api",
+          "version": "0.1.0"
+        },
+        {
+          "name": "mere-transport",
+          "version": "0.0.2"
+        },
+        {
+          "name": "mere-webrtc-carrier",
+          "version": "0.0.1"
+        },
+        {
+          "name": "meristem",
+          "version": "0.2.0"
+        },
+        {
+          "name": "mien",
+          "version": "0.0.1"
+        },
+        {
+          "name": "mooting",
+          "version": "0.1.0"
+        },
+        {
+          "name": "mora-cmudict",
+          "version": "0.0.1"
+        },
+        {
+          "name": "muniment",
+          "version": "0.1.2"
+        },
+        {
+          "name": "nematic",
+          "version": "0.1.1"
+        },
+        {
+          "name": "notochord",
+          "version": "0.1.0"
+        },
+        {
+          "name": "numen",
+          "version": "0.2.0"
+        },
+        {
+          "name": "pandect",
+          "version": "0.1.1"
+        },
+        {
+          "name": "personae",
+          "version": "0.2.1"
+        },
+        {
+          "name": "pictograph",
+          "version": "0.2.0"
+        },
+        {
+          "name": "platen",
+          "version": "0.0.1"
+        },
+        {
+          "name": "sceno",
+          "version": "0.0.4"
+        },
+        {
+          "name": "scenograph",
+          "version": "0.0.4"
+        },
+        {
+          "name": "scenomise",
+          "version": "0.0.4"
+        },
+        {
+          "name": "scenotime",
+          "version": "0.0.4"
+        },
+        {
+          "name": "script-rhai",
+          "version": "0.0.1"
+        },
+        {
+          "name": "scrying-engine",
+          "version": "0.2.0"
+        },
+        {
+          "name": "seiche",
+          "version": "0.0.5"
+        },
+        {
+          "name": "servitor",
+          "version": "0.0.2"
+        },
+        {
+          "name": "sprigging",
+          "version": "0.2.1"
+        },
+        {
+          "name": "stickleback",
+          "version": "0.1.1"
+        },
+        {
+          "name": "tabard",
+          "version": "0.0.1"
+        },
+        {
+          "name": "tinct",
+          "version": "0.1.2"
+        },
+        {
+          "name": "uxtree",
+          "version": "0.0.2"
+        },
+        {
+          "name": "weld-engine",
+          "version": "0.2.0"
+        },
+        {
+          "name": "workbench",
+          "version": "0.1.0"
+        }
+      ]
+    },
+    {
+      "source": "git+https://github.com/merely-made/netrender.git?rev=9607d16f1907f6c2085648ae96abcaa30d7c3d41#9607d16f1907f6c2085648ae96abcaa30d7c3d41",
+      "count": 4,
+      "packages": [
+        {
+          "name": "netrender",
+          "version": "0.1.2"
+        },
+        {
+          "name": "netrender_device",
+          "version": "0.1.2"
+        },
+        {
+          "name": "paint_list_api",
+          "version": "0.1.2"
+        },
+        {
+          "name": "paint_list_render",
+          "version": "0.1.2"
+        }
+      ]
+    },
+    {
+      "source": "git+https://github.com/merely-made/retinue.git?rev=fa4f925059cc698058cb21fecc1c825d095741a9#fa4f925059cc698058cb21fecc1c825d095741a9",
+      "count": 1,
+      "packages": [
+        {
+          "name": "retinue",
+          "version": "0.2.0"
+        }
+      ]
+    },
+    {
+      "source": "git+https://github.com/merely-made/smolweb.git?rev=882baeb1b59bbdbb305e475f6675f69af997c4f4#882baeb1b59bbdbb305e475f6675f69af997c4f4",
+      "count": 1,
+      "packages": [
+        {
+          "name": "gemini-protocol",
+          "version": "0.1.7"
+        }
+      ]
+    },
+    {
+      "source": "git+https://github.com/merely-made/turquet.git?rev=bc3c454f755d0bfd70ab48bd9556a1cda2213d41#bc3c454f755d0bfd70ab48bd9556a1cda2213d41",
+      "count": 1,
+      "packages": [
+        {
+          "name": "turquet",
+          "version": "0.13.0"
+        }
+      ]
+    },
+    {
+      "source": "git+https://github.com/merely-made/wgpu-graft.git?rev=01f3c9f3d68df3247e6b7ec7f65ffbca57e9b2d4#01f3c9f3d68df3247e6b7ec7f65ffbca57e9b2d4",
+      "count": 3,
+      "packages": [
+        {
+          "name": "grafting",
+          "version": "0.6.0"
+        },
+        {
+          "name": "grafting-frame",
+          "version": "0.1.0"
+        },
+        {
+          "name": "servo-wgpu-interop-adapter",
+          "version": "0.1.0"
+        }
+      ]
+    },
+    {
+      "source": "git+https://github.com/merely-made/wgpu-scry.git?rev=39818a7eddb8bec33f7c61ed144da226bc0a1d04#39818a7eddb8bec33f7c61ed144da226bc0a1d04",
+      "count": 1,
+      "packages": [
+        {
+          "name": "scrying",
+          "version": "0.7.1"
+        }
+      ]
+    },
+    {
+      "source": "git+https://github.com/merely-made/wgpu-weld.git?rev=4784d07c4064195c33136b9b91c8231913f08e06#4784d07c4064195c33136b9b91c8231913f08e06",
+      "count": 1,
+      "packages": [
+        {
+          "name": "welding",
+          "version": "0.15.0"
+        }
+      ]
+    },
+    {
+      "source": "git+https://github.com/merely-made/woodshed.git?rev=b613fc55d2d59e865b6bb04e55a880ee4773b824#b613fc55d2d59e865b6bb04e55a880ee4773b824",
+      "count": 6,
+      "packages": [
+        {
+          "name": "audio-primitives",
+          "version": "0.1.0"
+        },
+        {
+          "name": "redshank-model",
+          "version": "0.0.0"
+        },
+        {
+          "name": "redshank-playback",
+          "version": "0.0.0"
+        },
+        {
+          "name": "redshank-storage",
+          "version": "0.0.0"
+        },
+        {
+          "name": "redshank-surfaces",
+          "version": "0.0.0"
+        },
+        {
+          "name": "timed-text",
+          "version": "0.1.0"
+        }
+      ]
+    },
+    {
+      "source": "git+https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019",
+      "count": 56,
+      "packages": [
+        {
+          "name": "servo",
+          "version": "0.5.0"
+        },
+        {
+          "name": "servo-allocator",
+          "version": "0.5.0"
+        },
+        {
+          "name": "servo-background-hang-monitor",
+          "version": "0.5.0"
+        },
+        {
+          "name": "servo-background-hang-monitor-api",
+          "version": "0.5.0"
+        },
+        {
+          "name": "servo-base",
+          "version": "0.5.0"
+        },
+        {
+          "name": "servo-canvas",
+          "version": "0.5.0"
+        },
+        {
+          "name": "servo-canvas-traits",
+          "version": "0.5.0"
+        },
+        {
+          "name": "servo-config",
+          "version": "0.5.0"
+        },
+        {
+          "name": "servo-config-macro",
+          "version": "0.5.0"
+        },
+        {
+          "name": "servo-constellation",
+          "version": "0.5.0"
+        },
+        {
+          "name": "servo-constellation-traits",
+          "version": "0.5.0"
+        },
+        {
+          "name": "servo-default-resources",
+          "version": "0.5.0"
+        },
+        {
+          "name": "servo-deny-public-fields",
+          "version": "0.5.0"
+        },
+        {
+          "name": "servo-devtools",
+          "version": "0.5.0"
+        },
+        {
+          "name": "servo-devtools-traits",
+          "version": "0.5.0"
+        },
+        {
+          "name": "servo-dom-struct",
+          "version": "0.5.0"
+        },
+        {
+          "name": "servo-embedder-traits",
+          "version": "0.5.0"
+        },
+        {
+          "name": "servo-fonts",
+          "version": "0.5.0"
+        },
+        {
+          "name": "servo-fonts-traits",
+          "version": "0.5.0"
+        },
+        {
+          "name": "servo-geometry",
+          "version": "0.5.0"
+        },
+        {
+          "name": "servo-hyper-serde",
+          "version": "0.5.0"
+        },
+        {
+          "name": "servo-jstraceable-derive",
+          "version": "0.5.0"
+        },
+        {
+          "name": "servo-layout",
+          "version": "0.5.0"
+        },
+        {
+          "name": "servo-layout-api",
+          "version": "0.5.0"
+        },
+        {
+          "name": "servo-malloc-size-of",
+          "version": "0.5.0"
+        },
+        {
+          "name": "servo-media",
+          "version": "0.5.0"
+        },
+        {
+          "name": "servo-media-audio",
+          "version": "0.5.0"
+        },
+        {
+          "name": "servo-media-derive",
+          "version": "0.5.0"
+        },
+        {
+          "name": "servo-media-dummy",
+          "version": "0.5.0"
+        },
+        {
+          "name": "servo-media-ohos",
+          "version": "0.5.0"
+        },
+        {
+          "name": "servo-media-player",
+          "version": "0.5.0"
+        },
+        {
+          "name": "servo-media-streams",
+          "version": "0.5.0"
+        },
+        {
+          "name": "servo-media-thread",
+          "version": "0.5.0"
+        },
+        {
+          "name": "servo-media-traits",
+          "version": "0.5.0"
+        },
+        {
+          "name": "servo-media-webrtc",
+          "version": "0.5.0"
+        },
+        {
+          "name": "servo-metrics",
+          "version": "0.5.0"
+        },
+        {
+          "name": "servo-net",
+          "version": "0.5.0"
+        },
+        {
+          "name": "servo-net-traits",
+          "version": "0.5.0"
+        },
+        {
+          "name": "servo-paint",
+          "version": "0.5.0"
+        },
+        {
+          "name": "servo-paint-api",
+          "version": "0.5.0"
+        },
+        {
+          "name": "servo-pixels",
+          "version": "0.5.0"
+        },
+        {
+          "name": "servo-profile",
+          "version": "0.5.0"
+        },
+        {
+          "name": "servo-profile-traits",
+          "version": "0.5.0"
+        },
+        {
+          "name": "servo-script",
+          "version": "0.5.0"
+        },
+        {
+          "name": "servo-script-bindings",
+          "version": "0.5.0"
+        },
+        {
+          "name": "servo-script-traits",
+          "version": "0.5.0"
+        },
+        {
+          "name": "servo-storage",
+          "version": "0.5.0"
+        },
+        {
+          "name": "servo-storage-traits",
+          "version": "0.5.0"
+        },
+        {
+          "name": "servo-timers",
+          "version": "0.5.0"
+        },
+        {
+          "name": "servo-tracing",
+          "version": "0.5.0"
+        },
+        {
+          "name": "servo-url",
+          "version": "0.5.0"
+        },
+        {
+          "name": "servo-wakelock",
+          "version": "0.5.0"
+        },
+        {
+          "name": "servo-webgl",
+          "version": "0.5.0"
+        },
+        {
+          "name": "servo-webvtt",
+          "version": "0.5.0"
+        },
+        {
+          "name": "servo-webxr-api",
+          "version": "0.5.0"
+        },
+        {
+          "name": "servo-xpath",
+          "version": "0.5.0"
+        }
+      ]
+    }
+  ],
+  "added_registry_names": [
+    {
+      "name": "aead-stream",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.6.0"
+      ]
+    },
+    {
+      "name": "aes-kw",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.3.1"
+      ]
+    },
+    {
+      "name": "arboard",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "3.6.1"
+      ]
+    },
+    {
+      "name": "async-tungstenite",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.35.0"
+      ]
+    },
+    {
+      "name": "atomic_refcell",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.1.14"
+      ]
+    },
+    {
+      "name": "aws-lc-rs",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "1.18.1"
+      ]
+    },
+    {
+      "name": "aws-lc-sys",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.45.0"
+      ]
+    },
+    {
+      "name": "backtrace",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.3.76"
+      ]
+    },
+    {
+      "name": "bincode",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "1.3.3"
+      ]
+    },
+    {
+      "name": "buf-read-ext",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.4.0"
+      ]
+    },
+    {
+      "name": "build-parallel",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.1.2"
+      ]
+    },
+    {
+      "name": "byte-slice-cast",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "1.2.3"
+      ]
+    },
+    {
+      "name": "calendrical_calculations",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.1.3"
+      ]
+    },
+    {
+      "name": "cgl",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.3.2"
+      ]
+    },
+    {
+      "name": "chardetng",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.1.17"
+      ]
+    },
+    {
+      "name": "content-security-policy",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.8.2"
+      ]
+    },
+    {
+      "name": "core-text",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "20.1.0"
+      ]
+    },
+    {
+      "name": "core_maths",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.1.1"
+      ]
+    },
+    {
+      "name": "crypto-primes",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.7.2"
+      ]
+    },
+    {
+      "name": "cshake",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.2.1"
+      ]
+    },
+    {
+      "name": "dbl",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.5.0"
+      ]
+    },
+    {
+      "name": "diplomat",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.8.0"
+      ]
+    },
+    {
+      "name": "diplomat-runtime",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.8.3"
+      ]
+    },
+    {
+      "name": "diplomat_core",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.8.1"
+      ]
+    },
+    {
+      "name": "dunce",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "1.0.5"
+      ]
+    },
+    {
+      "name": "dwrote",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.11.5"
+      ]
+    },
+    {
+      "name": "ed448",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.5.0"
+      ]
+    },
+    {
+      "name": "ed448-goldilocks",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.14.0-pre.15"
+      ]
+    },
+    {
+      "name": "encoding_c",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.9.8"
+      ]
+    },
+    {
+      "name": "encoding_c_mem",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.2.6"
+      ]
+    },
+    {
+      "name": "env_filter",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "2.0.0"
+      ]
+    },
+    {
+      "name": "env_logger",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.11.11"
+      ]
+    },
+    {
+      "name": "etagere",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.2.15"
+      ]
+    },
+    {
+      "name": "fallible-iterator",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.3.0"
+      ]
+    },
+    {
+      "name": "fallible-streaming-iterator",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.1.9"
+      ]
+    },
+    {
+      "name": "fearless_simd",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.4.1"
+      ]
+    },
+    {
+      "name": "fixed_decimal",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.5.6"
+      ]
+    },
+    {
+      "name": "float-cmp",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.9.0"
+      ]
+    },
+    {
+      "name": "fontconfig-parser",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.5.8"
+      ]
+    },
+    {
+      "name": "fontdb",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.24.0"
+      ]
+    },
+    {
+      "name": "freetype",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.8.0"
+      ]
+    },
+    {
+      "name": "freetype-sys",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.23.0"
+      ]
+    },
+    {
+      "name": "fs_extra",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "1.3.0"
+      ]
+    },
+    {
+      "name": "fst",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.4.7"
+      ]
+    },
+    {
+      "name": "gaol",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.2.1"
+      ]
+    },
+    {
+      "name": "gleam",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.15.1"
+      ]
+    },
+    {
+      "name": "glifo",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.1.1"
+      ]
+    },
+    {
+      "name": "glslopt",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.1.14"
+      ]
+    },
+    {
+      "name": "harfbuzz-sys",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.7.0"
+      ]
+    },
+    {
+      "name": "hash2curve",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.14.0"
+      ]
+    },
+    {
+      "name": "hashlink",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.11.1"
+      ]
+    },
+    {
+      "name": "headers",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.4.2"
+      ]
+    },
+    {
+      "name": "headers-core",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.3.0"
+      ]
+    },
+    {
+      "name": "icu_calendar",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "1.5.2"
+      ]
+    },
+    {
+      "name": "icu_calendar_data",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "1.5.1"
+      ]
+    },
+    {
+      "name": "icu_capi",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "1.5.0"
+      ]
+    },
+    {
+      "name": "icu_casemap",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "1.5.1"
+      ]
+    },
+    {
+      "name": "icu_casemap_data",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "1.5.1"
+      ]
+    },
+    {
+      "name": "icu_collator",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "1.5.0"
+      ]
+    },
+    {
+      "name": "icu_collator_data",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "1.5.1"
+      ]
+    },
+    {
+      "name": "icu_datetime",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "1.5.1"
+      ]
+    },
+    {
+      "name": "icu_datetime_data",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "1.5.1"
+      ]
+    },
+    {
+      "name": "icu_decimal",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "1.5.0"
+      ]
+    },
+    {
+      "name": "icu_decimal_data",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "1.5.1"
+      ]
+    },
+    {
+      "name": "icu_experimental",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.1.0"
+      ]
+    },
+    {
+      "name": "icu_experimental_data",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.1.1"
+      ]
+    },
+    {
+      "name": "icu_list",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "1.5.0"
+      ]
+    },
+    {
+      "name": "icu_list_data",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "1.5.1"
+      ]
+    },
+    {
+      "name": "icu_locid",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "1.5.0"
+      ]
+    },
+    {
+      "name": "icu_locid_transform",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "1.5.0"
+      ]
+    },
+    {
+      "name": "icu_locid_transform_data",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "1.5.1"
+      ]
+    },
+    {
+      "name": "icu_pattern",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.2.0"
+      ]
+    },
+    {
+      "name": "icu_plurals",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "1.5.0"
+      ]
+    },
+    {
+      "name": "icu_plurals_data",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "1.5.1"
+      ]
+    },
+    {
+      "name": "icu_provider_adapters",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "1.5.0"
+      ]
+    },
+    {
+      "name": "icu_provider_macros",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "1.5.0"
+      ]
+    },
+    {
+      "name": "icu_timezone",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "1.5.0"
+      ]
+    },
+    {
+      "name": "icu_timezone_data",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "1.5.1"
+      ]
+    },
+    {
+      "name": "imagesize",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.15.0"
+      ]
+    },
+    {
+      "name": "imsz",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.4.1"
+      ]
+    },
+    {
+      "name": "inventory",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.3.24"
+      ]
+    },
+    {
+      "name": "k12",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.5.1"
+      ]
+    },
+    {
+      "name": "keccak",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.2.2"
+      ]
+    },
+    {
+      "name": "kem",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.3.0"
+      ]
+    },
+    {
+      "name": "keyboard-types",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.8.3"
+      ]
+    },
+    {
+      "name": "libsqlite3-sys",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.36.0"
+      ]
+    },
+    {
+      "name": "malloc_buf",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.0.6"
+      ]
+    },
+    {
+      "name": "malloc_size_of_derive",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.1.3"
+      ]
+    },
+    {
+      "name": "ml-dsa",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.1.1"
+      ]
+    },
+    {
+      "name": "ml-kem",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.3.2"
+      ]
+    },
+    {
+      "name": "module-lattice",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.2.3"
+      ]
+    },
+    {
+      "name": "mozangle",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.6.0"
+      ]
+    },
+    {
+      "name": "mozjs",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.21.6"
+      ]
+    },
+    {
+      "name": "mozjs_sys",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "140.14.0-0"
+      ]
+    },
+    {
+      "name": "nom-language",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.1.0"
+      ]
+    },
+    {
+      "name": "nom-rfc8288",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.4.0"
+      ]
+    },
+    {
+      "name": "num_cpus",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "1.17.0"
+      ]
+    },
+    {
+      "name": "num_threads",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.1.7"
+      ]
+    },
+    {
+      "name": "objc",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.2.7"
+      ]
+    },
+    {
+      "name": "ocb3",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.2.0-rc.3"
+      ]
+    },
+    {
+      "name": "ohos-deviceinfo-sys",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.1.8"
+      ]
+    },
+    {
+      "name": "ohos-media-sys",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.1.2"
+      ]
+    },
+    {
+      "name": "ohos-sys-opaque-types",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.1.12"
+      ]
+    },
+    {
+      "name": "ohos-window-sys",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.1.8"
+      ]
+    },
+    {
+      "name": "ordered-channel",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "1.2.0"
+      ]
+    },
+    {
+      "name": "peek-poke",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.3.0"
+      ]
+    },
+    {
+      "name": "peek-poke-derive",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.3.0"
+      ]
+    },
+    {
+      "name": "phc",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.6.1"
+      ]
+    },
+    {
+      "name": "pico-args",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.5.0"
+      ]
+    },
+    {
+      "name": "plane-split",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.18.0"
+      ]
+    },
+    {
+      "name": "primefield",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.14.0"
+      ]
+    },
+    {
+      "name": "resvg",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.48.1"
+      ]
+    },
+    {
+      "name": "ron",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.12.2"
+      ]
+    },
+    {
+      "name": "rsqlite-vfs",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.1.1"
+      ]
+    },
+    {
+      "name": "rusqlite",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.38.0"
+      ]
+    },
+    {
+      "name": "sea-query",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "1.0.2"
+      ]
+    },
+    {
+      "name": "sea-query-derive",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "1.0.0"
+      ]
+    },
+    {
+      "name": "sea-query-rusqlite",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.8.0"
+      ]
+    },
+    {
+      "name": "selectors",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.40.0"
+      ]
+    },
+    {
+      "name": "seq-macro",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.3.6"
+      ]
+    },
+    {
+      "name": "servo_arc",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.4.3"
+      ]
+    },
+    {
+      "name": "sha3",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.11.0",
+        "0.12.0"
+      ]
+    },
+    {
+      "name": "shake",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.1.0"
+      ]
+    },
+    {
+      "name": "simplecss",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.2.2"
+      ]
+    },
+    {
+      "name": "smallbitvec",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "2.6.1"
+      ]
+    },
+    {
+      "name": "speexdsp-resampler",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.1.0"
+      ]
+    },
+    {
+      "name": "sponge-cursor",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.1.0"
+      ]
+    },
+    {
+      "name": "sqlite-wasm-rs",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.5.5"
+      ]
+    },
+    {
+      "name": "strck",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.1.2"
+      ]
+    },
+    {
+      "name": "strck_ident",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.1.2"
+      ]
+    },
+    {
+      "name": "stylo",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.20.0"
+      ]
+    },
+    {
+      "name": "stylo_atoms",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.20.0"
+      ]
+    },
+    {
+      "name": "stylo_derive",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.20.0"
+      ]
+    },
+    {
+      "name": "stylo_dom",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.20.0"
+      ]
+    },
+    {
+      "name": "stylo_malloc_size_of",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.20.0"
+      ]
+    },
+    {
+      "name": "stylo_static_prefs",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.20.0"
+      ]
+    },
+    {
+      "name": "stylo_traits",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.20.0"
+      ]
+    },
+    {
+      "name": "surfman",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.13.0"
+      ]
+    },
+    {
+      "name": "svgtypes",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.16.1"
+      ]
+    },
+    {
+      "name": "swapper",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.1.0"
+      ]
+    },
+    {
+      "name": "sys-locale",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.3.2"
+      ]
+    },
+    {
+      "name": "tikv-jemalloc-sys",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.6.1+5.3.0-1-ge13ca993e8ccb9ba9847cc330696e02839f328f7"
+      ]
+    },
+    {
+      "name": "tikv-jemallocator",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.6.1"
+      ]
+    },
+    {
+      "name": "to_shmem",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.5.0"
+      ]
+    },
+    {
+      "name": "to_shmem_derive",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.1.0"
+      ]
+    },
+    {
+      "name": "topological-sort",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.1.0"
+      ]
+    },
+    {
+      "name": "tracy-rs",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.1.2"
+      ]
+    },
+    {
+      "name": "turboshake",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.7.1"
+      ]
+    },
+    {
+      "name": "uluru",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "3.1.0"
+      ]
+    },
+    {
+      "name": "unic-char-property",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.9.0"
+      ]
+    },
+    {
+      "name": "unic-char-range",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.9.0"
+      ]
+    },
+    {
+      "name": "unic-common",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.9.0"
+      ]
+    },
+    {
+      "name": "unic-ucd-ident",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.9.0"
+      ]
+    },
+    {
+      "name": "unic-ucd-version",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.9.0"
+      ]
+    },
+    {
+      "name": "unicode-properties",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.1.4"
+      ]
+    },
+    {
+      "name": "unicode-script",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.5.8"
+      ]
+    },
+    {
+      "name": "unicode-vo",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.1.0"
+      ]
+    },
+    {
+      "name": "unicode_categories",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.1.1"
+      ]
+    },
+    {
+      "name": "urlpattern",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.3.0"
+      ]
+    },
+    {
+      "name": "usvg",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.48.1"
+      ]
+    },
+    {
+      "name": "utf16_iter",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "1.0.5"
+      ]
+    },
+    {
+      "name": "vello_common",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.0.9"
+      ]
+    },
+    {
+      "name": "vello_cpu",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.0.9"
+      ]
+    },
+    {
+      "name": "void",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "1.0.2"
+      ]
+    },
+    {
+      "name": "webdriver",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.53.0"
+      ]
+    },
+    {
+      "name": "webrender",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.70.0"
+      ]
+    },
+    {
+      "name": "webrender_api",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.70.0"
+      ]
+    },
+    {
+      "name": "webrender_build",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.70.0"
+      ]
+    },
+    {
+      "name": "wnaf",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.14.1"
+      ]
+    },
+    {
+      "name": "wr_glyph_rasterizer",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.70.0"
+      ]
+    },
+    {
+      "name": "wr_malloc_size_of",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.2.2"
+      ]
+    },
+    {
+      "name": "write16",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "1.0.0"
+      ]
+    },
+    {
+      "name": "wuff",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.2.9"
+      ]
+    },
+    {
+      "name": "wuff-capi",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.2.0"
+      ]
+    },
+    {
+      "name": "x448",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.14.0-pre.12"
+      ]
+    },
+    {
+      "name": "xml",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "1.4.0"
+      ]
+    },
+    {
+      "name": "xmlwriter",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.1.0"
+      ]
+    },
+    {
+      "name": "yuv",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.8.19"
+      ]
+    },
+    {
+      "name": "zeitstempel",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.2.2"
+      ]
+    }
+  ],
+  "removed_registry_names": [],
+  "selected_current_packages": [
+    {
+      "name": "graft-engine",
+      "version": "0.2.0",
+      "source": "git+https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee31258b23c86572c429388c5d10bd4de9dc3"
+    },
+    {
+      "name": "grafting",
+      "version": "0.6.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index"
+    },
+    {
+      "name": "grafting",
+      "version": "0.6.0",
+      "source": "git+https://github.com/merely-made/wgpu-graft.git?rev=01f3c9f3d68df3247e6b7ec7f65ffbca57e9b2d4#01f3c9f3d68df3247e6b7ec7f65ffbca57e9b2d4"
+    },
+    {
+      "name": "inker",
+      "version": "0.1.1",
+      "source": "git+https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee31258b23c86572c429388c5d10bd4de9dc3"
+    },
+    {
+      "name": "scrying",
+      "version": "0.7.1",
+      "source": "git+https://github.com/merely-made/wgpu-scry.git?rev=39818a7eddb8bec33f7c61ed144da226bc0a1d04#39818a7eddb8bec33f7c61ed144da226bc0a1d04"
+    },
+    {
+      "name": "scrying-engine",
+      "version": "0.2.0",
+      "source": "git+https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee31258b23c86572c429388c5d10bd4de9dc3"
+    },
+    {
+      "name": "servo",
+      "version": "0.5.0",
+      "source": "git+https://github.com/servo/servo?rev=1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019#1d44e5dd6a8b64c02f9dbf7fcbdf4ebdd0740019"
+    },
+    {
+      "name": "weld-engine",
+      "version": "0.2.0",
+      "source": "git+https://github.com/merely-made/mere.git?rev=db4ee31258b23c86572c429388c5d10bd4de9dc3#db4ee31258b23c86572c429388c5d10bd4de9dc3"
+    },
+    {
+      "name": "welding",
+      "version": "0.15.0",
+      "source": "git+https://github.com/merely-made/wgpu-weld.git?rev=4784d07c4064195c33136b9b91c8231913f08e06#4784d07c4064195c33136b9b91c8231913f08e06"
+    },
+    {
+      "name": "wgpu",
+      "version": "30.0.1",
+      "source": "registry+https://github.com/rust-lang/crates.io-index"
+    }
+  ],
+  "scope": "Cargo.lock source-family inventory compared with root HEAD lock; does not establish native behavior or package activity for any feature selection",
+  "registry_version_set_changes": [
+    {
+      "name": "addr2line",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "baseline_versions": [
+        "0.26.1"
+      ],
+      "current_versions": [
+        "0.25.1",
+        "0.26.1"
+      ]
+    },
+    {
+      "name": "aes-gcm",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "baseline_versions": [
+        "0.10.3"
+      ],
+      "current_versions": [
+        "0.10.3",
+        "0.11.1"
+      ]
+    },
+    {
+      "name": "argon2",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "baseline_versions": [
+        "0.5.3"
+      ],
+      "current_versions": [
+        "0.5.3",
+        "0.6.0-rc.8"
+      ]
+    },
+    {
+      "name": "blake2",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "baseline_versions": [
+        "0.10.6"
+      ],
+      "current_versions": [
+        "0.10.6",
+        "0.11.0"
+      ]
+    },
+    {
+      "name": "cookie",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "baseline_versions": [
+        "0.18.2"
+      ],
+      "current_versions": [
+        "0.16.2",
+        "0.18.2"
+      ]
+    },
+    {
+      "name": "crypto-bigint",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "baseline_versions": [
+        "0.5.5"
+      ],
+      "current_versions": [
+        "0.5.5",
+        "0.7.5"
+      ]
+    },
+    {
+      "name": "ctr",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "baseline_versions": [
+        "0.9.2"
+      ],
+      "current_versions": [
+        "0.10.1",
+        "0.9.2"
+      ]
+    },
+    {
+      "name": "darling",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "baseline_versions": [
+        "0.24.1"
+      ],
+      "current_versions": [
+        "0.20.11",
+        "0.24.1"
+      ]
+    },
+    {
+      "name": "darling_core",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "baseline_versions": [
+        "0.24.1"
+      ],
+      "current_versions": [
+        "0.20.11",
+        "0.24.1"
+      ]
+    },
+    {
+      "name": "darling_macro",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "baseline_versions": [
+        "0.24.1"
+      ],
+      "current_versions": [
+        "0.20.11",
+        "0.24.1"
+      ]
+    },
+    {
+      "name": "ecdsa",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "baseline_versions": [
+        "0.16.9"
+      ],
+      "current_versions": [
+        "0.16.9",
+        "0.17.0"
+      ]
+    },
+    {
+      "name": "elliptic-curve",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "baseline_versions": [
+        "0.13.8"
+      ],
+      "current_versions": [
+        "0.13.8",
+        "0.14.1"
+      ]
+    },
+    {
+      "name": "ff",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "baseline_versions": [
+        "0.13.1"
+      ],
+      "current_versions": [
+        "0.13.1",
+        "0.14.0"
+      ]
+    },
+    {
+      "name": "ghash",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "baseline_versions": [
+        "0.5.1"
+      ],
+      "current_versions": [
+        "0.5.1",
+        "0.6.0"
+      ]
+    },
+    {
+      "name": "gimli",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "baseline_versions": [
+        "0.33.0"
+      ],
+      "current_versions": [
+        "0.32.3",
+        "0.33.0"
+      ]
+    },
+    {
+      "name": "group",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "baseline_versions": [
+        "0.13.0"
+      ],
+      "current_versions": [
+        "0.13.0",
+        "0.14.0"
+      ]
+    },
+    {
+      "name": "harfrust",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "baseline_versions": [
+        "0.8.4"
+      ],
+      "current_versions": [
+        "0.12.0",
+        "0.8.4"
+      ]
+    },
+    {
+      "name": "heck",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "baseline_versions": [
+        "0.5.0"
+      ],
+      "current_versions": [
+        "0.4.1",
+        "0.5.0"
+      ]
+    },
+    {
+      "name": "http",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "baseline_versions": [
+        "1.5.0"
+      ],
+      "current_versions": [
+        "0.2.12",
+        "1.5.0"
+      ]
+    },
+    {
+      "name": "icu_collections",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "baseline_versions": [
+        "2.3.0"
+      ],
+      "current_versions": [
+        "1.5.0",
+        "2.3.0"
+      ]
+    },
+    {
+      "name": "icu_normalizer",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "baseline_versions": [
+        "2.3.0"
+      ],
+      "current_versions": [
+        "1.5.0",
+        "2.3.0"
+      ]
+    },
+    {
+      "name": "icu_normalizer_data",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "baseline_versions": [
+        "2.3.0"
+      ],
+      "current_versions": [
+        "1.5.1",
+        "2.3.0"
+      ]
+    },
+    {
+      "name": "icu_properties",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "baseline_versions": [
+        "2.3.0"
+      ],
+      "current_versions": [
+        "1.5.1",
+        "2.3.0"
+      ]
+    },
+    {
+      "name": "icu_properties_data",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "baseline_versions": [
+        "2.3.0"
+      ],
+      "current_versions": [
+        "1.5.1",
+        "2.3.0"
+      ]
+    },
+    {
+      "name": "icu_provider",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "baseline_versions": [
+        "2.3.1"
+      ],
+      "current_versions": [
+        "1.5.0",
+        "2.3.1"
+      ]
+    },
+    {
+      "name": "icu_segmenter",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "baseline_versions": [
+        "2.3.0"
+      ],
+      "current_versions": [
+        "1.5.0",
+        "2.3.0"
+      ]
+    },
+    {
+      "name": "icu_segmenter_data",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "baseline_versions": [
+        "2.3.0"
+      ],
+      "current_versions": [
+        "1.5.1",
+        "2.3.0"
+      ]
+    },
+    {
+      "name": "itertools",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "baseline_versions": [
+        "0.13.0",
+        "0.14.0"
+      ],
+      "current_versions": [
+        "0.13.0",
+        "0.14.0",
+        "0.15.0"
+      ]
+    },
+    {
+      "name": "litemap",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "baseline_versions": [
+        "0.8.3"
+      ],
+      "current_versions": [
+        "0.7.5",
+        "0.8.3"
+      ]
+    },
+    {
+      "name": "mach2",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "baseline_versions": [
+        "0.4.3",
+        "0.5.0"
+      ],
+      "current_versions": [
+        "0.4.3",
+        "0.5.0",
+        "0.6.0"
+      ]
+    },
+    {
+      "name": "object",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "baseline_versions": [
+        "0.39.1"
+      ],
+      "current_versions": [
+        "0.37.3",
+        "0.39.1"
+      ]
+    },
+    {
+      "name": "p256",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "baseline_versions": [
+        "0.13.2"
+      ],
+      "current_versions": [
+        "0.13.2",
+        "0.14.0"
+      ]
+    },
+    {
+      "name": "p384",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "baseline_versions": [
+        "0.13.1"
+      ],
+      "current_versions": [
+        "0.13.1",
+        "0.14.0"
+      ]
+    },
+    {
+      "name": "p521",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "baseline_versions": [
+        "0.13.3"
+      ],
+      "current_versions": [
+        "0.13.3",
+        "0.14.0"
+      ]
+    },
+    {
+      "name": "password-hash",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "baseline_versions": [
+        "0.5.0"
+      ],
+      "current_versions": [
+        "0.5.0",
+        "0.6.1"
+      ]
+    },
+    {
+      "name": "pkcs1",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "baseline_versions": [
+        "0.7.5"
+      ],
+      "current_versions": [
+        "0.7.5",
+        "0.8.0-rc.4"
+      ]
+    },
+    {
+      "name": "polyval",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "baseline_versions": [
+        "0.6.2"
+      ],
+      "current_versions": [
+        "0.6.2",
+        "0.7.3"
+      ]
+    },
+    {
+      "name": "primeorder",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "baseline_versions": [
+        "0.13.6"
+      ],
+      "current_versions": [
+        "0.13.6",
+        "0.14.0"
+      ]
+    },
+    {
+      "name": "regex-automata",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "baseline_versions": [
+        "0.4.18"
+      ],
+      "current_versions": [
+        "0.2.0",
+        "0.4.18"
+      ]
+    },
+    {
+      "name": "rfc6979",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "baseline_versions": [
+        "0.4.0"
+      ],
+      "current_versions": [
+        "0.4.0",
+        "0.6.0"
+      ]
+    },
+    {
+      "name": "roxmltree",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "baseline_versions": [
+        "0.21.1"
+      ],
+      "current_versions": [
+        "0.20.0",
+        "0.21.1"
+      ]
+    },
+    {
+      "name": "rsa",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "baseline_versions": [
+        "0.9.10"
+      ],
+      "current_versions": [
+        "0.10.0-rc.18",
+        "0.9.10"
+      ]
+    },
+    {
+      "name": "sec1",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "baseline_versions": [
+        "0.7.3"
+      ],
+      "current_versions": [
+        "0.7.3",
+        "0.8.1"
+      ]
+    },
+    {
+      "name": "taffy",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "baseline_versions": [
+        "0.11.0-experimental-cache-fix.3"
+      ],
+      "current_versions": [
+        "0.11.0-experimental-cache-fix.3",
+        "0.12.2"
+      ]
+    },
+    {
+      "name": "tiny-skia",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "baseline_versions": [
+        "0.11.4"
+      ],
+      "current_versions": [
+        "0.11.4",
+        "0.12.0"
+      ]
+    },
+    {
+      "name": "tiny-skia-path",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "baseline_versions": [
+        "0.11.4"
+      ],
+      "current_versions": [
+        "0.11.4",
+        "0.12.0"
+      ]
+    },
+    {
+      "name": "tinystr",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "baseline_versions": [
+        "0.8.4"
+      ],
+      "current_versions": [
+        "0.7.6",
+        "0.8.4"
+      ]
+    },
+    {
+      "name": "tungstenite",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "baseline_versions": [
+        "0.29.0"
+      ],
+      "current_versions": [
+        "0.29.0",
+        "0.30.0"
+      ]
+    },
+    {
+      "name": "writeable",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "baseline_versions": [
+        "0.6.4"
+      ],
+      "current_versions": [
+        "0.5.5",
+        "0.6.4"
+      ]
+    },
+    {
+      "name": "yoke",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "baseline_versions": [
+        "0.8.3"
+      ],
+      "current_versions": [
+        "0.7.5",
+        "0.8.3"
+      ]
+    },
+    {
+      "name": "yoke-derive",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "baseline_versions": [
+        "0.8.3"
+      ],
+      "current_versions": [
+        "0.7.5",
+        "0.8.3"
+      ]
+    },
+    {
+      "name": "zerotrie",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "baseline_versions": [
+        "0.2.5"
+      ],
+      "current_versions": [
+        "0.1.3",
+        "0.2.5"
+      ]
+    },
+    {
+      "name": "zerovec",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "baseline_versions": [
+        "0.11.8"
+      ],
+      "current_versions": [
+        "0.10.4",
+        "0.11.8"
+      ]
+    },
+    {
+      "name": "zerovec-derive",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "baseline_versions": [
+        "0.11.6"
+      ],
+      "current_versions": [
+        "0.10.4",
+        "0.11.6"
+      ]
+    }
+  ],
+  "preexisting_registry_versions_missing": [],
+  "additional_parallel_registry_versions": [
+    {
+      "name": "addr2line",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.25.1"
+      ]
+    },
+    {
+      "name": "aes-gcm",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.11.1"
+      ]
+    },
+    {
+      "name": "argon2",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.6.0-rc.8"
+      ]
+    },
+    {
+      "name": "blake2",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.11.0"
+      ]
+    },
+    {
+      "name": "cookie",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.16.2"
+      ]
+    },
+    {
+      "name": "crypto-bigint",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.7.5"
+      ]
+    },
+    {
+      "name": "ctr",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.10.1"
+      ]
+    },
+    {
+      "name": "darling",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.20.11"
+      ]
+    },
+    {
+      "name": "darling_core",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.20.11"
+      ]
+    },
+    {
+      "name": "darling_macro",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.20.11"
+      ]
+    },
+    {
+      "name": "ecdsa",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.17.0"
+      ]
+    },
+    {
+      "name": "elliptic-curve",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.14.1"
+      ]
+    },
+    {
+      "name": "ff",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.14.0"
+      ]
+    },
+    {
+      "name": "ghash",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.6.0"
+      ]
+    },
+    {
+      "name": "gimli",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.32.3"
+      ]
+    },
+    {
+      "name": "group",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.14.0"
+      ]
+    },
+    {
+      "name": "harfrust",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.12.0"
+      ]
+    },
+    {
+      "name": "heck",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.4.1"
+      ]
+    },
+    {
+      "name": "http",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.2.12"
+      ]
+    },
+    {
+      "name": "icu_collections",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "1.5.0"
+      ]
+    },
+    {
+      "name": "icu_normalizer",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "1.5.0"
+      ]
+    },
+    {
+      "name": "icu_normalizer_data",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "1.5.1"
+      ]
+    },
+    {
+      "name": "icu_properties",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "1.5.1"
+      ]
+    },
+    {
+      "name": "icu_properties_data",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "1.5.1"
+      ]
+    },
+    {
+      "name": "icu_provider",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "1.5.0"
+      ]
+    },
+    {
+      "name": "icu_segmenter",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "1.5.0"
+      ]
+    },
+    {
+      "name": "icu_segmenter_data",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "1.5.1"
+      ]
+    },
+    {
+      "name": "itertools",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.15.0"
+      ]
+    },
+    {
+      "name": "litemap",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.7.5"
+      ]
+    },
+    {
+      "name": "mach2",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.6.0"
+      ]
+    },
+    {
+      "name": "object",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.37.3"
+      ]
+    },
+    {
+      "name": "p256",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.14.0"
+      ]
+    },
+    {
+      "name": "p384",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.14.0"
+      ]
+    },
+    {
+      "name": "p521",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.14.0"
+      ]
+    },
+    {
+      "name": "password-hash",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.6.1"
+      ]
+    },
+    {
+      "name": "pkcs1",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.8.0-rc.4"
+      ]
+    },
+    {
+      "name": "polyval",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.7.3"
+      ]
+    },
+    {
+      "name": "primeorder",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.14.0"
+      ]
+    },
+    {
+      "name": "regex-automata",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.2.0"
+      ]
+    },
+    {
+      "name": "rfc6979",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.6.0"
+      ]
+    },
+    {
+      "name": "roxmltree",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.20.0"
+      ]
+    },
+    {
+      "name": "rsa",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.10.0-rc.18"
+      ]
+    },
+    {
+      "name": "sec1",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.8.1"
+      ]
+    },
+    {
+      "name": "taffy",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.12.2"
+      ]
+    },
+    {
+      "name": "tiny-skia",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.12.0"
+      ]
+    },
+    {
+      "name": "tiny-skia-path",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.12.0"
+      ]
+    },
+    {
+      "name": "tinystr",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.7.6"
+      ]
+    },
+    {
+      "name": "tungstenite",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.30.0"
+      ]
+    },
+    {
+      "name": "writeable",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.5.5"
+      ]
+    },
+    {
+      "name": "yoke",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.7.5"
+      ]
+    },
+    {
+      "name": "yoke-derive",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.7.5"
+      ]
+    },
+    {
+      "name": "zerotrie",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.1.3"
+      ]
+    },
+    {
+      "name": "zerovec",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.10.4"
+      ]
+    },
+    {
+      "name": "zerovec-derive",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "versions": [
+        "0.10.4"
+      ]
+    }
+  ],
+  "registry_comparison_note": "All baseline registry package versions remain. Servo adds parallel versions to 54 already present registry package names; those additions are recorded explicitly and do not replace old versions."
+}

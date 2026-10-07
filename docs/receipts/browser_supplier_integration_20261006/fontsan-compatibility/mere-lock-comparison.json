@@ -1,0 +1,210 @@
+{
+  "schema": "mere-fontsan-lock-comparison-v1",
+  "commit": "edf175f9c0a8645318ac8925adf0af6956f61425",
+  "source_query_occurrences_changed": 64,
+  "Git_package_source_rows_changed": 33,
+  "other_source_qualified_dependency_queries_changed": 31,
+  "source_only_packages": [
+    {
+      "name": "browsing-context-api",
+      "version": "0.1.0"
+    },
+    {
+      "name": "buckram",
+      "version": "0.0.3"
+    },
+    {
+      "name": "cadency",
+      "version": "0.0.1"
+    },
+    {
+      "name": "document-session-api",
+      "version": "0.1.0"
+    },
+    {
+      "name": "engine-observables-api",
+      "version": "0.2.0"
+    },
+    {
+      "name": "fleece",
+      "version": "0.5.0"
+    },
+    {
+      "name": "genet-compositor",
+      "version": "0.2.0"
+    },
+    {
+      "name": "genet-document-resources",
+      "version": "0.2.1"
+    },
+    {
+      "name": "genet-documents",
+      "version": "0.1.0"
+    },
+    {
+      "name": "genet-fontique",
+      "version": "0.10.0"
+    },
+    {
+      "name": "genet-host-api",
+      "version": "0.2.0"
+    },
+    {
+      "name": "genet-livery",
+      "version": "0.0.4"
+    },
+    {
+      "name": "genet-paint-types",
+      "version": "0.2.0"
+    },
+    {
+      "name": "genet-parley",
+      "version": "0.10.0"
+    },
+    {
+      "name": "genet-render",
+      "version": "0.2.0"
+    },
+    {
+      "name": "genet-render-host",
+      "version": "0.2.0"
+    },
+    {
+      "name": "genet-scripted",
+      "version": "0.2.0"
+    },
+    {
+      "name": "genet-scripted-dom",
+      "version": "0.1.2"
+    },
+    {
+      "name": "genet-static-dom",
+      "version": "0.1.1"
+    },
+    {
+      "name": "genet-taffy",
+      "version": "0.14.0"
+    },
+    {
+      "name": "genet-text",
+      "version": "0.1.0"
+    },
+    {
+      "name": "genet-winit-host",
+      "version": "0.2.0"
+    },
+    {
+      "name": "layout-dom-api",
+      "version": "0.1.1"
+    },
+    {
+      "name": "livery",
+      "version": "0.0.5"
+    },
+    {
+      "name": "netfetcher",
+      "version": "0.1.1"
+    },
+    {
+      "name": "script-engine-api",
+      "version": "0.1.0"
+    },
+    {
+      "name": "script-engine-boa",
+      "version": "0.0.0"
+    },
+    {
+      "name": "script-engine-nova",
+      "version": "0.0.0"
+    },
+    {
+      "name": "script-runtime-api",
+      "version": "0.0.0"
+    },
+    {
+      "name": "servo-webgl-essl",
+      "version": "0.2.0"
+    },
+    {
+      "name": "servo-webgl-wgpu",
+      "version": "0.2.0"
+    },
+    {
+      "name": "servo-xpath",
+      "version": "0.2.0"
+    },
+    {
+      "name": "taproot",
+      "version": "0.1.0"
+    }
+  ],
+  "old_count": 1667,
+  "new_count": 1668,
+  "removed": [
+    {
+      "name": "fontsan-woff2",
+      "version": "0.1.1",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "checksum": "106ebe29445505f3860765d2597ddad20a3e90174d6e8539a10d58253b3e5c0f",
+      "dependencies": [
+        "brotli-decompressor",
+        "cc"
+      ]
+    }
+  ],
+  "added": [
+    {
+      "name": "wuff",
+      "version": "0.2.9",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "checksum": "200a7b806377b65f1ff9a985874332f15357c87e5dd7855f35f06dade95b8b3d",
+      "dependencies": [
+        "brotli-decompressor",
+        "bytes"
+      ]
+    },
+    {
+      "name": "wuff-capi",
+      "version": "0.2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "checksum": "d4dbb1eebaa6782421e6aeac4ab5f9f3b9c665eb2f8650073f5235408b3898e2",
+      "dependencies": [
+        "wuff"
+      ]
+    }
+  ],
+  "changed": [
+    {
+      "before": {
+        "name": "fontsan",
+        "version": "0.7.0",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "checksum": "cff76797a10ce7f8439f6e0a5ed06783e26e60d97e28c8c1c623a608ca67cff9",
+        "dependencies": [
+          "cc",
+          "fontsan-woff2",
+          "glob",
+          "libc",
+          "libz-sys"
+        ]
+      },
+      "after": {
+        "name": "fontsan",
+        "version": "0.7.0",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "checksum": "cff76797a10ce7f8439f6e0a5ed06783e26e60d97e28c8c1c623a608ca67cff9",
+        "dependencies": [
+          "cc",
+          "glob",
+          "libc",
+          "libz-sys",
+          "wuff-capi"
+        ]
+      }
+    }
+  ],
+  "existing_registry_version_or_checksum_changes": 0,
+  "all_other_records_and_dependency_edges_unchanged_after_exact_Git_source_normalization": true,
+  "resolution_state": "Deterministic narrow lock edit; supplier metadata stopped; actual locked published consumer resolution pending",
+  "lock_sha256": "10285485ef928de2b8756abd4b891e8e5b8452b5df83dd25ec02908fefd3fe6c"
+}

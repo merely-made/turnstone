@@ -1,0 +1,132 @@
+{
+  "schema": "turnstone-current-stack-remote-refresh-v1",
+  "checkpoint_utc": "2026-10-07T04:54:14Z",
+  "root_observation_utc": "2026-10-07T04:51:00Z",
+  "scope": "Read-only Git fetch/ref, immutable manifest/document and ancestry inspection; no builds, adoption or coordination relay.",
+  "refs": {
+    "mere_main": "a59e4c47a2a5c2024427eeb54b689f2e4f2c345b",
+    "knot_main": "a41ef7cedfa639152d76a4bc8c1fd3596608152b",
+    "knot_seed_borrow_remote": "f68af0dc441aa10fddc33b249f3e35e1f1a56cc4",
+    "woodshed_main": "06c2b13ce296c82fafc394e0c90da21458542803",
+    "genet_main": "965b64e206a47d1c8808472de9aa461233638768",
+    "turnstone_main": "032463aedd49234ef07050a8cb2035d39eb83bf1"
+  },
+  "verification": {
+    "main_refs": "git fetch origin main; git rev-parse origin/main in each primary repository",
+    "knot_seed_ref": "git ls-remote origin refs/heads/seed-borrow matched the local remote-tracking ref",
+    "manifests_and_documents": "git show/git grep at the exact observed immutable revisions",
+    "ancestry": [
+      {
+        "repository": "mere",
+        "ancestor": "1d87808abeadf9e47947326e1546d4a5dcd086d8",
+        "descendant": "a59e4c47a2a5c2024427eeb54b689f2e4f2c345b",
+        "exit_code": 0,
+        "meaning": "WS4 R6 is published on Mere main"
+      },
+      {
+        "repository": "genet",
+        "ancestor": "965b64e206a47d1c8808472de9aa461233638768",
+        "descendant": "d851a9db0cd1ff7837768250f21e9dff63455940",
+        "exit_code": 1,
+        "meaning": "Mere-selected Genet does not contain the decoder repair"
+      },
+      {
+        "repository": "genet",
+        "ancestor": "d851a9db0cd1ff7837768250f21e9dff63455940",
+        "descendant": "965b64e206a47d1c8808472de9aa461233638768",
+        "exit_code": 0,
+        "meaning": "The published repair descends from selected Genet"
+      },
+      {
+        "repository": "knot-editor",
+        "ancestor": "f68af0dc441aa10fddc33b249f3e35e1f1a56cc4",
+        "descendant": "a41ef7cedfa639152d76a4bc8c1fd3596608152b",
+        "exit_code": 1,
+        "meaning": "Published seed-borrow candidate is not integrated into Knot main"
+      }
+    ]
+  },
+  "published_pins": {
+    "mere": {
+      "manifest": "Cargo.toml",
+      "genet": "d851a9db0cd1ff7837768250f21e9dff63455940",
+      "gopher_protocol": "=0.2.0",
+      "lock_version": "0.2.0",
+      "lock_source": "registry+https://github.com/rust-lang/crates.io-index",
+      "lock_checksum": "b5d3f2e10ca1a90d7e0d2bec7421aa1121596ac2eddfae1cae9a440f58b1a378"
+    },
+    "knot_main": {
+      "manifest": "Cargo.toml",
+      "mere": "e0cea3e0d637c582b796addbc7ff7cc3a5a8f8b7",
+      "genet": "d851a9db0cd1ff7837768250f21e9dff63455940",
+      "change_from_prior_main_6cb57f10": "Five design documents; existing dependency pins retained"
+    },
+    "knot_seed_borrow": {
+      "manifest": "Cargo.toml",
+      "mere": "ea74604babecb236719e143dc032a7bdf1f0339f",
+      "publication_scope": "Remote branch only; no current-a59 Mere family or later seed implementation qualification inferred"
+    },
+    "redshank": {
+      "repository": "woodshed",
+      "manifest": "ports/redshank/Cargo.toml",
+      "mere": "db4ee31258b23c86572c429388c5d10bd4de9dc3",
+      "genet": "69a2383b2ad777b884a72f31f8f8fb7ece275c0b",
+      "scope_note": "The nested Redshank workspace is distinct from Woodshed root's Mere 5011e2f9 scope"
+    }
+  },
+  "accessibility": {
+    "mere_merged_scope": "Shared uxtree::graft helper, focus exits, ContainedSession, panic containment and per-session leaf registries merged by a59e4c47",
+    "e1a_recorded_result": {
+      "tree_checks": 27,
+      "real_session_checks": 18,
+      "consumer_versions": [
+        "0.35",
+        "0.36",
+        "0.38"
+      ],
+      "evidence_kind": "Windowless checks reported in committed app-composition brief; not rerun here",
+      "paths": [
+        "crates/forme/uxtree/tests/e1a_subtrees.rs",
+        "crates/cambium/cambium-winit-a11y/tests/e1a_sessions.rs"
+      ]
+    },
+    "e1b_status": "Human headed joined-tree walks remain open: Windows Narrator/NVDA, macOS VoiceOver, Linux Orca",
+    "u15": {
+      "evidence": "Mere app-composition brief lines 740-744",
+      "recorded_owner": "Turnstone unusual-protocols lane owns helper, focus handback, panic containment, keys/reservations and E1 alongside pelt-core",
+      "direct_user_quote": "This lane (Recommended)"
+    },
+    "u16": {
+      "evidence": "Mere smolweb fidelity plan lines 50-53",
+      "recorded_owner": "Turnstone unusual-protocols lane owns Smolweb/Micron accessibility_projection with the rest of the accessibility path",
+      "qualification": "Mere-recorded ownership statement; this passage is not a direct user quote"
+    },
+    "u17": {
+      "evidence": "Mere app-composition brief lines 745-752",
+      "direct_user_quote": "Per-session registries (Recommended)",
+      "effect": "Each retained session owns its leaf registry and keys; producers remain host-side with the host device; future shared forest registry may require namespacing"
+    },
+    "turnstone_receiving_record": "Published 032463a still contains U1-U10-era rulings and no U15/U16/U17 receiving record",
+    "ac6": "Cross-process paint-list plus accessibility transport remains research after the retained-session path is proven",
+    "browser_supplier_boundary": "Merged helper/E1a does not qualify Servo/Scry/CEF semantic export, advertised action coverage, foreign browser host integration or native assistive behavior"
+  },
+  "u9": {
+    "ws4_publication_prerequisite": "Satisfied at observed Mere main",
+    "final_tested_set": "Not satisfied",
+    "minimal_family_closure_proposal": [
+      "Mere owner selects a published current main descendant retaining R6 and helper, incorporating the published Genet decoder repair or a reviewed exact-source equivalent; no paused WIP adopted.",
+      "Identity/Knot owner publishes and qualifies a current-Mere candidate, including nested/standalone source declarations and seed ownership; current remote seed branch is not sufficient.",
+      "Redshank/Woodshed owner follows Knot with the same selected Mere/Genet family and its own qualification.",
+      "Turnstone source owner integrates that exact tested set last, preserving browser fixes and qualifying full3 plus simultaneous native coexistence on the matching executable.",
+      "Audit all direct, nested and standalone Git source queries; prove one family with locked graph/clean-suite/cargo-mode checks rather than assuming matching head names ensure closure."
+    ],
+    "remaining_owner_gates": [
+      "Published receiving record/coordination for U15-U17; no relay to an unreachable cloud owner was performed or inferred.",
+      "Exact locked S0 library suite and cargo_mode verify, current pin documentation, physics refusal and projection score-version acceptance/refusal.",
+      "Three-engine type/native current pixels, actual runtime modules, input/resize/orientation/close-reopen and bounded process shutdown.",
+      "Supplier semantic exports/action advertisement and routing plus E1b/foreign-browser native AT acceptance.",
+      "Separate supplier CI/MSRV/claimed-host hardware/package/registry-only release gates."
+    ]
+  },
+  "preservation": "New checkpoint only. Existing immutable receipts, dirty source, paused Mere work and foreign owner lanes preserved. No source/Cargo edits, builds, commits, pushes, new worktrees or isolated caches."
+}

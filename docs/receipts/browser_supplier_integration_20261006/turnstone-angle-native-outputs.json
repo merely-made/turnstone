@@ -1,0 +1,25 @@
+{
+  "observed_utc": "2026-10-07T04:04:19.8939830Z",
+  "scope": "Completed native ANGLE builder output. Final executable link selection, staging and loaded-module qualification remain pending.",
+  "target": "C:/t/cargo-targets/turnstone",
+  "build_script_pid": 31800,
+  "build_script_unit": "mozangle-fa1c352215c84460",
+  "observed_native_out_dir": "C:/t/cargo-targets/turnstone/debug/build/mozangle-48ae35774f2850b9/out",
+  "observed_compiler": "C:/Program Files/Microsoft Visual Studio/18/Insiders/VC/Tools/MSVC/14.51.36231/bin/HostX64/x64/cl.exe",
+  "files": [
+    {
+      "path": "C:\\t\\cargo-targets\\turnstone\\debug\\build\\mozangle-48ae35774f2850b9\\out\\libEGL.dll",
+      "length": 194048,
+      "sha256": "D3657207EA53F968552E99D9E1EDB782143862D0A6A5430D0F8951A69DBE577C",
+      "file_version": null,
+      "product_version": null
+    },
+    {
+      "path": "C:\\t\\cargo-targets\\turnstone\\debug\\build\\mozangle-48ae35774f2850b9\\out\\libGLESv2.dll",
+      "length": 12443648,
+      "sha256": "9C473D47B82898AAC20DBE18B4598677528393E72C6524A1AA55DD6ABE6BA2A4",
+      "file_version": null,
+      "product_version": null
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "recorded_utc": "2026-10-07T05:24:43.583024+00:00",
+  "scope": "Temporary local diagnostic, not a publication or final U9 repin",
+  "original_config": "absent; existing config.local.toml and local directory untouched",
+  "config_sha256": "3871c58fe27d047b5a1f55ad5e7213230898ebaaac41ef9056df9a44710ed6c7",
+  "manifest_sha256": "83f0e351c4d0300e3b3f5a424b613526ac9f63ea855508761787d8d279de5452",
+  "original_lock_sha256": "7cd795f9f961f928b92e3d5c357a2c01533f3dfbb5d137ee3ee3a6f0583163b3",
+  "control_lock_sha256": "f5130ef664f0954b79d1b53e535bfe315d12fb8643cba725ed1e55c50d649c72",
+  "packages": 1673,
+  "only_changed_package_sources": [
+    {
+      "name": "grafting",
+      "version": "0.6.0",
+      "source": "local diagnostic path"
+    },
+    {
+      "name": "grafting-frame",
+      "version": "0.1.0",
+      "source": "local diagnostic path"
+    },
+    {
+      "name": "servo-wgpu-interop-adapter",
+      "version": "0.1.0",
+      "source": "local diagnostic path"
+    }
+  ],
+  "rewritten_references": 0,
+  "other_package_records_unchanged": true
+}

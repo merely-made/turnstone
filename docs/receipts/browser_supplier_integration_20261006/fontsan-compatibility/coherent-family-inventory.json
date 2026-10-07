@@ -1,0 +1,36 @@
+[
+  {
+    "repo": "mere",
+    "baseline": "db4ee31258b23c86572c429388c5d10bd4de9dc3",
+    "Genet_manifest_rows": {
+      "Cargo.toml": 28
+    },
+    "requires_new_Mere_pin": false
+  },
+  {
+    "repo": "woodshed",
+    "baseline": "b613fc55d2d59e865b6bb04e55a880ee4773b824",
+    "Genet_manifest_rows": {
+      "ports/redshank/Cargo.toml": 5
+    },
+    "Mere_manifest_rows": {
+      "ports/redshank/Cargo.toml": 8,
+      "ports/redshank/web/Cargo.toml": 3
+    },
+    "preserve": "Other Woodshed/Hocket source families"
+  },
+  {
+    "repo": "knot-editor",
+    "baseline": "91cb44a2c00c088f0677956d31f3cdca6828c59e",
+    "Genet_manifest_rows": {
+      "Cargo.toml": 8,
+      "crates/knot-document/Cargo.toml": 6
+    },
+    "Mere_manifest_rows": {
+      "Cargo.toml": 32,
+      "apps/desktop/Cargo.toml": 2,
+      "crates/knot-document/Cargo.toml": 7
+    },
+    "preserve": "Primary33cc and newer independent origin/main stack"
+  }
+]

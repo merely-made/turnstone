@@ -1,0 +1,12 @@
+{
+  "started_utc": "2026-10-07T05:46:49.0477696Z",
+  "finished_utc": "2026-10-07T05:47:54.7073108Z",
+  "exit_code": 0,
+  "priority": "BelowNormal",
+  "jobs": 1,
+  "command": "cargo build --offline --locked --features scry,weld,servo --bin turnstone --target-dir C:/t/cargo-targets/turnstone -j1",
+  "scope": "Restored portable Git candidate compile only; no new native/default-reopen qualification",
+  "executable_sha256": "273B8A96F9D80C1DE4C1DBAD19C1B13524E9CF99F19BA0758B12C1DA2AB4A8E5",
+  "stdout_sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+  "stderr_sha256": "4FECFFC8F03338DB8A2F897F621C0C5604DE48D9D15D521C8B7B1D4A1174A69A"
+}

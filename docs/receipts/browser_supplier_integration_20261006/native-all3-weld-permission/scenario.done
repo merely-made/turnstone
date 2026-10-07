@@ -1,0 +1,5 @@
+RESULT ok
+captured 01_permission_decision
+captured 02_permission_answered
+captured 03_permission_teardown
+Direct Weld permission callback and teardown complete

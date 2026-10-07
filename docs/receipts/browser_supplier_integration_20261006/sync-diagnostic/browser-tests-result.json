@@ -1,0 +1,21 @@
+{
+  "recorded_utc": "2026-10-07T05:37:50.6207155Z",
+  "source_label": "all3-sync-control",
+  "test_executable": "C:/t/cargo-targets/turnstone/debug/deps/turnstone-8287a741c2bf1d90.exe",
+  "test_executable_sha256": "489DA5AA05DB5B38CAB3858F1AF2D2B73860647B343B9F228365ED19739A29AC",
+  "priority": "BelowNormal",
+  "groups": [
+    {
+      "filter": "document_find",
+      "exit_code": 0,
+      "stdout_sha256": "C9E309A9B2BC6DFFC920C9B72C9C4B127D8D0C9DA931D90240FDCE2D732D50D2",
+      "stderr_sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    {
+      "filter": "chrome",
+      "exit_code": 0,
+      "stdout_sha256": "4E0A458C8018314612436F04001364722C9F4BC6C14F47705E447C60E57DAB11",
+      "stderr_sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    }
+  ]
+}
