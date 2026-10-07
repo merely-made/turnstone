@@ -429,6 +429,9 @@ From U2 (second round), U4, U7 and U8:
 
 ### S0. Repin as one tested set
 
+**Status (2026-10-07):** closed by the browser session's coordinated repin
+(Turnstone `e00869c`); see Progress.
+
 **Depends on:** U9. It comes before any stage that needs a Mere change.
 
 **Done when:**
@@ -1160,6 +1163,24 @@ the same record once this lane can push to Mere (U15).
     stack seams rounds (neither the fidelity plan nor Mere's log names a
     session) and which session holds Turnstone's dirty browser tree.
   - Nothing was built or run.
+  - A local session took the lane over from the cloud session.
+  - S0 is closed, by the browser session's coordinated repin rather than this
+    lane's steps 2 to 6. Turnstone `abb349cf` (runtime) and `8d1f907f`
+    (test-only follow-up) pin Mere `57b4893d`, Genet `965b64e2`, Knot
+    `0096591a` and Redshank `82271df2`; `e00869c` records the gates. Windows
+    passes 681 library tests and Linux 650 (nine ignored on each), with
+    `cargo_mode.py verify` and one source per sibling. The receipt is
+    `docs/receipts/browser_family_20261007/final-s0-audit.json`.
+    - Mere `57b4893d` is on `main` and carries the session seam
+      (`a59e4c47`), S8's Mere half (`f2ad105a`, `35bd7d77`), the E1b probe
+      (`d041cc69`) and the side-branch fixes (`edf175f9`), so the side-branch
+      blocker is gone.
+    - Knot `0096591a` was published by the browser session, not the identity
+      session. The browser plan records that the identity session's
+      seed/vault repair is not yet a published baseline.
+  - Stale branches already merged to `main` were pruned from GitHub,
+    including Mere's `turnstone-session-seam`.
+  - Next: the SC inventory.
 
 ## Cross-references
 
