@@ -1,0 +1,1250 @@
+{
+  "schema": "owned-worktree-cleanup-final-preflight-v1",
+  "recorded_utc": "2026-10-07T12:03:29.303216+00:00",
+  "root_head": "c44199e84086c5b65c4a27bb2e8bb714f70c95f9",
+  "prior_committed_preflight": {
+    "path": "docs/receipts/browser_family_20261007/owned-worktree-cleanup-preflight.json",
+    "sha256": "6909146072b1e01ffba94041ed5f7235d479b05d13f11bcd4a3cba6e0b753e0b"
+  },
+  "worktrees": [
+    {
+      "repository": "mere",
+      "approved_path": "C:\\Users\\mark_\\Code\\worktrees\\mere-browser-input-compat",
+      "head": "57b4893db6909d5ed9c4ccae30216f0d8164201a",
+      "local_branch": "codex/browser-input-compat",
+      "canonical_nonreparse_path": true,
+      "nested_or_ancestor_reparse_points": [],
+      "status_including_all_untracked_and_ignored": "",
+      "ignored_files": [],
+      "untracked_files": [],
+      "origin_url": "https://github.com/merely-made/mere.git",
+      "fresh_origin_main": "57b4893db6909d5ed9c4ccae30216f0d8164201a",
+      "candidate_reachable_main": true,
+      "owned_remote_provisional_branch": {
+        "ref": "refs/heads/codex/browser-input-compat",
+        "sha": "edf175f9c0a8645318ac8925adf0af6956f61425",
+        "reachable_origin_main": true
+      },
+      "registered_git_common_dir": "C:\\Users\\mark_\\Code\\repos\\mere\\.git",
+      "registered_worktree_git_dir": "C:\\Users\\mark_\\Code\\repos\\mere\\.git\\worktrees\\mere-browser-input-compat",
+      "registered_exact_owned_worktree": true,
+      "registration_or_index_locks": false,
+      "primary_guard": {
+        "path": "C:\\Users\\mark_\\Code\\repos\\mere",
+        "head": "e7ec66aff19923d904e0d0155ea00d78b7015fea",
+        "status": "",
+        "dirty_file_hashes": []
+      },
+      "owner": "shared_weld_input approved compatibility collision lane",
+      "proposed_cleanup_after_linux_confirmation": [
+        "git worktree remove exact approved clean path without force",
+        "delete only local codex/browser-input-compat branch after exact SHA guard",
+        "delete only task-owned remote provisional branch after exact remote ref/main reachability recheck if included in Root final cleanup authorization"
+      ]
+    },
+    {
+      "repository": "woodshed",
+      "approved_path": "C:\\Users\\mark_\\Code\\worktrees\\woodshed-browser-input-compat",
+      "head": "82271df20927d41a4cbb79c56a09fef5bbb38cde",
+      "local_branch": "codex/browser-input-compat",
+      "canonical_nonreparse_path": true,
+      "nested_or_ancestor_reparse_points": [],
+      "status_including_all_untracked_and_ignored": "",
+      "ignored_files": [],
+      "untracked_files": [],
+      "origin_url": "https://github.com/merely-made/woodshed.git",
+      "fresh_origin_main": "82271df20927d41a4cbb79c56a09fef5bbb38cde",
+      "candidate_reachable_main": true,
+      "owned_remote_provisional_branch": {
+        "ref": "refs/heads/codex/browser-input-compat",
+        "sha": "24f196f46f775704e467b41140588a3f35335a9f",
+        "reachable_origin_main": true
+      },
+      "registered_git_common_dir": "C:\\Users\\mark_\\Code\\repos\\woodshed\\.git",
+      "registered_worktree_git_dir": "C:\\Users\\mark_\\Code\\repos\\woodshed\\.git\\worktrees\\woodshed-browser-input-compat",
+      "registered_exact_owned_worktree": true,
+      "registration_or_index_locks": false,
+      "primary_guard": {
+        "path": "C:\\Users\\mark_\\Code\\repos\\woodshed",
+        "head": "cefc903dcd7f506803acfe2ee52cad7693787188",
+        "status": " M ports/redshank/desktop/src/scenario.rs\n M ports/redshank/scenarios/README.md\n M ports/redshank/scenarios/fixtures/README.md\n M ports/redshank/scenarios/fixtures/make_fixtures.py\n M ports/redshank/spikes/playback/scripts/range_server.py\n?? ports/redshank/scenarios/fixtures/local-transcript/state-00000000000000000001.json\n?? ports/redshank/scenarios/fixtures/podnews-transcript/state-00000000000000000001.json\n?? ports/redshank/scenarios/transcript_live.scn\n?? ports/redshank/scenarios/transcript_offline_seed.scn\n?? ports/redshank/scenarios/transcript_offline_verify.scn\n?? ports/redshank/scenarios/transcript_timing.scn\n",
+        "dirty_file_hashes": [
+          {
+            "path": "ports/redshank/desktop/src/scenario.rs",
+            "sha256": "a83ceeb4cad97a2a8b6cca964ef877ba1fe11ca5cc692b93fc58135220607e4e",
+            "bytes": 33142
+          },
+          {
+            "path": "ports/redshank/scenarios/README.md",
+            "sha256": "b531a77e4dd518e19a70e78bcffb9ddaa87f2752bc16a70ad0e49c0e8e1f2ea2",
+            "bytes": 3277
+          },
+          {
+            "path": "ports/redshank/scenarios/fixtures/README.md",
+            "sha256": "35c4d29fe4a6101533db34293ff62a22362f4dccc02499db5d29c6ed1299f7e0",
+            "bytes": 4314
+          },
+          {
+            "path": "ports/redshank/scenarios/fixtures/local-transcript/state-00000000000000000001.json",
+            "sha256": "d39d98a01e94cd4642974d5970cc3b6dec99f283ac82742946a816163da022aa",
+            "bytes": 1568
+          },
+          {
+            "path": "ports/redshank/scenarios/fixtures/make_fixtures.py",
+            "sha256": "1c3e084ec8f63bb387786f4300016829ea9a0ebd69c4c120243dbf0fa4deae8d",
+            "bytes": 14594
+          },
+          {
+            "path": "ports/redshank/scenarios/fixtures/podnews-transcript/state-00000000000000000001.json",
+            "sha256": "d1ff0deb65e297f1152ab00610c18885e3f97059de390906b710cf4eea1a374b",
+            "bytes": 1617
+          },
+          {
+            "path": "ports/redshank/scenarios/transcript_live.scn",
+            "sha256": "6aab540b13ae76ef223736958d9f6431d20a05dce565ca27bc6c1905a353fee2",
+            "bytes": 2069
+          },
+          {
+            "path": "ports/redshank/scenarios/transcript_offline_seed.scn",
+            "sha256": "2b7338c7c2edb74494f94343d81fa2a99947bbdd189399086d18193799ce1515",
+            "bytes": 879
+          },
+          {
+            "path": "ports/redshank/scenarios/transcript_offline_verify.scn",
+            "sha256": "3ceb0b7b34f9139f34e3d2f04b627f274cd43604d3e7223036bfe5c54fda14b8",
+            "bytes": 533
+          },
+          {
+            "path": "ports/redshank/scenarios/transcript_timing.scn",
+            "sha256": "df2ffebc7e4da7d8d28ee0457cb46f3aa6fc5be37df0bb2ad7f9961edad61eaa",
+            "bytes": 517
+          },
+          {
+            "path": "ports/redshank/spikes/playback/scripts/range_server.py",
+            "sha256": "aebd1aeadf6d921cf7c7cc17347cafe2499556da1b1300c691431e06c7d8a82e",
+            "bytes": 3309
+          }
+        ]
+      },
+      "owner": "shared_weld_input approved compatibility collision lane",
+      "proposed_cleanup_after_linux_confirmation": [
+        "git worktree remove exact approved clean path without force",
+        "delete only local codex/browser-input-compat branch after exact SHA guard",
+        "delete only task-owned remote provisional branch after exact remote ref/main reachability recheck if included in Root final cleanup authorization"
+      ]
+    }
+  ],
+  "process_ownership_snapshot": {
+    "snapshot_count": 484,
+    "observer_pids_excluded": [
+      7796,
+      9040
+    ],
+    "current_directories_read": 311,
+    "live_worktree_references": [],
+    "owner_candidate_probe": [
+      {
+        "pid": 27144,
+        "name": "cmd.exe",
+        "cwd_read": true,
+        "command_line_available": true
+      },
+      {
+        "pid": 46864,
+        "name": "cmd.exe",
+        "cwd_read": true,
+        "command_line_available": true
+      },
+      {
+        "pid": 16672,
+        "name": "cmd.exe",
+        "cwd_read": true,
+        "command_line_available": true
+      },
+      {
+        "pid": 42240,
+        "name": "cmd.exe",
+        "cwd_read": true,
+        "command_line_available": true
+      },
+      {
+        "pid": 21760,
+        "name": "cmd.exe",
+        "cwd_read": true,
+        "command_line_available": true
+      },
+      {
+        "pid": 44428,
+        "name": "cmd.exe",
+        "cwd_read": true,
+        "command_line_available": true
+      },
+      {
+        "pid": 43316,
+        "name": "cmd.exe",
+        "cwd_read": true,
+        "command_line_available": true
+      },
+      {
+        "pid": 47496,
+        "name": "cmd.exe",
+        "cwd_read": true,
+        "command_line_available": true
+      },
+      {
+        "pid": 51036,
+        "name": "cmd.exe",
+        "cwd_read": true,
+        "command_line_available": true
+      },
+      {
+        "pid": 19328,
+        "name": "cmd.exe",
+        "cwd_read": true,
+        "command_line_available": true
+      },
+      {
+        "pid": 17100,
+        "name": "cmd.exe",
+        "cwd_read": true,
+        "command_line_available": true
+      },
+      {
+        "pid": 49460,
+        "name": "cmd.exe",
+        "cwd_read": true,
+        "command_line_available": true
+      },
+      {
+        "pid": 40836,
+        "name": "cmd.exe",
+        "cwd_read": true,
+        "command_line_available": true
+      },
+      {
+        "pid": 38536,
+        "name": "cmd.exe",
+        "cwd_read": true,
+        "command_line_available": true
+      },
+      {
+        "pid": 46952,
+        "name": "cmd.exe",
+        "cwd_read": true,
+        "command_line_available": true
+      },
+      {
+        "pid": 39700,
+        "name": "cmd.exe",
+        "cwd_read": true,
+        "command_line_available": true
+      },
+      {
+        "pid": 39908,
+        "name": "cmd.exe",
+        "cwd_read": true,
+        "command_line_available": true
+      },
+      {
+        "pid": 8580,
+        "name": "cmd.exe",
+        "cwd_read": true,
+        "command_line_available": true
+      },
+      {
+        "pid": 30728,
+        "name": "cmd.exe",
+        "cwd_read": true,
+        "command_line_available": true
+      },
+      {
+        "pid": 49368,
+        "name": "cmd.exe",
+        "cwd_read": true,
+        "command_line_available": true
+      },
+      {
+        "pid": 41924,
+        "name": "cmd.exe",
+        "cwd_read": true,
+        "command_line_available": true
+      },
+      {
+        "pid": 27980,
+        "name": "cmd.exe",
+        "cwd_read": true,
+        "command_line_available": true
+      },
+      {
+        "pid": 37408,
+        "name": "cmd.exe",
+        "cwd_read": true,
+        "command_line_available": true
+      },
+      {
+        "pid": 37880,
+        "name": "cmd.exe",
+        "cwd_read": true,
+        "command_line_available": true
+      },
+      {
+        "pid": 47084,
+        "name": "cmd.exe",
+        "cwd_read": true,
+        "command_line_available": true
+      },
+      {
+        "pid": 29804,
+        "name": "python.exe",
+        "cwd_read": true,
+        "command_line_available": true
+      },
+      {
+        "pid": 13384,
+        "name": "python.exe",
+        "cwd_read": true,
+        "command_line_available": true
+      },
+      {
+        "pid": 30520,
+        "name": "pwsh.exe",
+        "cwd_read": true,
+        "command_line_available": true
+      },
+      {
+        "pid": 23456,
+        "name": "python.exe",
+        "cwd_read": true,
+        "command_line_available": true
+      },
+      {
+        "pid": 46196,
+        "name": "python.exe",
+        "cwd_read": true,
+        "command_line_available": true
+      },
+      {
+        "pid": 37524,
+        "name": "cmd.exe",
+        "cwd_read": true,
+        "command_line_available": true
+      },
+      {
+        "pid": 27576,
+        "name": "pwsh.exe",
+        "cwd_read": true,
+        "command_line_available": true
+      },
+      {
+        "pid": 41880,
+        "name": "pwsh.exe",
+        "cwd_read": true,
+        "command_line_available": true
+      },
+      {
+        "pid": 50524,
+        "name": "cmd.exe",
+        "cwd_read": true,
+        "command_line_available": true
+      },
+      {
+        "pid": 18720,
+        "name": "cmd.exe",
+        "cwd_read": true,
+        "command_line_available": true
+      },
+      {
+        "pid": 48428,
+        "name": "cmd.exe",
+        "cwd_read": true,
+        "command_line_available": true
+      },
+      {
+        "pid": 11980,
+        "name": "pwsh.exe",
+        "cwd_read": true,
+        "command_line_available": true
+      },
+      {
+        "pid": 42556,
+        "name": "pwsh.exe",
+        "cwd_read": true,
+        "command_line_available": true
+      },
+      {
+        "pid": 25340,
+        "name": "pwsh.exe",
+        "cwd_read": false,
+        "command_line_available": true
+      }
+    ],
+    "limitations": [
+      {
+        "pid": 0,
+        "name": "System Idle Process",
+        "error": "[Errno 87] process query/read unavailable"
+      },
+      {
+        "pid": 4,
+        "name": "System",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 236,
+        "name": "Secure System",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 280,
+        "name": "Registry",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 848,
+        "name": "smss.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 1336,
+        "name": "csrss.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 1600,
+        "name": "wininit.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 1612,
+        "name": "csrss.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 1700,
+        "name": "winlogon.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 1724,
+        "name": "services.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 1764,
+        "name": "LsaIso.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 1772,
+        "name": "lsass.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 1900,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 1916,
+        "name": "fontdrvhost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 1924,
+        "name": "fontdrvhost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 2036,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 1020,
+        "name": "WUDFCompanionHost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 1316,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 832,
+        "name": "dwm.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 2148,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 2172,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 2188,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 2196,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 2220,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 2400,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 2448,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 2460,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 2500,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 2516,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 2532,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 2540,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 2764,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 2772,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 2816,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 2836,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 2864,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 3116,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 3372,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 3388,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 3440,
+        "name": "NVDisplay.Container.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 3540,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 3580,
+        "name": "amdfendrsr.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 3588,
+        "name": "atiesrxx.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 3596,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 3652,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 3808,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 3820,
+        "name": "WUDFHost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 4012,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 4240,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 4292,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 4652,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 4796,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 4904,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 4972,
+        "name": "dasHost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 4992,
+        "name": "WUDFHost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 5044,
+        "name": "WUDFHost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 4820,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 5168,
+        "name": "WUDFCompanionHost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 5192,
+        "name": "WUDFCompanionHost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 5228,
+        "name": "dasHost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 5304,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 5308,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 5320,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 5360,
+        "name": "WUDFHost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 5436,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 5444,
+        "name": "Memory Compression",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 5524,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 5556,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 5740,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 5792,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 5828,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 5848,
+        "name": "AsusOptimization.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 5856,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 6020,
+        "name": "spoolsv.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 6256,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 6352,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 6440,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 6456,
+        "name": "AsusSystemDiagnosis.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 6468,
+        "name": "AsusAppService.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 6480,
+        "name": "AsusSoftwareManager.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 6488,
+        "name": "AsusSwitch.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 6496,
+        "name": "AsusSystemAnalysis.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 6504,
+        "name": "AsusPTPService.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 6512,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 6520,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 6528,
+        "name": "wslservice.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 6536,
+        "name": "DAX3API.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 6544,
+        "name": "GameInputRedistService.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 6552,
+        "name": "nvcontainer.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 6560,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 6576,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 6584,
+        "name": "HPPrintScanDoctorService.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 6592,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 6600,
+        "name": "RtkAudUService64.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 6620,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 6632,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 6656,
+        "name": "TCPSVCS.EXE",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 6672,
+        "name": "MpDefenderCoreService.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 6684,
+        "name": "OfficeClickToRun.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 6696,
+        "name": "MsMpEng.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 6704,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 7152,
+        "name": "gamingservices.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 7256,
+        "name": "gamingservicesnet.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 7376,
+        "name": "NgcIso.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 7504,
+        "name": "WmiPrvSE.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 7792,
+        "name": "wlanext.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 8624,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 8964,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 9220,
+        "name": "AggregatorHost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 10156,
+        "name": "unsecapp.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 9820,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 9548,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 6424,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 10320,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 10692,
+        "name": "GameInputSvc.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 10728,
+        "name": "GameInputSvc.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 10888,
+        "name": "vmcompute.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 10996,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 11104,
+        "name": "DefenderAiPlatformHost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 7480,
+        "name": "NisSrv.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 8256,
+        "name": "atieclxx.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 8204,
+        "name": "NVDisplay.Container.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 8780,
+        "name": "nvcontainer.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 4176,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 9804,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 9348,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 6400,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 10424,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 3304,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 7356,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 9372,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 1784,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 9172,
+        "name": "SearchIndexer.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 4440,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 6952,
+        "name": "SecurityHealthService.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 5784,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 7464,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 5652,
+        "name": "DefenderSessionHelper.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 11012,
+        "name": "DAX3API.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 4628,
+        "name": "WmiPrvSE.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 14512,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 17604,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 19968,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 17420,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 5636,
+        "name": "ctfmon.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 24616,
+        "name": "ChsIME.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 18236,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 15340,
+        "name": "steamservice.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 15564,
+        "name": "logioptionsplus_updater.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 15632,
+        "name": "logioptionsplus_appbroker.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 24372,
+        "name": "FileSyncHelper.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 28056,
+        "name": "audiodg.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 924,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 19828,
+        "name": "dllhost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 13480,
+        "name": "AsusSoftwareManagerAgent.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 412,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 20436,
+        "name": "taskhostw.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 18564,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 34152,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 40672,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 34244,
+        "name": "codex-windows-sandbox-service.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 37300,
+        "name": "SearchProtocolHost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 46696,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 50724,
+        "name": "SearchFilterHost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 16968,
+        "name": "SearchFilterHost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 35160,
+        "name": "cowork-svc.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 31940,
+        "name": "SearchFilterHost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 37196,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 22900,
+        "name": "WmiPrvSE.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 45284,
+        "name": "svchost.exe",
+        "error": "[Errno 5] process query/read unavailable"
+      },
+      {
+        "pid": 25340,
+        "name": "pwsh.exe",
+        "error": "[Errno 87] process query/read unavailable"
+      }
+    ],
+    "method": "Fresh CIM command-line matching plus read-only NT PEB current-directory metadata,64/WOW64, self-cwd witness; no full command lines retained. Protected and exited processes remain limitations, not evidence of absence."
+  },
+  "summary": {
+    "clean_worktrees": 2,
+    "candidate_and_provisional_commits_reachable_origin_main": true,
+    "live_owned_worktree_references": 0,
+    "cwd_observer_limitations": 171,
+    "primary_head_status_dirty_hashes_unchanged": true,
+    "known_obstacles": []
+  },
+  "hold": "Await Root confirmation that Linux full suite and remaining gates are zero. Both worktrees, local/remote branches and primaries remain intact. Final state/process/main guards must be repeated immediately before authorized cleanup.",
+  "excluded_cleanup": "The two Weld profiles whose automatic cleanup review rejected removal remain untouched; no retry. Other worktrees, branches, paused Mere graph work, targets, Cargo homes and .github are outside scope."
+}

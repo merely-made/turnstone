@@ -1,0 +1,9 @@
+{
+  "observed_utc": "2026-10-07T11:58:39.416384+00:00",
+  "observer": "fresh read-only SSH Python process, inherited session limits; original ended process limits were not captured directly",
+  "rlimit_nofile_soft": 1024,
+  "rlimit_nofile_hard": 1048576,
+  "system_file_max": "9223372036854775807",
+  "source_sha": "8d1f907f4bd31b256737a27d3e63fe8cd8672efc",
+  "tracked_diff": []
+}

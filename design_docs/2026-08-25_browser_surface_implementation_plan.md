@@ -8,8 +8,9 @@ and four native scenarios are recorded in the
 Optional Windows Servo B3 candidate source is present; the locked three-engine
 build passes. The preserved host dispatch failure is repaired, and native
 assertion/exit guards pass. Pixel review still rejects intermittent white
-reopened A. The coordinated U9 family is now published at `abb349cf` and its
-Windows S0 checks pass; Linux source qualification is running. Default B3
+reopened A. The coordinated U9 runtime family is published at `abb349cf`, with
+test-only portability follow-up `8d1f907f`. Windows and Linux S0 source checks
+pass. Default B3
 correctness and foreign accessibility remain open.
 T0 contributed document surfaces, K0
 one-gesture Keep, F0 retained find, the D0 host decision surface, E0.1 engine
@@ -27,8 +28,9 @@ remains useful as research and acceptance evidence.
 
 ### Current upstream and coordinated repin, 2026-10-07
 
-**Status:** source published at `abb349cf`; Windows S0 checks pass, Linux
-qualification running. Explicitly authorized after the U14 checkpoint.
+**Status:** coordinated repin complete. Runtime source is published at `abb349cf`,
+with test-only portability follow-up `8d1f907f`; Windows and Linux S0 checks pass.
+Explicitly authorized after the U14 checkpoint.
 The user requests current Servo and CEF first, then the coordinated repin,
 with its previous assumptions rechecked against published source.
 
@@ -63,8 +65,12 @@ remain separate. An upgrade alone does not certify the intermittent reopen fix.
 The [current-family receipt](../docs/receipts/browser_family_20261007/README.md)
 records published Mere `57b4893d`, Genet `965b64e2`, Knot `0096591a`, Redshank
 `82271df2`, Graft `bb48281b`, Scry `2c3ebd24`, and Weld `c4dd593b`. Windows
-locked all-targets, 680 library tests (nine ignored), Cargo verification and
-the single-source sibling tree pass. Physics refusals reach a visible/polite
+locked all-targets, 681 library tests (nine ignored), Cargo verification and
+the single-source sibling tree pass. Linux default-feature locked all-targets,
+650 library tests (nine ignored), Cargo verification, tree and metadata also pass.
+Its standard-parallel suite needs a child-only descriptor soft limit of 65,536;
+the observed test peak is 2,333, and the failed original-budget control remains
+in the receipt. Test source and deadlines are unchanged. Physics refusals reach a visible/polite
 status, monitor display rates survive runtime replacement, and score 4 is
 typed-refused before mutation while score 5 is accepted. Seven native controls
 exit cleanly on the current binary. The default-mode stale resized Servo
@@ -232,8 +238,8 @@ packages resolve the conflict. Only three production manifest ranges change;
 Rust/data/license bytes are preserved. The combined locked build and initial
 library suite pass (679 passed, zero failed, nine ignored), and all seven normal
 page-native Intl/normalization probes pass. The sequential cargo-mode verification
-and Linux pre-repin all-targets baseline pass. Final clean-source S0 gates remain
-in progress.
+and Linux pre-repin all-targets baseline pass. Final clean-source S0 gates now
+pass on Windows and Linux, including the test-only portability follow-up above.
 
 The [current-family receipt](../docs/receipts/browser_family_20261007/README.md)
 preserves resize failures despite successful scenario/title/teardown assertions.
@@ -244,7 +250,7 @@ passes both. Existing and producer-only passes have additional frame handoffs,
 so these controls do not establish producer-only sufficiency. Producer readiness,
 source reuse, resource-state handback and resource/fence lifetime are explicit
 Graft release gates. Diagnostic positives do not qualify default B3 correctness.
-Matching pins and exact-source qualification remain the final U9 gate.
+Matching pins and exact-source qualification close the coordinated U9 repin.
 Windowless E1a checks do not qualify E1b human walks or foreign-browser actions.
 
 ### Terminology amendment, 2026-09-20

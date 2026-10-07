@@ -1,0 +1,783 @@
+
+running 659 tests
+test a11y::bridge_integrity::a_contributed_tree_attaches_below_its_registered_pane ... ok
+test a11y::bridge_integrity::the_pushed_tree_has_no_dangling_children_and_no_duplicate_ids ... ok
+test a11y::tests::panes_workbench_and_documents_project_under_one_root ... ok
+test app::contributed_pane_arms::tests::contributed_summon_preserves_source_and_mints_one_identity ... ok
+test app::contributed_pane_arms::tests::contributed_summon_rolls_back_when_blueprint_cannot_place_target ... ok
+test a11y::tests::the_stitched_tree_is_coherent ... ok
+test app::contributed_pane_arms::tests::contributed_summon_targets_the_active_lens ... ok
+test a11y::bridge_integrity::diagnostic_gloss_rows_attach_without_routes_and_retire_after_removal ... ok
+test a11y::route_table::an_omnibar_route_opens_the_omnibar_through_the_spine ... ok
+test a11y::tests::the_omnibar_projects_while_open ... ok
+test app::contributed_pane_arms::tests::knot_file_choices_are_palette_actions_lowered_to_shell_effects ... ok
+test a11y::route_table::every_graph_member_is_reachable_by_route_when_an_orrery_exists ... ok
+test app::document_find_arms::tests::current_match_is_observable_and_accessible ... ok
+test a11y::route_table::a_routed_selection_changes_the_app_and_a_miss_says_so ... ok
+test app::document_find_arms::tests::captured_target_and_request_drop_late_find_results ... ok
+test app::document_find_arms::tests::engine_managed_count_is_observed_without_synthetic_matches ... ok
+test app::document_find_arms::tests::unsupported_engine_neither_offers_nor_opens_find ... ok
+test app::document_find_arms::tests::workbench_find_and_zoom_follow_the_browser_page_with_an_independent_graph_cursor ... ok
+test app::node_arms::tests::committed_content_navigation_grows_the_same_members_lineage ... ok
+test app::node_arms::tests::page_zoom_steps_the_chromium_ladder_and_persists_the_request ... ok
+test app::node_arms::tests::the_ladder_ends_report_rather_than_stepping_past_themselves ... ok
+test app::node_arms::tests::opening_an_address_keeps_the_new_selection_through_pane_rendering ... ok
+test app::node_arms::tests::zoom_rows_appear_only_for_a_live_engine_that_reports_the_control ... ok
+test app::palette::tests::captured_collection_rows_preserve_worker_versions_and_mark_selection ... ok
+test app::omnibar_arms::tests::captured_page_mode_drops_results_after_stale_or_empty_refresh ... ok
+test app::omnibar_arms::tests::captured_page_mode_finds_body_text_without_recall_rows ... ok
+test app::omnibar_arms::tests::captured_search_respects_a_single_row_setting ... ok
+test app::feed_arms::tests::host_tick_runs_the_persisted_cadence ... ok
+test app::palette::tests::stale_captured_collection_selection_offers_the_latest_version ... ok
+test app::palette::tests::duplicate_collection_names_have_stable_distinct_palette_labels ... ok
+test app::pane_arms::tests::floating_pane_moves_through_live_primary_and_lens_projections ... ok
+test app::feed_arms::tests::guid_stable_episode_url_change_navigates_the_existing_member ... ok
+test app::omnibar_arms::tests::committing_a_captured_source_opens_its_source_address ... ok
+test app::palette::tests::committing_a_captured_collection_row_emits_its_exact_version ... ok
+test app::feed_arms::tests::subscription_refresh_projects_unread_entries_once ... ok
+test app::runtime_pool::tests::display_budget_survives_graph_replacement_and_unknown_rate ... ok
+test app::runtime_pool::tests::forme_runtime_key_keeps_graph_and_forme_separate ... ok
+test app::resident_admission_tests::pause_skips_manual_runs_and_resume_is_durable ... ok
+test app::resident_admission_tests::uninstall_persists_revocation_and_rebuild_rejects_lagging_binding ... ok
+test app::runtime_pool::tests::graph_pool_keeps_two_graph_authorities_independent ... ok
+test app::runtime_pool::tests::workbenches_are_owned_by_their_forme_runtime ... ok
+test app::redshank_arms::tests::opening_an_enclosure_yields_a_redshank_episode_pane ... ok
+test app::runtime_pool::tests::pane_viewports_do_not_alias_on_one_graph ... ok
+test app::tests::a_profile_with_no_vault_still_registers_a_knot_engine ... ok
+test app::tests::a_left_place_refuses_reconnect_and_rejoins_by_clearing_its_mark ... ok
+test app::tests::a_refused_invitation_leaves_no_binding_in_app_state ... ok
+test app::tests::a_held_document_is_refused_outside_a_place_and_its_node_stays ... ok
+test app::resident_run_tests::adopting_foreign_run_records_clears_the_live_table_without_rewriting_them ... ok
+test app::tests::a_stale_join_answer_cannot_bind_a_session ... ok
+test app::runtime_pool::tests::pane_selections_do_not_alias_on_one_graph ... ok
+test app::resident_run_tests::malformed_run_store_refuses_before_manual_body_mutation ... ok
+test app::tests::actor_fetched_body_is_retained_for_the_requested_content_spawn ... ok
+test app::tests::a_shared_knot_address_needs_no_path_of_its_own ... ok
+test app::redshank_arms::tests::a_note_and_progress_project_into_the_graph_and_reopen_after_a_restart ... ok
+test app::tests::available_actions_lead_with_the_contextual_rows ... ok
+test app::resident_admission_tests::duplicate_subjects_refuse_manual_routing_without_actions ... ok
+test app::tests::an_expired_invitation_is_reported_with_its_time ... ok
+test app::tests::capture_action_preserves_explicit_member_for_the_host ... ok
+test app::tests::back_forward_and_reload_flow_through_the_spine ... ok
+test app::tests::adopt_session_restores_the_saved_canvas_layout_from_facets ... ok
+test app::tests::close_session_trashes_and_recover_restores_identity ... ok
+test app::tests::binary_page_response_becomes_durable_download_custody ... ok
+test app::tests::composing_a_gloss_pane_toggles_sections_on_its_own_leaf ... ok
+test app::tests::browser_states_refresh_and_round_trip ... ok
+test app::tests::boot_launch_fetch_precedes_the_restored_content_spawn ... ok
+test app::tests::copying_the_local_rendezvous_carries_the_whole_ticket ... ok
+test app::tests::content_flip_lowers_and_fails_honestly ... ok
+test app::tests::changed_gemini_certificate_requires_an_explicit_trust_commit_before_refetch ... ok
+test app::tests::committing_an_action_row_runs_the_action_and_closes ... ok
+test app::tests::committing_a_node_row_selects_without_fetch_effects ... ok
+test app::tests::configured_row_limit_applies_to_the_live_omnibar_projection ... ok
+test app::tests::empty_recycle_bin_forgets_on_command ... ok
+test app::tests::failed_leave_from_joining_cannot_adopt_a_late_join_answer ... ok
+test app::tests::delete_stages_into_the_bin_and_recover_restores_identity ... ok
+test app::tests::a_rerooted_profile_refuses_automatic_certificate_reissue ... ok
+test app::tests::corrupt_admission_state_refuses_install_without_replacing_tombstones ... ok
+test app::tests::fork_session_snapshots_the_component_with_its_facets ... ok
+test app::tests::gemini_identity_is_confirmed_once_and_reused_only_for_its_capsule ... ok
+test app::tests::leave_place_is_correlated_and_failure_keeps_a_retryable_degraded_binding ... ok
+test app::tests::lens_ops_close_removes_the_summoned_pane ... ok
+test app::tests::graph_views_workbenches_and_followers_are_pane_scoped ... ok
+test app::tests::live_settings_snapshot_reconfigures_the_running_chrome_value_once ... ok
+test app::tests::keep_action_is_target_bound_idempotent_and_observable ... ok
+test app::tests::fork_carries_denizen_worlds_as_real_copies ... ok
+test app::tests::malformed_place_binding_is_visible_without_hiding_cached_graph ... ok
+test app::tests::micron_form_editor_is_explicit_redacts_masked_input_and_emits_one_request ... ok
+test app::tests::denizen_installs_after_visible_review ... ok
+test app::tests::moving_a_composed_section_reorders_that_leaf_and_clamps ... ok
+test app::tests::deleting_a_denizen_archives_its_world_and_recovery_restores_residency ... ok
+test app::tests::micron_form_fixed_variable_action_selection_and_visible_edit_errors ... ok
+test app::tests::nomadnet_omnibar_stop_and_reload_keep_native_request_identity ... ok
+test app::tests::install_delegates_from_the_profile_identity_and_uninstall_revokes_it ... ok
+test app::tests::place_collection_completion_is_correlated_and_failure_keeps_the_snapshot ... ok
+test app::tests::micron_form_refuses_submission_after_source_address_changes ... ok
+test app::tests::place_collection_selection_lowers_the_exact_version_and_clear ... ok
+test app::tests::micron_form_navigation_reload_and_close_cancel_and_ignore_late_reply ... ok
+test app::tests::omnibar_transcript_freezes_its_open_context_and_repeats_it ... ok
+test app::tests::micron_form_rejects_refreshed_source_before_send_and_on_reply ... ok
+test app::tests::place_artifacts_are_written_where_the_person_asked ... ok
+test app::tests::ordinary_smolweb_input_navigates_and_refetches_with_a_percent_encoded_query ... ok
+test app::tests::place_prekey_offer_is_written_beside_its_card ... ok
+test app::tests::place_founding_prompts_commit_escape_and_refuse ... ok
+test app::tests::publishing_pane_is_a_summonable_window_control ... ok
+test app::tests::place_invite_lifetime_suffix_is_read_from_the_right ... ok
+test app::tests::reconnect_metadata_failure_does_not_remove_the_admitted_binding ... ok
+test app::tests::place_status_leaves_the_omnibar_open_over_a_pane_open ... ok
+test app::tests::place_status_refresh_is_local_filtered_and_generation_scoped ... ok
+test app::tests::place_revoke_rows_are_a_founders_one_per_other_member ... ok
+test app::tests::place_reader_invitation_and_share_rows_act_only_inside_a_place ... ok
+test app::tests::reconnect_place_requires_binding_and_ignores_departed_generation ... ok
+test app::tests::retired_static_viewer_pins_migrate_to_livery ... ok
+test app::tests::recall_never_outranks_the_typed_address ... ok
+test app::tests::reload_after_a_failed_native_fetch_replaces_the_error_with_a_content_spawn ... ok
+test app::tests::requested_page_scale_round_trips_through_the_store ... ok
+test app::tests::shared_knot_pane_is_a_summonable_reader_control ... ok
+test app::tests::place_binding_survives_switch_and_restart_as_a_worker_open ... ok
+test app::tests::rename_session_through_the_omnibar_mode ... ok
+test app::tests::source_capture_refuses_a_member_without_a_current_target ... ok
+test app::tests::recall_keeps_a_footing_inside_the_row_budget ... ok
+test app::tests::source_capture_carries_current_target_without_requesting_png ... ok
+test app::tests::source_capture_completion_attaches_an_ordered_node_reference_series ... ok
+test app::tests::sensitive_smolweb_input_is_masked_and_never_enters_graph_or_events ... ok
+test app::tests::shared_nodes_arrive_without_disturbing_the_local_canvas ... ok
+test app::tests::session_restore_applies_law_before_overlays_and_records_refusal ... ok
+test app::tests::summon_enforces_registry_multiplicity_in_one_space ... ok
+test app::tests::stale_or_failed_source_capture_completion_never_attaches_a_reference ... ok
+test app::tests::stop_cancels_only_the_focused_request_and_rejects_its_late_answer ... ok
+test app::tests::streamed_page_spawns_from_a_prefix_then_replaces_and_settles ... ok
+test app::tests::tear_out_moves_the_leaf_and_keeps_its_id ... ok
+test app::tests::the_cascade_budget_arrives_from_settings_and_changes_live ... ok
+test app::tests::spartan_prompt_target_resolves_against_its_source_member ... ok
+test app::tests::the_overmap_composes_sections_too ... ok
+test app::tests::superseded_recall_answers_drop ... ok
+test app::tests::stale_place_update_from_a_departed_session_is_ignored ... ok
+test app::tests::the_actions_lane_and_short_needles_never_recall ... ok
+test app::tests::resident_petitions_run_through_the_gate ... ok
+test app::tests::workbench_persists_and_restores_pruned ... ok
+test app::user_agent_decision_arms::tests::authentication_secrets_are_redacted_and_absent_from_observation ... ok
+test app::tests::typing_asks_for_recall_and_the_answer_becomes_rows ... ok
+test app::tests::workbench_actions_flow_through_the_spine ... ok
+test app::user_agent_decision_arms::tests::permission_choice_is_retained_and_lowers_the_captured_request ... ok
+test arrange_pane::tests::intents_lower_to_the_palette_actions_by_id ... ok
+test app::tests::titan_address_opens_an_explicit_composer_without_uploading ... ok
+test app::tests::titan_composer_stages_body_mime_hidden_token_and_literal_confirmation ... ok
+test behaviors::tests::a_delta_naming_one_node_yields_that_node ... ok
+test behaviors::tests::a_digest_names_the_nodes_that_changed_not_their_containers ... ok
+test behaviors::tests::a_field_delta_names_no_node ... ok
+test behaviors::tests::a_malformed_id_yields_no_scope_rather_than_a_bogus_one ... ok
+test behaviors::tests::a_node_the_graph_does_not_hold_falls_back_to_its_bare_id ... ok
+test behaviors::tests::a_relation_delta_yields_both_ends ... ok
+test behaviors::tests::an_unwoken_context_is_empty_rather_than_absent ... ok
+test app::user_agent_decision_arms::tests::withdrawn_request_cannot_answer_a_later_navigation ... ok
+test browse::tests::certificate_request_prompts_once_then_reports_rejection ... ok
+test browse::tests::changed_certificate_preserves_the_fetch_target_and_both_fingerprints ... ok
+test arrange_pane::tests::refused_overlays_are_visible_and_keep_the_applied_law ... ok
+test browse::tests::failed_favicon_completion_clears_its_pending_request ... ok
+test browse::tests::favicon_completions_remove_only_their_own_request ... ok
+test app::tests::workbench_browser_commands_preserve_the_independent_graph_selection ... ok
+test browse::tests::input_response_keeps_actor_target_separate_from_graph_owner ... ok
+test arrange_pane::tests::current_refusal_attaches_to_the_platform_tree_and_clears_without_dom_sync ... ok
+test browse::tests::page_progress_keeps_the_request_pending_until_terminal_answer ... ok
+test browse::tests::pending_table_correlates_and_refuses_to_guess ... ok
+test browse::tests::subresource_waiters_share_one_fetch_and_clear_together ... ok
+test arrange_pane::tests::the_rows_read_the_canvas_back ... ok
+test browse::tests::superseding_and_stopping_cancel_only_the_named_request ... ok
+test behaviors::tests::typed_journal_authors_preserve_no_self_wake_subject_matching ... ok
+test cambium_pane::tests::a_roster_cell_resolves_by_text ... ok
+test app::tests::the_row_count_follows_the_viewport_under_the_configured_ceiling ... ok
+test cambium_pane::tests::every_tab_is_drawn_in_the_strip ... ok
+test browse::tests::favicon_write_stores_png_bytes_under_their_digest ... ok
+test browse::tests::superseded_node_drops_the_late_result ... ok
+test app::tests::swapped_script_body_is_refused_before_runtime_execution ... ok
+test cambium_pane::tests::grid_dom_is_hit_testable ... ok
+test cambium_pane::tests::clicking_a_tab_switches_the_body ... ok
+test cambium_pane::tests::two_roster_runners_keep_independent_selection ... ok
+test chrome_view::tests::authentication_card_debug_withholds_credential_fields ... ok
+test browse::tests::enrichment_stamps_the_requesting_node_among_url_twins ... ok
+test cambium_pane::tests::a_row_in_a_long_narrow_roster_navigates_to_its_own_url ... ok
+test chrome_view::tests::authentication_card_masks_password_and_a11y_withholds_credentials ... ok
+test cambium_pane::tests::tablist_height_matches_the_sheet ... ok
+test chrome_view::tests::a_press_hit_tests_without_cascading_again ... ok
+test chrome_view::tests::a_changed_chrome_cascades_again ... ok
+test chrome_view::tests::an_unchanged_chrome_paints_without_cascading_again ... ok
+test chrome_view::tests::document_find_projects_controlled_input_status_and_controls ... ok
+test chrome_view::tests::browser_strip_targets_the_workbench_member_without_moving_graph_selection ... ok
+test chrome_view::tests::chrome_windows_are_forest_siblings_with_scoped_layout ... ok
+test chrome_view::tests::hidden_shellbar_is_removed_from_the_chrome_and_a11y_projections ... ok
+test chrome_view::tests::active_fetch_switches_reload_to_stop_and_projects_link_preview ... ok
+test chrome_view::tests::browser_strip_routes_per_node_back_forward_and_reload ... ok
+test content::tests::fetched_documents_are_member_and_address_scoped ... ok
+test content::tests::flip_toggles_and_failure_retries ... ok
+test content::tests::live_nodes_lists_only_live ... ok
+test content::tests::source_candidates_are_html_and_address_scoped ... ok
+test content::tests::streamed_documents_accumulate_exact_bytes_before_decoding ... ok
+test chrome_view::tests::clicking_a_suggestion_row_bubbles_its_index ... ok
+test content_classes::tests::download_record_displaces_the_generic_web_page_class ... ok
+test content_classes::tests::reconciliation_is_idempotent ... ok
+test contributed_a11y::tests::a_new_admission_never_reuses_the_old_platform_action_id ... ok
+test contributed_a11y::tests::an_unfocused_dom_does_not_invent_focus_and_its_root_uses_the_pane_rect ... ok
+test chrome_view::tests::the_caret_split_mirrors_omnibar_state ... ok
+test contributed_a11y::tests::equal_dom_ids_in_two_panes_never_collide ... ok
+test contributed_a11y::tests::current_runner_focus_is_admitted_repeatedly_without_activation ... ok
+test contributed_a11y::tests::namespacing_places_bounds_and_preserves_distinct_actions ... ok
+test chrome_view::tests::live_appearance_is_applied_to_the_retained_chrome_surface ... ok
+test content_classes::tests::web_and_note_classes_coexist_and_are_admitted_in_one_graph ... ok
+test contributed_surface::tests::admission_generations_never_wrap_or_reuse_removed_identity ... ok
+test contributed_a11y::tests::queued_old_admission_cannot_activate_a_current_runner_control ... ok
+test contributed_surface::tests::erased_sessions_dispatch_and_sync_independently_and_drop_from_map ... ok
+test contributed_surface::tests::registration_asserts_the_descriptor_source_kind_matches_the_schema ... ok
+test contributed_surface::tests::registry_rejects_duplicate_and_validates_schema ... ok
+test contributed_surface::tests::retained_map_reuses_one_source_and_replaces_a_repinned_source ... ok
+test contributed_a11y::tests::test_provider_without_host_effects_still_admits_current_actions ... ok
+test contributed_surface::tests::source_schema_is_only_external_schema ... ok
+test contributed_surface::tests::typed_unavailability_becomes_a_generic_retained_surface ... ok
+test cookie_custody::tests::a_cookie_set_in_one_run_is_there_in_the_next ... ok
+test denizen::tests::a_deadband_is_strictly_parsed_and_named_in_review ... ok
+test denizen::tests::a_legacy_binding_rebuilds_and_asks_for_a_heal ... ok
+test denizen::tests::nested_logs_round_trip_through_disk ... ok
+test contributed_surface::tests::admitted_pane_exposes_its_retained_dom_and_complete_probe_stylesheet ... ok
+test diagnostic_observations::tests::byte_limit_accounts_the_encoded_category_and_envelope ... ok
+test diagnostic_observations::tests::event_copy_omits_urls_paths_titles_prompts_and_errors ... ok
+test diagnostic_observations::tests::inspection_age_and_disabled_status_are_actual_store_readings ... ok
+test diagnostic_observations::tests::inspection_keeps_loss_redaction_and_receipt_reader_independent ... ok
+test diagnostic_observations::tests::inspection_settings_are_independent_of_retention ... ok
+test diagnostic_observations::tests::overflow_is_visible_to_independent_readers ... ok
+test diagnostic_observations::tests::requested_export_failure_fails_the_scenario_sentinel ... ok
+test diagnostic_observations::tests::successful_requested_receipt_exports_records_and_loss ... ok
+test diagnostic_observations::tests::zero_configuration_reports_disabled_retention ... ok
+test contributed_surface::tests::retained_projection_and_actions_share_the_live_dom_session ... ok
+test distillery_installed_surface::tests::malformed_mesh_ids_and_spinning_cadences_are_refused_before_admission ... ok
+test distillery_installed_surface::tests::payload_version_is_checked_before_the_snapshot_is_built ... ok
+test distillery_installed_surface::tests::registry_admits_the_published_distillery_surface_from_a_versioned_source ... ok
+test contributed_a11y::tests::helper_refuses_hidden_disabled_and_unsupported_runner_actions ... ok
+test chrome_view::tests::one_mutation_invalidates_every_window_root ... ok
+test download::tests::attachment_and_unrenderable_media_download_but_text_stays_a_document ... ok
+test download::tests::filename_prefers_disposition_and_removes_path_authority ... ok
+test chrome_view::tests::permission_decision_projects_origin_choices_and_accessibility ... ok
+test feed::tests::gemtext_feed_preserves_relative_urls_dates_and_dedupes ... ok
+test feed::tests::guid_identity_survives_an_enclosure_or_link_change ... ok
+test feed::tests::podcast_facts_resolve_against_the_caller_base_and_guid_wins_deduplication ... ok
+test feed::tests::rss_and_json_feed_share_the_entry_shape ... ok
+test feed::tests::schedule_survives_restart_and_suppresses_unchanged_entries ... ok
+test frame_timing::tests::ms_reports_the_frame_log_unit ... ok
+test frame_timing::tests::raster_totals_are_derived_from_the_split ... ok
+test frame_timing::tests::reset_clears_between_frame_accumulation ... ok
+test frame_timing::tests::suggestion_runs_and_refits_count_separately ... ok
+test gemini_identity::tests::approval_is_persona_and_capsule_scoped_and_persists_without_secrets ... ok
+test gemini_identity::tests::identity_is_stable_per_persona_and_unlinkable_across_capsules ... ok
+test gemini_trust::tests::a_change_requires_the_current_pin_and_persists_the_decision ... ok
+test gemini_trust::tests::an_interrupted_replace_recovers_the_previous_pin ... ok
+test gemini_trust::tests::first_contact_survives_reopen ... ok
+test identity::tests::the_root_identity_survives_a_restart ... ok
+test identity::tests::the_unsealed_fallback_persists_and_says_so ... ok
+test distillery_installed_surface::tests::admitted_surface_renders_the_projected_profile_and_paths ... ok
+test distillery_installed_surface::tests::retained_accessibility_projects_a_generic_status_surface ... ok
+test distillery_installed_surface::tests::resident_cadences_round_trip_through_the_versioned_source ... ok
+test inspector_pane::tests::engine_inventory_mapping_preserves_unknown_saved_pin ... ok
+test inspector_pane::tests::engine_inventory_new_registration_reaches_picker_and_observation ... ok
+test chrome_view::tests::install_review_wraps_intact_and_keeps_card_and_click_geometry ... ok
+test inspector_pane::tests::clip_button_bubbles_a_typed_inspector_intent ... ok
+test inspector_pane::tests::engine_inventory_resync_discards_focus_request_when_rows_change ... ok
+test chrome_view::tests::keep_button_targets_the_member_then_projects_kept_state ... ok
+test inspector_pane::tests::focused_document_capabilities_sit_beside_the_viewer_picker ... ok
+test inspector_pane::tests::engine_inventory_survives_session_adoption ... ok
+test inspector_pane::tests::engine_inventory_valid_selection_recovers_failed_pin_but_keeps_at_rest_closed ... ok
+test inspector_pane::tests::engine_inventory_saved_unknown_is_selected_disabled_and_refuses_click ... ok
+test inspector_pane::tests::synced_sections_reach_the_dom ... ok
+test download::tests::store_writes_a_collision_free_copy_and_retrievable_blob ... ok
+test inspector_pane::tests::engine_inventory_human_label_keeps_engine_id_scenario_target ... ok
+test inspector_pane::tests::probe_resolved_clip_button_reaches_the_pane_at_receipt_size ... ok
+test denizen::tests::staged_installs_are_content_derived_and_reviewable ... ok
+test inspector_pane::tests::the_requested_page_zoom_is_mirrored_beside_the_capability ... ok
+test inspector_view::tests::a_lane_without_introspection_is_reported_not_synthesized ... ok
+test inspector_view::tests::closing_content_drops_the_facts ... ok
+test knot_authoring::tests::a_blank_path_setting_reads_as_unset ... ok
+test knot_authoring::tests::a_member_with_no_vault_visits_but_holds_nothing ... ok
+test knot_authoring::tests::a_place_held_address_matches_the_holder_own_disclosed_address ... ok
+test knot_authoring::tests::a_place_held_address_names_its_holder_and_stays_a_knot_address ... ok
+test knot_authoring::tests::a_visit_only_engine_offers_no_clip_target ... ok
+test knot_authoring::tests::dom_ranges_only_name_an_observed_representation ... ok
+test knot_authoring::tests::inspector_clip_crosses_the_typed_endpoint_action ... ignored, receipt: set KNOT_ENDPOINT_TEST_BIN to a built Mere knot_endpoint
+test knot_authoring::tests::inspector_clip_retains_livery_source_evidence_end_to_end ... ignored, receipt: set KNOT_ENDPOINT_TEST_BIN to a built Mere knot_endpoint
+test knot_authoring::tests::knot_addresses_are_selected_without_claiming_other_files ... ok
+test knot_authoring::tests::only_a_personae_root_is_read_as_a_holder ... ok
+test inspector_view::tests::focused_node_with_live_content_reports_both_sections ... ok
+test knot_authoring::tests::real_knot_consumer_saves_rejects_stale_and_reopens ... ignored, receipt: set KNOT_ENDPOINT_TEST_BIN to a built Mere knot_endpoint
+test knot_authoring::tests::received_communal_auto_run_waits_for_explicit_confirmation ... ignored, receipt: set KNOT_ENDPOINT_TEST_BIN to a built Mere knot_endpoint
+test knot_authoring::tests::resolve_and_run_cross_the_consented_authoring_path ... ignored, receipt: set KNOT_ENDPOINT_TEST_BIN to a built Mere knot_endpoint
+test knot_authoring::tests::sealed_cache_age_uses_readable_units ... ok
+test knot_authoring::tests::sealed_cache_attribution_is_visible_in_the_derived_preview ... ok
+test knot_authoring::tests::sharing_rewrites_a_locally_held_document_to_its_holder ... ok
+test knot_authoring::tests::synced_knot_head_becomes_public_scenograph_revision_without_save_token ... ok
+test knot_authoring::tests::unversioned_knot_source_requires_a_runtime_witness_without_durable_token ... ok
+test knot_document_surface::tests::absent_file_is_a_generic_typed_unavailable_surface ... ok
+test knot_document_surface::tests::native_protocol_file_sessions_edit_and_save_exact_source_bytes ... ok
+test knot_document_surface::tests::native_protocol_sources_are_admitted_by_extension ... ok
+test knot_document_surface::tests::payload_version_is_checked_before_file_authority_is_opened ... ok
+test knot_document_surface::tests::read_only_source_opens_a_read_only_document_session ... ok
+test knot_document_surface::tests::registry_admits_the_published_knot_surface_from_a_versioned_file_source ... ok
+test inspector_view::tests::no_focus_reports_none_honestly ... ok
+test inspector_view::tests::only_a_person_with_the_ui_id_renders_as_you ... ok
+test knot_authoring::tests::projected_action_is_probe_drivable_by_instance_identity ... ok
+test nomadnet::tests::native_address_keeps_destination_and_opaque_path ... ok
+test nomadnet::tests::native_projection_qualifies_same_node_page_links ... ok
+test nomadnet::tests::unresolved_aliases_are_rejected_in_every_retained_container ... ok
+test inspector_view::tests::livery_and_weld_capability_limits_are_presented_honestly ... ok
+test nomadnet::tests::micron_session_preserves_source_and_produces_scene ... ok
+test nomadnet::tests::micron_form_explicit_interface_sends_map_and_bounds_resource_reply ... ok
+test observe::tests::snapshot_projects_focused_document_capabilities ... ok
+test observe::tests::snapshot_reports_a_retained_engine_applied_page_zoom ... ok
+test overmap::tests::a_label_less_session_titles_by_id_prefix ... ok
+test overmap::tests::duplicate_container_ids_collapse_rather_than_corrupt ... ok
+test overmap::tests::session_of_url_rejects_foreign_urls ... ok
+test overmap::tests::sessions_project_as_container_nodes_with_lineage ... ok
+test pane::tests::a_divider_ratio_moves_the_seam ... ok
+test pane::tests::a_horizontal_split_halves_the_width_by_ratio ... ok
+test pane::tests::a_single_leaf_takes_the_whole_area ... ok
+test pane::tests::a_vertical_split_halves_the_height ... ok
+test pane::tests::maximize_gives_one_pane_the_whole_area ... ok
+test pane::tests::placement_carries_the_leaf_graph_binding ... ok
+test panes::blueprint_tests::a_named_layout_carries_a_non_default_chrome_composition ... ok
+test panes::blueprint_tests::context_following_resolves_focus_and_pin_makes_it_fixed ... ok
+test panes::blueprint_tests::floating_pane_relocates_through_dock_and_window_without_losing_identity ... ok
+test panes::blueprint_tests::floating_relocates_the_same_pane_and_survives_serde ... ok
+test panes::blueprint_tests::nary_tabs_mixed_surfaces_drag_resize_save_reload_and_tear_out ... ok
+test panes::blueprint_tests::normalization_prunes_unknowns_joins_splits_and_repairs_fractions ... ok
+test panes::blueprint_tests::tearout_moves_one_pane_spec_between_spaces_without_changing_identity ... ok
+test panes::blueprint_tests::validation_rejects_duplicate_stations_and_forme_graph_mismatch ... ok
+test panes::blueprint_tests::validation_rejects_one_pane_id_in_two_spaces ... ok
+test panes::legacy_bridge::tests::conversion_preserves_leaf_identity_and_binary_ratios ... ok
+test panes::registry::tests::built_in_ids_and_schemas_are_unique_and_namespaced ... ok
+test panes::registry::tests::publishing_workflows_are_typed_registrations ... ok
+test panes::registry::tests::registration_is_the_legacy_content_factory ... ok
+test panes::registry::tests::retired_system_and_placeholder_are_not_registered ... ok
+test panes::registry::tests::source_shapes_validate_fixed_and_following_sources ... ok
+test panes::store::tests::configured_gloss_section_order_survives_frame_and_lens_save ... ok
+test panes::store::tests::load_returns_none_when_no_file ... ok
+test panes::store::tests::malformed_json_is_invalid_data ... ok
+test panes::store::tests::retired_panes_restore_their_content_and_arrangement_in_frame_and_lenses ... ok
+test panes::store::tests::save_then_load_round_trips_layout ... ok
+test panes::tests::dedupe_graph_panes_keeps_one_orrery_per_graph ... ok
+test panes::tests::each_leaf_emits_a_pane_node_with_content_tag_label ... ok
+test panes::tests::frame_layout_round_trips_through_serde ... ok
+test panes::tests::graph_bound_panes_are_classified_apart_from_window_chrome ... ok
+test panes::tests::ids_are_deterministic_across_runs ... ok
+test panes::tests::project_frame_with_attaches_subtree_to_matching_leaf ... ok
+test panes::tests::reparent_leaf_moves_leaf_without_losing_pane_id ... ok
+test panes::tests::reparent_leaf_refuses_self_move ... ok
+test panes::tests::reparent_leaf_refuses_when_target_is_not_a_leaf ... ok
+test panes::tests::retag_graph_bound_from_repoints_only_the_outgoing_graph ... ok
+test panes::tests::retag_graph_bound_repoints_only_graph_bound_leaves ... ok
+test panes::tests::root_carries_frame_label ... ok
+test panes::tests::set_split_ratio_clamps_and_finds_path ... ok
+test panes::tests::split_nodes_carry_axis_and_ratio_in_description ... ok
+test knot_document_surface::tests::retained_accessibility_distinguishes_editable_and_read_only_documents ... ok
+test place::captured_collection::tests::missing_and_unavailable_manifest_statuses_never_become_text ... ok
+test place::captured_collection::tests::targeted_withdrawal_remints_only_the_selected_contribution_away ... ok
+test place::contract::tests::every_place_state_maps_to_a_report_that_holds_its_invariants ... ok
+test place::contract::tests::grant_expired_maps_to_expired_with_reading_unknown ... ok
+test place::contract::tests::grant_revoked_maps_to_revoked_with_reading_cut ... ok
+test place::contract::tests::left_maps_to_the_left_verdict_with_reading_unknown_and_no_membership ... ok
+test place::contract::tests::member_standing_maps_to_joined_with_membership_and_a_grant ... ok
+test place::contract::tests::membership_revoked_maps_to_revoked_with_reading_cut ... ok
+test place::invite::tests::a_projection_grant_is_optional_and_digest_checked_like_the_rest ... ok
+test place::invite::tests::a_tampered_artifact_is_refused_by_its_own_digest ... ok
+test place::invite::tests::a_well_formed_invitation_round_trips_and_validates ... ok
+test place::invite::tests::an_addressed_artifact_never_reads_as_verified_empty ... ok
+test place::invite::tests::an_oversized_inline_artifact_is_refused_before_it_is_trusted ... ok
+test place::invite::tests::an_unknown_carrier_survives_parsing_but_is_never_dialed ... ok
+test place::invite::tests::rendezvous_bounds_refuse_a_flooded_envelope ... ok
+test place::invite::tests::version_and_binding_faults_are_named_distinctly ... ok
+test observe::tests::semantic_actions_emit_events ... ok
+test observe::tests::snapshot_reports_the_requested_page_zoom ... ok
+test observe::tests::snapshot_reads_focus_omnibar_and_content_coherently ... ok
+test inspector_pane::tests::viewer_controls_write_the_followed_member_instead_of_the_runtime_cursor ... ok
+test inspector_pane::tests::picking_a_viewer_reports_the_intent_and_mirrors_back ... ok
+test place::captured_collection::tests::local_records_group_search_and_survive_cold_reopen ... ok
+test inspector_pane::tests::narrow_inspector_probe_selects_registered_scry_for_followed_b_after_a ... ok
+test place::lanes::tests::a_founder_binds_listen_only_and_reports_its_own_rendezvous ... ok
+test place::lanes::tests::a_founder_reconnects_through_an_empty_descriptor ... ok
+test place::lanes::tests::a_closed_live_bind_releases_the_store_lock_for_a_reopen ... ok
+[2m2026-10-07T12:00:20.128624Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:00:20.129480Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:00:21.369717Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:00:21.370090Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:00:21.719399Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:00:21.719784Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+test place::lanes::tests::a_membership_admission_and_a_shared_node_race_to_a_connected_joiner ... ok
+[2m2026-10-07T12:00:23.366145Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:00:23.366661Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:00:23.556280Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:00:23.556723Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+test place::lanes::tests::a_joiner_catches_up_on_a_live_place_over_one_ticket ... ok
+[2m2026-10-07T12:00:24.258795Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:00:24.261052Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:00:24.267608Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:00:24.269695Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+test place::lanes::tests::a_reader_is_refused_at_the_projection_door ... ok
+[2m2026-10-07T12:00:24.480383Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:00:24.480794Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:00:28.183973Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:00:28.184535Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:00:29.298847Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:00:29.299485Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:00:29.306252Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:00:29.307051Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+test place::lanes::tests::a_projection_session_nudges_the_founder_the_way_a_lane_arrival_does ... ok
+test place::lanes::tests::a_live_share_withdrawal_empties_the_receiver_selected_collection ... ok
+test place::lanes::tests::a_revoke_with_no_group_recipient_is_refused_and_changes_nothing ... ok
+[2m2026-10-07T12:00:33.560984Z[0m [31mERROR[0m [2miroh::socket[0m[2m:[0m Endpoint dropped without calling `Endpoint::close`. Aborting ungracefully.
+[2m2026-10-07T12:00:34.479944Z[0m [31mERROR[0m [2miroh::socket[0m[2m:[0m Endpoint dropped without calling `Endpoint::close`. Aborting ungracefully.
+[2m2026-10-07T12:00:36.192242Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:00:36.192732Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+test place::lanes::tests::a_joined_member_reads_chat_authored_after_a_later_invite ... ok
+[2m2026-10-07T12:00:36.564763Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:00:36.565290Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:00:36.865946Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:00:36.866339Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:00:37.267547Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:00:37.268867Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+test place::lanes::tests::a_partition_heals_and_both_sides_converge ... ok
+[2m2026-10-07T12:00:39.966588Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:00:39.967436Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:00:40.911272Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:00:40.911786Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+test place::lanes::tests::a_bounded_writer_grant_expires_while_connected_and_reconnect_still_admits ... ok
+[2m2026-10-07T12:00:43.056098Z[0m [31mERROR[0m [2miroh::socket[0m[2m:[0m Endpoint dropped without calling `Endpoint::close`. Aborting ungracefully.
+[2m2026-10-07T12:00:47.334268Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:00:47.336561Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+test place::lanes::tests::a_visited_document_reports_unavailable_when_the_holder_dies_without_closing ... ok
+[2m2026-10-07T12:00:47.943520Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:00:47.948823Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:00:48.657030Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:00:48.657408Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+test place::lanes::tests::a_replayed_operation_adds_no_place_state ... ok
+[2m2026-10-07T12:00:50.530366Z[0m [31mERROR[0m [2miroh::socket::remote_map::remote_state[0m[2m:[0m could not close last open path
+[2m2026-10-07T12:00:50.530439Z[0m [31mERROR[0m [2miroh::socket::remote_map::remote_state[0m[2m:[0m could not close last open path
+[2m2026-10-07T12:00:50.530645Z[0m [31mERROR[0m [2miroh::socket::remote_map::remote_state[0m[2m:[0m could not close last open path
+[2m2026-10-07T12:00:50.530676Z[0m [31mERROR[0m [2miroh::socket::remote_map::remote_state[0m[2m:[0m could not close last open path
+[2m2026-10-07T12:00:50.530818Z[0m [31mERROR[0m [2miroh::socket::remote_map::remote_state[0m[2m:[0m could not close last open path
+[2m2026-10-07T12:00:50.530848Z[0m [31mERROR[0m [2miroh::socket::remote_map::remote_state[0m[2m:[0m could not close last open path
+[2m2026-10-07T12:00:50.531021Z[0m [31mERROR[0m [2miroh::socket::remote_map::remote_state[0m[2m:[0m could not close last open path
+[2m2026-10-07T12:00:52.171285Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:00:52.171835Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:00:52.231415Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:00:52.233558Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+test place::lanes::tests::a_restarted_place_keeps_what_it_converged_on ... ok
+[2m2026-10-07T12:00:57.683860Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:00:57.684284Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+test place::lanes::tests::a_visited_document_reports_unavailable_when_the_holder_goes_silent ... ok
+[2m2026-10-07T12:00:58.717144Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:00:58.717682Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:01:01.217876Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:01:01.218322Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+test place::lanes::tests::a_writer_admission_carries_its_delegation_to_a_connected_joiner ... ok
+[2m2026-10-07T12:01:02.162665Z[0m [31mERROR[0m [2miroh::socket[0m[2m:[0m Endpoint dropped without calling `Endpoint::close`. Aborting ungracefully.
+[2m2026-10-07T12:01:03.189212Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:01:03.191003Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:01:03.198022Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:01:03.200322Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+test place::lanes::tests::a_writer_edits_the_document_its_founder_holds ... ok
+test place::lanes::tests::the_group_key_overlay_names_the_topic_stickleback_stores_under ... ok
+[2m2026-10-07T12:01:03.881566Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:01:03.882060Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:01:03.887789Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:01:03.890018Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+test place::lanes::tests::a_writer_invited_after_the_founder_is_already_live_is_admitted ... ok
+test place::projection_host::tests::projection_revocation_checks_before_folding_and_keeps_the_issuer_boundary ... ok
+test place::rendezvous::tests::rendezvous_refuses_expiry_wrong_scope_unknown_carriers_and_oversize_hints ... ok
+test place::rendezvous::tests::rendezvous_requires_binding_and_preserves_only_contact_metadata ... ok
+test place::tests::a_withdrawn_standing_names_itself_in_one_row ... ok
+test place::tests::binding_json_uses_distinct_readable_hex_ids ... ok
+test place::tests::binding_validation_rejects_version_and_channel_ambiguity ... ok
+test place::tests::elide_middle_keeps_the_ends_and_leaves_short_values_alone ... ok
+test place::tests::every_status_row_fits_one_palette_row ... ok
+test place::tests::serialized_id_requires_exact_hex ... ok
+test place::tests::the_projection_row_names_what_is_served_and_what_was_refused ... ok
+[2m2026-10-07T12:01:06.294903Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:01:06.295355Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:01:06.364805Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:01:06.368836Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+test place::lanes::tests::a_writer_visits_a_held_document_and_is_told_when_the_holder_goes ... ok
+[2m2026-10-07T12:01:06.932534Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:01:06.933074Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:01:09.250553Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:01:09.254113Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:01:09.302784Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:01:09.303287Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+test place::lanes::tests::an_unauthorized_profile_is_refused_before_it_authors ... ok
+[2m2026-10-07T12:01:12.397250Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:01:12.398895Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+test place::lanes::tests::a_revoked_writer_sees_it_live_and_cannot_write_dial_or_reconnect ... ok
+[2m2026-10-07T12:01:15.127726Z[0m [31mERROR[0m [2miroh::socket::remote_map::remote_state[0m[2m:[0m could not close last open path
+[2m2026-10-07T12:01:16.564414Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:01:16.564881Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+test place::worker::tests::a_live_place_reconnects_into_a_new_generation_in_one_process ... ok
+test place::worker::tests::a_place_with_only_a_plaintext_graph_is_refused_by_name ... ok
+[2m2026-10-07T12:01:23.636926Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:01:23.638709Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:01:24.374060Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:01:24.374963Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+test place::worker::tests::a_founded_place_invites_an_offered_prekey_and_admits_it ... ok
+test place::worker::tests::a_revoked_member_reaches_no_projected_place_state ... ok
+test place::worker::tests::a_reader_invitation_admits_a_member_that_cannot_author ... ok
+test place::lanes::tests::a_revoked_member_cannot_read_shared_nodes_authored_after_the_rotation has been running for over 60 seconds
+test place::lanes::tests::a_revoked_member_stops_reading_while_the_others_follow_the_rotation has been running for over 60 seconds
+test place::worker::tests::reconnect_for_a_released_generation_is_refused ... ok
+test place::worker::tests::an_authored_invitation_admits_on_the_other_side ... ok
+test place::lanes::tests::a_revoked_member_cannot_read_shared_nodes_authored_after_the_rotation ... ok
+[2m2026-10-07T12:01:38.237172Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:01:38.239997Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:01:39.606753Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:01:39.607257Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+test place::worker::tests::reconnect_refuses_removed_local_membership_before_dialing_and_keeps_cache ... ok
+[2m2026-10-07T12:01:41.269275Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:01:41.269683Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:01:41.410324Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:01:41.410928Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+test place::worker::tests::a_valid_invitation_admits_and_a_refused_one_leaves_nothing_behind ... ok
+test place::worker::tests::stale_reconnect_cannot_disturb_a_newer_open_scope ... ok
+[2m2026-10-07T12:01:43.571548Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:01:43.572416Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:01:43.850792Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:01:43.851184Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:01:43.857261Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:01:43.859039Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+test place::worker::tests::revoking_a_writer_withdraws_every_grant_its_admission_issued ... ok
+test place::worker::tests::two_profiles_reopen_their_own_retained_place_state ... ok
+test place::worker::tests::worker_collection_save_failure_keeps_the_previous_scope ... ok
+test place::worker::tests::worker_authority_shrink_keeps_the_exact_version_and_withholds_its_share ... ok
+test place::worker::tests::worker_releases_files_before_reopen_and_advances_generation ... ok
+test publish_pane::tests::unavailable_panel_is_an_honest_configured_surface ... ok
+test redshank_episode_surface::tests::a_host_projection_reaches_the_tile_through_the_viewport_pump ... ok
+test redshank_episode_surface::tests::a_wrong_version_or_a_missing_enclosure_is_refused_before_admission ... ok
+[2m2026-10-07T12:01:54.570624Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:01:54.571042Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+test redshank_episode_surface::tests::the_admitted_surface_renders_the_episode_title_and_a_play_control ... ok
+test redshank_episode_surface::tests::the_dock_emits_the_same_commands_through_turnstones_registry ... ok
+test redshank_episode_surface::tests::the_registry_admits_the_published_redshank_dock_from_a_versioned_source ... ok
+test redshank_host::tests::aligned_points_require_the_loaded_digest_and_never_remap_span_ends ... ok
+test redshank_host::tests::another_items_note_loads_paused_at_zero_and_holds_saved_progress ... ok
+test redshank_host::tests::capturing_cancels_a_pending_open_and_compact_projection_keeps_its_warning ... ok
+test redshank_host::tests::missing_replacement_note_cancels_the_old_deferred_open_and_span ... ok
+test redshank_host::tests::new_transport_supersedes_an_unacknowledged_note_seek_when_delivery_succeeds ... ok
+test redshank_host::tests::note_opens_require_ready_matching_receipts_or_explicit_approximation ... ok
+test redshank_host::tests::only_the_latest_seek_acknowledgement_releases_saved_progress ... ok
+test redshank_host::tests::refused_replacement_and_failed_runtime_dispatch_keep_the_progress_hold ... ok
+test redshank_host::tests::the_shells_fetch_handle_survives_a_session_reopen ... ok
+test remote_projection::tests::committed_receipt_matches_the_live_turnstone_endpoint ... ok
+test remote_projection::tests::live_mere_graph_becomes_cards_and_routed_relations ... ok
+test remote_projection::tests::projected_grant_accepts_view_and_refuses_graph_change ... ok
+test place::worker::tests::worker_rejects_a_departed_generation_without_rescoping_the_open_place ... ok
+test remote_projection::tests::score_five_accepts_and_score_four_refuses_without_replacing_snapshot ... ok
+test resident_admission::tests::corrupt_state_is_not_treated_as_empty ... ok
+test resident_admission::tests::loader_rejects_duplicate_members ... ok
+test resident_admission::tests::loader_rejects_mismatched_member_and_id ... ok
+test resident_admission::tests::loader_rejects_unknown_version_and_fields ... ok
+test resident_admission::tests::non_ascii_hex_is_refused_without_panicking ... ok
+test resident_admission::tests::state_round_trips_paused_and_revoked_records ... ok
+test resident_runs_tests::configured_read_bound_and_repeated_atomic_save_preserve_receipts ... ok
+test resident_runs_tests::malformed_or_mismatched_persisted_facts_are_rejected ... ok
+test resident_runs_tests::reopening_recovers_uncertainty_even_after_clock_rollback ... ok
+test ring::tests::a_covered_emission_passes_and_an_uncovered_one_names_its_ring ... ok
+test ring::tests::contributed_source_authority_resists_a_total_app_grant ... ok
+test ring::tests::decoded_envelopes_classify_across_all_grantable_rings ... ok
+test ring::tests::envelopes_decode_and_misfires_are_loud ... ok
+test ring::tests::every_ring_but_host_only_names_a_grantable_path ... ok
+test ring::tests::gate_management_resists_even_a_total_app_grant ... ok
+test scenario::tests::browser_receipt_assertions_are_typed_steps ... ok
+test scenario::tests::env_substitution_expands_at_parse_time_backslashes_and_colons_intact ... ok
+test scenario::tests::env_substitution_names_the_missing_variable_and_line ... ok
+test scenario::tests::file_hover_and_drop_are_distinct_ui_turns ... ok
+test scenario::tests::find_chord_is_one_focus_routed_key_step ... ok
+test scenario::tests::idle_diagnostics_and_document_idle_are_typed_steps ... ok
+test scenario::tests::parse_errors_name_their_line ... ok
+test scenario::tests::pointer_move_is_a_distinct_scenario_step ... ok
+test scenario::tests::record_place_is_a_typed_step ... ok
+test scenario::tests::save_chord_is_one_focus_routed_key_step ... ok
+test scenario::tests::tab_is_a_focus_routed_key_step ... ok
+test scenario::tests::touch_is_a_typed_step ... ok
+test scenario::tests::type_preserves_backslashes_and_colons_unchanged ... ok
+test scenario::tests::wait_knot_is_a_typed_step ... ok
+test scenario::tests::wait_row_wait_status_wait_file_are_typed_steps ... ok
+test sections::tests::by_id_resolves_the_registered_providers ... ok
+test remote_projection::tests::the_endpoint_holds_a_delegation_from_the_profile_identity ... ok
+test sections::tests::completed_download_projects_from_durable_graph_facets ... ok
+test sections::tests::diagnostic_rows_are_optional_read_only_and_preserve_explicit_unavailable_state ... ok
+test sections::tests::removed_section_gathers_absent_bin_records_only ... ok
+test session::tests::a_routine_save_updates_a_binding_but_never_mints_one ... ok
+test session::tests::current_session_marker_round_trips_and_falls_back ... ok
+test session::tests::flat_layout_migrates_into_sessions_once ... ok
+test sections::tests::download_status_and_error_rows_keep_custody_order_and_inert_activation ... ok
+test session::tests::legacy_node_columns_migrate_on_load_and_existing_facets_win ... ok
+test session::tests::marking_a_place_left_preserves_the_binding_and_retained_session_files ... ok
+test session::tests::place_binding_round_trips_as_a_distinct_public_sidecar ... ok
+test session::tests::place_collection_sidecar_is_exact_and_refuses_corruption ... ok
+test session::tests::projection_score_sidecar_round_trips_without_becoming_graph_truth ... ok
+test session::tests::removing_place_binding_preserves_retained_session_files ... ok
+test session::tests::the_persisted_strategy_is_an_id_never_a_display_name ... ok
+test session::tests::the_physics_choice_rides_the_view_intent_by_id ... ok
+test session::tests::unsupported_place_binding_stays_a_visible_error ... ok
+test session::tests::view_intent_round_trips_and_survives_a_corrupt_sidecar ... ok
+test settings_pane::tests::pane_renders_controls_from_setting_control_not_setting_ids ... ok
+test settings_pane::tests::provider_owner_is_available_to_host_after_projection_construction ... ok
+test settings_pane::tests::snapshot_projects_every_live_application_axis_to_chrome ... ok
+test session::tests::image_gc_keeps_live_blobs_and_drops_only_hash_named_orphans ... ok
+test settings_provider::tests::application_projection_describes_owner_axes_and_controls ... ok
+test settings_provider::tests::invalid_reference_and_value_do_not_write ... ok
+test settings_provider::tests::legacy_mode_without_id_survives_load_and_an_unrelated_write ... ok
+test settings_provider::tests::theme_id_and_mode_edits_preserve_the_other_value ... ok
+test settings_provider::tests::typed_writes_update_the_owner_and_persist ... ok
+test settings_pane::tests::successful_apply_publishes_a_value_snapshot_for_the_shell ... ok
+test place::worker::tests::worker_sets_and_clears_an_exact_collection_selection ... ok
+test shell::contributed_automation::tests::below_fold_click_waits_for_new_paint_then_lands_once ... ok
+test shell::contributed_automation::tests::first_layout_miss_and_explicit_dom_filters_keep_their_meanings ... ok
+test shell::contributed_automation::tests::referenced_name_selection_and_platform_action_route_share_the_live_button ... ok
+test shell::contributed_automation::tests::scoped_request_counter_refuses_exhaustion_without_reusing_identity ... ok
+test shell::contributed_automation::tests::two_contributed_panes_with_equal_names_and_local_ids_are_ambiguous ... ok
+test shell::contributed_automation::tests::replacement_and_removal_recreation_reject_reused_local_dom_ids ... ok
+test shell::effects::content_spawn_dispatch_tests::browser_dispatch_preserves_other_surfaces_and_retained_sessions ... ok
+test shell::effects::content_spawn_dispatch_tests::graft_spawn_waits_for_host_in_browser_surface_queue ... ok
+test shell::contributed_automation::tests::hidden_renamed_disabled_and_removed_pending_targets_never_activate ... ok
+test shell::contributed_automation::tests::viewport_reveal_cannot_activate_a_target_outside_an_ancestor_clip ... ok
+test shell::effects::reader_lineage_tests::reader_lineage_projects_and_reextract_updates_the_node_facet ... ok
+test shell::effects::retained_page_zoom_tests::a_live_livery_session_is_offered_the_zoom_rows ... ok
+test shell::effects::retained_page_zoom_tests::a_fresh_retained_session_is_seeded_with_the_persisted_request ... ok
+test shell::input::cursor_tests::web_cursor_shapes_map_to_host_cursor_icons ... ok
+test shell::keys::tests::content_scroll_keys_map_page_navigation ... ok
+test shell::keys::tests::page_zoom_chords_bind_the_browser_keys_and_are_claimed ... ok
+test shell::page_capture::tests::admission_failure_spends_id_and_allocator_exhaustion_refuses ... ok
+test shell::page_capture::tests::exact_completion_is_single_use ... ok
+test shell::page_capture::tests::generation_exhaustion_rotates_surface_and_retires_pending ... ok
+test shell::page_capture::tests::navigation_and_surface_replacement_refuse_old_completion ... ok
+test shell::page_capture::tests::session_switch_refuses_completion ... ok
+test shell::renderers::tests::evicting_an_undrawn_pane_is_harmless ... ok
+test shell::renderers::tests::eviction_takes_one_pane_and_spares_the_rest ... ok
+test shell::effects::retained_page_zoom_tests::an_unsupported_retained_lane_is_absorbed_quietly ... ok
+test shell::renderers::tests::resolving_the_same_pane_twice_keeps_its_state ... ok
+test shell::servo_profile_tests::ambiguous_or_escaping_profile_bindings_are_refused ... ok
+test shell::servo_profile_tests::named_process_profile_has_no_node_component_and_can_move ... ok
+test shell::surface_poll::tests::early_cancelled_wakes_do_not_postpone_surface_poll ... ok
+test shell::surface_poll::tests::inactive_polling_clears_deadline_and_reenable_starts_fresh ... ok
+test shell::surface_poll::tests::late_wake_polls_once_without_catch_up_spin ... ok
+test shell::tests::automatic_html_routes_to_the_registered_livery_session ... ok
+test shell::tests::dropped_files_classify_by_decodability ... ok
+test shell::renderers::tests::two_panes_of_one_kind_resolve_to_two_retained_runners ... ok
+test shell::effects::retained_page_zoom_tests::reset_returns_a_live_retained_session_to_the_default_scale ... ok
+test shell::tests::lens_viewports_stay_distinct ... ok
+test shell::tests::micron_file_uses_native_projection_and_preserves_source ... ok
+test shell::tests::reader_pin_uses_held_html_and_switching_back_restores_original_rendering ... ok
+test shell_services::tests::blueprint_composition_changes_only_projection_choices ... ok
+test shell_services::tests::default_providers_and_shortcuts_are_registered_without_a_canvas ... ok
+test shell_services::tests::retention_and_redaction_bound_the_local_ledger ... ok
+test shell_services::tests::transcript_binds_the_target_at_open_and_replay_keeps_it ... ok
+test sky_receipt::tests::fixed_boston_dto_goldens_preserve_exact_serialization_and_digests ... ok
+test sky_receipt::tests::json_reader_keeps_a_sane_unavailable_zone_identity ... ok
+test sky_receipt::tests::json_reader_rejects_another_receipt_version ... ok
+test sky_receipt::tests::json_reader_rejects_same_midpoint_body_reordering ... ok
+test sky_receipt::tests::json_reader_rejects_tampered_engine_and_day_boundaries ... ok
+test shell::tests::scroll_route_lands_in_a_live_nematic_session ... ok
+test sky_receipt::tests::json_reader_rejects_tampered_fact_projection ... ok
+test sky_receipt::tests::json_reader_rejects_tampered_inputs_and_provenance ... ok
+test sky_receipt::tests::pretty_json_round_trips_and_hashes_the_exact_bytes ... ok
+test sky_receipt::tests::json_reader_rejects_unknown_root_and_nested_fields ... ok
+test sky_surface::tests::duplicate_body_and_bad_zone_are_rejected_before_calculation ... ok
+test shell::tests::gemini_route_lands_in_a_live_nematic_session ... ok
+test place::worker::tests::worker_exact_collection_version_returns_only_its_ready_capture ... ok
+test place::lanes::tests::content_authored_the_instant_after_a_revoke_still_reaches_the_remaining_member ... ok
+test place::lanes::tests::the_place_worker_conforms_to_the_coop_lifecycle_contract has been running for over 60 seconds
+[2m2026-10-07T12:02:05.342997Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+[2m2026-10-07T12:02:05.346331Z[0m [31mERROR[0m [2miroh::socket::transports::relay[0m[2m:[0m relay_recv_channel closed
+test place::worker::tests::worker_stale_collection_version_withholds_available_capture ... ok
+test sky_surface::tests::source_version_and_unknown_fields_fail_closed ... ok
+test sky_surface::tests::polar_empty_crossings_are_described_without_visibility_inference ... ok
+test place::lanes::tests::the_place_worker_conforms_to_the_coop_lifecycle_contract ... ok
+test sky_timeline::tests::new_york_fall_transition_is_a_25_hour_half_open_day ... ok
+test sky_timeline::tests::new_york_spring_transition_is_a_23_hour_half_open_day ... ok
+test sky_timeline::tests::request_rejects_gap_and_fold_anchors ... ok
+test sky_timeline::tests::request_rejects_unknown_zone_and_duplicate_body ... ok
+test sky_timeline::tests::skipped_midnight_still_resolves_the_named_calendar_day ... ok
+test place::lanes::tests::a_revoked_member_stops_reading_while_the_others_follow_the_rotation ... ok
+test source_capture::tests::references_survive_facet_round_trip_in_capture_order ... ok
+test surface::appearance::tests::reader_closed_pane_cleanup_preserves_other_appearances ... ok
+test surface::appearance::tests::reader_duplicate_placements_receive_distinct_appearance_routes ... ok
+test surface::tests::a_content_surface_keeps_its_id_across_frames ... ok
+test surface::tests::abutting_rects_never_both_claim_a_point ... ok
+test surface::tests::canvas_only_when_nothing_else_present ... ok
+test surface::tests::chrome_swallows_input_only_when_focused ... ok
+test surface::tests::content_and_chrome_ids_do_not_alias_the_reserved_ones ... ok
+test surface::tests::content_is_inset_so_the_canvas_stays_visible ... ok
+test surface::tests::dest_emits_corners_not_offset_plus_size ... ok
+test surface::tests::pointer_over_content_hits_content_in_local_space ... ok
+test surface::tests::pressing_a_surface_focuses_it ... ok
+test surface::tests::workbench_tiles_compose_as_content_surfaces ... ok
+test surface::tests::z_order_is_canvas_then_content_then_chrome ... ok
+test swatch_pane::tests::clicking_a_minimap_node_activates_open ... ok
+test swatch_pane::tests::diagnostic_rows_keep_producer_identity_and_retained_bounds_without_activation ... ok
+test swatch_pane::tests::diagnostic_subtree_omits_clipped_hidden_and_removed_rows ... ok
+test swatch_pane::tests::hovering_sets_and_clears_emphasis ... ok
+test swatch_pane::tests::minimap_nodes_color_by_content_state ... ok
+test swatch_pane::tests::minimap_preset_paints_through_the_pipeline ... ok
+test swatch_pane::tests::overmap_preset_renders_lineage_and_switches ... ok
+test trail_memory::evaluation::captured_trail_frecency_receipt ... ignored, requires an explicit private Turnstone session
+test trail_memory::evaluation::captured_trail_mint_receipt ... ignored, requires an explicit private Turnstone session
+test trail_memory::evaluation::firefox_history_corpus_receipt ... ignored, requires an exported Firefox history corpus
+test trail_memory::tests::a_body_only_term_recalls_the_page ... ok
+test trail_memory::tests::explicit_source_capture_keeps_exact_bytes_and_reopens_annotation ... ok
+test trail_memory::tests::full_segment_flushes_itself ... ok
+test trail_memory::tests::mint_receipt_counts_the_corpus_exactly ... ok
+test trail_memory::tests::mint_receipt_scale_ladder ... ignored, measurement run: cargo test --release ... -- --ignored --nocapture
+test trail_memory::tests::navigation_mapping ... ok
+test trail_memory::tests::recall_overlays_current_titles_and_remints_on_change ... ok
+test sky_timeline::tests::daily_projection_uses_public_provider_and_retains_receipt_identity ... ok
+test trail_memory::tests::source_capture_refuses_incomplete_acquisition_context ... ok
+test trail_memory::tests::two_urls_for_one_page_recall_once_with_one_frecency ... ok
+test trail_memory::tests::records_chain_and_round_trip ... ok
+test trail_memory::tests::typed_prefix_recall_follows_frecency_over_title_overlap ... ok
+test trail_pane::tests::a_muted_row_is_inert ... ok
+test trail_pane::tests::clicking_a_row_bubbles_its_affordance ... ok
+test transcript_pane::tests::a_pending_entry_offers_no_repeat ... ok
+test transcript_pane::tests::a_redacted_entry_never_shows_its_input ... ok
+test transcript_pane::tests::an_empty_transcript_names_itself ... ok
+test transcript_pane::tests::the_most_recent_command_leads ... ok
+test transcript_pane::tests::a_recorded_command_appears_and_its_row_repeats_that_entry ... ok
+test ui::contributed_projection_tests::css_hidden_control_is_an_authoritative_semantic_and_visible_miss ... ok
+test ui::contributed_projection_tests::retained_semantics_bounds_and_pointer_visibility_share_ancestor_clips ... ok
+test ui::retained_layout_tests::a_resized_pane_rebuilds_once_and_then_settles ... ok
+test ui::retained_layout_tests::a_structural_change_rebuilds_but_an_attribute_change_does_not ... ok
+test ui::retained_layout_tests::repainting_an_unchanged_pane_does_not_rebuild_its_layout ... ok
+test ui::retained_layout_tests::a_rebuild_keeps_the_pane_where_it_was_scrolled ... ok
+test ui::scroll_tests::bars_are_hidden_until_scrolled ... ok
+test ui::scroll_tests::a_scrolled_pane_emits_its_bar ... ok
+test ui::scroll_tests::scrolling_above_the_top_stays_at_the_top ... ok
+test ui::scroll_tests::scrolling_past_the_end_clamps_to_the_content ... ok
+test ui::tests::actions_lane_filters_the_catalog_it_is_given ... ok
+test ui::tests::address_normalization_recognizes_hosts_and_schemes ... ok
+test ui::tests::caret_editing_is_char_boundary_safe ... ok
+test ui::tests::changed_certificate_prompt_exposes_both_complete_fingerprints ... ok
+test ui::scroll_tests::hit_testing_follows_the_scroll ... ok
+test ui::tests::empty_and_command_texts_suggest_hints ... ok
+test ui::tests::find_lane_matches_existing_nodes_before_go ... ok
+test ui::tests::live_appearance_changes_chrome_and_settings_paint_styles ... ok
+test web_policy::tests::credential_provider_answers_without_secret_facet_leakage ... ok
+test web_policy::tests::dismissal_is_not_a_retained_denial ... ok
+test web_policy::tests::grant_and_denial_are_origin_descriptor_scoped ... ok
+test web_policy::tests::navigation_withdrawal_removes_old_request_identity ... ok
+test web_policy::tests::one_shot_and_process_credentials_do_not_survive_restart ... ok
+test web_policy::tests::private_profiles_are_isolated_and_never_create_a_registry_file ... ok
+test web_policy::tests::remembered_permission_survives_registry_restart ... ok
+test web_policy::tests::unanswered_requests_expire_without_retaining_policy ... ok
+test ui::tests::chrome_absolute_siblings_all_paint ... ok
+test workbench_pane::tests::clicking_an_inactive_tab_reports_activation ... ok
+test workbench_pane::tests::a_tab_point_resolves_to_its_member ... ok
+test workbench_pane::tests::two_tiles_draw_two_strips ... ok
+test workbench_tiling::tests::a_stack_is_one_cell_with_its_active_tab ... ok
+test workbench_tiling::tests::an_empty_workbench_places_nothing ... ok
+test workbench_tiling::tests::drag_fractions_reweight_the_pair_and_clamp ... ok
+test workbench_tiling::tests::drop_zones_resolve_stack_and_edge_splits ... ok
+test workbench_tiling::tests::nested_splits_carry_nested_paths ... ok
+test workbench_tiling::tests::stacking_via_the_model_collapses_a_cell ... ok
+test workbench_tiling::tests::two_tiles_split_side_by_side_with_one_seam ... ok
+test workbench_pane::tests::long_page_titles_cannot_claim_the_siblings_tab ... ok
+test sky_timeline::tests::tromso_solstice_reports_no_sampled_conventional_crossing_under_policy ... ok
+test sky_surface::tests::changing_date_or_policy_rebuilds_a_distinct_receipt has been running for over 60 seconds
+test sky_surface::tests::next_day_replaces_one_retained_projection_without_rewriting_opening_provenance has been running for over 60 seconds
+test sky_surface::tests::provider_admits_semantic_controls_and_provenance has been running for over 60 seconds
+test sky_surface::tests::reference_source_reproduces_the_p0_receipt has been running for over 60 seconds
+test sky_surface::tests::reference_source_reproduces_the_p0_receipt ... ok
+test sky_timeline::tests::boston_eclipse_day_composes_an_analytical_sun_moon_receipt has been running for over 60 seconds
+test sky_surface::tests::provider_admits_semantic_controls_and_provenance ... ok
+test sky_timeline::tests::boston_eclipse_day_composes_an_analytical_sun_moon_receipt ... ok
+test sky_surface::tests::changing_date_or_policy_rebuilds_a_distinct_receipt ... ok
+test sky_surface::tests::next_day_replaces_one_retained_projection_without_rewriting_opening_provenance ... ok
+
+test result: ok. 650 passed; 0 failed; 9 ignored; 0 measured; 0 filtered out; finished in 246.15s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

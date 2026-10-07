@@ -1,0 +1,7 @@
+# Preserved parallel Linux descriptor-limit control, 2026-10-07
+
+Exact published source `8d1f907f4bd31b256737a27d3e63fe8cd8672efc` remained clean and unchanged. The first standard parallel `cargo +1.98.1 test --workspace --lib --locked -j1` returned **101** after 236.340 seconds: **634 passed, 16 failed, 9 ignored**; test time 205.53 seconds. [Result](linux-final-lib.result.json), [raw stdout](linux-final-lib.stdout.log), [stderr](linux-final-lib.stderr.log), [inputs](linux-final-inputs.json), and the [stopped summary](linux-final-summary.json) retain the actual negative. No subsequent gate was claimed from this stopped run.
+
+The failure output contains `Os { code: 24, kind: TooManyOpenFiles, message: "Too many open files" }`, including ractor 0.16.5 thread-local actor startup failures and later channel cascades. The repaired Denizen disclosure geometry and Sky receipt tests passed. [Fresh SSH inventory](linux-final-nofile-inventory.json) measured a 1,024 soft / 1,048,576 hard NOFILE limit; the ended original test process's actual limit was not directly captured. That observation gap is retained.
+
+The authorized [process-only raised-limit rerun](linux-final-fd-README.md) preserves this control and uses the same published source, normal parallel harness, target, toolchain, and build jobs. It observes the actual new process limit and sampled descriptor use. This failed run does not qualify the full default library suite. [Packet hashes](linux-final-hashes.json) bind the unchanged control and local launch/guard/inventory evidence.

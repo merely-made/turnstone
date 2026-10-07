@@ -1,0 +1,64 @@
+{
+  "command": [
+    "nice",
+    "-n",
+    "10",
+    "cargo",
+    "+1.98.1",
+    "metadata",
+    "--locked",
+    "--format-version",
+    "1",
+    "--filter-platform",
+    "x86_64-unknown-linux-gnu"
+  ],
+  "cwd": "/home/markik/Code/repos/turnstone",
+  "environment": {
+    "CARGO_TARGET_DIR": "/home/markik/Code/target",
+    "CARGO_BUILD_JOBS": "1"
+  },
+  "source_sha": "8d1f907f4bd31b256737a27d3e63fe8cd8672efc",
+  "started_utc": "2026-10-07T12:04:24.966770+00:00",
+  "scope": "Current published-family default Linux compile/tests/portable-lock verification; no foreign Windows backend features, headed browser or AT acceptance.",
+  "actual_exit_code": 0,
+  "owned_pid": 245988,
+  "host_nofile_before": [
+    1024,
+    1048576
+  ],
+  "child_nofile_configured": [
+    65536,
+    1048576
+  ],
+  "resource_scope": "Only launched process and descendants inherit raised soft limit; hard limit/system/user configuration unchanged.",
+  "descriptor_observation": {
+    "root_identity": {
+      "pid": 245988,
+      "parent_pid": 241639,
+      "start_ticks": 13466723,
+      "comm": "cargo"
+    },
+    "sampling_interval_seconds": 0.5,
+    "processes": {
+      "245988:13466723": {
+        "pid": 245988,
+        "parent_pid": 241639,
+        "start_ticks": 13466723,
+        "comm": "cargo",
+        "first_observed_utc": "2026-10-07T12:04:24.994088+00:00",
+        "peak_open_descriptors": 11,
+        "samples": 3,
+        "observed_limit_line": "Max open files            65536                1048576              files     ",
+        "last_observed_utc": "2026-10-07T12:04:26.038058+00:00",
+        "last_open_descriptors": 5
+      }
+    },
+    "limitations": "Accessible /proc snapshots at 0.5s; peaks are observed lower bounds, not exhaustive maxima. Only verified launched-root lineage with child creation at/after root is sampled; exited/inaccessible processes may be missed."
+  },
+  "finished_utc": "2026-10-07T12:04:26.379655+00:00",
+  "elapsed_seconds": 1.413,
+  "final_source_sha": "8d1f907f4bd31b256737a27d3e63fe8cd8672efc",
+  "tracked_diff_after": [],
+  "stdout_sha256": "1081568ccaa68f5300870e3530fb4874244b1a31e15ca317d2bfb08484f445e2",
+  "stderr_sha256": "906d60528082acd9c33a7d66c2846290f338015d65da6afd9a8598366470c508"
+}

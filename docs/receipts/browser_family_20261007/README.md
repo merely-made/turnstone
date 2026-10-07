@@ -1,10 +1,13 @@
 # Current browser family, 2026-10-07
 
-The coordinated source family is published on Turnstone `main` at
-`abb349cf7957e2b509f4cb7f492e3e0db4821964`. Windows S0 qualification passes:
-680 library tests, zero failures, nine ignored; the locked all-targets check,
-Cargo verification (1,280 packages), and locked three-engine tree all pass.
-Linux qualification of this source is running separately. This folder preserves
+The coordinated source family is published on Turnstone `main`: runtime adoption
+`abb349cf7957e2b509f4cb7f492e3e0db4821964`, followed by the test-only portability
+repair `8d1f907f4bd31b256737a27d3e63fe8cd8672efc`. Final Windows S0 qualification
+passes 681 library tests, zero failures, nine ignored, with all three browser
+features enabled. Final Linux default-feature qualification passes 650 library
+tests, zero failures, nine ignored. Both locked all-targets checks, Cargo
+verification (1,280 packages), and locked trees pass; Linux metadata also passes.
+This folder preserves
 exact-family commands, source identity and results. Historical October 6 supplier/native
 receipts remain in their own folder and retain their original scope.
 
@@ -28,7 +31,21 @@ remain unchanged. The [full production-scope proof](test-repair-production-equiv
 checks the entire prefixes before the inline test modules, including the
 Sky receipt module beyond its early test-only import. Its original narrower
 source audit remains historical. The actual denizen control and all 24 focused
-Windows Sky tests pass; complete Windows/Linux reruns are in progress.
+Windows Sky tests pass; complete Windows/Linux reruns now pass.
+
+The [final Windows source qualification](windows-final-source-qualification.json)
+binds its four completed gates to the clean tracked checkout `c44199e8`, which
+contains only receipt/documentation changes above `8d1f907f`. Its 260 recorded
+inputs match Git objects after attributes, apart from the identified inactive
+local configuration. The [final Linux packet](linux-final-fd-README.md) records
+the exact clean published `8d1f907f` checkout and unchanged tracked inputs.
+The first standard-parallel Linux run preserves 634 passes, 16 failures and
+nine ignored: OS error 24 exhausted its descriptor budget. A fresh SSH session
+measured soft/hard limits of 1,024 / 1,048,576; the ended failing process's own
+limits were not captured. The successful rerun raises only the launched child
+tree's soft limit to 65,536, retaining standard harness parallelism, source and
+test deadlines. The test process's observed descriptor peak is 2,333, a sampled
+lower bound. This host setting is not a production application or system change.
 
 See the [original Linux packet](linux-current-README.md),
 [exact Sky diagnostic](linux-sky-diagnostic-README.md), and
@@ -78,8 +95,9 @@ Git release source isolates its C-facing family; Mozilla's private collator
 and normalizer additionally need three production ranges widened. The
 vendored candidate preserves all Rust and data bytes. `resolve-icu-compat`
 metadata succeeds with the candidate. The combined locked build and library
-suite pass (the earlier checkpoint had 679 passing tests; the published source
-has 680, zero failed, nine ignored). Seven normal page-native
+suite pass (the earlier checkpoint had 679 passing tests; runtime adoption
+had 680, and the final test-only repair has 681, zero failed, nine ignored).
+Seven normal page-native
 Intl/normalization probes pass, with zero active Servo views and exit zero at
 teardown. This is not a lock-only conflict. See the
 [source identity proof](icu-source-isolation/README.md) and
@@ -170,6 +188,19 @@ failure. Its [manifest](artifact-manifest-all3-current-resource-descriptor.json)
 verifies independently against the immutable source ZIP and original finished
 outputs. Linux results have their own source-bound receipt; running logs are
 never admitted to this frozen Windows/native generation.
+
+The [final independent S0 audit](final-s0-audit.json) verifies all 74 indexed
+Linux artifacts, 12 completed final Windows artifacts, and 246 Linux core
+inputs directly against published Git bytes. The [closed record index](final-publication-artifacts.json)
+binds the final platform packets, audits, canonical status and cleanup record.
+The [cleanup result](owned-worktree-cleanup-result.json) records removal of
+the two completed compatibility worktrees and their exact owned local and
+provisional remote references, with primary-checkout guards preserved.
+Existing reusable Cargo targets and the selected CEF SDK cache remain build
+inputs; this lane retains no isolated Cargo home or compatibility worktree.
+Two inactive Weld native-test profiles remain under
+`wgpu-weld/docs/receipts/cef154_windows_20261007/.profiles/`: automatic approval
+review rejected their deletion with "blocked by policy". No bypass was attempted.
 
 Servo accessibility semantics,
 advertised actions, host subtree admission, and human Windows/macOS/Linux AT

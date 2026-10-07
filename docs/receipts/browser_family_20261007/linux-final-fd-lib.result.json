@@ -1,0 +1,75 @@
+{
+  "command": [
+    "nice",
+    "-n",
+    "10",
+    "cargo",
+    "+1.98.1",
+    "test",
+    "--workspace",
+    "--lib",
+    "--locked",
+    "-j1"
+  ],
+  "cwd": "/home/markik/Code/repos/turnstone",
+  "environment": {
+    "CARGO_TARGET_DIR": "/home/markik/Code/target",
+    "CARGO_BUILD_JOBS": "1"
+  },
+  "source_sha": "8d1f907f4bd31b256737a27d3e63fe8cd8672efc",
+  "started_utc": "2026-10-07T12:00:01.771142+00:00",
+  "scope": "Current published-family default Linux compile/tests/portable-lock verification; no foreign Windows backend features, headed browser or AT acceptance.",
+  "actual_exit_code": 0,
+  "owned_pid": 241701,
+  "host_nofile_before": [
+    1024,
+    1048576
+  ],
+  "child_nofile_configured": [
+    65536,
+    1048576
+  ],
+  "resource_scope": "Only launched process and descendants inherit raised soft limit; hard limit/system/user configuration unchanged.",
+  "descriptor_observation": {
+    "root_identity": {
+      "pid": 241701,
+      "parent_pid": 241639,
+      "start_ticks": 13440403,
+      "comm": "cargo"
+    },
+    "sampling_interval_seconds": 0.5,
+    "processes": {
+      "241701:13440403": {
+        "pid": 241701,
+        "parent_pid": 241639,
+        "start_ticks": 13440403,
+        "comm": "cargo",
+        "first_observed_utc": "2026-10-07T12:00:01.800939+00:00",
+        "peak_open_descriptors": 12,
+        "samples": 453,
+        "observed_limit_line": "Max open files            65536                1048576              files     ",
+        "last_observed_utc": "2026-10-07T12:04:09.626388+00:00",
+        "last_open_descriptors": 0
+      },
+      "241715:13440556": {
+        "pid": 241715,
+        "parent_pid": 241701,
+        "start_ticks": 13440556,
+        "comm": "turnstone-3c072",
+        "first_observed_utc": "2026-10-07T12:00:03.381142+00:00",
+        "peak_open_descriptors": 2333,
+        "samples": 449,
+        "observed_limit_line": "Max open files            65536                1048576              files     ",
+        "last_observed_utc": "2026-10-07T12:04:09.104072+00:00",
+        "last_open_descriptors": 129
+      }
+    },
+    "limitations": "Accessible /proc snapshots at 0.5s; peaks are observed lower bounds, not exhaustive maxima. Only verified launched-root lineage with child creation at/after root is sampled; exited/inaccessible processes may be missed."
+  },
+  "finished_utc": "2026-10-07T12:04:09.654769+00:00",
+  "elapsed_seconds": 247.884,
+  "final_source_sha": "8d1f907f4bd31b256737a27d3e63fe8cd8672efc",
+  "tracked_diff_after": [],
+  "stdout_sha256": "ebb878d717dc009ca048fddfa33e3a0e517f2967f98df1356936ac292a40cc2b",
+  "stderr_sha256": "53cf5d440098436885343f1a96ea294691a57eb2b047cfdf76313b1ca5112a9e"
+}

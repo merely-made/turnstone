@@ -1,0 +1,25 @@
+{
+  "recorded_utc": "2026-10-07T12:09:48.270649+00:00",
+  "initial_staged_verification_exit": 1,
+  "publication_attempted": false,
+  "initial_working_byte_index": "final-publication-artifacts-prestage.json",
+  "line_ending_mismatches": [
+    {
+      "path": "design_docs/2026-08-25_browser_surface_implementation_plan.md",
+      "working_bytes": 53389,
+      "working_sha256": "4fc25961e8af71eb30ca2a6f0316899213782f5f596a4e8a42c4e8c9c0c08f52",
+      "staged_bytes": 52604,
+      "staged_sha256": "ca855d28ec7114d7b21ccc151c0b43c6adceeb1a56898e8aacff3bf02cfdef1a",
+      "cause": "Git text attributes normalize line endings"
+    },
+    {
+      "path": "design_docs/DOC_README.md",
+      "working_bytes": 11989,
+      "working_sha256": "91e2a93b5a5e0b454f707ce16d2d090420e0aa8aa380b57096ec028debb7a894",
+      "staged_bytes": 11868,
+      "staged_sha256": "38ee320e2a83bfb44e71d39f1b9f420b32ebcc5116e972639cfcb2e82a930257",
+      "cause": "Git text attributes normalize line endings"
+    }
+  ],
+  "correction": "Final index records canonical staged Git bytes; original working-byte draft preserved."
+}

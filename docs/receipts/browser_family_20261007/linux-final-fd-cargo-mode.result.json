@@ -1,0 +1,84 @@
+{
+  "command": [
+    "nice",
+    "-n",
+    "10",
+    "python3",
+    "scripts/cargo_mode.py",
+    "verify",
+    "+1.98.1"
+  ],
+  "cwd": "/home/markik/Code/repos/turnstone",
+  "environment": {
+    "CARGO_TARGET_DIR": "/home/markik/Code/target",
+    "CARGO_BUILD_JOBS": "1"
+  },
+  "source_sha": "8d1f907f4bd31b256737a27d3e63fe8cd8672efc",
+  "started_utc": "2026-10-07T12:04:20.325774+00:00",
+  "scope": "Current published-family default Linux compile/tests/portable-lock verification; no foreign Windows backend features, headed browser or AT acceptance.",
+  "actual_exit_code": 0,
+  "owned_pid": 245920,
+  "host_nofile_before": [
+    1024,
+    1048576
+  ],
+  "child_nofile_configured": [
+    65536,
+    1048576
+  ],
+  "resource_scope": "Only launched process and descendants inherit raised soft limit; hard limit/system/user configuration unchanged.",
+  "descriptor_observation": {
+    "root_identity": {
+      "pid": 245920,
+      "parent_pid": 241639,
+      "start_ticks": 13466259,
+      "comm": "python3"
+    },
+    "sampling_interval_seconds": 0.5,
+    "processes": {
+      "245920:13466259": {
+        "pid": 245920,
+        "parent_pid": 241639,
+        "start_ticks": 13466259,
+        "comm": "python3",
+        "first_observed_utc": "2026-10-07T12:04:20.354183+00:00",
+        "peak_open_descriptors": 4,
+        "samples": 7,
+        "observed_limit_line": "Max open files            65536                1048576              files     ",
+        "last_observed_utc": "2026-10-07T12:04:23.489483+00:00",
+        "last_open_descriptors": 3
+      },
+      "245941:13466269": {
+        "pid": 245941,
+        "parent_pid": 245920,
+        "start_ticks": 13466269,
+        "comm": "cargo",
+        "first_observed_utc": "2026-10-07T12:04:20.877101+00:00",
+        "peak_open_descriptors": 11,
+        "samples": 3,
+        "observed_limit_line": "Max open files            65536                1048576              files     ",
+        "last_observed_utc": "2026-10-07T12:04:21.922394+00:00",
+        "last_open_descriptors": 0
+      },
+      "245953:13466431": {
+        "pid": 245953,
+        "parent_pid": 245920,
+        "start_ticks": 13466431,
+        "comm": "cargo",
+        "first_observed_utc": "2026-10-07T12:04:22.444864+00:00",
+        "peak_open_descriptors": 8,
+        "samples": 3,
+        "observed_limit_line": "Max open files            65536                1048576              files     ",
+        "last_observed_utc": "2026-10-07T12:04:23.489555+00:00",
+        "last_open_descriptors": 4
+      }
+    },
+    "limitations": "Accessible /proc snapshots at 0.5s; peaks are observed lower bounds, not exhaustive maxima. Only verified launched-root lineage with child creation at/after root is sampled; exited/inaccessible processes may be missed."
+  },
+  "finished_utc": "2026-10-07T12:04:23.586438+00:00",
+  "elapsed_seconds": 3.261,
+  "final_source_sha": "8d1f907f4bd31b256737a27d3e63fe8cd8672efc",
+  "tracked_diff_after": [],
+  "stdout_sha256": "79c1abd142449072acc66b8479487273f1d2fc472c6e055b4ba639e7adcba1b1",
+  "stderr_sha256": "7718d40f55ef7fd3610f7920f9cefae293365403994b2cef7f4e01697868ceb9"
+}

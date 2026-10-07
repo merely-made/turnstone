@@ -1,0 +1,61 @@
+{
+  "recorded_utc": "2026-10-07T12:04:26.568388+00:00",
+  "source_sha": "8d1f907f4bd31b256737a27d3e63fe8cd8672efc",
+  "artifacts": [
+    {
+      "path": "linux-final-Cargo.lock",
+      "bytes": 475352,
+      "sha256": "0e49603c02f3ef9d51cf986508c4c1bc540e1cdc5151b68268563463aa13bec0"
+    },
+    {
+      "path": "linux-final-Cargo.toml",
+      "bytes": 31839,
+      "sha256": "436872626f5152fc0cc629df40e92f9a4d01323ba825e8241669c7d3400349b6"
+    },
+    {
+      "path": "linux-final-guard.json",
+      "bytes": 8177,
+      "sha256": "9d692576b2b10f3ac25a9690ec731cc499c3cd17b707d92aff35f8372ea3a8fd"
+    },
+    {
+      "path": "linux-final-inputs.json",
+      "bytes": 570972,
+      "sha256": "0d2b1f4bea580906e5b13e63c80973d9755f55830f9eb18b0f5cb37c7e015571"
+    },
+    {
+      "path": "linux-final-lib.result.json",
+      "bytes": 982,
+      "sha256": "29ee0563e3d08bfab57895a44907f86301a94d1b09f7459b7cc577368b549608"
+    },
+    {
+      "path": "linux-final-lib.stderr.log",
+      "bytes": 13203,
+      "sha256": "78a0bdf618796c111d4ff5acfbf6014a4ebe9f5e263d0d74f7dda1771d7a3a89"
+    },
+    {
+      "path": "linux-final-lib.stdout.log",
+      "bytes": 74160,
+      "sha256": "4d6bcc08b2e91065715685763e6429512117893e1f82bac090bc1e910d2f2ded"
+    },
+    {
+      "path": "linux-final-nofile-inventory.json",
+      "bytes": 382,
+      "sha256": "4a16ac5a342db35cd1785258fc00c80367959dec6f9f6996f678986a5dee8f01"
+    },
+    {
+      "path": "linux-final-README.md",
+      "bytes": 1554,
+      "sha256": "ebde172a46bb206b7fc480017aebbd537407c0f5f38926ee4c7bd9fb89ef07c9"
+    },
+    {
+      "path": "linux-final-runner.py",
+      "bytes": 6177,
+      "sha256": "29c76a5c91f29bae8fb7e18b61efad82a56fbd50c494dd0dc7caf78b4e84751e"
+    },
+    {
+      "path": "linux-final-summary.json",
+      "bytes": 1602,
+      "sha256": "91863096467b9ce1ea7b6a190ab765ab93aeb1f4f5f032c5414f11b347c7d9ac"
+    }
+  ]
+}
