@@ -1106,6 +1106,16 @@ the same record once this lane can push to Mere (U15).
       `ProducerRegistry`.
     - E1b, the headed walks on Windows, macOS and Linux, is next. SC and S8
       build on this seam.
+    - Merged to Mere `main` as `a59e4c47` on Mark's word, over 15 newer
+      `main` commits with no conflict. Gates on the merged tree, `--locked`:
+      `uxtree` 19 and E1a tree half 27, `cambium` library 249,
+      `cambium-winit-a11y` 3 and E1a session half 18. The S45 license-header
+      check fails on `crates/system/framing/src/tests.rs` (no MPL Exhibit A),
+      already on `main` before the merge and outside this lane; the new files
+      pass it.
+  - Next in this lane, ruled by Mark: the E1b probe for the headed walks, and
+    S8's Mere half (smolweb and Micron accessibility projections). SC's
+    inventory follows once S8's shape is set.
   - Asked the identity session to report Knot's repin (commit, Mere and
     Genet revisions, S77). Asked the physics session who owns WS4 and the
     stack seams rounds (neither the fidelity plan nor Mere's log names a
