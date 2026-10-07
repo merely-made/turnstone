@@ -1,0 +1,32 @@
+# Diagnostic, not a receipt: the 50x control's page at 1x and then at 50x,
+# in one run (physics catalog plan, 2026-10-06, "Base it on the page's own
+# 1x"), to see how a bar relative to the page's 1x reads calm and under load.
+# Run with ?nodes=24&seed=7&links=none&gpu=off&physics_speed=1.
+assert snap ready == true
+assert snap physics-speed == 1
+click role:button Play physics
+settle 2
+assert snap physics-paused == false
+click role:combobox Arrangement
+settle 1
+click role:option Free (physics alone)
+settle 1
+click role:button Apply arrangement
+settle 1
+assert snap layout == free
+settle 4
+mark-pace one-x
+log-physics one-x
+log-intervals one-x
+click role:combobox Speed
+settle 1
+click role:option 50x
+settle 2
+assert snap physics-speed == 50
+timing start speed-fifty
+settle 4
+timing stop
+log-physics fifty
+log-pace fifty
+log-intervals fifty
+log diag speed fifty complete

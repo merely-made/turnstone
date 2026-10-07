@@ -730,6 +730,10 @@ pub(super) fn update_product_semantics(
                 .to_string(),
         ),
         (
+            "data-display-period-from",
+            host.frame_budget.source().label().to_string(),
+        ),
+        (
             "data-frame-interval-ms",
             format!("{:.1}", host.frame_budget.last_interval_ms()),
         ),

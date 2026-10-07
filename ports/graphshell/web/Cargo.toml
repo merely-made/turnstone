@@ -91,6 +91,8 @@ console_error_panic_hook = "0.1"
 web-sys = { version = "0.3", features = [
     "console",
     "Blob",
+    # The display period's worker (src/web_period_worker.rs).
+    "BlobPropertyBag",
     "CanvasRenderingContext2d",
     "Document",
     "DomRect",
@@ -109,6 +111,7 @@ web-sys = { version = "0.3", features = [
     "ImageData",
     "KeyboardEvent",
     "KeyboardEventInit",
+    "MessageEvent",
     # `?nodes=` and `?seed=`: phase 3's generated graph (src/web_graphs.rs).
     "Location",
     "MouseEvent",
@@ -123,9 +126,11 @@ web-sys = { version = "0.3", features = [
     "Response",
     "StorageManager",
     "Storage",
+    "Url",
     "UrlSearchParams",
     "WheelEvent",
     "Window",
+    "Worker",
 ] }
 
 # Standalone manifests do not inherit Mere's root patch table, so the ones

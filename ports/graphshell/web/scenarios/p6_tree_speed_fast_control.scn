@@ -1,8 +1,15 @@
-# The control for p6_tree_speed_fast: 24 nodes at 50x
-# (tree.html?nodes=24&seed=7&links=none&gpu=off&physics_speed=50), cheap
-# enough that the budget never binds and the canvas runs every tick owed.
+# The 50x receipt beside p6_tree_speed_fast: 24 nodes, at 1x and then at 50x
+# in one run (tree.html?nodes=24&seed=7&links=none&gpu=off&physics_speed=1).
+# 50x must reach half the lesser of 50 times the page's own 1x and the speed
+# its step budget fits at the run's measured tick cost (physics catalog plan,
+# ruled 2026-10-06, "Half of the lesser"), so the bar follows the load: under
+# load the budget, not the dial, limits 50x. Its control,
+# p6_tree_speed_fast_control_capped, plants a cap so 50x owes what 1x owes,
+# and must miss the bar.
 assert snap ready == true
-assert snap physics-speed == 50
+assert snap physics-speed == 1
+assert snap physics-budget-share == 0.5
+assert snap physics-budget-margin-us == 200
 click role:button Play physics
 settle 2
 assert snap physics-paused == false
@@ -14,14 +21,20 @@ click role:button Apply arrangement
 settle 1
 assert snap layout == free
 settle 4
+mark-pace one-x
+assert snap physics-effective-marked >= 0.001
+click role:combobox Speed
+settle 1
+click role:option 50x
+settle 2
+assert snap physics-speed == 50
 timing start speed-fast-control
 settle 4
 timing stop
 log-physics fast-control
 log-pace fast-control
-assert snap physics-budget-bound == false
-assert snap physics-effective-speed >= 25
-# A light page, still slower than 60 Hz: the period is capped here too.
+assert snap physics-effective-over-bar >= 1
+# The period read is at most the 1/60 s cap, the budget at most half of it.
 assert snap display-period-ms <= 16.7
 assert snap physics-budget-us <= 8333
 # Each frame's admitted ticks inside its own budget plus the clock's 100 us

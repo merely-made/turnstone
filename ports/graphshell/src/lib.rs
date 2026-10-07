@@ -72,6 +72,8 @@ pub mod frame_budget;
 pub mod product;
 #[cfg(feature = "web")]
 pub mod remote_board;
+#[cfg(feature = "web")]
+pub mod speed_bar;
 #[cfg(all(feature = "native", not(target_arch = "wasm32")))]
 pub mod profile;
 #[cfg(feature = "web")]

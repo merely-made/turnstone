@@ -27,6 +27,7 @@
 mod web_events;
 mod web_gpu;
 mod web_graphs;
+mod web_period_worker;
 #[cfg(feature = "main-page")]
 mod web_practice;
 #[cfg(feature = "main-page")]

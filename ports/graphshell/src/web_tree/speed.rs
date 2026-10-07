@@ -14,6 +14,7 @@
 use std::collections::VecDeque;
 use std::time::Duration;
 
+use graphshell::speed_bar::{self, BudgetFit, FitFrame};
 use mere::canvas::{Canvas, Speed};
 use mere::kernel::graph::NodeKey;
 use taproot::ProbeSnapshot;
@@ -48,13 +49,19 @@ pub(super) struct PaceWindow {
     /// Frames above real time whose floor alone ran past the budget and the
     /// grain, the gate admitting nothing: the floor's, not the gate's.
     floor_over: usize,
+    /// The effective speed `mark-pace` recorded, to compare a later speed
+    /// with on the same page (ruled 2026-10-06, "Relative to the page's 1x").
+    marked: Option<f32>,
+    /// The page's measured clock step, in us: what "past the grain" means.
+    grain_us: i64,
 }
 
 /// Record the frame just drawn under `budget`; on a dial run, every `WINDOW`
 /// moving frames, write the pace into the receipt's physics log.
 pub(super) fn record(shared: &Shared, canvas: &Canvas, moving: bool, budget: Duration) {
+    let wall = Duration::from_secs_f64(shared.frame_budget.borrow().last_interval_ms() / 1000.0);
     let mut window = shared.pace.borrow_mut();
-    window.record(canvas, moving, budget);
+    window.record(canvas, moving, budget, wall);
     if !shared.speed.explicit || !moving || window.logged == LOG_LINES {
         return;
     }
@@ -70,8 +77,8 @@ pub(super) fn record(shared: &Shared, canvas: &Canvas, moving: bool, budget: Dur
     shared.physics_log.borrow_mut().push(format!(
         "pace: speed {} effective {} bound {} ticks {} over {} frames drawn-moved {} \
          stepped {} compute-max {} us over-budget-max {} us budget {} us ({} of a {:.2} ms \
-         display period, {} {}; last frame {:.1} ms) margin {} us; every window: worst {} us, \
-         {} frames past the grain",
+         display period, {} at {} from the {}; last frame {:.1} ms) margin {} us; every window: \
+         worst {} us, {} frames past the grain",
         crate::web_speed::field(canvas.physics_speed()),
         pace.effective_speed
             .map_or_else(|| "none".into(), |speed| format!("{speed:.3}")),
@@ -87,6 +94,7 @@ pub(super) fn record(shared: &Shared, canvas: &Canvas, moving: bool, budget: Dur
         frame_budget.display_period_ms(),
         crate::web_speed::period_fields(&frame_budget).0,
         crate::web_speed::period_fields(&frame_budget).1,
+        frame_budget.source().label(),
         frame_budget.last_interval_ms(),
         frame_budget.margin().as_micros(),
         window.worst_field(),
@@ -103,6 +111,8 @@ struct Frame {
     admitted_until: Option<Duration>,
     /// The step budget this frame ran under.
     budget: Duration,
+    /// Above real time, what the speed bar reads of the frame.
+    fit: Option<FitFrame>,
 }
 
 /// What the window holds, for the snapshot and the log.
@@ -118,7 +128,15 @@ struct Summary {
 }
 
 impl PaceWindow {
-    pub(super) fn record(&mut self, canvas: &Canvas, moving: bool, budget: Duration) {
+    /// A window whose "past the grain" is the page's measured clock step.
+    pub(super) fn with_grain(grain_us: i64) -> Self {
+        Self {
+            grain_us,
+            ..Self::default()
+        }
+    }
+
+    pub(super) fn record(&mut self, canvas: &Canvas, moving: bool, budget: Duration, wall: Duration) {
         if self.sample.is_empty() {
             let mut keys: Vec<NodeKey> = canvas.graph().nodes().map(|(key, _)| key).collect();
             keys.sort_by_key(|key| key.index());
@@ -138,7 +156,7 @@ impl PaceWindow {
         let report = canvas.elapsed_step_report().unwrap_or_default();
         if canvas.physics_speed() > Speed::REAL_TIME {
             let micros = |duration: Duration| duration.as_micros().min(i64::MAX as u128) as i64;
-            let grain = crate::web_speed::CLOCK_GRAIN_US as i64;
+            let grain = self.grain_us;
             match report.admitted_until {
                 Some(until) if report.admitted > 0 => {
                     let over = micros(until) - micros(budget);
@@ -168,7 +186,27 @@ impl PaceWindow {
             compute: report.compute.unwrap_or_default(),
             admitted_until: report.admitted_until.filter(|_| report.admitted > 0),
             budget,
+            fit: (canvas.physics_speed() > Speed::REAL_TIME).then(|| FitFrame {
+                steps: report.steps,
+                floor: report.steps.saturating_sub(report.admitted),
+                compute: report.compute.unwrap_or_default(),
+                budget,
+                wall,
+            }),
         });
+    }
+
+    /// The bar `speed` must reach (ruled 2026-10-06, "Half of the lesser"),
+    /// and what the budget fits, over the window's frames above real time;
+    /// `None` at or below 1x, at Max, or before `mark-pace` or a timed tick.
+    fn bar(&self, speed: Speed, margin: Duration) -> Option<(f32, BudgetFit)> {
+        if speed <= Speed::REAL_TIME || speed == Speed::UNCAPPED {
+            return None;
+        }
+        let marked = self.marked.filter(|marked| *marked > 0.0)?;
+        let frames: Vec<FitFrame> = self.frames.iter().filter_map(|frame| frame.fit).collect();
+        let fit = speed_bar::budget_fit(&frames, margin)?;
+        Some((speed_bar::bar(speed.factor(), marked, fit), fit))
     }
 
     /// The worst frame above real time so far, or "none".
@@ -209,16 +247,28 @@ impl PaceWindow {
 pub(super) fn pace_line(label: &str, canvas: &Canvas, shared: &Shared) -> String {
     let window = shared.pace.borrow();
     let frame_budget = shared.frame_budget.borrow();
+    let shown = |speed: Option<f32>| speed.map_or_else(|| "none".into(), |s| format!("{s:.3}"));
+    let effective = canvas.physics_pace().effective_speed;
     format!(
-        "pace {label}: speed {} budget {} us margin {} us display period {:.3} ms ({}, worst \
-         interval {} ms off its multiple); every window: {} frames the gate admitted ticks in, \
-         worst {} us over budget ({}), {} past the grain; {} floor-only frames past it",
+        "pace {label}: speed {} effective {} (marked {}, ratio {}) budget {} us margin {} us \
+         display period {:.3} ms ({}, fitting {} of the recent intervals from the {}, a {} us \
+         clock); every window: {} \
+         frames the gate admitted ticks in, worst {} us over budget ({}), {} past the grain; \
+         {} floor-only frames past it; bar {}",
         crate::web_speed::field(canvas.physics_speed()),
+        shown(effective),
+        shown(window.marked),
+        match (effective, window.marked) {
+            (Some(now), Some(marked)) if marked > 0.0 => format!("{:.3}", now / marked),
+            _ => "none".into(),
+        },
         frame_budget.budget().per_frame.as_micros(),
         frame_budget.margin().as_micros(),
         frame_budget.display_period_ms(),
         crate::web_speed::period_fields(&frame_budget).0,
         crate::web_speed::period_fields(&frame_budget).1,
+        frame_budget.source().label(),
+        window.grain_us,
         window.above,
         window.worst_field(),
         window.worst_frame.map_or_else(
@@ -232,6 +282,42 @@ pub(super) fn pace_line(label: &str, canvas: &Canvas, shared: &Shared) -> String
         ),
         window.over_grain,
         window.floor_over,
+        bar_field(&window, canvas, &frame_budget),
+    )
+}
+
+/// The speed bar and what it was made of, for the pace line.
+fn bar_field(
+    window: &PaceWindow,
+    canvas: &Canvas,
+    frame_budget: &crate::web_speed::FrameBudget,
+) -> String {
+    let speed = canvas.physics_speed();
+    let marked = window.marked.unwrap_or_default();
+    window.bar(speed, frame_budget.margin()).map_or_else(
+        || "none".into(),
+        |(bar, fit)| {
+            format!(
+                "{bar:.3} (half the lesser of {}x the marked {marked:.3} and the {:.3} the \
+                 budget fits, {:.1} ticks a frame at {:.1} us a tick)",
+                speed.factor(),
+                fit.speed,
+                fit.ticks,
+                fit.tick.as_secs_f64() * 1e6,
+            )
+        },
+    )
+}
+
+/// `mark-pace <label>`: record the effective speed now, for the receipt to
+/// compare a later one with, and log it.
+pub(super) fn mark_line(label: &str, canvas: &Canvas, shared: &Shared) -> String {
+    let effective = canvas.physics_pace().effective_speed;
+    shared.pace.borrow_mut().marked = effective;
+    format!(
+        "pace mark {label}: speed {} effective {}",
+        crate::web_speed::field(canvas.physics_speed()),
+        effective.map_or_else(|| "none".into(), |speed| format!("{speed:.3}")),
     )
 }
 
@@ -239,11 +325,19 @@ pub(super) fn pace_line(label: &str, canvas: &Canvas, shared: &Shared) -> String
 /// read from, for a diagnostic to fit offline.
 pub(super) fn intervals_line(label: &str, shared: &Shared) -> String {
     let frame_budget = shared.frame_budget.borrow();
-    let intervals: Vec<String> = frame_budget
+    let main: Vec<String> = frame_budget
         .intervals()
         .map(|ms| format!("{ms:.3}"))
         .collect();
-    format!("intervals {label}: {}", intervals.join(" "))
+    let worker: Vec<String> = frame_budget
+        .worker_interval_log()
+        .map(|ms| format!("{ms:.3}"))
+        .collect();
+    format!(
+        "intervals {label}: {}\nintervals-worker {label}: {}",
+        main.join(" "),
+        worker.join(" "),
+    )
 }
 
 /// The dial's fields on the lane's snapshot.
@@ -276,6 +370,11 @@ pub(super) fn fields(snapshot: ProbeSnapshot, canvas: &Canvas, shared: &Shared) 
             "display-period-source",
             crate::web_speed::period_fields(&frame_budget).0,
         )
+        .with_field("display-period-from", frame_budget.source().label())
+        .with_field(
+            "clock-grain-us",
+            format!("{:.0}", frame_budget.grain_ms() * 1000.0),
+        )
         .with_field(
             "frame-interval-ms",
             format!("{:.1}", frame_budget.last_interval_ms()),
@@ -299,6 +398,37 @@ pub(super) fn fields(snapshot: ProbeSnapshot, canvas: &Canvas, shared: &Shared) 
             shared.pace.borrow().over_grain.to_string(),
         )
         .with_field("pace-gated-frames", shared.pace.borrow().above.to_string())
+        .with_field(
+            "physics-effective-marked",
+            shared
+                .pace
+                .borrow()
+                .marked
+                .map_or_else(|| "none".into(), |speed| format!("{speed:.3}")),
+        )
+        .with_field(
+            "physics-effective-over-marked",
+            match (pace.effective_speed, shared.pace.borrow().marked) {
+                (Some(now), Some(marked)) if marked > 0.0 => format!("{:.3}", now / marked),
+                _ => "none".into(),
+            },
+        )
+        .with_field(
+            // The effective speed over the bar a capped speed above 1x must
+            // reach (`speed_bar`); "none" at or below 1x, at Max, or before
+            // `mark-pace`.
+            "physics-effective-over-bar",
+            match (
+                pace.effective_speed,
+                shared
+                    .pace
+                    .borrow()
+                    .bar(canvas.physics_speed(), frame_budget.margin()),
+            ) {
+                (Some(now), Some((bar, _))) if bar > 0.0 => format!("{:.3}", now / bar),
+                _ => "none".into(),
+            },
+        )
         .with_field(
             "pace-floor-over-frames",
             shared.pace.borrow().floor_over.to_string(),
