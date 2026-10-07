@@ -123,6 +123,15 @@ pub fn connect_remote(signal_url: String, invite: Option<String>) -> Result<(), 
     Ok(())
 }
 
+/// Parse and arm a scenario on the tree page; `loader.js` calls this from
+/// `?scenario=`. With the reference host, `web_scenario`'s export serves both
+/// pages; without it, this is the tree's.
+#[cfg(not(feature = "main-page"))]
+#[wasm_bindgen]
+pub fn run_scenario(text: &str) -> Result<(), JsValue> {
+    web_tree::run(text).map_err(|error| JsValue::from_str(&error))
+}
+
 // The H5 reference host and its `mount` export, verbatim in their own file.
 #[cfg(feature = "main-page")]
 include!("web_main.rs");
