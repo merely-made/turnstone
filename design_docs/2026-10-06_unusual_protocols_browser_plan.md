@@ -4,7 +4,7 @@
 **Status (2026-10-07):** ruled. U1 to U14 are ruled: U1, U2 (accessibility
 on all three operating systems comes first), U3, U4, U5, U8 and U9 on
 2026-10-06, and U6, U7, U10 and U11 to U14 on 2026-10-07 (§7). The
-composition brief's AC1 to AC6 are ruled (§7, fifth round); U15 is open. The stage
+composition brief's AC1 to AC6 and U15 are ruled (§7, fifth round). The stage
 order is in "Stage order (2026-10-07)" under §6. S0 is next; its lane is
 written under S0 and waits on Knot's repin. A cloud
 session owns the plan from 2026-10-07; an assessment lane wrote it, and no
@@ -419,7 +419,7 @@ From U2 (second round), U4, U7 and U8:
 5. **S3, S4, S5**, then **S6, S7, S9 and S10**.
 6. **Misfin, then Gemini over Reticulum**, after the accessibility bar is
    met (U2). Neither has a stage yet.
-7. **The session seam (AC2 to AC5, U15)**: the Mere subtree helper, focus
+7. **The session seam (AC2 to AC5; this lane, U15)**: the Mere subtree helper, focus
    handback at a session's edges, panic containment, per-session key
    namespaces, and experiment E1. S8 joins page trees through the helper,
    so the helper and E1a come before S8. *Reading, not ruled:* they run in
@@ -1014,15 +1014,13 @@ the same record once this lane can push to Mere (U15).
   GPU textures plus AccessKit trees; session projections only. Mark:
   **"Paint lists + a11y trees (Recommended)"**.
 
-### Open forks (2026-10-07)
-
-**U15. Who builds the session-seam work in Mere?** That is AC2's subtree
-helper, focus handback, AC4's panic containment, the key namespaces,
-AC5's reservations and E1. The physics session handed the composition
-thread to this lane. U11 already puts this lane in Mere for SC, and S8
-depends on the helper. The stack seams owner (the local "Graph database
-concept for Mere" session) holds the Cambium seam findings (stack seams P2,
-F20).
+- **U15, who builds the session-seam work in Mere** (AC2's subtree helper,
+  focus handback, AC4's panic containment, key namespaces, AC5's
+  reservations and E1). Options: this lane, which already works in Mere for
+  SC (U11) and whose S8 waits on the helper; the stack seams owner (the
+  local "Graph database concept for Mere" session); a new composition lane.
+  Mark: **"This lane (Recommended)"**. *Follows:* this lane owns SC, the
+  session seam and S8, and needs Mere attached with push access.
 
 ## Progress
 
@@ -1062,8 +1060,13 @@ F20).
     opened. §4's live-pixel row corrected from its F6.
   - S0 step 1, Linux baseline: the first `cargo check --workspace --locked`
     stopped at `alsa-sys` because the container lacked ALSA's development
-    headers. That is an environment gap, not a code break. The packages
-    were installed and the check rerun.
+    headers. That is an environment gap, not a code break. With
+    `libasound2-dev` and the usual X11, Wayland, xkbcommon, udev,
+    fontconfig, OpenSSL and D-Bus development packages installed, the
+    rerun passed: `cargo check --workspace --locked` at Turnstone
+    `032463a`'s pins (Mere `3d1cdacc`) finished clean on Linux with 82
+    warnings in `turnstone`'s lib. This is Turnstone's first Linux compile
+    evidence (U1); tests were not run.
   - Asked the identity session to report Knot's repin (commit, Mere and
     Genet revisions, S77). Asked the physics session who owns WS4 and the
     stack seams rounds (neither the fidelity plan nor Mere's log names a
