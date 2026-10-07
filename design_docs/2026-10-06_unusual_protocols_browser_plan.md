@@ -1116,6 +1116,27 @@ the same record once this lane can push to Mere (U15).
   - Next in this lane, ruled by Mark: the E1b probe for the headed walks, and
     S8's Mere half (smolweb and Micron accessibility projections). SC's
     inventory follows once S8's shape is set.
+  - S8's Mere half landed on Mere `main` (`f2ad105a`, `35bd7d77`):
+    `SmolwebDocumentSession` publishes an accessibility projection from the
+    engine document and the retained document-canvas packet. Blocks carry
+    their roles and laid-out boxes; a block's text runs and links come out
+    as children in reading order, so no link is read twice. Links,
+    submissions and collapsible headings take Click (a revalidated point for
+    the host's pointer path), Focus and ScrollIntoView. Menus read one row per
+    item with its kind and its own line's box. Bounds are unclipped
+    viewport coordinates, and the revision moves with layout, scroll, size
+    and focus. It is declared Partial: text runs carry their block's box, and
+    preformatted blocks are one node.
+    - Micron pages take the same projection: Turnstone's
+      `MicronSessionEngine` spawns `SmolwebDocumentSession`. Two NomadNet
+      1.4.2 guide probes read with headings and working links.
+    - 41 lane tests pass. `smolweb_streaming_render` needs a GPU adapter
+      and fails the same way without the change.
+    - Findings for S8's Turnstone half and SC: Micron fields render as inert
+      source in the page, and the live form is Turnstone's own form editor,
+      so its accessibility is Turnstone's. `SmolwebDocument::focus_move`
+      wraps at the ends, as Cambium runners did, so a composed smolweb tile
+      needs the same edge exit.
   - Asked the identity session to report Knot's repin (commit, Mere and
     Genet revisions, S77). Asked the physics session who owns WS4 and the
     stack seams rounds (neither the fidelity plan nor Mere's log names a
