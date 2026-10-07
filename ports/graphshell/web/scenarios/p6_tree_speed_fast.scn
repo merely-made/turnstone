@@ -27,13 +27,15 @@ settle 1
 click role:button Apply arrangement
 settle 1
 assert snap layout == free
-settle 10
+# Fill the 32-frame effective-speed meter at 1x before marking it.
+settle 32
 mark-pace one-x
 assert snap physics-effective-marked >= 0.001
 click role:combobox Speed
 settle 1
 click role:option Max
-settle 2
+# Replace the meter's 1x frames before testing the selected speed.
+settle 32
 assert snap physics-speed == max
 timing start speed-fast
 settle 30
