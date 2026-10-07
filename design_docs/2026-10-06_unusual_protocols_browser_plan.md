@@ -577,33 +577,90 @@ Pelt's side is `PeltController` (`ports/pelt/core/src/lib.rs`) and
 | Reader appearances | one source session plus per-`SurfaceId` appearance sessions (`shell/mod.rs:978-1019`) | none | Turnstone; stays host-side |
 | Tiling | platen `TileLayout` of GraphMemberIds per graph and forme; one node can sit in several workbenches, lenses, a tile pane and the inset, sharing one session; content outlives tile close | cambium `Workbench`/`TileTree` of `TileId`; one controller per tile, inactive tabs included | Turnstone |
 
-**The fork.** `PeltWorkspace` is not viable for Turnstone without giving up
-graph-first navigation. It would bring a second arrangement authority keyed
-by `TileId` beside platen's. It would duplicate a node's session and history
-for every placement, and spawn every inactive tab. Its history is per tile,
-where Turnstone's is graph truth and a link opens another node. So the
-viable shape is **one `PeltController` per node** (not per tile), held in
-Turnstone's node-keyed map, with Pelt keeping `PeltWorkspace` for its own
-standalone tiling.
+**Design (SC1 and SC2, ruled 2026-10-07).** Each side built the opposite
+half of a browser. Pelt has the better session half and Turnstone the better
+loading half, so the controller takes both. Each host keeps only what makes
+it that host.
 
-**What `pelt-core` needs for that** (SC's Mere half):
+Turnstone drops its versions in favor of Pelt's:
 
-1. A host-fetched load mode beside today's synchronous one: a pending
-   state carrying the host's request identity, Stop and supersede, and
-   spawn or replace from host-held bytes, including streamed prefixes.
-2. Host-owned navigation: a link or submission returns an intent to the
-   host instead of respawning inside the controller, so Turnstone can mint
-   or select a node. Pelt's in-controller history stays its default.
-3. Re-routing per load, so one controller can change engine between
-   documents.
-4. Pass-throughs Pelt lacks: find, subresources, lineage.
-5. Typed fetch outcomes (input required, identity required, certificate
-   changed, download diverted) as controller states. The conversations'
-   UI and their stores (personas, the trust store, Muniment) stay
-   host-side.
-6. Pelt's synchronous-fetch receipts keep passing unchanged.
+- **Accessibility.** The session's own projection, revalidated click
+  targets and action dispatch replace the spawn-time outline. This is S8's
+  Turnstone half.
+- **Session identity.** `PeltSessionIdentity` replaces having no
+  generation at all.
+- **Hidden sessions.** Pelt's `set_hidden` replaces pumping every live
+  session every frame.
+- **Input.** Neutral `SessionInput`, with pointer capture, focus, text and
+  IME, replaces the pointer-down/up click translation.
+- **Web surfaces.** Route-state dispatch between document and surface, with
+  a stated fallback, replaces `node_uses_web_surface`, which recognizes only
+  Weld.
+- **Surface polling limits.** `SurfaceResourcePolicy` replaces polling
+  every surface every frame.
 
-**Questions for Mark** are in §7 (SC1, SC2).
+Pelt takes Turnstone's versions:
+
+- **Loading.** Async loading with request identity, supersede, exact Stop
+  and Reload, streaming and inline images. Pelt's engines fetch
+  synchronously inside `spawn` today.
+- **Typed outcomes:** input required, identity required, certificate
+  changed, download.
+- **Find, reader lineage and per-node web profiles.**
+- **Content lifetime.** Content lives as long as it is on, not as long as a
+  tile shows it.
+
+The shape:
+
+1. **One controller for documents and surfaces.** It holds a document
+   session or a surface producer behind one command and routing API, and
+   re-routes per load.
+2. **Host-supplied transport.** The controller owns the load state: request
+   ids, a pending state, supersede, Stop, streaming into `replace_body`, and
+   subresource delivery. A transport trait does the fetching. Turnstone's
+   fetch actor implements it, and Pelt's desktop wraps its present fetchers
+   on a worker thread.
+3. **History out of the controller.** The controller returns a navigation
+   intent with a disposition, and a history policy decides. Pelt ships a
+   linear history, today's behavior. Turnstone's policy is the graph: a link
+   opens or mints a node and records the lineage edge.
+4. **A store seam** (SC2) for client identities, trust, downloads and
+   cookies. Pelt gets simple defaults, and Turnstone plugs in personas,
+   Muniment and its trust store. The conversations' UI stays in each host.
+5. **A controller pool keyed by the host's key, with placements over it.**
+   Pelt keys by `TileId`, with `PeltWorkspace` as its placement layer.
+   Turnstone keys by node, with platen as its placement layer, so Forme stays
+   the arrangement authority. Hidden follows from whether any visible tab
+   places a key.
+6. **Accessibility per controller,** grafted with `uxtree::graft` and
+   namespaced by key and `PeltSessionIdentity`. Both hosts need the Genet
+   `AccessKitBridge` fix first, which puts it on SC's critical path.
+
+Turnstone's content port shrinks to:
+
+- mapping nodes to keys;
+- the graph history policy;
+- the conversations' UI;
+- the store implementations;
+- Reader appearances, until the pool can hold them as placements of one key;
+- capture.
+
+Steps (each keeps both suites green):
+
+1. The transport seam and the load state in `pelt-core`. Pelt's receipts
+   pass on its wrapped fetchers.
+2. One controller for documents and surfaces.
+3. History out to a policy, with linear history as Pelt's default.
+4. Turnstone drives one controller per node, with its fetch actor as the
+   transport. The gate is the smolweb scenarios, with exact Stop and Reload
+   identities.
+5. Turnstone's documents take the controller's projection (S8). This needs
+   the Genet bridge fix.
+6. The pool and placements, with hidden derived from them.
+7. The store traits.
+
+*Reading, not ruled:* Reload mints a new request id in the controller, as
+Turnstone's tests require, so Pelt's Reload changes with it.
 
 ### S2. Reading basics on every smolweb page
 
@@ -1125,6 +1182,27 @@ the same record once this lane can push to Mere (U15).
   host-side for now, because `ProducerRegistry` sits in `cambium-rootstock`
   above the seam and holds the host's GPU device.
 
+### Rulings (2026-10-07, sixth round: SC)
+
+- **SC2, how much of the fetch side moves into `pelt-core`.** Options: the
+  load state machine with the conversations' UI and stores host-side; all of
+  SC's list, including that UI and a store seam; accessibility only. Mark:
+  **"the conversations ui doesn't have to come, but a store seam seems
+  prudent"**. *Follows:* the load state machine and a store seam for
+  identities, trust, downloads and cookies move to `pelt-core`. Each host
+  keeps its own conversations' UI.
+- **SC1, the controller shape.** Options: one `PeltController` per node;
+  one per tile; adopt `PeltWorkspace`. Mark asked to "compare 1 and 3", then
+  reframed: "what should pelt take from turnstone, to replace the parts of
+  turnstone that are worse versions than what pelt brings? How do we
+  integrate pelt in a manner that simplifies and improves the architecture,
+  bringing it closer to a usable browser?" On the integrated design (SC
+  section), Mark: **"agreed with 1. I am open to further changes,
+  augmentations, and refactoring"**. *Follows:* one controller per node in
+  Turnstone, inside the integrated design. The pool and placements converge
+  Pelt and Turnstone on one controller without either owning the other's
+  arrangement. Further refactoring is in scope where it simplifies.
+
 ## Progress
 
 - **2026-10-06:**
@@ -1269,6 +1347,9 @@ the same record once this lane can push to Mere (U15).
     largest gain is S8's: Turnstone's documents expose only a spawn-time
     outline today, while the controller carries the session's full
     projection and actions. Asked Mark SC1 and SC2.
+  - SC1 and SC2 ruled (§7, sixth round). The SC section now holds the
+    integrated design and its seven steps. Step 1 (the transport seam and
+    load state in `pelt-core`) starts on a Mere branch.
     - Found in passing: `node_uses_web_surface` (`src/app/node_arms.rs:1701`)
       matches only Weld, so Scry and Servo nodes take the document Back and
       Reload path, and Stop does nothing for them.
