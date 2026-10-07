@@ -1,10 +1,11 @@
 # Unusual-protocols browser plan
 
 **Date:** 2026-10-06
-**Status (2026-10-07):** ruled. U1 to U10 are ruled: U1, U2 (accessibility
+**Status (2026-10-07):** ruled. U1 to U14 are ruled: U1, U2 (accessibility
 on all three operating systems comes first), U3, U4, U5, U8 and U9 on
-2026-10-06, and U6, U7 and U10 on 2026-10-07 (§7). U11 is open. The stage
-order is in "Stage order (2026-10-07)" under §6. S0 is next. A cloud
+2026-10-06, and U6, U7, U10 and U11 to U14 on 2026-10-07 (§7). The stage
+order is in "Stage order (2026-10-07)" under §6. S0 is next; its lane is
+written under S0 and waits on Knot's repin. A cloud
 session owns the plan from 2026-10-07; an assessment lane wrote it, and no
 code has changed (see "Evidence and limits").
 
@@ -438,6 +439,42 @@ From U2 (second round), U4, U7 and U8:
 - `python scripts/cargo_mode.py verify` passes.
 - `README.md`'s pin list matches `Cargo.toml`.
 
+**Lane (2026-10-07; U9, U12 to U14).** Inputs:
+
+- **Mere:** the revision Knot's repin lands on (the identity session,
+  vault lock ruling 55, "Knot's mere rows to current main"). It must be
+  on `origin/main` at or after `ea74604b`, so it carries WS4.
+- **Genet:** that Mere revision's pin (`d851a9db` at `ea74604b`).
+- **Knot:** the identity session's repin, carrying stack seams S77 (a
+  `Block::Menu` wildcard arm and a `..` in knot-editor's desktop preview).
+  Knot `main` (`6cb57f1`) pins Mere `e0cea3e0` today.
+- **Woodshed:** the browser session's Redshank repin to the same Mere (U13).
+  Redshank pins `db4ee312` at Woodshed `06c2b13`; Woodshed's root pins
+  `5011e2f9`, outside Turnstone's graph.
+- **Turnstone base:** the browser session's pushed commit holding its repin
+  and Servo work (U14). S0 starts from it.
+
+Steps:
+
+1. **Linux baseline (cloud).** `cargo check --workspace --locked` on
+   Turnstone `origin/main` at today's pins, so Linux breaks that predate the
+   repin are known before it.
+2. **Wait** for the Knot, Redshank and Turnstone-base commits above.
+3. **Repin (cloud).** Branch from the base. Set every Mere row, every Genet
+   row, the Knot rows and the Woodshed rows; regenerate the lock with
+   `scripts/cargo_mode.py`, never by hand.
+4. **Consumer fixes.** Surface the four physics refusals
+   (`src/app/mod.rs`, `src/app/session_lifecycle.rs`); score version 5 in,
+   a typed refusal for 4; WS4 fallout (the Gopher search `Submit` stays a
+   typed refusal until S4); `README.md`'s pins.
+5. **Linux gate (cloud),** at `-j 4` under `nice`: `cargo check
+   --workspace --all-targets --locked`, the library suite with `--locked`,
+   one source per sibling in `cargo tree --locked`, and `cargo_mode.py
+   verify`.
+6. **Windows gate.** On Mark's yes, push the branch. A session on Mark's
+   machine runs the same gate at `-j 4`, BelowNormal, and S0 merges to
+   `main` only after it passes.
+
 ### S1. Every text document opens
 
 **Mere half:**
@@ -468,8 +505,8 @@ From U2 (second round), U4, U7 and U8:
 
 ### SC. One browsing controller
 
-**Depends on:** U7 (ruled: before S2 and S8); U11 (who does the `pelt-core`
-half).
+**Depends on:** U7 (ruled: before S2 and S8). U11: this lane does the
+`pelt-core` half, on a Mere branch with Mere's gates.
 
 `pelt-core` already has what the accessibility stages need from a
 controller: page zoom, the session's accessibility projection, click-target
@@ -908,11 +945,26 @@ trust, and the WS4 tail.
   running process only, and offline reading across restarts comes from
   capture. L1 to L3 stand.
 
-### Open forks (2026-10-07)
+### Rulings (2026-10-07, fourth round)
 
-**U11. Who does SC's `pelt-core` half?** `pelt-core` lives in Mere
-(`ports/pelt/core`). U3 gave the Mere halves of S1 to S4 to Mere's smolweb
-fidelity lane and did not cover SC.
+- **U11, who does SC's `pelt-core` half.** `pelt-core` lives in Mere, and
+  U3 covered only S1 to S4. Options: this Turnstone lane, on a Mere branch
+  with Mere's gates; Mere's smolweb fidelity lane; a new Pelt lane in Mere.
+  Mark: **"This Turnstone lane (Recommended)"**. *Follows:* this lane needs
+  push access to Mere, or a local session makes the Mere commits.
+- **U12, where S0 builds.** Options: the cloud session repins and gates on
+  Linux, then a session on Mark's machine runs the Windows gate; all on
+  Mark's machine; cloud only. Mark: **"Cloud first, Windows gate
+  (Recommended)"**. *Follows:* the Linux run is also U1's first Linux
+  evidence. The cloud container has 4 cores, 15 GB of memory and about
+  30 GB of disk, which may not hold a full test build.
+- **U13, who repins Redshank.** Options: the browser session, which moved
+  Redshank last; this lane; Woodshed's own lane. Mark: **"The browser
+  session (Recommended)"**.
+- **U14, the browser session's uncommitted Turnstone repin.** Options: it
+  commits and pushes its repin and Servo work first, and S0 starts from
+  that head; S0 absorbs the repin rows; the browser session carries S0.
+  Mark: **"It commits first (Recommended)"**.
 
 ## Progress
 
@@ -937,7 +989,11 @@ fidelity lane and did not cover SC.
     receipts in `.../receipts/a11y.rs`, 1,131 lines). Only the Reader
     session implements `accessibility_projection`, so for small-web pages
     both hosts wait on S8's Mere half.
-  - U6, U7 and U10 ruled (third round). U11 opened.
+  - U6, U7 and U10 ruled (third round); U11 to U14 ruled (fourth round).
+  - Asked the identity session to report Knot's repin (commit, Mere and
+    Genet revisions, S77). Asked the physics session who owns WS4 and the
+    stack seams rounds (neither the fidelity plan nor Mere's log names a
+    session) and which session holds Turnstone's dirty browser tree.
   - Nothing was built or run.
 
 ## Cross-references
