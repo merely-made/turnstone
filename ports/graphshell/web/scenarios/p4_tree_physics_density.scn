@@ -5,7 +5,7 @@
 # the boot start the rank rises above the start's and the density CV falls.
 # Springs from the same start is the control (p4_tree_physics_density_control),
 # and picking Density greys the overlays it refuses with the law's reason
-# (it takes Hub room and Centre converted, F73).
+# (it takes Hub room, Centre and Tide converted, F73 and F81).
 assert snap ready == true
 # The boot arrangement pauses the canvas, so the law is set and applied with
 # nothing moving: its start is the boot layout, the control's too.
@@ -24,8 +24,8 @@ click role:combobox Physics law
 settle 1
 click role:option Density
 settle 1
-assert snap disabled-overlays == 6
-assert text Density takes only Hub room and Centre
+assert snap disabled-overlays == 5
+assert text Density takes only Hub room, Centre and Tide
 capture physics_density_refused
 settle 2
 click role:button Apply physics
