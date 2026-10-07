@@ -298,7 +298,8 @@ fn bar_field(
         || "none".into(),
         |(bar, fit)| {
             format!(
-                "{bar:.3} (half the lesser of {}x the marked {marked:.3} and the {:.3} the                  budget fits, {:.1} ticks a frame at {:.1} us a tick)",
+                "{bar:.3} (half the lesser of {}x the marked {marked:.3} and the {:.3} the \
+                 budget fits, {:.1} ticks a frame at {:.1} us a tick)",
                 speed.factor(),
                 fit.speed,
                 fit.ticks,
