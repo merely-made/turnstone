@@ -52,6 +52,13 @@ set.
 
 ## Current implementation plans and product direction
 
+- [Unusual-protocols browser plan](2026-10-06_unusual_protocols_browser_plan.md):
+  proposed 2026-10-06, for Mark's ruling. It assesses Turnstone against the
+  bar "can you use this as a web browser for the unusual protocols". It holds
+  a state table per protocol with evidence, fourteen ranked gaps (plain-text
+  documents failing first), stages S0 to S11, Pelt and Graphshell and
+  Knot and Woodshed composition options, a Mere repin impact read, and forks
+  U1 to U10.
 - [Page lifecycle](2026-09-06_page_lifecycle_plan.md): one page across
   visiting, keeping, capturing, annotating, collecting, sharing, revision
   and deletion; rulings L1-L7 join the surfaces, capture and recycle bin
