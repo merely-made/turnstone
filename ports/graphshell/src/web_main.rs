@@ -1731,7 +1731,10 @@ fn update_semantics(host: &mut BrowserHost) -> Result<(), String> {
         .map_err(|_| "could not expose detail state")?;
     body.set_attribute("data-action-count", &host.form().count.to_string())
         .map_err(|_| "could not expose action count")?;
-    body.set_attribute("data-session-store", host.session_store.token())
+    body.set_attribute(
+        "data-session-store",
+        host.session_store.token(host.app.host.has_unstored()),
+    )
         .map_err(|_| "could not expose session store state")?;
     body.set_attribute("data-session-store-error", &host.session_store_error)
         .map_err(|_| "could not expose session store error")?;

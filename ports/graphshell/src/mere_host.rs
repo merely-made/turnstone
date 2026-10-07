@@ -391,6 +391,11 @@ impl<B: Backend> MereHost<B> {
         Ok(Staged { current, retired })
     }
 
+    /// Whether any change waits for the next store.
+    pub fn has_unstored(&self) -> bool {
+        !self.retired.is_empty() || self.graph_session.has_unstored()
+    }
+
     /// The host's store, to write a [`Staged`] batch through.
     pub fn store(&self) -> B
     where

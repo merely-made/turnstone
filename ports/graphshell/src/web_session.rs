@@ -31,8 +31,12 @@ pub(super) enum SessionStore {
 }
 
 impl SessionStore {
-    pub(super) fn token(self) -> &'static str {
+    /// The page's token. `unstored` is a settled state with changes nobody
+    /// asked to store, such as a scene save (Scenograph editor plan, E2b
+    /// findings), so the token never claims what the store does not hold.
+    pub(super) fn token(self, unstored: bool) -> &'static str {
         match self {
+            Self::Stored if unstored => "unstored",
             Self::Stored => "stored",
             Self::Pending => "pending",
             Self::Writing => "writing",
@@ -76,15 +80,10 @@ pub(super) fn store_pending(state: &Rc<RefCell<BrowserHost>>) {
                 Ok(()) => {
                     host.app.host.staged(staged);
                     // A change made during the write is still pending.
-                    host.session_store = if host
-                        .app
-                        .host
-                        .prepare_store(0)
-                        .is_ok_and(|next| next.is_empty())
-                    {
-                        SessionStore::Stored
-                    } else {
+                    host.session_store = if host.app.host.has_unstored() {
                         SessionStore::Pending
+                    } else {
+                        SessionStore::Stored
                     };
                 },
                 Err(error) => {

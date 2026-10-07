@@ -111,6 +111,20 @@ body.full-page graphshell-tree {
   height: 43px;
 }
 
+#gs-session-undo {
+  left: 490px;
+  top: 10px;
+  width: 116px;
+  height: 43px;
+}
+
+#gs-session-redo {
+  left: 614px;
+  top: 10px;
+  width: 116px;
+  height: 43px;
+}
+
 nav button:nth-child(1) {
   left: 24px;
   top: 128px;
@@ -414,6 +428,16 @@ nav button:nth-child(8) { left: 254px; }
 
   #gs-session-remote {
     left: 124px;
+    top: 53px;
+  }
+
+  #gs-session-undo {
+    left: 250px;
+    top: 53px;
+  }
+
+  #gs-session-redo {
+    left: 374px;
     top: 53px;
   }
 
