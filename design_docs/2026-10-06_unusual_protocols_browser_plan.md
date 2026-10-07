@@ -1,7 +1,7 @@
 # Unusual-protocols browser plan
 
 **Date:** 2026-10-06
-**Status (2026-10-06):** proposed, for Mark's ruling. An assessment lane wrote
+**Status (2026-10-06):** proposed. First-round forks ruled the same day (U1, U4 and U8; U2 as read, pending confirmation); the rest are with Mark. An assessment lane wrote
 this plan. No code changed, and nothing was built or run (see "Evidence and
 limits"). Stages S0 to S11 wait on the forks in §7.
 
