@@ -7,7 +7,7 @@ act open-projection-editor
 settle 2
 assert dom #gs-projection-editor-dirty No unsaved changes
 assert dom #gs-projection-editor-preview Graphshell reference projection ·
-dom click [data-projection-panel="appearance"]
+dom click [data-projection-panel="preview"]
 settle 2
 type #gs-projection-appearance-title First
 settle 2
@@ -21,13 +21,16 @@ dom click [data-projection-panel="provenance"]
 settle 2
 dom click [data-command="undo-projection"]
 settle 2
-assert dom #gs-projection-editor-status Undone · Appearance
+assert dom #gs-projection-editor-status Undone · Preview
 assert dom #gs-projection-editor-preview First draft ·
 dom click [data-command="undo-projection"]
 settle 2
 assert dom #gs-projection-editor-preview Graphshell reference projection ·
 assert dom #gs-projection-editor-dirty No unsaved changes
-dom click [data-command="undo-projection"]
+# With nothing left to undo the button is disabled, so a click does nothing;
+# the command itself still answers.
+assert attr [data-command="undo-projection"] disabled
+act undo-projection
 settle 2
 assert dom #gs-projection-editor-status Nothing to undo
 dom click [data-command="redo-projection"]

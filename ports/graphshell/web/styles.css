@@ -220,6 +220,7 @@ nav button:nth-child(8) { left: 254px; }
 
 #gs-projection-editor-status,
 #gs-projection-editor-validation,
+#gs-projection-editor-dirty,
 #gs-projection-editor-source,
 #gs-projection-editor-provenance {
   color: #a9c7ba;
@@ -228,7 +229,8 @@ nav button:nth-child(8) { left: 254px; }
 }
 
 #gs-projection-editor-status,
-#gs-projection-editor-validation {
+#gs-projection-editor-validation,
+#gs-projection-editor-dirty {
   margin: 5px 0;
 }
 
