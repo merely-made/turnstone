@@ -109,6 +109,20 @@ pub fn start() {
     console_error_panic_hook::set_once();
 }
 
+/// Join a host over WebRTC as the tree's remote session; `loader.js` calls this
+/// from `?signal=` once the page is ready. Without the reference host this is
+/// the tree's only route (with it, `web_remote`'s export also serves the old
+/// page). Without `remote` the tree has no session, so it says so on the
+/// console and the link simply never comes up: a refusal, not a page error.
+#[cfg(not(feature = "main-page"))]
+#[wasm_bindgen]
+pub fn connect_remote(signal_url: String, invite: Option<String>) -> Result<(), JsValue> {
+    if let Err(error) = web_tree::connect_remote(signal_url, invite) {
+        web_sys::console::warn_1(&error.into());
+    }
+    Ok(())
+}
+
 // The H5 reference host and its `mount` export, verbatim in their own file.
 #[cfg(feature = "main-page")]
 include!("web_main.rs");
