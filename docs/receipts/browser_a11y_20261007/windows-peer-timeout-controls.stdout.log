@@ -1,0 +1,7 @@
+
+running 2 tests
+test place::lanes::tests::an_unauthorized_profile_is_refused_before_it_authors ... ok
+test place::worker::tests::reconnect_refuses_removed_local_membership_before_dialing_and_keeps_cache ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 711 filtered out; finished in 11.24s
+

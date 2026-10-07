@@ -1,0 +1,13 @@
+error: failed to get `knot-editor` as a dependency of package `turnstone v0.1.0 (C:\Users\mark_\Code\repos\turnstone)`
+
+Caused by:
+  failed to load source for dependency `knot-editor`
+
+Caused by:
+  unable to update https://github.com/merely-made/knot-editor.git?rev=14cd06e126c10df7f5506126b98af2f07ec87eb5
+
+Caused by:
+  failed to lookup reference in preexisting repository, and can't check for updates in offline mode (--offline)
+
+Caused by:
+  revspec '14cd06e126c10df7f5506126b98af2f07ec87eb5' not found; class=Reference (4); code=NotFound (-3)

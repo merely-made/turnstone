@@ -1,0 +1,63 @@
+{
+  "scope": "Native in-process supplier composition lifecycle only; Windows UIA is separately witnessed",
+  "runs": {
+    "a11y": {
+      "passed": true,
+      "inputs": {
+        "docs/receipts/browser_supplier_integration_20261006/native-a11y-servo/a11y-two-pages.foreign-a11y.json": "e20b927cb177a62c25ce781cb503c2780dbe1c3a17cacc781d34e1e95bbd8f03",
+        "docs/receipts/browser_supplier_integration_20261006/native-a11y-servo/semantics-idle-dom.foreign-a11y.json": "3cb6357196d62c43cb3ad3156080f47ab8e977bf6c5be3730d68e0af44ebde8a",
+        "docs/receipts/browser_supplier_integration_20261006/native-a11y-servo/semantics-a-navigation.foreign-a11y.json": "e833e3562b06fc108a0763306145c183fc53b9b0b7823ea647fab19631df7994",
+        "docs/receipts/browser_supplier_integration_20261006/native-a11y-servo/semantics-b-navigation.foreign-a11y.json": "4b5215ea630817f2eeaa0a6df99011371ca0f00443c5830366df96b20d3a9714",
+        "docs/receipts/browser_supplier_integration_20261006/native-a11y-servo/semantics-a-closed.foreign-a11y.json": "84112bf9d4898d369bd91344dd13480c8169f6d17e5881df7fdf1a95f9a7e3c1",
+        "docs/receipts/browser_supplier_integration_20261006/native-a11y-servo/semantics-all-closed.foreign-a11y.json": "9d05e5bcb8ab03bc64e5a53d288dd20e6e740b1be41c4f53b61e2e987c356a3b",
+        "docs/receipts/browser_supplier_integration_20261006/native-a11y-servo/semantics-reopened.foreign-a11y.json": "35ea4893c5dea62aeadc251f226cf43f2fbacd515223089ed57a57774eecf8bf",
+        "docs/receipts/browser_supplier_integration_20261006/native-a11y-servo/semantics-final-retired.foreign-a11y.json": "9d05e5bcb8ab03bc64e5a53d288dd20e6e740b1be41c4f53b61e2e987c356a3b"
+      },
+      "initial_roots": {
+        "b31d0f16-04a0-4d95-84c2-f764f031d01d": "95dd2e7e-d6f7-42a0-8f5c-2c2e973deceb",
+        "b463d329-b67f-4fdc-ab8f-a81fb8fb5366": "2968de35-f18f-4949-bd80-5c56e1d8d98d"
+      },
+      "after_a_navigation": {
+        "b31d0f16-04a0-4d95-84c2-f764f031d01d": "82828d7e-a264-45a0-b764-50c71c336193",
+        "b463d329-b67f-4fdc-ab8f-a81fb8fb5366": "2968de35-f18f-4949-bd80-5c56e1d8d98d"
+      },
+      "after_b_navigation": {
+        "b31d0f16-04a0-4d95-84c2-f764f031d01d": "82828d7e-a264-45a0-b764-50c71c336193",
+        "b463d329-b67f-4fdc-ab8f-a81fb8fb5366": "7cb7ffa3-0ed4-4bab-a440-397711545f2d"
+      },
+      "reopened_roots": {
+        "b31d0f16-04a0-4d95-84c2-f764f031d01d": "7f02a4c2-c5e1-4f46-abd2-05dab1155174",
+        "b463d329-b67f-4fdc-ab8f-a81fb8fb5366": "51ec72d0-4e63-452c-84c3-8c38ff2d2bc0"
+      }
+    },
+    "a11y-admission": {
+      "passed": true,
+      "inputs": {
+        "docs/receipts/browser_supplier_integration_20261006/native-a11y-admission-servo/a11y-two-pages.foreign-a11y.json": "db62be32a9e3cc799203e1933c042ba3d619b51d0a99df9aefc3141a7e446e22",
+        "docs/receipts/browser_supplier_integration_20261006/native-a11y-admission-servo/semantics-idle-dom.foreign-a11y.json": "08e88c6750568825feff43326744b0b6360e39d7130a173e028d54826f288a72",
+        "docs/receipts/browser_supplier_integration_20261006/native-a11y-admission-servo/semantics-a-navigation.foreign-a11y.json": "d8826457806cc4cc07d49c1729d456d70136b8e2b45692af60557b8a372ff828",
+        "docs/receipts/browser_supplier_integration_20261006/native-a11y-admission-servo/semantics-b-navigation.foreign-a11y.json": "b0e0bacb1f72ffc45925e7347eb40827240d0ad7be098e863f3a8baaf4872446",
+        "docs/receipts/browser_supplier_integration_20261006/native-a11y-admission-servo/semantics-a-closed.foreign-a11y.json": "fb084c1e086cda7e29df90bac076f9aff2e5a9bcdb32e6ada2edbacb5fb38c12",
+        "docs/receipts/browser_supplier_integration_20261006/native-a11y-admission-servo/semantics-all-closed.foreign-a11y.json": "9d05e5bcb8ab03bc64e5a53d288dd20e6e740b1be41c4f53b61e2e987c356a3b",
+        "docs/receipts/browser_supplier_integration_20261006/native-a11y-admission-servo/semantics-reopened.foreign-a11y.json": "3528e00ea296b9167daa00e05128664ce802ecd17573b04e9fb1031e45e62937",
+        "docs/receipts/browser_supplier_integration_20261006/native-a11y-admission-servo/semantics-final-retired.foreign-a11y.json": "9d05e5bcb8ab03bc64e5a53d288dd20e6e740b1be41c4f53b61e2e987c356a3b"
+      },
+      "initial_roots": {
+        "8035c554-8465-4f5a-8586-30194c462443": "54443187-21c8-4fab-8a6d-bfe0401aec33",
+        "cc355de8-eb44-49d9-aedd-bc8b3378074e": "c0fe24de-b69a-4472-9086-3fc073fdd70b"
+      },
+      "after_a_navigation": {
+        "8035c554-8465-4f5a-8586-30194c462443": "54443187-21c8-4fab-8a6d-bfe0401aec33",
+        "cc355de8-eb44-49d9-aedd-bc8b3378074e": "4f9e5670-c301-48ba-a229-b7974e20474f"
+      },
+      "after_b_navigation": {
+        "8035c554-8465-4f5a-8586-30194c462443": "6b264444-25a5-4345-860c-d66d9690ca45",
+        "cc355de8-eb44-49d9-aedd-bc8b3378074e": "4f9e5670-c301-48ba-a229-b7974e20474f"
+      },
+      "reopened_roots": {
+        "8035c554-8465-4f5a-8586-30194c462443": "bb848aa7-5aca-4824-8208-5ac07b54b440",
+        "cc355de8-eb44-49d9-aedd-bc8b3378074e": "3e1e9335-6bd3-4508-b307-89016be8b3b6"
+      }
+    }
+  }
+}

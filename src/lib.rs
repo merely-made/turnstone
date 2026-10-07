@@ -32,6 +32,7 @@ pub mod distillery_installed_surface;
 pub mod document_find;
 mod download;
 mod feed;
+mod foreign_a11y;
 pub mod frame_timing;
 mod frozen_projection_pane;
 mod gemini_identity;

@@ -14,6 +14,7 @@ mod contributed_automation;
 mod drive;
 mod effects;
 mod events;
+mod foreign_a11y;
 mod gestures;
 mod keys;
 mod nomadnet_fetch;
@@ -509,6 +510,11 @@ pub struct Shell {
     a11y_routes: crate::a11y::A11yRoutes,
     /// Assistive actions queued by the platform thread, drained here.
     a11y_actions: crate::shell::a11y_bridge::ActionQueue,
+    /// Activation occurs on a platform thread; replay subtrees on the UI thread.
+    a11y_reactivation: Arc<std::sync::atomic::AtomicBool>,
+    surface_a11y: crate::foreign_a11y::ForeignA11y,
+    a11y_surface_layout: Vec<(uuid::Uuid, accesskit::Rect)>,
+    a11y_focus_last: Option<crate::surface::FocusTarget>,
     host: Option<SurfaceHost>,
     width: u32,
     height: u32,
@@ -906,6 +912,10 @@ impl Shell {
             a11y_physics_refusal_last_projected: None,
             a11y_routes: crate::a11y::A11yRoutes::new(),
             a11y_actions: std::sync::Arc::new(std::sync::Mutex::new(Vec::new())),
+            a11y_reactivation: Arc::new(std::sync::atomic::AtomicBool::new(false)),
+            surface_a11y: crate::foreign_a11y::ForeignA11y::new(),
+            a11y_surface_layout: Vec::new(),
+            a11y_focus_last: None,
             host: None,
             width: 1024,
             height: 600,
@@ -1020,6 +1030,7 @@ impl Shell {
 
     fn clear_surface_content(&mut self) {
         self.reader_appearances.clear();
+        self.surface_a11y.clear();
         self.surface_producers.clear();
         self.surface_find_requests.clear();
         self.page_captures.clear_surfaces();
@@ -1688,17 +1699,88 @@ impl Shell {
         if self.a11y_adapter.is_none() {
             return;
         }
+        self.drain_surface_accessibility();
+        let replay = self
+            .a11y_reactivation
+            .load(std::sync::atomic::Ordering::Acquire);
+        if replay {
+            self.surface_a11y.reset_publication();
+        }
+        let placements = self.foreign_a11y_placements();
+        let changed = replay
+            || self.surface_a11y.needs_publish()
+            || placements != self.a11y_surface_layout
+            || self.a11y_focus_last != Some(self.app.focus);
         self.a11y_frames_since_push = self.a11y_frames_since_push.saturating_add(1);
         let refusal = self.app.physics_refusal().cloned();
         if self.a11y_frames_since_push < CADENCE_FRAMES
             && refusal == self.a11y_physics_refusal_last_projected
+            && !changed
         {
             return;
         }
         self.a11y_frames_since_push = 0;
-        let (tree, routes, focus) = self.projected_a11y_tree();
+        let (mut tree, mut routes, mut focus) = self.projected_a11y_tree();
+        let mut visible = Vec::new();
+        for &(node, rect) in &placements {
+            let Some(mut graft) = self.surface_a11y.graft(node, rect) else {
+                continue;
+            };
+            let id = uxtree::node_id_for_path(&format!("turnstone/doc/{node}"));
+            // Retire the former structural outline as well as its root's
+            // child-list. The OS must not receive orphan outline nodes beside
+            // the real native subtree.
+            let mut pending = tree
+                .nodes
+                .iter()
+                .find(|(candidate, _)| *candidate == id)
+                .map(|(_, old)| old.children().to_vec())
+                .unwrap_or_default();
+            let mut retired = std::collections::HashSet::new();
+            while let Some(child) = pending.pop() {
+                if retired.insert(child) {
+                    if let Some((_, old)) =
+                        tree.nodes.iter().find(|(candidate, _)| *candidate == child)
+                    {
+                        pending.extend(old.children().iter().copied());
+                    }
+                }
+            }
+            tree.nodes
+                .retain(|(candidate, _)| !retired.contains(candidate));
+            routes.retain(|candidate, _| !retired.contains(candidate));
+            if let Some((_, existing)) = tree
+                .nodes
+                .iter_mut()
+                .find(|(candidate, _)| *candidate == id)
+            {
+                if let Some(label) = existing.label() {
+                    graft.set_label(label.to_owned());
+                }
+                *existing = graft;
+            } else {
+                graft.set_label("browser page");
+                if let Some((_, root)) = tree
+                    .nodes
+                    .iter_mut()
+                    .find(|(candidate, _)| *candidate == tree.root)
+                {
+                    let mut children = root.children().to_vec();
+                    children.push(id);
+                    root.set_children(children);
+                }
+                tree.nodes.push((id, graft));
+            }
+            if matches!(self.app.focus, crate::surface::FocusTarget::Content { node: focused, .. } if focused == node)
+            {
+                focus = Some(id);
+            }
+            visible.push(node);
+        }
+        // Some app routes outlive their optional projected nodes. A route
+        // becomes available to the platform only while its node is published.
+        routes.retain(|id, _| tree.nodes.iter().any(|(current, _)| current == id));
         self.a11y_physics_refusal_last_projected = refusal;
-        self.a11y_routes = routes;
         let mut update = tree.to_tree_update(focus);
         // Narrator refuses to walk past a node without a bounding rectangle:
         // UIA treats boundless elements as off-screen, so the tree served
@@ -1718,11 +1800,50 @@ impl Shell {
                 node.set_bounds(bounds);
             }
         }
-        *self.a11y_shared.lock().expect("a11y tree slot poisoned") = Some(update.clone());
-        self.a11y_adapter
+        let initial = match self.surface_a11y.initial_host(update.clone(), &visible) {
+            Ok(initial) => initial,
+            Err(error) => {
+                tracing::warn!(%error, "foreign accessibility composition refused");
+                return;
+            },
+        };
+        let updates = match self.surface_a11y.frame(update, &visible) {
+            Ok(updates) => updates,
+            Err(error) => {
+                tracing::warn!(%error, "foreign accessibility publication refused");
+                return;
+            },
+        };
+        self.a11y_surface_layout = placements;
+        self.a11y_focus_last = Some(self.app.focus);
+        self.a11y_routes = routes;
+        *self.a11y_shared.lock().expect("a11y tree slot poisoned") = Some(initial.clone());
+        let adapter = self
+            .a11y_adapter
             .as_mut()
-            .expect("adapter presence checked above")
-            .update_if_active(|| update);
+            .expect("adapter presence checked above");
+        let mut aborted = false;
+        for update in updates {
+            adapter.update_if_active(|| {
+                let (update, abort) = crate::foreign_a11y::activation_safe_update(
+                    &self.a11y_reactivation,
+                    update,
+                    &initial,
+                );
+                aborted = abort;
+                update
+            });
+            if aborted {
+                break;
+            }
+        }
+        if aborted {
+            // Activation may replace the consumer between any two updates.
+            // Leave it on safe ROOT and rebuild the whole ordered forest on
+            // the next redraw instead of continuing a partially delivered batch.
+            self.surface_a11y.reset_publication();
+            self.request_redraw();
+        }
     }
 
     /// Drain assistive actions queued by the platform thread and lower each
@@ -1736,6 +1857,30 @@ impl Shell {
                 .expect("a11y action queue poisoned"),
         );
         for request in requests {
+            if request.target_tree != accesskit::TreeId::ROOT {
+                let result = self.surface_a11y.action_target(&request).and_then(|node| {
+                    // A preceding host action in this batch may hide a pane
+                    // before the next publication replaces the mounted set.
+                    if !self.foreign_a11y_placements().iter().any(|(current, _)| *current == node) {
+                        return Err("foreign accessibility surface is no longer visible".to_owned());
+                    }
+                    self.surface_producers
+                        .get_mut(&node)
+                        .ok_or_else(|| "foreign accessibility producer retired".to_owned())
+                        .and_then(|producer| {
+                            producer
+                                .send_accessibility_action(request)
+                                .map_err(|error| error.to_string())
+                        })
+                });
+                if let Err(reason) = result {
+                    self.app.note(crate::observe::AppEvent::InteractionMissed {
+                        what: "a11y-action",
+                        target: reason,
+                    });
+                }
+                continue;
+            }
             if !matches!(
                 request.action,
                 accesskit::Action::Click | accesskit::Action::Focus

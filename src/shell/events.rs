@@ -108,6 +108,7 @@ impl ApplicationHandler for Shell {
             self.a11y_shared.clone(),
             self.a11y_actions.clone(),
             self.proxy.clone(),
+            self.a11y_reactivation.clone(),
         ));
         window.set_visible(true);
         let size = window.inner_size();
@@ -243,6 +244,11 @@ impl ApplicationHandler for Shell {
         // Any cookie a fetch or a script set since the last drain goes to disk
         // now; the flush is dirty-gated, so a quiet drain writes nothing.
         self.cookie_custody.flush();
+        self.drain_surface_web_events();
+        self.drain_surface_accessibility();
+        // Semantic callbacks publish on their own wake, before any pixel
+        // frame acquisition or queued assistive action delivery.
+        self.push_a11y_tree();
         self.drain_a11y_actions();
         self.drain_pending_windows(event_loop);
         self.request_redraw();

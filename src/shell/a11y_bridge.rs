@@ -4,8 +4,8 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // SPDX-License-Identifier: MPL-2.0
 
-//! The OS AccessKit bridge: the same tree `assert a11y` reads, pushed to the
-//! platform assistive stack.
+//! The OS AccessKit bridge: app projection and retained foreign subtrees,
+//! composed on the UI thread and pushed to the platform assistive stack.
 //!
 //! Turnstone has carried a complete in-process accessibility projection since
 //! the a11y module landed — `project_app` stitches chrome, panes, and the
@@ -18,10 +18,12 @@
 //! The adapter's activation handler runs on whatever thread the platform
 //! calls in from, so it takes the latest tree out of a shared slot rather
 //! than reaching into `App`, which lives on the main thread and must stay
-//! there. The shell refreshes the slot on a frame cadence and nudges the
-//! adapter with `update_if_active`, so the OS view lags the app by at most
-//! the cadence, and a screen reader that never activates costs one mutex
-//! store per refresh and nothing else.
+//! there. The shell retains a safe host-only activation snapshot in the slot;
+//! activation wakes the UI thread to replay nested subtrees in parent order.
+//! Foreign semantic changes publish on their own wake through
+//! `update_if_active`, independently of pixel acquisition. App-only changes
+//! retain their frame cadence, with immediate publication on focus/layout
+//! changes. Composed receipt snapshots do not prove OS or screen-reader use.
 //!
 //! Actions are routed, not dropped, as of the day after the first pass: the
 //! platform hands an `ActionRequest` to whatever thread it likes, so the
@@ -32,6 +34,7 @@
 //! stream as `interaction-missed a11y-action`, because a miss a receipt
 //! cannot see is the failure this whole lane exists to prevent.
 
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 
 use accesskit::{ActionRequest, TreeUpdate};
@@ -43,11 +46,17 @@ use winit::window::Window;
 /// and whatever thread the platform activates from.
 pub(crate) type SharedTree = Arc<Mutex<Option<TreeUpdate>>>;
 
-struct ServeLatest(SharedTree);
+struct ServeLatest {
+    tree: SharedTree,
+    replay: Arc<AtomicBool>,
+    wake: winit::event_loop::EventLoopProxy<()>,
+}
 
 impl accesskit::ActivationHandler for ServeLatest {
     fn request_initial_tree(&mut self) -> Option<TreeUpdate> {
-        self.0.lock().expect("a11y tree slot poisoned").clone()
+        self.replay.store(true, Ordering::Release);
+        let _ = self.wake.send_event(());
+        self.tree.lock().expect("a11y tree slot poisoned").clone()
     }
 }
 
@@ -69,10 +78,12 @@ impl accesskit::ActionHandler for QueueAndWake {
     }
 }
 
-struct NoDeactivation;
+struct ReplayAfterDeactivation(Arc<AtomicBool>);
 
-impl accesskit::DeactivationHandler for NoDeactivation {
-    fn deactivate_accessibility(&mut self) {}
+impl accesskit::DeactivationHandler for ReplayAfterDeactivation {
+    fn deactivate_accessibility(&mut self) {
+        self.0.store(true, Ordering::Release);
+    }
 }
 
 /// Install the bridge. Must run before the window is first shown; the adapter
@@ -83,13 +94,18 @@ pub(crate) fn install(
     shared: SharedTree,
     queue: ActionQueue,
     wake: winit::event_loop::EventLoopProxy<()>,
+    replay: Arc<AtomicBool>,
 ) -> Adapter {
     let adapter = Adapter::with_direct_handlers(
         event_loop,
         window,
-        ServeLatest(shared),
+        ServeLatest {
+            tree: shared,
+            replay: replay.clone(),
+            wake: wake.clone(),
+        },
         QueueAndWake { queue, wake },
-        NoDeactivation,
+        ReplayAfterDeactivation(replay),
     );
     tracing::info!("a11y_bridge: installed");
     adapter

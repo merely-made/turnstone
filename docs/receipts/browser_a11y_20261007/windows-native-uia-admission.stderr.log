@@ -1,0 +1,5 @@
+Exception: C:\Users\mark_\Code\repos\turnstone\docs\receipts\browser_a11y_20261007\run-native.ps1:68
+Line |
+  68 |  … mpleted') { throw "UIA observer did not complete: $($observer.State)" …
+     |                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     | UIA observer did not complete: Failed

@@ -1,0 +1,9 @@
+{
+  "scope": "successful in-process composed foreign frame; OS activation and AT acceptance unqualified",
+  "public_fixture_text": true,
+  "surface_count": 0,
+  "tree_count": 0,
+  "node_count": 0,
+  "surfaces": [],
+  "servo_focus_policy": "document-root"
+}

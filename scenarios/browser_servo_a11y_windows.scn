@@ -1,0 +1,127 @@
+# Real Servo delegate semantics composed through preserved AccessKit TreeIds.
+# Serve fixtures/browser_servo at SERVO_FIXTURE_BASE, fresh named process/app
+# profiles, 1024x600 client area. TURNSTONE_A11Y_PUBLIC_FIXTURE_RECEIPT=1 opts
+# into these known public DOM markers; protected text remains redacted.
+# Counts/text and *.foreign-a11y.json qualify in-process composition only.
+# Native OS activation, action support and screen-reader walks remain separate.
+settle 30
+key escape
+open ${SERVO_FIXTURE_BASE}/a11y.html?page=A
+settle 80
+act Open node in Workbench
+settle 80
+act Open Inspector pane
+settle 10
+click surface:inspector .radio @data-engine-id=graft.servo
+settle 160
+assert row Viewer: graft.servo
+act Close pane
+settle 10
+act Open node in Workbench
+settle 60
+assert snap host-servo-views == 1
+assert snap host-foreign-a11y-surfaces == 1
+assert snap host-foreign-a11y-text ~ DOM-only A initial
+record-idle semantics-a-initial
+
+open ${SERVO_FIXTURE_BASE}/a11y.html?page=B
+settle 80
+act Open node in Workbench
+settle 80
+act Open Inspector pane
+settle 10
+click surface:inspector .radio @data-engine-id=graft.servo
+settle 160
+assert row Viewer: graft.servo
+act Close pane
+settle 10
+act Open node in Workbench
+act Maximize pane
+settle 60
+assert wb-cells == 2
+assert snap host-servo-views == 2
+assert snap host-foreign-a11y-surfaces == 2
+assert snap host-foreign-a11y-trees == 4
+assert snap host-foreign-a11y-text ~ DOM-only A initial
+assert snap host-foreign-a11y-text ~ DOM-only B initial
+assert snap host-foreign-a11y-text ~ TOP A: red
+assert snap host-foreign-a11y-text ~ TOP B: red
+capture 01_two_native_semantic_forests
+record-idle a11y-two-pages
+# Root's read-only owned-process UIA observer activates/traverses the provider
+# after this checkpoint; leave both pages intact while that control runs.
+settle 900
+
+click surface:workbench .tab Servo A
+settle 10
+click-at 200 150
+type alpha
+settle 60
+assert snap browser-current ~ Servo A semantics
+assert snap host-foreign-a11y-text ~ DOM-only A idle alpha
+assert snap host-foreign-a11y-text ~ DOM-only B initial
+record-idle semantics-idle-dom
+click-at 200 215
+settle 160
+assert snap browser-current ~ a11y.html?page=A&result=alpha
+assert snap host-foreign-a11y-surfaces == 2
+assert snap host-foreign-a11y-trees == 4
+assert snap host-foreign-a11y-text ~ DOM-only A result alpha
+assert snap host-foreign-a11y-text ~ DOM-only B initial
+record-idle semantics-a-navigation
+
+click surface:workbench .tab Servo B
+settle 10
+click-at 715 150
+type bravo
+settle 60
+assert snap host-foreign-a11y-text ~ DOM-only B idle bravo
+click-at 715 215
+settle 160
+assert snap browser-current ~ a11y.html?page=B&result=bravo
+assert snap host-foreign-a11y-text ~ DOM-only A result alpha
+assert snap host-foreign-a11y-text ~ DOM-only B result bravo
+capture 02_independent_semantic_navigation
+record-idle semantics-b-navigation
+
+click surface:workbench .tab Servo A
+act Toggle live content
+settle 60
+assert snap host-servo-views == 1
+assert snap host-foreign-a11y-surfaces == 1
+assert snap host-foreign-a11y-trees == 2
+record-idle semantics-a-closed
+click surface:workbench .tab Servo B
+act Toggle live content
+settle 60
+assert snap host-servo-views == 0
+assert snap host-foreign-a11y-surfaces == 0
+assert snap host-foreign-a11y-trees == 0
+assert snap host-foreign-a11y-nodes == 0
+record-idle semantics-all-closed
+
+act Toggle live content
+settle 160
+click surface:workbench .tab Servo A
+act Toggle live content
+settle 160
+assert snap host-servo-views == 2
+assert snap host-foreign-a11y-surfaces == 2
+assert snap host-foreign-a11y-trees == 4
+assert snap host-foreign-a11y-text ~ DOM-only A result alpha
+assert snap host-foreign-a11y-text ~ DOM-only B result bravo
+capture 03_reopened_semantic_forests
+record-idle semantics-reopened
+
+click surface:workbench .tab Servo A
+act Toggle live content
+settle 60
+click surface:workbench .tab Servo B
+act Toggle live content
+settle 60
+assert snap host-servo-views == 0
+assert snap host-foreign-a11y-surfaces == 0
+assert snap host-foreign-a11y-trees == 0
+assert snap host-foreign-a11y-nodes == 0
+record-idle semantics-final-retired
+log Actual upstream Servo semantics: two preserved nested forests, idle DOM delta, independent navigation, retirement and fresh reopen identities. OS AT acceptance remains open.

@@ -1,0 +1,30 @@
+{
+  "executable": "C:\\t\\cargo-targets\\turnstone\\debug\\turnstone.exe",
+  "executable_sha256": "6c29af8ee2c684f009bc41ea2cbe5ae70fdd716037ac40b08943a65ed3c40e9f",
+  "executable_hashed_utc": "2026-10-07T20:44:24.3910134Z",
+  "scenario": "C:\\Users\\mark_\\Code\\repos\\turnstone\\scenarios\\browser_servo_a11y_windows.scn",
+  "profile": "C:\\Users\\mark_\\Code\\repos\\turnstone\\docs\\receipts\\browser_supplier_integration_20261006\\profile\\a11y-admission-servo-app",
+  "phase_prefix": "a11y-admission",
+  "owned_pid": 55472,
+  "started_utc": "2026-10-07T20:44:24.4226870Z",
+  "finished_utc": "2026-10-07T20:45:37.1290203Z",
+  "timeout_seconds": 600,
+  "timed_out": false,
+  "native_exit": 0,
+  "module_evidence": "loaded-modules.json",
+  "scenario_result": "RESULT ok",
+  "runner_error": null,
+  "cleanup_attempted": false,
+  "cleanup_error": null,
+  "environment": {
+    "RUST_LOG": "warn,turnstone::shell::foreign_a11y=debug,turnstone::servo::a11y=debug",
+    "SCRY_FIXTURE_BASE": null,
+    "SERVO_FIXTURE_BASE": "http://127.0.0.1:43124",
+    "TURNSTONE_CEF_PATH": null,
+    "TURNSTONE_SERVO_PROFILE": "servo-a11y-admission",
+    "TURNSTONE_SERVO_PROFILE_DIR": "C:/t/cargo-targets/turnstone/runtime/servo-a11y-admission",
+    "GRAFT_SERVO_RESIZE_TRACE": null,
+    "TURNSTONE_SERVO_GPU_SYNC": null,
+    "TURNSTONE_SERVO_GPU_SYNC_TIMEOUT_MS": null
+  }
+}

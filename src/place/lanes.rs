@@ -2692,7 +2692,20 @@ mod tests {
             &guest_updates,
             guest_session,
             "initial catch-up",
-            |s| s.moot.members == 2 && s.chat.channels == 1,
+            |s| {
+                // A quiet lane with zero rounds has not caught up yet. Wait
+                // for every initial reconciliation before freezing counters.
+                s.moot.members == 2
+                    && s.moot.delegated_certificates == 2 // founder and invited writer
+                    && s.chat.channels == 1
+                    && s.sync.as_ref().is_some_and(|sync| {
+                        sync.lanes.len() == 10
+                            && sync
+                                .lanes
+                                .iter()
+                                .all(|lane| lane.sync_rounds > 0 && !lane.syncing)
+                    })
+            },
         );
         report_lanes("joiner at initial convergence", &converged);
         assert_eq!(converged.graph.nodes, 0, "nothing is shared yet");

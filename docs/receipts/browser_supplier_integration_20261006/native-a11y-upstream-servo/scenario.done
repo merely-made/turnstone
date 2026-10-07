@@ -1,0 +1,185 @@
+RESULT fail
+FAIL: assert snap host-foreign-a11y-surfaces Eq '2': got '1'
+FAIL: assert snap host-foreign-a11y-trees Eq '4': got '2'
+FAIL: assert snap host-foreign-a11y-text Contains 'DOM-only B initial': got '
+
+
+
+
+
+Servo A semantics
+
+
+
+
+TOP A: red
+
+
+Servo A semantics
+
+
+
+
+
+
+
+
+Servo A semantics
+Actual native text input
+​
+Navigate with actual input
+DOM-only A initial
+BOTTOM A: blue
+
+(() => {
+  const query = new URLSearchParams(location.search);
+  const page = query.get('page') === 'B' ? 'B' : 'A';
+  const result = query.get('result');
+  document.documentElement.dataset.page = page;
+  document.querySelector('.top').textContent = `TOP ${page}: red`;
+  document.querySelector('.bottom').textContent = `BOTTOM ${page}: blue`;
+  document.title = `Servo ${page} semantics${result === null ? '' : ' result'}`;
+  document.querySelector('#heading').textContent = `Servo ${page} semantics`;
+  document.querySelector('#state').textContent = result === null
+    ? `DOM-only ${page} initial` : `DOM-only ${page} result ${result}`;
+  const entry = document.querySelector('#entry');
+  entry.addEventListener('input', () => {
+    // This semantic change deliberately leaves the native title unchanged.
+    const text = entry.value;
+    setTimeout(() => { document.querySelector('#state').textContent = `DOM-only ${page} idle ${text}`; }, 200);
+  });
+  document.querySelector('#activate').addEventListener('click', () => {
+    const target = new URL('a11y.html', location.href);
+    target.searchParams.set('page', page);
+    target.searchParams.set('result', entry.value);
+    location.href = target.href;
+  });
+})();
+'
+FAIL: assert snap host-foreign-a11y-text Contains 'TOP B: red': got '
+
+
+
+
+
+Servo A semantics
+
+
+
+
+TOP A: red
+
+
+Servo A semantics
+
+
+
+
+
+
+
+
+Servo A semantics
+Actual native text input
+​
+Navigate with actual input
+DOM-only A initial
+BOTTOM A: blue
+
+(() => {
+  const query = new URLSearchParams(location.search);
+  const page = query.get('page') === 'B' ? 'B' : 'A';
+  const result = query.get('result');
+  document.documentElement.dataset.page = page;
+  document.querySelector('.top').textContent = `TOP ${page}: red`;
+  document.querySelector('.bottom').textContent = `BOTTOM ${page}: blue`;
+  document.title = `Servo ${page} semantics${result === null ? '' : ' result'}`;
+  document.querySelector('#heading').textContent = `Servo ${page} semantics`;
+  document.querySelector('#state').textContent = result === null
+    ? `DOM-only ${page} initial` : `DOM-only ${page} result ${result}`;
+  const entry = document.querySelector('#entry');
+  entry.addEventListener('input', () => {
+    // This semantic change deliberately leaves the native title unchanged.
+    const text = entry.value;
+    setTimeout(() => { document.querySelector('#state').textContent = `DOM-only ${page} idle ${text}`; }, 200);
+  });
+  document.querySelector('#activate').addEventListener('click', () => {
+    const target = new URL('a11y.html', location.href);
+    target.searchParams.set('page', page);
+    target.searchParams.set('result', entry.value);
+    location.href = target.href;
+  });
+})();
+'
+captured 01_two_native_semantic_forests
+FAIL: assert snap host-foreign-a11y-text Contains 'DOM-only B initial': got '
+
+
+
+
+
+Servo A semantics
+
+
+
+
+TOP A: red
+
+
+Servo A semantics
+
+
+
+
+
+
+
+
+Servo A semantics
+Actual native text input
+alpha
+Navigate with actual input
+BOTTOM A: blue
+
+(() => {
+  const query = new URLSearchParams(location.search);
+  const page = query.get('page') === 'B' ? 'B' : 'A';
+  const result = query.get('result');
+  document.documentElement.dataset.page = page;
+  document.querySelector('.top').textContent = `TOP ${page}: red`;
+  document.querySelector('.bottom').textContent = `BOTTOM ${page}: blue`;
+  document.title = `Servo ${page} semantics${result === null ? '' : ' result'}`;
+  document.querySelector('#heading').textContent = `Servo ${page} semantics`;
+  document.querySelector('#state').textContent = result === null
+    ? `DOM-only ${page} initial` : `DOM-only ${page} result ${result}`;
+  const entry = document.querySelector('#entry');
+  entry.addEventListener('input', () => {
+    // This semantic change deliberately leaves the native title unchanged.
+    const text = entry.value;
+    setTimeout(() => { document.querySelector('#state').textContent = `DOM-only ${page} idle ${text}`; }, 200);
+  });
+  document.querySelector('#activate').addEventListener('click', () => {
+    const target = new URL('a11y.html', location.href);
+    target.searchParams.set('page', page);
+    target.searchParams.set('result', entry.value);
+    location.href = target.href;
+  });
+})();
+
+DOM-only A idle alpha'
+FAIL: assert snap host-foreign-a11y-surfaces Eq '2': got '0'
+FAIL: assert snap host-foreign-a11y-trees Eq '4': got '0'
+FAIL: assert snap host-foreign-a11y-text Contains 'DOM-only A result alpha': got ''
+FAIL: assert snap host-foreign-a11y-text Contains 'DOM-only B initial': got ''
+FAIL: assert snap host-foreign-a11y-text Contains 'DOM-only B idle bravo': got ''
+FAIL: assert snap host-foreign-a11y-text Contains 'DOM-only A result alpha': got ''
+FAIL: assert snap host-foreign-a11y-text Contains 'DOM-only B result bravo': got ''
+captured 02_independent_semantic_navigation
+FAIL: assert snap host-foreign-a11y-surfaces Eq '1': got '0'
+FAIL: assert snap host-foreign-a11y-trees Eq '2': got '0'
+FAIL: assert snap host-foreign-a11y-surfaces Eq '2': got '0'
+FAIL: assert snap host-foreign-a11y-trees Eq '4': got '0'
+FAIL: assert snap host-foreign-a11y-text Contains 'DOM-only A result alpha': got ''
+FAIL: assert snap host-foreign-a11y-text Contains 'DOM-only B result bravo': got ''
+captured 03_reopened_semantic_forests
+Actual upstream Servo semantics: two preserved nested forests, idle DOM delta, independent navigation, retirement and fresh reopen identities. OS AT acceptance remains open.

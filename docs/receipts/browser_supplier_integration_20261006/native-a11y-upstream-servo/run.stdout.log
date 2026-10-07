@@ -1,0 +1,163 @@
+2026-10-07T20:57:46.701850Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:57:48.202734Z  WARN turnstone::gemini_identity: failed to project Gemini client identity error=client identities are only valid for gemini:// or titan:// capsules
+2026-10-07T20:57:48.322595Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:57:48.334030Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:57:50.040898Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:57:51.685777Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:57:51.697159Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:57:53.337061Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:57:55.004374Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:57:55.016181Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:57:56.563109Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:57:56.574871Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:57:57.125726Z  WARN servo_base: couldn't open C:\t\cargo-targets\turnstone\runtime\servo-a11y-upstream\auth_cache.json: The system cannot find the file specified. (os error 2)
+2026-10-07T20:57:57.126211Z  WARN servo_base: couldn't open C:\t\cargo-targets\turnstone\runtime\servo-a11y-upstream\hsts_list.json: The system cannot find the file specified. (os error 2)
+2026-10-07T20:57:57.126370Z  WARN servo_base: couldn't open C:\t\cargo-targets\turnstone\runtime\servo-a11y-upstream\cookie_jar.json: The system cannot find the file specified. (os error 2)
+2026-10-07T20:57:57.126632Z  WARN servo_base: couldn't open C:\t\cargo-targets\turnstone\runtime\servo-a11y-upstream\localstorage.json: The system cannot find the file specified. (os error 2)
+2026-10-07T20:57:57.129640Z  WARN servo_base: couldn't open C:\t\cargo-targets\turnstone\runtime\servo-a11y-upstream\localstorage.json: The system cannot find the file specified. (os error 2)
+2026-10-07T20:57:57.452357Z  WARN script::event_loop::timers: Resuming an already resumed timer.
+2026-10-07T20:57:57.800394Z  WARN webrender::device::gl: Cropping texture upload Box2D((0, 0), (0, 1)) to None
+2026-10-07T20:57:57.800518Z  WARN webrender::device::gl: Cropping texture upload Box2D((0, 0), (0, 1)) to None
+2026-10-07T20:57:57.800851Z  WARN webrender::device::gl: Cropping texture upload Box2D((0, 0), (0, 1)) to None
+2026-10-07T20:57:57.869802Z DEBUG turnstone::servo::a11y: Servo accessibility focus projection tree_id=67952517-5cab-4ad0-86de-d256b0a5b99c supplier_focus=0 projected_focus=0 policy="upstream"
+2026-10-07T20:57:57.869961Z DEBUG turnstone::servo::a11y: Servo accessibility focus projection tree_id=879211fb-8799-5492-9a31-95a35c05a192 supplier_focus=1 projected_focus=1 policy="upstream"
+2026-10-07T20:57:58.270722Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:57:58.282098Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:57:59.863336Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:01.377572Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:01.388582Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:03.006463Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:04.600284Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:04.610938Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:06.080802Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:07.815452Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:07.826202Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:08.547984Z DEBUG turnstone::servo::a11y: Servo accessibility focus projection tree_id=67952517-5cab-4ad0-86de-d256b0a5b99c supplier_focus=0 projected_focus=0 policy="upstream"
+2026-10-07T20:58:08.550794Z DEBUG turnstone::servo::a11y: Servo accessibility focus projection tree_id=879211fb-8799-5492-9a31-95a35c05a192 supplier_focus=1 projected_focus=1 policy="upstream"
+2026-10-07T20:58:09.457602Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:11.007964Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:11.018344Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:11.330905Z  WARN turnstone::gemini_identity: failed to project Gemini client identity error=client identities are only valid for gemini:// or titan:// capsules
+2026-10-07T20:58:12.693734Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:12.705055Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:14.324436Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:15.886112Z DEBUG turnstone::servo::a11y: Servo accessibility focus projection tree_id=67952517-5cab-4ad0-86de-d256b0a5b99c supplier_focus=0 projected_focus=0 policy="upstream"
+2026-10-07T20:58:15.888885Z DEBUG turnstone::servo::a11y: Servo accessibility focus projection tree_id=879211fb-8799-5492-9a31-95a35c05a192 supplier_focus=1 projected_focus=1 policy="upstream"
+2026-10-07T20:58:16.003146Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:17.541213Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:19.206868Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:19.217445Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:20.297569Z DEBUG turnstone::servo::a11y: Servo accessibility focus projection tree_id=67952517-5cab-4ad0-86de-d256b0a5b99c supplier_focus=0 projected_focus=0 policy="upstream"
+2026-10-07T20:58:20.300978Z DEBUG turnstone::servo::a11y: Servo accessibility focus projection tree_id=879211fb-8799-5492-9a31-95a35c05a192 supplier_focus=1 projected_focus=1 policy="upstream"
+2026-10-07T20:58:20.761396Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:21.248492Z  WARN script::event_loop::timers: Resuming an already resumed timer.
+2026-10-07T20:58:21.386951Z  WARN webrender::device::gl: Cropping texture upload Box2D((0, 0), (0, 1)) to None
+2026-10-07T20:58:21.387016Z  WARN webrender::device::gl: Cropping texture upload Box2D((0, 0), (0, 1)) to None
+2026-10-07T20:58:21.387233Z  WARN webrender::device::gl: Cropping texture upload Box2D((0, 0), (0, 1)) to None
+2026-10-07T20:58:21.545403Z DEBUG turnstone::servo::a11y: Servo accessibility focus projection tree_id=103661a5-e949-42da-a6e8-6f99a9952b16 supplier_focus=0 projected_focus=0 policy="upstream"
+2026-10-07T20:58:21.545586Z DEBUG turnstone::servo::a11y: Servo accessibility focus projection tree_id=ec6ecae0-eff5-5b5a-b517-70c3b04b116f supplier_focus=1 projected_focus=1 policy="upstream"
+2026-10-07T20:58:21.545810Z DEBUG turnstone::shell::foreign_a11y: foreign accessibility update refused node=1b889ef5-b1f2-4870-99f5-a51142a5a0a1 error=foreign focus is absent or unreachable
+2026-10-07T20:58:21.545836Z DEBUG turnstone::servo::a11y: Servo accessibility focus projection tree_id=ec6ecae0-eff5-5b5a-b517-70c3b04b116f supplier_focus=1 projected_focus=1 policy="upstream"
+2026-10-07T20:58:21.545903Z DEBUG turnstone::shell::foreign_a11y: foreign accessibility update refused node=1b889ef5-b1f2-4870-99f5-a51142a5a0a1 error=missing local child #38
+2026-10-07T20:58:22.487540Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:24.135904Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:25.039370Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:25.050723Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:26.643863Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:26.654442Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:28.291545Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:29.943019Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:29.953637Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:31.499211Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:32.921189Z DEBUG turnstone::servo::a11y: Servo accessibility focus projection tree_id=67952517-5cab-4ad0-86de-d256b0a5b99c supplier_focus=0 projected_focus=0 policy="upstream"
+2026-10-07T20:58:32.921411Z DEBUG turnstone::servo::a11y: Servo accessibility focus projection tree_id=879211fb-8799-5492-9a31-95a35c05a192 supplier_focus=1 projected_focus=1 policy="upstream"
+2026-10-07T20:58:32.921578Z DEBUG turnstone::servo::a11y: Servo accessibility focus projection tree_id=103661a5-e949-42da-a6e8-6f99a9952b16 supplier_focus=0 projected_focus=0 policy="upstream"
+2026-10-07T20:58:32.925127Z DEBUG turnstone::servo::a11y: Servo accessibility focus projection tree_id=ec6ecae0-eff5-5b5a-b517-70c3b04b116f supplier_focus=1 projected_focus=1 policy="upstream"
+2026-10-07T20:58:32.925276Z DEBUG turnstone::shell::foreign_a11y: foreign accessibility update refused node=1b889ef5-b1f2-4870-99f5-a51142a5a0a1 error=missing local child #38
+2026-10-07T20:58:33.110313Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:33.463971Z DEBUG turnstone::servo::a11y: Servo accessibility focus projection tree_id=67952517-5cab-4ad0-86de-d256b0a5b99c supplier_focus=0 projected_focus=0 policy="upstream"
+2026-10-07T20:58:33.464224Z DEBUG turnstone::servo::a11y: Servo accessibility focus projection tree_id=879211fb-8799-5492-9a31-95a35c05a192 supplier_focus=1 projected_focus=1 policy="upstream"
+2026-10-07T20:58:33.464401Z DEBUG turnstone::servo::a11y: Servo accessibility focus projection tree_id=103661a5-e949-42da-a6e8-6f99a9952b16 supplier_focus=0 projected_focus=0 policy="upstream"
+2026-10-07T20:58:33.468334Z DEBUG turnstone::servo::a11y: Servo accessibility focus projection tree_id=ec6ecae0-eff5-5b5a-b517-70c3b04b116f supplier_focus=1 projected_focus=1 policy="upstream"
+2026-10-07T20:58:33.468587Z DEBUG turnstone::shell::foreign_a11y: foreign accessibility update refused node=1b889ef5-b1f2-4870-99f5-a51142a5a0a1 error=missing local child #38
+2026-10-07T20:58:34.662332Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:34.672860Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:36.231089Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:36.241074Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:37.822501Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:37.833037Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:39.394734Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:39.404795Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:41.073822Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:42.000437Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:43.753014Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:43.763928Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:45.288698Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:45.300160Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:46.740662Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:48.447721Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:49.365336Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:49.376437Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:51.084436Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:52.038305Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:52.048789Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:52.877032Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:53.806297Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:54.696239Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:54.707080Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:55.226392Z DEBUG turnstone::servo::a11y: Servo accessibility focus projection tree_id=879211fb-8799-5492-9a31-95a35c05a192 supplier_focus=1 projected_focus=1 policy="upstream"
+2026-10-07T20:58:55.422347Z DEBUG turnstone::servo::a11y: Servo accessibility focus projection tree_id=879211fb-8799-5492-9a31-95a35c05a192 supplier_focus=1 projected_focus=1 policy="upstream"
+2026-10-07T20:58:56.283134Z  WARN script::event_loop::timers: Resuming an already resumed timer.
+2026-10-07T20:58:56.315424Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:56.327488Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:56.427798Z DEBUG turnstone::servo::a11y: Servo accessibility focus projection tree_id=80b5fdc6-1482-497e-a020-79c7577b1398 supplier_focus=0 projected_focus=0 policy="upstream"
+2026-10-07T20:58:56.427988Z DEBUG turnstone::servo::a11y: Servo accessibility focus projection tree_id=692643c7-3835-5830-aa58-3ad60bbf3519 supplier_focus=1 projected_focus=1 policy="upstream"
+2026-10-07T20:58:56.428144Z DEBUG turnstone::shell::foreign_a11y: foreign accessibility update refused node=1b4441ff-775f-45ca-bb19-2488235848db error=foreign focus is absent or unreachable
+2026-10-07T20:58:56.428163Z DEBUG turnstone::servo::a11y: Servo accessibility focus projection tree_id=692643c7-3835-5830-aa58-3ad60bbf3519 supplier_focus=1 projected_focus=1 policy="upstream"
+2026-10-07T20:58:56.428274Z DEBUG turnstone::shell::foreign_a11y: foreign accessibility update refused node=1b4441ff-775f-45ca-bb19-2488235848db error=foreign focus is absent or unreachable
+2026-10-07T20:58:57.907053Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:57.917837Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:58.960691Z DEBUG turnstone::servo::a11y: Servo accessibility focus projection tree_id=ec6ecae0-eff5-5b5a-b517-70c3b04b116f supplier_focus=1 projected_focus=1 policy="upstream"
+2026-10-07T20:58:58.960863Z DEBUG turnstone::shell::foreign_a11y: foreign accessibility update refused node=1b889ef5-b1f2-4870-99f5-a51142a5a0a1 error=missing local child #37
+2026-10-07T20:58:59.178428Z DEBUG turnstone::servo::a11y: Servo accessibility focus projection tree_id=ec6ecae0-eff5-5b5a-b517-70c3b04b116f supplier_focus=1 projected_focus=1 policy="upstream"
+2026-10-07T20:58:59.178538Z DEBUG turnstone::shell::foreign_a11y: foreign accessibility update refused node=1b889ef5-b1f2-4870-99f5-a51142a5a0a1 error=missing local child #37
+2026-10-07T20:58:59.589945Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:58:59.854774Z  WARN script::event_loop::timers: Resuming an already resumed timer.
+2026-10-07T20:58:59.987672Z DEBUG turnstone::servo::a11y: Servo accessibility focus projection tree_id=b2bebd85-e089-4696-b5f8-a794bd92dc3c supplier_focus=0 projected_focus=0 policy="upstream"
+2026-10-07T20:58:59.987832Z DEBUG turnstone::servo::a11y: Servo accessibility focus projection tree_id=d2476ff4-6e14-5990-8321-058f7446b78a supplier_focus=1 projected_focus=1 policy="upstream"
+2026-10-07T20:58:59.987964Z DEBUG turnstone::shell::foreign_a11y: foreign accessibility update refused node=1b889ef5-b1f2-4870-99f5-a51142a5a0a1 error=foreign focus is absent or unreachable
+2026-10-07T20:58:59.987983Z DEBUG turnstone::servo::a11y: Servo accessibility focus projection tree_id=d2476ff4-6e14-5990-8321-058f7446b78a supplier_focus=1 projected_focus=1 policy="upstream"
+2026-10-07T20:58:59.988094Z DEBUG turnstone::shell::foreign_a11y: foreign accessibility update refused node=1b889ef5-b1f2-4870-99f5-a51142a5a0a1 error=foreign focus is absent or unreachable
+2026-10-07T20:59:00.529311Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:59:00.541068Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:59:02.214107Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:59:02.224132Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:59:03.776472Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:59:04.269868Z  WARN script::event_loop::timers: Resuming an already resumed timer.
+2026-10-07T20:59:04.367822Z  WARN webrender::device::gl: Cropping texture upload Box2D((0, 0), (0, 1)) to None
+2026-10-07T20:59:04.367890Z  WARN webrender::device::gl: Cropping texture upload Box2D((0, 0), (0, 1)) to None
+2026-10-07T20:59:04.368136Z  WARN webrender::device::gl: Cropping texture upload Box2D((0, 0), (0, 1)) to None
+2026-10-07T20:59:04.384911Z DEBUG turnstone::servo::a11y: Servo accessibility focus projection tree_id=469598c5-812f-4514-a09e-ca2f41c1854c supplier_focus=0 projected_focus=0 policy="upstream"
+2026-10-07T20:59:04.385052Z DEBUG turnstone::servo::a11y: Servo accessibility focus projection tree_id=ea8b3121-f694-5da7-867d-c9007af5ed31 supplier_focus=1 projected_focus=1 policy="upstream"
+2026-10-07T20:59:04.385208Z DEBUG turnstone::shell::foreign_a11y: foreign accessibility update refused node=1b889ef5-b1f2-4870-99f5-a51142a5a0a1 error=foreign focus is absent or unreachable
+2026-10-07T20:59:05.565058Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:59:05.576143Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:59:06.959470Z  WARN script::event_loop::timers: Resuming an already resumed timer.
+2026-10-07T20:59:07.073772Z  WARN webrender::device::gl: Cropping texture upload Box2D((0, 0), (0, 1)) to None
+2026-10-07T20:59:07.073866Z  WARN webrender::device::gl: Cropping texture upload Box2D((0, 0), (0, 1)) to None
+2026-10-07T20:59:07.074118Z  WARN webrender::device::gl: Cropping texture upload Box2D((0, 0), (0, 1)) to None
+2026-10-07T20:59:07.089182Z DEBUG turnstone::servo::a11y: Servo accessibility focus projection tree_id=d31fefb2-47b0-48ed-8965-38497c21a2ef supplier_focus=0 projected_focus=0 policy="upstream"
+2026-10-07T20:59:07.089353Z DEBUG turnstone::servo::a11y: Servo accessibility focus projection tree_id=c7457847-3691-5404-b6d0-843e60d92709 supplier_focus=1 projected_focus=1 policy="upstream"
+2026-10-07T20:59:07.089509Z DEBUG turnstone::shell::foreign_a11y: foreign accessibility update refused node=1b4441ff-775f-45ca-bb19-2488235848db error=foreign focus is absent or unreachable
+2026-10-07T20:59:07.129813Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:59:07.140271Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:59:08.776700Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:59:08.787702Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:59:10.444289Z  WARN p2panda_net::iroh_mdns::actor: found invalid transport info coming from iroh's services endpoint_id=9b662f09bb44edb188b2a022b4eb969d44181252866340d454e017372d38d19b
+2026-10-07T20:59:11.667363Z  WARN profile_traits::mem: Error communicating with the memory profiler thread: Disconnected
+2026-10-07T20:59:11.667380Z  WARN profile_traits::mem: Error communicating with the memory profiler thread: Disconnected
+2026-10-07T20:59:11.667392Z  WARN profile_traits::mem: Error communicating with the memory profiler thread: Disconnected
+2026-10-07T20:59:11.667363Z  WARN profile_traits::mem: Error communicating with the memory profiler thread: Disconnected
+2026-10-07T20:59:11.667618Z  WARN profile_traits::mem: Error communicating with the memory profiler thread: Disconnected
+2026-10-07T20:59:11.669543Z  WARN profile_traits::mem: Error communicating with the memory profiler thread: Disconnected
+2026-10-07T20:59:11.677778Z  WARN profile_traits::mem: Error communicating with the memory profiler thread: Disconnected

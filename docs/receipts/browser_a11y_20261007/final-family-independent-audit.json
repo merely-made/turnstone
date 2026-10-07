@@ -1,0 +1,296 @@
+{
+  "schema": "turnstone-final-family-independent-audit-v1",
+  "observed_utc": "2026-10-07T20:30:08.971778+00:00",
+  "current_tracked_head": "e00869cbcc5d8e58bd2ef5dbb30c47a03d48c023",
+  "input_sha256": {
+    "Cargo.toml": "ece099a95bfee92c8fde62f56d31b75e395ad84aa893e46184bf0cb2130b087a",
+    "Cargo.lock": "313853bd573a1cb045d19b30b04016756af8f19e9dd4b277a1e1754336cee512",
+    "docs/receipts/browser_a11y_20261007/windows-selected-family.stdout.log": "0c4fad5b88084e066cc48020445673fd1ab87f0ed0c58745f736c25087c951b7",
+    "docs/receipts/browser_a11y_20261007/windows-selected-family.result.json": "681835dba55c2f212858be82ca45069e72eda1af3ce180db53d719d78c0c621c",
+    "docs/receipts/browser_a11y_20261007/lock-normalized-audit.json": "e90ef9877db2ee5672864f84e404c9c53032d0368f09f3a7a7bb49d413ee5044",
+    "docs/receipts/browser_a11y_20261007/lock-registry-audit.json": "5e06201e62f803280336c855b5f4f052c1ed1c7ff639eec57197ad27d749f509",
+    "docs/receipts/browser_a11y_20261007/windows-selected-family.stderr.log": "3e3d4f3c30b2d3af0b8c64b819d4fe703928a1a7f941e40d05cdf2a7d20ca795"
+  },
+  "selected_evidence_scope": {
+    "command": [
+      "cargo",
+      "+1.98.1",
+      "tree",
+      "--offline",
+      "--locked",
+      "--features",
+      "scry,weld,servo",
+      "--target",
+      "x86_64-pc-windows-msvc"
+    ],
+    "actual_exit_code": 0,
+    "changed_inputs": [],
+    "kind": "Cargo tree, not Cargo metadata. Windows all3 selected normal/build/dev graph; no native or accessibility acceptance claim.",
+    "stderr_observation": "Retained stderr includes malformed upstream Servo tidy-test Cargo fixture and unused-patch/package-cache wait diagnostics. Actual tree exit is0 with no changed inputs; do not reclassify this graph-only command as a library/native test."
+  },
+  "git_families": {
+    "mere": {
+      "selected_git_revision": "f1d169c755e082b5119c2485762fd28f4226d8fb",
+      "selected_git_packages": [
+        "armillary@0.1.1",
+        "cambium-winit@0.3.0",
+        "cambium@0.3.3",
+        "castellan@0.0.3",
+        "chartulary@0.2.2",
+        "chatelaine@0.0.2",
+        "chirograph@0.0.2",
+        "commons-spine@0.0.1",
+        "distillery@0.0.1",
+        "document-canvas@0.1.0",
+        "eidetic-search@0.0.1",
+        "eidetic@0.0.2",
+        "errand@0.4.0",
+        "esp@0.1.0",
+        "gemot@0.1.1",
+        "graft-engine@0.2.0",
+        "graphshell-client@0.0.2",
+        "graphshell-endpoint@0.0.2",
+        "graphshell@0.0.2",
+        "illume@0.0.2",
+        "import@0.0.1",
+        "incipit@0.2.0",
+        "inker@0.1.1",
+        "insigne@0.0.1",
+        "knot-editor-host@0.1.1",
+        "luggage@0.1.0",
+        "mere-alembic@0.0.1",
+        "mere-apparatus@0.0.1",
+        "mere-athanor@0.0.1",
+        "mere-cartography@0.0.2",
+        "mere-chrome@0.0.1",
+        "mere-document-lanes@0.1.0",
+        "mere-fetch@0.0.1",
+        "mere-forme@0.1.0",
+        "mere-kernel@0.0.2",
+        "mere-linked-data@0.0.1",
+        "mere-mesh@0.0.1",
+        "mere-moot@0.0.1",
+        "mere-proofs@0.1.0",
+        "mere-surface-api@0.1.0",
+        "mere-transport@0.0.2",
+        "mere-webrtc-carrier@0.0.1",
+        "mere@0.0.2",
+        "meristem@0.2.0",
+        "mien@0.0.1",
+        "mooting@0.1.0",
+        "mora-cmudict@0.0.1",
+        "muniment@0.1.2",
+        "nematic@0.1.1",
+        "notochord@0.1.0",
+        "numen@0.2.0",
+        "pandect@0.1.1",
+        "personae@0.2.1",
+        "pictograph@0.2.0",
+        "platen@0.0.1",
+        "reference-data@0.0.1",
+        "sceno@0.0.4",
+        "scenograph@0.0.4",
+        "scenomise@0.0.4",
+        "scenotime@0.0.4",
+        "script-rhai@0.0.1",
+        "scrying-engine@0.2.0",
+        "seiche@0.0.6",
+        "servitor@0.0.2",
+        "sprigging@0.2.1",
+        "stickleback@0.1.1",
+        "tabard@0.0.1",
+        "tinct@0.1.2",
+        "uxtree@0.0.2",
+        "weld-engine@0.2.0",
+        "workbench@0.1.0"
+      ],
+      "locked_git_package_count": 73,
+      "locked_git_source": "git+https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c755e082b5119c2485762fd28f4226d8fb"
+    },
+    "genet": {
+      "selected_git_revision": "965b64e206a47d1c8808472de9aa461233638768",
+      "selected_git_packages": [
+        "browsing-context-api@0.1.0",
+        "buckram@0.0.3",
+        "cadency@0.0.1",
+        "document-session-api@0.1.0",
+        "engine-observables-api@0.2.0",
+        "fleece@0.5.0",
+        "genet-clipboard@0.1.0",
+        "genet-document-resources@0.2.1",
+        "genet-documents@0.1.0",
+        "genet-fontique@0.10.0",
+        "genet-host-api@0.2.0",
+        "genet-livery@0.0.4",
+        "genet-paint-types@0.2.0",
+        "genet-parley@0.10.0",
+        "genet-render-host@0.2.0",
+        "genet-render@0.2.0",
+        "genet-scripted-dom@0.1.2",
+        "genet-static-dom@0.1.1",
+        "genet-taffy@0.14.0",
+        "genet-text@0.1.0",
+        "genet-winit-host@0.2.0",
+        "ipc-channel@0.22.0",
+        "layout-dom-api@0.1.1",
+        "livery@0.0.5",
+        "netfetcher@0.1.1",
+        "servo-media-player@0.2.0",
+        "servo-media-streams@0.2.0",
+        "servo-media-traits@0.2.0",
+        "taproot@0.1.0"
+      ],
+      "locked_git_package_count": 31,
+      "locked_git_source": "git+https://github.com/merely-made/genet.git?rev=965b64e206a47d1c8808472de9aa461233638768#965b64e206a47d1c8808472de9aa461233638768"
+    },
+    "knot-editor": {
+      "selected_git_revision": "14cd06e126c10df7f5506126b98af2f07ec87eb5",
+      "selected_git_packages": [
+        "knot-capture@0.0.1",
+        "knot-composition@0.0.1",
+        "knot-document@0.0.1",
+        "knot-editor@0.0.3",
+        "knot-file-catalog@0.0.1"
+      ],
+      "locked_git_package_count": 5,
+      "locked_git_source": "git+https://github.com/merely-made/knot-editor.git?rev=14cd06e126c10df7f5506126b98af2f07ec87eb5#14cd06e126c10df7f5506126b98af2f07ec87eb5"
+    },
+    "woodshed": {
+      "selected_git_revision": "317968ba55092ee8f372b4aa2eb515da35833cc3",
+      "selected_git_packages": [
+        "audio-primitives@0.1.0",
+        "redshank-model@0.0.0",
+        "redshank-playback@0.0.0",
+        "redshank-storage@0.0.0",
+        "redshank-surfaces@0.0.0",
+        "timed-text@0.1.0"
+      ],
+      "locked_git_package_count": 6,
+      "locked_git_source": "git+https://github.com/merely-made/woodshed.git?rev=317968ba55092ee8f372b4aa2eb515da35833cc3#317968ba55092ee8f372b4aa2eb515da35833cc3"
+    },
+    "wgpu-graft": {
+      "selected_git_revision": "bb48281bd4a88a726a009e0518706881b74b7604",
+      "selected_git_packages": [
+        "grafting-frame@0.1.0",
+        "grafting@0.6.0",
+        "servo-wgpu-interop-adapter@0.1.0"
+      ],
+      "locked_git_package_count": 3,
+      "locked_git_source": "git+https://github.com/merely-made/wgpu-graft.git?rev=bb48281bd4a88a726a009e0518706881b74b7604#bb48281bd4a88a726a009e0518706881b74b7604"
+    },
+    "wgpu-scry": {
+      "selected_git_revision": "2c3ebd24118851cf6125cfb193f55aab20e3ad67",
+      "selected_git_packages": [
+        "scrying@0.7.1"
+      ],
+      "locked_git_package_count": 1,
+      "locked_git_source": "git+https://github.com/merely-made/wgpu-scry.git?rev=2c3ebd24118851cf6125cfb193f55aab20e3ad67#2c3ebd24118851cf6125cfb193f55aab20e3ad67"
+    },
+    "wgpu-weld": {
+      "selected_git_revision": "c4dd593b7a730acb4aa6ffab0fe2edf8a0584083",
+      "selected_git_packages": [
+        "welding@0.15.0"
+      ],
+      "locked_git_package_count": 1,
+      "locked_git_source": "git+https://github.com/merely-made/wgpu-weld.git?rev=c4dd593b7a730acb4aa6ffab0fe2edf8a0584083#c4dd593b7a730acb4aa6ffab0fe2edf8a0584083"
+    }
+  },
+  "wgpu_selected_versions": [
+    "30.0.1"
+  ],
+  "no_alternate_old_git_family_selected": true,
+  "normalized_lock_audit": {
+    "baseline_packages": 1694,
+    "current_packages": 1694,
+    "revision_map": {
+      "57b4893db6909d5ed9c4ccae30216f0d8164201a": "f1d169c755e082b5119c2485762fd28f4226d8fb",
+      "0096591a0af98bf4777d8bfe718c0423dea9fc90": "14cd06e126c10df7f5506126b98af2f07ec87eb5",
+      "82271df20927d41a4cbb79c56a09fef5bbb38cde": "317968ba55092ee8f372b4aa2eb515da35833cc3"
+    },
+    "package_identity_differences": [],
+    "record_differences": [
+      {
+        "identity": [
+          "inker",
+          "0.1.1",
+          "git+https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c755e082b5119c2485762fd28f4226d8fb"
+        ],
+        "added_dependencies": [
+          "accesskit"
+        ],
+        "removed_dependencies": [],
+        "other_fields_equal": true
+      },
+      {
+        "identity": [
+          "turnstone",
+          "0.1.0",
+          ""
+        ],
+        "added_dependencies": [
+          "accesskit_consumer 0.35.0",
+          "accesskit_consumer 0.36.0",
+          "accesskit_consumer 0.38.0"
+        ],
+        "removed_dependencies": [],
+        "other_fields_equal": true
+      }
+    ],
+    "registry_package_count": 1449,
+    "registry_records_versions_sources_checksums_dependencies_identical": true
+  },
+  "existing_grafting_two_source_fact": {
+    "selected": true,
+    "packages": [
+      {
+        "name": "grafting",
+        "version": "0.6.0",
+        "source": "registry+https://github.com/rust-lang/crates.io-index",
+        "checksum": "384d9d63669dd2b92a2433f2d0f36c7e8b775865b673deeb9ca34d7e631d4be1",
+        "dependencies": [
+          "ash",
+          "dpi",
+          "gl_generator",
+          "libc",
+          "objc2 0.6.4",
+          "objc2-foundation 0.3.2",
+          "objc2-io-surface",
+          "objc2-metal 0.3.2",
+          "thiserror 2.0.20",
+          "wgpu",
+          "wgpu-hal",
+          "windows",
+          "wio"
+        ]
+      },
+      {
+        "name": "grafting",
+        "version": "0.6.0",
+        "source": "git+https://github.com/merely-made/wgpu-graft.git?rev=bb48281bd4a88a726a009e0518706881b74b7604#bb48281bd4a88a726a009e0518706881b74b7604",
+        "dependencies": [
+          "ash",
+          "dpi",
+          "euclid",
+          "gl_generator",
+          "gleam",
+          "glow",
+          "grafting-frame",
+          "image",
+          "libc",
+          "objc2 0.6.4",
+          "objc2-foundation 0.3.2",
+          "objc2-io-surface",
+          "objc2-metal 0.3.2",
+          "surfman",
+          "thiserror 2.0.20",
+          "wgpu",
+          "wgpu-hal",
+          "windows",
+          "wio"
+        ]
+      }
+    ],
+    "route": "Scry2c3 consumes registry grafting0.6.0; root/Servo use Git grafting0.6.0 atbb482. Both identities already exist in baseline and are unchanged; this is not a globally single-source grafting graph."
+  },
+  "dormant_scope": "No historical Mere/Genet/Knot/Redshank or alternate supplier Git revision remains in the current lock for these seven repositories. Other optional/unused lock or patch entries are not promoted to selected Windows all3 evidence, nor is this an audit of every platform/feature combination."
+}

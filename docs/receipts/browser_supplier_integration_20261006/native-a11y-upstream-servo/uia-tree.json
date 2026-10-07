@@ -1,0 +1,33 @@
+{
+  "scope": "LIMITED Windows UIA exposure of two original supplier HEADINGS and their owned-window ancestry; general body text, assistive actions, human AT and other platforms remain unqualified",
+  "observer_started_utc": "2026-10-07T20:57:42.4720622Z",
+  "checkpoint_timeout_seconds": 90,
+  "traversal_timeout_seconds": 90,
+  "checkpoint_wait_seconds": 52.884279,
+  "traversal_seconds": 37.1271904,
+  "hierarchy": "Matched marker ancestry queried with actual UIA RawViewWalker parent RuntimeIds through the verified owned window root; at most 64 ancestors",
+  "text_limit": "Known public fixture only; exact Heading Name properties, protected matched nodes refused, no aggregate TextPattern text read; original TOP body Name queries measured separately",
+  "probe": "Prime provider once, retry exact current Heading Name PropertyConditions every 100ms, collect details only after both match",
+  "marker_kind": "HEADINGS",
+  "expected_headings": [
+    "Servo A semantics",
+    "Servo B semantics"
+  ],
+  "general_body_text_gate": "OPEN: TOP TextRun/GenericContainer nodes are filtered by Windows consumer; RootWebArea lacks supplier text-range support",
+  "identity_encoding": "accesskit_windows 0.32.1 node.rs40-50; accesskit_consumer 0.35.0 node.rs45-50: (local_id<<64)|tree_index",
+  "identity_limit": "UIA exposes local node and internal consumer tree index, not supplier UUID. UUID association uses the unique original Heading label/local-id witness in the exact composed checkpoint",
+  "checkpoint_sha256": "b46a389b2d77203bd68efb60f639515d235441054b29aec0f1667f661bbdd574",
+  "body_name_probe_count": 0,
+  "body_name_matches": [],
+  "probe_attempts": 145,
+  "root_runtime_id": null,
+  "success_ack": "uia-ready.json",
+  "owned_pid": 9368,
+  "owned_created_utc": "2026-10-07T20:57:42.9583180Z",
+  "hwnd": 148179554,
+  "observed_markers": [],
+  "nodes": [],
+  "passed": false,
+  "limitation": "UIA root does not belong to the owned process",
+  "observer_finished_utc": "2026-10-07T20:59:12.5087077Z"
+}

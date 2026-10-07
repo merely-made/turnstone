@@ -1,0 +1,31 @@
+{
+  "recorded_utc": "2026-10-07T20:26:16.072897+00:00",
+  "source": "src/place/lanes.rs",
+  "scope": "one initial convergence predicate inside cfg(test) tests; runtime unchanged",
+  "original_source_sha256": "5505a6cc380ea5776de25457d4b849788977e60d6b363d986e4cab435d86ee7f",
+  "candidate_source_sha256": "3b61e77e9f8fdd634fb705e3bc275a120dc9c5f049bcf2a2386162a5efa829a2",
+  "original_source_archive": "writer-admission-readiness-original-source.zip",
+  "archive_sha256": "d5332140267c17b5711daa9e7fab0b4f2703748e2561f26f074b462c23e098ca",
+  "archive_member_bytes_verified": true,
+  "changed_original_byte_range": [
+    115975,
+    116035
+  ],
+  "unchanged_prefix_bytes": 115975,
+  "unchanged_prefix_sha256": "fadca8758927f8062987503a363165949eb5a8bc5985290ac166ffc982a9e931",
+  "unchanged_suffix_bytes": 129763,
+  "unchanged_suffix_sha256": "7b262ead44e70dfcf79c95372229e28c0fae5d589936a9d528e778bd74028da5",
+  "all_bytes_outside_predicate_identical": true,
+  "catchup_deadline_preserved": "45 seconds",
+  "live_delivery_window_preserved": "10 seconds",
+  "all_live_delivery_assertions_preserved": true,
+  "readiness": "2 members, 2 certificates, 1 channel; exactly 10 lanes, each sync_rounds > 0 and not syncing",
+  "original_linked_control": {
+    "result": "windows-writer-original-control.result.json",
+    "exit_code": 0,
+    "changed_inputs": [],
+    "executable": "C:\\t\\cargo-targets\\turnstone\\debug\\deps\\turnstone-6c1c8edf9a7a6cd4.exe",
+    "executable_sha256": "1bfea994baaee93e023196a91cf11df080e1deaf311658565508034c61e76759"
+  },
+  "qualification": "source only; no Cargo, build or tests executed by this task"
+}

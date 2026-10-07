@@ -1,0 +1,5 @@
+Exception: C:\Users\mark_\Code\repos\turnstone\docs\receipts\browser_supplier_integration_20261006\native-runner.ps1:305
+Line |
+ 305 |  …  'RESULT ok') { throw "Scenario failed or missing RESULT ok: $Name" }
+     |                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     | Scenario failed or missing RESULT ok: native-a11y-upstream-servo

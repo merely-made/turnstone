@@ -1,0 +1,298 @@
+{
+  "passed": true,
+  "scope": "LIMITED Windows UIA exposure of two original supplier HEADINGS and their owned-window ancestry; general body text, assistive actions, human AT and other platforms remain unqualified",
+  "marker_kind": "HEADINGS",
+  "observed_utc": "2026-10-07T20:56:39.5122746Z",
+  "owned_pid": 24784,
+  "owned_created_utc": "2026-10-07T20:55:50.1331121Z",
+  "hwnd": 32312008,
+  "headings": [
+    "Servo A semantics",
+    "Servo B semantics"
+  ],
+  "checkpoint_sha256": "ccab6d1d077db7b191a2f8ccce043f7441803d245819973d162af394168af7d7",
+  "root_runtime_id": [
+    42,
+    32312008
+  ],
+  "nodes": [
+    {
+      "runtime_id": [
+        42,
+        32312008,
+        4,
+        0,
+        19,
+        0,
+        2
+      ],
+      "control_type": "ControlType.Text",
+      "local_node_id": 19,
+      "consumer_tree_index": 2,
+      "supplier_heading_witness": {
+        "surface": "514c7fd5-e717-4e09-ae16-1ac822f86869",
+        "root_tree_id": "8eddcc53-23b5-4620-a4e2-3adb5f56b415",
+        "tree_id": "879211fb-8799-5492-9a31-95a35c05a192",
+        "local_node_id": 19,
+        "label": "Servo A semantics"
+      },
+      "parent_runtime_id": [
+        42,
+        32312008,
+        4,
+        0,
+        12,
+        0,
+        2
+      ],
+      "ancestry_runtime_ids": [
+        [
+          42,
+          32312008,
+          4,
+          0,
+          19,
+          0,
+          2
+        ],
+        [
+          42,
+          32312008,
+          4,
+          0,
+          12,
+          0,
+          2
+        ],
+        [
+          42,
+          32312008,
+          4,
+          0,
+          2,
+          0,
+          2
+        ],
+        [
+          42,
+          32312008,
+          4,
+          0,
+          0,
+          0,
+          1
+        ],
+        [
+          42,
+          32312008,
+          4,
+          250721049,
+          -1387413257,
+          0,
+          0
+        ],
+        [
+          42,
+          32312008,
+          4,
+          935856847,
+          1698020003,
+          0,
+          0
+        ],
+        [
+          42,
+          32312008,
+          4,
+          161365767,
+          -634782122,
+          0,
+          0
+        ],
+        [
+          42,
+          32312008,
+          4,
+          1717536488,
+          915979916,
+          0,
+          0
+        ],
+        [
+          42,
+          32312008
+        ]
+      ],
+      "associated_with_owned_root": true,
+      "document_ancestor_patterns": [
+        {
+          "runtime_id": [
+            42,
+            32312008,
+            4,
+            0,
+            2,
+            0,
+            2
+          ],
+          "patterns": [],
+          "text_pattern_available": false
+        }
+      ],
+      "name": "Servo A semantics",
+      "protected": false,
+      "enabled": true,
+      "offscreen": false,
+      "focused": false,
+      "bounds": [
+        282.0,
+        371.0,
+        461.0,
+        33.0
+      ],
+      "patterns": [],
+      "text": null
+    },
+    {
+      "runtime_id": [
+        42,
+        32312008,
+        4,
+        0,
+        56,
+        0,
+        4
+      ],
+      "control_type": "ControlType.Text",
+      "local_node_id": 56,
+      "consumer_tree_index": 4,
+      "supplier_heading_witness": {
+        "surface": "fb2346f1-24c6-4374-a578-a366b42dfde2",
+        "root_tree_id": "154bfa45-134a-47cf-95c0-c1dff5685321",
+        "tree_id": "ec6ecae0-eff5-5b5a-b517-70c3b04b116f",
+        "local_node_id": 56,
+        "label": "Servo B semantics"
+      },
+      "parent_runtime_id": [
+        42,
+        32312008,
+        4,
+        0,
+        49,
+        0,
+        4
+      ],
+      "ancestry_runtime_ids": [
+        [
+          42,
+          32312008,
+          4,
+          0,
+          56,
+          0,
+          4
+        ],
+        [
+          42,
+          32312008,
+          4,
+          0,
+          49,
+          0,
+          4
+        ],
+        [
+          42,
+          32312008,
+          4,
+          0,
+          39,
+          0,
+          4
+        ],
+        [
+          42,
+          32312008,
+          4,
+          0,
+          0,
+          0,
+          3
+        ],
+        [
+          42,
+          32312008,
+          4,
+          250721049,
+          -1387413257,
+          0,
+          0
+        ],
+        [
+          42,
+          32312008,
+          4,
+          935856847,
+          1698020003,
+          0,
+          0
+        ],
+        [
+          42,
+          32312008,
+          4,
+          161365767,
+          -634782122,
+          0,
+          0
+        ],
+        [
+          42,
+          32312008,
+          4,
+          1717536488,
+          915979916,
+          0,
+          0
+        ],
+        [
+          42,
+          32312008
+        ]
+      ],
+      "associated_with_owned_root": true,
+      "document_ancestor_patterns": [
+        {
+          "runtime_id": [
+            42,
+            32312008,
+            4,
+            0,
+            39,
+            0,
+            4
+          ],
+          "patterns": [],
+          "text_pattern_available": false
+        }
+      ],
+      "name": "Servo B semantics",
+      "protected": false,
+      "enabled": true,
+      "offscreen": false,
+      "focused": false,
+      "bounds": [
+        797.0,
+        371.0,
+        461.0,
+        33.0
+      ],
+      "patterns": [],
+      "text": null
+    }
+  ],
+  "body_name_probe_count": 2,
+  "body_name_matches": [],
+  "general_body_text_gate": "OPEN: TOP TextRun/GenericContainer nodes are filtered by Windows consumer; RootWebArea lacks supplier text-range support",
+  "identity_limit": "UIA exposes local node and internal consumer tree index, not supplier UUID. UUID association uses the unique original Heading label/local-id witness in the exact composed checkpoint"
+}

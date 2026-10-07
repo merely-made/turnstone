@@ -1,0 +1,28 @@
+
+running 18 tests
+test foreign_a11y::tests::duplicate_ownership_cycles_invalid_focus_and_local_graphs_fail_closed ... ok
+test foreign_a11y::tests::inactive_adapter_does_not_consume_pending_activation ... ok
+test foreign_a11y::tests::malformed_known_tree_withdraws_but_unknown_tree_cannot_corrupt ... ok
+test foreign_a11y::tests::nested_focus_and_two_panes_keep_identical_local_ids_distinct ... ok
+test foreign_a11y::tests::unix_consumer::recursive_frame_orders_descendants_and_preserves_two_pane_ids ... ok
+test foreign_a11y::tests::removed_local_nodes_retire_their_actions ... ok
+test foreign_a11y::tests::idle_delta_reaches_consumer_without_a_pixel_frame ... ok
+test foreign_a11y::tests::navigation_prunes_old_nested_trees_and_ignores_stale_callbacks ... ok
+test foreign_a11y::tests::retirement_and_new_root_reject_old_generation_actions_and_updates ... ok
+test shell::drive::foreign_a11y_receipt_tests::page_text_requires_exact_public_fixture_optin ... ok
+test foreign_a11y::tests::incomplete_tree_waits_and_invalid_host_frame_keeps_publication_pending ... ok
+test foreign_a11y::tests::windows_consumer::recursive_frame_orders_descendants_and_preserves_two_pane_ids ... ok
+test foreign_a11y::tests::hidden_remount_and_adapter_reactivation_replay_all_descendants ... ok
+test foreign_a11y::tests::publication_diagnostic_withdraws_hidden_retired_malformed_and_reset_trees ... ok
+test foreign_a11y::tests::fixture_text_optin_never_exposes_password_nodes_or_descendants ... ok
+test foreign_a11y::tests::publication_diagnostic_uses_emitted_frame_not_pending_supplier_delta ... ok
+test foreign_a11y::tests::windows_consumer::activation_at_every_batch_boundary_restarts_nested_replay ... ok
+test foreign_a11y::tests::unix_consumer::activation_at_every_batch_boundary_restarts_nested_replay ... ok
+
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 695 filtered out; finished in 0.01s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

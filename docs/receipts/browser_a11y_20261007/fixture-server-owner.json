@@ -1,0 +1,9 @@
+{
+  "port": 43124,
+  "directory": "C:\\Users\\mark_\\Code\\repos\\turnstone\\scenarios\\fixtures\\browser_servo",
+  "created_utc": "2026-10-07T19:54:34.3345843Z",
+  "pid": 31144,
+  "owner": "root browser accessibility native gate",
+  "executable": "C:\\Users\\mark_\\AppData\\Local\\hermes\\hermes-agent\\venv\\Scripts\\python.exe",
+  "recorded_utc": "2026-10-07T19:54:34.3574969Z"
+}

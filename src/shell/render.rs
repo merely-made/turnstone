@@ -61,7 +61,7 @@ impl Shell {
     /// Drain each producer's one host-facing stream before building a frame.
     /// The bounded batch prevents a faulty producer from monopolising the UI
     /// thread; another redraw continues the drain.
-    fn drain_surface_web_events(&mut self) {
+    pub(super) fn drain_surface_web_events(&mut self) {
         const MAX_EVENTS_PER_SURFACE: usize = 256;
         let mut pending = Vec::new();
         for (&node, producer) in &mut self.surface_producers {
@@ -84,6 +84,7 @@ impl Shell {
     fn consume_surface_web_event(&mut self, node: uuid::Uuid, event: inker::WebSurfaceEvent) {
         match event {
             inker::WebSurfaceEvent::Navigation(inker::NavigationEvent::Started { .. }) => {
+                self.resync_surface_accessibility(node);
                 self.page_captures.advance_document(node);
                 self.withdraw_user_agent_requests(node, "navigation-started");
                 self.app.content.note_surface_started(node);

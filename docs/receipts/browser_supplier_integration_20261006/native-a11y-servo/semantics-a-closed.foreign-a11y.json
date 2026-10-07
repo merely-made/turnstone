@@ -1,0 +1,669 @@
+{
+  "scope": "successful in-process composed foreign frame; OS activation and AT acceptance unqualified",
+  "public_fixture_text": true,
+  "surface_count": 1,
+  "tree_count": 2,
+  "node_count": 39,
+  "surfaces": [
+    {
+      "surface": "b463d329-b67f-4fdc-ab8f-a81fb8fb5366",
+      "root_tree_id": "7cb7ffa3-0ed4-4bab-a440-397711545f2d",
+      "trees": [
+        {
+          "tree_id": "7cb7ffa3-0ed4-4bab-a440-397711545f2d",
+          "root_node_id": 0,
+          "focus_node_id": 0,
+          "nodes": [
+            {
+              "node_id": 0,
+              "role": "ScrollView",
+              "children": [
+                1
+              ],
+              "graft_tree_id": null,
+              "label": null,
+              "value": null,
+              "text_redacted": false,
+              "actions": [],
+              "bounds": [
+                0.0,
+                0.0,
+                509.0,
+                570.0
+              ],
+              "transform": null
+            },
+            {
+              "node_id": 1,
+              "role": "GenericContainer",
+              "children": [],
+              "graft_tree_id": "d2476ff4-6e14-5990-8321-058f7446b78a",
+              "label": null,
+              "value": null,
+              "text_redacted": false,
+              "actions": [],
+              "bounds": null,
+              "transform": null
+            }
+          ]
+        },
+        {
+          "tree_id": "d2476ff4-6e14-5990-8321-058f7446b78a",
+          "root_node_id": 187,
+          "focus_node_id": 187,
+          "nodes": [
+            {
+              "node_id": 187,
+              "role": "GenericContainer",
+              "children": [
+                188,
+                189
+              ],
+              "graft_tree_id": null,
+              "label": null,
+              "value": null,
+              "text_redacted": false,
+              "actions": [],
+              "bounds": [
+                0.0,
+                0.0,
+                509.0,
+                109.6
+              ],
+              "transform": null
+            },
+            {
+              "node_id": 188,
+              "role": "GenericContainer",
+              "children": [
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196
+              ],
+              "graft_tree_id": null,
+              "label": null,
+              "value": null,
+              "text_redacted": false,
+              "actions": [],
+              "bounds": null,
+              "transform": null
+            },
+            {
+              "node_id": 189,
+              "role": "RootWebArea",
+              "children": [
+                198,
+                199,
+                200,
+                201,
+                202,
+                203
+              ],
+              "graft_tree_id": null,
+              "label": null,
+              "value": null,
+              "text_redacted": false,
+              "actions": [],
+              "bounds": [
+                0.0,
+                0.0,
+                509.0,
+                109.6
+              ],
+              "transform": null
+            },
+            {
+              "node_id": 190,
+              "role": "GenericContainer",
+              "children": [],
+              "graft_tree_id": null,
+              "label": null,
+              "value": null,
+              "text_redacted": false,
+              "actions": [],
+              "bounds": null,
+              "transform": null
+            },
+            {
+              "node_id": 191,
+              "role": "TextRun",
+              "children": [],
+              "graft_tree_id": null,
+              "label": null,
+              "value": "\n",
+              "text_redacted": false,
+              "actions": [],
+              "bounds": null,
+              "transform": null
+            },
+            {
+              "node_id": 192,
+              "role": "GenericContainer",
+              "children": [],
+              "graft_tree_id": null,
+              "label": null,
+              "value": null,
+              "text_redacted": false,
+              "actions": [],
+              "bounds": null,
+              "transform": null
+            },
+            {
+              "node_id": 193,
+              "role": "TextRun",
+              "children": [],
+              "graft_tree_id": null,
+              "label": null,
+              "value": "\n",
+              "text_redacted": false,
+              "actions": [],
+              "bounds": null,
+              "transform": null
+            },
+            {
+              "node_id": 194,
+              "role": "GenericContainer",
+              "children": [
+                197
+              ],
+              "graft_tree_id": null,
+              "label": null,
+              "value": null,
+              "text_redacted": false,
+              "actions": [],
+              "bounds": null,
+              "transform": null
+            },
+            {
+              "node_id": 195,
+              "role": "GenericContainer",
+              "children": [],
+              "graft_tree_id": null,
+              "label": null,
+              "value": null,
+              "text_redacted": false,
+              "actions": [],
+              "bounds": null,
+              "transform": null
+            },
+            {
+              "node_id": 196,
+              "role": "TextRun",
+              "children": [],
+              "graft_tree_id": null,
+              "label": null,
+              "value": "\n",
+              "text_redacted": false,
+              "actions": [],
+              "bounds": null,
+              "transform": null
+            },
+            {
+              "node_id": 197,
+              "role": "TextRun",
+              "children": [],
+              "graft_tree_id": null,
+              "label": null,
+              "value": "Servo B semantics result",
+              "text_redacted": false,
+              "actions": [],
+              "bounds": null,
+              "transform": null
+            },
+            {
+              "node_id": 198,
+              "role": "GenericContainer",
+              "children": [
+                204
+              ],
+              "graft_tree_id": null,
+              "label": null,
+              "value": null,
+              "text_redacted": false,
+              "actions": [],
+              "bounds": [
+                0.0,
+                0.0,
+                509.0,
+                28.0
+              ],
+              "transform": null
+            },
+            {
+              "node_id": 199,
+              "role": "Main",
+              "children": [
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214
+              ],
+              "graft_tree_id": null,
+              "label": null,
+              "value": null,
+              "text_redacted": false,
+              "actions": [],
+              "bounds": [
+                0.0,
+                0.0,
+                509.0,
+                109.6
+              ],
+              "transform": null
+            },
+            {
+              "node_id": 200,
+              "role": "GenericContainer",
+              "children": [
+                222
+              ],
+              "graft_tree_id": null,
+              "label": null,
+              "value": null,
+              "text_redacted": false,
+              "actions": [],
+              "bounds": [
+                0.0,
+                542.0,
+                509.0,
+                570.0
+              ],
+              "transform": null
+            },
+            {
+              "node_id": 201,
+              "role": "TextRun",
+              "children": [],
+              "graft_tree_id": null,
+              "label": null,
+              "value": "\n",
+              "text_redacted": false,
+              "actions": [],
+              "bounds": null,
+              "transform": null
+            },
+            {
+              "node_id": 202,
+              "role": "GenericContainer",
+              "children": [
+                223
+              ],
+              "graft_tree_id": null,
+              "label": null,
+              "value": null,
+              "text_redacted": false,
+              "actions": [],
+              "bounds": null,
+              "transform": null
+            },
+            {
+              "node_id": 203,
+              "role": "TextRun",
+              "children": [],
+              "graft_tree_id": null,
+              "label": null,
+              "value": "\n",
+              "text_redacted": false,
+              "actions": [],
+              "bounds": null,
+              "transform": null
+            },
+            {
+              "node_id": 204,
+              "role": "TextRun",
+              "children": [],
+              "graft_tree_id": null,
+              "label": null,
+              "value": "TOP B: red",
+              "text_redacted": false,
+              "actions": [],
+              "bounds": null,
+              "transform": null
+            },
+            {
+              "node_id": 205,
+              "role": "TextRun",
+              "children": [],
+              "graft_tree_id": null,
+              "label": null,
+              "value": "\n",
+              "text_redacted": false,
+              "actions": [],
+              "bounds": null,
+              "transform": null
+            },
+            {
+              "node_id": 206,
+              "role": "Heading",
+              "children": [
+                215
+              ],
+              "graft_tree_id": null,
+              "label": "Servo B semantics",
+              "value": null,
+              "text_redacted": false,
+              "actions": [],
+              "bounds": [
+                24.0,
+                38.0,
+                485.0,
+                71.6
+              ],
+              "transform": null
+            },
+            {
+              "node_id": 207,
+              "role": "TextRun",
+              "children": [],
+              "graft_tree_id": null,
+              "label": null,
+              "value": "\n",
+              "text_redacted": false,
+              "actions": [],
+              "bounds": null,
+              "transform": null
+            },
+            {
+              "node_id": 208,
+              "role": "GenericContainer",
+              "children": [
+                216
+              ],
+              "graft_tree_id": null,
+              "label": null,
+              "value": null,
+              "text_redacted": false,
+              "actions": [],
+              "bounds": [
+                24.0,
+                66.0,
+                185.01666666666668,
+                88.4
+              ],
+              "transform": null
+            },
+            {
+              "node_id": 209,
+              "role": "GenericContainer",
+              "children": [
+                217
+              ],
+              "graft_tree_id": null,
+              "label": null,
+              "value": null,
+              "text_redacted": false,
+              "actions": [],
+              "bounds": [
+                24.0,
+                88.0,
+                485.0,
+                144.0
+              ],
+              "transform": null
+            },
+            {
+              "node_id": 210,
+              "role": "TextRun",
+              "children": [],
+              "graft_tree_id": null,
+              "label": null,
+              "value": "\n",
+              "text_redacted": false,
+              "actions": [],
+              "bounds": null,
+              "transform": null
+            },
+            {
+              "node_id": 211,
+              "role": "GenericContainer",
+              "children": [
+                220
+              ],
+              "graft_tree_id": null,
+              "label": null,
+              "value": null,
+              "text_redacted": false,
+              "actions": [],
+              "bounds": [
+                24.0,
+                164.0,
+                485.0,
+                208.0
+              ],
+              "transform": null
+            },
+            {
+              "node_id": 212,
+              "role": "TextRun",
+              "children": [],
+              "graft_tree_id": null,
+              "label": null,
+              "value": "\n",
+              "text_redacted": false,
+              "actions": [],
+              "bounds": null,
+              "transform": null
+            },
+            {
+              "node_id": 213,
+              "role": "Paragraph",
+              "children": [
+                221
+              ],
+              "graft_tree_id": null,
+              "label": null,
+              "value": null,
+              "text_redacted": false,
+              "actions": [],
+              "bounds": [
+                24.0,
+                240.0,
+                485.0,
+                262.4
+              ],
+              "transform": null
+            },
+            {
+              "node_id": 214,
+              "role": "TextRun",
+              "children": [],
+              "graft_tree_id": null,
+              "label": null,
+              "value": "\n",
+              "text_redacted": false,
+              "actions": [],
+              "bounds": null,
+              "transform": null
+            },
+            {
+              "node_id": 215,
+              "role": "TextRun",
+              "children": [],
+              "graft_tree_id": null,
+              "label": null,
+              "value": "Servo B semantics",
+              "text_redacted": false,
+              "actions": [],
+              "bounds": null,
+              "transform": null
+            },
+            {
+              "node_id": 216,
+              "role": "TextRun",
+              "children": [],
+              "graft_tree_id": null,
+              "label": null,
+              "value": "Actual native text input",
+              "text_redacted": false,
+              "actions": [],
+              "bounds": null,
+              "transform": null
+            },
+            {
+              "node_id": 217,
+              "role": "GenericContainer",
+              "children": [
+                218
+              ],
+              "graft_tree_id": null,
+              "label": null,
+              "value": null,
+              "text_redacted": false,
+              "actions": [],
+              "bounds": [
+                33.0,
+                97.0,
+                476.0,
+                135.0
+              ],
+              "transform": null
+            },
+            {
+              "node_id": 218,
+              "role": "GenericContainer",
+              "children": [
+                219
+              ],
+              "graft_tree_id": null,
+              "label": null,
+              "value": null,
+              "text_redacted": false,
+              "actions": [],
+              "bounds": [
+                33.0,
+                104.8,
+                476.0,
+                127.2
+              ],
+              "transform": null
+            },
+            {
+              "node_id": 219,
+              "role": "TextRun",
+              "children": [],
+              "graft_tree_id": null,
+              "label": null,
+              "value": "​",
+              "text_redacted": false,
+              "actions": [],
+              "bounds": null,
+              "transform": null
+            },
+            {
+              "node_id": 220,
+              "role": "TextRun",
+              "children": [],
+              "graft_tree_id": null,
+              "label": null,
+              "value": "Navigate with actual input",
+              "text_redacted": false,
+              "actions": [],
+              "bounds": null,
+              "transform": null
+            },
+            {
+              "node_id": 221,
+              "role": "TextRun",
+              "children": [],
+              "graft_tree_id": null,
+              "label": null,
+              "value": "DOM-only B result bravo",
+              "text_redacted": false,
+              "actions": [],
+              "bounds": null,
+              "transform": null
+            },
+            {
+              "node_id": 222,
+              "role": "TextRun",
+              "children": [],
+              "graft_tree_id": null,
+              "label": null,
+              "value": "BOTTOM B: blue",
+              "text_redacted": false,
+              "actions": [],
+              "bounds": null,
+              "transform": null
+            },
+            {
+              "node_id": 223,
+              "role": "TextRun",
+              "children": [],
+              "graft_tree_id": null,
+              "label": null,
+              "value": "\n(() => {\n  const query = new URLSearchParams(location.search);\n  const page = query.get('page') === 'B' ? 'B' : 'A';\n  const result = query.get('result');\n  document.documentElement.dataset.page = page;\n  document.querySelector('.top').textContent = `TOP ${page}: red`;\n  document.querySelector('.bottom').textContent = `BOTTOM ${page}: blue`;\n  document.title = `Servo ${page} semantics${result === null ? '' : ' result'}`;\n  document.querySelector('#heading').textContent = `Servo ${page} semantics`;\n  document.querySelector('#state').textContent = result === null\n    ? `DOM-only ${page} initial` : `DOM-only ${page} result ${result}`;\n  const entry = document.querySelector('#entry');\n  entry.addEventListener('input', () => {\n    // This semantic change deliberately leaves the native title unchanged.\n    const text = entry.value;\n    setTimeout(() => { document.querySelector('#state').textContent = `DOM-only ${page} idle ${text}`; }, 200);\n  });\n  document.querySelector('#activate').addEventListener('click', () => {\n    const target = new URL('a11y.html', location.href);\n    target.searchParams.set('page', page);\n    target.searchParams.set('result', entry.value);\n    location.href = target.href;\n  });\n})();\n",
+              "text_redacted": false,
+              "actions": [],
+              "bounds": null,
+              "transform": null
+            }
+          ]
+        }
+      ],
+      "ordered_updates": [
+        {
+          "tree_id": "7cb7ffa3-0ed4-4bab-a440-397711545f2d",
+          "node_ids": [
+            0,
+            1
+          ],
+          "focus_node_id": 0
+        },
+        {
+          "tree_id": "d2476ff4-6e14-5990-8321-058f7446b78a",
+          "node_ids": [
+            187,
+            188,
+            189,
+            190,
+            191,
+            192,
+            193,
+            194,
+            195,
+            196,
+            197,
+            198,
+            199,
+            200,
+            201,
+            202,
+            203,
+            204,
+            205,
+            206,
+            207,
+            208,
+            209,
+            210,
+            211,
+            212,
+            213,
+            214,
+            215,
+            216,
+            217,
+            218,
+            219,
+            220,
+            221,
+            222,
+            223
+          ],
+          "focus_node_id": 187
+        }
+      ]
+    }
+  ],
+  "servo_focus_policy": "document-root"
+}

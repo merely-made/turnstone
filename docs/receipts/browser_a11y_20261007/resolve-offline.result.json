@@ -1,0 +1,16 @@
+{
+  "target": "C:/t/cargo-targets/turnstone",
+  "recorded_utc": "2026-10-07T19:50:34.9699587Z",
+  "priority": "BelowNormal",
+  "exit_code": 101,
+  "command": [
+    "cargo",
+    "+1.98.1",
+    "metadata",
+    "--offline",
+    "--format-version",
+    "1",
+    "--features",
+    "scry,weld,servo"
+  ]
+}

@@ -1,0 +1,3 @@
+RESULT ok
+captured 01_windows_uia_two_pages
+Actual Windows UIA heading and ancestry observation acknowledged; body text, controls, human AT and other platforms remain open.

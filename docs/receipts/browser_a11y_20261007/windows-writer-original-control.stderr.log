@@ -1,0 +1,26 @@
+joiner at initial convergence: members 2 nodes 0 channels 1
+joiner at initial convergence: gemot/constitution/v1 rounds 2 ops 0 syncing false
+joiner at initial convergence: gemot/delegation/v1 rounds 2 ops 0 syncing false
+joiner at initial convergence: gemot/membership/v1 rounds 2 ops 0 syncing false
+joiner at initial convergence: gemot/records/v1 rounds 2 ops 0 syncing false
+joiner at initial convergence: gemot/standing/v1 rounds 2 ops 0 syncing false
+joiner at initial convergence: gemot/tulpa/v1 rounds 2 ops 0 syncing false
+joiner at initial convergence: gemot/flora/v1 rounds 2 ops 0 syncing false
+joiner at initial convergence: commons/graph/encrypted/v1 rounds 2 ops 0 syncing false
+joiner at initial convergence: commons/chat/v1 rounds 2 ops 1 syncing false
+joiner at initial convergence: stickleback/group-key/v1 rounds 2 ops 1 syncing false
+founder: third member admitted at t+0 ms, shared node authored at t+1102 ms
+joiner: the founder's shared node arrived 732 ms after it was authored
+joiner: the third member arrived 1835 ms after admission
+joiner: the new writer's delegation arrived 1835 ms after admission
+joiner at the end of the window: members 3 nodes 1 channels 1
+joiner at the end of the window: gemot/constitution/v1 rounds 2 ops 0 syncing false
+joiner at the end of the window: gemot/delegation/v1 rounds 2 ops 1 syncing false
+joiner at the end of the window: gemot/membership/v1 rounds 2 ops 1 syncing false
+joiner at the end of the window: gemot/records/v1 rounds 2 ops 0 syncing false
+joiner at the end of the window: gemot/standing/v1 rounds 2 ops 0 syncing false
+joiner at the end of the window: gemot/tulpa/v1 rounds 2 ops 0 syncing false
+joiner at the end of the window: gemot/flora/v1 rounds 2 ops 0 syncing false
+joiner at the end of the window: commons/graph/encrypted/v1 rounds 2 ops 1 syncing false
+joiner at the end of the window: commons/chat/v1 rounds 2 ops 1 syncing false
+joiner at the end of the window: stickleback/group-key/v1 rounds 2 ops 2 syncing false

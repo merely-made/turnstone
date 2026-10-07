@@ -702,6 +702,7 @@ impl Shell {
             self.content_sessions.remove(&node);
             self.clear_reader_appearances(node);
             self.surface_producers.remove(&node);
+            self.surface_a11y.retire(node);
             self.surface_find_requests.remove(&node);
             self.page_captures.remove_surface(node);
             #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
@@ -750,6 +751,7 @@ impl Shell {
                 .unwrap_or_default();
             replay_page_scale(&mut self.app, node, producer.as_mut());
             self.surface_producers.insert(node, producer);
+            self.activate_surface_accessibility(node, false);
             self.page_captures.register_surface(node);
             tracing::info!(%node, %url, engine = %decision.engine_id, "surface content live");
             Ok(crate::content::ContentFacts {
@@ -1618,6 +1620,7 @@ impl Shell {
                     self.sync_ime_allowed();
                 }
                 Effect::CloseContent { node } => {
+                    self.surface_a11y.retire(node);
                     self.withdraw_user_agent_requests(node, "surface-closed");
                     self.clear_reader_appearances(node);
                     self.surface_find_requests.remove(&node);

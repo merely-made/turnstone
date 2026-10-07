@@ -1,0 +1,5 @@
+RESULT ok
+captured 01_two_native_semantic_forests
+captured 02_independent_semantic_navigation
+captured 03_reopened_semantic_forests
+Actual upstream Servo semantics: two preserved nested forests, idle DOM delta, independent navigation, retirement and fresh reopen identities. OS AT acceptance remains open.

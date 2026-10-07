@@ -38,7 +38,9 @@ remaining model to Turnstone's actual state; it does not re-decide it.
   composition and pointer/key routing. The local Windows Scry consumer is
   wired behind `--features scry`; native qualification is recorded below.
   Servo/Graft construction is now implemented behind `--features servo`;
-  its first three-engine build and native qualification remain in progress.
+  the [published three-engine baseline](../docs/receipts/browser_family_20261007/README.md)
+  qualifies the Windows build and scoped native pixel controls. Foreign
+  accessibility qualification is the next consumer lane below.
   [2026-07-18_meerkat_harvest.md](2026-07-18_meerkat_harvest.md) and git
   history are the donors.
 - **Compositor**: the shell already composes per-surface textures via
@@ -63,15 +65,40 @@ qualification evidence, with current-stack adoption coordinated separately.
 Servo 0.7's new public accessibility-action method makes its coherent
 Surfman/ANGLE migration a practical accessibility dependency.
 
-The [October 7 published-state checkpoint](../docs/receipts/browser_supplier_integration_20261006/current-stack-reconciliation/README.md)
-confirms WS4 R6 and the shared AccessKit helper/E1a on Mere main. The Genet
-decoder repair and matching Knot/Redshank pins still need the ordered tested
-set; human assistive walks and browser semantic/action transport remain open.
+The [October 7 foreign-tree lane](../docs/receipts/browser_a11y_20261007/README.md)
+adds real Servo callback admission and retained subtree composition on the
+existing UI thread. Mere's four additive producer methods are published and
+library-tested. The coherent Knot/Redshank/Turnstone set passes 704 Turnstone
+library tests (nine ignored), all-targets and native builds, two real Servo
+lifecycle runs, and limited Windows UIA heading/ancestry observation. The
+upstream layout producer advertises no actions, despite the
+public Click forwarder, so this host explicitly refuses assistive actions.
+Its actual supplier scope is wrapper plus top-level document trees; recursive
+consumer tests do not qualify iframe export. The fixture's body text and form
+roles do not reach the Windows provider; its document ancestors have no
+TextPattern. Hidden/script text also needs supplier correction. Human AT on
+all three platforms and the independent pixel/synchronization gates remain open.
+The pinned supplier's placeholder focus is projected explicitly to its
+document root by configurable `TURNSTONE_SERVO_A11Y_FOCUS=document-root`;
+`upstream` preserves raw focus. This supplies neutral subtree focus while
+DOM focused-node reporting remains unsupported. Receipts preserve the raw
+and projected focus distinction.
+The raw-focus native negative control fails with absent/unreachable focus;
+its failures and the earlier observer timestamp/traversal failures remain in
+the receipt. A passed heading graft is not full browser accessibility.
 
-### October supplier integration
+The [October 7 published-state checkpoint](../docs/receipts/browser_supplier_integration_20261006/current-stack-reconciliation/README.md)
+records WS4 R6 and the shared AccessKit helper/E1a on Mere main. The later
+[published family receipt](../docs/receipts/browser_family_20261007/README.md)
+qualifies the Genet decoder repair and ordered Knot/Redshank pins, ending at
+Turnstone `e00869c`. The new foreign-tree lane repeats that order for Mere's
+additive native semantic seam. Human assistive walks and complete browser
+action support remain open.
+
+### October 6 supplier integration history
 
 The [supplier integration receipt](../docs/receipts/browser_supplier_integration_20261006/README.md)
-qualifies the current shared Weld adapter at compatible Mere `db4ee312`,
+qualifies that shared Weld adapter at compatible Mere `db4ee312`,
 Woodshed `b613fc55` and Knot `91cb44a2`, retaining Genet `69a2383b`.
 Turnstone's local CEF mouse/text forwarding bridge is removed. The exact
 two-engine executable passes 83 distinct focused tests and four native runs:

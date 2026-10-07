@@ -584,3 +584,27 @@ sharing does not establish cross-engine cookie or storage transfer.
   beyond version currency. Shared subtree lifecycle, tree/node action ownership
   and Scry/Weld semantic export/control remain separate owner work. Pixel
   qualification cannot close these gates.
+
+- **2026-10-07 foreign-tree qualification:** Mere `f1d169c7` publishes the
+  native producer's activation, FIFO semantic updates, resynchronization and
+  typed action seam; 123 Inker and 6 Graft library tests pass. Turnstone now
+  retains and validates actual Servo wrapper/document forests, uses existing
+  graft composition, publishes idle changes without pixel acquisition, and
+  retires stale ownership on navigation/close. The ordered Knot `14cd06e1`,
+  Redshank `317968ba` and Turnstone set passes 704 library tests (nine ignored),
+  all-targets and native builds. Two native functional runs qualify idle DOM
+  updates, independent navigation, retirement and fresh reopen identities.
+  Windows UIA exposes two original supplier headings in distinct foreign
+  tree indices with actual ancestry to the owned window. Full details and
+  failed controls remain in the [dedicated receipt](../docs/receipts/browser_a11y_20261007/README.md).
+  Servo 0.7 advertises no actions, so its host refuses action dispatch; iframe
+  export and human AT on Windows/macOS/Linux remain supplier/release gates.
+  Capability metadata is not upgraded by transport implementation alone.
+  The pinned Servo supplier does not export actual DOM focus. Its explicit
+  configurable document-root projection supplies neutral subtree focus;
+  `TURNSTONE_SERVO_A11Y_FOCUS=upstream` preserves the raw placeholder for a
+  control. Focused-node reporting and assistive actions remain unsupported.
+  The raw-focus control fails as expected. The fixture's banner text is filtered
+  and its document ancestors have no Windows TextPattern; body text, hidden/script
+  text and form-control roles remain supplier/platform gates. The limited
+  heading/ancestry proof does not promote browser accessibility capability.

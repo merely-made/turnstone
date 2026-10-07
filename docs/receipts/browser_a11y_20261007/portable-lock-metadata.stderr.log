@@ -1,0 +1,15 @@
+    Blocking waiting for file lock on package cache
+error: invalid type: boolean `true`, expected a map
+ --> ..\..\..\.cargo\git\checkouts\servo-e53a6e7b994a25fe\aac43a3\python\tidy\tests\lints-configuration\no-workspace\Cargo.toml:8:7
+  |
+8 | foo = true
+  |       ^^^^
+warning: patch `burn-remote v0.22.0 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)` was not used in the crate graph
+warning: patch `cubecl-runtime v0.11.0 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)` was not used in the crate graph
+warning: patch `p2panda-stream v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5#1bec457e)` was not used in the crate graph
+help: Check that the patched package version and available features are compatible
+      with the dependency requirements. If the patch has a different version from
+      what is locked in the Cargo.lock file, run `cargo update` to use the new
+      version. This may also occur with an optional dependency that is not enabled.
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache

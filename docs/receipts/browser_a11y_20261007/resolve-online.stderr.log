@@ -1,0 +1,105 @@
+    Updating git repository `https://github.com/merely-made/mere.git`
+    Updating git repository `https://github.com/merely-made/knot-editor.git`
+From https://github.com/merely-made/knot-editor
+ * [new ref]         14cd06e126c10df7f5506126b98af2f07ec87eb5 -> refs/commit/14cd06e126c10df7f5506126b98af2f07ec87eb5
+    Updating git repository `https://github.com/merely-made/woodshed.git`
+From https://github.com/merely-made/woodshed
+ * [new ref]         317968ba55092ee8f372b4aa2eb515da35833cc3 -> refs/commit/317968ba55092ee8f372b4aa2eb515da35833cc3
+error: invalid type: boolean `true`, expected a map
+ --> ..\..\..\.cargo\git\checkouts\servo-e53a6e7b994a25fe\aac43a3\python\tidy\tests\lints-configuration\no-workspace\Cargo.toml:8:7
+  |
+8 | foo = true
+  |       ^^^^
+    Updating crates.io index
+warning: patch `burn-remote v0.22.0 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)` was not used in the crate graph
+warning: patch `cubecl-runtime v0.11.0 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)` was not used in the crate graph
+warning: patch `p2panda-stream v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5#1bec457e)` was not used in the crate graph
+help: Check that the patched package version and available features are compatible
+      with the dependency requirements. If the patch has a different version from
+      what is locked in the Cargo.lock file, run `cargo update` to use the new
+      version. This may also occur with an optional dependency that is not enabled.
+     Locking 84 packages to latest Rust 1.98.1 compatible versions
+      Adding app-host v0.0.1 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding armillary v0.1.1 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding audio-primitives v0.1.0 (https://github.com/merely-made/woodshed.git?rev=317968ba55092ee8f372b4aa2eb515da35833cc3#317968ba)
+      Adding cambium v0.3.3 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding cambium-rootstock v0.1.0 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding cambium-winit v0.3.0 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding castellan v0.0.3 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding chartulary v0.2.2 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding chatelaine v0.0.2 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding chirograph v0.0.2 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding commons-spine v0.0.1 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding distillery v0.0.1 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding document-canvas v0.1.0 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding eidetic v0.0.2 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding eidetic-search v0.0.1 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding errand v0.4.0 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding esp v0.1.0 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding gemot v0.1.1 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding graft-engine v0.2.0 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding graphshell v0.0.2 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding graphshell-client v0.0.2 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding graphshell-endpoint v0.0.2 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding illume v0.0.2 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding import v0.0.1 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding incipit v0.2.0 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding inker v0.1.1 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding insigne v0.0.1 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding knot-capture v0.0.1 (https://github.com/merely-made/knot-editor.git?rev=14cd06e126c10df7f5506126b98af2f07ec87eb5#14cd06e1)
+      Adding knot-composition v0.0.1 (https://github.com/merely-made/knot-editor.git?rev=14cd06e126c10df7f5506126b98af2f07ec87eb5#14cd06e1)
+      Adding knot-document v0.0.1 (https://github.com/merely-made/knot-editor.git?rev=14cd06e126c10df7f5506126b98af2f07ec87eb5#14cd06e1)
+      Adding knot-editor v0.0.3 (https://github.com/merely-made/knot-editor.git?rev=14cd06e126c10df7f5506126b98af2f07ec87eb5#14cd06e1)
+      Adding knot-editor-host v0.1.1 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding knot-file-catalog v0.0.1 (https://github.com/merely-made/knot-editor.git?rev=14cd06e126c10df7f5506126b98af2f07ec87eb5#14cd06e1)
+      Adding luggage v0.1.0 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding mere v0.0.2 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding mere-alembic v0.0.1 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding mere-apparatus v0.0.1 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding mere-athanor v0.0.1 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding mere-cartography v0.0.2 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding mere-chrome v0.0.1 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding mere-document-lanes v0.1.0 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding mere-fetch v0.0.1 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding mere-forme v0.1.0 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding mere-kernel v0.0.2 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding mere-linked-data v0.0.1 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding mere-mesh v0.0.1 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding mere-moot v0.0.1 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding mere-proofs v0.1.0 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding mere-surface-api v0.1.0 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding mere-transport v0.0.2 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding mere-webrtc-carrier v0.0.1 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding meristem v0.2.0 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding mien v0.0.1 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding mooting v0.1.0 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding mora-cmudict v0.0.1 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding muniment v0.1.2 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding nematic v0.1.1 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding notochord v0.1.0 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding numen v0.2.0 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding pandect v0.1.1 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding personae v0.2.1 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding pictograph v0.2.0 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding platen v0.0.1 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding redshank-model v0.0.0 (https://github.com/merely-made/woodshed.git?rev=317968ba55092ee8f372b4aa2eb515da35833cc3#317968ba)
+      Adding redshank-playback v0.0.0 (https://github.com/merely-made/woodshed.git?rev=317968ba55092ee8f372b4aa2eb515da35833cc3#317968ba)
+      Adding redshank-storage v0.0.0 (https://github.com/merely-made/woodshed.git?rev=317968ba55092ee8f372b4aa2eb515da35833cc3#317968ba)
+      Adding redshank-surfaces v0.0.0 (https://github.com/merely-made/woodshed.git?rev=317968ba55092ee8f372b4aa2eb515da35833cc3#317968ba)
+      Adding reference-data v0.0.1 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding sceno v0.0.4 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding scenograph v0.0.4 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding scenomise v0.0.4 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding scenotime v0.0.4 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding script-rhai v0.0.1 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding scrying-engine v0.2.0 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding seiche v0.0.6 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding servitor v0.0.2 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding sprigging v0.2.1 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding stickleback v0.1.1 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding tabard v0.0.1 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding timed-text v0.1.0 (https://github.com/merely-made/woodshed.git?rev=317968ba55092ee8f372b4aa2eb515da35833cc3#317968ba)
+      Adding tinct v0.1.2 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding uxtree v0.0.2 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding weld-engine v0.2.0 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)
+      Adding workbench v0.1.0 (https://github.com/merely-made/mere.git?rev=f1d169c755e082b5119c2485762fd28f4226d8fb#f1d169c7)

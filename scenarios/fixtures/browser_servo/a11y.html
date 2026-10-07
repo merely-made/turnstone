@@ -1,0 +1,37 @@
+<!doctype html>
+<!-- Copyright 2026 Mark Alan Boykin. SPDX-License-Identifier: MPL-2.0 -->
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Servo semantics fixture</title><link rel="stylesheet" href="fixture.css">
+</head><body><div class="top">TOP semantics: red</div><main>
+<h1 id="heading">Native semantics fixture</h1>
+<label for="entry">Actual native text input</label><input id="entry" autocomplete="off" spellcheck="false">
+<button id="activate" type="button">Navigate with actual input</button>
+<p id="state">DOM-only pending</p>
+</main><div class="bottom">BOTTOM semantics: blue</div>
+<script>
+(() => {
+  const query = new URLSearchParams(location.search);
+  const page = query.get('page') === 'B' ? 'B' : 'A';
+  const result = query.get('result');
+  document.documentElement.dataset.page = page;
+  document.querySelector('.top').textContent = `TOP ${page}: red`;
+  document.querySelector('.bottom').textContent = `BOTTOM ${page}: blue`;
+  document.title = `Servo ${page} semantics${result === null ? '' : ' result'}`;
+  document.querySelector('#heading').textContent = `Servo ${page} semantics`;
+  document.querySelector('#state').textContent = result === null
+    ? `DOM-only ${page} initial` : `DOM-only ${page} result ${result}`;
+  const entry = document.querySelector('#entry');
+  entry.addEventListener('input', () => {
+    // This semantic change deliberately leaves the native title unchanged.
+    const text = entry.value;
+    setTimeout(() => { document.querySelector('#state').textContent = `DOM-only ${page} idle ${text}`; }, 200);
+  });
+  document.querySelector('#activate').addEventListener('click', () => {
+    const target = new URL('a11y.html', location.href);
+    target.searchParams.set('page', page);
+    target.searchParams.set('result', entry.value);
+    location.href = target.href;
+  });
+})();
+</script></body></html>

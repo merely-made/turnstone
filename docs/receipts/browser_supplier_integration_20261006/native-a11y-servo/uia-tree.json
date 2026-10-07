@@ -1,0 +1,18 @@
+{
+  "scope": "Windows UI Automation traversal of the owned public-fixture process; not a human screen-reader walk or other-platform qualification",
+  "observer_started_utc": "2026-10-07T20:39:38.4070039Z",
+  "checkpoint_timeout_seconds": 90,
+  "traversal_timeout_seconds": 90,
+  "checkpoint_wait_seconds": 64.0517115,
+  "traversal_seconds": 0.0451722,
+  "hierarchy": "Actual parent RuntimeId queried with UIA RawViewWalker; the window parent may be outside this owned subtree",
+  "text_limit": "Known public fixture only; IsPassword redacts the current element, but ancestor TextPattern text is not a protected-descendant filter",
+  "owned_pid": null,
+  "owned_created_utc": null,
+  "hwnd": null,
+  "observed_markers": [],
+  "nodes": [],
+  "passed": false,
+  "limitation": "Owned process identity no longer matches the launch receipt",
+  "observer_finished_utc": "2026-10-07T20:40:42.5126857Z"
+}

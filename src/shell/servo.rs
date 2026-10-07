@@ -13,15 +13,16 @@ use grafting::{DiagnosticGpuSync, ImportedTexture, TextureOrigin};
 use inker::{
     CursorShape, DragEvent, DragOperationSet, FocusReason, KeyboardEvent, MouseButton, MouseEvent,
     MouseEventKind, NativeTextureHandle, NavigationEvent, OwnedSurfaceFrame, PhysicalPosition,
-    PointerEvent, PointerPhase, PointerType, SurfaceError, SurfaceSettings, SurfaceSpawnRequest,
-    SurfaceSyncHandle, SurfaceTextureFormat, WebFeatureStatus, WebFrameTransportMode, WebMessage,
-    WebSurfaceCapabilities, WebSurfaceEvent,
+    PointerEvent, PointerPhase, PointerType, SurfaceAccessibilityActionRequest,
+    SurfaceAccessibilityTreeId, SurfaceAccessibilityUpdate, SurfaceError, SurfaceSettings,
+    SurfaceSpawnRequest, SurfaceSyncHandle, SurfaceTextureFormat, WebFeatureStatus,
+    WebFrameTransportMode, WebMessage, WebSurfaceCapabilities, WebSurfaceEvent,
 };
 use servo::{
     DevicePoint, EventLoopWaker, InputEvent, Key, KeyState, LoadStatus, Location, Modifiers,
     MouseButtonAction, MouseButtonEvent, MouseLeftViewportEvent, MouseMoveEvent, NamedKey, Opts,
-    PermissionRequest, Servo, ServoBuilder, WebView, WebViewBuilder, WebViewDelegate, WebViewPoint,
-    WheelDelta, WheelEvent, WheelMode,
+    PermissionRequest, Preferences, Servo, ServoBuilder, WebView, WebViewBuilder, WebViewDelegate,
+    WebViewPoint, WheelDelta, WheelEvent, WheelMode,
 };
 use servo_wgpu_interop_adapter::ServoWgpuInteropAdapter;
 use std::{
@@ -43,6 +44,52 @@ pub(super) struct ServoHostOptions {
     pub profile_dir: PathBuf,
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum A11yFocusPolicy {
+    Upstream,
+    DocumentRoot,
+}
+
+impl A11yFocusPolicy {
+    fn name(self) -> &'static str {
+        match self {
+            Self::Upstream => "upstream",
+            Self::DocumentRoot => "document-root",
+        }
+    }
+
+    fn project(self, update: &mut SurfaceAccessibilityUpdate) {
+        // Pinned AAC exports a fixed placeholder, not DOM keyboard focus.
+        // This explicit partial projection uses AccessKit's document-root
+        // representation; it never supplies missing tree metadata or nodes.
+        if self == Self::DocumentRoot {
+            if let Some(tree) = &update.tree {
+                update.focus = tree.root;
+            }
+        }
+    }
+}
+
+fn parse_a11y_focus_policy(value: Option<&str>) -> Result<A11yFocusPolicy, SurfaceError> {
+    match value {
+        None | Some("document-root") => Ok(A11yFocusPolicy::DocumentRoot),
+        Some("upstream") => Ok(A11yFocusPolicy::Upstream),
+        Some(_) => Err(spawn_error(
+            "TURNSTONE_SERVO_A11Y_FOCUS must be upstream or document-root",
+        )),
+    }
+}
+
+fn requested_a11y_focus_policy() -> Result<A11yFocusPolicy, SurfaceError> {
+    match std::env::var("TURNSTONE_SERVO_A11Y_FOCUS") {
+        Ok(value) => parse_a11y_focus_policy(Some(&value)),
+        Err(std::env::VarError::NotPresent) => parse_a11y_focus_policy(None),
+        Err(_) => Err(spawn_error(
+            "TURNSTONE_SERVO_A11Y_FOCUS is not valid Unicode",
+        )),
+    }
+}
+
 static PROCESS_OWNER: OnceLock<ThreadId> = OnceLock::new();
 thread_local! {
     static ROOT: RefCell<Option<Rc<ProcessRoot>>> = const { RefCell::new(None) };
@@ -54,6 +101,7 @@ struct ProcessRoot {
     options: ServoHostOptions,
     views: Cell<usize>,
     wake: Arc<dyn Fn() + Send + Sync>,
+    a11y_focus_policy: A11yFocusPolicy,
 }
 
 #[derive(Clone)]
@@ -72,6 +120,7 @@ pub(super) struct TurnstoneServoFactory {
     options: ServoHostOptions,
     device: wgpu::Device,
     queue: wgpu::Queue,
+    a11y_focus_policy: A11yFocusPolicy,
 }
 
 impl TurnstoneServoFactory {
@@ -81,6 +130,9 @@ impl TurnstoneServoFactory {
     pub(super) fn profile_dir(&self) -> &std::path::Path {
         &self.options.profile_dir
     }
+    pub(super) fn a11y_focus_policy(&self) -> &'static str {
+        self.a11y_focus_policy.name()
+    }
     /// Construct exactly once on the UI thread. The configurable named profile
     /// is shared by this process's Servo views, independently of node profiles.
     pub(super) fn new(
@@ -89,6 +141,9 @@ impl TurnstoneServoFactory {
         queue: wgpu::Queue,
         wake: Arc<dyn Fn() + Send + Sync>,
     ) -> Result<Self, SurfaceError> {
+        // Refuse unknown settings before touching upstream process globals.
+        // Factory reuse and every later view retain this one selection.
+        let a11y_focus_policy = requested_a11y_focus_policy()?;
         if options.profile_name.trim().is_empty() || options.profile_dir.as_os_str().is_empty() {
             return Err(spawn_error(
                 "Servo needs an explicitly named profile directory",
@@ -125,6 +180,10 @@ impl TurnstoneServoFactory {
             }
             let servo = ServoBuilder::default()
                 .opts(opts)
+                .preferences(Preferences {
+                    accessibility_enabled: true,
+                    ..Preferences::default()
+                })
                 .event_loop_waker(Box::new(Waker(wake.clone())))
                 .build();
             *slot.borrow_mut() = Some(Rc::new(ProcessRoot {
@@ -132,12 +191,14 @@ impl TurnstoneServoFactory {
                 options: options.clone(),
                 views: Cell::new(0),
                 wake,
+                a11y_focus_policy,
             }));
             Ok(Self {
                 owner,
                 options,
                 device,
                 queue,
+                a11y_focus_policy,
             })
         })
     }
@@ -194,6 +255,11 @@ impl GraftProducerFactory for TurnstoneServoFactory {
                 "Servo named process profile differs from the initialized root",
             ));
         }
+        if root.a11y_focus_policy != self.a11y_focus_policy {
+            return Err(spawn_error(
+                "Servo accessibility process policy differs from its factory",
+            ));
+        }
         // The shell resolves Servo requests to the explicitly selected process
         // profile. Refuse accidentally forwarding a per-node binding.
         if PathBuf::from(&request.profile.user_data_dir) != self.options.profile_dir {
@@ -216,6 +282,9 @@ impl GraftProducerFactory for TurnstoneServoFactory {
         .map_err(|error| spawn_error(error.to_string()))?;
         let delegate = Rc::new(Delegate {
             events: RefCell::new(VecDeque::new()),
+            accessibility_updates: RefCell::new(VecDeque::new()),
+            accessibility_active: Cell::new(false),
+            accessibility_focus_provenance: Cell::new(0),
             ready: Cell::new(false),
             animating: Cell::new(false),
             requested_url: RefCell::new(request.url.clone()),
@@ -257,6 +326,9 @@ impl OwnedSurfaceFrame for ServoImportedFrame {
 
 struct Delegate {
     events: RefCell<VecDeque<WebSurfaceEvent>>,
+    accessibility_updates: RefCell<VecDeque<SurfaceAccessibilityUpdate>>,
+    accessibility_active: Cell<bool>,
+    accessibility_focus_provenance: Cell<u32>,
     ready: Cell<bool>,
     animating: Cell<bool>,
     requested_url: RefCell<String>,
@@ -267,8 +339,53 @@ impl Delegate {
         self.events.borrow_mut().push_back(event);
         (self.wake)();
     }
+
+    fn push_accessibility_update(&self, update: SurfaceAccessibilityUpdate) {
+        if !self.accessibility_active.get() {
+            return;
+        }
+        // Servo sends its wrapper graft before the document's update. Keep
+        // every nested TreeId and the callback order intact for host admission.
+        self.accessibility_updates.borrow_mut().push_back(update);
+        (self.wake)();
+    }
+
+    fn deactivate_accessibility(&self) {
+        self.accessibility_active.set(false);
+        self.accessibility_updates.borrow_mut().clear();
+        self.accessibility_focus_provenance.set(0);
+    }
+
+    fn poll_projected_accessibility_update(
+        &self,
+        policy: A11yFocusPolicy,
+    ) -> Option<SurfaceAccessibilityUpdate> {
+        // The FIFO always holds the exact raw supplier callback first. Change
+        // only focus at this producer boundary, preserving supplier identities,
+        // graph, bounds and advertised actions. DOM focused-node support and
+        // assistive actions remain unsupported.
+        let mut update = self.accessibility_updates.borrow_mut().pop_front()?;
+        let supplier_focus = update.focus;
+        policy.project(&mut update);
+        // Bound provenance to the first 32 callbacks per activation. Metadata
+        // alone is logged; labels, values and page text are never included.
+        let count = self.accessibility_focus_provenance.get();
+        if count < 32 {
+            tracing::debug!(target: "turnstone::servo::a11y",
+                tree_id = %update.tree_id.0,
+                supplier_focus = supplier_focus.0,
+                projected_focus = update.focus.0,
+                policy = policy.name(),
+                "Servo accessibility focus projection");
+            self.accessibility_focus_provenance.set(count + 1);
+        }
+        Some(update)
+    }
 }
 impl WebViewDelegate for Delegate {
+    fn notify_accessibility_tree_update(&self, _: WebView, update: servo::accesskit::TreeUpdate) {
+        self.push_accessibility_update(update);
+    }
     fn request_permission(&self, _: WebView, request: PermissionRequest) {
         // This host slice exposes no permission UI or decision persistence.
         // Resolve explicitly rather than inherit a caller-selected fallback.
@@ -330,6 +447,10 @@ impl TurnstoneServoSurface {
 }
 impl Drop for TurnstoneServoSurface {
     fn drop(&mut self) {
+        self.delegate.deactivate_accessibility();
+        if let Some(view) = &self.view {
+            view.set_accessibility_active(false);
+        }
         drop(self.view.take());
         self.root.servo.spin_event_loop();
         drop(self.interop.take());
@@ -338,6 +459,53 @@ impl Drop for TurnstoneServoSurface {
 }
 
 impl GraftSurface for TurnstoneServoSurface {
+    fn set_accessibility_active(
+        &mut self,
+        active: bool,
+    ) -> Result<Option<SurfaceAccessibilityTreeId>, SurfaceError> {
+        if !active {
+            self.delegate.deactivate_accessibility();
+            self.view().set_accessibility_active(false);
+            return Ok(None);
+        }
+        // Callbacks are queued even if upstream invokes the delegate before
+        // this returns. The host admits the returned root before draining them.
+        self.delegate.accessibility_active.set(true);
+        match self.view().set_accessibility_active(true) {
+            Some(tree) => Ok(Some(tree)),
+            None => {
+                self.delegate.deactivate_accessibility();
+                Err(unsupported("accessibility activation"))
+            },
+        }
+    }
+
+    fn poll_accessibility_update(&mut self) -> Option<SurfaceAccessibilityUpdate> {
+        self.delegate
+            .poll_projected_accessibility_update(self.root.a11y_focus_policy)
+    }
+
+    fn request_accessibility_resync(&mut self) -> Result<SurfaceAccessibilityTreeId, SurfaceError> {
+        // AAC has no public resend API. Reactivation requests initial trees
+        // and creates a new wrapper TreeId. The host retires the old forest
+        // and admits this root before polling the replacement's callbacks.
+        // Upstream deactivation is asynchronous; the host still validates the
+        // replacement's complete initial tree before accepting its deltas.
+        self.set_accessibility_active(false)?;
+        self.set_accessibility_active(true)?
+            .ok_or_else(|| unsupported("accessibility resynchronization"))
+    }
+
+    fn send_accessibility_action(
+        &mut self,
+        _request: SurfaceAccessibilityActionRequest,
+    ) -> Result<(), SurfaceError> {
+        // AAC's DOM bridge implements Click, but its node producer advertises
+        // no actions. Forwarding Click without that mask would invent support;
+        // Focus, value/edit, selection and scrolling lack DOM handlers too.
+        Err(unsupported("unadvertised accessibility actions"))
+    }
+
     fn resize(&mut self, width: u32, height: u32) -> Result<(), SurfaceError> {
         self.view()
             .resize(PhysicalSize::new(width.max(1), height.max(1)));
@@ -690,6 +858,163 @@ fn unsupported(operation: &str) -> SurfaceError {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn accessibility_delegate() -> Delegate {
+        Delegate {
+            events: RefCell::new(VecDeque::new()),
+            accessibility_updates: RefCell::new(VecDeque::new()),
+            accessibility_active: Cell::new(false),
+            accessibility_focus_provenance: Cell::new(0),
+            ready: Cell::new(false),
+            animating: Cell::new(false),
+            requested_url: RefCell::new(String::new()),
+            wake: Arc::new(|| {}),
+        }
+    }
+
+    fn accessibility_update(
+        tree: SurfaceAccessibilityTreeId,
+        grafted: Option<SurfaceAccessibilityTreeId>,
+    ) -> SurfaceAccessibilityUpdate {
+        use servo::accesskit::{Node, NodeId, Role, Tree};
+        let mut node = Node::new(Role::GenericContainer);
+        if let Some(grafted) = grafted {
+            node.set_tree_id(grafted);
+        }
+        SurfaceAccessibilityUpdate {
+            nodes: vec![(NodeId(0), node)],
+            tree: Some(Tree::new(NodeId(0))),
+            tree_id: tree,
+            focus: NodeId(0),
+        }
+    }
+
+    #[test]
+    fn accessibility_callbacks_preserve_order_and_nested_supplier_ids() {
+        use servo::accesskit::{NodeId, TreeId, Uuid};
+        let delegate = accessibility_delegate();
+        let wrapper = TreeId(Uuid::from_u64_pair(0, 101));
+        let document = TreeId(Uuid::from_u64_pair(0, 102));
+        let iframe = TreeId(Uuid::from_u64_pair(0, 103));
+        delegate.accessibility_active.set(true);
+        delegate.push_accessibility_update(accessibility_update(wrapper, Some(document)));
+        delegate.push_accessibility_update(accessibility_update(document, Some(iframe)));
+        delegate.push_accessibility_update(accessibility_update(iframe, None));
+        let mut updates = delegate.accessibility_updates.borrow_mut();
+        for (tree, grafted) in [
+            (wrapper, Some(document)),
+            (document, Some(iframe)),
+            (iframe, None),
+        ] {
+            let update = updates.pop_front().unwrap();
+            assert_eq!(update.tree_id, tree);
+            assert_eq!(update.nodes[0].0, NodeId(0));
+            assert_eq!(update.nodes[0].1.tree_id(), grafted);
+        }
+        assert!(updates.is_empty());
+    }
+
+    #[test]
+    fn accessibility_deactivation_retires_queued_and_late_callbacks() {
+        use servo::accesskit::{TreeId, Uuid};
+        let delegate = accessibility_delegate();
+        let old = TreeId(Uuid::from_u64_pair(0, 104));
+        let replacement = TreeId(Uuid::from_u64_pair(0, 105));
+        delegate.accessibility_active.set(true);
+        delegate.push_accessibility_update(accessibility_update(old, None));
+        delegate.deactivate_accessibility();
+        delegate.push_accessibility_update(accessibility_update(old, None));
+        assert!(delegate.accessibility_updates.borrow().is_empty());
+        delegate.accessibility_active.set(true);
+        delegate.push_accessibility_update(accessibility_update(replacement, None));
+        let mut updates = delegate.accessibility_updates.borrow_mut();
+        assert_eq!(updates.pop_front().unwrap().tree_id, replacement);
+        assert!(updates.is_empty());
+    }
+
+    #[test]
+    fn accessibility_focus_policy_projects_only_focus_after_raw_fifo_admission() {
+        use servo::accesskit::{Action, Node, NodeId, Role, Tree, TreeId, Uuid};
+        for policy in [A11yFocusPolicy::Upstream, A11yFocusPolicy::DocumentRoot] {
+            let delegate = accessibility_delegate();
+            delegate.accessibility_active.set(true);
+            let raw = [(106, 76), (107, 92)].map(|(id, root_id)| {
+                let mut root = Node::new(Role::RootWebArea);
+                root.set_children(vec![NodeId(root_id + 1)]);
+                let mut child = Node::new(Role::Button);
+                child.set_label("supplier node");
+                child.add_action(Action::Click);
+                SurfaceAccessibilityUpdate {
+                    nodes: vec![(NodeId(root_id), root), (NodeId(root_id + 1), child)],
+                    tree: Some(Tree::new(NodeId(root_id))),
+                    tree_id: TreeId(Uuid::from_u64_pair(0, id)),
+                    focus: NodeId(1),
+                }
+            });
+            for update in &raw {
+                delegate.push_accessibility_update(update.clone());
+            }
+            assert_eq!(delegate.accessibility_updates.borrow()[0], raw[0]);
+            assert_eq!(delegate.accessibility_updates.borrow()[1], raw[1]);
+            for original in raw {
+                let mut projected = delegate
+                    .poll_projected_accessibility_update(policy)
+                    .unwrap();
+                assert_eq!(
+                    projected.focus,
+                    match policy {
+                        A11yFocusPolicy::Upstream => original.focus,
+                        A11yFocusPolicy::DocumentRoot => original.tree.as_ref().unwrap().root,
+                    }
+                );
+                // Full equality after restoring focus pins IDs, tree metadata,
+                // node ordering, children, labels and action masks unchanged.
+                projected.focus = original.focus;
+                assert_eq!(projected, original);
+            }
+            assert!(
+                delegate
+                    .poll_projected_accessibility_update(policy)
+                    .is_none()
+            );
+        }
+    }
+
+    #[test]
+    fn accessibility_focus_projection_does_not_invent_missing_metadata() {
+        use servo::accesskit::{NodeId, TreeId, Uuid};
+        let delegate = accessibility_delegate();
+        delegate.accessibility_active.set(true);
+        let mut raw = accessibility_update(TreeId(Uuid::from_u64_pair(0, 108)), None);
+        raw.tree = None;
+        raw.focus = NodeId(999);
+        delegate.push_accessibility_update(raw.clone());
+        assert_eq!(
+            delegate
+                .poll_projected_accessibility_update(A11yFocusPolicy::DocumentRoot)
+                .unwrap(),
+            raw
+        );
+    }
+
+    #[test]
+    fn accessibility_focus_setting_is_explicit_and_rejects_unknown_values() {
+        assert_eq!(
+            parse_a11y_focus_policy(None).unwrap(),
+            A11yFocusPolicy::DocumentRoot
+        );
+        assert_eq!(
+            parse_a11y_focus_policy(Some("document-root")).unwrap(),
+            A11yFocusPolicy::DocumentRoot
+        );
+        assert_eq!(
+            parse_a11y_focus_policy(Some("upstream")).unwrap(),
+            A11yFocusPolicy::Upstream
+        );
+        for invalid in ["", "root", "Document-Root", "document-root ", "1"] {
+            assert!(parse_a11y_focus_policy(Some(invalid)).is_err());
+        }
+    }
 
     #[test]
     fn gpu_diagnostics_select_the_requested_wait_and_refuse_unknown_modes() {

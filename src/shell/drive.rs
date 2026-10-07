@@ -20,6 +20,37 @@ use crate::panes::PaneContent;
 
 use super::Shell;
 
+fn parse_public_fixture_a11y_receipt(value: Option<&str>) -> Result<bool, String> {
+    match value {
+        None | Some("0") => Ok(false),
+        Some("1") => Ok(true),
+        Some(_) => Err("TURNSTONE_A11Y_PUBLIC_FIXTURE_RECEIPT must be 0 or 1".into()),
+    }
+}
+
+fn public_fixture_a11y_receipt() -> Result<bool, String> {
+    match std::env::var("TURNSTONE_A11Y_PUBLIC_FIXTURE_RECEIPT") {
+        Ok(value) => parse_public_fixture_a11y_receipt(Some(&value)),
+        Err(std::env::VarError::NotPresent) => Ok(false),
+        Err(_) => Err("TURNSTONE_A11Y_PUBLIC_FIXTURE_RECEIPT is not valid Unicode".into()),
+    }
+}
+
+#[cfg(test)]
+mod foreign_a11y_receipt_tests {
+    use super::parse_public_fixture_a11y_receipt;
+
+    #[test]
+    fn page_text_requires_exact_public_fixture_optin() {
+        assert!(!parse_public_fixture_a11y_receipt(None).unwrap());
+        assert!(!parse_public_fixture_a11y_receipt(Some("0")).unwrap());
+        assert!(parse_public_fixture_a11y_receipt(Some("1")).unwrap());
+        for invalid in ["", "true", "yes", "2", " 1"] {
+            assert!(parse_public_fixture_a11y_receipt(Some(invalid)).is_err());
+        }
+    }
+}
+
 struct IdleDiagnosis {
     pending_fetches: bool,
     requested_content: bool,
@@ -450,8 +481,25 @@ impl taproot::Automatable for Shell {
             out = out
                 .with_field("host-servo-views", super::servo::active_views().to_string())
                 .with_field("host-servo-profile", self.servo_factory.as_ref()
-                    .map_or("", |factory| factory.profile_name()));
+                    .map_or("", |factory| factory.profile_name()))
+                .with_field("host-servo-a11y-focus", self.servo_factory.as_ref()
+                    .map_or("", |factory| factory.a11y_focus_policy()));
         }
+        let (foreign_surfaces, foreign_trees, foreign_nodes) = self.surface_a11y.published_counts();
+        out = out
+            .with_field("host-foreign-a11y-surfaces", foreign_surfaces.to_string())
+            .with_field("host-foreign-a11y-trees", foreign_trees.to_string())
+            .with_field("host-foreign-a11y-nodes", foreign_nodes.to_string())
+            // These observe successful in-process composition. The OS adapter
+            // may be inactive; neither the counts nor text qualify native AT.
+            .with_field(
+                "host-foreign-a11y-text",
+                if public_fixture_a11y_receipt().unwrap_or(false) {
+                    self.surface_a11y.published_text()
+                } else {
+                    String::new()
+                },
+            );
         if let Some(find) = snap.document_find {
             out = out
                 .with_field("document-find-query", find.query)
@@ -847,6 +895,7 @@ impl Shell {
                 })?;
             },
             Step::RecordIdle(name) => {
+                let public_fixture = public_fixture_a11y_receipt()?;
                 let diagnosis = self.idle_diagnosis();
                 let path = self.shared_out_dir.join(format!("{name}.txt"));
                 std::fs::write(&path, format!("RESULT ok\n{}\n", diagnosis.describe())).map_err(
@@ -858,6 +907,27 @@ impl Shell {
                         )
                     },
                 )?;
+                let path = self
+                    .shared_out_dir
+                    .join(format!("{name}.foreign-a11y.json"));
+                let mut diagnostic = self.surface_a11y.publication_diagnostic(public_fixture);
+                #[cfg(all(feature = "servo", windows))]
+                if let Some(factory) = &self.servo_factory {
+                    diagnostic["servo_focus_policy"] = serde_json::json!(factory.a11y_focus_policy());
+                }
+                let bytes = serde_json::to_vec_pretty(&diagnostic)
+                .map_err(|error| error.to_string())?;
+                let mut file = std::fs::OpenOptions::new()
+                    .write(true)
+                    .create_new(true)
+                    .open(&path)
+                    .map_err(|error| {
+                        format!(
+                            "record-idle '{name}': refusing to overwrite or unable to create {}: {error}",
+                            path.display()
+                        )
+                    })?;
+                std::io::Write::write_all(&mut file, &bytes).map_err(|error| error.to_string())?;
                 #[cfg(all(any(feature = "scry", feature = "servo"), windows))]
                 {
                     let surfaces = self.surface_plan().into_iter().filter_map(|surface| {

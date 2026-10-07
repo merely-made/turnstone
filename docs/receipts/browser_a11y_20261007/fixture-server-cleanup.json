@@ -1,0 +1,22 @@
+{
+  "owner": "root browser accessibility native gate",
+  "stopped_utc": "2026-10-07T21:02:55.8710365Z",
+  "verified_processes": [
+    {
+      "pid": 31144,
+      "name": "python",
+      "created_utc": "2026-10-07T19:54:34.3345843Z"
+    },
+    {
+      "pid": 35408,
+      "name": "conhost",
+      "created_utc": "2026-10-07T19:54:34.3527773Z"
+    },
+    {
+      "pid": 44620,
+      "name": "python",
+      "created_utc": "2026-10-07T19:54:34.3997757Z"
+    }
+  ],
+  "retained_server": false
+}

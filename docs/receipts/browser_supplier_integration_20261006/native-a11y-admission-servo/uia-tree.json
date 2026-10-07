@@ -1,0 +1,444 @@
+{
+  "scope": "Windows UI Automation traversal of the owned public-fixture process; not a human screen-reader walk or other-platform qualification",
+  "observer_started_utc": "2026-10-07T20:44:24.0871877Z",
+  "checkpoint_timeout_seconds": 90,
+  "traversal_timeout_seconds": 90,
+  "checkpoint_wait_seconds": 40.906314,
+  "traversal_seconds": 32.1106092,
+  "hierarchy": "Actual parent RuntimeId queried with UIA RawViewWalker; the window parent may be outside this owned subtree",
+  "text_limit": "Known public fixture only; IsPassword redacts the current element, but ancestor TextPattern text is not a protected-descendant filter",
+  "owned_pid": 55472,
+  "owned_created_utc": "2026-10-07T20:44:24.4226870Z",
+  "hwnd": 20842280,
+  "observed_markers": [],
+  "nodes": [
+    {
+      "runtime_id": [
+        42,
+        20842280
+      ],
+      "control_type": "ControlType.Window",
+      "parent_runtime_id": [
+        42,
+        65548
+      ],
+      "name": "Turnstone",
+      "protected": false,
+      "enabled": true,
+      "offscreen": false,
+      "focused": true,
+      "bounds": [
+        209.0,
+        254.0,
+        1024.0,
+        600.0
+      ],
+      "patterns": [
+        "WindowPatternIdentifiers.Pattern",
+        "TransformPatternIdentifiers.Pattern"
+      ],
+      "text": null
+    },
+    {
+      "runtime_id": [
+        42,
+        20842280,
+        4,
+        -174438269,
+        -31964153,
+        0,
+        0
+      ],
+      "control_type": "ControlType.Group",
+      "parent_runtime_id": [
+        42,
+        20842280
+      ],
+      "name": "chrome",
+      "protected": false,
+      "enabled": true,
+      "offscreen": false,
+      "focused": false,
+      "bounds": [
+        209.0,
+        254.0,
+        1024.0,
+        600.0
+      ],
+      "patterns": [],
+      "text": null
+    },
+    {
+      "runtime_id": [
+        42,
+        20842280,
+        4,
+        1342652172,
+        -1007814168,
+        0,
+        0
+      ],
+      "control_type": "ControlType.Text",
+      "parent_runtime_id": [
+        42,
+        20842280,
+        4,
+        -174438269,
+        -31964153,
+        0,
+        0
+      ],
+      "name": "",
+      "protected": false,
+      "enabled": true,
+      "offscreen": false,
+      "focused": false,
+      "bounds": [
+        209.0,
+        254.0,
+        1024.0,
+        600.0
+      ],
+      "patterns": [],
+      "text": null
+    },
+    {
+      "runtime_id": [
+        42,
+        20842280,
+        4,
+        1717536488,
+        915979916,
+        0,
+        0
+      ],
+      "control_type": "ControlType.Group",
+      "parent_runtime_id": [
+        42,
+        20842280
+      ],
+      "name": "content",
+      "protected": false,
+      "enabled": true,
+      "offscreen": false,
+      "focused": false,
+      "bounds": [
+        209.0,
+        254.0,
+        1024.0,
+        600.0
+      ],
+      "patterns": [],
+      "text": null
+    },
+    {
+      "runtime_id": [
+        42,
+        20842280,
+        4,
+        161365767,
+        -634782122,
+        0,
+        0
+      ],
+      "control_type": "ControlType.Group",
+      "parent_runtime_id": [
+        42,
+        20842280,
+        4,
+        1717536488,
+        915979916,
+        0,
+        0
+      ],
+      "name": "",
+      "protected": false,
+      "enabled": true,
+      "offscreen": false,
+      "focused": false,
+      "bounds": [
+        209.0,
+        254.0,
+        1024.0,
+        600.0
+      ],
+      "patterns": [],
+      "text": null
+    },
+    {
+      "runtime_id": [
+        42,
+        20842280,
+        4,
+        935856847,
+        1698020003,
+        0,
+        0
+      ],
+      "control_type": "ControlType.Group",
+      "parent_runtime_id": [
+        42,
+        20842280,
+        4,
+        161365767,
+        -634782122,
+        0,
+        0
+      ],
+      "name": "orrery",
+      "protected": false,
+      "enabled": true,
+      "offscreen": false,
+      "focused": false,
+      "bounds": [
+        209.0,
+        254.0,
+        1024.0,
+        600.0
+      ],
+      "patterns": [],
+      "text": null
+    },
+    {
+      "runtime_id": [
+        42,
+        20842280,
+        4,
+        250721049,
+        -1387413257,
+        0,
+        0
+      ],
+      "control_type": "ControlType.Group",
+      "parent_runtime_id": [
+        42,
+        20842280,
+        4,
+        935856847,
+        1698020003,
+        0,
+        0
+      ],
+      "name": "graph canvas, 14 nodes",
+      "protected": false,
+      "enabled": true,
+      "offscreen": false,
+      "focused": false,
+      "bounds": [
+        209.0,
+        254.0,
+        1024.0,
+        600.0
+      ],
+      "patterns": [],
+      "text": null
+    },
+    {
+      "runtime_id": [
+        42,
+        20842280,
+        4,
+        -1643063919,
+        -520485104,
+        0,
+        0
+      ],
+      "control_type": "ControlType.Group",
+      "parent_runtime_id": [
+        42,
+        20842280,
+        4,
+        161365767,
+        -634782122,
+        0,
+        0
+      ],
+      "name": "workbench",
+      "protected": false,
+      "enabled": true,
+      "offscreen": false,
+      "focused": false,
+      "bounds": [
+        209.0,
+        254.0,
+        1024.0,
+        600.0
+      ],
+      "patterns": [],
+      "text": null
+    },
+    {
+      "runtime_id": [
+        42,
+        20842280,
+        4,
+        -207820586,
+        -2009281277,
+        0,
+        0
+      ],
+      "control_type": "ControlType.Group",
+      "parent_runtime_id": [
+        42,
+        20842280,
+        4,
+        -1643063919,
+        -520485104,
+        0,
+        0
+      ],
+      "name": "Tile layout",
+      "protected": false,
+      "enabled": true,
+      "offscreen": false,
+      "focused": false,
+      "bounds": [
+        209.0,
+        254.0,
+        1024.0,
+        600.0
+      ],
+      "patterns": [],
+      "text": null
+    },
+    {
+      "runtime_id": [
+        42,
+        20842280,
+        4,
+        -560807713,
+        -16113995,
+        0,
+        0
+      ],
+      "control_type": "ControlType.Group",
+      "parent_runtime_id": [
+        42,
+        20842280,
+        4,
+        -207820586,
+        -2009281277,
+        0,
+        0
+      ],
+      "name": "Slot 0",
+      "protected": false,
+      "enabled": true,
+      "offscreen": false,
+      "focused": false,
+      "bounds": [
+        209.0,
+        254.0,
+        1024.0,
+        600.0
+      ],
+      "patterns": [],
+      "text": null
+    },
+    {
+      "runtime_id": [
+        42,
+        20842280,
+        4,
+        547415029,
+        1756097919,
+        0,
+        0
+      ],
+      "control_type": "ControlType.TabItem",
+      "parent_runtime_id": [
+        42,
+        20842280,
+        4,
+        -560807713,
+        -16113995,
+        0,
+        0
+      ],
+      "name": "Tile cc355de8-eb44-49d9-aedd-bc8b3378074e",
+      "protected": false,
+      "enabled": true,
+      "offscreen": false,
+      "focused": false,
+      "bounds": [
+        209.0,
+        254.0,
+        1024.0,
+        600.0
+      ],
+      "patterns": [],
+      "text": null
+    },
+    {
+      "runtime_id": [
+        42,
+        20842280,
+        4,
+        874313752,
+        137495117,
+        0,
+        0
+      ],
+      "control_type": "ControlType.Group",
+      "parent_runtime_id": [
+        42,
+        20842280,
+        4,
+        -207820586,
+        -2009281277,
+        0,
+        0
+      ],
+      "name": "Slot 1",
+      "protected": false,
+      "enabled": true,
+      "offscreen": false,
+      "focused": false,
+      "bounds": [
+        209.0,
+        254.0,
+        1024.0,
+        600.0
+      ],
+      "patterns": [],
+      "text": null
+    },
+    {
+      "runtime_id": [
+        42,
+        20842280,
+        4,
+        1566300108,
+        -439139623,
+        0,
+        0
+      ],
+      "control_type": "ControlType.TabItem",
+      "parent_runtime_id": [
+        42,
+        20842280,
+        4,
+        874313752,
+        137495117,
+        0,
+        0
+      ],
+      "name": "Tile 8035c554-8465-4f5a-8586-30194c462443",
+      "protected": false,
+      "enabled": true,
+      "offscreen": false,
+      "focused": false,
+      "bounds": [
+        209.0,
+        254.0,
+        1024.0,
+        600.0
+      ],
+      "patterns": [],
+      "text": null
+    }
+  ],
+  "passed": false,
+  "limitation": "Exception calling \"GetParent\" with \"1\" argument(s): \"\"",
+  "observer_finished_utc": "2026-10-07T20:45:37.1085696Z"
+}
