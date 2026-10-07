@@ -129,7 +129,7 @@ struct Shared {
     gpu_options: controls::GpuOptions,
     /// The page's device for the canvas's and the board's repulsion, built
     /// once from the host's render core on the producer's first frame.
-    physics_device: RefCell<Option<mere::canvas::PhysicsDevice>>,
+    physics_device: RefCell<Option<PhysicsDevice>>,
     visibility: Option<RefCell<visibility::Visibility>>,
     /// A released drag's drop point, canvas-local px, until the first frame
     /// that executes a physics step after the release.
@@ -181,6 +181,7 @@ impl TextureProducer for CanvasProducer {
         if shared.gpu.borrow().is_none() {
             *shared.gpu.borrow_mut() = Some((cx.device.clone(), cx.queue.clone()));
             let options = shared.gpu_options;
+            #[cfg(feature = "canvas-gpu")]
             if options.enabled {
                 // The host's own device, never one of ours: the render core's
                 // handles are the ones every producer on this page draws with.
@@ -624,10 +625,18 @@ pub(crate) fn mounted() -> bool {
     TREE.with(|tree| tree.borrow().is_some())
 }
 
+/// Whether the H5 reference host already owns this page.
+fn main_page_mounted() -> bool {
+    #[cfg(feature = "main-page")]
+    return web_scenario::host().is_some();
+    #[cfg(not(feature = "main-page"))]
+    false
+}
+
 /// Mount the one-tree page into `root`.
 #[wasm_bindgen]
 pub fn mount_tree(root: Element) -> Result<(), JsValue> {
-    if mounted() || web_scenario::host().is_some() {
+    if mounted() || main_page_mounted() {
         return Err(JsValue::from_str(
             "Graphshell is already mounted on this page",
         ));
@@ -940,10 +949,63 @@ fn publish(ok: bool, text: &str, shared: &Shared, saved: Option<serde_json::Valu
     }
 }
 
+#[cfg(feature = "canvas-gpu")]
+use mere::canvas::PhysicsDevice;
+
+/// Without `canvas-gpu` the page never has a physics device.
+#[cfg(not(feature = "canvas-gpu"))]
+enum PhysicsDevice {}
+
+#[cfg(not(feature = "canvas-gpu"))]
+impl PhysicsDevice {
+    fn answers(&self) -> u64 {
+        match *self {}
+    }
+
+    fn threshold(&self) -> usize {
+        match *self {}
+    }
+}
+
+/// Without `canvas-gpu` there is no lagged repulsion lane, so its counts stay
+/// zero; the fields are seiche's `LaggedStats`.
+#[cfg(not(feature = "canvas-gpu"))]
+#[derive(Clone, Copy, Debug, Default)]
+struct RepulsionStats {
+    device_steps: u64,
+    cpu_steps: u64,
+    submissions: u64,
+    failures: u64,
+    mismatched: u64,
+    waiting: u64,
+    stale: u64,
+    last_age: u64,
+}
+
+#[cfg(not(feature = "canvas-gpu"))]
+trait NoRepulsionLane {
+    fn repulsion_stats(&self) -> Option<RepulsionStats>;
+}
+
+#[cfg(not(feature = "canvas-gpu"))]
+impl NoRepulsionLane for mere::canvas::Canvas {
+    fn repulsion_stats(&self) -> Option<RepulsionStats> {
+        None
+    }
+}
+
 mod controls;
 mod lane;
 mod physics;
+#[cfg(feature = "product")]
 mod product;
+#[cfg(not(feature = "product"))]
+#[path = "web_tree/product_off.rs"]
+mod product;
+#[cfg(feature = "remote")]
+mod remote;
+#[cfg(not(feature = "remote"))]
+#[path = "web_tree/remote_off.rs"]
 mod remote;
 mod speed;
 mod visibility;
