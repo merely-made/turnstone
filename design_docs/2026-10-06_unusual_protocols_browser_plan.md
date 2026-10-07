@@ -4,7 +4,7 @@
 **Status (2026-10-07):** ruled. U1 to U14 are ruled: U1, U2 (accessibility
 on all three operating systems comes first), U3, U4, U5, U8 and U9 on
 2026-10-06, and U6, U7, U10 and U11 to U14 on 2026-10-07 (§7). The
-composition brief's AC1 to AC6 and U15 are ruled (§7, fifth round). The stage
+composition brief's AC1 to AC6, U15 and U16 are ruled (§7, fifth round). The stage
 order is in "Stage order (2026-10-07)" under §6. S0 is next; its lane is
 written under S0 and waits on Knot's repin. A cloud
 session owns the plan from 2026-10-07; an assessment lane wrote it, and no
@@ -692,7 +692,7 @@ offline replay.
 
 **Runs with S2, after SC** (U2, U7).
 
-**Mere half:**
+**Mere half (this lane, U16):**
 
 - Smolweb and Micron sessions implement `accessibility_projection`
   (headings, paragraphs, links and fields), as the Reader session already
@@ -1020,7 +1020,14 @@ the same record once this lane can push to Mere (U15).
   SC (U11) and whose S8 waits on the helper; the stack seams owner (the
   local "Graph database concept for Mere" session); a new composition lane.
   Mark: **"This lane (Recommended)"**. *Follows:* this lane owns SC, the
-  session seam and S8, and needs Mere attached with push access.
+  session seam and S8, and needs Mere attached with push access (attached
+  2026-10-07).
+- **U16, who does S8's Mere half** (smolweb and Micron sessions in
+  document-lanes implementing `accessibility_projection`; U3 covered S1 to S4
+  only). Options: this lane, which owns the accessibility path end to end;
+  Mere's smolweb fidelity lane, which owns document-lanes' smolweb sessions.
+  Mark: **"This lane (Recommended)"**. *Follows:* this lane owns SC, the
+  session seam, E1 and both halves of S8.
 
 ## Progress
 
@@ -1056,8 +1063,9 @@ the same record once this lane can push to Mere (U15).
     U14's "browser session" is that agent; Mark relays to it.
   - Mark pushed the plan's four commits; Turnstone `origin/main` is
     `032463a`. This lane's ruling commits were moved onto it.
-  - The composition brief landed (Mere `5919dc64`); AC1 to AC6 ruled; U15
-    opened. §4's live-pixel row corrected from its F6.
+  - The composition brief landed (Mere `5919dc64`); AC1 to AC6, U15 and
+    U16 ruled. Mere `e1bd641` records the AC rulings in the brief's §9 and
+    gives the smolweb fidelity plan its dated U3 note. §4's live-pixel row corrected from its F6.
   - S0 step 1, Linux baseline: the first `cargo check --workspace --locked`
     stopped at `alsa-sys` because the container lacked ALSA's development
     headers. That is an environment gap, not a code break. With
