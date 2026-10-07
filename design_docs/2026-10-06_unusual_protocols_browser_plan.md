@@ -3,7 +3,8 @@
 **Date:** 2026-10-06
 **Status (2026-10-07):** ruled. U1 to U14 are ruled: U1, U2 (accessibility
 on all three operating systems comes first), U3, U4, U5, U8 and U9 on
-2026-10-06, and U6, U7, U10 and U11 to U14 on 2026-10-07 (§7). The stage
+2026-10-06, and U6, U7, U10 and U11 to U14 on 2026-10-07 (§7). The
+composition brief's AC1 to AC6 are ruled (§7, fifth round); U15 is open. The stage
 order is in "Stage order (2026-10-07)" under §6. S0 is next; its lane is
 written under S0 and waits on Knot's repin. A cloud
 session owns the plan from 2026-10-07; an assessment lane wrote it, and no
@@ -317,7 +318,7 @@ kind of app-local copy the stack avoids.
 |---|---|---|---|
 | **Built: a crate pane.** The app ships a provider; Turnstone admits it. | A provider crate in the owning repo (descriptor, stylesheet, erased retained session), plus a Turnstone admission module. Redshank's was 480 lines, beside a 1,327-line authority host for the device. | Low to medium per app | Every composed repo joins the tested pin set, so each Mere move needs it moved first. This is already visible inside Woodshed: its root workspace pins Mere `8106c7c2`, while the Redshank workspace Turnstone consumes pins `3d1cdacc`. Device authority (audio, microphone, MIDI) needs one owner. Build weight grows. |
 | **Runtime: a session projection.** The app serves a granted projection; the host mounts it and returns intents. | A Graphshell endpoint per app with its projection and intent vocabulary. The host draws it generically (FrozenScene, Scenograph) or with the app's surface crate compiled in, as Knot does now. | Medium per app | Generic drawing loses bespoke interaction (a fretboard is not a card). The holder must be online, as the place port plan records for Knot. The machinery has receipts: G3, K2 and I3h. |
-| **Runtime: live pixels.** Another process's producer is shown live in the host's Workbench. | A cross-process producer protocol: shared GPU textures per OS (only D3D12 shared handles exist, from Weld and Scry), input, IME and focus forwarding, accessibility bridged across processes, and lifecycle and crash isolation. | High | High. Turnstone's Scry consumer shows how hard this class is even with a vendor runtime. The [2026-10-05 receipt](../docs/receipts/browser_scry_windows_20261005/README.md) found stale post-input images and blank reopened tiles, and clearing them took a dedicated qualification phase (another session's 2026-10-06 supplier integration receipt, uncommitted when this was written). |
+| **Runtime: live pixels.** Another process's producer is shown live in the host's Workbench. | A cross-process producer protocol: shared GPU textures per OS (the full export, import and fence set exists only on Windows, as D3D12 from Weld and Scry; Linux, through DMABUF over Vulkan, and macOS, through `MTLTexture`, have import halves only, and nothing brokers a handle between two of the stack's own processes: corrected 2026-10-07 from the composition brief's F6), input, IME and focus forwarding, accessibility bridged across processes, and lifecycle and crash isolation. | High | High. Turnstone's Scry consumer shows how hard this class is even with a vendor runtime. The [2026-10-05 receipt](../docs/receipts/browser_scry_windows_20261005/README.md) found stale post-input images and blank reopened tiles, and clearing them took a dedicated qualification phase (another session's 2026-10-06 supplier integration receipt, uncommitted when this was written). |
 | **Runtime: in-process plugins.** Surfaces arrive as Wasm components. | Turnstone's optional `wasm` feature runs `app-core` components through the action envelope (participant gate B3); no guest contributes a surface. It would need a component interface for retained views and paint, plus admission. | High | Medium to high: interface churn and paint cost. |
 
 **The answer.** For a dude and an LLM, the first two modes are the reachable
@@ -418,7 +419,12 @@ From U2 (second round), U4, U7 and U8:
 5. **S3, S4, S5**, then **S6, S7, S9 and S10**.
 6. **Misfin, then Gemini over Reticulum**, after the accessibility bar is
    met (U2). Neither has a stage yet.
-7. **S11** is research only (U8). S11a and S11b are not started; S11c
+7. **The session seam (AC2 to AC5, U15)**: the Mere subtree helper, focus
+   handback at a session's edges, panic containment, per-session key
+   namespaces, and experiment E1. S8 joins page trees through the helper,
+   so the helper and E1a come before S8. *Reading, not ruled:* they run in
+   Mere beside SC, and E1b's headed walks come before S8's.
+8. **S11** is research only (U8). S11a and S11b are not started; S11c
    became SC.
 
 ### S0. Repin as one tested set
@@ -696,8 +702,10 @@ offline replay.
 **Turnstone half:**
 
 - Content-port tiles publish the session's projection, through SC's
-  controller, into the stitched AccessKit tree, in place of the `Partial`
-  outline. Today Turnstone publishes a `DocumentA11yProjection` only for
+  controller, into Turnstone's AccessKit tree as a subtree through the Mere
+  helper (AC2), in place of the `Partial` outline. Turnstone's path-hash
+  stitching for contributed panes (`src/contributed_a11y.rs`) moves onto
+  the same helper. Today Turnstone publishes a `DocumentA11yProjection` only for
   contributed surfaces (`src/contributed_surface.rs:384`, `src/ui.rs:1659`).
 - Accessibility actions on a link or field route to the owning session.
 
@@ -966,6 +974,56 @@ trust, and the WS4 tail.
   that head; S0 absorbs the repin rows; the browser session carries S0.
   Mark: **"It commits first (Recommended)"**.
 
+### Rulings (2026-10-07, fifth round: the composition brief)
+
+The U8 research lane's brief is Mere
+`design_docs/cambium_docs/research/2026-10-06_app_composition_brief.md`
+(Mere `5919dc64`). Its forks AC1 to AC6 were put to Mark as written, with
+notes on how AC2 and AC3 meet SC and S8. The brief's own §9 should carry
+the same record once this lane can push to Mere (U15).
+
+- **AC1, how one Cambium app appears inside another.** Options: same
+  process, each guest a retained session with its own document, with
+  authority that must stay in its own process behind a Graphshell session;
+  mounts in the host window's forest document; live pixels from another
+  process. Mark: **"1, but there is a utility to 2 that has yet to be
+  articulated. for now, 1 is good"**. *Follows:* retained sessions are the
+  mechanism. Forest mounts keep a use Mark has yet to articulate, which
+  AC5's reservation keeps open.
+- **AC2, joining accessibility trees.** Options: AccessKit subtrees through
+  one Mere helper every host uses; Turnstone's path-hash stitching moved into
+  Mere unchanged; each host on its own. Mark: **"One mere subtree helper
+  (Recommended)"**. *Follows:* S8 and Pelt's combined tree (through SC) use
+  the helper.
+- **AC3, experiment E1.** Options: E1a (windowless tests in Mere) and E1b
+  (headed walks with Narrator or NVDA, VoiceOver and Orca on Fedora and
+  Mint); E1a only, with the headed walks inside S8; not now. Mark: **"E1a
+  and E1b (Recommended)"**.
+- **AC4, a guest's failure.** Options: catch unwinding panics at every call
+  into a guest session and retire it; a separate process for any guest
+  built outside the host's repository; no containment. Mark: **"Catch panics
+  (Recommended)"**. Turnstone's profiles do not set `panic = "abort"`, so
+  catching works.
+- **AC5, room for forest mounts.** Options: reserve room now with three
+  additive changes (a public `build_at` form, a stylesheet scope class,
+  per-session key namespaces) and build the mount when a consumer needs it;
+  build it now; nothing until needed. Mark: **"Reserve room now
+  (Recommended)"**.
+- **AC6, a future cross-process transport.** Options: paint lists plus
+  shipped AccessKit trees, research only after AC1's path is proven; shared
+  GPU textures plus AccessKit trees; session projections only. Mark:
+  **"Paint lists + a11y trees (Recommended)"**.
+
+### Open forks (2026-10-07)
+
+**U15. Who builds the session-seam work in Mere?** That is AC2's subtree
+helper, focus handback, AC4's panic containment, the key namespaces,
+AC5's reservations and E1. The physics session handed the composition
+thread to this lane. U11 already puts this lane in Mere for SC, and S8
+depends on the helper. The stack seams owner (the local "Graph database
+concept for Mere" session) holds the Cambium seam findings (stack seams P2,
+F20).
+
 ## Progress
 
 - **2026-10-06:**
@@ -990,6 +1048,22 @@ trust, and the WS4 tail.
     session implements `accessibility_projection`, so for small-web pages
     both hosts wait on S8's Mere half.
   - U6, U7 and U10 ruled (third round); U11 to U14 ruled (fourth round).
+  - Mark relayed the physics session's answers. WS4 and the stack seams
+    rounds belong to the local "Graph database concept for Mere" session
+    (rulings S66 and S70 to S75; R6 still on the smolweb branch; S77 is the
+    Knot pattern fix at Knot's next repin). The dirty browser-supplier tree
+    in Turnstone is most likely a Codex agent, not a Claude session: 16
+    files, about 8,800 lines added and 4,500 removed, across `weld.rs`,
+    `effects.rs`, `surface_frames.rs`, the manifests and the lock. U13 and
+    U14's "browser session" is that agent; Mark relays to it.
+  - Mark pushed the plan's four commits; Turnstone `origin/main` is
+    `032463a`. This lane's ruling commits were moved onto it.
+  - The composition brief landed (Mere `5919dc64`); AC1 to AC6 ruled; U15
+    opened. §4's live-pixel row corrected from its F6.
+  - S0 step 1, Linux baseline: the first `cargo check --workspace --locked`
+    stopped at `alsa-sys` because the container lacked ALSA's development
+    headers. That is an environment gap, not a code break. The packages
+    were installed and the check rerun.
   - Asked the identity session to report Knot's repin (commit, Mere and
     Genet revisions, S77). Asked the physics session who owns WS4 and the
     stack seams rounds (neither the fidelity plan nor Mere's log names a
@@ -1007,6 +1081,8 @@ trust, and the WS4 tail.
   (P1, S62, S66, S70 to S75).
 - Mere suite census:
   `mere/design_docs/2026-08-22_turnstone_suite_composition_and_capability_census.md`.
+- Mere app composition brief (U8; AC1 to AC6, E1):
+  `mere/design_docs/cambium_docs/research/2026-10-06_app_composition_brief.md`.
 - Mere family composition thesis:
   `mere/design_docs/2026-08-12_family_composition_thesis_brief.md`.
 - Mere auto-update brief: `mere/design_docs/2026-07-22_auto-update_brief.md`.
