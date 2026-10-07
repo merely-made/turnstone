@@ -30,9 +30,11 @@ use graphshell::capture::{
     ForgetMode, HistoryCapturePolicy,
 };
 use graphshell::mere_host::{
-    FIXTURE_DEVICE_TWO_ADDRESS, FIXTURE_PERSONA_ADDRESS, FIXTURE_WEB_ADDRESS, SelectedPersonaRef,
+    FIXTURE_DEVICE_TWO_ADDRESS, FIXTURE_PERSONA_ADDRESS, FIXTURE_WEB_ADDRESS, GRAPHSHELL, MereHost,
+    SelectedPersonaRef,
 };
-use graphshell::product::{RelationFamilyFilter, SavedSceneV2};
+use graphshell::product::{RelationFamilyFilter, SavedSceneV2, kept_summary};
+use graphshell::projection_compile::ProjectionSnapshot;
 use graphshell::projection_editor::{
     Appearance, Channel, EditorAction, Encoding, Interaction, ProjectionDefinition,
     ProjectionDefinitionSink, ProjectionDraft, ProjectionEditor, ProjectionPanel, Provenance,
@@ -54,7 +56,6 @@ const CAPTURE_POLICY_GLOBAL: &str = "graphshellCapturePolicyJson";
 const CAPTURE_VISITS_GLOBAL: &str = "graphshellInitialVisitsJson";
 const HISTORY_FILTER_GLOBAL: &str = "graphshellHistoryFilterJson";
 const HISTORY_FORGET_GLOBAL: &str = "graphshellHistoryForgetJson";
-const PROJECTION_EDITOR_STORAGE_KEY: &str = "graphshellProjectionDefinitionV1";
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 struct InitialCaptureSummary {
@@ -171,6 +172,10 @@ struct BrowserHost {
     projection_editor_open: bool,
     projection_editor_status: String,
     projection_editor_save_count: u32,
+    /// Where the session's changes stand; the frame pump stores what is
+    /// pending (`web_session`, SE22).
+    session_store: web_session::SessionStore,
+    session_store_error: String,
     /// The scenario lane (`web_scenario`): a script in flight, the semantic
     /// events it asserts against, and a capture armed or landing.
     scenario: Option<ScenarioRun>,
@@ -193,24 +198,23 @@ struct BrowserHost {
     faces: Option<graphshell::canvas_faces::FaceAlignment>,
 }
 
-struct BrowserProjectionSink;
+/// Saves a definition into the mere session (SE14): a node at its
+/// projection address, through the editor's own channel.
+struct SessionProjectionSink<'a> {
+    host: &'a mut MereHost<IndexedDbBackend>,
+}
 
-impl ProjectionDefinitionSink for BrowserProjectionSink {
+impl ProjectionDefinitionSink for SessionProjectionSink<'_> {
     type Error = String;
 
     fn save(&mut self, definition: &ProjectionDefinition) -> Result<(), Self::Error> {
-        let bytes = definition
-            .to_json_bytes()
-            .map_err(|error| format!("could not serialize projection definition: {error}"))?;
-        let storage = window()?
-            .local_storage()
-            .map_err(|_| "could not access browser local storage".to_string())?
-            .ok_or_else(|| "browser local storage is unavailable".to_string())?;
-        let value = String::from_utf8(bytes)
-            .map_err(|error| format!("projection definition was not UTF-8: {error}"))?;
-        storage
-            .set_item(PROJECTION_EDITOR_STORAGE_KEY, &value)
-            .map_err(|_| "could not save projection definition".to_string())
+        self.host
+            .save_projection(&ProjectionSnapshot {
+                definition: definition.clone(),
+                selected_occurrence: None,
+            })
+            .map(|_| ())
+            .map_err(|error| error.to_string())
     }
 }
 
@@ -491,6 +495,10 @@ impl BrowserHost {
             },
             "undo-projection" => self.step_projection(true),
             "redo-projection" => self.step_projection(false),
+            "undo-projection-save" => self.step_projection_save(true),
+            "redo-projection-save" => self.step_projection_save(false),
+            "session-undo" => self.step_session(true),
+            "session-redo" => self.step_session(false),
             "save-projection" => self.save_projection(),
             "reload-projection" => self.reload_projection(),
             "session-local" => {
@@ -680,14 +688,46 @@ impl BrowserHost {
         self.chrome_dirty = true;
     }
 
+    /// Undo (`back`) or redo Graphshell's own latest session change, never
+    /// the editor's saves (SE18).
+    fn step_session(&mut self, back: bool) {
+        let stepped = if back {
+            self.app.host.undo_now(GRAPHSHELL)
+        } else {
+            self.app.host.redo_now(GRAPHSHELL)
+        };
+        let verb = if back { "undo" } else { "redo" };
+        self.product_status = match stepped {
+            Ok(Some(reverted)) => {
+                self.session_store = web_session::SessionStore::Pending;
+                let _ = self.sync_canvas(&[], false);
+                let done = if back {
+                    "Undid Graphshell's last change"
+                } else {
+                    "Redid Graphshell's last change"
+                };
+                match kept_summary(&reverted.kept) {
+                    Some(kept) => format!("{done} · {kept}"),
+                    None => done.to_string(),
+                }
+            },
+            Ok(None) => format!("Nothing to {verb} in the session"),
+            Err(error) => format!("Session {verb} failed · {error}"),
+        };
+        self.chrome_dirty = true;
+    }
+
     fn save_projection(&mut self) {
         if self.live_projection.is_some() {
             self.save_live_projection();
             return;
         }
-        let mut sink = BrowserProjectionSink;
+        let mut sink = SessionProjectionSink {
+            host: &mut self.app.host,
+        };
         match self.projection_editor.save(&mut sink) {
             Ok(()) => {
+                self.session_store = web_session::SessionStore::Pending;
                 self.projection_editor_save_count =
                     self.projection_editor_save_count.saturating_add(1);
                 self.projection_editor_status = format!(
@@ -716,23 +756,12 @@ impl BrowserHost {
             self.reload_live_projection();
             return;
         }
-        let result = (|| -> Result<Option<ProjectionDefinition>, String> {
-            let storage = window()?
-                .local_storage()
-                .map_err(|_| "could not access browser local storage".to_string())?;
-            let Some(storage) = storage else {
-                return Ok(None);
-            };
-            let Some(value) = storage
-                .get_item(PROJECTION_EDITOR_STORAGE_KEY)
-                .map_err(|_| "could not read saved projection definition".to_string())?
-            else {
-                return Ok(None);
-            };
-            serde_json::from_str(&value)
-                .map(Some)
-                .map_err(|error| format!("could not decode saved projection definition: {error}"))
-        })();
+        let result = self
+            .app
+            .host
+            .saved_projection(&self.projection_editor.draft().id)
+            .map(|saved| saved.map(|snapshot| snapshot.definition))
+            .map_err(|error| error.to_string());
         match result {
             Ok(Some(definition)) => {
                 let draft = draft_from_definition(&definition);
@@ -1702,6 +1731,10 @@ fn update_semantics(host: &mut BrowserHost) -> Result<(), String> {
         .map_err(|_| "could not expose detail state")?;
     body.set_attribute("data-action-count", &host.form().count.to_string())
         .map_err(|_| "could not expose action count")?;
+    body.set_attribute("data-session-store", host.session_store.token())
+        .map_err(|_| "could not expose session store state")?;
+    body.set_attribute("data-session-store-error", &host.session_store_error)
+        .map_err(|_| "could not expose session store error")?;
     body.set_attribute("data-storage", &host.storage_status)
         .map_err(|_| "could not expose storage state")?;
     // A stable token beside the sentence, so a scenario checks a state rather
@@ -1903,6 +1936,8 @@ async fn run(root_element: Element) -> Result<(), String> {
         projection_editor_open: false,
         projection_editor_status: "Draft ready · unsaved".to_string(),
         projection_editor_save_count: 0,
+        session_store: web_session::SessionStore::Stored,
+        session_store_error: String::new(),
         scenario: None,
         scenario_frames: 0,
         probe_events: Vec::new(),

@@ -23,6 +23,8 @@
           data-command="session-remote"
           aria-pressed="false"
         >Remote mount</button>
+        <button data-command="session-undo" aria-label="Undo Graphshell's last change">Undo change</button>
+        <button data-command="session-redo" aria-label="Redo Graphshell's last undone change">Redo change</button>
       </header>
 
       <nav aria-label="Graph controls">
@@ -182,6 +184,8 @@
             <button type="button" data-command="undo-projection" disabled>Undo</button>
             <button type="button" data-command="redo-projection" disabled>Redo</button>
             <button type="button" data-command="save-projection">Save projection</button>
+            <button type="button" data-command="undo-projection-save">Undo save</button>
+            <button type="button" data-command="redo-projection-save">Redo save</button>
             <button type="button" data-command="reload-projection">Reload saved</button>
             <button type="button" data-command="close-projection-editor">Close</button>
           </div>

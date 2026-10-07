@@ -54,6 +54,7 @@ dom click [data-command="reload-projection"]
 settle 2
 assert snap projection-executable == true
 assert snap projection-selected-occurrence == card:2
+assert snap session-store == stored
 capture projection_reopened
 wait
 log executable projection authoring proof complete

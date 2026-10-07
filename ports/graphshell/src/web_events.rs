@@ -16,7 +16,9 @@ use web_sys::{
     MouseEvent, PointerEvent, WheelEvent,
 };
 
-use super::{ActiveSession, BrowserHost, document, root, update_semantics, web_scenario, window};
+use super::{
+    ActiveSession, BrowserHost, document, root, update_semantics, web_scenario, web_session, window,
+};
 
 pub(super) fn install_events(state: &Rc<RefCell<BrowserHost>>) -> Result<(), String> {
     let canvas = state.borrow().canvas_element.clone();
@@ -300,6 +302,7 @@ pub(super) fn schedule_frames(state: Rc<RefCell<BrowserHost>>) -> Result<(), Str
             host.probe_events.extend(events);
             let _ = update_semantics(&mut host);
         }
+        web_session::store_pending(&callback_state);
         let continue_frames = {
             let host = callback_state.borrow();
             host.practice
@@ -308,6 +311,7 @@ pub(super) fn schedule_frames(state: Rc<RefCell<BrowserHost>>) -> Result<(), Str
                 || host.scenario.is_some()
                 || host.capture_pending.is_some()
                 || host.capture_request.is_some()
+                || host.session_store.busy()
         };
         if continue_frames
             && !callback_pending.replace(true)

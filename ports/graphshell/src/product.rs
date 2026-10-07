@@ -24,6 +24,35 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use crate::mere_host::{MereHost, MereHostError};
+use crate::projection_compile::ProjectionSnapshot;
+
+/// What an undo kept because another author changed it since, in words for
+/// a status line (Scenograph editor plan, SE21). `None` when nothing was kept.
+pub fn kept_summary(kept: &[pandect::Kept]) -> Option<String> {
+    use mere::kernel::graph::Part;
+    if kept.is_empty() {
+        return None;
+    }
+    let parts: Vec<String> = kept
+        .iter()
+        .map(|kept| {
+            let part = match &kept.part {
+                Part::Node(_) => "the node".to_string(),
+                Part::Title(_) => "the title".to_string(),
+                Part::Facet(_, facet) => format!("the {facet} facet"),
+                other => format!("{other:?}"),
+            };
+            let by: Vec<String> = kept.by.iter().map(ToString::to_string).collect();
+            format!("{part}, changed since by {}", by.join(" and "))
+        })
+        .collect();
+    Some(format!("kept {}", parts.join("; ")))
+}
+
+/// The address a saved projection definition lives at.
+pub fn projection_address(definition_id: &str) -> String {
+    format!("mere://projection/{definition_id}")
+}
 
 pub const LOCAL_FILE_FACET: &str = "graphshell.local-file/v1";
 pub const CONTENT_FACET: &str = "graphshell.content/v1";
@@ -34,6 +63,13 @@ pub const SAVED_SCENE_FACET: &str = "graphshell.saved-scene/v3";
 /// and a reader of this facet does not see a version-2 scene.
 pub const SAVED_SCENE_FACET_V1: &str = "graphshell.saved-scene/v2";
 pub const PINNED_PROJECTION_FACET: &str = "graphshell.pinned-projection/v1";
+/// Where the projection editor saves a definition and its selected
+/// occurrence, on a node at [`projection_address`] (Scenograph editor plan,
+/// SE14).
+pub const PROJECTION_DEFINITION_FACET: &str = "graphshell.projection-definition/v1";
+/// The channel the projection editor's saves come through, so its Undo save
+/// reaches only them and Graphshell's session undo never does (SE18).
+pub const PROJECTION_EDITOR_VIA: &str = "graphshell.projection-editor";
 pub const PRODUCT_CODICIL_SCHEMA: &str = "graphshell.graph-codicil/v2";
 /// Read-only compatibility tag for graph selections exported before the
 /// Engram-to-Codicil vocabulary migration.
@@ -679,6 +715,61 @@ impl<B: Backend> MereHost<B> {
         Ok(id)
     }
 
+    /// Save a projection definition, with its selected occurrence, into the
+    /// session as one change through [`PROJECTION_EDITOR_VIA`]: the node at
+    /// its [`projection_address`] is made on the first save, and its facet
+    /// replaced on each one after.
+    pub fn save_projection(&mut self, snapshot: &ProjectionSnapshot) -> Result<Uuid, ProductError> {
+        let address = projection_address(&snapshot.definition.id);
+        let title = snapshot.definition.label.trim().to_string();
+        let value = serde_json::to_value(snapshot)
+            .map_err(|error| ProductError::InvalidCodicil(error.to_string()))?;
+        let id = self
+            .graph()
+            .get_node_by_url(&address)
+            .map(|(_, node)| node.id)
+            .unwrap_or_else(Uuid::new_v4);
+        self.through(PROJECTION_EDITOR_VIA.to_string(), |host| {
+            host.mutate_product_graph(|graph| {
+                let key = match graph.get_node_key_by_id(id) {
+                    Some(key) => key,
+                    None => {
+                        let key = add_node(graph, Some(id), address, PortablePoint::new(0.0, 0.0));
+                        if !title.is_empty() {
+                            apply_graph_delta(graph, GraphDelta::SetNodeTitle { key, title });
+                        }
+                        key
+                    },
+                };
+                apply_graph_delta(
+                    graph,
+                    GraphDelta::SetNodeFacet {
+                        key,
+                        facet: PROJECTION_DEFINITION_FACET.to_string(),
+                        value,
+                    },
+                );
+            })
+        });
+        Ok(id)
+    }
+
+    /// The projection saved for `definition_id`, if the session holds one.
+    pub fn saved_projection(
+        &self,
+        definition_id: &str,
+    ) -> Result<Option<ProjectionSnapshot>, ProductError> {
+        self.facet_value(
+            &projection_address(definition_id),
+            PROJECTION_DEFINITION_FACET,
+        )
+        .map(|value| {
+            serde_json::from_value(value.clone())
+                .map_err(|error| ProductError::InvalidCodicil(error.to_string()))
+        })
+        .transpose()
+    }
+
     /// The scene saved at `address`: a version-2 scene, else one saved
     /// before the roles, read as it behaved.
     pub fn product_scene(&self, address: &str) -> Result<SavedSceneV2, ProductError> {
@@ -943,6 +1034,187 @@ mod tests {
             persona: FIXTURE_PERSONA_ADDRESS.to_string(),
             profile: "profile:graphshell-h3".to_string(),
         }
+    }
+
+    fn projection(label: &str, selected: Option<&str>) -> ProjectionSnapshot {
+        use crate::projection_editor::*;
+        let definition = ProjectionDraft {
+            version: PROJECTION_DEFINITION_VERSION,
+            id: "notes-by-topic".into(),
+            label: label.into(),
+            source: SourceBinding {
+                authority: "local-device".into(),
+                domain: "notes".into(),
+                resource: "graph:notes".into(),
+            },
+            reading: Reading {
+                kind: "nodes".into(),
+                key: "topic".into(),
+                value: None,
+            },
+            encoding: Encoding {
+                x: Channel::Field("topic_x".into()),
+                y: Channel::Field("topic_y".into()),
+                color: None,
+                label: Some(Channel::Field("title".into())),
+            },
+            arrangement: Arrangement::default(),
+            interaction: Interaction::default(),
+            appearance: Appearance {
+                realization: "canvas".into(),
+                title: label.into(),
+                theme: "light".into(),
+            },
+            provenance: Provenance {
+                author: "mark".into(),
+                source_revision: Some("rev-7".into()),
+                revision_evidence: RevisionEvidence::PublicGeneration,
+                note: String::new(),
+            },
+        }
+        .to_definition()
+        .expect("a valid definition");
+        ProjectionSnapshot {
+            definition,
+            selected_occurrence: selected.map(str::to_string),
+        }
+    }
+
+    async fn open_on(backend: &MemoryBackend) -> MereHost<MemoryBackend> {
+        MereHost::open(
+            backend.clone(),
+            selected_persona(),
+            fixture_handlers(),
+            AccessContext {
+                persona: FIXTURE_PERSONA_ADDRESS.to_string(),
+                device: FIXTURE_DEVICE_TWO_ADDRESS.to_string(),
+                at_ms: 3_000,
+            },
+        )
+        .await
+        .expect("open")
+    }
+
+    /// Write the host's pending changes the way a browser host does: take the
+    /// batch, write it through a clone of the store, mark it stored (SE22).
+    async fn store_split(host: &mut MereHost<MemoryBackend>) {
+        let staged = host.prepare_store(1_800_000_000).expect("prepare");
+        staged.write(&host.store()).await.expect("write");
+        host.staged(staged);
+    }
+
+    #[test]
+    fn a_saved_projection_reopens_from_the_store() {
+        pollster::block_on(async {
+            let backend = MemoryBackend::new();
+            let mut host = open_on(&backend).await;
+            let saved = projection("Practice", Some("card:2"));
+            host.save_projection(&saved).expect("save");
+            store_split(&mut host).await;
+            let reopened = open_on(&backend).await;
+            let id = saved.definition.id.clone();
+            assert_eq!(reopened.saved_projection(&id).unwrap(), Some(saved));
+            assert_eq!(reopened.saved_projection("absent").unwrap(), None);
+        });
+    }
+
+    #[test]
+    fn undo_save_reaches_only_the_editors_channel() {
+        pollster::block_on(async {
+            let backend = MemoryBackend::new();
+            let mut host = open_on(&backend).await;
+            let first = projection("First", None);
+            let second = projection("Second", Some("card:1"));
+            let id = first.definition.id.clone();
+            host.save_projection(&first).expect("first save");
+            host.save_projection(&second).expect("second save");
+            host.create_address("https://example.net/after", "After")
+                .expect("a Graphshell change after the saves");
+
+            let undone = host.undo_now(PROJECTION_EDITOR_VIA).expect("undo save");
+            assert!(undone.is_some_and(|reverted| reverted.kept.is_empty()));
+            assert_eq!(host.saved_projection(&id).unwrap(), Some(first.clone()));
+            assert!(
+                host.graph()
+                    .get_node_by_url("https://example.net/after")
+                    .is_some(),
+                "Graphshell's own change is out of the editor's reach"
+            );
+            host.redo_now(PROJECTION_EDITOR_VIA).expect("redo save");
+            assert_eq!(host.saved_projection(&id).unwrap(), Some(second.clone()));
+
+            host.undo_now(PROJECTION_EDITOR_VIA).expect("undo again");
+            host.undo_now(PROJECTION_EDITOR_VIA)
+                .expect("undo the first save");
+            assert_eq!(
+                host.saved_projection(&id).unwrap(),
+                None,
+                "the first save made the node"
+            );
+            store_split(&mut host).await;
+            let reopened = open_on(&backend).await;
+            assert_eq!(
+                reopened.saved_projection(&id).unwrap(),
+                None,
+                "the undo was stored"
+            );
+
+            host.undo_now(GRAPHSHELL).expect("session undo");
+            assert!(
+                host.graph()
+                    .get_node_by_url("https://example.net/after")
+                    .is_none(),
+                "the session undo reaches Graphshell's change"
+            );
+        });
+    }
+
+    #[test]
+    fn undo_keeps_a_save_another_channel_changed_since() {
+        pollster::block_on(async {
+            let backend = MemoryBackend::new();
+            let mut host = open_on(&backend).await;
+            let first = projection("First", None);
+            let id = first.definition.id.clone();
+            host.save_projection(&first).expect("save");
+            let changed = projection("Changed elsewhere", None);
+            host.through("turnstone".to_string(), |host| {
+                let key = host
+                    .graph()
+                    .get_node_key_by_id(
+                        host.graph()
+                            .get_node_by_url(&projection_address(&id))
+                            .unwrap()
+                            .1
+                            .id,
+                    )
+                    .unwrap();
+                host.set_facet(
+                    key,
+                    PROJECTION_DEFINITION_FACET,
+                    serde_json::to_value(&changed).unwrap(),
+                )
+                .expect("another channel edits the facet")
+            });
+            let reverted = host
+                .undo_now(PROJECTION_EDITOR_VIA)
+                .expect("undo save")
+                .expect("a save to undo");
+            assert!(!reverted.kept.is_empty(), "the changed facet is kept");
+            assert!(
+                reverted.kept.iter().any(|kept| kept
+                    .by
+                    .iter()
+                    .any(|author| format!("{author:?}").contains("turnstone"))),
+                "and its changer is named"
+            );
+            assert_eq!(host.saved_projection(&id).unwrap(), Some(changed));
+            let summary = kept_summary(&reverted.kept).expect("a summary");
+            assert!(
+                summary.starts_with("kept ") && summary.contains("via turnstone"),
+                "{summary}"
+            );
+        });
     }
 
     /// A scene saved before the physics catalog carries no law, overlays or kind

@@ -17,15 +17,16 @@ use graphshell::projection_compile::{
     CompiledProjection, ProjectionDataset, ProjectionSnapshot, ProjectionValue,
     default_definition, practice_compiler,
 };
+use graphshell::product::{PROJECTION_EDITOR_VIA, kept_summary};
 use graphshell::projection_editor::{EditorAction, ProjectionEditor, ProjectionPanel};
 use netrender::Scene;
 use sceno::InstanceId;
 
+use super::web_session::SessionStore;
 use super::{
-    BrowserHost, document, draft_from_definition, element, now_ms, root, set_text, window,
+    BrowserHost, document, draft_from_definition, element, now_ms, root, set_text,
 };
 
-const STORAGE_KEY: &str = "graphshellExecutableProjectionV1";
 const PRACTICE_DATA: &str = include_str!("../web/fixtures/woodshed-stage.json");
 
 pub(super) struct LiveProjection {
@@ -211,7 +212,7 @@ impl BrowserHost {
 
     pub(super) fn save_live_projection(&mut self) {
         self.recompile_projection();
-        let result = (|| -> Result<(), String> {
+        let result = (|| -> Result<ProjectionSnapshot, String> {
             let live = self
                 .live_projection
                 .as_ref()
@@ -228,17 +229,17 @@ impl BrowserHost {
                 definition,
                 selected_occurrence: live.selected.clone(),
             };
-            let bytes = serde_json::to_string(&snapshot).map_err(|e| e.to_string())?;
-            let storage = window()?
-                .local_storage()
-                .map_err(|_| "Storage unavailable")?
-                .ok_or("Storage unavailable")?;
-            storage
-                .set_item(STORAGE_KEY, &bytes)
-                .map_err(|_| "Storage write failed".to_string())
-        })();
+            Ok(snapshot)
+        })()
+        .and_then(|snapshot| {
+            self.app
+                .host
+                .save_projection(&snapshot)
+                .map_err(|error| error.to_string())
+        });
         match result {
-            Ok(()) => {
+            Ok(_) => {
+                self.session_store = SessionStore::Pending;
                 self.projection_editor.mark_saved();
                 self.projection_editor_save_count += 1;
                 self.projection_editor_status =
@@ -254,16 +255,12 @@ impl BrowserHost {
                 .live_projection
                 .as_ref()
                 .ok_or("Load the source before reopening")?;
-            let storage = window()?
-                .local_storage()
-                .map_err(|_| "Storage unavailable")?
-                .ok_or("Storage unavailable")?;
-            let value = storage
-                .get_item(STORAGE_KEY)
-                .map_err(|_| "Storage read failed")?
+            let saved = self
+                .app
+                .host
+                .saved_projection(&self.projection_editor.draft().id)
+                .map_err(|error| error.to_string())?
                 .ok_or("No saved executable projection")?;
-            let saved: ProjectionSnapshot =
-                serde_json::from_str(&value).map_err(|e| e.to_string())?;
             practice_compiler().compile_snapshot(&saved, &live.dataset).map_err(|issues| {
                 issues
                     .iter()
@@ -286,6 +283,52 @@ impl BrowserHost {
             },
             Err(error) => self.projection_editor_status = format!("Reopen failed: {error}"),
         }
+    }
+}
+
+impl BrowserHost {
+    /// Undo (`back`) or redo the editor's latest save in the session, through
+    /// its own channel, and take what the store now holds for this draft as
+    /// one step on the draft's history (SE18, SE20, SE21).
+    pub(super) fn step_projection_save(&mut self, back: bool) {
+        let verb = if back { "undo" } else { "redo" };
+        let id = self.projection_editor.draft().id.clone();
+        let stepped = if back {
+            self.app.host.undo_now(PROJECTION_EDITOR_VIA)
+        } else {
+            self.app.host.redo_now(PROJECTION_EDITOR_VIA)
+        };
+        let status = match stepped {
+            Ok(Some(reverted)) => {
+                self.session_store = SessionStore::Pending;
+                let done = if back { "Undid save" } else { "Redid save" };
+                let stored = match self.app.host.saved_projection(&id) {
+                    Ok(Some(snapshot)) => {
+                        self.projection_editor
+                            .load_stored(draft_from_definition(&snapshot.definition));
+                        if let Some(live) = self.live_projection.as_mut() {
+                            live.selected = snapshot.selected_occurrence;
+                        }
+                        self.recompile_projection();
+                        format!("{done} · {}", snapshot.definition.label)
+                    },
+                    Ok(None) => {
+                        self.projection_editor.forget_saved();
+                        format!("{done} · nothing stored for {id}")
+                    },
+                    Err(error) => format!("{done} · could not read it back: {error}"),
+                };
+                match kept_summary(&reverted.kept) {
+                    Some(kept) => format!("{stored} · {kept}"),
+                    None => stored,
+                }
+            },
+            Ok(None) => format!("No save to {verb}"),
+            Err(error) => format!("Save {verb} failed · {error}"),
+        };
+        self.projection_editor_status = status;
+        self.projection_editor_open = true;
+        self.chrome_dirty = true;
     }
 }
 

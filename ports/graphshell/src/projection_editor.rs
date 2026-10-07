@@ -401,6 +401,23 @@ impl ProjectionEditor {
         Ok(())
     }
 
+    /// Take `draft`, read back from the store after an undo or redo of a save,
+    /// as one undo step on the draft's own history, and read clean against
+    /// the store (SE20).
+    pub fn load_stored(&mut self, draft: ProjectionDraft) {
+        if draft != self.draft {
+            self.history
+                .record((self.draft.clone(), self.panel), None, 0);
+            self.draft = draft;
+        }
+        self.history.mark_saved();
+    }
+
+    /// The store no longer holds this draft's definition: it reads unsaved.
+    pub fn forget_saved(&mut self) {
+        self.history.forget_saved();
+    }
+
     /// Mark the draft clean after the host persisted it by another path.
     pub fn mark_saved(&mut self) {
         self.history.mark_saved();

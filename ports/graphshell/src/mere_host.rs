@@ -171,10 +171,34 @@ pub struct MereHost<B> {
     session_item: bool,
 }
 
-/// What [`MereHost::stage`] put in a batch, to mark stored once it commits.
-pub(crate) struct Staged {
+/// Changes not yet stored, taken as one batch: what [`MereHost::stage`] put
+/// in a batch, or what [`MereHost::prepare_store`] took for its caller to
+/// write. Mark it stored once it commits.
+pub struct Staged {
     current: Pending,
     retired: Vec<Pending>,
+}
+
+impl Staged {
+    /// Whether there is nothing to write.
+    pub fn is_empty(&self) -> bool {
+        self.retired
+            .iter()
+            .chain([&self.current])
+            .all(Pending::is_empty)
+    }
+
+    /// Write the batch through `backend`, which must be the host's store or a
+    /// clone of it. Needs no access to the host, so a host that cannot hold
+    /// itself across an await writes here (SE22 of the Scenograph editor plan).
+    pub async fn write<T: Backend>(&self, backend: &T) -> Result<(), MereHostError> {
+        for pending in self.retired.iter().chain([&self.current]) {
+            if !pending.is_empty() {
+                backend.apply(pending.ops()).await?;
+            }
+        }
+        Ok(())
+    }
 }
 
 fn saved_at(saved_at_secs: u64) -> SystemTime {
@@ -347,6 +371,16 @@ impl<B: Backend> MereHost<B> {
         batch: &T,
         saved_at_secs: u64,
     ) -> Result<Staged, MereHostError> {
+        let staged = self.prepare_store(saved_at_secs)?;
+        staged.write(batch).await?;
+        Ok(staged)
+    }
+
+    /// Take every change not yet stored as one batch, without writing it. The
+    /// caller writes it ([`Staged::write`]) through [`store`](Self::store),
+    /// then hands it to [`staged`](Self::staged). Changes made in between stay
+    /// pending for the next batch.
+    pub fn prepare_store(&self, saved_at_secs: u64) -> Result<Staged, MereHostError> {
         let at = saved_at(saved_at_secs);
         let retired = self
             .retired
@@ -354,16 +388,19 @@ impl<B: Backend> MereHost<B> {
             .map(|session| session.pending(at))
             .collect::<Result<Vec<_>, _>>()?;
         let current = self.graph_session.pending(at)?;
-        for pending in retired.iter().chain([&current]) {
-            if !pending.is_empty() {
-                batch.apply(pending.ops()).await?;
-            }
-        }
         Ok(Staged { current, retired })
     }
 
-    /// Mark what [`stage`](Self::stage) put in a batch as stored.
-    pub(crate) fn staged(&mut self, staged: Staged) {
+    /// The host's store, to write a [`Staged`] batch through.
+    pub fn store(&self) -> B
+    where
+        B: Clone,
+    {
+        self.slots.backend().clone()
+    }
+
+    /// Mark a batch stored once it has committed.
+    pub fn staged(&mut self, staged: Staged) {
         let count = staged.retired.len();
         for (session, pending) in self.retired.iter_mut().zip(staged.retired) {
             session.stored(pending);
@@ -570,6 +607,22 @@ impl<B: Backend> MereHost<B> {
     pub async fn redo(&mut self, via: &str) -> Result<Option<Reverted>, MereHostError> {
         let author = author_of(&self.selected_persona, via);
         let reverted = self.graph_session.redo(author).await?;
+        self.bump_if(reverted.is_some());
+        Ok(reverted)
+    }
+
+    /// [`undo`](Self::undo), journaled but not stored until the next batch.
+    pub fn undo_now(&mut self, via: &str) -> Result<Option<Reverted>, MereHostError> {
+        let author = author_of(&self.selected_persona, via);
+        let reverted = self.graph_session.undo_now(author)?;
+        self.bump_if(reverted.is_some());
+        Ok(reverted)
+    }
+
+    /// [`redo`](Self::redo), journaled but not stored until the next batch.
+    pub fn redo_now(&mut self, via: &str) -> Result<Option<Reverted>, MereHostError> {
+        let author = author_of(&self.selected_persona, via);
+        let reverted = self.graph_session.redo_now(author)?;
         self.bump_if(reverted.is_some());
         Ok(reverted)
     }
