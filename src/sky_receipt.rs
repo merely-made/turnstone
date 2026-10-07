@@ -1234,6 +1234,28 @@ mod tests {
     use super::*;
 
     #[test]
+    fn fixed_boston_dto_goldens_preserve_exact_serialization_and_digests() {
+        // These are fixed Windows DTOs, not freshly recomputed astronomy.
+        // Their bytes preserve the original P0 serialization contract.
+        let fixtures: [(&[u8], &str); 2] = [
+            (
+                include_bytes!("../scenarios/fixtures/sky_receipt_v1_boston_2024-04-08.json"),
+                "caff8371d348ba141397a8185e291c533c6ab12d4fe85f9ce3be797707ce411d",
+            ),
+            (
+                include_bytes!("../scenarios/fixtures/sky_receipt_v1_boston_2024-04-09.json"),
+                "74883b5db9fa959cccdeb69744da4a99baec5bfd55bade77426cfe6b0d9c450f",
+            ),
+        ];
+        for (bytes, expected_digest) in fixtures {
+            let receipt = SkyReceiptV1::from_json(bytes).expect("the fixed DTO validates");
+            assert_eq!(receipt.to_pretty_json().unwrap().as_slice(), bytes);
+            assert_eq!(receipt.blake3_hex_digest().unwrap(), expected_digest);
+            assert_eq!(blake3::hash(bytes).to_hex().as_str(), expected_digest);
+        }
+    }
+
+    #[test]
     fn pretty_json_round_trips_and_hashes_the_exact_bytes() {
         let receipt = sample_receipt();
         let first = receipt.to_pretty_json().unwrap();

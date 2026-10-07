@@ -1,0 +1,356 @@
+{
+  "version": 1,
+  "engine": {
+    "package": "turquet",
+    "version": "0.13.0",
+    "source_revision": "bc3c454f755d0bfd70ab48bd9556a1cda2213d41"
+  },
+  "day": {
+    "date": "2024-04-09",
+    "time_zone": "America/New_York",
+    "start_utc": "2024-04-09T04:00:00Z",
+    "end_utc": "2024-04-10T04:00:00Z",
+    "start_tt": {
+      "day1": 2451545.0,
+      "day2": 8864.66746740695
+    },
+    "end_tt": {
+      "day1": 2451545.0,
+      "day2": 8865.66746740695
+    }
+  },
+  "observer": {
+    "longitude_east_radians": -1.2402117678453985,
+    "latitude_radians": 0.7393232164740501,
+    "height_meters_above_wgs84_ellipsoid": 0.0
+  },
+  "anchor_tt": {
+    "day1": 2451545.0,
+    "day2": 8865.16746740695
+  },
+  "search": {
+    "sample_step_nanoseconds": 3600000000000,
+    "tolerance_nanoseconds": 1000000000
+  },
+  "bodies": [
+    {
+      "body": "sun",
+      "rise_set": {
+        "refraction": {
+          "model": {
+            "name": "USNO standard-horizon fixed refraction",
+            "revision": "2026-08-25"
+          },
+          "apparent_lift_radians": 0.009890199094634533
+        },
+        "limb": {
+          "kind": "upper_angular_radius",
+          "model": {
+            "name": "USNO standard-horizon average solar upper limb",
+            "revision": "2026-08-25"
+          },
+          "angular_radius_radians": 0.004654211338651545
+        },
+        "horizon_dip": {
+          "kind": "level",
+          "model": {
+            "name": "level astronomical horizon",
+            "revision": "1"
+          }
+        }
+      }
+    },
+    {
+      "body": "moon",
+      "rise_set": {
+        "refraction": {
+          "model": {
+            "name": "USNO standard-horizon fixed refraction",
+            "revision": "2026-08-25"
+          },
+          "apparent_lift_radians": 0.009890199094634533
+        },
+        "limb": {
+          "kind": "upper_physical_radius",
+          "model": {
+            "name": "mean lunar physical-radius limb",
+            "revision": "1"
+          },
+          "physical_radius_meters": 1737400.0
+        },
+        "horizon_dip": {
+          "kind": "level",
+          "model": {
+            "name": "level astronomical horizon",
+            "revision": "1"
+          }
+        }
+      }
+    }
+  ],
+  "ephemeris": {
+    "model": {
+      "name": "Turquet analytical apparent ecliptic",
+      "revision": "3"
+    },
+    "snapshot": null,
+    "angular_accuracy": {
+      "maximum_error_radians": 0.00017453292519943296,
+      "evidence": "external_comparison",
+      "authority": "NASA/JPL Horizons",
+      "scope": "5,277 DE440s vectors across 1885-2099; angular only"
+    }
+  },
+  "observer_transform": {
+    "model": {
+      "name": "Turquet WGS84 airless topocentric transform",
+      "revision": "1"
+    },
+    "angular_accuracy": {
+      "maximum_error_radians": 0.00017453292519943296,
+      "evidence": "external_comparison",
+      "authority": "NASA/JPL Horizons",
+      "scope": "90 airless vectors at 3 sites and 3 epochs; underlying 1885-2099 date cohort"
+    }
+  },
+  "earth_orientation": {
+    "authority": "Turnstone test fixture",
+    "snapshot": "2024-04-08 DUT1=-0.01669 s; xp=yp=0 approximation"
+  },
+  "facts": [
+    {
+      "body": "sun",
+      "kind": "lower_transit",
+      "span_tt": {
+        "start": {
+          "day1": 2451545.0,
+          "day2": 8864.699236205779
+        },
+        "end": {
+          "day1": 2451545.0,
+          "day2": 8864.69924637815
+        }
+      },
+      "calculation_model": {
+        "name": "topocentric apparent local-meridian transit",
+        "revision": "1"
+      },
+      "detail": {
+        "kind": "meridian_transit",
+        "midpoint_altitude_radians": -0.6961781831616004
+      }
+    },
+    {
+      "body": "moon",
+      "kind": "lower_transit",
+      "span_tt": {
+        "start": {
+          "day1": 2451545.0,
+          "day2": 8864.714637409896
+        },
+        "end": {
+          "day1": 2451545.0,
+          "day2": 8864.714647582732
+        }
+      },
+      "calculation_model": {
+        "name": "topocentric apparent local-meridian transit",
+        "revision": "1"
+      },
+      "detail": {
+        "kind": "meridian_transit",
+        "midpoint_altitude_radians": -0.6537015583483069
+      }
+    },
+    {
+      "body": "sun",
+      "kind": "rise",
+      "span_tt": {
+        "start": {
+          "day1": 2451545.0,
+          "day2": 8864.925981810316
+        },
+        "end": {
+          "day1": 2451545.0,
+          "day2": 8864.925991982687
+        }
+      },
+      "calculation_model": {
+        "name": "caller-composed conventional rise/set circumstances",
+        "revision": "1"
+      },
+      "detail": {
+        "kind": "rise_set",
+        "airless_center_altitude_radians": -0.014529193808773338,
+        "refraction_offset_radians": 0.009890199094634533,
+        "limb_offset_radians": 0.004654211338651545,
+        "horizon_dip_offset_radians": 0.0
+      }
+    },
+    {
+      "body": "moon",
+      "kind": "rise",
+      "span_tt": {
+        "start": {
+          "day1": 2451545.0,
+          "day2": 8864.940935423598
+        },
+        "end": {
+          "day1": 2451545.0,
+          "day2": 8864.940945595969
+        }
+      },
+      "calculation_model": {
+        "name": "caller-composed conventional rise/set circumstances",
+        "revision": "1"
+      },
+      "detail": {
+        "kind": "rise_set",
+        "airless_center_altitude_radians": -0.014692622615767611,
+        "refraction_offset_radians": 0.009890199094634533,
+        "limb_offset_radians": 0.004805868299330598,
+        "horizon_dip_offset_radians": 0.0
+      }
+    },
+    {
+      "body": "sun",
+      "kind": "position",
+      "span_tt": {
+        "start": {
+          "day1": 2451545.0,
+          "day2": 8865.16746740695
+        },
+        "end": {
+          "day1": 2451545.0,
+          "day2": 8865.16746740695
+        }
+      },
+      "calculation_model": null,
+      "detail": {
+        "kind": "position",
+        "right_ascension_radians": 0.32698575716319267,
+        "declination_radians": 0.13833236012944228,
+        "azimuth_radians": 2.8007608550185132,
+        "altitude_radians": 0.944698989115183,
+        "distance_meters": 149856663175.42178
+      }
+    },
+    {
+      "body": "moon",
+      "kind": "position",
+      "span_tt": {
+        "start": {
+          "day1": 2451545.0,
+          "day2": 8865.16746740695
+        },
+        "end": {
+          "day1": 2451545.0,
+          "day2": 8865.16746740695
+        }
+      },
+      "calculation_model": null,
+      "detail": {
+        "kind": "position",
+        "right_ascension_radians": 0.5303877240968395,
+        "declination_radians": 0.2345339288722516,
+        "azimuth_radians": 2.418014163517088,
+        "altitude_radians": 0.9576588382173479,
+        "distance_meters": 356968565.9058054
+      }
+    },
+    {
+      "body": "sun",
+      "kind": "upper_transit",
+      "span_tt": {
+        "start": {
+          "day1": 2451545.0,
+          "day2": 8865.199144651182
+        },
+        "end": {
+          "day1": 2451545.0,
+          "day2": 8865.199154823553
+        }
+      },
+      "calculation_model": {
+        "name": "topocentric apparent local-meridian transit",
+        "revision": "1"
+      },
+      "detail": {
+        "kind": "meridian_transit",
+        "midpoint_altitude_radians": 0.9700102071824892
+      }
+    },
+    {
+      "body": "moon",
+      "kind": "upper_transit",
+      "span_tt": {
+        "start": {
+          "day1": 2451545.0,
+          "day2": 8865.233029335272
+        },
+        "end": {
+          "day1": 2451545.0,
+          "day2": 8865.233039507642
+        }
+      },
+      "calculation_model": {
+        "name": "topocentric apparent local-meridian transit",
+        "revision": "1"
+      },
+      "detail": {
+        "kind": "meridian_transit",
+        "midpoint_altitude_radians": 1.0735693194556126
+      }
+    },
+    {
+      "body": "sun",
+      "kind": "set",
+      "span_tt": {
+        "start": {
+          "day1": 2451545.0,
+          "day2": 8865.472836463246
+        },
+        "end": {
+          "day1": 2451545.0,
+          "day2": 8865.472846635617
+        }
+      },
+      "calculation_model": {
+        "name": "caller-composed conventional rise/set circumstances",
+        "revision": "1"
+      },
+      "detail": {
+        "kind": "rise_set",
+        "airless_center_altitude_radians": -0.014566616439670964,
+        "refraction_offset_radians": 0.009890199094634533,
+        "limb_offset_radians": 0.004654211338651545,
+        "horizon_dip_offset_radians": 0.0
+      }
+    },
+    {
+      "body": "moon",
+      "kind": "set",
+      "span_tt": {
+        "start": {
+          "day1": 2451545.0,
+          "day2": 8865.53595698718
+        },
+        "end": {
+          "day1": 2451545.0,
+          "day2": 8865.53596715955
+        }
+      },
+      "calculation_model": {
+        "name": "caller-composed conventional rise/set circumstances",
+        "revision": "1"
+      },
+      "detail": {
+        "kind": "rise_set",
+        "airless_center_altitude_radians": -0.014672592768253185,
+        "refraction_offset_radians": 0.009890199094634533,
+        "limb_offset_radians": 0.004778213212058742,
+        "horizon_dip_offset_radians": 0.0
+      }
+    }
+  ]
+}

@@ -56,3 +56,7 @@ docs/receipts/browser_supplier_integration_20261006/** -text -whitespace
 # Preserve verified published Mozilla ICU source, data and license bytes.
 vendor/mozjs-icu-collator/** -text -whitespace
 vendor/mozjs-icu-normalizer/** -text -whitespace
+
+# Fixed Sky V1 DTO goldens are hashed as their exact captured bytes.
+scenarios/fixtures/sky_receipt_v1_boston_2024-04-08.json -text
+scenarios/fixtures/sky_receipt_v1_boston_2024-04-09.json -text

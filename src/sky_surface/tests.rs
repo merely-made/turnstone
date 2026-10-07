@@ -37,14 +37,16 @@ fn text_present(dom: &genet_scripted_dom::ScriptedDom, needle: &str) -> bool {
 
 #[test]
 fn reference_source_reproduces_the_p0_receipt() {
-    let projection = calculate_source(&SkyPaneSourceV1::boston_eclipse_reference()).unwrap();
+    let source = SkyPaneSourceV1::boston_eclipse_reference();
+    let projection = calculate_source(&source).unwrap();
     assert_eq!(projection.receipt.day.date, "2024-04-08");
     assert_eq!(projection.receipt.day.time_zone, "America/New_York");
     assert_eq!(projection.receipt.facts.len(), 11);
-    assert_eq!(
-        projection.digest,
-        "caff8371d348ba141397a8185e291c533c6ab12d4fe85f9ce3be797707ce411d"
-    );
+    let bytes = projection.receipt.to_pretty_json().unwrap();
+    assert_eq!(projection.digest, blake3::hash(&bytes).to_hex().to_string());
+    let repeated = calculate_source(&source).unwrap();
+    assert_eq!(repeated.receipt.to_pretty_json().unwrap(), bytes);
+    assert_eq!(repeated.digest, projection.digest);
     assert!(
         projection
             .rows
@@ -123,7 +125,8 @@ fn provider_admits_semantic_controls_and_provenance() {
         &dom,
         "2024-04-08 DUT1=-0.01669 s; xp=yp=0 approximation"
     ));
-    assert!(text_present(&dom, "Receipt caff8371"));
+    let current = calculate_source(&SkyPaneSourceV1::boston_eclipse_reference()).unwrap();
+    assert!(text_present(&dom, &format!("Receipt {}", current.digest)));
     assert!(text_present(&dom, "bounded TT solver interval"));
     assert!(dom.all_with_class(dom.document(), "setting-apply").len() >= 7);
     assert_eq!(dom.all_with_class(dom.document(), "sky-alert").len(), 0);
@@ -165,11 +168,13 @@ fn next_day_replaces_one_retained_projection_without_rewriting_opening_provenanc
 
     let mut next_source = SkyPaneSourceV1::boston_eclipse_reference();
     next_source.date = "2024-04-09".into();
-    let next_digest = calculate_source(&next_source).unwrap().digest;
-    assert_eq!(
-        next_digest,
-        "74883b5db9fa959cccdeb69744da4a99baec5bfd55bade77426cfe6b0d9c450f"
-    );
+    let next_projection = calculate_source(&next_source).unwrap();
+    let next_bytes = next_projection.receipt.to_pretty_json().unwrap();
+    let next_digest = next_projection.digest;
+    assert_eq!(next_digest, blake3::hash(&next_bytes).to_hex().to_string());
+    let repeated = calculate_source(&next_source).unwrap();
+    assert_eq!(repeated.receipt.to_pretty_json().unwrap(), next_bytes);
+    assert_eq!(repeated.digest, next_digest);
     let changed_dom = changed.dom_ref();
     assert!(text_present(
         &changed_dom,

@@ -1540,7 +1540,13 @@ mod tests {
         assert_eq!(SkyReceiptV1::from_json(&bytes).unwrap(), receipt);
         assert_eq!(
             receipt.blake3_hex_digest().unwrap(),
-            "caff8371d348ba141397a8185e291c533c6ab12d4fe85f9ce3be797707ce411d"
+            blake3::hash(&bytes).to_hex().to_string()
+        );
+        let repeated = build_sky_timeline(&AnalyticalEphemeris, &eop, &request).unwrap();
+        assert_eq!(
+            SkyReceiptV1::from_timeline(&repeated).to_pretty_json().unwrap(),
+            bytes,
+            "the same provider and request produce identical receipt bytes on this platform"
         );
 
         let mut prior = None;

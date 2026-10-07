@@ -1120,6 +1120,7 @@ pub fn install(app: &mut App, pending: PendingInstall) -> Result<Uuid, String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::action::{Action, Update};
 
     #[test]
     fn staged_installs_are_content_derived_and_reviewable() {
@@ -1141,13 +1142,20 @@ mod tests {
                 ring.name()
             );
         }
-        let width = crate::ui::chrome_row_width(&review);
         assert!(
-            width <= crate::ui::ROW_TEXT_BUDGET,
-            "the ask must fit one palette row without clipping: \
-             {width}px > {}px: {review}",
-            crate::ui::ROW_TEXT_BUDGET,
+            review.contains("own world"),
+            "the ask names its scope: {review}"
         );
+        assert!(
+            review.ends_with("Confirm"),
+            "the ask names its decision: {review}"
+        );
+        // Review rows may wrap; exercise the actual Confirm projection.
+        let mut app = App::test_stub();
+        app.viewport = (1024.0, 320.0);
+        app.pending_install = Some(a.clone());
+        app.update(Action::OmnibarOpen { command: true });
+        crate::chrome_view::tests::assert_install_review_layout(&app, &review);
 
         std::fs::write(&path, "mere.open('mere://other')").unwrap();
         let c = stage_install(&path).unwrap();
