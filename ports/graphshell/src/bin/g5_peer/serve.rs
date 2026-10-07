@@ -40,7 +40,7 @@ pub(crate) async fn serve(
     // pasted ticket. The ticket is still printed, because discovery is a
     // convenience and a hand-carried ticket is the fallback that always works
     // (and the only one that works across networks).
-    let carrier = P2pandaTransport::builder_from_seed(seed)
+    let carrier = P2pandaTransport::builder_from_seed_ref(&seed)
         .alpns(vec![projection_alpn()])
         .mdns(MdnsDiscoveryMode::Active)
         .bind()
