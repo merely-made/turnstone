@@ -9,6 +9,7 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
+use cambium::catalogue::{self, ids};
 use cambium::{AnyView, GenetAppRunner, GenetCtx, GenetElement, View, el, text};
 use genet_render::TextSystem;
 use genet_scripted_dom::ScriptedDom;
@@ -166,8 +167,10 @@ fn chrome_view(model: ChromeModel) -> impl View<(), (), GenetCtx, Element = Gene
                         (
                             pill("Local Mere".into(), model.local_active),
                             pill("Remote mount".into(), !model.local_active),
-                            el("div", text("Undo change")).attr("class", "pill step"),
-                            el("div", text("Redo change")).attr("class", "pill step"),
+                            el("div", text(shared_label(ids::SESSION_UNDO)))
+                                .attr("class", "pill step"),
+                            el("div", text(shared_label(ids::SESSION_REDO)))
+                                .attr("class", "pill step"),
                         ),
                     )
                     .attr("class", "sessions"),
@@ -359,4 +362,9 @@ pub(crate) fn build_chrome_scene(
         text,
     )
     .map_err(|error| error.to_string())
+}
+
+/// A shared command's name, as every surface shows it (SE52).
+fn shared_label(id: &str) -> &'static str {
+    catalogue::label(id).expect("a catalogue id")
 }
