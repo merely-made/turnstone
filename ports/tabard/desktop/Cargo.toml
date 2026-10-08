@@ -8,15 +8,13 @@ repository.workspace = true
 publish = false
 
 [dependencies]
-tabard-workshop = { path = ".." }
+tabard-workshop.workspace = true
 cambium = { workspace = true }
 cambium-genet-winit-host = { workspace = true }
 cambium-rootstock.workspace = true
 mesquite = { workspace = true }
 taproot = { workspace = true }
 layout_dom_api = { workspace = true }
-netrender.workspace = true
-wgpu.workspace = true
 dirs = "5"
 
 [dev-dependencies]

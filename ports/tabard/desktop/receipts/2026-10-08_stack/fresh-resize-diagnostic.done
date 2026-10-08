@@ -1,0 +1,5 @@
+RESULT fail
+Diagnostic: empty library and actual native resize
+captured fresh_resize_initial
+frames: 0 captured, 0 blank, 0 distinct digests
+FAIL: capture fresh_resize_initial never landed after 120 frames

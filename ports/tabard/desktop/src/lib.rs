@@ -20,18 +20,18 @@ use std::{
 
 use cambium::{Key, KeyEvent, NamedKey};
 use cambium_genet_winit_host::{
-    AppCtx, CloseDisposition, FocusedTextSlot, Harness, HostHooks, HostOptions, Init, Runner,
-    WindowFrame, inert_hooks,
+    AppCtx, CaptionLabels, CloseDisposition, FocusedTextSlot, Harness, HostHooks, HostOptions,
+    Init, Runner, WindowCommands, WindowFrame, inert_hooks, platform_caption_controls,
 };
 use layout_dom_api::{LayoutDom, LocalName, Namespace};
 use mesquite::{CaptureRecord, LaneConfig};
 use tabard_workshop::{
     ExportArtifact, GRAPH_LEAF_KEY, READER_LEAF_KEY, STYLESHEET_LEAF_KEY, StylesheetSpecimen,
-    WorkshopState, WorkshopView, workshop_stylesheet, workshop_view,
+    WorkshopState, WorkshopView, workshop_stylesheet, workshop_view, workshop_view_with_captions,
 };
 use taproot::ProbeSnapshot;
 
-pub type Logic = fn(&WorkshopState) -> WorkshopView;
+pub type Logic = Box<dyn FnMut(&WorkshopState) -> WorkshopView>;
 pub type WorkshopHarness = Harness<WorkshopState, Logic, WorkshopView>;
 type Context<'a> = AppCtx<'a, WorkshopState, Logic, WorkshopView>;
 type WorkshopRunner = Runner<WorkshopState, Logic, WorkshopView>;
@@ -94,15 +94,31 @@ pub fn parse_arguments(arguments: impl IntoIterator<Item = OsString>) -> io::Res
 
 pub const USAGE: &str = "Tabard appearance workshop\n\nUsage: tabard-desktop [--library PATH]\n\nThe default authored library is mere/tabard/themes.json under the platform's\nlocal application data directory. --library selects a separate library file.\n\nTABARD_SCENARIO, TABARD_CAPTURE_DIR and TABARD_RECEIPT enable the headed\nMesquite acceptance lane. TABARD_WIDTH and TABARD_HEIGHT override window size.";
 
-/// Shared initialization for the headed window and windowless routing tests.
+/// Portable initialization without native window controls.
+/// Native windows and their harness use [`initialize_with_commands`].
 pub fn initialize(state: WorkshopState) -> Init<WorkshopState, Logic> {
     Init {
         state,
-        logic: workshop_view as Logic,
+        logic: Box::new(workshop_view),
         sheet: workshop_stylesheet(),
         fonts: Vec::new(),
         images: Vec::new(),
     }
+}
+
+/// Bind native caption controls to the host's existing command queue without
+/// adding window state to the reusable authoring model.
+pub fn initialize_with_commands(
+    state: WorkshopState,
+    commands: &WindowCommands,
+) -> Init<WorkshopState, Logic> {
+    let commands = commands.clone();
+    let labels = CaptionLabels::default();
+    let mut init = initialize(state);
+    init.logic = Box::new(move |state| {
+        workshop_view_with_captions(state, platform_caption_controls(&commands, &labels))
+    });
+    init
 }
 
 pub fn host_options() -> HostOptions {
@@ -110,7 +126,8 @@ pub fn host_options() -> HostOptions {
         title: "Tabard — Appearance workshop".into(),
         initial_logical_size: (1180.0, 800.0),
         size_env: Some(("TABARD_WIDTH".into(), "TABARD_HEIGHT".into())),
-        window_frame: WindowFrame::Host,
+        window_frame: WindowFrame::App,
+        maximize_control_label: CaptionLabels::default().maximize,
         ..Default::default()
     }
 }
@@ -145,12 +162,12 @@ pub fn hooks_with_exporter(
                 .insert(GRAPH_LEAF_KEY, Box::new(ctx.runner.state().graph_leaf()));
             let current_reader = ctx.runner.state().reader_preview();
             let producer = reader_producer.get_or_insert_with(|| {
-                Rc::new(RefCell::new(reader::ReaderProducer::new(
+                Rc::new(RefCell::new(reader::scene_producer(
                     current_reader.clone(),
                     reader::READER_RASTER_KEY,
                 )))
             });
-            producer.borrow_mut().set_reader(current_reader);
+            producer.borrow_mut().set_source(current_reader);
             if !ctx.producers.contains(READER_LEAF_KEY) {
                 ctx.producers
                     .register(READER_LEAF_KEY, producer.clone(), &[])
@@ -158,12 +175,12 @@ pub fn hooks_with_exporter(
             }
             let current_stylesheet = ctx.runner.state().stylesheet_preview();
             let producer = stylesheet_producer.get_or_insert_with(|| {
-                Rc::new(RefCell::new(reader::ScenePreviewProducer::new(
+                Rc::new(RefCell::new(reader::scene_producer(
                     current_stylesheet.clone(),
-                    0x7461_6261_7264_6373,
+                    reader::STYLESHEET_RASTER_KEY,
                 )))
             });
-            producer.borrow_mut().set_preview(current_stylesheet);
+            producer.borrow_mut().set_source(current_stylesheet);
             if !ctx.producers.contains(STYLESHEET_LEAF_KEY) {
                 ctx.producers
                     .register(STYLESHEET_LEAF_KEY, producer.clone(), &[])
@@ -222,7 +239,11 @@ pub fn hooks_with_exporter(
 
 /// Mount the production view with the production host configuration.
 pub fn harness(state: WorkshopState) -> WorkshopHarness {
-    let mut harness = Harness::with_hooks_and_options(initialize(state), hooks(), host_options());
+    let mut harness = Harness::with_command_init(
+        |commands| initialize_with_commands(state, commands),
+        hooks(),
+        host_options(),
+    );
     harness.layout_at(1180.0, 800.0);
     harness
 }
@@ -399,7 +420,11 @@ pub fn run(library: PathBuf) -> Result<(), Box<dyn std::error::Error>> {
         }),
         ..product_hooks
     };
-    cambium_genet_winit_host::run(host_options(), move |_, _, _| initialize(state), hooks)?;
+    cambium_genet_winit_host::run(
+        host_options(),
+        move |_, commands, _| initialize_with_commands(state, commands),
+        hooks,
+    )?;
     if scripted && completion.get() != Some(true) {
         return Err(
             io::Error::other("The Tabard acceptance scenario failed or did not complete.").into(),

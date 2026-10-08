@@ -11,7 +11,9 @@ use std::{cell::RefCell, path::PathBuf, rc::Rc};
 use cambium::{FileEvent, FileRequest};
 use cambium_genet_winit_host::{CloseRequest, Harness, KeyPress, Modifiers, read_file};
 use cambium_rootstock::{FileAnswer, FileChooser};
-use tabard_desktop::{WorkshopHarness, hooks_with_exporter, host_options, initialize};
+use tabard_desktop::{
+    WorkshopHarness, hooks_with_exporter, host_options, initialize_with_commands,
+};
 use tabard_workshop::{ExportArtifact, ExportFormat, WorkshopState};
 use taproot::Selector;
 
@@ -36,7 +38,11 @@ fn mount(
         captures.borrow_mut().push(artifact.clone());
         Some(destination.clone())
     });
-    let mut host = Harness::with_hooks_and_options(initialize(state), hooks, host_options());
+    let mut host = Harness::with_command_init(
+        |commands| initialize_with_commands(state, commands),
+        hooks,
+        host_options(),
+    );
     host.layout_at(1180.0, 800.0);
     host
 }
@@ -291,4 +297,49 @@ fn application_close_failed_save_keeps_the_draft_until_explicit_discard() {
         library.is_dir(),
         "explicit close must not replace the failed destination"
     );
+}
+
+#[test]
+fn shared_caption_close_uses_the_workshops_unsaved_work_policy() {
+    use cambium_genet_winit_host::{CaptionLabels, window_caption_controls};
+    use tabard_workshop::workshop_view_with_captions;
+
+    let mut host: WorkshopHarness = Harness::with_command_init(
+        |commands| {
+            let mut init = initialize_with_commands(WorkshopState::in_memory(), commands);
+            let commands = commands.clone();
+            // Exercise custom captions on every test platform, including macOS
+            // where the production adapter retains the native traffic lights.
+            init.logic = Box::new(move |state| {
+                workshop_view_with_captions(
+                    state,
+                    window_caption_controls(&commands, &CaptionLabels::default()),
+                )
+            });
+            init
+        },
+        hooks_with_exporter(|_| None),
+        host_options(),
+    );
+    host.layout_at(1180.0, 800.0);
+    replace_native_text(&mut host, "name", "Caption close draft");
+    let draft = host.state().draft_theme().clone();
+    click(
+        &mut host,
+        &Selector::role("button").with_attr("data-window-action", "close"),
+    );
+    host.relayout();
+    assert!(host.state().close_requested());
+    assert!(!host.close_requested());
+    assert_eq!(host.state().draft_theme(), &draft);
+    click(&mut host, &action("cancel-close"));
+    assert!(!host.state().close_requested());
+    assert_eq!(host.state().draft_theme(), &draft);
+    click(
+        &mut host,
+        &Selector::role("button").with_attr("data-window-action", "close"),
+    );
+    host.relayout();
+    click(&mut host, &action("discard-close"));
+    assert!(host.close_requested());
 }

@@ -1,0 +1,13 @@
+RESULT ok
+Usable authoring: hex, authored default, exact CSS, save and reopen
+captured usable_initial
+captured authored_stylesheet
+captured usable_reopened
+captured derived_restored
+captured usable_narrow
+capture usable_initial 2360x1600 digest=5407504735315d20 file=/tmp/tabard-stack-native-20261008/usable_initial.png
+capture authored_stylesheet 2360x1600 digest=2e33a8473de4da61 file=/tmp/tabard-stack-native-20261008/authored_stylesheet.png
+capture usable_reopened 2360x1600 digest=973b639d2eecc364 file=/tmp/tabard-stack-native-20261008/usable_reopened.png
+capture derived_restored 2360x1600 digest=112e3292efed0117 file=/tmp/tabard-stack-native-20261008/derived_restored.png
+capture usable_narrow 1280x1560 digest=062ce2c0932dcc62 file=/tmp/tabard-stack-native-20261008/usable_narrow.png
+frames: 5 captured, 0 blank, 5 distinct digests

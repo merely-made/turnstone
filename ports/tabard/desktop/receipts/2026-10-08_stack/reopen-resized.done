@@ -1,0 +1,5 @@
+RESULT fail
+Usable authoring survives a fresh process
+captured usable_fresh_process
+frames: 0 captured, 0 blank, 0 distinct digests
+FAIL: capture usable_fresh_process never landed after 120 frames

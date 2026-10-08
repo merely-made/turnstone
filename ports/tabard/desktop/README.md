@@ -3,13 +3,24 @@
 This thin native host mounts `tabard-workshop`'s shared Cambium surface and
 `WorkshopState` directly. It provides the window, keyboard and pointer routing,
 native text/IME integration, and Mesquite's scenario/capture lifecycle.
+The shared package lives in
+[`crates/cambium/tabard-workshop`](../../../crates/cambium/tabard-workshop);
+its [embedding guide](../../../crates/cambium/tabard-workshop/README.md)
+describes the reusable model and host seams.
 The shared graph leaf is registered with the host's leaf map. Reader and
-isolated application-stylesheet scenes share the generic `ScenePreviewProducer`
+isolated application-stylesheet scenes share the shared `cambium_genet_winit_host::SceneProducer`
 on the host's existing render core/device, including retained textures,
-distinct raster keys, resizing and library-reopen rebinding. The portable
+distinct raster keys, resizing and library-reopen rebinding. Only source callbacks and raster keys remain in this port. The portable
 workshop retains the authoring state and document scenes. See the
 [workshop README](../README.md) for the controls, export semantics and remaining
 product boundaries.
+
+The header uses Cambium's shared `title_bar` composition: Tabard supplies its
+mark, title and authoring actions. `WindowFrame::App` enables the host's existing
+drag, resize, double-click and system-menu behavior. macOS keeps native traffic
+lights; the component reserves their measured inset. Windows and Linux receive
+shared keyboard-accessible caption controls bound to the host's command queue.
+Caption Close goes through the same unsaved-work policy as native Close.
 
 Run from the repository root:
 
@@ -110,3 +121,9 @@ CSS, save/reopen, clear/undo and a narrow layout. Then run
 `scenarios/usability_reopen.scn` against its saved library to check a second
 process. The [2026-10-08 receipts](receipts/2026-10-08_usable) retain the native
 images, complete receipts and importable sample definition.
+
+The [shared-kit receipts](receipts/2026-10-08_stack) cover the relocated workshop,
+shared scene adapter and title-bar adoption. The authoring/native narrow-layout
+scenario passes. Fresh-process state restoration passes its assertions, while
+its native capture currently exhausts the occluded-surface guard; the receipt
+records that open presentation boundary and platform validation limits.
