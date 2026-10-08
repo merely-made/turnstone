@@ -1,0 +1,174 @@
+{
+  "schema": "scenomise.host-dataset/v1",
+  "dataset": {
+    "source": {
+      "authority": "woodshed",
+      "domain": "music.practice",
+      "resource": "set:musical-comparison"
+    },
+    "revision": "musical-comparison-fixture-v1",
+    "fields": {
+      "label": "text",
+      "left_occurrence": "text",
+      "left_only": "text",
+      "method": "text",
+      "method_version": "number",
+      "motion_from": "text",
+      "motion_to": "text",
+      "occurrence_id": "text",
+      "pitch_set": "text",
+      "result_status": "text",
+      "result_version": "number",
+      "right_occurrence": "text",
+      "right_only": "text",
+      "root_pitch_class": "number",
+      "shared": "text",
+      "x": "number",
+      "y": "number"
+    },
+    "occurrences": [
+      {
+        "occurrence_id": "card:1",
+        "source": {
+          "adapter": "woodshed.stage",
+          "id": "chord:Major"
+        },
+        "values": {
+          "label": {
+            "kind": "text",
+            "value": "C Major"
+          },
+          "occurrence_id": {
+            "kind": "text",
+            "value": "card:1"
+          },
+          "pitch_set": {
+            "kind": "text",
+            "value": "0:C 4:E 7:G"
+          },
+          "root_pitch_class": {
+            "kind": "number",
+            "value": 0.0
+          },
+          "x": {
+            "kind": "number",
+            "value": 0.0
+          },
+          "y": {
+            "kind": "number",
+            "value": 0.0
+          }
+        }
+      },
+      {
+        "occurrence_id": "card:2",
+        "source": {
+          "adapter": "woodshed.stage",
+          "id": "chord:Minor"
+        },
+        "values": {
+          "label": {
+            "kind": "text",
+            "value": "A Minor"
+          },
+          "occurrence_id": {
+            "kind": "text",
+            "value": "card:2"
+          },
+          "pitch_set": {
+            "kind": "text",
+            "value": "9:A 0:C 4:E"
+          },
+          "root_pitch_class": {
+            "kind": "number",
+            "value": 9.0
+          },
+          "x": {
+            "kind": "number",
+            "value": 24.0
+          },
+          "y": {
+            "kind": "number",
+            "value": 0.0
+          }
+        }
+      },
+      {
+        "occurrence_id": "comparison:a95125ac7790b604",
+        "source": {
+          "adapter": "graphshell.comparison",
+          "id": "comparison:a95125ac7790b604"
+        },
+        "values": {
+          "label": {
+            "kind": "text",
+            "value": "Common tones: C · E"
+          },
+          "left_occurrence": {
+            "kind": "text",
+            "value": "card:1"
+          },
+          "left_only": {
+            "kind": "text",
+            "value": "7:G"
+          },
+          "method": {
+            "kind": "text",
+            "value": "keyed-pitch-set-singleton"
+          },
+          "method_version": {
+            "kind": "number",
+            "value": 1.0
+          },
+          "motion_from": {
+            "kind": "text",
+            "value": "7:G"
+          },
+          "motion_to": {
+            "kind": "text",
+            "value": "9:A"
+          },
+          "occurrence_id": {
+            "kind": "text",
+            "value": "comparison:a95125ac7790b604"
+          },
+          "result_status": {
+            "kind": "text",
+            "value": "applicable"
+          },
+          "result_version": {
+            "kind": "number",
+            "value": 1.0
+          },
+          "right_occurrence": {
+            "kind": "text",
+            "value": "card:2"
+          },
+          "right_only": {
+            "kind": "text",
+            "value": "9:A"
+          },
+          "shared": {
+            "kind": "text",
+            "value": "0:C 4:E"
+          },
+          "x": {
+            "kind": "number",
+            "value": 12.0
+          },
+          "y": {
+            "kind": "number",
+            "value": 14.0
+          }
+        }
+      }
+    ]
+  },
+  "relationships": [],
+  "revisions": [
+    {
+      "sequence": 1,
+      "revision": "musical-comparison-fixture-v1"
+    }
+  ]
+}
