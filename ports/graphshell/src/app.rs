@@ -385,13 +385,27 @@ mod tests {
             let families: BTreeSet<_> = app
                 .host
                 .graph()
-                .relations()
-                .map(|relation| relation.kind.family())
+                .projected_relations()
+                .map(|(_, relation)| relation.kind.family())
                 .collect();
             assert!(families.contains(&EdgeFamily::Semantic));
             assert!(families.contains(&EdgeFamily::Containment));
             assert!(families.contains(&EdgeFamily::Arrangement));
             assert!(families.contains(&EdgeFamily::Provenance));
+            assert!(
+                app.host
+                    .graph()
+                    .relations()
+                    .any(|relation| { relation.kind.family() == EdgeFamily::Arrangement })
+            );
+            assert!(
+                app.host
+                    .graph()
+                    .resource_relations()
+                    .any(|(_, _, _, payload)| {
+                        payload.families().contains(&EdgeFamily::Semantic)
+                    })
+            );
 
             assert_eq!(
                 app.host

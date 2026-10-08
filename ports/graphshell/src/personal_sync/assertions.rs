@@ -154,9 +154,8 @@ pub(super) fn retract_legacy(
         .zip(graph.get_node_key_by_id(to))
     {
         let ids = graph
-            .find_edge_key(from, to)
-            .and_then(|edge| graph.get_edge(edge))
-            .map(|edge| {
+            .projected_relations_between(from, to)
+            .flat_map(|(_, edge)| {
                 edge.semantic_statements()
                     .iter()
                     .filter(|s| {
@@ -164,9 +163,8 @@ pub(super) fn retract_legacy(
                             && kind.is_none_or(|kind| s.recognized_sub_kind == Some(kind))
                     })
                     .map(|s| s.statement_id.clone())
-                    .collect::<Vec<_>>()
             })
-            .unwrap_or_default();
+            .collect::<Vec<_>>();
         for id in ids {
             graph.retract_semantic_statement(from, to, &id);
         }

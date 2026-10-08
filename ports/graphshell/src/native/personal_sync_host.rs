@@ -1127,7 +1127,13 @@ impl PersonalSyncHost {
                 continue;
             }
 
-            let mut tags = node.tags.iter().cloned().collect::<Vec<_>>();
+            let mut tags = projection
+                .graph
+                .get_node_key_by_id(node.id)
+                .and_then(|key| projection.graph.node_content_tags(key))
+                .unwrap_or_default()
+                .into_iter()
+                .collect::<Vec<_>>();
             tags.sort();
             cards.push(SupplementalCard {
                 adapter: "mere.graph".into(),

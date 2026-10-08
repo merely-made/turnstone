@@ -643,10 +643,17 @@ pub(super) fn update_product_semantics(
     let member = host.current_primary_member();
     if member != host.last_detail_member {
         if let Some(id) = member
-            && let Some((_, node)) = host.app.host.graph().get_node_by_id(id)
+            && let Some((key, node)) = host.app.host.graph().get_node_by_id(id)
         {
             set_input_value("edit-title", &node.title)?;
-            let mut tags = node.tags.iter().cloned().collect::<Vec<_>>();
+            let mut tags = host
+                .app
+                .host
+                .graph()
+                .node_content_tags(key)
+                .unwrap_or_default()
+                .into_iter()
+                .collect::<Vec<_>>();
             tags.sort();
             set_input_value("edit-tags", &tags.join(", "))?;
             set_select_value("handler-select", &host.handler_id)?;

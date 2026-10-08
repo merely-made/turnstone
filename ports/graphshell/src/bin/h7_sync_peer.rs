@@ -329,6 +329,7 @@ fn selection() -> SyncSelection {
 }
 
 fn assert_offline(projection: &SyncProjection, role: Role) -> Result<(), String> {
+    // These v1 personal events replay raw Surface tags, not content-tag assertions.
     let expected = match role {
         Role::Windows => "windows",
         Role::Qpc => "qpc",

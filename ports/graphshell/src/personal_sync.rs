@@ -1825,16 +1825,9 @@ mod tests {
         let to = projection.graph.get_node_key_by_id(B).unwrap();
         projection
             .graph
-            .find_edge_key(from, to)
-            .map(|edge| {
-                projection
-                    .graph
-                    .get_edge(edge)
-                    .unwrap()
-                    .semantic_statements()
-                    .to_vec()
-            })
-            .unwrap_or_default()
+            .projected_relations_between(from, to)
+            .flat_map(|(_, edge)| edge.semantic_statements().iter().cloned())
+            .collect()
     }
 
     #[tokio::test]
@@ -2186,6 +2179,112 @@ mod tests {
         );
     }
 
+    #[tokio::test]
+    async fn p1_sync_legacy_retraction_keeps_exact_claims_in_both_stores() {
+        use mere::kernel::persistence::{
+            PersistedEdge, PersistedEdgeFamily, PersistedSemanticEdgeData,
+            PersistedSemanticStatement,
+        };
+
+        let (replica, alice, bob) = assertion_fixture().await;
+        let mut projection = replica.projection().await.unwrap();
+        let statements = [
+            (&alice, "urn:sync:surface:alice", 100),
+            (&bob, "urn:sync:surface:bob", 200),
+        ]
+        .into_iter()
+        .map(|(asserter, id, at)| PersistedSemanticStatement {
+            statement_id: id.into(),
+            predicate: mere::kernel::graph::predicate_iri(SemanticSubKind::Supports).into(),
+            recognized_sub_kind: Some(SemanticSubKind::Supports),
+            label: Some("held Surface claim".into()),
+            graph_scope: mere::kernel::types::GraphScope::Default,
+            provenance_iri: Some(asserter.clone()),
+            asserted_at_ms: Some(at),
+        })
+        .collect();
+        apply_graph_delta(
+            &mut projection.graph,
+            GraphDelta::ReplaySetEdgesByIds {
+                from_id: A,
+                to_id: B,
+                edges: vec![PersistedEdge {
+                    from_node_id: A.to_string(),
+                    to_node_id: B.to_string(),
+                    families: vec![PersistedEdgeFamily::Semantic],
+                    semantic: Some(PersistedSemanticEdgeData {
+                        statements,
+                        ..Default::default()
+                    }),
+                    traversal: None,
+                    containment: None,
+                    arrangement: None,
+                    imported: None,
+                    provenance: None,
+                }],
+            },
+        );
+        assert_eq!(
+            projection.graph.edge_count(),
+            1,
+            "raw Surface positive control"
+        );
+        assert_eq!(projection.graph.resource_relations().count(), 1);
+        let before = assertion_statements(&projection);
+        assert_eq!(before.len(), 4);
+        assert!(before.iter().all(|s| s.asserted_at_ms.is_some()));
+        for (id, at) in [
+            ("urn:sync:surface:alice", 100),
+            ("urn:sync:surface:bob", 200),
+        ] {
+            assert_eq!(
+                before
+                    .iter()
+                    .find(|s| s.statement_id == id)
+                    .unwrap()
+                    .asserted_at_ms,
+                Some(at),
+                "raw exact capture retains its recorded time",
+            );
+        }
+        assert!(assertions::retract_legacy(
+            &mut projection.graph,
+            A,
+            B,
+            RelationSelector::Semantic(SemanticSubKind::Cites),
+            &alice,
+        ));
+        assert_eq!(
+            assertion_statements(&projection),
+            before
+                .iter()
+                .filter(|s| !(s.provenance_iri.as_deref() == Some(alice.as_str())
+                    && s.recognized_sub_kind == Some(SemanticSubKind::Cites)))
+                .cloned()
+                .collect::<Vec<_>>(),
+            "Resource withdrawal leaves exact raw Surface records and the peer claim",
+        );
+        assert!(assertions::retract_legacy(
+            &mut projection.graph,
+            A,
+            B,
+            RelationSelector::Family(EdgeFamily::Semantic),
+            &alice,
+        ));
+        let remaining = assertion_statements(&projection);
+        assert_eq!(
+            remaining,
+            before
+                .iter()
+                .filter(|s| s.provenance_iri.as_deref() == Some(bob.as_str()))
+                .cloned()
+                .collect::<Vec<_>>(),
+            "both peer handles retain their full original metadata",
+        );
+        assert_eq!(projection.graph.edge_count(), 1);
+        assert_eq!(projection.graph.resource_relations().count(), 1);
+    }
+
     fn selection() -> SyncSelection {
         SyncSelection::default()
             .with_facets(["graphshell.test/v1"])
@@ -2233,7 +2332,11 @@ mod tests {
             .map(|record| record.record_id)
             .collect::<Vec<_>>();
         accesses.sort();
-        (nodes, projection.graph.edge_count(), accesses)
+        (
+            nodes,
+            projection.graph.projected_relations().count(),
+            accesses,
+        )
     }
 
     #[tokio::test]
@@ -2435,8 +2538,8 @@ mod tests {
                     let b = bob.projection().await.unwrap();
                     if a.access_records.len() == 2
                         && b.access_records.len() == 2
-                        && a.graph.edge_count() == 1
-                        && b.graph.edge_count() == 1
+                        && a.graph.projected_relations().count() == 1
+                        && b.graph.projected_relations().count() == 1
                     {
                         break (a, b);
                     }
@@ -2453,8 +2556,8 @@ mod tests {
         assert_eq!(
             alice_projection
                 .graph
-                .relations()
-                .filter(|relation| matches!(relation.kind, RelationKind::Semantic(_)))
+                .projected_relations()
+                .filter(|(_, relation)| matches!(relation.kind, RelationKind::Semantic(_)))
                 .count(),
             1
         );
@@ -2647,8 +2750,8 @@ mod tests {
         assert_eq!(
             projection
                 .graph
-                .relations()
-                .filter(|relation| relation.kind.family() == EdgeFamily::Semantic)
+                .projected_relations()
+                .filter(|(_, relation)| relation.kind.family() == EdgeFamily::Semantic)
                 .count(),
             0
         );

@@ -24,6 +24,7 @@ use mere::kernel::graph::{
 use mere::kernel::persistence::GraphSnapshot;
 use mere::kernel::types::NodeProperty;
 use muniment::Backend;
+use pandect::graph_placement::{PlacementProfile, materialize_snapshot};
 use sceno::SourceRef;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -424,6 +425,27 @@ pub struct ProductCodicilV2 {
     pub scene: Option<SavedSceneV2>,
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub(crate) struct ProfiledProductCodicil {
+    #[serde(flatten)]
+    pub product: ProductCodicilV2,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub placement: Option<PlacementProfile>,
+}
+
+impl std::ops::Deref for ProfiledProductCodicil {
+    type Target = ProductCodicilV2;
+    fn deref(&self) -> &Self::Target {
+        &self.product
+    }
+}
+
+impl std::ops::DerefMut for ProfiledProductCodicil {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.product
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct ExportRequest {
     pub focused: Uuid,
@@ -562,11 +584,9 @@ impl<B: Backend> MereHost<B> {
             .collect();
         let current: BTreeSet<_> = self
             .graph()
-            .get_node(key)
+            .node_content_tags(key)
             .expect("key resolved above")
-            .tags
-            .iter()
-            .cloned()
+            .into_iter()
             .collect();
         self.mutate_product_graph(|graph| {
             apply_graph_delta(
@@ -585,7 +605,7 @@ impl<B: Backend> MereHost<B> {
                     },
                 );
             }
-            for tag in wanted.difference(&current) {
+            for tag in &wanted {
                 apply_graph_delta(
                     graph,
                     GraphDelta::InsertNodeTag {
@@ -638,23 +658,22 @@ impl<B: Backend> MereHost<B> {
         let query = query.trim().to_lowercase();
         let related: HashSet<_> = self
             .graph()
-            .relations()
-            .filter(|relation| family.accepts(family_of(relation.kind)))
-            .flat_map(|relation| [relation.from, relation.to])
+            .projected_relations()
+            .filter(|(_, relation)| family.accepts(family_of(relation.kind)))
+            .flat_map(|(_, relation)| [relation.from, relation.to])
             .collect();
         self.graph()
             .nodes()
             .filter(|(key, _)| family == RelationFamilyFilter::All || related.contains(key))
-            .filter(|(_, node)| {
+            .filter(|(key, node)| {
                 if query.is_empty() {
                     return true;
                 }
                 node.title.to_lowercase().contains(&query)
                     || node.url().to_lowercase().contains(&query)
-                    || node
-                        .tags
-                        .iter()
-                        .any(|tag| tag.to_lowercase().contains(&query))
+                    || self.graph().node_content_tags(*key).is_some_and(|tags| {
+                        tags.iter().any(|tag| tag.to_lowercase().contains(&query))
+                    })
                     || self
                         .graph()
                         .facets()
@@ -707,13 +726,16 @@ impl<B: Backend> MereHost<B> {
             request.include_local_file_locations,
         );
         let scene = request.scene.map(|scene| filter_scene(scene, &members));
-        serde_json::to_vec_pretty(&ProductCodicilV2 {
-            schema: PRODUCT_CODICIL_SCHEMA.to_string(),
-            scope: request.scope,
-            exported_at_ms: request.exported_at_ms,
-            graph,
-            facets,
-            scene,
+        serde_json::to_vec_pretty(&ProfiledProductCodicil {
+            placement: self.snapshot_placement(),
+            product: ProductCodicilV2 {
+                schema: PRODUCT_CODICIL_SCHEMA.to_string(),
+                scope: request.scope,
+                exported_at_ms: request.exported_at_ms,
+                graph,
+                facets,
+                scene,
+            },
         })
         .map_err(|error| ProductError::InvalidCodicil(error.to_string()))
     }
@@ -722,7 +744,8 @@ impl<B: Backend> MereHost<B> {
     /// arrive whole, its relations join the graph's, and its facets overwrite
     /// (reservoir plan §7 item 27).
     pub fn import_product_codicil(&mut self, bytes: &[u8]) -> Result<ImportReceipt, ProductError> {
-        let codicil = decode_codicil(bytes)?;
+        let input = decode_profiled_codicil(bytes)?;
+        let codicil = input.product;
         let mut known: HashSet<String> = self
             .graph()
             .nodes()
@@ -738,7 +761,8 @@ impl<B: Backend> MereHost<B> {
             relations: codicil.graph.edges.len(),
             facets: codicil.facets.iter().map(|(_, facets)| facets.len()).sum(),
         };
-        let edits = product_import_edits(self.graph(), codicil.graph, codicil.facets)?;
+        let edits =
+            product_import_edits(self.graph(), codicil.graph, codicil.facets, input.placement)?;
         self.apply_edits(edits)?;
         Ok(receipt)
     }
@@ -751,13 +775,17 @@ impl<B: Backend + Clone> MereHost<B> {
         &mut self,
         bytes: &[u8],
     ) -> Result<(ImportReceipt, Option<SavedSceneV2>), ProductError> {
-        let codicil = decode_codicil(bytes)?;
+        let input = decode_profiled_codicil(bytes)?;
+        let codicil = input.product;
         let receipt = ImportReceipt {
             nodes: codicil.graph.nodes.len(),
             relations: codicil.graph.edges.len(),
             facets: codicil.facets.iter().map(|(_, facets)| facets.len()).sum(),
         };
-        self.begin_session(codicil_graph(codicil.graph, codicil.facets)?);
+        self.begin_profiled_session(
+            profiled_codicil_graph(codicil.graph, codicil.facets, input.placement)?,
+            input.placement,
+        )?;
         Ok((receipt, codicil.scene))
     }
 }
@@ -765,16 +793,28 @@ impl<B: Backend + Clone> MereHost<B> {
 /// A codicil's graph with its facet store laid in whole: no codicil carries
 /// legacy column data, so nothing the snapshot's columns import is kept.
 fn codicil_graph(snapshot: GraphSnapshot, facets: NodeFacetStore) -> Result<Graph, ProductError> {
-    let mut graph = Graph::try_from_snapshot(&snapshot)
+    profiled_codicil_graph(snapshot, facets, None)
+}
+
+fn profiled_codicil_graph(
+    snapshot: GraphSnapshot,
+    facets: NodeFacetStore,
+    placement: Option<PlacementProfile>,
+) -> Result<Graph, ProductError> {
+    let mut graph = materialize_snapshot(&snapshot, placement)
         .map_err(|error| ProductError::InvalidCodicil(error.to_string()))?;
     *graph.facets_mut() = facets;
+    graph
+        .validate_active_resource_assertion_handles()
+        .map_err(|error| ProductError::InvalidCodicil(error.to_string()))?;
     Ok(graph)
 }
 
-fn product_import_edits(
+pub(crate) fn product_import_edits(
     live: &Graph,
     mut snapshot: GraphSnapshot,
     facets: NodeFacetStore,
+    placement: Option<PlacementProfile>,
 ) -> Result<Vec<CapturedDelta>, ProductError> {
     let current = live.to_snapshot();
     // C1's missing-source marker is canonical even before raw-handle validation.
@@ -796,11 +836,11 @@ fn product_import_edits(
     // Validate raw handles before legacy surface materialization can coalesce them.
     pandect::snapshot_merge::try_merge_snapshots(&current, &snapshot)
         .map_err(|error| ProductError::InvalidCodicil(error.to_string()))?;
-    let incoming = codicil_graph(snapshot, facets)?;
+    let incoming = profiled_codicil_graph(snapshot, facets, placement)?;
     let incoming_snapshot = incoming.to_snapshot();
     let (joined, _) = pandect::snapshot_merge::try_merge_snapshots(&current, &incoming_snapshot)
         .map_err(|error| ProductError::InvalidCodicil(error.to_string()))?;
-    let target = Graph::try_from_snapshot(&joined)
+    let target = materialize_snapshot(&joined, placement)
         .map_err(|error| ProductError::InvalidCodicil(error.to_string()))?
         .to_snapshot();
 
@@ -809,7 +849,7 @@ fn product_import_edits(
     surface_snapshot.resources.clear();
     surface_snapshot.resource_edges.clear();
     surface_snapshot.shown_resources.clear();
-    let surfaces = codicil_graph(surface_snapshot, incoming.facets().clone())?;
+    let surfaces = profiled_codicil_graph(surface_snapshot, incoming.facets().clone(), placement)?;
     let mut edits = import_edits(live, &surfaces);
     for record in &target.resources {
         if !current.resources.contains(record) {
@@ -857,6 +897,9 @@ fn product_import_edits(
         ));
     }
     replay_captured_deltas_onto(&mut scratch, edits.clone());
+    scratch
+        .validate_active_resource_assertion_handles()
+        .map_err(|error| ProductError::InvalidCodicil(error.to_string()))?;
     let actual = scratch.to_snapshot();
     let resources = |snapshot: &GraphSnapshot| {
         snapshot
@@ -929,7 +972,7 @@ fn transfer_members(graph: &Graph, request: &ExportRequest) -> Result<HashSet<Uu
                 .get_node_key_by_id(request.focused)
                 .expect("validated above");
             members.insert(request.focused);
-            for relation in graph.relations() {
+            for (_, relation) in graph.projected_relations() {
                 if relation.from == focused || relation.to == focused {
                     if let Some(node) = graph.get_node(relation.from) {
                         members.insert(node.id);
@@ -1141,8 +1184,15 @@ fn filter_scene(mut scene: SavedSceneV2, members: &HashSet<Uuid>) -> SavedSceneV
 }
 
 pub(crate) fn decode_codicil(bytes: &[u8]) -> Result<ProductCodicilV2, ProductError> {
-    let codicil: ProductCodicilV2 = serde_json::from_slice(bytes)
+    Ok(decode_profiled_codicil(bytes)?.product)
+}
+
+pub(crate) fn decode_profiled_codicil(
+    bytes: &[u8],
+) -> Result<ProfiledProductCodicil, ProductError> {
+    let input: ProfiledProductCodicil = serde_json::from_slice(bytes)
         .map_err(|error| ProductError::InvalidCodicil(error.to_string()))?;
+    let codicil = &input.product;
     if codicil.schema != PRODUCT_CODICIL_SCHEMA && codicil.schema != LEGACY_PRODUCT_ENGRAM_SCHEMA {
         return Err(ProductError::InvalidCodicil(format!(
             "expected {PRODUCT_CODICIL_SCHEMA} or legacy {LEGACY_PRODUCT_ENGRAM_SCHEMA}, found {}",
@@ -1162,9 +1212,12 @@ pub(crate) fn decode_codicil(bytes: &[u8]) -> Result<ProductCodicilV2, ProductEr
             "a relation names an object outside the codicil".to_string(),
         ));
     }
-    Graph::try_from_snapshot(&codicil.graph)
-        .map_err(|error| ProductError::InvalidCodicil(error.to_string()))?;
-    Ok(codicil)
+    profiled_codicil_graph(
+        codicil.graph.clone(),
+        codicil.facets.clone(),
+        input.placement,
+    )?;
+    Ok(input)
 }
 
 #[cfg(test)]
@@ -1185,6 +1238,99 @@ mod tests {
             persona: FIXTURE_PERSONA_ADDRESS.to_string(),
             profile: "profile:graphshell-h3".to_string(),
         }
+    }
+
+    #[test]
+    fn product_profiles_preserve_held_surface_truth_and_refuse_legacy_before_mutation() {
+        let original = crate::mere_host::placement_test_graph();
+        let product = ProductCodicilV2 {
+            schema: PRODUCT_CODICIL_SCHEMA.into(),
+            scope: TransferScope::SelectedSubgraph,
+            exported_at_ms: 17,
+            graph: original.to_snapshot(),
+            facets: original.facets().clone(),
+            scene: None,
+        };
+        let mut host = MereHost::empty(
+            MemoryBackend::new(),
+            selected_persona(),
+            fixture_handlers(),
+            AccessContext {
+                persona: FIXTURE_PERSONA_ADDRESS.into(),
+                device: FIXTURE_DEVICE_TWO_ADDRESS.into(),
+                at_ms: 17,
+            },
+        );
+        let bytes = |placement| {
+            serde_json::to_vec(&ProfiledProductCodicil {
+                product: product.clone(),
+                placement,
+            })
+            .unwrap()
+        };
+        let recorded = bytes(Some(PlacementProfile::RecordedStrataV1));
+        host.replace_with_product_codicil(&recorded).unwrap();
+        assert_eq!(
+            host.snapshot_placement(),
+            Some(PlacementProfile::RecordedStrataV1)
+        );
+        assert_eq!(host.graph().to_snapshot().edges, product.graph.edges);
+        assert_eq!(
+            host.graph().to_snapshot().resources,
+            product.graph.resources
+        );
+        assert_eq!(
+            host.graph().to_snapshot().resource_edges,
+            product.graph.resource_edges
+        );
+        let first = Uuid::from_u128(1);
+        let export = host
+            .export_product_codicil(ExportRequest {
+                focused: first,
+                selected: vec![first, Uuid::from_u128(2)],
+                scope: TransferScope::SelectedSubgraph,
+                exported_at_ms: 18,
+                include_local_file_locations: false,
+                scene: None,
+            })
+            .unwrap();
+        let exported = decode_profiled_codicil(&export).unwrap();
+        assert_eq!(exported.placement, Some(PlacementProfile::RecordedStrataV1));
+        assert_eq!(exported.graph.edges, product.graph.edges);
+        let journal = host.graph_session().journal().entries().len();
+        host.import_product_codicil(&recorded).unwrap();
+        assert_eq!(host.graph_session().journal().entries().len(), journal);
+
+        let mut before = host.graph().to_snapshot();
+        before.timestamp_secs = 0;
+        let session = host.graph_session().id();
+        let changes = host.graph_session().changes().len();
+        let legacy = bytes(Some(PlacementProfile::LegacySurfaceV1));
+        assert!(host.import_product_codicil(&legacy).is_err());
+        assert!(host.replace_with_product_codicil(&legacy).is_err());
+        let mut after = host.graph().to_snapshot();
+        after.timestamp_secs = 0;
+        assert_eq!(
+            serde_json::to_value(after).unwrap(),
+            serde_json::to_value(before).unwrap()
+        );
+        assert_eq!(host.graph_session().id(), session);
+        assert_eq!(host.graph_session().journal().entries().len(), journal);
+        assert_eq!(host.graph_session().changes().len(), changes);
+        host.replace_with_product_codicil(&bytes(None)).unwrap();
+        assert_eq!(host.snapshot_placement(), None);
+        assert_eq!(
+            decode_profiled_codicil(&bytes(None)).unwrap().placement,
+            None
+        );
+        assert!(host.graph().to_snapshot().edges.iter().any(|edge| {
+            edge.semantic.as_ref().is_some_and(|semantic| {
+                semantic
+                    .statements
+                    .iter()
+                    .any(|claim| claim.statement_id == "held-profile-handle")
+            })
+        }));
     }
 
     fn resource_selection_graph() -> (Graph, Vec<Uuid>, mere::kernel::persistence::PersistedEdge) {
@@ -1275,6 +1421,212 @@ mod tests {
             .find(|edge| edge.to_node_id == ids[2])
             .unwrap();
         (graph, surfaces, exact_tag)
+    }
+
+    #[test]
+    fn direct_selection_and_family_readers_lift_content_without_losing_surface_relations() {
+        use mere::kernel::persistence::{PersistedEdgeFamily, PersistedTraversalEdgeData};
+        let (mut graph, surfaces, _) = resource_selection_graph();
+        let mut extras = Vec::new();
+        for name in ["traversal", "layout", "unrelated"] {
+            let key = add_node(
+                &mut graph,
+                Some(Uuid::new_v4()),
+                format!("https://{name}.test/"),
+                PortablePoint::zero(),
+            );
+            extras.push(graph.get_node(key).unwrap().id);
+        }
+        let mut snapshot = graph.to_snapshot();
+        snapshot.edges.clear();
+        let mut traversal = crate::mere_host::placement_test_graph()
+            .to_snapshot()
+            .edges
+            .remove(0);
+        traversal.from_node_id = surfaces[0].to_string();
+        traversal.to_node_id = extras[0].to_string();
+        traversal.families = vec![PersistedEdgeFamily::Traversal];
+        traversal.semantic = None;
+        traversal.traversal = Some(PersistedTraversalEdgeData::default());
+        snapshot.edges.push(traversal.clone());
+        let mut graph = Graph::try_from_recorded_snapshot(&snapshot).unwrap();
+        let first = graph.get_node_key_by_id(surfaces[0]).unwrap();
+        let layout = graph.get_node_key_by_id(extras[1]).unwrap();
+        assert_relation(
+            &mut graph,
+            first,
+            layout,
+            EdgeAssertion::Arrangement {
+                sub_kind: ArrangementSubKind::FrameMember,
+            },
+        );
+        let request = ExportRequest {
+            focused: surfaces[0],
+            selected: vec![],
+            scope: TransferScope::DirectRelations,
+            exported_at_ms: 17,
+            include_local_file_locations: false,
+            scene: None,
+        };
+        let members = transfer_members(&graph, &request).unwrap();
+        assert_eq!(
+            members,
+            HashSet::from([surfaces[0], surfaces[2], extras[0], extras[1]])
+        );
+        assert!(
+            !members.contains(&surfaces[1]),
+            "sharing a resource alone is not a direct link"
+        );
+        assert!(!members.contains(&extras[2]));
+        let incoming = transfer_members(
+            &graph,
+            &ExportRequest {
+                focused: surfaces[2],
+                ..request
+            },
+        )
+        .unwrap();
+        assert_eq!(
+            incoming,
+            HashSet::from([surfaces[0], surfaces[1], surfaces[2]]),
+            "both source aliases lift the directed content claim"
+        );
+        let mut host = MereHost::empty(
+            MemoryBackend::new(),
+            selected_persona(),
+            fixture_handlers(),
+            AccessContext {
+                persona: FIXTURE_PERSONA_ADDRESS.into(),
+                device: FIXTURE_DEVICE_TWO_ADDRESS.into(),
+                at_ms: 17,
+            },
+        );
+        host.begin_profiled_session(graph, Some(PlacementProfile::RecordedStrataV1))
+            .unwrap();
+        assert_eq!(
+            host.matching_members("", RelationFamilyFilter::Traversal)
+                .into_iter()
+                .collect::<HashSet<_>>(),
+            HashSet::from([surfaces[0], extras[0]])
+        );
+        assert_eq!(
+            host.matching_members("", RelationFamilyFilter::Arrangement)
+                .into_iter()
+                .collect::<HashSet<_>>(),
+            HashSet::from([surfaces[0], extras[1]])
+        );
+        let semantic = host
+            .matching_members("", RelationFamilyFilter::Semantic)
+            .into_iter()
+            .collect::<HashSet<_>>();
+        assert!(surfaces.iter().all(|id| semantic.contains(id)));
+        assert!(!semantic.contains(&extras[2]));
+        let exported = filtered_snapshot(host.graph(), &members, 17);
+        assert!(exported.edges.contains(&traversal));
+        assert!(
+            exported
+                .resource_edges
+                .iter()
+                .any(|edge| edge.semantic.as_ref().is_some_and(|bucket| bucket
+                    .statements
+                    .iter()
+                    .any(|claim| claim.statement_id == "outside-content-handle")))
+        );
+    }
+
+    #[test]
+    fn product_tag_edits_keep_peer_assertions_and_search_shown_resource_labels() {
+        let (graph, surfaces, _) = resource_selection_graph();
+        let mut host = MereHost::empty(
+            MemoryBackend::new(),
+            selected_persona(),
+            fixture_handlers(),
+            AccessContext {
+                persona: FIXTURE_PERSONA_ADDRESS.into(),
+                device: FIXTURE_DEVICE_TWO_ADDRESS.into(),
+                at_ms: 17,
+            },
+        );
+        host.begin_profiled_session(graph, Some(PlacementProfile::RecordedStrataV1))
+            .unwrap();
+        let first = host.graph().get_node_key_by_id(surfaces[0]).unwrap();
+        host.mutate_product_graph(|graph| {
+            graph.write_as(Author::person("urn:mere:peer-test"), |graph| {
+                for label in ["Shared", "PeerOnly"] {
+                    apply_graph_delta(
+                        graph,
+                        GraphDelta::InsertNodeTag {
+                            key: first,
+                            tag: label.into(),
+                        },
+                    );
+                }
+            })
+        });
+        host.edit_node(
+            surfaces[0],
+            "tagged page",
+            ["Shared".into(), "OwnOnly".into()],
+        )
+        .unwrap();
+        let source = host.graph().shown_resource_id(first).unwrap();
+        let shared: Vec<_> = host
+            .graph()
+            .resource_relations()
+            .filter(|(_, from, to, _)| {
+                *from == source
+                    && host
+                        .graph()
+                        .resource_tag_concept(*to)
+                        .is_some_and(|tag| tag.label == "Shared")
+            })
+            .flat_map(|(_, _, _, bucket)| bucket.semantic_statements())
+            .collect();
+        assert_eq!(
+            shared.len(),
+            2,
+            "the selected Author asserts even when a peer already uses the label"
+        );
+        assert_ne!(shared[0].provenance_iri, shared[1].provenance_iri);
+        let peer_claims = host
+            .graph()
+            .to_snapshot()
+            .resource_edges
+            .into_iter()
+            .filter_map(|edge| edge.semantic)
+            .flat_map(|bucket| bucket.statements)
+            .filter(|claim| claim.provenance_iri.as_deref() == Some("urn:mere:peer-test"))
+            .collect::<Vec<_>>();
+        assert_eq!(peer_claims.len(), 2);
+        host.edit_node(surfaces[0], "tagged page", ["Shared".into()])
+            .unwrap();
+        let actual = host.graph().to_snapshot().resource_edges;
+        assert!(peer_claims.iter().all(|claim| actual.iter().any(|edge| {
+            edge.semantic
+                .as_ref()
+                .is_some_and(|bucket| bucket.statements.contains(claim))
+        })));
+        assert!(
+            !host
+                .graph()
+                .node_content_tags(first)
+                .unwrap()
+                .contains("OwnOnly")
+        );
+        assert_eq!(
+            host.matching_members("PeerOnly", RelationFamilyFilter::All)
+                .into_iter()
+                .collect::<HashSet<_>>(),
+            HashSet::from([surfaces[0], surfaces[1]])
+        );
+        assert!(
+            host.matching_members("absent-label", RelationFamilyFilter::All)
+                .is_empty()
+        );
+        let journal = host.graph_session().journal().entries().len();
+        host.edit_node(surfaces[0], "tagged page", ["Shared".into()])
+            .unwrap();
+        assert_eq!(host.graph_session().journal().entries().len(), journal);
     }
 
     #[test]
@@ -1534,6 +1886,120 @@ mod tests {
                 .any(|record| record.canonical_iri == UNRELATED)
         );
         assert_eq!(whole.resource_edges, baseline.resource_edges);
+    }
+
+    #[test]
+    fn product_surface_sidecars_reject_resource_handle_collisions_before_edits() {
+        let (graph, surfaces, edge) = resource_selection_graph();
+        let held = edge.semantic.as_ref().unwrap().statements[0]
+            .statement_id
+            .clone();
+        let mut product = ProductCodicilV2 {
+            schema: PRODUCT_CODICIL_SCHEMA.into(),
+            scope: TransferScope::SelectedSubgraph,
+            exported_at_ms: 17,
+            graph: graph.to_snapshot(),
+            facets: graph.facets().clone(),
+            scene: None,
+        };
+        let mut host = MereHost::empty(
+            MemoryBackend::new(),
+            selected_persona(),
+            fixture_handlers(),
+            AccessContext {
+                persona: FIXTURE_PERSONA_ADDRESS.into(),
+                device: FIXTURE_DEVICE_TWO_ADDRESS.into(),
+                at_ms: 17,
+            },
+        );
+        host.begin_profiled_session(graph.clone(), Some(PlacementProfile::RecordedStrataV1))
+            .unwrap();
+        let before = host.graph().to_snapshot();
+        let facets = host.graph().facets().clone();
+        let journal = host.graph_session().journal().entries().len();
+        for collision in [false, true] {
+            let mut property =
+                mere::kernel::types::NodeProperty::new("urn:test:predicate".into(), "exact".into())
+                    .with_metadata(Some("urn:test:source".into()), Some(42));
+            property.statement_id = if collision {
+                held.clone()
+            } else {
+                "surface-literal-handle".into()
+            };
+            product
+                .facets
+                .set(
+                    surfaces[0],
+                    chartulary::FacetId::new(SEMANTIC_PROPERTIES),
+                    serde_json::to_value(vec![property.clone(), property]).unwrap(),
+                    &chartulary::AcceptAll,
+                )
+                .unwrap();
+            product
+                .facets
+                .set(
+                    surfaces[0],
+                    chartulary::FacetId::new("extension.origin-note"),
+                    serde_json::json!({"statement_id": held}),
+                    &chartulary::AcceptAll,
+                )
+                .unwrap();
+            let bytes = serde_json::to_vec(&ProfiledProductCodicil {
+                product: product.clone(),
+                placement: Some(PlacementProfile::RecordedStrataV1),
+            })
+            .unwrap();
+            assert_eq!(decode_profiled_codicil(&bytes).is_err(), collision);
+            assert_eq!(
+                profiled_codicil_graph(product.graph.clone(), product.facets.clone(), None)
+                    .is_err(),
+                collision
+            );
+            if collision {
+                assert!(host.import_product_codicil(&bytes).is_err());
+                assert!(host.replace_with_product_codicil(&bytes).is_err());
+                let mut after = host.graph().to_snapshot();
+                after.timestamp_secs = before.timestamp_secs;
+                assert_eq!(
+                    serde_json::to_value(after).unwrap(),
+                    serde_json::to_value(&before).unwrap()
+                );
+                assert_eq!(host.graph().facets(), &facets);
+                assert_eq!(host.graph_session().journal().entries().len(), journal);
+                // This input is valid alone; its sidecar collides only with the live Resource.
+                let mut surface_only = product.clone();
+                surface_only.graph.resources.clear();
+                surface_only.graph.resource_edges.clear();
+                surface_only.graph.shown_resources.clear();
+                let bytes = serde_json::to_vec(&ProfiledProductCodicil {
+                    product: surface_only,
+                    placement: Some(PlacementProfile::RecordedStrataV1),
+                })
+                .unwrap();
+                assert!(decode_profiled_codicil(&bytes).is_ok());
+                assert!(host.import_product_codicil(&bytes).is_err());
+                assert_eq!(host.graph().facets(), &facets);
+                assert_eq!(host.graph_session().journal().entries().len(), journal);
+            } else {
+                let restored = profiled_codicil_graph(
+                    product.graph.clone(),
+                    product.facets.clone(),
+                    Some(PlacementProfile::RecordedStrataV1),
+                )
+                .unwrap();
+                assert_eq!(
+                    restored.to_snapshot().resource_edges,
+                    product.graph.resource_edges
+                );
+                assert_eq!(
+                    restored.facets().get(
+                        &surfaces[0],
+                        &chartulary::FacetId::new("extension.origin-note")
+                    ),
+                    Some(&serde_json::json!({"statement_id": held}))
+                );
+            }
+        }
     }
 
     #[test]
@@ -2250,15 +2716,39 @@ mod tests {
             "new content facets do not repeat the NI digest as private hex",
         );
         assert_eq!(content["byte_len"], 413);
+        let file_key = reopened.graph().get_node_key_by_id(file).unwrap();
+        let web_key = reopened.graph().get_node_key_by_id(web).unwrap();
+        let (handle, payload) = reopened
+            .graph()
+            .projected_relations_between(file_key, web_key)
+            .next()
+            .unwrap();
+        assert!(matches!(
+            handle,
+            mere::kernel::graph::RelationKey::Resource(_)
+        ));
         assert!(
-            reopened
-                .graph()
-                .relations()
-                .any(|relation| relation.kind == RelationKind::Semantic(SemanticSubKind::Cites))
+            payload.has_relation(mere::kernel::graph::RelationSelector::Semantic(
+                SemanticSubKind::Cites
+            ))
         );
-        assert!(reopened.graph().relations().any(|relation| {
+        assert!(reopened.graph().find_edge_key(file_key, web_key).is_none());
+        assert!(reopened.graph().projected_relations().any(|(_, relation)| {
             relation.kind == RelationKind::Provenance(ProvenanceSubKind::GeneratedFrom)
         }));
+        let normalized_edges = |edges: &[mere::kernel::persistence::PersistedEdge]| {
+            let mut edges: Vec<_> = edges
+                .iter()
+                .map(|edge| serde_json::to_string(edge).unwrap())
+                .collect();
+            edges.sort();
+            edges
+        };
+        assert_eq!(
+            normalized_edges(&reopened.graph().to_snapshot().resource_edges),
+            normalized_edges(&decode_codicil(&bytes).unwrap().graph.resource_edges),
+            "selected Resource claim handles, sources, scopes and metadata survive import"
+        );
 
         let replaced = reopened.graph_session().id();
         let (_, imported_scene) = reopened
