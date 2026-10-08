@@ -1,10 +1,12 @@
 # Tabard appearance workshop
 
-`tabard-workshop` is the reusable Cambium surface and retained authoring state
-for Tabard. The shared theme, draft and file-library APIs live in
-[`crates/system/tabard`](../../crates/system/tabard); this port composes them
-into a product surface. [`desktop`](desktop) mounts that surface in a native
-window without a second editor model.
+Tabard is the standalone appearance workshop. [`desktop`](desktop) mounts the
+shared [`tabard-workshop`](../../crates/cambium/tabard-workshop) surface in a
+native window. Its retained authoring state, controls, specimens, tests and
+fixtures live in that Cambium package, so other applications can embed the
+same workshop. The shared theme, draft and file-library APIs live in
+[`crates/system/tabard`](../../crates/system/tabard). See the
+[embedding guide](../../crates/cambium/tabard-workshop/README.md) for host seams.
 
 The workshop edits an isolated user draft. Pick a primary, secondary, tertiary
 or neutral seed, adjust its hue/saturation/lightness, or enter a six-digit RGB
@@ -24,8 +26,8 @@ a CSS field; **Apply to preview** applies its exact text to the selected mode,
 and **Clear to derived** removes the override. Save also applies staged CSS.
 Ordinary selectors such as `body`, `.toolbar`, `.address-field`, `button`,
 `h1`, `p`, `a` and `.token-keyword` target the checked-in
-[application fixture](fixtures/application.html). Its
-[fixture rules](fixtures/application.css) consume `--tabard-color-*` and
+[application fixture](../../crates/cambium/tabard-workshop/fixtures/application.html). Its
+[fixture rules](../../crates/cambium/tabard-workshop/fixtures/application.css) consume `--tabard-color-*` and
 `--tabard-syntax-*` properties with neutral fallbacks. Without an override,
 Tabard supplies the selected mode's derived properties. With an override,
 the exact authored sheet replaces that derived sheet and follows the fixture
@@ -64,28 +66,6 @@ does not activate a theme elsewhere. In-memory hosts use
 `WorkshopState::in_memory()` and save for the session. Native close requests
 offer Save and close, Close without saving, or Keep editing when user work is
 pending. Invalid input or a failed save keeps the window and draft available.
-
-An embedding host mounts `workshop_view`, `workshop_stylesheet()` and
-`WorkshopState`. The stylesheet composes Cambium's shared syntax and graph
-rules with the workshop frame. Register `graph_leaf()` under `GRAPH_LEAF_KEY`.
-Both `reader_preview()` and `stylesheet_preview()` return retained preview
-handles implementing `PreviewScene`: `frame`, `revision` and `accessible_name`.
-Register their texture producers under `READER_LEAF_KEY` and
-`STYLESHEET_LEAF_KEY`. The desktop's generic
-[`ScenePreviewProducer<T>`](desktop/src/reader.rs) demonstrates this adapter on
-the existing host render core/device, with distinct raster keys and rebinding
-when reopening replaces the state. The adapter is desktop-local; the portable
-workshop exposes scenes and does not depend on a desktop port or create a
-renderer.
-
-Ordinary control messages synchronize the authoring model. Hosts using native
-text/IME provide focused slots through `text_field` and `text_field_mut` for
-`name`, `seed-hex` and `mode-sheet`, then call `sync_controls()` after dispatch.
-They supply the existing file-chooser seam for import, consume `take_export()`
-and call `complete_export()` after choosing a destination. Embedding close
-policy calls `request_close()` and honors the explicit `exit_requested()`
-decision. The desktop host demonstrates these seams without a second editor
-model.
 
 The syntax specimen uses Cambium's read-only `highlighted_code` view: Illume
 lexes the Rust source, Cambium maps its token kinds to Tinct roles, and the
