@@ -48,6 +48,15 @@ pub trait NativeIdentityUi: Send + Sync {
     fn prompt_vault_passphrase(&self) -> Result<Option<Zeroizing<String>>, NativeIdentityFailure> {
         Err(NativeIdentityFailure::UiUnavailable)
     }
+
+    /// The same box in the host's own words: a resident's start prompt, a
+    /// first-run choice, a retry after an error (vault lock rulings 63, 64).
+    fn ask_vault_passphrase(
+        &self,
+        _message: &str,
+    ) -> Result<Option<Zeroizing<String>>, NativeIdentityFailure> {
+        Err(NativeIdentityFailure::UiUnavailable)
+    }
 }
 
 /// Cross-platform system-dialog implementation used by the installed host.
@@ -124,8 +133,15 @@ impl NativeIdentityUi for SystemNativeIdentityUi {
     }
 
     fn prompt_vault_passphrase(&self) -> Result<Option<Zeroizing<String>>, NativeIdentityFailure> {
+        self.ask_vault_passphrase("Enter the vault passphrase.")
+    }
+
+    fn ask_vault_passphrase(
+        &self,
+        message: &str,
+    ) -> Result<Option<Zeroizing<String>>, NativeIdentityFailure> {
         self.require_graphical_backend()?;
-        Ok(InputBox::new("Identity vault", "Enter the vault passphrase.")
+        Ok(InputBox::new("Identity vault", message)
             .password()
             .show()
             .map(Zeroizing::new))
