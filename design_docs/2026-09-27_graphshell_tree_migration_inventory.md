@@ -1,8 +1,9 @@
 # Graphshell tree migration inventory
 
 **Date:** 2026-09-27
-**Status (2026-09-30):** phase 4 in progress; saved-graph Title/Tags migration
-has native and headed reopening receipts. Remaining product migration and
+**Status (2026-10-08):** phase 4 in progress; saved-graph Title/Tags and durable
+address/file intake have native and browser reopening receipts at `da466027a`,
+based on `79fbbeb75` with Genet `15713014`. Remaining product migration and
 large-graph responsiveness are open.
 **Parent:** [Graphshell on one Cambium tree](2026-09-25_graphshell_one_tree_plan.md).
 
@@ -15,8 +16,28 @@ since 2026-10-02 (`9adc4415`). So `TreePage` now holds the physics panel and
 session state beside its graph, and the "First slice" and "Owners and seams"
 paragraphs and migration steps 2 and 3 below describe the tree before them.
 The [controls receipt](../testing/2026-09-27_graphshell_controls_physics_receipt.md)'s
-2026-10-01 and 2026-10-02 sections record both. The inventory is not rebuilt
-here.
+2026-10-01 and 2026-10-02 sections record both. The dated inventory below preserves the earlier sequence; the current
+annotation following it records the bounded intake progress.
+
+**Current intake slice (2026-10-08):** `tree.html?app=local` now adds an address
+and optional title through the existing `MereHost`, or a file through Cambium's
+shared `open_file` seam. File identity hashes the returned bytes; name, media
+type, length and modification time remain owner facets. Success waits for the
+existing IndexedDB persistence acknowledgement, ingests the owner's graph,
+and selects/opens that member without replacing camera, arrangement roles or
+physics choice. Repeated address/file identity reuses the member. Refusals
+leave the graph untouched; a failed write retains a pending member and Retry
+intake. Selection is guarded during the chooser/write, while Tab remains
+available. The floating panel is anchored below the wrapped toolbar, and
+empty/long single-line fields have current-stack sizing receipts.
+
+The [controls receipt](../testing/2026-09-27_graphshell_controls_physics_receipt.md)
+owns the exact native and 1280/420 px browser evidence. Chooser cancellation
+uses the real DOM cancel listener plus the headless shared callback fixture;
+OS-dialog Cancel is still unverified. This completes the bounded address/file
+part of step 3, not all detail actions or phase 4. Facets, relations, handlers,
+representation, find/arrange, saved scene/transfer, projection/capture/practice
+and the five public-page cutover remain open.
 
 Mark approved proceeding to Cambium while treating rendering performance and
 live physics as open work. A paused graph rendered through a producer establishes
@@ -45,7 +66,8 @@ velocity. This establishes position continuity, not momentum continuity.
 
 The default `TreePage` opens a fixture with `GraphshellApp<MemoryBackend>` and
 retains only its graph. The opt-in `app=local` route now retains the existing
-IndexedDB application and its Title/Tags editor, as recorded below. The main
+IndexedDB application, Title/Tags editor and durable address/file intake, as
+recorded in the current annotation above and dated receipts below. The main
 browser page still owns the broader product state and integrations. Keep
 existing pages available until each remaining behavior has crossed the
 boundary and passed its receipt.
