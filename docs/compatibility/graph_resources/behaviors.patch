@@ -1,0 +1,296 @@
+--- a/src/behaviors.rs
++++ b/src/behaviors.rs
+@@ -99,7 +99,7 @@
+ /// so long that building its scope costs more than the match is worth.
+ const MAX_ANCESTRY_DEPTH: usize = 32;
+ 
+-/// The node ids a delta touches.
++/// Surface ids named directly by a delta. Resource ids need graph projection.
+ ///
+ /// Exhaustive by construction: a new `CapturedDelta` variant fails to compile
+ /// here until it is classified, which is the same discipline `ring_of` uses
+@@ -109,6 +109,12 @@
+     use CapturedDelta as D;
+     match delta {
+         D::ReplayAddNodeWithIdIfMissing { id, .. } => vec![id.as_str()],
++        D::ReplaySetShownResourceById { surface_id, .. } => vec![surface_id.as_str()],
++
++        // Resource UUIDs are not Surface UUIDs and must not become bare scopes.
++        // touched_surface_ids resolves these through the graph explicitly.
++        D::ReplaySetResourceRecordById { .. }
++        | D::ReplaySetResourceEdgesByIds { .. } => Vec::new(),
+ 
+         D::ReplayRemoveNodeById { node_id, .. }
+         | D::ReplaySetNodeTitleById { node_id, .. }
+@@ -171,6 +177,64 @@
+     }
+ }
+ 
++/// Surfaces affected in the graph state visible to the after-dispatch drain.
++///
++/// Record writes reach every current view of the resource. A tag concept's
++/// record also changes the tag label projected onto the resources that point
++/// to it with taggedWith. Only that exact predicate adds this dependency;
++/// arbitrary incoming semantic relations do not propagate content changes.
++///
++/// Pair replacements name both resource endpoints even after retraction has
++/// removed the relation. No Resource UUID is used as a Surface scope fallback.
++/// This does not reconstruct mappings or ancestry from before the dispatch.
++fn touched_surface_ids(graph: &Graph, delta: &CapturedDelta) -> Vec<String> {
++    use CapturedDelta as D;
++    use mere::kernel::graph::resource::TAGGED_WITH_IRI;
++
++    let mut resources = HashSet::new();
++    match delta {
++        D::ReplaySetResourceRecordById { resource_id, .. } => {
++            if let Ok(id) = resource_id.parse::<uuid::Uuid>() {
++                resources.insert(id);
++                // Test the relation itself, not the concept's current facet:
++                // removing the facet also changes its incoming tag projections.
++                for (from, to, payload) in graph.resource_edges() {
++                    if to.id() == id
++                        && payload.semantic_statements().iter().any(|statement| {
++                            statement.predicate == TAGGED_WITH_IRI
++                        })
++                    {
++                        resources.insert(from.id());
++                    }
++                }
++            }
++        }
++        D::ReplaySetResourceEdgesByIds {
++            from_resource_id,
++            to_resource_id,
++            ..
++        } => {
++            for id in [from_resource_id, to_resource_id] {
++                if let Ok(id) = id.parse::<uuid::Uuid>() {
++                    resources.insert(id);
++                }
++            }
++        }
++        // Exhaustive classification is retained in touched_ids above.
++        _ => {}
++    }
++    let mut surfaces: Vec<String> = touched_ids(delta)
++        .into_iter()
++        .map(str::to_owned)
++        .chain(resources.into_iter().flat_map(|id| {
++            graph.surface_ids_showing_resource(id).into_iter().map(|id| id.to_string())
++        }))
++        .collect();
++    surfaces.sort_unstable();
++    surfaces.dedup();
++    surfaces
++}
++
+ /// Every containment ancestry of `id`, each as a root-first scope path ending
+ /// in the node itself.
+ ///
+@@ -195,11 +259,18 @@
+     };
+ 
+     while let Some((path, at, seen)) = frontier.pop() {
+-        let containers: Vec<_> = graph
+-            .containment_edges()
+-            .filter(|edge| edge.from == at)
+-            .map(|edge| edge.to)
++        // URL/domain/filesystem containment belongs to Resource relations;
++        // user folders and collections remain Surface relations. Project both
++        // into the Surface vocabulary watches already use.
++        let mut containers: Vec<_> = graph
++            .projected_outgoing_relations(at)
++            .filter(|(_, _, payload)| payload.containment_data().is_some_and(|data| {
++                !data.sub_kinds.is_empty()
++            }))
++            .map(|(container, _, _)| container)
+             .collect();
++        containers.sort_unstable_by_key(|key| graph.get_node(*key).map(|node| node.id));
++        containers.dedup();
+         let mut grew = false;
+         for container in containers {
+             let Some(node) = graph.get_node(container) else {
+@@ -289,9 +360,9 @@
+         .map(|(index, entry)| (index as u64 + 1, entry))
+         .filter(|(seq, _)| *seq > cursor)
+         .map(|(seq, entry)| {
+-            let scopes = touched_ids(&entry.delta)
++            let scopes = touched_surface_ids(graph, &entry.delta)
+                 .into_iter()
+-                .flat_map(|id| ancestry_scopes(graph, id))
++                .flat_map(|id| ancestry_scopes(graph, &id))
+                 .collect();
+             // Servitor's watch wire format matches the admitted subject id,
+             // including its no-self-wake guard. The journal keeps kind,
+@@ -679,4 +750,170 @@
+         let graph = Graph::new();
+         assert!(ancestry_scopes(&graph, "not-a-uuid").is_empty());
+     }
+-}
++
++    fn resource_views() -> (Graph, mere::kernel::graph::NodeKey, mere::kernel::graph::NodeKey) {
++        use mere::kernel::graph::apply::add_node;
++        let mut graph = Graph::new();
++        let a = add_node(&mut graph, None, "https://example.test/page#one".into(), Default::default());
++        let b = add_node(&mut graph, None, "https://example.test/page#two".into(), Default::default());
++        assert_eq!(graph.shown_resource_id(a), graph.shown_resource_id(b));
++        (graph, a, b)
++    }
++
++    fn surface_names(graph: &Graph, keys: &[mere::kernel::graph::NodeKey]) -> Vec<String> {
++        let mut ids: Vec<_> = keys.iter().map(|key| graph.get_node(*key).unwrap().id.to_string()).collect();
++        ids.sort_unstable();
++        ids
++    }
++
++    #[test]
++    fn resource_record_wakes_each_current_view_without_resource_uuid_scopes() {
++        let (graph, a, b) = resource_views();
++        let resource = graph.shown_resource_id(a).unwrap();
++        let delta = CapturedDelta::ReplaySetResourceRecordById {
++            resource_id: resource.to_string(), record: None,
++        };
++        assert!(touched_ids(&delta).is_empty());
++        assert_eq!(touched_surface_ids(&graph, &delta), surface_names(&graph, &[a, b]));
++        assert!(!touched_surface_ids(&graph, &delta).contains(&resource.to_string()));
++        assert!(touched_surface_ids(&Graph::new(), &delta).is_empty(),
++            "a detached Resource never becomes a bare Surface watch scope");
++    }
++
++    #[test]
++    fn concept_record_changes_wake_incoming_tag_sources_even_after_facet_removal() {
++        use mere::kernel::graph::apply::{GraphDelta, add_node, apply_graph_delta, assert_semantic_predicate_in_scope};
++        use mere::kernel::graph::resource::ResourceNode;
++        use mere::kernel::graph::resource_tags::TagConcept;
++        use mere::kernel::persistence::PersistedResourceRecord;
++        let (mut graph, a, b) = resource_views();
++        let resource = graph.shown_resource_id(a).unwrap();
++        let concept_iri = "https://vocabulary.test/tags#Research";
++        assert!(graph.tag_resource_with_concept(resource, concept_iri, TagConcept {
++            owner_iri: "urn:author:alice".into(), label: "Research".into(),
++        }).unwrap());
++        let concept = ResourceNode::for_term(concept_iri).id();
++        let concept_view = add_node(&mut graph, None, "https://example.test/concept".into(), Default::default());
++        let concept_surface = graph.get_node(concept_view).unwrap().id;
++        apply_graph_delta(&mut graph, GraphDelta::ReplaySetShownResourceById {
++            surface_id: concept_surface, resource_id: Some(concept),
++        });
++        let unrelated = add_node(&mut graph, None, "https://unrelated.test/page".into(), Default::default());
++        assert!(assert_semantic_predicate_in_scope(&mut graph, unrelated, concept_view,
++            "https://unrelated.test/taggedWith".into(), Default::default()).is_some());
++        let record = PersistedResourceRecord { canonical_iri: concept_iri.into(), facets: Vec::new() };
++        apply_graph_delta(&mut graph, GraphDelta::ReplaySetResourceRecordById {
++            resource_id: concept, record: Some(record.clone()),
++        });
++        assert!(graph.resource_tag_concept(concept).is_none());
++        assert!(graph.node_content_tags(a).unwrap().is_empty());
++        let delta = CapturedDelta::ReplaySetResourceRecordById {
++            resource_id: concept.to_string(), record: Some(record),
++        };
++        assert_eq!(touched_surface_ids(&graph, &delta), surface_names(&graph, &[a, b, concept_view]),
++            "incoming exact taggedWith sources and the concept view wake; arbitrary incoming edges do not");
++    }
++
++    #[test]
++    fn retracted_resource_pair_still_wakes_both_endpoint_views_once() {
++        use mere::kernel::graph::apply::{GraphDelta, add_node, apply_graph_delta};
++        use mere::kernel::graph::resource::ResourceNode;
++        use mere::kernel::graph::resource_tags::TagConcept;
++        let (mut graph, a, b) = resource_views();
++        let resource = graph.shown_resource_id(a).unwrap();
++        let concept_iri = "https://vocabulary.test/tags#Research";
++        graph.tag_resource_with_concept(resource, concept_iri, TagConcept {
++            owner_iri: "urn:author:alice".into(), label: "Research".into(),
++        }).unwrap();
++        let concept = ResourceNode::for_term(concept_iri).id();
++        let c = add_node(&mut graph, None, "https://example.test/concept-view".into(), Default::default());
++        let c_id = graph.get_node(c).unwrap().id;
++        apply_graph_delta(&mut graph, GraphDelta::ReplaySetShownResourceById {
++            surface_id: c_id, resource_id: Some(concept),
++        });
++        let delta = CapturedDelta::ReplaySetResourceEdgesByIds {
++            from_resource_id: resource.to_string(), to_resource_id: concept.to_string(), edges: Vec::new(),
++        };
++        apply_graph_delta(&mut graph, delta.replay_delta().unwrap());
++        assert!(graph.resource_edges().all(|(from, to, _)| from.id() != resource || to.id() != concept));
++        assert_eq!(touched_surface_ids(&graph, &delta), surface_names(&graph, &[a, b, c]));
++        let self_pair = CapturedDelta::ReplaySetResourceEdgesByIds {
++            from_resource_id: resource.to_string(), to_resource_id: resource.to_string(), edges: Vec::new(),
++        };
++        assert_eq!(touched_surface_ids(&graph, &self_pair), surface_names(&graph, &[a, b]));
++    }
++
++    #[test]
++    fn shown_resource_changes_keep_the_surface_even_after_detach_or_removal() {
++        use mere::kernel::graph::apply::{GraphDelta, apply_graph_delta};
++        let (mut graph, a, b) = resource_views();
++        let resource = graph.shown_resource_id(a).unwrap();
++        let a_id = graph.get_node(a).unwrap().id;
++        let record = CapturedDelta::ReplaySetResourceRecordById {
++            resource_id: resource.to_string(), record: None,
++        };
++        let detach = CapturedDelta::ReplaySetShownResourceById {
++            surface_id: a_id.to_string(), resource_id: None,
++        };
++        apply_graph_delta(&mut graph, detach.replay_delta().unwrap());
++        assert_eq!(touched_surface_ids(&graph, &record), surface_names(&graph, &[b]),
++            "Resource records project through final state, not old mappings");
++        assert_eq!(touched_surface_ids(&graph, &detach), vec![a_id.to_string()]);
++        apply_graph_delta(&mut graph, GraphDelta::ReplayRemoveNodeById { node_id: a_id });
++        let ids = touched_surface_ids(&graph, &detach);
++        assert_eq!(ids, vec![a_id.to_string()]);
++        assert_eq!(ancestry_scopes(&graph, &ids[0])[0].segments(), &[a_id.to_string()]);
++    }
++
++    #[test]
++    fn resource_projection_preserves_journal_author_and_no_self_wake() {
++        use mere::kernel::graph::Author;
++        let (graph, a, b) = resource_views();
++        let resource = graph.shown_resource_id(a).unwrap();
++        let expected = surface_names(&graph, &[a, b]);
++        let mut app = App::test_stub();
++        let graph_id = app.graph_runtimes.active_graph();
++        app.graph_runtimes.activate_or_insert(graph_id, Some(app.session_id), mere::canvas::Canvas::with_graph(graph));
++        let cursor = journal_len(&app);
++        let subject = Subject::new([0x42; 32]);
++        let author = Author::script(subject.to_hex(), "resource-body").via("turnstone");
++        {
++            let mut journal = app.journal.lock().unwrap();
++            journal.record_as(author.clone(), CapturedDelta::ReplaySetResourceRecordById {
++                resource_id: resource.to_string(), record: None,
++            });
++        }
++        let entries = entries_since(&app, cursor);
++        assert_eq!(entries.len(), 1);
++        let wake = servitor::Wake { subject, matched: vec![cursor + 1] };
++        assert_eq!(context_for(&entries, &wake).woken_by[0].nodes, expected);
++        for surface in &expected {
++            let watch = servitor::Watch {
++                subject, scope: ScopePath::parse(surface).unwrap(),
++                self_author: subject.to_hex(), cursor,
++            };
++            assert!(!watch.matches(&entries[0].as_event()));
++        }
++        assert_eq!(entries[0].author, subject.to_hex());
++        assert_eq!(app.journal.lock().unwrap().entries().last().unwrap().author, author);
++    }
++
++    #[test]
++    fn resource_and_surface_containment_both_contribute_current_watch_ancestry() {
++        use mere::kernel::graph::apply::{add_node, assert_relation};
++        use mere::kernel::graph::{ContainmentSubKind, EdgeAssertion};
++        let (mut graph, a, _) = resource_views();
++        let parent = add_node(&mut graph, None, "https://containers.test/collection#one".into(), Default::default());
++        let parent_alias = add_node(&mut graph, None, "https://containers.test/collection#two".into(), Default::default());
++        let folder = add_node(&mut graph, None, "https://folders.test/surface".into(), Default::default());
++        assert_relation(&mut graph, a, parent, EdgeAssertion::Containment { sub_kind: ContainmentSubKind::UrlPath }).unwrap();
++        assert_relation(&mut graph, a, folder, EdgeAssertion::Containment { sub_kind: ContainmentSubKind::UserFolder }).unwrap();
++        let leaf = graph.get_node(a).unwrap().id.to_string();
++        let scopes = ancestry_scopes(&graph, &leaf);
++        for key in [parent, parent_alias, folder] {
++            let parent_id = graph.get_node(key).unwrap().id.to_string();
++            assert!(scopes.iter().any(|scope| scope.segments() == &[parent_id.clone(), leaf.clone()]),
++                "both views of the resource container and the Surface folder are distinct regions");
++        }
++    }
++}

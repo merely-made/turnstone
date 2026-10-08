@@ -1,0 +1,29 @@
+COMMAND ["/home/markik/Code/target/debug/deps/turnstone-919ba489be28f23f", "inspector_view::tests::", "--test-threads=1"]
+
+running 7 tests
+test inspector_view::tests::a_lane_without_introspection_is_reported_not_synthesized ... ok
+test inspector_view::tests::closing_content_drops_the_facts ... ok
+test inspector_view::tests::content_tags_are_sorted_and_follow_tag_removal ... ok
+test inspector_view::tests::focused_node_with_live_content_reports_both_sections ... ok
+test inspector_view::tests::livery_and_weld_capability_limits_are_presented_honestly ... ok
+test inspector_view::tests::no_focus_reports_none_honestly ... ok
+test inspector_view::tests::only_a_person_with_the_ui_id_renders_as_you ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 683 filtered out; finished in 0.36s
+
+
+COMMAND ["/home/markik/Code/target/debug/deps/turnstone-919ba489be28f23f", "app::tests::delete_stages_into_the_bin_and_recover_restores_identity", "--test-threads=1"]
+
+running 1 test
+test app::tests::delete_stages_into_the_bin_and_recover_restores_identity ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 689 filtered out; finished in 0.13s
+
+
+COMMAND ["/home/markik/Code/target/debug/deps/turnstone-919ba489be28f23f", "app::tests::keep_action_is_target_bound_idempotent_and_observable", "--test-threads=1"]
+
+running 1 test
+test app::tests::keep_action_is_target_bound_idempotent_and_observable ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 689 filtered out; finished in 0.11s
+

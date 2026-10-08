@@ -1,0 +1,38 @@
+{
+  "commit": "78a59e172c78c70e943332ade5492b91ff09fea7",
+  "binary_sha256": "bfda7c16e88e01ff8d66a787b9d0e55b6fc78f9df10972997702692b98d5b62d",
+  "source_guard_exit": 0,
+  "files": {
+    "Cargo.toml": "b083917265dc2154c58a31053304508ae48ab414919589537b70406f8316b071",
+    "Cargo.lock": "de6ce134764e50cb82cbf7110121e2d8ac509484afc0d51060d52ba0bd9e6576",
+    "src/content_tags.rs": "02ea5236f6ea543b3087c4d0a0c7fafa4eb0e1d4e943ce11c0cb315b22e75d7d",
+    "src/lib.rs": "f1545b1066ad8be91abf45c96aa1f9462ca651a124cc0ffa731a0c7a4b3e87da",
+    "src/inspector_view.rs": "ea8cb3e03a0f837f40f65f4bad921d48c95b3f119c0ce2375c50bd9ec5b4ec9e",
+    "src/roster_view.rs": "8930ddb25993bfbc021b3648044a7b0cbd9f6d71dca684d5b3caaf7a0a5d4322",
+    "src/app/node_arms.rs": "c12965c2779417e45bb5eb3a1ee56945e39672e2b7f97762d59fb71285752c25",
+    "src/app/tests.rs": "df9dbff47eab810c6274c88b2b4cc6a719c6c5fe01b9bfda29a004500280c1ad"
+  },
+  "results": [
+    {
+      "filter": "inspector_view::tests::",
+      "exit_code": 0,
+      "result_lines": [
+        "test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 683 filtered out; finished in 0.36s"
+      ]
+    },
+    {
+      "filter": "app::tests::delete_stages_into_the_bin_and_recover_restores_identity",
+      "exit_code": 0,
+      "result_lines": [
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 689 filtered out; finished in 0.13s"
+      ]
+    },
+    {
+      "filter": "app::tests::keep_action_is_target_bound_idempotent_and_observable",
+      "exit_code": 0,
+      "result_lines": [
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 689 filtered out; finished in 0.11s"
+      ]
+    }
+  ]
+}
