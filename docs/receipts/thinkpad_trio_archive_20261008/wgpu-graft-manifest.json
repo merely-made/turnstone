@@ -1,0 +1,40 @@
+{
+  "repository": "wgpu-graft",
+  "original_head": "17615cf973ce3cae6d05d7825fbdf8e605354317",
+  "original_branch": "main",
+  "target_head": "0b026a44b3e296b6fa7c5ad4944751adeb8c5db7",
+  "tracked": {
+    "grafting/Cargo.toml": {
+      "kind": "file",
+      "sha256": "f61d01c32f6ef4e6bc4d3e7e8b898672c23ef6139678182ba8a17f50dea4aa91",
+      "size": 4113,
+      "mode": 420,
+      "mtime_ns": 1788149485142857921
+    },
+    "grafting/src/lib.rs": {
+      "kind": "file",
+      "sha256": "217d6a36c827e8f601986a1d358af9fb86c6cbb3e80f7005e6662136867562ac",
+      "size": 39964,
+      "mode": 420,
+      "mtime_ns": 1788149477349851145
+    },
+    "grafting/src/vulkan_dmabuf.rs": {
+      "kind": "file",
+      "sha256": "f878283e94238a29d60fd6dd1dc46531b4743dab64cab11c87ea474910250d4f",
+      "size": 21753,
+      "mode": 420,
+      "mtime_ns": 1788149477373851166
+    }
+  },
+  "untracked": {},
+  "patch_sha256": {
+    "tracked.patch": "7bf9bfc3bbd4bb2302d16f1487b66f9d03e2cf52447ce2764d92e2771eff4553",
+    "index.patch": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "worktree.patch": "7bf9bfc3bbd4bb2302d16f1487b66f9d03e2cf52447ce2764d92e2771eff4553"
+  },
+  "active_owners": [],
+  "stage": "complete",
+  "current_head": "0b026a44b3e296b6fa7c5ad4944751adeb8c5db7",
+  "tracked_clean": true,
+  "archive_verified": true
+}

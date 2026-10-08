@@ -1,0 +1,89 @@
+{
+  "repository": "wgpu-scry",
+  "original_head": "1b555ceee70cf7ee3b4c8d05c0dd513d0635967b",
+  "original_branch": "main",
+  "target_head": "dc9bd1a08d905ee64b1b9529a84ff5e11aa1bbe4",
+  "tracked": {
+    "Cargo.lock": {
+      "kind": "file",
+      "sha256": "6bd006efdf831874a2fb3a7a493882d02b7ad3e1f72454eb442bd16995a8c02c",
+      "size": 131022,
+      "mode": 420,
+      "mtime_ns": 1788150323380586686
+    },
+    "scrying/Cargo.toml": {
+      "kind": "file",
+      "sha256": "b375d2ee1c44ebc155685ea79453fe22d4532e450e20cda602ebc5aa6c2c270f",
+      "size": 7979,
+      "mode": 420,
+      "mtime_ns": 1788150323820587069
+    },
+    "scrying/src/lib.rs": {
+      "kind": "file",
+      "sha256": "1f2b75c0749a75017c2a1ac7dfa5cb531f940b1078a9bfc6f838e7830ff53d36",
+      "size": 64476,
+      "mode": 420,
+      "mtime_ns": 1788150391611645396
+    },
+    "scrying/src/native_frame/dmabuf.rs": {
+      "kind": "file",
+      "sha256": "735886b9bccacf0e0d65242f9f3df7e215e511fccf2a30c614b260293353fd25",
+      "size": 11549,
+      "mode": 420,
+      "mtime_ns": 1788150324557587710
+    },
+    "scrying/src/native_frame/metal.rs": {
+      "kind": "file",
+      "sha256": "5c8f06c0114c20c46da64286b15fccefd5115d8fb2f6c655edda09917d776231",
+      "size": 1310,
+      "mode": 420,
+      "mtime_ns": 1788150324589587738
+    },
+    "scrying/src/wgpu_compat.rs": {
+      "kind": "file",
+      "sha256": "7a8a0253b519d3c4e7aca59bd353fccc5af705dd2f7d437e9f6568f5f1bd4f8a",
+      "size": 927,
+      "mode": 420,
+      "mtime_ns": 1788150391629645411
+    },
+    "scrying/src/wpe_producer/ffi.rs": {
+      "kind": "file",
+      "sha256": "34e7e27637fd73414f8fe5d1fd6cc84ccee131cad8fd9aa72d2eb7a73f2a81f4",
+      "size": 20030,
+      "mode": 420,
+      "mtime_ns": 1788150391990645718
+    },
+    "scrying/src/wpe_producer/producer.rs": {
+      "kind": "file",
+      "sha256": "c681e1eae20567f7bdb1d1b4b88edd1835e041a207ca9ec88a01514806cac3b7",
+      "size": 34156,
+      "mode": 420,
+      "mtime_ns": 1788150325012588105
+    },
+    "scrying/tests/dmabuf_roundtrip.rs": {
+      "kind": "file",
+      "sha256": "86049d1875aa58bd1b64b2cb8d77484d06fd62d0cca7e49df7d442791aee17b8",
+      "size": 23954,
+      "mode": 420,
+      "mtime_ns": 1788150325407588449
+    },
+    "scrying/tests/wpe_to_vulkan_roundtrip.rs": {
+      "kind": "file",
+      "sha256": "cdc4641860be8b14017a99d5a4732c6f9b8995d4fd04ff9f3ec9cf091e991875",
+      "size": 23162,
+      "mode": 420,
+      "mtime_ns": 1788150325437588475
+    }
+  },
+  "untracked": {},
+  "patch_sha256": {
+    "tracked.patch": "3ef03e8021dcc96d34f779fc178279035cff5c6a7c7502e48de008ef6d1e248d",
+    "index.patch": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "worktree.patch": "3ef03e8021dcc96d34f779fc178279035cff5c6a7c7502e48de008ef6d1e248d"
+  },
+  "active_owners": [],
+  "stage": "complete",
+  "current_head": "dc9bd1a08d905ee64b1b9529a84ff5e11aa1bbe4",
+  "tracked_clean": true,
+  "archive_verified": true
+}

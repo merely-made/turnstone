@@ -1,0 +1,50 @@
+[
+  {
+    "repository": "wgpu-graft",
+    "original_head": "17615cf973ce3cae6d05d7825fbdf8e605354317",
+    "current_head": "0b026a44b3e296b6fa7c5ad4944751adeb8c5db7",
+    "archive": "/home/markik/Code/repos/wgpu-graft/docs/receipts/thinkpad_trio_archive_20261008",
+    "tracked_files": 3,
+    "untracked_files": 0,
+    "untracked_bytes": 0,
+    "tracked_clean": true,
+    "archive_verified": true,
+    "patch_sha256": {
+      "tracked.patch": "7bf9bfc3bbd4bb2302d16f1487b66f9d03e2cf52447ce2764d92e2771eff4553",
+      "index.patch": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "worktree.patch": "7bf9bfc3bbd4bb2302d16f1487b66f9d03e2cf52447ce2764d92e2771eff4553"
+    }
+  },
+  {
+    "repository": "wgpu-scry",
+    "original_head": "1b555ceee70cf7ee3b4c8d05c0dd513d0635967b",
+    "current_head": "dc9bd1a08d905ee64b1b9529a84ff5e11aa1bbe4",
+    "archive": "/home/markik/Code/repos/wgpu-scry/docs/receipts/thinkpad_trio_archive_20261008",
+    "tracked_files": 10,
+    "untracked_files": 0,
+    "untracked_bytes": 0,
+    "tracked_clean": true,
+    "archive_verified": true,
+    "patch_sha256": {
+      "tracked.patch": "3ef03e8021dcc96d34f779fc178279035cff5c6a7c7502e48de008ef6d1e248d",
+      "index.patch": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "worktree.patch": "3ef03e8021dcc96d34f779fc178279035cff5c6a7c7502e48de008ef6d1e248d"
+    }
+  },
+  {
+    "repository": "wgpu-weld",
+    "original_head": "a1eaa267ae9e9a9eed229a7c955a9c25394ca75d",
+    "current_head": "c4dd593b7a730acb4aa6ffab0fe2edf8a0584083",
+    "archive": "/home/markik/Code/repos/wgpu-weld/docs/receipts/thinkpad_trio_archive_20261008",
+    "tracked_files": 5,
+    "untracked_files": 934,
+    "untracked_bytes": 1787654373,
+    "tracked_clean": true,
+    "archive_verified": true,
+    "patch_sha256": {
+      "tracked.patch": "8a1e500b541f90b131756bbe1afd485fa27a3fc78aa9cea25c9dfa100ca80ac2",
+      "index.patch": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "worktree.patch": "8a1e500b541f90b131756bbe1afd485fa27a3fc78aa9cea25c9dfa100ca80ac2"
+    }
+  }
+]
