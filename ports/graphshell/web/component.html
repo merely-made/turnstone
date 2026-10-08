@@ -12,6 +12,10 @@
     ></canvas>
 
     <main id="gs-semantic-host" aria-label="Graphshell reference host">
+      <div id="gs-command-menu" role="menu" aria-label="Commands" hidden>
+        <input id="gs-command-search" type="search" placeholder="Search commands" aria-label="Search commands" autocomplete="off">
+        <div id="gs-command-menu-items"></div>
+      </div>
       <header aria-label="Mounted sessions">
         <button
           id="gs-session-local"

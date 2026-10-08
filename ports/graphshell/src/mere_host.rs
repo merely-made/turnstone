@@ -23,6 +23,8 @@ use mere::kernel::graph::{Author, CapturedDelta, Graph, NodeFacetStore, NodeKey,
 use mere::kernel::persistence::GraphSnapshot;
 use mere::kernel::time::wall_clock_now;
 use muniment::{Backend, JsonSlots, StoreError};
+/// The view types a host writes through [`MereHost::set_view_now`].
+pub use pandect::{CommandMenuView, ViewIntent as SessionViewIntent};
 use pandect::{
     GraphSession, MereSessions, Pending, Reverted, SessionError, SessionId, ViewIntent, ViewKey,
 };
@@ -642,6 +644,25 @@ impl<B: Backend> MereHost<B> {
         let key = ViewKey::new(via, view)?;
         let author = author_of(&self.selected_persona, via);
         self.graph_session.set_view(author, key, state).await?;
+        Ok(())
+    }
+
+    /// `via`'s view named `view`, if it has one.
+    pub fn view(&self, via: &str, view: &str) -> Option<&ViewIntent> {
+        let key = ViewKey::new(via, view).ok()?;
+        self.graph_session.view(&key)
+    }
+
+    /// [`set_view`](Self::set_view), not stored until the next batch.
+    pub fn set_view_now(
+        &mut self,
+        via: &str,
+        view: &str,
+        state: ViewIntent,
+    ) -> Result<(), MereHostError> {
+        let key = ViewKey::new(via, view)?;
+        let author = author_of(&self.selected_persona, via);
+        self.graph_session.set_view_now(author, key, state);
         Ok(())
     }
 

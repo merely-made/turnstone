@@ -270,9 +270,16 @@ impl Probe<'_> {
     /// Queue a pointer event for the canvas. Queued, not dispatched: see
     /// [`DomAction`].
     fn pointer(&mut self, kind: &'static str, x: f32, y: f32) {
-        self.host
-            .deferred_dom
-            .push(DomAction::Pointer { kind, x, y });
+        self.pointer_with(kind, x, y, 0);
+    }
+
+    fn pointer_with(&mut self, kind: &'static str, x: f32, y: f32, button: i16) {
+        self.host.deferred_dom.push(DomAction::Pointer {
+            kind,
+            x,
+            y,
+            button,
+        });
     }
 
     /// Where the single focused node is, in the pointer's screen space.
@@ -393,6 +400,33 @@ impl Probe<'_> {
                     css: css.to_string(),
                     on,
                 });
+                Ok(())
+            },
+            // `pointer <down|move|up> <left|middle|right> <x> <y>`: one pointer
+            // event at canvas coordinates with the button named, so a scenario
+            // can right-drag or middle-drag (Scenograph editor plan, C1).
+            "pointer" => {
+                let mut parts = rest.split_whitespace();
+                let kind = match parts.next() {
+                    Some("down") => "pointerdown",
+                    Some("move") => "pointermove",
+                    Some("up") => "pointerup",
+                    _ => return Err("pointer wants down, move or up".to_string()),
+                };
+                let button = match parts.next() {
+                    Some("left") => 0,
+                    Some("middle") => 1,
+                    Some("right") => 2,
+                    _ => return Err("pointer wants left, middle or right".to_string()),
+                };
+                let n = numbers(&parts.collect::<Vec<_>>().join(" "), 2)?;
+                self.pointer_with(kind, n[0], n[1], button);
+                Ok(())
+            },
+            // `mark-camera`: remember where the camera is, so `camera-dx` and
+            // `camera-dy` report how far it moved since (C1).
+            "mark-camera" => {
+                self.host.camera_mark = Some(self.host.canvas.camera().offset);
                 Ok(())
             },
             "click-at" => {
@@ -562,6 +596,11 @@ impl Automatable for Probe<'_> {
         snap = snap.with_field("camera-x", parts.next().unwrap_or_default());
         snap = snap.with_field("camera-y", parts.next().unwrap_or_default());
         snap = snap.with_field("camera", camera);
+        if let Some(mark) = self.host.camera_mark {
+            let offset = self.host.canvas.camera().offset;
+            snap = snap.with_field("camera-dx", (offset.0 - mark.0).to_string());
+            snap = snap.with_field("camera-dy", (offset.1 - mark.1).to_string());
+        }
         snap = snap.with_field("zoom", self.host.canvas.camera().zoom.to_string());
         for (name, value) in self.host.faces.unwrap_or_default().fields() {
             snap = snap.with_field(name, value);
@@ -664,6 +703,8 @@ pub(crate) enum DomAction {
         kind: &'static str,
         x: f32,
         y: f32,
+        /// The DOM button: 0 left, 1 middle, 2 right.
+        button: i16,
     },
     Click(String),
     Key(KeySpec),
@@ -710,7 +751,7 @@ pub(super) fn run_deferred(actions: Vec<DomAction>) -> Vec<String> {
 #[cfg(feature = "main-page")]
 fn dispatch(action: DomAction) -> Result<(), String> {
     match action {
-        DomAction::Pointer { kind, x, y } => {
+        DomAction::Pointer { kind, x, y, button } => {
             let canvas = element("graphshell-canvas")?;
             let rect = canvas.get_bounding_client_rect();
             let init = PointerEventInit::new();
@@ -718,8 +759,14 @@ fn dispatch(action: DomAction) -> Result<(), String> {
             init.set_cancelable(true);
             init.set_client_x((rect.left() + f64::from(x)) as i32);
             init.set_client_y((rect.top() + f64::from(y)) as i32);
-            init.set_button(0);
-            init.set_buttons(if kind == "pointerup" { 0 } else { 1 });
+            init.set_button(button);
+            // The `buttons` bit for the one held: left 1, right 2, middle 4.
+            let held = match button {
+                1 => 4,
+                2 => 2,
+                _ => 1,
+            };
+            init.set_buttons(if kind == "pointerup" { 0 } else { held });
             init.set_pointer_id(1);
             init.set_is_primary(true);
             let event = PointerEvent::new_with_event_init_dict(kind, &init)
