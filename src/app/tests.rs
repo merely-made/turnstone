@@ -2476,6 +2476,7 @@ fn delete_stages_into_the_bin_and_recover_restores_identity() {
         .graph_runtimes
         .focused_member()
         .expect("the opened node is focused");
+    assert!(app.graph_runtimes.tag_node(original, "saved-label"));
 
     let fx = app.update(Action::DeleteFocusedNode);
     assert!(
@@ -2495,6 +2496,7 @@ fn delete_stages_into_the_bin_and_recover_restores_identity() {
         "the record carries the ORIGINAL id"
     );
     assert_eq!(record.url, url);
+    assert_eq!(record.tags, vec!["saved-label".to_string()]);
     assert!(
         fx.iter().any(|e| matches!(e, Effect::CloseContent { .. })),
         "its content session is closed: {fx:?}"
@@ -2530,6 +2532,9 @@ fn delete_stages_into_the_bin_and_recover_restores_identity() {
         "Removed derives away once the node is present (record still staged)"
     );
     assert!(!app.removed.is_empty(), "the bin record itself remains");
+    let key = app.graph_runtimes.graph().get_node_by_id(original).unwrap().0;
+    assert!(crate::content_tags::content_tags(app.graph_runtimes.graph(), key)
+        .contains("saved-label"));
 }
 
 /// The envelope lane end to end (participant gate B3): a dropped `.wasm`

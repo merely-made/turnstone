@@ -90,7 +90,12 @@ fn inspector_sections_for_context(
             ),
             (
                 "Tags".to_string(),
-                summarize_strings(node.tags.iter().map(String::as_str)),
+                graph
+                    .map(|graph| {
+                        let tags = crate::content_tags::content_tags(graph, key);
+                        summarize_strings(tags.iter().map(String::as_str))
+                    })
+                    .unwrap_or_else(|| "none".to_string()),
             ),
             (
                 "Import provenance".to_string(),
@@ -442,6 +447,32 @@ mod tests {
         assert_eq!(
             sections[1].rows,
             vec![("Content state".to_string(), "none".to_string())]
+        );
+    }
+
+    #[test]
+    fn content_tags_are_sorted_and_follow_tag_removal() {
+        let mut app = App::test_stub();
+        app.update(Action::OpenAddress("https://example.test/tagged".into()));
+        let member = app.graph_runtimes.focused_member().unwrap();
+        assert!(app.graph_runtimes.tag_node(member, "zebra"));
+        assert!(app.graph_runtimes.tag_node(member, "apple"));
+        assert!(
+            inspector_lines(&app)
+                .iter()
+                .any(|line| line == "Tags: apple, zebra")
+        );
+        assert!(app.graph_runtimes.untag_node(member, "apple"));
+        assert!(
+            inspector_lines(&app)
+                .iter()
+                .any(|line| line == "Tags: zebra")
+        );
+        assert!(app.graph_runtimes.untag_node(member, "zebra"));
+        assert!(
+            inspector_lines(&app)
+                .iter()
+                .any(|line| line == "Tags: none")
         );
     }
 

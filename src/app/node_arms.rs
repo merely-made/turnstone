@@ -188,10 +188,9 @@ impl App {
                 node_id: node.id,
                 url: node.url().to_string(),
                 title: (!title.is_empty() && title != node.url()).then(|| title.to_string()),
-                tags: graph
-                    .node_tags(key)
-                    .map(|t| t.iter().cloned().collect())
-                    .unwrap_or_default(),
+                tags: crate::content_tags::content_tags(graph, key)
+                    .into_iter()
+                    .collect(),
                 deleted_at_ms: std::time::SystemTime::now()
                     .duration_since(std::time::UNIX_EPOCH)
                     .map(|d| d.as_millis() as u64)

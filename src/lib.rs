@@ -21,6 +21,7 @@ mod chrome_view;
 mod component;
 mod content;
 mod content_classes;
+mod content_tags;
 mod contributed_a11y;
 pub mod contributed_surface;
 pub mod cookie_custody;

@@ -54,7 +54,9 @@ pub fn roster_rows(app: &App) -> Vec<RosterViewRow> {
             title: graph.node_display_label(key),
             url: node.url().to_string(),
             content_type: node.media_type.clone(),
-            tags: node.tags.iter().cloned().collect(),
+            tags: crate::content_tags::content_tags(graph, key)
+                .into_iter()
+                .collect(),
             selected: focused == Some(node.id),
             open: matches!(app.content.get(node.id), Some(NodeContent::Live)),
         })
@@ -138,7 +140,9 @@ fn roster_grid_rows_for_context(
             title: graph.node_display_label(key),
             url: node.url().to_string(),
             content_type: node.media_type.clone(),
-            tags: node.tags.iter().cloned().collect(),
+            tags: crate::content_tags::content_tags(graph, key)
+                .into_iter()
+                .collect(),
             selected: focused == Some(node.id),
             open: matches!(app.content.get(node.id), Some(NodeContent::Live)),
         })
