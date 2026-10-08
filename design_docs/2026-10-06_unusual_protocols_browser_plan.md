@@ -1350,6 +1350,34 @@ the same record once this lane can push to Mere (U15).
   - SC1 and SC2 ruled (§7, sixth round). The SC section now holds the
     integrated design and its seven steps. Step 1 (the transport seam and
     load state in `pelt-core`) starts on a Mere branch.
+  - SC step 1 is on Mere `main` (branch `pelt-host-load`, `35e61050` and
+    `eca623bc`, merged as `1360d771`):
+    - The new zero-dependency crate `page-load` (`mere-page-load`) holds the
+      fetch vocabulary, which `mere-fetch` now re-exports unchanged, plus a
+      sans-IO `PageLoad`. That is `ContentStates`' fetch half per document,
+      with the clock passed in, and Turnstone's download classifier.
+    - It is sans-IO because Turnstone fetches pages for graph truth even
+      when content is off, and keeps fetch state in its pure App model.
+      Turnstone's App can own `PageLoad`s directly, and Pelt's controller
+      composes one.
+    - `pelt-core` gains a host-loading mode: Fetch and Cancel commands out;
+      progress and outcomes in, gated on their exact request; held bodies
+      only; history committed on the first answer; a new request on Reload;
+      Stop cancelling the exact request and keeping the page; an optional
+      in-place body replacer for streaming; conversations typed in
+      `PeltDocumentState::Awaiting`; downloads in the host effect. Engine
+      loading is unchanged. Pelt desktop presents the two new states.
+    - Tests: `page-load` 10, `mere-fetch` 20, and `pelt-core` 20, including
+      9 for host loading, all pass on macOS. `pelt-desktop` and `pelt` pass
+      `cargo check --all-targets`.
+    - `pelt-desktop --lib` passes 57 of 57 after a separate fix
+      (`06246afe`, merged as `7e5ca10c`): six Livery receipts built their
+      fixture paths with Windows separators and failed on macOS and Linux.
+    - `check_port_boundaries.py` fails on `main` already: `crates/mere`
+      depends on the `tabard` port.
+    - Deferred: `PeltWorkspace` passthroughs for host loading, and Pelt
+      desktop's switch to the `mere-fetch` actor. A trait-level
+      `replace_body` in Genet would retire the downcast replacer.
     - Found in passing: `node_uses_web_surface` (`src/app/node_arms.rs:1701`)
       matches only Weld, so Scry and Servo nodes take the document Back and
       Reload path, and Stop does nothing for them.
