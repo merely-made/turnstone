@@ -178,7 +178,8 @@ pub fn ring_of(action: &Action) -> Ring {
         | OmnibarCaret(_)
         | OmnibarMove(_)
         | OmnibarCommit
-        | OmnibarCommitRow(_) => Ring::Dispatch,
+        | OmnibarCommitRow(_)
+        | OmnibarShowAllCommands => Ring::Dispatch,
 
         // The session tier: whole-session lifecycle and the recycle bin.
         SaveSession
@@ -288,7 +289,12 @@ pub fn ring_of(action: &Action) -> Ring {
         | ShowPlaceStatus
         // The whole ticket on the system clipboard is an exfiltration route
         // out of the process. It stays beside the other place gestures.
-        | CopyLocalRendezvous => Ring::HostOnly,
+        | CopyLocalRendezvous
+        // The person's own command menu. Dispatch is preselected for every
+        // participant, so a participant could otherwise rewrite what the
+        // palette keeps for them.
+        | OmnibarToggleKeepRow(_)
+        | OmnibarToggleKeepSelected => Ring::HostOnly,
     }
 }
 

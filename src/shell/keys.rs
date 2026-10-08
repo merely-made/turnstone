@@ -395,6 +395,11 @@ impl Shell {
                 WinitKey::Named(WinitNamedKey::End) => Some(Action::OmnibarCaret(CaretMove::End)),
                 WinitKey::Named(WinitNamedKey::Delete) => Some(Action::OmnibarDelete),
                 WinitKey::Named(WinitNamedKey::Space) => Some(Action::OmnibarChar(' ')),
+                // Keep or drop the highlighted command (the browsers' bookmark
+                // chord; Ctrl+K already summons the palette).
+                WinitKey::Character(s) if self.ctrl && s.eq_ignore_ascii_case("d") => {
+                    Some(Action::OmnibarToggleKeepSelected)
+                }
                 WinitKey::Character(s) if !self.ctrl => s.chars().next().map(Action::OmnibarChar),
                 _ => None,
             }

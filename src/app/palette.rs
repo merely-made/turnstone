@@ -17,6 +17,40 @@ use crate::panes::PaneContent;
 
 use super::{App, pane_label};
 
+/// The commands Turnstone keeps by default (Mark, 2026-10-08): the browsing
+/// eight. A person can drop any of them and keep any other command.
+pub(crate) const DEFAULT_KEPT_COMMANDS: [&str; 8] = [
+    "Back",
+    "Forward",
+    "Reload",
+    "Stop loading",
+    "Toggle live content",
+    "Open node in Workbench",
+    "Fit view",
+    "Save session",
+];
+
+/// The command category of the rows composed ahead of the static registry.
+pub(crate) const CONTEXT_COMMANDS: &str = "context";
+/// The command category of the static registry.
+const STATIC_COMMANDS: &str = "turnstone";
+/// The bare `>` lane's last row, which expands it to the whole catalog.
+pub(crate) const ALL_COMMANDS_ROW: &str = "All commands\u{2026}";
+
+/// Which labels are commands, and which of those the person keeps.
+pub(crate) struct CommandKeepStates {
+    registered: std::collections::HashSet<String>,
+    kept: std::collections::HashSet<String>,
+}
+
+impl CommandKeepStates {
+    pub(crate) fn of(&self, label: &str) -> Option<bool> {
+        self.registered
+            .contains(label)
+            .then(|| self.kept.contains(label))
+    }
+}
+
 impl App {
     /// The dynamic switcher entries for the omnibar's `>` lane: a switch per
     /// OTHER session, most recently updated first ("New session" is a static
@@ -218,6 +252,104 @@ impl App {
         }
         rows.extend(crate::action::palette_actions());
         rows
+    }
+
+    /// The catalog read through Cambium's command set (Scenograph editor plan
+    /// SE28 to SE32). Each row registers under its label, which is what the
+    /// automation runner resolves; the rows `available_actions` puts ahead of
+    /// the static registry form the `context` category, so they still lead.
+    /// The first row wins a shared label, as it does for the runner.
+    pub(crate) fn command_set(&self) -> (cambium::CommandSet, Vec<(String, Action)>) {
+        let catalog = self.available_actions();
+        let contextual = catalog
+            .len()
+            .saturating_sub(crate::action::palette_actions().len());
+        let mut set = cambium::CommandSet::new().with_defaults(DEFAULT_KEPT_COMMANDS);
+        for (index, (label, _)) in catalog.iter().enumerate() {
+            if set.get(label).is_some() {
+                continue;
+            }
+            let category = if index < contextual {
+                CONTEXT_COMMANDS
+            } else {
+                STATIC_COMMANDS
+            };
+            set.register(cambium::Command::new(label.clone(), label.clone(), category));
+        }
+        (set, catalog)
+    }
+
+    /// What the `>` lane offers. A bare `>` shows the contextual rows, then the
+    /// kept commands, then the recent ones, and ends with "All commands…",
+    /// which expands to the whole catalog in its composed order. A query
+    /// searches every command. `rows` bounds the lane so the expanding row is
+    /// never truncated away.
+    pub(crate) fn command_lane(&self, query: &str, all: bool, rows: usize) -> Vec<(String, Action)> {
+        let (set, catalog) = self.command_set();
+        if all {
+            return catalog;
+        }
+        let action_for = |label: &str| {
+            catalog
+                .iter()
+                .find(|(known, _)| known == label)
+                .map(|(_, action)| action.clone())
+        };
+        let mut lane: Vec<(String, Action)> = set
+            .menu(&self.command_choices, Some(CONTEXT_COMMANDS), query)
+            .into_iter()
+            .filter_map(|item| action_for(&item.id).map(|action| (item.label, action)))
+            .collect();
+        if query.trim().is_empty() {
+            lane.truncate(rows.saturating_sub(1).max(1));
+            lane.push((ALL_COMMANDS_ROW.to_string(), Action::OmnibarShowAllCommands));
+        }
+        lane
+    }
+
+    /// Whether the command `label` is kept, or `None` when it is not a command
+    /// (an address row, a hint, or "All commands…" itself).
+    pub(crate) fn command_keep_states(&self) -> CommandKeepStates {
+        let (set, _) = self.command_set();
+        CommandKeepStates {
+            registered: set.commands().iter().map(|command| command.id.clone()).collect(),
+            kept: set
+                .kept(&self.command_choices)
+                .into_iter()
+                .map(|command| command.id.clone())
+                .collect(),
+        }
+    }
+
+    /// Keep `label` if it is not kept, drop it if it is. The choice is the
+    /// person's and is saved with the session's view sidecar.
+    pub(super) fn toggle_command_kept(&mut self, label: &str) -> Vec<Effect> {
+        let (set, _) = self.command_set();
+        if set.get(label).is_none() {
+            return vec![Effect::Redraw];
+        }
+        let kept = set
+            .kept(&self.command_choices)
+            .iter()
+            .any(|command| command.id == label);
+        if kept {
+            set.remove(&mut self.command_choices, label);
+        } else {
+            set.add(&mut self.command_choices, label);
+        }
+        self.events.push(AppEvent::CommandKept {
+            label: label.to_string(),
+            kept: !kept,
+        });
+        self.recompute_omnibar_suggestions();
+        vec![Effect::SaveSession, Effect::Redraw]
+    }
+
+    /// Note that `label` ran from the palette. Recents ride the next session
+    /// save rather than forcing one per command.
+    pub(super) fn record_command_use(&mut self, label: &str) {
+        let (set, _) = self.command_set();
+        set.record_use(&mut self.command_choices, label);
     }
 
     /// The founding half of the place vocabulary. Offered by situation: a
@@ -678,5 +810,213 @@ mod tests {
             selection: Some(selected),
         }));
         assert!(!app.omnibar.open, "the palette closes on commit");
+    }
+}
+
+/// The `>` lane read through Cambium's command set (Scenograph editor plan
+/// SE28 to SE32).
+#[cfg(test)]
+mod command_menu_tests {
+    use super::{ALL_COMMANDS_ROW, DEFAULT_KEPT_COMMANDS};
+    use crate::action::{Action, Effect};
+    use crate::app::App;
+    use crate::observe::AppEvent;
+    use crate::ui::Suggestion;
+
+    fn labels(rows: &[(String, Action)]) -> Vec<&str> {
+        rows.iter().map(|(label, _)| label.as_str()).collect()
+    }
+
+    fn contextual(app: &App) -> Vec<String> {
+        let catalog = app.available_actions();
+        let statics = crate::action::palette_actions().len();
+        catalog[..catalog.len() - statics]
+            .iter()
+            .map(|(label, _)| label.clone())
+            .collect()
+    }
+
+    #[test]
+    fn a_bare_lane_shows_context_then_kept_then_all_commands() {
+        let app = App::test_stub();
+        let lane = app.command_lane("", false, 100);
+        let mut expected = contextual(&app);
+        expected.extend(DEFAULT_KEPT_COMMANDS.iter().map(|label| label.to_string()));
+        expected.push(ALL_COMMANDS_ROW.to_string());
+        assert_eq!(labels(&lane), expected);
+        assert!(
+            !labels(&lane).contains(&"Reseed layout"),
+            "a command that is not kept waits for search or All commands"
+        );
+        assert_eq!(lane.last().unwrap().1, Action::OmnibarShowAllCommands);
+    }
+
+    #[test]
+    fn the_all_commands_row_survives_a_short_lane() {
+        let app = App::test_stub();
+        let lane = app.command_lane("", false, 4);
+        assert_eq!(lane.len(), 4);
+        assert_eq!(lane.last().unwrap().0, ALL_COMMANDS_ROW);
+    }
+
+    #[test]
+    fn search_reaches_every_command() {
+        let app = App::test_stub();
+        let lane = app.command_lane("reseed", false, 100);
+        assert_eq!(labels(&lane), ["Reseed layout"]);
+        assert!(
+            !labels(&lane).contains(&ALL_COMMANDS_ROW),
+            "the expanding row belongs to the bare lane"
+        );
+    }
+
+    #[test]
+    fn keeping_and_dropping_change_the_lane_and_save() {
+        let mut app = App::test_stub();
+        let effects = app.toggle_command_kept("Reseed layout");
+        assert!(effects.contains(&Effect::SaveSession));
+        assert!(app.events.iter().any(|event| matches!(
+            event,
+            AppEvent::CommandKept { label, kept: true } if label == "Reseed layout"
+        )));
+        assert!(labels(&app.command_lane("", false, 100)).contains(&"Reseed layout"));
+
+        app.toggle_command_kept("Fit view");
+        let lane = app.command_lane("", false, 100);
+        assert!(!labels(&lane).contains(&"Fit view"), "a default can be dropped");
+        assert_eq!(app.command_choices.removed, ["Fit view"]);
+
+        app.toggle_command_kept("Fit view");
+        assert!(labels(&app.command_lane("", false, 100)).contains(&"Fit view"));
+        assert!(app.command_choices.removed.is_empty());
+
+        let before = app.command_choices.clone();
+        assert_eq!(app.toggle_command_kept("Not a command"), vec![Effect::Redraw]);
+        assert_eq!(app.command_choices, before, "only registered commands are kept");
+    }
+
+    #[test]
+    fn a_command_run_from_the_palette_becomes_recent() {
+        let mut app = App::test_stub();
+        app.update(Action::OmnibarOpen { command: true });
+        app.update(Action::OmnibarInsert("reseed".into()));
+        let selected = app
+            .omnibar
+            .suggestions
+            .iter()
+            .position(|row| matches!(row, Suggestion::Act { label, .. } if label == "Reseed layout"))
+            .expect("search finds it");
+        app.update(Action::OmnibarCommitRow(selected));
+        assert_eq!(app.command_choices.recent, ["Reseed layout"]);
+        let lane = app.command_lane("", false, 100);
+        let position = |label: &str| labels(&lane).iter().position(|row| *row == label);
+        assert!(
+            position("Reseed layout") > position("Save session"),
+            "recent commands follow the kept ones"
+        );
+    }
+
+    #[test]
+    fn all_commands_expands_the_lane_and_keeps_the_palette_open() {
+        let mut app = App::test_stub();
+        app.update(Action::OmnibarOpen { command: true });
+        let last = app.omnibar.suggestions.len() - 1;
+        assert!(matches!(
+            &app.omnibar.suggestions[last],
+            Suggestion::Act { label, .. } if label == ALL_COMMANDS_ROW
+        ));
+        app.update(Action::OmnibarCommitRow(last));
+        assert!(app.omnibar.open, "expanding is not a command");
+        assert!(app.omnibar.all_commands);
+        // The whole catalog in its composed order, bounded by the row limit as
+        // the bare lane always was; typing narrows it.
+        let shown: Vec<String> = app
+            .omnibar
+            .suggestions
+            .iter()
+            .map(|row| match row {
+                Suggestion::Act { label, .. } => label.clone(),
+                other => panic!("an expanded lane lists commands: {other:?}"),
+            })
+            .collect();
+        let catalog: Vec<String> = app
+            .available_actions()
+            .into_iter()
+            .map(|(label, _)| label)
+            .take(shown.len())
+            .collect();
+        assert_eq!(shown, catalog);
+        app.update(Action::OmnibarInsert("reseed".into()));
+        assert!(app.omnibar.suggestions.iter().any(
+            |row| matches!(row, Suggestion::Act { label, .. } if label == "Reseed layout")
+        ));
+        app.update(Action::OmnibarClose);
+        app.update(Action::OmnibarOpen { command: true });
+        assert!(!app.omnibar.all_commands, "closing returns to the person's commands");
+    }
+
+    #[test]
+    fn the_highlighted_command_toggles_with_ctrl_d() {
+        let mut app = App::test_stub();
+        app.update(Action::OmnibarOpen { command: true });
+        app.update(Action::OmnibarInsert("reseed".into()));
+        app.omnibar.selected = app
+            .omnibar
+            .suggestions
+            .iter()
+            .position(|row| matches!(row, Suggestion::Act { label, .. } if label == "Reseed layout"))
+            .unwrap();
+        app.update(Action::OmnibarToggleKeepSelected);
+        assert_eq!(app.command_choices.added, ["Reseed layout"]);
+        assert!(app.omnibar.open, "keeping does not run or close");
+    }
+
+    /// The canvas, not Turnstone, decides what a right press was: a click
+    /// within the slop asks for the menu (naming the node under it), and a
+    /// right-drag past it selects and asks for nothing (SE26).
+    #[test]
+    fn a_right_click_asks_for_the_menu_and_a_right_drag_does_not() {
+        use mere::canvas::PointerButton;
+        let mut app = App::test_stub();
+        app.update(Action::OpenAddress("mere://alpha".into()));
+        let pane = app.default_graph_pane();
+        app.graph_pane_pointer_down(pane, PointerButton::Right, 40.0, 40.0);
+        app.graph_pane_pointer_up(pane, PointerButton::Right, 41.0, 40.0);
+        let request = app
+            .graph_pane_take_context_request(pane)
+            .expect("a right click within the slop asks for the menu");
+        assert_eq!(request.at, (41.0, 40.0));
+        assert!(app.graph_pane_take_context_request(pane).is_none(), "taken once");
+
+        app.graph_pane_pointer_down(pane, PointerButton::Right, 40.0, 40.0);
+        app.graph_pane_cursor_moved(pane, 140.0, 120.0);
+        app.graph_pane_pointer_up(pane, PointerButton::Right, 140.0, 120.0);
+        assert!(
+            app.graph_pane_take_context_request(pane).is_none(),
+            "a right-drag is a selection"
+        );
+    }
+
+    #[test]
+    fn palette_rows_and_their_keep_controls_are_accessible() {
+        let mut app = App::test_stub();
+        app.update(Action::OmnibarOpen { command: true });
+        let lines = crate::a11y::tree_lines(&crate::a11y::project_app(&app));
+        assert!(
+            lines.iter().any(|line| line.contains("button") && line.contains("Drop Back")),
+            "a kept command offers Drop: {lines:#?}"
+        );
+        assert!(lines.iter().any(|line| line.contains(ALL_COMMANDS_ROW)));
+
+        let (_, routes) = crate::a11y::project_app_with_routes(&app);
+        let back = app
+            .omnibar
+            .suggestions
+            .iter()
+            .position(|row| matches!(row, Suggestion::Act { label, .. } if label == "Back"))
+            .unwrap();
+        let target = uxtree::node_id_for_path(&format!("turnstone/chrome/omnibar/row/{back}/keep"));
+        crate::a11y::apply_route(&mut app, routes.get(&target), target);
+        assert_eq!(app.command_choices.removed, ["Back"], "the assistive action drops it");
     }
 }

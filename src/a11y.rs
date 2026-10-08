@@ -143,6 +143,59 @@ fn project_frozen_projection(app: &App) -> UxTree {
         .to_ux_tree("turnstone/frozen-projection")
 }
 
+/// The open omnibar's suggestion rows, each a button that commits it, with a
+/// Keep or Drop button beside each command in the `>` lane. Both run through
+/// the same actions a click does. The install review projects on its own.
+fn omnibar_rows(app: &App) -> Vec<(String, Node, Option<A11yRoute>)> {
+    if !app.omnibar.open {
+        return Vec::new();
+    }
+    let keep_states = app
+        .omnibar
+        .text
+        .trim()
+        .starts_with('>')
+        .then(|| app.command_keep_states());
+    let mut rows = Vec::new();
+    for (index, suggestion) in app.omnibar.suggestions.iter().enumerate() {
+        if crate::chrome_view::is_install_review(suggestion)
+            || matches!(
+                suggestion,
+                crate::ui::Suggestion::Hint(_) | crate::ui::Suggestion::Prompt(_)
+            )
+        {
+            continue;
+        }
+        let text = crate::chrome_view::row_text(suggestion);
+        let path = format!("turnstone/chrome/omnibar/row/{index}");
+        let mut row = Node::new(Role::Button);
+        row.set_label(text);
+        row.set_selected(index == app.omnibar.selected);
+        rows.push((
+            path.clone(),
+            row,
+            Some(A11yRoute::Action(crate::action::Action::OmnibarCommitRow(
+                index,
+            ))),
+        ));
+        if let crate::ui::Suggestion::Act { label, action } = suggestion
+            && *action != crate::action::Action::OmnibarShowAllCommands
+            && let Some(kept) = keep_states.as_ref().and_then(|states| states.of(label))
+        {
+            let mut toggle = Node::new(Role::Button);
+            toggle.set_label(format!("{} {label}", if kept { "Drop" } else { "Keep" }));
+            rows.push((
+                format!("{path}/keep"),
+                toggle,
+                Some(A11yRoute::Action(
+                    crate::action::Action::OmnibarToggleKeepRow(index),
+                )),
+            ));
+        }
+    }
+    rows
+}
+
 /// The chrome subtree: the omnibar (a text input when open, with its live
 /// text and caret-free honesty) and the at-rest caption.
 fn project_chrome(app: &App) -> UxTree {
@@ -155,6 +208,11 @@ fn project_chrome(app: &App) -> UxTree {
         n.set_value(app.omnibar.presented_text());
         nodes.push((id, n));
         children.push(id);
+        for (path, node, _) in omnibar_rows(app) {
+            let id = node_id_for_path(&path);
+            nodes.push((id, node));
+            children.push(id);
+        }
         if let Some(review) = app
             .omnibar
             .suggestions
@@ -346,6 +404,9 @@ fn outline_role(entry: &OutlineFact) -> Role {
 pub enum A11yRoute {
     /// The chrome: open the omnibar in its find lane.
     OpenOmnibar,
+    /// A chrome control: run this action through the update spine, exactly
+    /// as its click does (a palette row's commit, its Keep or Drop).
+    Action(crate::action::Action),
     /// A frozen-projection instance: select that member in the graph pane, so
     /// a reader who found a node by name can make it the app's selection.
     SelectMember {
@@ -388,6 +449,11 @@ pub(crate) fn project_app_with_routes_and_contributions(
         node_id_for_path("turnstone/chrome/omnibar"),
         A11yRoute::OpenOmnibar,
     );
+    for (path, _, route) in omnibar_rows(app) {
+        if let Some(route) = route {
+            routes.insert(node_id_for_path(&path), route);
+        }
+    }
     if let Some(pane) = orrery_pane {
         for (_, node) in app.graph_runtimes.graph().nodes() {
             routes.insert(
@@ -418,6 +484,7 @@ pub(crate) fn apply_route(
         Some(A11yRoute::OpenOmnibar) => {
             app.update(crate::action::Action::OmnibarOpen { command: false })
         }
+        Some(A11yRoute::Action(action)) => app.update(action.clone()),
         Some(A11yRoute::SelectMember { pane, member }) => {
             if app.graph_pane_select_member(*pane, *member) {
                 vec![crate::action::Effect::Redraw]

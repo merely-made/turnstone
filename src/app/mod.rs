@@ -154,6 +154,10 @@ pub struct App {
     /// The summonable omnibar (rung 3): find over graph truth, go through
     /// OpenAddress, `>` for the actions lane.
     pub omnibar: OmnibarState,
+    /// The person's command menu: kept, dropped and recent commands, read
+    /// through Cambium's command set (Scenograph editor plan SE28 to SE32).
+    /// Saved in the session's view sidecar, never in graph truth.
+    pub(crate) command_choices: cambium::CommandChoices,
     /// Find in the captured active document. This is separate from the
     /// omnibar's graph recall and command lanes.
     pub document_find: crate::document_find::DocumentFindState,
@@ -788,6 +792,16 @@ impl App {
             .unwrap_or(false)
     }
 
+    /// The right click the pane's canvas did not use, if any, for the host's
+    /// context menu (Scenograph editor plan SE26).
+    pub fn graph_pane_take_context_request(
+        &mut self,
+        pane: PaneId,
+    ) -> Option<mere::canvas::ContextRequest> {
+        self.with_graph_pane(pane, |canvas| canvas.take_context_request())
+            .flatten()
+    }
+
     pub fn graph_pane_pointer_up(
         &mut self,
         pane: PaneId,
@@ -1384,6 +1398,9 @@ impl App {
             }
             Action::OmnibarMove(delta) => self.omnibar_move(delta),
             Action::OmnibarCommitRow(index) => self.omnibar_commit_row(index),
+            Action::OmnibarShowAllCommands => self.show_all_commands(),
+            Action::OmnibarToggleKeepRow(index) => self.toggle_keep_row(index),
+            Action::OmnibarToggleKeepSelected => self.toggle_keep_row(self.omnibar.selected),
             Action::OmnibarCommit => self.commit_omnibar(),
             Action::RepeatShellEntry(id) => self.repeat_shell_entry(id),
             Action::OpenShellEntryTarget(id) => self.open_shell_entry_target(id),
