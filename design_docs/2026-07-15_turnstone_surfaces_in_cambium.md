@@ -254,7 +254,8 @@ turnstone `675f7f0`, 289 pass.
 
 ## Forms consumer compatibility, 2026-10-07
 
-**Status:** approved, implementation and fresh qualification in progress.
+**Status:** local mechanical compatibility qualifies on the existing public pins;
+candidate adoption and publication remain pending.
 The numbered F5 scope ruling lives in
 `genet/design_docs/2026-10-07_forms_value_validation_submission_plan.md`.
 Mere owns the field representation and F6 accessibility-leaf projection in
@@ -272,3 +273,18 @@ adoption of the unpublished Mere/Genet candidate. A later adoption must verify
 the complete sibling dependency family and run its consumer gates separately.
 Root owns serial gates, commits and the acceptance record; delegated source
 work does not change manifests, locks or local path overlays.
+
+At integrated source `8e06a85fe244b6949002c433a502dc0f8ebc1d66`, corrected
+public metadata and the complete library pass: 674 tests, zero failures, nine
+existing ignores and no filtered cases. The marked-DIV Knot discovery and
+Sky Civil date name cases pass. All 70 Mere packages use public
+`f1d169c755e082b5119c2485762fd28f4226d8fb`; all 29 Genet packages use public
+`965b64e206a47d1c8808472de9aa461233638768`. The frozen lock SHA256 is
+`313853BD573A1CB045D19B30B04016756AF8F19E9DD4B277A1E1754336CEE512`.
+Receipts and counts are `turnstone-forms-corrected-public-*` under
+`Code/testing/genet/forms`. The initial unescaped selector compile failure is
+preserved; `609bba1` fixes it, and the subsequent upstream merge changes only
+the unusual-protocols plan. Source/config/lock bytes and mtimes, plus the
+unrelated untracked `.github/` directory, remain unchanged during the gates.
+These checks prepare the consumer for app DIVs; they do not claim adoption of
+the unpublished Forms family or a new human AT receipt.
