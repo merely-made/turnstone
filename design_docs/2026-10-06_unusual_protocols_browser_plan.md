@@ -1546,6 +1546,27 @@ the same record once this lane can push to Mere (U15).
       `src/publish_service.rs` and `src/share_reader_service.rs`
       (`MdnsDiscoveryMode::Active`). The fix is the identity session's next
       item, in mere-transport. Turnstone takes it at the repin after it lands.
+  - SC step 3 is on Mere `main` (`e536d2a3`, merged as `c32e4c03`). A
+    controller's history now has two modes:
+    - Linear, the default and unchanged: links push, Back and Forward
+      traverse.
+    - Host (`with_host_history`, or `PeltRegistries::with_host_history` for
+      routed content): the controller keeps only its current entry. A link
+      or GET form returns a `PeltNavigationRequest`, with its cause and the
+      modifiers held, and nothing loads. Document Back and Forward return
+      unhandled, and the host's Address command opens in place.
+    - `open(request)` replaces the current entry and routes like any new
+      load. A held body opens directly even under host loading, cancelling
+      any fetch in flight. `PeltContent::open` does the same in either lane.
+      Web surfaces keep their own engine history.
+    - This is Turnstone's seam for step 4. Its App keeps the graph history
+      (`canvas.visit` opens or mints a node; member back and forward) and
+      the per-node `PageLoad`. Its Shell turns each decision into `open`,
+      with the fetched body held, on that node's `PeltContent`.
+    - Tests on macOS: `pelt-core` 30, including 4 for host history and 1
+      for host-history content, all pass, and Linear-mode tests pass
+      unchanged. `pelt-desktop --lib` passes 57 of 57, and Pelt desktop and
+      `pelt` pass `cargo check --all-targets`.
     - Found in passing: `node_uses_web_surface` (`src/app/node_arms.rs:1701`)
       matches only Weld, so Scry and Servo nodes take the document Back and
       Reload path, and Stop does nothing for them.
