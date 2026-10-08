@@ -763,15 +763,9 @@ mod tests {
         let mut canvas = Canvas::with_graph(app.host.graph().clone());
         canvas.resize(width, height);
         canvas.set_layout_strategy(Some(SPIRAL.to_string()));
+        let (registry, graph) = canvas.registry_and_graph();
         let positions = mere::canvas::project_canvas_strategy(
-            SPIRAL,
-            canvas.graph(),
-            None,
-            width,
-            height,
-            None,
-            None,
-            true,
+            registry, SPIRAL, graph, None, width, height, None, None, true,
         );
         canvas.apply_strategy_positions(&positions);
         canvas.fit_to_content();

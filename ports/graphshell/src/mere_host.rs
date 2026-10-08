@@ -169,6 +169,11 @@ pub struct MereHost<B> {
     projection_session: ProjectionSession,
     /// Whether the graph projection shows the session item (§7 item 31).
     session_item: bool,
+    /// The channel registry the served layout reads its facts from, held
+    /// across calls for the current session's graph and reset when the
+    /// session changes: a host without a canvas holds one (dynamics grammar
+    /// plan, F87).
+    served_registry: std::sync::Mutex<mere::canvas::ChannelRegistry>,
 }
 
 /// Changes not yet stored, taken as one batch: what [`MereHost::stage`] put
@@ -236,6 +241,7 @@ impl<B: Backend + Clone> MereHost<B> {
             reopened,
             projection_session: ProjectionSession(LOCAL_SESSION.to_string()),
             session_item: false,
+            served_registry: std::sync::Mutex::new(mere::canvas::ChannelRegistry::new()),
         }
     }
 
@@ -337,6 +343,12 @@ impl<B: Backend + Clone> MereHost<B> {
         let next = self.sessions.begin(self.author(), Some(graph));
         self.retired
             .push(std::mem::replace(&mut self.graph_session, next));
+        // One registry serves one graph.
+        *self
+            .served_registry
+            .get_mut()
+            .unwrap_or_else(|poisoned| poisoned.into_inner()) =
+            mere::canvas::ChannelRegistry::new();
         self.projection_epoch = self.projection_epoch.wrapping_add(1);
         self.projection_revision = 1;
         self.resources.clear();
@@ -524,7 +536,12 @@ impl<B: Backend> MereHost<B> {
             .nodes()
             .map(|(key, _)| (key, SERVED_FOOTPRINT))
             .collect();
+        let mut registry = self
+            .served_registry
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
         mere::canvas::project_canvas_strategy_with_score_for_view(
+            &mut registry,
             "phyllotaxis.default",
             self.graph(),
             None,

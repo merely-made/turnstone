@@ -407,16 +407,21 @@ impl BrowserHost {
         }
         let previous_score = self.canvas.projection_score().cloned();
         let extents = self.canvas.strategy_extents();
+        let focus = self.canvas.focused_key();
+        let zoom = self.canvas.camera().zoom;
+        // The canvas passes its own registry (dynamics grammar plan, F87).
+        let (registry, graph) = self.canvas.registry_and_graph();
         let projection = project_canvas_strategy_with_score_for_view(
+            registry,
             &self.layout_id,
-            self.canvas.graph(),
-            self.canvas.focused_key(),
+            graph,
+            focus,
             self.width,
             self.height,
             None,
             Some(&extents),
             true,
-            self.canvas.camera().zoom,
+            zoom,
             previous_score.as_ref(),
         );
         self.canvas.set_projection_score(projection.score);

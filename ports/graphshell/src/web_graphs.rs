@@ -112,15 +112,10 @@ pub(crate) fn prepared_canvas(graph: Graph, width: u32, height: u32) -> Canvas {
     let mut canvas = Canvas::with_graph(graph);
     canvas.resize(width, height);
     canvas.set_layout_strategy(Some(LAYOUT.to_string()));
+    // The canvas passes its own registry (dynamics grammar plan, F87).
+    let (registry, graph) = canvas.registry_and_graph();
     let positions = project_canvas_strategy(
-        LAYOUT,
-        canvas.graph(),
-        None,
-        width,
-        height,
-        None,
-        None,
-        true,
+        registry, LAYOUT, graph, None, width, height, None, None, true,
     );
     canvas.apply_strategy_positions(&positions);
     canvas.fit_to_content();
