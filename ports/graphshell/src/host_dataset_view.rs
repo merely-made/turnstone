@@ -21,10 +21,10 @@
 use std::collections::BTreeMap;
 
 use mere::kernel::geometry::PortablePoint;
-use mere::kernel::graph::Graph;
 use mere::kernel::graph::apply::{
     GraphDelta, add_node, apply_graph_delta, assert_semantic_predicate_in_scope,
 };
+use mere::kernel::graph::{Graph, NodeKey};
 use mere::kernel::types::GraphScope;
 use scenomise::host_dataset::HostDatasetV1;
 use uuid::Uuid;
@@ -59,6 +59,8 @@ impl ViewedRelation {
 /// A host dataset ready for the viewer's canvas.
 pub struct HostDatasetView {
     pub graph: Graph,
+    /// Where the viewer's arrangement placed each node, in scene units.
+    pub positions: Vec<(NodeKey, PortablePoint)>,
     pub relations: Vec<ViewedRelation>,
     pub revision: String,
 }
@@ -121,6 +123,7 @@ pub fn host_dataset_view(envelope: &HostDatasetV1) -> Result<HostDatasetView, St
     let projection = &compiled.projection;
     let mut graph = Graph::new();
     let mut keys = std::collections::HashMap::new();
+    let mut positions = Vec::new();
     for (index, item) in projection.scene.items.iter().enumerate() {
         let instance = sceno::InstanceId(index as u32);
         let occurrence = &projection.occurrence_by_instance[&instance];
@@ -140,6 +143,7 @@ pub fn host_dataset_view(envelope: &HostDatasetV1) -> Result<HostDatasetView, St
             },
         );
         keys.insert(instance, key);
+        positions.push((key, PortablePoint::new(at.x, at.y)));
     }
     let mut relations = Vec::new();
     for (relation, relationship) in projection
@@ -167,6 +171,7 @@ pub fn host_dataset_view(envelope: &HostDatasetV1) -> Result<HostDatasetView, St
     }
     Ok(HostDatasetView {
         graph,
+        positions,
         relations,
         revision: envelope.dataset.revision.as_str().to_owned(),
     })
@@ -245,5 +250,27 @@ mod tests {
             )),
             Err(HostDatasetError::UnknownKey { .. })
         ));
+    }
+
+    /// The site exporter's output (merelyllc.com `9df5e96`), pinned by its
+    /// sha256 so a changed export is a deliberate fixture update.
+    #[test]
+    fn the_site_export_compiles_with_every_relation_drawn() {
+        use sha2::{Digest, Sha256};
+        let bytes = include_bytes!("../web/fixtures/site-repository-host-dataset.json");
+        let digest: String = Sha256::digest(bytes)
+            .iter()
+            .map(|byte| format!("{byte:02x}"))
+            .collect();
+        assert_eq!(
+            digest,
+            "1b16d990958c3fd1fe9cd17a3fa4a98bc62441f28d23fb92ecd7f9d7abf7eca0"
+        );
+        let envelope = parse_host_dataset(std::str::from_utf8(bytes).unwrap()).unwrap();
+        let view = host_dataset_view(&envelope).unwrap();
+        assert_eq!(view.graph.node_count(), 21);
+        assert_eq!(view.positions.len(), 21);
+        assert_eq!(view.relations.len(), 30);
+        assert_eq!(view.graph.relations().count(), 30);
     }
 }

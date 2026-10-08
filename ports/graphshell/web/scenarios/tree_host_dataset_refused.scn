@@ -1,0 +1,16 @@
+# S1 (mer3ly site canvas plan, Ruling 125): a refused host dataset is an
+# explicit, accessible refusal over an empty graph, never the fixture. Run
+# with any refused input, for example
+#   tree.html?dataset=fixtures/host-dataset-stale.json (a stale revision)
+#   tree.html?dataset=fixtures/host-dataset-unknown-field.json (an unknown key)
+#   tree.html?dataset=fixtures/absent.json (a fetch that fails)
+assert snap ready == true
+settle 2
+assert snap dataset == refused
+assert snap dataset-error ~ Dataset refused
+assert snap reader-alert ~ Dataset refused
+assert snap nodes == 0
+assert snap edges == 0
+capture tree_host_dataset_refused
+wait
+log host dataset refusal receipt complete
