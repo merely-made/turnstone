@@ -60,6 +60,9 @@ set.
   execution snapshot is historical: Knot and Redshank now publish the tested
   family, and [Turnstone's S0 receipt](../docs/receipts/browser_family_20261007/README.md)
   records published source and passing Windows/Linux source qualification.
+  Its browser-sidecar scope proposal separates local/attached session authority
+  from PWA/extension capabilities; native SC/session/S8 ownership and stage
+  order remain unchanged.
 - [Page lifecycle](2026-09-06_page_lifecycle_plan.md): one page across
   visiting, keeping, capturing, annotating, collecting, sharing, revision
   and deletion; rulings L1-L7 join the surfaces, capture and recycle bin

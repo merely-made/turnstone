@@ -887,6 +887,124 @@ This stage runs independently of S1 to S10, per U8. Three independent parts:
 - **S11c, Pelt convergence (per U7).** Moved to SC on 2026-10-07, ahead of
   S2 and S8.
 
+### Browser sidecar scope (2026-10-07; proposal)
+
+**Status:** scope proposal from the site/composition review. No browser code
+changed, no browser target was built, and these delivery cuts are not new
+rulings or additions to the stage order. SC, the session seam, E1 and S8 stay
+with their existing owner under U15 and U16; accessibility keeps U2's priority.
+
+**User intent:** the host browser supplies the fullweb lane. Turnstone supplies
+the unusual-protocol reading and browsing experience, either attached to the
+person's native Turnstone session or owning a browser-local session that can
+be kept and exported without installing a native application. An extension
+adds host-browser integration; installation as a PWA is not required to own a
+local session.
+
+#### Existing decisions and the boundary to reconcile
+
+The June extension/companion plan already describes rendering in the browser
+and raw-socket fetch outside it. Its delivery phases and product framing were
+superseded, first by the capture-first browser lane and then by the Graphshell
+reference-host plan. Those historical plans now live at:
+
+- `mere/design_docs/archive_docs/2026-10-06_superseded_plans/2026-06-23_browser_extension_companion_plan.md`
+- `mere/design_docs/archive_docs/2026-10-06_superseded_plans/2026-06-24_orrery_browser_lane_plan.md`
+
+The current reference-host plan (§§1, 3 and 6) assigns the browser portal and
+consented browser-wide capture to Graphshell, and browsing/page lifecycle to
+Turnstone. Proposal: Turnstone's browser experience consumes that portal and
+the shared browsing controller rather than duplicating either. This does not
+rename Graphshell, reverse its product ruling, or claim that Turnstone's native
+binary is already WASM-portable. The product-facing entry point and packaging
+still need reconciliation between the two plans before implementation.
+
+#### Two independent choices
+
+Session authority and browser wrapper are independent:
+
+| Capability | Browser-local session | Attached native session |
+|---|---|---|
+| State and actions | Local Mere session through its browser store; Turnstone owns product actions. | Native owner accepts admitted typed intents; the browser holds a disclosed projection and presentation state. |
+| Unusual-protocol reading | Portable presentation of imported or fetched bodies. A raw-protocol fetch needs a separately granted companion or gateway. | The owner fetches through its admitted product endpoint and discloses the result; attachment alone grants no arbitrary fetch. |
+| Session persistence | IndexedDB through Muniment, with the browser's persistence answer shown; export remains a separate action. | Native persistence remains authoritative; a browser cache never becomes a competing session. |
+| Identity | Report the local subject and available credentials honestly; a local browser session is not automatically admitted to a native owner. | Reuse Notochord admission and advertised action scopes; native vault secrets stay native. |
+| Disconnect | Imported, retained and available local material remains usable; unavailable fetch actions explain the missing provider. | Keep only explicitly disclosed/cacheable material and local presentation. Refuse unavailable owner actions; reconnect revalidates the grant and revision. |
+
+| Integration | Ordinary web page / PWA | Extension |
+|---|---|---|
+| Fullweb | Ask the host browser to open an ordinary address. Do not infer that it loaded or that its contents were captured. | The host-tab handler can use extension APIs; report only lifecycle facts actually observed. |
+| Host browsing intake | Explicit import or another separately supported user action; no browser-wide tab/history access. | Optional, consented intake under the existing capture policy. An ordinary visit record is not a page-body capture. |
+| Native connection | Admitted browser carrier, currently WebRTC; no WebExtensions native-messaging API. | The existing registered native-messaging bridge, or the same browser carrier for a remote owner. |
+
+These wrapper boundaries follow Graphshell's reference-host plan §6 and its
+implemented extension (`mere/ports/graphshell/web/extension/README.md`). Native
+messaging requires an installed native application and extension permission
+([MDN](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Native_messaging)).
+Neither profile imports host-browser cookies or another site's authenticated
+state into the Mere session by implication. Supported HTTP fetches remain
+subject to the host browser's access rules. The companion/gateway is an
+explicit provider, with its identity, reachability, trust decision and granted
+protocol actions visible; the June raw-socket split is not a public gateway
+deployment decision.
+
+#### Shared seams and portable artifacts
+
+- Consume SC's controller and store seam when qualified; assess their actual
+  WASM dependency cone first. Do not recreate Turnstone's content port in
+  JavaScript. Use the portable document presentation and Cambium browser
+  accessibility path; host-browser fullweb stays in host tabs.
+- Reuse Graphshell's client/session protocol for snapshots, diffs, resources
+  and typed intents. Reuse the WebRTC carrier plan's C4 proof and keep C5 public
+  rendezvous as its own deployment gate. A successful connection does not
+  establish page fidelity or Turnstone product acceptance.
+- Reuse the browser storage and product export/import contracts, assessing the
+  selected build profile. The site's plain viewer intentionally excludes
+  product persistence and remote sessions; it is not the browser-app profile
+  (`mere/ports/graphshell/web/Cargo.toml`).
+- A Shelfmark cites a scene against named authorities and generations; it is
+  not a session backup. A graph codicil is an immutable, scoped graph artifact;
+  editing a thaw creates a live session. Export must name scope, omitted
+  resources/private attachments and its import semantics. Do not promise a
+  complete native session, credentials or every page body from a scene link.
+  Homes: `mere/design_docs/mere_docs/technical_architecture/2026-08-16_shelfmark_format_note.md`,
+  `mere/crates/system/pandect/src/graph_codicil.rs`, and
+  `mere/design_docs/mere_docs/implementation_strategy/2026-09-23_reservoir_plan.md`.
+- Preserve this repository's [page lifecycle](2026-09-06_page_lifecycle_plan.md):
+  visits record addresses, Keep retains the node, and explicit Capture retains
+  admitted bytes. Do not turn opening a host tab into an implicit capture.
+
+#### Bounded delivery proposals and acceptance
+
+1. **Capability inventory first.** Name the exact app feature profile,
+   controller/presentation dependency cone and supported protocols. Publish
+   available, unavailable and provider-dependent actions. A WASM compile proves
+   the dependency boundary only; it does not prove browser usability.
+2. **Local reading and recovery.** Open user-selected unusual-protocol fixtures,
+   follow supported links, navigate Back/Forward, Stop and Reload, and exercise
+   input with exact request identities. Keyboard and screen-reader actions use
+   the same actions as pointer input. Reopen the same origin's local session;
+   distinguish granted, refused and unknown persistence, and test export/import
+   into an empty store, including invalid input and declared omissions. Clearing
+   storage and a changed hosting origin cannot be presented as successful
+   recovery. `navigator.storage.persist()` is a request, not a guarantee against
+   user deletion ([MDN](https://developer.mozilla.org/en-US/docs/Web/API/StorageManager/persist)).
+3. **Attached browsing.** Join one native Turnstone session through admitted
+   existing seams, show its granted browsing projection, send a supported
+   owner action, and request a fullweb address in the host browser. Prove denial,
+   stale revision, disconnect/reconnect and revocation; a refusal changes no
+   native state. Private keys and vault material never reach the browser.
+4. **Extension integration.** Reuse the existing permission/capture model and
+   bridge. Prove default-off intake, refusal and revocation, bounded acknowledged
+   intake, and explicit separation of visit metadata from captured page bodies.
+
+These are proposed browser cuts, not authorisation to duplicate the native
+lane or deploy a gateway/public rendezvous. Browser acceptance needs headed
+interaction and browser assistive-technology receipts; native AccessKit or
+Graphshell carrier receipts alone do not close it. Offline support must name
+which application assets and retained bodies are actually available rather
+than promising fresh raw-protocol browsing without a reachable provider.
+
 ## 7. Forks for Mark
 
 The recommendation is listed first.
@@ -1382,6 +1500,13 @@ the same record once this lane can push to Mere (U15).
       matches only Weld, so Scry and Servo nodes take the document Back and
       Reload path, and Stop does nothing for them.
     - Nothing was built or run.
+
+- **2026-10-07, site/composition review:** recorded the browser-sidecar scope
+  proposal under §6, separating session authority from browser wrapper and
+  naming the existing carrier, storage, citation and lifecycle owners. Read
+  Turnstone `50d44f6` and the current local Mere plans/implementation; no browser
+  code changed, and nothing was built or run for this scope review. The proposed
+  browser cuts do not change U2's priority, U15/U16's ownership or stage order.
 
 ## Cross-references
 
