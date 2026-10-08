@@ -1612,6 +1612,52 @@ the same record once this lane can push to Mere (U15).
     - Next, still under SC: pass B (web surfaces onto `PeltContent`'s
       surface lane, with the browser lane); controller-level input instead
       of the legacy pointer path; then step 5 (S8).
+  - The Scenograph lane's command-menu follow-up (its SE32 and SE35) landed
+    in Turnstone, on the pins step 4 already moved past Mere `16c1ef8d`.
+    Mark's choices for Turnstone (2026-10-08):
+    - A bare `>` (or a right click) shows the contextual rows, then the kept
+      commands, then the recent ones, then "All commands…", which expands to
+      the whole catalog in its composed order.
+    - The default kept commands are the browsing eight: Back, Forward,
+      Reload, Stop loading, Toggle live content, Open node in Workbench, Fit
+      view and Save session.
+    - Keep and drop work through a control on each command row and through
+      Ctrl+D on the highlighted row, both exposed to assistive technology.
+  - What changed in Turnstone:
+    - `available_actions` is still the single composition, for the
+      snapshot, the automation runner and the lane. The `>` lane reads it
+      through `cambium::CommandSet`: rows register under their labels, and
+      the rows composed ahead of the static registry form the `context`
+      category, so they still lead. Search covers every command.
+    - Choices (kept, dropped, recent) are saved in the session's view
+      sidecar (`ViewIntentV1.command_menu`), never in graph truth (SE31). An
+      older sidecar opens with the defaults. Keeping or dropping saves the
+      session; recent commands ride the next save.
+    - On a graph pane, the right press now goes to the canvas, so a
+      right-drag selects. The palette opens on the release the canvas
+      reports as a click (`take_context_request`), selecting the node under
+      it first. Elsewhere, the menu still opens on the press.
+    - The palette's rows were missing from the accessibility tree; only the
+      input and the install review were projected. Each row is now a button
+      that commits it, and each command row has a "Keep …" or "Drop …"
+      button. Both use the same actions as a click (`A11yRoute::Action`).
+    - Ring: "All commands…" is in Dispatch. Keep and drop are HostOnly,
+      since Dispatch is granted to every participant by default and would
+      let one rewrite the person's menu.
+    - Not done: a headed check of right-drag selection and the menu in the
+      window (the scenarios are Windows-gated), and zoom scaling for the
+      Keep/Drop control's font, which the themed sheet does not yet size.
+    - Gates on macOS:
+      - New tests: 10 for the command menu, including right click against
+        right-drag and the accessible rows; 1 for the sidecar; and 1 chrome
+        click test where the label commits and the control toggles.
+      - Two existing tests changed. The snapshot test searches `>res`,
+        because search now ranks kept and recent commands first. The
+        expanded lane is compared with the catalog's own order.
+      - `cargo check --all-targets --locked` and `verify` pass, with the
+        lock unchanged.
+      - The library suite: 675 passing (five place tests needed a rerun
+        alone), and the four macOS-only failures recorded for step 4.
   - Checked for the browser sidecar scope: `pelt-core` and `page-load`
     compile for `wasm32-unknown-unknown`, with a dependency cone of 80
     packages. That proves the dependency boundary only, not browser

@@ -455,6 +455,42 @@ pub struct ViewIntentV1 {
     pub physics_mass_source: Option<String>,
     #[serde(default)]
     pub physics_depth_source: Option<String>,
+    /// The person's command menu (Scenograph editor plan SE28 to SE31):
+    /// commands kept beyond the defaults, defaults dropped, and the recent
+    /// ones. View state like the rest of this sidecar, never graph truth.
+    #[serde(default)]
+    pub command_menu: CommandMenuV1,
+}
+
+/// The stored half of `cambium::CommandChoices`; ids are command labels.
+#[derive(Debug, Default, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct CommandMenuV1 {
+    #[serde(default)]
+    pub added: Vec<String>,
+    #[serde(default)]
+    pub removed: Vec<String>,
+    #[serde(default)]
+    pub recent: Vec<String>,
+}
+
+impl From<&cambium::CommandChoices> for CommandMenuV1 {
+    fn from(choices: &cambium::CommandChoices) -> Self {
+        Self {
+            added: choices.added.clone(),
+            removed: choices.removed.clone(),
+            recent: choices.recent.clone(),
+        }
+    }
+}
+
+impl From<CommandMenuV1> for cambium::CommandChoices {
+    fn from(menu: CommandMenuV1) -> Self {
+        Self {
+            added: menu.added,
+            removed: menu.removed,
+            recent: menu.recent,
+        }
+    }
 }
 
 pub fn view_intent_path(session_dir: &Path) -> PathBuf {
@@ -1017,6 +1053,27 @@ mod tests {
     }
 
     #[test]
+    fn command_menu_rides_the_view_sidecar_and_old_sidecars_default_it() {
+        let root = temp_root("command-menu");
+        let intent = ViewIntentV1 {
+            command_menu: CommandMenuV1 {
+                added: vec!["Reseed layout".into()],
+                removed: vec!["Fit view".into()],
+                recent: vec!["Back".into()],
+            },
+            ..ViewIntentV1::default()
+        };
+        save_view_intent(&root, &intent);
+        assert_eq!(load_view_intent(&root), Some(intent));
+
+        // A sidecar written before the command menu existed still opens.
+        std::fs::write(view_intent_path(&root), br#"{"layout_strategy":"spiral"}"#).unwrap();
+        let older = load_view_intent(&root).expect("older sidecar loads");
+        assert_eq!(older.command_menu, CommandMenuV1::default());
+        assert_eq!(older.layout_strategy.as_deref(), Some("spiral"));
+    }
+
+    #[test]
     fn view_intent_round_trips_and_survives_a_corrupt_sidecar() {
         let root = temp_root("view-intent");
         assert_eq!(
@@ -1059,6 +1116,7 @@ mod tests {
             physics_kind_source: Some("coloring".to_string()),
             physics_mass_source: Some("pagerank".to_string()),
             physics_depth_source: Some("layers".to_string()),
+            command_menu: CommandMenuV1::default(),
         };
         save_view_intent(&root, &intent);
         assert_eq!(load_view_intent(&root), Some(intent));

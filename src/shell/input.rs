@@ -287,6 +287,9 @@ impl Shell {
                 crate::chrome_view::ChromeIntent::CommitRow(index) => {
                     Action::OmnibarCommitRow(index)
                 }
+                crate::chrome_view::ChromeIntent::ToggleKeep(index) => {
+                    Action::OmnibarToggleKeepRow(index)
+                }
                 crate::chrome_view::ChromeIntent::NavBack => Action::NavBack,
                 crate::chrome_view::ChromeIntent::NavForward => Action::NavForward,
                 crate::chrome_view::ChromeIntent::Reload => Action::Reload,
@@ -335,20 +338,15 @@ impl Shell {
         }
         let plan = self.surface_plan();
         let hit = crate::surface::hit_test(&plan, self.app.focus, x, y);
-        // Right-click is the context menu the palette registry names: open the
-        // command palette (the `>` actions lane), selecting the graph node
-        // under the pointer first so node-scoped actions apply to it. Panes and
-        // content keep their own right-click behavior (none yet); this handles
-        // the canvas, which is where the node-scoped actions live.
-        if button == MouseButton::Right {
-            if let Some(hit) = hit
-                && let crate::surface::SurfaceKind::Graph(pane) = hit.kind
-                && let Some(member) =
-                    self.app
-                        .graph_pane_node_at_screen(pane, hit.local.0, hit.local.1)
-            {
-                self.app.graph_pane_select_member(pane, member);
-            }
+        // Right-click is the context menu the palette registry names: the
+        // command palette (the `>` actions lane). On the canvas the press goes
+        // to the canvas, so a right-drag selects (Scenograph editor plan
+        // SE26); the menu opens on the release the canvas reports as a click,
+        // in `deliver_release`. Elsewhere the menu opens on the press, as
+        // before.
+        if button == MouseButton::Right
+            && !hit.is_some_and(|hit| matches!(hit.kind, crate::surface::SurfaceKind::Graph(_)))
+        {
             self.act(Action::OmnibarOpen { command: true });
             self.pointer_capture = None;
             return;
@@ -1138,11 +1136,22 @@ impl Shell {
                 (surface.kind == crate::surface::SurfaceKind::Graph(pane))
                     .then_some((x - surface.rect.x, y - surface.rect.y))
             })
-            && self
+        {
+            if self
                 .app
                 .graph_pane_pointer_up(pane, button, local_x, local_y)
-        {
-            self.request_redraw();
+            {
+                self.request_redraw();
+            }
+            // A right click the canvas did not use is a request for the
+            // context menu: select the node under it, so node-scoped commands
+            // apply to it, then open the command lane.
+            if let Some(request) = self.app.graph_pane_take_context_request(pane) {
+                if let Some(member) = request.node {
+                    self.app.graph_pane_select_member(pane, member);
+                }
+                self.act(Action::OmnibarOpen { command: true });
+            }
         }
     }
 

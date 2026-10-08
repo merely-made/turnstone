@@ -1941,6 +1941,7 @@ impl Shell {
                 physics_depth_source: Some(
                     self.app.graph_runtimes.physics_depth_source().id().to_string(),
                 ),
+                command_menu: (&self.app.command_choices).into(),
             },
         );
         // Stamp a derived display name the first time the session has content

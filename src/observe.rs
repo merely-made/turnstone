@@ -476,6 +476,8 @@ pub enum AppEvent {
     OmnibarClosed,
     /// A commit resolved to a suggestion (its display string).
     OmnibarCommitted(String),
+    /// The person kept (or dropped) a command in the palette.
+    CommandKept { label: String, kept: bool },
     LayoutReseeded,
     ContentState {
         node: Uuid,
@@ -726,6 +728,9 @@ impl AppEvent {
             AppEvent::OmnibarOpened => "omnibar-opened".to_string(),
             AppEvent::OmnibarClosed => "omnibar-closed".to_string(),
             AppEvent::OmnibarCommitted(what) => format!("omnibar-committed {what}"),
+            AppEvent::CommandKept { label, kept } => {
+                format!("command-{} {label}", if *kept { "kept" } else { "dropped" })
+            },
             AppEvent::LayoutReseeded => "layout-reseeded".to_string(),
             AppEvent::ContentState { node, state } => format!("content {node} {state}"),
             AppEvent::PaneSummoned(kind) => format!("pane-summoned {kind}"),
@@ -1269,13 +1274,18 @@ mod tests {
         let mut app = App::test_stub();
         app.update(Action::OpenAddress("mere://alpha".to_string()));
         app.update(Action::OmnibarOpen { command: true });
-        app.update(Action::OmnibarChar('r'));
+        // Search ranks the person's kept and recent commands first (the
+        // command set's order), so the query is specific enough to keep its
+        // command within the row limit.
+        for c in "res".chars() {
+            app.update(Action::OmnibarChar(c));
+        }
 
         let snap = snapshot(&app);
         let focused = snap.focused.expect("the opened node is focused");
         assert_eq!(focused.url, "mere://alpha");
         assert!(snap.omnibar.open);
-        assert_eq!(snap.omnibar.text, ">r");
+        assert_eq!(snap.omnibar.text, ">res");
         assert!(
             snap.omnibar
                 .suggestions

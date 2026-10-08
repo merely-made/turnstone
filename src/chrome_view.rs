@@ -52,6 +52,8 @@ use crate::ui::{CARD_TOP, CARD_W, OmnibarState, Suggestion};
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ChromeIntent {
     CommitRow(usize),
+    /// Keep or drop the command on this suggestion row.
+    ToggleKeep(usize),
     NavBack,
     NavForward,
     Reload,
@@ -81,6 +83,9 @@ struct RowView {
     /// The row's index in `OmnibarState::suggestions` (what a click commits);
     /// `None` for inert hint rows.
     commit: Option<usize>,
+    /// For a command row, whether the person keeps it; it then carries a
+    /// Keep/Drop control beside its label.
+    keep: Option<bool>,
 }
 
 #[derive(Clone, PartialEq)]
@@ -310,6 +315,37 @@ fn window_chrome_view(state: &ChromeState, slot: usize) -> ChromeView {
 
         let mut card_children: Vec<ChromeView> = vec![Box::new(input)];
         for row in &state.rows {
+            if let (Some(index), Some(kept)) = (row.commit, row.keep) {
+                // A command row: its label commits it, and its own control
+                // keeps or drops it. Two siblings, so neither click reaches
+                // the other's handler.
+                let label = on_click(
+                    el::<_, ChromeState, ChromeIntent>("div", row.text.clone())
+                        .attr("class", "omni-row-label"),
+                    move |_state: &mut ChromeState, _click: PointerClick| {
+                        ChromeIntent::CommitRow(index)
+                    },
+                );
+                let toggle = on_click(
+                    el::<_, ChromeState, ChromeIntent>("div", if kept { "Drop" } else { "Keep" })
+                        .attr("class", "omni-keep"),
+                    move |_state: &mut ChromeState, _click: PointerClick| {
+                        ChromeIntent::ToggleKeep(index)
+                    },
+                );
+                let children: Vec<ChromeView> = vec![Box::new(label), Box::new(toggle)];
+                card_children.push(Box::new(
+                    el::<_, ChromeState, ChromeIntent>("div", children).attr(
+                        "class",
+                        if row.class == "omni-row-sel" {
+                            "omni-row-sel omni-row-command"
+                        } else {
+                            "omni-row omni-row-command"
+                        },
+                    ),
+                ));
+                continue;
+            }
             let base = el::<_, ChromeState, ChromeIntent>("div", row.text.clone())
                 .attr("class", row.class);
             card_children.push(match row.commit {
@@ -719,6 +755,9 @@ impl ChromeSurfaces {
             omnibar_input.set_preedit(preedit);
         }
         let chrome = app.shell_chrome_config();
+        // Only the `>` lane's command rows carry Keep/Drop.
+        let keep_states = (omnibar.open && omnibar.text.trim().starts_with('>'))
+            .then(|| app.command_keep_states());
         let rows: Vec<RowView> = omnibar
             .suggestions
             .iter()
@@ -737,6 +776,15 @@ impl ChromeSurfaces {
                 commit: match s {
                     Suggestion::Hint(_) | Suggestion::Prompt(_) => None,
                     _ => Some(i),
+                },
+                keep: match s {
+                    Suggestion::Act { label, action }
+                        if !is_install_review(s)
+                            && *action != crate::action::Action::OmnibarShowAllCommands =>
+                    {
+                        keep_states.as_ref().and_then(|states| states.of(label))
+                    },
+                    _ => None,
                 },
             })
             .collect();
@@ -1325,6 +1373,36 @@ pub(crate) mod tests {
         };
         let intents = chrome.click(0, x, y, 1024, 600);
         assert_eq!(intents, vec![ChromeIntent::CommitRow(0)]);
+    }
+
+    /// A command row's label commits it and its own control keeps or drops
+    /// it, each with the row's original index.
+    #[test]
+    fn a_command_rows_keep_control_is_its_own_target() {
+        let app = open_omnibar_app();
+        let mut chrome = ChromeSurfaces::new();
+        chrome.sync(&app, &[(0, 1024.0, 600.0)]);
+        let centre_of = |chrome: &ChromeSurfaces, class: &str| {
+            let dom = chrome.dom.borrow();
+            let root = chrome
+                .runner
+                .window_root(chrome.projections[0])
+                .expect("the primary window-root exists");
+            let sheet = crate::ui::chrome_sheet(&chrome.appearance);
+            let node = dom
+                .all_with_class(dom.document(), class)
+                .into_iter()
+                .next()
+                .unwrap_or_else(|| panic!("a {class} is drawn"));
+            let (x, y, w, h) = crate::ui::subtree_node_rect(&dom, root, node, &sheet, 1024, 600)
+                .expect("it has a rect");
+            (x + w / 2.0, y + h / 2.0)
+        };
+        let (kx, ky) = centre_of(&chrome, "omni-keep");
+        let (lx, ly) = centre_of(&chrome, "omni-row-label");
+        assert!(kx > lx, "the control sits after the label");
+        assert_eq!(chrome.click(0, kx, ky, 1024, 600), vec![ChromeIntent::ToggleKeep(0)]);
+        assert_eq!(chrome.click(0, lx, ly, 1024, 600), vec![ChromeIntent::CommitRow(0)]);
     }
 
     /// The actual retained Confirm row, shared with the staged-install test.
