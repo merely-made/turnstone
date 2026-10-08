@@ -1528,6 +1528,24 @@ the same record once this lane can push to Mere (U15).
     - The `>` lane gains kept and recent commands, with keep and drop.
     - `shell/input.rs` opens the palette on the right release that
       `take_context_request` reports, not on the press.
+  - Knot handoff from the identity session, relayed by Mark, for the next
+    coordinated repin:
+    - Knot `eabd443` lends the signing seed rather than copying it (vault
+      lock ruling 49). It sits on Knot `14cd06e`'s repin, which Turnstone
+      already pins (every Mere row at `f1d169c7`, Genet `965b64e`, S77
+      included).
+    - Mere `93880980` pins Knot `eabd4434` in its workspace and djinn.
+    - The old `f68af0d` / `ea74604b` / `d851a9db` set was never pushed and
+      is retired.
+    - The only public signature change is that `signing_seed()` now returns
+      `&[u8; 32]`. Turnstone never calls it: its Knot use (write grants,
+      endpoints, effect authority, publish and share-read types) is
+      unchanged, so moving to `eabd443` or later needs no source change.
+    - Exposure under ruling 60: Mere's mDNS-on transport leaves four copies
+      of the seed. Turnstone turns mDNS on explicitly in
+      `src/publish_service.rs` and `src/share_reader_service.rs`
+      (`MdnsDiscoveryMode::Active`). The fix is the identity session's next
+      item, in mere-transport. Turnstone takes it at the repin after it lands.
     - Found in passing: `node_uses_web_surface` (`src/app/node_arms.rs:1701`)
       matches only Weld, so Scry and Servo nodes take the document Back and
       Reload path, and Stop does nothing for them.
