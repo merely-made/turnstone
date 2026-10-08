@@ -234,15 +234,14 @@ fn canvas_metadata_refresh_preserves_geometry_camera_selection_and_play_state() 
     assert!(!canvas.physics_paused());
     let (key, node) = canvas.graph().get_node_by_id(id).unwrap();
     assert_eq!(node.title, saved.title);
-    assert_eq!(
-        canvas
-            .graph()
-            .node_content_tags(key)
-            .unwrap()
-            .into_iter()
-            .collect::<Vec<_>>(),
-        saved.tags
-    );
+    let mut refreshed_tags: Vec<_> = canvas
+        .graph()
+        .node_content_tags(key)
+        .unwrap()
+        .into_iter()
+        .collect();
+    refreshed_tags.sort();
+    assert_eq!(refreshed_tags, saved.tags);
     assert!(
         canvas
             .graph()

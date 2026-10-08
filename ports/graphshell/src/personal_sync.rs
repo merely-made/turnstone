@@ -2183,7 +2183,7 @@ mod tests {
     async fn p1_sync_legacy_retraction_keeps_exact_claims_in_both_stores() {
         use mere::kernel::persistence::{
             PersistedEdge, PersistedEdgeFamily, PersistedSemanticEdgeData,
-            PersistedSemanticStatement,
+            PersistedSemanticStatement, PersistedSemanticSubKind,
         };
 
         let (replica, alice, bob) = assertion_fixture().await;
@@ -2196,7 +2196,7 @@ mod tests {
         .map(|(asserter, id, at)| PersistedSemanticStatement {
             statement_id: id.into(),
             predicate: mere::kernel::graph::predicate_iri(SemanticSubKind::Supports).into(),
-            recognized_sub_kind: Some(SemanticSubKind::Supports),
+            recognized_sub_kind: Some(PersistedSemanticSubKind::Supports),
             label: Some("held Surface claim".into()),
             graph_scope: mere::kernel::types::GraphScope::Default,
             provenance_iri: Some(asserter.clone()),
