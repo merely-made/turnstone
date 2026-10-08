@@ -36,6 +36,43 @@ fn semantic_tree() -> Option<serde_json::Value> {
     serde_json::from_str(&text).ok()
 }
 
+/// The host dataset as the semantic tree tells it (S1): the labels of the
+/// "Relations" region's list items, and the text of the first alert.
+fn heard_dataset(tree: &serde_json::Value) -> (Vec<String>, Option<String>) {
+    let field = |node: &serde_json::Value, name: &str| {
+        node.get(name).and_then(|v| v.as_str()).map(str::to_owned)
+    };
+    let children = |node: &serde_json::Value| {
+        node.get("children")
+            .and_then(|v| v.as_array())
+            .cloned()
+            .unwrap_or_default()
+    };
+    let (mut relations, mut alert) = (Vec::new(), None);
+    let mut stack = vec![tree.clone()];
+    while let Some(node) = stack.pop() {
+        let role = field(&node, "role");
+        if role.as_deref() == Some("alert") && alert.is_none() {
+            alert = field(&node, "label").or_else(|| Some(String::new()));
+        }
+        if role.as_deref() == Some("region")
+            && field(&node, "label").as_deref() == Some("Relations")
+        {
+            let mut items = vec![node.clone()];
+            while let Some(item) = items.pop() {
+                if field(&item, "role").as_deref() == Some("listitem") {
+                    relations.extend(field(&item, "label"));
+                }
+                items.extend(children(&item));
+            }
+            continue;
+        }
+        stack.extend(children(&node));
+    }
+    relations.sort();
+    (relations, alert)
+}
+
 /// One item of the canvas slot as the semantic tree tells it: its name, its
 /// buttons' names, and how many of them carry a description.
 struct HeardItem {
@@ -621,6 +658,17 @@ impl Product for TreeLane {
             .with_field("picked", page.picked.clone().unwrap_or_default())
             .with_field("nodes", page.nodes.to_string())
             .with_field("source", page.source.clone())
+            // The host dataset (S1): its state, the edges the canvas draws,
+            // and what a reader reaches of its relations or its refusal.
+            .with_field("dataset", page.dataset.state())
+            .with_field(
+                "dataset-error",
+                match &page.dataset {
+                    super::HostedDataset::Refused(error) => error.clone(),
+                    _ => String::new(),
+                },
+            )
+            .with_field("edges", canvas.graph().relations().count().to_string())
             .with_field("moving", self.shared.moving.get().to_string())
             .with_field(
                 "gpu-timed",
@@ -629,7 +677,10 @@ impl Product for TreeLane {
         // What a screen reader reaches of the canvas, read from the page's
         // own semantic tree, and the keyboard move (dynamics grammar plan,
         // F65 to F68).
-        let heard = semantic_tree().as_ref().and_then(heard_canvas);
+        let tree = semantic_tree();
+        let (heard_relations, heard_alert) =
+            tree.as_ref().map(heard_dataset).unwrap_or_default();
+        let heard = tree.as_ref().and_then(heard_canvas);
         let snapshot = snapshot
             .with_field(
                 "reader-canvas",
@@ -661,6 +712,9 @@ impl Product for TreeLane {
                     .map_or(0, |(_, items)| items.iter().map(|item| item.described).sum())
                     .to_string(),
             )
+            .with_field("reader-relations", heard_relations.len().to_string())
+            .with_field("reader-relation-labels", heard_relations.join("|"))
+            .with_field("reader-alert", heard_alert.unwrap_or_default())
             .with_field("key-moving", canvas.key_moving().is_some().to_string())
             .with_field(
                 "key-move-offset",

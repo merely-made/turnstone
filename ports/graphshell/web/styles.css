@@ -515,3 +515,90 @@ nav button:nth-child(8) { left: 254px; }
 #gs-capture-status[data-state="working"] {
   color: #f4cf7b;
 }
+
+/* The command context menu (Scenograph editor plan, track C1). */
+#gs-command-menu {
+  position: fixed;
+  z-index: 20;
+  width: 264px;
+  max-height: 360px;
+  overflow: auto;
+  padding: 8px;
+  pointer-events: auto;
+  color: #dce5e8;
+  background: #101820;
+  border: 1px solid #41616b;
+  border-radius: 8px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+}
+
+#gs-command-menu[hidden] {
+  display: none;
+}
+
+#gs-command-menu .command-row {
+  display: flex;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+#gs-command-menu button {
+  position: static;
+  pointer-events: auto;
+  min-height: 28px;
+  padding: 5px 8px;
+  color: #dce5e8;
+  background: #17242c;
+  border: 0;
+  border-radius: 6px;
+  font: 12px system-ui, sans-serif;
+  text-align: left;
+  cursor: pointer;
+}
+
+#gs-command-menu button[role="menuitem"] {
+  flex: 1;
+}
+
+#gs-command-menu button:hover,
+#gs-command-menu button:focus-visible {
+  background: #294b52;
+}
+
+#gs-command-menu button[disabled] {
+  color: #6f858c;
+  cursor: default;
+}
+
+#gs-command-menu .command-keep {
+  width: 28px;
+  color: #8da2a9;
+  text-align: center;
+}
+
+#gs-command-menu p {
+  margin: 8px 4px;
+  color: #8da2a9;
+  font-size: 11px;
+}
+
+/* The projection editor's arrangement rows (Scenograph editor plan, E5). */
+#gs-projection-arrangement-options .option-row {
+  margin-top: 6px;
+}
+
+#gs-projection-arrangement-options .option-refusal {
+  min-height: 0;
+  margin: 2px 0 0;
+  color: #e3a07a;
+  font-size: 10px;
+}
+
+#gs-projection-arrangement-options [aria-invalid="true"] {
+  border-color: #c4734f;
+}
+
+#gs-projection-arrangement-options p {
+  color: #8da2a9;
+  font-size: 11px;
+}

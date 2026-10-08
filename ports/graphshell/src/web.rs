@@ -23,6 +23,7 @@
 // The viewer cone (mer3ly site canvas plan, Rulings 109-110, 118): the tree page
 // and what it reads are always compiled; the H5 reference host, the product
 // modes and the remote board are additive features, all on by default.
+mod web_dataset;
 #[cfg(feature = "main-page")]
 mod web_events;
 mod web_gpu;
@@ -40,7 +41,11 @@ mod web_remote;
 mod web_rtc_link;
 mod web_scenario;
 #[cfg(feature = "main-page")]
+mod web_commands;
+#[cfg(feature = "main-page")]
 mod web_session;
+#[cfg(feature = "main-page")]
+mod web_options;
 mod web_speed;
 mod web_timing;
 mod web_tree;

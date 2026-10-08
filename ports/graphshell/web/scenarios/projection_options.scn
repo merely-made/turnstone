@@ -1,0 +1,32 @@
+# The projection editor's arrangement rows (Scenograph editor plan, E5): one
+# row per declared option, placeholders that say what a blank row means, a
+# refusal in the compiler's words, and rows rebuilt when the arrangement
+# changes. The practice projection starts on Grid with three items.
+assert title GRAPHSHELL H3 READY
+act load-practice-projection
+settle 2
+dom click [data-projection-panel="arrangement"]
+settle 2
+assert attr #gs-projection-option-cell_width placeholder 164 (the largest item's width)
+assert attr #gs-projection-option-columns placeholder 2 (the side of the square that holds every item)
+type #gs-projection-option-columns 0
+settle 2
+assert dom #gs-projection-option-columns-refusal needs a positive whole number
+assert attr #gs-projection-option-columns aria-invalid true
+assert snap projection-executable == false
+type #gs-projection-option-columns 3
+settle 2
+assert attr #gs-projection-option-columns aria-invalid false
+assert snap projection-executable == true
+type #gs-projection-arrangement-kind spiral
+settle 2
+assert dom #gs-projection-arrangement-options Curve
+select #gs-projection-option-curve linear
+settle 2
+assert snap projection-executable == true
+type #gs-projection-arrangement-kind nothing.like.it
+settle 2
+assert dom #gs-projection-arrangement-options names no built-in arrangement or registered solver
+capture projection_options
+wait
+log projection editor arrangement rows proof complete

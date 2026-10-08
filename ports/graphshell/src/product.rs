@@ -294,6 +294,13 @@ pub struct SavedSceneV2 {
     /// (dynamics grammar plan, G7). Absent in a scene saved before G7.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub arrangement_roles: Option<SavedRolesV1>,
+    /// The scene's dynamics spec (dynamics grammar plan, G4a): absent from
+    /// every scene saved before it, under this facet until G4b first writes
+    /// one the flat fields cannot express (F99), and written by nothing yet
+    /// (F100). It rides opaque and is read when the scene opens, where a
+    /// refused spec fails that open alone (F97, F114).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub dynamics: Option<SavedDynamics>,
     pub camera_offset: (f32, f32),
     pub camera_zoom: f32,
     pub default_handler: String,
@@ -311,7 +318,51 @@ pub struct SavedRolesV1 {
     pub items: BTreeMap<Uuid, String>,
 }
 
+/// A scene's dynamics spec as it rides: an opaque value, so whatever carries
+/// the scene (the facet, a codicil, a personal graph record) reads it whole
+/// and the spec is read only when the scene opens (F114). Read through
+/// seiche's path-tracking reader, so a refusal names where it sits (F113).
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(transparent)]
+pub struct SavedDynamics(serde_json::Value);
+
+impl SavedDynamics {
+    pub fn from_spec(spec: &mere::canvas::dynamics_spec::DynamicsSpec) -> Self {
+        Self(serde_json::to_value(spec).expect("a dynamics spec always serializes"))
+    }
+
+    /// The spec as written, unread.
+    pub fn value(&self) -> &serde_json::Value {
+        &self.0
+    }
+
+    /// The spec, or where and why it is refused while read.
+    pub fn spec(&self) -> Result<mere::canvas::dynamics_spec::DynamicsSpec, String> {
+        mere::canvas::dynamics_spec::read(&self.0)
+            .map_err(|error| format!("dynamics spec: {error}"))
+    }
+}
+
 impl SavedSceneV2 {
+    /// The scene's spec, if it has one, read and derived over the canvas's
+    /// catalog; a refusal names the id and where it sits (F97, F113).
+    pub fn dynamics_spec(
+        &self,
+    ) -> Result<Option<mere::canvas::dynamics_spec::DynamicsSpec>, String> {
+        let Some(dynamics) = &self.dynamics else {
+            return Ok(None);
+        };
+        let spec = dynamics.spec()?;
+        mere::canvas::dynamics_spec::derive(&spec)
+            .map_err(|error| format!("dynamics spec: {error}"))?;
+        Ok(Some(spec))
+    }
+
+    /// Whether the scene's spec, if it has one, reads and derives.
+    pub fn check_dynamics(&self) -> Result<(), String> {
+        self.dynamics_spec().map(|_| ())
+    }
+
     /// The roles this scene opens with, and the anchored stiffness. A scene
     /// saved before G7 has only its pull: the canvas anchored every item at
     /// that pull while playing, so a positive pull reads as anchored at it and
@@ -490,6 +541,9 @@ pub enum ProductError {
     EmptySelection,
     InvalidCodicil(String),
     InvalidContentReference(String),
+    /// A saved scene that reads but does not open: its dynamics spec is
+    /// refused (dynamics grammar plan, F97).
+    InvalidScene(String),
 }
 
 impl std::fmt::Display for ProductError {
@@ -504,6 +558,7 @@ impl std::fmt::Display for ProductError {
             Self::InvalidContentReference(error) => {
                 write!(formatter, "invalid portable content reference: {error}")
             },
+            Self::InvalidScene(error) => write!(formatter, "the scene does not open: {error}"),
         }
     }
 }
@@ -780,14 +835,17 @@ impl<B: Backend> MereHost<B> {
     }
 
     /// The scene saved at `address`: a version-2 scene, else one saved
-    /// before the roles, read as it behaved.
+    /// before the roles, read as it behaved. A scene whose dynamics spec is
+    /// refused does not open (F97).
     pub fn product_scene(&self, address: &str) -> Result<SavedSceneV2, ProductError> {
         let value = self
             .facet_value(address, SAVED_SCENE_FACET)
             .or_else(|| self.facet_value(address, SAVED_SCENE_FACET_V1))
             .ok_or_else(|| ProductError::UnknownAddress(address.to_string()))?;
-        serde_json::from_value(value.clone())
-            .map_err(|error| ProductError::InvalidCodicil(error.to_string()))
+        let scene: SavedSceneV2 = serde_json::from_value(value.clone())
+            .map_err(|error| ProductError::InvalidCodicil(error.to_string()))?;
+        scene.check_dynamics().map_err(ProductError::InvalidScene)?;
+        Ok(scene)
     }
 
     pub fn export_product_codicil(&self, request: ExportRequest) -> Result<Vec<u8>, ProductError> {
@@ -847,6 +905,9 @@ impl<B: Backend + Clone> MereHost<B> {
         bytes: &[u8],
     ) -> Result<(ImportReceipt, Option<SavedSceneV2>), ProductError> {
         let codicil = decode_codicil(bytes)?;
+        if let Some(scene) = &codicil.scene {
+            scene.check_dynamics().map_err(ProductError::InvalidScene)?;
+        }
         let receipt = ImportReceipt {
             nodes: codicil.graph.nodes.len(),
             relations: codicil.graph.edges.len(),
@@ -1452,6 +1513,7 @@ mod tests {
             physics_depth_source: "layers".to_string(),
             arrangement_pull: 0.4,
             arrangement_roles: None,
+            dynamics: None,
             camera_offset: (123.0, 234.0),
             camera_zoom: 1.2,
             default_handler: "system.default".to_string(),
@@ -1584,5 +1646,372 @@ mod tests {
         assert_eq!(imported_scene.selected.len(), 4);
         assert_eq!(imported_scene.cartography.sprite_iter().count(), 1);
         assert_eq!(imported_scene.cartography.face_iter().count(), 2);
+    }
+
+    /// G4a: the dynamics spec on the scene (dynamics grammar plan, F97–F110).
+    mod dynamics {
+        use std::collections::BTreeMap;
+
+        use mere::canvas::dynamics_spec::{
+            Bar, DynamicsSpec, GroupRoles, Node, Observable, Realization, Stage, Stop, Target,
+        };
+        use mere::canvas::{PhysicsLaw, PhysicsOverlay, Role};
+
+        use super::*;
+
+        fn base() -> SavedSceneV2 {
+            serde_json::from_value(serde_json::json!({
+                "name": "Spec scene",
+                "selected": [],
+                "layout_strategy": "grid.default",
+                "physics_paused": true,
+                "physics_damping": 0.7,
+                "camera_offset": [0.0, 0.0],
+                "camera_zoom": 1.0,
+                "default_handler": "system.default",
+                "cartography": CartographyGeometry::default(),
+            }))
+            .expect("a scene with no spec reads")
+        }
+
+        fn law(law: PhysicsLaw) -> Node {
+            Node::preset(law.id())
+        }
+
+        fn at(law: PhysicsLaw, weight: f64) -> Node {
+            Node::Preset {
+                id: law.id().into(),
+                weight,
+                terms: BTreeMap::new(),
+                rung: None,
+                overlays: Vec::new(),
+            }
+        }
+
+        /// A spec the canvas runs (R1–R4), using every root field.
+        fn runnable(member: Uuid) -> DynamicsSpec {
+            let mut first = law(PhysicsLaw::Springs);
+            first
+                .overlays_mut()
+                .push(Node::preset(PhysicsOverlay::GravityLocus.id()));
+            let mix = Node::Mix {
+                parts: vec![at(PhysicsLaw::Springs, 0.5), at(PhysicsLaw::Energy, 2.0)],
+                weight: 1.0,
+                overlays: Vec::new(),
+            };
+            let between = Node::Grouped {
+                partition: "groups.meaning".into(),
+                outer: Box::new(at(PhysicsLaw::Charge, 16.0)),
+                inner: Box::new(law(PhysicsLaw::Springs)),
+                weight: 1.0,
+                overlays: Vec::new(),
+            };
+            let stage = |node, stop, capture| Stage {
+                node,
+                stop,
+                capture,
+            };
+            let mut spec = DynamicsSpec::new(Node::Schedule {
+                stages: vec![
+                    stage(first, Stop::Frames(240), Some(Role::Anchored)),
+                    stage(mix, Stop::Rest, None),
+                    stage(between, Stop::LawDone, None),
+                    stage(law(PhysicsLaw::Still), Stop::Rest, None),
+                ],
+                weight: 1.0,
+                overlays: Vec::new(),
+            });
+            spec.seed = 7;
+            spec.channels.insert("mass".into(), "mass.pagerank".into());
+            spec.realization = Realization::Integrate { damping: Some(0.7) };
+            spec.target = Some(Target {
+                arrangement: "grid.default".into(),
+                anchored_pull: 12.0,
+                default_role: Role::Seeded,
+                groups: Some(GroupRoles {
+                    channel: "groups.site".into(),
+                    roles: BTreeMap::from([("example.test".to_string(), Role::Anchored)]),
+                }),
+                items: BTreeMap::from([(member.to_string(), Role::Pinned)]),
+            });
+            spec.bars = vec![Bar {
+                observable: Observable::Overlaps,
+                at_least: None,
+                at_most: Some(4.0),
+            }];
+            spec
+        }
+
+        /// Nested schedules `depth` deep: the deepest wire per tree level.
+        fn chain(depth: usize) -> DynamicsSpec {
+            let mut node = law(PhysicsLaw::Springs);
+            for _ in 1..depth {
+                node = Node::Schedule {
+                    stages: vec![Stage {
+                        node,
+                        stop: Stop::Rest,
+                        capture: None,
+                    }],
+                    weight: 1.0,
+                    overlays: Vec::new(),
+                };
+            }
+            DynamicsSpec::new(node)
+        }
+
+        /// The deepest nesting of arrays and objects in JSON text.
+        fn json_nesting(text: &[u8]) -> usize {
+            let (mut depth, mut deepest, mut in_string, mut escaped) =
+                (0usize, 0usize, false, false);
+            for &b in text {
+                if in_string {
+                    match (escaped, b) {
+                        (true, _) => escaped = false,
+                        (false, b'\\') => escaped = true,
+                        (false, b'"') => in_string = false,
+                        _ => {},
+                    }
+                    continue;
+                }
+                match b {
+                    b'"' => in_string = true,
+                    b'{' | b'[' => {
+                        depth += 1;
+                        deepest = deepest.max(depth);
+                    },
+                    b'}' | b']' => depth -= 1,
+                    _ => {},
+                }
+            }
+            deepest
+        }
+
+        fn host() -> MereHost<MemoryBackend> {
+            MereHost::fixture(MemoryBackend::new(), selected_persona(), fixture_handlers())
+                .expect("fixture")
+        }
+
+        fn web(host: &MereHost<MemoryBackend>) -> Uuid {
+            host.graph()
+                .get_node_by_url(FIXTURE_WEB_ADDRESS)
+                .unwrap()
+                .1
+                .id
+        }
+
+        fn codicil(host: &MereHost<MemoryBackend>, scene: SavedSceneV2) -> Vec<u8> {
+            let web = web(host);
+            host.export_product_codicil(ExportRequest {
+                focused: web,
+                selected: vec![web],
+                scope: TransferScope::SelectedSubgraph,
+                exported_at_ms: 1,
+                include_local_file_locations: false,
+                scene: Some(scene),
+            })
+            .unwrap()
+        }
+
+        #[test]
+        fn a_scene_saved_before_the_spec_opens_and_resaves_without_one() {
+            let scene = base();
+            assert_eq!(scene.dynamics, None);
+            assert!(scene.check_dynamics().is_ok());
+            let value = serde_json::to_value(&scene).unwrap();
+            assert!(
+                value.get("dynamics").is_none(),
+                "nothing is added on re-save"
+            );
+            let mut host = host();
+            host.save_product_scene("mere://scene/no-spec", &scene)
+                .unwrap();
+            assert_eq!(host.product_scene("mere://scene/no-spec").unwrap(), scene);
+        }
+
+        #[test]
+        fn a_spec_saves_and_reopens_byte_for_byte_with_its_scene() {
+            let mut host = host();
+            let web = web(&host);
+            let spec = runnable(web);
+            mere::canvas::dynamics_spec::derive(&spec).expect("a runnable spec derives");
+            let scene = SavedSceneV2 {
+                selected: vec![web],
+                dynamics: Some(SavedDynamics::from_spec(&spec)),
+                ..base()
+            };
+            host.save_product_scene("mere://scene/spec", &scene)
+                .unwrap();
+            let reopened = host.product_scene("mere://scene/spec").unwrap();
+            assert_eq!(reopened, scene);
+            assert_eq!(
+                serde_json::to_string(&reopened).unwrap(),
+                serde_json::to_string(&scene).unwrap(),
+                "byte for byte"
+            );
+            assert_eq!(
+                host.facet_value("mere://scene/spec", SAVED_SCENE_FACET),
+                Some(&serde_json::to_value(&scene).unwrap())
+            );
+            // Through the codicil, as JSON text, opened as a session.
+            let bytes = codicil(&host, scene);
+            let (_, imported) = host.replace_with_product_codicil(&bytes).unwrap();
+            assert_eq!(imported.unwrap().dynamics_spec(), Ok(Some(spec)));
+        }
+
+        #[test]
+        fn a_refused_spec_fails_the_open_by_name_and_place() {
+            let mut host = host();
+            let mut spec = runnable(Uuid::from_u128(1));
+            let Node::Schedule { stages, .. } = &mut spec.root else {
+                unreachable!("runnable's root is a schedule")
+            };
+            stages[1].node = Node::Mix {
+                parts: vec![law(PhysicsLaw::Springs), Node::preset("charge.coulomb")],
+                weight: 1.0,
+                overlays: Vec::new(),
+            };
+            let unknown = SavedSceneV2 {
+                dynamics: Some(SavedDynamics::from_spec(&spec)),
+                ..base()
+            };
+            host.save_product_scene("mere://scene/unknown", &unknown)
+                .unwrap();
+            let err = host
+                .product_scene("mere://scene/unknown")
+                .unwrap_err()
+                .to_string();
+            assert_eq!(
+                err,
+                "the scene does not open: dynamics spec: at root.stages[1].node.parts[1]: \
+                 unknown law preset charge.coulomb"
+            );
+            // A newer spec is refused in the reader's words (F98).
+            let good = SavedSceneV2 {
+                dynamics: Some(SavedDynamics::from_spec(&runnable(Uuid::from_u128(1)))),
+                ..base()
+            };
+            host.save_product_scene("mere://scene/newer", &good)
+                .unwrap();
+            assert!(
+                host.product_scene("mere://scene/newer").is_ok(),
+                "the control"
+            );
+            let key = host
+                .graph()
+                .get_node_by_url("mere://scene/newer")
+                .unwrap()
+                .0;
+            let mut value = serde_json::to_value(&good).unwrap();
+            value["dynamics"]["version"] = serde_json::json!(2);
+            host.set_facet(key, SAVED_SCENE_FACET, value).unwrap();
+            let err = host
+                .product_scene("mere://scene/newer")
+                .unwrap_err()
+                .to_string();
+            assert!(
+                err.contains("at version: dynamics spec version 2 is newer than this reader's 1"),
+                "{err}"
+            );
+            // A codicil carrying a refused spec does not open as a session.
+            let session = host.graph_session().id();
+            let bytes = codicil(&host, unknown);
+            assert!(matches!(
+                host.replace_with_product_codicil(&bytes),
+                Err(ProductError::InvalidScene(_))
+            ));
+            assert_eq!(host.graph_session().id(), session, "no session begun");
+        }
+
+        /// F113: each kind of refusal serde makes while the spec is read
+        /// names its path at the open: an unknown raw kind, an unknown field,
+        /// an unknown role, a newer version.
+        #[test]
+        fn a_spec_refused_while_read_names_its_path_at_the_open() {
+            let mut host = host();
+            let good = SavedSceneV2 {
+                dynamics: Some(SavedDynamics::from_spec(&runnable(Uuid::from_u128(1)))),
+                ..base()
+            };
+            host.save_product_scene("mere://scene/read", &good).unwrap();
+            assert!(
+                host.product_scene("mere://scene/read").is_ok(),
+                "the control"
+            );
+            let key = host.graph().get_node_by_url("mere://scene/read").unwrap().0;
+            let base_value = serde_json::to_value(&good).unwrap();
+            let cases: [(&dyn Fn(&mut serde_json::Value), &str); 4] = [
+                (
+                    &|v| {
+                        v["dynamics"]["root"]["stages"][3]["node"] =
+                            serde_json::json!({ "node": "raw", "term": { "densty": {} } })
+                    },
+                    "at root.stages[3].node.term: unknown variant `densty`",
+                ),
+                (
+                    &|v| v["dynamics"]["root"]["stages"][1]["node"]["colour"] = "red".into(),
+                    "at root.stages[1].node.colour: unknown field `colour`",
+                ),
+                (
+                    &|v| v["dynamics"]["target"]["default_role"] = "tethered".into(),
+                    "at target.default_role: unknown variant `tethered`",
+                ),
+                (
+                    &|v| v["dynamics"]["version"] = 2.into(),
+                    "at version: dynamics spec version 2 is newer than this reader's 1",
+                ),
+            ];
+            for (edit, expected) in cases {
+                let mut value = base_value.clone();
+                edit(&mut value);
+                host.set_facet(key, SAVED_SCENE_FACET, value).unwrap();
+                let err = host
+                    .product_scene("mere://scene/read")
+                    .unwrap_err()
+                    .to_string();
+                assert!(
+                    err.starts_with(&format!(
+                        "the scene does not open: dynamics spec: {expected}"
+                    )),
+                    "{err}"
+                );
+            }
+        }
+
+        /// F110: a depth-32 spec round-trips through the JSON carrier, parsed
+        /// from a codicil's text (serde_json's limit, 128), and derive refuses
+        /// depth 33.
+        #[test]
+        fn a_depth_32_spec_round_trips_through_the_json_carrier() {
+            let host = host();
+            for depth in [32, 33] {
+                let spec = chain(depth);
+                assert_eq!(spec.depth(), depth);
+                let bytes = codicil(
+                    &host,
+                    SavedSceneV2 {
+                        dynamics: Some(SavedDynamics::from_spec(&spec)),
+                        ..base()
+                    },
+                );
+                let nesting = json_nesting(&bytes);
+                println!("depth {depth}: codicil JSON nesting {nesting} (serde_json limit 128)");
+                let codicil = decode_codicil(&bytes).expect("parsed within serde_json's limit");
+                assert_eq!(
+                    codicil.scene.unwrap().dynamics.unwrap().spec(),
+                    Ok(spec.clone())
+                );
+                let refusal = mere::canvas::dynamics_spec::derive(&spec)
+                    .unwrap_err()
+                    .to_string();
+                if depth == 33 {
+                    assert_eq!(refusal, "dynamics spec is 33 deep, deeper than 32");
+                } else {
+                    assert!(
+                        refusal.contains("a schedule runs only at the root"),
+                        "32 passes the cap and meets the runnability check: {refusal}"
+                    );
+                }
+            }
+        }
     }
 }

@@ -717,6 +717,7 @@ mod tests {
             physics_depth_source: "roots".to_string(),
             arrangement_pull: 0.4,
             arrangement_roles: None,
+            dynamics: None,
             camera_offset: (0.0, 0.0),
             camera_zoom: 1.0,
             default_handler: "system.default".to_string(),

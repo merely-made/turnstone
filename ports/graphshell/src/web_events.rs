@@ -50,6 +50,7 @@ pub(super) fn install_events(state: &Rc<RefCell<BrowserHost>>) -> Result<(), Str
     let pointer_down = Closure::<dyn FnMut(PointerEvent)>::new(move |event: PointerEvent| {
         if let Some(button) = BrowserHost::pointer_button(event.button()) {
             let mut host = down_state.borrow_mut();
+            host.close_command_menu();
             if host.active == ActiveSession::Local {
                 let (x, y) = host.pointer_position(event.client_x(), event.client_y());
                 host.canvas.pointer_down(button, x, y);
@@ -90,6 +91,15 @@ pub(super) fn install_events(state: &Rc<RefCell<BrowserHost>>) -> Result<(), Str
         .map_err(|_| "could not attach mousemove fallback")?;
     mouse_move.forget();
 
+    // The canvas's right click is Graphshell's own menu (SE26).
+    let context_menu = Closure::<dyn FnMut(Event)>::new(move |event: Event| {
+        event.prevent_default();
+    });
+    canvas
+        .add_event_listener_with_callback("contextmenu", context_menu.as_ref().unchecked_ref())
+        .map_err(|_| "could not attach contextmenu")?;
+    context_menu.forget();
+
     let up_state = state.clone();
     let pointer_up = Closure::<dyn FnMut(PointerEvent)>::new(move |event: PointerEvent| {
         if let Some(button) = BrowserHost::pointer_button(event.button()) {
@@ -97,6 +107,9 @@ pub(super) fn install_events(state: &Rc<RefCell<BrowserHost>>) -> Result<(), Str
             if host.active == ActiveSession::Local {
                 let (x, y) = host.pointer_position(event.client_x(), event.client_y());
                 host.canvas.pointer_up(button, x, y);
+                if let Some(request) = host.canvas.take_context_request() {
+                    host.open_command_menu((event.client_x(), event.client_y()), request.node);
+                }
                 if let Some(member) = host.canvas.focused_member() {
                     host.primary_member = Some(member);
                 }
@@ -139,6 +152,15 @@ pub(super) fn install_events(state: &Rc<RefCell<BrowserHost>>) -> Result<(), Str
         else {
             return;
         };
+        if let Some(action) = target.get_attribute("data-command-menu") {
+            let mut host = click_state.borrow_mut();
+            host.command_menu_action(&action);
+            let _ = update_semantics(&mut host);
+            return;
+        }
+        if target.closest("#gs-command-menu").ok().flatten().is_none() {
+            click_state.borrow_mut().close_command_menu();
+        }
         if let Some(panel) = target.get_attribute("data-projection-panel") {
             let mut host = click_state.borrow_mut();
             host.select_projection_panel(&panel);
@@ -211,6 +233,27 @@ pub(super) fn install_events(state: &Rc<RefCell<BrowserHost>>) -> Result<(), Str
         else {
             return;
         };
+        if let Some(key) = target.get_attribute("data-projection-option") {
+            let value = if let Some(input) = target.dyn_ref::<HtmlInputElement>() {
+                input.value()
+            } else if let Some(select) = target.dyn_ref::<HtmlSelectElement>() {
+                select.value()
+            } else {
+                return;
+            };
+            let mut host = input_state.borrow_mut();
+            host.update_projection_option(&key, &value);
+            let _ = update_semantics(&mut host);
+            return;
+        }
+        if target.id() == "gs-command-search" {
+            if let Ok(search) = target.dyn_into::<HtmlInputElement>() {
+                let mut host = input_state.borrow_mut();
+                host.search_commands(&search.value());
+                let _ = update_semantics(&mut host);
+            }
+            return;
+        }
         let Some(field) = target.get_attribute("data-projection-field") else {
             return;
         };
@@ -232,6 +275,31 @@ pub(super) fn install_events(state: &Rc<RefCell<BrowserHost>>) -> Result<(), Str
 
     let key_state = state.clone();
     let keydown = Closure::<dyn FnMut(KeyboardEvent)>::new(move |event: KeyboardEvent| {
+        if key_state.borrow().command_menu_open() {
+            match event.key().as_str() {
+                "Escape" => {
+                    event.prevent_default();
+                    let mut host = key_state.borrow_mut();
+                    host.close_command_menu();
+                    let _ = update_semantics(&mut host);
+                    return;
+                },
+                "Enter"
+                    if event
+                        .target()
+                        .and_then(|target| target.dyn_into::<Element>().ok())
+                        .is_some_and(|target| target.id() == "gs-command-search") =>
+                {
+                    event.prevent_default();
+                    let mut host = key_state.borrow_mut();
+                    host.run_first_command();
+                    let _ = update_semantics(&mut host);
+                    return;
+                },
+                // Typing and moving within the menu is the menu's own.
+                _ => return,
+            }
+        }
         if event
             .target()
             .and_then(|target| target.dyn_into::<Element>().ok())
@@ -241,6 +309,7 @@ pub(super) fn install_events(state: &Rc<RefCell<BrowserHost>>) -> Result<(), Str
                     || target.has_attribute("data-projection-field")
                     || target.has_attribute("data-projection-occurrence")
                     || target.has_attribute("data-practice-command")
+                    || target.has_attribute("data-projection-option")
             })
         {
             return;

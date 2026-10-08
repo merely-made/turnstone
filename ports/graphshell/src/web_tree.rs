@@ -102,7 +102,11 @@ const SHEET: &str = "\
     .tree-detail .detail-key { display:block; } \
     .tree-detail .detail-value { display:block;margin:2px 0 8px;overflow-wrap:anywhere; } \
     .tree-detail input { display:block;width:280px;height:26px;color:#dce3e8;background:#263640;border:1px solid #637581; } \
-    .tree-product button { background:#263640;color:#dce3e8;padding:5px 10px;border:1px solid #637581; }";
+    .tree-product button { background:#263640;color:#dce3e8;padding:5px 10px;border:1px solid #637581; } \
+    .tree-relations { margin:0 12px 6px; font-size:12px; } \
+    .tree-relations h2 { font-size:13px; margin:0 0 2px; } \
+    .tree-relations ul { margin:0; padding:0 0 0 16px; max-height:96px; overflow-y:auto; } \
+    .tree-refusal { margin:4px 12px 8px; padding:8px; color:#f3d2c6; background:#3a1f1a; border:1px solid #a4574a; }";
 
 /// What the page, its producer and its hooks share.
 struct Shared {
@@ -434,6 +438,8 @@ pub(crate) struct TreePage {
     /// The address of the node the last click picked.
     picked: Option<String>,
     product: Option<product::SavedProduct>,
+    /// The host dataset the page supplied, if any (S1).
+    dataset: HostedDataset,
     /// The "Graph tools" arrangement and physics section.
     physics: physics::PhysicsPanel,
     /// Which session the canvas leaf shows.
@@ -453,6 +459,63 @@ pub(crate) struct TreePage {
     /// an absolutely placed box between its insets, so the view is told its
     /// size, as mere-view's harness tells its view.
     size: (u32, u32),
+}
+
+/// What became of the page's host dataset (S1).
+pub(crate) enum HostedDataset {
+    /// The page supplied none.
+    None,
+    /// Compiled, with its relations as the viewer presents them.
+    Loaded(Vec<graphshell::host_dataset_view::ViewedRelation>),
+    /// Refused, and why.
+    Refused(String),
+}
+
+impl HostedDataset {
+    fn state(&self) -> &'static str {
+        match self {
+            Self::None => "none",
+            Self::Loaded(_) => "loaded",
+            Self::Refused(_) => "refused",
+        }
+    }
+}
+
+/// The host dataset's refusal as an alert, or its relations as a list a
+/// reader reaches beside the canvas.
+fn hosted_dataset(page: &TreePage) -> Option<Child> {
+    match &page.dataset {
+        HostedDataset::None => None,
+        HostedDataset::Refused(error) => Some(Box::new(
+            el("p", error.clone())
+                .attr("class", "tree-refusal")
+                .attr("role", "alert")
+                .attr("id", "gs-dataset-refusal"),
+        )),
+        HostedDataset::Loaded(relations) if relations.is_empty() => None,
+        HostedDataset::Loaded(relations) => Some(Box::new(
+            el(
+                "section",
+                (
+                    el("h2", "Relations"),
+                    el(
+                        "ul",
+                        relations
+                            .iter()
+                            .map(|relation| {
+                                Box::new(el("li", relation.spoken()).attr("role", "listitem"))
+                                    as Child
+                            })
+                            .collect::<Vec<_>>(),
+                    )
+                    .attr("role", "list"),
+                ),
+            )
+            .attr("class", "tree-relations")
+            .attr("role", "region")
+            .attr("aria-label", "Relations"),
+        )),
+    }
 }
 
 impl TreePage {
@@ -512,6 +575,7 @@ fn view(page: &TreePage) -> Child {
                 el("p", page.status())
                     .attr("class", "tree-status")
                     .attr("role", "status"),
+                hosted_dataset(page),
                 controls::toolbar(page),
                 product::controls(page),
                 el(
@@ -681,8 +745,34 @@ async fn boot(root: Element) -> Result<(), String> {
     let width = canvas.client_width().max(1) as u32;
     let height = canvas.client_height().max(1) as u32;
 
-    let product = product::open().await?;
-    let (graph, source) = if let Some(product) = &product {
+    // A host dataset (S1) replaces every other source, and a refused one
+    // shows its refusal over an empty graph, never the fixture.
+    let hosted = crate::web_dataset::supplied(&root);
+    let product = if hosted.is_some() {
+        None
+    } else {
+        product::open().await?
+    };
+    let mut dataset = HostedDataset::None;
+    let mut placed = None;
+    let (graph, source) = if let Some(hosted) = hosted {
+        match hosted
+            .and_then(|envelope| graphshell::host_dataset_view::host_dataset_view(&envelope))
+        {
+            Ok(view) => {
+                dataset = HostedDataset::Loaded(view.relations);
+                placed = Some(view.positions);
+                (
+                    view.graph,
+                    format!("host dataset, revision {}", view.revision),
+                )
+            },
+            Err(error) => {
+                dataset = HostedDataset::Refused(error);
+                (Graph::new(), "host dataset refused".to_string())
+            },
+        }
+    } else if let Some(product) = &product {
         (product.graph(), "saved graph".to_string())
     } else {
         match web_graphs::requested() {
@@ -696,7 +786,10 @@ async fn boot(root: Element) -> Result<(), String> {
     let nodes = graph.node_count();
     let speed_options = crate::web_speed::options()?;
     let shared = Rc::new(Shared {
-        canvas: RefCell::new(web_graphs::prepared_canvas(graph, width, height)),
+        canvas: RefCell::new(match &placed {
+            Some(positions) => web_graphs::placed_canvas(graph, positions, width, height),
+            None => web_graphs::prepared_canvas(graph, width, height),
+        }),
         dirty: Cell::new(true),
         moving: Cell::new(false),
         size: Cell::new((width, height)),
@@ -757,6 +850,7 @@ async fn boot(root: Element) -> Result<(), String> {
                 nodes,
                 picked: None,
                 product,
+                dataset,
                 physics,
                 tools_open: false,
                 session: remote::Session::Local,

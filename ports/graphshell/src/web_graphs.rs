@@ -107,6 +107,22 @@ pub(crate) fn generated(nodes: usize, seed: u64, links: Links) -> Graph {
     graph
 }
 
+/// A canvas holding `graph` at `positions`, a placement already made (a host
+/// dataset's compiled arrangement), fitted to `width` by `height`.
+pub(crate) fn placed_canvas(
+    graph: Graph,
+    positions: &[(mere::kernel::graph::NodeKey, PortablePoint)],
+    width: u32,
+    height: u32,
+) -> Canvas {
+    let mut canvas = Canvas::with_graph(graph);
+    canvas.resize(width, height);
+    canvas.set_layout_strategy(Some(LAYOUT.to_string()));
+    canvas.apply_strategy_positions(positions);
+    canvas.fit_to_content();
+    canvas
+}
+
 /// A canvas holding `graph`, arranged and fitted to `width` by `height`.
 pub(crate) fn prepared_canvas(graph: Graph, width: u32, height: u32) -> Canvas {
     let mut canvas = Canvas::with_graph(graph);

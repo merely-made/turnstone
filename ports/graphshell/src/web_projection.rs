@@ -287,6 +287,14 @@ impl BrowserHost {
 }
 
 impl BrowserHost {
+    /// How many items the arrangement rows measure defaults against: the
+    /// loaded executable dataset's, or none (E5).
+    pub(super) fn option_item_count(&self) -> Option<usize> {
+        self.live_projection
+            .as_ref()
+            .map(|live| live.dataset.occurrences.len())
+    }
+
     /// Undo (`back`) or redo the editor's latest save in the session, through
     /// its own channel, and take what the store now holds for this draft as
     /// one step on the draft's history (SE18, SE20, SE21).

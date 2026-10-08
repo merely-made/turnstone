@@ -565,6 +565,8 @@ impl BrowserHost {
                 )
                 .saved(),
             ),
+            // Nothing writes a spec yet (G4a, F100); G4b's binding does.
+            dynamics: None,
             camera_offset: camera.offset,
             camera_zoom: camera.zoom,
             default_handler: select_value("handler-select")?,
