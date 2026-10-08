@@ -41,7 +41,7 @@ function semanticNode(element) {
     ] ?? null);
   const label =
     element.getAttribute("aria-label") ||
-    (element.matches('button, h1, h2, dd, li, [role="button"], [role="heading"], [role="status"], [role="listitem"]') ? element.textContent.trim() : null);
+    (element.matches('button, h1, h2, dd, li, [role="button"], [role="heading"], [role="status"], [role="alert"], [role="listitem"]') ? element.textContent.trim() : null);
   const children = [...element.children]
     .filter((child) => child.getAttribute("aria-hidden") !== "true")
     .map(semanticNode)
@@ -386,6 +386,28 @@ async function loadChronicleBindingReceipt(params) {
   root.dataset.chronicleGeneration = report.djinnGeneration;
 }
 
+// `?dataset=<url>`, else the root's `data-dataset-src`, names the page's host
+// dataset. Its text becomes the root's `data-dataset`; a fetch that fails
+// becomes `data-dataset-error`, which the page shows as a refusal rather than
+// falling back to anything. A page may also set `data-dataset` itself. The
+// page, not this loader, parses and checks the envelope.
+async function loadHostDataset() {
+  const root = graphshellRoot();
+  if (!root) return;
+  const url =
+    new URLSearchParams(location.search).get("dataset") ?? root.getAttribute("data-dataset-src");
+  if (!url) return;
+  try {
+    const response = await fetch(url, { cache: "no-store" });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    root.setAttribute("data-dataset", await response.text());
+    root.removeAttribute("data-dataset-error");
+  } catch (error) {
+    root.removeAttribute("data-dataset");
+    root.setAttribute("data-dataset-error", `could not fetch ${url}: ${error.message ?? error}`);
+  }
+}
+
 try {
   if ((globalThis.browser ?? globalThis.chrome)?.runtime?.id) {
     await import("./capture-model.js");
@@ -394,6 +416,10 @@ try {
   }
   const module = await import("./pkg/graphshell_web.js");
   await module.default();
+  // The host dataset (scenomise.host-dataset/v1; mer3ly site canvas plan,
+  // S1): fetched before mounting so the viewer and the practice proof read
+  // one input, the root's `data-dataset`.
+  await loadHostDataset();
   // Two ways in, one component. `mountGraphshell(element)` is the plain
   // entry; `<graphshell-view>` is the same entry as a custom element, mounted
   // when it connects. Elements already in the document upgrade on define.

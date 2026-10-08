@@ -1,0 +1,20 @@
+# S1 (mer3ly site canvas plan, Rulings 124, 128 and 129): the practice proof
+# on the shared host dataset input, with one relationship its source
+# discloses between the two subjects. Run as
+# practice.html?dataset=fixtures/woodshed-comparison-relations.host-dataset.json
+# The same comparison, cards and slots as the served practice dataset; the
+# relationship is routed onto the recipe's arrangement, drawn between its
+# two cards, and named to a reader beside the board.
+assert snap practice-view == relations
+assert snap practice-relations == 1
+assert attr [data-practice-id="relations-list"] aria-label Relations Shares C and E: C Major to A Minor
+settle 2
+capture practice_relations_grid
+wait
+dom click [data-practice-command="scatter"]
+settle 2
+assert snap practice-layout == scatter.default
+assert snap practice-relations == 1
+capture practice_relations_scatter
+wait
+log practice relations receipt complete

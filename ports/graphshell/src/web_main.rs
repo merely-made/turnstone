@@ -1947,7 +1947,7 @@ async fn run(root_element: Element) -> Result<(), String> {
         projection_editor: ProjectionEditor::new(initial_projection_draft()),
         live_projection: None,
         practice: if root()?.has_attribute("data-practice-workspace") {
-            Some(web_practice::PracticeHost::new(root()?.get_attribute("data-practice-source").as_deref())?)
+            Some(web_practice::PracticeHost::new(web_dataset::supplied(&root()?))?)
         } else { None },
         practice_scene: Scene::new(width, height),
         projection_editor_open: false,

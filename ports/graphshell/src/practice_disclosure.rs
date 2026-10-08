@@ -633,16 +633,69 @@ mod tests {
         serde_json::to_string_pretty(&comparison_host_dataset(&record()).unwrap()).unwrap() + "\n"
     }
 
-    /// The served file is this conversion of Woodshed's export, byte for byte.
+    /// The relations scenario's dataset: the same comparison, and one
+    /// relationship its source discloses between the two subjects, added
+    /// only through the envelope's `relationships`.
+    const SERVED_RELATIONS: &str = "web/fixtures/woodshed-comparison-relations.host-dataset.json";
+
+    fn served_relations() -> String {
+        let record = record();
+        let mut envelope = comparison_host_dataset(&record).unwrap();
+        envelope
+            .relationships
+            .push(scenomise::projection::DisclosedRelationship {
+                id: "shared-tones:card:1:card:2".into(),
+                from_occurrence: record.left.occurrence_id.clone(),
+                to_occurrence: record.right.occurrence_id.clone(),
+                kind: "shares_pitch_classes".into(),
+                label: "Shares C and E".into(),
+                explanation: "Woodshed's comparison discloses C and E in both pitch sets.".into(),
+                provenance: scenomise::projection::RelationshipProvenance {
+                    source: envelope.dataset.source.clone(),
+                    source_revision: envelope.dataset.revision.clone(),
+                    method: record.method.id.clone(),
+                    method_version: record.method.version,
+                    provider: "woodshed".into(),
+                    evidence: vec![
+                        sceno::SourceRef::new(&record.left.source.adapter, &record.left.source.id),
+                        sceno::SourceRef::new(
+                            &record.right.source.adapter,
+                            &record.right.source.id,
+                        ),
+                    ],
+                },
+            });
+        serde_json::to_string_pretty(&envelope).unwrap() + "\n"
+    }
+
+    /// The served files are these conversions of Woodshed's export, byte for byte.
     /// `GRAPHSHELL_WRITE_PRACTICE_DATASET=1 cargo test -p graphshell
     /// served_practice_dataset` rewrites it.
     #[test]
     fn served_practice_dataset_is_the_converted_woodshed_export() {
         let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(SERVED);
-        if std::env::var_os("GRAPHSHELL_WRITE_PRACTICE_DATASET").is_some() {
-            std::fs::write(&path, served()).unwrap();
+        let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+        for (path, text) in [
+            (path, served()),
+            (root.join(SERVED_RELATIONS), served_relations()),
+        ] {
+            if std::env::var_os("GRAPHSHELL_WRITE_PRACTICE_DATASET").is_some() {
+                std::fs::write(&path, &text).unwrap();
+            }
+            assert_eq!(
+                std::fs::read_to_string(&path).unwrap(),
+                text,
+                "{}",
+                path.display()
+            );
         }
-        assert_eq!(std::fs::read_to_string(&path).unwrap(), served());
+    }
+
+    #[test]
+    fn the_relations_dataset_rebuilds_the_same_record() {
+        let envelope = scenomise::host_dataset::parse_host_dataset(&served_relations()).unwrap();
+        assert_eq!(envelope.relationships.len(), 1);
+        assert_eq!(comparison_from_host_dataset(&envelope).unwrap(), record());
     }
 
     #[test]
