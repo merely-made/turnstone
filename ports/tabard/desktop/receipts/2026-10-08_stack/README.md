@@ -49,7 +49,16 @@ apply exact CSS, save, reopen, clear the override, undo and resize. The retained
 `themes.json` and workshop sidecar are test fixture data from an explicitly
 separate `/tmp/tabard-stack-native-20261008` library.
 
-## Open presentation boundary
+## macOS presentation acceptance
+
+The subsequent [LaunchServices matrix](launchservices/README.md) passes on the
+published `7d2a5f3cfe97174058368073d2bae809fffbf902` source: 192 actual
+presentations and 15 nonblank captures across shared components, usability and
+fresh-process reopen. All images were visually inspected. Normal application
+launching succeeds with the same production host and rendering path; no
+occlusion override or presentation-counter bypass was added.
+
+## Historical background-launch presentation boundary
 
 The separate fresh-process scenario passes its restoration assertions
 (`hc_dark`, `#2f7fff`, clean draft), but its visual capture does not complete.
@@ -77,7 +86,8 @@ JSON projections, concise logs and owned-window findings are preserved in
 application and an occlusion state without the Visible bit despite valid,
 visible window geometry on the active Space. A one-time focus experiment was
 ineffective and removed. This fixes receipt/progression accounting; reliable
-fresh-process native presentation remains unverified.
+fresh-process native presentation was unverified in those attempts. The later
+LaunchServices matrix above supplies that missing proof on macOS.
 
 Windows/Linux native frames, Windows Snap interaction, native chooser panels
 and a live screen-reader session remain unverified. Their portable/native

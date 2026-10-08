@@ -1,5 +1,10 @@
 # Native presentation investigation, 2026-10-08
 
+These are historical background-child launch attempts. Subsequent normal macOS
+application launching passes with the production binary and successful-frame
+accounting intact. See the [LaunchServices acceptance](../launchservices/README.md)
+for shared mode previews, resizing, authored CSS and fresh-process reopen.
+
 The shared host now exposes each redraw attempt's successful PresentedFrame identity. Mesquite advances native scenario steps, settle counts, frame limits, and capture grace only for new presentations, while polling pending asynchronous readback on every turn. Continuous unpresented native work has a separate 10-second elapsed deadline. JSON and text receipts distinguish presentations, redraw attempts, and unpresented redraws.
 
 Native attempts below ran tabard-desktop with WindowFrame::App at 1180x800 against either the saved authored library or a fresh absent library. All processes exited unsuccessfully with zero presentations and zero captures; no native screenshot was produced. Scenario actions and assertions did not advance without a presentation. These results do not replace the earlier successful 95-frame, five-capture usability receipt at /tmp/tabard-stack-native-20261008.

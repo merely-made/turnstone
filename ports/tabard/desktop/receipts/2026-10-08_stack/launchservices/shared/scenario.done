@@ -1,0 +1,22 @@
+RESULT ok
+Shared component specimens follow the authored draft and explicit mode
+captured shared_light
+captured shared_dark
+captured shared_hc_light
+captured shared_hc_dark
+captured graph_selected
+captured shared_seed_edited
+captured shared_undone
+captured shared_narrow_reader
+captured shared_narrow_graph
+capture shared_light 2360x1600 digest=c54ffd483ec7a8ec file=/Users/markik/Code/output/tabard-visual-acceptance/tabard-matrix/shared/shared_light.png
+capture shared_dark 2360x1600 digest=cd7593ee80715970 file=/Users/markik/Code/output/tabard-visual-acceptance/tabard-matrix/shared/shared_dark.png
+capture shared_hc_light 2360x1600 digest=5d6dd3336053f06d file=/Users/markik/Code/output/tabard-visual-acceptance/tabard-matrix/shared/shared_hc_light.png
+capture shared_hc_dark 2360x1600 digest=5e75373cc91b39b6 file=/Users/markik/Code/output/tabard-visual-acceptance/tabard-matrix/shared/shared_hc_dark.png
+capture graph_selected 2360x1600 digest=d4a06f50fc7e7007 file=/Users/markik/Code/output/tabard-visual-acceptance/tabard-matrix/shared/graph_selected.png
+capture shared_seed_edited 2360x1600 digest=9ce30cebaf6076bc file=/Users/markik/Code/output/tabard-visual-acceptance/tabard-matrix/shared/shared_seed_edited.png
+capture shared_undone 2360x1600 digest=221a0eed83da02e4 file=/Users/markik/Code/output/tabard-visual-acceptance/tabard-matrix/shared/shared_undone.png
+capture shared_narrow_reader 1280x1560 digest=6ad5dcd2ae9c1286 file=/Users/markik/Code/output/tabard-visual-acceptance/tabard-matrix/shared/shared_narrow_reader.png
+capture shared_narrow_graph 1280x1560 digest=88506a4057493d17 file=/Users/markik/Code/output/tabard-visual-acceptance/tabard-matrix/shared/shared_narrow_graph.png
+frames: 9 captured, 0 blank, 9 distinct digests
+presentation: 79 frames, 81 redraws, 2 unpresented redraws

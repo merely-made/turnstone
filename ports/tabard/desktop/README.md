@@ -83,6 +83,25 @@ It rejects unchanged frame digests for the seed edit and mode switch. It reports
 through the process exit status as well as the Mesquite receipt. The scenario
 requires a fresh library because its initial draft is unsaved.
 
+On macOS, run headed scenarios through LaunchServices so the operating system
+launches an active application. The shared launcher wraps the built executable
+in a temporary unsigned application bundle, preserves the normal host/render
+path, and requires both launcher success and Mesquite's `RESULT ok` receipt:
+
+```sh
+python3 scripts/run_macos_scenario.py \
+  --binary target/debug/tabard-desktop --prefix TABARD \
+  --scenario ports/tabard/desktop/scenarios/shared_components.scn \
+  --output /tmp/tabard-shared-evidence \
+  -- --library /tmp/tabard-shared-themes.json
+```
+
+Use a new output directory and fresh library path for the first run. For a
+fresh-process reopen, reuse that library with the matching reopen scenario and
+a new output directory. Product profile isolation for other consumers belongs
+in repeated `--env KEY=VALUE` arguments. The launcher is shared Mesquite tooling
+and does not change rendering or permit unpresented redraws to advance scenarios.
+
 The shared-component scenario checks all four mode previews, graph selection,
 a keyboard seed edit and undo, and the real reader and graph in the narrow
 layout. Run `ports/tabard/desktop/scenarios/shared_components.scn` with the same
@@ -124,6 +143,9 @@ images, complete receipts and importable sample definition.
 
 The [shared-kit receipts](receipts/2026-10-08_stack) cover the relocated workshop,
 shared scene adapter and title-bar adoption. The authoring/native narrow-layout
-scenario passes. Fresh-process state restoration passes its assertions, while
-its native capture currently exhausts the occluded-surface guard; the receipt
-records that open presentation boundary and platform validation limits.
+scenario passes. The [LaunchServices acceptance](receipts/2026-10-08_stack/launchservices/README.md)
+now passes all four mode previews, shared reader/syntax/graph interaction,
+actual resizing, exact CSS authoring and fresh-process native capture: 192
+presentations and 15 nonblank images on macOS. Historical background-child
+launch failures remain recorded with their zero-presentation receipts.
+Windows/Linux headed behavior and live native accessibility remain unverified.
