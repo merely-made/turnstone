@@ -10,6 +10,7 @@
 //! seams (`on_key`, `deliver_press`, `deliver_wheel`) that the scenario runner
 //! also drives, so one description runs through two runners.
 
+use super::NodeSessions;
 use winit::application::ApplicationHandler;
 use winit::event::{ElementState, Ime, MouseScrollDelta, StartCause, WindowEvent};
 use winit::event_loop::{ActiveEventLoop, ControlFlow};
@@ -186,7 +187,7 @@ impl ApplicationHandler for Shell {
                     match outcome.result {
                         Ok(bytes) => {
                             for node in requesters {
-                                if let Some(session) = self.content_sessions.get_mut(&node) {
+                                if let Some(session) = self.content_sessions.session_mut(&node) {
                                     session.provide_subresource(&outcome.url, &bytes);
                                 }
                             }

@@ -11,6 +11,7 @@
 //! retained runners and their identity. Arrangement rides the SESSION, so
 //! adopting a session closes these and reopens that session's own.
 
+use super::NodeSessions;
 use std::sync::Arc;
 
 use genet_winit_host::SurfaceHost;
@@ -309,7 +310,7 @@ impl Shell {
         // a frame where both windows render is a no-op.
         let now_ms = self.epoch.elapsed().as_secs_f64() * 1000.0;
         let mut animating = false;
-        for session in self.content_sessions.values_mut() {
+        for session in self.content_sessions.sessions_mut() {
             session.pump(now_ms);
             if !session.settled() {
                 animating = true;

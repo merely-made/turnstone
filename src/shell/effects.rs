@@ -10,6 +10,7 @@
 //! here, and every answer comes back as a typed `Update`. Nothing else in the
 //! shell talks to a port.
 
+use super::NodeSessions;
 use std::sync::mpsc::Receiver;
 
 use fetch::{FetchCommand, FetchUpdate};
@@ -1237,8 +1238,36 @@ impl Shell {
                             spawn = spawn.with_content_type(content_type);
                         }
                     }
-                    let update = match self.content_engines.spawn(&decision.engine_id, &spawn) {
-                        Ok(mut session) => {
+                    // Each node's document is a Pelt controller (SC step 4).
+                    // The App keeps the node's load and its graph history, so
+                    // the controller opens the held body and hands any link
+                    // back as a navigation request. Addresses Turnstone does
+                    // not fetch (local, mere:, Knot) still load through their
+                    // engine.
+                    let mut config =
+                        pelt_core::PeltControllerConfig::from_request(decision.engine_id.clone(), spawn)
+                            .with_host_history();
+                    if config.request.body.is_some() {
+                        config = config.with_host_loading();
+                    }
+                    let route = pelt_core::PeltRoute {
+                        decision: decision.clone(),
+                        source: if request.pinned_engine.is_some() {
+                            pelt_core::PeltRouteSource::UserOverride
+                        } else {
+                            pelt_core::PeltRouteSource::Automatic
+                        },
+                        state: pelt_core::PeltRouteState::Document,
+                    };
+                    let opened = pelt_core::PeltController::new_shared(
+                        std::sync::Arc::clone(&self.content_engines),
+                        std::sync::Arc::clone(&self.pelt_surface_engines),
+                        config,
+                        super::ShellClock(std::time::Instant::now()),
+                    );
+                    let update = match opened {
+                        Ok(mut controller) => {
+                            let session = controller.session_mut();
                             tracing::info!(%node, %url, engine = %decision.engine_id, "content session live");
                             // Mirror the spawn-time facts into app truth (the
                             // adapter conversion): the engine id plus the
@@ -1289,10 +1318,13 @@ impl Shell {
                             // The effective level it answers with is kept; a
                             // refusal is reported and dropped, and what the
                             // node asked for stays persisted either way.
-                            replay_retained_page_scale(&mut self.app, node, session.as_mut());
+                            replay_retained_page_scale(&mut self.app, node, session);
                             let subresources = session.subresources();
                             self.clear_reader_appearances(node);
-                            self.content_sessions.insert(node, session);
+                            self.content_sessions.insert(
+                                node,
+                                pelt_core::PeltContent::from_controller(controller, route),
+                            );
                             for url in subresources {
                                 if self.pending_fetches.note_subresource(&url, node) {
                                     self.fetch_handle
@@ -1331,7 +1363,7 @@ impl Shell {
                         self.run_effects(vec![Effect::SpawnContent { node, url }]);
                         continue;
                     }
-                    let Some(session) = self.content_sessions.get_mut(&node) else {
+                    let Some(session) = self.content_sessions.session_mut(&node) else {
                         self.run_effects(vec![Effect::SpawnContent { node, url }]);
                         continue;
                     };
@@ -1415,11 +1447,11 @@ impl Shell {
                     if let Some(producer) = self.surface_producers.get_mut(&node) {
                         let producer = producer.as_mut();
                         apply_page_scale(&mut self.app, node, scale, producer);
-                    } else if let Some(session) = self.content_sessions.get_mut(&node) {
+                    } else if let Some(session) = self.content_sessions.session_mut(&node) {
                         // The retained lane: the session reflows at the new CSS
                         // viewport on the next frame, and answers with the
                         // level it actually settled on.
-                        apply_retained_page_scale(&mut self.app, node, scale, session.as_mut());
+                        apply_retained_page_scale(&mut self.app, node, scale, session);
                     } else {
                         // Nothing live to scale: content is off. The request is
                         // persisted and the spawn path replays it.
@@ -1495,7 +1527,7 @@ impl Shell {
                         }
                     };
                     let engine_query = DocumentFindQuery::new(query.clone());
-                    let immediate = if let Some(session) = self.content_sessions.get_mut(&node) {
+                    let immediate = if let Some(session) = self.content_sessions.session_mut(&node) {
                         Some(
                             if find_next {
                                 session.document_find_step(engine_direction)
@@ -1533,7 +1565,7 @@ impl Shell {
                 }
                 Effect::ClearContentFind { node } => {
                     self.surface_find_requests.remove(&node);
-                    if let Some(session) = self.content_sessions.get_mut(&node) {
+                    if let Some(session) = self.content_sessions.session_mut(&node) {
                         if let Err(error) = session.clear_document_find() {
                             tracing::warn!(%node, %error, "retained document find clear failed");
                         }
@@ -1778,7 +1810,7 @@ impl Shell {
         }
         let mut facts: Vec<crate::observe::KnotDocumentFacts> = self
             .content_sessions
-            .values()
+            .sessions()
             .filter_map(|session| {
                 let knot = session
                     .as_any_ref()

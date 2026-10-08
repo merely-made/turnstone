@@ -1567,6 +1567,55 @@ the same record once this lane can push to Mere (U15).
       for host-history content, all pass, and Linear-mode tests pass
       unchanged. `pelt-desktop --lib` passes 57 of 57, and Pelt desktop and
       `pelt` pass `cargo check --all-targets`.
+- **2026-10-08:**
+  - SC step 4, pass A (documents), with the coordinated family repin that it
+    needs. Mark ruled that this lane does the published repin, and that step 4
+    adopts documents first, leaving web surfaces (pass B) to be coordinated
+    with the browser lane's live work in `src/shell`.
+    - Mere `3ded2cd7` adds the controller's session seam (`session()`,
+      `session_mut()`), so features the controller doesn't wrap yet (find,
+      subresources, Turnstone's own pointer path) reach the live session.
+    - Family, in U9 order: Knot `6e66f1ab` and Redshank/Woodshed `3ef71040`,
+      both on Mere `3ded2cd7` with Genet `965b64e2` unchanged, then Turnstone.
+      Each lock adds only `edit-history` and `mere-page-load` (plus
+      `pelt-core` in Turnstone). `cargo tree --locked` shows one source per
+      sibling.
+    - App: `FetchedDocument` and `PageFetchPhase` are now page-load's types,
+      and `ContentStates` delegates to one `PageLoad` per node, so the load
+      state machine exists once, in Mere.
+    - Shell: each node's document is a `PeltContent` around a host-history
+      controller, host-loading when the App holds the body. Routing and the
+      spawn-time facts are unchanged. Existing call sites reach the session
+      through the seam, so behavior is unchanged.
+    - Gates, macOS (Turnstone's first macOS run):
+      - Knot: the workspace check passes; `knot-editor` and `knot-desktop`
+        pass 525 tests in 31 suites; `knot-document` passes 45.
+      - Redshank: desktop and wasm checks pass; the port suite passes 193 of
+        201 (7 ignored as before). The one failure loads a fixture image
+        from a fixed Windows path. The IPC consumer test passes 3.
+      - Turnstone: main itself passes `cargo check` on macOS.
+      - Turnstone's library suite under load: 657 passed, 11 failed. Seven
+        of the failures pass on rerun (place lanes and workers under heavy
+        compile load). The other four fail identically on unchanged main
+        on macOS, so they predate this work and are macOS-specific: row
+        count by viewport, the two probe-clicked inspector tests, and
+        sky-surface time-zone text.
+      - Final gates on the published lock:
+        - `cargo_mode.py verify` passes: 1,283 packages, lock unchanged.
+        - `cargo check --workspace --all-targets --locked` passes.
+        - The library suite passes 660 with 9 ignored. Of its 8 failures,
+          the four place tests pass alone, and the other four are the
+          macOS failures above.
+        - So the gates are 664 passing and 4 macOS-only failures that
+          predate this change.
+        - The Windows run and Linux CI are Mark's, as for S0.
+    - Next, still under SC: pass B (web surfaces onto `PeltContent`'s
+      surface lane, with the browser lane); controller-level input instead
+      of the legacy pointer path; then step 5 (S8).
+  - Checked for the browser sidecar scope: `pelt-core` and `page-load`
+    compile for `wasm32-unknown-unknown`, with a dependency cone of 80
+    packages. That proves the dependency boundary only, not browser
+    usability.
     - Found in passing: `node_uses_web_surface` (`src/app/node_arms.rs:1701`)
       matches only Weld, so Scry and Servo nodes take the document Back and
       Reload path, and Stop does nothing for them.
