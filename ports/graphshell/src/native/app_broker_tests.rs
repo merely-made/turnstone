@@ -505,3 +505,62 @@ async fn a_route_granted_while_serving_opens_for_the_next_connection() {
     client.close().await.unwrap();
     server.abort();
 }
+
+/// Persisted denials override default access, and an ambient route is refused
+/// without opt-in. Neither case may reach even the Graphshell challenge.
+#[tokio::test]
+async fn denials_and_ambient_refusals_precede_product_construction() {
+    use crate::native::endpoint_catalog::ResidentEndpointRoute;
+    for (app, route, denied) in [
+        ("turnstone", "mere/divination", true),
+        ("turnstone", "ambient/mere/divination", false),
+        ("unknown", "mere/divination", false),
+    ] {
+        let opened = Arc::new(AtomicUsize::new(0));
+        let counter = opened.clone();
+        let mut catalog = ResidentEndpointCatalog::new();
+        catalog
+            .register_erased(route, "V4 refusal probe", move |_| {
+                counter.fetch_add(1, Ordering::SeqCst);
+                Err("factory must not open".into())
+            })
+            .unwrap();
+        let mut allowed = AllowedAppRoutes::default();
+        allowed.grant_default(
+            ResidentEndpointRoute::new("mere/divination", std::time::Duration::from_millis(50))
+                .unwrap(),
+        );
+        if denied {
+            allowed.set_denied(AppId::new(app), AppRouteId::new(route).unwrap(), true);
+        }
+        let (host, client) = tokio::io::duplex(16 * 1024);
+        let (mut reader, mut writer) = tokio::io::split(host);
+        let (mut client_reader, mut client_writer) = tokio::io::split(client);
+        write_native_message_async(
+            &mut client_writer,
+            &AppHello::for_route(AppId::new(app), AppRouteId::new(route).unwrap()),
+        )
+        .await
+        .unwrap();
+        let result = serve_app_connection_for_tests(
+            &mut reader,
+            &mut writer,
+            resident_host(),
+            &allowed,
+            60_000,
+            None,
+            AppEndpointCatalog::new(catalog),
+        )
+        .await;
+        assert!(result.is_err());
+        assert_eq!(opened.load(Ordering::SeqCst), 0);
+        drop(reader);
+        drop(writer);
+        assert!(
+            read_native_message_async::<_, AppHostMessage>(&mut client_reader)
+                .await
+                .unwrap()
+                .is_none()
+        );
+    }
+}

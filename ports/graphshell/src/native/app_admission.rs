@@ -27,7 +27,7 @@
 //! one off. Treating a self-declared name as proof would be theatre, and it
 //! is not treated as such.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::sync::{Arc, RwLock};
 use std::time::Duration;
 
@@ -132,6 +132,8 @@ pub enum AppAdmissionError {
     NotAllowed(AppId),
     /// The application is known, but this route is not in its host grant.
     RouteNotGranted { app: AppId, route: AppRouteId },
+    /// An explicit owner denial takes precedence over every route grant.
+    RouteDenied { app: AppId, route: AppRouteId },
     /// The hello named no application.
     Unnamed,
     /// The route key was empty or ambiguous.
@@ -154,6 +156,9 @@ impl std::fmt::Display for AppAdmissionError {
             },
             Self::RouteNotGranted { app, route } => {
                 write!(f, "{app} is not granted the resident route {route}")
+            },
+            Self::RouteDenied { app, route } => {
+                write!(f, "{app} is explicitly denied the resident route {route}")
             },
             Self::Unnamed => f.write_str("the first-party hello named no application"),
             Self::InvalidRoute(route) => write!(
@@ -243,6 +248,8 @@ pub struct AppRequest {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct AllowedAppRoutes {
     routes: BTreeMap<AppId, BTreeMap<AppRouteId, ResidentEndpointRoute>>,
+    defaults: BTreeMap<AppRouteId, ResidentEndpointRoute>,
+    denied: BTreeSet<(AppId, AppRouteId)>,
 }
 
 impl Default for AllowedAppRoutes {
@@ -278,6 +285,8 @@ impl AllowedAppRoutes {
     pub fn none() -> Self {
         Self {
             routes: BTreeMap::new(),
+            defaults: BTreeMap::new(),
+            denied: BTreeSet::new(),
         }
     }
 
@@ -286,8 +295,18 @@ impl AllowedAppRoutes {
         let Some(routes) = self.routes.get(&request.app) else {
             return Err(AppAdmissionError::NotAllowed(request.app.clone()));
         };
+        if self
+            .denied
+            .contains(&(request.app.clone(), request.route.clone()))
+        {
+            return Err(AppAdmissionError::RouteDenied {
+                app: request.app.clone(),
+                route: request.route.clone(),
+            });
+        }
         routes
             .get(&request.route)
+            .or_else(|| self.defaults.get(&request.route))
             .cloned()
             .ok_or_else(|| AppAdmissionError::RouteNotGranted {
                 app: request.app.clone(),
@@ -295,11 +314,48 @@ impl AllowedAppRoutes {
             })
     }
 
+    /// Make one route available to every application the owner already
+    /// admits. This never turns an unknown app label into an admitted app.
+    pub fn grant_default(&mut self, route: ResidentEndpointRoute) {
+        self.defaults
+            .insert(AppRouteId::new(route.id()).expect("valid route"), route);
+    }
+
+    /// Whether the owner has admitted this application independently of
+    /// route defaults and recorded denials.
+    pub fn is_admitted(&self, app: &AppId) -> bool {
+        self.routes.contains_key(app)
+    }
+
+    /// Set or clear an owner denial without altering route grants.
+    pub fn set_denied(&mut self, app: AppId, route: AppRouteId, denied: bool) {
+        if denied {
+            self.denied.insert((app, route));
+        } else {
+            self.denied.remove(&(app, route));
+        }
+    }
+
+    /// Remove the route grant without removing the application's admission.
+    pub fn revoke(&mut self, app: &AppId, route: &AppRouteId) {
+        if let Some(routes) = self.routes.get_mut(app) {
+            routes.remove(route);
+        }
+    }
+
     /// The application and route pairs admitted, for reporting.
     pub fn iter(&self) -> impl Iterator<Item = (&AppId, &AppRouteId)> {
-        self.routes
-            .iter()
-            .flat_map(|(app, routes)| routes.keys().map(move |route| (app, route)))
+        self.routes.iter().flat_map(move |(app, routes)| {
+            routes
+                .keys()
+                .chain(
+                    self.defaults
+                        .keys()
+                        .filter(move |route| !routes.contains_key(*route)),
+                )
+                .filter(move |route| !self.denied.contains(&(app.clone(), (*route).clone())))
+                .map(move |route| (app, route))
+        })
     }
 }
 
@@ -334,6 +390,16 @@ impl AppRouteGrants {
             .expect("app grants are never poisoned")
             .clone()
     }
+
+    /// Publish an atomic policy update; a connection sees either side.
+    pub fn update(&self, change: impl FnOnce(&mut AllowedAppRoutes)) {
+        change(&mut self.routes.write().expect("app grants are never poisoned"));
+    }
+
+    /// Make a route available to all already admitted applications.
+    pub fn grant_default(&self, route: ResidentEndpointRoute) {
+        self.update(|routes| routes.grant_default(route));
+    }
 }
 
 /// The per-user endpoint first-party applications connect to.
@@ -344,8 +410,8 @@ pub fn configured_app_endpoint() -> String {
         .unwrap_or_else(default_app_endpoint)
 }
 
-/// The platform default, ignoring the environment override. Only the
-/// installed resident may bind it.
+/// The platform default, ignoring the environment override. Only the device
+/// resident (installed or embedded) may bind it.
 pub fn default_app_endpoint() -> String {
     #[cfg(windows)]
     {
