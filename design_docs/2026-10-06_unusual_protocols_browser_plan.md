@@ -1658,6 +1658,37 @@ the same record once this lane can push to Mere (U15).
         lock unchanged.
       - The library suite: 675 passing (five place tests needed a rerun
         alone), and the four macOS-only failures recorded for step 4.
+  - Request for the next coordinated repin past Mere `18404a4c`: the
+    Scenograph lane's C2 brief. Mark ruled SE45 to SE50 in the Scenograph
+    editor plan:
+    - One store for the menu's choices. Turnstone's `ViewIntentV1` keeps
+      `cambium::CommandChoices` (same JSON field names, so stored sidecars
+      read back unchanged) in place of `CommandMenuV1`.
+    - The `>` lane's in-progress state (query, selected row, expanded) reads
+      through `cambium::MenuSession`.
+    - `CommandSet::menu` now returns `Vec<&Command>`; rows draw with
+      `CommandItem::from`.
+    - The shared verbs Turnstone offers register under catalogue ids,
+      through `catalogue::command(id)`, so their labels follow the
+      catalogue: nav:back/forward/reload/stop, view:fit, physics:toggle,
+      node:delete, session:save, pane:settings/trail/workbench,
+      palette:open, node:viewer_auto, and workbench:split_beside,
+      split_out and stack_onto if offered.
+    - Choices stored under the old label ids fall away; there are no
+      alias tables (SE50).
+    - Labels change ("Fit view" becomes "Fit to view", "Play/pause
+      physics" becomes "Play or pause physics"). Turnstone resolves those
+      by label in `scenarios/available_actions.scn`,
+      `proof3_physics_capability.scn` and `proof3_recency.scn`, and in
+      `src/action.rs`, `app/palette.rs` (`DEFAULT_KEPT_COMMANDS`),
+      `app/tests.rs`, `session.rs`, `remote_projection.rs` and
+      `shell/drive.rs`.
+    - Labels will be revised again (SE51). Registering through the
+      catalogue absorbs that without code.
+    - Done when: the sidecar stores `CommandChoices`, the shared verbs use
+      catalogue ids, the lane reads through `MenuSession`, the command-menu
+      tests pass, and a headed check opens the palette, searches, keeps and
+      drops a command, and reloads with it kept.
   - Checked for the browser sidecar scope: `pelt-core` and `page-load`
     compile for `wasm32-unknown-unknown`, with a dependency cone of 80
     packages. That proves the dependency boundary only, not browser
