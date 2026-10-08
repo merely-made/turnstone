@@ -43,6 +43,53 @@ pub const RESTORE_SESSION_INTENT: &str = "mere.sessions.restore";
 /// Schema of [`SessionsActionV1`].
 pub const SESSIONS_SCHEMA: &str = "mere.sessions/v1";
 
+/// The reservoir archive projection and source vocabulary.
+pub const MERE_ARCHIVE: &str = "djinn.mere/v1/archive";
+pub const ARCHIVE_SOURCE: &str = "mere.archive";
+pub const SAVE_CODICIL_INTENT: &str = "mere.archive.save";
+pub const OPEN_CODICIL_INTENT: &str = "mere.archive.open";
+pub const COMPOSE_CODICILS_INTENT: &str = "mere.archive.compose";
+pub const ARCHIVE_SCHEMA: &str = "mere.archive/v1";
+
+/// Archive operations name ids, never positions in the current projection.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ArchiveActionV1 {
+    pub schema: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub session: Option<SessionId>,
+    #[serde(default)]
+    pub codicils: Vec<String>,
+}
+
+impl ArchiveActionV1 {
+    pub fn save(session: SessionId) -> Self {
+        Self {
+            schema: ARCHIVE_SCHEMA.into(),
+            session: Some(session),
+            codicils: Vec::new(),
+        }
+    }
+    pub fn on(codicils: Vec<String>) -> Self {
+        Self {
+            schema: ARCHIVE_SCHEMA.into(),
+            session: None,
+            codicils,
+        }
+    }
+}
+
+/// The shared advertised archive actions used by reservoir endpoints.
+pub fn archive_action(intent: &str, label: &str) -> AdvertisedAction {
+    action(
+        intent,
+        label,
+        "Keep an immutable archive, browse a thaw, or compose source codicils.",
+        ARCHIVE_SCHEMA,
+        IntentEffect::DomainTruth,
+    )
+}
+
 /// The scene source kind of the session item.
 pub const SESSION_ITEM_SOURCE: &str = "mere.session";
 
@@ -214,7 +261,11 @@ pub fn card<B: Backend>(session: &GraphSession<B>) -> PortableCardV1 {
                 value: session.changes().len().to_string(),
             },
         ],
-        badges: Vec::new(),
+        badges: if manifest.codicil_read_only {
+            vec!["Read-only thaw; editing forks".into()]
+        } else {
+            Vec::new()
+        },
         media: Vec::new(),
     }
 }

@@ -326,7 +326,30 @@ impl<B: Backend + Clone> MereHost<B> {
         handlers: HandlerRegistry,
         access_context: AccessContext,
     ) -> Result<Self, MereHostError> {
-        let graph_session = MereSessions::new(backend.clone()).open(id).await?;
+        Self::open_session_checked(
+            backend,
+            id,
+            selected_persona,
+            handlers,
+            access_context,
+            None,
+        )
+        .await
+    }
+
+    /// Open with product authority, checking before advancing durable projection state.
+    pub async fn open_session_checked(
+        backend: B,
+        id: SessionId,
+        selected_persona: SelectedPersonaRef,
+        handlers: HandlerRegistry,
+        access_context: AccessContext,
+        validator: Option<pandect::GraphValidator>,
+    ) -> Result<Self, MereHostError> {
+        let mut graph_session = MereSessions::new(backend.clone()).open(id).await?;
+        if let Some(validator) = validator {
+            graph_session = graph_session.with_validator(validator)?;
+        }
         let epoch = Self::advance_epoch(&JsonSlots::new(backend.clone()), 0).await?;
         Ok(Self::assemble(
             backend,
@@ -436,6 +459,15 @@ impl<B: Backend> MereHost<B> {
     /// rather than beginning empty or from the reference fixture.
     pub fn was_reopened(&self) -> bool {
         self.reopened
+    }
+
+    /// Compose the product's whole-graph authority into every session write path.
+    pub fn with_graph_validator(
+        mut self,
+        validator: pandect::GraphValidator,
+    ) -> Result<Self, MereHostError> {
+        self.graph_session = self.graph_session.with_validator(validator)?;
+        Ok(self)
     }
 
     /// The session truth lives in: its journal, changes and authors.
@@ -563,9 +595,9 @@ impl<B: Backend> MereHost<B> {
 
     /// Run `edit` on the graph as one journaled change by the selected
     /// persona, via the current channel.
-    fn edit_graph<R>(&mut self, edit: impl FnOnce(&mut Graph) -> R) -> R {
+    fn edit_graph<R>(&mut self, edit: impl FnOnce(&mut Graph) -> R) -> Result<R, MereHostError> {
         let author = self.author();
-        self.graph_session.edit_now(author, edit).0
+        Ok(self.graph_session.edit_now(author, edit)?.0)
     }
 
     /// Run `work` with its edits coming through `via`, such as a browser
@@ -593,7 +625,7 @@ impl<B: Backend> MereHost<B> {
                     value,
                 },
             )
-        });
+        })?;
         if matches!(
             result,
             mere::kernel::graph::apply::GraphDeltaResult::NodeMetadataUpdated(true)
@@ -603,10 +635,13 @@ impl<B: Backend> MereHost<B> {
         Ok(())
     }
 
-    pub(crate) fn mutate_product_graph<R>(&mut self, mutate: impl FnOnce(&mut Graph) -> R) -> R {
-        let result = self.edit_graph(mutate);
+    pub(crate) fn mutate_product_graph<R>(
+        &mut self,
+        mutate: impl FnOnce(&mut Graph) -> R,
+    ) -> Result<R, MereHostError> {
+        let result = self.edit_graph(mutate)?;
         self.projection_revision = self.projection_revision.wrapping_add(1);
-        result
+        Ok(result)
     }
 
     /// Apply edits in stable-id form as one change, such as an import's or an
@@ -679,7 +714,17 @@ impl<B: Backend> MereHost<B> {
     ) -> Result<(), MereHostError> {
         let key = ViewKey::new(via, view)?;
         let author = author_of(&self.selected_persona, via);
-        self.graph_session.set_view_now(author, key, state);
+        self.graph_session.set_view_now(author, key, state)?;
+        Ok(())
+    }
+
+    /// Record the codicil returned by the reservoir's owner under the admitted app.
+    pub async fn archive_receipt(&mut self, via: &str, id: String) -> Result<(), MereHostError> {
+        let id = pandect::graph_codicil::parse_codicil_id(&id)
+            .map_err(pandect::SessionError::Corrupt)?;
+        self.graph_session
+            .archived(author_of(&self.selected_persona, via), id)
+            .await?;
         Ok(())
     }
 
@@ -973,6 +1018,11 @@ impl<B: Backend> IntentSink for MereHost<B> {
     type Error = MereHostError;
 
     fn invoke(&mut self, intent: IntentInvocation) -> Result<IntentResult, Self::Error> {
+        if self.graph_session.manifest().codicil_read_only {
+            return Ok(IntentResult::Rejected {
+                reason: "read-only codicil thaw; fork before editing".into(),
+            });
+        }
         if intent.session != self.session() {
             return Err(MereHostError::WrongSession);
         }
@@ -1026,7 +1076,7 @@ impl<B: Backend> IntentSink for MereHost<B> {
             });
         }
         let context = self.access_context.clone();
-        self.edit_graph(|graph| record_access(graph, target, &context, &payload.handler))?;
+        self.edit_graph(|graph| record_access(graph, target, &context, &payload.handler))??;
         self.projection_revision = self.projection_revision.wrapping_add(1);
         Ok(IntentResult::Accepted)
     }

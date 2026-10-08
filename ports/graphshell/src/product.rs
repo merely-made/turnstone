@@ -593,7 +593,7 @@ impl<B: Backend> MereHost<B> {
                     },
                 );
             }
-        });
+        })?;
         Ok(id)
     }
 
@@ -618,7 +618,7 @@ impl<B: Backend> MereHost<B> {
                         .then_some(metadata.media_type.clone()),
                 },
             );
-        });
+        })?;
         self.set_facet(
             key,
             CONTENT_FACET,
@@ -689,7 +689,7 @@ impl<B: Backend> MereHost<B> {
                     },
                 );
             }
-        });
+        })?;
         Ok(())
     }
 
@@ -725,7 +725,7 @@ impl<B: Backend> MereHost<B> {
             .ok_or(ProductError::UnknownNode(to))?;
         self.mutate_product_graph(|graph| {
             assert_relation(graph, from, to, relation.assertion());
-        });
+        })?;
         Ok(())
     }
 
@@ -814,7 +814,7 @@ impl<B: Backend> MereHost<B> {
                     },
                 );
             })
-        });
+        })?;
         Ok(id)
     }
 
