@@ -1,0 +1,6 @@
+# Run as a second process against the library saved by workshop.scn.
+log Reopen an authored library in a fresh desktop process
+settle 3
+assert snap dirty == false
+assert snap name == Untitled theme
+capture reopened_process
