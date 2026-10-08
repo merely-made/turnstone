@@ -83,7 +83,7 @@ pub(crate) const KNOT_SHEET: &str = "\
                    border: 1px solid rgb(52, 62, 86); padding: 3px 10px; } \
     .knot-body { display: flex; } \
     .knot-editor-wrap { width: 70%; padding: 10px; } \
-    .knot-editor-wrap textarea, .knot-editor-wrap [role="textbox"][data-cambium-text-value] { color: rgb(218, 224, 236); \
+    .knot-editor-wrap textarea, .knot-editor-wrap [role=textbox][data-cambium-text-value] { color: rgb(218, 224, 236); \
                                  background-color: rgb(25, 30, 44); \
                                  font-size: 13px; white-space: pre-wrap; \
                                  padding: 10px; border: 1px solid rgb(52, 62, 86); } \
