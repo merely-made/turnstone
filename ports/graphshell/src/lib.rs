@@ -41,6 +41,8 @@ pub mod carrier;
 pub mod distillery_w1;
 #[cfg(feature = "web")]
 pub mod handlers;
+#[cfg(feature = "web")]
+pub mod host_dataset_view;
 #[cfg(all(feature = "native", not(target_arch = "wasm32")))]
 pub mod identity;
 #[cfg(all(feature = "native", not(target_arch = "wasm32")))]
