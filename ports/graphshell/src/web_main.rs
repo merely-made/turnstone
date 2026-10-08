@@ -175,6 +175,13 @@ struct BrowserHost {
     /// Where the session's changes stand; the frame pump stores what is
     /// pending (`web_session`, SE22).
     session_store: web_session::SessionStore,
+    /// The command context menu (track C1): the commands, the person's
+    /// choices, and the menu while it is open.
+    command_set: cambium::CommandSet,
+    command_choices: cambium::CommandChoices,
+    command_menu: Option<web_commands::OpenMenu>,
+    /// Where a scenario's `mark-camera` found the camera.
+    camera_mark: Option<(f32, f32)>,
     session_store_error: String,
     /// The scenario lane (`web_scenario`): a script in flight, the semantic
     /// events it asserts against, and a capture armed or landing.
@@ -1655,6 +1662,7 @@ fn update_semantics(host: &mut BrowserHost) -> Result<(), String> {
         host.action_draft_semantics_ready = true;
     }
     update_projection_editor_semantics(host)?;
+    web_commands::present_command_menu(host)?;
     set_text(
         "capture-attribution",
         &format!(
@@ -1738,6 +1746,11 @@ fn update_semantics(host: &mut BrowserHost) -> Result<(), String> {
         .map_err(|_| "could not expose session store state")?;
     body.set_attribute("data-session-store-error", &host.session_store_error)
         .map_err(|_| "could not expose session store error")?;
+    body.set_attribute(
+        "data-command-menu",
+        if host.command_menu_open() { "open" } else { "closed" },
+    )
+    .map_err(|_| "could not expose the command menu state")?;
     body.set_attribute("data-storage", &host.storage_status)
         .map_err(|_| "could not expose storage state")?;
     // A stable token beside the sentence, so a scenario checks a state rather
@@ -1885,6 +1898,7 @@ async fn run(root_element: Element) -> Result<(), String> {
     let mut chrome_text = TextSystem::new();
     chrome_text.register_font_bytes(include_bytes!("../web/GraphshellSans.ttf").to_vec());
     let chrome_scene = build_chrome_scene(initial_model, width, height, &mut chrome_text)?;
+    let command_choices = web_commands::stored_choices(&app.host);
     let state = Rc::new(RefCell::new(BrowserHost {
         app,
         remote: RemoteLink::Fixture(remote),
@@ -1940,6 +1954,10 @@ async fn run(root_element: Element) -> Result<(), String> {
         projection_editor_status: "Draft ready · unsaved".to_string(),
         projection_editor_save_count: 0,
         session_store: web_session::SessionStore::Stored,
+        command_set: web_commands::page_commands(),
+        command_choices,
+        command_menu: None,
+        camera_mark: None,
         session_store_error: String::new(),
         scenario: None,
         scenario_frames: 0,
