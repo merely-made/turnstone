@@ -55,6 +55,8 @@ pub mod live_endpoint;
 #[cfg(feature = "web")]
 pub mod local_edit;
 #[cfg(feature = "web")]
+pub mod local_intake;
+#[cfg(feature = "web")]
 pub mod mere_host;
 #[cfg(feature = "web")]
 mod mere_host_fixture;
