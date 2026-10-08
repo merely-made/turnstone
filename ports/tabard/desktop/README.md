@@ -3,10 +3,13 @@
 This thin native host mounts `tabard-workshop`'s shared Cambium surface and
 `WorkshopState` directly. It provides the window, keyboard and pointer routing,
 native text/IME integration, and Mesquite's scenario/capture lifecycle.
-The shared graph leaf is registered with the host's leaf map. The reader scene
-uses a texture producer and the host's existing render core/device, including
-its retained texture, resizing and library-reopen invalidation. Neither
-specimen creates another renderer or product model.
+The shared graph leaf is registered with the host's leaf map. Reader and
+isolated application-stylesheet scenes share the generic `ScenePreviewProducer`
+on the host's existing render core/device, including retained textures,
+distinct raster keys, resizing and library-reopen rebinding. The portable
+workshop retains the authoring state and document scenes. See the
+[workshop README](../README.md) for the controls, export semantics and remaining
+product boundaries.
 
 Run from the repository root:
 
@@ -26,12 +29,29 @@ cargo run -p tabard-desktop -- --library /tmp/tabard-workshop/themes.json
 The initial window is 1180 × 800 logical pixels. `TABARD_WIDTH` and
 `TABARD_HEIGHT` override its size. The workshop's Save and Reopen controls own
 the authored-file workflow; startup reports malformed or unreadable libraries.
+The last saved user-theme selection and preview mode are remembered in a
+separate file formed by appending `.workshop.json` to the selected library path.
+Experiments with another `--library` therefore have their own editor preferences.
+
+Import uses the host's existing native open-file chooser. Export uses a native
+save-path chooser and sends the captured artifact back to the shared state for
+publication and any replacement confirmation. `hooks_with_exporter` lets an
+embedding or acceptance host inject destination selection without replacing
+the writing or authoring logic. Ordinary window-close and application-close
+requests use the workshop's unsaved-work confirmation; a failed Save and close
+keeps the window visible. The host's focused-text seam covers the name, hex
+color and multiline CSS fields, and post-dispatch synchronization updates the
+shared draft.
 
 The windowless harness uses the same state, view, initialization, text seam and
-host options as the native window. Its native text seam is verified by editing
-the draft name through injected keyboard input and discarding that edit. A
+host options as the native window. Acceptance tests route injected native text
+to all three fields, return a real colliding theme file through `FileChooser`,
+write captured exports to real temporary files, preserve Undo across export,
+and exercise native/application close with invalid input and failed writes. A
 narrow-window test delivers a wheel gesture through the host's production
-scrolling path and checks that the specimens enter the visible body:
+scrolling path and checks that the specimens enter the visible body. These
+windowless tests verify routing and file behavior; they do not verify GPU pixels
+or a live platform screen-reader session:
 
 ```sh
 cargo test -p tabard-desktop
@@ -83,3 +103,10 @@ save a resource-preserving paint-list sidecar alongside each native PNG.
 
 Authored theme persistence belongs to `tabard-workshop`; this package selects
 the path and does not maintain a second theme model or registry.
+
+The standalone usability scenario, `scenarios/usability.scn`, starts with a fresh
+library and exercises RGB entry, an authored high-contrast dark default, exact
+CSS, save/reopen, clear/undo and a narrow layout. Then run
+`scenarios/usability_reopen.scn` against its saved library to check a second
+process. The [2026-10-08 receipts](receipts/2026-10-08_usable) retain the native
+images, complete receipts and importable sample definition.

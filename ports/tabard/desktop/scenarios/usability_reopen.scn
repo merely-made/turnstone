@@ -1,0 +1,9 @@
+# Fresh process against the library produced by usability.scn.
+log Usable authoring survives a fresh process
+settle 4
+assert snap mode == hc_dark
+assert snap primary == #2f7fff
+assert snap dirty == false
+click .application-canvas
+settle 4
+capture usable_fresh_process

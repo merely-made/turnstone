@@ -26,8 +26,8 @@ use cambium_genet_winit_host::{
 use layout_dom_api::{LayoutDom, LocalName, Namespace};
 use mesquite::{CaptureRecord, LaneConfig};
 use tabard_workshop::{
-    GRAPH_LEAF_KEY, READER_LEAF_KEY, WorkshopState, WorkshopView, workshop_stylesheet,
-    workshop_view,
+    ExportArtifact, GRAPH_LEAF_KEY, READER_LEAF_KEY, STYLESHEET_LEAF_KEY, StylesheetSpecimen,
+    WorkshopState, WorkshopView, workshop_stylesheet, workshop_view,
 };
 use taproot::ProbeSnapshot;
 
@@ -116,7 +116,29 @@ pub fn host_options() -> HostOptions {
 }
 
 pub fn hooks() -> HostHooks<WorkshopState, Logic, WorkshopView> {
+    hooks_with_exporter(|artifact| {
+        let extension = if artifact.format == tabard_workshop::ExportFormat::Css {
+            "css"
+        } else {
+            "json"
+        };
+        cambium_genet_winit_host::choose_save_path(
+            "Export theme",
+            &artifact.suggested_name,
+            &[extension],
+        )
+    })
+}
+
+/// Embedding/test hosts provide destination selection; the shared state owns
+/// validation and writing, including explicit collision replacement.
+pub fn hooks_with_exporter(
+    mut destination: impl FnMut(&ExportArtifact) -> Option<PathBuf> + 'static,
+) -> HostHooks<WorkshopState, Logic, WorkshopView> {
     let mut reader_producer: Option<Rc<RefCell<reader::ReaderProducer>>> = None;
+    let mut stylesheet_producer: Option<
+        Rc<RefCell<reader::ScenePreviewProducer<StylesheetSpecimen>>>,
+    > = None;
     HostHooks {
         frame: Box::new(move |ctx| {
             ctx.leaves
@@ -125,6 +147,7 @@ pub fn hooks() -> HostHooks<WorkshopState, Logic, WorkshopView> {
             let producer = reader_producer.get_or_insert_with(|| {
                 Rc::new(RefCell::new(reader::ReaderProducer::new(
                     current_reader.clone(),
+                    reader::READER_RASTER_KEY,
                 )))
             });
             producer.borrow_mut().set_reader(current_reader);
@@ -133,9 +156,43 @@ pub fn hooks() -> HostHooks<WorkshopState, Logic, WorkshopView> {
                     .register(READER_LEAF_KEY, producer.clone(), &[])
                     .expect("reader uses its own bounded producer key");
             }
+            let current_stylesheet = ctx.runner.state().stylesheet_preview();
+            let producer = stylesheet_producer.get_or_insert_with(|| {
+                Rc::new(RefCell::new(reader::ScenePreviewProducer::new(
+                    current_stylesheet.clone(),
+                    0x7461_6261_7264_6373,
+                )))
+            });
+            producer.borrow_mut().set_preview(current_stylesheet);
+            if !ctx.producers.contains(STYLESHEET_LEAF_KEY) {
+                ctx.producers
+                    .register(STYLESHEET_LEAF_KEY, producer.clone(), &[])
+                    .expect("stylesheet uses its own bounded producer key");
+            }
             false
         }),
-        after_dispatch: Box::new(|ctx| ctx.runner.update(WorkshopState::sync_controls)),
+        after_dispatch: Box::new(move |ctx| {
+            ctx.runner.update(WorkshopState::sync_controls);
+            let mut export = None;
+            ctx.runner.update(|state| export = state.take_export());
+            if let Some(artifact) = export {
+                let path = destination(&artifact);
+                ctx.runner
+                    .update(|state| state.complete_export(artifact, path));
+            }
+            if ctx.runner.state().exit_requested() {
+                *ctx.close = true;
+            }
+        }),
+        close_request: Box::new(|ctx, _| {
+            let mut allow = false;
+            ctx.runner.update(|state| allow = state.request_close());
+            if allow {
+                cambium_genet_winit_host::CloseDisposition::Exit
+            } else {
+                cambium_genet_winit_host::CloseDisposition::KeepVisible
+            }
+        }),
         focused_text: Box::new(|runner| {
             let node = runner.focus()?;
             let dom = runner.dom();
@@ -323,22 +380,24 @@ pub fn run(library: PathBuf) -> Result<(), Box<dyn std::error::Error>> {
     let lane = Rc::new(RefCell::new(lane));
     let frame_lane = lane.clone();
     let close_lane = lane.clone();
+    let product_hooks = hooks();
+    let mut product_close = product_hooks.close_request;
     let hooks = HostHooks {
         after_frame: Box::new(move |ctx| {
             if let Some(lane) = frame_lane.borrow_mut().as_mut() {
                 lane.after_frame(ctx);
             }
         }),
-        close_request: Box::new(move |_, _| {
+        close_request: Box::new(move |ctx, request| {
             if let Some(lane) = close_lane.borrow_mut().as_mut()
                 && !lane.finished()
             {
                 lane.request_close();
                 return CloseDisposition::KeepVisible;
             }
-            CloseDisposition::Exit
+            product_close(ctx, request)
         }),
-        ..hooks()
+        ..product_hooks
     };
     cambium_genet_winit_host::run(host_options(), move |_, _, _| initialize(state), hooks)?;
     if scripted && completion.get() != Some(true) {

@@ -1,0 +1,55 @@
+# Fresh separate --library. All mutations travel through visible controls and
+# the retained text/key route; no direct product-state setters.
+log Usable authoring: hex, authored default, exact CSS, save and reopen
+settle 4
+assert snap mode == light
+remember original
+capture usable_initial
+
+key tab-until data-field=seed-hex
+input-text #2F7FFF
+click role:button @data-action=apply-hex
+settle 3
+assert snap primary == #2f7fff
+differs original primary
+
+click role:button @data-mode=hc_dark
+click role:button @data-action=default-mode
+click role:button @data-action=toggle-stylesheet
+key tab-until data-field=mode-sheet
+input-text :root{--tabard-color-bg:#142238;--tabard-color-surface:#1B2E49;--tabard-color-surface-2:#243D5E;--tabard-color-text:#EAF2FF;--tabard-color-text-header:#9CD5FF;--tabard-color-text-dim:#C0D5F2;--tabard-color-primary:#2F7FFF;--tabard-color-on-primary:white;--tabard-syntax-link:#9CD5FF;--tabard-syntax-keyword:#9CD5FF;--tabard-syntax-string:#B0DFC1;--tabard-syntax-number:#F5CE7A;--tabard-syntax-emphasis:#EAF2FF;}
+click role:button @data-action=apply-stylesheet
+settle 4
+click .application-canvas
+settle 3
+capture authored_stylesheet
+
+click role:button @data-action=save
+settle 3
+assert snap dirty == false
+remember authored
+click role:button @data-action=reopen
+settle 4
+assert snap dirty == false
+assert snap mode == hc_dark
+same authored primary name theme
+click .application-canvas
+settle 3
+capture usable_reopened
+
+click role:button @data-action=toggle-stylesheet
+click role:button @data-action=clear-stylesheet
+settle 3
+assert snap dirty == true
+click .application-canvas
+settle 3
+capture derived_restored
+click role:button @data-action=undo
+settle 3
+assert snap dirty == false
+
+resize 640 780
+settle 4
+click .application-canvas
+settle 3
+capture usable_narrow

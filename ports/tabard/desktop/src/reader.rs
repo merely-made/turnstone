@@ -4,7 +4,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // SPDX-License-Identifier: MPL-2.0
 
-//! The real reader scene on the host's existing renderer and device.
+//! Portable preview scenes on the host's existing renderer and device.
 
 use std::{cell::RefCell, rc::Rc};
 
@@ -13,12 +13,15 @@ use cambium_genet_winit_host::{
 };
 use cambium_rootstock::{ProducerRole, ProducerSemantics};
 use netrender::ColorLoad;
-use tabard_workshop::ReaderSpecimen;
+use tabard_workshop::{PreviewScene, ReaderSpecimen};
 
-const READER_RASTER_KEY: u64 = 0x7461_6261_7264_7264;
+pub const READER_RASTER_KEY: u64 = 0x7461_6261_7264_7264;
 
-pub struct ReaderProducer {
-    reader: Rc<RefCell<ReaderSpecimen>>,
+pub type ReaderProducer = ScenePreviewProducer<ReaderSpecimen>;
+
+pub struct ScenePreviewProducer<T: PreviewScene> {
+    preview: Rc<RefCell<T>>,
+    raster_key: u64,
     texture: Option<wgpu::Texture>,
     physical_size: [u32; 2],
     logical_size: (u32, u32),
@@ -27,10 +30,11 @@ pub struct ReaderProducer {
     generation: u64,
 }
 
-impl ReaderProducer {
-    pub fn new(reader: Rc<RefCell<ReaderSpecimen>>) -> Self {
+impl<T: PreviewScene> ScenePreviewProducer<T> {
+    pub fn new(preview: Rc<RefCell<T>>, raster_key: u64) -> Self {
         Self {
-            reader,
+            preview,
+            raster_key,
             texture: None,
             physical_size: [0, 0],
             logical_size: (0, 0),
@@ -41,38 +45,38 @@ impl ReaderProducer {
     }
 
     /// Reopening the library replaces the workshop state. Bind its new
-    /// appearance without retaining pixels from the old reader instance.
-    pub fn set_reader(&mut self, reader: Rc<RefCell<ReaderSpecimen>>) -> bool {
-        if Rc::ptr_eq(&self.reader, &reader) {
+    /// appearance without retaining pixels from the old preview instance.
+    pub fn set_preview(&mut self, preview: Rc<RefCell<T>>) -> bool {
+        if Rc::ptr_eq(&self.preview, &preview) {
             return false;
         }
-        self.reader = reader;
+        self.preview = preview;
         self.revision = 0;
         self.texture = None;
         true
     }
 }
 
-impl TextureProducer for ReaderProducer {
+impl<T: PreviewScene> TextureProducer for ScenePreviewProducer<T> {
     fn render(&mut self, cx: &ProducerContext<'_>) -> Option<ProducedTexture> {
         let logical_size = (
             cx.frame.logical_size.0.round().max(1.0) as u32,
             cx.frame.logical_size.1.round().max(1.0) as u32,
         );
-        let mut reader = self.reader.borrow_mut();
+        let mut preview = self.preview.borrow_mut();
         if !cx.frame.needs_frame
             && self.texture.is_some()
-            && self.revision == reader.revision()
+            && self.revision == preview.revision()
             && self.physical_size == cx.frame.physical_size
             && self.logical_size == logical_size
             && self.layout_scale == cx.frame.layout_scale
         {
             return None;
         }
-        let scene = reader.frame(logical_size.0, logical_size.1);
+        let scene = preview.frame(logical_size.0, logical_size.1);
         let [width, height] = cx.frame.physical_size;
         let (texture, view) = cx.core.rasterize_scaled_for(
-            READER_RASTER_KEY,
+            self.raster_key,
             &scene,
             width,
             height,
@@ -83,11 +87,11 @@ impl TextureProducer for ReaderProducer {
         self.physical_size = cx.frame.physical_size;
         self.logical_size = logical_size;
         self.layout_scale = cx.frame.layout_scale;
-        self.revision = reader.revision();
+        self.revision = preview.revision();
         self.generation = self
             .generation
             .checked_add(1)
-            .expect("reader generation exhausted");
+            .expect("preview generation exhausted");
         Some(ProducedTexture {
             view,
             generation: self.generation,
@@ -103,8 +107,14 @@ impl TextureProducer for ReaderProducer {
     fn semantics(&mut self) -> Option<ProducerSemantics> {
         Some(ProducerSemantics {
             role: Some(ProducerRole::Image),
-            name: Some(self.reader.borrow().accessible_name().to_owned()),
+            name: Some(self.preview.borrow().accessible_name().to_owned()),
             children: Vec::new(),
         })
+    }
+}
+
+impl ScenePreviewProducer<ReaderSpecimen> {
+    pub fn set_reader(&mut self, reader: Rc<RefCell<ReaderSpecimen>>) -> bool {
+        self.set_preview(reader)
     }
 }
