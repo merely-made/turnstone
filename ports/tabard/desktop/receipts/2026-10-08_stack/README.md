@@ -61,16 +61,23 @@ A fresh empty-library control fails the same way
 state checks pass, and the saved authored library remains unchanged.
 
 In these runs wgpu surface acquisition repeatedly returns `Occluded` before
-scene rasterization. The display was awake; the evidence does not isolate an
+drawable acquisition/presentation. The display was awake; the evidence does not isolate an
 OS/session issue from intermittent AppFrame startup. The prior five-capture
 pass establishes that this configuration can render, not that fresh-process
 presentation is reliable in the current session.
 
-The native host calls `AfterFrame` even after unsuccessful acquisition, and
-Mesquite spends its 120-attempt capture grace on those attempts. A shared-host
-follow-up should distinguish successful presentation identities from redraw
-attempts and bound persistent occlusion by elapsed time. This change does not
-modify that lifecycle or claim to resolve it.
+The shared host now distinguishes successful presentation identities from
+redraw attempts. Mesquite pauses native scenario progress, settling and capture
+grace while acquisition is unsuccessful, polls asynchronous readback on every
+turn, and uses a separate ten-second continuous presentation deadline. The
+subsequent fresh, saved and native-state diagnostic runs record zero
+presentations and zero captures; their complete failed receipts, structured
+JSON projections, concise logs and owned-window findings are preserved in
+[presentation_wait](presentation_wait/README.md). macOS reports an inactive
+application and an occlusion state without the Visible bit despite valid,
+visible window geometry on the active Space. A one-time focus experiment was
+ineffective and removed. This fixes receipt/progression accounting; reliable
+fresh-process native presentation remains unverified.
 
 Windows/Linux native frames, Windows Snap interaction, native chooser panels
 and a live screen-reader session remain unverified. Their portable/native

@@ -1,0 +1,17 @@
+{
+  "schema": 1,
+  "source_format": "Mesquite text receipt",
+  "source_receipt": "saved-presentation.done",
+  "kind": "tabard-native-presentation-wait",
+  "case": "saved",
+  "ok": false,
+  "frames": 0,
+  "redraws": 201,
+  "unpresented_redraws": 201,
+  "captures": [],
+  "errors": [
+    "native presentation stalled for 10000 ms (201 redraws, 0 presented frames)"
+  ],
+  "capture_guard": "independent continuous native presentation deadline",
+  "deadline_ms": 10000
+}
