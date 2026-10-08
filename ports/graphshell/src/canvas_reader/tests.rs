@@ -393,7 +393,7 @@ fn the_clients_tree_lists_the_boards_drag_and_pin_through_the_local_route() {
     board.sync(
         app.client.mounted(&session),
         revision,
-        PhysicsChoice::default(),
+        Some(&mere::canvas::PhysicsChoice::default().into_spec()),
         Speed::REAL_TIME,
     );
     let profile = CapabilityProfile::new([

@@ -108,7 +108,7 @@ impl BrowserHost {
         (
             self.product_status.clone(),
             self.layout_id.clone(),
-            self.canvas.physics_law().label().to_string(),
+            PhysicsChoice::live(&self.canvas).law.label().to_string(),
             self.canvas.physics_paused(),
         )
     }
@@ -650,16 +650,14 @@ pub(super) fn update_product_semantics(
         host.layout_stats_stale = false;
     }
     let stats = host.layout_stats;
+    // The flat view of what the canvas runs (dynamics grammar plan, F162).
+    let live = PhysicsChoice::live(&host.canvas);
     let body = root()?;
     for (name, value) in [
-        (
-            "data-physics-law",
-            host.canvas.physics_law().id().to_string(),
-        ),
+        ("data-physics-law", live.law.id().to_string()),
         (
             "data-physics-overlays",
-            host.canvas
-                .physics_overlays()
+            live.overlays
                 .iter()
                 .map(|overlay| overlay.id())
                 .collect::<Vec<_>>()
@@ -718,22 +716,10 @@ pub(super) fn update_product_semantics(
             "data-speed-note",
             crate::web_speed::reached(&host.canvas).unwrap_or_default(),
         ),
-        (
-            "data-physics-kind-source",
-            host.canvas.physics_kind_source().id().to_string(),
-        ),
-        (
-            "data-physics-group-source",
-            host.canvas.physics_group_source().id().to_string(),
-        ),
-        (
-            "data-physics-mass-source",
-            host.canvas.physics_mass_source().id().to_string(),
-        ),
-        (
-            "data-physics-depth-source",
-            host.canvas.physics_depth_source().id().to_string(),
-        ),
+        ("data-physics-kind-source", live.kind.id().to_string()),
+        ("data-physics-group-source", live.groups.id().to_string()),
+        ("data-physics-mass-source", live.mass.id().to_string()),
+        ("data-physics-depth-source", live.depth.id().to_string()),
         // What the law slot runs, and the schedule's stage under way: what
         // the scene receipts assert after an open (dynamics grammar plan,
         // G4b1, F161).
@@ -1039,25 +1025,17 @@ fn ensure_physics_controls(host: &BrowserHost) -> Result<(), String> {
 /// checked overlays, the three sources, and the profile that names the pair
 /// (the placeholder when none does).
 fn sync_physics_controls(host: &BrowserHost) -> Result<(), String> {
-    set_select_value("physics-select", host.canvas.physics_law().id())?;
+    let live = PhysicsChoice::live(&host.canvas);
+    set_select_value("physics-select", live.law.id())?;
     for overlay in PhysicsOverlay::ALL {
         element_as::<HtmlInputElement>(&format!("overlay-{}", overlay.id()))?
-            .set_checked(host.canvas.physics_overlays().contains(&overlay));
+            .set_checked(live.overlays.contains(&overlay));
     }
-    set_select_value("kind-source-select", host.canvas.physics_kind_source().id())?;
-    set_select_value(
-        "group-source-select",
-        host.canvas.physics_group_source().id(),
-    )?;
-    set_select_value("mass-source-select", host.canvas.physics_mass_source().id())?;
-    set_select_value(
-        "depth-source-select",
-        host.canvas.physics_depth_source().id(),
-    )?;
-    set_select_value(
-        "profile-select",
-        host.canvas.physics_profile_id().unwrap_or(""),
-    )?;
+    set_select_value("kind-source-select", live.kind.id())?;
+    set_select_value("group-source-select", live.groups.id())?;
+    set_select_value("mass-source-select", live.mass.id())?;
+    set_select_value("depth-source-select", live.depth.id())?;
+    set_select_value("profile-select", live.profile_id().unwrap_or(""))?;
     set_select_value("role-select", host.canvas.arrangement_roles().default.id())?;
     sync_overlay_availability()
 }

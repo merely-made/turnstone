@@ -88,7 +88,7 @@ impl PhysicsPanel {
     /// Set every physics control to the canvas's live choice, and the profile
     /// to the one naming the pair, or custom.
     pub(super) fn sync(&mut self, canvas: &Canvas) {
-        let live = canvas.physics_choice();
+        let live = PhysicsChoice::live(canvas);
         self.role.selected = index_of(Role::ALL, canvas.arrangement_roles().default);
         self.law.selected = index_of(PhysicsLaw::ALL, live.law);
         self.kind.selected = index_of(PhysicsKindSource::ALL, live.kind);
@@ -98,8 +98,8 @@ impl PhysicsPanel {
         for (checked, overlay) in self.overlays.iter_mut().zip(PhysicsOverlay::ALL) {
             *checked = live.overlays.contains(&overlay);
         }
-        self.profile.selected = canvas
-            .physics_profile_id()
+        self.profile.selected = live
+            .profile_id()
             .and_then(|id| CANVAS_PHYSICS_PROFILES.iter().position(|p| p.id == id))
             .map_or(0, |index| index + 1);
     }

@@ -154,16 +154,16 @@ impl TreeRemote {
         })
     }
 
-    /// Mirror the viewer's `choice` and `speed` onto the board and reconcile
+    /// Mirror the viewer's live stage and `speed` onto the board and reconcile
     /// it to the scene.
     pub(super) fn sync_board(
         &mut self,
-        choice: mere::canvas::PhysicsChoice,
+        stage: Option<mere::canvas::dynamics_spec::DynamicsSpec>,
         speed: mere::canvas::Speed,
     ) {
         let revision = self.revision();
         let mounted = self.live.as_ref().and_then(|live| live.session.mounted());
-        self.board.sync(mounted, revision, choice, speed);
+        self.board.sync(mounted, revision, stage.as_ref(), speed);
     }
 }
 

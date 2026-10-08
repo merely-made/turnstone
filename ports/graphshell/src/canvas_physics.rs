@@ -39,7 +39,9 @@ pub fn arrangement_choices() -> impl Iterator<Item = (&'static str, &'static str
 
 /// The live profile id, or [`CUSTOM_PROFILE`].
 pub fn profile_id(canvas: &Canvas) -> &'static str {
-    canvas.physics_profile_id().unwrap_or(CUSTOM_PROFILE)
+    PhysicsChoice::live(canvas)
+        .profile_id()
+        .unwrap_or(CUSTOM_PROFILE)
 }
 
 /// The overlays a form has ticked, in catalog order.
@@ -50,20 +52,32 @@ pub fn ticked_overlays(ticked: impl Fn(PhysicsOverlay) -> bool) -> Vec<PhysicsOv
         .collect()
 }
 
-/// Apply physics: sources, overlays and law in one rebuild, and the camera
-/// follows the layout while it plays (ruled 2026-10-03, "Follow while
-/// playing"). Returns the status, with the law's reason when it refused the
-/// overlays.
+/// Apply physics: the picked law, overlays and sources written into the
+/// canvas's spec and set as one change (dynamics grammar plan, F162), and the
+/// camera follows the layout while it plays (ruled 2026-10-03, "Follow while
+/// playing"). Overlays the law refuses are left out, and the status gives
+/// the law's reason.
 pub fn apply_physics(canvas: &mut Canvas, choice: &PhysicsChoice) -> String {
-    let refused = canvas.set_physics_choice(choice).err();
+    let (choice, refused) = choice.clone().admitted();
+    let applied = canvas
+        .dynamics_spec()
+        .map_err(|error| error.to_string())
+        .and_then(|mut spec| {
+            choice.write_into(&mut spec);
+            canvas
+                .set_dynamics_spec(&spec)
+                .map(|_| ())
+                .map_err(|error| error.to_string())
+        });
     canvas.set_view_follow(true);
     let status = with_overlays(
-        format!("Physics set to {}", canvas.physics_law().label()),
+        format!("Physics set to {}", PhysicsChoice::live(canvas).law.label()),
         canvas,
     );
-    match refused {
-        Some(refusal) => format!("{status} · {}", refusal.reason),
-        None => status,
+    match (applied, refused) {
+        (Err(error), _) => format!("{status} · {error}"),
+        (Ok(()), Some(refusal)) => format!("{status} · {}", refusal.reason),
+        (Ok(()), None) => status,
     }
 }
 
@@ -72,12 +86,17 @@ pub fn apply_profile(canvas: &mut Canvas, id: &str) -> Result<String, String> {
     if id.is_empty() || id == CUSTOM_PROFILE {
         return Err("choose a profile first".to_string());
     }
-    if !canvas.apply_physics_profile(id) {
-        return Err(format!("unknown physics profile {id}"));
-    }
+    let choice = PhysicsChoice::live(canvas)
+        .with_profile(id)
+        .ok_or_else(|| format!("unknown physics profile {id}"))?;
+    let mut spec = canvas.dynamics_spec()?;
+    choice.write_into(&mut spec);
+    canvas
+        .set_dynamics_spec(&spec)
+        .map_err(|error| error.to_string())?;
     canvas.set_view_follow(true);
     Ok(with_overlays(
-        format!("Profile {id}: {}", canvas.physics_law().label()),
+        format!("Profile {id}: {}", PhysicsChoice::live(canvas).law.label()),
         canvas,
     ))
 }
@@ -135,7 +154,7 @@ pub fn layout_line(label: &str, canvas: &Canvas, start: Option<&LawStart>) -> St
     );
     format!(
         "layout {label}: law {} nodes {} rank {:.3} cv {:.3} overlaps {} spread {:.0}; {start}",
-        canvas.physics_law().id(),
+        PhysicsChoice::live(canvas).law.id(),
         canvas.graph().node_count(),
         stats.mass_area_rank,
         stats.density_cv,
@@ -145,7 +164,7 @@ pub fn layout_line(label: &str, canvas: &Canvas, start: Option<&LawStart>) -> St
 }
 
 fn with_overlays(status: String, canvas: &Canvas) -> String {
-    let overlays = canvas.physics_overlays();
+    let overlays = PhysicsChoice::live(canvas).overlays;
     if overlays.is_empty() {
         return status;
     }
@@ -529,7 +548,7 @@ mod tests {
             "ticked overlays come in catalog order"
         );
         let status = apply_physics(&mut canvas, &choice);
-        assert_eq!(canvas.physics_choice(), choice);
+        assert_eq!(PhysicsChoice::live(&canvas), choice);
         assert_eq!(status, "Physics set to Kinds with Hub room, Skeleton");
         assert_eq!(profile_id(&canvas), CUSTOM_PROFILE);
         let status = apply_physics(
@@ -554,7 +573,7 @@ mod tests {
         );
         for profile in CANVAS_PHYSICS_PROFILES {
             apply_profile(&mut canvas, profile.id).unwrap();
-            let live = canvas.physics_choice();
+            let live = PhysicsChoice::live(&canvas);
             assert_eq!(live.law, profile.law, "{}", profile.id);
             assert_eq!(live.overlays, profile.overlays, "{}", profile.id);
             assert_eq!(live.kind, PhysicsKindSource::Component, "sources stay");
@@ -578,7 +597,7 @@ mod tests {
     fn a_custom_pair_names_no_profile_until_it_matches_again() {
         let mut canvas = canvas();
         apply_profile(&mut canvas, "void").unwrap();
-        let mut choice = canvas.physics_choice();
+        let mut choice = PhysicsChoice::live(&canvas);
         choice.overlays = vec![PhysicsOverlay::Skeleton];
         apply_physics(&mut canvas, &choice);
         assert_eq!(profile_id(&canvas), CUSTOM_PROFILE);

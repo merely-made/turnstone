@@ -170,7 +170,7 @@ impl TreeLane {
     ) -> ProbeSnapshot {
         let page = ctx.runner.state();
         let canvas = self.shared.canvas.borrow();
-        let choice = canvas.physics_choice();
+        let choice = mere::canvas::PhysicsChoice::live(&canvas);
         let checked = {
             let dom = ctx.runner.dom();
             let dom = dom.borrow();
@@ -449,7 +449,9 @@ impl TreeLane {
             )
             .with_field(
                 "remote-physics-law",
-                self.shared.canvas.borrow().physics_law().id(),
+                mere::canvas::PhysicsChoice::view(remote.board.board().stage())
+                    .map(|view| view.law.id())
+                    .unwrap_or_default(),
             )
             .with_field(
                 "remote-physics-speed",
@@ -819,7 +821,7 @@ impl Product for TreeLane {
                      device {} device-steps {} cpu-steps {} submissions {} answers {} failures {} \
                      waiting {} stale {} mismatched {} last-age {} {framing}",
                     rest.trim(),
-                    canvas.physics_law().id(),
+                    mere::canvas::PhysicsChoice::live(&canvas).law.id(),
                     canvas.graph().node_count(),
                     stats.energy,
                     stats.spread,

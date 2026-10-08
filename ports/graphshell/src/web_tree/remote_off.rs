@@ -120,10 +120,10 @@ impl TreeRemote {
 
     pub(super) fn sync_board(
         &mut self,
-        choice: mere::canvas::PhysicsChoice,
+        stage: Option<mere::canvas::dynamics_spec::DynamicsSpec>,
         speed: mere::canvas::Speed,
     ) {
-        self.board.sync(None, None, choice, speed);
+        self.board.sync(None, None, stage.as_ref(), speed);
     }
 }
 

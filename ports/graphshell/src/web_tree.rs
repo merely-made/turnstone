@@ -240,12 +240,12 @@ impl TextureProducer for CanvasProducer {
             // One leaf, the producer picks the scene: the board, mirroring
             // the canvas's law and speed, ticked once a frame and drawn from
             // its bodies.
-            let choice = canvas.physics_choice();
+            let stage = canvas.live_stage_spec().ok();
             let speed = canvas.physics_speed();
             drop(canvas);
             let scene = {
                 let mut remote = shared.remote.borrow_mut();
-                remote.sync_board(choice, speed);
+                remote.sync_board(stage, speed);
                 remote.board.set_step_budget(Some(budget));
                 remote.board.tick();
                 let remote = &mut *remote;
@@ -349,7 +349,7 @@ impl TextureProducer for CanvasProducer {
             );
             shared.release_log.borrow_mut().push(format!(
                 "release-step {} {distance:.1} px after {} steps ({from_press:.1} px from the press point, zoom {:.2})",
-                canvas.physics_law().id(),
+                mere::canvas::PhysicsChoice::live(&canvas).law.id(),
                 report.steps,
                 canvas.camera().zoom
             ));
