@@ -12,6 +12,7 @@
 //! input (scroll, hover, blur) rides state directly per the gesture law;
 //! durable intent becomes an `Action`.
 
+use super::NodeSessions;
 use winit::event::{Force, MouseButton, Touch, TouchPhase};
 use winit::keyboard::{Key as WinitKey, NamedKey as WinitNamedKey};
 use winit::window::CursorIcon;
@@ -876,7 +877,7 @@ impl Shell {
             if let Some((local_x, local_y)) = local {
                 if self
                     .content_sessions
-                    .get_mut(&node)
+                    .session_mut(&node)
                     .is_some_and(|session| session.pointer_move(local_x, local_y))
                 {
                     self.request_redraw();
@@ -1058,7 +1059,7 @@ impl Shell {
             });
             let outcome = local.and_then(|(local_x, local_y)| {
                 if button == MouseButton::Left
-                    && let Some(session) = self.content_sessions.get_mut(&node)
+                    && let Some(session) = self.content_sessions.session_mut(&node)
                 {
                     return Some(session.pointer_up(local_x, local_y));
                 }

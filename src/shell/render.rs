@@ -12,6 +12,7 @@
 //! mutable borrow never overlaps the host's. The capture path composes the
 //! same layer list the presented frame did, so a receipt shows what was shown.
 
+use super::NodeSessions;
 use std::path::Path;
 
 use genet_winit_host::SurfaceHost;
@@ -530,7 +531,7 @@ impl Shell {
                     .app
                     .follower_context(pane_id)
                     .and_then(|context| context.member)
-                    .and_then(|member| self.content_sessions.get(&member))
+                    .and_then(|member| self.content_sessions.session(&member))
                     .and_then(|session| session.clip())
                     .is_some();
                 let clip_target = self
@@ -766,7 +767,7 @@ impl Shell {
         // ones; only the framed surface is rasterized below.
         let now_ms = self.epoch.elapsed().as_secs_f64() * 1000.0;
         let mut needs_redraw = false;
-        for session in self.content_sessions.values_mut() {
+        for session in self.content_sessions.sessions_mut() {
             session.pump(now_ms);
             if !session.settled() {
                 needs_redraw = true;

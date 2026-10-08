@@ -207,44 +207,14 @@ pub struct ExtractionLineageFacts {
 }
 
 /// One page body fetched by the shell actor and ready to hand to a document
-/// engine. This transient representation prevents a live session from issuing
-/// a second network request for bytes the host already owns.
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct FetchedDocument {
-    /// Exact acquired response bytes. The decoded body is only for rendering;
-    /// source capture always deposits these bytes.
-    pub bytes: Vec<u8>,
-    pub content_type: Option<String>,
-    pub body: String,
-    /// The source URL this fetch actor retained for the response. This is
-    /// scoped with the node so a later navigation cannot borrow its evidence.
-    pub effective_url: Option<String>,
-    /// Milliseconds since the Unix epoch when Turnstone admitted these bytes.
-    pub acquired_at_ms: u64,
-}
+/// engine: exact acquired bytes, the decoded body, the response address and
+/// the admission time. A live session never issues a second network request
+/// for bytes the host already owns. The type is Mere's `page-load` document.
+pub type FetchedDocument = page_load::LoadedDocument;
 
-/// Network progress remains app truth even after the first prefix has become
-/// a live document session.
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub enum PageFetchPhase {
-    Requested,
-    Streaming {
-        response_url: String,
-        content_type: Option<String>,
-        received_bytes: usize,
-    },
-    Settled {
-        received_bytes: usize,
-    },
-    /// A hosted surface reports normalized load progress rather than bytes.
-    Loading {
-        progress_millis: Option<u16>,
-    },
-    /// The human stopped the active transfer before it settled.
-    Stopped {
-        received_bytes: usize,
-    },
-}
+/// Network progress, which remains app truth even after the first prefix has
+/// become a live document session. The type is Mere's `page-load` phase.
+pub type PageFetchPhase = page_load::LoadPhase;
 
 /// The structural read, mirrored in app-owned terms (the report type itself
 /// stays port-side; the app holds what its surfaces present — the Inspector's
@@ -278,10 +248,9 @@ pub struct ContentStates {
     /// The effective page zoom a live engine reported back, per node. Purely
     /// transient: it dies with the session, and the save path never sees it.
     page_zoom: HashMap<Uuid, PageZoomFacts>,
-    documents: HashMap<Uuid, (String, FetchedDocument)>,
-    stream_bytes: HashMap<Uuid, (String, Vec<u8>)>,
-    fetch_phases: HashMap<Uuid, PageFetchPhase>,
-    active_fetches: HashMap<Uuid, fetch::FetchRequestId>,
+    /// Each node's load: its current request, transfer phase, streamed bytes
+    /// and retained response, owned by Mere's sans-IO `PageLoad`.
+    loads: HashMap<Uuid, page_load::PageLoad>,
 }
 
 impl ContentStates {
@@ -335,13 +304,13 @@ impl ContentStates {
         node: Uuid,
         request: fetch::FetchRequestId,
     ) -> Option<fetch::FetchRequestId> {
-        self.stream_bytes.remove(&node);
-        self.fetch_phases.insert(node, PageFetchPhase::Requested);
-        self.active_fetches.insert(node, request)
+        self.loads.entry(node).or_default().begin(request)
     }
 
     pub fn active_fetch(&self, node: Uuid) -> Option<fetch::FetchRequestId> {
-        self.active_fetches.get(&node).copied()
+        self.loads
+            .get(&node)
+            .and_then(page_load::PageLoad::active_request)
     }
 
     pub fn is_active_fetch(&self, node: Uuid, request: fetch::FetchRequestId) -> bool {
@@ -349,71 +318,37 @@ impl ContentStates {
     }
 
     pub fn finish_fetch(&mut self, node: Uuid, request: fetch::FetchRequestId) -> bool {
-        if !self.is_active_fetch(node, request) {
-            return false;
-        }
-        self.active_fetches.remove(&node);
-        true
+        self.loads
+            .get_mut(&node)
+            .is_some_and(|load| load.finish(request))
     }
 
     pub fn settle_fetch(&mut self, node: Uuid, request: fetch::FetchRequestId) -> bool {
-        if !self.finish_fetch(node, request) {
-            return false;
-        }
-        let received_bytes = match self.fetch_phases.get(&node) {
-            Some(PageFetchPhase::Streaming { received_bytes, .. }) => *received_bytes,
-            Some(PageFetchPhase::Settled { received_bytes })
-            | Some(PageFetchPhase::Stopped { received_bytes }) => *received_bytes,
-            _ => 0,
-        };
-        self.fetch_phases
-            .insert(node, PageFetchPhase::Settled { received_bytes });
-        true
+        self.loads
+            .get_mut(&node)
+            .is_some_and(|load| load.settle(request))
     }
 
     pub fn stop_fetch(&mut self, node: Uuid, request: fetch::FetchRequestId) -> bool {
-        if !self.finish_fetch(node, request) {
-            return false;
-        }
-        let received_bytes = match self.fetch_phases.get(&node) {
-            Some(PageFetchPhase::Streaming { received_bytes, .. }) => *received_bytes,
-            Some(PageFetchPhase::Settled { received_bytes })
-            | Some(PageFetchPhase::Stopped { received_bytes }) => *received_bytes,
-            _ => 0,
-        };
-        self.stream_bytes.remove(&node);
-        self.fetch_phases
-            .insert(node, PageFetchPhase::Stopped { received_bytes });
-        true
+        self.loads
+            .get_mut(&node)
+            .is_some_and(|load| load.stop(request))
     }
 
     pub fn note_surface_started(&mut self, node: Uuid) {
-        self.fetch_phases.insert(
-            node,
-            PageFetchPhase::Loading {
-                progress_millis: None,
-            },
-        );
+        self.loads.entry(node).or_default().surface_started();
     }
 
     pub fn note_surface_progress(&mut self, node: Uuid, value: f32) {
-        let progress_millis = (value.clamp(0.0, 1.0) * 1000.0).round() as u16;
-        self.fetch_phases.insert(
-            node,
-            PageFetchPhase::Loading {
-                progress_millis: Some(progress_millis),
-            },
-        );
+        self.loads.entry(node).or_default().surface_progress(value);
     }
 
     pub fn note_surface_settled(&mut self, node: Uuid) {
-        self.fetch_phases
-            .insert(node, PageFetchPhase::Settled { received_bytes: 0 });
+        self.loads.entry(node).or_default().surface_settled();
     }
 
     pub fn note_surface_stopped(&mut self, node: Uuid) {
-        self.fetch_phases
-            .insert(node, PageFetchPhase::Stopped { received_bytes: 0 });
+        self.loads.entry(node).or_default().surface_stopped();
     }
 
     pub fn note_live(&mut self, node: Uuid, facts: Option<ContentFacts>) {
@@ -455,10 +390,10 @@ impl ContentStates {
         document: FetchedDocument,
         received_bytes: usize,
     ) {
-        self.documents.insert(node, (url, document));
-        self.stream_bytes.remove(&node);
-        self.fetch_phases
-            .insert(node, PageFetchPhase::Settled { received_bytes });
+        self.loads
+            .entry(node)
+            .or_default()
+            .note_fetched(url, document, received_bytes);
     }
 
     /// Append one exact transport fragment and refresh the decoded document
@@ -472,67 +407,31 @@ impl ContentStates {
         content_type: Option<String>,
         chunk: &[u8],
     ) -> usize {
-        let entry = self
-            .stream_bytes
-            .entry(node)
-            .or_insert_with(|| (url.clone(), Vec::new()));
-        if entry.0 != url {
-            *entry = (url.clone(), Vec::new());
-        }
-        entry.1.extend_from_slice(chunk);
-        let received_bytes = entry.1.len();
-        let acquired_at_ms = self
-            .documents
-            .get(&node)
-            .filter(|(owner, _)| owner == &url)
-            .map(|(_, previous)| previous.acquired_at_ms)
-            .filter(|observed_at| *observed_at != 0)
-            .unwrap_or_else(|| {
-                std::time::SystemTime::now()
-                    .duration_since(std::time::UNIX_EPOCH)
-                    .map(|duration| duration.as_millis() as u64)
-                    .unwrap_or(0)
-            });
-        self.documents.insert(
-            node,
-            (
-                url,
-                FetchedDocument {
-                    bytes: entry.1.clone(),
-                    content_type: content_type.clone(),
-                    body: String::from_utf8_lossy(&entry.1).into_owned(),
-                    effective_url: Some(response_url.clone()),
-                    acquired_at_ms,
-                },
-            ),
-        );
-        self.fetch_phases.insert(
-            node,
-            PageFetchPhase::Streaming {
-                response_url,
-                content_type,
-                received_bytes,
-            },
-        );
-        received_bytes
+        let now_ms = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map(|duration| duration.as_millis() as u64)
+            .unwrap_or(0);
+        self.loads.entry(node).or_default().note_streamed(
+            url,
+            response_url,
+            content_type,
+            chunk,
+            now_ms,
+        )
     }
 
     pub fn fetch_phase(&self, node: Uuid) -> Option<&PageFetchPhase> {
-        self.fetch_phases.get(&node)
+        self.loads.get(&node).and_then(page_load::PageLoad::phase)
     }
 
     pub fn fetch_in_progress(&self, node: Uuid) -> bool {
-        self.active_fetches.contains_key(&node)
-            || matches!(
-                self.fetch_phases.get(&node),
-                Some(PageFetchPhase::Loading { .. })
-            )
+        self.loads
+            .get(&node)
+            .is_some_and(page_load::PageLoad::in_progress)
     }
 
     pub fn fetched(&self, node: Uuid, url: &str) -> Option<&FetchedDocument> {
-        self.documents
-            .get(&node)
-            .and_then(|(owner, document)| (owner == url).then_some(document))
+        self.loads.get(&node).and_then(|load| load.fetched(url))
     }
 
     /// A source-capture candidate is available only for the exact current
@@ -550,27 +449,24 @@ impl ContentStates {
     }
 
     pub fn forget_fetched(&mut self, node: Uuid) {
-        self.documents.remove(&node);
-        self.stream_bytes.remove(&node);
-        self.fetch_phases.remove(&node);
+        if let Some(load) = self.loads.get_mut(&node) {
+            load.forget_fetched();
+        }
     }
 
     /// Remove every transient fact owned by a node that has left the graph.
     pub fn forget_node(&mut self, node: Uuid) {
         self.note_closed(node);
-        self.documents.remove(&node);
-        self.stream_bytes.remove(&node);
-        self.fetch_phases.remove(&node);
-        self.active_fetches.remove(&node);
+        self.loads.remove(&node);
     }
 
     pub fn note_failed(&mut self, node: Uuid, error: String) {
         self.states.insert(node, NodeContent::Failed(error));
         self.facts.remove(&node);
         self.page_zoom.remove(&node);
-        self.stream_bytes.remove(&node);
-        self.fetch_phases.remove(&node);
-        self.active_fetches.remove(&node);
+        if let Some(load) = self.loads.get_mut(&node) {
+            load.fail();
+        }
     }
 
     /// The node's content is gone (closed, or the port dropped it).
