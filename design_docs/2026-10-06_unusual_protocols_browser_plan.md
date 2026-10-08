@@ -1496,6 +1496,38 @@ the same record once this lane can push to Mere (U15).
     - Deferred: `PeltWorkspace` passthroughs for host loading, and Pelt
       desktop's switch to the `mere-fetch` actor. A trait-level
       `replace_body` in Genet would retire the downcast replacer.
+  - SC step 2 is on Mere `main` (`831b5a82`, merged as `938c64be`).
+    `pelt-core` gains `PeltContent`, one routed piece of browsing content: a
+    document lane (a `PeltController`) or a surface lane (a live web-engine
+    producer), behind one command, input, frame and routing API.
+    - Routing moves into `PeltRegistries::choose` and runs for every new load.
+      A document lane changes engine by address and by the response's media
+      type. History reopens each entry with the engine it was shown with.
+    - A load that routes to a surface swaps lanes, and a surface asked for a
+      document address swaps back. A failed swap keeps the current lane.
+      History does not cross lanes.
+    - Content can carry its own surface profile, for Turnstone's per-node
+      web profiles. Stop, Reload, Back and Forward reach a surface's web
+      plane whichever engine it is, which is the structural fix for
+      `node_uses_web_surface` recognizing only Weld.
+    - `PeltWorkspace` is now a map of `PeltContent`, with its public API
+      unchanged.
+    - Naming: the per-node object Turnstone will hold is `PeltContent`. It
+      wraps a `PeltController` on a document lane.
+    - Tests on macOS: `pelt-core` 25 (5 new for content), all pass, and the
+      routing and workspace tests pass unchanged. `pelt-desktop --lib`
+      passes 57 of 57. Pelt desktop and `pelt` pass `cargo check
+      --all-targets --locked`.
+  - Request for the next coordinated Mere repin, from the Scenograph editor
+    lane (Mark's SE35 assigns it to this lane). The brief is §3 of
+    `mere/design_docs/mere_docs/implementation_strategy/2026-10-07_scenograph_editor_plan.md`.
+    Mere main at `16c1ef8d` and later offers `cambium::CommandSet`, the
+    pictograph context gestures (`take_context_request`) and pandect's
+    `CommandMenuView`. Turnstone's side:
+    - `available_actions` goes through the command set.
+    - The `>` lane gains kept and recent commands, with keep and drop.
+    - `shell/input.rs` opens the palette on the right release that
+      `take_context_request` reports, not on the press.
     - Found in passing: `node_uses_web_surface` (`src/app/node_arms.rs:1701`)
       matches only Weld, so Scry and Servo nodes take the document Back and
       Reload path, and Stop does nothing for them.
