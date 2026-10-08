@@ -1,0 +1,58 @@
+# Use the local IndexedDB route; retain its dedicated profile for the reopen run.
+# This scenario's address must not already exist on the first run.
+assert snap source == saved graph
+click role:button Restore arrangement
+settle 3
+remember before-intake
+click role:button Add an object
+settle 2
+click role:button New node
+settle 2
+assert text Enter an address before adding an object
+assert snap save-state == error
+same before-intake nodes
+same before-intake graph-session
+click role:textbox Address
+input-text https://example.net/tree-intake
+click role:textbox New object title
+input-text TreeIntakeTitle
+click role:button New node
+wait 120
+assert snap save-state == saved
+assert text Object added and saved
+assert snap detail-open == true
+assert snap detail-title == TreeIntakeTitle
+same before-intake graph-session
+same before-intake camera
+same before-intake physics-paused
+remember created
+click role:textbox Title
+input-text TreeIntakeSavedTitle
+click role:textbox Tags
+input-text intake,durable
+click role:button Save changes
+wait 120
+assert snap save-state == saved
+assert snap detail-title == TreeIntakeSavedTitle
+assert snap detail-tags == durable, intake
+same created detail-member
+same created graph-session
+same created geometry
+same created camera
+capture p4_tree_intake_saved
+# Duplicate intake selects the existing stable member without replacing its title.
+remember saved
+click role:button Add an object
+settle 2
+click role:textbox Address
+input-text https://example.net/tree-intake
+click role:textbox New object title
+input-text ShouldNotReplace
+click role:button New node
+wait 120
+assert snap save-state == saved
+assert snap detail-title == TreeIntakeSavedTitle
+same saved nodes
+same saved detail-member
+same saved graph-session
+capture p4_tree_intake_duplicate

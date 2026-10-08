@@ -556,6 +556,7 @@ impl Product for TreeLane {
         let saved = ctx.runner.state().product.as_ref().map(|product| {
             json!({
                 "session": product.session, "selected": product.selected,
+                "address": product.address, "file": product.saved_file(),
                 "title": product.title.text(), "tags": product.tags.text(),
                 "save_state": product.save_state, "reopened": product.reopened,
             })
@@ -750,6 +751,7 @@ impl Product for TreeLane {
                         .unwrap_or_default(),
                 )
                 .with_field("detail-title", product.title.text())
+                .with_field("detail-address", &product.address)
                 .with_field("detail-tags", product.tags.text())
                 .with_field(
                     "item-role",
@@ -772,6 +774,21 @@ impl Product for TreeLane {
     ) -> Result<(), String> {
         let (verb, rest) = line.split_once(' ').unwrap_or((line, ""));
         match verb {
+            // The browser instrument cannot operate an empty chooser. Exercise
+            // the platform cancel event through the real chooser listener,
+            // including its pending FileAnswer and the retained callback target.
+            // This is a DOM-event fixture, not proof of the OS dialog's Cancel.
+            "cancel-file-choice" => {
+                let input = super::super::document()?
+                    .get_element_by_id("cambium-file-input")
+                    .ok_or("the browser file chooser is not mounted")?;
+                let event = Event::new("cancel")
+                    .map_err(|_| "could not create the file cancellation event")?;
+                input
+                    .dispatch_event(&event)
+                    .map(|_| ())
+                    .map_err(|_| "could not dispatch file cancellation".into())
+            },
             "timing" => {
                 let (what, label) = rest.split_once(' ').unwrap_or((rest, ""));
                 self.shared.with_gpu(|gpu| {

@@ -95,13 +95,13 @@ const SHEET: &str = "\
     .select-box { background:#263640; border:1px solid #637581; padding:2px 8px; } \
     .select-list { background:#17232b; border:1px solid #637581; z-index:20; width:262px; } \
     .select-option { padding:1px 8px; } \
-    .tree-product { position:absolute;top:112px;left:12px;max-width:360px;z-index:5; } \
+    .tree-product { position:absolute;top:8px;left:12px;max-width:360px;max-height:90%;overflow-y:auto;z-index:5; } \
     .tree-product p { margin:4px 0; } \
     .tree-detail { background:#17232b;border:1px solid #637581;padding:12px; } \
     .tree-detail label { display:block;margin:8px 0; } \
     .tree-detail .detail-key { display:block; } \
     .tree-detail .detail-value { display:block;margin:2px 0 8px;overflow-wrap:anywhere; } \
-    .tree-detail input { display:block;width:280px;height:26px;color:#dce3e8;background:#263640;border:1px solid #637581; } \
+    .tree-product [data-cambium-text-value] { display:block;width:280px;min-height:1.2em;height:26px;color:#dce3e8;background:#263640;border:1px solid #637581; } \
     .tree-product button { background:#263640;color:#dce3e8;padding:5px 10px;border:1px solid #637581; } \
     .tree-relations { margin:0 12px 6px; font-size:12px; } \
     .tree-relations h2 { font-size:13px; margin:0 0 2px; } \
@@ -159,6 +159,9 @@ struct Shared {
     remote: Rc<RefCell<remote::TreeRemote>>,
     /// Whether the canvas leaf shows the remote board rather than the graph.
     remote_shown: Cell<bool>,
+    /// Keep reader actions aligned with the local editor during a file answer
+    /// or an unacknowledged write. Updated at each dispatch and frame.
+    selection_locked: Cell<bool>,
     /// A planted accessibility defect, the receipts' positive control
     /// (`?plant_a11y=`; dynamics grammar plan, G9). `None` in use.
     plant: graphshell::canvas_reader::Plant,
@@ -413,7 +416,7 @@ impl TextureProducer for CanvasProducer {
     /// A reader pressed one of an item's buttons: Pin pins it, Drag starts
     /// a keyboard move the arrows steer.
     fn act(&mut self, key: u64, id: &str) -> bool {
-        if self.shared.remote_shown.get() {
+        if self.shared.remote_shown.get() || self.shared.selection_locked.get() {
             return false;
         }
         let done = graphshell::canvas_reader::canvas_act(
@@ -577,10 +580,10 @@ fn view(page: &TreePage) -> Child {
                     .attr("role", "status"),
                 hosted_dataset(page),
                 controls::toolbar(page),
-                product::controls(page),
                 el(
                     "div",
                     (
+                        product::controls(page),
                         el("div", graph).attr("class", "tree-graph"),
                         if docked {
                             Some(tools_region(page))
@@ -629,6 +632,26 @@ fn tools_region(page: &TreePage) -> Child {
 /// Escape puts it back (F67).
 fn keys(page: &mut TreePage, key: &Key) -> bool {
     use graphshell::canvas_reader::{MoveKey, key_move};
+    if page
+        .product
+        .as_ref()
+        .is_some_and(|product| product.selection_locked())
+    {
+        // Keep Tab and other non-graph keys available to leave the graph and
+        // reach Retry intake; only commands that could change this view wait.
+        return match key {
+            Key::Named(
+                NamedKey::ArrowLeft
+                | NamedKey::ArrowRight
+                | NamedKey::ArrowUp
+                | NamedKey::ArrowDown
+                | NamedKey::Enter
+                | NamedKey::Escape,
+            ) => true,
+            Key::Character(text) => text == "+" || text == "=" || text == "-",
+            _ => false,
+        };
+    }
     let move_key = match key {
         Key::Named(NamedKey::ArrowLeft) => Some(MoveKey::Left),
         Key::Named(NamedKey::ArrowRight) => Some(MoveKey::Right),
@@ -817,6 +840,7 @@ async fn boot(root: Element) -> Result<(), String> {
         faces: Cell::new(None),
         remote: Rc::new(RefCell::new(remote::TreeRemote::new())),
         remote_shown: Cell::new(false),
+        selection_locked: Cell::new(false),
         plant: controls::reader_plant()?,
     });
     if let Some(slice) = controls::meaning_slice()? {
@@ -913,11 +937,22 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
             {
                 ctx.runner.update(|page| {
                     if let Some(product) = &mut page.product {
-                        product.poll(&mut frame_shared.canvas.borrow_mut());
+                        let mut canvas = frame_shared.canvas.borrow_mut();
+                        if product.poll(&mut canvas) {
+                            page.nodes = canvas.graph().nodes().count();
+                            page.picked = canvas.focused_url().map(str::to_owned);
+                        }
                     }
                 });
                 frame_shared.dirty.set(true);
             }
+            frame_shared.selection_locked.set(
+                ctx.runner
+                    .state()
+                    .product
+                    .as_ref()
+                    .is_some_and(|product| product.selection_locked()),
+            );
             // The remote session moves outside the runner (its channel's
             // pumps); rebuild the view when it has.
             let (generation, linked) = {
@@ -978,7 +1013,15 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
             // signal before it can safely cache its last texture.
             true
         }),
-        after_dispatch: Box::new(|_ctx| {}),
+        after_dispatch: Box::new(|ctx| {
+            ctx.runner.state().shared.selection_locked.set(
+                ctx.runner
+                    .state()
+                    .product
+                    .as_ref()
+                    .is_some_and(|product| product.selection_locked()),
+            );
+        }),
         after_frame: Box::new(move |ctx| {
             after_shared.with_gpu(|gpu| {
                 let mut timing = after_shared.timing.borrow_mut();

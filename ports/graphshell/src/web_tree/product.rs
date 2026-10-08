@@ -6,14 +6,20 @@
 
 //! The bounded local saved-graph workflow on the retained tree.
 use super::*;
-use cambium::{SelectState, TextInput};
+use cambium::{FileEvent, SelectState, TextInput};
 use graphshell::local_edit::{NodeMetadata, metadata, save_metadata, sync_canvas_metadata};
+use graphshell::local_intake::{create_address, create_file, persist_intake, sync_canvas_intake};
 use mere::canvas::Role;
 use muniment::IndexedDbBackend;
 use uuid::Uuid;
 
 type App = GraphshellApp<IndexedDbBackend>;
-type Completion = (App, Result<NodeMetadata, String>);
+#[derive(Clone, Copy)]
+enum CompletedEdit {
+    Metadata,
+    Intake,
+}
+type Completion = (App, CompletedEdit, Result<NodeMetadata, String>);
 
 pub(super) struct SavedProduct {
     app: Option<App>,
@@ -34,6 +40,12 @@ pub(super) struct SavedProduct {
     pub(super) save_state: &'static str,
     pub(super) session: String,
     pub(super) reopened: bool,
+    intake_open: bool,
+    intake_address: TextInput,
+    intake_title: TextInput,
+    file_requested: bool,
+    /// A created but unacknowledged member. Retrying stores this same object.
+    pending_intake: Option<Uuid>,
 }
 
 /// The existing fixture and generated comparison routes remain unchanged.
@@ -94,6 +106,11 @@ pub(super) async fn open() -> Result<Option<SavedProduct>, String> {
         save_state: "idle",
         session,
         reopened,
+        intake_open: false,
+        intake_address: TextInput::new(""),
+        intake_title: TextInput::new(""),
+        file_requested: false,
+        pending_intake: None,
     }))
 }
 
@@ -101,37 +118,70 @@ fn now_secs() -> u64 {
     (js_sys::Date::now() / 1_000.0) as u64
 }
 
-/// Map the retained detail field to the host's caret, IME and selection path.
+#[derive(Clone, Copy)]
+enum TextField {
+    Title,
+    Tags,
+    IntakeAddress,
+    IntakeTitle,
+}
+
+impl TextField {
+    fn get(self, product: &SavedProduct) -> &TextInput {
+        match self {
+            Self::Title => &product.title,
+            Self::Tags => &product.tags,
+            Self::IntakeAddress => &product.intake_address,
+            Self::IntakeTitle => &product.intake_title,
+        }
+    }
+    fn get_mut(self, product: &mut SavedProduct) -> &mut TextInput {
+        match self {
+            Self::Title => &mut product.title,
+            Self::Tags => &mut product.tags,
+            Self::IntakeAddress => &mut product.intake_address,
+            Self::IntakeTitle => &mut product.intake_title,
+        }
+    }
+}
+
+/// Map the retained fields to the host's caret, IME and selection path.
 pub(super) fn focused_text(
     runner: &cambium_rootstock::Runner<TreePage, Logic, Child>,
 ) -> Option<cambium_rootstock::FocusedTextSlot<TreePage>> {
     let product = runner.state().product.as_ref()?;
-    if !product.detail_open || product.saving {
+    if product.saving || product.pending_intake.is_some() {
         return None;
     }
     let node = runner.focus()?;
     let dom = runner.dom();
     let dom = dom.borrow();
-    let title =
-        taproot::matching(&dom, &Selector::role("textbox").containing("Title")).contains(&node);
-    if !title
-        && !taproot::matching(&dom, &Selector::role("textbox").containing("Tags")).contains(&node)
-    {
-        return None;
-    }
+    let field = [
+        ("Title", TextField::Title, product.detail_open),
+        ("Tags", TextField::Tags, product.detail_open),
+        ("Address", TextField::IntakeAddress, product.intake_open),
+        (
+            "New object title",
+            TextField::IntakeTitle,
+            product.intake_open,
+        ),
+    ]
+    .into_iter()
+    .find_map(|(label, field, visible)| {
+        (visible
+            && taproot::matching(&dom, &Selector::role("textbox").containing(label))
+                .contains(&node))
+        .then_some(field)
+    })?;
     Some(cambium_rootstock::FocusedTextSlot {
         node,
         get: Box::new(move |page: &TreePage| {
             let product = page.product.as_ref().expect("focused local detail");
-            if title { &product.title } else { &product.tags }
+            field.get(product)
         }),
         get_mut: Box::new(move |page: &mut TreePage| {
             let product = page.product.as_mut().expect("focused local detail");
-            if title {
-                &mut product.title
-            } else {
-                &mut product.tags
-            }
+            field.get_mut(product)
         }),
     })
 }
@@ -139,6 +189,9 @@ pub(super) fn focused_text(
 impl SavedProduct {
     pub(super) fn ready(&self) -> bool {
         self.completed.borrow().is_some()
+    }
+    pub(super) fn selection_locked(&self) -> bool {
+        self.saving || self.file_requested || self.pending_intake.is_some()
     }
     pub(super) fn graph(&self) -> Graph {
         self.app
@@ -149,8 +202,24 @@ impl SavedProduct {
             .clone()
     }
 
+    /// Selected file facts from the acknowledged local owner, for receipts.
+    pub(super) fn saved_file(&self) -> Option<serde_json::Value> {
+        if self.saving || self.pending_intake.is_some() {
+            return None;
+        }
+        let app = self.app.as_ref()?;
+        let (_, node) = app.host.graph().get_node_by_id(self.selected?)?;
+        let content = app
+            .host
+            .facet_value(node.url(), graphshell::product::CONTENT_FACET)?;
+        let local = app
+            .host
+            .facet_value(node.url(), graphshell::product::LOCAL_FILE_FACET)?;
+        Some(serde_json::json!({ "content": content, "local": local }))
+    }
+
     pub(super) fn select(&mut self, selected: Option<Uuid>) {
-        if self.saving || self.selected == selected {
+        if self.selection_locked() || self.selected == selected {
             return;
         }
         self.selected = selected;
@@ -172,13 +241,23 @@ impl SavedProduct {
 
     /// Open the detail editor, its item role read from the canvas.
     pub(super) fn open_detail(&mut self, canvas: &Canvas) {
+        // Keep the open_file view's registered target alive until the host
+        // finishes reading the chosen bytes and dispatches its answer.
+        if self.selection_locked() {
+            return;
+        }
+        self.intake_open = false;
         self.detail_open = true;
         self.role.selected =
             item_role_index(self.selected.and_then(|member| canvas.member_role(member)));
     }
 
     pub(super) fn save(&mut self) {
-        if self.saving {
+        if self.saving || self.file_requested {
+            return;
+        }
+        if self.pending_intake.is_some() {
+            self.status = "Retry intake before saving other changes".into();
             return;
         }
         let Some(member) = self.selected else {
@@ -197,29 +276,126 @@ impl SavedProduct {
         // The task owns the app. No RefCell borrow crosses the IndexedDB await.
         wasm_bindgen_futures::spawn_local(async move {
             let result = save_metadata(&mut app, member, &title, &tags, now_secs()).await;
-            *completed.borrow_mut() = Some((app, result));
+            *completed.borrow_mut() = Some((app, CompletedEdit::Metadata, result));
+        });
+    }
+
+    fn add_address(&mut self) {
+        if self.saving || self.pending_intake.is_some() || self.file_requested {
+            return;
+        }
+        let Some(app) = self.app.as_mut() else {
+            return;
+        };
+        match create_address(app, self.intake_address.text(), self.intake_title.text()) {
+            Ok(member) => self.store_intake(member),
+            Err(error) => {
+                self.status = error;
+                self.save_state = "error";
+            },
+        }
+    }
+
+    fn receive_file(&mut self, event: FileEvent) {
+        self.file_requested = false;
+        if self.saving || self.pending_intake.is_some() {
+            return;
+        }
+        let Some(file) = event.files.into_iter().next() else {
+            self.status = "File choice canceled".into();
+            return;
+        };
+        let Some(app) = self.app.as_mut() else {
+            return;
+        };
+        match create_file(
+            app,
+            &file.name,
+            file.media_type.as_deref(),
+            file.last_modified_ms,
+            &file.bytes,
+        ) {
+            Ok(member) => self.store_intake(member),
+            Err(error) => {
+                self.status = format!("File intake refused · {error}");
+                self.save_state = "error";
+            },
+        }
+    }
+
+    fn store_intake(&mut self, member: Uuid) {
+        if self.saving {
+            return;
+        }
+        let Some(mut app) = self.app.take() else {
+            return;
+        };
+        self.pending_intake = Some(member);
+        self.saving = true;
+        self.save_state = "saving";
+        self.status = "Saving new object…".into();
+        let completed = self.completed.clone();
+        wasm_bindgen_futures::spawn_local(async move {
+            let result = persist_intake(&mut app, member, now_secs()).await;
+            *completed.borrow_mut() = Some((app, CompletedEdit::Intake, result));
         });
     }
 
     pub(super) fn poll(&mut self, canvas: &mut Canvas) -> bool {
-        let Some((app, result)) = self.completed.borrow_mut().take() else {
+        let Some((app, edit, result)) = self.completed.borrow_mut().take() else {
             return false;
         };
         self.app = Some(app);
         self.saving = false;
         match result {
             Ok(saved) => {
-                let refresh = sync_canvas_metadata(canvas, &saved);
-                self.title = TextInput::new(saved.title);
-                self.tags = TextInput::new(saved.tags.join(", "));
+                let refresh = match edit {
+                    CompletedEdit::Metadata => sync_canvas_metadata(canvas, &saved),
+                    CompletedEdit::Intake => {
+                        let refresh = sync_canvas_intake(
+                            canvas,
+                            self.app.as_ref().expect("completed app").host.graph(),
+                            saved.member,
+                        );
+                        self.pending_intake = None;
+                        if refresh.is_ok() {
+                            self.select(Some(saved.member));
+                            self.open_detail(canvas);
+                            self.intake_address = TextInput::new("");
+                            self.intake_title = TextInput::new("");
+                        }
+                        refresh
+                    },
+                };
+                if matches!(edit, CompletedEdit::Metadata) || refresh.is_ok() {
+                    self.title = TextInput::new(saved.title);
+                    self.tags = TextInput::new(saved.tags.join(", "));
+                }
                 self.status = match refresh {
-                    Ok(()) => "Changes saved".into(),
-                    Err(error) => format!("Changes saved · canvas refresh failed: {error}"),
+                    Ok(()) => match edit {
+                        CompletedEdit::Metadata => "Changes saved".into(),
+                        CompletedEdit::Intake => "Object added and saved".into(),
+                    },
+                    Err(error) => match edit {
+                        CompletedEdit::Metadata => {
+                            format!("Changes saved · canvas refresh failed: {error}")
+                        },
+                        CompletedEdit::Intake => format!(
+                            "Object saved · canvas refresh failed: {error} · reload to restore the local view"
+                        ),
+                    },
                 };
                 self.save_state = "saved";
             },
             Err(error) => {
-                self.status = format!("Save failed · {error} · changes remain in memory");
+                self.status = match edit {
+                    CompletedEdit::Metadata => {
+                        format!("Save failed · {error} · changes remain in memory")
+                    },
+                    CompletedEdit::Intake => format!(
+                        "Intake save failed · {error} · new object remains in memory; retry intake to save it"
+                    ),
+                };
                 self.save_state = "error";
             },
         }
@@ -261,6 +437,104 @@ fn apply_item_role(page: &mut TreePage) {
     page.shared.dirty.set(true);
 }
 
+fn intake_controls(page: &TreePage) -> Child {
+    use cambium::{FileFilter, button, el, lens, open_file, text_field_typed};
+    let product = page.product.as_ref().expect("local intake");
+    let mut children: Vec<Child> = vec![Box::new(
+        button("Add an object", |page: &mut TreePage, _| {
+            if let Some(product) = &mut page.product
+                && !product.saving
+                && !product.file_requested
+            {
+                product.intake_open = !product.intake_open;
+                if product.intake_open {
+                    product.detail_open = false;
+                }
+            }
+        })
+        .attr(
+            "aria-expanded",
+            if product.intake_open { "true" } else { "false" },
+        ),
+    )];
+    if product.intake_open {
+        let mut fields: Vec<Child> = Vec::new();
+        if product.saving {
+            fields.push(Box::new(el("p", "Saving new object…")));
+        } else if let Some(member) = product.pending_intake {
+            fields.push(Box::new(button(
+                "Retry intake",
+                move |page: &mut TreePage, _| {
+                    if let Some(product) = &mut page.product {
+                        product.store_intake(member);
+                    }
+                },
+            )));
+        } else {
+            fields.push(Box::new(el(
+                "label",
+                (
+                    "Address",
+                    lens(
+                        |input: &mut TextInput| {
+                            text_field_typed(input).attr("aria-label", "Address")
+                        },
+                        |page: &mut TreePage| {
+                            &mut page.product.as_mut().expect("local intake").intake_address
+                        },
+                    ),
+                ),
+            )));
+            fields.push(Box::new(el(
+                "label",
+                (
+                    "New object title",
+                    lens(
+                        |input: &mut TextInput| {
+                            text_field_typed(input).attr("aria-label", "New object title")
+                        },
+                        |page: &mut TreePage| {
+                            &mut page.product.as_mut().expect("local intake").intake_title
+                        },
+                    ),
+                ),
+            )));
+            fields.push(Box::new(button(
+                cambium::catalogue::label(cambium::catalogue::ids::NODE_NEW)
+                    .expect("shared New node label"),
+                |page: &mut TreePage, _| {
+                    if let Some(product) = &mut page.product {
+                        product.add_address();
+                    }
+                },
+            )));
+            fields.push(Box::new(open_file(
+                button("Choose a file", |page: &mut TreePage, _| {
+                    if let Some(product) = &mut page.product
+                        && !product.saving
+                        && product.pending_intake.is_none()
+                    {
+                        product.file_requested = true;
+                    }
+                }),
+                product.file_requested,
+                FileFilter::default(),
+                |page: &mut TreePage, event: FileEvent| {
+                    if let Some(product) = &mut page.product {
+                        product.receive_file(event);
+                    }
+                },
+            )));
+        }
+        children.push(Box::new(
+            el("section", fields)
+                .attr("class", "tree-detail tree-intake")
+                .attr("aria-label", "Add an object"),
+        ));
+    }
+    Box::new(el("div", children))
+}
+
 pub(super) fn controls(page: &TreePage) -> Child {
     use cambium::{DetailRow, DetailSection, button, detail_panel, el, lens, text_field_typed};
     let Some(product) = &page.product else {
@@ -272,6 +546,7 @@ pub(super) fn controls(page: &TreePage) -> Child {
             el("p", product.status.clone()).attr("role", "status"),
         ));
     }
+    children.push(intake_controls(page));
     if product.selected.is_some() {
         children.push(Box::new(button(
             if product.detail_open {

@@ -1,0 +1,2 @@
+Graphshell tree intake fixture, 2026-10-08.
+Durable file identity uses these exact bytes.

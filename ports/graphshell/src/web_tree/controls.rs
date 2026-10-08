@@ -82,7 +82,11 @@ pub(super) fn toolbar(page: &TreePage) -> Child {
 
 impl TreePage {
     pub(super) fn pointer(&mut self, event: PointerEvent) {
-        if self.product.as_ref().is_some_and(|product| product.saving) {
+        if self
+            .product
+            .as_ref()
+            .is_some_and(|product| product.selection_locked())
+        {
             return;
         }
         if event.button != PointerButton::Primary {
