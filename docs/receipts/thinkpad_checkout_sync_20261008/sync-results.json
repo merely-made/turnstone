@@ -1,0 +1,892 @@
+[
+  {
+    "path": "/home/markik/Code/crates/arboard",
+    "before": "d57a91ccdbc54ed2eadd991d317272ba7005416f",
+    "branch_before": "custom-formats",
+    "tracked_before": {},
+    "archived": [],
+    "merge_exit": 0,
+    "outcome": "updated",
+    "after": "57a68d037e51eff34974928f56b434c87b827fb8",
+    "branch_after": "custom-formats",
+    "tracked_after": {}
+  },
+  {
+    "path": "/home/markik/Code/crates/boa",
+    "before": "a54e8624dbc154b8d556b0a3ffd2113b8fc49982",
+    "branch_before": "serval",
+    "tracked_before": {},
+    "archived": [],
+    "switch_exit": 0,
+    "merge_exit": 0,
+    "outcome": "updated",
+    "after": "4b6d316d1f363f4f483982fecfc62e7532835b89",
+    "branch_after": "genet",
+    "tracked_after": {}
+  },
+  {
+    "path": "/home/markik/Code/crates/firefox-gfx-wr",
+    "before": "31042cde7b7b6776eaf8c9429dbde7f2e2d3614b",
+    "branch_before": "shader-census-wgpu-30",
+    "tracked_before": {},
+    "archived": [],
+    "outcome": "retained_local_shader_census_branch_upstream_fetched",
+    "after": "31042cde7b7b6776eaf8c9429dbde7f2e2d3614b",
+    "branch_after": "shader-census-wgpu-30",
+    "tracked_after": {}
+  },
+  {
+    "path": "/home/markik/Code/crates/imaging",
+    "before": "a8ac08d498b4266cd340b6a3cd66eef8fc4a5ab9",
+    "branch_before": "mere-wgpu-29-vello-0-9",
+    "tracked_before": {},
+    "archived": [],
+    "merge_exit": 0,
+    "outcome": "already_current",
+    "after": "a8ac08d498b4266cd340b6a3cd66eef8fc4a5ab9",
+    "branch_after": "mere-wgpu-29-vello-0-9",
+    "tracked_after": {}
+  },
+  {
+    "path": "/home/markik/Code/crates/piccolo",
+    "before": "e77309c648b91d59c1ded9b20e54999ae8b19741",
+    "branch_before": "master",
+    "tracked_before": {},
+    "archived": [],
+    "merge_exit": 0,
+    "outcome": "already_current",
+    "after": "e77309c648b91d59c1ded9b20e54999ae8b19741",
+    "branch_after": "master",
+    "tracked_after": {}
+  },
+  {
+    "path": "/home/markik/Code/crates/vano",
+    "before": "b5201d125cd994521df95ead1ed38fb5549f4cce",
+    "branch_before": "serval-embedder",
+    "tracked_before": {},
+    "archived": [],
+    "switch_exit": 0,
+    "merge_exit": 0,
+    "outcome": "updated",
+    "after": "1816f328fab7151a06e999d4353022fabd9b7d28",
+    "branch_after": "genet-embedder",
+    "tracked_after": {}
+  },
+  {
+    "path": "/home/markik/Code/crates/xilem",
+    "before": "f8014ddaaf83fa95af66a1a6a19ddb4695c60a38",
+    "branch_before": "mere-wgpu-29-vello-0-9",
+    "tracked_before": {},
+    "archived": [],
+    "switch_exit": 0,
+    "merge_exit": 0,
+    "outcome": "updated",
+    "after": "271a27a6d4a930f7878d404f9014e3c50a3a9b88",
+    "branch_after": "main",
+    "tracked_after": {}
+  },
+  {
+    "path": "/home/markik/Code/repos/cambium",
+    "before": "f1251f7ebb83d6ad20c3fdd765fe3f88cb1be38d",
+    "branch_before": "main",
+    "tracked_before": {},
+    "archived": [],
+    "outcome": "endpoint_unavailable",
+    "after": "f1251f7ebb83d6ad20c3fdd765fe3f88cb1be38d",
+    "branch_after": "main",
+    "tracked_after": {}
+  },
+  {
+    "path": "/home/markik/Code/repos/cleromancy",
+    "before": "9789d64e5df4937c3005a2b3a25b5a733f67817b",
+    "branch_before": "",
+    "tracked_before": {},
+    "archived": [],
+    "switch_exit": 0,
+    "merge_exit": 0,
+    "outcome": "updated",
+    "after": "ff3b1f5302e15b054b412bba8261dfc28ea81740",
+    "branch_after": "main",
+    "tracked_after": {}
+  },
+  {
+    "path": "/home/markik/Code/repos/genet",
+    "before": "6cb2284a33d74ff90fd2c71f95c459eef502206b",
+    "branch_before": "main",
+    "tracked_before": {},
+    "archived": [],
+    "merge_exit": 0,
+    "outcome": "already_current",
+    "after": "6cb2284a33d74ff90fd2c71f95c459eef502206b",
+    "branch_after": "main",
+    "tracked_after": {}
+  },
+  {
+    "path": "/home/markik/Code/repos/hocket",
+    "before": "0923086d671ba643b143fb02663a0adf4e9f7af7",
+    "branch_before": "main",
+    "tracked_before": {},
+    "archived": [],
+    "outcome": "endpoint_unavailable",
+    "after": "0923086d671ba643b143fb02663a0adf4e9f7af7",
+    "branch_after": "main",
+    "tracked_after": {}
+  },
+  {
+    "path": "/home/markik/Code/repos/isometry",
+    "before": "412f8eec2a66a2e1a310dcc5017139c81aa9912a",
+    "branch_before": "main",
+    "tracked_before": {},
+    "archived": [],
+    "merge_exit": 0,
+    "outcome": "updated",
+    "after": "40a31d61b2a041074f22f71dde2421b768db853f",
+    "branch_after": "main",
+    "tracked_after": {}
+  },
+  {
+    "path": "/home/markik/Code/repos/knot-editor",
+    "before": "0096591a0af98bf4777d8bfe718c0423dea9fc90",
+    "branch_before": "main",
+    "tracked_before": {},
+    "archived": [
+      {
+        "original": "docs/receipts/2026-10-07_current_family_repin/linux-compiler-priority-observation.json",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/2026-10-07_current_family_repin/linux-compiler-priority-observation.json",
+        "sha256": "0e392a2ffe7cc49f55ea74e04a39d852c9241114933f3cee47745b2cd92cf37a",
+        "size": 411,
+        "mtime_ns": 1791362372575299780,
+        "upstream_sha256": "0e392a2ffe7cc49f55ea74e04a39d852c9241114933f3cee47745b2cd92cf37a"
+      },
+      {
+        "original": "docs/receipts/2026-10-07_current_family_repin/linux-family-witness.json",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/2026-10-07_current_family_repin/linux-family-witness.json",
+        "sha256": "21bc07d3c35a6421616d9ccf54248da22f5ce91b4d7bb74a5d6aa34e449e4021",
+        "size": 3486,
+        "mtime_ns": 1791362724401265796,
+        "upstream_sha256": "21bc07d3c35a6421616d9ccf54248da22f5ce91b4d7bb74a5d6aa34e449e4021"
+      },
+      {
+        "original": "docs/receipts/2026-10-07_current_family_repin/linux-ff.stderr.log",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/2026-10-07_current_family_repin/linux-ff.stderr.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "size": 0,
+        "mtime_ns": 1791362192063888268,
+        "upstream_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "original": "docs/receipts/2026-10-07_current_family_repin/linux-ff.stdout.log",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/2026-10-07_current_family_repin/linux-ff.stdout.log",
+        "sha256": "20cee9721301b0edf460cd079aedb7ba158f980db5756287b3b80325cbd01e0c",
+        "size": 24392,
+        "mtime_ns": 1791362192063888268,
+        "upstream_sha256": "20cee9721301b0edf460cd079aedb7ba158f980db5756287b3b80325cbd01e0c"
+      },
+      {
+        "original": "docs/receipts/2026-10-07_current_family_repin/linux-inputs.json",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/2026-10-07_current_family_repin/linux-inputs.json",
+        "sha256": "8d72ae64633b980fcfea414333a45003b63fb5dd453ac094fa5359245a9b51bc",
+        "size": 1420,
+        "mtime_ns": 1791362192115312739,
+        "upstream_sha256": "8d72ae64633b980fcfea414333a45003b63fb5dd453ac094fa5359245a9b51bc"
+      },
+      {
+        "original": "docs/receipts/2026-10-07_current_family_repin/linux-metadata-result.json",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/2026-10-07_current_family_repin/linux-metadata-result.json",
+        "sha256": "91898ac7a38750d5c814959befc1e8e7d3028658f82fe4260669606c473b735c",
+        "size": 510,
+        "mtime_ns": 1791362724310789267,
+        "upstream_sha256": "91898ac7a38750d5c814959befc1e8e7d3028658f82fe4260669606c473b735c"
+      },
+      {
+        "original": "docs/receipts/2026-10-07_current_family_repin/linux-metadata-start.json",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/2026-10-07_current_family_repin/linux-metadata-start.json",
+        "sha256": "9409ef0871174a74a5fc4b66d95b0a552a29b619bcf4643a1c6e91a02a7d728d",
+        "size": 295,
+        "mtime_ns": 1791362720684425383,
+        "upstream_sha256": "9409ef0871174a74a5fc4b66d95b0a552a29b619bcf4643a1c6e91a02a7d728d"
+      },
+      {
+        "original": "docs/receipts/2026-10-07_current_family_repin/linux-metadata.stderr.log",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/2026-10-07_current_family_repin/linux-metadata.stderr.log",
+        "sha256": "537a1d6652f073d52133f9df0c4ef8567f8afae839440c170580aa16195b2bf4",
+        "size": 984,
+        "mtime_ns": 1791362724143441198,
+        "upstream_sha256": "537a1d6652f073d52133f9df0c4ef8567f8afae839440c170580aa16195b2bf4"
+      },
+      {
+        "original": "docs/receipts/2026-10-07_current_family_repin/linux-metadata.stdout.log",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/2026-10-07_current_family_repin/linux-metadata.stdout.log",
+        "sha256": "5c7d3e5240440a55a1638a81ae3b8669f9c824340bae87a30e93e030349f4adb",
+        "size": 5558251,
+        "mtime_ns": 1791362724274767529,
+        "upstream_sha256": "5c7d3e5240440a55a1638a81ae3b8669f9c824340bae87a30e93e030349f4adb"
+      },
+      {
+        "original": "docs/receipts/2026-10-07_current_family_repin/linux-postflight.json",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/2026-10-07_current_family_repin/linux-postflight.json",
+        "sha256": "d2826bd6a6a9a039a03f1873f5d7737b2247e3303d38fa5d64335954f2212508",
+        "size": 1526,
+        "mtime_ns": 1791362826884931471,
+        "upstream_sha256": "d2826bd6a6a9a039a03f1873f5d7737b2247e3303d38fa5d64335954f2212508"
+      },
+      {
+        "original": "docs/receipts/2026-10-07_current_family_repin/linux-preflight.json",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/2026-10-07_current_family_repin/linux-preflight.json",
+        "sha256": "f5623f90c0643671e4cbba527ec288a1e51e0642df779afd3d6ea7c40c632bbb",
+        "size": 323,
+        "mtime_ns": 1791362192063785304,
+        "upstream_sha256": "f5623f90c0643671e4cbba527ec288a1e51e0642df779afd3d6ea7c40c632bbb"
+      },
+      {
+        "original": "docs/receipts/2026-10-07_current_family_repin/linux-priority-observation.json",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/2026-10-07_current_family_repin/linux-priority-observation.json",
+        "sha256": "6c8cbecafc4c6fa9c68671e1ec99810dc38319f7d04bd77fb4f7e8650b04a654",
+        "size": 399,
+        "mtime_ns": 1791362230287243846,
+        "upstream_sha256": "6c8cbecafc4c6fa9c68671e1ec99810dc38319f7d04bd77fb4f7e8650b04a654"
+      },
+      {
+        "original": "docs/receipts/2026-10-07_current_family_repin/linux-remote-artifact-hashes.json",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/2026-10-07_current_family_repin/linux-remote-artifact-hashes.json",
+        "sha256": "11ee496abcddb58c8d023b539f2e6a14a9dd76f2b26131709c211d36cb73dff6",
+        "size": 2731,
+        "mtime_ns": 1791362826893559032,
+        "upstream_sha256": "11ee496abcddb58c8d023b539f2e6a14a9dd76f2b26131709c211d36cb73dff6"
+      },
+      {
+        "original": "docs/receipts/2026-10-07_current_family_repin/linux-workspace-check-result.json",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/2026-10-07_current_family_repin/linux-workspace-check-result.json",
+        "sha256": "890e1ed9acf34e0dbc2527504169d697ba9ec0eb5dfadc587102869d0449211c",
+        "size": 533,
+        "mtime_ns": 1791362720683608858,
+        "upstream_sha256": "890e1ed9acf34e0dbc2527504169d697ba9ec0eb5dfadc587102869d0449211c"
+      },
+      {
+        "original": "docs/receipts/2026-10-07_current_family_repin/linux-workspace-check-start.json",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/2026-10-07_current_family_repin/linux-workspace-check-start.json",
+        "sha256": "22cb40281a6651d0bb7e5539899a8d116e53940f1e7bbb387befb746ee8cedd3",
+        "size": 318,
+        "mtime_ns": 1791362192116203203,
+        "upstream_sha256": "22cb40281a6651d0bb7e5539899a8d116e53940f1e7bbb387befb746ee8cedd3"
+      },
+      {
+        "original": "docs/receipts/2026-10-07_current_family_repin/linux-workspace-check.stderr.log",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/2026-10-07_current_family_repin/linux-workspace-check.stderr.log",
+        "sha256": "d10a5a837b0077fe31da2d0c03868f8648baa909a9abd27bf3e839674f983ac6",
+        "size": 38111,
+        "mtime_ns": 1791362720559750609,
+        "upstream_sha256": "d10a5a837b0077fe31da2d0c03868f8648baa909a9abd27bf3e839674f983ac6"
+      },
+      {
+        "original": "docs/receipts/2026-10-07_current_family_repin/linux-workspace-check.stdout.log",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/2026-10-07_current_family_repin/linux-workspace-check.stdout.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "size": 0,
+        "mtime_ns": 1791362192115312739,
+        "upstream_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ],
+    "merge_exit": 0,
+    "outcome": "updated",
+    "after": "6e66f1abddd382cc50543e6db7e2b02537018fd1",
+    "branch_after": "main",
+    "tracked_after": {}
+  },
+  {
+    "path": "/home/markik/Code/repos/mere",
+    "before": "09aea801c349afa2a0fb0bbc3c5d82ef719e4ea4",
+    "branch_before": "knot-phase-a-client-receipt",
+    "tracked_before": {},
+    "archived": [],
+    "switch_exit": 0,
+    "merge_exit": 0,
+    "outcome": "updated",
+    "after": "7a5bedd13c776b43101672349841bd77132bc377",
+    "branch_after": "main",
+    "tracked_after": {}
+  },
+  {
+    "path": "/home/markik/Code/repos/mere-receipt",
+    "before": "ff68e86c59482d3e58789920b60a7588a3702b97",
+    "branch_before": "",
+    "tracked_before": {},
+    "archived": [],
+    "outcome": "retained_pinned_receipt_worktree",
+    "after": "ff68e86c59482d3e58789920b60a7588a3702b97",
+    "branch_after": "",
+    "tracked_after": {}
+  },
+  {
+    "path": "/home/markik/Code/repos/merecat",
+    "before": "058e6aaa145b5abbe0ca4492983cb10e4019825e",
+    "branch_before": "main",
+    "tracked_before": {},
+    "archived": [],
+    "merge_exit": 0,
+    "outcome": "updated",
+    "after": "1802a68371327343539b3e73d4517248cf3361b1",
+    "branch_after": "main",
+    "tracked_after": {}
+  },
+  {
+    "path": "/home/markik/Code/repos/netrender",
+    "before": "6f1a4fe70a58a57ba6b248acfa662f0ec4e44a25",
+    "branch_before": "main",
+    "tracked_before": {},
+    "archived": [],
+    "merge_exit": 0,
+    "outcome": "updated",
+    "after": "0edc60771e6e24a8eb8e93c75b59c9b1aaf8c017",
+    "branch_after": "main",
+    "tracked_after": {}
+  },
+  {
+    "path": "/home/markik/Code/repos/turnstone",
+    "before": "8d1f907f4bd31b256737a27d3e63fe8cd8672efc",
+    "branch_before": "main",
+    "tracked_before": {},
+    "archived": [
+      {
+        "original": "docs/receipts/browser_family_20261007/linux-current-Cargo.lock",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/browser_family_20261007/linux-current-Cargo.lock",
+        "sha256": "0e49603c02f3ef9d51cf986508c4c1bc540e1cdc5151b68268563463aa13bec0",
+        "size": 475352,
+        "mtime_ns": 1791370759276228293,
+        "upstream_sha256": "0e49603c02f3ef9d51cf986508c4c1bc540e1cdc5151b68268563463aa13bec0"
+      },
+      {
+        "original": "docs/receipts/browser_family_20261007/linux-current-Cargo.toml",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/browser_family_20261007/linux-current-Cargo.toml",
+        "sha256": "436872626f5152fc0cc629df40e92f9a4d01323ba825e8241669c7d3400349b6",
+        "size": 31839,
+        "mtime_ns": 1791370759276079132,
+        "upstream_sha256": "436872626f5152fc0cc629df40e92f9a4d01323ba825e8241669c7d3400349b6"
+      },
+      {
+        "original": "docs/receipts/browser_family_20261007/linux-current-cargo-mode.result.json",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/browser_family_20261007/linux-current-cargo-mode.result.json",
+        "sha256": "f738065ce050f2cb58e724e221e975f55d15302e3e6b3a51a611dd0dfb9440be",
+        "size": 901,
+        "mtime_ns": 1791372607550895047,
+        "upstream_sha256": "f738065ce050f2cb58e724e221e975f55d15302e3e6b3a51a611dd0dfb9440be"
+      },
+      {
+        "original": "docs/receipts/browser_family_20261007/linux-current-cargo-mode.stderr.log",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/browser_family_20261007/linux-current-cargo-mode.stderr.log",
+        "sha256": "ed701fc97eef8d28f013835335c01c86d072d6750d17934ce9df4706b7269499",
+        "size": 20805,
+        "mtime_ns": 1791372607256576612,
+        "upstream_sha256": "ed701fc97eef8d28f013835335c01c86d072d6750d17934ce9df4706b7269499"
+      },
+      {
+        "original": "docs/receipts/browser_family_20261007/linux-current-cargo-mode.stdout.log",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/browser_family_20261007/linux-current-cargo-mode.stdout.log",
+        "sha256": "79c1abd142449072acc66b8479487273f1d2fc472c6e055b4ba639e7adcba1b1",
+        "size": 173,
+        "mtime_ns": 1791372607352577082,
+        "upstream_sha256": "79c1abd142449072acc66b8479487273f1d2fc472c6e055b4ba639e7adcba1b1"
+      },
+      {
+        "original": "docs/receipts/browser_family_20261007/linux-current-check.result.json",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/browser_family_20261007/linux-current-check.result.json",
+        "sha256": "425db6bbe4d00641e52edb1e1594343e49a4ab54c5958f8e7b4b9441e4a2709b",
+        "size": 990,
+        "mtime_ns": 1791371032821231544,
+        "upstream_sha256": "425db6bbe4d00641e52edb1e1594343e49a4ab54c5958f8e7b4b9441e4a2709b"
+      },
+      {
+        "original": "docs/receipts/browser_family_20261007/linux-current-check.stderr.log",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/browser_family_20261007/linux-current-check.stderr.log",
+        "sha256": "300a1b7c5b52de37de90bb8ccf0215fa7f79d83ecc746ad31f0dede5a10838ad",
+        "size": 38691,
+        "mtime_ns": 1791371032484783828,
+        "upstream_sha256": "300a1b7c5b52de37de90bb8ccf0215fa7f79d83ecc746ad31f0dede5a10838ad"
+      },
+      {
+        "original": "docs/receipts/browser_family_20261007/linux-current-check.stdout.log",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/browser_family_20261007/linux-current-check.stdout.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "size": 0,
+        "mtime_ns": 1791370759276228293,
+        "upstream_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "original": "docs/receipts/browser_family_20261007/linux-current-continuation-summary.json",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/browser_family_20261007/linux-current-continuation-summary.json",
+        "sha256": "aec9d5b213ce02fbe577b9380e1dee30b09ca619a2defa5e7f1770a120b8f4e0",
+        "size": 3570,
+        "mtime_ns": 1791372611157797613,
+        "upstream_sha256": "aec9d5b213ce02fbe577b9380e1dee30b09ca619a2defa5e7f1770a120b8f4e0"
+      },
+      {
+        "original": "docs/receipts/browser_family_20261007/linux-current-denizen-exact-control.result.json",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/browser_family_20261007/linux-current-denizen-exact-control.result.json",
+        "sha256": "1ea591025a56db78794cb62ac3f7a49f5f733a60e8af96d1899ae22c50d24d31",
+        "size": 1227,
+        "mtime_ns": 1791372293486265039,
+        "upstream_sha256": "1ea591025a56db78794cb62ac3f7a49f5f733a60e8af96d1899ae22c50d24d31"
+      },
+      {
+        "original": "docs/receipts/browser_family_20261007/linux-current-denizen-exact-control.stderr.log",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/browser_family_20261007/linux-current-denizen-exact-control.stderr.log",
+        "sha256": "c32857639175b68ba86110d77260050a65ab1ad0efe008f9610921823f576277",
+        "size": 358,
+        "mtime_ns": 1791372292891038029,
+        "upstream_sha256": "c32857639175b68ba86110d77260050a65ab1ad0efe008f9610921823f576277"
+      },
+      {
+        "original": "docs/receipts/browser_family_20261007/linux-current-denizen-exact-control.stdout.log",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/browser_family_20261007/linux-current-denizen-exact-control.stdout.log",
+        "sha256": "2651976beda6817f8f166e66d283f36c439254a430adf47a4a90196360751600",
+        "size": 294,
+        "mtime_ns": 1791372292891038029,
+        "upstream_sha256": "2651976beda6817f8f166e66d283f36c439254a430adf47a4a90196360751600"
+      },
+      {
+        "original": "docs/receipts/browser_family_20261007/linux-current-family-provenance.json",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/browser_family_20261007/linux-current-family-provenance.json",
+        "sha256": "f1f4dedb984a4366e5e235fbf8ba23f28e725dc8ce296aa2af4d75ff81c370b2",
+        "size": 15850,
+        "mtime_ns": 1791372611157640047,
+        "upstream_sha256": "f1f4dedb984a4366e5e235fbf8ba23f28e725dc8ce296aa2af4d75ff81c370b2"
+      },
+      {
+        "original": "docs/receipts/browser_family_20261007/linux-current-inputs.json",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/browser_family_20261007/linux-current-inputs.json",
+        "sha256": "5552931ca9ac8ffec2bf869e263647393e51f4bbd65ff3b825b6c7255a57cddd",
+        "size": 570590,
+        "mtime_ns": 1791370759275841095,
+        "upstream_sha256": "5552931ca9ac8ffec2bf869e263647393e51f4bbd65ff3b825b6c7255a57cddd"
+      },
+      {
+        "original": "docs/receipts/browser_family_20261007/linux-current-lib.result.json",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/browser_family_20261007/linux-current-lib.result.json",
+        "sha256": "5268795316bd3e07e1115eae268e0bdae071cf9b8f6240de4ac89c332e80dd79",
+        "size": 1017,
+        "mtime_ns": 1791372516229697608,
+        "upstream_sha256": "5268795316bd3e07e1115eae268e0bdae071cf9b8f6240de4ac89c332e80dd79"
+      },
+      {
+        "original": "docs/receipts/browser_family_20261007/linux-current-lib.stderr.log",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/browser_family_20261007/linux-current-lib.stderr.log",
+        "sha256": "93650e571f6e977bb7a09e9037f6fa6f3782fa557825d8d3b007f2df1696e6c8",
+        "size": 51012,
+        "mtime_ns": 1791372515990129931,
+        "upstream_sha256": "93650e571f6e977bb7a09e9037f6fa6f3782fa557825d8d3b007f2df1696e6c8"
+      },
+      {
+        "original": "docs/receipts/browser_family_20261007/linux-current-lib.stdout.log",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/browser_family_20261007/linux-current-lib.stdout.log",
+        "sha256": "781a9781f4fe99bb34dc04cdb676f3b264c4dfd8624fca5b7d96020776b5a0f4",
+        "size": 75441,
+        "mtime_ns": 1791372515902129501,
+        "upstream_sha256": "781a9781f4fe99bb34dc04cdb676f3b264c4dfd8624fca5b7d96020776b5a0f4"
+      },
+      {
+        "original": "docs/receipts/browser_family_20261007/linux-current-metadata.result.json",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/browser_family_20261007/linux-current-metadata.result.json",
+        "sha256": "7506b742d76595392a8673fc1cc477959d6683b134685fd09ba8c9acd1a52be7",
+        "size": 978,
+        "mtime_ns": 1791372610720727279,
+        "upstream_sha256": "7506b742d76595392a8673fc1cc477959d6683b134685fd09ba8c9acd1a52be7"
+      },
+      {
+        "original": "docs/receipts/browser_family_20261007/linux-current-metadata.stderr.log",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/browser_family_20261007/linux-current-metadata.stderr.log",
+        "sha256": "906d60528082acd9c33a7d66c2846290f338015d65da6afd9a8598366470c508",
+        "size": 1027,
+        "mtime_ns": 1791372610042590248,
+        "upstream_sha256": "906d60528082acd9c33a7d66c2846290f338015d65da6afd9a8598366470c508"
+      },
+      {
+        "original": "docs/receipts/browser_family_20261007/linux-current-metadata.stdout.log",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/browser_family_20261007/linux-current-metadata.stdout.log",
+        "sha256": "1081568ccaa68f5300870e3530fb4874244b1a31e15ca317d2bfb08484f445e2",
+        "size": 5314115,
+        "mtime_ns": 1791372610488592431,
+        "upstream_sha256": "1081568ccaa68f5300870e3530fb4874244b1a31e15ca317d2bfb08484f445e2"
+      },
+      {
+        "original": "docs/receipts/browser_family_20261007/linux-current-summary.json",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/browser_family_20261007/linux-current-summary.json",
+        "sha256": "52fcaa4e3589f8608a6c6a406e6015eb3a2b43f99502e49e5ed2da4aa6bc3294",
+        "size": 2756,
+        "mtime_ns": 1791372516900134385,
+        "upstream_sha256": "52fcaa4e3589f8608a6c6a406e6015eb3a2b43f99502e49e5ed2da4aa6bc3294"
+      },
+      {
+        "original": "docs/receipts/browser_family_20261007/linux-current-tree.result.json",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/browser_family_20261007/linux-current-tree.result.json",
+        "sha256": "a7b90ccb1d9cb42bc8aa864c382815ecdfab395c186b7bf91ce09fb91822e30e",
+        "size": 884,
+        "mtime_ns": 1791372609107198522,
+        "upstream_sha256": "a7b90ccb1d9cb42bc8aa864c382815ecdfab395c186b7bf91ce09fb91822e30e"
+      },
+      {
+        "original": "docs/receipts/browser_family_20261007/linux-current-tree.stderr.log",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/browser_family_20261007/linux-current-tree.stderr.log",
+        "sha256": "906d60528082acd9c33a7d66c2846290f338015d65da6afd9a8598366470c508",
+        "size": 1027,
+        "mtime_ns": 1791372608471582559,
+        "upstream_sha256": "906d60528082acd9c33a7d66c2846290f338015d65da6afd9a8598366470c508"
+      },
+      {
+        "original": "docs/receipts/browser_family_20261007/linux-current-tree.stdout.log",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/browser_family_20261007/linux-current-tree.stdout.log",
+        "sha256": "5b2c4b42939d7d0f0820b07f3f5cb6da33af0ed6bd53b23ac0aeb73c22aa77e5",
+        "size": 252099,
+        "mtime_ns": 1791372608841584370,
+        "upstream_sha256": "5b2c4b42939d7d0f0820b07f3f5cb6da33af0ed6bd53b23ac0aeb73c22aa77e5"
+      },
+      {
+        "original": "docs/receipts/browser_family_20261007/linux-final-Cargo.lock",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/browser_family_20261007/linux-final-Cargo.lock",
+        "sha256": "0e49603c02f3ef9d51cf986508c4c1bc540e1cdc5151b68268563463aa13bec0",
+        "size": 475352,
+        "mtime_ns": 1791373944106721729,
+        "upstream_sha256": "0e49603c02f3ef9d51cf986508c4c1bc540e1cdc5151b68268563463aa13bec0"
+      },
+      {
+        "original": "docs/receipts/browser_family_20261007/linux-final-Cargo.toml",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/browser_family_20261007/linux-final-Cargo.toml",
+        "sha256": "436872626f5152fc0cc629df40e92f9a4d01323ba825e8241669c7d3400349b6",
+        "size": 31839,
+        "mtime_ns": 1791373944106551719,
+        "upstream_sha256": "436872626f5152fc0cc629df40e92f9a4d01323ba825e8241669c7d3400349b6"
+      },
+      {
+        "original": "docs/receipts/browser_family_20261007/linux-final-fd-Cargo.lock",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/browser_family_20261007/linux-final-fd-Cargo.lock",
+        "sha256": "0e49603c02f3ef9d51cf986508c4c1bc540e1cdc5151b68268563463aa13bec0",
+        "size": 475352,
+        "mtime_ns": 1791374401770982774,
+        "upstream_sha256": "0e49603c02f3ef9d51cf986508c4c1bc540e1cdc5151b68268563463aa13bec0"
+      },
+      {
+        "original": "docs/receipts/browser_family_20261007/linux-final-fd-Cargo.toml",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/browser_family_20261007/linux-final-fd-Cargo.toml",
+        "sha256": "436872626f5152fc0cc629df40e92f9a4d01323ba825e8241669c7d3400349b6",
+        "size": 31839,
+        "mtime_ns": 1791374401770801362,
+        "upstream_sha256": "436872626f5152fc0cc629df40e92f9a4d01323ba825e8241669c7d3400349b6"
+      },
+      {
+        "original": "docs/receipts/browser_family_20261007/linux-final-fd-cargo-mode.result.json",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/browser_family_20261007/linux-final-fd-cargo-mode.result.json",
+        "sha256": "a6e493318dbabba97903a6bd48ddd1bac05100a44f4350ccf237fc1105e129a7",
+        "size": 3128,
+        "mtime_ns": 1791374663595275627,
+        "upstream_sha256": "a6e493318dbabba97903a6bd48ddd1bac05100a44f4350ccf237fc1105e129a7"
+      },
+      {
+        "original": "docs/receipts/browser_family_20261007/linux-final-fd-cargo-mode.stderr.log",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/browser_family_20261007/linux-final-fd-cargo-mode.stderr.log",
+        "sha256": "7718d40f55ef7fd3610f7920f9cefae293365403994b2cef7f4e01697868ceb9",
+        "size": 20398,
+        "mtime_ns": 1791374663475384406,
+        "upstream_sha256": "7718d40f55ef7fd3610f7920f9cefae293365403994b2cef7f4e01697868ceb9"
+      },
+      {
+        "original": "docs/receipts/browser_family_20261007/linux-final-fd-cargo-mode.stdout.log",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/browser_family_20261007/linux-final-fd-cargo-mode.stdout.log",
+        "sha256": "79c1abd142449072acc66b8479487273f1d2fc472c6e055b4ba639e7adcba1b1",
+        "size": 173,
+        "mtime_ns": 1791374663573385222,
+        "upstream_sha256": "79c1abd142449072acc66b8479487273f1d2fc472c6e055b4ba639e7adcba1b1"
+      },
+      {
+        "original": "docs/receipts/browser_family_20261007/linux-final-fd-check.result.json",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/browser_family_20261007/linux-final-fd-check.result.json",
+        "sha256": "61975eedbd38ed82a0fce0e0c1d1f184eb848d8f8a29c923960a8e39af6ce91b",
+        "size": 3162,
+        "mtime_ns": 1791374660325609170,
+        "upstream_sha256": "61975eedbd38ed82a0fce0e0c1d1f184eb848d8f8a29c923960a8e39af6ce91b"
+      },
+      {
+        "original": "docs/receipts/browser_family_20261007/linux-final-fd-check.stderr.log",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/browser_family_20261007/linux-final-fd-check.stderr.log",
+        "sha256": "c1c4f0e1e9031ee29f4b686da47943fa068fd8eb79310af664c7b60eb9f233a7",
+        "size": 21833,
+        "mtime_ns": 1791374660190357057,
+        "upstream_sha256": "c1c4f0e1e9031ee29f4b686da47943fa068fd8eb79310af664c7b60eb9f233a7"
+      },
+      {
+        "original": "docs/receipts/browser_family_20261007/linux-final-fd-check.stdout.log",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/browser_family_20261007/linux-final-fd-check.stdout.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "size": 0,
+        "mtime_ns": 1791374649664931937,
+        "upstream_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "original": "docs/receipts/browser_family_20261007/linux-final-fd-family-provenance.json",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/browser_family_20261007/linux-final-fd-family-provenance.json",
+        "sha256": "851ec2a0c90e84cecd0239cbac27ebe34f39690120fb99363c80d8951dab4624",
+        "size": 15871,
+        "mtime_ns": 1791374666654534284,
+        "upstream_sha256": "851ec2a0c90e84cecd0239cbac27ebe34f39690120fb99363c80d8951dab4624"
+      },
+      {
+        "original": "docs/receipts/browser_family_20261007/linux-final-fd-inputs.json",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/browser_family_20261007/linux-final-fd-inputs.json",
+        "sha256": "892476b0723e49aac9fd2ed6239490d262b9f2dcb3ddb66b8dd561586b46a638",
+        "size": 570972,
+        "mtime_ns": 1791374401770587449,
+        "upstream_sha256": "892476b0723e49aac9fd2ed6239490d262b9f2dcb3ddb66b8dd561586b46a638"
+      },
+      {
+        "original": "docs/receipts/browser_family_20261007/linux-final-fd-lib.result.json",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/browser_family_20261007/linux-final-fd-lib.result.json",
+        "sha256": "c3cf07a3477f6516469733c67264e59e0b80aa4b062009ac7a9df1a87ad4f7c3",
+        "size": 2687,
+        "mtime_ns": 1791374649664931937,
+        "upstream_sha256": "c3cf07a3477f6516469733c67264e59e0b80aa4b062009ac7a9df1a87ad4f7c3"
+      },
+      {
+        "original": "docs/receipts/browser_family_20261007/linux-final-fd-lib.stderr.log",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/browser_family_20261007/linux-final-fd-lib.stderr.log",
+        "sha256": "53cf5d440098436885343f1a96ea294691a57eb2b047cfdf76313b1ca5112a9e",
+        "size": 13192,
+        "mtime_ns": 1791374649615269016,
+        "upstream_sha256": "53cf5d440098436885343f1a96ea294691a57eb2b047cfdf76313b1ca5112a9e"
+      },
+      {
+        "original": "docs/receipts/browser_family_20261007/linux-final-fd-lib.stdout.log",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/browser_family_20261007/linux-final-fd-lib.stdout.log",
+        "sha256": "ebb878d717dc009ca048fddfa33e3a0e517f2967f98df1356936ac292a40cc2b",
+        "size": 71578,
+        "mtime_ns": 1791374649617269033,
+        "upstream_sha256": "ebb878d717dc009ca048fddfa33e3a0e517f2967f98df1356936ac292a40cc2b"
+      },
+      {
+        "original": "docs/receipts/browser_family_20261007/linux-final-fd-metadata.result.json",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/browser_family_20261007/linux-final-fd-metadata.result.json",
+        "sha256": "04e205655133917303b038e82c01ba894631d139e4fd11145366d8359422afdd",
+        "size": 2233,
+        "mtime_ns": 1791374666394242328,
+        "upstream_sha256": "04e205655133917303b038e82c01ba894631d139e4fd11145366d8359422afdd"
+      },
+      {
+        "original": "docs/receipts/browser_family_20261007/linux-final-fd-metadata.stderr.log",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/browser_family_20261007/linux-final-fd-metadata.stderr.log",
+        "sha256": "906d60528082acd9c33a7d66c2846290f338015d65da6afd9a8598366470c508",
+        "size": 1027,
+        "mtime_ns": 1791374665892404529,
+        "upstream_sha256": "906d60528082acd9c33a7d66c2846290f338015d65da6afd9a8598366470c508"
+      },
+      {
+        "original": "docs/receipts/browser_family_20261007/linux-final-fd-metadata.stdout.log",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/browser_family_20261007/linux-final-fd-metadata.stdout.log",
+        "sha256": "1081568ccaa68f5300870e3530fb4874244b1a31e15ca317d2bfb08484f445e2",
+        "size": 5314115,
+        "mtime_ns": 1791374666336408225,
+        "upstream_sha256": "1081568ccaa68f5300870e3530fb4874244b1a31e15ca317d2bfb08484f445e2"
+      },
+      {
+        "original": "docs/receipts/browser_family_20261007/linux-final-fd-summary.json",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/browser_family_20261007/linux-final-fd-summary.json",
+        "sha256": "dc82559d0ddfd52a37473ef4b64e9553df9dae4080f63c42950dd7fd5d4aca70",
+        "size": 15331,
+        "mtime_ns": 1791374666654731105,
+        "upstream_sha256": "dc82559d0ddfd52a37473ef4b64e9553df9dae4080f63c42950dd7fd5d4aca70"
+      },
+      {
+        "original": "docs/receipts/browser_family_20261007/linux-final-fd-tree.result.json",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/browser_family_20261007/linux-final-fd-tree.result.json",
+        "sha256": "0d4f70d88da77598729895bb03d43d7fa4ff250f468b805fe82529ac62799b28",
+        "size": 2139,
+        "mtime_ns": 1791374664966666403,
+        "upstream_sha256": "0d4f70d88da77598729895bb03d43d7fa4ff250f468b805fe82529ac62799b28"
+      },
+      {
+        "original": "docs/receipts/browser_family_20261007/linux-final-fd-tree.stderr.log",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/browser_family_20261007/linux-final-fd-tree.stderr.log",
+        "sha256": "906d60528082acd9c33a7d66c2846290f338015d65da6afd9a8598366470c508",
+        "size": 1027,
+        "mtime_ns": 1791374664517393081,
+        "upstream_sha256": "906d60528082acd9c33a7d66c2846290f338015d65da6afd9a8598366470c508"
+      },
+      {
+        "original": "docs/receipts/browser_family_20261007/linux-final-fd-tree.stdout.log",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/browser_family_20261007/linux-final-fd-tree.stdout.log",
+        "sha256": "5b2c4b42939d7d0f0820b07f3f5cb6da33af0ed6bd53b23ac0aeb73c22aa77e5",
+        "size": 252099,
+        "mtime_ns": 1791374664875396062,
+        "upstream_sha256": "5b2c4b42939d7d0f0820b07f3f5cb6da33af0ed6bd53b23ac0aeb73c22aa77e5"
+      },
+      {
+        "original": "docs/receipts/browser_family_20261007/linux-final-inputs.json",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/browser_family_20261007/linux-final-inputs.json",
+        "sha256": "0d2b1f4bea580906e5b13e63c80973d9755f55830f9eb18b0f5cb37c7e015571",
+        "size": 570972,
+        "mtime_ns": 1791373944106315163,
+        "upstream_sha256": "0d2b1f4bea580906e5b13e63c80973d9755f55830f9eb18b0f5cb37c7e015571"
+      },
+      {
+        "original": "docs/receipts/browser_family_20261007/linux-final-lib.result.json",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/browser_family_20261007/linux-final-lib.result.json",
+        "sha256": "29ee0563e3d08bfab57895a44907f86301a94d1b09f7459b7cc577368b549608",
+        "size": 982,
+        "mtime_ns": 1791374180467388371,
+        "upstream_sha256": "29ee0563e3d08bfab57895a44907f86301a94d1b09f7459b7cc577368b549608"
+      },
+      {
+        "original": "docs/receipts/browser_family_20261007/linux-final-lib.stderr.log",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/browser_family_20261007/linux-final-lib.stderr.log",
+        "sha256": "78a0bdf618796c111d4ff5acfbf6014a4ebe9f5e263d0d74f7dda1771d7a3a89",
+        "size": 13203,
+        "mtime_ns": 1791374180411362733,
+        "upstream_sha256": "78a0bdf618796c111d4ff5acfbf6014a4ebe9f5e263d0d74f7dda1771d7a3a89"
+      },
+      {
+        "original": "docs/receipts/browser_family_20261007/linux-final-lib.stdout.log",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/browser_family_20261007/linux-final-lib.stdout.log",
+        "sha256": "4d6bcc08b2e91065715685763e6429512117893e1f82bac090bc1e910d2f2ded",
+        "size": 74160,
+        "mtime_ns": 1791374180323362000,
+        "upstream_sha256": "4d6bcc08b2e91065715685763e6429512117893e1f82bac090bc1e910d2f2ded"
+      },
+      {
+        "original": "docs/receipts/browser_family_20261007/linux-final-summary.json",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/browser_family_20261007/linux-final-summary.json",
+        "sha256": "91863096467b9ce1ea7b6a190ab765ab93aeb1f4f5f032c5414f11b347c7d9ac",
+        "size": 1602,
+        "mtime_ns": 1791374180648673295,
+        "upstream_sha256": "91863096467b9ce1ea7b6a190ab765ab93aeb1f4f5f032c5414f11b347c7d9ac"
+      },
+      {
+        "original": "docs/receipts/browser_family_20261007/linux-sky-diagnostic-overlay.patch",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/browser_family_20261007/linux-sky-diagnostic-overlay.patch",
+        "sha256": "759bddb376364c1a7e89c0386f00b13b8b5b9b6cb0a8e1a421c95ff262fe7ee3",
+        "size": 1203,
+        "mtime_ns": 1791373008949554931,
+        "upstream_sha256": "759bddb376364c1a7e89c0386f00b13b8b5b9b6cb0a8e1a421c95ff262fe7ee3"
+      },
+      {
+        "original": "docs/receipts/browser_family_20261007/linux-sky-diagnostic-receipts.json",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/browser_family_20261007/linux-sky-diagnostic-receipts.json",
+        "sha256": "96fc28701a4d301fdced1ae2fd9b1560279366867ddfdde6b0774487457c54bd",
+        "size": 43046,
+        "mtime_ns": 1791373069786861892,
+        "upstream_sha256": "96fc28701a4d301fdced1ae2fd9b1560279366867ddfdde6b0774487457c54bd"
+      },
+      {
+        "original": "docs/receipts/browser_family_20261007/linux-sky-diagnostic.result.json",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/browser_family_20261007/linux-sky-diagnostic.result.json",
+        "sha256": "ba79212771ec3f4d9a1be65446be430eac371fae3ad912dbeb2943867d7616bd",
+        "size": 1988,
+        "mtime_ns": 1791373070346428293,
+        "upstream_sha256": "ba79212771ec3f4d9a1be65446be430eac371fae3ad912dbeb2943867d7616bd"
+      },
+      {
+        "original": "docs/receipts/browser_family_20261007/linux-sky-diagnostic.stderr.log",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/browser_family_20261007/linux-sky-diagnostic.stderr.log",
+        "sha256": "f15d7721d91d566cf5c9b74429a4d20ad0dea7a580362a5956d69a44676977fb",
+        "size": 13410,
+        "mtime_ns": 1791373069737861647,
+        "upstream_sha256": "f15d7721d91d566cf5c9b74429a4d20ad0dea7a580362a5956d69a44676977fb"
+      },
+      {
+        "original": "docs/receipts/browser_family_20261007/linux-sky-diagnostic.stdout.log",
+        "preserved": "docs/receipts/thinkpad_checkout_sync_20261008/preserved/docs/receipts/browser_family_20261007/linux-sky-diagnostic.stdout.log",
+        "sha256": "78c09d263d5326eee99e6a179ea18ece1b6bf85efa8974b166f49301d85278c0",
+        "size": 21307,
+        "mtime_ns": 1791373069733861627,
+        "upstream_sha256": "78c09d263d5326eee99e6a179ea18ece1b6bf85efa8974b166f49301d85278c0"
+      }
+    ],
+    "merge_exit": 0,
+    "outcome": "updated",
+    "after": "1802a68371327343539b3e73d4517248cf3361b1",
+    "branch_after": "main",
+    "tracked_after": {}
+  },
+  {
+    "path": "/home/markik/Code/repos/wgpu-graft",
+    "before": "17615cf973ce3cae6d05d7825fbdf8e605354317",
+    "branch_before": "main",
+    "tracked_before": {
+      "grafting/Cargo.toml": "f61d01c32f6ef4e6bc4d3e7e8b898672c23ef6139678182ba8a17f50dea4aa91",
+      "grafting/src/lib.rs": "217d6a36c827e8f601986a1d358af9fb86c6cbb3e80f7005e6662136867562ac",
+      "grafting/src/vulkan_dmabuf.rs": "f878283e94238a29d60fd6dd1dc46531b4743dab64cab11c87ea474910250d4f"
+    },
+    "archived": [],
+    "outcome": "retained_dirty_source",
+    "after": "17615cf973ce3cae6d05d7825fbdf8e605354317",
+    "branch_after": "main",
+    "tracked_after": {
+      "grafting/Cargo.toml": "f61d01c32f6ef4e6bc4d3e7e8b898672c23ef6139678182ba8a17f50dea4aa91",
+      "grafting/src/lib.rs": "217d6a36c827e8f601986a1d358af9fb86c6cbb3e80f7005e6662136867562ac",
+      "grafting/src/vulkan_dmabuf.rs": "f878283e94238a29d60fd6dd1dc46531b4743dab64cab11c87ea474910250d4f"
+    }
+  },
+  {
+    "path": "/home/markik/Code/repos/wgpu-scry",
+    "before": "1b555ceee70cf7ee3b4c8d05c0dd513d0635967b",
+    "branch_before": "main",
+    "tracked_before": {
+      "Cargo.lock": "6bd006efdf831874a2fb3a7a493882d02b7ad3e1f72454eb442bd16995a8c02c",
+      "scrying/Cargo.toml": "b375d2ee1c44ebc155685ea79453fe22d4532e450e20cda602ebc5aa6c2c270f",
+      "scrying/src/lib.rs": "1f2b75c0749a75017c2a1ac7dfa5cb531f940b1078a9bfc6f838e7830ff53d36",
+      "scrying/src/native_frame/dmabuf.rs": "735886b9bccacf0e0d65242f9f3df7e215e511fccf2a30c614b260293353fd25",
+      "scrying/src/native_frame/metal.rs": "5c8f06c0114c20c46da64286b15fccefd5115d8fb2f6c655edda09917d776231",
+      "scrying/src/wgpu_compat.rs": "7a8a0253b519d3c4e7aca59bd353fccc5af705dd2f7d437e9f6568f5f1bd4f8a",
+      "scrying/src/wpe_producer/ffi.rs": "34e7e27637fd73414f8fe5d1fd6cc84ccee131cad8fd9aa72d2eb7a73f2a81f4",
+      "scrying/src/wpe_producer/producer.rs": "c681e1eae20567f7bdb1d1b4b88edd1835e041a207ca9ec88a01514806cac3b7",
+      "scrying/tests/dmabuf_roundtrip.rs": "86049d1875aa58bd1b64b2cb8d77484d06fd62d0cca7e49df7d442791aee17b8",
+      "scrying/tests/wpe_to_vulkan_roundtrip.rs": "cdc4641860be8b14017a99d5a4732c6f9b8995d4fd04ff9f3ec9cf091e991875"
+    },
+    "archived": [],
+    "outcome": "retained_dirty_source",
+    "after": "1b555ceee70cf7ee3b4c8d05c0dd513d0635967b",
+    "branch_after": "main",
+    "tracked_after": {
+      "Cargo.lock": "6bd006efdf831874a2fb3a7a493882d02b7ad3e1f72454eb442bd16995a8c02c",
+      "scrying/Cargo.toml": "b375d2ee1c44ebc155685ea79453fe22d4532e450e20cda602ebc5aa6c2c270f",
+      "scrying/src/lib.rs": "1f2b75c0749a75017c2a1ac7dfa5cb531f940b1078a9bfc6f838e7830ff53d36",
+      "scrying/src/native_frame/dmabuf.rs": "735886b9bccacf0e0d65242f9f3df7e215e511fccf2a30c614b260293353fd25",
+      "scrying/src/native_frame/metal.rs": "5c8f06c0114c20c46da64286b15fccefd5115d8fb2f6c655edda09917d776231",
+      "scrying/src/wgpu_compat.rs": "7a8a0253b519d3c4e7aca59bd353fccc5af705dd2f7d437e9f6568f5f1bd4f8a",
+      "scrying/src/wpe_producer/ffi.rs": "34e7e27637fd73414f8fe5d1fd6cc84ccee131cad8fd9aa72d2eb7a73f2a81f4",
+      "scrying/src/wpe_producer/producer.rs": "c681e1eae20567f7bdb1d1b4b88edd1835e041a207ca9ec88a01514806cac3b7",
+      "scrying/tests/dmabuf_roundtrip.rs": "86049d1875aa58bd1b64b2cb8d77484d06fd62d0cca7e49df7d442791aee17b8",
+      "scrying/tests/wpe_to_vulkan_roundtrip.rs": "cdc4641860be8b14017a99d5a4732c6f9b8995d4fd04ff9f3ec9cf091e991875"
+    }
+  },
+  {
+    "path": "/home/markik/Code/repos/wgpu-weld",
+    "before": "a1eaa267ae9e9a9eed229a7c955a9c25394ca75d",
+    "branch_before": "main",
+    "tracked_before": {
+      "Cargo.lock": "e2f91b02ab73d20f54998894d656caabefabbc5c0b2b27806e795a0d78923a0a",
+      "welding/Cargo.toml": "d1f82ca6c3e57249dbfa023e7e38a97b3755faa75dcd610b1efc2b913086e1df",
+      "welding/src/native_frame/metal.rs": "f2a88f373071438b45b177ecb2ccb1a2e0464775ceb9d528ad0b8db663440eda",
+      "welding/src/native_frame/mod.rs": "06b42f2063ac9f48e191b477ce3b4161887bbdade8d0507d08c384d7c3a9fde6",
+      "welding/src/native_frame/vulkan_dmabuf.rs": "d53a6efe69149a9af67388f0f2a6599f297602db3d23989ee2a1f621c84c4e7c"
+    },
+    "archived": [],
+    "outcome": "retained_dirty_source",
+    "after": "a1eaa267ae9e9a9eed229a7c955a9c25394ca75d",
+    "branch_after": "main",
+    "tracked_after": {
+      "Cargo.lock": "e2f91b02ab73d20f54998894d656caabefabbc5c0b2b27806e795a0d78923a0a",
+      "welding/Cargo.toml": "d1f82ca6c3e57249dbfa023e7e38a97b3755faa75dcd610b1efc2b913086e1df",
+      "welding/src/native_frame/metal.rs": "f2a88f373071438b45b177ecb2ccb1a2e0464775ceb9d528ad0b8db663440eda",
+      "welding/src/native_frame/mod.rs": "06b42f2063ac9f48e191b477ce3b4161887bbdade8d0507d08c384d7c3a9fde6",
+      "welding/src/native_frame/vulkan_dmabuf.rs": "d53a6efe69149a9af67388f0f2a6599f297602db3d23989ee2a1f621c84c4e7c"
+    }
+  },
+  {
+    "path": "/home/markik/Code/repos/woodshed",
+    "before": "296997f23014afa5a50c890007da3875fbdb00dd",
+    "branch_before": "main",
+    "tracked_before": {},
+    "archived": [],
+    "merge_exit": 0,
+    "outcome": "updated",
+    "after": "9e4b37238d5febfcfe73b4bc9e291ec93b2ee1cd",
+    "branch_after": "main",
+    "tracked_after": {}
+  }
+]

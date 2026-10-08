@@ -1,0 +1,167 @@
+{
+  "verified": [
+    {
+      "path": "/home/markik/Code/crates/arboard",
+      "outcome": "updated",
+      "source_guard": true,
+      "archives_verified": 0,
+      "upstream_equal": true
+    },
+    {
+      "path": "/home/markik/Code/crates/boa",
+      "outcome": "updated",
+      "source_guard": true,
+      "archives_verified": 0,
+      "upstream_equal": true,
+      "previous_branch_retained": "serval"
+    },
+    {
+      "path": "/home/markik/Code/crates/firefox-gfx-wr",
+      "outcome": "retained_local_shader_census_branch_upstream_fetched",
+      "source_guard": true,
+      "archives_verified": 0
+    },
+    {
+      "path": "/home/markik/Code/crates/imaging",
+      "outcome": "already_current",
+      "source_guard": true,
+      "archives_verified": 0,
+      "upstream_equal": true
+    },
+    {
+      "path": "/home/markik/Code/crates/piccolo",
+      "outcome": "already_current",
+      "source_guard": true,
+      "archives_verified": 0,
+      "upstream_equal": true
+    },
+    {
+      "path": "/home/markik/Code/crates/vano",
+      "outcome": "updated",
+      "source_guard": true,
+      "archives_verified": 0,
+      "upstream_equal": true,
+      "previous_branch_retained": "serval-embedder"
+    },
+    {
+      "path": "/home/markik/Code/crates/xilem",
+      "outcome": "updated",
+      "source_guard": true,
+      "archives_verified": 0,
+      "upstream_equal": true,
+      "previous_branch_retained": "mere-wgpu-29-vello-0-9"
+    },
+    {
+      "path": "/home/markik/Code/repos/cambium",
+      "outcome": "endpoint_unavailable",
+      "source_guard": true,
+      "archives_verified": 0
+    },
+    {
+      "path": "/home/markik/Code/repos/cleromancy",
+      "outcome": "updated",
+      "source_guard": true,
+      "archives_verified": 0,
+      "upstream_equal": true
+    },
+    {
+      "path": "/home/markik/Code/repos/genet",
+      "outcome": "already_current",
+      "source_guard": true,
+      "archives_verified": 0,
+      "upstream_equal": true
+    },
+    {
+      "path": "/home/markik/Code/repos/hocket",
+      "outcome": "endpoint_unavailable",
+      "source_guard": true,
+      "archives_verified": 0
+    },
+    {
+      "path": "/home/markik/Code/repos/isometry",
+      "outcome": "updated",
+      "source_guard": true,
+      "archives_verified": 0,
+      "upstream_equal": true
+    },
+    {
+      "path": "/home/markik/Code/repos/knot-editor",
+      "outcome": "updated",
+      "source_guard": true,
+      "archives_verified": 17,
+      "upstream_equal": true
+    },
+    {
+      "path": "/home/markik/Code/repos/mere",
+      "outcome": "updated",
+      "source_guard": true,
+      "archives_verified": 0,
+      "upstream_equal": true,
+      "previous_branch_retained": "knot-phase-a-client-receipt"
+    },
+    {
+      "path": "/home/markik/Code/repos/mere-receipt",
+      "outcome": "retained_pinned_receipt_worktree",
+      "source_guard": true,
+      "archives_verified": 0
+    },
+    {
+      "path": "/home/markik/Code/repos/merecat",
+      "outcome": "updated",
+      "source_guard": true,
+      "archives_verified": 0,
+      "upstream_equal": true
+    },
+    {
+      "path": "/home/markik/Code/repos/netrender",
+      "outcome": "updated",
+      "source_guard": true,
+      "archives_verified": 0,
+      "upstream_equal": true
+    },
+    {
+      "path": "/home/markik/Code/repos/turnstone",
+      "outcome": "updated",
+      "source_guard": true,
+      "archives_verified": 56,
+      "upstream_equal": true
+    },
+    {
+      "path": "/home/markik/Code/repos/wgpu-graft",
+      "outcome": "retained_dirty_source",
+      "source_guard": true,
+      "archives_verified": 0
+    },
+    {
+      "path": "/home/markik/Code/repos/wgpu-scry",
+      "outcome": "retained_dirty_source",
+      "source_guard": true,
+      "archives_verified": 0
+    },
+    {
+      "path": "/home/markik/Code/repos/wgpu-weld",
+      "outcome": "retained_dirty_source",
+      "source_guard": true,
+      "archives_verified": 0
+    },
+    {
+      "path": "/home/markik/Code/repos/woodshed",
+      "outcome": "updated",
+      "source_guard": true,
+      "archives_verified": 0,
+      "upstream_equal": true
+    }
+  ],
+  "receipt_files_verified": 73,
+  "compatibility_worktree": {
+    "path": "/home/markik/Code/worktrees/turnstone-resource-compat",
+    "published_and_integrated": false,
+    "clean": true,
+    "active_owners": [],
+    "removed": false,
+    "head": "eeb4a501aa63fe4c41a7a5abef29db77fcb87418"
+  },
+  "new_builds_started": 0,
+  "new_worktrees_created": 0,
+  "cargo_configuration_changed": false
+}
