@@ -1,0 +1,1982 @@
+{
+  "schema": "scenomise.host-dataset/v1",
+  "dataset": {
+    "source": {
+      "authority": "https://merelyllc.com",
+      "domain": "public-repositories",
+      "resource": "repository-graph"
+    },
+    "revision": "sha256:5eb53ba97d96fbe953e1ed4cf6d51fadfd4e016b296f1f03c643f3f81d6fa641",
+    "fields": {
+      "class": "text",
+      "github_url": "text",
+      "homepage": "text",
+      "label": "text",
+      "license": "text",
+      "occurrence_id": "text",
+      "order": "number",
+      "project_url": "text",
+      "pushed_at": "text",
+      "relationship_scope": "text",
+      "status": "text",
+      "summary": "text"
+    },
+    "occurrences": [
+      {
+        "occurrence_id": "cleromancy",
+        "source": {
+          "adapter": "mer3ly.repository-graph/v1",
+          "id": "cleromancy"
+        },
+        "values": {
+          "class": {
+            "kind": "text",
+            "value": "product"
+          },
+          "github_url": {
+            "kind": "text",
+            "value": "https://github.com/merely-made/cleromancy"
+          },
+          "homepage": {
+            "kind": "text",
+            "value": "https://github.com/merely-made/cleromancy"
+          },
+          "label": {
+            "kind": "text",
+            "value": "Cleromancy"
+          },
+          "license": {
+            "kind": "text",
+            "value": "MIT OR Apache-2.0"
+          },
+          "occurrence_id": {
+            "kind": "text",
+            "value": "cleromancy"
+          },
+          "order": {
+            "kind": "number",
+            "value": 0.0
+          },
+          "project_url": {
+            "kind": "text",
+            "value": "https://merelyllc.com/projects/cleromancy/"
+          },
+          "pushed_at": {
+            "kind": "text",
+            "value": "2026-09-15T07:39:05Z"
+          },
+          "relationship_scope": {
+            "kind": "text",
+            "value": "Published public repository-family relationships from the site authority; excludes a resolved Cargo dependency closure."
+          },
+          "status": {
+            "kind": "text",
+            "value": "active"
+          },
+          "summary": {
+            "kind": "text",
+            "value": "A local-first Tarot, dice, and astrology journal built on Graphshell, with replayable readings and explicit sync consent."
+          }
+        }
+      },
+      {
+        "occurrence_id": "emblem",
+        "source": {
+          "adapter": "mer3ly.repository-graph/v1",
+          "id": "emblem"
+        },
+        "values": {
+          "class": {
+            "kind": "text",
+            "value": "foundation"
+          },
+          "github_url": {
+            "kind": "text",
+            "value": "https://github.com/merely-made/emblem"
+          },
+          "homepage": {
+            "kind": "text",
+            "value": "https://github.com/merely-made/emblem"
+          },
+          "label": {
+            "kind": "text",
+            "value": "Emblem"
+          },
+          "license": {
+            "kind": "text",
+            "value": "MPL-2.0"
+          },
+          "occurrence_id": {
+            "kind": "text",
+            "value": "emblem"
+          },
+          "order": {
+            "kind": "number",
+            "value": 1.0
+          },
+          "project_url": {
+            "kind": "text",
+            "value": "https://merelyllc.com/projects/emblem/"
+          },
+          "pushed_at": {
+            "kind": "text",
+            "value": "2026-09-05T05:13:45Z"
+          },
+          "relationship_scope": {
+            "kind": "text",
+            "value": "Published public repository-family relationships from the site authority; excludes a resolved Cargo dependency closure."
+          },
+          "status": {
+            "kind": "text",
+            "value": "active"
+          },
+          "summary": {
+            "kind": "text",
+            "value": "A pure-Rust IconVG encoder and decoder that turns compact vector graphics into paths and fills for a host renderer."
+          }
+        }
+      },
+      {
+        "occurrence_id": "genet",
+        "source": {
+          "adapter": "mer3ly.repository-graph/v1",
+          "id": "genet"
+        },
+        "values": {
+          "class": {
+            "kind": "text",
+            "value": "platform"
+          },
+          "github_url": {
+            "kind": "text",
+            "value": "https://github.com/merely-made/genet"
+          },
+          "homepage": {
+            "kind": "text",
+            "value": "https://github.com/merely-made/genet"
+          },
+          "label": {
+            "kind": "text",
+            "value": "Genet"
+          },
+          "license": {
+            "kind": "text",
+            "value": "MPL-2.0"
+          },
+          "occurrence_id": {
+            "kind": "text",
+            "value": "genet"
+          },
+          "order": {
+            "kind": "number",
+            "value": 2.0
+          },
+          "project_url": {
+            "kind": "text",
+            "value": "https://merelyllc.com/projects/genet/"
+          },
+          "pushed_at": {
+            "kind": "text",
+            "value": "2026-09-23T12:05:08Z"
+          },
+          "relationship_scope": {
+            "kind": "text",
+            "value": "Published public repository-family relationships from the site authority; excludes a resolved Cargo dependency closure."
+          },
+          "status": {
+            "kind": "text",
+            "value": "active"
+          },
+          "summary": {
+            "kind": "text",
+            "value": "An embeddable Rust web engine with modular static, interactive, scripted, and full-web profiles."
+          }
+        }
+      },
+      {
+        "occurrence_id": "isocosm",
+        "source": {
+          "adapter": "mer3ly.repository-graph/v1",
+          "id": "isocosm"
+        },
+        "values": {
+          "class": {
+            "kind": "text",
+            "value": "product"
+          },
+          "github_url": {
+            "kind": "text",
+            "value": "https://github.com/merely-made/isocosm"
+          },
+          "homepage": {
+            "kind": "text",
+            "value": "https://github.com/merely-made/isocosm"
+          },
+          "label": {
+            "kind": "text",
+            "value": "Isocosm"
+          },
+          "license": {
+            "kind": "text",
+            "value": "MIT OR Apache-2.0"
+          },
+          "occurrence_id": {
+            "kind": "text",
+            "value": "isocosm"
+          },
+          "order": {
+            "kind": "number",
+            "value": 3.0
+          },
+          "project_url": {
+            "kind": "text",
+            "value": "https://merelyllc.com/projects/isocosm/"
+          },
+          "pushed_at": {
+            "kind": "text",
+            "value": "2026-09-24T11:45:08Z"
+          },
+          "relationship_scope": {
+            "kind": "text",
+            "value": "Published public repository-family relationships from the site authority; excludes a resolved Cargo dependency closure."
+          },
+          "status": {
+            "kind": "text",
+            "value": "prototype"
+          },
+          "summary": {
+            "kind": "text",
+            "value": "One simulated world played three ways: the Isocosm simulator and the games over it, Isocosm: VTT (a pixel-art isometric virtual tabletop with peer-to-peer play), Isocosm: Mesocosm (an ecological roguelike of lineages) and Isocosm: Eponym (a second-person action RPG). The tabletop crates are MIT OR Apache-2.0; the simulator, Mesocosm, Eponym and the shared wing crates are MPL-2.0."
+          }
+        }
+      },
+      {
+        "occurrence_id": "knot-editor",
+        "source": {
+          "adapter": "mer3ly.repository-graph/v1",
+          "id": "knot-editor"
+        },
+        "values": {
+          "class": {
+            "kind": "text",
+            "value": "product"
+          },
+          "github_url": {
+            "kind": "text",
+            "value": "https://github.com/merely-made/knot-editor"
+          },
+          "homepage": {
+            "kind": "text",
+            "value": "https://github.com/merely-made/knot-editor"
+          },
+          "label": {
+            "kind": "text",
+            "value": "Knot Editor"
+          },
+          "license": {
+            "kind": "text",
+            "value": "MPL-2.0"
+          },
+          "occurrence_id": {
+            "kind": "text",
+            "value": "knot-editor"
+          },
+          "order": {
+            "kind": "number",
+            "value": 4.0
+          },
+          "project_url": {
+            "kind": "text",
+            "value": "https://merelyllc.com/projects/knot-editor/"
+          },
+          "pushed_at": {
+            "kind": "text",
+            "value": "2026-09-24T10:21:29Z"
+          },
+          "relationship_scope": {
+            "kind": "text",
+            "value": "Published public repository-family relationships from the site authority; excludes a resolved Cargo dependency closure."
+          },
+          "status": {
+            "kind": "text",
+            "value": "active"
+          },
+          "summary": {
+            "kind": "text",
+            "value": "A files-in-place, local-first Djot editor that keeps document authority and contributes the same retained surface to hosts such as Turnstone."
+          }
+        }
+      },
+      {
+        "occurrence_id": "mer3ly",
+        "source": {
+          "adapter": "mer3ly.repository-graph/v1",
+          "id": "mer3ly"
+        },
+        "values": {
+          "class": {
+            "kind": "text",
+            "value": "product"
+          },
+          "github_url": {
+            "kind": "text",
+            "value": "https://github.com/merely-made/merelyllc.com"
+          },
+          "homepage": {
+            "kind": "text",
+            "value": "https://merelyllc.com/"
+          },
+          "label": {
+            "kind": "text",
+            "value": "Mer3ly"
+          },
+          "license": {
+            "kind": "text",
+            "value": "MPL-2.0"
+          },
+          "occurrence_id": {
+            "kind": "text",
+            "value": "mer3ly"
+          },
+          "order": {
+            "kind": "number",
+            "value": 5.0
+          },
+          "project_url": {
+            "kind": "text",
+            "value": "https://merelyllc.com/projects/mer3ly/"
+          },
+          "pushed_at": {
+            "kind": "text",
+            "value": "2026-09-11T18:16:25Z"
+          },
+          "relationship_scope": {
+            "kind": "text",
+            "value": "Published public repository-family relationships from the site authority; excludes a resolved Cargo dependency closure."
+          },
+          "status": {
+            "kind": "text",
+            "value": "active"
+          },
+          "summary": {
+            "kind": "text",
+            "value": "The public Merely company site and repository-family map."
+          }
+        }
+      },
+      {
+        "occurrence_id": "mere",
+        "source": {
+          "adapter": "mer3ly.repository-graph/v1",
+          "id": "mere"
+        },
+        "values": {
+          "class": {
+            "kind": "text",
+            "value": "platform"
+          },
+          "github_url": {
+            "kind": "text",
+            "value": "https://github.com/merely-made/mere"
+          },
+          "homepage": {
+            "kind": "text",
+            "value": "https://github.com/merely-made/mere"
+          },
+          "label": {
+            "kind": "text",
+            "value": "Mere"
+          },
+          "license": {
+            "kind": "text",
+            "value": "MIT OR Apache-2.0"
+          },
+          "occurrence_id": {
+            "kind": "text",
+            "value": "mere"
+          },
+          "order": {
+            "kind": "number",
+            "value": 6.0
+          },
+          "project_url": {
+            "kind": "text",
+            "value": "https://merelyllc.com/projects/mere/"
+          },
+          "pushed_at": {
+            "kind": "text",
+            "value": "2026-09-24T11:36:39Z"
+          },
+          "relationship_scope": {
+            "kind": "text",
+            "value": "Published public repository-family relationships from the site authority; excludes a resolved Cargo dependency closure."
+          },
+          "status": {
+            "kind": "text",
+            "value": "active"
+          },
+          "summary": {
+            "kind": "text",
+            "value": "The graph-first library for addressable content, spatial arrangement, local memory, and trusted exchange."
+          }
+        }
+      },
+      {
+        "occurrence_id": "mora",
+        "source": {
+          "adapter": "mer3ly.repository-graph/v1",
+          "id": "mora"
+        },
+        "values": {
+          "class": {
+            "kind": "text",
+            "value": "foundation"
+          },
+          "github_url": {
+            "kind": "text",
+            "value": "https://github.com/merely-made/mora"
+          },
+          "homepage": {
+            "kind": "text",
+            "value": "https://github.com/merely-made/mora"
+          },
+          "label": {
+            "kind": "text",
+            "value": "Mora"
+          },
+          "license": {
+            "kind": "text",
+            "value": "MPL-2.0"
+          },
+          "occurrence_id": {
+            "kind": "text",
+            "value": "mora"
+          },
+          "order": {
+            "kind": "number",
+            "value": 7.0
+          },
+          "project_url": {
+            "kind": "text",
+            "value": "https://merelyllc.com/projects/mora/"
+          },
+          "pushed_at": {
+            "kind": "text",
+            "value": "2026-09-05T03:22:22Z"
+          },
+          "relationship_scope": {
+            "kind": "text",
+            "value": "Published public repository-family relationships from the site authority; excludes a resolved Cargo dependency closure."
+          },
+          "status": {
+            "kind": "text",
+            "value": "active"
+          },
+          "summary": {
+            "kind": "text",
+            "value": "A dependency-free prosody engine for syllabification, syllable weight, verse meter, rhyme, and other sound relationships."
+          }
+        }
+      },
+      {
+        "occurrence_id": "netrender",
+        "source": {
+          "adapter": "mer3ly.repository-graph/v1",
+          "id": "netrender"
+        },
+        "values": {
+          "class": {
+            "kind": "text",
+            "value": "foundation"
+          },
+          "github_url": {
+            "kind": "text",
+            "value": "https://github.com/merely-made/netrender"
+          },
+          "homepage": {
+            "kind": "text",
+            "value": "https://github.com/merely-made/netrender"
+          },
+          "label": {
+            "kind": "text",
+            "value": "Netrender"
+          },
+          "license": {
+            "kind": "text",
+            "value": "MPL-2.0"
+          },
+          "occurrence_id": {
+            "kind": "text",
+            "value": "netrender"
+          },
+          "order": {
+            "kind": "number",
+            "value": 8.0
+          },
+          "project_url": {
+            "kind": "text",
+            "value": "https://merelyllc.com/projects/netrender/"
+          },
+          "pushed_at": {
+            "kind": "text",
+            "value": "2026-09-17T03:09:30Z"
+          },
+          "relationship_scope": {
+            "kind": "text",
+            "value": "Published public repository-family relationships from the site authority; excludes a resolved Cargo dependency closure."
+          },
+          "status": {
+            "kind": "text",
+            "value": "active"
+          },
+          "summary": {
+            "kind": "text",
+            "value": "A Vello and wgpu realization engine for Genet paint lists and other retained scenes."
+          }
+        }
+      },
+      {
+        "occurrence_id": "org-profile",
+        "source": {
+          "adapter": "mer3ly.repository-graph/v1",
+          "id": "org-profile"
+        },
+        "values": {
+          "class": {
+            "kind": "text",
+            "value": "tool"
+          },
+          "github_url": {
+            "kind": "text",
+            "value": "https://github.com/merely-made/.github"
+          },
+          "homepage": {
+            "kind": "text",
+            "value": "https://github.com/merely-made"
+          },
+          "label": {
+            "kind": "text",
+            "value": "Merely organization profile"
+          },
+          "license": {
+            "kind": "text",
+            "value": "NOASSERTION"
+          },
+          "occurrence_id": {
+            "kind": "text",
+            "value": "org-profile"
+          },
+          "order": {
+            "kind": "number",
+            "value": 9.0
+          },
+          "project_url": {
+            "kind": "text",
+            "value": "https://merelyllc.com/projects/org-profile/"
+          },
+          "pushed_at": {
+            "kind": "text",
+            "value": "2026-09-24T11:45:13Z"
+          },
+          "relationship_scope": {
+            "kind": "text",
+            "value": "Published public repository-family relationships from the site authority; excludes a resolved Cargo dependency closure."
+          },
+          "status": {
+            "kind": "text",
+            "value": "reference"
+          },
+          "summary": {
+            "kind": "text",
+            "value": "The public GitHub organization profile and its short project index."
+          }
+        }
+      },
+      {
+        "occurrence_id": "pipit",
+        "source": {
+          "adapter": "mer3ly.repository-graph/v1",
+          "id": "pipit"
+        },
+        "values": {
+          "class": {
+            "kind": "text",
+            "value": "foundation"
+          },
+          "github_url": {
+            "kind": "text",
+            "value": "https://github.com/merely-made/pipit"
+          },
+          "homepage": {
+            "kind": "text",
+            "value": "https://github.com/merely-made/pipit"
+          },
+          "label": {
+            "kind": "text",
+            "value": "Pipit"
+          },
+          "license": {
+            "kind": "text",
+            "value": "MIT OR Apache-2.0"
+          },
+          "occurrence_id": {
+            "kind": "text",
+            "value": "pipit"
+          },
+          "order": {
+            "kind": "number",
+            "value": 10.0
+          },
+          "project_url": {
+            "kind": "text",
+            "value": "https://merelyllc.com/projects/pipit/"
+          },
+          "pushed_at": {
+            "kind": "text",
+            "value": "2026-09-05T03:22:38Z"
+          },
+          "relationship_scope": {
+            "kind": "text",
+            "value": "Published public repository-family relationships from the site authority; excludes a resolved Cargo dependency closure."
+          },
+          "status": {
+            "kind": "text",
+            "value": "active"
+          },
+          "summary": {
+            "kind": "text",
+            "value": "A dependency-free speech codec for constrained links, with framed IMA ADPCM and low-bitrate LPC voice clips."
+          }
+        }
+      },
+      {
+        "occurrence_id": "retinue",
+        "source": {
+          "adapter": "mer3ly.repository-graph/v1",
+          "id": "retinue"
+        },
+        "values": {
+          "class": {
+            "kind": "text",
+            "value": "platform"
+          },
+          "github_url": {
+            "kind": "text",
+            "value": "https://github.com/merely-made/retinue"
+          },
+          "homepage": {
+            "kind": "text",
+            "value": "https://github.com/merely-made/retinue"
+          },
+          "label": {
+            "kind": "text",
+            "value": "Retinue"
+          },
+          "license": {
+            "kind": "text",
+            "value": "MPL-2.0"
+          },
+          "occurrence_id": {
+            "kind": "text",
+            "value": "retinue"
+          },
+          "order": {
+            "kind": "number",
+            "value": 11.0
+          },
+          "project_url": {
+            "kind": "text",
+            "value": "https://merelyllc.com/projects/retinue/"
+          },
+          "pushed_at": {
+            "kind": "text",
+            "value": "2026-09-21T18:00:08Z"
+          },
+          "relationship_scope": {
+            "kind": "text",
+            "value": "Published public repository-family relationships from the site authority; excludes a resolved Cargo dependency closure."
+          },
+          "status": {
+            "kind": "text",
+            "value": "active"
+          },
+          "summary": {
+            "kind": "text",
+            "value": "A Rust implementation of Reticulum and the Merely radio stack for identity, links, resources, and reliable streams."
+          }
+        }
+      },
+      {
+        "occurrence_id": "smolweb",
+        "source": {
+          "adapter": "mer3ly.repository-graph/v1",
+          "id": "smolweb"
+        },
+        "values": {
+          "class": {
+            "kind": "text",
+            "value": "foundation"
+          },
+          "github_url": {
+            "kind": "text",
+            "value": "https://github.com/merely-made/smolweb"
+          },
+          "homepage": {
+            "kind": "text",
+            "value": "https://github.com/merely-made/smolweb"
+          },
+          "label": {
+            "kind": "text",
+            "value": "Smolweb"
+          },
+          "license": {
+            "kind": "text",
+            "value": "MIT"
+          },
+          "occurrence_id": {
+            "kind": "text",
+            "value": "smolweb"
+          },
+          "order": {
+            "kind": "number",
+            "value": 12.0
+          },
+          "project_url": {
+            "kind": "text",
+            "value": "https://merelyllc.com/projects/smolweb/"
+          },
+          "pushed_at": {
+            "kind": "text",
+            "value": "2026-09-11T08:15:34Z"
+          },
+          "relationship_scope": {
+            "kind": "text",
+            "value": "Published public repository-family relationships from the site authority; excludes a resolved Cargo dependency closure."
+          },
+          "status": {
+            "kind": "text",
+            "value": "active"
+          },
+          "summary": {
+            "kind": "text",
+            "value": "Spec-faithful Rust implementations of Misfin, Spartan, Nex, Guppy, and adjacent small-web protocols."
+          }
+        }
+      },
+      {
+        "occurrence_id": "turnstone",
+        "source": {
+          "adapter": "mer3ly.repository-graph/v1",
+          "id": "turnstone"
+        },
+        "values": {
+          "class": {
+            "kind": "text",
+            "value": "product"
+          },
+          "github_url": {
+            "kind": "text",
+            "value": "https://github.com/merely-made/turnstone"
+          },
+          "homepage": {
+            "kind": "text",
+            "value": "https://github.com/merely-made/turnstone"
+          },
+          "label": {
+            "kind": "text",
+            "value": "Turnstone"
+          },
+          "license": {
+            "kind": "text",
+            "value": "MIT OR Apache-2.0"
+          },
+          "occurrence_id": {
+            "kind": "text",
+            "value": "turnstone"
+          },
+          "order": {
+            "kind": "number",
+            "value": 13.0
+          },
+          "project_url": {
+            "kind": "text",
+            "value": "https://merelyllc.com/projects/turnstone/"
+          },
+          "pushed_at": {
+            "kind": "text",
+            "value": "2026-09-23T11:15:10Z"
+          },
+          "relationship_scope": {
+            "kind": "text",
+            "value": "Published public repository-family relationships from the site authority; excludes a resolved Cargo dependency closure."
+          },
+          "status": {
+            "kind": "text",
+            "value": "prototype"
+          },
+          "summary": {
+            "kind": "text",
+            "value": "A graph-shaped browser host for relating, curating, and cooperatively browsing the web."
+          }
+        }
+      },
+      {
+        "occurrence_id": "turquet",
+        "source": {
+          "adapter": "mer3ly.repository-graph/v1",
+          "id": "turquet"
+        },
+        "values": {
+          "class": {
+            "kind": "text",
+            "value": "foundation"
+          },
+          "github_url": {
+            "kind": "text",
+            "value": "https://github.com/merely-made/turquet"
+          },
+          "homepage": {
+            "kind": "text",
+            "value": "https://github.com/merely-made/turquet"
+          },
+          "label": {
+            "kind": "text",
+            "value": "Turquet"
+          },
+          "license": {
+            "kind": "text",
+            "value": "MIT"
+          },
+          "occurrence_id": {
+            "kind": "text",
+            "value": "turquet"
+          },
+          "order": {
+            "kind": "number",
+            "value": 14.0
+          },
+          "project_url": {
+            "kind": "text",
+            "value": "https://merelyllc.com/projects/turquet/"
+          },
+          "pushed_at": {
+            "kind": "text",
+            "value": "2026-09-11T19:10:30Z"
+          },
+          "relationship_scope": {
+            "kind": "text",
+            "value": "Published public repository-family relationships from the site authority; excludes a resolved Cargo dependency closure."
+          },
+          "status": {
+            "kind": "text",
+            "value": "active"
+          },
+          "summary": {
+            "kind": "text",
+            "value": "A celestial calculation engine for positions and events, with explicit time scales, observer frames, and reproducible model provenance."
+          }
+        }
+      },
+      {
+        "occurrence_id": "vano",
+        "source": {
+          "adapter": "mer3ly.repository-graph/v1",
+          "id": "vano"
+        },
+        "values": {
+          "class": {
+            "kind": "text",
+            "value": "foundation"
+          },
+          "github_url": {
+            "kind": "text",
+            "value": "https://github.com/merely-made/vano"
+          },
+          "homepage": {
+            "kind": "text",
+            "value": "https://github.com/merely-made/vano"
+          },
+          "label": {
+            "kind": "text",
+            "value": "Vano"
+          },
+          "license": {
+            "kind": "text",
+            "value": "MPL-2.0"
+          },
+          "occurrence_id": {
+            "kind": "text",
+            "value": "vano"
+          },
+          "order": {
+            "kind": "number",
+            "value": 15.0
+          },
+          "project_url": {
+            "kind": "text",
+            "value": "https://merelyllc.com/projects/vano/"
+          },
+          "pushed_at": {
+            "kind": "text",
+            "value": "2026-09-12T23:52:06Z"
+          },
+          "relationship_scope": {
+            "kind": "text",
+            "value": "Published public repository-family relationships from the site authority; excludes a resolved Cargo dependency closure."
+          },
+          "status": {
+            "kind": "text",
+            "value": "active"
+          },
+          "summary": {
+            "kind": "text",
+            "value": "A data-oriented JavaScript engine for Genet, maintained as a substantial Nova fork."
+          }
+        }
+      },
+      {
+        "occurrence_id": "wavicle",
+        "source": {
+          "adapter": "mer3ly.repository-graph/v1",
+          "id": "wavicle"
+        },
+        "values": {
+          "class": {
+            "kind": "text",
+            "value": "foundation"
+          },
+          "github_url": {
+            "kind": "text",
+            "value": "https://github.com/merely-made/wavicle"
+          },
+          "homepage": {
+            "kind": "text",
+            "value": "https://github.com/merely-made/wavicle"
+          },
+          "label": {
+            "kind": "text",
+            "value": "Wavicle"
+          },
+          "license": {
+            "kind": "text",
+            "value": "MIT OR Apache-2.0"
+          },
+          "occurrence_id": {
+            "kind": "text",
+            "value": "wavicle"
+          },
+          "order": {
+            "kind": "number",
+            "value": 16.0
+          },
+          "project_url": {
+            "kind": "text",
+            "value": "https://merelyllc.com/projects/wavicle/"
+          },
+          "pushed_at": {
+            "kind": "text",
+            "value": "2026-09-03T05:29:02Z"
+          },
+          "relationship_scope": {
+            "kind": "text",
+            "value": "Published public repository-family relationships from the site authority; excludes a resolved Cargo dependency closure."
+          },
+          "status": {
+            "kind": "text",
+            "value": "active"
+          },
+          "summary": {
+            "kind": "text",
+            "value": "A pure-Rust WavPack v5 codec for lossless audio."
+          }
+        }
+      },
+      {
+        "occurrence_id": "wgpu-graft",
+        "source": {
+          "adapter": "mer3ly.repository-graph/v1",
+          "id": "wgpu-graft"
+        },
+        "values": {
+          "class": {
+            "kind": "text",
+            "value": "foundation"
+          },
+          "github_url": {
+            "kind": "text",
+            "value": "https://github.com/merely-made/wgpu-graft"
+          },
+          "homepage": {
+            "kind": "text",
+            "value": "https://github.com/merely-made/wgpu-graft"
+          },
+          "label": {
+            "kind": "text",
+            "value": "wgpu-graft"
+          },
+          "license": {
+            "kind": "text",
+            "value": "MPL-2.0"
+          },
+          "occurrence_id": {
+            "kind": "text",
+            "value": "wgpu-graft"
+          },
+          "order": {
+            "kind": "number",
+            "value": 17.0
+          },
+          "project_url": {
+            "kind": "text",
+            "value": "https://merelyllc.com/projects/wgpu-graft/"
+          },
+          "pushed_at": {
+            "kind": "text",
+            "value": "2026-09-05T03:53:35Z"
+          },
+          "relationship_scope": {
+            "kind": "text",
+            "value": "Published public repository-family relationships from the site authority; excludes a resolved Cargo dependency closure."
+          },
+          "status": {
+            "kind": "text",
+            "value": "research"
+          },
+          "summary": {
+            "kind": "text",
+            "value": "A library for importing native GPU textures into wgpu textures."
+          }
+        }
+      },
+      {
+        "occurrence_id": "wgpu-scry",
+        "source": {
+          "adapter": "mer3ly.repository-graph/v1",
+          "id": "wgpu-scry"
+        },
+        "values": {
+          "class": {
+            "kind": "text",
+            "value": "foundation"
+          },
+          "github_url": {
+            "kind": "text",
+            "value": "https://github.com/merely-made/wgpu-scry"
+          },
+          "homepage": {
+            "kind": "text",
+            "value": "https://github.com/merely-made/wgpu-scry"
+          },
+          "label": {
+            "kind": "text",
+            "value": "wgpu-scry"
+          },
+          "license": {
+            "kind": "text",
+            "value": "MPL-2.0"
+          },
+          "occurrence_id": {
+            "kind": "text",
+            "value": "wgpu-scry"
+          },
+          "order": {
+            "kind": "number",
+            "value": 18.0
+          },
+          "project_url": {
+            "kind": "text",
+            "value": "https://merelyllc.com/projects/wgpu-scry/"
+          },
+          "pushed_at": {
+            "kind": "text",
+            "value": "2026-09-11T19:30:04Z"
+          },
+          "relationship_scope": {
+            "kind": "text",
+            "value": "Published public repository-family relationships from the site authority; excludes a resolved Cargo dependency closure."
+          },
+          "status": {
+            "kind": "text",
+            "value": "research"
+          },
+          "summary": {
+            "kind": "text",
+            "value": "A library for embedding system webviews into wgpu textures."
+          }
+        }
+      },
+      {
+        "occurrence_id": "wgpu-weld",
+        "source": {
+          "adapter": "mer3ly.repository-graph/v1",
+          "id": "wgpu-weld"
+        },
+        "values": {
+          "class": {
+            "kind": "text",
+            "value": "foundation"
+          },
+          "github_url": {
+            "kind": "text",
+            "value": "https://github.com/merely-made/wgpu-weld"
+          },
+          "homepage": {
+            "kind": "text",
+            "value": "https://github.com/merely-made/wgpu-weld"
+          },
+          "label": {
+            "kind": "text",
+            "value": "wgpu-weld"
+          },
+          "license": {
+            "kind": "text",
+            "value": "MPL-2.0"
+          },
+          "occurrence_id": {
+            "kind": "text",
+            "value": "wgpu-weld"
+          },
+          "order": {
+            "kind": "number",
+            "value": 19.0
+          },
+          "project_url": {
+            "kind": "text",
+            "value": "https://merelyllc.com/projects/wgpu-weld/"
+          },
+          "pushed_at": {
+            "kind": "text",
+            "value": "2026-09-05T03:23:05Z"
+          },
+          "relationship_scope": {
+            "kind": "text",
+            "value": "Published public repository-family relationships from the site authority; excludes a resolved Cargo dependency closure."
+          },
+          "status": {
+            "kind": "text",
+            "value": "research"
+          },
+          "summary": {
+            "kind": "text",
+            "value": "A library for embedding Chromium Embedded Framework surfaces into wgpu textures."
+          }
+        }
+      },
+      {
+        "occurrence_id": "woodshed",
+        "source": {
+          "adapter": "mer3ly.repository-graph/v1",
+          "id": "woodshed"
+        },
+        "values": {
+          "class": {
+            "kind": "text",
+            "value": "product"
+          },
+          "github_url": {
+            "kind": "text",
+            "value": "https://github.com/merely-made/woodshed"
+          },
+          "homepage": {
+            "kind": "text",
+            "value": "https://github.com/merely-made/woodshed"
+          },
+          "label": {
+            "kind": "text",
+            "value": "Woodshed"
+          },
+          "license": {
+            "kind": "text",
+            "value": "MIT OR Apache-2.0"
+          },
+          "occurrence_id": {
+            "kind": "text",
+            "value": "woodshed"
+          },
+          "order": {
+            "kind": "number",
+            "value": 20.0
+          },
+          "project_url": {
+            "kind": "text",
+            "value": "https://merelyllc.com/projects/woodshed/"
+          },
+          "pushed_at": {
+            "kind": "text",
+            "value": "2026-09-23T11:01:04Z"
+          },
+          "relationship_scope": {
+            "kind": "text",
+            "value": "Published public repository-family relationships from the site authority; excludes a resolved Cargo dependency closure."
+          },
+          "status": {
+            "kind": "text",
+            "value": "active"
+          },
+          "summary": {
+            "kind": "text",
+            "value": "An open-source practice toolkit for musicians."
+          }
+        }
+      }
+    ]
+  },
+  "relationships": [
+    {
+      "id": "cleromancy-depends-on-genet",
+      "from_occurrence": "cleromancy",
+      "to_occurrence": "genet",
+      "kind": "depends_on",
+      "label": "Cleromancy depends on Genet",
+      "explanation": "Cleromancy Cargo.toml pins layout-dom-api and taproot from merely-made/genet. Verification recorded on 2026-10-06 (derived).",
+      "provenance": {
+        "source": {
+          "authority": "https://merelyllc.com",
+          "domain": "public-repositories",
+          "resource": "repository-graph"
+        },
+        "source_revision": "sha256:5eb53ba97d96fbe953e1ed4cf6d51fadfd4e016b296f1f03c643f3f81d6fa641",
+        "method": "mer3ly.repository-relations.derived",
+        "method_version": 1,
+        "provider": "mer3ly authority exporter",
+        "evidence": [
+          {
+            "adapter": "mer3ly.repository-relation/v1",
+            "id": "cleromancy-depends-on-genet"
+          }
+        ]
+      }
+    },
+    {
+      "id": "cleromancy-depends-on-mere",
+      "from_occurrence": "cleromancy",
+      "to_occurrence": "mere",
+      "kind": "depends_on",
+      "label": "Cleromancy depends on Mere",
+      "explanation": "Cleromancy Cargo.toml pins Graphshell, Cambium, and the Mere graph and persistence crates from merely-made/mere. Verification recorded on 2026-10-06 (derived).",
+      "provenance": {
+        "source": {
+          "authority": "https://merelyllc.com",
+          "domain": "public-repositories",
+          "resource": "repository-graph"
+        },
+        "source_revision": "sha256:5eb53ba97d96fbe953e1ed4cf6d51fadfd4e016b296f1f03c643f3f81d6fa641",
+        "method": "mer3ly.repository-relations.derived",
+        "method_version": 1,
+        "provider": "mer3ly authority exporter",
+        "evidence": [
+          {
+            "adapter": "mer3ly.repository-relation/v1",
+            "id": "cleromancy-depends-on-mere"
+          }
+        ]
+      }
+    },
+    {
+      "id": "cleromancy-depends-on-turquet",
+      "from_occurrence": "cleromancy",
+      "to_occurrence": "turquet",
+      "kind": "depends_on",
+      "label": "Cleromancy depends on Turquet",
+      "explanation": "Cleromancy Cargo.toml uses Turquet for the optional analytic-ephemeris and sky-timeline features. Verification recorded on 2026-10-06 (derived).",
+      "provenance": {
+        "source": {
+          "authority": "https://merelyllc.com",
+          "domain": "public-repositories",
+          "resource": "repository-graph"
+        },
+        "source_revision": "sha256:5eb53ba97d96fbe953e1ed4cf6d51fadfd4e016b296f1f03c643f3f81d6fa641",
+        "method": "mer3ly.repository-relations.derived",
+        "method_version": 1,
+        "provider": "mer3ly authority exporter",
+        "evidence": [
+          {
+            "adapter": "mer3ly.repository-relation/v1",
+            "id": "cleromancy-depends-on-turquet"
+          }
+        ]
+      }
+    },
+    {
+      "id": "genet-depends-on-netrender",
+      "from_occurrence": "genet",
+      "to_occurrence": "netrender",
+      "kind": "depends_on",
+      "label": "Genet depends on Netrender",
+      "explanation": "Genet Cargo manifests use git packages from merely-made/netrender. Verification recorded on 2026-07-29 (derived).",
+      "provenance": {
+        "source": {
+          "authority": "https://merelyllc.com",
+          "domain": "public-repositories",
+          "resource": "repository-graph"
+        },
+        "source_revision": "sha256:5eb53ba97d96fbe953e1ed4cf6d51fadfd4e016b296f1f03c643f3f81d6fa641",
+        "method": "mer3ly.repository-relations.derived",
+        "method_version": 1,
+        "provider": "mer3ly authority exporter",
+        "evidence": [
+          {
+            "adapter": "mer3ly.repository-relation/v1",
+            "id": "genet-depends-on-netrender"
+          }
+        ]
+      }
+    },
+    {
+      "id": "genet-depends-on-vano",
+      "from_occurrence": "genet",
+      "to_occurrence": "vano",
+      "kind": "depends_on",
+      "label": "Genet depends on Vano",
+      "explanation": "Genet's root Cargo manifest resolves nova_vm from merely-made/vano. Verification recorded on 2026-07-30 (derived).",
+      "provenance": {
+        "source": {
+          "authority": "https://merelyllc.com",
+          "domain": "public-repositories",
+          "resource": "repository-graph"
+        },
+        "source_revision": "sha256:5eb53ba97d96fbe953e1ed4cf6d51fadfd4e016b296f1f03c643f3f81d6fa641",
+        "method": "mer3ly.repository-relations.derived",
+        "method_version": 1,
+        "provider": "mer3ly authority exporter",
+        "evidence": [
+          {
+            "adapter": "mer3ly.repository-relation/v1",
+            "id": "genet-depends-on-vano"
+          }
+        ]
+      }
+    },
+    {
+      "id": "genet-depends-on-wgpu-scry",
+      "from_occurrence": "genet",
+      "to_occurrence": "wgpu-scry",
+      "kind": "depends_on",
+      "label": "Genet depends on wgpu-scry",
+      "explanation": "Genet Cargo manifests use the scrying package from merely-made/wgpu-scry. Verification recorded on 2026-07-29 (derived).",
+      "provenance": {
+        "source": {
+          "authority": "https://merelyllc.com",
+          "domain": "public-repositories",
+          "resource": "repository-graph"
+        },
+        "source_revision": "sha256:5eb53ba97d96fbe953e1ed4cf6d51fadfd4e016b296f1f03c643f3f81d6fa641",
+        "method": "mer3ly.repository-relations.derived",
+        "method_version": 1,
+        "provider": "mer3ly authority exporter",
+        "evidence": [
+          {
+            "adapter": "mer3ly.repository-relation/v1",
+            "id": "genet-depends-on-wgpu-scry"
+          }
+        ]
+      }
+    },
+    {
+      "id": "genet-renders-with-netrender",
+      "from_occurrence": "genet",
+      "to_occurrence": "netrender",
+      "kind": "renders_with",
+      "label": "Genet renders with Netrender",
+      "explanation": "Genet's README identifies Netrender as the realization engine for Genet paint lists. Verification recorded on 2026-07-29 (curated).",
+      "provenance": {
+        "source": {
+          "authority": "https://merelyllc.com",
+          "domain": "public-repositories",
+          "resource": "repository-graph"
+        },
+        "source_revision": "sha256:5eb53ba97d96fbe953e1ed4cf6d51fadfd4e016b296f1f03c643f3f81d6fa641",
+        "method": "mer3ly.repository-relations.curated",
+        "method_version": 1,
+        "provider": "mer3ly authority exporter",
+        "evidence": [
+          {
+            "adapter": "mer3ly.repository-relation/v1",
+            "id": "genet-renders-with-netrender"
+          }
+        ]
+      }
+    },
+    {
+      "id": "isocosm-depends-on-genet",
+      "from_occurrence": "isocosm",
+      "to_occurrence": "genet",
+      "kind": "depends_on",
+      "label": "Isocosm depends on Genet",
+      "explanation": "Isocosm's root Cargo manifest (the VTT, formerly Isometry) uses Genet's layout, scripted-DOM, and probe packages from merely-made/genet. Verification recorded on 2026-09-04 (derived).",
+      "provenance": {
+        "source": {
+          "authority": "https://merelyllc.com",
+          "domain": "public-repositories",
+          "resource": "repository-graph"
+        },
+        "source_revision": "sha256:5eb53ba97d96fbe953e1ed4cf6d51fadfd4e016b296f1f03c643f3f81d6fa641",
+        "method": "mer3ly.repository-relations.derived",
+        "method_version": 1,
+        "provider": "mer3ly authority exporter",
+        "evidence": [
+          {
+            "adapter": "mer3ly.repository-relation/v1",
+            "id": "isocosm-depends-on-genet"
+          }
+        ]
+      }
+    },
+    {
+      "id": "isocosm-depends-on-mere",
+      "from_occurrence": "isocosm",
+      "to_occurrence": "mere",
+      "kind": "depends_on",
+      "label": "Isocosm depends on Mere",
+      "explanation": "Isocosm's root Cargo manifest (the VTT, formerly Isometry) uses Mere graph, replication, identity, and scene packages, and takes Cambium, its Genet winit host, and Sprigging from there since they moved to Mere on 2026-09-03. Verification recorded on 2026-09-04 (derived).",
+      "provenance": {
+        "source": {
+          "authority": "https://merelyllc.com",
+          "domain": "public-repositories",
+          "resource": "repository-graph"
+        },
+        "source_revision": "sha256:5eb53ba97d96fbe953e1ed4cf6d51fadfd4e016b296f1f03c643f3f81d6fa641",
+        "method": "mer3ly.repository-relations.derived",
+        "method_version": 1,
+        "provider": "mer3ly authority exporter",
+        "evidence": [
+          {
+            "adapter": "mer3ly.repository-relation/v1",
+            "id": "isocosm-depends-on-mere"
+          }
+        ]
+      }
+    },
+    {
+      "id": "isocosm-depends-on-netrender",
+      "from_occurrence": "isocosm",
+      "to_occurrence": "netrender",
+      "kind": "depends_on",
+      "label": "Isocosm depends on Netrender",
+      "explanation": "Isocosm's root Cargo manifest (the VTT, formerly Isometry) uses rendering packages from merely-made/netrender. Verification recorded on 2026-07-29 (derived).",
+      "provenance": {
+        "source": {
+          "authority": "https://merelyllc.com",
+          "domain": "public-repositories",
+          "resource": "repository-graph"
+        },
+        "source_revision": "sha256:5eb53ba97d96fbe953e1ed4cf6d51fadfd4e016b296f1f03c643f3f81d6fa641",
+        "method": "mer3ly.repository-relations.derived",
+        "method_version": 1,
+        "provider": "mer3ly authority exporter",
+        "evidence": [
+          {
+            "adapter": "mer3ly.repository-relation/v1",
+            "id": "isocosm-depends-on-netrender"
+          }
+        ]
+      }
+    },
+    {
+      "id": "knot-editor-depends-on-genet",
+      "from_occurrence": "knot-editor",
+      "to_occurrence": "genet",
+      "kind": "depends_on",
+      "label": "Knot Editor depends on Genet",
+      "explanation": "Knot Editor's workspace manifest resolves Fleece, genet-host-api, genet-probe, genet-scripted-dom, and layout-dom-api from merely-made/genet at one revision. Verification recorded on 2026-09-04 (derived).",
+      "provenance": {
+        "source": {
+          "authority": "https://merelyllc.com",
+          "domain": "public-repositories",
+          "resource": "repository-graph"
+        },
+        "source_revision": "sha256:5eb53ba97d96fbe953e1ed4cf6d51fadfd4e016b296f1f03c643f3f81d6fa641",
+        "method": "mer3ly.repository-relations.derived",
+        "method_version": 1,
+        "provider": "mer3ly authority exporter",
+        "evidence": [
+          {
+            "adapter": "mer3ly.repository-relation/v1",
+            "id": "knot-editor-depends-on-genet"
+          }
+        ]
+      }
+    },
+    {
+      "id": "knot-editor-depends-on-mere",
+      "from_occurrence": "knot-editor",
+      "to_occurrence": "mere",
+      "kind": "depends_on",
+      "label": "Knot Editor depends on Mere",
+      "explanation": "Knot Editor's workspace manifest resolves its Mere graph, identity, transport, and host packages, and Cambium, Illume, Inker, and the Knot editor host, from merely-made/mere at one revision. Verification recorded on 2026-09-04 (derived).",
+      "provenance": {
+        "source": {
+          "authority": "https://merelyllc.com",
+          "domain": "public-repositories",
+          "resource": "repository-graph"
+        },
+        "source_revision": "sha256:5eb53ba97d96fbe953e1ed4cf6d51fadfd4e016b296f1f03c643f3f81d6fa641",
+        "method": "mer3ly.repository-relations.derived",
+        "method_version": 1,
+        "provider": "mer3ly authority exporter",
+        "evidence": [
+          {
+            "adapter": "mer3ly.repository-relation/v1",
+            "id": "knot-editor-depends-on-mere"
+          }
+        ]
+      }
+    },
+    {
+      "id": "mere-depends-on-emblem",
+      "from_occurrence": "mere",
+      "to_occurrence": "emblem",
+      "kind": "depends_on",
+      "label": "Mere depends on Emblem",
+      "explanation": "Mere Cargo.toml declares emblem 0.2.0 for IconVG faces. Verification recorded on 2026-10-06 (derived).",
+      "provenance": {
+        "source": {
+          "authority": "https://merelyllc.com",
+          "domain": "public-repositories",
+          "resource": "repository-graph"
+        },
+        "source_revision": "sha256:5eb53ba97d96fbe953e1ed4cf6d51fadfd4e016b296f1f03c643f3f81d6fa641",
+        "method": "mer3ly.repository-relations.derived",
+        "method_version": 1,
+        "provider": "mer3ly authority exporter",
+        "evidence": [
+          {
+            "adapter": "mer3ly.repository-relation/v1",
+            "id": "mere-depends-on-emblem"
+          }
+        ]
+      }
+    },
+    {
+      "id": "mere-depends-on-genet",
+      "from_occurrence": "mere",
+      "to_occurrence": "genet",
+      "kind": "depends_on",
+      "label": "Mere depends on Genet",
+      "explanation": "Mere Cargo manifests use Genet's host, document, layout, render, and engine packages. The Cambium user-interface family is no longer among them; it moved into Mere on 2026-09-03. Verification recorded on 2026-09-04 (derived).",
+      "provenance": {
+        "source": {
+          "authority": "https://merelyllc.com",
+          "domain": "public-repositories",
+          "resource": "repository-graph"
+        },
+        "source_revision": "sha256:5eb53ba97d96fbe953e1ed4cf6d51fadfd4e016b296f1f03c643f3f81d6fa641",
+        "method": "mer3ly.repository-relations.derived",
+        "method_version": 1,
+        "provider": "mer3ly authority exporter",
+        "evidence": [
+          {
+            "adapter": "mer3ly.repository-relation/v1",
+            "id": "mere-depends-on-genet"
+          }
+        ]
+      }
+    },
+    {
+      "id": "mere-depends-on-knot-editor",
+      "from_occurrence": "mere",
+      "to_occurrence": "knot-editor",
+      "kind": "depends_on",
+      "label": "Mere depends on Knot Editor",
+      "explanation": "Mere's root Cargo manifest resolves knot-editor and knot-document from merely-made/knot-editor; Djinn consumes the editor through that workspace entry. Verification recorded on 2026-09-04 (derived).",
+      "provenance": {
+        "source": {
+          "authority": "https://merelyllc.com",
+          "domain": "public-repositories",
+          "resource": "repository-graph"
+        },
+        "source_revision": "sha256:5eb53ba97d96fbe953e1ed4cf6d51fadfd4e016b296f1f03c643f3f81d6fa641",
+        "method": "mer3ly.repository-relations.derived",
+        "method_version": 1,
+        "provider": "mer3ly authority exporter",
+        "evidence": [
+          {
+            "adapter": "mer3ly.repository-relation/v1",
+            "id": "mere-depends-on-knot-editor"
+          }
+        ]
+      }
+    },
+    {
+      "id": "mere-depends-on-mora",
+      "from_occurrence": "mere",
+      "to_occurrence": "mora",
+      "kind": "depends_on",
+      "label": "Mere depends on Mora",
+      "explanation": "Mere Cargo.toml declares mora 0.1.0 and the mora-cmudict adapter. Verification recorded on 2026-10-06 (derived).",
+      "provenance": {
+        "source": {
+          "authority": "https://merelyllc.com",
+          "domain": "public-repositories",
+          "resource": "repository-graph"
+        },
+        "source_revision": "sha256:5eb53ba97d96fbe953e1ed4cf6d51fadfd4e016b296f1f03c643f3f81d6fa641",
+        "method": "mer3ly.repository-relations.derived",
+        "method_version": 1,
+        "provider": "mer3ly authority exporter",
+        "evidence": [
+          {
+            "adapter": "mer3ly.repository-relation/v1",
+            "id": "mere-depends-on-mora"
+          }
+        ]
+      }
+    },
+    {
+      "id": "mere-depends-on-netrender",
+      "from_occurrence": "mere",
+      "to_occurrence": "netrender",
+      "kind": "depends_on",
+      "label": "Mere depends on Netrender",
+      "explanation": "Mere Cargo manifests use rendering packages from merely-made/netrender. Verification recorded on 2026-07-29 (derived).",
+      "provenance": {
+        "source": {
+          "authority": "https://merelyllc.com",
+          "domain": "public-repositories",
+          "resource": "repository-graph"
+        },
+        "source_revision": "sha256:5eb53ba97d96fbe953e1ed4cf6d51fadfd4e016b296f1f03c643f3f81d6fa641",
+        "method": "mer3ly.repository-relations.derived",
+        "method_version": 1,
+        "provider": "mer3ly authority exporter",
+        "evidence": [
+          {
+            "adapter": "mer3ly.repository-relation/v1",
+            "id": "mere-depends-on-netrender"
+          }
+        ]
+      }
+    },
+    {
+      "id": "mere-depends-on-retinue",
+      "from_occurrence": "mere",
+      "to_occurrence": "retinue",
+      "kind": "depends_on",
+      "label": "Mere depends on Retinue",
+      "explanation": "Mere's root Cargo manifest uses Retinue from merely-made/retinue. Verification recorded on 2026-07-29 (derived).",
+      "provenance": {
+        "source": {
+          "authority": "https://merelyllc.com",
+          "domain": "public-repositories",
+          "resource": "repository-graph"
+        },
+        "source_revision": "sha256:5eb53ba97d96fbe953e1ed4cf6d51fadfd4e016b296f1f03c643f3f81d6fa641",
+        "method": "mer3ly.repository-relations.derived",
+        "method_version": 1,
+        "provider": "mer3ly authority exporter",
+        "evidence": [
+          {
+            "adapter": "mer3ly.repository-relation/v1",
+            "id": "mere-depends-on-retinue"
+          }
+        ]
+      }
+    },
+    {
+      "id": "mere-renders-with-genet",
+      "from_occurrence": "mere",
+      "to_occurrence": "genet",
+      "kind": "renders_with",
+      "label": "Mere renders with Genet",
+      "explanation": "Mere's README identifies Genet as its HTML engine and product-neutral host layer. Verification recorded on 2026-07-29 (curated).",
+      "provenance": {
+        "source": {
+          "authority": "https://merelyllc.com",
+          "domain": "public-repositories",
+          "resource": "repository-graph"
+        },
+        "source_revision": "sha256:5eb53ba97d96fbe953e1ed4cf6d51fadfd4e016b296f1f03c643f3f81d6fa641",
+        "method": "mer3ly.repository-relations.curated",
+        "method_version": 1,
+        "provider": "mer3ly authority exporter",
+        "evidence": [
+          {
+            "adapter": "mer3ly.repository-relation/v1",
+            "id": "mere-renders-with-genet"
+          }
+        ]
+      }
+    },
+    {
+      "id": "retinue-depends-on-pipit",
+      "from_occurrence": "retinue",
+      "to_occurrence": "pipit",
+      "kind": "depends_on",
+      "label": "Retinue depends on Pipit",
+      "explanation": "Retinue crates/outrider/Cargo.toml uses pipit 0.2 behind the optional voice feature. Verification recorded on 2026-10-06 (derived).",
+      "provenance": {
+        "source": {
+          "authority": "https://merelyllc.com",
+          "domain": "public-repositories",
+          "resource": "repository-graph"
+        },
+        "source_revision": "sha256:5eb53ba97d96fbe953e1ed4cf6d51fadfd4e016b296f1f03c643f3f81d6fa641",
+        "method": "mer3ly.repository-relations.derived",
+        "method_version": 1,
+        "provider": "mer3ly authority exporter",
+        "evidence": [
+          {
+            "adapter": "mer3ly.repository-relation/v1",
+            "id": "retinue-depends-on-pipit"
+          }
+        ]
+      }
+    },
+    {
+      "id": "turnstone-depends-on-genet",
+      "from_occurrence": "turnstone",
+      "to_occurrence": "genet",
+      "kind": "depends_on",
+      "label": "Turnstone depends on Genet",
+      "explanation": "Turnstone's root Cargo manifest uses Genet document, host, layout, render, and scripting packages. Verification recorded on 2026-09-04 (derived).",
+      "provenance": {
+        "source": {
+          "authority": "https://merelyllc.com",
+          "domain": "public-repositories",
+          "resource": "repository-graph"
+        },
+        "source_revision": "sha256:5eb53ba97d96fbe953e1ed4cf6d51fadfd4e016b296f1f03c643f3f81d6fa641",
+        "method": "mer3ly.repository-relations.derived",
+        "method_version": 1,
+        "provider": "mer3ly authority exporter",
+        "evidence": [
+          {
+            "adapter": "mer3ly.repository-relation/v1",
+            "id": "turnstone-depends-on-genet"
+          }
+        ]
+      }
+    },
+    {
+      "id": "turnstone-depends-on-knot-editor",
+      "from_occurrence": "turnstone",
+      "to_occurrence": "knot-editor",
+      "kind": "depends_on",
+      "label": "Turnstone depends on Knot Editor",
+      "explanation": "Turnstone's root Cargo manifest resolves knot-editor and knot-document from merely-made/knot-editor. Verification recorded on 2026-09-04 (derived).",
+      "provenance": {
+        "source": {
+          "authority": "https://merelyllc.com",
+          "domain": "public-repositories",
+          "resource": "repository-graph"
+        },
+        "source_revision": "sha256:5eb53ba97d96fbe953e1ed4cf6d51fadfd4e016b296f1f03c643f3f81d6fa641",
+        "method": "mer3ly.repository-relations.derived",
+        "method_version": 1,
+        "provider": "mer3ly authority exporter",
+        "evidence": [
+          {
+            "adapter": "mer3ly.repository-relation/v1",
+            "id": "turnstone-depends-on-knot-editor"
+          }
+        ]
+      }
+    },
+    {
+      "id": "turnstone-depends-on-mere",
+      "from_occurrence": "turnstone",
+      "to_occurrence": "mere",
+      "kind": "depends_on",
+      "label": "Turnstone depends on Mere",
+      "explanation": "Turnstone's root Cargo manifest uses Mere graph, host, memory, identity, and scene packages, and takes Cambium, Workbench, Sprigging, Inker, and the surface API from there since they moved to Mere on 2026-09-03. Verification recorded on 2026-09-04 (derived).",
+      "provenance": {
+        "source": {
+          "authority": "https://merelyllc.com",
+          "domain": "public-repositories",
+          "resource": "repository-graph"
+        },
+        "source_revision": "sha256:5eb53ba97d96fbe953e1ed4cf6d51fadfd4e016b296f1f03c643f3f81d6fa641",
+        "method": "mer3ly.repository-relations.derived",
+        "method_version": 1,
+        "provider": "mer3ly authority exporter",
+        "evidence": [
+          {
+            "adapter": "mer3ly.repository-relation/v1",
+            "id": "turnstone-depends-on-mere"
+          }
+        ]
+      }
+    },
+    {
+      "id": "turnstone-depends-on-netrender",
+      "from_occurrence": "turnstone",
+      "to_occurrence": "netrender",
+      "kind": "depends_on",
+      "label": "Turnstone depends on Netrender",
+      "explanation": "Turnstone's root Cargo manifest uses rendering packages from merely-made/netrender. Verification recorded on 2026-07-29 (derived).",
+      "provenance": {
+        "source": {
+          "authority": "https://merelyllc.com",
+          "domain": "public-repositories",
+          "resource": "repository-graph"
+        },
+        "source_revision": "sha256:5eb53ba97d96fbe953e1ed4cf6d51fadfd4e016b296f1f03c643f3f81d6fa641",
+        "method": "mer3ly.repository-relations.derived",
+        "method_version": 1,
+        "provider": "mer3ly authority exporter",
+        "evidence": [
+          {
+            "adapter": "mer3ly.repository-relation/v1",
+            "id": "turnstone-depends-on-netrender"
+          }
+        ]
+      }
+    },
+    {
+      "id": "turnstone-hosts-mere",
+      "from_occurrence": "turnstone",
+      "to_occurrence": "mere",
+      "kind": "host_for",
+      "label": "Turnstone hosts Mere",
+      "explanation": "Mere's README names Turnstone as the separate browser host that consumes the Mere library. Verification recorded on 2026-07-29 (curated).",
+      "provenance": {
+        "source": {
+          "authority": "https://merelyllc.com",
+          "domain": "public-repositories",
+          "resource": "repository-graph"
+        },
+        "source_revision": "sha256:5eb53ba97d96fbe953e1ed4cf6d51fadfd4e016b296f1f03c643f3f81d6fa641",
+        "method": "mer3ly.repository-relations.curated",
+        "method_version": 1,
+        "provider": "mer3ly authority exporter",
+        "evidence": [
+          {
+            "adapter": "mer3ly.repository-relation/v1",
+            "id": "turnstone-hosts-mere"
+          }
+        ]
+      }
+    },
+    {
+      "id": "wgpu-scry-depends-on-wgpu-graft",
+      "from_occurrence": "wgpu-scry",
+      "to_occurrence": "wgpu-graft",
+      "kind": "depends_on",
+      "label": "wgpu-scry depends on wgpu-graft",
+      "explanation": "wgpu-scry's root Cargo manifest uses grafting from merely-made/wgpu-graft. Verification recorded on 2026-07-29 (derived).",
+      "provenance": {
+        "source": {
+          "authority": "https://merelyllc.com",
+          "domain": "public-repositories",
+          "resource": "repository-graph"
+        },
+        "source_revision": "sha256:5eb53ba97d96fbe953e1ed4cf6d51fadfd4e016b296f1f03c643f3f81d6fa641",
+        "method": "mer3ly.repository-relations.derived",
+        "method_version": 1,
+        "provider": "mer3ly authority exporter",
+        "evidence": [
+          {
+            "adapter": "mer3ly.repository-relation/v1",
+            "id": "wgpu-scry-depends-on-wgpu-graft"
+          }
+        ]
+      }
+    },
+    {
+      "id": "wgpu-weld-depends-on-wgpu-graft",
+      "from_occurrence": "wgpu-weld",
+      "to_occurrence": "wgpu-graft",
+      "kind": "depends_on",
+      "label": "wgpu-weld depends on wgpu-graft",
+      "explanation": "wgpu-weld's root Cargo manifest uses grafting from merely-made/wgpu-graft. Verification recorded on 2026-07-29 (derived).",
+      "provenance": {
+        "source": {
+          "authority": "https://merelyllc.com",
+          "domain": "public-repositories",
+          "resource": "repository-graph"
+        },
+        "source_revision": "sha256:5eb53ba97d96fbe953e1ed4cf6d51fadfd4e016b296f1f03c643f3f81d6fa641",
+        "method": "mer3ly.repository-relations.derived",
+        "method_version": 1,
+        "provider": "mer3ly authority exporter",
+        "evidence": [
+          {
+            "adapter": "mer3ly.repository-relation/v1",
+            "id": "wgpu-weld-depends-on-wgpu-graft"
+          }
+        ]
+      }
+    },
+    {
+      "id": "woodshed-depends-on-genet",
+      "from_occurrence": "woodshed",
+      "to_occurrence": "genet",
+      "kind": "depends_on",
+      "label": "Woodshed depends on Genet",
+      "explanation": "Woodshed's root Cargo manifest resolves Genet's raw host, layout, scripted-DOM, probe, Taffy, Parley, and IPC packages from one immutable Genet revision; its moved UI and application packages come from Mere. Verification recorded on 2026-09-05 (derived).",
+      "provenance": {
+        "source": {
+          "authority": "https://merelyllc.com",
+          "domain": "public-repositories",
+          "resource": "repository-graph"
+        },
+        "source_revision": "sha256:5eb53ba97d96fbe953e1ed4cf6d51fadfd4e016b296f1f03c643f3f81d6fa641",
+        "method": "mer3ly.repository-relations.derived",
+        "method_version": 1,
+        "provider": "mer3ly authority exporter",
+        "evidence": [
+          {
+            "adapter": "mer3ly.repository-relation/v1",
+            "id": "woodshed-depends-on-genet"
+          }
+        ]
+      }
+    },
+    {
+      "id": "woodshed-depends-on-mere",
+      "from_occurrence": "woodshed",
+      "to_occurrence": "mere",
+      "kind": "depends_on",
+      "label": "Woodshed depends on Mere",
+      "explanation": "Woodshed resolves Cambium, Sprigging, Workbench, Tinct, the surface API, scenes, identity, and storage packages from one immutable merely-made/mere revision; its headed P4e receipt passed after the 2026-09-04 repoint. Verification recorded on 2026-09-05 (derived).",
+      "provenance": {
+        "source": {
+          "authority": "https://merelyllc.com",
+          "domain": "public-repositories",
+          "resource": "repository-graph"
+        },
+        "source_revision": "sha256:5eb53ba97d96fbe953e1ed4cf6d51fadfd4e016b296f1f03c643f3f81d6fa641",
+        "method": "mer3ly.repository-relations.derived",
+        "method_version": 1,
+        "provider": "mer3ly authority exporter",
+        "evidence": [
+          {
+            "adapter": "mer3ly.repository-relation/v1",
+            "id": "woodshed-depends-on-mere"
+          }
+        ]
+      }
+    },
+    {
+      "id": "woodshed-depends-on-netrender",
+      "from_occurrence": "woodshed",
+      "to_occurrence": "netrender",
+      "kind": "depends_on",
+      "label": "Woodshed depends on Netrender",
+      "explanation": "Woodshed's root Cargo manifest uses rendering packages from merely-made/netrender. Verification recorded on 2026-07-29 (derived).",
+      "provenance": {
+        "source": {
+          "authority": "https://merelyllc.com",
+          "domain": "public-repositories",
+          "resource": "repository-graph"
+        },
+        "source_revision": "sha256:5eb53ba97d96fbe953e1ed4cf6d51fadfd4e016b296f1f03c643f3f81d6fa641",
+        "method": "mer3ly.repository-relations.derived",
+        "method_version": 1,
+        "provider": "mer3ly authority exporter",
+        "evidence": [
+          {
+            "adapter": "mer3ly.repository-relation/v1",
+            "id": "woodshed-depends-on-netrender"
+          }
+        ]
+      }
+    }
+  ],
+  "revisions": [
+    {
+      "sequence": 1,
+      "revision": "sha256:5eb53ba97d96fbe953e1ed4cf6d51fadfd4e016b296f1f03c643f3f81d6fa641"
+    }
+  ]
+}

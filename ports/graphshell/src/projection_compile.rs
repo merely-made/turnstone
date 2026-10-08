@@ -16,6 +16,7 @@
 use std::collections::BTreeMap;
 
 use crate::projection_editor::ProjectionDefinition;
+pub use scenomise::host_dataset::*;
 pub use scenomise::projection::*;
 
 use sceno::Size2;

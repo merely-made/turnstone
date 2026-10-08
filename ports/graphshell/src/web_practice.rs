@@ -17,15 +17,15 @@ use cambium::{GenetAppRunner, el, text};
 use genet_render::TextSystem;
 use genet_scripted_dom::ScriptedDom;
 use graphshell::{
+    practice_disclosure::tone_labels as tones,
     practice_workspace::{
-        ComparisonRecord, PracticeAction, PracticeRuntimeConfig, PracticeSource, PracticeView,
-        PracticeWorkspace, PracticeWorkspaceSnapshot, Selection,
+        PracticeAction, PracticeRuntimeConfig, PracticeSource, PracticeView, PracticeWorkspace,
+        PracticeWorkspaceSnapshot, Selection,
     },
     projection_compile::{
-        CompiledProjection, PRACTICE_CARD, ProjectionDataset, ProjectionFieldType,
-        ProjectionOccurrence, ProjectionValue, default_definition, practice_compiler,
+        CompiledProjection, HostDatasetV1, PRACTICE_CARD, default_definition, practice_compiler,
     },
-    projection_editor::{Channel, ProjectionDefinition, SourceBinding},
+    projection_editor::{Channel, ProjectionDefinition},
 };
 use mere::canvas::{ArrangementAction, Axes, BoardItem, PermittedActions, PhysicsBoard};
 use netrender::{Scene, ScenePath, Transform};
@@ -40,7 +40,6 @@ use web_sys::{Element, PointerEvent};
 
 use super::{BrowserHost, document, element, root, web_gpu::GpuPresenter, window};
 
-const FIXTURE: &str = include_str!("../web/fixtures/woodshed-comparison.json");
 const STORAGE: &str = "graphshellPracticeWorkspaceV1";
 const HISTORY_LIMIT: usize = 64;
 
@@ -93,7 +92,9 @@ struct SavedPractice {
 
 pub(super) struct PracticeHost {
     workspace: PracticeWorkspace,
-    dataset: ProjectionDataset,
+    /// The host dataset the page supplied (S1): the comparison's dataset and
+    /// any relationships its source disclosed.
+    host: HostDatasetV1,
     definition: ProjectionDefinition,
     compiled: CompiledProjection,
     board: PhysicsBoard,
@@ -123,74 +124,14 @@ fn encoded_axes(definition: &ProjectionDefinition) -> Axes {
     }
 }
 
-fn tones(value: &serde_json::Value) -> String {
-    value
-        .as_array()
-        .into_iter()
-        .flatten()
-        .filter_map(|v| v.get("label").and_then(|v| v.as_str()))
-        .collect::<Vec<_>>()
-        .join(" · ")
-}
-
-fn dataset_for(record: &ComparisonRecord) -> ProjectionDataset {
-    let mut occurrences = Vec::new();
-    let relation = record.relation();
-    for (id, source, label, x, y) in [
-        (
-            record.left.occurrence_id.clone(),
-            sceno::SourceRef::new(&record.left.source.adapter, &record.left.source.id),
-            record.left.label.clone(),
-            0.0,
-            0.0,
-        ),
-        (
-            record.right.occurrence_id.clone(),
-            sceno::SourceRef::new(&record.right.source.adapter, &record.right.source.id),
-            record.right.label.clone(),
-            24.0,
-            0.0,
-        ),
-        (
-            relation.id.clone(),
-            sceno::SourceRef::new("graphshell.comparison", &relation.id),
-            format!("Common tones: {}", tones(&record.result["shared"])),
-            12.0,
-            14.0,
-        ),
-    ] {
-        occurrences.push(ProjectionOccurrence {
-            occurrence_id: id.clone(),
-            source,
-            values: BTreeMap::from([
-                ("occurrence_id".into(), ProjectionValue::Text(id)),
-                ("label".into(), ProjectionValue::Text(label)),
-                ("x".into(), ProjectionValue::Number(x)),
-                ("y".into(), ProjectionValue::Number(y)),
-            ]),
-        });
-    }
-    ProjectionDataset {
-        source: SourceBinding {
-            authority: record.source.authority.clone(),
-            domain: record.source.domain.clone(),
-            resource: record.source.resource.clone(),
-        },
-        revision: record.revision.clone().into(),
-        fields: BTreeMap::from([
-            ("occurrence_id".into(), ProjectionFieldType::Text),
-            ("label".into(), ProjectionFieldType::Text),
-            ("x".into(), ProjectionFieldType::Number),
-            ("y".into(), ProjectionFieldType::Number),
-        ]),
-        occurrences,
-    }
-}
-
 impl PracticeHost {
-    pub(super) fn new(json: Option<&str>) -> Result<Self, String> {
-        let record =
-            graphshell::practice_disclosure::parse_woodshed_comparison(json.unwrap_or(FIXTURE))?;
+    /// Open the workspace on the page's host dataset, which must carry one
+    /// Woodshed comparison; there is no built-in fallback.
+    pub(super) fn new(supplied: Option<Result<HostDatasetV1, String>>) -> Result<Self, String> {
+        let host = supplied.ok_or(
+            "The practice workspace needs a host dataset: data-dataset-src or ?dataset=",
+        )??;
+        let record = graphshell::practice_disclosure::comparison_from_host_dataset(&host)?;
         let source = PracticeSource {
             binding: record.source.clone(),
             revision: record.revision.clone(),
@@ -201,7 +142,6 @@ impl PracticeHost {
             .into_iter()
             .collect(),
         };
-        let dataset = dataset_for(&record);
         let workspace = PracticeWorkspace::new(
             source,
             record,
@@ -212,17 +152,20 @@ impl PracticeHost {
             HISTORY_LIMIT,
         )
         .map_err(|e| format!("{e:?}"))?;
-        let mut definition = default_definition(&dataset);
+        let mut definition = default_definition(&host.dataset);
         definition.label = "Thursday practice".into();
         definition.appearance.title = "Thursday practice".into();
         definition.encoding.x = Channel::Field("x".into());
         definition.encoding.y = Channel::Field("y".into());
-        let compiled = practice_compiler().compile(&definition, &dataset).map_err(|e| format!("{e:?}"))?;
+        let compiled = host
+            .compile(practice_compiler(), &definition)
+            .map_err(|e| format!("{e:?}"))?
+            .projection;
         let mut board = PhysicsBoard::new();
         board.set_encoded_axes(encoded_axes(&definition));
         Ok(Self {
             workspace,
-            dataset,
+            host,
             definition,
             compiled,
             board,
@@ -356,8 +299,11 @@ impl PracticeHost {
                 "grid" | "scatter" => {
                     let mut definition = self.definition.clone();
                     definition.arrangement.kind = format!("{command}.default");
-                    let compiled = practice_compiler().refresh(&self.compiled, &definition, &self.dataset)
-                        .map_err(|e| format!("{e:?}"))?;
+                    let compiled = self
+                        .host
+                        .refresh(practice_compiler(), &self.compiled, &definition)
+                        .map_err(|e| format!("{e:?}"))?
+                        .projection;
                     self.workspace
                         .set_runtime(PracticeRuntimeConfig {
                             layout_id: definition.arrangement.kind.clone(),
@@ -427,8 +373,11 @@ impl PracticeHost {
                     if saved.workspace.runtime.layout_id != saved.definition.arrangement.kind {
                         return Err("Saved layout disagrees with recipe".into());
                     }
-                    let compiled = practice_compiler().refresh(&self.compiled, &saved.definition, &self.dataset)
-                        .map_err(|e| format!("{e:?}"))?;
+                    let compiled = self
+                        .host
+                        .refresh(practice_compiler(), &self.compiled, &saved.definition)
+                        .map_err(|e| format!("{e:?}"))?
+                        .projection;
                     let workspace = PracticeWorkspace::reopen(
                         saved.workspace,
                         self.workspace.source().clone(),
@@ -457,6 +406,33 @@ impl PracticeHost {
         }
         self.dirty = true;
         Ok(())
+    }
+
+    /// Each disclosed relationship as a reader hears it: its label and the
+    /// two cards it joins.
+    fn relations_spoken(&self) -> String {
+        let label = |occurrence: &str| {
+            self.compiled
+                .instance_by_occurrence
+                .get(occurrence)
+                .and_then(|instance| self.compiled.labels.get(instance))
+                .cloned()
+                .unwrap_or_else(|| occurrence.to_owned())
+        };
+        let mut relationships: Vec<_> = self.host.relationships.iter().collect();
+        relationships.sort_by(|a, b| a.id.cmp(&b.id));
+        relationships
+            .iter()
+            .map(|relationship| {
+                format!(
+                    "{}: {} to {}",
+                    relationship.label,
+                    label(&relationship.from_occurrence),
+                    label(&relationship.to_occurrence)
+                )
+            })
+            .collect::<Vec<_>>()
+            .join("; ")
     }
 
     fn controls(&self, width: u32, height: u32) -> Vec<Control> {
@@ -568,7 +544,7 @@ impl PracticeHost {
         let selection = &self.workspace.location().selection;
         match self.workspace.location().view {
             PracticeView::Relations => {
-                for occurrence in &self.dataset.occurrences {
+                for occurrence in &self.host.dataset.occurrences {
                     let is_relation = occurrence.occurrence_id == relation.id;
                     let subject = if occurrence.occurrence_id == record.left.occurrence_id {
                         &record.left
@@ -615,6 +591,18 @@ impl PracticeHost {
                     );
                 }
                 let y = height as f32 - 173.0;
+                if !self.host.relationships.is_empty() {
+                    add(
+                        "relations-list",
+                        "Relations".into(),
+                        self.relations_spoken(),
+                        "quiet",
+                        [20.0, y - 40.0, w - 40.0, 34.0],
+                        None,
+                        false,
+                        None,
+                    );
+                }
                 add(
                     "grid",
                     "Grid".into(),
@@ -917,6 +905,24 @@ impl PracticeHost {
                     }
                 }
             }
+            // Relationships the host dataset disclosed (S1), routed onto
+            // this arrangement, drawn between the cards they join.
+            let center = |instance: &sceno::InstanceId| {
+                self.compiled
+                    .occurrence_by_instance
+                    .get(instance)
+                    .and_then(|id| self.board.position(id))
+                    .map(|(x, y)| (x + self.card_size.0 * 0.5, y + self.card_size.1 * 0.5))
+            };
+            for relation in &self.compiled.scene.relations {
+                if let (Some((fx, fy)), Some((tx, ty))) =
+                    (center(&relation.from), center(&relation.to))
+                {
+                    let mut path = ScenePath::new();
+                    path.move_to(fx, fy).line_to(tx, ty);
+                    scene.push_shape_stroked(path, [0.86, 0.72, 0.42, 1.0], 2.0);
+                }
+            }
         }
         let container = element("practice-controls")?;
         // Keep alternate views warm, including the actual focused controls.
@@ -1100,6 +1106,10 @@ impl PracticeHost {
             (
                 "data-practice-settling",
                 self.board.is_settling().to_string(),
+            ),
+            (
+                "data-practice-relations",
+                self.compiled.scene.relations.len().to_string(),
             ),
             (
                 "data-practice-encoded-drift",
