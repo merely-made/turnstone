@@ -73,6 +73,12 @@ const SHEET: &str = "\
     .tree-status { margin: 4px 12px 8px; } \
     .tree-controls { display:flex; gap:6px; padding:6px 12px; flex-wrap:wrap; } \
     .tree-controls button { background:#263640; color:#dce3e8; padding:5px 10px; border:1px solid #637581; } \
+    .tree-grouping { max-height:180px; overflow-y:auto; padding:4px 12px; border-bottom:1px solid #2c3b44; } \
+    .tree-grouping h2 { font-size:14px; margin:2px 0; } \
+    .tree-grouping p { font-size:12px; margin:3px 0; overflow-wrap:anywhere; } \
+    .tree-grouping ul { margin:3px 0; padding-left:18px; } \
+    .tree-grouping button { background:#263640; color:#dce3e8; padding:4px 8px; margin:2px 4px; border:1px solid #637581; } \
+    .tree-grouped .tree-relations { max-height:110px; overflow-y:auto; padding:0 12px; overflow-wrap:anywhere; } \
     .tree-body { display:flex; flex-direction:row; flex:1 1 auto; min-height:0; position:relative; }     .tools-overlay { position:absolute; top:0; right:0; bottom:0; z-index:10; }     .tools-storage { margin:2px 0 6px; color:#9fb0bb; font-size:12px; } \
     .tree-graph { display:flex; flex-direction:column; flex:1 1 auto; min-width:0; } \
     .tree-canvas { display: block; flex: 1 1 auto; min-height: 0; } \
@@ -440,6 +446,10 @@ pub(crate) struct TreePage {
     product: Option<product::SavedProduct>,
     /// The host dataset the page supplied, if any (S1).
     dataset: HostedDataset,
+    /// Optional explicit containment reading over the same host authority.
+    grouping: Option<graphshell::host_dataset_view::GroupedHostDataset>,
+    grouping_evidence: bool,
+    grouping_error: Option<String>,
     /// The "Graph tools" arrangement and physics section.
     physics: physics::PhysicsPanel,
     /// Which session the canvas leaf shows.
@@ -503,8 +513,15 @@ fn hosted_dataset(page: &TreePage) -> Option<Child> {
                         relations
                             .iter()
                             .map(|relation| {
-                                Box::new(el("li", relation.spoken()).attr("role", "listitem"))
-                                    as Child
+                                let mut children: Vec<Child> =
+                                    vec![Box::new(el("span", relation.spoken()))];
+                                if page.grouping_evidence {
+                                    for witness in &relation.witnesses {
+                                        children
+                                            .push(Box::new(el("p", grouping::evidence(witness))));
+                                    }
+                                }
+                                Box::new(el("li", children).attr("role", "listitem")) as Child
                             })
                             .collect::<Vec<_>>(),
                     )
@@ -576,6 +593,7 @@ fn view(page: &TreePage) -> Child {
                     .attr("class", "tree-status")
                     .attr("role", "status"),
                 hosted_dataset(page),
+                grouping::controls(page),
                 controls::toolbar(page),
                 product::controls(page),
                 el(
@@ -595,6 +613,14 @@ fn view(page: &TreePage) -> Child {
                 )
                 .attr("class", "tree-body"),
             ),
+        )
+        .attr(
+            "class",
+            if page.grouping.is_some() {
+                "tree-grouped"
+            } else {
+                ""
+            },
         )
         .attr("style", format!("width:{width}px;height:{height}px;")),
     )
@@ -754,11 +780,20 @@ async fn boot(root: Element) -> Result<(), String> {
         product::open().await?
     };
     let mut dataset = HostedDataset::None;
+    let mut grouping = None;
     let mut placed = None;
     let (graph, source) = if let Some(hosted) = hosted {
-        match hosted
-            .and_then(|envelope| graphshell::host_dataset_view::host_dataset_view(&envelope))
-        {
+        match hosted.and_then(|envelope| {
+            if let Some(kind) = grouping::requested(&root)? {
+                let grouped =
+                    graphshell::host_dataset_view::GroupedHostDataset::new(envelope, &kind)?;
+                let view = grouped.view()?;
+                grouping = Some(grouped);
+                Ok(view)
+            } else {
+                graphshell::host_dataset_view::host_dataset_view(&envelope)
+            }
+        }) {
             Ok(view) => {
                 dataset = HostedDataset::Loaded(view.relations);
                 placed = Some(view.positions);
@@ -851,6 +886,9 @@ async fn boot(root: Element) -> Result<(), String> {
                 picked: None,
                 product,
                 dataset,
+                grouping,
+                grouping_evidence: false,
+                grouping_error: None,
                 physics,
                 tools_open: false,
                 session: remote::Session::Local,
@@ -1108,6 +1146,7 @@ impl NoRepulsionLane for mere::canvas::Canvas {
 }
 
 mod controls;
+mod grouping;
 mod lane;
 mod physics;
 #[cfg(feature = "product")]

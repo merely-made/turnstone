@@ -1,0 +1,39 @@
+# Explicit containment over the bounded Cargo manifest fixture:
+# tree.html?dataset=fixtures/grouped-manifest-components.json&grouping=contains
+assert snap ready == true
+settle 3
+assert snap dataset == loaded
+assert snap nodes == 3
+assert snap edges == 3
+click role:button Expand mere
+settle 2
+assert snap nodes == 4
+click role:button Expand mere workspace
+settle 2
+assert snap nodes == 10
+capture groups_expanded
+wait
+click role:button Collapse mere
+settle 2
+assert snap nodes == 3
+click role:button Expand mere
+settle 2
+assert snap nodes == 10
+click role:button Enter mere workspace
+settle 2
+assert snap nodes == 9
+assert text 2 external context items
+click role:button Show relationship evidence
+settle 2
+assert text This is a declaration
+capture groups_entered
+wait
+click role:button Whole graph
+settle 2
+assert snap nodes == 10
+click role:button Collapse mere
+settle 2
+assert snap nodes == 3
+capture groups_collapsed
+wait
+log nested host groups receipt complete
