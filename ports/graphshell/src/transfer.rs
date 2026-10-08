@@ -971,6 +971,23 @@ fn remapped_id(source: &str, id_by_source: &HashMap<Uuid, Uuid>) -> Result<Strin
         })
 }
 
+/// A spec's target item roles under a copy's new ids, as the scene's own
+/// item roles are: an item the copy leaves out is dropped (dynamics grammar
+/// plan, G4a; F105's item roles are keyed by node UUID).
+fn remap_spec(
+    spec: &mere::canvas::dynamics_spec::DynamicsSpec,
+    remap: &impl Fn(Uuid) -> Option<Uuid>,
+) -> mere::canvas::dynamics_spec::DynamicsSpec {
+    let mut spec = spec.clone();
+    if let Some(target) = spec.target.as_mut() {
+        target.items = std::mem::take(&mut target.items)
+            .into_iter()
+            .filter_map(|(id, role)| Some((remap(Uuid::parse_str(&id).ok()?)?.to_string(), role)))
+            .collect();
+    }
+    spec
+}
+
 fn remap_scene(scene: &SavedSceneV2, ids: &HashMap<Uuid, Uuid>) -> SavedSceneV2 {
     let remap = |id: Uuid| ids.get(&id).copied();
     SavedSceneV2 {
@@ -995,6 +1012,7 @@ fn remap_scene(scene: &SavedSceneV2, ids: &HashMap<Uuid, Uuid>) -> SavedSceneV2 
                 ..roles.clone()
             }
         }),
+        dynamics: scene.dynamics.as_ref().map(|spec| remap_spec(spec, &remap)),
         camera_offset: scene.camera_offset,
         camera_zoom: scene.camera_zoom,
         default_handler: scene.default_handler.clone(),
@@ -1675,5 +1693,31 @@ mod tests {
                     if *id == manifest.transfer_id && address.contains("phone/laptop")
             ));
         });
+    }
+
+    /// G4a: a copy carries a scene's dynamics spec, its target's item roles
+    /// under the copy's new ids, as the scene's own item roles are (F105).
+    #[test]
+    fn a_copy_remaps_the_spec_targets_item_roles() {
+        use mere::canvas::Role;
+        use mere::canvas::dynamics_spec::{DynamicsSpec, Node, Target};
+        let (kept, left, minted) = (Uuid::from_u128(1), Uuid::from_u128(2), Uuid::from_u128(3));
+        let mut spec = DynamicsSpec::new(Node::preset("spring.rapier"));
+        spec.target = Some(Target {
+            arrangement: "grid.default".into(),
+            anchored_pull: 12.0,
+            default_role: Role::Seeded,
+            groups: None,
+            items: [(kept, Role::Pinned), (left, Role::Anchored)]
+                .into_iter()
+                .map(|(id, role)| (id.to_string(), role))
+                .collect(),
+        });
+        let ids = HashMap::from([(kept, minted)]);
+        let copied = remap_spec(&spec, &|id| ids.get(&id).copied());
+        let items = &copied.target.as_ref().unwrap().items;
+        assert_eq!(items.len(), 1, "an item the copy leaves out is dropped");
+        assert_eq!(items.get(&minted.to_string()), Some(&Role::Pinned));
+        assert_eq!(copied.root, spec.root, "the rest is carried as it is");
     }
 }
