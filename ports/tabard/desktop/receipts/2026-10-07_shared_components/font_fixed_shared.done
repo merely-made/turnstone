@@ -1,0 +1,21 @@
+RESULT fail
+Shared component specimens follow the authored draft and explicit mode
+captured shared_light
+captured shared_dark
+captured shared_hc_light
+FAIL: capture 'shared_hc_dark' failed
+FAIL: capture 'graph_selected' failed
+FAIL: capture 'shared_seed_edited' failed
+FAIL: capture 'shared_undone' failed
+FAIL: capture 'shared_narrow_reader' failed
+FAIL: capture 'shared_narrow_graph' failed
+capture shared_light 2360x1600 digest=90f49aa8b8e38b33 file=/Users/markik/Code/tabard-workshop-receipts/2026-10-07_shared-components-font-fixed/shared/shared_light.png
+capture shared_dark 2360x1600 digest=0cd18c29d89ad41d file=/Users/markik/Code/tabard-workshop-receipts/2026-10-07_shared-components-font-fixed/shared/shared_dark.png
+frames: 2 captured, 0 blank, 2 distinct digests
+FAIL: capture shared_hc_light never landed after 120 frames
+FAIL: another capture is still pending
+FAIL: another capture is still pending
+FAIL: another capture is still pending
+FAIL: another capture is still pending
+FAIL: another capture is still pending
+FAIL: another capture is still pending

@@ -1,0 +1,19 @@
+RESULT fail
+Tabard authoring: preview, history, persistence and reopen
+captured initial
+FAIL: capture 'seed_edited' failed
+FAIL: capture 'dark' failed
+FAIL: capture 'undone' failed
+FAIL: capture 'discarded' failed
+FAIL: capture 'saved' failed
+FAIL: capture 'reopened' failed
+FAIL: capture 'narrow' failed
+frames: 0 captured, 0 blank, 0 distinct digests
+FAIL: capture initial never landed after 120 frames
+FAIL: another capture is still pending
+FAIL: another capture is still pending
+FAIL: another capture is still pending
+FAIL: another capture is still pending
+FAIL: another capture is still pending
+FAIL: another capture is still pending
+FAIL: another capture is still pending

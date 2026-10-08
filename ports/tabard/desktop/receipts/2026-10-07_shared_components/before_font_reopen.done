@@ -1,0 +1,5 @@
+RESULT ok
+Reopen an authored library in a fresh desktop process
+captured reopened_process
+capture reopened_process 2360x1600 digest=6c405203855990c2 file=/Users/markik/Code/tabard-workshop-receipts/2026-10-07_shared-components/reopen/reopened_process.png
+frames: 1 captured, 0 blank, 1 distinct digests

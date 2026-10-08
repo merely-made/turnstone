@@ -3,6 +3,10 @@
 This thin native host mounts `tabard-workshop`'s shared Cambium surface and
 `WorkshopState` directly. It provides the window, keyboard and pointer routing,
 native text/IME integration, and Mesquite's scenario/capture lifecycle.
+The shared graph leaf is registered with the host's leaf map. The reader scene
+uses a texture producer and the host's existing render core/device, including
+its retained texture, resizing and library-reopen invalidation. Neither
+specimen creates another renderer or product model.
 
 Run from the repository root:
 
@@ -47,6 +51,13 @@ preview, undo, discard, saved theme, explicit reopening and a 640 × 780 layout.
 It rejects unchanged frame digests for the seed edit and mode switch. It reports failure
 through the process exit status as well as the Mesquite receipt. The scenario
 requires a fresh library because its initial draft is unsaved.
+
+The shared-component scenario checks all four mode previews, graph selection,
+a keyboard seed edit and undo, and the real reader and graph in the narrow
+layout. Run `ports/tabard/desktop/scenarios/shared_components.scn` with the same
+environment variables and a fresh library path. This exercises Illume spans,
+the extracted reader and the graph swatch on the native GPU host; retained
+tests separately assert their source, palette and event behavior.
 
 Then open the saved library in a second process:
 

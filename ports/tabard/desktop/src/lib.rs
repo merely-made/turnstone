@@ -8,6 +8,8 @@
 //! The runner owns the product's `WorkshopState` directly. The host supplies
 //! a window, a private default library path and frame captures.
 
+mod reader;
+
 use std::{
     cell::{Cell, RefCell},
     ffi::OsString,
@@ -23,7 +25,10 @@ use cambium_genet_winit_host::{
 };
 use layout_dom_api::{LayoutDom, LocalName, Namespace};
 use mesquite::{CaptureRecord, LaneConfig};
-use tabard_workshop::{WORKSHOP_CSS, WorkshopState, WorkshopView, workshop_view};
+use tabard_workshop::{
+    GRAPH_LEAF_KEY, READER_LEAF_KEY, WorkshopState, WorkshopView, workshop_stylesheet,
+    workshop_view,
+};
 use taproot::ProbeSnapshot;
 
 pub type Logic = fn(&WorkshopState) -> WorkshopView;
@@ -94,7 +99,7 @@ pub fn initialize(state: WorkshopState) -> Init<WorkshopState, Logic> {
     Init {
         state,
         logic: workshop_view as Logic,
-        sheet: WORKSHOP_CSS.into(),
+        sheet: workshop_stylesheet(),
         fonts: Vec::new(),
         images: Vec::new(),
     }
@@ -111,7 +116,25 @@ pub fn host_options() -> HostOptions {
 }
 
 pub fn hooks() -> HostHooks<WorkshopState, Logic, WorkshopView> {
+    let mut reader_producer: Option<Rc<RefCell<reader::ReaderProducer>>> = None;
     HostHooks {
+        frame: Box::new(move |ctx| {
+            ctx.leaves
+                .insert(GRAPH_LEAF_KEY, Box::new(ctx.runner.state().graph_leaf()));
+            let current_reader = ctx.runner.state().reader_preview();
+            let producer = reader_producer.get_or_insert_with(|| {
+                Rc::new(RefCell::new(reader::ReaderProducer::new(
+                    current_reader.clone(),
+                )))
+            });
+            producer.borrow_mut().set_reader(current_reader);
+            if !ctx.producers.contains(READER_LEAF_KEY) {
+                ctx.producers
+                    .register(READER_LEAF_KEY, producer.clone(), &[])
+                    .expect("reader uses its own bounded producer key");
+            }
+            false
+        }),
         after_dispatch: Box::new(|ctx| ctx.runner.update(WorkshopState::sync_controls)),
         focused_text: Box::new(|runner| {
             let node = runner.focus()?;
@@ -169,6 +192,7 @@ fn focus_name(runner: &WorkshopRunner) -> String {
 
 struct WorkshopLane {
     completion: Rc<Cell<Option<bool>>>,
+    sheet: String,
 }
 
 impl mesquite::Product for WorkshopLane {
@@ -180,7 +204,7 @@ impl mesquite::Product for WorkshopLane {
     const LOG_PREFIX: &'static str = "tabard";
 
     fn sheet(&self) -> &str {
-        WORKSHOP_CSS
+        &self.sheet
     }
 
     fn snapshot(&self, ctx: &Context<'_>, _: usize, _: f32) -> ProbeSnapshot {
@@ -188,6 +212,13 @@ impl mesquite::Product for WorkshopLane {
         let primary = state.draft_theme().seeds.primary;
         ProbeSnapshot::default()
             .with_field("mode", state.mode_key())
+            .with_field(
+                "graph_selected",
+                state
+                    .selected_graph_node()
+                    .map(|id| id.to_string())
+                    .unwrap_or_default(),
+            )
             .with_field("dirty", state.is_dirty().to_string())
             .with_field("theme", state.draft_theme().id.clone())
             .with_field("name", state.draft_theme().name.clone())
@@ -280,6 +311,7 @@ pub fn run(library: PathBuf) -> Result<(), Box<dyn std::error::Error>> {
                 config,
                 WorkshopLane {
                     completion: completion.clone(),
+                    sheet: workshop_stylesheet(),
                 },
                 cambium_genet_winit_host::read_file,
             )
