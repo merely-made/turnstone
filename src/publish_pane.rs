@@ -111,7 +111,7 @@ fn field(
     label: &'static str,
 ) -> PublishPaneView {
     let input = Box::new(lens(
-        move |input: &mut TextInput| text_field_typed(input),
+        move |input: &mut TextInput| text_field_typed(input).attr("aria-label", label),
         getter,
     )) as PublishPaneView;
     Box::new(

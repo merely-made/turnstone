@@ -35,6 +35,33 @@ fn text_present(dom: &genet_scripted_dom::ScriptedDom, needle: &str) -> bool {
     contains(dom, dom.document(), needle)
 }
 
+fn has_labeled_text_control(
+    dom: &genet_scripted_dom::ScriptedDom,
+    node: genet_scripted_dom::NodeId,
+    label: &str,
+) -> bool {
+    let tag = dom.element_name(node).map(|element| element.local.as_ref());
+    let aria_label = dom.attribute(
+        node,
+        &layout_dom_api::Namespace::from(""),
+        &layout_dom_api::LocalName::from("aria-label"),
+    );
+    let marked = dom.attribute(
+        node,
+        &layout_dom_api::Namespace::from(""),
+        &layout_dom_api::LocalName::from("role"),
+    ) == Some("textbox")
+        && dom.attribute(
+            node,
+            &layout_dom_api::Namespace::from(""),
+            &layout_dom_api::LocalName::from("data-cambium-text-value"),
+        ).is_some();
+    (matches!(tag, Some("input" | "textarea")) || marked) && aria_label == Some(label)
+        || dom
+            .dom_children(node)
+            .any(|child| has_labeled_text_control(dom, child, label))
+}
+
 #[test]
 fn reference_source_reproduces_the_p0_receipt() {
     let source = SkyPaneSourceV1::boston_eclipse_reference();
@@ -130,7 +157,7 @@ fn provider_admits_semantic_controls_and_provenance() {
     assert!(text_present(&dom, "bounded TT solver interval"));
     assert!(dom.all_with_class(dom.document(), "setting-apply").len() >= 7);
     assert_eq!(dom.all_with_class(dom.document(), "sky-alert").len(), 0);
-    assert!(dom.first_tag(dom.document(), "input").is_some());
+    assert!(has_labeled_text_control(&dom, dom.document(), "Civil date"));
     assert!(dom.first_tag(dom.document(), "button").is_some());
     assert!(dom.first_tag(dom.document(), "label").is_some());
 }

@@ -83,7 +83,7 @@ pub(crate) const KNOT_SHEET: &str = "\
                    border: 1px solid rgb(52, 62, 86); padding: 3px 10px; } \
     .knot-body { display: flex; } \
     .knot-editor-wrap { width: 70%; padding: 10px; } \
-    .knot-editor-wrap textarea { color: rgb(218, 224, 236); \
+    .knot-editor-wrap textarea, .knot-editor-wrap [role="textbox"][data-cambium-text-value] { color: rgb(218, 224, 236); \
                                  background-color: rgb(25, 30, 44); \
                                  font-size: 13px; white-space: pre-wrap; \
                                  padding: 10px; border: 1px solid rgb(52, 62, 86); } \
@@ -3158,23 +3158,69 @@ mod tests {
         }
     }
 
-    fn find_element(dom: &ScriptedDom, node: NodeId, name: &str) -> Option<NodeId> {
-        if dom.kind(node) == NodeKind::Element
-            && dom
-                .element_name(node)
-                .is_some_and(|element| element.local.as_ref() == name)
-        {
+    fn find_text_control(dom: &ScriptedDom, node: NodeId) -> Option<NodeId> {
+        let tag = dom.element_name(node).map(|element| element.local.as_ref());
+        let native = matches!(tag, Some("input" | "textarea"));
+        let marked = dom.attribute(
+            node,
+            &layout_dom_api::Namespace::from(""),
+            &layout_dom_api::LocalName::from("role"),
+        ) == Some("textbox")
+            && dom.attribute(
+                node,
+                &layout_dom_api::Namespace::from(""),
+                &layout_dom_api::LocalName::from("data-cambium-text-value"),
+            ).is_some();
+        if native || marked {
             return Some(node);
         }
         dom.dom_children(node)
-            .find_map(|child| find_element(dom, child, name))
+            .find_map(|child| find_text_control(dom, child))
+    }
+
+    #[test]
+    fn marked_div_text_control_is_discovered_without_a_native_tag() {
+        type FixtureView = Box<dyn AnyView<(), (), GenetCtx, GenetElement>>;
+        fn marked_fixture(_: &()) -> FixtureView {
+            Box::new(
+                el::<_, (), ()>("div", "draft")
+                    .attr("role", "textbox")
+                    .attr("data-cambium-text-value", "draft"),
+            )
+        }
+
+        let dom: DomHandle = Rc::new(std::cell::RefCell::new(ScriptedDom::new()));
+        let _runner = GenetAppRunner::new(
+            dom.clone(),
+            marked_fixture as fn(&()) -> FixtureView,
+            (),
+        );
+        let dom = dom.borrow();
+        let field = find_text_control(&dom, dom.document())
+            .expect("the marked DIV is recognized as the editor field");
+        assert_eq!(
+            dom.element_name(field)
+                .map(|name| name.local.as_ref()),
+            Some("div")
+        );
+        assert!(dom.attribute(
+            field,
+            &layout_dom_api::Namespace::from(""),
+            &layout_dom_api::LocalName::from("aria-label"),
+        ).is_none(), "the unnamed Knot field stays unnamed");
     }
 
     fn focus_editor(session: &mut KnotDocumentSession) {
         let textarea = {
             let dom = session.dom.borrow();
-            find_element(&dom, session.runner.root(), "textarea")
-                .expect("authoring view should contain a textarea")
+            let field = find_text_control(&dom, session.runner.root())
+                .expect("authoring view should contain a text control");
+            assert!(dom.attribute(
+                field,
+                &layout_dom_api::Namespace::from(""),
+                &layout_dom_api::LocalName::from("aria-label"),
+            ).is_none(), "the Knot editor remains unnamed");
+            field
         };
         session
             .runner

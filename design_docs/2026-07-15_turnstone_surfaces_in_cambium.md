@@ -251,3 +251,24 @@ per pane, so the next person to ask why a window feels heavy does not have to
 instrument the frame loop by hand first.
 
 turnstone `675f7f0`, 289 pass.
+
+## Forms consumer compatibility, 2026-10-07
+
+**Status:** approved, implementation and fresh qualification in progress.
+The numbered F5 scope ruling lives in
+`genet/design_docs/2026-10-07_forms_value_validation_submission_plan.md`.
+Mere owns the field representation and F6 accessibility-leaf projection in
+`mere/design_docs/cambium_docs/technical_architecture/genet-compatibility.md`.
+
+This bounded pass updates Knot field selectors, Sky's field lookup and the
+attachment of existing Sky/Publish labels for explicit Cambium app textboxes.
+Currently unnamed Knot and share fields stay unnamed. Retain native-tag
+recognition for the current public Mere pin until verified adoption.
+
+Done when the affected authoring/Sky/Publish fixtures pass on the existing
+locked public dependency graph and app-marker fixtures exercise the proposed
+representation. Compilation or fixtures on the current graph do not establish
+adoption of the unpublished Mere/Genet candidate. A later adoption must verify
+the complete sibling dependency family and run its consumer gates separately.
+Root owns serial gates, commits and the acceptance record; delegated source
+work does not change manifests, locks or local path overlays.
