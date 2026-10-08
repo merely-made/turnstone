@@ -4,7 +4,7 @@
 assert title GRAPHSHELL H3 READY
 assert snap ready == true
 # The boot arrangement pauses the canvas; the receipt wants the law running.
-dom click [data-command="toggle-physics"]
+dom click [data-command="physics:toggle"]
 settle 1
 assert snap physics-paused == false
 # No arrangement: the boot Spiral's anchor springs would pull under every law.

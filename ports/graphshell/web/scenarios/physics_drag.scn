@@ -8,7 +8,7 @@
 # reaches, and exactly as the px forms did at zoom 1.
 assert title GRAPHSHELL H3 READY
 assert snap ready == true
-dom click [data-command="toggle-physics"]
+dom click [data-command="physics:toggle"]
 settle 1
 assert snap physics-paused == false
 select #gs-arrangement-select free

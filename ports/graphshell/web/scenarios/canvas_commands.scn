@@ -45,7 +45,7 @@ settle 1
 pointer up right 1000 150
 settle 2
 assert dom #gs-command-menu-items Projection: order by tempo
-dom click [data-command-menu="run:zoom-in"]
+dom click [data-command-menu="run:view:zoom_in"]
 settle 6
 assert snap command-menu == closed
 assert snap session-store == stored

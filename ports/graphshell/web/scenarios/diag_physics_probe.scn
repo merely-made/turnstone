@@ -3,7 +3,7 @@
 # the failure text carries the reading.
 assert title GRAPHSHELL H3 READY
 assert snap ready == true
-dom click [data-command="toggle-physics"]
+dom click [data-command="physics:toggle"]
 settle 1
 assert snap physics-paused == false
 select #gs-arrangement-select free

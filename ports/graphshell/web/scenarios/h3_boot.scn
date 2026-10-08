@@ -27,6 +27,6 @@ assert attr #gs-detail-surface aria-hidden false
 key escape
 settle 1
 assert snap detail-open == false
-assert event command open-detail
+assert event command node:edit
 assert event command close-detail
 log h3 boot receipt complete

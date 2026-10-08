@@ -12,6 +12,7 @@
 //! draws them as DOM like its panels (SE33). What the person keeps and has
 //! used is a view of Graphshell's in the mere session (SE31).
 
+use cambium::catalogue::{self, ids};
 use cambium::{Command, CommandChoices, CommandSet, MenuSession};
 use graphshell::mere_host::{GRAPHSHELL, SessionViewIntent as ViewIntent};
 use wasm_bindgen::JsCast;
@@ -23,33 +24,39 @@ use super::{BrowserHost, document, element};
 /// The view the menu's choices are kept in.
 const COMMANDS_VIEW: &str = "commands";
 
+/// A shared command's label: the verbs other hosts offer too take the
+/// catalogue's id and name, and keep the page's surface (SE50).
+fn shared(id: &str) -> &'static str {
+    catalogue::label(id).expect("a catalogue id")
+}
+
 /// The commands the page offers through its menu, by surface.
 pub(super) fn page_commands() -> CommandSet {
     let mut set = CommandSet::new().with_defaults([
-        "zoom-in",
-        "zoom-out",
-        "fit-content",
-        "add-address",
+        ids::VIEW_ZOOM_IN,
+        ids::VIEW_ZOOM_OUT,
+        ids::VIEW_FIT,
+        ids::NODE_NEW,
         "open-projection-editor",
-        "session-undo",
-        "session-redo",
+        ids::SESSION_UNDO,
+        ids::SESSION_REDO,
         "save-scene",
     ]);
     for (id, label, category) in [
-        ("open-detail", "Edit selected object", "node"),
+        (ids::NODE_EDIT, shared(ids::NODE_EDIT), "node"),
         ("invoke-action", "Open selected object", "node"),
         ("select-web", "Select research object", "canvas"),
-        ("zoom-in", "Zoom in", "canvas"),
-        ("zoom-out", "Zoom out", "canvas"),
-        ("fit-content", "Fit to view", "canvas"),
+        (ids::VIEW_ZOOM_IN, shared(ids::VIEW_ZOOM_IN), "canvas"),
+        (ids::VIEW_ZOOM_OUT, shared(ids::VIEW_ZOOM_OUT), "canvas"),
+        (ids::VIEW_FIT, shared(ids::VIEW_FIT), "canvas"),
         ("pan-left", "Pan left", "canvas"),
         ("pan-right", "Pan right", "canvas"),
         ("pan-up", "Pan up", "canvas"),
         ("pan-down", "Pan down", "canvas"),
-        ("add-address", "Add address", "canvas"),
-        ("toggle-physics", "Pause or resume physics", "canvas"),
-        ("session-undo", "Undo change", "session"),
-        ("session-redo", "Redo change", "session"),
+        (ids::NODE_NEW, shared(ids::NODE_NEW), "canvas"),
+        (ids::PHYSICS_TOGGLE, shared(ids::PHYSICS_TOGGLE), "canvas"),
+        (ids::SESSION_UNDO, shared(ids::SESSION_UNDO), "session"),
+        (ids::SESSION_REDO, shared(ids::SESSION_REDO), "session"),
         ("session-local", "Show the local mere", "session"),
         ("session-remote", "Show the remote mount", "session"),
         ("save-scene", "Save scene", "session"),
