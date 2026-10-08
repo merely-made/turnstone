@@ -4,7 +4,7 @@ Requested by Mark in the Turnstone lane. Host: `thinkpad-l14-f`. This is Git
 checkout maintenance, not a build or dependency compatibility qualification.
 
 Twelve checkouts advanced, three already matched their tracked upstreams, and
-seven remain protected or unavailable. Fetches used at most two low-priority
+five remain protected and two are legacy checkouts. Fetches used at most two low-priority
 workers, with automatic Git maintenance disabled for the command. No new
 build, worktree, Cargo home, Cargo target, or global Cargo configuration was
 created or changed. The existing Genet build was left alone.
@@ -18,10 +18,10 @@ created or changed. The existing Genet build was left alone.
 | `crates/piccolo` | Already current | `e77309c648` | `master` |
 | `crates/vano` | Updated | `1816f328fa` | `genet-embedder` |
 | `crates/xilem` | Updated | `271a27a6d4` | `main` |
-| `repos/cambium` | Endpoint inaccessible; checkout preserved | `f1251f7ebb` | `main` |
+| `repos/cambium` | Legacy checkout; maintained in Mere | `f1251f7ebb` | `main` |
 | `repos/cleromancy` | Updated | `ff3b1f5302` | `main` |
 | `repos/genet` | Already current | `6cb2284a33` | `main` |
-| `repos/hocket` | Endpoint inaccessible; checkout preserved | `0923086d67` | `main` |
+| `repos/hocket` | Legacy checkout; maintained in Woodshed | `0923086d67` | `main` |
 | `repos/isometry` | Updated | `40a31d61b2` | `main` |
 | `repos/knot-editor` | Updated | `6e66f1abdd` | `main` |
 | `repos/mere` | Updated | `7a5bedd13c` | `main` |
@@ -45,9 +45,14 @@ and retain their earlier fork/receipt branches. Cleromancy reattached to `main`;
 its previous detached commit remains in the published history. Mere's secondary
 `mere-receipt` worktree and Firefox's shader-census branch remain pinned.
 
-The Cambium and Hocket fetches failed for their configured endpoints. A bounded
-check against current namespace endpoints also did not find an accessible
-repository. No credentials or remote configuration were changed.
+Mark clarified on 2026-10-08 that Cambium's maintained home is Mere and Hocket's
+is Woodshed. Use `/home/markik/Code/repos/mere` and
+`/home/markik/Code/repos/woodshed` for their current Linux work. The standalone
+Cambium and Hocket directories are preserved legacy checkouts, rather than
+repositories awaiting an authentication repair. Exclude them from future routine
+refreshes. The raw JSON receipts retain the actual failed fetch outcomes; this
+ownership clarification does not rewrite that historical evidence. No credentials
+or remote configuration were changed.
 
 Seventeen Knot and fifty-six Turnstone receipt files collided with new tracked
 files. Only those receipt files were relocated under each repository's
