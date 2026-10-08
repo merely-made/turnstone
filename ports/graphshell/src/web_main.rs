@@ -33,7 +33,7 @@ use graphshell::mere_host::{
     FIXTURE_DEVICE_TWO_ADDRESS, FIXTURE_PERSONA_ADDRESS, FIXTURE_WEB_ADDRESS, GRAPHSHELL, MereHost,
     SelectedPersonaRef,
 };
-use graphshell::product::{RelationFamilyFilter, SavedSceneV2, kept_summary};
+use graphshell::product::{RelationFamilyFilter, SavedSceneV3, kept_summary};
 use graphshell::projection_compile::ProjectionSnapshot;
 use graphshell::projection_editor::{
     Appearance, Channel, EditorAction, Encoding, Interaction, ProjectionDefinition,
@@ -161,7 +161,7 @@ struct BrowserHost {
     last_export: String,
     export_bytes: usize,
     imported_nodes: usize,
-    saved_scene: Option<SavedSceneV2>,
+    saved_scene: Option<SavedSceneV3>,
     arrangement_transition: Option<graphshell::canvas_physics::ArrangementTransition>,
     primary_member: Option<Uuid>,
     last_detail_member: Option<Uuid>,

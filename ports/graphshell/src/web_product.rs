@@ -10,8 +10,8 @@ use std::collections::HashMap;
 
 use graphshell::canvas_physics;
 use graphshell::product::{
-    EditableRelation, ExportRequest, LocalFileMetadata, RelationFamilyFilter, SavedSceneV2,
-    TransferScope,
+    EditableRelation, ExportRequest, LocalFileMetadata, RelationFamilyFilter, SavedDynamics,
+    SavedSceneV3, TransferScope,
 };
 use mere::canvas::{
     CANVAS_PHYSICS_DEPTH_SOURCES, CANVAS_PHYSICS_KIND_SOURCES, CANVAS_PHYSICS_LAWS,
@@ -184,13 +184,17 @@ impl BrowserHost {
         Ok(())
     }
 
-    pub(super) fn apply_saved_scene(&mut self, scene: SavedSceneV2) -> Result<(), String> {
+    /// Open a saved scene: its spec runs as the canvas's record (dynamics
+    /// grammar plan, G4b1, F142), naming the arrangement, its roles, the law
+    /// or composition and the damping; the view state beside it follows.
+    pub(super) fn apply_saved_scene(&mut self, scene: SavedSceneV3) -> Result<(), String> {
         self.arrangement_transition = None;
-        self.layout_id = scene
-            .layout_strategy
-            .clone()
-            .unwrap_or_else(|| "phyllotaxis.default".to_string());
-        self.physics_damping = scene.physics_damping;
+        let spec = scene.dynamics_spec()?;
+        self.layout_id = scene.arrangement()?;
+        let mere::canvas::dynamics_spec::Realization::Integrate { damping } = spec.realization;
+        if let Some(damping) = damping {
+            self.physics_damping = damping as f32;
+        }
         self.physics_paused = scene.physics_paused;
         self.handler_id = scene.default_handler.clone();
         self.canvas.set_graph(self.app.host.graph().clone());
@@ -227,45 +231,12 @@ impl BrowserHost {
             .apply_cartography_materials(scene.cartography.material_iter());
         self.canvas
             .apply_cartography_faces(scene.cartography.face_iter());
-        // The roles ride the scene; a scene saved before them reads its pull
-        // as the roles it acted as (dynamics grammar plan, G7).
-        let (roles, stiffness) = scene.roles()?;
-        self.canvas.set_anchor_stiffness(stiffness);
-        let table = roles.table(self.canvas.graph());
-        self.canvas.set_arrangement_roles(table);
-        // The law, its overlays and the kind source ride the scene; an unknown id
-        // (a scene from a newer catalog) falls back to the default rather than
-        // failing the restore. (Physics catalog — P1.)
-        self.canvas.set_physics_kind_source(
-            mere::canvas::PhysicsKindSource::parse(&scene.physics_kind_source)
-                .unwrap_or(mere::canvas::PhysicsKindSource::Site),
-        );
-        self.canvas.set_physics_group_source(
-            mere::canvas::PhysicsKindSource::parse(&scene.physics_group_source)
-                .unwrap_or(mere::canvas::PhysicsKindSource::Site),
-        );
-        self.canvas.set_physics_mass_source(
-            mere::canvas::PhysicsMassSource::parse(&scene.physics_mass_source)
-                .unwrap_or(mere::canvas::PhysicsMassSource::Degree),
-        );
-        self.canvas.set_physics_depth_source(
-            mere::canvas::PhysicsDepthSource::parse(&scene.physics_depth_source)
-                .unwrap_or(mere::canvas::PhysicsDepthSource::Roots),
-        );
-        // A saved scene cannot pair Density with overlays (the canvas refused
-        // them when it was made), so a refusal here has nothing to report.
-        let _ = self.canvas.set_physics_overlays(
-            scene
-                .physics_overlays
-                .iter()
-                .filter_map(|id| mere::canvas::PhysicsOverlay::parse(id))
-                .collect(),
-        );
-        let _ = self.canvas.set_physics_law(
-            mere::canvas::PhysicsLaw::parse(&scene.physics_law)
-                .unwrap_or(mere::canvas::PhysicsLaw::Springs),
-        );
-        self.canvas.set_physics_damping(scene.physics_damping);
+        // The roles, the law or composition and the sources ride the spec;
+        // a refusal names where and nothing is applied (F97, F149).
+        self.canvas
+            .set_dynamics_spec(&spec)
+            .map_err(|error| format!("dynamics spec: {error}"))?;
+        self.canvas.set_physics_damping(self.physics_damping);
         self.canvas.set_physics_paused(scene.physics_paused);
         // The panel's controls follow the reopened scene; before the first
         // frame fills them there is nothing to set yet.
@@ -540,33 +511,17 @@ impl BrowserHost {
             }
         };
         let camera = self.canvas.camera();
-        let scene = SavedSceneV2 {
+        // The record (F142): what the canvas runs, its arrangement the
+        // host's; a spec opened and not edited since saves as it was.
+        let mut spec = self.canvas.dynamics_spec()?;
+        if let Some(target) = spec.target.as_mut() {
+            target.arrangement = self.layout_id.clone();
+        }
+        let scene = SavedSceneV3 {
             name: "Graphshell working scene".to_string(),
             selected,
-            layout_strategy: Some(self.layout_id.clone()),
             physics_paused: self.physics_paused,
-            physics_damping: self.physics_damping,
-            physics_law: self.canvas.physics_law().id().to_string(),
-            physics_overlays: self
-                .canvas
-                .physics_overlays()
-                .iter()
-                .map(|overlay| overlay.id().to_string())
-                .collect(),
-            physics_kind_source: self.canvas.physics_kind_source().id().to_string(),
-            physics_group_source: self.canvas.physics_group_source().id().to_string(),
-            physics_mass_source: self.canvas.physics_mass_source().id().to_string(),
-            physics_depth_source: self.canvas.physics_depth_source().id().to_string(),
-            arrangement_pull: self.canvas.anchor_stiffness(),
-            arrangement_roles: Some(
-                graphshell::product::SavedRoles::from_table(
-                    self.canvas.arrangement_roles(),
-                    self.canvas.graph(),
-                )
-                .saved(),
-            ),
-            // Nothing writes a spec yet (G4a, F100); G4b's binding does.
-            dynamics: None,
+            dynamics: SavedDynamics::from_spec(&spec),
             camera_offset: camera.offset,
             camera_zoom: camera.zoom,
             default_handler: select_value("handler-select")?,
@@ -779,6 +734,28 @@ pub(super) fn update_product_semantics(
             "data-physics-depth-source",
             host.canvas.physics_depth_source().id().to_string(),
         ),
+        // What the law slot runs, and the schedule's stage under way: what
+        // the scene receipts assert after an open (dynamics grammar plan,
+        // G4b1, F161).
+        (
+            "data-physics-composition",
+            match host.canvas.physics_composition() {
+                None => "none",
+                Some(mere::canvas::PhysicsComposition::Mix(_)) => "mix",
+                Some(mere::canvas::PhysicsComposition::Grouped(_)) => "grouped",
+            }
+            .to_string(),
+        ),
+        (
+            "data-physics-schedule-stage",
+            host.canvas
+                .physics_schedule_stage()
+                .map_or_else(|| "none".to_string(), |stage| stage.to_string()),
+        ),
+        (
+            "data-saved-scene-facet",
+            saved_scene_facet(host).to_string(),
+        ),
         ("data-physics-energy", format!("{:.1}", stats.energy)),
         ("data-layout-spread", format!("{:.0}", stats.spread)),
         ("data-layout-overlaps", stats.overlaps.to_string()),
@@ -890,6 +867,25 @@ pub(super) fn update_product_semantics(
         }
     }
     Ok(())
+}
+
+/// Which facet version holds the scene at [`SAVED_SCENE_ADDRESS`]: `v4`,
+/// `v3`, `v2`, or `none`.
+fn saved_scene_facet(host: &BrowserHost) -> &'static str {
+    use graphshell::product::{SAVED_SCENE_FACET, SAVED_SCENE_FACET_V2, SAVED_SCENE_FACET_V3};
+    [
+        (SAVED_SCENE_FACET, "v4"),
+        (SAVED_SCENE_FACET_V3, "v3"),
+        (SAVED_SCENE_FACET_V2, "v2"),
+    ]
+    .into_iter()
+    .find(|(facet, _)| {
+        host.app
+            .host
+            .facet_value(SAVED_SCENE_ADDRESS, facet)
+            .is_some()
+    })
+    .map_or("none", |(_, version)| version)
 }
 
 async fn read_file_metadata(file: &File) -> Result<LocalFileMetadata, String> {

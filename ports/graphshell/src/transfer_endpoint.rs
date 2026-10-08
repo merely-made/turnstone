@@ -359,7 +359,7 @@ mod tests {
     use mere::kernel::graph::{Graph, NodeFacetStore};
 
     use super::*;
-    use crate::product::{PRODUCT_CODICIL_SCHEMA, ProductCodicilV2, TransferScope};
+    use crate::product::{PRODUCT_CODICIL_SCHEMA, ProductCodicilV3, TransferScope};
     use crate::transfer::{
         AccessTransferPolicy, TransferBlobV1, TransferEndpointV1, TransferOperation,
         TransferRouteV1, product_codicil_schema,
@@ -375,7 +375,7 @@ mod tests {
             "https://example.test/h6-endpoint".to_string(),
             PortablePoint::new(0.0, 0.0),
         );
-        let product = ProductCodicilV2 {
+        let product = ProductCodicilV3 {
             schema: PRODUCT_CODICIL_SCHEMA.to_string(),
             scope: TransferScope::ObjectOnly,
             exported_at_ms: 1,

@@ -703,6 +703,8 @@ mod tests {
             .1
             .id;
         selected_ids.push(access);
+        // Written as a version-3 scene and converted, so the save is a
+        // version-4 scene (dynamics grammar plan, F142).
         let scene = SavedSceneV2 {
             name: "Identity and access".to_string(),
             selected: selected_ids.clone(),
@@ -727,7 +729,9 @@ mod tests {
                     .enumerate()
                     .map(|(index, id)| (*id, (index as f32 * 30.0, 0.0))),
             ),
-        };
+        }
+        .into_v3()
+        .expect("the flat scene converts");
         app.host
             .save_product_scene("mere://scene/h4-identity-access", &scene)
             .expect("save mixed scene");
