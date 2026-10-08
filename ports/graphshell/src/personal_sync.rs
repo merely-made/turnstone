@@ -2716,7 +2716,7 @@ mod tests {
                         physics_depth_source: "roots".into(),
                         arrangement_pull: 0.4,
                         arrangement_roles: None,
-                        dynamics: Some(spec.clone()),
+                        dynamics: Some(crate::product::SavedDynamics::from_spec(&spec)),
                         camera_offset: (0.0, 0.0),
                         camera_zoom: 1.0,
                         default_handler: "graphshell.inspect".into(),
@@ -2737,7 +2737,7 @@ mod tests {
             let PersonalGraphEvent::SaveScene { scene, .. } = &back.events[0] else {
                 panic!("the event comes back as it went");
             };
-            assert_eq!(scene.dynamics, Some(spec));
+            assert_eq!(scene.dynamics.as_ref().unwrap().spec(), Ok(spec));
             assert_eq!(
                 encode_cbor(&back).unwrap(),
                 bytes,
@@ -2748,5 +2748,67 @@ mod tests {
                 depth == 33
             );
         }
+    }
+
+    /// F114: a record carrying a scene whose spec this reader refuses still
+    /// decodes; the spec rides opaque, and that scene's open alone fails.
+    #[test]
+    fn a_refused_spec_fails_its_scenes_open_not_the_record() {
+        use mere::canvas::dynamics_spec::{DynamicsSpec, Node};
+        let spec = DynamicsSpec::new(Node::preset("spring.rapier"));
+        let mut newer = serde_json::to_value(&spec).unwrap();
+        newer["version"] = serde_json::json!(2);
+        newer["realization"] = serde_json::json!({ "anneal": { "cooling": 0.99 } });
+        let scene = |dynamics: serde_json::Value| SavedSceneV2 {
+            name: "Newer spec".into(),
+            selected: vec![A],
+            layout_strategy: Some("grid.default".into()),
+            physics_paused: true,
+            physics_damping: 0.7,
+            physics_law: "spring.rapier".into(),
+            physics_overlays: Vec::new(),
+            physics_kind_source: "site".into(),
+            physics_mass_source: "degree".into(),
+            physics_depth_source: "roots".into(),
+            arrangement_pull: 0.4,
+            arrangement_roles: None,
+            dynamics: Some(serde_json::from_value(dynamics).unwrap()),
+            camera_offset: (0.0, 0.0),
+            camera_zoom: 1.0,
+            default_handler: "graphshell.inspect".into(),
+            cartography: CartographyGeometry::default(),
+        };
+        let record = PersonalGraphRecord {
+            events: vec![
+                PersonalGraphEvent::SaveScene {
+                    node: A,
+                    scene: scene(newer),
+                },
+                PersonalGraphEvent::SaveScene {
+                    node: B,
+                    scene: scene(serde_json::to_value(&spec).unwrap()),
+                },
+            ],
+            parents: Vec::new(),
+            writer_attestation: None,
+        };
+        let bytes = encode_cbor(&record).expect("encodes");
+        let back: PersonalGraphRecord =
+            decode_cbor_strict(bytes.as_slice()).expect("the record decodes whole");
+        let opened: Vec<Result<(), String>> = back
+            .events
+            .iter()
+            .map(|event| match event {
+                PersonalGraphEvent::SaveScene { scene, .. } => scene.check_dynamics(),
+                _ => unreachable!("two scenes"),
+            })
+            .collect();
+        assert_eq!(
+            opened[0],
+            Err("dynamics spec: at version: dynamics spec version 2 is newer than this \
+                 reader's 1"
+                .into())
+        );
+        assert_eq!(opened[1], Ok(()), "the other scene in the record opens");
     }
 }

@@ -292,9 +292,10 @@ pub struct SavedSceneV2 {
     /// The scene's dynamics spec (dynamics grammar plan, G4a): absent from
     /// every scene saved before it, under this facet until G4b first writes
     /// one the flat fields cannot express (F99), and written by nothing yet
-    /// (F100). A spec that does not derive fails the open (F97).
+    /// (F100). It rides opaque and is read when the scene opens, where a
+    /// refused spec fails that open alone (F97, F114).
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub dynamics: Option<mere::canvas::dynamics_spec::DynamicsSpec>,
+    pub dynamics: Option<SavedDynamics>,
     pub camera_offset: (f32, f32),
     pub camera_zoom: f32,
     pub default_handler: String,
@@ -312,16 +313,49 @@ pub struct SavedRolesV1 {
     pub items: BTreeMap<Uuid, String>,
 }
 
+/// A scene's dynamics spec as it rides: an opaque value, so whatever carries
+/// the scene (the facet, a codicil, a personal graph record) reads it whole
+/// and the spec is read only when the scene opens (F114). Read through
+/// seiche's path-tracking reader, so a refusal names where it sits (F113).
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(transparent)]
+pub struct SavedDynamics(serde_json::Value);
+
+impl SavedDynamics {
+    pub fn from_spec(spec: &mere::canvas::dynamics_spec::DynamicsSpec) -> Self {
+        Self(serde_json::to_value(spec).expect("a dynamics spec always serializes"))
+    }
+
+    /// The spec as written, unread.
+    pub fn value(&self) -> &serde_json::Value {
+        &self.0
+    }
+
+    /// The spec, or where and why it is refused while read.
+    pub fn spec(&self) -> Result<mere::canvas::dynamics_spec::DynamicsSpec, String> {
+        mere::canvas::dynamics_spec::read(&self.0)
+            .map_err(|error| format!("dynamics spec: {error}"))
+    }
+}
+
 impl SavedSceneV2 {
-    /// Whether the scene's spec, if it has one, derives over the canvas's
-    /// catalog; the refusal names the id and where it was found (F97).
+    /// The scene's spec, if it has one, read and derived over the canvas's
+    /// catalog; a refusal names the id and where it sits (F97, F113).
+    pub fn dynamics_spec(
+        &self,
+    ) -> Result<Option<mere::canvas::dynamics_spec::DynamicsSpec>, String> {
+        let Some(dynamics) = &self.dynamics else {
+            return Ok(None);
+        };
+        let spec = dynamics.spec()?;
+        mere::canvas::dynamics_spec::derive(&spec)
+            .map_err(|error| format!("dynamics spec: {error}"))?;
+        Ok(Some(spec))
+    }
+
+    /// Whether the scene's spec, if it has one, reads and derives.
     pub fn check_dynamics(&self) -> Result<(), String> {
-        match &self.dynamics {
-            None => Ok(()),
-            Some(spec) => mere::canvas::dynamics_spec::derive(spec)
-                .map(|_| ())
-                .map_err(|error| format!("dynamics spec: {error}")),
-        }
+        self.dynamics_spec().map(|_| ())
     }
 
     /// The roles this scene opens with, and the anchored stiffness. A scene
@@ -1782,7 +1816,7 @@ mod tests {
             mere::canvas::dynamics_spec::derive(&spec).expect("a runnable spec derives");
             let scene = SavedSceneV2 {
                 selected: vec![web],
-                dynamics: Some(spec.clone()),
+                dynamics: Some(SavedDynamics::from_spec(&spec)),
                 ..base()
             };
             host.save_product_scene("mere://scene/spec", &scene)
@@ -1801,7 +1835,7 @@ mod tests {
             // Through the codicil, as JSON text, opened as a session.
             let bytes = codicil(&host, scene);
             let (_, imported) = host.replace_with_product_codicil(&bytes).unwrap();
-            assert_eq!(imported.unwrap().dynamics, Some(spec));
+            assert_eq!(imported.unwrap().dynamics_spec(), Ok(Some(spec)));
         }
 
         #[test]
@@ -1817,7 +1851,7 @@ mod tests {
                 overlays: Vec::new(),
             };
             let unknown = SavedSceneV2 {
-                dynamics: Some(spec),
+                dynamics: Some(SavedDynamics::from_spec(&spec)),
                 ..base()
             };
             host.save_product_scene("mere://scene/unknown", &unknown)
@@ -1833,7 +1867,7 @@ mod tests {
             );
             // A newer spec is refused in the reader's words (F98).
             let good = SavedSceneV2 {
-                dynamics: Some(runnable(Uuid::from_u128(1))),
+                dynamics: Some(SavedDynamics::from_spec(&runnable(Uuid::from_u128(1)))),
                 ..base()
             };
             host.save_product_scene("mere://scene/newer", &good)
@@ -1855,7 +1889,7 @@ mod tests {
                 .unwrap_err()
                 .to_string();
             assert!(
-                err.contains("dynamics spec version 2 is newer than this reader's 1"),
+                err.contains("at version: dynamics spec version 2 is newer than this reader's 1"),
                 "{err}"
             );
             // A codicil carrying a refused spec does not open as a session.
@@ -1866,6 +1900,61 @@ mod tests {
                 Err(ProductError::InvalidScene(_))
             ));
             assert_eq!(host.graph_session().id(), session, "no session begun");
+        }
+
+        /// F113: each kind of refusal serde makes while the spec is read
+        /// names its path at the open: an unknown raw kind, an unknown field,
+        /// an unknown role, a newer version.
+        #[test]
+        fn a_spec_refused_while_read_names_its_path_at_the_open() {
+            let mut host = host();
+            let good = SavedSceneV2 {
+                dynamics: Some(SavedDynamics::from_spec(&runnable(Uuid::from_u128(1)))),
+                ..base()
+            };
+            host.save_product_scene("mere://scene/read", &good).unwrap();
+            assert!(
+                host.product_scene("mere://scene/read").is_ok(),
+                "the control"
+            );
+            let key = host.graph().get_node_by_url("mere://scene/read").unwrap().0;
+            let base_value = serde_json::to_value(&good).unwrap();
+            let cases: [(&dyn Fn(&mut serde_json::Value), &str); 4] = [
+                (
+                    &|v| {
+                        v["dynamics"]["root"]["stages"][3]["node"] =
+                            serde_json::json!({ "node": "raw", "term": { "densty": {} } })
+                    },
+                    "at root.stages[3].node.term: unknown variant `densty`",
+                ),
+                (
+                    &|v| v["dynamics"]["root"]["stages"][1]["node"]["colour"] = "red".into(),
+                    "at root.stages[1].node.colour: unknown field `colour`",
+                ),
+                (
+                    &|v| v["dynamics"]["target"]["default_role"] = "tethered".into(),
+                    "at target.default_role: unknown variant `tethered`",
+                ),
+                (
+                    &|v| v["dynamics"]["version"] = 2.into(),
+                    "at version: dynamics spec version 2 is newer than this reader's 1",
+                ),
+            ];
+            for (edit, expected) in cases {
+                let mut value = base_value.clone();
+                edit(&mut value);
+                host.set_facet(key, SAVED_SCENE_FACET, value).unwrap();
+                let err = host
+                    .product_scene("mere://scene/read")
+                    .unwrap_err()
+                    .to_string();
+                assert!(
+                    err.starts_with(&format!(
+                        "the scene does not open: dynamics spec: {expected}"
+                    )),
+                    "{err}"
+                );
+            }
         }
 
         /// F110: a depth-32 spec round-trips through the JSON carrier, parsed
@@ -1880,14 +1969,17 @@ mod tests {
                 let bytes = codicil(
                     &host,
                     SavedSceneV2 {
-                        dynamics: Some(spec.clone()),
+                        dynamics: Some(SavedDynamics::from_spec(&spec)),
                         ..base()
                     },
                 );
                 let nesting = json_nesting(&bytes);
                 println!("depth {depth}: codicil JSON nesting {nesting} (serde_json limit 128)");
                 let codicil = decode_codicil(&bytes).expect("parsed within serde_json's limit");
-                assert_eq!(codicil.scene.unwrap().dynamics, Some(spec.clone()));
+                assert_eq!(
+                    codicil.scene.unwrap().dynamics.unwrap().spec(),
+                    Ok(spec.clone())
+                );
                 let refusal = mere::canvas::dynamics_spec::derive(&spec)
                     .unwrap_err()
                     .to_string();

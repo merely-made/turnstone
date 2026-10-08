@@ -974,6 +974,18 @@ fn remapped_id(source: &str, id_by_source: &HashMap<Uuid, Uuid>) -> Result<Strin
 /// A spec's target item roles under a copy's new ids, as the scene's own
 /// item roles are: an item the copy leaves out is dropped (dynamics grammar
 /// plan, G4a; F105's item roles are keyed by node UUID).
+/// A spec this reader refuses rides on unchanged, to be refused where the
+/// scene opens (F114).
+fn remap_dynamics(
+    dynamics: &crate::product::SavedDynamics,
+    remap: &impl Fn(Uuid) -> Option<Uuid>,
+) -> crate::product::SavedDynamics {
+    match dynamics.spec() {
+        Ok(spec) => crate::product::SavedDynamics::from_spec(&remap_spec(&spec, remap)),
+        Err(_) => dynamics.clone(),
+    }
+}
+
 fn remap_spec(
     spec: &mere::canvas::dynamics_spec::DynamicsSpec,
     remap: &impl Fn(Uuid) -> Option<Uuid>,
@@ -1012,7 +1024,10 @@ fn remap_scene(scene: &SavedSceneV2, ids: &HashMap<Uuid, Uuid>) -> SavedSceneV2 
                 ..roles.clone()
             }
         }),
-        dynamics: scene.dynamics.as_ref().map(|spec| remap_spec(spec, &remap)),
+        dynamics: scene
+            .dynamics
+            .as_ref()
+            .map(|dynamics| remap_dynamics(dynamics, &remap)),
         camera_offset: scene.camera_offset,
         camera_zoom: scene.camera_zoom,
         default_handler: scene.default_handler.clone(),
