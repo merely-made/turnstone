@@ -232,7 +232,7 @@ impl<B: Backend + Clone> MereHost<B> {
             [
                 web, file, scene, remote, persona, device_one, device_two, key, grant, receipt,
             ]
-        });
+        })?;
 
         host.set_facet(
             remote,
@@ -330,7 +330,7 @@ impl<B: Backend + Clone> MereHost<B> {
                 },
                 "system.default",
             )
-        })?;
+        })??;
 
         let score = host.score();
         host.set_facet(

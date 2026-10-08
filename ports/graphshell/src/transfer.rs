@@ -573,6 +573,7 @@ where
                     .find(|existing| existing.record_id == record_id)
                     .ok_or(crate::access::AccessError::UnknownNode)
             })
+            .map_err(|error| TransferError::InvalidManifest(error.to_string()))?
             .map_err(|error| TransferError::InvalidManifest(error.to_string()))?;
         save_access_record(destination_authority, &record).await?;
         destination_access_records.push(record.record_id);
@@ -1133,6 +1134,7 @@ fn attach_existing_access_record<B: Backend>(
     };
     let (projected, _) = host
         .mutate_product_graph(|graph| record_observation(graph, key, &observation))
+        .map_err(|error| TransferError::InvalidManifest(error.to_string()))?
         .map_err(|error| TransferError::InvalidManifest(error.to_string()))?;
     if &projected != record {
         return Err(TransferError::InvalidManifest(format!(
@@ -1264,6 +1266,7 @@ mod tests {
         };
         let (record, _) = host
             .mutate_product_graph(|graph| record_observation(graph, key, &observation))
+            .unwrap()
             .unwrap();
         let mut authority = backend.clone();
         bootstrap_access_record_schema(&mut authority)

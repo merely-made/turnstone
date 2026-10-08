@@ -738,7 +738,7 @@ impl<B: Backend> MereHost<B> {
             privacy: PrivacyClass::LocalOnly,
         };
         let (record, inserted) = self
-            .mutate_product_graph(|graph| record_observation(graph, key, &observation))
+            .mutate_product_graph(|graph| record_observation(graph, key, &observation))?
             .map_err(MereHostError::from)?;
         if !inserted {
             return Ok(ProjectedVisit { node, record });
@@ -793,7 +793,7 @@ impl<B: Backend> MereHost<B> {
                         timestamp_ms: Some(visit.at_ms),
                     },
                 );
-            });
+            })?;
         }
         Ok(ProjectedVisit { node, record })
     }
@@ -814,7 +814,7 @@ impl<B: Backend> MereHost<B> {
         if mode == ForgetMode::RemoveCapturedObject && capture_created {
             self.mutate_product_graph(|graph| {
                 apply_graph_delta(graph, GraphDelta::RemoveNode { key });
-            });
+            })?;
             return Ok(());
         }
 
@@ -874,7 +874,7 @@ impl<B: Backend> MereHost<B> {
                     },
                 );
             }
-        });
+        })?;
         Ok(())
     }
 }

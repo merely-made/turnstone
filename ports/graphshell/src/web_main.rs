@@ -506,8 +506,8 @@ impl BrowserHost {
             "redo-projection" => self.step_projection(false),
             "undo-projection-save" => self.step_projection_save(true),
             "redo-projection-save" => self.step_projection_save(false),
-            "session-undo" => self.step_session(true),
-            "session-redo" => self.step_session(false),
+            "session:undo" => self.step_session(true),
+            "session:redo" => self.step_session(false),
             "save-projection" => self.save_projection(),
             "reload-projection" => self.reload_projection(),
             "session-local" => {
@@ -532,7 +532,7 @@ impl BrowserHost {
                 self.primary_member = self.canvas.focused_member();
                 self.detail_open = false;
             },
-            "open-detail" => {
+            "node:edit" => {
                 if self.active == ActiveSession::Local && self.current_primary_member().is_none() {
                     self.canvas.select_by_url(FIXTURE_WEB_ADDRESS);
                     self.primary_member = self.canvas.focused_member();
@@ -542,9 +542,9 @@ impl BrowserHost {
             "close-detail" => self.detail_open = false,
             "invoke-action" => self.invoke_action(),
             "submit-action-draft" => self.submit_action_draft(),
-            "zoom-in" => self.zoom(40.0),
-            "zoom-out" => self.zoom(-40.0),
-            "fit-content" => self.fit_content(),
+            "view:zoom_in" => self.zoom(40.0),
+            "view:zoom_out" => self.zoom(-40.0),
+            "view:fit" => self.fit_content(),
             "pan-left" => self.pan(-42.0, 0.0),
             "pan-right" => self.pan(42.0, 0.0),
             "pan-up" => self.pan(0.0, -42.0),

@@ -74,14 +74,14 @@ pub(super) fn install_product_events(
 impl BrowserHost {
     pub(super) fn run_product_command(&mut self, command: &str) -> bool {
         let result = match command {
-            "add-address" => self.add_address(),
+            "node:new" => self.add_address(),
             "save-metadata" => self.save_metadata(),
             "add-relation" => self.add_relation(),
             "select-pair" => self.select_pair(),
             "apply-filter" => self.apply_filter(),
             "clear-filter" => self.clear_filter(),
             "apply-arrangement" => self.apply_arrangement_from_form(),
-            "toggle-physics" => self.toggle_physics(),
+            "physics:toggle" => self.toggle_physics(),
             "apply-physics" => self.apply_physics_from_form(),
             "choose-speed" => self.choose_speed_from_form(),
             "apply-profile" => self.apply_profile_from_form(),
