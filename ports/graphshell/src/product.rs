@@ -2180,13 +2180,29 @@ mod tests {
                     "unknown depth source sea",
                 ),
             ];
-            for (i, (field, id, expected)) in cases.into_iter().enumerate() {
+            // One node per facet version, its scene rewritten per case: each
+            // node added is a timestamp the session's replay check compares,
+            // and under load a clock tick between the two fails it (main's
+            // kernel flake, Findings 2026-10-04).
+            put(
+                &mut host,
+                "mere://scene/unknown",
+                SAVED_SCENE_FACET_V2,
+                legacy(),
+            );
+            let key = host
+                .graph()
+                .get_node_by_url("mere://scene/unknown")
+                .unwrap()
+                .0;
+            for (field, id, expected) in cases {
                 let mut value = legacy();
                 value[field] = id;
-                let address = format!("mere://scene/unknown-{i}");
-                put(&mut host, &address, SAVED_SCENE_FACET_V2, value);
+                host.set_facet(key, SAVED_SCENE_FACET_V2, value).unwrap();
                 assert_eq!(
-                    host.product_scene(&address).unwrap_err().to_string(),
+                    host.product_scene("mere://scene/unknown")
+                        .unwrap_err()
+                        .to_string(),
                     format!("the scene does not open: {expected}")
                 );
             }
