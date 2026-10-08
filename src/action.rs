@@ -413,6 +413,13 @@ pub enum Action {
     /// Commit the suggestion row at this index — a ROW CLICK in the retained
     /// chrome (select, then the ordinary commit path).
     OmnibarCommitRow(usize),
+    /// Expand the bare `>` lane to the whole catalog ("All commands…").
+    OmnibarShowAllCommands,
+    /// Keep or drop the command on the suggestion row at this index (its
+    /// Keep/Drop control).
+    OmnibarToggleKeepRow(usize),
+    /// Keep or drop the command on the highlighted row (Ctrl+D).
+    OmnibarToggleKeepSelected,
     /// Repeat one intentional shell interaction from the bounded local
     /// transcript, preserving its captured pane context.
     RepeatShellEntry(crate::shell_services::ShellEntryId),

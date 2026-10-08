@@ -88,6 +88,72 @@ const SMOLWEB_SESSION_ENGINE_IDS: &[&str] = &[
     inker::routing::ENGINE_NEMATIC_FEED,
 ];
 
+/// Each node's live document: Pelt's routed content around a host-loading,
+/// host-history controller (SC step 4). The App owns the node's load and graph
+/// history; the controller opens the body the App fetched.
+pub(crate) type NodeDocuments =
+    HashMap<uuid::Uuid, pelt_core::PeltContent<netrender::Scene>>;
+
+/// The session seam of each node's document, for the host features the Pelt
+/// controller does not wrap yet (find, subresources, Turnstone's own pointer
+/// path, engine extras reached by downcast).
+pub(crate) trait NodeSessions {
+    fn session(&self, node: &uuid::Uuid) -> Option<&dyn DocumentSession<Scene>>;
+    fn session_mut(&mut self, node: &uuid::Uuid) -> Option<&mut dyn DocumentSession<Scene>>;
+    fn sessions(&self) -> impl Iterator<Item = &dyn DocumentSession<Scene>>;
+    fn sessions_mut(&mut self) -> impl Iterator<Item = &mut dyn DocumentSession<Scene>>;
+    fn node_sessions_mut(
+        &mut self,
+    ) -> impl Iterator<Item = (uuid::Uuid, &mut dyn DocumentSession<Scene>)>;
+}
+
+impl NodeSessions for NodeDocuments {
+    fn session(&self, node: &uuid::Uuid) -> Option<&dyn DocumentSession<Scene>> {
+        self.get(node)
+            .and_then(pelt_core::PeltContent::document)
+            .map(pelt_core::PeltController::session)
+    }
+
+    fn session_mut(&mut self, node: &uuid::Uuid) -> Option<&mut dyn DocumentSession<Scene>> {
+        self.get_mut(node)
+            .and_then(pelt_core::PeltContent::document_mut)
+            .map(pelt_core::PeltController::session_mut)
+    }
+
+    fn sessions(&self) -> impl Iterator<Item = &dyn DocumentSession<Scene>> {
+        self.values()
+            .filter_map(pelt_core::PeltContent::document)
+            .map(pelt_core::PeltController::session)
+    }
+
+    fn sessions_mut(&mut self) -> impl Iterator<Item = &mut dyn DocumentSession<Scene>> {
+        self.values_mut()
+            .filter_map(pelt_core::PeltContent::document_mut)
+            .map(pelt_core::PeltController::session_mut)
+    }
+
+    fn node_sessions_mut(
+        &mut self,
+    ) -> impl Iterator<Item = (uuid::Uuid, &mut dyn DocumentSession<Scene>)> {
+        self.iter_mut().filter_map(|(node, content)| {
+            content
+                .document_mut()
+                .map(|controller| (*node, controller.session_mut()))
+        })
+    }
+}
+
+/// Turnstone pumps each session with its own frame clock; the controller's
+/// clock is only consulted by `PeltController::pump`, which the shell does not
+/// call yet.
+pub(crate) struct ShellClock(std::time::Instant);
+
+impl pelt_core::PeltClock for ShellClock {
+    fn now_ms(&self) -> f64 {
+        self.0.elapsed().as_secs_f64() * 1000.0
+    }
+}
+
 /// The content lanes that are always available in an ordinary Turnstone
 /// build. Keeping their construction together makes route availability an
 /// inspectable fact instead of an assumption split across shell setup.
@@ -522,9 +588,12 @@ pub struct Shell {
     /// registry does the engine-id dispatch, and the live sessions — retained,
     /// non-Send handles — live here, keyed by the same node ids App's
     /// ContentStates tracks. Ports own handles; App holds data.
-    content_engines: SessionRegistry<netrender::Scene>,
-    content_sessions:
-        std::collections::HashMap<uuid::Uuid, Box<dyn DocumentSession<netrender::Scene>>>,
+    /// Shared with every node's Pelt controller, which spawns from it.
+    content_engines: Arc<SessionRegistry<netrender::Scene>>,
+    /// Pelt's surface registry for document controllers. Web surfaces still
+    /// live in `surface_producers` until SC step 4's second pass.
+    pelt_surface_engines: Arc<inker::SurfaceEngineRegistry>,
+    content_sessions: NodeDocuments,
     /// Reader's immutable article packet remains in `content_sessions`; each
     /// visible Reader appearance gets a separate document-canvas session here.
     /// Other engines stay on the established one-session path until they can
@@ -919,7 +988,8 @@ impl Shell {
             host: None,
             width: 1024,
             height: 600,
-            content_engines,
+            content_engines: Arc::new(content_engines),
+            pelt_surface_engines: Arc::new(inker::SurfaceEngineRegistry::new()),
             content_sessions: std::collections::HashMap::new(),
             reader_appearances: std::collections::HashMap::new(),
             surface_engines: inker::SurfaceEngineRegistry::new(),
@@ -978,7 +1048,7 @@ impl Shell {
     }
 
     fn has_independent_reader_appearance(&self, node: &uuid::Uuid) -> bool {
-        self.content_sessions.get(node).is_some_and(|session| {
+        self.content_sessions.session(node).is_some_and(|session| {
             session
                 .as_any_ref()
                 .is::<mere_document_lanes::ReaderDocumentSession>()
@@ -993,7 +1063,7 @@ impl Shell {
     ) -> Option<R> {
         let reader_source = self
             .content_sessions
-            .get(&node)
+            .session(&node)
             .and_then(|session| {
                 session
                     .as_any_ref()
@@ -1011,7 +1081,7 @@ impl Shell {
             if stale {
                 let reader = self
                     .content_sessions
-                    .get(&node)
+                    .session(&node)
                     .and_then(|session| {
                         session
                             .as_any_ref()
@@ -1024,8 +1094,8 @@ impl Shell {
             return (entry.0 == node).then(|| f(&mut entry.1));
         }
         self.content_sessions
-            .get_mut(&node)
-            .map(|session| f(session.as_mut()))
+            .session_mut(&node)
+            .map(|session| f(session))
     }
 
     fn clear_surface_content(&mut self) {
@@ -1937,7 +2007,7 @@ impl Shell {
         };
         let Some(clip) = self
             .content_sessions
-            .get(&member)
+            .session(&member)
             .and_then(|session| session.clip())
         else {
             return;

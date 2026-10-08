@@ -439,6 +439,10 @@ pub struct OmnibarState {
     /// Index into `suggestions` of the highlighted row.
     pub selected: usize,
     pub suggestions: Vec<Suggestion>,
+    /// The bare `>` lane was expanded to the whole catalog ("All
+    /// commands…"); it returns to the person's commands when the omnibar
+    /// closes.
+    pub all_commands: bool,
 }
 
 impl std::fmt::Debug for OmnibarState {
@@ -897,6 +901,10 @@ pub(crate) const CHROME_SHEET: &str = "\
                     padding: 5px 8px; white-space: nowrap; overflow: hidden; \
                     background-color: rgb(232, 150, 40); border-radius: 6px; } \
     .omni-row-review { white-space: normal; overflow-wrap: anywhere; } \
+    .omni-row-command { display: flex; align-items: center; } \
+    .omni-row-label { flex-grow: 1; flex-shrink: 1; white-space: nowrap; overflow: hidden; } \
+    .omni-keep { flex-shrink: 0; margin-left: 8px; padding: 1px 6px; font-size: 11px; \
+                 border: 1px solid rgb(70, 82, 110); border-radius: 4px; } \
     .omni-row-muted { color: rgb(140, 148, 165); font-size: 14px; \
                       padding: 5px 8px; white-space: nowrap; } \
     .whereami { position: absolute; color: rgb(170, 178, 195); \

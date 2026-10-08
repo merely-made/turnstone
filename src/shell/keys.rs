@@ -13,6 +13,7 @@
 //! spine. The canvas view hotkeys stay suspended while a page reads, so a
 //! stray `space` cannot reseed the graph behind it.
 
+use super::NodeSessions;
 use winit::keyboard::{Key as WinitKey, NamedKey as WinitNamedKey};
 
 use inker::SessionScrollKey;
@@ -151,7 +152,7 @@ impl Shell {
         let crate::surface::FocusTarget::Content { node, .. } = self.app.focus else {
             return false;
         };
-        let Some(session) = self.content_sessions.get_mut(&node) else {
+        let Some(session) = self.content_sessions.session_mut(&node) else {
             return false;
         };
         let Some(editor) = session
@@ -175,7 +176,7 @@ impl Shell {
             return false;
         };
         self.content_sessions
-            .get_mut(&node)
+            .session_mut(&node)
             .and_then(|session| {
                 session
                     .as_any()
@@ -394,6 +395,11 @@ impl Shell {
                 WinitKey::Named(WinitNamedKey::End) => Some(Action::OmnibarCaret(CaretMove::End)),
                 WinitKey::Named(WinitNamedKey::Delete) => Some(Action::OmnibarDelete),
                 WinitKey::Named(WinitNamedKey::Space) => Some(Action::OmnibarChar(' ')),
+                // Keep or drop the highlighted command (the browsers' bookmark
+                // chord; Ctrl+K already summons the palette).
+                WinitKey::Character(s) if self.ctrl && s.eq_ignore_ascii_case("d") => {
+                    Some(Action::OmnibarToggleKeepSelected)
+                }
                 WinitKey::Character(s) if !self.ctrl => s.chars().next().map(Action::OmnibarChar),
                 _ => None,
             }

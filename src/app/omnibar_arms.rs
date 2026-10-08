@@ -97,7 +97,13 @@ impl App {
                 .note_suggestions(started.elapsed(), false);
             return;
         }
-        let actions = self.available_actions();
+        // The `>` lane reads through the command set: the context's commands,
+        // then the kept ones, then recent ones, or the whole catalog once
+        // expanded. The other lanes take the catalog as composed.
+        let actions = match self.omnibar.text.trim().strip_prefix('>') {
+            Some(query) => self.command_lane(query, self.omnibar.all_commands, row_limit),
+            None => self.available_actions(),
+        };
         recompute_suggestions_with_limit(
             &mut self.omnibar,
             &self.graph_runtimes,
@@ -407,6 +413,29 @@ impl App {
             self.omnibar.selected = (cur + delta).rem_euclid(len as i32) as usize;
         }
         vec![Effect::Redraw]
+    }
+
+    /// "All commands…": the bare `>` lane shows the whole catalog until the
+    /// omnibar closes.
+    pub(super) fn show_all_commands(&mut self) -> Vec<Effect> {
+        if !self.omnibar.open {
+            return vec![Effect::Redraw];
+        }
+        self.omnibar.all_commands = true;
+        self.omnibar.selected = 0;
+        self.recompute_omnibar_suggestions();
+        vec![Effect::Redraw]
+    }
+
+    /// Keep or drop the command on the suggestion row at `index`.
+    pub(super) fn toggle_keep_row(&mut self, index: usize) -> Vec<Effect> {
+        match self.omnibar.suggestions.get(index) {
+            Some(Suggestion::Act { label, .. }) if self.omnibar.open => {
+                let label = label.clone();
+                self.toggle_command_kept(&label)
+            },
+            _ => vec![Effect::Redraw],
+        }
     }
 
     pub(super) fn omnibar_commit_row(&mut self, index: usize) -> Vec<Effect> {

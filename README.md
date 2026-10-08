@@ -62,6 +62,11 @@ the current coordinated family: Mere `57b4893d`, Genet `965b64e2`, Knot
 `aac43a3f` (0.7.0). The
 [current-family receipt](docs/receipts/browser_family_20261007/README.md)
 records source identity, compatibility changes and exact qualification scope.
+The family then advanced twice. The browser lane's foreign-accessibility
+repin (`fc52533`) moved Mere to `f1d169c7` and Knot to `14cd06e`. SC step 4
+(2026-10-08) moved it to Mere `3ded2cd7`, Genet `965b64e2`, Knot `6e66f1ab`
+and Redshank/Woodshed `3ef71040`, bringing in Pelt's routed browsing
+controller (`pelt-core`) and the sans-IO page load (`page-load`).
 Knot and Redshank
 share the Mere/Genet surface family with Turnstone so retained-surface,
 publishing and projection interfaces have one source identity.

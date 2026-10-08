@@ -12,6 +12,7 @@
 //! its labelled actions, and whether it is still busy. `Driveable` adds the two
 //! the generic loop cannot do: a screenshot and turnstone's own verbs.
 
+use super::NodeSessions;
 use winit::event::MouseButton;
 use winit::keyboard::{Key as WinitKey, NamedKey as WinitNamedKey};
 
@@ -110,7 +111,7 @@ impl Shell {
             // Content sessions fold their own events (a Knot hub's bell or
             // loss) only when polled, which the frame loop does per frame;
             // a wait that holds the loop must poll them itself.
-            for session in self.content_sessions.values_mut() {
+            for session in self.content_sessions.sessions_mut() {
                 let _ = session.settled();
             }
             self.refresh_knot_documents();
@@ -129,8 +130,8 @@ impl Shell {
     fn idle_diagnosis(&mut self) -> IdleDiagnosis {
         let mut unsettled_sessions = self
             .content_sessions
-            .iter_mut()
-            .filter_map(|(node, session)| (!session.settled()).then_some(*node))
+            .node_sessions_mut()
+            .filter_map(|(node, session)| (!session.settled()).then_some(node))
             .collect::<Vec<_>>();
         unsettled_sessions.sort_unstable();
         IdleDiagnosis {
@@ -177,7 +178,7 @@ impl taproot::Automatable for Shell {
             ];
             match surface.kind {
                 crate::surface::SurfaceKind::Content(node) => {
-                    if let Some(session) = self.content_sessions.get(&node)
+                    if let Some(session) = self.content_sessions.session(&node)
                         && let Some(knot) = session
                             .as_any_ref()
                             .downcast_ref::<crate::knot_authoring::KnotDocumentSession>(
@@ -414,7 +415,7 @@ impl taproot::Automatable for Shell {
                 return None;
             };
             self.content_sessions
-                .get(&node)
+                .session(&node)
                 .and_then(|session| session.text_target(text))
                 .map(|target| taproot::TextTarget {
                     anchor: (
@@ -679,7 +680,7 @@ impl taproot::Automatable for Shell {
         }
         Some(
             self.content_sessions
-                .values_mut()
+                .sessions_mut()
                 .any(|session| !session.settled()),
         )
     }

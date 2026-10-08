@@ -1567,6 +1567,101 @@ the same record once this lane can push to Mere (U15).
       for host-history content, all pass, and Linear-mode tests pass
       unchanged. `pelt-desktop --lib` passes 57 of 57, and Pelt desktop and
       `pelt` pass `cargo check --all-targets`.
+- **2026-10-08:**
+  - SC step 4, pass A (documents), with the coordinated family repin that it
+    needs. Mark ruled that this lane does the published repin, and that step 4
+    adopts documents first, leaving web surfaces (pass B) to be coordinated
+    with the browser lane's live work in `src/shell`.
+    - Mere `3ded2cd7` adds the controller's session seam (`session()`,
+      `session_mut()`), so features the controller doesn't wrap yet (find,
+      subresources, Turnstone's own pointer path) reach the live session.
+    - Family, in U9 order: Knot `6e66f1ab` and Redshank/Woodshed `3ef71040`,
+      both on Mere `3ded2cd7` with Genet `965b64e2` unchanged, then Turnstone.
+      Each lock adds only `edit-history` and `mere-page-load` (plus
+      `pelt-core` in Turnstone). `cargo tree --locked` shows one source per
+      sibling.
+    - App: `FetchedDocument` and `PageFetchPhase` are now page-load's types,
+      and `ContentStates` delegates to one `PageLoad` per node, so the load
+      state machine exists once, in Mere.
+    - Shell: each node's document is a `PeltContent` around a host-history
+      controller, host-loading when the App holds the body. Routing and the
+      spawn-time facts are unchanged. Existing call sites reach the session
+      through the seam, so behavior is unchanged.
+    - Gates, macOS (Turnstone's first macOS run):
+      - Knot: the workspace check passes; `knot-editor` and `knot-desktop`
+        pass 525 tests in 31 suites; `knot-document` passes 45.
+      - Redshank: desktop and wasm checks pass; the port suite passes 193 of
+        201 (7 ignored as before). The one failure loads a fixture image
+        from a fixed Windows path. The IPC consumer test passes 3.
+      - Turnstone: main itself passes `cargo check` on macOS.
+      - Turnstone's library suite under load: 657 passed, 11 failed. Seven
+        of the failures pass on rerun (place lanes and workers under heavy
+        compile load). The other four fail identically on unchanged main
+        on macOS, so they predate this work and are macOS-specific: row
+        count by viewport, the two probe-clicked inspector tests, and
+        sky-surface time-zone text.
+      - Final gates on the published lock:
+        - `cargo_mode.py verify` passes: 1,283 packages, lock unchanged.
+        - `cargo check --workspace --all-targets --locked` passes.
+        - The library suite passes 660 with 9 ignored. Of its 8 failures,
+          the four place tests pass alone, and the other four are the
+          macOS failures above.
+        - So the gates are 664 passing and 4 macOS-only failures that
+          predate this change.
+        - The Windows run and Linux CI are Mark's, as for S0.
+    - Next, still under SC: pass B (web surfaces onto `PeltContent`'s
+      surface lane, with the browser lane); controller-level input instead
+      of the legacy pointer path; then step 5 (S8).
+  - The Scenograph lane's command-menu follow-up (its SE32 and SE35) landed
+    in Turnstone, on the pins step 4 already moved past Mere `16c1ef8d`.
+    Mark's choices for Turnstone (2026-10-08):
+    - A bare `>` (or a right click) shows the contextual rows, then the kept
+      commands, then the recent ones, then "All commands…", which expands to
+      the whole catalog in its composed order.
+    - The default kept commands are the browsing eight: Back, Forward,
+      Reload, Stop loading, Toggle live content, Open node in Workbench, Fit
+      view and Save session.
+    - Keep and drop work through a control on each command row and through
+      Ctrl+D on the highlighted row, both exposed to assistive technology.
+  - What changed in Turnstone:
+    - `available_actions` is still the single composition, for the
+      snapshot, the automation runner and the lane. The `>` lane reads it
+      through `cambium::CommandSet`: rows register under their labels, and
+      the rows composed ahead of the static registry form the `context`
+      category, so they still lead. Search covers every command.
+    - Choices (kept, dropped, recent) are saved in the session's view
+      sidecar (`ViewIntentV1.command_menu`), never in graph truth (SE31). An
+      older sidecar opens with the defaults. Keeping or dropping saves the
+      session; recent commands ride the next save.
+    - On a graph pane, the right press now goes to the canvas, so a
+      right-drag selects. The palette opens on the release the canvas
+      reports as a click (`take_context_request`), selecting the node under
+      it first. Elsewhere, the menu still opens on the press.
+    - The palette's rows were missing from the accessibility tree; only the
+      input and the install review were projected. Each row is now a button
+      that commits it, and each command row has a "Keep …" or "Drop …"
+      button. Both use the same actions as a click (`A11yRoute::Action`).
+    - Ring: "All commands…" is in Dispatch. Keep and drop are HostOnly,
+      since Dispatch is granted to every participant by default and would
+      let one rewrite the person's menu.
+    - Not done: a headed check of right-drag selection and the menu in the
+      window (the scenarios are Windows-gated), and zoom scaling for the
+      Keep/Drop control's font, which the themed sheet does not yet size.
+    - Gates on macOS:
+      - New tests: 10 for the command menu, including right click against
+        right-drag and the accessible rows; 1 for the sidecar; and 1 chrome
+        click test where the label commits and the control toggles.
+      - Two existing tests changed. The snapshot test searches `>res`,
+        because search now ranks kept and recent commands first. The
+        expanded lane is compared with the catalog's own order.
+      - `cargo check --all-targets --locked` and `verify` pass, with the
+        lock unchanged.
+      - The library suite: 675 passing (five place tests needed a rerun
+        alone), and the four macOS-only failures recorded for step 4.
+  - Checked for the browser sidecar scope: `pelt-core` and `page-load`
+    compile for `wasm32-unknown-unknown`, with a dependency cone of 80
+    packages. That proves the dependency boundary only, not browser
+    usability.
     - Found in passing: `node_uses_web_surface` (`src/app/node_arms.rs:1701`)
       matches only Weld, so Scry and Servo nodes take the document Back and
       Reload path, and Stop does nothing for them.

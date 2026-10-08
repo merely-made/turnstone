@@ -724,6 +724,17 @@ impl App {
             fx.push(Effect::Redraw);
             return fx;
         }
+        // "All commands…" expands the lane rather than running a command, so
+        // the palette stays open and keeps focus.
+        if matches!(
+            self.omnibar.selection(),
+            Some(Suggestion::Act {
+                action: Action::OmnibarShowAllCommands,
+                ..
+            })
+        ) {
+            return self.show_all_commands();
+        }
         // Commit always ends with the omnibar closed, so chrome hands
         // focus back to the canvas. (A committed OpenAddress may later
         // spawn content; routing focus onto it is slice B.)
@@ -805,6 +816,7 @@ impl App {
                 };
             },
             Some(Suggestion::Act { label, action }) => {
+                self.record_command_use(&label);
                 // An action row normally records a command. A row that opens
                 // an address, including captured-page sources, remains
                 // navigation in the transcript so replay keeps its meaning.
