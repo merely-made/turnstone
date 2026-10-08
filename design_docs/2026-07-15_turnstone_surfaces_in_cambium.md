@@ -254,8 +254,9 @@ turnstone `675f7f0`, 289 pass.
 
 ## Forms consumer compatibility, 2026-10-07
 
-**Status:** local mechanical compatibility qualifies on the existing public pins;
-candidate adoption and publication remain pending.
+**Status, 2026-10-08:** mechanical compatibility qualifies on the existing public
+pins, including the fresh ThinkPad integration gate below. Adoption of Mere's
+new Forms family remains a separate gate.
 The numbered F5 scope ruling lives in
 `genet/design_docs/2026-10-07_forms_value_validation_submission_plan.md`.
 Mere owns the field representation and F6 accessibility-leaf projection in
@@ -288,3 +289,31 @@ the unusual-protocols plan. Source/config/lock bytes and mtimes, plus the
 unrelated untracked `.github/` directory, remain unchanged during the gates.
 These checks prepare the consumer for app DIVs; they do not claim adoption of
 the unpublished Forms family or a new human AT receipt.
+
+At integrated source `e77e1e2db88344c651c1d4bf31e1802a2b142fc0`, the complete
+library passes on Fedora ThinkPad: 680 tests, zero failures, nine existing
+ignores and no filtered cases. Cargo 1.98.1 uses one build job and one test
+thread; the manifest, committed lock and tracked source stay unchanged. This
+source includes published upstream `d0775a1` and its existing family pin to
+Mere `3ded2cd7c2370713118a2440c962c39262720205`, with Genet `965b64e2`.
+Locked metadata resolves 73 Mere and 29 Genet packages; the lock contains 76
+and 31 respectively, including packages outside that resolved feature graph.
+The 1,697-package lock SHA256 is
+`de6ce134764e50cb82cbf7110121e2d8ac509484afc0d51060d52ba0bd9e6576`.
+
+The public-source audit verifies all 123 resolved Git packages across ten
+repository/revision groups in clean normal Cargo checkouts. Global and repo
+Cargo configuration are absent and no Git URL rewrites are configured. Raw
+gate and metadata receipts use prefixes `thinkpad-forms-20261008-turnstone-lib`
+and `thinkpad-forms-20261008-turnstone-metadata`; the accompanying provenance
+JSON and root qualification live under `Code/testing/genet/forms/thinkpad` and
+`Code/testing/genet/forms`. These are default-feature Linux library checks;
+native-window operation, human AT acceptance and adoption of the new Forms
+family are not inferred.
+
+The remote Forms worktree protects the primary checkout's untracked receipts.
+A separate Windows publication worktree at exact e77 isolates this publication
+from another owner's later resource-content preparation on local main. Only
+this qualification document is added to tested e77 for publication. The later
+resource commits, `.github/` work and other owners' worktrees are preserved;
+this documentation is merged back locally after the normal main push.
