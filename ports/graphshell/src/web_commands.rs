@@ -12,8 +12,9 @@
 //! draws them as DOM like its panels (SE33). What the person keeps and has
 //! used is a view of Graphshell's in the mere session (SE31).
 
-use cambium::{Command, CommandChoices, CommandItem, CommandSet};
-use graphshell::mere_host::{CommandMenuView, GRAPHSHELL, SessionViewIntent as ViewIntent};
+use cambium::catalogue::{self, ids};
+use cambium::{Command, CommandChoices, CommandSet, MenuSession};
+use graphshell::mere_host::{GRAPHSHELL, SessionViewIntent as ViewIntent};
 use wasm_bindgen::JsCast;
 use web_sys::{Element, HtmlElement, HtmlInputElement};
 
@@ -23,33 +24,39 @@ use super::{BrowserHost, document, element};
 /// The view the menu's choices are kept in.
 const COMMANDS_VIEW: &str = "commands";
 
+/// A shared command's label: the verbs other hosts offer too take the
+/// catalogue's id and name, and keep the page's surface (SE50).
+fn shared(id: &str) -> &'static str {
+    catalogue::label(id).expect("a catalogue id")
+}
+
 /// The commands the page offers through its menu, by surface.
 pub(super) fn page_commands() -> CommandSet {
     let mut set = CommandSet::new().with_defaults([
-        "zoom-in",
-        "zoom-out",
-        "fit-content",
-        "add-address",
+        ids::VIEW_ZOOM_IN,
+        ids::VIEW_ZOOM_OUT,
+        ids::VIEW_FIT,
+        ids::NODE_NEW,
         "open-projection-editor",
-        "session-undo",
-        "session-redo",
+        ids::SESSION_UNDO,
+        ids::SESSION_REDO,
         "save-scene",
     ]);
     for (id, label, category) in [
-        ("open-detail", "Edit selected object", "node"),
+        (ids::NODE_EDIT, shared(ids::NODE_EDIT), "node"),
         ("invoke-action", "Open selected object", "node"),
         ("select-web", "Select research object", "canvas"),
-        ("zoom-in", "Zoom in", "canvas"),
-        ("zoom-out", "Zoom out", "canvas"),
-        ("fit-content", "Fit to view", "canvas"),
+        (ids::VIEW_ZOOM_IN, shared(ids::VIEW_ZOOM_IN), "canvas"),
+        (ids::VIEW_ZOOM_OUT, shared(ids::VIEW_ZOOM_OUT), "canvas"),
+        (ids::VIEW_FIT, shared(ids::VIEW_FIT), "canvas"),
         ("pan-left", "Pan left", "canvas"),
         ("pan-right", "Pan right", "canvas"),
         ("pan-up", "Pan up", "canvas"),
         ("pan-down", "Pan down", "canvas"),
-        ("add-address", "Add address", "canvas"),
-        ("toggle-physics", "Pause or resume physics", "canvas"),
-        ("session-undo", "Undo change", "session"),
-        ("session-redo", "Redo change", "session"),
+        (ids::NODE_NEW, shared(ids::NODE_NEW), "canvas"),
+        (ids::PHYSICS_TOGGLE, shared(ids::PHYSICS_TOGGLE), "canvas"),
+        (ids::SESSION_UNDO, shared(ids::SESSION_UNDO), "session"),
+        (ids::SESSION_REDO, shared(ids::SESSION_REDO), "session"),
         ("session-local", "Show the local mere", "session"),
         ("session-remote", "Show the remote mount", "session"),
         ("save-scene", "Save scene", "session"),
@@ -94,13 +101,11 @@ pub(super) fn page_commands() -> CommandSet {
 pub(super) struct OpenMenu {
     /// Client px.
     at: (i32, i32),
-    /// The surface it was opened over: `"node"`, or `None` on empty canvas,
-    /// where only the kept and recent commands show (SE29).
-    context: Option<&'static str>,
-    query: String,
+    /// Its query, context (`"node"`, or `None` on empty canvas, where only the
+    /// kept and recent commands show, SE29) and search focus.
+    session: MenuSession,
     /// The rows changed since they were last drawn.
     stale: bool,
-    focus_search: bool,
 }
 
 /// The person's choices as the session keeps them.
@@ -109,11 +114,6 @@ pub(super) fn stored_choices(
 ) -> CommandChoices {
     host.view(GRAPHSHELL, COMMANDS_VIEW)
         .and_then(|view| view.commands.clone())
-        .map(|view| CommandChoices {
-            added: view.added,
-            removed: view.removed,
-            recent: view.recent,
-        })
         .unwrap_or_default()
 }
 
@@ -128,10 +128,8 @@ impl BrowserHost {
         }
         self.command_menu = Some(OpenMenu {
             at,
-            context: node.map(|_| "node"),
-            query: String::new(),
+            session: MenuSession::open(node.map(|_| "node")),
             stale: true,
-            focus_search: true,
         });
         self.chrome_dirty = true;
     }
@@ -148,7 +146,7 @@ impl BrowserHost {
 
     pub(super) fn search_commands(&mut self, query: &str) {
         if let Some(menu) = self.command_menu.as_mut() {
-            menu.query = query.to_string();
+            menu.session.set_query(query);
             menu.stale = true;
         }
     }
@@ -182,26 +180,19 @@ impl BrowserHost {
 
     /// Run the first row the menu shows, as Enter in its search field does.
     pub(super) fn run_first_command(&mut self) {
-        let first = self.command_menu.as_ref().and_then(|menu| {
-            self.command_set
-                .menu(&self.command_choices, menu.context, &menu.query)
-                .into_iter()
-                .find(|item| !item.disabled)
+        let chosen = self.command_menu.as_ref().and_then(|menu| {
+            let rows = menu.session.rows(&self.command_set, &self.command_choices);
+            menu.session.chosen(&rows).map(|command| command.id.clone())
         });
-        if let Some(item) = first {
-            self.command_menu_action(&format!("run:{}", item.id));
+        if let Some(id) = chosen {
+            self.command_menu_action(&format!("run:{id}"));
         }
     }
 
     /// Keep the person's choices in the session; the frame pump stores them.
     fn keep_command_choices(&mut self) {
-        let choices = &self.command_choices;
         let view = ViewIntent {
-            commands: Some(CommandMenuView {
-                added: choices.added.clone(),
-                removed: choices.removed.clone(),
-                recent: choices.recent.clone(),
-            }),
+            commands: Some(self.command_choices.clone()),
             ..ViewIntent::default()
         };
         match self.app.host.set_view_now(GRAPHSHELL, COMMANDS_VIEW, view) {
@@ -222,12 +213,10 @@ pub(super) fn present_command_menu(host: &mut BrowserHost) -> Result<(), String>
         }
         return Ok(());
     };
-    if !menu.stale && !menu.focus_search {
+    if !menu.stale && !menu.session.focus_search {
         return Ok(());
     }
-    let items = host
-        .command_set
-        .menu(&host.command_choices, menu.context, &menu.query);
+    let items = menu.session.rows(&host.command_set, &host.command_choices);
     let kept: Vec<String> = host
         .command_set
         .kept(&host.command_choices)
@@ -276,17 +265,17 @@ pub(super) fn present_command_menu(host: &mut BrowserHost) -> Result<(), String>
     let search: HtmlInputElement = element("command-search")?
         .dyn_into()
         .map_err(|_| "the command search is not an input")?;
-    if menu.focus_search {
+    if menu.session.focus_search {
         search.set_value("");
         let _ = search.focus();
-        menu.focus_search = false;
+        menu.session.focus_search = false;
     }
     menu.stale = false;
     Ok(())
 }
 
 /// One row: the command, and a control to keep it or stop keeping it.
-fn row(document: &web_sys::Document, item: &CommandItem, kept: bool) -> Result<Element, String> {
+fn row(document: &web_sys::Document, item: &Command, kept: bool) -> Result<Element, String> {
     let make = |tag: &str| {
         document
             .create_element(tag)
@@ -300,7 +289,7 @@ fn row(document: &web_sys::Document, item: &CommandItem, kept: bool) -> Result<E
     run.set_attribute("data-command-menu", &format!("run:{}", item.id))
         .ok();
     run.set_text_content(Some(&item.label));
-    if item.disabled {
+    if item.disabled_reason.is_some() {
         run.set_attribute("disabled", "").ok();
         if let Some(reason) = &item.disabled_reason {
             run.set_attribute("title", reason).ok();

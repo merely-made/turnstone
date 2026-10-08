@@ -24,7 +24,7 @@ use mere::kernel::persistence::GraphSnapshot;
 use mere::kernel::time::wall_clock_now;
 use muniment::{Backend, JsonSlots, StoreError};
 /// The view types a host writes through [`MereHost::set_view_now`].
-pub use pandect::{CommandMenuView, ViewIntent as SessionViewIntent};
+pub use pandect::ViewIntent as SessionViewIntent;
 use pandect::{
     GraphSession, MereSessions, Pending, Reverted, SessionError, SessionId, ViewIntent, ViewKey,
 };

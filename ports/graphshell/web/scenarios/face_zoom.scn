@@ -5,7 +5,7 @@
 # between zooms; a node count keeps the check from passing on an empty frame.
 assert title GRAPHSHELL H3 READY
 assert snap ready == true
-dom click [data-command="toggle-physics"]
+dom click [data-command="physics:toggle"]
 settle 1
 assert snap physics-paused == false
 select #gs-arrangement-select free
@@ -17,7 +17,7 @@ dom click [data-command="apply-physics"]
 settle 1
 assert snap physics-law == spring.rapier
 settle 60
-dom click [data-command="toggle-physics"]
+dom click [data-command="physics:toggle"]
 settle 2
 assert snap physics-paused == true
 set-zoom 1

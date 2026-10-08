@@ -27,19 +27,19 @@
           data-command="session-remote"
           aria-pressed="false"
         >Remote mount</button>
-        <button id="gs-session-undo" data-command="session-undo" aria-label="Undo Graphshell's last change">Undo change</button>
-        <button id="gs-session-redo" data-command="session-redo" aria-label="Redo Graphshell's last undone change">Redo change</button>
+        <button id="gs-session-undo" data-command="session:undo" aria-label="Undo Graphshell's last change">Undo change</button>
+        <button id="gs-session-redo" data-command="session:redo" aria-label="Redo Graphshell's last undone change">Redo change</button>
       </header>
 
       <nav aria-label="Graph controls">
         <button data-command="select-web">Select research object</button>
-        <button data-command="open-detail">Edit selected object</button>
+        <button data-command="node:edit">Edit selected object</button>
         <button data-command="pan-left" aria-label="Pan left">Pan left</button>
         <button data-command="pan-right" aria-label="Pan right">Pan right</button>
         <button data-command="pan-up" aria-label="Pan up">Pan up</button>
         <button data-command="pan-down" aria-label="Pan down">Pan down</button>
-        <button data-command="zoom-in" aria-label="Zoom in">Zoom in</button>
-        <button data-command="zoom-out" aria-label="Zoom out">Zoom out</button>
+        <button data-command="view:zoom_in" aria-label="Zoom in">Zoom in</button>
+        <button data-command="view:zoom_out" aria-label="Zoom out">Zoom out</button>
       </nav>
 
       <aside id="gs-product-panel" aria-label="Graph tools">
@@ -102,7 +102,7 @@
           <input id="gs-address-input" value="https://example.net/new-object">
           <label for="gs-address-title">Title</label>
           <input id="gs-address-title" value="New research object">
-          <button data-command="add-address">Add address</button>
+          <button data-command="node:new">Add address</button>
           <button data-command="open-projection-editor">Edit projection</button>
           <button data-command="load-practice-projection">Open practice projection</button>
           <button data-command="reopen-practice-projection">Reopen saved practice projection</button>
@@ -226,7 +226,7 @@
           </select>
           <div class="button-row">
             <button data-command="apply-arrangement">Arrange</button>
-            <button data-command="toggle-physics">Pause physics</button>
+            <button data-command="physics:toggle">Pause physics</button>
           </div>
           <label for="gs-role-select">Role</label>
           <select id="gs-role-select">

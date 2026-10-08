@@ -319,9 +319,9 @@ pub(super) fn install_events(state: &Rc<RefCell<BrowserHost>>) -> Result<(), Str
             "ArrowRight" => "pan-right",
             "ArrowUp" => "pan-up",
             "ArrowDown" => "pan-down",
-            "+" | "=" => "zoom-in",
-            "-" | "_" => "zoom-out",
-            "Enter" => "open-detail",
+            "+" | "=" => "view:zoom_in",
+            "-" | "_" => "view:zoom_out",
+            "Enter" => "node:edit",
             "Escape" => "close-detail",
             _ => return,
         };

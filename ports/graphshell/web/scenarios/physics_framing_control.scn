@@ -6,7 +6,7 @@
 # following, and the view takes the planted node in.
 assert title GRAPHSHELL H3 READY
 assert snap ready == true
-dom click [data-command="toggle-physics"]
+dom click [data-command="physics:toggle"]
 settle 1
 assert snap physics-paused == false
 select #gs-arrangement-select free
@@ -33,7 +33,7 @@ assert snap view-follow == false
 assert snap layout-outside == 1
 capture physics_framing_planted
 wait
-act fit-content
+act view:fit
 settle 60
 assert snap view-follow == true
 assert snap layout-outside == 0

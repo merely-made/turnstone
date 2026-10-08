@@ -39,9 +39,9 @@ assert dom #gs-projection-editor-preview Stored two ·
 # Graphshell's session Undo reaches its own change, never the editor's save.
 type #gs-address-input https://example.net/session-undo-probe
 settle 2
-act add-address
+act node:new
 settle 2
-act session-undo
+act session:undo
 settle 6
 assert dom #gs-product-status Undid Graphshell's last change
 assert dom #gs-projection-editor-preview Stored two ·

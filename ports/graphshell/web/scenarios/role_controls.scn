@@ -8,7 +8,7 @@ dom click [data-command="apply-role"]
 settle 1
 assert snap arrangement-role == anchored
 assert dom #gs-product-status Role set to anchored
-dom click [data-command="open-detail"]
+dom click [data-command="node:edit"]
 settle 2
 assert snap item-role == recipe
 select #gs-item-role-select pinned
