@@ -581,3 +581,24 @@ nav button:nth-child(8) { left: 254px; }
   color: #8da2a9;
   font-size: 11px;
 }
+
+/* The projection editor's arrangement rows (Scenograph editor plan, E5). */
+#gs-projection-arrangement-options .option-row {
+  margin-top: 6px;
+}
+
+#gs-projection-arrangement-options .option-refusal {
+  min-height: 0;
+  margin: 2px 0 0;
+  color: #e3a07a;
+  font-size: 10px;
+}
+
+#gs-projection-arrangement-options [aria-invalid="true"] {
+  border-color: #c4734f;
+}
+
+#gs-projection-arrangement-options p {
+  color: #8da2a9;
+  font-size: 11px;
+}

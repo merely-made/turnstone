@@ -44,6 +44,8 @@ mod web_scenario;
 mod web_commands;
 #[cfg(feature = "main-page")]
 mod web_session;
+#[cfg(feature = "main-page")]
+mod web_options;
 mod web_speed;
 mod web_timing;
 mod web_tree;

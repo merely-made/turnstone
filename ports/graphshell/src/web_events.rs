@@ -233,6 +233,19 @@ pub(super) fn install_events(state: &Rc<RefCell<BrowserHost>>) -> Result<(), Str
         else {
             return;
         };
+        if let Some(key) = target.get_attribute("data-projection-option") {
+            let value = if let Some(input) = target.dyn_ref::<HtmlInputElement>() {
+                input.value()
+            } else if let Some(select) = target.dyn_ref::<HtmlSelectElement>() {
+                select.value()
+            } else {
+                return;
+            };
+            let mut host = input_state.borrow_mut();
+            host.update_projection_option(&key, &value);
+            let _ = update_semantics(&mut host);
+            return;
+        }
         if target.id() == "gs-command-search" {
             if let Ok(search) = target.dyn_into::<HtmlInputElement>() {
                 let mut host = input_state.borrow_mut();
@@ -296,6 +309,7 @@ pub(super) fn install_events(state: &Rc<RefCell<BrowserHost>>) -> Result<(), Str
                     || target.has_attribute("data-projection-field")
                     || target.has_attribute("data-projection-occurrence")
                     || target.has_attribute("data-practice-command")
+                    || target.has_attribute("data-projection-option")
             })
         {
             return;

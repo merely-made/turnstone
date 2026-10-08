@@ -182,6 +182,8 @@ struct BrowserHost {
     command_menu: Option<web_commands::OpenMenu>,
     /// Where a scenario's `mark-camera` found the camera.
     camera_mark: Option<(f32, f32)>,
+    /// The arrangement the option rows were drawn for (E5).
+    option_rows_kind: Option<String>,
     session_store_error: String,
     /// The scenario lane (`web_scenario`): a script in flight, the semantic
     /// events it asserts against, and a capture armed or landing.
@@ -616,10 +618,13 @@ impl BrowserHost {
                 draft.encoding.label = Some(Channel::Field(value.to_string()));
                 EditorAction::SetEncoding(draft.encoding)
             },
-            "arrangement.kind" => {
-                draft.arrangement.kind = value.to_string();
-                EditorAction::SetArrangement(draft.arrangement)
-            },
+            "arrangement.kind" => EditorAction::SetArrangement(
+                graphshell::projection_editor::with_kind(
+                    &draft.arrangement,
+                    value,
+                    graphshell::projection_compile::practice_compiler().registry(),
+                ),
+            ),
             "arrangement.direction" => {
                 draft.arrangement.direction = value.to_string();
                 EditorAction::SetArrangement(draft.arrangement)
@@ -1663,6 +1668,7 @@ fn update_semantics(host: &mut BrowserHost) -> Result<(), String> {
     }
     update_projection_editor_semantics(host)?;
     web_commands::present_command_menu(host)?;
+    web_options::present_option_rows(host)?;
     set_text(
         "capture-attribution",
         &format!(
@@ -1958,6 +1964,7 @@ async fn run(root_element: Element) -> Result<(), String> {
         command_choices,
         command_menu: None,
         camera_mark: None,
+        option_rows_kind: None,
         session_store_error: String::new(),
         scenario: None,
         scenario_frames: 0,
