@@ -173,6 +173,12 @@ taffy = { package = "genet-taffy", version = "=0.14.0", git = "https://github.co
 layout-dom-api = { git = "https://github.com/merely-made/genet.git", rev = "15713014e2e23b887360471552f75f60684f5384", version = "=0.1.1" }
 genet-scripted-dom = { git = "https://github.com/merely-made/genet.git", rev = "15713014e2e23b887360471552f75f60684f5384", version = "=0.1.2" }
 vello = { git = "https://github.com/mark-ik/vello.git", tag = "vello-0.10.0" }
+# Qualified coarse-command traversal repair for Chrome WebGPU on Radeon.
+# Keep Classic and its encoding/shader types on one immutable maintenance source.
+# This preserves 0.10 APIs and GPU-count recovery; it does not adopt Vello 0.11.
+netrender-vello = { git = "https://github.com/mark-ik/vello.git", rev = "865cbf419668a6fb5b5e96ea54eaaf9be160fd92" }
+vello_encoding = { git = "https://github.com/mark-ik/vello.git", rev = "865cbf419668a6fb5b5e96ea54eaaf9be160fd92" }
+vello_shaders = { git = "https://github.com/mark-ik/vello.git", rev = "865cbf419668a6fb5b5e96ea54eaaf9be160fd92" }
 # The resident lane's CubeCL stack (mere `canvas-gpu`, physics catalog P5c),
 # restated from the root manifest because [patch] is not inherited:
 # cubecl-runtime 0.11.0 with persistence removed from its defaults
