@@ -127,7 +127,9 @@ pub fn configured_device_endpoint() -> String {
         .unwrap_or_else(default_device_endpoint)
 }
 
-fn default_device_endpoint() -> String {
+/// The platform default, ignoring the environment override. Only the
+/// installed resident may bind it.
+pub fn default_device_endpoint() -> String {
     #[cfg(windows)]
     {
         DEFAULT_WINDOWS_DEVICE_ENDPOINT.to_string()

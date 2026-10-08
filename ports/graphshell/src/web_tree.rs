@@ -119,10 +119,18 @@ struct Shared {
     gpu: RefCell<Option<(wgpu::Device, wgpu::Queue)>>,
     timing: RefCell<FrameTiming>,
     physics_config: mere::canvas::ElapsedStepConfig,
+    /// The page's simulation speed and budget, and the frames the receipts read.
+    speed: crate::web_speed::SpeedOptions,
+    pace: RefCell<speed::PaceWindow>,
+    /// The speed reached, under the speed picker while the budget binds.
+    reached: RefCell<crate::web_speed::ReachedNote>,
+    /// The step budget, a share of the measured frame interval.
+    frame_budget: RefCell<crate::web_speed::FrameBudget>,
+    period_worker: crate::web_period_worker::PeriodWorker,
     gpu_options: controls::GpuOptions,
     /// The page's device for the canvas's and the board's repulsion, built
     /// once from the host's render core on the producer's first frame.
-    physics_device: RefCell<Option<mere::canvas::PhysicsDevice>>,
+    physics_device: RefCell<Option<PhysicsDevice>>,
     visibility: Option<RefCell<visibility::Visibility>>,
     /// A released drag's drop point, canvas-local px, until the first frame
     /// that executes a physics step after the release.
@@ -147,6 +155,9 @@ struct Shared {
     remote: Rc<RefCell<remote::TreeRemote>>,
     /// Whether the canvas leaf shows the remote board rather than the graph.
     remote_shown: Cell<bool>,
+    /// A planted accessibility defect, the receipts' positive control
+    /// (`?plant_a11y=`; dynamics grammar plan, G9). `None` in use.
+    plant: graphshell::canvas_reader::Plant,
 }
 
 impl Shared {
@@ -171,6 +182,7 @@ impl TextureProducer for CanvasProducer {
         if shared.gpu.borrow().is_none() {
             *shared.gpu.borrow_mut() = Some((cx.device.clone(), cx.queue.clone()));
             let options = shared.gpu_options;
+            #[cfg(feature = "canvas-gpu")]
             if options.enabled {
                 // The host's own device, never one of ours: the render core's
                 // handles are the ones every producer on this page draws with.
@@ -199,15 +211,38 @@ impl TextureProducer for CanvasProducer {
             canvas.resize(size.0, size.1);
             shared.size.set(size);
         }
+        // The step budget is a share of the display's period, read from the
+        // frames' intervals (ruled 2026-10-04, "Infer the period").
+        let frame_ms = cx
+            .frame
+            .timestamp
+            .map_or_else(now_ms, |timestamp| timestamp.as_secs_f64() * 1000.0);
+        shared
+            .period_worker
+            .feed(&mut shared.frame_budget.borrow_mut(), frame_ms);
+        let budget = shared.frame_budget.borrow_mut().frame(frame_ms);
+        canvas.set_physics_step_budget(Some(budget));
+        crate::web_speed::plant_max_frame(&canvas, shared.speed.plant_max_frame);
+        let physics_config = crate::web_speed::planted_owed(
+            shared.physics_config,
+            canvas.physics_speed(),
+            std::time::Duration::from_secs_f64(
+                shared.frame_budget.borrow().last_interval_ms() / 1000.0,
+            ),
+            shared.speed.plant_owed,
+        );
         let profile = shared.timing.borrow().active();
         if shared.remote_shown.get() {
             // One leaf, the producer picks the scene: the board, mirroring
-            // the canvas's law, ticked once a frame and drawn from its bodies.
+            // the canvas's law and speed, ticked once a frame and drawn from
+            // its bodies.
             let choice = canvas.physics_choice();
+            let speed = canvas.physics_speed();
             drop(canvas);
             let scene = {
                 let mut remote = shared.remote.borrow_mut();
-                remote.sync_board(choice);
+                remote.sync_board(choice, speed);
+                remote.board.set_step_budget(Some(budget));
                 remote.board.tick();
                 let remote = &mut *remote;
                 let empty = mere::canvas::BoardScene::default();
@@ -250,7 +285,7 @@ impl TextureProducer for CanvasProducer {
                     size.0,
                     size.1,
                     timestamp,
-                    shared.physics_config,
+                    physics_config,
                     now_ms,
                 ),
                 None => canvas.frame_profiled(size.0, size.1, now_ms),
@@ -270,7 +305,7 @@ impl TextureProducer for CanvasProducer {
         } else {
             match cx.frame.timestamp {
                 Some(timestamp) => {
-                    canvas.frame_at(size.0, size.1, timestamp, shared.physics_config)
+                    canvas.frame_at(size.0, size.1, timestamp, physics_config)
                 },
                 None => canvas.frame(size.0, size.1),
             }
@@ -289,6 +324,7 @@ impl TextureProducer for CanvasProducer {
             ]);
         }
         shared.moving.set(moving);
+        speed::record(shared, &canvas, moving, budget.per_frame);
         if let Some((x, y)) = shared.release_watch.get()
             && cx.frame.timestamp.is_some()
             && canvas.dragging_node().is_none()
@@ -352,11 +388,15 @@ impl TextureProducer for CanvasProducer {
     }
 
     /// While the board is shown, the slot is a list of its cards, each named
-    /// by its title and placed where it is painted. The graph keeps the
-    /// slot's own DOM semantics for now.
+    /// by its title and placed where it is painted. Otherwise it is the
+    /// graph's items on screen, each a group whose drag and pin are buttons
+    /// (dynamics grammar plan, F62, F65 to F67).
     fn semantics(&mut self) -> Option<cambium_rootstock::ProducerSemantics> {
         if !self.shared.remote_shown.get() {
-            return None;
+            return Some(graphshell::canvas_reader::describe_canvas(
+                &self.shared.canvas.borrow(),
+                self.shared.plant,
+            ));
         }
         let (width, height) = self.shared.size.get();
         Some(remote::board_semantics(
@@ -364,6 +404,24 @@ impl TextureProducer for CanvasProducer {
             width,
             height,
         ))
+    }
+
+    /// A reader pressed one of an item's buttons: Pin pins it, Drag starts
+    /// a keyboard move the arrows steer.
+    fn act(&mut self, key: u64, id: &str) -> bool {
+        if self.shared.remote_shown.get() {
+            return false;
+        }
+        let done = graphshell::canvas_reader::canvas_act(
+            &mut self.shared.canvas.borrow_mut(),
+            key,
+            id,
+            self.shared.plant,
+        );
+        if done {
+            self.shared.dirty.set(true);
+        }
+        done
     }
 }
 
@@ -502,8 +560,26 @@ fn tools_region(page: &TreePage) -> Child {
     )
 }
 
-/// Arrows pan and plus or minus zoom, as on the main page.
+/// Arrows pan and plus or minus zoom, as on the main page. During a
+/// keyboard move the arrows nudge the item instead, Enter drops it and
+/// Escape puts it back (F67).
 fn keys(page: &mut TreePage, key: &Key) -> bool {
+    use graphshell::canvas_reader::{MoveKey, key_move};
+    let move_key = match key {
+        Key::Named(NamedKey::ArrowLeft) => Some(MoveKey::Left),
+        Key::Named(NamedKey::ArrowRight) => Some(MoveKey::Right),
+        Key::Named(NamedKey::ArrowUp) => Some(MoveKey::Up),
+        Key::Named(NamedKey::ArrowDown) => Some(MoveKey::Down),
+        Key::Named(NamedKey::Enter) => Some(MoveKey::Drop),
+        Key::Named(NamedKey::Escape) => Some(MoveKey::Back),
+        _ => None,
+    };
+    if let Some(move_key) = move_key
+        && key_move(&mut page.shared.canvas.borrow_mut(), move_key, PAN_STEP)
+    {
+        page.shared.dirty.set(true);
+        return true;
+    }
     if let Some(product) = &mut page.product {
         match key {
             Key::Named(NamedKey::Enter) if product.selected.is_some() => {
@@ -562,10 +638,18 @@ pub(crate) fn mounted() -> bool {
     TREE.with(|tree| tree.borrow().is_some())
 }
 
+/// Whether the H5 reference host already owns this page.
+fn main_page_mounted() -> bool {
+    #[cfg(feature = "main-page")]
+    return web_scenario::host().is_some();
+    #[cfg(not(feature = "main-page"))]
+    false
+}
+
 /// Mount the one-tree page into `root`.
 #[wasm_bindgen]
 pub fn mount_tree(root: Element) -> Result<(), JsValue> {
-    if mounted() || web_scenario::host().is_some() {
+    if mounted() || main_page_mounted() {
         return Err(JsValue::from_str(
             "Graphshell is already mounted on this page",
         ));
@@ -610,6 +694,7 @@ async fn boot(root: Element) -> Result<(), String> {
         }
     };
     let nodes = graph.node_count();
+    let speed_options = crate::web_speed::options()?;
     let shared = Rc::new(Shared {
         canvas: RefCell::new(web_graphs::prepared_canvas(graph, width, height)),
         dirty: Cell::new(true),
@@ -619,6 +704,13 @@ async fn boot(root: Element) -> Result<(), String> {
         gpu: RefCell::new(None),
         timing: RefCell::new(FrameTiming::default()),
         physics_config: controls::physics_config()?,
+        speed: speed_options,
+        pace: RefCell::new(speed::PaceWindow::with_grain(
+            speed_options.grain.as_micros() as i64,
+        )),
+        reached: RefCell::new(crate::web_speed::ReachedNote::default()),
+        frame_budget: RefCell::new(crate::web_speed::frame_budget(speed_options)),
+        period_worker: crate::web_period_worker::PeriodWorker::start(speed_options.period_source),
         gpu_options: controls::gpu_options()?,
         physics_device: RefCell::new(None),
         visibility: visibility::requested()?,
@@ -632,10 +724,16 @@ async fn boot(root: Element) -> Result<(), String> {
         faces: Cell::new(None),
         remote: Rc::new(RefCell::new(remote::TreeRemote::new())),
         remote_shown: Cell::new(false),
+        plant: controls::reader_plant()?,
     });
     if let Some(slice) = controls::meaning_slice()? {
         shared.canvas.borrow_mut().set_meaning_slice(slice);
     }
+    crate::web_speed::apply(
+        &mut shared.canvas.borrow_mut(),
+        shared.speed,
+        &shared.frame_budget.borrow(),
+    );
     visibility::install(&shared, &document)?;
     let options = HostOptions {
         title: "Graphshell, one tree".into(),
@@ -748,6 +846,18 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
             {
                 ctx.runner.update(|page| page.advance_arrangement(now_ms()));
             }
+            // The speed picker applies when chosen ("Speed select"), and the
+            // speed reached shows beneath it while the budget binds.
+            if ctx.runner.state().physics.speed_pending() {
+                ctx.runner.update(TreePage::apply_speed);
+            }
+            let (note, changed) = frame_shared
+                .reached
+                .borrow_mut()
+                .update(&frame_shared.canvas.borrow());
+            if changed {
+                ctx.runner.update(|page| page.physics.speed_note = note);
+            }
             let size = (
                 ctx.logical_size.0.round().max(1.0) as u32,
                 ctx.logical_size.1.round().max(1.0) as u32,
@@ -858,11 +968,65 @@ fn publish(ok: bool, text: &str, shared: &Shared, saved: Option<serde_json::Valu
     }
 }
 
+#[cfg(feature = "canvas-gpu")]
+use mere::canvas::PhysicsDevice;
+
+/// Without `canvas-gpu` the page never has a physics device.
+#[cfg(not(feature = "canvas-gpu"))]
+enum PhysicsDevice {}
+
+#[cfg(not(feature = "canvas-gpu"))]
+impl PhysicsDevice {
+    fn answers(&self) -> u64 {
+        match *self {}
+    }
+
+    fn threshold(&self) -> usize {
+        match *self {}
+    }
+}
+
+/// Without `canvas-gpu` there is no lagged repulsion lane, so its counts stay
+/// zero; the fields are seiche's `LaggedStats`.
+#[cfg(not(feature = "canvas-gpu"))]
+#[derive(Clone, Copy, Debug, Default)]
+struct RepulsionStats {
+    device_steps: u64,
+    cpu_steps: u64,
+    submissions: u64,
+    failures: u64,
+    mismatched: u64,
+    waiting: u64,
+    stale: u64,
+    last_age: u64,
+}
+
+#[cfg(not(feature = "canvas-gpu"))]
+trait NoRepulsionLane {
+    fn repulsion_stats(&self) -> Option<RepulsionStats>;
+}
+
+#[cfg(not(feature = "canvas-gpu"))]
+impl NoRepulsionLane for mere::canvas::Canvas {
+    fn repulsion_stats(&self) -> Option<RepulsionStats> {
+        None
+    }
+}
+
 mod controls;
 mod lane;
 mod physics;
+#[cfg(feature = "product")]
 mod product;
+#[cfg(not(feature = "product"))]
+#[path = "web_tree/product_off.rs"]
+mod product;
+#[cfg(feature = "remote")]
 mod remote;
+#[cfg(not(feature = "remote"))]
+#[path = "web_tree/remote_off.rs"]
+mod remote;
+mod speed;
 mod visibility;
 
 /// Join a host over WebRTC as the tree's remote session (`?signal=`).

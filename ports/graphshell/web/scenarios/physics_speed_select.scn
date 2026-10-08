@@ -1,0 +1,36 @@
+# Seiche's speed dial through the main page's Speed select (physics catalog
+# plan, ruled 2026-10-04, "Speed select" and "Target + Max, budget as frame
+# share"): 1x by default; 50x applies when chosen, and on
+# index.html?nodes=300&seed=7&links=none&gpu=off, too large for fifty CPU
+# ticks in half a frame, the speed reached shows beneath the select; Max runs
+# as fast as the budget allows; back at 1x the budget no longer binds.
+assert title GRAPHSHELL H3 READY
+assert snap ready == true
+assert snap physics-speed == 1
+dom click [data-command="toggle-physics"]
+settle 1
+assert snap physics-paused == false
+select #gs-arrangement-select free
+dom click [data-command="apply-arrangement"]
+settle 1
+assert snap layout == free
+select #gs-speed-select 50
+settle 2
+assert snap physics-speed == 50
+assert dom #gs-product-status Speed set to 50x
+settle 40
+assert snap physics-budget-share == 0.5
+assert dom #gs-speed-note Reached
+capture physics_speed_select_bound
+select #gs-speed-select max
+settle 2
+assert snap physics-speed == max
+assert dom #gs-product-status Speed set to Max
+settle 40
+assert snap physics-budget-bound == true
+assert dom #gs-speed-note the frame budget is full
+select #gs-speed-select 1
+settle 4
+assert snap physics-speed == 1
+assert snap physics-budget-bound == false
+log physics speed select receipt complete

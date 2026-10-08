@@ -12,7 +12,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use base64::Engine;
 use chirograph::{CarrierRequestBody, CarrierResponseBody, ResumeRequest};
 use personae::delegation::DelegationError;
-use personae::{IdentityProvider, IdentityStorage};
+use personae::IdentityStorage;
 
 use crate::browser_carrier::{
     BrowserCarrierError, BrowserChallenge, BrowserHostMessage, BrowserLauncher, BrowserLink,
@@ -27,8 +27,11 @@ use crate::native::endpoint_catalog::{
     ResidentEndpointSession,
 };
 use crate::native::identity_ui::{NativeIdentityUi, apply_native_identity_action};
-use crate::native::local_session::{LocalSession, admit_local_client, identity_endpoint_for};
+use crate::native::local_session::{
+    DoorIdentity, LocalSession, admit_local_client, identity_endpoint_for,
+};
 use crate::native::personae_host::PersonaeHost;
+use crate::native::tasks::spawn_tracked_with_handle;
 use crate::session_loop::{SessionLoopError, SessionSummary, serve_admitted_session};
 use crate::session_notices::serve_admitted_session_notifying;
 
@@ -38,12 +41,19 @@ pub enum BrowserHostError {
     Carrier(#[from] BrowserCarrierError),
     #[error("local browser grant failed: {0}")]
     Delegation(#[from] DelegationError),
+    /// The door's kept keys are unavailable (rulings 40, 46).
+    #[error("the door's kept keys are unavailable: {0}")]
+    DoorKeys(personae::IdentityError),
     #[error(transparent)]
     Session(#[from] SessionLoopError),
     #[error(transparent)]
     Catalog(#[from] ResidentEndpointCatalogError),
     #[error("browser session task failed: {0}")]
     Task(#[from] tokio::task::JoinError),
+    /// The session task ended without answering: it panicked or was
+    /// cancelled with its resident's tasks.
+    #[error("browser session task ended without answering")]
+    TaskEnded(#[from] tokio::sync::oneshot::error::RecvError),
 }
 
 /// Serve one browser-launched native-messaging process.
@@ -61,7 +71,7 @@ pub async fn serve_identity_native_messages<P, S, U, R, W>(
     session_duration_ms: u64,
 ) -> Result<Option<SessionSummary>, BrowserHostError>
 where
-    P: IdentityProvider,
+    P: DoorIdentity + ?Sized,
     S: IdentityStorage + 'static,
     U: NativeIdentityUi,
     R: tokio::io::AsyncRead + Unpin,
@@ -93,7 +103,7 @@ pub(crate) async fn serve_identity_native_messages_with_cards<P, S, U, R, W>(
     surface: DeviceSurface,
 ) -> Result<Option<SessionSummary>, BrowserHostError>
 where
-    P: IdentityProvider,
+    P: DoorIdentity + ?Sized,
     S: IdentityStorage + 'static,
     U: NativeIdentityUi,
     R: tokio::io::AsyncRead + Unpin,
@@ -130,7 +140,7 @@ pub async fn serve_catalog_native_messages<P, S, U, R, W>(
     route: ResidentEndpointRoute,
 ) -> Result<Option<SessionSummary>, BrowserHostError>
 where
-    P: IdentityProvider,
+    P: DoorIdentity + ?Sized,
     S: IdentityStorage + 'static,
     U: NativeIdentityUi,
     R: tokio::io::AsyncRead + Unpin,
@@ -171,7 +181,7 @@ async fn serve_native_messages<P, S, U, R, W>(
     selected_endpoint: BrowserSessionEndpoint,
 ) -> Result<Option<SessionSummary>, BrowserHostError>
 where
-    P: IdentityProvider,
+    P: DoorIdentity + ?Sized,
     S: IdentityStorage + 'static,
     U: NativeIdentityUi,
     R: tokio::io::AsyncRead + Unpin,
@@ -208,7 +218,7 @@ where
     let server = match selected_endpoint {
         BrowserSessionEndpoint::Identity { surface } => {
             let mut endpoint = identity_endpoint_for(Arc::clone(&personae), &authority, surface);
-            tokio::spawn(async move {
+            spawn_tracked_with_handle(async move {
                 let revocations = RwLock::new(revocations);
                 let mut resume = |_: &mut IdentityEndpoint<S>, _: ResumeRequest| {
                     Err("identity resume is not implemented".to_string())
@@ -229,7 +239,7 @@ where
             // A missing route therefore never yields a live browser session,
             // and the endpoint only sees the narrow admitted context.
             let mut endpoint = catalog.open(route.id(), &endpoint_context)?;
-            tokio::spawn(async move {
+            spawn_tracked_with_handle(async move {
                 let revocations = RwLock::new(revocations);
                 let mut resume = |endpoint: &mut ResidentEndpointSession,
                                   request: ResumeRequest| {

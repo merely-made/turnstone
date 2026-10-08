@@ -1,4 +1,7 @@
 // Copyright 2026 Mark Alan Boykin
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // SPDX-License-Identifier: MPL-2.0
 
 //! The bounded local saved-graph workflow on the retained tree.
@@ -245,11 +248,13 @@ fn apply_item_role(page: &mut TreePage) {
         .selected
         .checked_sub(1)
         .and_then(|i| Role::ALL.get(i).copied());
-    page.shared
+    let set = page
+        .shared
         .canvas
         .borrow_mut()
         .set_member_role(member, role);
     product.status = match role {
+        _ if !set => "Item role refused: the item does not permit it".into(),
         Some(role) => format!("Item role set to {}", role.id()),
         None => "Item role follows the recipe".into(),
     };

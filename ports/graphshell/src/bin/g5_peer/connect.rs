@@ -48,7 +48,7 @@ pub(crate) async fn connect(
     network: NetworkId,
     source: PeerSource,
 ) -> Result<(), String> {
-    let carrier = P2pandaTransport::builder_from_seed(seed)
+    let carrier = P2pandaTransport::builder_from_seed_ref(&seed)
         .alpns(vec![projection_alpn()])
         .mdns(MdnsDiscoveryMode::Active)
         .bind()

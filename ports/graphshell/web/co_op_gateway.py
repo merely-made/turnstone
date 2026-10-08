@@ -1,5 +1,9 @@
 # Copyright 2026 Mark Alan Boykin
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
+
 """Loopback proof carrier. Each process owns one Rust peer and one disk store.
 
 Rust Commons/Gemot validates and retains signed operations. This gateway only

@@ -89,6 +89,29 @@ pub fn open_session<P: IdentityProvider>(
     )
 }
 
+/// [`open_session`] with the session signer bound to `network`, for a door
+/// whose kept keys must open nothing else (vault lock ruling 46).
+pub fn open_network_bound_session<P: IdentityProvider>(
+    identity: &P,
+    network: NetworkId,
+    profile: ProfileRef,
+    class: TrafficClass,
+    nonce: [u8; 32],
+    binding: &ProofBinding,
+    delegations: Vec<SignedDelegationCertificate>,
+) -> Result<SessionHello, HandshakeError> {
+    SessionHello::issue_network_bound(
+        identity,
+        network,
+        profile,
+        connect_action(),
+        class,
+        nonce,
+        binding,
+        delegations,
+    )
+}
+
 /// Whether this service serves the action an admitted principal was admitted
 /// for.
 ///

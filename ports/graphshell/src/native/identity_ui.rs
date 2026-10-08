@@ -16,7 +16,7 @@ use std::path::PathBuf;
 use std::sync::Arc;
 
 use light_file_dialog::dialog::{Dialog, DialogBackend, InputBox, OpenFileDialog};
-use personae::IdentityStorage;
+use personae::{IdentityStorage, OsPresence, UnlockMethod};
 use ssh_key::PrivateKey;
 use zeroize::Zeroizing;
 
@@ -37,6 +37,17 @@ pub trait NativeIdentityUi: Send + Sync {
     fn prompt_ssh_private_key_passphrase(
         &self,
     ) -> Result<Option<Zeroizing<String>>, NativeIdentityFailure>;
+
+    /// Ask the OS to verify the user (Windows Hello). `Ok(None)` when it is
+    /// unavailable, cancelled or not verified: the passphrase box follows.
+    fn verify_presence(&self) -> Result<Option<OsPresence>, NativeIdentityFailure> {
+        Ok(None)
+    }
+
+    /// Ask for the vault passphrase in a native box; `Ok(None)` if cancelled.
+    fn prompt_vault_passphrase(&self) -> Result<Option<Zeroizing<String>>, NativeIdentityFailure> {
+        Err(NativeIdentityFailure::UiUnavailable)
+    }
 }
 
 /// Cross-platform system-dialog implementation used by the installed host.
@@ -97,6 +108,28 @@ impl NativeIdentityUi for SystemNativeIdentityUi {
         .show()
         .map(Zeroizing::new))
     }
+
+    /// Windows Hello through personae's gate, which alone mints the proof.
+    fn verify_presence(&self) -> Result<Option<OsPresence>, NativeIdentityFailure> {
+        if !personae::unlock::presence_availability().is_available() {
+            return Ok(None);
+        }
+        match personae::unlock::verify_presence("Unlock your identity vault") {
+            Ok(proof) => Ok(Some(proof)),
+            Err(error) => {
+                tracing::info!(%error, "presence not verified; asking for the passphrase");
+                Ok(None)
+            },
+        }
+    }
+
+    fn prompt_vault_passphrase(&self) -> Result<Option<Zeroizing<String>>, NativeIdentityFailure> {
+        self.require_graphical_backend()?;
+        Ok(InputBox::new("Identity vault", "Enter the vault passphrase.")
+            .password()
+            .show()
+            .map(Zeroizing::new))
+    }
 }
 
 /// Refusal implementation for hosts that deliberately expose no desktop UI.
@@ -128,6 +161,40 @@ where
     match action {
         NativeIdentityAction::ImportSshPrivate { unlock_policy } => {
             import_ssh_private(host, ui, ImportSshKeyNativeIntentV1 { unlock_policy })
+        },
+        NativeIdentityAction::UnlockVault => unlock_vault(host, ui),
+    }
+}
+
+/// OS presence first, then the passphrase box; the credential stays here.
+fn unlock_vault<S, U>(host: &Arc<PersonaeHost<S>>, ui: &U) -> NativeIdentityResult
+where
+    S: IdentityStorage + 'static,
+    U: NativeIdentityUi,
+{
+    if !host.is_locked() {
+        return NativeIdentityResult::UnlockedVault;
+    }
+    if let Ok(Some(proof)) = ui.verify_presence() {
+        match host.unlock_vault(UnlockMethod::OsPresence(proof)) {
+            Ok(()) => return NativeIdentityResult::UnlockedVault,
+            Err(error) => tracing::warn!(%error, "presence unlock refused; asking for the passphrase"),
+        }
+    }
+    let passphrase = match ui.prompt_vault_passphrase() {
+        Ok(Some(passphrase)) => passphrase,
+        Ok(None) => return NativeIdentityResult::Cancelled,
+        Err(reason) => return NativeIdentityResult::Rejected { reason },
+    };
+    let unlocked = host.unlock_vault(UnlockMethod::Passphrase(passphrase.as_bytes()));
+    drop(passphrase);
+    match unlocked {
+        Ok(()) => NativeIdentityResult::UnlockedVault,
+        Err(_) if host.is_locked() => NativeIdentityResult::Rejected {
+            reason: NativeIdentityFailure::IncorrectPassphrase,
+        },
+        Err(_) => NativeIdentityResult::Rejected {
+            reason: NativeIdentityFailure::UnlockRejected,
         },
     }
 }

@@ -1,0 +1,37 @@
+# Diagnostic, not a receipt: the gate's margin (physics catalog plan,
+# 2026-10-04, "Gate keeps a forecast margin") against every frame above real
+# time. Run with ?nodes=300&seed=7&links=none&gpu=off&physics_speed=max, and
+# again with &physics_budget_margin_us=0 for the margin's control; Springs
+# is applied eight times, each restarting its settle, so a run holds several
+# hundred budget-bound frames.
+assert snap ready == true
+click role:button Play physics
+settle 2
+click role:combobox Arrangement
+settle 1
+click role:option Free (physics alone)
+settle 1
+click role:button Apply arrangement
+settle 1
+click role:combobox Physics law
+settle 1
+click role:option Springs
+settle 1
+click role:button Apply physics
+settle 15
+click role:button Apply physics
+settle 15
+click role:button Apply physics
+settle 15
+click role:button Apply physics
+settle 15
+click role:button Apply physics
+settle 15
+click role:button Apply physics
+settle 15
+click role:button Apply physics
+settle 15
+click role:button Apply physics
+settle 15
+log-pace diag
+log diag speed margin complete

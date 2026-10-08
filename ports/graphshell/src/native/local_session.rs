@@ -25,7 +25,7 @@ use notochord::{
     ServiceRule, TrustedRoot,
 };
 use personae::delegation::DelegationError;
-use personae::{IdentityProvider, IdentityStorage};
+use personae::{IdentityError, IdentityProvider, IdentityStorage, InMemoryProvider, RetainedKeys};
 use tokio::io::DuplexStream;
 
 use crate::admission::{CONNECT_ACTION, GRAPHSHELL_DOMAIN, PROJECTION_SERVICE};
@@ -50,17 +50,52 @@ pub(crate) struct LocalSession {
     pub revocations: RevocationLedger,
 }
 
+/// What a door admits its sessions with (vault lock rulings 40 and 46): a
+/// restricted provider holding only the door's two keys, which the vault lock
+/// leaves in place. They are the grant's delegation signer and the session
+/// signer bound to the door's local network, so they open nothing else.
+pub trait DoorIdentity: Send + Sync {
+    /// The door's kept keys, or why there are none.
+    fn door_keys(&self) -> Result<Arc<RetainedKeys>, IdentityError>;
+}
+
+/// The resident host keeps the door keys through every lock.
+impl<S: IdentityStorage + 'static> DoorIdentity for PersonaeHost<S> {
+    fn door_keys(&self) -> Result<Arc<RetainedKeys>, IdentityError> {
+        self.retained_keys(&door_salts(self.master_public_key().to_bytes()))
+    }
+}
+
+/// A fixture provider never locks; it captures afresh.
+impl DoorIdentity for InMemoryProvider {
+    fn door_keys(&self) -> Result<Arc<RetainedKeys>, IdentityError> {
+        RetainedKeys::capture(self, &door_salts(self.master_public_key().to_bytes())).map(Arc::new)
+    }
+}
+
+/// The door's two salts for `subject`: the local grant's delegation signer
+/// and the session signer bound to its local network.
+pub fn door_salts(subject: [u8; 32]) -> Vec<Vec<u8>> {
+    let network = local_network(subject);
+    vec![
+        insigne::delegation::delegation_signing_salt(&local_scope(network)),
+        notochord::network_session_signing_salt(&network),
+    ]
+}
+
 /// Mint a local grant for `link` and admit it.
 ///
 /// The domains are named `local-browser-*` because the browser door minted the
 /// first of these. They are kept as they are on purpose: they are hashed into
 /// a network id, so renaming them would silently change every derived network
 /// rather than clarify anything.
-pub(crate) async fn admit_local_client<P: IdentityProvider>(
-    identity: &P,
+pub(crate) async fn admit_local_client<D: DoorIdentity + ?Sized>(
+    door: &D,
     link: &LocalLink,
     session_duration_ms: u64,
 ) -> Result<LocalSession, BrowserHostError> {
+    let keys = door.door_keys().map_err(BrowserHostError::DoorKeys)?;
+    let identity = keys.as_ref();
     let subject = identity.master_public_key().to_bytes();
     let network = local_network(subject);
     let root = local_root(subject);
@@ -150,6 +185,15 @@ fn local_network(subject: [u8; 32]) -> NetworkId {
     NetworkId(*hasher.finalize().as_bytes())
 }
 
+fn local_scope(network: NetworkId) -> CapabilityScope {
+    CapabilityScope {
+        domain: GRAPHSHELL_DOMAIN.to_string(),
+        resource: network.0.to_vec(),
+        path_prefix: PROJECTION_SERVICE.to_string(),
+        actions: [CONNECT_ACTION.to_string()].into_iter().collect(),
+    }
+}
+
 fn local_root(subject: [u8; 32]) -> [u8; 32] {
     let mut hasher = blake3::Hasher::new();
     hasher.update(ROOT_DOMAIN);
@@ -171,12 +215,7 @@ fn local_grant<P: IdentityProvider>(
             DelegationParent::Root(root),
             identity.master_public_key().to_bytes(),
             identity.master_public_key().to_bytes(),
-            CapabilityScope {
-                domain: GRAPHSHELL_DOMAIN.to_string(),
-                resource: network.0.to_vec(),
-                path_prefix: PROJECTION_SERVICE.to_string(),
-                actions: [CONNECT_ACTION.to_string()].into_iter().collect(),
-            },
+            local_scope(network),
             issued_at_ms,
             issued_at_ms,
             Some(expires_at_ms),

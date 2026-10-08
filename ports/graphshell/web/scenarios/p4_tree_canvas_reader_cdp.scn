@@ -1,0 +1,13 @@
+# Chrome's own computed accessibility tree of the graph canvas (dynamics
+# grammar plan, G9, F68). This receipt carries the scenario runner's one
+# stated exception to "no DevTools": the runner attaches to this receipt's
+# Chrome over the DevTools protocol once the scenario is done, read-only and
+# never sending input, and reads Accessibility.getFullAXTree for the canvas's
+# slot, its items and their Drag and Pin buttons. The page's own semantic tree
+# is asserted by p4_tree_canvas_reader.scn; this one asserts nothing about the
+# buttons itself, so its positive control (?plant_a11y=missing_action) must be
+# caught by Chrome's tree alone.
+assert snap ready == true
+settle 3
+assert snap reader-canvas ~ shown
+log canvas reader devtools receipt complete

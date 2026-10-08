@@ -51,6 +51,7 @@ use crate::native::endpoint_catalog::{
 use crate::native::local_endpoint::{LocalStream, connect_local, serve_local};
 use crate::native::local_session::{LocalSession, admit_local_client, identity_endpoint_for};
 use crate::native::personae_host::PersonaeHost;
+use crate::native::tasks::spawn_tracked_with_handle;
 use crate::session_loop::{SessionSummary, serve_admitted_session};
 use crate::session_notices::serve_admitted_session_notifying;
 use chirograph::ResumeRequest;
@@ -300,7 +301,7 @@ where
     let session = endpoint_context.session().0.clone();
     let server = if route.id() == APP_IDENTITY_ROUTE {
         let mut endpoint = identity_endpoint_for(Arc::clone(&personae), &authority, surface);
-        tokio::spawn(async move {
+        spawn_tracked_with_handle(async move {
             let revocations = StdRwLock::new(revocations);
             let mut resume = |_: &mut IdentityEndpoint<S>, _: ResumeRequest| {
                 Err("identity resume is not implemented".to_string())
@@ -321,7 +322,7 @@ where
         // this narrow context.
         let mut endpoint = catalog.open(route.id(), &endpoint_context).await?;
         let notice_poll_interval = route.notice_poll_interval();
-        tokio::spawn(async move {
+        spawn_tracked_with_handle(async move {
             let revocations = StdRwLock::new(revocations);
             let mut resume = |endpoint: &mut ResidentEndpointSession, request: ResumeRequest| {
                 endpoint.resume(request)

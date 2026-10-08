@@ -30,6 +30,8 @@ pub mod canvas_faces;
 #[cfg(feature = "web")]
 pub mod canvas_physics;
 #[cfg(feature = "web")]
+pub mod canvas_reader;
+#[cfg(feature = "web")]
 pub mod capture;
 #[cfg(all(feature = "personal-sync", not(target_arch = "wasm32")))]
 pub mod carriage;
@@ -65,9 +67,13 @@ pub mod personal_sync;
 #[cfg(all(feature = "native", not(target_arch = "wasm32")))]
 pub mod policy_projection;
 #[cfg(feature = "web")]
+pub mod frame_budget;
+#[cfg(feature = "web")]
 pub mod product;
 #[cfg(feature = "web")]
 pub mod remote_board;
+#[cfg(feature = "web")]
+pub mod speed_bar;
 #[cfg(all(feature = "native", not(target_arch = "wasm32")))]
 pub mod profile;
 #[cfg(feature = "web")]

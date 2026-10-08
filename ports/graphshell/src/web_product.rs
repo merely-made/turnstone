@@ -83,6 +83,7 @@ impl BrowserHost {
             "apply-arrangement" => self.apply_arrangement_from_form(),
             "toggle-physics" => self.toggle_physics(),
             "apply-physics" => self.apply_physics_from_form(),
+            "choose-speed" => self.choose_speed_from_form(),
             "apply-profile" => self.apply_profile_from_form(),
             "apply-face" => self.apply_face(),
             "apply-role" => self.apply_role_from_form(),
@@ -423,6 +424,16 @@ impl BrowserHost {
 
     /// The physics panel's Apply: the form's sources, overlays and law, in
     /// one rebuild. (Physics catalog — P2.)
+    /// The speed select applies when chosen (ruled 2026-10-04, "Speed select").
+    fn choose_speed_from_form(&mut self) -> Result<String, String> {
+        let value = select_value("speed-select")?;
+        let index = crate::web_speed::PRESETS
+            .iter()
+            .position(|(preset, _)| *preset == value)
+            .ok_or_else(|| format!("no speed preset {value}"))?;
+        Ok(crate::web_speed::choose(&mut self.canvas, index))
+    }
+
     fn apply_physics_from_form(&mut self) -> Result<String, String> {
         let law_id = select_value("physics-select")?;
         let law =
@@ -505,7 +516,9 @@ impl BrowserHost {
                 mere::canvas::Role::parse(other).ok_or_else(|| format!("unknown role {other}"))?,
             ),
         };
-        self.canvas.set_member_role(member, role);
+        if !self.canvas.set_member_role(member, role) {
+            return Err("Item role refused: the item does not permit it".into());
+        }
         Ok(match role {
             Some(role) => format!("Item role set to {}", role.id()),
             None => "Item role follows the recipe".to_string(),
@@ -669,6 +682,7 @@ pub(super) fn update_product_semantics(
         element.set_text_content(Some(&host.product_status));
     }
     ensure_physics_controls(host)?;
+    sync_speed_note(host)?;
     if host.layout_stats_stale {
         host.layout_stats = host.canvas.layout_stats();
         host.layout_stats_stale = false;
@@ -692,6 +706,55 @@ pub(super) fn update_product_semantics(
         (
             "data-physics-profile",
             canvas_physics::profile_id(&host.canvas).to_string(),
+        ),
+        (
+            "data-physics-speed",
+            crate::web_speed::field(host.canvas.physics_speed()),
+        ),
+        (
+            "data-physics-budget-us",
+            host.frame_budget.budget().per_frame.as_micros().to_string(),
+        ),
+        (
+            "data-physics-budget-share",
+            host.frame_budget.share().to_string(),
+        ),
+        (
+            "data-physics-budget-margin-us",
+            host.frame_budget.margin().as_micros().to_string(),
+        ),
+        (
+            "data-display-period-ms",
+            format!("{:.2}", host.frame_budget.display_period_ms()),
+        ),
+        (
+            "data-display-period-source",
+            crate::web_speed::period_fields(&host.frame_budget)
+                .0
+                .to_string(),
+        ),
+        (
+            "data-display-period-from",
+            host.frame_budget.source().label().to_string(),
+        ),
+        (
+            "data-frame-interval-ms",
+            format!("{:.1}", host.frame_budget.last_interval_ms()),
+        ),
+        (
+            "data-physics-effective-speed",
+            host.canvas
+                .physics_pace()
+                .effective_speed
+                .map_or_else(|| "none".into(), |speed| format!("{speed:.3}")),
+        ),
+        (
+            "data-physics-budget-bound",
+            host.canvas.physics_pace().budget_bound.to_string(),
+        ),
+        (
+            "data-speed-note",
+            crate::web_speed::reached(&host.canvas).unwrap_or_default(),
         ),
         (
             "data-physics-kind-source",
@@ -904,6 +967,22 @@ fn fill_select(
 /// seen empty (the component ships the controls bare so the catalogs stay in
 /// one place), then set every control to the canvas's live choice.
 /// (Physics catalog — P2.)
+/// Show the speed reached under the speed select while the budget binds.
+fn sync_speed_note(host: &mut BrowserHost) -> Result<(), String> {
+    let (note, changed) = host.reached_note.update(&host.canvas);
+    if !changed {
+        return Ok(());
+    }
+    let element = element("speed-note")?;
+    element.set_text_content(Some(note.as_deref().unwrap_or_default()));
+    if note.is_some() {
+        element.remove_attribute("hidden")
+    } else {
+        element.set_attribute("hidden", "")
+    }
+    .map_err(|_| "could not show the speed note".to_string())
+}
+
 fn ensure_physics_controls(host: &BrowserHost) -> Result<(), String> {
     if element_as::<HtmlSelectElement>("physics-select")?.length() > 0 {
         return Ok(());
@@ -918,6 +997,11 @@ fn ensure_physics_controls(host: &BrowserHost) -> Result<(), String> {
         .map(|profile| (profile.id, profile.label))
         .collect();
     fill_select("profile-select", &profiles, Some("Choose a profile"))?;
+    fill_select("speed-select", &crate::web_speed::PRESETS, None)?;
+    set_select_value(
+        "speed-select",
+        crate::web_speed::PRESETS[crate::web_speed::preset_of(&host.canvas)].0,
+    )?;
     let fieldset = element("physics-overlays")?;
     let document = document()?;
     for (id, label) in CANVAS_PHYSICS_OVERLAYS {
@@ -975,29 +1059,38 @@ fn sync_physics_controls(host: &BrowserHost) -> Result<(), String> {
     sync_overlay_availability()
 }
 
-/// Grey the overlay checkboxes, with the reason beside them, while the law
-/// picker names a law that takes no overlays (Density). Runs when the picker
+/// Grey each overlay checkbox the law picker's law refuses, unchecked, with
+/// the reason beside them, and the fieldset when it refuses every one (none
+/// does today; Density refuses all but three, F73). Runs when the picker
 /// changes and whenever the controls follow the canvas.
 pub(super) fn sync_overlay_availability() -> Result<(), String> {
     let law = PhysicsLaw::parse(&select_value("physics-select")?);
-    let refusal = law.and_then(PhysicsLaw::overlay_refusal);
-    let fieldset = element("physics-overlays")?;
-    if refusal.is_some() {
-        fieldset
-            .set_attribute("disabled", "")
-            .map_err(|_| "could not disable the overlays".to_string())?;
-        for overlay in PhysicsOverlay::ALL {
-            element_as::<HtmlInputElement>(&format!("overlay-{}", overlay.id()))?
-                .set_checked(false);
+    let mut reason = None;
+    let mut all = true;
+    for overlay in PhysicsOverlay::ALL {
+        let input = element_as::<HtmlInputElement>(&format!("overlay-{}", overlay.id()))?;
+        match law.and_then(|law| law.refuses(overlay)) {
+            Some(why) => {
+                reason = Some(why);
+                input.set_checked(false);
+                input.set_disabled(true);
+            },
+            None => {
+                all = false;
+                input.set_disabled(false);
+            },
         }
-    } else {
-        fieldset
-            .remove_attribute("disabled")
-            .map_err(|_| "could not enable the overlays".to_string())?;
     }
+    let fieldset = element("physics-overlays")?;
+    if all {
+        fieldset.set_attribute("disabled", "")
+    } else {
+        fieldset.remove_attribute("disabled")
+    }
+    .map_err(|_| "could not set the overlays' state".to_string())?;
     let note = element("overlay-note")?;
-    note.set_text_content(refusal);
-    if refusal.is_some() {
+    note.set_text_content(reason);
+    if reason.is_some() {
         note.remove_attribute("hidden")
     } else {
         note.set_attribute("hidden", "")

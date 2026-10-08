@@ -1,4 +1,7 @@
 // Copyright 2026 Mark Alan Boykin
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // SPDX-License-Identifier: MPL-2.0
 
 //! Graph controls use the same canvas operations as the existing product page.
@@ -167,6 +170,23 @@ pub(super) fn meaning_slice() -> Result<Option<Option<usize>>, String> {
     };
     let scores: usize = value.parse().map_err(|_| "invalid meaning_slice")?;
     Ok(Some((scores > 0).then_some(scores)))
+}
+
+/// A planted accessibility defect from `?plant_a11y=` (`missing_item`,
+/// `missing_action`, `dead_action`): the receipts' positive control.
+pub(super) fn reader_plant() -> Result<graphshell::canvas_reader::Plant, String> {
+    let search = web_sys::window()
+        .ok_or("no window")?
+        .location()
+        .search()
+        .map_err(|_| "cannot read page options")?;
+    let params =
+        web_sys::UrlSearchParams::new_with_str(&search).map_err(|_| "invalid page options")?;
+    match params.get("plant_a11y") {
+        None => Ok(graphshell::canvas_reader::Plant::None),
+        Some(value) => graphshell::canvas_reader::Plant::parse(&value)
+            .ok_or_else(|| format!("invalid plant_a11y {value}")),
+    }
 }
 
 pub(super) fn physics_config() -> Result<mere::canvas::ElapsedStepConfig, String> {

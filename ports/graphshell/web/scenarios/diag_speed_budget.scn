@@ -1,0 +1,17 @@
+# Diagnostic, not a receipt: the step budget against the page's own frames,
+# the speed lane's frame-budget before/after comparison (physics catalog plan,
+# 2026-10-04, "The display's frame"). Run with
+# ?nodes=300&seed=7&links=none&gpu=off&physics_speed=50 or =max; the pace
+# lines in the receipt carry the budget and the intervals it was taken from.
+assert snap ready == true
+click role:button Play physics
+settle 2
+click role:combobox Arrangement
+settle 1
+click role:option Free (physics alone)
+settle 1
+click role:button Apply arrangement
+settle 1
+settle 90
+log-physics diag
+log diag speed budget complete

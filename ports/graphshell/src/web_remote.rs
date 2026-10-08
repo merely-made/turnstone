@@ -156,10 +156,11 @@ impl BrowserHost {
         }
     }
 
-    /// Mirror the local canvas's physics choice onto the remote board, and
-    /// reconcile its bodies whenever the acknowledged revision moves.
+    /// Mirror the local canvas's physics choice and speed onto the remote
+    /// board, and reconcile its bodies whenever the acknowledged revision moves.
     pub(crate) fn sync_remote_board(&mut self) {
         let choice = self.canvas.physics_choice();
+        let speed = self.canvas.physics_speed();
         let revision = self.remote_revision();
         let mounted = match &self.remote {
             RemoteLink::Fixture(_) => self
@@ -168,7 +169,7 @@ impl BrowserHost {
                 .and_then(|session| self.app.client.mounted(session)),
             RemoteLink::WebRtc(live) => live.session.mounted(),
         };
-        self.remote_board.sync(mounted, revision, choice);
+        self.remote_board.sync(mounted, revision, choice, speed);
     }
 
     /// The board drawn from the bodies, fitted under the page's chrome.
@@ -349,6 +350,10 @@ pub(super) fn update_remote_semantics(
     // The board's physics, for the P3 receipt: the law it runs, its energy,
     // and the distance between the first two cards in the score's units.
     set("data-remote-physics-law", host.canvas.physics_law().id())?;
+    set(
+        "data-remote-physics-speed",
+        &crate::web_speed::field(host.remote_board.speed()),
+    )?;
     set(
         "data-remote-energy",
         &format!("{:.1}", host.remote_board.energy()),

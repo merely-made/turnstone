@@ -8,7 +8,9 @@ description = "Graphshell presentation host and loopback acceptance view."
 autobins = false
 
 [features]
-default = ["native"]
+default = ["native", "image-decode"]
+# Forwards genet-livery's image decoding (mer3ly Ruling 111); on by default.
+image-decode = ["cambium-rootstock?/image-decode", "mere?/image-decode"]
 # Existing admitted sessions, transports, Personae composition, and receipt
 # binaries. This remains the default so current native callers keep working.
 native = [
@@ -87,6 +89,9 @@ webrtc-join = [
 canvas-gpu = ["web", "mere/canvas-gpu"]
 web = [
     "dep:async-trait",
+    # The canvas's producer semantics for a screen reader (`canvas_reader`;
+    # dynamics grammar plan, F67).
+    "dep:cambium-rootstock",
     "dep:chartulary",
     "dep:eidetic",
     "dep:mere",
@@ -116,6 +121,7 @@ personal-sync = [
 # The check conclusions and faults, named directly (insigne proofs plan, B).
 insigne = { workspace = true, features = ["verify"] }
 async-trait = { version = "0.1", optional = true }
+cambium-rootstock = { workspace = true, optional = true }
 base64.workspace = true
 chartulary = { workspace = true, optional = true }
 distillery = { path = "../distillery", optional = true }
@@ -139,6 +145,8 @@ scenotime.workspace = true
 serde = { version = "1", features = ["derive"], optional = true }
 serde_json.workspace = true
 workbench.workspace = true
+# The projection editor's undo (Scenograph editor plan, E2 and SE10).
+edit-history.workspace = true
 sha2 = { workspace = true, optional = true }
 uuid = { workspace = true, features = ["v5"], optional = true }
 url = { version = "2", optional = true }
@@ -266,6 +274,14 @@ path = "src/bin/h4f_agent_probe.rs"
 required-features = ["native"]
 
 [dev-dependencies]
+# The native accessibility receipt (dynamics grammar plan, F67): the canvas's
+# producer semantics through cambium-winit-a11y's AccessKit lowering, driven
+# by the headless harness, its view built with Cambium, the tree read in
+# AccessKit's own types.
+accesskit = "0.24"
+cambium = { workspace = true }
+cambium-genet-winit-host = { workspace = true }
+cambium-winit-a11y = { workspace = true }
 # W1's integration receipt drives the actual Distillery Chronicle endpoint.
 # Distillery depends on Mere's substrate, not Graphshell, so this test-only
 # edge does not enter the product dependency graph.

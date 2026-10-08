@@ -1,4 +1,7 @@
 // Copyright 2026 Mark Alan Boykin
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // SPDX-License-Identifier: MPL-2.0
 
 //! The "Graph tools" region's remote session section, and where the tree
@@ -151,11 +154,16 @@ impl TreeRemote {
         })
     }
 
-    /// Mirror `choice` onto the board and reconcile it to the scene.
-    pub(super) fn sync_board(&mut self, choice: mere::canvas::PhysicsChoice) {
+    /// Mirror the viewer's `choice` and `speed` onto the board and reconcile
+    /// it to the scene.
+    pub(super) fn sync_board(
+        &mut self,
+        choice: mere::canvas::PhysicsChoice,
+        speed: mere::canvas::Speed,
+    ) {
         let revision = self.revision();
         let mounted = self.live.as_ref().and_then(|live| live.session.mounted());
-        self.board.sync(mounted, revision, choice);
+        self.board.sync(mounted, revision, choice, speed);
     }
 }
 
@@ -320,10 +328,14 @@ pub(super) fn board_semantics(
             .scene()
             .card_rects(remote.board.board(), width, height, BOARD_FIT)
             .into_iter()
-            .map(|(_, title, rect)| ProducerNode {
+            .enumerate()
+            .map(|(ordinal, (id, title, rect))| ProducerNode {
+                // A card's id is its scene instance.
+                key: id.parse().unwrap_or(ordinal as u64),
                 role: ProducerRole::ListItem,
                 name: title,
                 rect: [rect.x, rect.y, rect.width, rect.height],
+                actions: Vec::new(),
             })
             .collect()
     } else {
@@ -430,6 +442,15 @@ pub(super) fn section(page: &TreePage) -> Child {
                 .attr("role", "status"),
         ),
     ];
+    // The board steps at the viewer's own dial (ruled 2026-10-04, "The
+    // viewer's own dial").
+    if remote.mounted().is_some() {
+        children.push(Box::new(
+            el("p", crate::web_speed::board_line(remote.board.speed()))
+                .attr("class", "tools-status")
+                .attr("aria-label", "Remote board speed"),
+        ));
+    }
     // The board's cards by title, in the scene's order.
     let titles: Vec<Child> = remote
         .live

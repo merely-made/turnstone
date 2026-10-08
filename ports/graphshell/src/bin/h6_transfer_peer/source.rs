@@ -160,7 +160,7 @@ pub(crate) async fn serve(
     let mut endpoint = TransferSourceEndpoint::new(manifest, [(blob_hash, file_bytes)])
         .map_err(|error| error.to_string())?;
 
-    let carrier = P2pandaTransport::builder_from_seed(seed)
+    let carrier = P2pandaTransport::builder_from_seed_ref(&seed)
         .alpns(vec![projection_alpn()])
         .mdns(MdnsDiscoveryMode::Active)
         .bind()

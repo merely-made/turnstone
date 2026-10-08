@@ -20,19 +20,36 @@ name = "graphshell_web"
 crate-type = ["cdylib"]
 path = "../src/web.rs"
 
+# The viewer cone (mer3ly site canvas plan, Rulings 109-110): every feature is
+# additive and on by default, so the default build is the full page. The viewer
+# is `--no-default-features`, with or without `canvas-gpu`.
+[features]
+default = ["main-page", "product", "remote", "canvas-gpu", "image-decode"]
+# The H5 reference host and its `mount` export (`src/web_main.rs`). It drives
+# the product modules and the remote link, so it needs both.
+main-page = ["product", "remote"]
+# What a page saves: IndexedDB, saved scenes, the tree's product mode,
+# `web_product` and `web_practice`.
+product = ["muniment/indexeddb", "dep:sha2"]
+# The WebRTC door and the remote board: `web_remote`, `web_rtc_link`, the tree's
+# remote board.
+remote = ["graphshell/webrtc-browser", "dep:futures-channel", "dep:futures-util"]
+# The canvas's repulsion on the page's own WebGPU device (physics catalog P5c).
+canvas-gpu = ["graphshell/canvas-gpu", "mere/canvas-gpu"]
+# Forwards genet-livery's image decoding (mer3ly Ruling 111); on by default.
+image-decode = ["genet-render/image-decode", "taproot/image-decode", "cambium-rootstock/image-decode", "mesquite/image-decode", "cambium-genet-web-host/image-decode", "graphshell/image-decode", "mere/image-decode"]
+
 [dependencies]
 # `webrtc-browser` is the C4 door's peer half (`webrtc_browser`, `webrtc_join`)
 # and needs `--cfg getrandom_backend="wasm_js"` in this target's rustflags:
 # personae's wasm32 identity stack sits on getrandom 0.3, whose `wasm_js`
-# feature is inert without the cfg. See .cargo/config.toml.example.
-graphshell = { path = "..", default-features = false, features = ["web", "webrtc-browser", "canvas-gpu"] }
-# `canvas-gpu`: the canvas's repulsion on the page's own WebGPU device
-# (physics catalog plan, P5c).
-mere = { path = "../../../crates/mere", default-features = false, features = ["graph", "canvas", "canvas-gpu"] }
+# feature is inert without the cfg. The cfg is committed in .cargo/config.toml.
+graphshell = { path = "..", default-features = false, features = ["web"] }
+mere = { path = "../../../crates/mere", default-features = false, features = ["graph", "canvas"] }
 # `indexeddb` supplies the browser realization of muniment's byte-store seam,
 # which this crate hands to `GraphshellApp` as its backend. It lived here until
 # the duplicate showed up; muniment owns the backend family, so it owns this.
-muniment = { path = "../../../crates/eidetic/muniment", features = ["indexeddb"] }
+muniment = { path = "../../../crates/eidetic/muniment" }
 graphshell-client = { path = "../../../crates/graphshell/graphshell-client" }
 sceno = { path = "../../../crates/cambium/scenes/sceno" }
 scenotime = { path = "../../../crates/cambium/scenes/scenotime" }
@@ -42,30 +59,30 @@ serde = { version = "1", features = ["derive"] }
 cambium = { path = "../../../crates/cambium/cambium" }
 # The one-tree page (`src/web_tree.rs`): Cambium's web host mounts the tree,
 # and rootstock carries the host types and the canvas's texture producer.
-cambium-genet-web-host = { path = "../../../crates/cambium/cambium-genet-web-host" }
-cambium-rootstock = { path = "../../../crates/cambium/cambium-rootstock" }
-mesquite = { path = "../../../crates/cambium/mesquite" }
-genet-render = { git = "https://github.com/merely-made/genet.git", rev = "bd3e8861b2932d62b73c9936ac3a317f1df3ffdb" }
+cambium-genet-web-host = { path = "../../../crates/cambium/cambium-genet-web-host", default-features = false }
+cambium-rootstock = { path = "../../../crates/cambium/cambium-rootstock", default-features = false }
+mesquite = { path = "../../../crates/cambium/mesquite", default-features = false }
+genet-render = { git = "https://github.com/merely-made/genet.git", rev = "965b64e206a47d1c8808472de9aa461233638768", default-features = false, features = ["livery", "accesskit"] }
 # The present core, shared with every winit host. Booting wgpu, picking a
 # non-sRGB surface format, and rasterizing a Scene are not browser-specific, so
 # this crate no longer hand-rolls them; only the canvas target and the
 # content-over-chrome composition below are ours.
-genet-render-host = { git = "https://github.com/merely-made/genet.git", rev = "bd3e8861b2932d62b73c9936ac3a317f1df3ffdb" }
-genet-scripted-dom = { git = "https://github.com/merely-made/genet.git", rev = "bd3e8861b2932d62b73c9936ac3a317f1df3ffdb", version = "=0.1.2" }
+genet-render-host = { git = "https://github.com/merely-made/genet.git", rev = "965b64e206a47d1c8808472de9aa461233638768" }
+genet-scripted-dom = { git = "https://github.com/merely-made/genet.git", rev = "965b64e206a47d1c8808472de9aa461233638768", version = "=0.1.2" }
 # The shared scenario driver every genet app runs its receipts through; the
 # page implements its `Automatable`/`Driveable` over the browser DOM
 # (`src/web_scenario.rs`). Pure: its three deps are already in this graph.
 # Named genet-probe until genet 7baa554c (2026-09-14).
-taproot = { git = "https://github.com/merely-made/genet.git", rev = "bd3e8861b2932d62b73c9936ac3a317f1df3ffdb" }
+taproot = { git = "https://github.com/merely-made/genet.git", rev = "965b64e206a47d1c8808472de9aa461233638768", default-features = false }
 js-sys = "0.3"
 netrender = { git = "https://github.com/merely-made/netrender.git", rev = "9607d16f1907f6c2085648ae96abcaa30d7c3d41" }
 netrender_device = { git = "https://github.com/merely-made/netrender.git", rev = "9607d16f1907f6c2085648ae96abcaa30d7c3d41" }
 serde_json = "1"
 # The remote link's outbound queue: the host enqueues lines synchronously,
 # a task drains them onto the channel.
-futures-channel = "0.3"
-futures-util = { version = "0.3", default-features = false }
-sha2 = "0.11"
+futures-channel = { version = "0.3", optional = true }
+futures-util = { version = "0.3", default-features = false, optional = true }
+sha2 = { version = "0.11", optional = true }
 uuid = { version = "1", features = ["serde", "v4"] }
 wasm-bindgen = "=0.2.129"
 wasm-bindgen-futures = "0.4"
@@ -74,6 +91,8 @@ console_error_panic_hook = "0.1"
 web-sys = { version = "0.3", features = [
     "console",
     "Blob",
+    # The display period's worker (src/web_period_worker.rs).
+    "BlobPropertyBag",
     "CanvasRenderingContext2d",
     "Document",
     "DomRect",
@@ -92,6 +111,7 @@ web-sys = { version = "0.3", features = [
     "ImageData",
     "KeyboardEvent",
     "KeyboardEventInit",
+    "MessageEvent",
     # `?nodes=` and `?seed=`: phase 3's generated graph (src/web_graphs.rs).
     "Location",
     "MouseEvent",
@@ -106,9 +126,11 @@ web-sys = { version = "0.3", features = [
     "Response",
     "StorageManager",
     "Storage",
+    "Url",
     "UrlSearchParams",
     "WheelEvent",
     "Window",
+    "Worker",
 ] }
 
 # Standalone manifests do not inherit Mere's root patch table, so the ones
@@ -131,7 +153,8 @@ web-sys = { version = "0.3", features = [
 # just those crates in dev builds — never the crates edited here, so an
 # incremental host build stays fast. This manifest is its own workspace, so
 # the override reaches the wasm build alone. (Physics catalog — the P2 profile
-# item, 2026-09-04.)
+# item, 2026-09-04; glamx joined 2026-10-04 so the root manifest, which now
+# optimizes the same physics crates in dev, names the same six.)
 [profile.dev.package.rapier2d]
 opt-level = 3
 [profile.dev.package.parry2d]
@@ -142,15 +165,17 @@ opt-level = 3
 opt-level = 3
 [profile.dev.package.seiche]
 opt-level = 3
+[profile.dev.package.glamx]
+opt-level = 3
 
 [patch.crates-io]
-taffy = { package = "genet-taffy", version = "=0.14.0", git = "https://github.com/merely-made/genet.git", rev = "bd3e8861b2932d62b73c9936ac3a317f1df3ffdb" }
-layout-dom-api = { git = "https://github.com/merely-made/genet.git", rev = "bd3e8861b2932d62b73c9936ac3a317f1df3ffdb", version = "=0.1.1" }
-genet-scripted-dom = { git = "https://github.com/merely-made/genet.git", rev = "bd3e8861b2932d62b73c9936ac3a317f1df3ffdb", version = "=0.1.2" }
+taffy = { package = "genet-taffy", version = "=0.14.0", git = "https://github.com/merely-made/genet.git", rev = "965b64e206a47d1c8808472de9aa461233638768" }
+layout-dom-api = { git = "https://github.com/merely-made/genet.git", rev = "965b64e206a47d1c8808472de9aa461233638768", version = "=0.1.1" }
+genet-scripted-dom = { git = "https://github.com/merely-made/genet.git", rev = "965b64e206a47d1c8808472de9aa461233638768", version = "=0.1.2" }
 vello = { git = "https://github.com/mark-ik/vello.git", tag = "vello-0.10.0" }
 # The resident lane's CubeCL stack (mere `canvas-gpu`, physics catalog P5c),
-# restated from the root manifest: cubecl-runtime 0.11.0-pre.2's published
-# manifest lacks the wasm-bindgen-futures edge its wasm tuner uses, and
-# burn-cubecl carries the same-allocation binding fix. Delete with the root's.
+# restated from the root manifest because [patch] is not inherited:
+# cubecl-runtime 0.11.0 with persistence removed from its defaults
+# (ruling 375). burn-cubecl takes the registry crate, as at the root, since
+# its selector was retired under ruling 410. Delete with the root's row.
 cubecl-runtime = { path = "../../../support/patches/cubecl-runtime" }
-burn-cubecl = { path = "../../../support/patches/burn-cubecl" }

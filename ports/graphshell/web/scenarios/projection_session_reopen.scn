@@ -1,0 +1,11 @@
+# Run in a NEW page load after projection_session.scn, on the same origin:
+# the last stored save comes back from IndexedDB through the session.
+assert title GRAPHSHELL H3 READY
+act open-projection-editor
+settle 2
+act reload-projection
+settle 2
+assert dom #gs-projection-editor-status Reloaded · graphshell-reference
+assert dom #gs-projection-editor-preview Stored two ·
+assert dom #gs-projection-editor-dirty No unsaved changes
+log projection session fresh-page reload complete

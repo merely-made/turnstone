@@ -177,6 +177,7 @@ const nativeFailureLabels = {
   invalid_private_key: "The selected file is not a supported OpenSSH private key.",
   incorrect_passphrase: "That passphrase did not unlock the selected SSH private key.",
   import_rejected: "Personae rejected the selected key.",
+  unlock_rejected: "The vault refused the unlock.",
 };
 
 function setNativeIdentityControlsDisabled(disabled) {
@@ -194,8 +195,14 @@ function handleNativeIdentityResult(message) {
   setNativeIdentityControlsDisabled(false);
   const result = message.result;
   if (result.status === "imported_ssh_private") {
-    const replacement = result.replaced_existing ? "replaced" : "imported";
+    // A held key is left untouched (chatelaine ruling 54).
+    const replacement = result.replaced_existing ? "already held" : "imported";
     setStatus(`SSH key ${replacement} · ${result.fingerprint} · refreshing`);
+    request({ Snapshot: projection }, "snapshot");
+    return;
+  }
+  if (result.status === "unlocked_vault") {
+    setStatus("Vault unlocked · refreshing");
     request({ Snapshot: projection }, "snapshot");
     return;
   }
@@ -425,6 +432,19 @@ function renderCard(card, item) {
   for (const action of item.offer.semantics.actions) {
     if (action.intent === "castellan.ssh.import-native") {
       renderNativeImportAction(action, actionsNode);
+      continue;
+    }
+    if (action.intent === "castellan.vault.unlock") {
+      // The resident prompts on its own screen; nothing is typed here.
+      const button = document.createElement("button");
+      button.textContent = action.label;
+      button.dataset.intent = action.intent;
+      button.addEventListener("click", () => {
+        if (requestNativeIdentity({ type: "unlock_vault" }, { type: "native_identity", label: action.label })) {
+          setStatus("Unlock on this device's own prompt…");
+        }
+      });
+      actionsNode.append(button);
       continue;
     }
     if (renderConfirmedIdentityAction(action, card, item, actionsNode)) {
