@@ -1,0 +1,1624 @@
+diff --git a/src/app/feed_arms.rs b/src/app/feed_arms.rs
+index ca563da..0754eb5 100644
+--- a/src/app/feed_arms.rs
++++ b/src/app/feed_arms.rs
+@@ -104,6 +104,7 @@ impl App {
+
+     /// Supply the host clock to both W4 behaviors and feed schedules.
+     pub fn tick(&mut self, now_ms: u64) -> Vec<Effect> {
++        if self.session_load_refused() { return Vec::new(); }
+         self.now_ms = Some(now_ms);
+         let requests = self.feeds.start_due(now_ms);
+         let mut effects = self.feed_fetch_effects(requests);
+@@ -227,9 +228,11 @@ impl App {
+                 );
+                 canvas.set_node_title_for(member, projection.entry.title.clone());
+                 canvas.set_node_body_for(member, projection.entry.summary.clone());
++                let bound = self.feeds.bind_projected_entry(node, &projection.entry, member);
++                debug_assert!(bound, "merge projection names an admitted entry");
++                let (_, _, unread) = self.feeds.surface_flags(member);
+                 surface_controls::set(canvas, member, Control::FeedEntry, true);
+-                surface_controls::set(canvas, member, Control::Unread, true);
+-                self.feeds.bind_entry(node, &projection.entry.url, member);
++                surface_controls::set(canvas, member, Control::Unread, unread);
+             }
+         }
+         let unread = self.feeds.unread_count();
+diff --git a/src/app/fixtures.rs b/src/app/fixtures.rs
+index a81afc2..ff338bd 100644
+--- a/src/app/fixtures.rs
++++ b/src/app/fixtures.rs
+@@ -30,6 +30,10 @@ impl App {
+         let graph_id = GraphId::from_uuid(*session_id.as_uuid());
+         let mut frisket = FrisketLayout::default();
+         frisket.retag_graph_bound(graph_id);
++        let mut graph_runtimes = super::GraphRuntimePool::new(graph_id, Some(session_id), Canvas::new());
++        graph_runtimes.adopt_graph(mere::kernel::graph::Graph::new(),
++            crate::session_persistence::SessionPersistence::writable(
++                crate::session::session_dir(&data_root, session_id), None));
+         Self {
+             watches: servitor::WatchTable::new(),
+             app_watches: servitor::WatchTable::new(),
+@@ -41,7 +45,7 @@ impl App {
+             now_ms: None,
+             behavior_cursor: 0,
+             cascade_budget: servitor::cascade::CascadeBudget::DEFAULT.rounds(),
+-            graph_runtimes: super::GraphRuntimePool::new(graph_id, Some(session_id), Canvas::new()),
++            graph_runtimes,
+             graph_views: super::GraphPaneViews::default(),
+             forme_runtimes: super::FormeRuntimePool::default(),
+             pane_context: crate::panes::ContextIndex::default(),
+diff --git a/src/app/mod.rs b/src/app/mod.rs
+index 076d7a5..b75813d 100644
+--- a/src/app/mod.rs
++++ b/src/app/mod.rs
+@@ -1131,8 +1131,15 @@ impl App {
+     /// woken body sees the world the action left rather than the one it found,
+     /// and its own effects join the same return.
+     pub fn update(&mut self, action: Action) -> Vec<Effect> {
++        if self.session_load_refused() && !matches!(&action, Action::NewSession | Action::SwitchSession(_)
++            | Action::OmnibarOpen { .. } | Action::OmnibarClose | Action::OmnibarChar(_)
++            | Action::OmnibarInsert(_) | Action::OmnibarBackspace | Action::OmnibarDelete
++            | Action::OmnibarCaret(_) | Action::OmnibarMove(_) | Action::OmnibarCommitRow(_)
++            | Action::OmnibarShowAllCommands | Action::OmnibarCommit) {
++            return vec![Effect::Redraw];
++        }
+         let mut effects = self.dispatch(action);
+-        effects.extend(crate::behaviors::drain(self));
++        if !self.session_load_refused() { effects.extend(crate::behaviors::drain(self)); }
+         effects
+     }
+
+@@ -1331,7 +1338,8 @@ impl App {
+                 vec![Effect::SwitchSession { id }]
+             }
+             Action::SwitchSession(id) => {
+-                if id == self.session_id || self.sessions.get(id).is_none() {
++                if (id == self.session_id && !self.session_load_refused())
++                    || (id != self.session_id && self.sessions.get(id).is_none()) {
+                     return vec![Effect::Redraw];
+                 }
+                 vec![Effect::SwitchSession { id }]
+@@ -1491,6 +1499,8 @@ mod fixtures;
+ mod node_arms;
+ #[cfg(test)]
+ mod surface_control_tests;
++#[cfg(test)]
++mod session_persistence_tests;
+ mod omnibar_arms;
+ mod palette;
+ mod pane_arms;
+diff --git a/src/app/omnibar_arms.rs b/src/app/omnibar_arms.rs
+index 346c981..713a0f4 100644
+--- a/src/app/omnibar_arms.rs
++++ b/src/app/omnibar_arms.rs
+@@ -261,6 +261,7 @@ impl App {
+     }
+
+     pub(super) fn open_omnibar(&mut self, command: bool) -> Vec<Effect> {
++        let command = command || self.session_load_refused();
+         let mut effects = self.cancel_smolweb_conversation();
+         let target = self.fallback_shell_context();
+         self.shell.begin_omnibar(target);
+diff --git a/src/app/palette.rs b/src/app/palette.rs
+index f281bcf..c420c2b 100644
+--- a/src/app/palette.rs
++++ b/src/app/palette.rs
+@@ -228,6 +228,13 @@ impl App {
+     /// while the palette showed dynamic-first, so a dynamic row that shadowed a
+     /// static label would have acted as the wrong one).
+     pub fn available_actions(&self) -> Vec<(String, Action)> {
++        if self.session_load_refused() {
++            let mut rows = vec![("Retry session".into(), Action::SwitchSession(self.session_id)),
++                ("New session".into(), Action::NewSession)];
++            rows.extend(self.sessions.iter().filter(|(id, _)| *id != self.session_id)
++                .map(|(id, _)| (format!("Switch to session {}", self.session_label(id)), Action::SwitchSession(id))));
++            return rows;
++        }
+         let mut rows = self.session_actions();
+         rows.extend(self.place_founding_actions());
+         rows.extend(self.place_member_actions());
+@@ -285,9 +292,9 @@ impl App {
+     /// the static registry form the `context` category, so they still lead.
+     pub(crate) fn command_catalog(&self) -> CommandCatalog {
+         let catalog = self.available_actions();
+-        let contextual = catalog
+-            .len()
+-            .saturating_sub(crate::action::palette_actions().len());
++        let contextual = if self.session_load_refused() { catalog.len() } else {
++            catalog.len().saturating_sub(crate::action::palette_actions().len())
++        };
+         let mut set = cambium::CommandSet::new().with_defaults(DEFAULT_KEPT_COMMANDS);
+         let mut actions = std::collections::HashMap::new();
+         let mut ids = std::collections::HashMap::new();
+diff --git a/src/app/runtime_pool.rs b/src/app/runtime_pool.rs
+index 222160c..3d3d881 100644
+--- a/src/app/runtime_pool.rs
++++ b/src/app/runtime_pool.rs
+@@ -33,6 +33,7 @@ pub struct GraphRuntime {
+     pub graph: GraphId,
+     pub session: Option<SessionId>,
+     pub canvas: Canvas,
++    pub(crate) persistence: crate::session_persistence::SessionPersistence<pandect::graph_placement::PlacementProfile>,
+ }
+
+ impl GraphRuntime {
+@@ -41,6 +42,7 @@ impl GraphRuntime {
+             graph,
+             session,
+             canvas,
++            persistence: crate::session_persistence::SessionPersistence::Unbound,
+         }
+     }
+ }
+@@ -69,6 +71,27 @@ impl GraphRuntimePool {
+         }
+     }
+
++    pub(crate) fn active_persistence(&self) -> &crate::session_persistence::SessionPersistence<pandect::graph_placement::PlacementProfile> {
++        &self.runtimes.get(&self.active).expect("active runtime").persistence
++    }
++
++    pub(crate) fn adopt_graph(
++        &mut self, graph: mere::kernel::graph::Graph,
++        state: crate::session_persistence::SessionPersistence<pandect::graph_placement::PlacementProfile>,
++    ) {
++        let runtime = self.runtimes.get_mut(&self.active).expect("active runtime");
++        runtime.canvas.set_graph(graph);
++        runtime.persistence = state;
++    }
++
++    /// Unqualified graph replacement revokes any prior placement. It cannot
++    /// unlock a refused destination. Adoption carries graph and state together.
++    pub fn set_graph(&mut self, graph: mere::kernel::graph::Graph) {
++        let runtime = self.runtimes.get_mut(&self.active).expect("active runtime");
++        runtime.persistence.clear_placement();
++        runtime.canvas.set_graph(graph);
++    }
++
+     pub fn active_graph(&self) -> GraphId {
+         self.active
+     }
+diff --git a/src/app/session_lifecycle.rs b/src/app/session_lifecycle.rs
+index 1b1993c..a09215f 100644
+--- a/src/app/session_lifecycle.rs
++++ b/src/app/session_lifecycle.rs
+@@ -154,9 +154,9 @@ impl App {
+             app.events.push(AppEvent::ProfileIdentityPending);
+         }
+         let mut effects = app.adopt_session(session_id);
+-        if let Some(url) = address {
++        if !app.session_load_refused() && let Some(url) = address {
+             app.apply_launch_address(url, &mut effects);
+-        } else if minted && app.graph_runtimes.graph().nodes().count() == 0 {
++        } else if !app.session_load_refused() && minted && app.graph_runtimes.graph().nodes().count() == 0 {
+             // A bare FIRST launch: the sample graph, with the omnibar open by
+             // itself so the app is discoverable without documentation. A bare
+             // relaunch restores the canvas quietly (Ctrl+L / Ctrl+K summon).
+@@ -262,6 +262,10 @@ impl App {
+     /// untouched; the two are independent thereafter. Returns no effects if
+     /// `seed` names no node.
+     pub fn fork_session_from(&mut self, seed: uuid::Uuid) -> Vec<Effect> {
++        let donor_placement = match self.graph_runtimes.active_persistence().placement_for(&self.session_dir()) {
++            Ok(placement) => placement,
++            Err(error) => { tracing::warn!(%error, "session fork refused"); return Vec::new(); }
++        };
+         if self.graph_runtimes.graph().get_node_by_id(seed).is_none() {
+             return Vec::new();
+         }
+@@ -385,6 +389,13 @@ impl App {
+
+         // Mint the fork's session: manifest with the parent back-reference,
+         // then its on-disk state, so the switch below adopts a real session.
++        let fork_placement = donor_placement;
++        let fork_facets = fork_graph.facets().clone();
++        let mut fork_graph = match pandect::graph_placement::materialize_snapshot(&fork_graph.to_snapshot(), fork_placement) {
++            Ok(graph) => graph,
++            Err(error) => { tracing::warn!(%error, "assembled fork graph refused"); return Vec::new(); }
++        };
++        fork_graph.overlay_facets(fork_facets);
+         let fork_id = crate::panes::SessionId::new();
+         let fork_dir = session::session_dir(&self.data_root, fork_id);
+         if let Some(admissions) = &fork_admissions
+@@ -396,12 +407,14 @@ impl App {
+         let mut manifest = pandect::GraphSessionManifest::new(fork_id, fork_graph_id);
+         manifest.storage_path = Some(session::session_dir(&self.data_root, fork_id));
+         manifest.parent_session = Some(self.session_id);
+-        self.sessions.insert(manifest);
+-        if let Err(err) = self.sessions.flush_dirty() {
+-            tracing::warn!(%err, "failed to write the fork session's manifest");
++        let fork_state = crate::session_persistence::SessionPersistence::writable(fork_dir.clone(), fork_placement);
++        if let Err(error) = fork_state.save_with(&fork_dir,
++            || pandect::save_node_facets(&fork_dir, fork_graph.facets()),
++            |placement| pandect::session_graph_store::save_profiled(
++                &fork_dir.join(pandect::session_graph_store::GRAPH_FILE), &fork_graph, placement)) {
++            tracing::warn!(%error, "fork persistence failed before manifest publication");
++            return Vec::new();
+         }
+-        session::save_session_graph(&fork_dir, &fork_graph);
+-        session::save_node_facets(&fork_dir, fork_graph.facets());
+         // Each carried world becomes the fork's own file: donor and fork
+         // evolve their copies independently thereafter. A missing donor file
+         // is fine — the resident rebuilds on an empty world, as always.
+@@ -420,8 +433,15 @@ impl App {
+             })();
+             if let Err(err) = result {
+                 tracing::warn!(%err, log_id, "failed to carry a participant world into the fork");
++                return Vec::new();
+             }
+         }
++        self.sessions.insert(manifest);
++        if let Err(error) = self.sessions.flush_dirty() {
++            tracing::warn!(%error, "fork manifest publication failed; refusing switch");
++            self.sessions.remove(fork_id);
++            return Vec::new();
++        }
+         self.events.push(AppEvent::SessionForked);
+         vec![Effect::SwitchSession { id: fork_id }]
+     }
+@@ -953,13 +973,38 @@ impl App {
+             .unwrap_or_else(GraphId::nil);
+         self.graph_runtimes
+             .activate_or_insert(graph, Some(id), Canvas::new());
++        let sdir = self.session_dir();
++        match session::try_load_session_graph(&sdir) {
++            Ok(input) => {
++                let (graph, placement) = input.map(|input| (input.graph, input.placement))
++                    .unwrap_or_else(|| (mere::kernel::graph::Graph::new(), None));
++                self.graph_runtimes.adopt_graph(graph,
++                    crate::session_persistence::SessionPersistence::writable(sdir.clone(), placement));
++            }
++            Err(error) => {
++                tracing::warn!(%error, "refusing session adoption; disk state remains protected");
++                self.graph_runtimes.adopt_graph(mere::kernel::graph::Graph::new(),
++                    crate::session_persistence::SessionPersistence::refused(sdir, error.clone()));
++                self.next_place_generation = self.next_place_generation.wrapping_add(1);
++                self.place = crate::place::PlaceState::Failed { error: error.clone() };
++                self.feeds = Default::default();
++                self.redshank = self.redshank.suspended();
++                self.redshank_members.clear();
++                self.browser = Default::default();
++                self.content = ContentStates::default();
++                self.removed.clear();
++                self.resident_runs = Default::default();
++                self.resident_run_error = Some(error.clone());
++                self.events.push(AppEvent::SessionLoadRefused { error });
++                return vec![Effect::Redraw];
++            }
++        }
+         session::record_current_session(&self.data_root, id);
+         if self.sessions.update(id, |m| m.touch()) {
+             if let Err(err) = self.sessions.flush_dirty() {
+                 tracing::warn!(%err, "failed to touch the adopted session's manifest");
+             }
+         }
+-        let sdir = self.session_dir();
+         // This is the sole recovery boundary. Do not reload this store around
+         // nested `update` calls: the live table is what prevents overlap.
+         self.resident_runs = crate::resident_runs::ResidentRuns::with_limits(self.resident_run_storage_limits);
+@@ -1043,8 +1088,6 @@ impl App {
+         // canvas's own session-switch seam (mere's MG2 `set_graph`: physics
+         // actor and node pool stay alive, every node parks at the origin and
+         // halts; the saved layout is applied from the facet store next).
+-        self.graph_runtimes
+-            .set_graph(session::load_session_graph(&sdir).unwrap_or_default());
+         self.feeds = crate::feed::FeedSubscriptions::load(&sdir);
+         self.feeds.reconcile(self.graph_runtimes.graph());
+         // The listening model rides the session directory like the feeds do.
+@@ -1125,8 +1168,7 @@ impl App {
+         // The removed-sessions cache (overmap O3): derived from the manifest
+         // trash, refreshed here and on close/recover.
+         self.trash = self.sessions.list_trash();
+-        self.graph_runtimes
+-            .overlay_facets(session::load_node_facets(&sdir).unwrap_or_default());
++        // Canonical facets were read fallibly and overlaid during graph adoption.
+         // Current member-keyed sidecar state wins over cached feed projections.
+         self.reconcile_feed_tags();
+         // A profile saved before the nil-GraphId heal keyed its scene.* facets
+@@ -1356,6 +1398,26 @@ impl App {
+         effects
+     }
+
++    pub(crate) fn session_load_refused(&self) -> bool {
++        matches!(self.graph_runtimes.active_persistence(), crate::session_persistence::SessionPersistence::Refused { .. })
++    }
++
++    pub(crate) fn persist_session_graph(&mut self) -> std::io::Result<()> {
++        let directory = self.session_dir();
++        self.graph_runtimes.active_persistence().placement_for(&directory)?;
++        self.refresh_browser_states();
++        self.refresh_facets();
++        crate::content_classes::reconcile(&mut self.graph_runtimes).map_err(std::io::Error::other)?;
++        // Persist the sidecar's read status before its Surface projection. An
++        // error is observable and stops this save rather than reporting success.
++        self.feeds.save(&directory)?;
++        let graph = self.graph_runtimes.graph();
++        self.graph_runtimes.active_persistence().save_with(&directory,
++            || pandect::save_node_facets(&directory, graph.facets()),
++            |placement| pandect::session_graph_store::save_profiled(
++                &directory.join(pandect::session_graph_store::GRAPH_FILE), graph, placement))
++    }
++
+     /// Refresh the browser-state sidecar from live truth before a save
+     /// (rung 6): each graph node's `content_on` mirrors its content
+     /// lifecycle (live or in flight), and entries for vanished nodes drop.
+diff --git a/src/app/session_persistence_tests.rs b/src/app/session_persistence_tests.rs
+new file mode 100644
+index 0000000..e4f09e2
+--- /dev/null
++++ b/src/app/session_persistence_tests.rs
+@@ -0,0 +1,219 @@
++// Copyright 2026 Mark Alan Boykin
++// SPDX-License-Identifier: MPL-2.0
++//! Future-family host controls; compilation requires the qualified supplier.
++use super::App;
++use crate::action::{Action, Effect};
++use crate::session;
++use crate::session_persistence::SessionPersistence;
++use mere::kernel::graph::{Graph, apply::add_node};
++use pandect::graph_placement::PlacementProfile;
++
++#[test]
++fn host_session_recorded_and_absent_ordinary_save_reopen_and_replacement() {
++    for placement in [Some(PlacementProfile::RecordedStrataV1), None] {
++        let mut app = App::test_stub();
++        let directory = app.session_dir();
++        let mut graph = Graph::new();
++        for url in [
++            "https://host-placement.test/dir/page",
++            "https://host-placement.test/dir/",
++        ] {
++            add_node(&mut graph, None, url.into(), Default::default());
++        }
++        let mut snapshot = graph.to_snapshot();
++        snapshot.edges.clear();
++        snapshot.resource_edges.clear();
++        let graph = Graph::try_from_recorded_snapshot(&snapshot).unwrap();
++        app.graph_runtimes.adopt_graph(
++            graph,
++            SessionPersistence::writable(directory.clone(), placement),
++        );
++        app.persist_session_graph().unwrap();
++        let stored = pandect::session_graph_store::load_profiled_snapshot(
++            &directory.join(pandect::session_graph_store::GRAPH_FILE),
++        )
++        .unwrap()
++        .unwrap();
++        assert_eq!(stored.placement, placement);
++        let loaded = session::try_load_session_graph(&directory)
++            .unwrap()
++            .unwrap();
++        assert_eq!(loaded.placement, placement);
++        let reopened = loaded.graph.to_snapshot();
++        if placement.is_some() {
++            assert!(reopened.edges.is_empty() && reopened.resource_edges.is_empty());
++        } else {
++            assert!(!reopened.edges.is_empty() || !reopened.resource_edges.is_empty());
++        }
++        app.graph_runtimes.set_graph(Graph::new());
++        app.persist_session_graph().unwrap();
++        let stored = pandect::session_graph_store::load_profiled_snapshot(
++            &directory.join(pandect::session_graph_store::GRAPH_FILE),
++        )
++        .unwrap()
++        .unwrap();
++        assert_eq!(
++            stored.placement, None,
++            "unqualified replacement revokes prior authority"
++        );
++    }
++}
++
++#[test]
++fn host_session_refusal_blocks_save_fork_background_and_survives_graph_replacement() {
++    let mut app = App::test_stub();
++    let directory = app.session_dir();
++    std::fs::create_dir_all(&directory).unwrap();
++    let file = directory.join(pandect::session_graph_store::GRAPH_FILE);
++    std::fs::write(&file, b"{invalid session graph").unwrap();
++    let old_count = app.sessions.len();
++    let adopted = app.adopt_session(app.session_id);
++    assert!(
++        adopted
++            .iter()
++            .all(|effect| matches!(effect, Effect::Redraw))
++    );
++    assert!(app.session_load_refused());
++    app.update(Action::OmnibarOpen { command: true });
++    assert!(app.omnibar.open);
++    assert!(
++        app.available_actions()
++            .iter()
++            .any(|(label, _)| label == "Retry session")
++    );
++    assert!(
++        app.available_actions()
++            .iter()
++            .all(|(_, action)| matches!(action, Action::SwitchSession(_) | Action::NewSession))
++    );
++    let retry = app.update(Action::SwitchSession(app.session_id));
++    assert!(
++        retry
++            .iter()
++            .any(|effect| matches!(effect, Effect::SwitchSession { id } if *id == app.session_id))
++    );
++    assert!(app.persist_session_graph().is_err());
++    assert!(
++        app.update(Action::SaveSession)
++            .iter()
++            .all(|effect| matches!(effect, Effect::Redraw))
++    );
++    assert!(app.tick(10).is_empty());
++    let mut graph = Graph::new();
++    let seed = uuid::Uuid::new_v4();
++    add_node(
++        &mut graph,
++        Some(seed),
++        "https://refusal.test/page".into(),
++        Default::default(),
++    );
++    app.graph_runtimes.set_graph(graph);
++    assert!(app.session_load_refused());
++    assert!(app.fork_session_from(seed).is_empty());
++    assert_eq!(app.sessions.len(), old_count);
++    assert_eq!(std::fs::read(&file).unwrap(), b"{invalid session graph");
++    pandect::session_graph_store::save_profiled(&file, &Graph::new(), None).unwrap();
++    app.adopt_session(app.session_id);
++    assert!(
++        !app.session_load_refused(),
++        "successful explicit retry unlocks persistence"
++    );
++    app.persist_session_graph().unwrap();
++}
++
++#[test]
++fn host_session_facet_write_failure_does_not_replace_graph_or_migration_evidence() {
++    let mut app = App::test_stub();
++    let directory = app.session_dir();
++    app.persist_session_graph().unwrap();
++    let file = directory.join(pandect::session_graph_store::GRAPH_FILE);
++    let original = std::fs::read(&file).unwrap();
++    let blocked = pandect::node_facets_path(&directory).with_extension("json.tmp");
++    std::fs::create_dir(&blocked).unwrap();
++    app.graph_runtimes.visit("https://write-failure.test/page");
++    assert!(app.persist_session_graph().is_err());
++    assert_eq!(std::fs::read(&file).unwrap(), original);
++    std::fs::remove_dir(blocked).unwrap();
++    app.persist_session_graph().unwrap();
++    assert_ne!(std::fs::read(file).unwrap(), original);
++}
++
++#[test]
++fn host_session_graph_write_failure_preserves_original_and_returns_failure() {
++    let mut app = App::test_stub();
++    let directory = app.session_dir();
++    app.persist_session_graph().unwrap();
++    let file = directory.join(pandect::session_graph_store::GRAPH_FILE);
++    let original = std::fs::read(&file).unwrap();
++    let blocked = file.with_extension("json.tmp");
++    std::fs::create_dir(&blocked).unwrap();
++    app.graph_runtimes
++        .visit("https://graph-write-failure.test/page");
++    assert!(app.persist_session_graph().is_err());
++    assert_eq!(std::fs::read(&file).unwrap(), original);
++    std::fs::remove_dir(blocked).unwrap();
++    app.persist_session_graph().unwrap();
++    assert_ne!(std::fs::read(file).unwrap(), original);
++}
++
++#[test]
++fn host_session_fork_manifest_failure_never_publishes_or_switches() {
++    let mut app = App::test_stub();
++    app.graph_runtimes
++        .visit("https://fork-publication.test/page");
++    let seed = app.graph_runtimes.focused_member().unwrap();
++    // The fixture's manifest store deliberately has no publication root.
++    // Child graph/facets can persist, but manifest publication must fail.
++    assert!(app.sessions.root().is_none());
++    let count = app.sessions.len();
++    assert!(app.fork_session_from(seed).is_empty());
++    assert_eq!(
++        app.sessions.len(),
++        count,
++        "failed child cannot publish on a later flush"
++    );
++    let children: Vec<_> = std::fs::read_dir(app.data_root.join("sessions"))
++        .unwrap()
++        .map(|entry| entry.unwrap().path())
++        .collect();
++    assert_eq!(children.len(), 1);
++    assert!(
++        children[0]
++            .join(pandect::session_graph_store::GRAPH_FILE)
++            .is_file()
++    );
++    assert!(pandect::node_facets_path(&children[0]).is_file());
++    assert!(
++        !children[0]
++            .join(pandect::manifest_store::MANIFEST_FILE)
++            .exists()
++    );
++}
++
++#[test]
++fn host_session_interrupted_replacement_never_overwrites_its_backup() {
++    let mut app = App::test_stub();
++    let directory = app.session_dir();
++    app.graph_runtimes
++        .visit("https://interrupted-replacement.test/page");
++    app.persist_session_graph().unwrap();
++    let file = directory.join(pandect::session_graph_store::GRAPH_FILE);
++    let backup = file.with_extension("json.previous");
++    let original = std::fs::read(&file).unwrap();
++    std::fs::rename(&file, &backup).unwrap();
++    app.adopt_session(app.session_id);
++    assert!(app.session_load_refused());
++    assert!(app.persist_session_graph().is_err());
++    assert!(!file.exists());
++    assert_eq!(std::fs::read(&backup).unwrap(), original);
++    assert!(
++        app.available_actions()
++            .iter()
++            .any(|(label, _)| label == "Retry session")
++    );
++    assert!(
++        app.command_lane("", false, 10)
++            .iter()
++            .any(|(label, _)| label == "Retry session")
++    );
++}
+diff --git a/src/app/surface_control_tests.rs b/src/app/surface_control_tests.rs
+index 29c2449..177c161 100644
+--- a/src/app/surface_control_tests.rs
++++ b/src/app/surface_control_tests.rs
+@@ -72,3 +72,26 @@ fn surface_controls_duplicate_feed_views_have_independent_read_state() {
+  let mut restored=crate::feed::FeedSubscriptions::load(root.path());restored.reconcile(app.graph_runtimes.graph());
+  assert_eq!(restored.surface_flags(entries[0]),(false,false,false));assert_eq!(restored.surface_flags(entries[1]),(false,true,true));assert!(restored.surface_flags(second).0);
+ }
++
++#[test]
++fn unchanged_feed_repairs_missing_binding_as_a_new_read_view() {
++    let mut app = App::test_stub();
++    let url = "gemini://binding-repair.test/feed";
++    app.update(Action::OpenAddress(url.into()));
++    let source = app.graph_runtimes.focused_member().unwrap();
++    app.update(Action::SubscribeFocusedFeed { period: servitor::Period::Hour });
++    let fetched = FetchedPage::text(Some("text/gemini".into()), "=> /entry 2026-10-08 Entry");
++    app.apply_update(Update::FeedFetched { node: source, url: url.into(), result: Ok(fetched.clone()) });
++    let entry = app.feeds.entry_members(source)[0];
++    app.feeds.mark_read(entry);
++    app.feeds.forget_member(entry);
++    app.reconcile_feed_tags();
++    // The old equal-URL view survives as an unrelated sibling.
++    let count = app.graph_runtimes.graph().node_count();
++    app.apply_update(Update::FeedFetched { node: source, url: url.into(), result: Ok(fetched) });
++    let replacement = app.feeds.entry_members(source)[0];
++    assert_ne!(replacement, entry);
++    assert_eq!(app.graph_runtimes.graph().node_count(), count + 1);
++    assert!(!surface_controls::read(app.graph_runtimes.graph(), replacement, Control::Unread));
++    assert!(!surface_controls::read(app.graph_runtimes.graph(), entry, Control::Unread));
++}
+diff --git a/src/app/updates.rs b/src/app/updates.rs
+index 408d011..36c3c8b 100644
+--- a/src/app/updates.rs
++++ b/src/app/updates.rs
+@@ -18,6 +18,7 @@ use super::App;
+ impl App {
+     /// Fold one typed service answer into state.
+     pub fn apply_update(&mut self, update: Update) -> Vec<Effect> {
++        if self.session_load_refused() { return Vec::new(); }
+         match update {
+             Update::FeedFetched { node, url, result } => self.apply_feed_fetched(node, url, result),
+             Update::PageStreamed {
+diff --git a/src/behaviors.rs b/src/behaviors.rs
+index 9c4f651..2ce676f 100644
+--- a/src/behaviors.rs
++++ b/src/behaviors.rs
+@@ -378,7 +378,7 @@ pub fn entries_since(app: &App, cursor: u64) -> Vec<CommittedEntry> {
+ /// effects are decided, so a woken body sees the world the action left rather
+ /// than the one it found.
+ pub fn drain(app: &mut App) -> Vec<Effect> {
+-    if app.denizens.is_empty() || app.draining {
++    if app.session_load_refused() || app.denizens.is_empty() || app.draining {
+         // Re-entered from a body's own Actions, which lower through `update`.
+         // A nested drain would fire the clock and app tiers in the middle of a
+         // cascade, outside its rounds and its budget.
+diff --git a/src/feed.rs b/src/feed.rs
+index 20a351a..dc2bd90 100644
+--- a/src/feed.rs
++++ b/src/feed.rs
+@@ -382,7 +382,8 @@ impl FeedSubscriptions {
+                     .entries
+                     .iter()
+                     .find(|(stored_identity, stored)| {
+-                        stored.url == entry.url || stored_identity.as_str() == entry.url
++                        stored.guid.as_deref().is_none_or(str::is_empty)
++                            && stored_identity.as_str() == entry.url
+                     })
+                     .map(|(identity, _)| identity.clone())
+                 && let Some(stored) = subscription.entries.remove(&old_identity)
+@@ -390,7 +391,12 @@ impl FeedSubscriptions {
+                 subscription.entries.insert(identity.clone(), stored);
+             }
+             match subscription.entries.get_mut(&identity) {
+-                Some(stored) if stored.same_document(&entry) => {}
++                Some(stored) if stored.same_document(&entry) && stored.member.is_some() => {}
++                Some(stored) if stored.same_document(&entry) => {
++                    // The document is unchanged, but its placement is missing.
++                    // Repair that binding without changing its stored read status.
++                    merge.entries.push(EntryProjection { member: None, entry });
++                }
+                 Some(stored) => {
+                     stored.replace_document(&entry);
+                     merge.entries.push(EntryProjection {
+@@ -426,22 +432,27 @@ impl FeedSubscriptions {
+         Some(merge)
+     }
+
++    /// Compatibility for an unambiguous address. A URL cannot choose among
++    /// different GUID entries, even when they describe the same resource.
+     pub fn bind_entry(&mut self, source: Uuid, url: &str, member: Uuid) {
+-        if let Some(entry) = self
+-            .subscriptions
+-            .get_mut(&source)
+-            .and_then(|subscription| {
+-                subscription
+-                    .entries
+-                    .iter_mut()
+-                    .find(|(identity, entry)| identity.as_str() == url || entry.url == url)
+-                    .map(|(_, entry)| entry)
+-            })
+-        {
+-            entry.member = Some(member);
++        let Some(subscription) = self.subscriptions.get_mut(&source) else { return; };
++        let identities: Vec<_> = subscription.entries.iter()
++            .filter(|(identity, entry)| identity.as_str() == url || entry.url == url)
++            .map(|(identity, _)| identity.clone()).collect();
++        if identities.len() == 1 {
++            subscription.entries.get_mut(&identities[0]).expect("selected entry").member = Some(member);
+         }
+     }
+
++    /// Bind the exact entry that was projected, rather than the first URL match.
++    pub(crate) fn bind_projected_entry(&mut self, source: Uuid, entry: &FeedEntry, member: Uuid) -> bool {
++        let identity = entry_identity(entry);
++        let Some(stored) = self.subscriptions.get_mut(&source)
++            .and_then(|subscription| subscription.entries.get_mut(&identity)) else { return false; };
++        stored.member = Some(member);
++        true
++    }
++
+     /// The subscribed episode an address names: its own page, its bound
+     /// graph member's page, or its enclosure. Only entries with playable
+     /// audio answer.
+@@ -547,9 +558,8 @@ impl FeedSubscriptions {
+                             .is_some_and(|(_, node)| node.url() == url)
+                     });
+                 // Equal URLs do not prove placement identity; never adopt a sibling.
+-                if entry.member.is_none() {
+-                    entry.unread = false;
+-                }
++                // Retain the sidecar's read status while this exact placement
++                // is absent. It is projected only after an explicit binding exists.
+             }
+         }
+     }
+@@ -935,6 +945,95 @@ mod tests {
+         assert_eq!(json.entries[0].url, rss.entries[0].url);
+     }
+
++    #[test]
++    fn unchanged_unbound_entry_gets_an_explicit_view_without_adopting_a_sibling() {
++        let source = Uuid::new_v4();
++        let sibling = Uuid::new_v4();
++        let entry_view = Uuid::new_v4();
++        let source_url = "https://feed-repair.test/feed";
++        let entry_url = "https://feed-repair.test/entry";
++        let mut graph = mere::kernel::graph::Graph::new();
++        for (id, url) in [(source, source_url), (sibling, entry_url)] {
++            mere::kernel::graph::apply::add_node(&mut graph, Some(id), url.into(), Default::default());
++        }
++        let mut feeds = FeedSubscriptions::default();
++        feeds.subscribe(source, source_url.into(), servitor::Period::Hour);
++        let parsed = ParsedFeed { entries: vec![FeedEntry {
++            url: entry_url.into(), title: "Entry".into(), ..Default::default()
++        }], ..Default::default() };
++        feeds.merge(source, parsed.clone(), 1).unwrap();
++        feeds.bind_entry(source, entry_url, entry_view);
++        feeds.mark_read(entry_view);
++        // Reopen/reconcile refuses an arbitrary equal-URL sibling and retains
++        // the prior read status while there is no explicit view.
++        feeds.reconcile(&graph);
++        assert_eq!(feeds.surface_flags(sibling), (false, false, false));
++        let repaired = feeds.merge(source, parsed.clone(), 2).unwrap();
++        assert_eq!(repaired.entries.len(), 1, "unchanged content still needs an explicit view binding");
++        assert_eq!(repaired.entries[0].member, None);
++        feeds.bind_entry(source, entry_url, entry_view);
++        assert_eq!(feeds.surface_flags(entry_view), (false, true, false), "binding repair preserves read status");
++        assert!(feeds.merge(source, parsed.clone(), 3).unwrap().entries.is_empty());
++        // A changed document is new unread evidence, independently of repair.
++        let mut changed = parsed;
++        changed.entries[0].title = "Changed".into();
++        assert_eq!(feeds.merge(source, changed, 4).unwrap().entries.len(), 1);
++        assert_eq!(feeds.surface_flags(entry_view), (false, true, true));
++    }
++
++    #[test]
++    fn unread_entry_missing_binding_retains_status_through_restart_and_repair() {
++        let root = tempfile::tempdir().unwrap();
++        let source = Uuid::new_v4();
++        let entry = Uuid::new_v4();
++        let mut graph = mere::kernel::graph::Graph::new();
++        mere::kernel::graph::apply::add_node(&mut graph, Some(source),
++            "https://unread-repair.test/feed".into(), Default::default());
++        let parsed = ParsedFeed { entries: vec![FeedEntry {
++            url: "https://unread-repair.test/entry".into(), title: "Entry".into(), ..Default::default()
++        }], ..Default::default() };
++        for unread in [false, true] {
++            let mut feeds = FeedSubscriptions::default();
++            feeds.subscribe(source, "https://unread-repair.test/feed".into(), servitor::Period::Hour);
++            feeds.merge(source, parsed.clone(), 1).unwrap();
++            feeds.bind_entry(source, "https://unread-repair.test/entry", entry);
++            if !unread { feeds.mark_read(entry); }
++            feeds.save(root.path()).unwrap();
++            let mut feeds = FeedSubscriptions::load(root.path());
++            feeds.reconcile(&graph); // The exact bound view is absent.
++            assert_eq!(feeds.unread_count(), usize::from(unread));
++            let repair = feeds.merge(source, parsed.clone(), 2).unwrap();
++            assert_eq!(repair.entries.len(), 1);
++            let fresh = Uuid::new_v4();
++            feeds.bind_entry(source, &repair.entries[0].entry.url, fresh);
++            assert_eq!(feeds.surface_flags(fresh), (false, true, unread));
++            assert!(feeds.merge(source, parsed.clone(), 3).unwrap().entries.is_empty());
++        }
++    }
++
++    #[test]
++    fn separate_guid_entries_with_one_url_keep_distinct_bindings() {
++        let source = Uuid::new_v4();
++        let mut feeds = FeedSubscriptions::default();
++        feeds.subscribe(source, "https://guid-binding.test/feed".into(), servitor::Period::Hour);
++        let parsed = ParsedFeed { entries: ["left", "right"].into_iter().map(|guid| FeedEntry {
++            guid: Some(guid.into()), url: "https://guid-binding.test/shared".into(),
++            title: guid.into(), ..Default::default()
++        }).collect(), ..Default::default() };
++        let projections = feeds.merge(source, parsed.clone(), 1).unwrap();
++        let members = [Uuid::new_v4(), Uuid::new_v4()];
++        for (projection, member) in projections.entries.iter().zip(members) {
++            assert!(feeds.bind_projected_entry(source, &projection.entry, member));
++        }
++        assert!(feeds.merge(source, parsed.clone(), 2).unwrap().entries.is_empty(),
++            "both explicit GUID placements must remain bound");
++        assert_eq!(feeds.entry_members(source).len(), 2);
++        for member in members { assert_eq!(feeds.surface_flags(member), (false, true, true)); }
++        // A URL alone must not choose between these two entries.
++        feeds.bind_entry(source, "https://guid-binding.test/shared", Uuid::new_v4());
++        for member in members { assert_eq!(feeds.surface_flags(member), (false, true, true)); }
++    }
++
+     #[test]
+     fn schedule_survives_restart_and_suppresses_unchanged_entries() {
+         let dir = tempfile::tempdir().unwrap();
+@@ -959,6 +1058,7 @@ mod tests {
+         };
+         let merge = feeds.merge(source, parsed.clone(), 10).unwrap();
+         assert_eq!(merge.entries.len(), 1);
++        feeds.bind_entry(source, "gemini://capsule.test/one", Uuid::new_v4());
+         assert!(feeds.merge(source, parsed, 20).unwrap().entries.is_empty());
+         feeds.save(dir.path()).unwrap();
+
+diff --git a/src/lib.rs b/src/lib.rs
+index d542497..44bec1f 100644
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -70,6 +70,7 @@ mod scenario;
+ mod script;
+ mod sections;
+ mod session;
++mod session_persistence;
+ mod settings_pane;
+ pub mod settings_provider;
+ mod share_reader_pane;
+diff --git a/src/observe.rs b/src/observe.rs
+index 2f53d43..822b2b4 100644
+--- a/src/observe.rs
++++ b/src/observe.rs
+@@ -433,6 +433,7 @@ pub enum AppEvent {
+     PlaceRendezvousCopied(usize),
+     /// The app adopted a session (a boot, a mint, or a switch), by label.
+     SessionSwitched(String),
++    SessionLoadRefused { error: String },
+     /// The current session was closed (trashed).
+     SessionClosed,
+     /// A fork minted a new session from the focused component (the fork arm).
+@@ -715,6 +716,7 @@ impl AppEvent {
+                 format!("place-rendezvous-copied {count}")
+             }
+             AppEvent::SessionSwitched(label) => format!("session-switched {label}"),
++            AppEvent::SessionLoadRefused { error } => format!("session-load-refused {error}"),
+             AppEvent::SessionClosed => "session-closed".to_string(),
+             AppEvent::SessionForked => "session-forked".to_string(),
+             AppEvent::SessionRecovered(label) => format!("session-recovered {label}"),
+diff --git a/src/recycle.rs b/src/recycle.rs
+index cc89c63..5fee108 100644
+--- a/src/recycle.rs
++++ b/src/recycle.rs
+@@ -164,19 +164,24 @@ fn emit_list(store: &mut dyn Store, out: &Emitter<Update>) {
+ /// on every answer (the fetch actor's exact shape). Returns the command
+ /// handle plus the update receiver the shell drains.
+ pub fn spawn_bin(wake: Wake, dir: PathBuf) -> (ActorHandle<BinCommand>, Receiver<Update>) {
++    spawn_bin_for_session(wake, Some(dir))
++}
++
++pub(crate) fn spawn_bin_for_session(wake: Wake, dir: Option<PathBuf>) -> (ActorHandle<BinCommand>, Receiver<Update>) {
+     spawn_named(
+         "recycle-bin",
+         wake,
+         move |commands, out: Emitter<Update>| {
+-            let mut current_dir = dir.clone();
+-            let mut store = match open(&dir) {
+-                Ok(mut store) => {
++            let mut current_dir = dir.clone().unwrap_or_default();
++            let mut store = match dir.as_ref().map(|dir| open(dir)).transpose() {
++                Ok(Some(mut store)) => {
+                     retire_then_list(&mut store, &current_dir, &out);
+                     Some(store)
+                 }
++                Ok(None) => None,
+                 Err(err) => {
+                     out.emit(Update::BinFailed {
+-                        error: format!("open {}: {err}", dir.display()),
++                        error: format!("open {}: {err}", current_dir.display()),
+                     });
+                     None
+                 }
+diff --git a/src/redshank_host.rs b/src/redshank_host.rs
+index cd9d32e..13d87b8 100644
+--- a/src/redshank_host.rs
++++ b/src/redshank_host.rs
+@@ -149,6 +149,16 @@ impl RedshankHost {
+         Self::open_with(session_dir, output, Some(fetch))
+     }
+
++    /// Configure playback without opening a session store or runtime. Refused
++    /// sessions keep this configuration so the next successful reopen recovers.
++    pub(crate) fn detached(output: Output, fetch: Arc<dyn Fetch>) -> Self {
++        Self { output, fetch: Some(fetch), ..Self::default() }
++    }
++
++    pub(crate) fn suspended(&self) -> Self {
++        Self { output: self.output, fetch: self.fetch.clone(), ..Self::default() }
++    }
++
+     /// Reopen under another session directory with this host's output and
+     /// handle. A host that never had a handle reopens its model and notes but
+     /// starts no runtime, rather than minting a handle of its own.
+@@ -1324,4 +1334,22 @@ mod tests {
+         assert!(bare.fetch().is_none());
+         assert!(bare.runtime().is_none());
+     }
++    #[test]
++    fn suspended_host_keeps_output_and_fetch_without_opening_storage() {
++        let handle: Arc<dyn Fetch> = Arc::new(Inert);
++        let configured = RedshankHost::detached(Output::Device, handle.clone());
++        let suspended = configured.suspended();
++        assert_eq!(suspended.output(), Output::Device);
++        assert!(Arc::ptr_eq(&suspended.fetch().unwrap(), &handle));
++        assert!(suspended.runtime().is_none());
++        assert!(suspended.store.is_none());
++        // Verify the same reopen seam without opening a physical audio device.
++        let silent = RedshankHost::detached(Output::Silent, handle.clone()).suspended();
++        let root = tempfile::tempdir().unwrap();
++        let reopened = silent.reopen(root.path());
++        assert_eq!(reopened.output(), Output::Silent);
++        assert!(Arc::ptr_eq(&reopened.fetch().unwrap(), &handle));
++        assert!(reopened.runtime().is_none());
++    }
++
+ }
+diff --git a/src/session.rs b/src/session.rs
+index 53997f4..fa7a28c 100644
+--- a/src/session.rs
++++ b/src/session.rs
+@@ -550,73 +550,58 @@ pub fn migrate_flat_layout(data_root: &Path, store: &mut ManifestStore) -> Optio
+     Some(id)
+ }
+
+-/// Restore the persisted session graph, if one exists. Logs and returns
+-/// `None` on a load failure (the host starts fresh rather than dying on a
+-/// corrupt file).
+-pub fn load_session_graph(data_root: &Path) -> Option<Graph> {
++/// A loaded graph carries only the placement declared at its input boundary.
++pub(crate) struct LoadedSessionGraph {
++    pub graph: Graph,
++    pub placement: Option<pandect::graph_placement::PlacementProfile>,
++}
++
++/// Missing inputs are fresh; corrupt or unreadable inputs refuse persistence.
++/// Read canonical facets before any migration write or image deposition.
++pub(crate) fn try_load_session_graph(data_root: &Path) -> Result<Option<LoadedSessionGraph>, String> {
++    // Pandect's compatibility reader uses exists(); distinguish inspection
++    // failure here before it can silently treat an unreadable path as absent.
++    crate::session_persistence::require_complete_file(&pandect::node_facets_path(data_root))
++        .map_err(|error| format!("canonical facets could not be inspected: {error}"))?;
++    let canonical = pandect::load_node_facets(data_root)
++        .map_err(|error| format!("canonical facets could not be read: {error}"))?
++        .unwrap_or_default();
+     let graph_file = data_root.join(session_graph_store::GRAPH_FILE);
+-    match session_graph_store::load_profiled_snapshot(&graph_file) {
+-        Ok(Some(mut input)) => {
+-            let placement = input.placement;
+-            let snapshot = &mut input.snapshot;
+-            let legacy_node_facets = snapshot.legacy_node_facet_count();
+-            let legacy_controls = crate::surface_controls::extract_legacy(snapshot);
+-            let controls_migrated = !legacy_controls.is_empty();
+-            // Externalize pre-phase-2 inline imagery before the final graph is
+-            // retained: conversion keeps references only. First validate the
+-            // original input; then rebuild from any deposited image references.
+-            // A snapshot already externalized has nothing to deposit.
+-            // Refuse invalid or unqualified legacy input before writing image blobs.
+-            let mut graph = match pandect::graph_placement::materialize_snapshot(snapshot, placement) {
+-                Ok(graph) => graph,
+-                Err(error) => {
+-                    tracing::warn!(%error, path = ?graph_file,
+-                        "failed to materialize the session graph; starting fresh");
+-                    return None;
+-                }
+-            };
+-            let migrated = externalize_legacy_images(snapshot, data_root);
+-            if migrated > 0 {
+-                // The first conversion validated the original input. Rebuild from
+-                // the image references deposited above, preserving its placement.
+-                graph = match pandect::graph_placement::materialize_snapshot(snapshot, placement) {
+-                    Ok(graph) => graph,
+-                    Err(error) => {
+-                        tracing::warn!(%error, path = ?graph_file,
+-                            "failed to materialize migrated session imagery; starting fresh");
+-                        return None;
+-                    }
+-                };
+-            }
+-            graph.overlay_facets(legacy_controls);
+-            // Explicit canonical false overrides migrated legacy defaults.
+-            graph.overlay_facets(load_node_facets(data_root).unwrap_or_default());
+-            if legacy_node_facets > 0 || controls_migrated {
+-                // Strip disk labels only after evidence and controls were saved.
+-                match pandect::save_node_facets(data_root, graph.facets()) {
+-                    Ok(()) => save_loaded_session_graph(data_root, &graph, placement),
+-                    Err(error) => tracing::warn!(%error, "legacy controls could not be saved; snapshot retained"),
+-                }
+-                tracing::info!(
+-                    legacy_node_facets,
+-                    "migrated legacy node metadata into facets"
+-                );
+-            } else if migrated > 0 {
+-                // Re-save immediately so the pixels leave `graph.json` even if
+-                // the session never saves again.
+-                save_loaded_session_graph(data_root, &graph, placement);
+-            }
+-            if migrated > 0 {
+-                tracing::info!(migrated, "externalized legacy inline node imagery");
+-            }
+-            tracing::info!(path = ?graph_file, "session graph restored");
+-            Some(graph)
+-        }
+-        Ok(None) => None,
+-        Err(err) => {
+-            tracing::warn!(%err, path = ?graph_file, "failed to load the session graph; starting fresh");
+-            None
+-        }
++    crate::session_persistence::require_complete_file(&graph_file)
++        .map_err(|error| format!("session graph replacement is incomplete: {error}"))?;
++    let Some(mut input) = session_graph_store::load_profiled_snapshot(&graph_file)
++        .map_err(|error| format!("session graph could not be read: {error}"))? else {
++        return Ok(None);
++    };
++    let placement = input.placement;
++    let snapshot = &mut input.snapshot;
++    // Validate the untouched source before stripping old controls or depositing blobs.
++    pandect::graph_placement::materialize_snapshot(snapshot, placement)?;
++    let legacy_node_facets = snapshot.legacy_node_facet_count();
++    let legacy_controls = crate::surface_controls::extract_legacy(snapshot);
++    let controls_migrated = !legacy_controls.is_empty();
++    let migrated = externalize_legacy_images(snapshot, data_root)
++        .map_err(|error| format!("session imagery could not be migrated: {error}"))?;
++    let mut graph = pandect::graph_placement::materialize_snapshot(snapshot, placement)?;
++    graph.overlay_facets(legacy_controls);
++    graph.overlay_facets(canonical);
++    if legacy_node_facets > 0 || controls_migrated || migrated > 0 {
++        // Evidence first, and propagate failure so the display runtime cannot
++        // overwrite the source later through an automatic ordinary save.
++        pandect::save_node_facets(data_root, graph.facets())
++            .map_err(|error| format!("migration facets could not be persisted: {error}"))?;
++        session_graph_store::save_profiled(&graph_file, &graph, placement)
++            .map_err(|error| format!("migrated graph could not be persisted: {error}"))?;
++    }
++    Ok(Some(LoadedSessionGraph { graph, placement }))
++}
++
++/// Read-only compatibility for consumers that need a graph without adopting
++/// session persistence authority. The application uses the fallible loader.
++pub fn load_session_graph(data_root: &Path) -> Option<Graph> {
++    match try_load_session_graph(data_root) {
++        Ok(input) => input.map(|input| input.graph),
++        Err(error) => { tracing::warn!(%error, "session graph load refused"); None }
+     }
+ }
+
+@@ -633,7 +618,7 @@ pub fn load_session_graph(data_root: &Path) -> Option<Graph> {
+ fn externalize_legacy_images(
+     snapshot: &mut mere::kernel::persistence::GraphSnapshot,
+     data_root: &Path,
+-) -> usize {
++) -> std::io::Result<usize> {
+     use mere::kernel::types::{ImageRef, ImageRole};
+
+     let mut written = 0usize;
+@@ -645,7 +630,7 @@ fn externalize_legacy_images(
+                 node.legacy_thumbnail_width,
+                 node.legacy_thumbnail_height,
+             );
+-            save_image_blob(data_root, &image.hex(), &png);
++            try_save_image_blob(data_root, &image.hex(), &png)?;
+             node.images.insert(ImageRole::Preview, image);
+             node.legacy_thumbnail_width = 0;
+             node.legacy_thumbnail_height = 0;
+@@ -664,7 +649,7 @@ fn externalize_legacy_images(
+                 node.legacy_favicon_width,
+                 node.legacy_favicon_height,
+             );
+-            save_image_blob(data_root, &image.hex(), &png);
++            try_save_image_blob(data_root, &image.hex(), &png)?;
+             node.images.insert(ImageRole::Favicon, image);
+             node.legacy_favicon_width = 0;
+             node.legacy_favicon_height = 0;
+@@ -676,7 +661,7 @@ fn externalize_legacy_images(
+         0,
+         "every legacy image must be externalized before the snapshot materializes"
+     );
+-    written
++    Ok(written)
+ }
+
+ /// Encode decoded straight-alpha RGBA8 pixels into the one durable image
+@@ -705,19 +690,6 @@ pub fn save_session_graph(data_root: &Path, graph: &Graph) {
+     }
+ }
+
+-/// Re-save a loaded input with exactly its declared placement. Absence remains
+-/// unqualified; neither resource columns nor successful load mint a profile.
+-fn save_loaded_session_graph(
+-    data_root: &Path,
+-    graph: &Graph,
+-    placement: Option<pandect::graph_placement::PlacementProfile>,
+-) {
+-    let graph_file = data_root.join(session_graph_store::GRAPH_FILE);
+-    if let Err(err) = session_graph_store::save_profiled(&graph_file, graph, placement) {
+-        tracing::warn!(%err, "failed to persist the migrated session graph");
+-    }
+-}
+-
+ /// The session's image-blob directory: `<session>/images/<hex>`.
+ ///
+ /// After the node-image externalization the graph carries ~40-byte references
+@@ -733,20 +705,21 @@ fn images_dir(data_root: &Path) -> std::path::PathBuf {
+ /// Persist one image blob under its digest hex. Best-effort, like the graph:
+ /// a lost favicon re-fetches, so a write failure is logged, not fatal.
+ pub fn save_image_blob(data_root: &Path, hex: &str, bytes: &[u8]) {
+-    let dir = images_dir(data_root);
+-    if let Err(err) = std::fs::create_dir_all(&dir) {
+-        tracing::warn!(%err, path = ?dir, "failed to create the image directory");
+-        return;
++    if let Err(error) = try_save_image_blob(data_root, hex, bytes) {
++        tracing::warn!(%error, "failed to persist an image blob");
+     }
++}
++
++fn try_save_image_blob(data_root: &Path, hex: &str, bytes: &[u8]) -> std::io::Result<()> {
++    let dir = images_dir(data_root);
++    std::fs::create_dir_all(&dir)?;
+     let path = dir.join(hex);
+-    // Content-addressed: identical bytes are the same file, so an existing
+-    // blob needs no rewrite.
+-    if path.exists() {
+-        return;
+-    }
+-    if let Err(err) = std::fs::write(&path, bytes) {
+-        tracing::warn!(%err, path = ?path, "failed to persist an image blob");
++    if path.try_exists()? {
++        if std::fs::read(&path)? == bytes { return Ok(()); }
++        return Err(std::io::Error::new(std::io::ErrorKind::InvalidData,
++            "existing content-addressed image blob has different bytes"));
+     }
++    std::fs::write(path, bytes)
+ }
+
+ /// Read one image blob back, or `None` when it is absent (swept, not yet
+@@ -965,6 +938,46 @@ mod tests {
+         recorded
+     }
+
++    #[test]
++    fn session_profile_corrupt_facets_preserve_graph_labels_and_deposit_no_images() {
++        let root = tempfile::tempdir().unwrap();
++        let path = root.path().join(session_graph_store::GRAPH_FILE);
++        let mut snapshot = recorded_session_fixture().to_snapshot();
++        snapshot.nodes[0].tags = vec!["keep".into(), "Paper".into()];
++        snapshot.nodes[0].legacy_thumbnail_png = Some(encode_rgba_png(&[1, 2, 3, 255], 1, 1).unwrap());
++        snapshot.nodes[0].legacy_thumbnail_width = 1;
++        snapshot.nodes[0].legacy_thumbnail_height = 1;
++        let bytes = serde_json::to_vec_pretty(&snapshot).unwrap();
++        std::fs::write(&path, &bytes).unwrap();
++        let facets = pandect::node_facets_path(root.path());
++        std::fs::write(&facets, b"{bad facets").unwrap();
++        assert!(try_load_session_graph(root.path()).is_err());
++        assert_eq!(std::fs::read(&path).unwrap(), bytes);
++        assert_eq!(std::fs::read(facets).unwrap(), b"{bad facets");
++        assert!(!root.path().join("images").exists());
++    }
++
++    #[test]
++    fn session_profile_migration_write_failure_preserves_raw_control_evidence() {
++        let root = tempfile::tempdir().unwrap();
++        let path = root.path().join(session_graph_store::GRAPH_FILE);
++        let mut snapshot = recorded_session_fixture().to_snapshot();
++        snapshot.nodes[0].tags = vec!["keep".into(), "Paper".into()];
++        let bytes = serde_json::to_vec_pretty(&snapshot).unwrap();
++        std::fs::write(&path, &bytes).unwrap();
++        let blocked_tmp = pandect::node_facets_path(root.path()).with_extension("json.tmp");
++        std::fs::create_dir(&blocked_tmp).unwrap();
++        assert!(try_load_session_graph(root.path()).is_err());
++        assert_eq!(std::fs::read(&path).unwrap(), bytes);
++        std::fs::remove_dir(blocked_tmp).unwrap();
++        let input = try_load_session_graph(root.path()).unwrap().unwrap();
++        let first = uuid::Uuid::parse_str(&snapshot.nodes[0].node_id).unwrap();
++        assert!(crate::surface_controls::read(&input.graph, first, crate::surface_controls::Control::Keep));
++        let saved = session_graph_store::load_profiled_snapshot(&path).unwrap().unwrap();
++        assert_eq!(saved.placement, None);
++        assert!(saved.snapshot.nodes.iter().all(|node| !node.tags.iter().any(|tag| tag == "keep")));
++    }
++
+     #[test]
+     fn session_profile_recorded_load_and_migration_preserve_held_relations() {
+         use pandect::graph_placement::PlacementProfile;
+diff --git a/src/session_persistence.rs b/src/session_persistence.rs
+new file mode 100644
+index 0000000..0fc0bed
+--- /dev/null
++++ b/src/session_persistence.rs
+@@ -0,0 +1,269 @@
++// Copyright 2026 Mark Alan Boykin
++// SPDX-License-Identifier: MPL-2.0
++//! Host-owned session write authority, independent of graph contents.
++use std::io;
++use std::path::{Path, PathBuf};
++
++/// Missing targets with replacement evidence are interrupted saves, not fresh
++/// sessions. Preserve those bytes until an explicit recovery resolves them.
++pub(crate) fn require_complete_file(path: &Path) -> io::Result<bool> {
++    if path.try_exists()? {
++        return Ok(true);
++    }
++    let extension = path
++        .extension()
++        .and_then(|extension| extension.to_str())
++        .unwrap_or_default();
++    for suffix in ["previous", "tmp"] {
++        let evidence = path.with_extension(format!("{extension}.{suffix}"));
++        if evidence.try_exists()? {
++            return Err(io::Error::new(
++                io::ErrorKind::InvalidData,
++                format!(
++                    "incomplete replacement at {}; preserved {}",
++                    path.display(),
++                    evidence.display()
++                ),
++            ));
++        }
++    }
++    Ok(false)
++}
++
++#[derive(Clone, Debug)]
++pub(crate) enum SessionPersistence<P> {
++    Unbound,
++    Writable {
++        directory: PathBuf,
++        placement: Option<P>,
++    },
++    Refused {
++        directory: PathBuf,
++        reason: String,
++    },
++}
++
++impl<P: Copy> SessionPersistence<P> {
++    pub(crate) fn writable(directory: PathBuf, placement: Option<P>) -> Self {
++        Self::Writable {
++            directory,
++            placement,
++        }
++    }
++
++    pub(crate) fn refused(directory: PathBuf, reason: String) -> Self {
++        Self::Refused { directory, reason }
++    }
++
++    pub(crate) fn placement_for(&self, directory: &Path) -> io::Result<Option<P>> {
++        match self {
++            Self::Writable {
++                directory: owner,
++                placement,
++            } if owner == directory => Ok(*placement),
++            Self::Writable { .. } => Err(io::Error::new(
++                io::ErrorKind::InvalidInput,
++                "graph runtime belongs to a different session directory",
++            )),
++            Self::Unbound => Err(io::Error::new(
++                io::ErrorKind::PermissionDenied,
++                "graph runtime has no session persistence authority",
++            )),
++            Self::Refused { directory, reason } => Err(io::Error::new(
++                io::ErrorKind::PermissionDenied,
++                format!(
++                    "session persistence refused at {}: {reason}",
++                    directory.display()
++                ),
++            )),
++        }
++    }
++
++    /// A graph replacement can revoke qualification, never a load refusal.
++    pub(crate) fn clear_placement(&mut self) {
++        if let Self::Writable { placement, .. } = self {
++            *placement = None;
++        }
++    }
++
++    /// The facet sidecar holds migration evidence. Do not replace the graph
++    /// if those facets could not be persisted, and propagate every error.
++    pub(crate) fn save_with(
++        &self,
++        directory: &Path,
++        save_facets: impl FnOnce() -> io::Result<()>,
++        save_graph: impl FnOnce(Option<P>) -> io::Result<()>,
++    ) -> io::Result<()> {
++        let placement = self.placement_for(directory)?;
++        save_facets()?;
++        save_graph(placement)
++    }
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++    use std::cell::RefCell;
++    use std::path::{Path, PathBuf};
++
++    #[test]
++    fn ordinary_save_keeps_optional_placement_and_writes_facets_first() {
++        for profile in [Some(7u8), None] {
++            let state = SessionPersistence::writable(PathBuf::from("session-a"), profile);
++            let steps = RefCell::new(Vec::new());
++            state
++                .save_with(
++                    Path::new("session-a"),
++                    || {
++                        steps.borrow_mut().push("facets");
++                        Ok(())
++                    },
++                    |placement| {
++                        assert_eq!(placement, profile);
++                        steps.borrow_mut().push("graph");
++                        Ok(())
++                    },
++                )
++                .unwrap();
++            assert_eq!(*steps.borrow(), ["facets", "graph"]);
++        }
++    }
++
++    #[test]
++    fn refused_unbound_and_wrong_destination_write_nothing() {
++        for state in [
++            SessionPersistence::refused(PathBuf::from("session-a"), "invalid input".into()),
++            SessionPersistence::Unbound,
++            SessionPersistence::writable(PathBuf::from("session-b"), Some(7u8)),
++        ] {
++            assert!(
++                state
++                    .save_with(
++                        Path::new("session-a"),
++                        || panic!("facet write"),
++                        |_| panic!("graph write")
++                    )
++                    .is_err()
++            );
++        }
++    }
++
++    #[test]
++    fn failed_facets_prevent_graph_write_and_graph_failure_is_returned() {
++        let state = SessionPersistence::writable(PathBuf::from("session-a"), Some(7u8));
++        let err = state
++            .save_with(
++                Path::new("session-a"),
++                || Err(std::io::Error::other("facet failure")),
++                |_| panic!("graph write"),
++            )
++            .unwrap_err();
++        assert_eq!(err.to_string(), "facet failure");
++        let err = state
++            .save_with(
++                Path::new("session-a"),
++                || Ok(()),
++                |_| Err(std::io::Error::other("graph failure")),
++            )
++            .unwrap_err();
++        assert_eq!(err.to_string(), "graph failure");
++    }
++
++    #[test]
++    fn graph_replacement_clears_qualification_but_cannot_clear_refusal() {
++        let mut state = SessionPersistence::writable(PathBuf::from("session-a"), Some(7u8));
++        state.clear_placement();
++        state
++            .save_with(
++                Path::new("session-a"),
++                || Ok(()),
++                |profile| {
++                    assert_eq!(profile, None);
++                    Ok(())
++                },
++            )
++            .unwrap();
++        state = SessionPersistence::refused(PathBuf::from("session-a"), "bad".into());
++        state.clear_placement();
++        assert!(
++            state
++                .save_with(
++                    Path::new("session-a"),
++                    || panic!("facets"),
++                    |_| panic!("graph")
++                )
++                .is_err()
++        );
++        // Successful explicit reload replaces the refusal, rather than a
++        // display-graph edit or focus change doing so accidentally.
++        state = SessionPersistence::writable(PathBuf::from("session-a"), None);
++        state
++            .save_with(Path::new("session-a"), || Ok(()), |_| Ok(()))
++            .unwrap();
++    }
++    #[test]
++    fn facet_write_failure_preserves_actual_graph_bytes_and_evidence_retry() {
++        let root = std::env::temp_dir().join(format!(
++            "turnstone-persistence-{}-{}",
++            std::process::id(),
++            std::time::SystemTime::now()
++                .duration_since(std::time::UNIX_EPOCH)
++                .unwrap()
++                .as_nanos()
++        ));
++        std::fs::create_dir_all(&root).unwrap();
++        let graph = root.join("graph.json");
++        let facet_tmp = root.join("facets.json.tmp");
++        std::fs::write(&graph, b"original graph with old labels").unwrap();
++        std::fs::create_dir(&facet_tmp).unwrap();
++        let state = SessionPersistence::writable(root.clone(), Some(7u8));
++        assert!(
++            state
++                .save_with(
++                    &root,
++                    || std::fs::write(&facet_tmp, b"migration evidence"),
++                    |_| std::fs::write(&graph, b"stripped graph")
++                )
++                .is_err()
++        );
++        assert_eq!(
++            std::fs::read(&graph).unwrap(),
++            b"original graph with old labels"
++        );
++        std::fs::remove_dir(&facet_tmp).unwrap();
++        state
++            .save_with(
++                &root,
++                || std::fs::write(&facet_tmp, b"migration evidence"),
++                |_| std::fs::write(&graph, b"stripped graph"),
++            )
++            .unwrap();
++        assert_eq!(std::fs::read(&facet_tmp).unwrap(), b"migration evidence");
++        assert_eq!(std::fs::read(&graph).unwrap(), b"stripped graph");
++        std::fs::remove_dir_all(root).unwrap();
++    }
++    #[test]
++    fn interrupted_replacement_is_not_a_fresh_writable_session() {
++        let root = std::env::temp_dir().join(format!(
++            "turnstone-replacement-{}-{}",
++            std::process::id(),
++            std::time::SystemTime::now()
++                .duration_since(std::time::UNIX_EPOCH)
++                .unwrap()
++                .as_nanos()
++        ));
++        std::fs::create_dir_all(&root).unwrap();
++        let target = root.join("graph.json");
++        assert!(!require_complete_file(&target).unwrap());
++        for suffix in ["previous", "tmp"] {
++            let evidence = target.with_extension(format!("json.{suffix}"));
++            std::fs::write(&evidence, b"retained graph").unwrap();
++            assert!(require_complete_file(&target).is_err());
++            assert_eq!(std::fs::read(&evidence).unwrap(), b"retained graph");
++            std::fs::remove_file(evidence).unwrap();
++        }
++        std::fs::write(&target, b"successfully installed graph").unwrap();
++        assert!(require_complete_file(&target).unwrap());
++        std::fs::remove_dir_all(root).unwrap();
++    }
++}
+diff --git a/src/shell/effects.rs b/src/shell/effects.rs
+index 654c495..241e557 100644
+--- a/src/shell/effects.rs
++++ b/src/shell/effects.rs
+@@ -815,6 +815,10 @@ impl Shell {
+         // the scenario log and diagnostics subscribe at this same drain).
+         self.drain_app_events();
+         for effect in effects {
++            if self.app.session_load_refused() && !matches!(&effect,
++                Effect::SwitchSession { .. } | Effect::Redraw | Effect::ClosePlace { .. }) {
++                continue;
++            }
+             let fetch_commands = browse::fetch_commands_for(&effect, &mut self.pending_fetches);
+             if !fetch_commands.is_empty() {
+                 for command in fetch_commands {
+@@ -1153,13 +1157,19 @@ impl Shell {
+                     self.lens_divider_drag = None;
+                     self.pending_windows.clear();
+                     let fx = self.app.adopt_session(next);
+-                    self.bin_handle.command(crate::recycle::BinCommand::Reopen(
+-                        crate::recycle::bin_dir(&self.app.session_dir()),
+-                    ));
+-                    self.trail_handle
+-                        .command(crate::trail_memory::TrailCommand::Reopen(
++                    if !self.app.session_load_refused() {
++                        self.bin_handle.command(crate::recycle::BinCommand::Reopen(
++                            crate::recycle::bin_dir(&self.app.session_dir()),
++                        ));
++                        self.trail_handle.command(crate::trail_memory::TrailCommand::Reopen(
+                             crate::trail_memory::memory_dir(&self.app.session_dir()),
+                         ));
++                    } else {
++                        let (bin_ack, _) = std::sync::mpsc::sync_channel(1);
++                        let (trail_ack, _) = std::sync::mpsc::sync_channel(1);
++                        self.bin_handle.command(crate::recycle::BinCommand::Release(bin_ack));
++                        self.trail_handle.command(crate::trail_memory::TrailCommand::Release(trail_ack));
++                    }
+                     self.run_effects(fx);
+                     self.request_redraw();
+                 }
+@@ -1179,13 +1189,19 @@ impl Shell {
+                     // it answers with THAT bin's list (the app cleared its
+                     // mirror in adopt_session). The trail memory re-points
+                     // with it (flushing the departing session's segments).
+-                    self.bin_handle.command(crate::recycle::BinCommand::Reopen(
+-                        crate::recycle::bin_dir(&self.app.session_dir()),
+-                    ));
+-                    self.trail_handle
+-                        .command(crate::trail_memory::TrailCommand::Reopen(
++                    if !self.app.session_load_refused() {
++                        self.bin_handle.command(crate::recycle::BinCommand::Reopen(
++                            crate::recycle::bin_dir(&self.app.session_dir()),
++                        ));
++                        self.trail_handle.command(crate::trail_memory::TrailCommand::Reopen(
+                             crate::trail_memory::memory_dir(&self.app.session_dir()),
+                         ));
++                    } else {
++                        let (bin_ack, _) = std::sync::mpsc::sync_channel(1);
++                        let (trail_ack, _) = std::sync::mpsc::sync_channel(1);
++                        self.bin_handle.command(crate::recycle::BinCommand::Release(bin_ack));
++                        self.trail_handle.command(crate::trail_memory::TrailCommand::Release(trail_ack));
++                    }
+                     self.run_effects(fx);
+                     self.request_redraw();
+                 }
+@@ -1924,9 +1940,9 @@ impl Shell {
+     /// session switch (which must save the DEPARTING session first).
+     pub(super) fn save_session(&mut self) {
+         let sdir = self.app.session_dir();
+-        session::save_session_graph(&sdir, self.app.graph_runtimes.graph());
+-        if let Err(error) = self.app.feeds.save(&sdir) {
+-            tracing::warn!(%error, "failed to persist feed subscriptions");
++        if let Err(error) = self.app.persist_session_graph() {
++            tracing::warn!(%error, "session persistence refused or failed; sidecars and image collection skipped");
++            return;
+         }
+         if let Some(binding) = self.app.place.binding() {
+             match session::update_place_binding(&sdir, binding) {
+@@ -1956,16 +1972,7 @@ impl Shell {
+         // The lens-window spaces (rung 7 depth): torn-out panes
+         // survive a restart as windows again.
+         session::save_lens_spaces(&sdir, &self.app.lenses);
+-        // Browser state (rung 6): content-on refreshed from live truth, so a
+-        // restart respawns what was showing; then the whole live state lands
+-        // in the facet store (arrangement.* + scene.* + web.*) via the shared
+-        // refresh (the fork's facet-carry reads the same refreshed store).
+-        self.app.refresh_browser_states();
+-        self.app.refresh_facets();
+-        if let Err(error) = crate::content_classes::reconcile(&mut self.app.graph_runtimes) {
+-            tracing::warn!(%error, "content-class reconciliation failed");
+-        }
+-        session::save_node_facets(&sdir, self.app.graph_runtimes.facets());
++        // Browser, canonical facets and graph were persisted together above.
+         if let Err(error) = self.app.gemini_identities.save(&self.app.data_root) {
+             tracing::warn!(%error, "failed to persist Gemini identity bindings");
+         }
+diff --git a/src/shell/mod.rs b/src/shell/mod.rs
+index ea90a1c..adf65e6 100644
+--- a/src/shell/mod.rs
++++ b/src/shell/mod.rs
+@@ -956,7 +956,8 @@ impl Shell {
+             let _ = bin_proxy.send_event(());
+         });
+         let (bin_handle, bin_rx) =
+-            crate::recycle::spawn_bin(bin_wake, crate::recycle::bin_dir(&app.session_dir()));
++            crate::recycle::spawn_bin_for_session(bin_wake,
++                (!app.session_load_refused()).then(|| crate::recycle::bin_dir(&app.session_dir())));
+
+         // The trail-memory actor over THIS session's memory store (search
+         // wiring W1 + W2): browsing capture in, recall answers out, behind
+@@ -967,9 +968,9 @@ impl Shell {
+         });
+         let capture_library =
+             crate::place::captured_collection::LocalCaptureLibrary::default();
+-        let (trail_handle, trail_rx) = crate::trail_memory::spawn_trail_with_capture_library(
++        let (trail_handle, trail_rx) = crate::trail_memory::spawn_trail_for_session(
+             trail_wake,
+-            crate::trail_memory::memory_dir(&app.session_dir()),
++            (!app.session_load_refused()).then(|| crate::trail_memory::memory_dir(&app.session_dir())),
+             capture_library.clone(),
+         );
+
+@@ -1066,11 +1067,16 @@ impl Shell {
+                 redshank_docks.clone(),
+             ))
+             .expect("the Redshank episode provider is unique");
++        if app.session_load_refused() {
++            app.redshank = crate::redshank_host::RedshankHost::detached(
++                crate::redshank_host::Output::Device, blocking_fetch);
++        } else {
+         app.redshank = crate::redshank_host::RedshankHost::open(
+             &app.session_dir(),
+             crate::redshank_host::Output::Device,
+             blocking_fetch,
+         );
++        }
+         if let Some(runtime) = app.redshank.runtime() {
+             let redshank_proxy = proxy.clone();
+             runtime.set_wake(Arc::new(move || {
+diff --git a/src/trail_memory.rs b/src/trail_memory.rs
+index 772f592..5bc5b30 100644
+--- a/src/trail_memory.rs
++++ b/src/trail_memory.rs
+@@ -864,13 +864,20 @@ pub(crate) fn spawn_trail_with_capture_library(
+     wake: Wake,
+     dir: PathBuf,
+     capture_library: crate::place::captured_collection::LocalCaptureLibrary,
++) -> (ActorHandle<TrailCommand>, Receiver<Update>) {
++    spawn_trail_for_session(wake, Some(dir), capture_library)
++}
++
++pub(crate) fn spawn_trail_for_session(
++    wake: Wake, dir: Option<PathBuf>,
++    capture_library: crate::place::captured_collection::LocalCaptureLibrary,
+ ) -> (ActorHandle<TrailCommand>, Receiver<Update>) {
+     spawn_named(
+         "trail-memory",
+         wake,
+         move |commands, out: Emitter<Update>| {
+-            let mut state = open_memory(&dir, &capture_library);
+-            let mut current_dir = dir.clone();
++            let mut state = dir.as_ref().and_then(|dir| open_memory(dir, &capture_library));
++            let mut current_dir = dir.unwrap_or_default();
+             // The derived lexical/behavioural projection and whether the corpus has
+             // moved since it was minted. Built on the first recall, not at
+             // spawn: a session that never searches never pays for one.

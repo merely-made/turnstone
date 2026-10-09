@@ -1,14 +1,25 @@
 # Resource graph consumer preparation
 
-Turnstone retains its declared Mere revision
-`3ded2cd7c2370713118a2440c962c39262720205`. The original preparation inspected
+Turnstone now follows the published browser family at Mere
+`e48db81404eb580b7a7b3c01caeb410e539da4c8`, Genet `15713014`, Knot `16aaff78`
+and Redshank `ece6e9ea`, merged from upstream `22361c9`. The resource migration
+still requires the owner's final qualified graph revision. For this baseline,
+apply the original first five patches followed by
+`host-persistence-current-family.patch` and `journal-origin-current-family.patch`.
+The original seven patch files remain unchanged as historical preparation.
+[Current checks](current-family-checks.json) bind this order and the reconciled
+source. The seven patches apply in an isolated index; 32 Rust files parse and
+the unchanged actual journal module's 15 isolated tests pass. Full-host
+compilation and resource-family integration remain pending.
+
+The historical preparation used Mere `3ded2cd7` and inspected
 uncommitted work based on `6399fe6c`. The 2026-10-08 follow-up reviews immutable
 supplier checkpoint `72c68b6d`; its independent gates passed, but its exact RDF
 import repair is still being implemented and is not qualified. Mark chose the
 additive import envelope in the Mere chat. No direct profile-RDF parse/apply
 pipeline in Turnstone, Knot or Woodshed requires a contribution DTO change.
 `checkpoint-review.json` records this review and committed supplier file hashes.
-This preparation does not merge the supplier or change the family pins.
+Those earlier preparation receipts did not change the family pins.
 
 The 2026-10-09 continuation adds the seventh unapplied `journal-origin.patch`
 after `host-persistence.patch`. Mark approved graph-bound capture and

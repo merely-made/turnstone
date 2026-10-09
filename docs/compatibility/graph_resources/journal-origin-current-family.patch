@@ -1,0 +1,2090 @@
+diff --git a/src/app/denizen_arms.rs b/src/app/denizen_arms.rs
+index 49bbda9..e4c10dc 100644
+--- a/src/app/denizen_arms.rs
++++ b/src/app/denizen_arms.rs
+@@ -9,8 +9,8 @@
+ //! Host-only by ring, so no grant can ever cover them: a component confirming
+ //! its own review would be self-escalation.
+
++use  std::time::Instant;
+ use uuid::Uuid;
+-use std::time::Instant;
+
+ use crate::action::{Action, Effect};
+ use crate::observe::AppEvent;
+@@ -72,6 +72,10 @@ impl App {
+         scoped_reads: &[(servitor::Cap, servitor::Mode)],
+     ) -> Vec<Effect> {
+         let run_session = self.session_id;
++        let Some(run_origin) = self.behavior_execution_origin() else {
++            self.refuse_behavior("participant run has no accepted session/graph binding".into());
++            return vec![Effect::Redraw];
++        };
+         self.denizens.authority.set_now(crate::denizen::now_ms());
+         let Some((subject, label, binding)) = self
+             .denizens
+@@ -169,11 +173,16 @@ impl App {
+         let evaluation_started = Instant::now();
+         let evaluated = self.evaluate_denizen_body(member, subject, &label, &binding, trigger);
+         let elapsed_ms = u64::try_from(evaluation_started.elapsed().as_millis()).unwrap_or(u64::MAX);
++        if self.behavior_execution_origin() != Some(run_origin) {
++            self.refuse_behavior("session or graph runtime changed during participant evaluation; outcome remains unresolved".into());
++            return vec![Effect::Redraw];
++        }
+         let (actions, output) = match evaluated {
+             Ok(value) => {
+                 self.denizens.authority.set_now(crate::denizen::now_ms());
+                 match self.denizens.residents.get(&member).map(|resident| &resident.binding) {
+-                    Some(current) if servitor::resident::revalidate(&ticket, current, &self.denizens.authority, &required).is_ok() => value,
++                    Some(current) if servitor::resident::revalidate(&ticket, current, &self.denizens.authority, &required).is_ok() => {
++                        value}
+                     Some(_) => {
+                         let reason = "run invalidated before lowering".to_string();
+                         if let Err(error) = self.persist_resident_run_event(run_id, servitor::RunEvent::ResultRecorded {
+@@ -415,12 +424,14 @@ impl App {
+         };
+
+         let before = match self.journal.lock() {
+-            Ok(journal) => journal.entries().len() as u64,
+-            Err(poisoned) => poisoned.into_inner().entries().len() as u64,
++            Ok(journal) => journal.high_water(),
++            Err(poisoned) => poisoned.into_inner().high_water(),
+         };
++        let lowering_origin = self.behavior_execution_origin() ;
+         let lowering_started = Instant::now();
+         let (effects, refused) = self.lower_denizen_actions(run_id, subject, label, actions);
+-        if self.session_id != captured_session {
++        if self.session_id != captured_session || self.behavior_execution_origin() != lowering_origin
++        {
+             self.events.push(AppEvent::DenizenRefused("session changed while resident actions were lowering; outcome remains unresolved".into()));
+             return effects;
+         }
+diff --git a/src/app/fixtures.rs b/src/app/fixtures.rs
+index ff338bd..94847ee 100644
+--- a/src/app/fixtures.rs
++++ b/src/app/fixtures.rs
+@@ -30,10 +30,19 @@ impl App {
+         let graph_id = GraphId::from_uuid(*session_id.as_uuid());
+         let mut frisket = FrisketLayout::default();
+         frisket.retag_graph_bound(graph_id);
+-        let mut graph_runtimes = super::GraphRuntimePool::new(graph_id, Some(session_id), Canvas::new());
++        mere::kernel::graph::set_captured_delta_hook(None);
++        let journal = crate::host_journal::shared_journal();
++        let mut graph_runtimes = super::GraphRuntimePool::with_journal(graph_id, Some(session_id), Canvas::new(),
++            journal.clone(),
++        );
+         graph_runtimes.adopt_graph(mere::kernel::graph::Graph::new(),
+             crate::session_persistence::SessionPersistence::writable(
+-                crate::session::session_dir(&data_root, session_id), None));
++                crate::session::session_dir(&data_root, session_id), None,
++            ),
++        );
++        let behavior_binding = graph_runtimes
++            .get(graph_id)
++            .and_then(|runtime| runtime.origin());
+         Self {
+             watches: servitor::WatchTable::new(),
+             app_watches: servitor::WatchTable::new(),
+@@ -99,11 +108,9 @@ impl App {
+             resident_run_storage_limits: crate::resident_runs::StorageLimits::default(),
+             gemini_identities: crate::gemini_identity::GeminiIdentityBindings::default(),
+             identity: Some(identity),
+-            journal: {
+-                let (journal, hook) = mere::kernel::graph::journal_capture_hook();
+-                mere::kernel::graph::set_captured_delta_hook(Some(hook));
+-                journal
+-            },
++            journal,
++            behavior_binding,
++            behavior_refusal: None,
+             next_pane_id: 1,
+             events: Vec::new(),
+             knot_documents: Vec::new(),
+@@ -144,6 +151,7 @@ impl App {
+         let _ = assert_relation(&mut graph, notes, radios, relation());
+         let _ = assert_relation(&mut graph, notes, harmony, relation());
+         app.graph_runtimes.set_graph(graph);
++        app.bind_behavior_journal().expect("fixture graph binding");
+         let _ = app
+             .graph_runtimes
+             .set_node_title_for(uuid::Uuid::from_u128(0x101), "Field notes".into());
+diff --git a/src/app/journal_origin.rs b/src/app/journal_origin.rs
+new file mode 100644
+index 0000000..ad37fae
+--- /dev/null
++++ b/src/app/journal_origin.rs
+@@ -0,0 +1,86 @@
++// Copyright 2026 Mark Alan Boykin
++// SPDX-License-Identifier: MPL-2.0
++
++use super::App;
++use crate::host_journal::RuntimeOrigin;
++use crate::observe::AppEvent;
++
++impl App {
++    /// Called only at an accepted session/fixture baseline, after quiet setup.
++    pub(crate) fn bind_behavior_journal(&mut self) -> Result<(), String> {
++        self.behavior_binding = None;
++        let graph = self.graph_runtimes.active_graph();
++        self.graph_runtimes.suspend_recording(graph);
++        if self.session_load_refused() {
++            return Err("refused session cannot bind behavior capture".into());
++        }
++        let runtime = self
++            .graph_runtimes
++            .get(graph)
++            .ok_or("behavior graph is absent")?;
++        if runtime.session != Some(self.session_id) {
++            return Err("behavior graph belongs to another session".into());
++        }
++        let floor = self
++            .watches
++            .watches()
++            .iter()
++            .map(|watch| watch.cursor)
++            .max()
++            .unwrap_or(0);
++        let boundary = {
++            let mut journal = self
++                .journal
++                .lock()
++                .map_err(|_| "behavior journal capture lock poisoned")?;
++            journal
++                .raise_cursor_floor(floor)
++                .map_err(|error| error.to_string())?;
++            journal.high_water()
++        };
++        let origin = self.graph_runtimes.bind_recording(graph)?;
++        self.behavior_binding = Some(origin);
++        self.behavior_cursor = boundary;
++        self.behavior_refusal = None;
++        Ok(())
++    }
++
++    /// Resolve the loaded authority context independently of pane focus/cursor.
++    pub(crate) fn behavior_origin(&self) -> Option<RuntimeOrigin> {
++        let origin = self.behavior_binding?;
++        if origin.session != Some(self.session_id) {
++            return None;
++        }
++        let runtime = self.graph_runtimes.get(origin.graph)?;
++        if !origin.is_current(self.session_id, runtime.origin())
++            || runtime.session != origin.session
++            || !runtime.canvas.graph().is_recording()
++            || matches!(
++                &runtime.persistence,
++                crate::session_persistence::SessionPersistence::Refused { .. }
++            )
++        {
++            return None;
++        }
++        let journal = self.journal.lock().ok()?;
++        if journal.error().is_some() {
++            return None;
++        }
++        Some(origin)
++    }
++
++    pub(crate) fn behavior_execution_origin(&self) -> Option<RuntimeOrigin> {
++        let origin = self.behavior_origin()?;
++        if self.journal.lock().ok()?.execution_error().is_some() {
++            return None;
++        }
++        (self.graph_runtimes.active_graph() == origin.graph).then_some(origin)
++    }
++
++    pub(crate) fn refuse_behavior(&mut self, error: String) {
++        if self.behavior_refusal.as_ref() != Some(&error) {
++            self.behavior_refusal = Some(error.clone());
++            self.events.push(AppEvent::DenizenRefused(error));
++        }
++    }
++}
+diff --git a/src/app/journal_origin_tests.rs b/src/app/journal_origin_tests.rs
+new file mode 100644
+index 0000000..7874754
+--- /dev/null
++++ b/src/app/journal_origin_tests.rs
+@@ -0,0 +1,317 @@
++// Copyright 2026 Mark Alan Boykin
++// SPDX-License-Identifier: MPL-2.0
++
++//! Full-host controls. These require the qualified resource-aware Mere family.
++use super::*;
++use crate::host_journal::{RuntimeOrigin, restore_table};
++use mere::kernel::graph::apply::{add_node, assert_relation};
++use mere::kernel::graph::{Author, Graph, capture::CapturedDelta};
++use mere::kernel::graph::{ContainmentSubKind, EdgeAssertion};
++use servitor::{ScopePath, Subject, Watch};
++
++fn paired_graph(extra_view: bool, parent: u128) -> (Graph, uuid::Uuid) {
++    let mut graph = Graph::new();
++    let node = add_node(
++        &mut graph,
++        Some(uuid::Uuid::from_u128(7)),
++        "https://shared.test/page#one".into(),
++        Default::default(),
++    );
++    if extra_view {
++        add_node(
++            &mut graph,
++            Some(uuid::Uuid::from_u128(8)),
++            "https://shared.test/page#two".into(),
++            Default::default(),
++        );
++    }
++    let folder = add_node(
++        &mut graph,
++        Some(uuid::Uuid::from_u128(parent)),
++        "mere://user-folder".into(),
++        Default::default(),
++    );
++    assert_relation(
++        &mut graph,
++        node,
++        folder,
++        EdgeAssertion::Containment {
++            sub_kind: ContainmentSubKind::UserFolder,
++        },
++    )
++    .unwrap();
++    let resource = graph.shown_resource_id(node).unwrap();
++    (graph, resource)
++}
++
++fn record_resource(app: &App, origin: RuntimeOrigin, resource: uuid::Uuid) {
++    app.journal
++        .lock()
++        .unwrap()
++        .record_as(
++            origin,
++            Author::user(),
++            CapturedDelta::ReplaySetResourceRecordById {
++                resource_id: resource.to_string(),
++                record: None,
++            },
++        )
++        .unwrap();
++}
++
++#[test]
++fn equal_resource_and_surface_ids_cannot_transfer_scopes_across_runtimes() {
++    let mut app = App::test_stub();
++    let (a, resource_a) = paired_graph(false, 10);
++    let (b, resource_b) = paired_graph(true, 11);
++    assert_eq!(resource_a, resource_b);
++    let graph_a = app.graph_runtimes.active_graph();
++    app.graph_runtimes.set_graph(a);
++    app.bind_behavior_journal().unwrap();
++    let origin_a = app.behavior_origin().unwrap();
++    let cursor = app.journal.lock().unwrap().high_water();
++    let graph_b = GraphId::from_uuid(uuid::Uuid::from_u128(2));
++    app.graph_runtimes
++        .activate_or_insert(graph_b, None, mere::canvas::Canvas::with_graph(b));
++    let origin_b = app.graph_runtimes.get(graph_b).unwrap().origin().unwrap();
++    record_resource(&app, origin_b, resource_b);
++    let foreign = crate::behaviors::entries_since(&app, cursor);
++    assert!(
++        foreign.is_empty(),
++        "a foreign resource edit cannot wake even a root watch"
++    );
++    record_resource(&app, origin_a, resource_a);
++    // The active canvas is B, but A's loaded authority still projects A's graph.
++    assert!(
++        app.behavior_execution_origin().is_none(),
++        "execution is refused while its legacy lane names B"
++    );
++    let entries = crate::behaviors::entries_since(&app, cursor);
++    assert_eq!(entries.len(), 1);
++    let surface = uuid::Uuid::from_u128(7).to_string();
++    let folder_a = uuid::Uuid::from_u128(10).to_string();
++    let folder_b = uuid::Uuid::from_u128(11).to_string();
++    assert!(
++        entries[0]
++            .scopes
++            .iter()
++            .any(|scope| scope.segments() == &[folder_a.clone(), surface.clone()])
++    );
++    assert!(
++        !entries[0]
++            .scopes
++            .iter()
++            .any(|scope| scope.segments().contains(&folder_b))
++    );
++    assert!(!entries[0].scopes.iter().any(|scope| {
++        scope
++            .segments()
++            .contains(&uuid::Uuid::from_u128(8).to_string())
++    }));
++    let subject = Subject::new([3; 32]);
++    for scope in [
++        ScopePath::root(),
++        ScopePath::parse(&format!("{folder_a}/{surface}")).unwrap(),
++    ] {
++        let watch = Watch {
++            subject,
++            scope,
++            self_author: subject.to_hex(),
++            cursor,
++        };
++        assert!(watch.matches(&entries[0].as_event()));
++        assert!(
++            foreign
++                .iter()
++                .all(|entry| !watch.matches(&entry.as_event()))
++        );
++    }
++    app.graph_runtimes.activate(graph_a);
++    assert_eq!(app.behavior_execution_origin(), Some(origin_a));
++}
++
++#[test]
++fn same_graph_reload_excludes_old_generation_even_with_equal_ids() {
++    let mut app = App::test_stub();
++    let (graph, resource) = paired_graph(false, 10);
++    app.graph_runtimes.set_graph(graph.clone());
++    app.bind_behavior_journal().unwrap();
++    let old = app.behavior_origin().unwrap();
++    record_resource(&app, old, resource);
++    app.graph_runtimes.set_graph(graph);
++    assert!(
++        app.behavior_origin().is_none(),
++        "replacement invalidates loaded authority until explicit adoption"
++    );
++    app.bind_behavior_journal().unwrap();
++    let new = app.behavior_origin().unwrap();
++    assert_ne!(old, new);
++    assert!(crate::behaviors::entries_since(&app, 0).is_empty());
++    record_resource(&app, new, resource);
++    assert_eq!(crate::behaviors::entries_since(&app, 0).len(), 1);
++}
++
++#[test]
++fn restored_graph_watch_cursor_cannot_hide_first_new_edit() {
++    let mut app = App::test_stub();
++    let subject = Subject::new([4; 32]);
++    let line = format!("{} 900 {} /", subject.to_hex(), subject.to_hex());
++    app.watches = servitor::WatchTable::from_wire_lines([line.as_str()]).unwrap();
++    app.bind_behavior_journal().unwrap();
++    let origin = app.behavior_origin().unwrap();
++    assert_eq!(app.behavior_cursor, 900);
++    let seq = app
++        .journal
++        .lock()
++        .unwrap()
++        .record_as(
++            origin,
++            Author::user(),
++            CapturedDelta::ReplayRemoveNodeById {
++                node_id: uuid::Uuid::from_u128(7).to_string(),
++            },
++        )
++        .unwrap();
++    assert_eq!(seq, 901);
++    let entry = &crate::behaviors::entries_since(&app, app.behavior_cursor)[0];
++    assert!(app.watches.watches()[0].matches(&entry.as_event()));
++}
++
++#[test]
++fn exhausted_saved_cursor_refuses_capture_binding_and_allows_fresh_retry() {
++    let mut app = App::test_stub();
++    let subject = Subject::new([4; 32]);
++    let line = format!("{} {} user /", subject.to_hex(), u64::MAX);
++    app.watches = servitor::WatchTable::from_wire_lines([line.as_str()]).unwrap();
++    assert!(
++        app.bind_behavior_journal()
++            .unwrap_err()
++            .contains("exhausted")
++    );
++    assert!(app.behavior_origin().is_none());
++    app.watches = servitor::WatchTable::new();
++    app.bind_behavior_journal().unwrap();
++    assert!(app.behavior_origin().is_some());
++}
++
++#[test]
++fn sample_canvas_replacement_rebinds_once_and_retains_display_budget() {
++    let mut app = App::test_stub();
++    let old = app.behavior_origin().unwrap();
++    app.graph_runtimes.set_physics_display_rate(Some(144_000));
++    app.graph_runtimes
++        .replace_active_canvas(mere::canvas::Canvas::with_sample_graph());
++    assert!(app.behavior_origin().is_none());
++    app.bind_behavior_journal().unwrap();
++    let new = app.behavior_origin().unwrap();
++    assert_ne!(old, new);
++    let member = app.graph_runtimes.graph().nodes().next().unwrap().1.id;
++    let count = app.journal.lock().unwrap().entries().len();
++    app.graph_runtimes
++        .set_node_title_for(member, "one edit".into());
++    let journal = app.journal.lock().unwrap();
++    assert_eq!(journal.entries().len(), count + 1);
++    assert_eq!(journal.entries().last().unwrap().origin, new);
++}
++
++#[test]
++fn scratch_fork_assembly_cannot_record_into_live_stream() {
++    let mut app = App::test_stub();
++    let key = app.graph_runtimes.visit("https://scratch.test/");
++    let member = app.graph_runtimes.graph().get_node(key).unwrap().id;
++    let mut scratch = app.graph_runtimes.graph().clone();
++    assert!(!scratch.is_recording());
++    let count = app.journal.lock().unwrap().entries().len();
++    mere::kernel::graph::apply::apply_graph_delta(
++        &mut scratch,
++        mere::kernel::graph::apply::GraphDelta::ReplaySetNodeTitleById {
++            node_id: member,
++            title: "fork edit".into(),
++        },
++    );
++    assert_eq!(app.journal.lock().unwrap().entries().len(), count);
++}
++
++#[test]
++fn loaded_new_watch_table_survives_old_cascade_restore_attempt() {
++    let mut app = App::test_stub();
++    let old = app.behavior_origin().unwrap();
++    let old_table = std::mem::take(&mut app.watches);
++    app.graph_runtimes.set_graph(Graph::new());
++    let subject = Subject::new([5; 32]);
++    let line = format!("{} 17 user /", subject.to_hex());
++    app.watches = servitor::WatchTable::from_wire_lines([line.as_str()]).unwrap();
++    app.bind_behavior_journal().unwrap();
++    let current = app.behavior_execution_origin();
++    assert!(!restore_table(&mut app.watches, old_table, old, current));
++    assert_eq!(app.watches.watches().len(), 1);
++    assert_eq!(app.watches.watches()[0].subject, subject);
++}
++
++#[cfg(feature = "piccolo")]
++#[test]
++fn foreign_only_tail_advances_without_waking_authorized_local_body() {
++    use crate::action::Action;
++    let root = tempfile::tempdir().unwrap();
++    let mut app = App::test_stub();
++    app.data_root = root.path().to_path_buf();
++    std::fs::create_dir_all(app.session_dir()).unwrap();
++    let pack = root.path().join("origin-watch.lua");
++    std::fs::write(
++        &pack,
++        "-- @watch https://shared.test/page\nmere.open('mere://origin-woke')",
++    )
++    .unwrap();
++    app.update(Action::InstallDenizen {
++        path: pack.display().to_string(),
++    });
++    app.update(Action::ConfirmInstallDenizen);
++    app.update(Action::ReseedLayout);
++    assert_eq!(app.watches.watches().len(), 1);
++    let count_before_foreign = app.graph_runtimes.graph().node_count();
++    let origin_a = app.behavior_origin().unwrap();
++    let watched = app
++        .graph_runtimes
++        .graph()
++        .get_node_by_url("https://shared.test/page")
++        .unwrap()
++        .0;
++    let resource = app
++        .graph_runtimes
++        .graph()
++        .shown_resource_id(watched)
++        .unwrap();
++    let graph_b = GraphId::from_uuid(uuid::Uuid::from_u128(22));
++    let copy = app.graph_runtimes.graph().clone();
++    app.graph_runtimes
++        .activate_or_insert(graph_b, None, mere::canvas::Canvas::with_graph(copy));
++    let origin_b = app.graph_runtimes.get(graph_b).unwrap().origin().unwrap();
++    app.graph_runtimes.activate(origin_a.graph);
++    app.take_events();
++    record_resource(&app, origin_b, resource);
++    let boundary = app.journal.lock().unwrap().high_water();
++    crate::behaviors::drain(&mut app);
++    assert_eq!(app.behavior_cursor, boundary);
++    assert_eq!(
++        app.graph_runtimes.graph().node_count(),
++        count_before_foreign
++    );
++    assert!(
++        !app.take_events()
++            .iter()
++            .any(|event| matches!(event, crate::observe::AppEvent::DenizenRan(_)))
++    );
++    record_resource(&app, origin_a, resource);
++    crate::behaviors::drain(&mut app);
++    assert!(
++        app.graph_runtimes
++            .graph()
++            .get_node_by_url("mere://origin-woke")
++            .is_some()
++    );
++    assert!(
++        app.take_events()
++            .iter()
++            .any(|event| matches!(event, crate::observe::AppEvent::DenizenRan(_)))
++    );
++}
+diff --git a/src/app/mod.rs b/src/app/mod.rs
+index b75813d..82bf73f 100644
+--- a/src/app/mod.rs
++++ b/src/app/mod.rs
+@@ -27,6 +27,9 @@ use crate::{browse, session};
+
+ mod contributed_pane_arms;
+ mod document_find_arms;
++mod journal_origin;
++#[cfg(test)]
++mod journal_origin_tests;
+ #[cfg(test)]
+ mod resident_admission_tests;
+ #[cfg(test)]
+@@ -330,17 +333,19 @@ pub struct App {
+     /// Capsule approvals for the active Personae root. The sidecar contains
+     /// origin mappings only; client certificate keys are derived on demand.
+     pub gemini_identities: crate::gemini_identity::GeminiIdentityBindings,
+-    /// The attributed edit journal (mere's spine): every graph mutation
+-    /// captured under its author — `user` for the UI, a participant's subject hex
+-    /// during a run. Shared with the capture hook installed at boot.
+-    pub journal: std::sync::Arc<std::sync::Mutex<mere::kernel::graph::GraphJournal>>,
++    /// Process-local, ordered captures with graph/session/generation origin.
++
++    pub journal: crate::host_journal::SharedJournal,
++    pub(crate) behavior_binding: Option<crate::host_journal::RuntimeOrigin>,
++    pub(crate) behavior_refusal: Option<String>,
+     /// Standing subscriptions: which participant wakes on what (graph behaviors
+     /// W0/W1). Empty until a behavior is installed, which is why the drain
+     /// costs nothing on a session that has none.
+     pub watches: servitor::WatchTable,
+     /// The app tier's own table (W3). A separate table because a watch cursor
+     /// is a position in ONE journal, and these two count different things: a
+-    /// `GraphJournal` sequence and an app-event ordinal. Sharing a table would
++    /// host graph-capture ordinal and an app-event ordinal. Sharing a table would
++
+     /// have the two seq spaces advance each other's cursors past unread work.
+     pub app_watches: servitor::WatchTable,
+     /// How far the behavior drain has read the undrained event queue.
+@@ -866,7 +871,7 @@ impl App {
+             Err(refusal) => {
+                 self.events.push(AppEvent::PhysicsRefused(refusal.clone()));
+                 Some((self.graph_runtimes.active_graph(), refusal))
+-            },
++            }
+         };
+     }
+
+@@ -1275,19 +1280,19 @@ impl App {
+             Action::FoundPlace { name } => self.found_place(name),
+             Action::BeginExportPlaceCard => {
+                 self.begin_place_prompt(crate::ui::PlacePrompt::ExportCard)
+-            },
++            }
+             Action::ExportPlaceCard { path } => self.export_place_card(path),
+             Action::BeginOfferPlacePrekey => {
+                 self.begin_place_prompt(crate::ui::PlacePrompt::OfferPrekey)
+-            },
++            }
+             Action::OfferPlacePrekey { path } => self.offer_place_prekey(path),
+             Action::OfferPlacePrekeyForCard { card, out } => {
+                 self.offer_place_prekey_for_card(card, out)
+-            },
++            }
+             Action::BeginInviteToPlace => self.begin_place_prompt(crate::ui::PlacePrompt::Invite),
+             Action::BeginInviteToPlaceAsReader => {
+                 self.begin_place_prompt(crate::ui::PlacePrompt::InviteReader)
+-            },
++            }
+             Action::InviteToPlace {
+                 path,
+                 access,
+@@ -1304,7 +1309,7 @@ impl App {
+             Action::JoinPlaceFile { path } => self.join_place_file(path),
+             Action::BeginSendPlaceMessage => {
+                 self.begin_place_prompt(crate::ui::PlacePrompt::SendMessage)
+-            },
++            }
+             Action::JoinPlace(invite) => self.join_place(invite),
+             Action::LeavePlace => self.leave_place(),
+             Action::ReconnectPlace => self.reconnect_place(),
+@@ -1494,17 +1499,18 @@ impl App {
+
+ mod denizen_arms;
+ mod feed_arms;
+-mod redshank_arms;
+-mod fixtures;
++mod  fixtures;
+ mod node_arms;
+-#[cfg(test)]
+-mod surface_control_tests;
+-#[cfg(test)]
+-mod session_persistence_tests;
++
+ mod omnibar_arms;
+ mod palette;
+ mod pane_arms;
++mod redshank_arms;
+ mod session_lifecycle;
++#[cfg(test)]
++mod session_persistence_tests;
++#[cfg(test)]
++mod surface_control_tests;
+ mod updates;
+
+ #[cfg(test)]
+diff --git a/src/app/palette.rs b/src/app/palette.rs
+index c420c2b..f84cc5d 100644
+--- a/src/app/palette.rs
++++ b/src/app/palette.rs
+@@ -110,44 +110,33 @@ impl App {
+             blake3::Hash::from(ticket.binding.revision.0).to_hex().to_string(),
+         )
+         .via("turnstone");
+-        // `update` can synchronously drain another resident.  Preserve the
+-        // author that was in force when this lowering began so that the inner
+-        // run restores this run, rather than unconditionally restoring `user`.
+-        // The guard deliberately releases the journal lock before `update`:
+-        // graph capture takes that lock itself.
+-        let previous_author = match self.journal.lock() {
+-            Ok(mut journal) => {
+-                let previous = journal.author().to_owned();
+-                journal.set_author(author.clone());
+-                previous
+-            }
+-            Err(poisoned) => {
+-                let mut journal = poisoned.into_inner();
+-                let previous = journal.author().to_owned();
+-                journal.set_author(author);
+-                previous
++
++        let origin =  self.behavior_execution_origin();
++        if origin.is_none() {
++            self.refuse_behavior("participant lowering has no accepted graph binding".into());
++                return(vec![Effect::Redraw], true);
++
+             }
+-        };
+-        let _restore_author = JournalAuthorRestore {
+-            journal: self.journal.clone(),
+-            previous_author,
+-        };
++
++        let _restore_author = crate::host_journal::AuthorRestore::enter(self.journal.clone(),
++            author);
+         let mut effects = Vec::new();
+         let mut refused = false;
+         for action in actions {
+             // Evaluation's capability view is advisory. Authority is checked
+             // once more at every actual emission, because a cascade may have
+             // changed live grants since the body was evaluated.
+-            if self.session_id != session {
+-                self.events.push(AppEvent::DenizenRefused(format!("{label}: session changed during run")));
++            if self.session_id != session || self.behavior_execution_origin() != origin {
++                self.events.push(AppEvent::DenizenRefused(format!("{label}: session or graph runtime changed during run")));
+                 refused = true;
+                 break;
+             }
+             self.denizens.authority.set_now(crate::denizen::now_ms());
+             let current = self.denizens.residents.get(&member).map(|resident| &resident.binding);
+             let validation = current.ok_or_else(|| "resident disappeared".to_string())
+-                .and_then(|binding| servitor::revalidate(&ticket, binding, &self.denizens.authority, &[])
+-                    .map_err(|reason| format!("run invalidated: {reason:?}")));
++                .and_then(|binding| {
++                    servitor::revalidate(&ticket, binding, &self.denizens.authority, &[])
++                    .map_err(|reason| format!("run invalidated: {reason:?}"))});
+             if let Err(reason) = validation {
+                 self.events.push(AppEvent::DenizenRefused(format!("{label}: {reason}")));
+                 refused = true;
+@@ -232,7 +221,8 @@ impl App {
+             let mut rows = vec![("Retry session".into(), Action::SwitchSession(self.session_id)),
+                 ("New session".into(), Action::NewSession)];
+             rows.extend(self.sessions.iter().filter(|(id, _)| *id != self.session_id)
+-                .map(|(id, _)| (format!("Switch to session {}", self.session_label(id)), Action::SwitchSession(id))));
++                .map(|(id, _)| {
++                        (format!("Switch to session {}", self.session_label(id)), Action::SwitchSession(id))}));
+             return rows;
+         }
+         let mut rows = self.session_actions();
+@@ -517,7 +507,7 @@ impl App {
+                 match status {
+                     crate::place::CapturedCollectionSelectionStatus::Stale { current } => {
+                         Some(current)
+-                    },
++                    }
+                     _ => None,
+                 },
+             ),
+@@ -655,22 +645,7 @@ impl App {
+             }
+         }
+         rows
+-    }
+-}
+
+-/// Restores the graph journal's exact prior attribution after a synchronous
+-/// nested lowering or an early return. It never crosses an asynchronous wait.
+-struct JournalAuthorRestore {
+-    journal: std::sync::Arc<std::sync::Mutex<mere::kernel::graph::GraphJournal>>,
+-    previous_author: mere::kernel::graph::Author,
+-}
+-
+-impl Drop for JournalAuthorRestore {
+-    fn drop(&mut self) {
+-        match self.journal.lock() {
+-            Ok(mut journal) => journal.set_author(self.previous_author.clone()),
+-            Err(poisoned) => poisoned.into_inner().set_author(self.previous_author.clone()),
+-        }
+     }
+ }
+
+diff --git a/src/app/resident_run_tests.rs b/src/app/resident_run_tests.rs
+index 900bb43..b00677f 100644
+--- a/src/app/resident_run_tests.rs
++++ b/src/app/resident_run_tests.rs
+@@ -84,7 +84,7 @@ fn default_policy_records_two_completed_invocations_without_replaying_them() {
+     .via("turnstone");
+     let prior_author = mere::kernel::graph::Author::rule("before-run", "7").via("other-route");
+     app.journal.lock().unwrap().set_author(prior_author.clone());
+-    let before_seq = app.journal.lock().unwrap().entries().len() as u64;
++    let before_seq = app.journal.lock().unwrap().high_water();
+     app.take_events();
+     for _ in 0..2 {
+         let effects = app.update(Action::RunDenizen { member });
+diff --git a/src/app/runtime_pool.rs b/src/app/runtime_pool.rs
+index 3d3d881..08c0198 100644
+--- a/src/app/runtime_pool.rs
++++ b/src/app/runtime_pool.rs
+@@ -33,15 +33,20 @@ pub struct GraphRuntime {
+     pub graph: GraphId,
+     pub session: Option<SessionId>,
+     pub canvas: Canvas,
++    origin: Option<crate::host_journal::RuntimeOrigin>,
+     pub(crate) persistence: crate::session_persistence::SessionPersistence<pandect::graph_placement::PlacementProfile>,
+ }
+
+ impl GraphRuntime {
++    pub(crate) fn origin(&self) -> Option<crate::host_journal::RuntimeOrigin> {
++        self.origin
++    }
+     pub fn new(graph: GraphId, session: Option<SessionId>, canvas: Canvas) -> Self {
+         Self {
+             graph,
+             session,
+             canvas,
++            origin: None,
+             persistence: crate::session_persistence::SessionPersistence::Unbound,
+         }
+     }
+@@ -57,18 +62,89 @@ pub struct GraphRuntimePool {
+     runtimes: HashMap<GraphId, GraphRuntime>,
+     active: GraphId,
+     display_rate: Option<Option<u32>>,
++journal: crate::host_journal::SharedJournal,
+ }
+
+ impl GraphRuntimePool {
+     pub fn new(graph: GraphId, session: Option<SessionId>, canvas: Canvas) -> Self {
++        Self::with_journal(
++            graph,
++            session,
++            canvas,
++            crate::host_journal::shared_journal(),
++        )
++    }
++
++    pub(crate) fn with_journal(
++        graph: GraphId,
++        session: Option<SessionId>,
++        canvas: Canvas,
++        journal: crate::host_journal::SharedJournal,
++    ) -> Self {
+         let runtime = GraphRuntime::new(graph, session, canvas);
+         let mut runtimes = HashMap::new();
+         runtimes.insert(graph, runtime);
+-        Self {
++        let mut pool = Self {
+             runtimes,
+             active: graph,
+             display_rate: None,
++        journal,
++        }
++    ;
++        let _ = pool.bind_recording(graph);
++        pool
++    }
++
++    /// Recorder installation changes host instrumentation, not graph truth.
++    pub(crate) fn suspend_recording(&mut self, graph: GraphId) {
++        if let Some(runtime) = self.runtimes.get_mut(&graph) {
++            runtime.origin = None;
++            runtime.canvas.ingest_graph(|graph| {
++                graph.set_recorder(None);
++                false
++            });
++        }
++    }
++
++    pub(crate) fn bind_recording(
++        &mut self,
++        graph: GraphId,
++    ) -> Result<crate::host_journal::RuntimeOrigin, String> {
++        self.suspend_recording(graph);
++        let runtime = self
++            .runtimes
++            .get_mut(&graph)
++            .ok_or("graph runtime is absent")?;
++        if matches!(
++            &runtime.persistence,
++            crate::session_persistence::SessionPersistence::Refused { .. }
++        ) {
++            return Err("refused graph cannot record live edits".into());
+         }
++        let origin = self
++            .journal
++            .lock()
++            .map_err(|_| "behavior journal capture lock poisoned")?
++            .allocate_origin(graph, runtime.session)
++            .map_err(|error| error.to_string())?;
++        let recorder = crate::host_journal::recorder(self.journal.clone(), origin);
++        runtime.canvas.ingest_graph(|graph| {
++            graph.set_recorder(Some(recorder));
++            false
++        });
++        runtime.origin = Some(origin);
++        Ok(origin)
++    }
++
++    pub(crate) fn replace_active_canvas(&mut self, mut canvas: Canvas) {
++        if let Some(rate) = self.display_rate {
++            canvas.set_physics_display_rate(rate);
++        }
++        let runtime = self.runtimes.get_mut(&self.active).expect("active runtime");
++        runtime.persistence.clear_placement();
++        runtime.canvas = canvas;
++        runtime.origin = None;
++        let _ = self.bind_recording(self.active);
+     }
+
+     pub(crate) fn active_persistence(&self) -> &crate::session_persistence::SessionPersistence<pandect::graph_placement::PlacementProfile> {
+@@ -77,11 +153,14 @@ impl GraphRuntimePool {
+
+     pub(crate) fn adopt_graph(
+         &mut self, graph: mere::kernel::graph::Graph,
+-        state: crate::session_persistence::SessionPersistence<pandect::graph_placement::PlacementProfile>,
++        state: crate::session_persistence::SessionPersistence<pandect::graph_placement::PlacementProfile,
++        >,
+     ) {
+         let runtime = self.runtimes.get_mut(&self.active).expect("active runtime");
+         runtime.canvas.set_graph(graph);
+         runtime.persistence = state;
++        runtime.origin = None;
++        let _ = self.bind_recording(self.active);
+     }
+
+     /// Unqualified graph replacement revokes any prior placement. It cannot
+@@ -90,6 +169,8 @@ impl GraphRuntimePool {
+         let runtime = self.runtimes.get_mut(&self.active).expect("active runtime");
+         runtime.persistence.clear_placement();
+         runtime.canvas.set_graph(graph);
++        runtime.origin = None;
++        let _ = self.bind_recording(self.active);
+     }
+
+     pub fn active_graph(&self) -> GraphId {
+@@ -161,6 +242,7 @@ impl GraphRuntimePool {
+         self.runtimes
+             .insert(graph, GraphRuntime::new(graph, session, canvas));
+         self.active = graph;
++        let _ = self.bind_recording(graph);
+         self.runtimes
+             .get_mut(&graph)
+             .expect("the runtime was just inserted")
+diff --git a/src/app/session_lifecycle.rs b/src/app/session_lifecycle.rs
+index a09215f..2231473 100644
+--- a/src/app/session_lifecycle.rs
++++ b/src/app/session_lifecycle.rs
+@@ -46,11 +46,11 @@ impl App {
+             Ok(false) => {}
+             Err(error) => eprintln!("[turnstone] could not adopt the legacy identity: {error}"),
+         }
+-        // The attributed journal + its capture hook (participant gate B1):
+-        // every mutation that flows through apply_graph_delta records here
+-        // under the current author.
+-        let (journal, hook) = mere::kernel::graph::journal_capture_hook();
+-        mere::kernel::graph::set_captured_delta_hook(Some(hook));
++
++        let journal = crate::host_journal::shared_journal();
++        // Each installed graph records once. Scratch/migration graphs are quiet.
++
++        mere::kernel::graph::set_captured_delta_hook(None);
+         let mut sessions = session::load_manifests(&data_root);
+         // Pre-overmap manifests minted nil root_graph_ids; the container id
+         // must be real (scene.* facet key + overmap identity), so heal at boot.
+@@ -87,10 +87,11 @@ impl App {
+             now_ms: None,
+             behavior_cursor: 0,
+             cascade_budget: servitor::cascade::CascadeBudget::DEFAULT.rounds(),
+-            graph_runtimes: super::GraphRuntimePool::new(
++            graph_runtimes: super::GraphRuntimePool::with_journal(
+                 initial_graph,
+                 Some(session_id),
+                 Canvas::new(),
++                journal.clone(),
+             ),
+             graph_views: super::GraphPaneViews::default(),
+             forme_runtimes: super::FormeRuntimePool::default(),
+@@ -146,6 +147,8 @@ impl App {
+             gemini_identities,
+             identity,
+             journal,
++            behavior_binding: None,
++            behavior_refusal: None,
+             next_pane_id: 1,
+             events: Vec::new(),
+             knot_documents: Vec::new(),
+@@ -161,7 +164,10 @@ impl App {
+             // itself so the app is discoverable without documentation. A bare
+             // relaunch restores the canvas quietly (Ctrl+L / Ctrl+K summon).
+             tracing::info!("no session graph; starting on the sample graph");
+-            *app.graph_runtimes.active_canvas_mut() = Canvas::with_sample_graph();
++            app.graph_runtimes.replace_active_canvas( Canvas::with_sample_graph());
++            if let Err(error) = app.bind_behavior_journal() {
++                app.refuse_behavior(error);
++            }
+             app.omnibar.open = true;
+             let context = app.fallback_shell_context();
+             app.shell.begin_omnibar(context);
+@@ -410,8 +416,10 @@ impl App {
+         let fork_state = crate::session_persistence::SessionPersistence::writable(fork_dir.clone(), fork_placement);
+         if let Err(error) = fork_state.save_with(&fork_dir,
+             || pandect::save_node_facets(&fork_dir, fork_graph.facets()),
+-            |placement| pandect::session_graph_store::save_profiled(
+-                &fork_dir.join(pandect::session_graph_store::GRAPH_FILE), &fork_graph, placement)) {
++            |placement| {
++                pandect::session_graph_store::save_profiled(
++                &fork_dir.join(pandect::session_graph_store::GRAPH_FILE), &fork_graph, placement)},
++        ) {
+             tracing::warn!(%error, "fork persistence failed before manifest publication");
+             return Vec::new();
+         }
+@@ -524,7 +532,7 @@ impl App {
+             .push(AppEvent::PlaceRendezvousCopied(tickets.len()));
+         vec![
+             Effect::CopyText(tickets.join("\n")),
+-            Effect::Redraw,
++            Effect::Redraw
+         ]
+     }
+
+@@ -538,7 +546,7 @@ impl App {
+         match prompt {
+             PlacePrompt::FoundPlace | PlacePrompt::OfferPrekey | PlacePrompt::Join if joined => {
+                 return self.refuse_place("leave this place before joining or founding another");
+-            },
++            }
+             PlacePrompt::ExportCard
+             | PlacePrompt::Invite
+             | PlacePrompt::InviteReader
+@@ -546,8 +554,8 @@ impl App {
+                 if !joined =>
+             {
+                 return self.refuse_place("this session is not in a place");
+-            },
+-            _ => {},
++            }
++            _ => {}
+         }
+         self.omnibar = OmnibarState {
+             open: true,
+@@ -964,6 +972,7 @@ impl App {
+     /// (content respawns + lens-window reopens). Session-scoped view state
+     /// (omnibar, active pane, maximize) resets.
+     pub fn adopt_session(&mut self, id: crate::panes::SessionId) -> Vec<Effect> {
++        self.behavior_binding = None;
+         self.session_id = id;
+         self.physics_refusal = None;
+         let graph = self
+@@ -973,6 +982,7 @@ impl App {
+             .unwrap_or_else(GraphId::nil);
+         self.graph_runtimes
+             .activate_or_insert(graph, Some(id), Canvas::new());
++        self.graph_runtimes.suspend_recording(graph);
+         let sdir = self.session_dir();
+         match session::try_load_session_graph(&sdir) {
+             Ok(input) => {
+@@ -999,6 +1009,7 @@ impl App {
+                 return vec![Effect::Redraw];
+             }
+         }
++        self.graph_runtimes.suspend_recording(graph);
+         session::record_current_session(&self.data_root, id);
+         if self.sessions.update(id, |m| m.touch()) {
+             if let Err(err) = self.sessions.flush_dirty() {
+@@ -1051,7 +1062,7 @@ impl App {
+                     Err(error) => {
+                         tracing::warn!(%error, "place-left mark failed to load");
+                         crate::place::PlaceState::Failed { error: error.to_string() }
+-                    },
++                    }
+                     Ok(None) => unreachable!("guarded above"),
+                 }
+             }
+@@ -1392,6 +1403,9 @@ impl App {
+             }
+         }
+         self.window_count = 1;
++        if let Err(error) = self.bind_behavior_journal() {
++            self.refuse_behavior(error);
++        }
+         let label = self.session_label(id);
+         self.events.push(AppEvent::SessionSwitched(label));
+         effects.push(Effect::Redraw);
+@@ -1414,8 +1428,10 @@ impl App {
+         let graph = self.graph_runtimes.graph();
+         self.graph_runtimes.active_persistence().save_with(&directory,
+             || pandect::save_node_facets(&directory, graph.facets()),
+-            |placement| pandect::session_graph_store::save_profiled(
+-                &directory.join(pandect::session_graph_store::GRAPH_FILE), graph, placement))
++            |placement| {
++                pandect::session_graph_store::save_profiled(
++                &directory.join(pandect::session_graph_store::GRAPH_FILE), graph, placement)},
++        )
+     }
+
+     /// Refresh the browser-state sidecar from live truth before a save
+diff --git a/src/app/tests.rs b/src/app/tests.rs
+index c06c9f9..b752430 100644
+--- a/src/app/tests.rs
++++ b/src/app/tests.rs
+@@ -13,9 +13,9 @@ use super::*;
+ // integrated as an exact, coordinated supplier set. These are product read
+ // and recycle-label checks, not an attributed recovery receipt.
+ fn resource_content_fixture() -> (App, uuid::Uuid, uuid::Uuid, uuid::Uuid) {
+-    use mere::kernel::graph::{Author, Graph};
+     use mere::kernel::graph::apply::add_node;
+     use mere::kernel::graph::resource_tags::{TagConcept, tag_concept_iri};
++    use mere::kernel::graph::{Author, Graph};
+
+     let mut graph = Graph::new();
+     let first = uuid::Uuid::from_u128(101);
+@@ -53,6 +53,7 @@ fn resource_content_fixture() -> (App, uuid::Uuid, uuid::Uuid, uuid::Uuid) {
+     assert!(graph.get_node(b).unwrap().tags.is_empty());
+     let mut app = App::test_stub();
+     app.graph_runtimes.set_graph(graph);
++    app.bind_behavior_journal().expect("test baseline");
+     let pane = app.default_graph_pane();
+     assert!(app.graph_pane_select_member(pane, first));
+     (app, first, second, resource)
+@@ -5735,7 +5736,7 @@ fn place_prekey_offer_is_written_beside_its_card() {
+         ] => {
+             assert_eq!(*moot, binding.moot.0);
+             *generation
+-        },
++        }
+         other => panic!("offering a pre-key lowers one worker command: {other:?}"),
+     };
+
+@@ -5749,7 +5750,7 @@ fn place_prekey_offer_is_written_beside_its_card() {
+         .find_map(|effect| match effect {
+             Effect::WritePlaceArtifact { path, bytes } if path == "card.json.prekey.json" => {
+                 Some(bytes)
+-            },
++            }
+             _ => None,
+         })
+         .expect("the offer lands beside the card");
+diff --git a/src/behaviors.rs b/src/behaviors.rs
+index 2ce676f..12020f4 100644
+--- a/src/behaviors.rs
++++ b/src/behaviors.rs
+@@ -200,9 +200,9 @@ fn touched_surface_ids(graph: &Graph, delta: &CapturedDelta) -> Vec<String> {
+                 // removing the facet also changes its incoming tag projections.
+                 for (from, to, payload) in graph.resource_edges() {
+                     if to.id() == id
+-                        && payload.semantic_statements().iter().any(|statement| {
++                        && payload.semantic_statements().iter().any(|statement|
+                             statement.predicate == TAGGED_WITH_IRI
+-                        })
++                        )
+                     {
+                         resources.insert(from.id());
+                     }
+@@ -264,9 +264,11 @@ pub fn ancestry_scopes(graph: &Graph, id: &str) -> Vec<ScopePath> {
+         // into the Surface vocabulary watches already use.
+         let mut containers: Vec<_> = graph
+             .projected_outgoing_relations(at)
+-            .filter(|(_, _, payload)| payload.containment_data().is_some_and(|data| {
++            .filter(|(_, _, payload)| {
++                payload.containment_data().is_some_and(|data|
+                 !data.sub_kinds.is_empty()
+-            }))
++            )
++            })
+             .map(|(container, _, _)| container)
+             .collect();
+         containers.sort_unstable_by_key(|key| graph.get_node(*key).map(|node| node.id));
+@@ -346,30 +348,48 @@ fn app_entries(app: &App, author_from: Option<(usize, &str)>) -> Vec<CommittedEn
+         .collect()
+ }
+
+-/// The journal entries after `cursor`, as cascade inputs.
+-pub fn entries_since(app: &App, cursor: u64) -> Vec<CommittedEntry> {
+-    let journal = match app.journal.lock() {
+-        Ok(journal) => journal,
+-        Err(poisoned) => poisoned.into_inner(),
+-    };
+-    let graph = app.graph_runtimes.graph();
+-    journal
+-        .entries()
++/// Snapshot the complete tail boundary, projecting only the loaded runtime.
++ fn projected_tail(app: &App, origin: crate::host_journal::RuntimeOrigin,
++    cursor: u64) -> Option<(u64, Vec<CommittedEntry> )> {
++    if app.behavior_origin() != Some(origin) {
++        return None;
++    }
++    let tail =  app.journal.lock() .ok()?.tail(origin,
++    cursor);
++    let graph = app.graph_runtimes.canvas(origin.graph)?.graph();
++    let entries = tail
++        .entries
+         .iter()
+-        .enumerate()
+-        .map(|(index, entry)| (index as u64 + 1, entry))
+-        .filter(|(seq, _)| *seq > cursor)
+-        .map(|(seq, entry)| {
++        .map(| entry| {
+             let scopes = touched_surface_ids(graph, &entry.delta)
+                 .into_iter()
+                 .flat_map(|id| ancestry_scopes(graph, &id))
+                 .collect();
+-            // Servitor's watch wire format matches the admitted subject id,
+-            // including its no-self-wake guard. The journal keeps kind,
+-            // version and via; Display would change this identity protocol.
+-            CommittedEntry::new(seq, entry.author.id.clone(), scopes)
++
++            CommittedEntry::new(entry.seq, entry.author.id.clone(), scopes)
+         })
+         .collect()
++;
++    Some((tail.high_water, entries))
++}
++
++/// The entries after `cursor` belonging to the loaded authority context.
++/// Focus and the legacy active-canvas cursor cannot supply capture origin.
++pub fn entries_since(app: &App, cursor: u64) -> Vec<CommittedEntry> {
++    let Some(origin) = app.behavior_origin() else {
++        return Vec::new();
++    };
++    projected_tail(app, origin, cursor)
++        .map(|(_, entries)| entries)
++        .unwrap_or_default()
++}
++
++fn binding_matches(app: &App, origin: crate::host_journal::RuntimeOrigin) -> bool {
++    app.behavior_execution_origin() == Some(origin)
++}
++
++fn routing_refused(app: &mut App) {
++    app.refuse_behavior("automatic participant run refused: loaded session/runtime binding changed or is unavailable".into());
+ }
+
+ /// Run the behavior cascade for whatever has been committed since last time.
+@@ -378,25 +398,37 @@ pub fn entries_since(app: &App, cursor: u64) -> Vec<CommittedEntry> {
+ /// effects are decided, so a woken body sees the world the action left rather
+ /// than the one it found.
+ pub fn drain(app: &mut App) -> Vec<Effect> {
+-    if app.session_load_refused() || app.denizens.is_empty() || app.draining {
+-        // Re-entered from a body's own Actions, which lower through `update`.
+-        // A nested drain would fire the clock and app tiers in the middle of a
+-        // cascade, outside its rounds and its budget.
++    if app.session_load_refused() || app.draining {
++
+         return Vec::new();
+     }
++    let error = match app.journal.lock() {
++        Ok(journal) => journal.execution_error().map(|error| error.to_string()),
++        Err(_) => Some("behavior journal capture lock poisoned".into()),
++    };
++    if let Some(error) = error {
++        app.refuse_behavior(error);
++        return vec![Effect::Redraw];
++    }
++    if app.denizens.is_empty() {
++        return Vec::new();
++    }
++    let Some(origin) = app.behavior_execution_origin() else {
++        routing_refused(app);
++        return vec![Effect::Redraw];
++    };
+     app.denizens.authority.set_now(crate::denizen::now_ms());
+     app.draining = true;
+-    let mut effects = drain_time_tier(app);
+-    effects.extend(drain_app_tier(app));
+-    if !app.watches.is_empty() {
+-        effects.extend(drain_graph_tier(app));
++    let mut effects = drain_time_tier(app, origin);
++    if binding_matches(app, origin) {
++        effects.extend(drain_app_tier(app, origin));
++    }
++    if binding_matches(app, origin) && !app.watches.is_empty() {
++        effects.extend(drain_graph_tier(app, origin));
+     }
+     app.draining = false;
+-    if !effects.is_empty() {
+-        // Cursors and schedule phase moved, and they are state rather than
+-        // declaration: losing them means re-waking on history already
+-        // considered, or a daily behavior that never fires because every
+-        // restart restarts its period.
++    if binding_matches(app, origin) && !effects.is_empty() {
++
+         crate::denizen::save_watches(
+             &app.session_dir(),
+             &app.watches,
+@@ -414,7 +446,7 @@ pub fn drain(app: &mut App) -> Vec<Effect> {
+ /// there is nothing for a woken body to feed back into: what it *writes* goes
+ /// to the journal, which the graph drain picks up in the same beat. One pass,
+ /// stable order, nothing to bound.
+-fn drain_time_tier(app: &mut App) -> Vec<Effect> {
++fn drain_time_tier(app: &mut App, origin: crate::host_journal::RuntimeOrigin) -> Vec<Effect> {
+     if app.time_watches.is_empty() {
+         return Vec::new();
+     }
+@@ -426,6 +458,11 @@ fn drain_time_tier(app: &mut App) -> Vec<Effect> {
+     let due = app.time_watches.due(now_ms);
+     let mut effects = Vec::new();
+     for subject in due {
++        if !binding_matches(app, origin) {
++            routing_refused(app);
++            effects.push(Effect::Redraw);
++            break;
++        }
+         app.denizens.authority.set_now(crate::denizen::now_ms());
+         let Some(member) = member_of(app, subject, &[]) else {
+             app.record_event(AppEvent::DenizenRefused(
+@@ -438,6 +475,11 @@ fn drain_time_tier(app: &mut App) -> Vec<Effect> {
+         // body has no matched entries to read, and saying so is truer than
+         // handing it the last thing that happened to change.
+         effects.extend(app.run_denizen_for_clock(member, now_ms));
++    if !binding_matches(app, origin) {
++            routing_refused(app);
++            effects.push(Effect::Redraw);
++            break;
++        }
+     }
+     effects
+ }
+@@ -445,7 +487,7 @@ fn drain_time_tier(app: &mut App) -> Vec<Effect> {
+ /// The app tier: wake on what the application did, rather than on what the
+ /// graph recorded. Runs first, so anything a woken body writes to the graph is
+ /// picked up by the graph drain in the same beat.
+-fn drain_app_tier(app: &mut App) -> Vec<Effect> {
++fn drain_app_tier(app: &mut App, origin: crate::host_journal::RuntimeOrigin) -> Vec<Effect> {
+     if app.app_watches.is_empty() {
+         app.mark_events_seen();
+         return Vec::new();
+@@ -463,6 +505,12 @@ fn drain_app_tier(app: &mut App) -> Vec<Effect> {
+     let cascade = run_cascade(&mut watches, budget, entries, |wakes| {
+         let mut produced = Vec::new();
+         for wake in wakes {
++            if !binding_matches(app, origin) {
++                routing_refused(app);
++                effects.push(Effect::Redraw);
++                produced.clear();
++                break;
++            }
+             let required = scoped_reads
+                 .get(&wake.subject)
+                 .map(Vec::as_slice)
+@@ -477,6 +525,12 @@ fn drain_app_tier(app: &mut App) -> Vec<Effect> {
+             let hex = wake.subject.to_hex();
+             let before = app.events_len();
+             effects.extend(app.run_denizen_for_cascade(member, &context, required));
++            if !binding_matches(app, origin) {
++                routing_refused(app);
++                effects.push(Effect::Redraw);
++                produced.clear();
++                break;
++            }
+             // Whatever the body just caused is attributed to it, so it cannot
+             // be woken by its own noise.
+             produced.extend(app_entries(app, Some((before, &hex))));
+@@ -485,30 +539,38 @@ fn drain_app_tier(app: &mut App) -> Vec<Effect> {
+         round_entries = produced.clone();
+         produced
+     });
+-    app.app_watches = watches;
++    let current = app.behavior_execution_origin();
++    if crate::host_journal::restore_table(&mut app.app_watches , watches, origin, current) {
+     report(app, &cascade);
++    }
+     effects
+ }
+
+-fn drain_graph_tier(app: &mut App) -> Vec<Effect> {
+-    let entries = entries_since(app, app.behavior_cursor);
++fn drain_graph_tier(app: &mut App, origin: crate::host_journal::RuntimeOrigin) -> Vec<Effect> {
++    let Some((boundary, entries )) = projected_tail(app, origin, app.behavior_cursor)else {
++        return Vec::new();
++    };
++    // A foreign-only tail is consumed without constructing a local trigger.
++    app.behavior_cursor = boundary;
+     if entries.is_empty() {
+         return Vec::new();
+     }
+-    app.behavior_cursor = entries
+-        .iter()
+-        .map(|entry| entry.seq)
+-        .max()
+-        .unwrap_or_default();
++
+
+     let budget = CascadeBudget::new(app.cascade_budget);
+-    let mut effects: Vec<Effect> = Vec::new();
++    let mut effects = Vec::new();
+     let mut watches = std::mem::take(&mut app.watches);
+     let scoped_reads = scoped_reads(&watches);
+-    let mut round_entries: Vec<CommittedEntry> = entries.clone();
++    let mut round_entries = entries.clone();
+     let cascade = run_cascade(&mut watches, budget, entries, |wakes| {
+         let mut produced = Vec::new();
+         for wake in wakes {
++            if !binding_matches(app, origin) {
++                routing_refused(app);
++                effects.push(Effect::Redraw);
++                produced.clear();
++                break;
++            }
+             let required = scoped_reads
+                 .get(&wake.subject)
+                 .map(Vec::as_slice)
+@@ -520,21 +582,30 @@ fn drain_graph_tier(app: &mut App) -> Vec<Effect> {
+                 continue;
+             };
+             let context = context_for(&round_entries, wake);
+-            let before = journal_len(app);
++            let before = journal_high_water(app);
+             effects.extend(app.run_denizen_for_cascade(member, &context, required));
+-            produced.extend(entries_since(app, before));
++            if !binding_matches(app, origin){
++                routing_refused(app);
++        effects.push(Effect::Redraw);
++                produced.clear();
++                break;
++            }
++
++        if let Some((boundary, entries)) = projected_tail(app, origin, before) {
++            app.behavior_cursor = boundary;
++                produced.extend(entries);
+         }
+-        // What the round's bodies committed becomes the next round's input,
+-        // and the next round's digest.
+-        if let Some(highest) = produced.iter().map(|entry| entry.seq).max() {
+-            app.behavior_cursor = app.behavior_cursor.max(highest);
+         }
+         round_entries = produced.clone();
+         produced
+     });
+-    app.watches = watches;
++    // A body may have loaded another session or replaced this same graph.
++    // Its newly loaded table is authoritative; never put the old one over it.
++    let current = app.behavior_execution_origin();
++    if crate::host_journal::restore_table(&mut app.watches , watches, origin, current) {
+
+     report(app, &cascade);
++    }
+     effects
+ }
+
+@@ -606,10 +677,10 @@ fn scoped_reads(table: &servitor::WatchTable) -> HashMap<Subject, Vec<(servitor:
+     reads
+ }
+
+-fn journal_len(app: &App) -> u64 {
++fn journal_high_water(app: &App) -> u64 {
+     match app.journal.lock() {
+-        Ok(journal) => journal.entries().len() as u64,
+-        Err(poisoned) => poisoned.into_inner().entries().len() as u64,
++        Ok(journal) => journal.high_water(),
++        Err(poisoned) => poisoned.into_inner().high_water(),
+     }
+ }
+
+@@ -657,9 +728,12 @@ mod tests {
+         {
+             let mut journal = app.journal.lock().unwrap();
+             for author in [Author::user(), body_author.clone()] {
+-                journal.record_as(author, CapturedDelta::ReplaySetNodeTitleById {
++                journal.record_as(app.behavior_binding.unwrap(),
++                        author, CapturedDelta::ReplaySetNodeTitleById {
+                     node_id: node.clone(), title: "changed".into(),
+-                });
++                },
++                    )
++                    .unwrap();
+             }
+         }
+         let entries = entries_since(&app, 0);
+@@ -873,15 +947,20 @@ mod tests {
+         let expected = surface_names(&graph, &[a, b]);
+         let mut app = App::test_stub();
+         let graph_id = app.graph_runtimes.active_graph();
+-        app.graph_runtimes.activate_or_insert(graph_id, Some(app.session_id), mere::canvas::Canvas::with_graph(graph));
+-        let cursor = journal_len(&app);
++        app.graph_runtimes.activate_or_insert(graph_id, Some(app.session_id), mere::canvas::Canvas::with_graph(graph),
++        );
++        app.bind_behavior_journal().unwrap();
++        let cursor = journal_high_water(&app);
+         let subject = Subject::new([0x42; 32]);
+         let author = Author::script(subject.to_hex(), "resource-body").via("turnstone");
+         {
+             let mut journal = app.journal.lock().unwrap();
+-            journal.record_as(author.clone(), CapturedDelta::ReplaySetResourceRecordById {
++            journal.record_as(app.behavior_binding.unwrap(),
++                    author.clone(), CapturedDelta::ReplaySetResourceRecordById {
+                 resource_id: resource.to_string(), record: None,
+-            });
++            },
++                )
++                .unwrap();
+         }
+         let entries = entries_since(&app, cursor);
+         assert_eq!(entries.len(), 1);
+diff --git a/src/host_journal.rs b/src/host_journal.rs
+new file mode 100644
+index 0000000..62ee689
+--- /dev/null
++++ b/src/host_journal.rs
+@@ -0,0 +1,513 @@
++// Copyright 2026 Mark Alan Boykin
++// SPDX-License-Identifier: MPL-2.0
++
++//! Process-local behavior capture. Origin is supplied by each installed graph,
++//! never recovered from focus or from the IDs a delta happens to name.
++use crate::panes::{GraphId, SessionId};
++use mere::kernel::graph::capture::{CapturedDelta, DeltaRecorder};
++use mere::kernel::graph::{AttributedDelta, Author};
++use std::ops::Deref;
++use std::sync::{Arc, Mutex};
++
++#[derive(Clone, Copy, Debug, PartialEq, Eq)]
++pub struct RuntimeOrigin {
++    pub graph: GraphId,
++    pub session: Option<SessionId>,
++    pub generation: u64,
++}
++
++impl RuntimeOrigin {
++    pub fn is_current(self, session: SessionId, current: Option<Self>) -> bool {
++        self.session == Some(session) && current == Some(self)
++    }
++}
++
++/// A cascade temporarily owns its old table. A replacement session's table
++/// must survive when that cascade returns, including same-session reloads.
++pub fn restore_table<T>(
++    destination: &mut T,
++    old: T,
++    expected: RuntimeOrigin,
++    current: Option<RuntimeOrigin>,
++) -> bool {
++    if current != Some(expected) {
++        return false;
++    }
++    *destination = old;
++    true
++}
++
++#[derive(Clone, Debug)]
++pub struct HostEntry {
++    pub seq: u64,
++    pub origin: RuntimeOrigin,
++    pub edit: AttributedDelta,
++}
++impl Deref for HostEntry {
++    type Target = AttributedDelta;
++    fn deref(&self) -> &Self::Target {
++        &self.edit
++    }
++}
++
++#[derive(Clone, Debug, PartialEq, Eq)]
++pub enum JournalError {
++    SequenceExhausted,
++    GenerationExhausted,
++    Poisoned,
++}
++impl std::fmt::Display for JournalError {
++    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
++        f.write_str(match self {
++            Self::SequenceExhausted => "behavior journal sequence exhausted",
++            Self::GenerationExhausted => "behavior runtime generation exhausted",
++            Self::Poisoned => "behavior journal capture lock poisoned",
++        })
++    }
++}
++impl std::error::Error for JournalError {}
++
++pub struct JournalTail {
++    pub high_water: u64,
++    pub entries: Vec<HostEntry>,
++}
++
++#[derive(Debug)]
++pub struct HostJournal {
++    entries: Vec<HostEntry>,
++    author: Author,
++    high_water: u64,
++    generation: u64,
++    error: Option<JournalError>,
++}
++impl Default for HostJournal {
++    fn default() -> Self {
++        Self {
++            entries: Vec::new(),
++            author: Author::user(),
++            high_water: 0,
++            generation: 0,
++            error: None,
++        }
++    }
++}
++impl HostJournal {
++    pub fn new() -> Self {
++        Self::default()
++    }
++    pub fn author(&self) -> &Author {
++        &self.author
++    }
++    pub fn set_author(&mut self, author: Author) {
++        self.author = author;
++    }
++    pub fn entries(&self) -> &[HostEntry] {
++        &self.entries
++    }
++    pub fn high_water(&self) -> u64 {
++        self.high_water
++    }
++    pub fn error(&self) -> Option<&JournalError> {
++        self.error.as_ref()
++    }
++    pub fn execution_error(&self) -> Option<JournalError> {
++        self.error
++            .clone()
++            .or_else(|| (self.high_water == u64::MAX).then_some(JournalError::SequenceExhausted))
++    }
++
++    pub fn allocate_origin(
++        &mut self,
++        graph: GraphId,
++        session: Option<SessionId>,
++    ) -> Result<RuntimeOrigin, JournalError> {
++        if let Some(error) = &self.error {
++            return Err(error.clone());
++        }
++        let Some(generation) = self.generation.checked_add(1) else {
++            self.error = Some(JournalError::GenerationExhausted);
++            return Err(JournalError::GenerationExhausted);
++        };
++        self.generation = generation;
++        Ok(RuntimeOrigin {
++            graph,
++            session,
++            generation,
++        })
++    }
++
++    /// A refused restored cursor must not disable an unrelated fresh session.
++    pub fn raise_cursor_floor(&mut self, floor: u64) -> Result<(), JournalError> {
++        if let Some(error) = self.execution_error() {
++            return Err(error);
++        }
++        if floor == u64::MAX {
++            return Err(JournalError::SequenceExhausted);
++        }
++        self.high_water = self.high_water.max(floor);
++        Ok(())
++    }
++
++    pub fn record(
++        &mut self,
++        origin: RuntimeOrigin,
++        delta: CapturedDelta,
++    ) -> Result<u64, JournalError> {
++        self.record_as(origin, self.author.clone(), delta)
++    }
++    pub fn record_as(
++        &mut self,
++        origin: RuntimeOrigin,
++        author: Author,
++        delta: CapturedDelta,
++    ) -> Result<u64, JournalError> {
++        if let Some(error) = &self.error {
++            return Err(error.clone());
++        }
++        let Some(seq) = self.high_water.checked_add(1) else {
++            self.error = Some(JournalError::SequenceExhausted);
++            return Err(JournalError::SequenceExhausted);
++        };
++        self.high_water = seq;
++        self.entries.push(HostEntry {
++            seq,
++            origin,
++            edit: AttributedDelta { author, delta },
++        });
++        Ok(seq)
++    }
++    /// Clone under one lock: the boundary includes foreign entries, while the
++    /// payload contains only entries for this exact accepted graph lifetime.
++    pub fn tail(&self, origin: RuntimeOrigin, cursor: u64) -> JournalTail {
++        JournalTail {
++            high_water: self.high_water,
++            entries: self
++                .entries
++                .iter()
++                .filter(|entry| entry.seq > cursor && entry.origin == origin)
++                .cloned()
++                .collect(),
++        }
++    }
++}
++
++pub type SharedJournal = Arc<Mutex<HostJournal>>;
++pub fn shared_journal() -> SharedJournal {
++    Arc::new(Mutex::new(HostJournal::new()))
++}
++
++pub fn recorder(journal: SharedJournal, origin: RuntimeOrigin) -> DeltaRecorder {
++    Arc::new(move |delta| match journal.lock() {
++        Ok(mut sink) => {
++            let _ = sink.record(origin, delta.clone());
++        }
++        Err(poisoned) => {
++            poisoned.into_inner().error = Some(JournalError::Poisoned);
++        }
++    })
++}
++/// Exact typed attribution survives nested synchronous lowering and unwind.
++pub struct AuthorRestore {
++    journal: SharedJournal,
++    previous: Author,
++}
++impl AuthorRestore {
++    pub fn enter(journal: SharedJournal, author: Author) -> Self {
++        let previous = {
++            let mut sink = journal
++                .lock()
++                .unwrap_or_else(|poisoned| poisoned.into_inner());
++            let previous = sink.author().clone();
++            sink.set_author(author);
++            previous
++        };
++        Self { journal, previous }
++    }
++}
++impl Drop for AuthorRestore {
++    fn drop(&mut self) {
++        self.journal
++            .lock()
++            .unwrap_or_else(|poisoned| poisoned.into_inner())
++            .set_author(self.previous.clone());
++    }
++}
++
++#[cfg(test)]
++mod journal_tests {
++    use super::*;
++    use mere::kernel::graph::{Author, capture::CapturedDelta};
++    fn graph(n: u128) -> GraphId {
++        GraphId::from_uuid(uuid::Uuid::from_u128(n))
++    }
++    fn delta() -> CapturedDelta {
++        CapturedDelta::ReplaySetNodeTitleById {
++            node_id: uuid::Uuid::from_u128(7).to_string(),
++            title: "changed".into(),
++        }
++    }
++    #[test]
++    fn equal_node_ids_keep_distinct_runtime_origins() {
++        let mut j = HostJournal::new();
++        let a = j.allocate_origin(graph(1), None).unwrap();
++        let b = j.allocate_origin(graph(2), None).unwrap();
++        assert_eq!(j.record_as(a, Author::user(), delta()).unwrap(), 1);
++        assert_eq!(j.record_as(b, Author::user(), delta()).unwrap(), 2);
++        assert_eq!(j.tail(a, 0).entries.len(), 1);
++        assert_eq!(j.tail(b, 0).entries.len(), 1);
++        assert_ne!(a, b);
++    }
++    #[test]
++    fn restored_cursor_is_a_floor_not_a_vector_index() {
++        let mut j = HostJournal::new();
++        j.raise_cursor_floor(900).unwrap();
++        let a = j.allocate_origin(graph(1), None).unwrap();
++        assert_eq!(j.record_as(a, Author::user(), delta()).unwrap(), 901);
++        assert_eq!(j.entries().len(), 1);
++        assert_eq!(j.high_water(), 901);
++        assert_eq!(j.tail(a, 900).entries[0].seq, 901);
++        j.raise_cursor_floor(100).unwrap();
++        assert_eq!(j.record_as(a, Author::user(), delta()).unwrap(), 902);
++    }
++    #[test]
++    fn foreign_only_tail_still_advances_scan_boundary() {
++        let mut j = HostJournal::new();
++        let a = j.allocate_origin(graph(1), None).unwrap();
++        let b = j.allocate_origin(graph(2), None).unwrap();
++        j.record_as(b, Author::user(), delta()).unwrap();
++        let tail = j.tail(a, 0);
++        assert!(tail.entries.is_empty());
++        assert_eq!(tail.high_water, 1);
++        assert!(j.tail(a, tail.high_water).entries.is_empty());
++    }
++    #[test]
++    fn reloaded_graph_and_session_get_new_generation() {
++        let mut j = HostJournal::new();
++        let session = Some(SessionId::new());
++        let old = j.allocate_origin(graph(1), session).unwrap();
++        j.record_as(old, Author::user(), delta()).unwrap();
++        let new = j.allocate_origin(graph(1), session).unwrap();
++        assert_ne!(old, new);
++        assert!(j.tail(new, 0).entries.is_empty());
++    }
++    #[test]
++    fn exhausted_restored_cursor_refuses_without_poisoning_other_sessions() {
++        let mut j = HostJournal::new();
++        assert_eq!(
++            j.raise_cursor_floor(u64::MAX),
++            Err(JournalError::SequenceExhausted)
++        );
++        assert_eq!(j.high_water(), 0);
++        let a = j.allocate_origin(graph(1), None).unwrap();
++        assert_eq!(j.record_as(a, Author::user(), delta()).unwrap(), 1);
++    }
++    #[test]
++    fn append_exhaustion_is_latched_without_wrapping() {
++        let mut j = HostJournal::new();
++        let a = j.allocate_origin(graph(1), None).unwrap();
++        j.raise_cursor_floor(u64::MAX - 1).unwrap();
++        assert_eq!(j.record_as(a, Author::user(), delta()).unwrap(), u64::MAX);
++        assert_eq!(
++            j.record_as(a, Author::user(), delta()),
++            Err(JournalError::SequenceExhausted)
++        );
++        assert_eq!(j.high_water(), u64::MAX);
++        assert_eq!(j.entries().len(), 1);
++        assert_eq!(j.error(), Some(&JournalError::SequenceExhausted));
++    }
++    #[test]
++    fn complete_typed_author_is_retained() {
++        let mut j = HostJournal::new();
++        let a = j.allocate_origin(graph(1), None).unwrap();
++        let author = Author::script("subject", "revision").via("turnstone");
++        j.set_author(author.clone());
++        j.record(a, delta()).unwrap();
++        assert_eq!(j.entries()[0].edit.author, author);
++        assert_eq!(j.entries()[0].origin, a);
++    }
++    #[test]
++    fn graph_owned_recorder_records_once_and_clone_scratch_is_silent() {
++        use mere::kernel::graph::{
++            Graph,
++            apply::{GraphDelta, add_node, apply_graph_delta},
++        };
++        let journal = shared_journal();
++        let origin = journal
++            .lock()
++            .unwrap()
++            .allocate_origin(graph(1), None)
++            .unwrap();
++        let mut live = Graph::new();
++        live.set_recorder(Some(recorder(journal.clone(), origin)));
++        let key = add_node(
++            &mut live,
++            Some(uuid::Uuid::from_u128(7)),
++            "https://test/".into(),
++            Default::default(),
++        );
++        let before = journal.lock().unwrap().entries().len();
++        apply_graph_delta(
++            &mut live,
++            GraphDelta::SetNodeTitle {
++                key,
++                title: "live title".into(),
++            },
++        );
++        assert_eq!(journal.lock().unwrap().entries().len(), before + 1);
++        assert_eq!(
++            journal.lock().unwrap().entries().last().unwrap().origin,
++            origin
++        );
++        let mut scratch = live.clone();
++        assert!(!scratch.is_recording());
++        apply_graph_delta(
++            &mut scratch,
++            GraphDelta::SetNodeTitle {
++                key,
++                title: "scratch title".into(),
++            },
++        );
++        assert_eq!(journal.lock().unwrap().entries().len(), before + 1);
++    }
++    #[test]
++    fn nested_author_guards_restore_all_fields_even_on_unwind() {
++        let journal = shared_journal();
++        let prior = Author::engine("previous", "engine-1").via("route-1");
++        let outer = Author::script("outer", "body-1").via("turnstone");
++        let inner = Author::script("inner", "body-2").via("endpoint");
++        journal.lock().unwrap().set_author(prior.clone());
++        {
++            let _outer = AuthorRestore::enter(journal.clone(), outer.clone());
++            let result = std::panic::catch_unwind(|| {
++                let _inner = AuthorRestore::enter(journal.clone(), inner.clone());
++                assert_eq!(journal.lock().unwrap().author(), &inner);
++                panic!("script failed");
++            });
++            assert!(result.is_err());
++            assert_eq!(journal.lock().unwrap().author(), &outer);
++        }
++        assert_eq!(journal.lock().unwrap().author(), &prior);
++    }
++    #[test]
++    fn generation_exhaustion_refuses_and_latches() {
++        let mut journal = HostJournal::new();
++        journal.generation = u64::MAX;
++        assert_eq!(
++            journal.allocate_origin(graph(1), None),
++            Err(JournalError::GenerationExhausted)
++        );
++        assert_eq!(journal.error(), Some(&JournalError::GenerationExhausted));
++    }
++    #[test]
++    fn poisoned_capture_is_visible_and_cannot_supply_fresh_triggers() {
++        let journal = shared_journal();
++        let origin = journal
++            .lock()
++            .unwrap()
++            .allocate_origin(graph(1), None)
++            .unwrap();
++        let capture = recorder(journal.clone(), origin);
++        let sink = journal.clone();
++        assert!(
++            std::panic::catch_unwind(move || {
++                let _locked = sink.lock().unwrap();
++                panic!("bad writer");
++            })
++            .is_err()
++        );
++        capture(&delta());
++        let poisoned = journal.lock().unwrap_err().into_inner();
++        assert_eq!(poisoned.error(), Some(&JournalError::Poisoned));
++        assert!(poisoned.entries().is_empty());
++    }
++    #[test]
++    fn typed_subject_projection_preserves_no_self_wake() {
++        use servitor::{ScopePath, Subject, Watch};
++        let subject = Subject::new([0x31; 32]);
++        let mut journal = HostJournal::new();
++        let origin = journal.allocate_origin(graph(1), None).unwrap();
++        let author = Author::script(subject.to_hex(), "body-1").via("turnstone");
++        journal.record_as(origin, Author::user(), delta()).unwrap();
++        journal.record_as(origin, author.clone(), delta()).unwrap();
++        let scope = ScopePath::parse(&uuid::Uuid::from_u128(7).to_string()).unwrap();
++        let watch = Watch {
++            subject,
++            scope: scope.clone(),
++            self_author: subject.to_hex(),
++            cursor: 0,
++        };
++        let scopes = [scope];
++        let entries = journal.tail(origin, 0).entries;
++        assert!(watch.matches(&servitor::WatchEvent {
++            seq: entries[0].seq,
++            author: &entries[0].author.id,
++            scopes: &scopes
++        }));
++        assert!(!watch.matches(&servitor::WatchEvent {
++            seq: entries[1].seq,
++            author: &entries[1].author.id,
++            scopes: &scopes
++        }));
++        assert_eq!(entries[1].author, author);
++    }
++
++    #[test]
++    fn runtime_binding_requires_exact_generation_and_session() {
++        let mut journal = HostJournal::new();
++        let session = SessionId::new();
++        let origin = journal.allocate_origin(graph(1), Some(session)).unwrap();
++        assert!(origin.is_current(session, Some(origin)));
++        assert!(!origin.is_current(SessionId::new(), Some(origin)));
++        let replacement = journal.allocate_origin(graph(1), Some(session)).unwrap();
++        assert!(!origin.is_current(session, Some(replacement)));
++        assert!(!origin.is_current(session, None));
++        let detached = journal.allocate_origin(graph(1), None).unwrap();
++        assert!(!detached.is_current(session, Some(detached)));
++    }
++    #[test]
++    fn interrupted_cascade_keeps_new_watch_table_after_same_session_reload() {
++        use servitor::{Subject, WatchTable};
++        let mut journal = HostJournal::new();
++        let session = SessionId::new();
++        let old_origin = journal.allocate_origin(graph(1), Some(session)).unwrap();
++        let new_origin = journal.allocate_origin(graph(1), Some(session)).unwrap();
++        let table = |byte| {
++            let line = format!("{} 123 user /", Subject::new([byte; 32]).to_hex());
++            WatchTable::from_wire_lines([line.as_str()]).unwrap()
++        };
++        let mut current = table(2);
++        let expected = current.to_wire_lines();
++        assert!(!restore_table(
++            &mut current,
++            table(1),
++            old_origin,
++            Some(new_origin)
++        ));
++        assert_eq!(current.to_wire_lines(), expected);
++        let old = table(1);
++        let expected = old.to_wire_lines();
++        assert!(restore_table(
++            &mut current,
++            old,
++            new_origin,
++            Some(new_origin)
++        ));
++        assert_eq!(current.to_wire_lines(), expected);
++    }
++    #[test]
++    fn final_captured_ordinal_refuses_the_next_execution_before_any_write() {
++        let mut journal = HostJournal::new();
++        let origin = journal.allocate_origin(graph(1), None).unwrap();
++        journal.raise_cursor_floor(u64::MAX - 1).unwrap();
++        journal.record_as(origin, Author::user(), delta()).unwrap();
++        assert!(
++            journal.error().is_none(),
++            "the final entry itself was fully captured"
++        );
++        assert_eq!(
++            journal.execution_error(),
++            Some(JournalError::SequenceExhausted)
++        );
++        assert_eq!(journal.entries().len(), 1);
++    }
++}
+diff --git a/src/inspector_view.rs b/src/inspector_view.rs
+index 6df1b84..4de7e16 100644
+--- a/src/inspector_view.rs
++++ b/src/inspector_view.rs
+@@ -201,6 +201,9 @@ fn feed_rows(app: &App, member: uuid::Uuid) -> Option<Vec<(String, String)>> {
+ /// label while kind/version/route remain visible; only the trusted UI person
+ /// renders as `you`. An engine or script named `user` is still a machine.
+ fn journal_rows(app: &App) -> Vec<(String, String)> {
++    let Some(origin) = app.behavior_origin() else {
++        return Vec::new();
++    };
+     let Ok(journal) = app.journal.lock() else {
+         return Vec::new();
+     };
+@@ -208,6 +211,7 @@ fn journal_rows(app: &App) -> Vec<(String, String)> {
+         .entries()
+         .iter()
+         .rev()
++        .filter(|entry| entry.origin == origin)
+         .take(5)
+         .map(|entry| {
+             let author = journal_author_label(app, &entry.author);
+diff --git a/src/lib.rs b/src/lib.rs
+index 44bec1f..38ecf4d 100644
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -22,14 +22,14 @@ mod component;
+ mod content;
+ mod content_classes;
+ mod content_tags;
+-mod surface_controls;
+-mod contributed_a11y;
++mod  contributed_a11y;
+ pub mod contributed_surface;
+ pub mod cookie_custody;
+ mod denizen;
+-pub mod diagnostic_observations;
++
+ mod device_receipts_pane;
+ mod device_receipts_service;
++pub mod diagnostic_observations;
+ pub mod distillery_installed_surface;
+ pub mod document_find;
+ mod download;
+@@ -39,6 +39,7 @@ pub mod frame_timing;
+ mod frozen_projection_pane;
+ mod gemini_identity;
+ mod gemini_trust;
++mod host_journal;
+ mod identity;
+ mod inspector_controls;
+ mod inspector_pane;
+@@ -82,6 +83,7 @@ pub mod sky_surface;
+ pub mod sky_timeline;
+ mod source_capture;
+ mod surface;
++mod surface_controls;
+ mod swatch_pane;
+ mod trail_memory;
+ mod trail_pane;
+diff --git a/src/remote_projection.rs b/src/remote_projection.rs
+index f7f9c25..6d8c8c0 100644
+--- a/src/remote_projection.rs
++++ b/src/remote_projection.rs
+@@ -29,7 +29,7 @@ use graphshell_endpoint::{IntentSink, PresentationSource, ProjectionCatalog, Pro
+ use identity::IdentityProvider;
+ use identity::delegation::Issue;
+ use insigne::delegation::SignedDelegationCertificate;
+-use mere::kernel::graph::{Author, GraphJournal, NodeKey};
++use mere::kernel::graph::{Author,  NodeKey};
+ use sceno::{Arrangement, Score, Spiral};
+ use scenotime::{Revision, SceneEpoch, SceneSnapshot};
+ use servitor::delegation::{DelegationTable, root_certificate};
+@@ -52,30 +52,8 @@ fn layout_scope() -> ScopePath {
+ fn graph_scope() -> ScopePath {
+     ScopePath::parse(GRAPH_SCOPE).expect("a valid scope")
+ }
+-// A nested dispatch must restore all attribution fields, even on an early exit.
+-struct EndpointAuthorRestore {
+-    journal: std::sync::Arc<std::sync::Mutex<GraphJournal>>,
+-    previous: Author,
+-}
++type EndpointAuthorRestore = crate::host_journal::AuthorRestore;
+
+-impl EndpointAuthorRestore {
+-    fn enter(journal: std::sync::Arc<std::sync::Mutex<GraphJournal>>, author: Author) -> Self {
+-        let previous = {
+-            let mut current = journal.lock().unwrap_or_else(|poisoned| poisoned.into_inner());
+-            let previous = current.author().clone();
+-            current.set_author(author);
+-            previous
+-        };
+-        Self { journal, previous }
+-    }
+-}
+-
+-impl Drop for EndpointAuthorRestore {
+-    fn drop(&mut self) {
+-        self.journal.lock().unwrap_or_else(|poisoned| poisoned.into_inner())
+-            .set_author(self.previous.clone());
+-    }
+-}
+
+ const FIT_INTENT: &str = "turnstone.fit-view";
+
+@@ -103,7 +81,7 @@ impl std::fmt::Display for ProjectionRefusal {
+             Self::WrongSession => f.write_str("projection request names the wrong session"),
+             Self::UnsupportedProtocol => {
+                 f.write_str("projection request uses an unsupported protocol")
+-            },
++            }
+             Self::UnsupportedScore {
+                 received,
+                 supported,
+@@ -113,7 +91,7 @@ impl std::fmt::Display for ProjectionRefusal {
+             ),
+             Self::UnsupportedArrangement => {
+                 f.write_str("G3 Turnstone endpoint currently accepts Spiral arrangements")
+-            },
++            }
+             Self::InvalidScene(reason) => write!(f, "invalid disclosed scene: {reason}"),
+             Self::Presentation(reason) => f.write_str(reason),
+         }

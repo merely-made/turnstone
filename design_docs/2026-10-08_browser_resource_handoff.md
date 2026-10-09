@@ -1,9 +1,10 @@
 # Turnstone browser and resource integration handoff
 
-**Status, 2026-10-08:** paused at Mark's request for a fresh chat. Current browser
-family adoption is published; the next resource-graph adoption is prepared,
-unapplied and unqualified. This handoff does not authorize merging an unqualified
-Mere checkpoint. Read the live tree before resuming.
+**Status, 2026-10-09:** resumed with Mark's authorization to update. Upstream
+browser baseline `22361c9` is merged in consumer commit `1a992214`; the next
+resource-graph adoption remains prepared, unapplied and unqualified. The latest
+continuation below records the current patch order. Read the live tree before
+resuming.
 
 ## Start here
 
@@ -12,9 +13,9 @@ and this handoff. Keep the browser release lane separate from the forthcoming
 Mere resource-graph migration. The earlier S0 tested-set browser repin is closed;
 it must not be redone merely because older plan prose mentions a pending repin.
 
-Mark's latest instruction is to make a handoff. No further dependency change,
-build, release or publication was started after that instruction.
-Mark is making **turnstone chat** on the ThinkPad to continue this work.
+The original handoff stopped further dependency changes, builds and publication.
+Mark subsequently resumed this **turnstone chat** on the ThinkPad and authorized
+the update. No further permission gate is needed for the recorded consumer work.
 **Forms** is the Genet/Vano chat, not this lane. The handoff and patch checkpoint
 are being transferred through Git objects to the existing consumer worktree;
 no new worktree is needed. No message was sent to Forms.
@@ -408,3 +409,49 @@ Direct restore-table tests qualify only the helper, not that complete cascade.
 No production edit, dependency repin, supplier build or chat message occurred.
 The supplier owner is still working; no final immutable integration clearance
 was available in the compact status checked during this continuation.
+
+
+## Current upstream family continuation, 2026-10-09
+
+Mark authorized updating after discussing Mere's qualification. Read-only remote
+refresh found newer published browser work. Consumer merge `1a992214` incorporates
+upstream `22361c9`, preserving the prepared graph work and the newer controller
+input, command catalogue, physics and pending profile identity behavior.
+
+The production family is now Mere `e48db81404eb580b7a7b3c01caeb410e539da4c8`,
+Genet `15713014e2e23b887360471552f75f60684f5384`, Knot
+`16aaff7804d49ba829af646c3a8eca2d6ec2fc2f` and Redshank/Woodshed
+`ece6e9eaf7c11a37f4b1457895704b1e6aeb6b8c`. Cargo.lock contains one Mere Git
+source. This updates the browser baseline; it does not adopt the resource-graph
+supplier's active merge worktree. That owner, **Discuss graph semantics**, is
+has green native tests and is still completing its locked workspace and wasm checks.
+
+Upstream's controller-input receipt records Knot 661 passing tests, Redshank
+242 passing tests with exclusions, and Turnstone all-target compilation and
+verification. Its macOS library run had 683 passes and eight failures: four
+platform failures and four place tests that passed separately. This consumer
+continuation does not turn that receipt into a clean Linux full-suite claim.
+
+The original seven `.patch` files remain byte-for-byte unchanged. The first five
+still apply on this baseline. The sixth needed context reconciliation with the
+new command catalogue and session changes. The seventh also required keeping
+`identity: Some(identity)` in the fixture while retaining its new graph-bound
+journal. Use this current order:
+
+1. `reader.patch`
+2. `behaviors.patch`
+3. `content-tests.patch`
+4. `session-profile.patch`
+5. `controls.patch`
+6. `host-persistence-current-family.patch`
+7. `journal-origin-current-family.patch`
+
+[Current checks](../docs/compatibility/graph_resources/current-family-checks.json)
+record clean ordered application in an isolated index, exact resulting hashes
+and 32 Rust parser checks. The actual journal module is unchanged from the
+previous compiled receipt; its existing binary was rerun with 15 passes.
+`cargo metadata --offline --locked --no-deps` passes for the merged production
+manifest. None of the resource patches is applied to production, and the merged
+host has not been compiled or tested here. Remaining full-host gates in the
+previous continuation still apply after the final immutable graph supplier and
+coordinated family update.

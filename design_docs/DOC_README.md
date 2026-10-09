@@ -54,9 +54,10 @@ set.
 
 - [Browser/resource handoff, 2026-10-08](2026-10-08_browser_resource_handoff.md):
   resume point for published browser adoption, ThinkPad preservation, per-view
-  control ruling and seven unapplied next-Mere consumer patches; host persistence
-  and approved graph-origin routing are prepared. Full-host and immutable-family
-  qualification gates remain explicit.
+  control ruling and seven unapplied next-Mere consumer patches, reconciled with
+  current upstream browser baseline `22361c9`. Host persistence and graph-origin
+  routing are prepared; the handoff gives the revised patch order and receipts.
+  Full-host and immutable-family qualification gates remain explicit.
 - [Unusual-protocols browser plan](2026-10-06_unusual_protocols_browser_plan.md):
   the bar ("can you use this as a web browser for the unusual protocols"),
   per-protocol state, ranked gaps and stages S0 to S11 plus SC. Ruled U1 to
