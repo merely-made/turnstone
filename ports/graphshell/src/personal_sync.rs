@@ -36,7 +36,7 @@ use stickleback::{
 use uuid::Uuid;
 
 use crate::access::{ACCESS_HISTORY_FACET, AccessHistory, AccessRecord};
-use crate::product::{SAVED_SCENE_FACET, SAVED_SCENE_FACET_V1, SavedSceneV2};
+use crate::product::{SAVED_SCENE_FACET_V2, SAVED_SCENE_FACET_V3, SavedSceneV2};
 
 pub const PERSONAL_GRAPH_LOG: u64 = 0;
 pub const PERSONAL_GRAPH_LIMITS: CausalLimits = CausalLimits {
@@ -714,7 +714,13 @@ fn validate_facet_name(facet: &str) -> Result<(), Reject> {
             "facet id is empty or too long",
         ));
     }
-    if facet == ACCESS_HISTORY_FACET || facet == SAVED_SCENE_FACET || facet == SAVED_SCENE_FACET_V1 {
+    // A version-4 scene travels as an ordinary facet, opaque, so an older
+    // device stores and passes it on (dynamics grammar plan, F158); the
+    // facets the typed scene event writes stay reserved to it.
+    if facet == ACCESS_HISTORY_FACET
+        || facet == SAVED_SCENE_FACET_V3
+        || facet == SAVED_SCENE_FACET_V2
+    {
         return Err(Reject::new(
             "reserved-personal-graph-facet",
             "facet has a dedicated append or scene event",
@@ -1422,13 +1428,15 @@ fn apply_event(
                 .entry(record.record_id)
                 .or_insert_with(|| record.clone());
         },
+        // A scene saved before version 4 (F158): it folds under its own
+        // facet and converts when it opens (F142).
         PersonalGraphEvent::SaveScene { node, scene } => {
             scenes.insert(*node, scene.clone());
             apply_graph_delta(
                 graph,
                 GraphDelta::ReplaySetNodeFacetById {
                     node_id: *node,
-                    facet: SAVED_SCENE_FACET.to_string(),
+                    facet: SAVED_SCENE_FACET_V3.to_string(),
                     value: serde_json::to_value(scene).expect("saved scene always serializes"),
                 },
             );
@@ -2746,7 +2754,11 @@ mod tests {
                 "byte for byte, deterministic"
             );
             assert_eq!(
-                scene.check_dynamics().is_err_and(|e| e.contains("33 deep")),
+                scene
+                    .clone()
+                    .into_v3()
+                    .and_then(|scene| scene.check_dynamics())
+                    .is_err_and(|e| e.contains("33 deep")),
                 depth == 33
             );
         }
@@ -2802,7 +2814,10 @@ mod tests {
             .events
             .iter()
             .map(|event| match event {
-                PersonalGraphEvent::SaveScene { scene, .. } => scene.check_dynamics(),
+                PersonalGraphEvent::SaveScene { scene, .. } => scene
+                    .clone()
+                    .into_v3()
+                    .and_then(|scene| scene.check_dynamics()),
                 _ => unreachable!("two scenes"),
             })
             .collect();
@@ -2813,5 +2828,40 @@ mod tests {
                 .into())
         );
         assert_eq!(opened[1], Ok(()), "the other scene in the record opens");
+    }
+
+    /// F158: a version-4 scene travels as an ordinary facet, so a record
+    /// carrying one decodes on any device and folds into the facet store
+    /// opaque; the facets the typed scene event writes stay reserved to it,
+    /// and an older scene event folds under its own facet, to convert when
+    /// it opens.
+    #[test]
+    fn a_version_4_scene_travels_as_an_opaque_facet() {
+        use crate::product::SAVED_SCENE_FACET;
+        assert!(validate_facet_name(SAVED_SCENE_FACET).is_ok());
+        for reserved in [SAVED_SCENE_FACET_V3, SAVED_SCENE_FACET_V2] {
+            assert_eq!(
+                validate_facet_name(reserved).unwrap_err().code,
+                "reserved-personal-graph-facet"
+            );
+        }
+        let scene = serde_json::json!({ "name": "v4", "dynamics": { "version": 9 } });
+        let record = PersonalGraphRecord {
+            events: vec![PersonalGraphEvent::SetFacet {
+                node: A,
+                facet: SAVED_SCENE_FACET.into(),
+                value: scene.clone(),
+            }],
+            parents: Vec::new(),
+            writer_attestation: None,
+        };
+        let bytes = encode_cbor(&record).expect("encodes");
+        let back: PersonalGraphRecord =
+            decode_cbor_strict(bytes.as_slice()).expect("a spec this reader refuses still decodes");
+        let PersonalGraphEvent::SetFacet { value, .. } = &back.events[0] else {
+            panic!("the event comes back as it went");
+        };
+        assert_eq!(value, &scene);
+        assert_eq!(encode_cbor(&back).unwrap(), bytes, "byte for byte");
     }
 }

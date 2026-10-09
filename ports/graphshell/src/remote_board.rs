@@ -10,14 +10,14 @@
 //! Both browser pages draw the remote session through this, so the mapping
 //! from Graphshell's scene to the board is written once. The score's
 //! positions become anchor slots; the board mirrors the local canvas's
-//! physics choice and its speed dial (ruled 2026-10-04, "The viewer's own
+//! live stage (dynamics grammar plan, F150) and its speed dial (ruled 2026-10-04, "The viewer's own
 //! dial"); nothing is written back. (Physics catalog — P3.)
 
 use graphshell_client::MountedScene;
 use graphshell_client::frozen::Satisfaction;
+use mere::canvas::dynamics_spec::DynamicsSpec;
 use mere::canvas::{
-    BoardBackdrop, BoardCard, BoardFootprint, BoardRect, BoardScene, PhysicsBoard, PhysicsChoice,
-    Speed,
+    BoardBackdrop, BoardCard, BoardFootprint, BoardRect, BoardScene, PhysicsBoard, Speed,
 };
 use crate::view::ProjectionLayoutView;
 
@@ -87,18 +87,24 @@ impl RemoteBoard {
         self.board.set_physics_device(device);
     }
 
-    /// Mirror the viewer's `choice` and `speed` (no-ops when unchanged) and,
-    /// whenever the acknowledged revision moves, reconcile the bodies to the
-    /// scene: a new card spawns at its slot with a settle burst, the others
-    /// keep their simulated positions, every slot is re-anchored.
+    /// Mirror the viewer's live `stage` and `speed` (no-ops when unchanged)
+    /// and, whenever the acknowledged revision moves, reconcile the bodies to
+    /// the scene: a new card spawns at its slot with a settle burst, the
+    /// others keep their simulated positions, every slot is re-anchored. The
+    /// stage is the canvas's [`live_stage_spec`](mere::canvas::Canvas::live_stage_spec)
+    /// (dynamics grammar plan, F150): its law or composition, the stage under
+    /// way when a schedule runs. `None`, or a stage the board refuses, leaves
+    /// the board's stage as it was.
     pub fn sync(
         &mut self,
         mounted: Option<&MountedScene>,
         revision: Option<u64>,
-        choice: PhysicsChoice,
+        stage: Option<&DynamicsSpec>,
         speed: Speed,
     ) {
-        self.board.set_choice(choice);
+        if let Some(stage) = stage {
+            let _ = self.board.set_stage(stage);
+        }
         if speed != self.speed {
             self.speed = speed;
             self.board.set_speed(speed);
@@ -202,7 +208,7 @@ mod tests {
         remote.sync(
             client.mounted(&session),
             Some(1),
-            PhysicsChoice::default(),
+            Some(&mere::canvas::PhysicsChoice::default().into_spec()),
             Speed::REAL_TIME,
         );
         assert_eq!(remote.board().len(), 1);
@@ -213,14 +219,14 @@ mod tests {
         remote.sync(
             client.mounted(&session),
             Some(1),
-            PhysicsChoice::default(),
+            Some(&mere::canvas::PhysicsChoice::default().into_spec()),
             Speed::REAL_TIME,
         );
         assert_eq!(remote.board().len(), 1);
         remote.sync(
             client.mounted(&session),
             Some(2),
-            PhysicsChoice::default(),
+            Some(&mere::canvas::PhysicsChoice::default().into_spec()),
             Speed::REAL_TIME,
         );
         assert_eq!(remote.board().len(), 2);
@@ -244,18 +250,28 @@ mod tests {
             }
             remote.board().pace().ticks - before
         };
-        remote.sync(mounted, Some(1), PhysicsChoice::default(), Speed::REAL_TIME);
+        remote.sync(
+            mounted,
+            Some(1),
+            Some(&mere::canvas::PhysicsChoice::default().into_spec()),
+            Speed::REAL_TIME,
+        );
         assert_eq!(steps(&mut remote, 4), 4, "1x: a tick a frame");
         remote.sync(
             mounted,
             Some(1),
-            PhysicsChoice::default(),
+            Some(&mere::canvas::PhysicsChoice::default().into_spec()),
             Speed::from_factor(5.0),
         );
         assert_eq!(remote.speed(), Speed::from_factor(5.0));
         assert_eq!(steps(&mut remote, 4), 20, "the viewer's 5x");
         // Control: the same board back at the viewer's 1x runs a tick a frame.
-        remote.sync(mounted, Some(1), PhysicsChoice::default(), Speed::REAL_TIME);
+        remote.sync(
+            mounted,
+            Some(1),
+            Some(&mere::canvas::PhysicsChoice::default().into_spec()),
+            Speed::REAL_TIME,
+        );
         assert_eq!(steps(&mut remote, 4), 4);
     }
 }

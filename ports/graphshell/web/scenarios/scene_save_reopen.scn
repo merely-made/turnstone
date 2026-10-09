@@ -1,0 +1,67 @@
+# Save and reopen a scene on the old page (dynamics grammar plan, G4b1,
+# F142, F161): the save writes a version-4 scene, its dynamics spec the only
+# physics and arrangement record, and a reopen brings back the arrangement,
+# the law, its overlay, the sources and the recipe's role after each was
+# changed away.
+assert title GRAPHSHELL H3 READY
+assert snap ready == true
+act select-web
+settle 1
+select #gs-arrangement-select grid.default
+dom click [data-command="apply-arrangement"]
+settle 1
+assert snap layout == grid.default
+select #gs-physics-select stress.kamada-kawai
+check #gs-overlay-grid-snap on
+select #gs-mass-source-select pagerank
+select #gs-depth-source-select layers
+dom click [data-command="apply-physics"]
+settle 1
+assert snap physics-law == stress.kamada-kawai
+assert snap physics-overlays == grid-snap
+assert snap physics-profile == crystal
+assert snap physics-mass-source == pagerank
+assert snap physics-depth-source == layers
+select #gs-role-select anchored
+dom click [data-command="apply-role"]
+settle 1
+assert snap arrangement-role == anchored
+dom click [data-command="save-scene"]
+settle 2
+assert dom #gs-product-status Scene saved
+assert snap saved-scene-facet == v4
+capture scene_save_saved
+wait
+# Everything changed away.
+select #gs-arrangement-select phyllotaxis.default
+dom click [data-command="apply-arrangement"]
+settle 1
+select #gs-physics-select charge.barnes-hut
+check #gs-overlay-grid-snap off
+select #gs-mass-source-select degree
+select #gs-depth-source-select roots
+dom click [data-command="apply-physics"]
+settle 1
+select #gs-role-select seeded
+dom click [data-command="apply-role"]
+settle 1
+assert snap layout == phyllotaxis.default
+assert snap physics-law == charge.barnes-hut
+assert snap physics-profile == gas
+assert snap physics-mass-source == degree
+assert snap arrangement-role == seeded
+# The reopen brings each back from the spec.
+dom click [data-command="reopen-scene"]
+settle 2
+assert dom #gs-product-status Saved scene reopened
+assert snap saved-scene-facet == v4
+assert snap layout == grid.default
+assert snap physics-law == stress.kamada-kawai
+assert snap physics-overlays == grid-snap
+assert snap physics-profile == crystal
+assert snap physics-mass-source == pagerank
+assert snap physics-depth-source == layers
+assert snap arrangement-role == anchored
+assert snap physics-composition == none
+capture scene_save_reopened
+log scene save and reopen receipt complete

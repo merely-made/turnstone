@@ -40,7 +40,8 @@ use crate::access::{
 };
 use crate::mere_host::MereHost;
 use crate::product::{
-    CONTENT_FACET, ExportRequest, ProductCodicilV2, ProductError, SavedSceneV2, decode_codicil,
+    CONTENT_FACET, ExportRequest, ProductCodicilV3, ProductError, SAVED_SCENE_FACET,
+    SAVED_SCENE_FACET_V2, SAVED_SCENE_FACET_V3, SavedSceneV2, SavedSceneV3, decode_codicil,
 };
 
 pub const TRANSFER_MANIFEST_SCHEMA: &str = "graphshell.transfer-manifest/v1";
@@ -57,7 +58,7 @@ fn schema_ref(definition: &SchemaDefinition) -> SchemaRef {
 }
 
 pub(crate) fn product_codicil_schema() -> SchemaDefinition {
-    MereNativeSchemaBuilder::new("graphshell.GraphCodicil/v2")
+    MereNativeSchemaBuilder::new("graphshell.GraphCodicil/v3")
         .description("A closed graph or scene selection with portable facets.")
         .field("schema", MereNativeFieldSpec::String, true)
         .field(
@@ -116,7 +117,7 @@ fn transfer_receipt_schema() -> SchemaDefinition {
         .build()
 }
 
-impl TypedPayload for ProductCodicilV2 {
+impl TypedPayload for ProductCodicilV3 {
     fn schema_ref() -> SchemaRef {
         *PRODUCT_CODICIL_SCHEMA_REF
     }
@@ -387,7 +388,7 @@ pub async fn prepare_transfer<HB: Backend, AB: Backend, BB: Backend>(
     let definition = product_codicil_schema();
     validate_payload(&definition, &selection_payload)?;
     let selection = Codicil::new(
-        ProductCodicilV2::schema_ref(),
+        ProductCodicilV3::schema_ref(),
         selection_payload,
         request.privacy,
         ProvenanceRecord {
@@ -695,7 +696,7 @@ async fn save_transfer_receipt<B: Backend>(
 
 pub(crate) fn verify_manifest(
     manifest: &TransferManifestV1,
-) -> Result<ProductCodicilV2, TransferError> {
+) -> Result<ProductCodicilV3, TransferError> {
     if manifest.schema != TRANSFER_MANIFEST_SCHEMA {
         return Err(TransferError::InvalidManifest(format!(
             "expected {TRANSFER_MANIFEST_SCHEMA}, found {}",
@@ -705,8 +706,11 @@ pub(crate) fn verify_manifest(
     manifest.selection.verify_integrity()?;
     let actual_schema_ref = schema_ref(&manifest.selection_schema);
     let schema_id = manifest.selection_schema.schema_id.as_str();
-    let supported_schema =
-        schema_id == "graphshell.GraphCodicil/v2" || schema_id == "graphshell.GraphEngram/v1";
+    // Version 3 carries a version-4 scene; version 2 and the engram are read
+    // and their scene converted (dynamics grammar plan, F159).
+    let supported_schema = schema_id == "graphshell.GraphCodicil/v3"
+        || schema_id == "graphshell.GraphCodicil/v2"
+        || schema_id == "graphshell.GraphEngram/v1";
     if actual_schema_ref != manifest.selection.schema || !supported_schema {
         return Err(TransferError::InvalidManifest(
             "selection schema reference does not match its definition".to_string(),
@@ -763,7 +767,7 @@ pub(crate) fn verify_manifest(
     Ok(product)
 }
 
-fn selected_ids(product: &ProductCodicilV2) -> Result<HashSet<Uuid>, TransferError> {
+fn selected_ids(product: &ProductCodicilV3) -> Result<HashSet<Uuid>, TransferError> {
     product
         .graph
         .nodes
@@ -874,9 +878,9 @@ fn require_selected_content_blobs(
 }
 
 fn copied_product(
-    source: &ProductCodicilV2,
+    source: &ProductCodicilV3,
     manifest: &TransferManifestV1,
-) -> Result<(ProductCodicilV2, Vec<TransferredIdV1>), TransferError> {
+) -> Result<(ProductCodicilV3, Vec<TransferredIdV1>), TransferError> {
     let mut donor = Graph::from_snapshot(&source.graph);
     donor.overlay_facets(source.facets.clone());
     let mut copy = Graph::new();
@@ -912,8 +916,9 @@ fn copied_product(
             if copy_excludes_facet(facet.as_str()) {
                 continue;
             }
+            let value = remap_scene_facet(facet.as_str(), value, &id_by_source);
             copied_facets
-                .set(destination_id, facet.clone(), value.clone(), &AcceptAll)
+                .set(destination_id, facet.clone(), value, &AcceptAll)
                 .expect("AcceptAll cannot reject a copied facet");
         }
     }
@@ -933,7 +938,7 @@ fn copied_product(
     snapshot.timestamp_secs = source.graph.timestamp_secs;
 
     Ok((
-        ProductCodicilV2 {
+        ProductCodicilV3 {
             schema: source.schema.clone(),
             scope: source.scope,
             exported_at_ms: source.exported_at_ms,
@@ -1001,21 +1006,69 @@ fn remap_spec(
     spec
 }
 
-fn remap_scene(scene: &SavedSceneV2, ids: &HashMap<Uuid, Uuid>) -> SavedSceneV2 {
+/// A scene's representations under a copy's new ids; a member the copy
+/// leaves out is dropped.
+fn remap_cartography(
+    cartography: &mere::canvas::CartographyGeometry,
+    remap: &impl Fn(Uuid) -> Option<Uuid>,
+) -> mere::canvas::CartographyGeometry {
+    mere::canvas::CartographyGeometry::from_positions(
+        cartography
+            .iter()
+            .filter_map(|(id, position)| remap(id).map(|new_id| (new_id, position))),
+    )
+    .with_sizes(
+        cartography
+            .size_iter()
+            .filter_map(|(id, size)| remap(id).map(|new_id| (new_id, size))),
+    )
+    .with_size_by_degree(cartography.size_by_degree())
+    .with_size_by_importance(cartography.size_by_importance())
+    .with_importance_metric(cartography.importance_metric())
+    .with_sprites(
+        cartography
+            .sprite_iter()
+            .filter_map(|(id, uri)| remap(id).map(|new_id| (new_id, uri.to_string()))),
+    )
+    .with_sprite_hulls(
+        cartography
+            .sprite_hull_iter()
+            .filter_map(|(id, hull)| remap(id).map(|new_id| (new_id, hull))),
+    )
+    .with_materials(
+        cartography
+            .material_iter()
+            .filter_map(|(id, material)| remap(id).map(|new_id| (new_id, material))),
+    )
+    .with_faces(
+        cartography
+            .face_iter()
+            .filter_map(|(id, face)| remap(id).map(|new_id| (new_id, face.to_string()))),
+    )
+}
+
+/// A version-4 scene under a copy's new ids: the selection, the
+/// representations and the spec's target items (F159).
+fn remap_scene(scene: &SavedSceneV3, ids: &HashMap<Uuid, Uuid>) -> SavedSceneV3 {
     let remap = |id: Uuid| ids.get(&id).copied();
-    SavedSceneV2 {
+    SavedSceneV3 {
         name: scene.name.clone(),
         selected: scene.selected.iter().filter_map(|id| remap(*id)).collect(),
-        layout_strategy: scene.layout_strategy.clone(),
         physics_paused: scene.physics_paused,
-        physics_damping: scene.physics_damping,
-        physics_law: scene.physics_law.clone(),
-        physics_overlays: scene.physics_overlays.clone(),
-        physics_kind_source: scene.physics_kind_source.clone(),
-        physics_group_source: scene.physics_group_source.clone(),
-        physics_mass_source: scene.physics_mass_source.clone(),
-        physics_depth_source: scene.physics_depth_source.clone(),
-        arrangement_pull: scene.arrangement_pull,
+        dynamics: remap_dynamics(&scene.dynamics, &remap),
+        camera_offset: scene.camera_offset,
+        camera_zoom: scene.camera_zoom,
+        default_handler: scene.default_handler.clone(),
+        cartography: remap_cartography(&scene.cartography, &remap),
+    }
+}
+
+/// A version-3 or version-2 scene facet a copied node carries, under the
+/// copy's new ids, kept in its own version (F159).
+fn remap_scene_v2(scene: &SavedSceneV2, ids: &HashMap<Uuid, Uuid>) -> SavedSceneV2 {
+    let remap = |id: Uuid| ids.get(&id).copied();
+    SavedSceneV2 {
+        selected: scene.selected.iter().filter_map(|id| remap(*id)).collect(),
         arrangement_roles: scene.arrangement_roles.as_ref().map(|roles| {
             crate::product::SavedRolesV1 {
                 items: roles
@@ -1030,49 +1083,30 @@ fn remap_scene(scene: &SavedSceneV2, ids: &HashMap<Uuid, Uuid>) -> SavedSceneV2 
             .dynamics
             .as_ref()
             .map(|dynamics| remap_dynamics(dynamics, &remap)),
-        camera_offset: scene.camera_offset,
-        camera_zoom: scene.camera_zoom,
-        default_handler: scene.default_handler.clone(),
-        cartography: mere::canvas::CartographyGeometry::from_positions(
-            scene
-                .cartography
-                .iter()
-                .filter_map(|(id, position)| remap(id).map(|new_id| (new_id, position))),
-        )
-        .with_sizes(
-            scene
-                .cartography
-                .size_iter()
-                .filter_map(|(id, size)| remap(id).map(|new_id| (new_id, size))),
-        )
-        .with_size_by_degree(scene.cartography.size_by_degree())
-        .with_size_by_importance(scene.cartography.size_by_importance())
-        .with_importance_metric(scene.cartography.importance_metric())
-        .with_sprites(
-            scene
-                .cartography
-                .sprite_iter()
-                .filter_map(|(id, uri)| remap(id).map(|new_id| (new_id, uri.to_string()))),
-        )
-        .with_sprite_hulls(
-            scene
-                .cartography
-                .sprite_hull_iter()
-                .filter_map(|(id, hull)| remap(id).map(|new_id| (new_id, hull))),
-        )
-        .with_materials(
-            scene
-                .cartography
-                .material_iter()
-                .filter_map(|(id, material)| remap(id).map(|new_id| (new_id, material))),
-        )
-        .with_faces(
-            scene
-                .cartography
-                .face_iter()
-                .filter_map(|(id, face)| remap(id).map(|new_id| (new_id, face.to_string()))),
-        ),
+        cartography: remap_cartography(&scene.cartography, &remap),
+        ..scene.clone()
     }
+}
+
+/// A copied node's facet: a saved scene under the copy's new ids, anything
+/// else as it was. A scene this reader cannot read is copied unchanged.
+fn remap_scene_facet(
+    facet: &str,
+    value: &serde_json::Value,
+    ids: &HashMap<Uuid, Uuid>,
+) -> serde_json::Value {
+    let remapped = if facet == SAVED_SCENE_FACET {
+        serde_json::from_value::<SavedSceneV3>(value.clone())
+            .ok()
+            .and_then(|scene| serde_json::to_value(remap_scene(&scene, ids)).ok())
+    } else if facet == SAVED_SCENE_FACET_V3 || facet == SAVED_SCENE_FACET_V2 {
+        serde_json::from_value::<SavedSceneV2>(value.clone())
+            .ok()
+            .and_then(|scene| serde_json::to_value(remap_scene_v2(&scene, ids)).ok())
+    } else {
+        None
+    };
+    remapped.unwrap_or_else(|| value.clone())
 }
 
 fn attach_transfer_content<B: Backend>(
@@ -1738,5 +1772,91 @@ mod tests {
         assert_eq!(items.len(), 1, "an item the copy leaves out is dropped");
         assert_eq!(items.get(&minted.to_string()), Some(&Role::Pinned));
         assert_eq!(copied.root, spec.root, "the rest is carried as it is");
+    }
+
+    /// F159: a copied node's saved scene, version 4 or earlier, has its
+    /// selection, representations and item roles under the copy's new ids;
+    /// any other facet is copied as it was.
+    #[test]
+    fn a_copied_scene_facet_is_remapped() {
+        use mere::canvas::Role;
+        use mere::canvas::dynamics_spec::{DynamicsSpec, Node, Target};
+        let (kept, minted) = (Uuid::from_u128(1), Uuid::from_u128(3));
+        let ids = HashMap::from([(kept, minted)]);
+        let mut spec = DynamicsSpec::new(Node::preset("spring.rapier"));
+        spec.target = Some(Target {
+            arrangement: "grid.default".into(),
+            anchored_pull: 12.0,
+            default_role: Role::Seeded,
+            groups: None,
+            items: [(kept.to_string(), Role::Pinned)].into_iter().collect(),
+        });
+        let v4 = SavedSceneV3 {
+            name: "copied".into(),
+            selected: vec![kept],
+            physics_paused: false,
+            dynamics: crate::product::SavedDynamics::from_spec(&spec),
+            camera_offset: (0.0, 0.0),
+            camera_zoom: 1.0,
+            default_handler: "system.default".into(),
+            cartography: mere::canvas::CartographyGeometry::from_positions([(kept, (1.0, 2.0))]),
+        };
+        let value = serde_json::to_value(&v4).unwrap();
+        let copied: SavedSceneV3 =
+            serde_json::from_value(remap_scene_facet(SAVED_SCENE_FACET, &value, &ids)).unwrap();
+        assert_eq!(copied.selected, vec![minted]);
+        assert_eq!(
+            copied
+                .cartography
+                .iter()
+                .map(|(id, _)| id)
+                .collect::<Vec<_>>(),
+            vec![minted]
+        );
+        assert_eq!(
+            copied
+                .dynamics
+                .spec()
+                .unwrap()
+                .target
+                .unwrap()
+                .items
+                .keys()
+                .collect::<Vec<_>>(),
+            vec![&minted.to_string()]
+        );
+        let mut v3 = serde_json::json!({
+            "name": "flat",
+            "selected": [kept],
+            "layout_strategy": "grid.default",
+            "physics_paused": true,
+            "physics_damping": 0.7,
+            "arrangement_pull": 0.4,
+            "arrangement_roles": { "default": "seeded", "items": { kept.to_string(): "pinned" } },
+            "camera_offset": [0.0, 0.0],
+            "camera_zoom": 1.0,
+            "default_handler": "system.default",
+            "cartography": mere::canvas::CartographyGeometry::default(),
+        });
+        let copied: SavedSceneV2 =
+            serde_json::from_value(remap_scene_facet(SAVED_SCENE_FACET_V3, &v3, &ids)).unwrap();
+        assert_eq!(copied.selected, vec![minted]);
+        assert_eq!(
+            copied
+                .arrangement_roles
+                .unwrap()
+                .items
+                .keys()
+                .collect::<Vec<_>>(),
+            vec![&minted]
+        );
+        v3["selected"] = serde_json::json!("not a scene");
+        assert_eq!(
+            remap_scene_facet(SAVED_SCENE_FACET_V3, &v3, &ids),
+            v3,
+            "a scene this reader cannot read is copied unchanged"
+        );
+        let other = serde_json::json!({ "selected": [kept] });
+        assert_eq!(remap_scene_facet("example.notes/v1", &other, &ids), other);
     }
 }
