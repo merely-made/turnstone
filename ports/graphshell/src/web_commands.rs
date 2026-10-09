@@ -86,6 +86,7 @@ pub(super) fn page_commands() -> CommandSet {
             "projection",
         ),
         ("projection-grid", "Projection: grid", "projection"),
+        ("compare-projection", "Compare arrangements", "projection"),
         (
             "projection-scatter",
             "Projection: order by tempo",

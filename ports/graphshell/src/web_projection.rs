@@ -18,7 +18,10 @@ use graphshell::projection_compile::{
     default_definition, practice_compiler,
 };
 use graphshell::product::{PROJECTION_EDITOR_VIA, kept_summary};
-use graphshell::projection_editor::{EditorAction, ProjectionEditor, ProjectionPanel};
+use graphshell::projection_compare::{
+    Comparison, FACET_AXIS_ADAPTER, FACET_CELL_ADAPTER, FacetLayout, compare_arrangements,
+};
+use graphshell::projection_editor::{EditorAction, ProjectionEditor, ProjectionPanel, with_kind};
 use netrender::Scene;
 use sceno::InstanceId;
 
@@ -43,6 +46,12 @@ pub(super) struct LiveProjection {
     fields: [String; 2],
     solves: u64,
     placement_reuses: u64,
+    /// The preview shows the comparison grid instead of the projection
+    /// (Scenograph editor plan, SE80).
+    comparing: bool,
+    comparison: Option<Comparison>,
+    /// The draft's arrangement kind, for the scenario lane.
+    arrangement: String,
 }
 
 #[derive(Clone)]
@@ -103,6 +112,9 @@ impl BrowserHost {
                     fields: [String::new(), String::new()],
                     solves: 1,
                     placement_reuses: 0,
+                    comparing: false,
+                    comparison: None,
+                    arrangement: String::new(),
                 });
                 self.projection_editor_open = true;
                 self.detail_open = false;
@@ -120,6 +132,7 @@ impl BrowserHost {
         };
         let draft = self.projection_editor.draft();
         live.title = draft.appearance.title.clone();
+        live.arrangement = draft.arrangement.kind.clone();
         let channel_name = |channel: &graphshell::projection_editor::Channel| match channel {
             graphshell::projection_editor::Channel::Field(name)
             | graphshell::projection_editor::Channel::Constant(name) => name.clone(),
@@ -184,6 +197,74 @@ impl BrowserHost {
             let _ = container
                 .set_attribute("data-placement-reuses", &live.placement_reuses.to_string());
         }
+        self.refresh_projection_comparison();
+    }
+
+    /// Show or hide the comparison grid in the preview (SE80).
+    pub(super) fn toggle_projection_compare(&mut self) {
+        let Some(live) = &mut self.live_projection else {
+            return;
+        };
+        live.comparing = !live.comparing;
+        live.dirty = true;
+        self.refresh_projection_comparison();
+        self.projection_editor_open = true;
+        self.chrome_dirty = true;
+    }
+
+    /// Rebuild the grid from the working draft, when it is showing.
+    fn refresh_projection_comparison(&mut self) {
+        let draft = self.projection_editor.draft().clone();
+        let Some(live) = &mut self.live_projection else {
+            return;
+        };
+        if !live.comparing {
+            live.comparison = None;
+            return;
+        }
+        let layout = FacetLayout {
+            cell: sceno::Size2::new(220.0, 150.0),
+            gap: 16.0,
+            heading: 28.0,
+        };
+        match compare_arrangements(&draft, &live.dataset, live.selected.as_deref(), &layout) {
+            Ok(comparison) => live.comparison = Some(comparison),
+            Err(error) => {
+                live.comparison = None;
+                live.error = error;
+            },
+        }
+        live.dirty = true;
+    }
+
+    /// Picking a cell applies its family to the draft as one undo step
+    /// (SE81); the working cell is already the draft.
+    pub(super) fn pick_projection_compare(&mut self, swatch_id: &str) {
+        let Some(family) = self
+            .live_projection
+            .as_ref()
+            .and_then(|live| live.comparison.as_ref())
+            .and_then(|comparison| {
+                comparison
+                    .cells
+                    .iter()
+                    .find(|cell| cell.swatch_id == swatch_id && !cell.working)
+            })
+            .map(|cell| cell.family.clone())
+        else {
+            return;
+        };
+        let arrangement = with_kind(
+            &self.projection_editor.draft().arrangement,
+            &family,
+            practice_compiler().registry(),
+        );
+        self.projection_editor
+            .reduce(EditorAction::SetArrangement(arrangement), now_ms());
+        self.projection_editor.break_run();
+        self.recompile_projection();
+        self.projection_editor_status = format!("Arrangement · {family} (from the comparison)");
+        self.chrome_dirty = true;
     }
 
     pub(super) fn projection_arrangement(&mut self, id: &str) {
@@ -208,6 +289,7 @@ impl BrowserHost {
         live.selected = Some(occurrence.into());
         live.dirty = true;
         self.chrome_dirty = true;
+        self.refresh_projection_comparison();
     }
 
     pub(super) fn save_live_projection(&mut self) {
@@ -393,7 +475,9 @@ impl LiveProjection {
             left + spatial_w + 20.0
         };
         let list_y = if stacked { 165.0 + spatial_h } else { 170.0 };
-        if let Some(compiled) = &self.compiled {
+        if let (true, Some(comparison)) = (self.comparing, &self.comparison) {
+            self.compare_targets(comparison.clone(), left, available, height as f32);
+        } else if let Some(compiled) = &self.compiled {
             let bounds = compiled.scene.bounds;
             let scale = ((spatial_w - 24.0) / bounds.size.w.max(1.0))
                 .min((spatial_h - 24.0) / bounds.size.h.max(1.0))
@@ -492,6 +576,118 @@ impl LiveProjection {
         Ok(self.scene.clone())
     }
 
+    /// The comparison grid as cards: a frame per cell (its heading in the
+    /// title) and its items inside, scaled to the preview's space.
+    fn compare_targets(&mut self, comparison: Comparison, left: f32, available: f32, height: f32) {
+        let scene = &comparison.scene;
+        let bounds = scene.bounds;
+        // Headings keep a readable size however small the grid draws: a
+        // margin for row labels, and a strip above the columns.
+        let row_margin = if comparison.facet.rows.is_some() {
+            64.0
+        } else {
+            0.0
+        };
+        let left = left + row_margin;
+        let available = available - row_margin;
+        let scale = ((available - 24.0) / bounds.size.w.max(1.0))
+            .min((height - 200.0).max(160.0) / bounds.size.h.max(1.0))
+            .min(1.0);
+        let place = |x: f32, y: f32, w: f32, h: f32| {
+            [
+                left + 12.0 + (x - bounds.origin.x) * scale,
+                160.0 + (y - bounds.origin.y) * scale,
+                w * scale,
+                h * scale,
+            ]
+        };
+        let row_label = |row: usize| {
+            comparison
+                .facet
+                .rows
+                .as_ref()
+                .and_then(|axis| axis.labels.get(row).cloned())
+        };
+        for item in &scene.items {
+            let source = &scene.sources[item.source.0 as usize];
+            let Some(footprint) = item.footprint.bounds() else {
+                continue;
+            };
+            let world = scene
+                .to_world(item.space)
+                .unwrap_or(sceno::Transform2::IDENTITY)
+                .then(&item.transform);
+            let rect = place(
+                world.translate.x + footprint.origin.x * world.scale,
+                world.translate.y + footprint.origin.y * world.scale,
+                footprint.size.w * world.scale,
+                footprint.size.h * world.scale,
+            );
+            if source.adapter == FACET_AXIS_ADAPTER {
+                // Headings name the columns and rows, outside the cells.
+                let label = source
+                    .id
+                    .split_once(':')
+                    .and_then(|(axis, index)| {
+                        let index: usize = index.parse().ok()?;
+                        match axis {
+                            "columns" => comparison.facet.columns.labels.get(index).cloned(),
+                            "rows" => row_label(index),
+                            _ => None,
+                        }
+                    })
+                    .unwrap_or_default();
+                let [x, y, w, h] = rect;
+                let rect = if source.id.starts_with("rows:") {
+                    [x - row_margin, y, row_margin - 6.0 + w, h.max(18.0)]
+                } else {
+                    [x, y + h - 18.0, w, 18.0]
+                };
+                self.targets.push(Target {
+                    occurrence: source.id.clone(),
+                    view: "compare-heading",
+                    label,
+                    detail: String::new(),
+                    rect,
+                    selected: false,
+                });
+                continue;
+            }
+            if source.adapter == FACET_CELL_ADAPTER {
+                let Some(cell) = comparison.cells.iter().find(|c| c.swatch_id == source.id) else {
+                    continue;
+                };
+                let label = match (cell.working, row_label(cell.row)) {
+                    (true, Some(row)) => format!("{} (working) · {row}", cell.family),
+                    (true, None) => format!("{} (working)", cell.family),
+                    (false, Some(row)) => format!("{} · {row}", cell.family),
+                    (false, None) => cell.family.clone(),
+                };
+                self.targets.push(Target {
+                    occurrence: cell.swatch_id.clone(),
+                    view: "compare",
+                    label,
+                    detail: if cell.working {
+                        "Your draft".into()
+                    } else {
+                        "Pick to apply".into()
+                    },
+                    rect,
+                    selected: cell.working,
+                });
+            } else {
+                self.targets.push(Target {
+                    occurrence: format!("{}:{}", source.adapter, source.id),
+                    view: "compare-item",
+                    label: String::new(),
+                    detail: String::new(),
+                    rect,
+                    selected: false,
+                });
+            }
+        }
+    }
+
     fn sync_semantics(&self) -> Result<(), String> {
         let document = document()?;
         let container = element("projection-live")?;
@@ -499,18 +695,37 @@ impl LiveProjection {
             .remove_attribute("hidden")
             .map_err(|_| "Could not expose preview")?;
         // Keep the actual focused button alive across selection changes.
-        let expected = self.targets.len().to_string();
+        let pressable: Vec<&Target> = self
+            .targets
+            .iter()
+            .filter(|target| !matches!(target.view, "compare-item" | "compare-heading"))
+            .collect();
+        // Rebuild when the set of targets changes, not only their number: a
+        // picked comparison cell renames cells while their count holds.
+        let expected = pressable
+            .iter()
+            .fold(0xcbf2_9ce4_8422_2325u64, |hash, target| {
+                target_id(target).bytes().fold(hash, |h, b| {
+                    (h ^ u64::from(b)).wrapping_mul(0x0000_0100_0000_01b3)
+                })
+            })
+            .to_string();
         if container.get_attribute("data-target-count").as_deref() != Some(&expected) {
             container.set_text_content(None);
-            for target in &self.targets {
+            for target in &pressable {
                 let button = document
                     .create_element("button")
                     .map_err(|_| "Could not create preview target")?;
                 button
                     .set_attribute("type", "button")
                     .map_err(|_| "Target type")?;
+                let pick = if target.view == "compare" {
+                    "data-projection-compare-cell"
+                } else {
+                    "data-projection-occurrence"
+                };
                 button
-                    .set_attribute("data-projection-occurrence", &target.occurrence)
+                    .set_attribute(pick, &target.occurrence)
                     .map_err(|_| "Target occurrence")?;
                 button
                     .set_attribute("data-projection-view", target.view)
@@ -526,7 +741,7 @@ impl LiveProjection {
                 .set_attribute("data-target-count", &expected)
                 .map_err(|_| "Target count")?;
         }
-        for target in &self.targets {
+        for target in &pressable {
             let button = element(&target_id(target))?;
             button.set_text_content(Some(&format!("{} · {}", target.label, target.detail)));
             button
@@ -574,6 +789,25 @@ impl LiveProjection {
                 "data-projection-occurrences",
                 self.dataset.occurrences.len().to_string(),
             ),
+            (
+                "data-projection-compare",
+                if self.comparing { "on" } else { "off" }.to_string(),
+            ),
+            (
+                "data-projection-compare-cells",
+                self.comparison
+                    .as_ref()
+                    .map_or(0, |comparison| comparison.cells.len())
+                    .to_string(),
+            ),
+            (
+                "data-projection-compare-refused",
+                self.comparison
+                    .as_ref()
+                    .map_or(0, |comparison| comparison.refused.len())
+                    .to_string(),
+            ),
+            ("data-projection-arrangement", self.arrangement.clone()),
         ] {
             body.set_attribute(name, &value)
                 .map_err(|_| "Preview state")?;
@@ -613,20 +847,29 @@ fn paint(
                 .iter()
                 .map(|target| {
                     let [x, y, w, h] = target.rect;
+                    // A comparison cell's name is its headings'; its button
+                    // keeps the full label for the accessibility tree.
+                    let (title, detail) = match target.view {
+                        "compare" | "compare-item" => (String::new(), String::new()),
+                        _ => (target.label.clone(), target.detail.clone()),
+                    };
                     Box::new(
                         el(
                             "div",
                             (
-                                el("div", text(target.label.clone())).attr("class", "card-title"),
-                                el("div", text(target.detail.clone())).attr("class", "card-detail"),
+                                el("div", text(title)).attr("class", "card-title"),
+                                el("div", text(detail)).attr("class", "card-detail"),
                             ),
                         )
                         .attr(
                             "class",
-                            if target.selected {
-                                "preview-card selected"
-                            } else {
-                                "preview-card"
+                            match (target.view, target.selected) {
+                                ("compare", true) => "preview-card compare-cell selected",
+                                ("compare", false) => "preview-card compare-cell",
+                                ("compare-item", _) => "preview-card compare-item",
+                                ("compare-heading", _) => "preview-card compare-heading",
+                                (_, true) => "preview-card selected",
+                                (_, false) => "preview-card",
                             },
                         )
                         .attr(
@@ -656,6 +899,11 @@ fn paint(
       .preview-card {{ position:absolute; box-sizing:border-box; background-color:#172a35; border:1px solid #385565; border-radius:6px; padding:9px; overflow:hidden; }}
       .preview-card.selected {{ background-color:#304953; border:2px solid #f0c674; }}
       .card-title {{ font-size:15px; color:#f0dfb8; }}
+      .compare-cell {{ background-color:transparent; padding:4px; }}
+      .compare-cell .card-title {{ font-size:12px; }}
+      .compare-item {{ padding:0; border-radius:3px; }}
+      .compare-heading {{ background-color:transparent; border:none; padding:2px; }}
+      .compare-heading .card-title {{ font-size:12px; color:#c9d6db; }}
       .card-detail {{ font-size:10px; color:#a2bac5; margin-top:7px; }}
     "#,
         width.saturating_sub(335)

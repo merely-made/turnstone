@@ -13,8 +13,10 @@
 use scenograph::swatch::{
     Axis, AxisKind, AxisScale, Facet, FacetCell, Followed, Scope, Swatch, SwatchMode,
 };
-use scenomise::catalog::FAMILIES;
-use scenomise::facet::{FacetLayout, compose_facet};
+use scenomise::catalog::{FAMILIES, Family};
+use scenomise::facet::compose_facet;
+// The page draws the grid from these.
+pub use scenomise::facet::{FACET_AXIS_ADAPTER, FACET_CELL_ADAPTER, FacetLayout};
 
 use crate::projection_compile::{ProjectionDataset, practice_compiler};
 use crate::projection_editor::{ProjectionDraft, with_kind};
@@ -56,11 +58,13 @@ pub fn compare_arrangements(
     let compiler = practice_compiler();
     let working_kind = draft.arrangement.kind.clone();
     let mut families = vec![working_kind.clone()];
+    // An alias (`grid.default`) names the same family as its id (`grid`).
+    let working_family = Family::resolve(&working_kind);
     families.extend(
         FAMILIES
             .iter()
-            .map(|family| family.id().to_string())
-            .filter(|id| id != &working_kind),
+            .filter(|family| Some(**family) != working_family)
+            .map(|family| family.id().to_string()),
     );
     let selection: Option<ProjectionDataset> = selected.map(|id| {
         let mut subset = dataset.clone();
@@ -250,6 +254,16 @@ mod tests {
     }
 
     #[test]
+    fn an_alias_working_kind_is_not_shown_twice() {
+        let (mut draft, dataset) = draft_for_tests();
+        draft.arrangement.kind = "grid.default".into();
+        let comparison = compare_arrangements(&draft, &dataset, None, &FacetLayout::default())
+            .expect("compares");
+        assert_eq!(comparison.cells[0].family, "grid.default");
+        assert!(!comparison.cells.iter().any(|cell| cell.family == "grid"));
+    }
+
+    #[test]
     fn a_selection_adds_a_row_over_that_occurrence() {
         let (draft, dataset) = draft_for_tests();
         let first = dataset.occurrences[0].occurrence_id.clone();
@@ -265,5 +279,70 @@ mod tests {
             .find(|cell| cell.row == 1)
             .expect("a selected cell");
         assert_eq!(selected.swatch.scope, Scope::Selection(vec![first]));
+    }
+
+    #[test]
+    fn every_compiled_cell_keeps_its_cards_inside_its_frame() {
+        use sceno::{ProjectedItem, Rect, Representation, Size2, Vec2};
+        let (draft, dataset) = draft_for_tests();
+        let first = dataset.occurrences[0].occurrence_id.clone();
+        let comparison =
+            compare_arrangements(&draft, &dataset, Some(&first), &FacetLayout::default())
+                .expect("compares");
+        let scene = &comparison.scene;
+        let world_rect = |item: &ProjectedItem| {
+            let world = scene.to_world(item.space).unwrap().then(&item.transform);
+            let local = item.footprint.bounds().unwrap();
+            Rect::new(
+                Vec2::new(
+                    world.translate.x + local.origin.x * world.scale,
+                    world.translate.y + local.origin.y * world.scale,
+                ),
+                Size2::new(local.size.w * world.scale, local.size.h * world.scale),
+            )
+        };
+        let frames: Vec<_> = scene
+            .items
+            .iter()
+            .filter(|item| {
+                item.representation
+                    == Representation::Open {
+                        kind: "facet.cell".into(),
+                    }
+            })
+            .collect();
+        assert_eq!(frames.len(), comparison.cells.len());
+        for (frame, cell) in frames.iter().zip(&comparison.cells) {
+            let outer = world_rect(frame);
+            // A cell's items sit in spaces under the cell's own space.
+            let cell_space = scene
+                .spaces
+                .iter()
+                .position(|space| {
+                    space.name.as_deref() == Some(&format!("cell: {}", cell.swatch_id))
+                })
+                .expect("the cell's space") as u32;
+            let held = scene.items.iter().filter(|item| {
+                let mut space = Some(item.space);
+                while let Some(id) = space {
+                    if id.0 == cell_space {
+                        return true;
+                    }
+                    space = scene.spaces[id.0 as usize].parent;
+                }
+                false
+            });
+            for item in held {
+                let inner = world_rect(item);
+                assert!(
+                    inner.origin.x >= outer.origin.x - 0.5
+                        && inner.origin.y >= outer.origin.y - 0.5
+                        && inner.origin.x + inner.size.w <= outer.origin.x + outer.size.w + 0.5
+                        && inner.origin.y + inner.size.h <= outer.origin.y + outer.size.h + 0.5,
+                    "{}: a card escapes its frame",
+                    cell.swatch_id
+                );
+            }
+        }
     }
 }

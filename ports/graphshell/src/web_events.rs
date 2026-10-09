@@ -171,6 +171,12 @@ pub(super) fn install_events(state: &Rc<RefCell<BrowserHost>>) -> Result<(), Str
             click_state.borrow_mut().practice_command(&command);
             return;
         }
+        if let Some(cell) = target.get_attribute("data-projection-compare-cell") {
+            let mut host = click_state.borrow_mut();
+            host.pick_projection_compare(&cell);
+            let _ = update_semantics(&mut host);
+            return;
+        }
         if let Some(occurrence) = target.get_attribute("data-projection-occurrence") {
             let mut host = click_state.borrow_mut();
             host.select_projection_occurrence(&occurrence);
@@ -308,6 +314,7 @@ pub(super) fn install_events(state: &Rc<RefCell<BrowserHost>>) -> Result<(), Str
                     || target.has_attribute("data-action-draft-submit")
                     || target.has_attribute("data-projection-field")
                     || target.has_attribute("data-projection-occurrence")
+                    || target.has_attribute("data-projection-compare-cell")
                     || target.has_attribute("data-practice-command")
                     || target.has_attribute("data-projection-option")
             })
