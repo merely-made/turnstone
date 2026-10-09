@@ -311,7 +311,100 @@ The host stream is not currently persisted, so restored graph-watch cursors must
 not be compared with a new zero-based vector index. The proposed contract uses
 explicit ordinals above the restored cursor floor and excludes old generations.
 
-Status: proposed written design awaiting Mark's review. No seventh patch or
-implementation plan has been prepared. The supplier owner's compact live status
+Mark approved the written design on 2026-10-09, then explicitly directed scoped
+continuous execution without further process reviews. That instruction overrides
+the skills' additional plan approval stages. The supplier owner's compact status
 still supplies no final qualified immutable family or integration clearance.
-The six preserved patches remain unapplied and production pins are unchanged.
+
+## Graph-origin implementation plan (2026-10-09)
+
+Execute inline in the existing consumer worktree. Spec: `behaviors.md`, proposed
+graph-origin contract. Produce `journal-origin.patch` after the existing six;
+preserve their bytes, production source and dependency pins. Keep Rust 2024 and
+the shared Linux target; do not build the supplier's active lane.
+
+Ruling: use this existing handoff as plan and ledger, and retain the scratch
+source/test receipt until the immutable-family host gate can run. Mark's scope
+instruction takes precedence over more elaborate skill bookkeeping. One fresh
+source reviewer remains useful for the runtime/authority boundary.
+
+### Task 1: ordered host stream
+
+- [x] Create proposed `src/host_journal.rs`, register in `src/lib.rs`. Define
+  `RuntimeOrigin { graph, session, generation }`, `HostEntry { seq, origin, edit }`
+  and `HostJournal` retaining typed author guards and attributed edits.
+- [x] Test origin distinction for equal IDs, explicit ordinal ordering after a
+  restored cursor floor, foreign-tail filtering, generation replacement, and
+  counter exhaustion. Compile actual proposed module with cached Mere/incipit
+  dependencies using a small `rustc --test` harness; preserve red/green evidence.
+- [x] Interfaces: `allocate_origin(GraphId, Option<SessionId>) -> Result<RuntimeOrigin, JournalError>`;
+  `raise_cursor_floor(u64) -> Result<(), JournalError>`;
+  `record_as(RuntimeOrigin, Author, CapturedDelta) -> Result<u64, JournalError>`;
+  `high_water() -> u64`; `entries() -> &[HostEntry]`; `author()` / `set_author()`;
+  shared stream alias and a graph-owned recorder constructor. Latch capture
+  failure for host diagnostics; never wrap counters.
+
+### Task 2: bind live runtimes and session authority
+
+- [x] In proposed `src/app/runtime_pool.rs`, bind all installed live graphs to
+  the shared stream, with a fresh generation on graph/canvas replacement.
+  Detached adoption setup and refused graphs remain quiet. Keep a session-watch
+  origin in `App`, independent of the compatibility active-graph cursor.
+- [x] Update `src/app/{mod,fixtures,session_lifecycle}.rs`, bootstrap and sample
+  replacement. Restore graph watches and raise cursor floor before capture;
+  install watch origin only after successful setup, clear it before adoption.
+- [x] Draft full-host replacement, scratch/fork silence, stale-generation and
+  two-runtime controls in `src/app/journal_origin_tests.rs`. Their execution
+  requires the qualified family; parser success cannot substitute for it.
+- [x] Interfaces: runtime `origin() -> Option<RuntimeOrigin>` and explicit bind,
+  suspend and canvas replacement seams; `App::behavior_origin()` resolves the
+  loaded authority binding, requiring session/runtime identity and stream health.
+
+### Task 3: guarded delivery and existing consumers
+
+- [x] Update `src/behaviors.rs` to filter host entries by bound origin before
+  Resource projection; use explicit ordinals and acknowledge foreign-only tails.
+  Require the bound graph in the incumbent execution lane before any automatic
+  invocation. Keep watch scopes, trigger wire and read/write admission unchanged.
+- [x] Pin origin across graph/app cascades and clock batches. Stop on session or
+  generation change; never restore an old taken table over newly loaded watches.
+- [x] Update `src/app/{denizen_arms,palette}.rs`, `src/remote_projection.rs` and
+  `src/inspector_view.rs` for the stream type, high-water cursors and origin-filtered
+  label lookup. Retain nested author restoration. Audit every journal use.
+- [x] Add graph/root-watch foreign controls, focus-change and origin projection,
+  no-self-wake, revoked read, nested attribution, restored cursor, and interrupted
+  cascade controls. Run supplier-independent actual-source tests; mark full-host
+  controls uncompiled until the final family gate.
+
+### Task 4: verify, review and checkpoint
+
+- [x] Generate seventh patch from the six-patch source baseline. Apply all seven
+  in an isolated Git index, compare source hashes, parse every changed Rust file,
+  and check whitespace and preserved patch bytes.
+- [x] Run fresh-context read-only source review, resolve important findings with
+  focused regression controls, save `journal-origin-checks.json` and test log.
+- [x] Update existing behavior/handoff/index status and commit only preparation
+  artifacts. Record pending full-host behavior, participant, endpoint, inspector
+  and session qualification against the owner-cleared immutable family.
+
+
+### Graph-origin preparation completion receipt (2026-10-09)
+
+The approved contract is prepared in `journal-origin.patch`, seventh after
+host-persistence. All seven patches apply in an isolated index and 32 combined
+changed Rust files parse. The previous six bytes and production source/pins are
+unchanged. Actual host-stream source passes 15 isolated tests against existing
+compiled Mere/Servitor libraries; five bad-source controls and the reviewed
+execution-exhaustion regression demonstrate failure sensitivity. See
+`docs/compatibility/graph_resources/journal-origin-checks.json` and its test log.
+
+Fresh read-only source review found a drafted test UUID type mismatch and a
+last-ordinal execution-exhaustion gap. Both were fixed; the reviewer verified the
+latter correction. Full-host compilation is pending: the attempted standalone
+runtime-module build stopped at cached Pandect's absent PlacementProfile module.
+Eight new host controls are drafted, but a real session-changing body in all
+three wake tiers and final family suites remain explicit integration gates.
+Direct restore-table tests qualify only the helper, not that complete cascade.
+No production edit, dependency repin, supplier build or chat message occurred.
+The supplier owner is still working; no final immutable integration clearance
+was available in the compact status checked during this continuation.

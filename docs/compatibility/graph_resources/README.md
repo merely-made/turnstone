@@ -10,6 +10,14 @@ pipeline in Turnstone, Knot or Woodshed requires a contribution DTO change.
 `checkpoint-review.json` records this review and committed supplier file hashes.
 This preparation does not merge the supplier or change the family pins.
 
+The 2026-10-09 continuation adds the seventh unapplied `journal-origin.patch`
+after `host-persistence.patch`. Mark approved graph-bound capture and
+session-bound delivery; see [the behavior contract and receipt](behaviors.md#proposed-graph-origin-contract-2026-10-08).
+[Journal checks](journal-origin-checks.json) record seven-patch application,
+32 combined Rust parser checks and 15 isolated actual host-stream tests. Full
+host/resource-aware compilation and real session-changing cascade proof remain
+pending at the qualified immutable family. The previous six patches are preserved.
+
 The Inspector, both Roster gathers, and recycle-label capture now use the
 central `content_tags` reader. At the current pin it reads legacy node tags.
 When Mere exposes its inherent `Graph::node_content_tags` method, Rust method

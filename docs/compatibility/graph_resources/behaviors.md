@@ -84,8 +84,8 @@ originated an entry. Cross-graph wake attribution remains an integration gate.
 
 ## Proposed graph-origin contract (2026-10-08)
 
-Status: written design for Mark's review, not an approved implementation or a
-seventh patch. The six saved patches and production dependency pins are unchanged.
+Status: Mark approved this contract on 2026-10-09 and directed scoped, continuous
+execution. The seventh unapplied patch prepares it; production pins stay unchanged.
 
 ### Purpose and choice
 
@@ -194,6 +194,44 @@ qualified immutable family, compile the full host and run the existing behavior,
 participant admission/run, endpoint, inspector and session suites alongside these
 controls. Isolated helper tests cannot qualify that wiring. Production application
 and repinning remain gated by the owner-cleared Mere family adoption order.
+
+## Graph-origin preparation receipt (2026-10-09)
+
+Apply `journal-origin.patch` seventh, after `host-persistence.patch`. It replaces
+the thread recorder with graph-owned capture carrying graph, session and lifetime
+generation into an ordered host stream. The loaded participant/watch binding is
+independent of focus. Resource projection and inspector labels use that binding;
+automatic execution requires its graph in the incumbent active-canvas lane.
+Graph and app cascades protect replacement watch tables, and clock batches stop
+when their binding changes. Typed author guards and existing capability scopes
+retain their meanings. Sample-canvas replacement also revokes prior placement.
+
+The stream records explicit ordinals and raises its floor above restored graph
+watch cursors. Foreign-only tails advance the scan boundary without providing a
+trigger. A refused saved cursor permits a fresh binding retry. True capture or
+allocation failures disable capture-dependent execution. Source review found and
+fixed an exhaustion boundary after the final possible captured entry; its focused
+regression failed before that fix and passed afterward. A drafted host test's
+GraphDelta UUID field was also corrected against the immutable supplier API.
+
+All seven patches apply in an isolated Git index, the previous six bytes are
+preserved, and all 32 combined changed Rust files parse. The actual proposed
+`host_journal.rs` passes 15 isolated tests with cached Mere and Servitor libraries,
+including real Graph capture and clone silence. Five explicit bad-source controls
+fail for broken origin filtering, sequence floors, generation distinction, table
+restoration and nested authors. The initial missing-API compile failure and the
+pre-fix exhaustion regression are distinguished from those mutation controls in
+`journal-origin-tests.log`; exact source, dependency and artifact hashes are in
+`journal-origin-checks.json`.
+
+An attempted actual runtime-module build stops because cached Pandect does not
+contain `graph_placement::PlacementProfile`. No full-host compilation occurred.
+Eight resource-aware host controls are drafted, including a foreground body with
+a foreign-tail negative control, but remain uncompiled. The direct table-restore
+helper test does not prove interruption by a real session-changing body. That
+graph/app/clock integration control, existing revoked-read and participant suites,
+endpoint/inspector/session controls and final family qualification remain pending.
+The process-local host stream still supplies no durable undrained-edit recovery.
 
 Normalized UTF-8/LF consumer `src/behaviors.rs` SHA-256 used for patch preparation:
 `6201fc7e09c2c882eeb432c8eec9b6d8811697010e74aede7e47772dc863b673`.
