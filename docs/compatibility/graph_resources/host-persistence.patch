@@ -3,7 +3,7 @@ index bba53e4..e037ebf 100644
 --- a/src/app/feed_arms.rs
 +++ b/src/app/feed_arms.rs
 @@ -104,6 +104,7 @@ impl App {
- 
+
      /// Supply the host clock to both W4 behaviors and feed schedules.
      pub fn tick(&mut self, now_ms: u64) -> Vec<Effect> {
 +        if self.session_load_refused() { return Vec::new(); }
@@ -68,7 +68,7 @@ index e68666c..9f8fbed 100644
 +        if !self.session_load_refused() { effects.extend(crate::behaviors::drain(self)); }
          effects
      }
- 
+
 @@ -1323,7 +1330,8 @@ impl App {
                  vec![Effect::SwitchSession { id }]
              }
@@ -94,7 +94,7 @@ index e5549ae..8dcd088 100644
 +++ b/src/app/omnibar_arms.rs
 @@ -254,6 +254,7 @@ impl App {
      }
- 
+
      pub(super) fn open_omnibar(&mut self, command: bool) -> Vec<Effect> {
 +        let command = command || self.session_load_refused();
          let mut effects = self.cancel_smolweb_conversation();
@@ -141,7 +141,7 @@ index 5b5fe2e..57b3229 100644
      pub canvas: Canvas,
 +    pub(crate) persistence: crate::session_persistence::SessionPersistence<pandect::graph_placement::PlacementProfile>,
  }
- 
+
  impl GraphRuntime {
 @@ -38,6 +39,7 @@ impl GraphRuntime {
              graph,
@@ -154,7 +154,7 @@ index 5b5fe2e..57b3229 100644
 @@ -66,6 +68,27 @@ impl GraphRuntimePool {
          }
      }
- 
+
 +    pub(crate) fn active_persistence(&self) -> &crate::session_persistence::SessionPersistence<pandect::graph_placement::PlacementProfile> {
 +        &self.runtimes.get(&self.active).expect("active runtime").persistence
 +    }
@@ -207,7 +207,7 @@ index fac2710..99f8408 100644
              return Vec::new();
          }
 @@ -375,6 +379,13 @@ impl App {
- 
+
          // Mint the fork's session: manifest with the parent back-reference,
          // then its on-disk state, so the switch below adopts a real session.
 +        let fork_placement = donor_placement;
@@ -318,7 +318,7 @@ index fac2710..99f8408 100644
 @@ -1315,6 +1357,26 @@ impl App {
          effects
      }
- 
+
 +    pub(crate) fn session_load_refused(&self) -> bool {
 +        matches!(self.graph_runtimes.active_persistence(), crate::session_persistence::SessionPersistence::Refused { .. })
 +    }
@@ -654,7 +654,7 @@ index 20a351a..dc2bd90 100644
 @@ -426,22 +432,27 @@ impl FeedSubscriptions {
          Some(merge)
      }
- 
+
 +    /// Compatibility for an unambiguous address. A URL cannot choose among
 +    /// different GUID entries, even when they describe the same resource.
      pub fn bind_entry(&mut self, source: Uuid, url: &str, member: Uuid) {
@@ -678,7 +678,7 @@ index 20a351a..dc2bd90 100644
 +            subscription.entries.get_mut(&identities[0]).expect("selected entry").member = Some(member);
          }
      }
- 
+
 +    /// Bind the exact entry that was projected, rather than the first URL match.
 +    pub(crate) fn bind_projected_entry(&mut self, source: Uuid, entry: &FeedEntry, member: Uuid) -> bool {
 +        let identity = entry_identity(entry);
@@ -706,7 +706,7 @@ index 20a351a..dc2bd90 100644
 @@ -935,6 +945,95 @@ mod tests {
          assert_eq!(json.entries[0].url, rss.entries[0].url);
      }
- 
+
 +    #[test]
 +    fn unchanged_unbound_entry_gets_an_explicit_view_without_adopting_a_sibling() {
 +        let source = Uuid::new_v4();
@@ -806,7 +806,7 @@ index 20a351a..dc2bd90 100644
 +        feeds.bind_entry(source, "gemini://capsule.test/one", Uuid::new_v4());
          assert!(feeds.merge(source, parsed, 20).unwrap().entries.is_empty());
          feeds.save(dir.path()).unwrap();
- 
+
 diff --git a/src/lib.rs b/src/lib.rs
 index d542497..44bec1f 100644
 --- a/src/lib.rs
@@ -879,7 +879,7 @@ index cd9d32e..13d87b8 100644
 @@ -149,6 +149,16 @@ impl RedshankHost {
          Self::open_with(session_dir, output, Some(fetch))
      }
- 
+
 +    /// Configure playback without opening a session store or runtime. Refused
 +    /// sessions keep this configuration so the next successful reopen recovers.
 +    pub(crate) fn detached(output: Output, fetch: Arc<dyn Fetch>) -> Self {
@@ -923,7 +923,7 @@ index 9b8ce3f..18a4e98 100644
 @@ -579,73 +579,58 @@ pub fn migrate_flat_layout(data_root: &Path, store: &mut ManifestStore) -> Optio
      Some(id)
  }
- 
+
 -/// Restore the persisted session graph, if one exists. Logs and returns
 -/// `None` on a load failure (the host starts fresh rather than dying on a
 -/// corrupt file).
@@ -1044,7 +1044,7 @@ index 9b8ce3f..18a4e98 100644
 +        Err(error) => { tracing::warn!(%error, "session graph load refused"); None }
      }
  }
- 
+
 @@ -662,7 +647,7 @@ pub fn load_session_graph(data_root: &Path) -> Option<Graph> {
  fn externalize_legacy_images(
      snapshot: &mut mere::kernel::persistence::GraphSnapshot,
@@ -1052,7 +1052,7 @@ index 9b8ce3f..18a4e98 100644
 -) -> usize {
 +) -> std::io::Result<usize> {
      use mere::kernel::types::{ImageRef, ImageRole};
- 
+
      let mut written = 0usize;
 @@ -674,7 +659,7 @@ fn externalize_legacy_images(
                  node.legacy_thumbnail_width,
@@ -1079,12 +1079,12 @@ index 9b8ce3f..18a4e98 100644
 -    written
 +    Ok(written)
  }
- 
+
  /// Encode decoded straight-alpha RGBA8 pixels into the one durable image
 @@ -734,19 +719,6 @@ pub fn save_session_graph(data_root: &Path, graph: &Graph) {
      }
  }
- 
+
 -/// Re-save a loaded input with exactly its declared placement. Absence remains
 -/// unqualified; neither resource columns nor successful load mint a profile.
 -fn save_loaded_session_graph(
@@ -1132,12 +1132,12 @@ index 9b8ce3f..18a4e98 100644
      }
 +    std::fs::write(path, bytes)
  }
- 
+
  /// Read one image blob back, or `None` when it is absent (swept, not yet
 @@ -994,6 +967,46 @@ mod tests {
          recorded
      }
- 
+
 +    #[test]
 +    fn session_profile_corrupt_facets_preserve_graph_labels_and_deposit_no_images() {
 +        let root = tempfile::tempdir().unwrap();
@@ -1563,7 +1563,7 @@ index 2482854..39fa053 100644
 -            crate::recycle::spawn_bin(bin_wake, crate::recycle::bin_dir(&app.session_dir()));
 +            crate::recycle::spawn_bin_for_session(bin_wake,
 +                (!app.session_load_refused()).then(|| crate::recycle::bin_dir(&app.session_dir())));
- 
+
          // The trail-memory actor over THIS session's memory store (search
          // wiring W1 + W2): browsing capture in, recall answers out, behind
 @@ -837,9 +838,9 @@ impl Shell {
@@ -1577,7 +1577,7 @@ index 2482854..39fa053 100644
 +            (!app.session_load_refused()).then(|| crate::trail_memory::memory_dir(&app.session_dir())),
              capture_library.clone(),
          );
- 
+
 @@ -930,11 +931,16 @@ impl Shell {
                  redshank_docks.clone(),
              ))

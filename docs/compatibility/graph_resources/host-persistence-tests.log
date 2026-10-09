@@ -1,10 +1,10 @@
 PERSISTENCE GREEN
 
 running 6 tests
-test tests::failed_facets_prevent_graph_write_and_graph_failure_is_returned ... ok
 test tests::graph_replacement_clears_qualification_but_cannot_clear_refusal ... ok
 test tests::ordinary_save_keeps_optional_placement_and_writes_facets_first ... ok
 test tests::refused_unbound_and_wrong_destination_write_nothing ... ok
+test tests::failed_facets_prevent_graph_write_and_graph_failure_is_returned ... ok
 test tests::facet_write_failure_preserves_actual_graph_bytes_and_evidence_retry ... ok
 test tests::interrupted_replacement_is_not_a_fresh_writable_session ... ok
 
@@ -16,9 +16,9 @@ FEED GREEN
 running 8 tests
 test feed::tests::guid_identity_survives_an_enclosure_or_link_change ... ok
 test feed::tests::gemtext_feed_preserves_relative_urls_dates_and_dedupes ... ok
-test feed::tests::podcast_facts_resolve_against_the_caller_base_and_guid_wins_deduplication ... ok
-test feed::tests::separate_guid_entries_with_one_url_keep_distinct_bindings ... ok
 test feed::tests::rss_and_json_feed_share_the_entry_shape ... ok
+test feed::tests::separate_guid_entries_with_one_url_keep_distinct_bindings ... ok
+test feed::tests::podcast_facts_resolve_against_the_caller_base_and_guid_wins_deduplication ... ok
 test feed::tests::unchanged_unbound_entry_gets_an_explicit_view_without_adopting_a_sibling ... ok
 test feed::tests::schedule_survives_restart_and_suppresses_unchanged_entries ... ok
 test feed::tests::unread_entry_missing_binding_retains_status_through_restart_and_repair ... ok
@@ -31,14 +31,14 @@ REDSHANK GREEN
 running 10 tests
 test redshank_host::tests::another_items_note_loads_paused_at_zero_and_holds_saved_progress ... ok
 test redshank_host::tests::capturing_cancels_a_pending_open_and_compact_projection_keeps_its_warning ... ok
-test redshank_host::tests::missing_replacement_note_cancels_the_old_deferred_open_and_span ... ok
-test redshank_host::tests::new_transport_supersedes_an_unacknowledged_note_seek_when_delivery_succeeds ... ok
+test redshank_host::tests::aligned_points_require_the_loaded_digest_and_never_remap_span_ends ... ok
 test redshank_host::tests::refused_replacement_and_failed_runtime_dispatch_keep_the_progress_hold ... ok
 test redshank_host::tests::note_opens_require_ready_matching_receipts_or_explicit_approximation ... ok
 test redshank_host::tests::suspended_host_keeps_output_and_fetch_without_opening_storage ... ok
-test redshank_host::tests::only_the_latest_seek_acknowledgement_releases_saved_progress ... ok
-test redshank_host::tests::aligned_points_require_the_loaded_digest_and_never_remap_span_ends ... ok
 test redshank_host::tests::the_shells_fetch_handle_survives_a_session_reopen ... ok
+test redshank_host::tests::new_transport_supersedes_an_unacknowledged_note_seek_when_delivery_succeeds ... ok
+test redshank_host::tests::missing_replacement_note_cancels_the_old_deferred_open_and_span ... ok
+test redshank_host::tests::only_the_latest_seek_acknowledgement_releases_saved_progress ... ok
 
 test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 
@@ -248,4 +248,3 @@ failures:
     redshank_host::tests::suspended_host_keeps_output_and_fetch_without_opening_storage
 
 test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 9 filtered out; finished in 0.00s
-

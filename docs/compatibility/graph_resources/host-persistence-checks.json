@@ -1,6 +1,6 @@
 {
-  "reviewed_at": "2026-10-09T03:04:38.159620+00:00",
-  "consumer_baseline": "64d0221f4fd63a85ec540a2a649569a39a3347a0",
+  "reviewed_at": "2026-10-09T03:05:25.878619+00:00",
+  "consumer_baseline": "187091e1aad4b0445e2a23f003d371fed1cd43ea",
   "supplier_api_reference": "72c68b6d6f6a5c9023999d9fdaf4b3db632e6874",
   "scope": "Unapplied host persistence preparation; isolated module tests and static combined checks. Full application/qualified supplier compilation not performed.",
   "compiler": "rustc 1.98.1 (48a229cea 2026-09-01)\nbinary: rustc\ncommit-hash: 48a229ceaefd4985c50990b14116b6d856af0985\ncommit-date: 2026-09-01\nhost: x86_64-unknown-linux-gnu\nrelease: 1.98.1\nLLVM version: 22.1.8",
@@ -40,7 +40,7 @@
       "original_handoff_bytes_preserved": true
     },
     "host-persistence.patch": {
-      "sha256": "b391c1b953e1b96587ab63dab5e94665c624381e3d8521d48edf82578292096f",
+      "sha256": "41f7ff71212656825b04e4cc89068d755165b3fb8732f09665dcb0898ee94fc0",
       "apply_exit": 0,
       "original_handoff_bytes_preserved": false
     }
@@ -262,5 +262,5 @@
   ],
   "red_control_note": "Feed regressions were executed against actual pre-repair draft logic. Reversed write ordering, missing-target-as-fresh and reset-to-default Redshank controls used explicit bad-source copies to verify failure sensitivity; original helper API absence produced a compile failure.",
   "production_source_unchanged": true,
-  "test_log_sha256": "0cca7085eca6a5c034ba73856428e1606154f116ee32c6a2b1e3aaf4c10355b3"
+  "test_log_sha256": "9d85f085677c5d3a8136264e2f36b3957bec31a6113cde903e48ca3272a12d31"
 }
