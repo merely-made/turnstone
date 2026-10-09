@@ -11,5 +11,9 @@
 //! `graphshell.identity.*` became `castellan.*`, matching how `knot.*` already
 //! names knot's. Receipts written before that carry the old strings, which is
 //! correct — they record what ran.
+//!
+//! Since the dramatis repo plan's DR-A (2026-10-09) the intent names and
+//! payloads live in `dramatis::intents`; the cards stay in castellan, which
+//! re-exports both.
 
 pub use castellan::projection::*;

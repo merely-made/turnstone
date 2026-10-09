@@ -10,5 +10,8 @@
 //! with the keeper founding (2026-08-14). Graphshell composes the keeper — it
 //! serves the projection, supplies the desktop dialogs, and binds the agent
 //! endpoints — and owns none of it.
+//!
+//! Since the dramatis repo plan's DR-A (2026-10-09) the receipts live in
+//! `dramatis::receipts`; castellan re-exports them beside `PersonaeHost`.
 
 pub use castellan::authority::*;
