@@ -323,8 +323,10 @@ pub struct App {
     /// descends from (capability-model OQ2). Vault-sealed when a personae
     /// backend exists (the SHARED vault, so this is the user's actual
     /// identity); the loud unsealed fallback otherwise. Install signs a
-    /// delegation with it; uninstall revokes that delegation.
-    pub identity: std::sync::Arc<crate::identity::RootIdentity>,
+    /// delegation with it; uninstall revokes that delegation. `None` while
+    /// the vault is locked: the identity is pending, never a fallback key
+    /// (vault lock ruling 35), until [`App::adopt_profile_root`].
+    pub identity: Option<std::sync::Arc<crate::identity::RootIdentity>>,
     /// Capsule approvals for the active Personae root. The sidecar contains
     /// origin mappings only; client certificate keys are derived on demand.
     pub gemini_identities: crate::gemini_identity::GeminiIdentityBindings,
@@ -487,17 +489,23 @@ impl App {
             // The host measures (per-node face footprints), the strategy
             // places — extent-aware spacing per the P2 contract.
             let extents = canvas.strategy_extents();
+            let community = canvas.community().cloned();
+            // Recency reading pairs the Spiral's newest-first ordering with
+            // the size-by-recency channel (P3).
+            let recent_first = canvas.size_by_recency();
+            // The canvas passes its own channel registry, which serves its
+            // graph (Mere F87).
+            let (registry, graph) = canvas.registry_and_graph();
             let strategy = mere::canvas::project_canvas_strategy_with_score(
+                registry,
                 &id,
-                canvas.graph(),
+                graph,
                 focus,
                 w,
                 h,
-                canvas.community(),
+                community.as_ref(),
                 Some(&extents),
-                // Recency reading pairs the Spiral's newest-first ordering
-                // with the size-by-recency channel (P3).
-                canvas.size_by_recency(),
+                recent_first,
             );
             canvas.apply_strategy_positions(&strategy.positions);
             canvas.set_projection_score(strategy.score);

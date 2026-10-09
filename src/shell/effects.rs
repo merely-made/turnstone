@@ -621,12 +621,9 @@ impl Shell {
         if events.is_empty() {
             return;
         }
-        let owner: String =
-            identity::IdentityProvider::master_public_key(self.app.identity.as_ref())
-                .to_bytes()
-                .iter()
-                .map(|b| format!("{b:02x}"))
-                .collect();
+        let owner: Option<String> = self.app.personae_root().map(|root| {
+            root.iter().map(|b| format!("{b:02x}")).collect()
+        });
         let at_ms = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
             .map(|d| d.as_millis() as u64)
@@ -638,13 +635,24 @@ impl Shell {
             }
             self.observed_events.push_back(event.describe());
             if let Some((url, transition)) = crate::trail_memory::navigation(&event) {
-                self.trail_handle
-                    .command(crate::trail_memory::TrailCommand::Record {
-                        owner: owner.clone(),
-                        url,
-                        transition,
-                        at_ms,
-                    });
+                match &owner {
+                    Some(owner) => {
+                        self.trail_handle
+                            .command(crate::trail_memory::TrailCommand::Record {
+                                owner: owner.clone(),
+                                url,
+                                transition,
+                                at_ms,
+                            });
+                    },
+                    // The trail is the persona's, keyed by its root, which a
+                    // locked vault does not reveal (vault lock ruling 38).
+                    // Hold the visit until the root is adopted.
+                    None if self.pending_trail.len() < super::PENDING_TRAIL_CAP => {
+                        self.pending_trail.push((url, transition, at_ms));
+                    },
+                    None => {},
+                }
             }
         }
     }
@@ -1941,7 +1949,7 @@ impl Shell {
                 physics_depth_source: Some(
                     self.app.graph_runtimes.physics_depth_source().id().to_string(),
                 ),
-                command_menu: (&self.app.command_choices).into(),
+                command_menu: self.app.command_choices.clone(),
             },
         );
         // Stamp a derived display name the first time the session has content

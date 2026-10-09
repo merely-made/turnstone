@@ -221,6 +221,9 @@ impl ApplicationHandler for Shell {
             let effects = self.app.apply_update(update);
             self.run_effects(effects);
         }
+        // The vault unlocked: adopt the root before the place worker's
+        // answers, which may be the commands it held until now.
+        self.adopt_unlocked_root();
         while let Ok(update) = self.place_rx.try_recv() {
             // One place answer the app never sees: a prepared dial is a
             // shell-owned thing. The app learns of a refusal as an event and

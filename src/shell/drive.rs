@@ -454,7 +454,7 @@ impl taproot::Automatable for Shell {
             .with_field("floats", snap.floating_panes.join(","))
             .with_field("lens-floats", snap.lens_floating_panes.join(","))
             // What the app will DO right now, by label — the automation half of
-            // a coherent snapshot. `assert snap actions ~ Fit view` asks whether
+            // a coherent snapshot. `assert snap actions ~ Fit to view` asks whether
             // a verb is on offer before spending a step on it.
             .with_field("actions", snap.available_actions.join(","))
             // The omnibar's offered rows as their display strings, so a
@@ -462,7 +462,12 @@ impl taproot::Automatable for Shell {
             // without a verb of its own — the same minimal-shared-and-grow
             // rule the panes and actions fields follow.
             .with_field("suggestions", snap.omnibar.suggestions.join(","))
-            .with_field("kept", kept.to_string());
+            .with_field("kept", kept.to_string())
+            // The person's command-menu choices by id, as the view sidecar
+            // stores them: the bare `>` lane is bounded by the row limit, so a
+            // kept command can be stored and still sit past the visible rows.
+            .with_field("commands-added", self.app.command_choices.added.join(","))
+            .with_field("commands-removed", self.app.command_choices.removed.join(","));
         #[cfg(all(feature = "scry", windows))]
         {
             let ready = self
@@ -821,6 +826,7 @@ impl Shell {
                     EditKey::Space => (WinitKey::Named(WinitNamedKey::Space), false),
                     EditKey::Save => (WinitKey::Character("s".into()), true),
                     EditKey::Find => (WinitKey::Character("f".into()), true),
+                    EditKey::KeepCommand => (WinitKey::Character("d".into()), true),
                 };
                 let previous_ctrl = self.ctrl;
                 self.ctrl |= ctrl;

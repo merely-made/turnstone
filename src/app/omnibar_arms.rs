@@ -97,11 +97,18 @@ impl App {
                 .note_suggestions(started.elapsed(), false);
             return;
         }
-        // The `>` lane reads through the command set: the context's commands,
-        // then the kept ones, then recent ones, or the whole catalog once
-        // expanded. The other lanes take the catalog as composed.
+        // The `>` lane reads through its menu session and the command set:
+        // the context's commands, then the kept ones, then recent ones, or
+        // every command once expanded. The other lanes take the catalog as
+        // composed.
         let actions = match self.omnibar.text.trim().strip_prefix('>') {
-            Some(query) => self.command_lane(query, self.omnibar.all_commands, row_limit),
+            Some(query) => {
+                let query = query.to_string();
+                let menu = &mut self.omnibar.menu;
+                menu.context = Some(super::palette::CONTEXT_COMMANDS.to_string());
+                menu.set_query(&query);
+                self.command_lane(&self.omnibar.menu, row_limit)
+            },
             None => self.available_actions(),
         };
         recompute_suggestions_with_limit(
@@ -408,11 +415,25 @@ impl App {
 
     pub(super) fn omnibar_move(&mut self, delta: i32) -> Vec<Effect> {
         let len = self.omnibar.suggestions.len();
-        if len > 0 {
+        if len > 0 && self.omnibar_in_command_lane() {
+            // The `>` lane's highlight moves through its menu session. The
+            // omnibar always draws a highlighted row, so the session starts
+            // from it rather than from "not yet moved".
+            let menu = &mut self.omnibar.menu;
+            menu.selected = Some(self.omnibar.selected);
+            menu.step(delta as isize, len);
+            self.omnibar.selected = menu.selected.unwrap_or(0);
+        } else if len > 0 {
             let cur = self.omnibar.selected as i32;
             self.omnibar.selected = (cur + delta).rem_euclid(len as i32) as usize;
         }
         vec![Effect::Redraw]
+    }
+
+    /// Whether the line is in the `>` command lane.
+    fn omnibar_in_command_lane(&self) -> bool {
+        matches!(self.omnibar.mode, OmnibarMode::Address)
+            && self.omnibar.text.trim().starts_with('>')
     }
 
     /// "All commands…": the bare `>` lane shows the whole catalog until the
@@ -421,7 +442,7 @@ impl App {
         if !self.omnibar.open {
             return vec![Effect::Redraw];
         }
-        self.omnibar.all_commands = true;
+        self.omnibar.menu.expand_all();
         self.omnibar.selected = 0;
         self.recompute_omnibar_suggestions();
         vec![Effect::Redraw]
@@ -445,6 +466,9 @@ impl App {
             return vec![Effect::Redraw];
         }
         self.omnibar.selected = index;
+        if self.omnibar_in_command_lane() {
+            self.omnibar.menu.selected = Some(index);
+        }
         return self.update(Action::OmnibarCommit);
     }
 

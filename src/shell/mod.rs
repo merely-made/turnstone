@@ -343,6 +343,76 @@ fn pane_display_label(content: &PaneContent) -> String {
 /// path). A parse error yields a stillborn scenario whose first `finish` reports
 /// the failure — the harness learns WHY instead of timing out. `None` when the
 /// env var is unset (the turnstone driver, or no driver, runs instead).
+/// How many visits a locked session holds for the trail before it drops the
+/// rest. Far beyond an ordinary sitting; a bound so a session left locked
+/// for days cannot grow without limit.
+const PENDING_TRAIL_CAP: usize = 4096;
+
+/// The share reader, which speaks as the profile root.
+fn start_share_reader(
+    root: Arc<crate::identity::RootIdentity>,
+) -> Option<Arc<crate::share_reader_service::KnotShareReaderService>> {
+    match crate::share_reader_service::KnotShareReaderService::start(root) {
+        Ok(service) => Some(Arc::new(service)),
+        Err(error) => {
+            tracing::warn!(%error, "Knot share reader is unavailable");
+            None
+        }
+    }
+}
+
+/// Knot publishing, which signs as the profile root.
+fn start_publishing(
+    source: knot::KnotPublishSource,
+    root: Arc<crate::identity::RootIdentity>,
+) -> Option<Arc<crate::publish_service::KnotPublishingService>> {
+    match crate::publish_service::KnotPublishingService::start(source, root) {
+        Ok(service) => Some(Arc::new(service)),
+        Err(error) => {
+            tracing::warn!(%error, "Knot publishing is unavailable");
+            None
+        }
+    }
+}
+
+impl Shell {
+    /// Take the profile root once a locked vault unlocks (vault lock ruling
+    /// 35): the app adopts it, the place worker runs what it held, and the
+    /// share reader and publishing start. Their panes are rebuilt so they
+    /// reach the services rather than keep the absence they were drawn with.
+    fn adopt_unlocked_root(&mut self) {
+        let Some(unlocks) = &self.unlock_rx else {
+            return;
+        };
+        let Ok(root) = unlocks.try_recv() else {
+            return;
+        };
+        self.unlock_rx = None;
+        let effects = self.app.adopt_profile_root(root.clone());
+        self.place_handle
+            .command(crate::place::worker::PlaceWorkerCommand::AdoptIdentity(root.clone()));
+        self.shared_knot_service = start_share_reader(root.clone());
+        if let Some(source) = self.pending_publish_source.take() {
+            self.publish_service = start_publishing(source, root);
+        }
+        self.renderers.publish.clear();
+        self.renderers.shared_knot.clear();
+        if let Some(owner) = self.app.personae_root() {
+            let owner: String = owner.iter().map(|b| format!("{b:02x}")).collect();
+            for (url, transition, at_ms) in std::mem::take(&mut self.pending_trail) {
+                self.trail_handle
+                    .command(crate::trail_memory::TrailCommand::Record {
+                        owner: owner.clone(),
+                        url,
+                        transition,
+                        at_ms,
+                    });
+            }
+        }
+        self.run_effects(effects);
+    }
+}
+
 fn shared_scenario_from_env() -> Option<taproot::Scenario> {
     let path = std::path::PathBuf::from(std::env::var_os("TURNSTONE_SCENARIO")?);
     let body = std::fs::read_to_string(&path).unwrap_or_default();
@@ -523,6 +593,15 @@ pub struct Shell {
     place_handle: armillary::ActorHandle<crate::place::worker::PlaceWorkerCommand>,
     /// Generation-tagged app-owned answers from the place worker.
     place_rx: Receiver<Update>,
+    /// The profile root, once a locked vault unlocks (vault lock ruling 35).
+    /// `None` when the identity was ready at start, or once adopted.
+    unlock_rx: Option<Receiver<Arc<crate::identity::RootIdentity>>>,
+    /// Knot's publish source, held while the identity is pending: the
+    /// publishing service speaks as the profile, so it starts at unlock.
+    pending_publish_source: Option<knot::KnotPublishSource>,
+    /// Visits made while the identity is pending, filed under the root at
+    /// unlock (at most [`PENDING_TRAIL_CAP`]).
+    pending_trail: Vec<(String, eidetic::TraceTransition, u64)>,
     /// The system clipboard, opened once at startup: the handle holds X11 and
     /// Wayland selection ownership for its lifetime. `Err` carries why it is
     /// unreachable, so a copy refuses out loud rather than panicking. It stays
@@ -847,14 +926,31 @@ impl Shell {
         let place_wake: armillary::Wake = Arc::new(move || {
             let _ = place_proxy.send_event(());
         });
-        let (place_handle, place_rx) = crate::place::worker::spawn_place_worker(
-            place_wake,
-            app.identity.clone(),
-            crate::place::worker::PlaceWorkerSettings {
-                capture_library,
-                ..crate::place::worker::PlaceWorkerSettings::default()
+        let place_settings = crate::place::worker::PlaceWorkerSettings {
+            capture_library,
+            ..crate::place::worker::PlaceWorkerSettings::default()
+        };
+        // With the vault locked the identity is pending (vault lock ruling
+        // 35): the place worker holds what speaks as the profile, the share
+        // reader and publishing wait, and a watch on the persisted lock's
+        // marker hands the root over once a user act unlocks the vault.
+        let (place_handle, place_rx) = match &app.identity {
+            Some(root) => {
+                crate::place::worker::spawn_place_worker(place_wake, root.clone(), place_settings)
             },
-        );
+            None => crate::place::worker::spawn_pending_place_worker(place_wake, place_settings),
+        };
+        let unlock_rx = app.identity.is_none().then(|| {
+            let unlock_proxy = proxy.clone();
+            crate::identity::watch_for_unlock(
+                app.data_root.clone(),
+                crate::identity::default_vault_dir(),
+                Arc::new(move || {
+                    let _ = unlock_proxy.send_event(());
+                }),
+            )
+        });
+        let mut pending_publish_source = None;
 
         // The content port's ordinary lanes: both Genet static renderers plus
         // the engine-native smolweb family. Route policy selects one by
@@ -866,15 +962,7 @@ impl Shell {
         });
         let mut knot_clip = None;
         let mut publish_service = None;
-        let shared_knot_service = match crate::share_reader_service::KnotShareReaderService::start(
-            app.identity.clone(),
-        ) {
-            Ok(service) => Some(Arc::new(service)),
-            Err(error) => {
-                tracing::warn!(%error, "Knot share reader is unavailable");
-                None
-            }
-        };
+        let shared_knot_service = app.identity.clone().and_then(start_share_reader);
         let device_receipts_service =
             match crate::device_receipts_service::DeviceReceiptsService::start() {
                 Ok(service) => Some(Arc::new(service)),
@@ -888,12 +976,9 @@ impl Shell {
             Ok(Some(mut engine)) => {
                 knot_clip = engine.clip_handle();
                 if let Some(source) = engine.take_publish_source() {
-                    match crate::publish_service::KnotPublishingService::start(
-                        source,
-                        app.identity.clone(),
-                    ) {
-                        Ok(service) => publish_service = Some(Arc::new(service)),
-                        Err(error) => tracing::warn!(%error, "Knot publishing is unavailable"),
+                    match app.identity.clone() {
+                        Some(root) => publish_service = start_publishing(source, root),
+                        None => pending_publish_source = Some(source),
                     }
                 }
                 content_engines.register(Box::new(engine));
@@ -961,6 +1046,9 @@ impl Shell {
             trail_rx,
             place_handle,
             place_rx,
+            unlock_rx,
+            pending_publish_source,
+            pending_trail: Vec::new(),
             clipboard,
             cursor: (0.0, 0.0),
             ctrl: false,

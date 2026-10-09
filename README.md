@@ -66,7 +66,12 @@ The family then advanced twice. The browser lane's foreign-accessibility
 repin (`fc52533`) moved Mere to `f1d169c7` and Knot to `14cd06e`. SC step 4
 (2026-10-08) moved it to Mere `3ded2cd7`, Genet `965b64e2`, Knot `6e66f1ab`
 and Redshank/Woodshed `3ef71040`, bringing in Pelt's routed browsing
-controller (`pelt-core`) and the sans-IO page load (`page-load`).
+controller (`pelt-core`) and the sans-IO page load (`page-load`). The
+Scenograph C2 and vault lock repin (2026-10-08) moved it to Mere `463c8d40`,
+Genet `15713014`, Knot `5bef84c0` and Redshank/Woodshed `52fbe468`: the
+command menu stores Cambium's own choices under the stack's shared command
+ids, and a locked personae vault leaves the profile identity pending rather
+than replaced.
 Knot and Redshank
 share the Mere/Genet surface family with Turnstone so retained-surface,
 publishing and projection interfaces have one source identity.

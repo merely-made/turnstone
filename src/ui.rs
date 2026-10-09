@@ -439,10 +439,11 @@ pub struct OmnibarState {
     /// Index into `suggestions` of the highlighted row.
     pub selected: usize,
     pub suggestions: Vec<Suggestion>,
-    /// The bare `>` lane was expanded to the whole catalog ("All
-    /// commands…"); it returns to the person's commands when the omnibar
-    /// closes.
-    pub all_commands: bool,
+    /// The `>` lane's palette state, read through Cambium's menu session
+    /// (SE48): its query, the highlighted command, and whether it was
+    /// expanded to every command ("All commands…"). It starts over when the
+    /// omnibar closes.
+    pub menu: cambium::MenuSession,
 }
 
 impl std::fmt::Debug for OmnibarState {

@@ -7,12 +7,12 @@ settle 30
 key escape
 
 # The static registry is on offer from the start.
-assert snap actions ~ Fit view
+assert snap actions ~ Fit to view
 assert snap actions ~ Open Gloss pane
 
 # And a label the snapshot reports is a label `act` can resolve — the
 # round trip that makes the list worth publishing.
-act Fit view
+act Fit to view
 settle 10
 
 # Contextual rows JOIN the catalog when their context exists, and they LEAD

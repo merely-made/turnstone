@@ -22,7 +22,7 @@ capture 02_recency_sizes
 
 act Layout: Spiral
 settle 20
-act Fit view
+act Fit to view
 settle 20
 act Save session
 settle 5

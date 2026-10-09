@@ -317,6 +317,8 @@ pub enum EditKey {
     Space,
     Save,
     Find,
+    /// Ctrl+D: keep or drop the highlighted command in the `>` lane.
+    KeepCommand,
 }
 
 #[derive(Debug)]
@@ -396,9 +398,10 @@ pub fn parse(body: &str) -> Result<Vec<Step>, String> {
                 "space" => Step::Key(EditKey::Space),
                 "ctrl+s" => Step::Key(EditKey::Save),
                 "ctrl+f" => Step::Key(EditKey::Find),
+                "ctrl+d" => Step::Key(EditKey::KeepCommand),
                 _ => {
                     return err(
-                        "key wants enter|escape|tab|backspace|delete|up|down|left|right|home|end|pagedown|pageup|space|ctrl+s|ctrl+f",
+                        "key wants enter|escape|tab|backspace|delete|up|down|left|right|home|end|pagedown|pageup|space|ctrl+s|ctrl+f|ctrl+d",
                     );
                 }
             },

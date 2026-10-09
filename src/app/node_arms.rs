@@ -236,7 +236,7 @@ impl App {
                 self.graph_runtimes.facets(),
                 self.graph_runtimes.graph(),
                 &sdir,
-                self.identity.as_ref(),
+                self.personae_root(),
             );
         }
         for runtime in self.forme_runtimes.iter_mut() {
@@ -304,7 +304,7 @@ impl App {
                 self.graph_runtimes.facets(),
                 self.graph_runtimes.graph(),
                 &sdir,
-                self.identity.as_ref(),
+                self.personae_root(),
             );
             // Residency came back; its standing subscriptions come with it, or
             // a recovered behavior silently stops waking.
@@ -986,8 +986,7 @@ impl App {
         let request = self.next_smolweb_submission;
         self.active_smolweb_submission = Some(request);
         let identity = if submission.protocol == Protocol::Titan {
-            self.gemini_identities
-                .identity_for(self.identity.as_ref(), &submission.target)
+            self.gemini_identity_for(&submission.target)
                 .unwrap_or_else(|error| {
                     tracing::warn!(%error, "failed to project Titan client identity");
                     None
@@ -1411,10 +1410,11 @@ impl App {
             return vec![Effect::Redraw];
         }
 
-        let origin = match self
-            .gemini_identities
-            .bind(self.identity.as_ref(), &input.identity_url)
-        {
+        let bound = match &self.identity {
+            Some(root) => self.gemini_identities.bind(root.as_ref(), &input.identity_url),
+            None => Err(crate::denizen::PENDING_IDENTITY.to_string()),
+        };
+        let origin = match bound {
             Ok(origin) => origin,
             Err(error) => {
                 self.omnibar = OmnibarState::default();
