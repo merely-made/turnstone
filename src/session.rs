@@ -457,40 +457,11 @@ pub struct ViewIntentV1 {
     pub physics_depth_source: Option<String>,
     /// The person's command menu (Scenograph editor plan SE28 to SE31):
     /// commands kept beyond the defaults, defaults dropped, and the recent
-    /// ones. View state like the rest of this sidecar, never graph truth.
+    /// ones, stored as Cambium's own choices (SE45), so the JSON is the one
+    /// every host writes. View state like the rest of this sidecar, never
+    /// graph truth.
     #[serde(default)]
-    pub command_menu: CommandMenuV1,
-}
-
-/// The stored half of `cambium::CommandChoices`; ids are command labels.
-#[derive(Debug, Default, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
-pub struct CommandMenuV1 {
-    #[serde(default)]
-    pub added: Vec<String>,
-    #[serde(default)]
-    pub removed: Vec<String>,
-    #[serde(default)]
-    pub recent: Vec<String>,
-}
-
-impl From<&cambium::CommandChoices> for CommandMenuV1 {
-    fn from(choices: &cambium::CommandChoices) -> Self {
-        Self {
-            added: choices.added.clone(),
-            removed: choices.removed.clone(),
-            recent: choices.recent.clone(),
-        }
-    }
-}
-
-impl From<CommandMenuV1> for cambium::CommandChoices {
-    fn from(menu: CommandMenuV1) -> Self {
-        Self {
-            added: menu.added,
-            removed: menu.removed,
-            recent: menu.recent,
-        }
-    }
+    pub command_menu: cambium::CommandChoices,
 }
 
 pub fn view_intent_path(session_dir: &Path) -> PathBuf {
@@ -1056,10 +1027,10 @@ mod tests {
     fn command_menu_rides_the_view_sidecar_and_old_sidecars_default_it() {
         let root = temp_root("command-menu");
         let intent = ViewIntentV1 {
-            command_menu: CommandMenuV1 {
+            command_menu: cambium::CommandChoices {
                 added: vec!["Reseed layout".into()],
-                removed: vec!["Fit view".into()],
-                recent: vec!["Back".into()],
+                removed: vec!["view:fit".into()],
+                recent: vec!["nav:back".into()],
             },
             ..ViewIntentV1::default()
         };
@@ -1069,8 +1040,19 @@ mod tests {
         // A sidecar written before the command menu existed still opens.
         std::fs::write(view_intent_path(&root), br#"{"layout_strategy":"spiral"}"#).unwrap();
         let older = load_view_intent(&root).expect("older sidecar loads");
-        assert_eq!(older.command_menu, CommandMenuV1::default());
+        assert_eq!(older.command_menu, cambium::CommandChoices::default());
         assert_eq!(older.layout_strategy.as_deref(), Some("spiral"));
+
+        // A sidecar from the label-keyed `CommandMenuV1` reads back with its
+        // fields intact: the JSON names did not change (SE45).
+        std::fs::write(
+            view_intent_path(&root),
+            br#"{"command_menu":{"added":["Reseed layout"],"removed":["Fit view"],"recent":[]}}"#,
+        )
+        .unwrap();
+        let labelled = load_view_intent(&root).expect("a label-keyed sidecar loads");
+        assert_eq!(labelled.command_menu.added, ["Reseed layout"]);
+        assert_eq!(labelled.command_menu.removed, ["Fit view"]);
     }
 
     #[test]
@@ -1116,7 +1098,7 @@ mod tests {
             physics_kind_source: Some("coloring".to_string()),
             physics_mass_source: Some("pagerank".to_string()),
             physics_depth_source: Some("layers".to_string()),
-            command_menu: CommandMenuV1::default(),
+            command_menu: cambium::CommandChoices::default(),
         };
         save_view_intent(&root, &intent);
         assert_eq!(load_view_intent(&root), Some(intent));

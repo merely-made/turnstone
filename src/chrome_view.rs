@@ -1082,6 +1082,7 @@ pub(crate) mod tests {
             node,
             Some(crate::content::ContentFacts {
                 engine: "test.surface".into(),
+                lane: crate::content::ContentLane::Surface,
                 structure: None,
                 lineage: None,
                 capabilities: crate::content::DocumentCapabilityFacts {

@@ -12,7 +12,7 @@
 //! input (scroll, hover, blur) rides state directly per the gesture law;
 //! durable intent becomes an `Action`.
 
-use super::NodeSessions;
+use super::{NodeSessions, NodeSurfaces};
 use winit::event::{Force, MouseButton, Touch, TouchPhase};
 use winit::keyboard::{Key as WinitKey, NamedKey as WinitNamedKey};
 use winit::window::CursorIcon;
@@ -215,14 +215,19 @@ impl Shell {
                 });
                 return;
             }
-            if self
-                .with_content_appearance(node, hit.id, |session| {
+            let scrolled = if self.controller_drives(&node) {
+                self.content_sessions
+                    .get_mut(&node)
+                    .is_some_and(|content| content.scroll_at(hit.local.0, hit.local.1, dx, dy, 1.0))
+            } else {
+                self.with_content_appearance(node, hit.id, |session| {
                     session.scroll_at(hit.local.0, hit.local.1, dx, dy)
                 })
                 .unwrap_or(false)
-            {
+            };
+            if scrolled {
                 self.request_redraw();
-            } else if let Some(producer) = self.surface_producers.get_mut(&node) {
+            } else if let Some(producer) = self.content_sessions.surface_mut(&node) {
                 if let Err(error) = producer.send_mouse_input(inker::MouseEvent {
                     position: inker::PhysicalPosition {
                         x: hit.local.0,
@@ -359,7 +364,22 @@ impl Shell {
                         node,
                         appearance: hit.id,
                     };
-                    if let Some(outcome) = self.with_content_appearance(node, hit.id, |session| {
+                    if self.controller_drives(&node) {
+                        if let Some(button) = super::controller_input::session_pointer_button(button)
+                        {
+                            let modifiers = self.session_modifiers();
+                            self.document_input(
+                                node,
+                                inker::SessionInput::PointerButton {
+                                    x: hit.local.0,
+                                    y: hit.local.1,
+                                    button,
+                                    state: inker::SessionButtonState::Pressed,
+                                    modifiers,
+                                },
+                            );
+                        }
+                    } else if let Some(outcome) = self.with_content_appearance(node, hit.id, |session| {
                         (button == MouseButton::Left).then(|| session.pointer_down(hit.local.0, hit.local.1))
                     }).flatten() {
                         match outcome {
@@ -376,7 +396,7 @@ impl Shell {
                                 SessionClick::Handled | SessionClick::Miss => {}
                         }
                     } else if let (Some(producer), Some(surface_button)) = (
-                        self.surface_producers.get_mut(&node),
+                        self.content_sessions.surface_mut(&node),
                         surface_mouse_button(button),
                     ) {
                         if let Err(error) = producer.move_focus(inker::FocusReason::Mouse) {
@@ -873,13 +893,23 @@ impl Shell {
                     .then_some((x - surface.rect.x, y - surface.rect.y))
             });
             if let Some((local_x, local_y)) = local {
-                if self
+                let modifiers = self.session_modifiers();
+                if self.controller_drives(&node) {
+                    self.document_input(
+                        node,
+                        inker::SessionInput::PointerMoved {
+                            x: local_x,
+                            y: local_y,
+                            modifiers,
+                        },
+                    );
+                } else if self
                     .content_sessions
                     .session_mut(&node)
                     .is_some_and(|session| session.pointer_move(local_x, local_y))
                 {
                     self.request_redraw();
-                } else if let Some(producer) = self.surface_producers.get_mut(&node) {
+                } else if let Some(producer) = self.content_sessions.surface_mut(&node) {
                     if let Err(error) = producer.send_pointer_input(mouse_pointer_event(
                         local_x,
                         local_y,
@@ -977,7 +1007,7 @@ impl Shell {
             return;
         }
         let preview_changed = self.app.set_link_preview(None);
-        let Some(producer) = self.surface_producers.get_mut(&node) else {
+        let Some(producer) = self.content_sessions.surface_mut(&node) else {
             self.reset_surface_cursor();
             return;
         };
@@ -1006,7 +1036,7 @@ impl Shell {
     pub(super) fn apply_pending_surface_cursor(&mut self) {
         let shape = self
             .hovered_surface
-            .and_then(|node| self.surface_producers.get_mut(&node))
+            .and_then(|node| self.content_sessions.surface_mut(&node))
             .and_then(|producer| producer.poll_cursor_shape());
         if let (Some(shape), Some(window)) = (shape, self.window.as_ref()) {
             let icon = surface_cursor_icon(shape);
@@ -1055,6 +1085,25 @@ impl Shell {
                 (surface.kind == crate::surface::SurfaceKind::Content(node))
                     .then_some((x - surface.rect.x, y - surface.rect.y))
             });
+            if self.controller_drives(&node) {
+                if let (Some((local_x, local_y)), Some(button)) =
+                    (local, super::controller_input::session_pointer_button(button))
+                {
+                    let modifiers = self.session_modifiers();
+                    self.document_input(
+                        node,
+                        inker::SessionInput::PointerButton {
+                            x: local_x,
+                            y: local_y,
+                            button,
+                            state: inker::SessionButtonState::Released,
+                            modifiers,
+                        },
+                    );
+                }
+                self.request_redraw();
+                return;
+            }
             let outcome = local.and_then(|(local_x, local_y)| {
                 if button == MouseButton::Left
                     && let Some(session) = self.content_sessions.session_mut(&node)
@@ -1062,7 +1111,7 @@ impl Shell {
                     return Some(session.pointer_up(local_x, local_y));
                 }
                 if let (Some(producer), Some(surface_button)) = (
-                    self.surface_producers.get_mut(&node),
+                    self.content_sessions.surface_mut(&node),
                     surface_mouse_button(button),
                 ) {
                     if let Err(error) = producer.send_pointer_input(mouse_pointer_event(
@@ -1210,7 +1259,7 @@ impl Shell {
             )
             .and_then(|hit| match hit.kind {
                 crate::surface::SurfaceKind::Content(node)
-                    if self.surface_producers.contains_key(&node) =>
+                    if self.content_sessions.has_surface(&node) =>
                 {
                     Some(node)
                 }
@@ -1239,8 +1288,8 @@ impl Shell {
                 .then_some((position.0 - surface.rect.x, position.1 - surface.rect.y))
         });
         let delivered = local.is_some_and(|(x, y)| {
-            self.surface_producers
-                .get_mut(&active.node)
+            self.content_sessions
+                .surface_mut(&active.node)
                 .is_some_and(|producer| {
                     match producer.send_pointer_input(inker::PointerEvent {
                         pointer_id: active.pointer_id,

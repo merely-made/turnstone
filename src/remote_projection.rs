@@ -78,6 +78,11 @@ impl Drop for EndpointAuthorRestore {
 }
 
 const FIT_INTENT: &str = "turnstone.fit-view";
+
+/// The catalogue's label for fitting the view.
+fn fit_label() -> &'static str {
+    cambium::catalogue::label(cambium::catalogue::ids::VIEW_FIT).unwrap_or("Fit to view")
+}
 const OPEN_INTENT: &str = "turnstone.open-address";
 
 /// Typed refusals at the projection boundary. Version mismatch is checked
@@ -151,9 +156,14 @@ impl TurnstoneEndpoint {
         // "the endpoint did not grant itself", which is not an authority
         // statement. Now: a per-session keypair derived from the user's
         // master key, holding a capability the USER delegated to it.
-        let salt = format!("turnstone/projection-endpoint/{}", session.0);
-        let endpoint_key = app
+        // The endpoint speaks for the profile, so it waits for the vault to
+        // unlock like everything else that does.
+        let root = app
             .identity
+            .clone()
+            .ok_or_else(|| crate::denizen::PENDING_IDENTITY.to_string())?;
+        let salt = format!("turnstone/projection-endpoint/{}", session.0);
+        let endpoint_key = root
             .derive_keypair(salt.as_bytes())
             .map_err(|error| format!("failed to derive the endpoint identity: {error:?}"))?;
         let subject = Subject::new(endpoint_key.public_key().to_bytes());
@@ -179,7 +189,7 @@ impl TurnstoneEndpoint {
         // authorized for nothing.
         let now = crate::denizen::now_ms();
         let certificate = root_certificate(
-            IdentityProvider::master_public_key(app.identity.as_ref()).to_bytes(),
+            IdentityProvider::master_public_key(root.as_ref()).to_bytes(),
             subject,
             &layout,
             Mode::Write,
@@ -189,10 +199,10 @@ impl TurnstoneEndpoint {
             0,
             *blake3::hash(salt.as_bytes()).as_bytes(),
         );
-        let signed = SignedDelegationCertificate::issue(app.identity.as_ref(), certificate)
+        let signed = SignedDelegationCertificate::issue(root.as_ref(), certificate)
             .map_err(|error| format!("failed to sign the endpoint delegation: {error:?}"))?;
         let mut authority = DelegationTable::new(
-            IdentityProvider::master_public_key(app.identity.as_ref()).to_bytes(),
+            IdentityProvider::master_public_key(root.as_ref()).to_bytes(),
         );
         authority.adopt(signed);
         authority.set_now(now);
@@ -226,7 +236,9 @@ impl TurnstoneEndpoint {
         vec![
             AdvertisedAction {
                 intent: IntentReference(FIT_INTENT.into()),
-                label: "Fit view".into(),
+                // The stack's label for the verb (SE49), so the advertised
+                // card and Turnstone's own palette say the same thing.
+                label: fit_label().into(),
                 explanation: "Frame the disclosed Turnstone graph without changing it.".into(),
                 payload_schema: r#"{"type":"null"}"#.into(),
                 input_form: None,
@@ -373,7 +385,21 @@ pub(crate) fn disclose_scene(
 ) -> sceno::Scene {
     let extents: HashMap<NodeKey, (f32, f32)> =
         graph.nodes().map(|(key, _)| (key, card_extent)).collect();
-    let mut mapped = cartography::project_spiral_score(graph, Some(&extents), focused, true);
+    // The spiral reads keyed signals, most recent first (Mere F132). A
+    // disclosure is a one-off projection with no canvas behind it, so it
+    // takes a fresh registry for this graph.
+    let signals = mere::canvas::ChannelRegistry::new().disclose(
+        graph,
+        &[cartography::ORDER_RECENCY, cartography::WEIGHT_RECENCY],
+        focused,
+    );
+    let mut mapped = cartography::project_spiral_score(
+        graph,
+        &signals,
+        cartography::ORDER_RECENCY,
+        Some(&extents),
+        focused,
+    );
     mapped.score.arrangement = Arrangement::Spiral(spiral);
     let solved = scenomise::solve(&mapped.score);
     let mut scene = cartography::scene_from_projection(
@@ -732,7 +758,7 @@ pub fn render_g3_receipt() -> Result<String, String> {
             layout: Some(run.layout),
             intents: vec![
                 graphshell::view::IntentReceiptView {
-                    label: "Fit view · curation".into(),
+                    label: format!("{} · curation", fit_label()),
                     result: result_name(&run.fit_result),
                     detail: result_detail(
                         &run.fit_result,
@@ -799,7 +825,7 @@ mod tests {
         use servitor::AuthorityProvider;
 
         let app = App::projection_fixture();
-        let user = IdentityProvider::master_public_key(app.identity.as_ref()).to_bytes();
+        let user = app.personae_root().expect("the fixture's vault is not locked");
         let endpoint = TurnstoneEndpoint::new(app).unwrap();
         let layout = Cap::Scope(layout_scope());
 

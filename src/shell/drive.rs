@@ -12,7 +12,7 @@
 //! its labelled actions, and whether it is still busy. `Driveable` adds the two
 //! the generic loop cannot do: a screenshot and turnstone's own verbs.
 
-use super::NodeSessions;
+use super::{NodeSessions, NodeSurfaces};
 use winit::event::MouseButton;
 use winit::keyboard::{Key as WinitKey, NamedKey as WinitNamedKey};
 
@@ -442,7 +442,7 @@ impl taproot::Automatable for Shell {
             .with_field("focus", snap.focus)
             .with_field(
                 "host-surface-producers",
-                self.surface_producers.len().to_string(),
+                self.content_sessions.surface_count().to_string(),
             )
             .with_field("node-count", snap.node_count.to_string())
             .with_field("roster-tab", snap.roster_tab)
@@ -454,7 +454,7 @@ impl taproot::Automatable for Shell {
             .with_field("floats", snap.floating_panes.join(","))
             .with_field("lens-floats", snap.lens_floating_panes.join(","))
             // What the app will DO right now, by label — the automation half of
-            // a coherent snapshot. `assert snap actions ~ Fit view` asks whether
+            // a coherent snapshot. `assert snap actions ~ Fit to view` asks whether
             // a verb is on offer before spending a step on it.
             .with_field("actions", snap.available_actions.join(","))
             // The omnibar's offered rows as their display strings, so a
@@ -462,7 +462,12 @@ impl taproot::Automatable for Shell {
             // without a verb of its own — the same minimal-shared-and-grow
             // rule the panes and actions fields follow.
             .with_field("suggestions", snap.omnibar.suggestions.join(","))
-            .with_field("kept", kept.to_string());
+            .with_field("kept", kept.to_string())
+            // The person's command-menu choices by id, as the view sidecar
+            // stores them: the bare `>` lane is bounded by the row limit, so a
+            // kept command can be stored and still sit past the visible rows.
+            .with_field("commands-added", self.app.command_choices.added.join(","))
+            .with_field("commands-removed", self.app.command_choices.removed.join(","));
         #[cfg(all(feature = "scry", windows))]
         {
             let ready = self
@@ -790,7 +795,7 @@ impl Shell {
                     self.act(Action::OmnibarInsert(text.clone()));
                 } else if self.deliver_contributed_ime(&winit::event::Ime::Commit(text.clone())) {
                     self.request_redraw();
-                } else if self.deliver_knot_ime(&winit::event::Ime::Commit(text.clone())) {
+                } else if self.deliver_document_ime(&winit::event::Ime::Commit(text.clone())) {
                     self.request_redraw();
                 } else if self.type_surface_text(text) {
                     // Hosted committed text is distinct from OS IME/preedit.
@@ -821,6 +826,7 @@ impl Shell {
                     EditKey::Space => (WinitKey::Named(WinitNamedKey::Space), false),
                     EditKey::Save => (WinitKey::Character("s".into()), true),
                     EditKey::Find => (WinitKey::Character("f".into()), true),
+                    EditKey::KeepCommand => (WinitKey::Character("d".into()), true),
                 };
                 let previous_ctrl = self.ctrl;
                 self.ctrl |= ctrl;
@@ -948,7 +954,7 @@ impl Shell {
                     #[cfg(not(feature = "servo"))]
                     let servo_views = 0usize;
                     std::fs::write(self.shared_out_dir.join(format!("{name}.surface-frames.json")),
-                        serde_json::to_vec_pretty(&serde_json::json!({"live_producers":self.surface_producers.len(),"cached_frames":self.surface_frames.len(),"scry_importers":stats,"servo_active_views":servo_views,"content_surfaces":surfaces})).map_err(|error|error.to_string())?)
+                        serde_json::to_vec_pretty(&serde_json::json!({"live_producers":self.content_sessions.surface_count(),"cached_frames":self.surface_frames.len(),"scry_importers":stats,"servo_active_views":servo_views,"content_surfaces":surfaces})).map_err(|error|error.to_string())?)
                         .map_err(|error|error.to_string())?;
                 }
             },

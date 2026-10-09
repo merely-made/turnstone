@@ -235,7 +235,7 @@ impl App {
                 self.graph_runtimes.facets(),
                 self.graph_runtimes.graph(),
                 &sdir,
-                self.identity.as_ref(),
+                self.personae_root(),
             );
         }
         for runtime in self.forme_runtimes.iter_mut() {
@@ -303,7 +303,7 @@ impl App {
                 self.graph_runtimes.facets(),
                 self.graph_runtimes.graph(),
                 &sdir,
-                self.identity.as_ref(),
+                self.personae_root(),
             );
             // Residency came back; its standing subscriptions come with it, or
             // a recovered behavior silently stops waking.
@@ -985,8 +985,7 @@ impl App {
         let request = self.next_smolweb_submission;
         self.active_smolweb_submission = Some(request);
         let identity = if submission.protocol == Protocol::Titan {
-            self.gemini_identities
-                .identity_for(self.identity.as_ref(), &submission.target)
+            self.gemini_identity_for(&submission.target)
                 .unwrap_or_else(|error| {
                     tracing::warn!(%error, "failed to project Titan client identity");
                     None
@@ -1410,10 +1409,11 @@ impl App {
             return vec![Effect::Redraw];
         }
 
-        let origin = match self
-            .gemini_identities
-            .bind(self.identity.as_ref(), &input.identity_url)
-        {
+        let bound = match &self.identity {
+            Some(root) => self.gemini_identities.bind(root.as_ref(), &input.identity_url),
+            None => Err(crate::denizen::PENDING_IDENTITY.to_string()),
+        };
+        let origin = match bound {
             Ok(origin) => origin,
             Err(error) => {
                 self.omnibar = OmnibarState::default();
@@ -1709,10 +1709,13 @@ impl App {
         effects
     }
 
+    /// Whether `node`'s live content is a web surface, by the lane its
+    /// content reported rather than by engine id, so every surface engine
+    /// (Weld, Scry, Servo) takes the web plane's own navigation.
     fn node_uses_web_surface(&self, node: Uuid) -> bool {
         self.content
             .facts(node)
-            .is_some_and(|facts| facts.engine == inker::routing::ENGINE_WELD_CHROMIUM)
+            .is_some_and(|facts| facts.lane == crate::content::ContentLane::Surface)
     }
 
     pub(super) fn reseed_layout(&mut self) -> Vec<Effect> {
@@ -1828,6 +1831,7 @@ mod tests {
             member,
             Some(crate::content::ContentFacts {
                 engine: "test.surface".into(),
+                lane: crate::content::ContentLane::Surface,
                 structure: None,
                 lineage: None,
                 capabilities: crate::content::DocumentCapabilityFacts {
@@ -1925,6 +1929,7 @@ mod tests {
             member,
             Some(crate::content::ContentFacts {
                 engine: "test.opaque".into(),
+                lane: crate::content::ContentLane::Document,
                 structure: None,
                 lineage: None,
                 capabilities: crate::content::DocumentCapabilityFacts {

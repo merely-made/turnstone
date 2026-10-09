@@ -11,6 +11,7 @@
 //! learns flows back through the spine.
 
 mod contributed_automation;
+mod controller_input;
 mod drive;
 mod effects;
 mod events;
@@ -88,9 +89,11 @@ const SMOLWEB_SESSION_ENGINE_IDS: &[&str] = &[
     inker::routing::ENGINE_NEMATIC_FEED,
 ];
 
-/// Each node's live document: Pelt's routed content around a host-loading,
-/// host-history controller (SC step 4). The App owns the node's load and graph
-/// history; the controller opens the body the App fetched.
+/// Each node's live content: Pelt's routed content, either a document lane
+/// around a host-loading, host-history controller or a surface lane around the
+/// web engine's producer (SC step 4). The App owns the node's load and graph
+/// history; a document controller opens the body the App fetched, and a
+/// surface takes navigation on its own web plane.
 pub(crate) type NodeDocuments =
     HashMap<uuid::Uuid, pelt_core::PeltContent<netrender::Scene>>;
 
@@ -140,6 +143,54 @@ impl NodeSessions for NodeDocuments {
                 .document_mut()
                 .map(|controller| (*node, controller.session_mut()))
         })
+    }
+}
+
+/// The surface lane of each node's content: the live producer, for the host
+/// work the content does not wrap (pointer streams, drag, accessibility,
+/// capture, imported frames).
+pub(crate) trait NodeSurfaces {
+    fn surface_mut(&mut self, node: &uuid::Uuid) -> Option<&mut dyn inker::SurfaceProducer>;
+    fn has_surface(&self, node: &uuid::Uuid) -> bool;
+    /// Whether `node`'s content is a document. A torn-out lens window
+    /// composites only documents.
+    fn has_document(&self, node: &uuid::Uuid) -> bool;
+    fn surfaces_mut(
+        &mut self,
+    ) -> impl Iterator<Item = (uuid::Uuid, &mut dyn inker::SurfaceProducer)>;
+    fn surface_count(&self) -> usize;
+}
+
+impl NodeSurfaces for NodeDocuments {
+    fn surface_mut(&mut self, node: &uuid::Uuid) -> Option<&mut dyn inker::SurfaceProducer> {
+        self.get_mut(node)
+            .and_then(pelt_core::PeltContent::surface_producer_mut)
+    }
+
+    fn has_surface(&self, node: &uuid::Uuid) -> bool {
+        self.get(node)
+            .is_some_and(|content| content.lane() == pelt_core::PeltLane::Surface)
+    }
+
+    fn has_document(&self, node: &uuid::Uuid) -> bool {
+        self.get(node)
+            .is_some_and(|content| content.lane() == pelt_core::PeltLane::Document)
+    }
+
+    fn surfaces_mut(
+        &mut self,
+    ) -> impl Iterator<Item = (uuid::Uuid, &mut dyn inker::SurfaceProducer)> {
+        self.iter_mut().filter_map(|(node, content)| {
+            content
+                .surface_producer_mut()
+                .map(|producer| (*node, producer))
+        })
+    }
+
+    fn surface_count(&self) -> usize {
+        self.values()
+            .filter(|content| content.lane() == pelt_core::PeltLane::Surface)
+            .count()
     }
 }
 
@@ -343,6 +394,76 @@ fn pane_display_label(content: &PaneContent) -> String {
 /// path). A parse error yields a stillborn scenario whose first `finish` reports
 /// the failure — the harness learns WHY instead of timing out. `None` when the
 /// env var is unset (the turnstone driver, or no driver, runs instead).
+/// How many visits a locked session holds for the trail before it drops the
+/// rest. Far beyond an ordinary sitting; a bound so a session left locked
+/// for days cannot grow without limit.
+const PENDING_TRAIL_CAP: usize = 4096;
+
+/// The share reader, which speaks as the profile root.
+fn start_share_reader(
+    root: Arc<crate::identity::RootIdentity>,
+) -> Option<Arc<crate::share_reader_service::KnotShareReaderService>> {
+    match crate::share_reader_service::KnotShareReaderService::start(root) {
+        Ok(service) => Some(Arc::new(service)),
+        Err(error) => {
+            tracing::warn!(%error, "Knot share reader is unavailable");
+            None
+        }
+    }
+}
+
+/// Knot publishing, which signs as the profile root.
+fn start_publishing(
+    source: knot::KnotPublishSource,
+    root: Arc<crate::identity::RootIdentity>,
+) -> Option<Arc<crate::publish_service::KnotPublishingService>> {
+    match crate::publish_service::KnotPublishingService::start(source, root) {
+        Ok(service) => Some(Arc::new(service)),
+        Err(error) => {
+            tracing::warn!(%error, "Knot publishing is unavailable");
+            None
+        }
+    }
+}
+
+impl Shell {
+    /// Take the profile root once a locked vault unlocks (vault lock ruling
+    /// 35): the app adopts it, the place worker runs what it held, and the
+    /// share reader and publishing start. Their panes are rebuilt so they
+    /// reach the services rather than keep the absence they were drawn with.
+    fn adopt_unlocked_root(&mut self) {
+        let Some(unlocks) = &self.unlock_rx else {
+            return;
+        };
+        let Ok(root) = unlocks.try_recv() else {
+            return;
+        };
+        self.unlock_rx = None;
+        let effects = self.app.adopt_profile_root(root.clone());
+        self.place_handle
+            .command(crate::place::worker::PlaceWorkerCommand::AdoptIdentity(root.clone()));
+        self.shared_knot_service = start_share_reader(root.clone());
+        if let Some(source) = self.pending_publish_source.take() {
+            self.publish_service = start_publishing(source, root);
+        }
+        self.renderers.publish.clear();
+        self.renderers.shared_knot.clear();
+        if let Some(owner) = self.app.personae_root() {
+            let owner: String = owner.iter().map(|b| format!("{b:02x}")).collect();
+            for (url, transition, at_ms) in std::mem::take(&mut self.pending_trail) {
+                self.trail_handle
+                    .command(crate::trail_memory::TrailCommand::Record {
+                        owner: owner.clone(),
+                        url,
+                        transition,
+                        at_ms,
+                    });
+            }
+        }
+        self.run_effects(effects);
+    }
+}
+
 fn shared_scenario_from_env() -> Option<taproot::Scenario> {
     let path = std::path::PathBuf::from(std::env::var_os("TURNSTONE_SCENARIO")?);
     let body = std::fs::read_to_string(&path).unwrap_or_default();
@@ -523,6 +644,15 @@ pub struct Shell {
     place_handle: armillary::ActorHandle<crate::place::worker::PlaceWorkerCommand>,
     /// Generation-tagged app-owned answers from the place worker.
     place_rx: Receiver<Update>,
+    /// The profile root, once a locked vault unlocks (vault lock ruling 35).
+    /// `None` when the identity was ready at start, or once adopted.
+    unlock_rx: Option<Receiver<Arc<crate::identity::RootIdentity>>>,
+    /// Knot's publish source, held while the identity is pending: the
+    /// publishing service speaks as the profile, so it starts at unlock.
+    pending_publish_source: Option<knot::KnotPublishSource>,
+    /// Visits made while the identity is pending, filed under the root at
+    /// unlock (at most [`PENDING_TRAIL_CAP`]).
+    pending_trail: Vec<(String, eidetic::TraceTransition, u64)>,
     /// The system clipboard, opened once at startup: the handle holds X11 and
     /// Wayland selection ownership for its lifetime. `Err` carries why it is
     /// unreachable, so a copy refuses out loud rather than panicking. It stays
@@ -590,8 +720,9 @@ pub struct Shell {
     /// ContentStates tracks. Ports own handles; App holds data.
     /// Shared with every node's Pelt controller, which spawns from it.
     content_engines: Arc<SessionRegistry<netrender::Scene>>,
-    /// Pelt's surface registry for document controllers. Web surfaces still
-    /// live in `surface_producers` until SC step 4's second pass.
+    /// Pelt's surface registry for document controllers. A node's web surface
+    /// is spawned from `surface_engines` below and held as the surface lane
+    /// of its content.
     pelt_surface_engines: Arc<inker::SurfaceEngineRegistry>,
     content_sessions: NodeDocuments,
     /// Reader's immutable article packet remains in `content_sessions`; each
@@ -602,11 +733,10 @@ pub struct Shell {
         crate::surface::SurfaceId,
         (uuid::Uuid, mere_document_lanes::ReaderDocumentSession),
     >,
-    /// Long-lived frame-streaming engines, separate from the retained document
-    /// sessions above. The neutral inker registry chooses the producer; the
-    /// shell owns its non-Send live handle and its imported frame cache.
+    /// Long-lived frame-streaming engines. The neutral inker registry chooses
+    /// the producer; each node's content holds its non-Send live handle, and
+    /// the shell keeps the imported frame cache.
     surface_engines: inker::SurfaceEngineRegistry,
-    surface_producers: std::collections::HashMap<uuid::Uuid, Box<dyn inker::SurfaceProducer>>,
     /// Mailbox fallback cadence until producers expose an event-loop wake hook.
     surface_poll_clock: surface_poll::SurfacePollClock,
     /// Last monitor-rate observation on the existing event/render cadence.
@@ -847,14 +977,31 @@ impl Shell {
         let place_wake: armillary::Wake = Arc::new(move || {
             let _ = place_proxy.send_event(());
         });
-        let (place_handle, place_rx) = crate::place::worker::spawn_place_worker(
-            place_wake,
-            app.identity.clone(),
-            crate::place::worker::PlaceWorkerSettings {
-                capture_library,
-                ..crate::place::worker::PlaceWorkerSettings::default()
+        let place_settings = crate::place::worker::PlaceWorkerSettings {
+            capture_library,
+            ..crate::place::worker::PlaceWorkerSettings::default()
+        };
+        // With the vault locked the identity is pending (vault lock ruling
+        // 35): the place worker holds what speaks as the profile, the share
+        // reader and publishing wait, and a watch on the persisted lock's
+        // marker hands the root over once a user act unlocks the vault.
+        let (place_handle, place_rx) = match &app.identity {
+            Some(root) => {
+                crate::place::worker::spawn_place_worker(place_wake, root.clone(), place_settings)
             },
-        );
+            None => crate::place::worker::spawn_pending_place_worker(place_wake, place_settings),
+        };
+        let unlock_rx = app.identity.is_none().then(|| {
+            let unlock_proxy = proxy.clone();
+            crate::identity::watch_for_unlock(
+                app.data_root.clone(),
+                crate::identity::default_vault_dir(),
+                Arc::new(move || {
+                    let _ = unlock_proxy.send_event(());
+                }),
+            )
+        });
+        let mut pending_publish_source = None;
 
         // The content port's ordinary lanes: both Genet static renderers plus
         // the engine-native smolweb family. Route policy selects one by
@@ -866,15 +1013,7 @@ impl Shell {
         });
         let mut knot_clip = None;
         let mut publish_service = None;
-        let shared_knot_service = match crate::share_reader_service::KnotShareReaderService::start(
-            app.identity.clone(),
-        ) {
-            Ok(service) => Some(Arc::new(service)),
-            Err(error) => {
-                tracing::warn!(%error, "Knot share reader is unavailable");
-                None
-            }
-        };
+        let shared_knot_service = app.identity.clone().and_then(start_share_reader);
         let device_receipts_service =
             match crate::device_receipts_service::DeviceReceiptsService::start() {
                 Ok(service) => Some(Arc::new(service)),
@@ -888,12 +1027,9 @@ impl Shell {
             Ok(Some(mut engine)) => {
                 knot_clip = engine.clip_handle();
                 if let Some(source) = engine.take_publish_source() {
-                    match crate::publish_service::KnotPublishingService::start(
-                        source,
-                        app.identity.clone(),
-                    ) {
-                        Ok(service) => publish_service = Some(Arc::new(service)),
-                        Err(error) => tracing::warn!(%error, "Knot publishing is unavailable"),
+                    match app.identity.clone() {
+                        Some(root) => publish_service = start_publishing(source, root),
+                        None => pending_publish_source = Some(source),
                     }
                 }
                 content_engines.register(Box::new(engine));
@@ -961,6 +1097,9 @@ impl Shell {
             trail_rx,
             place_handle,
             place_rx,
+            unlock_rx,
+            pending_publish_source,
+            pending_trail: Vec::new(),
             clipboard,
             cursor: (0.0, 0.0),
             ctrl: false,
@@ -993,7 +1132,6 @@ impl Shell {
             content_sessions: std::collections::HashMap::new(),
             reader_appearances: std::collections::HashMap::new(),
             surface_engines: inker::SurfaceEngineRegistry::new(),
-            surface_producers: std::collections::HashMap::new(),
             surface_poll_clock: surface_poll::SurfacePollClock::new(surface_poll_interval_from_env()),
             physics_display_rate_last_observed: None,
             surface_find_requests: std::collections::HashMap::new(),
@@ -1044,7 +1182,7 @@ impl Shell {
     }
 
     fn has_live_content(&self, node: &uuid::Uuid) -> bool {
-        self.content_sessions.contains_key(node) || self.surface_producers.contains_key(node)
+        self.content_sessions.contains_key(node)
     }
 
     fn has_independent_reader_appearance(&self, node: &uuid::Uuid) -> bool {
@@ -1101,7 +1239,8 @@ impl Shell {
     fn clear_surface_content(&mut self) {
         self.reader_appearances.clear();
         self.surface_a11y.clear();
-        self.surface_producers.clear();
+        self.content_sessions
+            .retain(|_, content| content.lane() != pelt_core::PeltLane::Surface);
         self.surface_find_requests.clear();
         self.page_captures.clear_surfaces();
         #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
@@ -1934,8 +2073,8 @@ impl Shell {
                     if !self.foreign_a11y_placements().iter().any(|(current, _)| *current == node) {
                         return Err("foreign accessibility surface is no longer visible".to_owned());
                     }
-                    self.surface_producers
-                        .get_mut(&node)
+                    self.content_sessions
+                        .surface_mut(&node)
                         .ok_or_else(|| "foreign accessibility producer retired".to_owned())
                         .and_then(|producer| {
                             producer
@@ -2104,6 +2243,68 @@ impl Shell {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// SC controller-level input over Turnstone's own engines: a host-history
+    /// controller hands a Spartan prompt's submission up as a POST the
+    /// submission conversation completes, and a link up as a navigation the
+    /// graph places. Keyboard focus and Enter reach the page through the same
+    /// neutral input, and nothing loads in place.
+    #[test]
+    fn a_document_controller_hands_links_and_submissions_up() {
+        use inker::{
+            SessionButtonState, SessionFocusDirection, SessionFormMethod, SessionInput,
+            SessionKey, SessionModifiers,
+        };
+        let address = "spartan://capsule.test/";
+        let decision = standard_route_policy().route(&inker::EngineRouteRequest {
+            workspace_id: inker::WorkspaceRouteId::new("turnstone-test"),
+            view: None,
+            node: None,
+            address: address.to_string(),
+            content_type: None,
+            pinned_engine: None,
+        });
+        let request = SessionSpawnRequest::new(address)
+            .with_body("=: /sign Sign it\n=> /next Next\n")
+            .with_viewport(640, 480);
+        let config = pelt_core::PeltControllerConfig::from_request(decision.engine_id, request)
+            .with_host_history();
+        let mut controller = pelt_core::PeltController::new_shared(
+            Arc::new(standard_content_engines()),
+            Arc::new(inker::SurfaceEngineRegistry::new()),
+            config,
+            ShellClock(std::time::Instant::now()),
+        )
+        .expect("the Spartan lane spawns");
+        let _ = controller.frame(640, 480);
+        let enter = || SessionInput::Key {
+            key: SessionKey::Enter,
+            state: SessionButtonState::Pressed,
+            modifiers: SessionModifiers::default(),
+            repeat: false,
+        };
+
+        assert!(
+            controller
+                .input(SessionInput::FocusMove(SessionFocusDirection::Forward))
+                .handled
+        );
+        let submitted = controller.input(enter());
+        let submission = submitted.submission.expect("the prompt hands its submission up");
+        assert_eq!(submission.method, SessionFormMethod::Post);
+        assert_eq!(submission.action, "spartan://capsule.test/sign");
+        assert_eq!(submitted.navigation, None, "a submission is not a navigation");
+
+        assert!(
+            controller
+                .input(SessionInput::FocusMove(SessionFocusDirection::Forward))
+                .handled
+        );
+        let followed = controller.input(enter());
+        let navigation = followed.navigation.expect("the link hands its navigation up");
+        assert_eq!(navigation.request.address, "spartan://capsule.test/next");
+        assert_eq!(controller.address(), address, "nothing loads in place");
+    }
 
     /// Gate 1 of the smolweb browser gap analysis: Turnstone's default route
     /// for a Gemini address must name a registered retained-session engine,

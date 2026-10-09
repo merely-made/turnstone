@@ -18,24 +18,48 @@ use crate::panes::PaneContent;
 use super::{App, pane_label};
 
 /// The commands Turnstone keeps by default (Mark, 2026-10-08): the browsing
-/// eight. A person can drop any of them and keep any other command.
+/// eight, by id. A shared verb's id is the catalogue's; the rest keep their
+/// label as a host-owned id. A person can drop any of them and keep any other
+/// command.
 pub(crate) const DEFAULT_KEPT_COMMANDS: [&str; 8] = [
-    "Back",
-    "Forward",
-    "Reload",
-    "Stop loading",
+    cambium::catalogue::ids::NAV_BACK,
+    cambium::catalogue::ids::NAV_FORWARD,
+    cambium::catalogue::ids::NAV_RELOAD,
+    cambium::catalogue::ids::NAV_STOP,
     "Toggle live content",
     "Open node in Workbench",
-    "Fit view",
-    "Save session",
+    cambium::catalogue::ids::VIEW_FIT,
+    cambium::catalogue::ids::SESSION_SAVE,
 ];
 
 /// The command category of the rows composed ahead of the static registry.
 pub(crate) const CONTEXT_COMMANDS: &str = "context";
-/// The command category of the static registry.
+/// The command category of the static registry's host-owned rows. A shared
+/// verb takes its catalogue namespace instead.
 const STATIC_COMMANDS: &str = "turnstone";
 /// The bare `>` lane's last row, which expands it to the whole catalog.
 pub(crate) const ALL_COMMANDS_ROW: &str = "All commands\u{2026}";
+
+/// The catalog registered as a command set: each row once, under its shared
+/// id or its label, with the action it runs.
+pub(crate) struct CommandCatalog {
+    pub(crate) set: cambium::CommandSet,
+    actions: std::collections::HashMap<String, Action>,
+    /// A shown label to the id it registered under; the first row wins a
+    /// shared label, as it does for the automation runner.
+    ids: std::collections::HashMap<String, String>,
+}
+
+impl CommandCatalog {
+    /// The id the command shown as `label` registered under.
+    pub(crate) fn id_of(&self, label: &str) -> Option<&str> {
+        self.ids.get(label).map(String::as_str)
+    }
+
+    fn action(&self, id: &str) -> Option<&Action> {
+        self.actions.get(id)
+    }
+}
 
 /// Which labels are commands, and which of those the person keeps.
 pub(crate) struct CommandKeepStates {
@@ -255,87 +279,109 @@ impl App {
     }
 
     /// The catalog read through Cambium's command set (Scenograph editor plan
-    /// SE28 to SE32). Each row registers under its label, which is what the
-    /// automation runner resolves; the rows `available_actions` puts ahead of
+    /// SE28 to SE32, SE45 to SE50). A shared verb registers under its
+    /// catalogue id; every other row under its label, which is what the
+    /// automation runner resolves. The rows `available_actions` puts ahead of
     /// the static registry form the `context` category, so they still lead.
-    /// The first row wins a shared label, as it does for the runner.
-    pub(crate) fn command_set(&self) -> (cambium::CommandSet, Vec<(String, Action)>) {
+    pub(crate) fn command_catalog(&self) -> CommandCatalog {
         let catalog = self.available_actions();
         let contextual = catalog
             .len()
             .saturating_sub(crate::action::palette_actions().len());
         let mut set = cambium::CommandSet::new().with_defaults(DEFAULT_KEPT_COMMANDS);
-        for (index, (label, _)) in catalog.iter().enumerate() {
-            if set.get(label).is_some() {
+        let mut actions = std::collections::HashMap::new();
+        let mut ids = std::collections::HashMap::new();
+        for (index, (label, action)) in catalog.into_iter().enumerate() {
+            if ids.contains_key(&label) {
                 continue;
             }
-            let category = if index < contextual {
-                CONTEXT_COMMANDS
-            } else {
-                STATIC_COMMANDS
+            let shared = (index >= contextual)
+                .then(|| crate::action::shared_command_id(&action))
+                .flatten();
+            let command = match shared.and_then(cambium::catalogue::command) {
+                Some(command) => command,
+                None => {
+                    let category = if index < contextual {
+                        CONTEXT_COMMANDS
+                    } else {
+                        STATIC_COMMANDS
+                    };
+                    cambium::Command::new(label.clone(), label.clone(), category)
+                },
             };
-            set.register(cambium::Command::new(label.clone(), label.clone(), category));
+            if set.get(&command.id).is_some() {
+                continue;
+            }
+            ids.insert(label, command.id.clone());
+            actions.insert(command.id.clone(), action);
+            set.register(command);
         }
-        (set, catalog)
+        CommandCatalog { set, actions, ids }
     }
 
-    /// What the `>` lane offers. A bare `>` shows the contextual rows, then the
-    /// kept commands, then the recent ones, and ends with "All commands…",
-    /// which expands to the whole catalog in its composed order. A query
-    /// searches every command. `rows` bounds the lane so the expanding row is
-    /// never truncated away.
-    pub(crate) fn command_lane(&self, query: &str, all: bool, rows: usize) -> Vec<(String, Action)> {
-        let (set, catalog) = self.command_set();
-        if all {
-            return catalog;
-        }
-        let action_for = |label: &str| {
-            catalog
-                .iter()
-                .find(|(known, _)| known == label)
-                .map(|(_, action)| action.clone())
-        };
-        let mut lane: Vec<(String, Action)> = set
-            .menu(&self.command_choices, Some(CONTEXT_COMMANDS), query)
+    /// What the `>` lane offers, read through the omnibar's menu session. A
+    /// bare `>` shows the contextual rows, then the kept commands, then the
+    /// recent ones, and ends with "All commands…", which expands to every
+    /// command in the catalog's composed order. A query searches every
+    /// command. `rows` bounds the lane so the expanding row is never
+    /// truncated away.
+    pub(crate) fn command_lane(&self, menu: &cambium::MenuSession, rows: usize) -> Vec<(String, Action)> {
+        let catalog = self.command_catalog();
+        let mut lane: Vec<(String, Action)> = menu
+            .rows(&catalog.set, &self.command_choices)
             .into_iter()
-            .filter_map(|item| action_for(&item.id).map(|action| (item.label, action)))
+            .filter_map(|command| {
+                catalog
+                    .action(&command.id)
+                    .map(|action| (command.label.clone(), action.clone()))
+            })
             .collect();
-        if query.trim().is_empty() {
+        if menu.query.trim().is_empty() && !menu.all {
             lane.truncate(rows.saturating_sub(1).max(1));
             lane.push((ALL_COMMANDS_ROW.to_string(), Action::OmnibarShowAllCommands));
         }
         lane
     }
 
-    /// Whether the command `label` is kept, or `None` when it is not a command
-    /// (an address row, a hint, or "All commands…" itself).
+    /// Whether the command shown as `label` is kept, or `None` when it is not
+    /// a command (an address row, a hint, or "All commands…" itself).
     pub(crate) fn command_keep_states(&self) -> CommandKeepStates {
-        let (set, _) = self.command_set();
+        let catalog = self.command_catalog();
+        let kept: std::collections::HashSet<&str> = catalog
+            .set
+            .kept(&self.command_choices)
+            .into_iter()
+            .map(|command| command.id.as_str())
+            .collect();
         CommandKeepStates {
-            registered: set.commands().iter().map(|command| command.id.clone()).collect(),
-            kept: set
-                .kept(&self.command_choices)
-                .into_iter()
-                .map(|command| command.id.clone())
+            registered: catalog.set.commands().iter().map(|command| command.label.clone()).collect(),
+            kept: catalog
+                .set
+                .commands()
+                .iter()
+                .filter(|command| kept.contains(command.id.as_str()))
+                .map(|command| command.label.clone())
                 .collect(),
         }
     }
 
-    /// Keep `label` if it is not kept, drop it if it is. The choice is the
-    /// person's and is saved with the session's view sidecar.
+    /// Keep the command shown as `label` if it is not kept, drop it if it is.
+    /// The choice is the person's, stored by id, and is saved with the
+    /// session's view sidecar.
     pub(super) fn toggle_command_kept(&mut self, label: &str) -> Vec<Effect> {
-        let (set, _) = self.command_set();
-        if set.get(label).is_none() {
+        let catalog = self.command_catalog();
+        let Some(id) = catalog.id_of(label) else {
             return vec![Effect::Redraw];
-        }
-        let kept = set
+        };
+        let kept = catalog
+            .set
             .kept(&self.command_choices)
             .iter()
-            .any(|command| command.id == label);
+            .any(|command| command.id == id);
         if kept {
-            set.remove(&mut self.command_choices, label);
+            catalog.set.remove(&mut self.command_choices, id);
         } else {
-            set.add(&mut self.command_choices, label);
+            catalog.set.add(&mut self.command_choices, id);
         }
         self.events.push(AppEvent::CommandKept {
             label: label.to_string(),
@@ -345,11 +391,13 @@ impl App {
         vec![Effect::SaveSession, Effect::Redraw]
     }
 
-    /// Note that `label` ran from the palette. Recents ride the next session
-    /// save rather than forcing one per command.
+    /// Note that the command shown as `label` ran from the palette. Recents
+    /// ride the next session save rather than forcing one per command.
     pub(super) fn record_command_use(&mut self, label: &str) {
-        let (set, _) = self.command_set();
-        set.record_use(&mut self.command_choices, label);
+        let catalog = self.command_catalog();
+        if let Some(id) = catalog.id_of(label) {
+            catalog.set.record_use(&mut self.command_choices, id);
+        }
     }
 
     /// The founding half of the place vocabulary. Offered by situation: a
@@ -827,6 +875,16 @@ mod command_menu_tests {
         rows.iter().map(|(label, _)| label.as_str()).collect()
     }
 
+    /// The lane for `query`, bare or expanded, as the omnibar's session asks.
+    fn lane(app: &App, query: &str, all: bool, rows: usize) -> Vec<(String, Action)> {
+        let mut menu = cambium::MenuSession::open(Some(super::CONTEXT_COMMANDS));
+        menu.set_query(query);
+        if all {
+            menu.expand_all();
+        }
+        app.command_lane(&menu, rows)
+    }
+
     fn contextual(app: &App) -> Vec<String> {
         let catalog = app.available_actions();
         let statics = crate::action::palette_actions().len();
@@ -839,9 +897,11 @@ mod command_menu_tests {
     #[test]
     fn a_bare_lane_shows_context_then_kept_then_all_commands() {
         let app = App::test_stub();
-        let lane = app.command_lane("", false, 100);
+        let lane = lane(&app, "", false, 100);
         let mut expected = contextual(&app);
-        expected.extend(DEFAULT_KEPT_COMMANDS.iter().map(|label| label.to_string()));
+        expected.extend(DEFAULT_KEPT_COMMANDS.iter().map(|id| {
+            cambium::catalogue::label(id).unwrap_or(*id).to_string()
+        }));
         expected.push(ALL_COMMANDS_ROW.to_string());
         assert_eq!(labels(&lane), expected);
         assert!(
@@ -854,7 +914,7 @@ mod command_menu_tests {
     #[test]
     fn the_all_commands_row_survives_a_short_lane() {
         let app = App::test_stub();
-        let lane = app.command_lane("", false, 4);
+        let lane = lane(&app, "", false, 4);
         assert_eq!(lane.len(), 4);
         assert_eq!(lane.last().unwrap().0, ALL_COMMANDS_ROW);
     }
@@ -862,7 +922,7 @@ mod command_menu_tests {
     #[test]
     fn search_reaches_every_command() {
         let app = App::test_stub();
-        let lane = app.command_lane("reseed", false, 100);
+        let lane = lane(&app, "reseed", false, 100);
         assert_eq!(labels(&lane), ["Reseed layout"]);
         assert!(
             !labels(&lane).contains(&ALL_COMMANDS_ROW),
@@ -879,15 +939,16 @@ mod command_menu_tests {
             event,
             AppEvent::CommandKept { label, kept: true } if label == "Reseed layout"
         )));
-        assert!(labels(&app.command_lane("", false, 100)).contains(&"Reseed layout"));
+        assert!(labels(&lane(&app, "", false, 100)).contains(&"Reseed layout"));
+        assert_eq!(app.command_choices.added, ["Reseed layout"], "a host-owned id is its label");
 
-        app.toggle_command_kept("Fit view");
-        let lane = app.command_lane("", false, 100);
-        assert!(!labels(&lane).contains(&"Fit view"), "a default can be dropped");
-        assert_eq!(app.command_choices.removed, ["Fit view"]);
+        app.toggle_command_kept("Fit to view");
+        let shown = lane(&app, "", false, 100);
+        assert!(!labels(&shown).contains(&"Fit to view"), "a default can be dropped");
+        assert_eq!(app.command_choices.removed, ["view:fit"], "stored by its shared id");
 
-        app.toggle_command_kept("Fit view");
-        assert!(labels(&app.command_lane("", false, 100)).contains(&"Fit view"));
+        app.toggle_command_kept("Fit to view");
+        assert!(labels(&lane(&app, "", false, 100)).contains(&"Fit to view"));
         assert!(app.command_choices.removed.is_empty());
 
         let before = app.command_choices.clone();
@@ -908,7 +969,7 @@ mod command_menu_tests {
             .expect("search finds it");
         app.update(Action::OmnibarCommitRow(selected));
         assert_eq!(app.command_choices.recent, ["Reseed layout"]);
-        let lane = app.command_lane("", false, 100);
+        let lane = lane(&app, "", false, 100);
         let position = |label: &str| labels(&lane).iter().position(|row| *row == label);
         assert!(
             position("Reseed layout") > position("Save session"),
@@ -927,7 +988,7 @@ mod command_menu_tests {
         ));
         app.update(Action::OmnibarCommitRow(last));
         assert!(app.omnibar.open, "expanding is not a command");
-        assert!(app.omnibar.all_commands);
+        assert!(app.omnibar.menu.all);
         // The whole catalog in its composed order, bounded by the row limit as
         // the bare lane always was; typing narrows it.
         let shown: Vec<String> = app
@@ -952,7 +1013,7 @@ mod command_menu_tests {
         ));
         app.update(Action::OmnibarClose);
         app.update(Action::OmnibarOpen { command: true });
-        assert!(!app.omnibar.all_commands, "closing returns to the person's commands");
+        assert!(!app.omnibar.menu.all, "closing returns to the person's commands");
     }
 
     #[test]
@@ -1017,6 +1078,66 @@ mod command_menu_tests {
             .unwrap();
         let target = uxtree::node_id_for_path(&format!("turnstone/chrome/omnibar/row/{back}/keep"));
         crate::a11y::apply_route(&mut app, routes.get(&target), target);
-        assert_eq!(app.command_choices.removed, ["Back"], "the assistive action drops it");
+        assert_eq!(app.command_choices.removed, ["nav:back"], "the assistive action drops it");
+    }
+
+    /// The verbs the stack shares register under the catalogue's ids and
+    /// labels (SE49, SE50); Turnstone's own keep their label as their id.
+    #[test]
+    fn shared_verbs_register_under_catalogue_ids() {
+        use cambium::catalogue::{self, ids};
+        let app = App::test_stub();
+        let catalog = app.command_catalog();
+        for id in [
+            ids::NAV_BACK,
+            ids::NAV_FORWARD,
+            ids::NAV_RELOAD,
+            ids::NAV_STOP,
+            ids::VIEW_FIT,
+            ids::PHYSICS_TOGGLE,
+            ids::NODE_DELETE,
+            ids::SESSION_SAVE,
+            ids::PANE_SETTINGS,
+            ids::PANE_TRAIL,
+            ids::PANE_WORKBENCH,
+        ] {
+            let command = catalog.set.get(id).unwrap_or_else(|| panic!("{id} is offered"));
+            assert_eq!(Some(command.label.as_str()), catalogue::label(id));
+            assert_eq!(command.category, catalogue::namespace(id));
+            assert_eq!(catalog.id_of(&command.label), Some(id));
+        }
+        assert_eq!(catalog.id_of("Reseed layout"), Some("Reseed layout"));
+        assert!(
+            app.available_actions()
+                .iter()
+                .any(|(label, action)| label == "Fit to view" && *action == Action::FitView),
+            "the runner resolves the catalogue's label"
+        );
+    }
+
+    /// A choice stored under a shared verb's old label falls away: no alias
+    /// table maps it (SE50).
+    #[test]
+    fn a_label_keyed_choice_for_a_shared_verb_falls_away() {
+        let mut app = App::test_stub();
+        app.command_choices.removed = vec!["Fit view".into()];
+        assert!(labels(&lane(&app, "", false, 100)).contains(&"Fit to view"));
+    }
+
+    /// The highlight moves through the lane's menu session and wraps.
+    #[test]
+    fn the_lane_highlight_moves_through_its_menu_session() {
+        let mut app = App::test_stub();
+        app.update(Action::OmnibarOpen { command: true });
+        let rows = app.omnibar.suggestions.len();
+        assert!(rows > 1);
+        app.update(Action::OmnibarMove(-1));
+        assert_eq!(app.omnibar.selected, rows - 1, "up from the first row wraps");
+        assert_eq!(app.omnibar.menu.selected, Some(rows - 1));
+        app.update(Action::OmnibarMove(1));
+        assert_eq!(app.omnibar.selected, 0);
+        app.update(Action::OmnibarInsert("reseed".into()));
+        assert_eq!(app.omnibar.menu.query, "reseed");
+        assert_eq!(app.omnibar.menu.selected, None, "a new query starts the highlight over");
     }
 }

@@ -120,6 +120,10 @@ pub enum NodeContent {
 pub struct ContentFacts {
     /// The engine id the route decision picked (e.g. `genet.livery`).
     pub engine: String,
+    /// Which lane of the node's Pelt content presents it. A surface takes
+    /// Back, Forward, Reload and Stop on its engine's own web plane; a
+    /// document's belong to the App's load and graph history.
+    pub lane: ContentLane,
     /// The structural read, when the lane has one. `None` is reported
     /// honestly (a lane without introspection, not an empty document).
     pub structure: Option<StructureFacts>,
@@ -130,6 +134,16 @@ pub struct ContentFacts {
     /// boundary so product surfaces never infer support from a method's
     /// existence.
     pub capabilities: DocumentCapabilityFacts,
+}
+
+/// The lane of a node's live content (Pelt's `PeltLane`, mirrored so the App
+/// stays port-agnostic).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum ContentLane {
+    /// A retained document session.
+    Document,
+    /// A live web-engine surface (Weld, Scry or Servo).
+    Surface,
 }
 
 /// App-owned, port-agnostic mirror of one document control's availability.

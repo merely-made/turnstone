@@ -3,12 +3,12 @@
 
 //! Native producer semantics, driven on the existing UI thread.
 
-use super::Shell;
+use super::{NodeSurfaces, Shell};
 use crate::surface::{FocusTarget, SurfaceKind};
 
 impl Shell {
     pub(super) fn activate_surface_accessibility(&mut self, node: uuid::Uuid, resync: bool) {
-        let Some(producer) = self.surface_producers.get_mut(&node) else {
+        let Some(producer) = self.content_sessions.surface_mut(&node) else {
             return;
         };
         let root = if resync {
@@ -38,7 +38,7 @@ impl Shell {
 
     pub(super) fn drain_surface_accessibility(&mut self) {
         const MAX_UPDATES: usize = 256;
-        for (&node, producer) in &mut self.surface_producers {
+        for (node, producer) in self.content_sessions.surfaces_mut() {
             for _ in 0..MAX_UPDATES {
                 let Some(update) = producer.poll_accessibility_update() else {
                     break;

@@ -21,8 +21,10 @@ use super::App;
 
 impl App {
     fn isolated(data_root: PathBuf) -> Self {
-        let identity =
-            crate::identity::load_or_create_root(&data_root, &data_root.join("personae-vault"));
+        let identity = match crate::identity::load_root(&data_root, &data_root.join("personae-vault")) {
+            crate::identity::RootLoad::Ready(root) => root,
+            crate::identity::RootLoad::Locked => unreachable!("a fresh fixture vault is never locked"),
+        };
         let root = identity::IdentityProvider::master_public_key(identity.as_ref()).to_bytes();
         let session_id = SessionId::new();
         let graph_id = GraphId::from_uuid(*session_id.as_uuid());
@@ -92,7 +94,7 @@ impl App {
             resident_run_limits: servitor::RunLimits { decisions: crate::denizen::RUN_BUDGET as u64, tool_calls: 0, tokens: 0, elapsed_ms: 30_000, consecutive_failures: 1 },
             resident_run_storage_limits: crate::resident_runs::StorageLimits::default(),
             gemini_identities: crate::gemini_identity::GeminiIdentityBindings::default(),
-            identity,
+            identity: Some(identity),
             journal: {
                 let (journal, hook) = mere::kernel::graph::journal_capture_hook();
                 mere::kernel::graph::set_captured_delta_hook(Some(hook));

@@ -257,6 +257,9 @@ pub enum PlaceWorkerCommand {
         request: u64,
     },
     Release(std::sync::mpsc::SyncSender<()>),
+    /// The vault unlocked: the profile root a pending worker was started
+    /// without. The commands it held run now, in the order they came.
+    AdoptIdentity(Arc<RootIdentity>),
     /// Stop serving the way a killed process stops: no close on the wire.
     /// Test-only, because nothing a person does to this app produces it.
     #[cfg(test)]
@@ -2136,6 +2139,26 @@ pub fn spawn_place_worker(
     identity: Arc<RootIdentity>,
     settings: PlaceWorkerSettings,
 ) -> (ActorHandle<PlaceWorkerCommand>, Receiver<Update>) {
+    spawn_place_worker_with(wake, Some(identity), settings)
+}
+
+/// Spawn the worker while the profile identity is pending (the vault is
+/// locked). Every command that speaks as the profile waits, in order, until
+/// [`PlaceWorkerCommand::AdoptIdentity`]; `Release` is still answered at once,
+/// so a session switch never waits on the vault, and drops what the released
+/// session had waiting.
+pub fn spawn_pending_place_worker(
+    wake: Wake,
+    settings: PlaceWorkerSettings,
+) -> (ActorHandle<PlaceWorkerCommand>, Receiver<Update>) {
+    spawn_place_worker_with(wake, None, settings)
+}
+
+fn spawn_place_worker_with(
+    wake: Wake,
+    identity: Option<Arc<RootIdentity>>,
+    settings: PlaceWorkerSettings,
+) -> (ActorHandle<PlaceWorkerCommand>, Receiver<Update>) {
     spawn_named(
         "turnstone-place",
         wake,
@@ -2143,7 +2166,49 @@ pub fn spawn_place_worker(
             let mut live: Option<OpenPlace> = None;
             let mut live_scope: Option<(SessionId, u64)> = None;
             let mut lifecycle_generation = 0u64;
-            while let Ok(command) = commands.recv() {
+            let mut adopted = identity;
+            let mut waiting: std::collections::VecDeque<PlaceWorkerCommand> =
+                std::collections::VecDeque::new();
+            loop {
+                let command = match adopted.is_some().then(|| waiting.pop_front()).flatten() {
+                    Some(command) => command,
+                    None => match commands.recv() {
+                        Ok(command) => command,
+                        Err(_) => break,
+                    },
+                };
+                let identity = match (command, &adopted) {
+                    (PlaceWorkerCommand::AdoptIdentity(root), _) => {
+                        adopted.get_or_insert(root);
+                        continue;
+                    },
+                    (command, Some(root)) => {
+                        let root = Arc::clone(root);
+                        (command, root)
+                    },
+                    // Nothing is open while pending, so a release has nothing
+                    // to drop but what that session had waiting.
+                    (PlaceWorkerCommand::Release(ack), None) => {
+                        waiting.clear();
+                        let _ = ack.send(());
+                        continue;
+                    },
+                    #[cfg(test)]
+                    (PlaceWorkerCommand::Abandon(ack), None) => {
+                        let _ = ack.send(());
+                        continue;
+                    },
+                    #[cfg(test)]
+                    (PlaceWorkerCommand::Freeze(_, ack), None) => {
+                        let _ = ack.send(());
+                        continue;
+                    },
+                    (command, None) => {
+                        waiting.push_back(command);
+                        continue;
+                    },
+                };
+                let (command, identity) = identity;
                 match command {
                     PlaceWorkerCommand::Open {
                         session,
@@ -2626,6 +2691,7 @@ pub fn spawn_place_worker(
                         live_scope = None;
                         let _ = ack.send(());
                     },
+                    PlaceWorkerCommand::AdoptIdentity(_) => {},
                     #[cfg(test)]
                     PlaceWorkerCommand::Abandon(ack) => {
                         if let Some(opened) = live.as_mut()
@@ -4022,6 +4088,59 @@ pub(crate) mod tests {
         assert_eq!(withdrawn.chat.revoked_authority, 3);
         assert_eq!(withdrawn.moot.delegated_certificates, 1);
         let _ = std::fs::remove_dir_all(&root);
+    }
+
+    /// Vault lock ruling 35: a worker started while the identity is pending
+    /// holds what speaks as the profile until the root arrives, then runs it
+    /// in order. A release is answered at once and drops what was waiting.
+    #[test]
+    fn a_pending_worker_holds_commands_until_the_root_arrives() {
+        let root = tempfile::tempdir().unwrap();
+        let directory = root.path().join("profile");
+        let identity = Arc::new(RootIdentity::Unsealed(InMemoryProvider::from_seed(
+            [0x95; 32],
+        )));
+        let binding = binding(0x45);
+        seed_profile(&directory, identity.as_ref(), &binding, 1);
+
+        let wake: Wake = Arc::new(|| {});
+        let (worker, updates) = spawn_pending_place_worker(wake, settings());
+        let open = |session| PlaceWorkerCommand::Open {
+            session,
+            generation: 1,
+            directory: directory.clone(),
+            binding: binding.clone(),
+        };
+        let wait = std::time::Duration::from_millis(300);
+
+        let released = SessionId::new();
+        worker.command(open(released));
+        let (ack, acked) = std::sync::mpsc::sync_channel(1);
+        worker.command(PlaceWorkerCommand::Release(ack));
+        acked
+            .recv_timeout(std::time::Duration::from_secs(5))
+            .expect("a release never waits on the vault");
+
+        let session = SessionId::new();
+        worker.command(open(session));
+        assert!(
+            updates.recv_timeout(wait).is_err(),
+            "nothing opens while the identity is pending"
+        );
+
+        worker.command(PlaceWorkerCommand::AdoptIdentity(identity));
+        match updates
+            .recv_timeout(std::time::Duration::from_secs(5))
+            .unwrap()
+        {
+            Update::PlaceOpened {
+                session: opened,
+                result: Ok(_),
+                ..
+            } => assert_eq!(opened, session, "the released session's open was dropped"),
+            _ => panic!("expected the held open"),
+        }
+        assert!(updates.recv_timeout(wait).is_err(), "and it ran once");
     }
 
     #[test]

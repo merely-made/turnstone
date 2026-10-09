@@ -13,7 +13,7 @@
 //! spine. The canvas view hotkeys stay suspended while a page reads, so a
 //! stray `space` cannot reseed the graph behind it.
 
-use super::NodeSessions;
+use super::NodeSurfaces;
 use winit::keyboard::{Key as WinitKey, NamedKey as WinitNamedKey};
 
 use inker::SessionScrollKey;
@@ -83,7 +83,7 @@ impl Shell {
         let crate::surface::FocusTarget::Content { node, .. } = self.app.focus else {
             return false;
         };
-        if !self.surface_producers.contains_key(&node) {
+        if !self.content_sessions.has_surface(&node) {
             return false;
         }
         for character in text.chars() {
@@ -125,7 +125,7 @@ impl Shell {
         if matches!(key, WinitKey::Named(WinitNamedKey::Escape)) {
             return false;
         }
-        let Some(producer) = self.surface_producers.get_mut(&node) else {
+        let Some(producer) = self.content_sessions.surface_mut(&node) else {
             return false;
         };
         let key_code = windows_virtual_key(key);
@@ -148,41 +148,17 @@ impl Shell {
         true
     }
 
-    fn deliver_knot_key(&mut self, key: &WinitKey) -> bool {
+    /// IME for the focused document goes through its browsing controller,
+    /// as its keys do: Knot's editor and a page's form fields take it alike.
+    pub(super) fn deliver_document_ime(&mut self, ime: &winit::event::Ime) -> bool {
         let crate::surface::FocusTarget::Content { node, .. } = self.app.focus else {
             return false;
         };
-        let Some(session) = self.content_sessions.session_mut(&node) else {
-            return false;
-        };
-        let Some(editor) = session
-            .as_any()
-            .downcast_mut::<crate::knot_authoring::KnotDocumentSession>()
-        else {
-            return false;
-        };
-        let modifiers = cambium::Modifiers {
-            shift: self.shift,
-            ctrl: self.ctrl,
-            alt: self.alt,
-            meta: false,
-        };
-        cambium_winit::key_event_from_winit(key, modifiers)
-            .is_some_and(|event| editor.dispatch_key(event))
-    }
-
-    pub(super) fn deliver_knot_ime(&mut self, ime: &winit::event::Ime) -> bool {
-        let crate::surface::FocusTarget::Content { node, .. } = self.app.focus else {
-            return false;
-        };
-        self.content_sessions
-            .session_mut(&node)
-            .and_then(|session| {
-                session
-                    .as_any()
-                    .downcast_mut::<crate::knot_authoring::KnotDocumentSession>()
-            })
-            .is_some_and(|editor| editor.dispatch_key(cambium_winit::ime_event_from_winit(ime)))
+        self.document_input(
+            node,
+            inker::SessionInput::Ime(super::controller_input::session_ime(ime)),
+        )
+        .unwrap_or(false)
     }
 
     fn deliver_contributed_key(&mut self, key: &WinitKey) -> bool {
@@ -240,6 +216,13 @@ impl Shell {
         let crate::surface::FocusTarget::Content { node, appearance } = self.app.focus else {
             return false;
         };
+        // The document's own controller takes the key first, so an editor,
+        // a form field or a focused link keeps it (Enter follows, Tab moves
+        // focus within the page). What it leaves falls to the scroll keys,
+        // the blur, and then the Actions.
+        if self.document_key(node, key) == Some(true) {
+            return true;
+        }
         // Escape blurs back to the canvas. Focus is ephemeral UI state (the
         // press path sets it directly too), so this rides on state, not an
         // Action.
@@ -363,10 +346,6 @@ impl Shell {
             return;
         }
         if !self.app.omnibar.open && self.deliver_contributed_key(key) {
-            self.request_redraw();
-            return;
-        }
-        if !self.app.omnibar.open && self.deliver_knot_key(key) {
             self.request_redraw();
             return;
         }

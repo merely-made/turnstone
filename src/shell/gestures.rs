@@ -17,7 +17,7 @@ use winit::event::MouseButton;
 use crate::action::Action;
 use crate::panes::PaneContent;
 
-use super::{Shell, decode_sprite};
+use super::{NodeSurfaces, Shell, decode_sprite};
 
 impl Shell {
     /// Resolve a workbench tab gesture at its release point: released over a
@@ -344,7 +344,7 @@ impl Shell {
         crate::surface::hit_test(&self.surface_plan(), self.app.focus, x, y).and_then(|hit| {
             match hit.kind {
                 crate::surface::SurfaceKind::Content(node)
-                    if self.surface_producers.contains_key(&node) =>
+                    if self.content_sessions.has_surface(&node) =>
                 {
                     Some((node, hit.local.0, hit.local.1))
                 }
@@ -389,7 +389,7 @@ impl Shell {
             alt: self.alt,
             meta: false,
         };
-        if let Some(producer) = self.surface_producers.get_mut(&node)
+        if let Some(producer) = self.content_sessions.surface_mut(&node)
             && let Err(error) = producer.send_drag_input(inker::DragEvent {
                 phase,
                 position: inker::PhysicalPosition { x, y },

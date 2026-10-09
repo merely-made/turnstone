@@ -47,7 +47,7 @@ fn pause_skips_manual_runs_and_resume_is_durable() {
         app.graph_runtimes.facets(),
         app.graph_runtimes.graph(),
         &app.session_dir(),
-        app.identity.as_ref(),
+        app.personae_root(),
     );
     app.denizens = reopened;
     app.update(Action::RunDenizen { member });
@@ -85,7 +85,7 @@ fn uninstall_persists_revocation_and_rebuild_rejects_lagging_binding() {
         app.graph_runtimes.facets(),
         app.graph_runtimes.graph(),
         &app.session_dir(),
-        app.identity.as_ref(),
+        app.personae_root(),
     );
     assert_eq!(
         rebuilt.residents.get(&member).unwrap().binding.lifecycle,

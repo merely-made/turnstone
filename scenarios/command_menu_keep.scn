@@ -1,0 +1,35 @@
+# Scenograph C2 headed check, run 1 of 2 (FRESH profile): the `>` lane reads
+# through Cambium's menu session and command set. Search reaches a command
+# that is not kept, and Ctrl+D keeps it. A default (the catalogue's "Fit to
+# view") is dropped the same way. The choices are stored by id: a host-owned
+# command by its label, a shared verb by its catalogue id. Run 2
+# (command_menu_keep_restart.scn) reopens the same TURNSTONE_ROOT.
+settle 30
+key escape
+
+omnibar actions
+type reseed
+settle 10
+assert snap suggestions ~ Reseed layout
+key ctrl+d
+settle 5
+assert event command-kept Reseed layout
+assert snap commands-added == Reseed layout
+key escape
+
+omnibar actions
+settle 10
+assert snap suggestions ~ Back
+type fit to
+settle 10
+assert snap suggestions ~ Fit to view
+key ctrl+d
+settle 5
+assert event command-dropped Fit to view
+assert snap commands-removed == view:fit
+capture 01_kept_and_dropped
+key escape
+
+act Save session
+settle 30
+log command menu keep receipt complete

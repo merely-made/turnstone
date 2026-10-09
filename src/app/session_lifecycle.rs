@@ -65,9 +65,16 @@ impl App {
             .get(session_id)
             .map(|manifest| manifest.root_graph_id)
             .unwrap_or_else(GraphId::nil);
-        let identity =
-            crate::identity::load_or_create_root(&data_root, &crate::identity::default_vault_dir());
-        let root = identity::IdentityProvider::master_public_key(identity.as_ref()).to_bytes();
+        let identity = match crate::identity::load_root(
+            &data_root,
+            &crate::identity::default_vault_dir(),
+        ) {
+            crate::identity::RootLoad::Ready(root) => Some(root),
+            crate::identity::RootLoad::Locked => None,
+        };
+        let root = identity
+            .as_ref()
+            .map(|root| identity::IdentityProvider::master_public_key(root.as_ref()).to_bytes());
         let gemini_identities = crate::gemini_identity::GeminiIdentityBindings::load(&data_root);
         let mut app = Self {
             watches: servitor::WatchTable::new(),
@@ -130,7 +137,7 @@ impl App {
             recall: Vec::new(),
             recall_query: String::new(),
             pending_install: None,
-            denizens: crate::denizen::Denizens::new(root),
+            denizens: root.map_or_else(crate::denizen::Denizens::pending, crate::denizen::Denizens::new),
             resident_runs: crate::resident_runs::ResidentRuns::default(),
             resident_run_error: None,
             resident_run_effect_policy: crate::resident_runs::ExternalEffectPolicy::default(),
@@ -143,6 +150,9 @@ impl App {
             events: Vec::new(),
             knot_documents: Vec::new(),
         };
+        if app.identity.is_none() {
+            app.events.push(AppEvent::ProfileIdentityPending);
+        }
         let mut effects = app.adopt_session(session_id);
         if let Some(url) = address {
             app.apply_launch_address(url, &mut effects);
@@ -442,9 +452,37 @@ impl App {
 
     /// This profile's Personae root. The same root the worker evaluates
     /// authority for; read here so a card can name it without a round trip.
-    pub(crate) fn personae_root(&self) -> [u8; 32] {
+    /// `None` while the vault is locked.
+    pub(crate) fn personae_root(&self) -> Option<[u8; 32]> {
         use identity::IdentityProvider as _;
-        self.identity.master_public_key().to_bytes()
+        self.identity
+            .as_ref()
+            .map(|root| root.master_public_key().to_bytes())
+    }
+
+    /// The vault unlocked: the pending identity becomes the profile root.
+    /// Participants rebuild under it, so their chains verify again; the
+    /// shell starts what speaks as the profile. A second root for the same
+    /// run is ignored: a live persona switch is not this path.
+    pub(crate) fn adopt_profile_root(
+        &mut self,
+        root: std::sync::Arc<crate::identity::RootIdentity>,
+    ) -> Vec<Effect> {
+        if self.identity.is_some() {
+            return Vec::new();
+        }
+        let description = root.description();
+        self.identity = Some(root);
+        let sdir = self.session_dir();
+        self.denizens = crate::denizen::rebuild(
+            self.graph_runtimes.facets(),
+            self.graph_runtimes.graph(),
+            &sdir,
+            self.personae_root(),
+        );
+        self.events
+            .push(AppEvent::ProfileIdentityUnlocked(description));
+        vec![Effect::Redraw]
     }
 
     /// Refuse one place gesture out loud, changing nothing.
@@ -529,6 +567,9 @@ impl App {
         let Some(binding) = self.place.binding().cloned() else {
             return self.refuse_place("open a place before exporting its card");
         };
+        let Some(root) = self.personae_root() else {
+            return self.refuse_place(crate::denizen::PENDING_IDENTITY);
+        };
         let local_rendezvous = match &self.place {
             crate::place::PlaceState::Offline { snapshot, .. } => snapshot
                 .sync
@@ -540,7 +581,7 @@ impl App {
         let card = crate::place::PlaceCardV1 {
             version: crate::place::PLACE_CARD_VERSION,
             binding,
-            founder_root: crate::place::hex32(&self.personae_root()),
+            founder_root: crate::place::hex32(&root),
             rendezvous: local_rendezvous
                 .into_iter()
                 .map(|hint| crate::place::invite::RendezvousV1 {
@@ -1025,7 +1066,7 @@ impl App {
         let view_intent = session::load_view_intent(&sdir);
         self.command_choices = view_intent
             .as_ref()
-            .map(|intent| intent.command_menu.clone().into())
+            .map(|intent| intent.command_menu.clone())
             .unwrap_or_default();
         if let Some(intent) = view_intent {
             self.graph_runtimes
@@ -1135,7 +1176,7 @@ impl App {
             self.graph_runtimes.facets(),
             self.graph_runtimes.graph(),
             &sdir,
-            self.identity.as_ref(),
+            self.personae_root(),
         );
         // Residency came back; its standing subscriptions have to come with
         // it, or a behavior silently stops waking after a reload.

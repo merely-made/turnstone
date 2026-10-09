@@ -35,6 +35,16 @@
 //! refuses to start over a key store is worse than one that says plainly what
 //! protects its key. Once the vault opens on a machine, the legacy unsealed
 //! seed file is retired (deleted) so no plaintext key lingers.
+//!
+//! ## A locked vault
+//!
+//! A locked vault is not a missing one (vault lock rulings 23 and 35). While
+//! the vault carries the persisted lock, or its open answers `Locked`,
+//! Turnstone runs with its identity **pending**: no fallback key, no unsealed
+//! write. Browsing works; what speaks as the profile (places, publishing, the
+//! share reader, participants) waits. [`watch_for_unlock`] watches the marker
+//! and opens the root once a user act clears it (Mark, 2026-10-08). The
+//! dramatis plan's D12 keeps this rule when apps call djinn instead.
 
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
@@ -107,31 +117,89 @@ impl IdentityProvider for RootIdentity {
     }
 }
 
-/// Load the profile's root identity: the personae vault at `vault_dir` first,
-/// on the family-chosen profile (`identity::roster` — shared with the personae
-/// bins and Graphshell, so turnstone's root is the user's actual identity),
-/// the legacy unsealed seed as a loud fallback.
+/// What opening the profile's root found.
+pub enum RootLoad {
+    /// The root, from the vault or (loudly) the unsealed fallback.
+    Ready(Arc<RootIdentity>),
+    /// The vault is locked: the identity stays pending until a user act
+    /// unlocks it. Never answered with a fallback key (ruling 35).
+    Locked,
+}
+
+/// Open the profile's root: the shared personae vault on the family-chosen
+/// profile (the same identity the personae bins and Graphshell speak as), the
+/// legacy unsealed seed as a loud fallback when no vault can open, or
+/// [`RootLoad::Locked`] when the vault is locked.
 ///
-/// Never fails the caller: a browser that refuses to start over a key store
-/// is worse than one whose participants need re-rooting. A changed root is not
-/// silent breakage either — `denizen::rebuild` re-issues from the reviewed
-/// projections under the current root (the re-root heal). That heal is also
-/// what makes a live persona switch an invocation rather than new machinery.
-pub fn load_or_create_root(data_root: &Path, vault_dir: &Path) -> Arc<RootIdentity> {
+/// A locked vault never reaches the fallback: starting as a different root
+/// would re-root every participant grant and then re-root them back at the
+/// next unlocked start. A missing or unusable vault still falls back,
+/// because a browser that refuses to start over a key store is worse than one
+/// whose participants need re-rooting; `denizen::rebuild` re-issues from the
+/// reviewed projections under the current root (the re-root heal).
+pub fn load_root(data_root: &Path, vault_dir: &Path) -> RootLoad {
+    // The persisted lock binds every opener, whichever backend would answer
+    // (ruling 23): personae itself refuses only the OS-sealed root under it.
+    if identity::lock_persisted(vault_dir) {
+        tracing::warn!(
+            vault = ?vault_dir,
+            "personae vault is locked; the profile identity is pending until it is unlocked"
+        );
+        return RootLoad::Locked;
+    }
     match open_vault(vault_dir) {
         Ok(root) => {
             tracing::info!(protection = %root.description(), "profile identity");
             retire_unsealed_seed(data_root);
-            Arc::new(root)
+            RootLoad::Ready(Arc::new(root))
+        }
+        Err(IdentityError::Locked) => {
+            tracing::warn!("personae vault is locked; the profile identity is pending until it is unlocked");
+            RootLoad::Locked
         }
         Err(err) => {
             tracing::warn!(
                 %err,
                 "personae vault unavailable; falling back to the unsealed profile seed"
             );
-            Arc::new(RootIdentity::Unsealed(unsealed_fallback(data_root)))
+            RootLoad::Ready(Arc::new(RootIdentity::Unsealed(unsealed_fallback(data_root))))
         }
     }
+}
+
+/// How often [`watch_for_unlock`] looks at the marker. A stat per second is
+/// nothing beside a person reaching for djinn's prompt.
+const UNLOCK_POLL: std::time::Duration = std::time::Duration::from_secs(1);
+
+/// Watch a locked vault and hand back the root once a user act unlocks it
+/// (Mark, 2026-10-08: watch the persisted lock's marker). The thread waits
+/// for the marker to clear, then opens the vault; an open that still answers
+/// `Locked` keeps it waiting. It calls `wake` after sending, and ends with the
+/// root sent or the receiver gone.
+pub fn watch_for_unlock(
+    data_root: PathBuf,
+    vault_dir: PathBuf,
+    wake: Arc<dyn Fn() + Send + Sync>,
+) -> std::sync::mpsc::Receiver<Arc<RootIdentity>> {
+    let (tx, rx) = std::sync::mpsc::channel();
+    let spawned = std::thread::Builder::new()
+        .name("turnstone-unlock-watch".into())
+        .spawn(move || loop {
+            std::thread::sleep(UNLOCK_POLL);
+            if identity::lock_persisted(&vault_dir) {
+                continue;
+            }
+            if let RootLoad::Ready(root) = load_root(&data_root, &vault_dir) {
+                if tx.send(root).is_ok() {
+                    wake();
+                }
+                return;
+            }
+        });
+    if let Err(err) = spawned {
+        tracing::warn!(%err, "could not watch the vault for unlock; the profile identity stays pending");
+    }
+    rx
 }
 
 fn open_vault(vault_dir: &Path) -> Result<RootIdentity, IdentityError> {
@@ -219,6 +287,14 @@ mod tests {
         dir
     }
 
+    /// The root, for a vault that is not locked.
+    fn load_or_create_root(data_root: &Path, vault_dir: &Path) -> Arc<RootIdentity> {
+        match load_root(data_root, vault_dir) {
+            RootLoad::Ready(root) => root,
+            RootLoad::Locked => panic!("the vault at {vault_dir:?} is unexpectedly locked"),
+        }
+    }
+
     /// A vault dir that cannot exist (a path under a FILE), forcing the
     /// unsealed fallback deterministically on every platform.
     fn broken_vault_dir(base: &Path) -> PathBuf {
@@ -302,6 +378,53 @@ mod tests {
             root_subject(seeded.as_ref()),
             root_subject(vaulted.as_ref()),
             "the vault identity supersedes the stopgap key"
+        );
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    /// Ruling 35: a locked vault leaves the identity pending. It never
+    /// reaches the fallback, so no unsealed seed is minted.
+    #[test]
+    fn a_locked_vault_leaves_the_identity_pending() {
+        let dir = scratch("locked");
+        let vault = dir.join("personae-vault");
+        identity::persist_lock(&vault).unwrap();
+
+        assert!(matches!(load_root(&dir, &vault), RootLoad::Locked));
+        assert!(
+            !master_key_path(&dir).exists(),
+            "no fallback seed while the vault is locked"
+        );
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    /// The watch hands the root back once the marker clears, and not before.
+    #[test]
+    fn the_unlock_watch_opens_the_root_when_the_marker_clears() {
+        let dir = scratch("unlock-watch");
+        let vault = dir.join("personae-vault");
+        identity::persist_lock(&vault).unwrap();
+        let woken = Arc::new(std::sync::atomic::AtomicBool::new(false));
+        let flag = woken.clone();
+        let roots = watch_for_unlock(
+            dir.clone(),
+            vault.clone(),
+            Arc::new(move || flag.store(true, std::sync::atomic::Ordering::SeqCst)),
+        );
+
+        assert!(
+            roots.recv_timeout(UNLOCK_POLL * 2).is_err(),
+            "nothing opens while the marker is there"
+        );
+        identity::clear_persisted_lock(&vault).unwrap();
+        let root = roots
+            .recv_timeout(UNLOCK_POLL * 10)
+            .expect("the root arrives once the vault is unlocked");
+        assert!(woken.load(std::sync::atomic::Ordering::SeqCst));
+        assert_eq!(
+            root_subject(root.as_ref()),
+            root_subject(load_or_create_root(&dir, &vault).as_ref()),
+            "the same profile root a later open finds"
         );
         let _ = std::fs::remove_dir_all(&dir);
     }

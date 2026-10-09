@@ -1151,7 +1151,7 @@ fn denizen_installs_after_visible_review() {
         app.graph_runtimes.facets(),
         app.graph_runtimes.graph(),
         &app.session_dir(),
-        app.identity.as_ref(),
+        app.personae_root(),
     );
     assert_eq!(rebuilt.residents.len(), 1);
     assert!(
@@ -1166,6 +1166,76 @@ fn denizen_installs_after_visible_review() {
             servitor::Mode::Write
         ),
         "authority derives from the projection, not from a second store"
+    );
+    let _ = std::fs::remove_dir_all(&app.data_root);
+}
+
+/// Vault lock ruling 35: with the vault locked the identity is pending, not
+/// replaced. Participants keep residing but nothing they hold verifies, a new
+/// install refuses rather than signing with a fallback key, nothing on disk
+/// is rewritten, and the unlocked root brings their authority back.
+#[test]
+fn a_locked_vault_holds_participants_until_the_root_is_adopted() {
+    use servitor::AuthorityProvider;
+
+    let mut app = App::test_stub();
+    app.data_root = std::env::temp_dir().join(format!("turnstone-pending-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&app.data_root);
+    std::fs::create_dir_all(app.session_dir()).unwrap();
+    let pack = app.data_root.join("keeper.lua");
+    std::fs::write(&pack, "mere.open('mere://kept/note')").unwrap();
+    app.update(Action::InstallDenizen {
+        path: pack.display().to_string(),
+    });
+    app.update(Action::ConfirmInstallDenizen);
+    let subject = app.denizens.residents.values().next().unwrap().subject;
+    let navigate = crate::ring::Ring::Navigate.cap().unwrap();
+    let admissions = crate::resident_admission::path(&app.session_dir());
+    let admitted = std::fs::read(&admissions).unwrap();
+
+    // The vault locks: the app runs with its identity pending.
+    let root = app.identity.take().expect("the stub starts unlocked");
+    app.denizens = crate::denizen::rebuild(
+        app.graph_runtimes.facets(),
+        app.graph_runtimes.graph(),
+        &app.session_dir(),
+        app.personae_root(),
+    );
+    assert_eq!(app.denizens.residents.len(), 1, "still resident");
+    assert!(
+        !app.denizens.authority.covers(subject, &navigate, servitor::Mode::Write),
+        "no chain verifies without the root"
+    );
+    assert_eq!(std::fs::read(&admissions).unwrap(), admitted, "nothing rewritten");
+    assert_eq!(app.personae_root(), None);
+    assert_eq!(app.gemini_identity_for("gemini://capsule.example/"), Ok(None));
+
+    let other = app.data_root.join("other.lua");
+    std::fs::write(&other, "mere.open('mere://kept/other')").unwrap();
+    app.update(Action::InstallDenizen {
+        path: other.display().to_string(),
+    });
+    app.take_events();
+    app.update(Action::ConfirmInstallDenizen);
+    assert_eq!(app.denizens.residents.len(), 1, "no install while pending");
+    assert!(app.take_events().iter().any(|event| matches!(
+        event,
+        AppEvent::DenizenRefused(reason) if reason == crate::denizen::PENDING_IDENTITY
+    )));
+
+    // The vault unlocks: the same root returns, and with it the authority.
+    app.adopt_profile_root(root.clone());
+    assert!(
+        app.denizens.authority.covers(subject, &navigate, servitor::Mode::Write),
+        "the stored chain verifies under the adopted root"
+    );
+    assert!(app.take_events().iter().any(|event| matches!(
+        event,
+        AppEvent::ProfileIdentityUnlocked(_)
+    )));
+    assert!(
+        app.adopt_profile_root(root).is_empty(),
+        "a second root for the same run is ignored"
     );
     let _ = std::fs::remove_dir_all(&app.data_root);
 }
@@ -2151,7 +2221,7 @@ fn fork_carries_denizen_worlds_as_real_copies() {
     // The fork rebuilds a full resident from its OWN dir, no legacy heal.
     let fork_facets = session::load_node_facets(&fork_dir).expect("fork facets persisted");
     let rebuilt =
-        crate::denizen::rebuild(&fork_facets, &fork_graph, &fork_dir, app.identity.as_ref());
+        crate::denizen::rebuild(&fork_facets, &fork_graph, &fork_dir, app.personae_root());
     assert_eq!(rebuilt.residents.len(), 1, "the fork's denizen resides");
     assert!(rebuilt.legacy_heals.is_empty());
     let fork_member = rebuilt.residents.keys().next().copied().unwrap();
@@ -2668,7 +2738,7 @@ fn a_rerooted_profile_refuses_automatic_certificate_reissue() {
         app.graph_runtimes.facets(),
         app.graph_runtimes.graph(),
         &app.session_dir(),
-        &new_root,
+        Some(identity::IdentityProvider::master_public_key(&new_root).to_bytes()),
     );
     assert_eq!(
         rebuilt.residents.len(),
@@ -2739,7 +2809,7 @@ fn install_delegates_from_the_profile_identity_and_uninstall_revokes_it() {
     let _ = std::fs::remove_dir_all(&app.data_root);
     std::fs::create_dir_all(app.session_dir()).unwrap();
     // The root identity is the profile's, not a constant.
-    let root = identity::IdentityProvider::master_public_key(app.identity.as_ref()).to_bytes();
+    let root = app.personae_root().unwrap();
     assert_eq!(
         app.denizens.authority.root(),
         root,
@@ -3045,7 +3115,7 @@ fn available_actions_lead_with_the_contextual_rows() {
     // first; the static registry follows.
     let first_static = rows
         .iter()
-        .position(|(label, _)| label == "Fit view")
+        .position(|(label, _)| label == "Fit to view")
         .expect("the static registry is in the catalog");
     let a_contextual = rows
         .iter()
@@ -3646,6 +3716,75 @@ fn browser_states_refresh_and_round_trip() {
     let _ = std::fs::remove_dir_all(&dir);
 }
 
+/// SC step 4 pass B: a node's content lane, not its engine id, decides who
+/// takes Reload and Stop. Every surface engine (Scry and Servo as well as
+/// Weld) gets them on its own web plane; a document reloads through the App's
+/// load.
+#[test]
+fn every_surface_engine_takes_reload_and_stop_on_its_web_plane() {
+    for engine in [
+        inker::routing::ENGINE_WELD_CHROMIUM,
+        inker::routing::ENGINE_SCRYING_WEB,
+        inker::routing::ENGINE_GRAFT_SERVO,
+    ] {
+        let mut app = App::test_stub();
+        app.update(Action::OpenAddress("https://example.com/page".to_string()));
+        let node = app.graph_runtimes.focused_member().unwrap();
+        // The address's own page fetch is the App's, and Stop cancels it first.
+        assert!(
+            app.update(Action::Stop)
+                .iter()
+                .any(|effect| matches!(effect, Effect::CancelPage { .. }))
+        );
+        app.content.note_live(
+            node,
+            Some(crate::content::ContentFacts {
+                engine: engine.to_string(),
+                lane: crate::content::ContentLane::Surface,
+                structure: None,
+                lineage: None,
+                capabilities: Default::default(),
+            }),
+        );
+        let reload = app.update(Action::Reload);
+        assert!(
+            reload.contains(&Effect::ControlContent {
+                node,
+                control: crate::action::ContentControl::Reload,
+            }),
+            "{engine}: {reload:?}"
+        );
+        let stop = app.update(Action::Stop);
+        assert!(
+            stop.contains(&Effect::ControlContent {
+                node,
+                control: crate::action::ContentControl::Stop,
+            }),
+            "{engine}: a surface mid-load stops on its web plane"
+        );
+    }
+
+    let mut app = App::test_stub();
+    app.update(Action::OpenAddress("https://example.com/page".to_string()));
+    let node = app.graph_runtimes.focused_member().unwrap();
+    app.content.note_live(
+        node,
+        Some(crate::content::ContentFacts {
+            engine: inker::routing::ENGINE_GENET_LIVERY.to_string(),
+            lane: crate::content::ContentLane::Document,
+            structure: None,
+            lineage: None,
+            capabilities: Default::default(),
+        }),
+    );
+    assert!(
+        !app.update(Action::Reload)
+            .iter()
+            .any(|effect| matches!(effect, Effect::ControlContent { .. })),
+        "a document reloads through the App's load"
+    );
+}
+
 /// The requested page scale rides the same sidecar to the same store, and a
 /// reset leaves nothing behind for it to carry.
 #[test]
@@ -3657,6 +3796,7 @@ fn requested_page_scale_round_trips_through_the_store() {
         node,
         Some(crate::content::ContentFacts {
             engine: "weld.chromium".into(),
+            lane: crate::content::ContentLane::Surface,
             structure: None,
             lineage: None,
             capabilities: crate::content::DocumentCapabilityFacts {
@@ -5166,7 +5306,7 @@ fn place_artifacts_are_written_where_the_person_asked() {
     assert_eq!(card.rendezvous[0].hint, "ticket-one");
     assert_eq!(
         card.founder_root,
-        crate::place::hex32(&app.personae_root()),
+        crate::place::hex32(&app.personae_root().unwrap()),
         "the card names this profile's own root"
     );
 
@@ -5490,7 +5630,7 @@ fn place_prekey_offer_is_written_beside_its_card() {
         .expect("the offer lands beside the card");
     let offer: crate::place::PlacePrekeyOfferV1 = serde_json::from_slice(bytes).unwrap();
     assert_eq!(offer.moot, binding.moot);
-    assert_eq!(offer.root, crate::place::hex32(&app.personae_root()));
+    assert_eq!(offer.root, crate::place::hex32(&app.personae_root().unwrap()));
     assert_eq!(offer.prekey_bytes().unwrap(), vec![7, 8, 9]);
 
     // The answer was consumed; a replay writes nothing.
@@ -5592,7 +5732,7 @@ fn place_revoke_rows_are_a_founders_one_per_other_member() {
             .collect()
     };
     let mut app = App::test_stub();
-    let local = app.personae_root();
+    let local = app.personae_root().unwrap();
     let with_local = |access| {
         vec![
             PlaceMember {
@@ -5711,7 +5851,7 @@ fn place_invite_lifetime_suffix_is_read_from_the_right() {
     use crate::place::PlaceInviteAccess::{Reader, Writer};
 
     let mut app = App::test_stub();
-    let local = app.personae_root();
+    let local = app.personae_root().unwrap();
     app.place = open_place(local, Vec::new());
     let commit = |app: &mut App, begin: Action, line: &str| -> Vec<Effect> {
         app.update(begin);

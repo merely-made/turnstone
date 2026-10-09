@@ -715,10 +715,13 @@ impl App {
                 match result {
                     Ok(prekey) => {
                         use base64::Engine as _;
+                        let Some(root) = self.personae_root() else {
+                            return self.refuse_place(crate::denizen::PENDING_IDENTITY);
+                        };
                         let offer = crate::place::PlacePrekeyOfferV1 {
                             version: crate::place::PLACE_CARD_VERSION,
                             moot: pending.moot,
-                            root: crate::place::hex32(&self.personae_root()),
+                            root: crate::place::hex32(&root),
                             prekey: base64::engine::general_purpose::STANDARD.encode(&prekey),
                         };
                         match serde_json::to_vec_pretty(&offer) {

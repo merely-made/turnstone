@@ -193,6 +193,20 @@ fn bindings_path(data_root: &Path) -> PathBuf {
 }
 
 impl crate::app::App {
+    /// The client certificate a remembered capsule approval projects for
+    /// `url`. None while the identity is pending (the vault is locked): the
+    /// request goes without one, and a capsule that needs it asks again,
+    /// when binding refuses until the vault unlocks.
+    pub(crate) fn gemini_identity_for(
+        &self,
+        url: &str,
+    ) -> Result<Option<fetch::GeminiClientIdentity>, String> {
+        match &self.identity {
+            Some(root) => self.gemini_identities.identity_for(root.as_ref(), url),
+            None => Ok(None),
+        }
+    }
+
     /// Build the one page-fetch effect. A remembered capsule approval is
     /// projected into transient certificate bytes here, before the command
     /// crosses the fetch port.
@@ -204,10 +218,7 @@ impl crate::app::App {
     ) -> crate::action::Effect {
         let request = fetch::next_fetch_request_id();
         let supersedes = self.content.begin_fetch(node, request);
-        let identity = match self
-            .gemini_identities
-            .identity_for(self.identity.as_ref(), &url)
-        {
+        let identity = match self.gemini_identity_for(&url) {
             Ok(identity) => identity,
             Err(error) => {
                 tracing::warn!(%error, "failed to project Gemini client identity");

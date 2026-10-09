@@ -1,0 +1,16 @@
+# Scenograph C2 headed check, run 2 of 2: a distinct process over run 1's
+# TURNSTONE_ROOT. The choices come back from the view sidecar by id, and the
+# kept command answers a search with its catalogue label.
+settle 60
+key escape
+assert snap commands-added == Reseed layout
+assert snap commands-removed == view:fit
+omnibar actions
+settle 10
+assert snap suggestions ~ Back
+type reseed
+settle 10
+assert snap suggestions ~ Reseed layout
+capture 01_restored_choices
+key escape
+log command menu restart receipt complete

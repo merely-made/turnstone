@@ -1321,6 +1321,25 @@ the same record once this lane can push to Mere (U15).
   Pelt and Turnstone on one controller without either owning the other's
   arrangement. Further refactoring is in scope where it simplifies.
 
+### Rulings (2026-10-08, seventh round: the vault lock reaches Turnstone)
+
+- **When Turnstone stops falling back under a locked vault.** The identity
+  session's Dramatis report showed that Mere `4ba47666` (vault lock L3) adds
+  the persisted lock, under which Turnstone's open answers `Locked` and its
+  fallback would quietly re-root it (vault lock ruling 35's hazard). Mark:
+  **"yeah, batch it with C2, watch the marker"**. *Follows:* the bridge rides
+  the C2 repin, which therefore targets Mere `463c8d40` (past L3) rather than
+  `227062a9`, and Turnstone learns of an unlock by watching the marker until
+  djinn can say so itself (Dramatis DR-C).
+- **The bridge's shape.** Turnstone hands its root to the place worker, the
+  share reader, publishing, participant authority, place cards, Gemini client
+  certificates and the projection endpoint. Options: run pending (ruling 35's
+  shape: browsing works, what speaks as the profile waits and starts at
+  unlock); wait at startup with no window; refuse at startup. Mark: **"Run
+  pending (Recommended)"**. *Follows:* the identity is `None` while locked;
+  no fallback key is minted; Dramatis D12 reuses the rule when Turnstone
+  calls djinn.
+
 ## Progress
 
 - **2026-10-06:**
@@ -1697,6 +1716,184 @@ the same record once this lane can push to Mere (U15).
       matches only Weld, so Scry and Servo nodes take the document Back and
       Reload path, and Stop does nothing for them.
     - Nothing was built or run.
+  - The Scenograph C2 adoption and the vault lock bridge, with the coordinated
+    family repin they need (seventh round). Mere `227062a9` already held C2,
+    and another lane had moved Knot onto it, but it predates the persisted
+    lock, so the family went to Mere `463c8d40` instead.
+    - Family, in U9 order:
+      - Knot `5bef84c0`: Mere rows to `463c8d40`, Genet `15713014` unchanged.
+        Its lock moves only sources.
+      - Redshank/Woodshed `b39a38d3` and `52fbe468`: Mere to `463c8d40`, Genet
+        to `15713014`. The lock adds only `command-menu`. Mere `019e07a0` draws
+        Cambium's text fields as `role="textbox"` divs, not textareas, so
+        Redshank's focus probe, field styles and one markup test follow it,
+        as Knot's did in `341d5ca`.
+      - Turnstone: one source per sibling in the lock; it adds
+        `command-menu` and `serde_path_to_error`.
+    - Mere API moves at this repin: `project_canvas_strategy_with_score` takes
+      the canvas's own `ChannelRegistry` (F87), and `project_spiral_score`
+      reads keyed signals (F132). The disclosed scene takes a fresh registry
+      per projection. The G3 receipt changes only in its "Fit to view" label;
+      its layout is byte-identical.
+    - C2:
+      - The view sidecar stores `cambium::CommandChoices` itself. A sidecar
+        written as `CommandMenuV1` reads back unchanged (tested over the old
+        JSON).
+      - The `>` lane reads through `cambium::MenuSession`, held on
+        `OmnibarState` in place of `all_commands`: the query, the expansion
+        and the highlight's moves.
+      - The shared verbs register under catalogue ids, labelled by the
+        catalogue: `nav:back`, `nav:forward`, `nav:reload`, `nav:stop`,
+        `view:fit`, `physics:toggle`, `node:delete`, `session:save`,
+        `pane:settings`, `pane:trail` and `pane:workbench`. One function,
+        `action::shared_command_id`, names them. Every other row keeps its
+        label as its host-owned id, so those stored choices survive.
+      - Not offered by Turnstone's palette, so not registered:
+        `node:viewer_auto`, `palette:open` and the three workbench verbs.
+      - Labels now read "Fit to view" and "Pause or resume physics" in the
+        scenarios, tests and the remote card. A stored choice under an old
+        label falls away (SE50; tested).
+    - The vault lock bridge (ruling 35, "Run pending"):
+      - `identity::load_root` answers `Locked` while the marker is present
+        (whichever backend would answer, per ruling 23) or the open says
+        `Locked`. It never reaches the fallback then, so no seed is minted.
+        A missing vault still falls back.
+      - `App.identity` is `None` while pending. Participants rebuild with no
+        root, so nothing verifies and nothing is written; install, place
+        cards, pre-key offers, Gemini binding and the projection endpoint
+        refuse with one reason. Gemini fetches go without a client
+        certificate.
+      - The shell starts the place worker pending (it holds commands that
+        speak as the profile, in order; `Release` still answers at once),
+        defers the share reader and publishing, and holds trail visits
+        (capped at 4,096), since the trail is keyed by the root.
+      - `identity::watch_for_unlock` polls the marker each second. Once it
+        clears, the root opens; the app adopts it and rebuilds participants;
+        the worker runs what it held; the services start; the held visits
+        are filed.
+      - Not covered: a lock while Turnstone runs. Ruling 23's live lock comes
+        through djinn's broadcast, which Dramatis DR-C delivers.
+    - Gates, macOS:
+      - Knot: the workspace check passes; the workspace suite passes 616
+        (2 ignored); `knot-document` passes 45.
+      - Redshank: the desktop and wasm checks pass; the suite passes 242 with
+        7 ignored. The one failure is the artwork test that loads a fixed
+        Windows path, as before.
+      - Turnstone: `cargo check --all-targets --locked` and `verify` pass.
+        The library suite under load: 676 passed, 11 failed. The four known
+        macOS failures recur; six place tests timed out under load and pass
+        alone (74 of 74); the G3 receipt was regenerated and passes.
+      - Headed, macOS (`scenarios/command_menu_keep.scn`, then
+        `command_menu_keep_restart.scn` on the same profile): search reaches
+        "Reseed layout", Ctrl+D keeps it, "Fit to view" is dropped, and a
+        second process reads both back. The sidecar holds
+        `added: ["Reseed layout"]` and `removed: ["view:fit"]`. The snapshot
+        gained `commands-added` and `commands-removed`, because the bare lane
+        is bounded by the row limit. Scenario keys gained `ctrl+d`.
+      - Headed, macOS (`scenarios/vault_locked_pending.scn`, a scratch vault
+        through `XDG_DATA_HOME`): Turnstone starts pending with the marker
+        present and opens a page. A background job clears the marker 12
+        seconds in, and the root is adopted within a second.
+- **2026-10-09:**
+  - SC step 4, pass B: each node's web surface is the surface lane of its
+    Pelt content, beside documents in the one per-node map.
+    - Mere `0357b286`: `PeltContent::from_surface` wraps a producer the host
+      spawned at its own route and per-node profile, as `from_controller`
+      wraps a document, and `surface_producer_mut` lends the producer for the
+      work the content does not wrap. `pelt-core` passes 34, 3 of them new
+      (`tests/host_surface.rs`).
+    - Family, in U9 order: Knot `ee0512d0` and Redshank/Woodshed `2f8ac103`
+      move only their Mere rows; every lock moves only sources.
+    - Shell: `surface_producers` is gone. A spawned surface is inserted as
+      `PeltContent::from_surface`, and every producer use (input, drag,
+      cursor, accessibility, capture, find, zoom, imported frames) reaches it
+      through `NodeSurfaces` over the same map. A torn-out lens window still
+      composites only documents, as before. A document spawned over a live
+      surface retires the surface's capture, frames, accessibility and find
+      state with it.
+    - Route-state dispatch: `ContentFacts` carries the content's lane
+      (`ContentLane`), and `node_uses_web_surface` reads the lane instead of
+      matching Weld's engine id. Scry and Servo nodes now take Back, Forward,
+      Reload and Stop on their web plane, as Weld's did (the bug found in
+      passing on 2026-10-08). The shell sends them through
+      `PeltContent::command`.
+    - Mere API moves at this repin: the canvas's physics is a `DynamicsSpec`
+      edited through `PhysicsChoice` (F162). `GraphRuntimePool` keeps
+      Turnstone's one-field physics reads and edits, each written into the
+      spec as one change, so the call sites are unchanged.
+    - Gates, macOS:
+      - Knot: the check passes; 661 tests pass (3 ignored).
+      - Redshank: the desktop and wasm checks pass; 242 pass with 7 ignored
+        and the one Windows-path artwork failure. (The C2 entry above said
+        245; the count was 242 there too.)
+      - Turnstone: `cargo check --all-targets --locked` and `verify` pass
+        (1,285 packages). The library suite under load: 677 passed, 11
+        failed. The four macOS failures recur; six place tests failed under
+        load and pass alone (the bounded-grant expiry needed a quiet machine,
+        twice); the new lane test's first draft was wrong (the address's own
+        page fetch takes the first Stop) and passes as corrected.
+    - Not covered on macOS: no surface engine registers a producer here, so
+      the surface lane runs only on Windows. The Windows-only frame import
+      was reviewed by hand, not compiled. The Windows headed run is Mark's.
+    - Next under SC: controller-level input (the surface lane's `input` and
+      `frame` in place of the shell's own pointer and frame paths), then
+      step 5 (S8).
+  - Controller-level input. Mark's three choices (asked from the input
+    inventory):
+    - Submissions: "Fix it in Genet". Through the neutral input path a
+      smolweb mutation endpoint (Titan, Spartan) arrived as a GET form with
+      no fields, which a host-history controller would follow as a
+      navigation. The emitting session is in Mere's `document-lanes`, not
+      Genet, so the fix needed no Genet repin: the smolweb session reports
+      a POST with no fields, and `pelt-core` hands a host-history
+      controller's POST to the host in `PeltHostEffect::submission`, its
+      action resolved (Mere `e48db814`). A linear-history controller still
+      refuses POST.
+    - Surfaces: "Documents first". Web surfaces keep the shell's W3C pointer
+      path, qualified on Windows, until the neutral input carries pointer
+      identity.
+    - Keys: "Pointer and keys". Knot's document session gains `key_input`,
+      `text_input`, `ime_input` and `editable_focus` over its Cambium key
+      dispatch.
+    - Family: Knot `16aaff78` and Redshank/Woodshed `ece6e9ea` move their Mere
+      rows to `e48db814`; Mere moved Retinue to 0.3.0, but no Mere crate in
+      Knot's, Redshank's or Turnstone's tree pulls it, so their Retinue pins
+      stay. The locks add `mere-curation` and `num-derive` (Rapier 0.36 comes
+      with Mere).
+    - Shell (`src/shell/controller_input.rs`): a document's press, captured
+      drag, release, wheel and a lens window's click go through the node's
+      `PeltContent::input`; keys go first to the controller (an editor or a
+      form field keeps them; Tab moves focus within the page), then to the
+      scroll keys, Escape's blur and the Actions; IME goes to the
+      controller. A navigation request opens through the graph
+      (`content_link_target`), and a submission opens the submission
+      conversation. A Reader node's appearances and every web surface keep
+      their own paths. Hover still sends nothing to documents, and IME
+      enablement is unchanged.
+    - Gained in passing: Livery's form fields take typed text, Enter submits
+      a GET form as a navigation, and Tab traverses a smolweb page's stops.
+      An HTML POST form reaches the submission conversation, which refuses a
+      non-smolweb target out loud.
+    - Gates, macOS:
+      - Mere: `document-lanes` 56 with all features (the Spartan test asserts
+        the POST); `pelt-core` 36, 2 new.
+      - Knot: 661 pass (3 ignored).
+      - Redshank: 242 pass with 7 ignored and the Windows-path artwork
+        failure.
+      - Turnstone: `cargo check --all-targets --locked` and `verify` pass
+        (1,287 packages). The library suite: 683 passed, 8 failed: the four
+        macOS failures, and four place tests that pass alone. New tests: a
+        host-history controller over Turnstone's own engines hands a Spartan
+        prompt's POST and a link's navigation up through keyboard focus and
+        Enter; Knot's key conversion; the winit key mapping.
+      - Headed, macOS: `scenarios/smolweb_spartan.scn` passes against a
+        Python stand-in for the PowerShell Spartan fixture (the click on the
+        prompt now goes through the controller): the fixture received the
+        18-byte body and answered success.
+    - Next under SC: step 5 (S8), the document's own accessibility
+      projection, which needs the Genet `AccessKitBridge` fix; surface input
+      through the controller once the neutral input carries pointer
+      identity.
 
 - **2026-10-07, site/composition review:** recorded the browser-sidecar scope
   proposal under §6, separating session authority from browser wrapper and

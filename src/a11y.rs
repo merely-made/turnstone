@@ -758,6 +758,7 @@ mod tests {
             node,
             facts: Some(ContentFacts {
                 engine: "genet.web".to_string(),
+                lane: crate::content::ContentLane::Document,
                 lineage: None,
                 capabilities: Default::default(),
                 structure: Some(StructureFacts {

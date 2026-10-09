@@ -14,12 +14,12 @@ settle 30
 
 act Layout: Spiral
 settle 20
-act Fit view
+act Fit to view
 settle 20
 capture 01_spiral_paused
 
 # Play: the arrangement stays selected; the sim takes over from its seed.
-act Play/pause physics
+act Pause or resume physics
 settle 90
 capture 02_spiral_played
 
@@ -27,7 +27,7 @@ capture 02_spiral_played
 # was unreachable while physics was welded to the layout mode.
 act Layout: Force-directed
 settle 60
-act Play/pause physics
+act Pause or resume physics
 settle 20
 capture 03_free_graph_frozen
 

@@ -10,7 +10,7 @@
 //! seams (`on_key`, `deliver_press`, `deliver_wheel`) that the scenario runner
 //! also drives, so one description runs through two runners.
 
-use super::NodeSessions;
+use super::{NodeSessions, NodeSurfaces};
 use winit::application::ApplicationHandler;
 use winit::event::{ElementState, Ime, MouseScrollDelta, StartCause, WindowEvent};
 use winit::event_loop::{ActiveEventLoop, ControlFlow};
@@ -41,7 +41,7 @@ impl ApplicationHandler for Shell {
         // input delivery. A deadline wake requests paint outside WM_PAINT so
         // captured browser mailboxes and self-drive cannot lose their clock.
         // Replace this fallback when the engines expose a host wake callback.
-        let active = !self.surface_producers.is_empty() || self.shared_scenario.is_some();
+        let active = self.content_sessions.surface_count() > 0 || self.shared_scenario.is_some();
         if self.surface_poll_clock.poll_due(active, std::time::Instant::now()) {
             self.request_redraw();
         }
@@ -57,7 +57,7 @@ impl ApplicationHandler for Shell {
         }
         // Live captured surfaces require a clock independent of paint delivery.
         // Otherwise a minute supplies the idle W4 schedule clock.
-        let active = !self.surface_producers.is_empty() || self.shared_scenario.is_some();
+        let active = self.content_sessions.surface_count() > 0 || self.shared_scenario.is_some();
         let now = std::time::Instant::now();
         let deadline = self.surface_poll_clock.deadline(active, now)
             .unwrap_or_else(|| now + std::time::Duration::from_secs(60));
@@ -221,6 +221,9 @@ impl ApplicationHandler for Shell {
             let effects = self.app.apply_update(update);
             self.run_effects(effects);
         }
+        // The vault unlocked: adopt the root before the place worker's
+        // answers, which may be the commands it held until now.
+        self.adopt_unlocked_root();
         while let Ok(update) = self.place_rx.try_recv() {
             // One place answer the app never sees: a prepared dial is a
             // shell-owned thing. The app learns of a refusal as an event and
@@ -394,7 +397,7 @@ impl ApplicationHandler for Shell {
                     self.request_redraw();
                     return;
                 }
-                if !self.app.omnibar.open && self.deliver_knot_ime(&ime) {
+                if !self.app.omnibar.open && self.deliver_document_ime(&ime) {
                     self.request_redraw();
                     return;
                 }

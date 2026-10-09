@@ -244,6 +244,13 @@ impl Denizens {
         }
     }
 
+    /// A runtime with no profile root yet: the vault is locked, so it holds
+    /// no certificate and covers nothing (vault lock ruling 35). The adopt
+    /// path rebuilds it under the root once the vault unlocks.
+    pub fn pending() -> Self {
+        Self::default()
+    }
+
     /// Whether any participant resides in the session.
     pub fn is_empty(&self) -> bool {
         self.residents.is_empty()
@@ -449,14 +456,18 @@ pub fn load_nested(session_dir: &Path, log_id: &str) -> Option<GraphLog<Containe
 /// (`legacy_nested_log`); such a resident still rebuilds, and the member goes
 /// on [`Denizens::legacy_heals`] so the adopt path can move the pointer onto
 /// the node and rewrite the facet without it.
+///
+/// `root` is the profile root's public key, or `None` while the identity is
+/// pending (the vault is locked). A pending rebuild adopts no certificate, so
+/// every resident fails closed, and it writes nothing: it never imports
+/// admission state, which needs a verified chain.
 pub fn rebuild(
     app_facets: &pandect::NodeFacetStore,
     graph: &mere::kernel::graph::Graph,
     session_dir: &Path,
-    provider: &impl IdentityProvider,
+    root: Option<[u8; 32]>,
 ) -> Denizens {
-    let root = provider.master_public_key().to_bytes();
-    let mut denizens = Denizens::new(root);
+    let mut denizens = root.map_or_else(Denizens::pending, Denizens::new);
     denizens.authority.set_now(now_ms());
     let admission_path = crate::resident_admission::path(session_dir);
     let missing_admission_state = match admission_path.try_exists() {
@@ -510,15 +521,13 @@ pub fn rebuild(
         // replacement certificate. Missing, malformed, or re-rooted chains
         // therefore stay refused until an owner explicitly installs again.
         let stored = load_certs(session_dir, &subject.to_hex());
-        let verifies = {
-            let mut probe = servitor::delegation::DelegationTable::new(
-                identity::IdentityProvider::master_public_key(provider).to_bytes(),
-            );
+        let verifies = root.is_some_and(|root| {
+            let mut probe = servitor::delegation::DelegationTable::new(root);
             for cert in &stored {
                 probe.adopt(cert.clone());
             }
             stored.iter().any(|cert| probe.verify_chain(cert).is_ok())
-        };
+        });
         for cert in stored.into_iter().filter(|_| verifies) {
             denizens.authority.adopt(cert);
         }
@@ -860,11 +869,21 @@ pub fn install_caps(rings: &[crate::ring::Ring], watched: Option<&Cap>) -> Vec<(
     caps
 }
 
+/// Why a gesture that speaks as the profile refuses while the vault is
+/// locked (vault lock ruling 35).
+pub const PENDING_IDENTITY: &str =
+    "the profile identity is locked; unlock the personae vault to continue";
+
 /// Mint the confirmed participant into the session: the graph node, the binding +
 /// source facets, the nested world with its gate-projected grant, and the
 /// runtime entry. Returns the member id. (The caller persists: facets ride
 /// the ordinary save; the nested log saves here, once, at its birth.)
 pub fn install(app: &mut App, pending: PendingInstall) -> Result<Uuid, String> {
+    // Install is a delegation signed by the profile root; with the vault
+    // locked there is none to sign with, and no fallback stands in for it.
+    let Some(root) = app.identity.clone() else {
+        return Err(PENDING_IDENTITY.to_string());
+    };
     if let Some(error) = &app.denizens.admission_error {
         return Err(format!("resident admission state needs owner repair before install: {error}"));
     }
@@ -1025,9 +1044,9 @@ pub fn install(app: &mut App, pending: PendingInstall) -> Result<Uuid, String> {
     };
     let issued_at = now_ms();
     let certs = issue_install_certificates_for_generation(
-        app.identity.as_ref(), subject, &caps, issued_at, generation,
+        root.as_ref(), subject, &caps, issued_at, generation,
     );
-    let mut probe = DelegationTable::new(app.identity.master_public_key().to_bytes());
+    let mut probe = DelegationTable::new(root.master_public_key().to_bytes());
     probe.set_now(issued_at);
     for cert in certs.iter().cloned() { probe.adopt(cert); }
     if caps.iter().any(|(cap, mode)| !servitor::AuthorityProvider::covers(&probe, subject, cap, *mode)) {
@@ -1224,7 +1243,12 @@ mod tests {
 
         let graph = mere::kernel::graph::Graph::new();
         let provider = identity::InMemoryProvider::from_seed([5u8; 32]);
-        let denizens = rebuild(&store, &graph, &dir, &provider);
+        let denizens = rebuild(
+            &store,
+            &graph,
+            &dir,
+            Some(identity::IdentityProvider::master_public_key(&provider).to_bytes()),
+        );
         assert_eq!(denizens.residents.len(), 1, "the legacy resident survives");
         assert_eq!(
             denizens.legacy_heals,

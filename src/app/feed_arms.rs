@@ -141,10 +141,7 @@ impl App {
     }
 
     fn fetch_feed_effect(&self, node: uuid::Uuid, url: String) -> Effect {
-        let identity = match self
-            .gemini_identities
-            .identity_for(self.identity.as_ref(), &url)
-        {
+        let identity = match self.gemini_identity_for(&url) {
             Ok(identity) => identity,
             Err(error) => {
                 tracing::warn!(%error, "failed to project Gemini client identity for feed");

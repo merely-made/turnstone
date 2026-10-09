@@ -184,6 +184,7 @@ mod tests {
             node,
             Some(ContentFacts {
                 engine: "test.document".into(),
+                lane: crate::content::ContentLane::Document,
                 structure: None,
                 lineage: None,
                 capabilities: DocumentCapabilityFacts {
@@ -207,6 +208,7 @@ mod tests {
             a,
             Some(ContentFacts {
                 engine: "test.document".into(),
+                lane: crate::content::ContentLane::Document,
                 structure: None,
                 lineage: None,
                 capabilities: DocumentCapabilityFacts {
@@ -261,6 +263,7 @@ mod tests {
             node,
             Some(ContentFacts {
                 engine: "test.opaque".into(),
+                lane: crate::content::ContentLane::Document,
                 structure: None,
                 lineage: None,
                 capabilities: DocumentCapabilityFacts {
