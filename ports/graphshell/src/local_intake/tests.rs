@@ -7,7 +7,7 @@
 use super::*;
 use crate::mere_host::{FIXTURE_PERSONA_ADDRESS, FIXTURE_WEB_ADDRESS, SelectedPersonaRef};
 use crate::product::LOCAL_FILE_FACET;
-use mere::canvas::{CameraView, Face, PhysicsLaw, Role};
+use mere::canvas::{CameraView, Face, PhysicsChoice, PhysicsLaw, Role};
 use muniment::{Backend, MemoryBackend, StoreError, TransactFn, WriteOp};
 use std::sync::{
     Arc,
@@ -263,7 +263,14 @@ fn intake_ingest_preserves_existing_layout_and_physics_while_selecting_new_membe
         canvas.set_selected_members(&[original]);
         canvas.set_member_role(original, Some(Role::Pinned));
         canvas.set_node_face(original, Face::Bare);
-        canvas.set_physics_law(PhysicsLaw::Charge).unwrap();
+        // Charge, set through the canvas's spec and its flat view (F162).
+        let mut spec = canvas.dynamics_spec().unwrap();
+        PhysicsChoice {
+            law: PhysicsLaw::Charge,
+            ..PhysicsChoice::live(&canvas)
+        }
+        .write_into(&mut spec);
+        canvas.set_dynamics_spec(&spec).unwrap();
         canvas.set_physics_paused(paused);
         canvas.set_camera(CameraView {
             offset: (31.0, 23.0),
@@ -271,7 +278,7 @@ fn intake_ingest_preserves_existing_layout_and_physics_while_selecting_new_membe
         });
         let camera = canvas.camera();
         let roles = canvas.arrangement_roles().clone();
-        let choice = canvas.physics_choice();
+        let choice = PhysicsChoice::live(&canvas);
         let old_key = canvas.graph().get_node_key_by_id(original).unwrap();
 
         let added =
@@ -290,7 +297,7 @@ fn intake_ingest_preserves_existing_layout_and_physics_while_selecting_new_membe
         }
         assert_eq!(canvas.camera(), camera);
         assert_eq!(canvas.arrangement_roles(), &roles);
-        assert_eq!(canvas.physics_choice(), choice);
+        assert_eq!(PhysicsChoice::live(&canvas), choice);
         assert_eq!(canvas.physics_paused(), paused);
         assert_eq!(canvas.node_face(old_key), Face::Bare);
         assert_eq!(canvas.selected_members(), [added]);

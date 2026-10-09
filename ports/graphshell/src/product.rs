@@ -2527,6 +2527,11 @@ mod tests {
                 old["schema"] = schema.into();
                 let read = decode_codicil(&serde_json::to_vec(&old).unwrap()).unwrap();
                 assert_eq!(read.schema, schema);
+                // Every field but the scene comes across as written.
+                let carried = serde_json::to_value(&read).unwrap();
+                for field in ["scope", "exported_at_ms", "graph", "facets"] {
+                    assert_eq!(carried[field], old[field], "{schema}: {field}");
+                }
                 assert_eq!(
                     read.scene.unwrap().dynamics_spec().unwrap().root,
                     law(PhysicsLaw::Stress)
