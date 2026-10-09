@@ -215,12 +215,17 @@ impl Shell {
                 });
                 return;
             }
-            if self
-                .with_content_appearance(node, hit.id, |session| {
+            let scrolled = if self.controller_drives(&node) {
+                self.content_sessions
+                    .get_mut(&node)
+                    .is_some_and(|content| content.scroll_at(hit.local.0, hit.local.1, dx, dy, 1.0))
+            } else {
+                self.with_content_appearance(node, hit.id, |session| {
                     session.scroll_at(hit.local.0, hit.local.1, dx, dy)
                 })
                 .unwrap_or(false)
-            {
+            };
+            if scrolled {
                 self.request_redraw();
             } else if let Some(producer) = self.content_sessions.surface_mut(&node) {
                 if let Err(error) = producer.send_mouse_input(inker::MouseEvent {
@@ -359,7 +364,22 @@ impl Shell {
                         node,
                         appearance: hit.id,
                     };
-                    if let Some(outcome) = self.with_content_appearance(node, hit.id, |session| {
+                    if self.controller_drives(&node) {
+                        if let Some(button) = super::controller_input::session_pointer_button(button)
+                        {
+                            let modifiers = self.session_modifiers();
+                            self.document_input(
+                                node,
+                                inker::SessionInput::PointerButton {
+                                    x: hit.local.0,
+                                    y: hit.local.1,
+                                    button,
+                                    state: inker::SessionButtonState::Pressed,
+                                    modifiers,
+                                },
+                            );
+                        }
+                    } else if let Some(outcome) = self.with_content_appearance(node, hit.id, |session| {
                         (button == MouseButton::Left).then(|| session.pointer_down(hit.local.0, hit.local.1))
                     }).flatten() {
                         match outcome {
@@ -873,7 +893,17 @@ impl Shell {
                     .then_some((x - surface.rect.x, y - surface.rect.y))
             });
             if let Some((local_x, local_y)) = local {
-                if self
+                let modifiers = self.session_modifiers();
+                if self.controller_drives(&node) {
+                    self.document_input(
+                        node,
+                        inker::SessionInput::PointerMoved {
+                            x: local_x,
+                            y: local_y,
+                            modifiers,
+                        },
+                    );
+                } else if self
                     .content_sessions
                     .session_mut(&node)
                     .is_some_and(|session| session.pointer_move(local_x, local_y))
@@ -1055,6 +1085,25 @@ impl Shell {
                 (surface.kind == crate::surface::SurfaceKind::Content(node))
                     .then_some((x - surface.rect.x, y - surface.rect.y))
             });
+            if self.controller_drives(&node) {
+                if let (Some((local_x, local_y)), Some(button)) =
+                    (local, super::controller_input::session_pointer_button(button))
+                {
+                    let modifiers = self.session_modifiers();
+                    self.document_input(
+                        node,
+                        inker::SessionInput::PointerButton {
+                            x: local_x,
+                            y: local_y,
+                            button,
+                            state: inker::SessionButtonState::Released,
+                            modifiers,
+                        },
+                    );
+                }
+                self.request_redraw();
+                return;
+            }
             let outcome = local.and_then(|(local_x, local_y)| {
                 if button == MouseButton::Left
                     && let Some(session) = self.content_sessions.session_mut(&node)

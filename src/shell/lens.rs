@@ -524,7 +524,26 @@ impl Shell {
                         }
                         crate::surface::SurfaceKind::Content(node) => {
                             self.app.focus = crate::surface::FocusTarget::Content { node, appearance: hit.id };
-                            if let Some(outcome) = self.with_content_appearance(node, hit.id, |session| session.click_at(hit.local.0, hit.local.1)) {
+                            if self.controller_drives(&node) {
+                                // A lens window takes a whole click per press, as
+                                // before: press and release at one point.
+                                let modifiers = self.session_modifiers();
+                                for state in [
+                                    inker::SessionButtonState::Pressed,
+                                    inker::SessionButtonState::Released,
+                                ] {
+                                    self.document_input(
+                                        node,
+                                        inker::SessionInput::PointerButton {
+                                            x: hit.local.0,
+                                            y: hit.local.1,
+                                            button: inker::SessionPointerButton::Primary,
+                                            state,
+                                            modifiers,
+                                        },
+                                    );
+                                }
+                            } else if let Some(outcome) = self.with_content_appearance(node, hit.id, |session| session.click_at(hit.local.0, hit.local.1)) {
                                 match outcome {
                                     SessionClick::Navigate(url) => {
                                         let url = super::content_link_target(&self.app, node, &url);

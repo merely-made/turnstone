@@ -397,7 +397,7 @@ impl ApplicationHandler for Shell {
                     self.request_redraw();
                     return;
                 }
-                if !self.app.omnibar.open && self.deliver_knot_ime(&ime) {
+                if !self.app.omnibar.open && self.deliver_document_ime(&ime) {
                     self.request_redraw();
                     return;
                 }

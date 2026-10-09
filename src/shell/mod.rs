@@ -11,6 +11,7 @@
 //! learns flows back through the spine.
 
 mod contributed_automation;
+mod controller_input;
 mod drive;
 mod effects;
 mod events;
@@ -2242,6 +2243,68 @@ impl Shell {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// SC controller-level input over Turnstone's own engines: a host-history
+    /// controller hands a Spartan prompt's submission up as a POST the
+    /// submission conversation completes, and a link up as a navigation the
+    /// graph places. Keyboard focus and Enter reach the page through the same
+    /// neutral input, and nothing loads in place.
+    #[test]
+    fn a_document_controller_hands_links_and_submissions_up() {
+        use inker::{
+            SessionButtonState, SessionFocusDirection, SessionFormMethod, SessionInput,
+            SessionKey, SessionModifiers,
+        };
+        let address = "spartan://capsule.test/";
+        let decision = standard_route_policy().route(&inker::EngineRouteRequest {
+            workspace_id: inker::WorkspaceRouteId::new("turnstone-test"),
+            view: None,
+            node: None,
+            address: address.to_string(),
+            content_type: None,
+            pinned_engine: None,
+        });
+        let request = SessionSpawnRequest::new(address)
+            .with_body("=: /sign Sign it\n=> /next Next\n")
+            .with_viewport(640, 480);
+        let config = pelt_core::PeltControllerConfig::from_request(decision.engine_id, request)
+            .with_host_history();
+        let mut controller = pelt_core::PeltController::new_shared(
+            Arc::new(standard_content_engines()),
+            Arc::new(inker::SurfaceEngineRegistry::new()),
+            config,
+            ShellClock(std::time::Instant::now()),
+        )
+        .expect("the Spartan lane spawns");
+        let _ = controller.frame(640, 480);
+        let enter = || SessionInput::Key {
+            key: SessionKey::Enter,
+            state: SessionButtonState::Pressed,
+            modifiers: SessionModifiers::default(),
+            repeat: false,
+        };
+
+        assert!(
+            controller
+                .input(SessionInput::FocusMove(SessionFocusDirection::Forward))
+                .handled
+        );
+        let submitted = controller.input(enter());
+        let submission = submitted.submission.expect("the prompt hands its submission up");
+        assert_eq!(submission.method, SessionFormMethod::Post);
+        assert_eq!(submission.action, "spartan://capsule.test/sign");
+        assert_eq!(submitted.navigation, None, "a submission is not a navigation");
+
+        assert!(
+            controller
+                .input(SessionInput::FocusMove(SessionFocusDirection::Forward))
+                .handled
+        );
+        let followed = controller.input(enter());
+        let navigation = followed.navigation.expect("the link hands its navigation up");
+        assert_eq!(navigation.request.address, "spartan://capsule.test/next");
+        assert_eq!(controller.address(), address, "nothing loads in place");
+    }
 
     /// Gate 1 of the smolweb browser gap analysis: Turnstone's default route
     /// for a Gemini address must name a registered retained-session engine,

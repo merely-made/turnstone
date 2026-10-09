@@ -73,7 +73,10 @@ command menu stores Cambium's own choices under the stack's shared command
 ids, and a locked personae vault leaves the profile identity pending rather
 than replaced. SC step 4's pass B (2026-10-08) moved it to Mere `0357b286`,
 Knot `ee0512d0` and Redshank/Woodshed `2f8ac103`, Genet unchanged: each
-node's web surface is the surface lane of its Pelt content.
+node's web surface is the surface lane of its Pelt content. Controller-level
+input (2026-10-09) moved it to Mere `e48db814`, Knot `16aaff78` and
+Redshank/Woodshed `ece6e9ea`: a document's pointer and keys go through its
+controller, which hands links and submissions up.
 Knot and Redshank
 share the Mere/Genet surface family with Turnstone so retained-surface,
 publishing and projection interfaces have one source identity.

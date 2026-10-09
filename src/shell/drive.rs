@@ -795,7 +795,7 @@ impl Shell {
                     self.act(Action::OmnibarInsert(text.clone()));
                 } else if self.deliver_contributed_ime(&winit::event::Ime::Commit(text.clone())) {
                     self.request_redraw();
-                } else if self.deliver_knot_ime(&winit::event::Ime::Commit(text.clone())) {
+                } else if self.deliver_document_ime(&winit::event::Ime::Commit(text.clone())) {
                     self.request_redraw();
                 } else if self.type_surface_text(text) {
                     // Hosted committed text is distinct from OS IME/preedit.
