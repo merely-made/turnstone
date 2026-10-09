@@ -1,0 +1,29 @@
+# DOM cancel-event fixture through the real WebFileChooser listener.
+# The browser instrument selects real files but cannot operate OS-dialog Cancel.
+assert snap source == saved graph
+click role:button Restore arrangement
+settle 3
+click-node https://example.test/i2p-port
+settle 2
+remember before-choice
+click role:button Add an object
+settle 2
+click role:button Choose a file
+settle 1
+# Details must not unmount the callback target while the choice is outstanding.
+click role:button Open details
+settle 1
+assert snap detail-open == false
+cancel-file-choice
+settle 3
+assert text File choice canceled
+same before-choice nodes
+same before-choice graph-session
+same before-choice detail-member
+same before-choice geometry
+same before-choice camera
+# A field is usable again after the empty answer releases the pending state.
+click role:textbox Address
+input-text https://example.net/cancelled-choice-draft
+assert text https://example.net/cancelled-choice-draft
+capture p4_tree_file_cancel

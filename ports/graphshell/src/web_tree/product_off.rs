@@ -4,7 +4,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // SPDX-License-Identifier: MPL-2.0
 
-//! The saved-graph workflow with the `product` feature off (the viewer cone,
+//! Local saved-graph editing and intake with the `product` feature off (the viewer cone,
 //! mer3ly Rulings 110 and 119): `product.rs`'s API, inert. `open` never finds a
 //! saved graph, so no `SavedProduct` exists and its methods cannot run.
 use super::*;
@@ -44,7 +44,15 @@ impl SavedProduct {
         match self.never {}
     }
 
+    pub(super) fn selection_locked(&self) -> bool {
+        false
+    }
+
     pub(super) fn graph(&self) -> Graph {
+        match self.never {}
+    }
+
+    pub(super) fn saved_file(&self) -> Option<serde_json::Value> {
         match self.never {}
     }
 
