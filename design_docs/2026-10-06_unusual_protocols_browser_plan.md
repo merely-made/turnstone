@@ -1838,6 +1838,62 @@ the same record once this lane can push to Mere (U15).
     - Next under SC: controller-level input (the surface lane's `input` and
       `frame` in place of the shell's own pointer and frame paths), then
       step 5 (S8).
+  - Controller-level input. Mark's three choices (asked from the input
+    inventory):
+    - Submissions: "Fix it in Genet". Through the neutral input path a
+      smolweb mutation endpoint (Titan, Spartan) arrived as a GET form with
+      no fields, which a host-history controller would follow as a
+      navigation. The emitting session is in Mere's `document-lanes`, not
+      Genet, so the fix needed no Genet repin: the smolweb session reports
+      a POST with no fields, and `pelt-core` hands a host-history
+      controller's POST to the host in `PeltHostEffect::submission`, its
+      action resolved (Mere `e48db814`). A linear-history controller still
+      refuses POST.
+    - Surfaces: "Documents first". Web surfaces keep the shell's W3C pointer
+      path, qualified on Windows, until the neutral input carries pointer
+      identity.
+    - Keys: "Pointer and keys". Knot's document session gains `key_input`,
+      `text_input`, `ime_input` and `editable_focus` over its Cambium key
+      dispatch.
+    - Family: Knot `16aaff78` and Redshank/Woodshed `ece6e9ea` move their Mere
+      rows to `e48db814`; Mere moved Retinue to 0.3.0, but no Mere crate in
+      Knot's, Redshank's or Turnstone's tree pulls it, so their Retinue pins
+      stay. The locks add `mere-curation` and `num-derive` (Rapier 0.36 comes
+      with Mere).
+    - Shell (`src/shell/controller_input.rs`): a document's press, captured
+      drag, release, wheel and a lens window's click go through the node's
+      `PeltContent::input`; keys go first to the controller (an editor or a
+      form field keeps them; Tab moves focus within the page), then to the
+      scroll keys, Escape's blur and the Actions; IME goes to the
+      controller. A navigation request opens through the graph
+      (`content_link_target`), and a submission opens the submission
+      conversation. A Reader node's appearances and every web surface keep
+      their own paths. Hover still sends nothing to documents, and IME
+      enablement is unchanged.
+    - Gained in passing: Livery's form fields take typed text, Enter submits
+      a GET form as a navigation, and Tab traverses a smolweb page's stops.
+      An HTML POST form reaches the submission conversation, which refuses a
+      non-smolweb target out loud.
+    - Gates, macOS:
+      - Mere: `document-lanes` 56 with all features (the Spartan test asserts
+        the POST); `pelt-core` 36, 2 new.
+      - Knot: 661 pass (3 ignored).
+      - Redshank: 242 pass with 7 ignored and the Windows-path artwork
+        failure.
+      - Turnstone: `cargo check --all-targets --locked` and `verify` pass
+        (1,287 packages). The library suite: 683 passed, 8 failed: the four
+        macOS failures, and four place tests that pass alone. New tests: a
+        host-history controller over Turnstone's own engines hands a Spartan
+        prompt's POST and a link's navigation up through keyboard focus and
+        Enter; Knot's key conversion; the winit key mapping.
+      - Headed, macOS: `scenarios/smolweb_spartan.scn` passes against a
+        Python stand-in for the PowerShell Spartan fixture (the click on the
+        prompt now goes through the controller): the fixture received the
+        18-byte body and answered success.
+    - Next under SC: step 5 (S8), the document's own accessibility
+      projection, which needs the Genet `AccessKitBridge` fix; surface input
+      through the controller once the neutral input carries pointer
+      identity.
 
 - **2026-10-07, site/composition review:** recorded the browser-sidecar scope
   proposal under §6, separating session authority from browser wrapper and
