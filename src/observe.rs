@@ -1317,6 +1317,7 @@ mod tests {
             node,
             Some(ContentFacts {
                 engine: "weld.chromium".into(),
+                lane: crate::content::ContentLane::Surface,
                 structure: None,
                 lineage: None,
                 capabilities: DocumentCapabilityFacts {
@@ -1364,6 +1365,7 @@ mod tests {
             node,
             Some(ContentFacts {
                 engine: "weld.chromium".into(),
+                lane: crate::content::ContentLane::Surface,
                 structure: None,
                 lineage: None,
                 capabilities: DocumentCapabilityFacts {
@@ -1414,6 +1416,7 @@ mod tests {
             node,
             Some(ContentFacts {
                 engine: "genet.livery".into(),
+                lane: crate::content::ContentLane::Document,
                 structure: None,
                 lineage: None,
                 capabilities: DocumentCapabilityFacts {

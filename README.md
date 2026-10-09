@@ -71,7 +71,9 @@ Scenograph C2 and vault lock repin (2026-10-08) moved it to Mere `463c8d40`,
 Genet `15713014`, Knot `5bef84c0` and Redshank/Woodshed `52fbe468`: the
 command menu stores Cambium's own choices under the stack's shared command
 ids, and a locked personae vault leaves the profile identity pending rather
-than replaced.
+than replaced. SC step 4's pass B (2026-10-08) moved it to Mere `0357b286`,
+Knot `ee0512d0` and Redshank/Woodshed `2f8ac103`, Genet unchanged: each
+node's web surface is the surface lane of its Pelt content.
 Knot and Redshank
 share the Mere/Genet surface family with Turnstone so retained-surface,
 publishing and projection interfaces have one source identity.

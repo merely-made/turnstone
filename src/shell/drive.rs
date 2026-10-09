@@ -12,7 +12,7 @@
 //! its labelled actions, and whether it is still busy. `Driveable` adds the two
 //! the generic loop cannot do: a screenshot and turnstone's own verbs.
 
-use super::NodeSessions;
+use super::{NodeSessions, NodeSurfaces};
 use winit::event::MouseButton;
 use winit::keyboard::{Key as WinitKey, NamedKey as WinitNamedKey};
 
@@ -442,7 +442,7 @@ impl taproot::Automatable for Shell {
             .with_field("focus", snap.focus)
             .with_field(
                 "host-surface-producers",
-                self.surface_producers.len().to_string(),
+                self.content_sessions.surface_count().to_string(),
             )
             .with_field("node-count", snap.node_count.to_string())
             .with_field("roster-tab", snap.roster_tab)
@@ -954,7 +954,7 @@ impl Shell {
                     #[cfg(not(feature = "servo"))]
                     let servo_views = 0usize;
                     std::fs::write(self.shared_out_dir.join(format!("{name}.surface-frames.json")),
-                        serde_json::to_vec_pretty(&serde_json::json!({"live_producers":self.surface_producers.len(),"cached_frames":self.surface_frames.len(),"scry_importers":stats,"servo_active_views":servo_views,"content_surfaces":surfaces})).map_err(|error|error.to_string())?)
+                        serde_json::to_vec_pretty(&serde_json::json!({"live_producers":self.content_sessions.surface_count(),"cached_frames":self.surface_frames.len(),"scry_importers":stats,"servo_active_views":servo_views,"content_surfaces":surfaces})).map_err(|error|error.to_string())?)
                         .map_err(|error|error.to_string())?;
                 }
             },

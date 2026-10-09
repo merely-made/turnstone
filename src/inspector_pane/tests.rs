@@ -205,6 +205,7 @@ fn focused_document_capabilities_sit_beside_the_viewer_picker() {
         node,
         Some(crate::content::ContentFacts {
             engine: "genet.livery".into(),
+            lane: crate::content::ContentLane::Document,
             structure: None,
             lineage: None,
             capabilities: crate::content::DocumentCapabilityFacts {
@@ -253,6 +254,7 @@ fn the_requested_page_zoom_is_mirrored_beside_the_capability() {
         node,
         Some(crate::content::ContentFacts {
             engine: "weld.chromium".into(),
+            lane: crate::content::ContentLane::Surface,
             structure: None,
             lineage: None,
             capabilities: crate::content::DocumentCapabilityFacts {
@@ -594,6 +596,7 @@ fn narrow_inspector_probe_selects_registered_scry_for_followed_b_after_a() {
             b,
             Some(crate::content::ContentFacts {
                 engine: "genet.livery".into(),
+                lane: crate::content::ContentLane::Document,
                 structure: None,
                 lineage: None,
                 capabilities: crate::content::DocumentCapabilityFacts::default(),

@@ -88,9 +88,11 @@ const SMOLWEB_SESSION_ENGINE_IDS: &[&str] = &[
     inker::routing::ENGINE_NEMATIC_FEED,
 ];
 
-/// Each node's live document: Pelt's routed content around a host-loading,
-/// host-history controller (SC step 4). The App owns the node's load and graph
-/// history; the controller opens the body the App fetched.
+/// Each node's live content: Pelt's routed content, either a document lane
+/// around a host-loading, host-history controller or a surface lane around the
+/// web engine's producer (SC step 4). The App owns the node's load and graph
+/// history; a document controller opens the body the App fetched, and a
+/// surface takes navigation on its own web plane.
 pub(crate) type NodeDocuments =
     HashMap<uuid::Uuid, pelt_core::PeltContent<netrender::Scene>>;
 
@@ -140,6 +142,54 @@ impl NodeSessions for NodeDocuments {
                 .document_mut()
                 .map(|controller| (*node, controller.session_mut()))
         })
+    }
+}
+
+/// The surface lane of each node's content: the live producer, for the host
+/// work the content does not wrap (pointer streams, drag, accessibility,
+/// capture, imported frames).
+pub(crate) trait NodeSurfaces {
+    fn surface_mut(&mut self, node: &uuid::Uuid) -> Option<&mut dyn inker::SurfaceProducer>;
+    fn has_surface(&self, node: &uuid::Uuid) -> bool;
+    /// Whether `node`'s content is a document. A torn-out lens window
+    /// composites only documents.
+    fn has_document(&self, node: &uuid::Uuid) -> bool;
+    fn surfaces_mut(
+        &mut self,
+    ) -> impl Iterator<Item = (uuid::Uuid, &mut dyn inker::SurfaceProducer)>;
+    fn surface_count(&self) -> usize;
+}
+
+impl NodeSurfaces for NodeDocuments {
+    fn surface_mut(&mut self, node: &uuid::Uuid) -> Option<&mut dyn inker::SurfaceProducer> {
+        self.get_mut(node)
+            .and_then(pelt_core::PeltContent::surface_producer_mut)
+    }
+
+    fn has_surface(&self, node: &uuid::Uuid) -> bool {
+        self.get(node)
+            .is_some_and(|content| content.lane() == pelt_core::PeltLane::Surface)
+    }
+
+    fn has_document(&self, node: &uuid::Uuid) -> bool {
+        self.get(node)
+            .is_some_and(|content| content.lane() == pelt_core::PeltLane::Document)
+    }
+
+    fn surfaces_mut(
+        &mut self,
+    ) -> impl Iterator<Item = (uuid::Uuid, &mut dyn inker::SurfaceProducer)> {
+        self.iter_mut().filter_map(|(node, content)| {
+            content
+                .surface_producer_mut()
+                .map(|producer| (*node, producer))
+        })
+    }
+
+    fn surface_count(&self) -> usize {
+        self.values()
+            .filter(|content| content.lane() == pelt_core::PeltLane::Surface)
+            .count()
     }
 }
 
@@ -669,8 +719,9 @@ pub struct Shell {
     /// ContentStates tracks. Ports own handles; App holds data.
     /// Shared with every node's Pelt controller, which spawns from it.
     content_engines: Arc<SessionRegistry<netrender::Scene>>,
-    /// Pelt's surface registry for document controllers. Web surfaces still
-    /// live in `surface_producers` until SC step 4's second pass.
+    /// Pelt's surface registry for document controllers. A node's web surface
+    /// is spawned from `surface_engines` below and held as the surface lane
+    /// of its content.
     pelt_surface_engines: Arc<inker::SurfaceEngineRegistry>,
     content_sessions: NodeDocuments,
     /// Reader's immutable article packet remains in `content_sessions`; each
@@ -681,11 +732,10 @@ pub struct Shell {
         crate::surface::SurfaceId,
         (uuid::Uuid, mere_document_lanes::ReaderDocumentSession),
     >,
-    /// Long-lived frame-streaming engines, separate from the retained document
-    /// sessions above. The neutral inker registry chooses the producer; the
-    /// shell owns its non-Send live handle and its imported frame cache.
+    /// Long-lived frame-streaming engines. The neutral inker registry chooses
+    /// the producer; each node's content holds its non-Send live handle, and
+    /// the shell keeps the imported frame cache.
     surface_engines: inker::SurfaceEngineRegistry,
-    surface_producers: std::collections::HashMap<uuid::Uuid, Box<dyn inker::SurfaceProducer>>,
     /// Mailbox fallback cadence until producers expose an event-loop wake hook.
     surface_poll_clock: surface_poll::SurfacePollClock,
     /// Last monitor-rate observation on the existing event/render cadence.
@@ -1081,7 +1131,6 @@ impl Shell {
             content_sessions: std::collections::HashMap::new(),
             reader_appearances: std::collections::HashMap::new(),
             surface_engines: inker::SurfaceEngineRegistry::new(),
-            surface_producers: std::collections::HashMap::new(),
             surface_poll_clock: surface_poll::SurfacePollClock::new(surface_poll_interval_from_env()),
             physics_display_rate_last_observed: None,
             surface_find_requests: std::collections::HashMap::new(),
@@ -1132,7 +1181,7 @@ impl Shell {
     }
 
     fn has_live_content(&self, node: &uuid::Uuid) -> bool {
-        self.content_sessions.contains_key(node) || self.surface_producers.contains_key(node)
+        self.content_sessions.contains_key(node)
     }
 
     fn has_independent_reader_appearance(&self, node: &uuid::Uuid) -> bool {
@@ -1189,7 +1238,8 @@ impl Shell {
     fn clear_surface_content(&mut self) {
         self.reader_appearances.clear();
         self.surface_a11y.clear();
-        self.surface_producers.clear();
+        self.content_sessions
+            .retain(|_, content| content.lane() != pelt_core::PeltLane::Surface);
         self.surface_find_requests.clear();
         self.page_captures.clear_surfaces();
         #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
@@ -2022,8 +2072,8 @@ impl Shell {
                     if !self.foreign_a11y_placements().iter().any(|(current, _)| *current == node) {
                         return Err("foreign accessibility surface is no longer visible".to_owned());
                     }
-                    self.surface_producers
-                        .get_mut(&node)
+                    self.content_sessions
+                        .surface_mut(&node)
                         .ok_or_else(|| "foreign accessibility producer retired".to_owned())
                         .and_then(|producer| {
                             producer

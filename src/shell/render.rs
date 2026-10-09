@@ -12,7 +12,7 @@
 //! mutable borrow never overlaps the host's. The capture path composes the
 //! same layer list the presented frame did, so a receipt shows what was shown.
 
-use super::NodeSessions;
+use super::{NodeSessions, NodeSurfaces};
 use std::path::Path;
 
 use genet_winit_host::SurfaceHost;
@@ -43,8 +43,8 @@ impl Shell {
             .begin(session, node)
             .map_err(|error| format!("capture target refused: {error:?}"))?;
         let result = self
-            .surface_producers
-            .get_mut(&node)
+            .content_sessions
+            .surface_mut(&node)
             .and_then(|producer| producer.as_web_surface())
             .ok_or_else(|| "capture target has no hosted web surface".to_string())
             .and_then(|surface| {
@@ -65,7 +65,7 @@ impl Shell {
     pub(super) fn drain_surface_web_events(&mut self) {
         const MAX_EVENTS_PER_SURFACE: usize = 256;
         let mut pending = Vec::new();
-        for (&node, producer) in &mut self.surface_producers {
+        for (node, producer) in self.content_sessions.surfaces_mut() {
             let Some(web) = producer.as_web_surface() else {
                 continue;
             };
@@ -193,7 +193,7 @@ impl Shell {
                 // windowless CEF surface. Answer CEF explicitly so its source
                 // does not remain in a stuck drag state; capability reporting
                 // keeps this path Partial until a toolkit drag carrier lands.
-                if let Some(producer) = self.surface_producers.get_mut(&node)
+                if let Some(producer) = self.content_sessions.surface_mut(&node)
                     && let Err(error) =
                         producer.finish_drag_source(position, inker::DragOperationSet::NONE)
                 {
@@ -426,8 +426,8 @@ impl Shell {
         answer: inker::PermissionAnswer,
     ) -> Result<(), String> {
         let producer = self
-            .surface_producers
-            .get_mut(&node)
+            .content_sessions
+            .surface_mut(&node)
             .ok_or_else(|| "requesting surface no longer exists".to_string())?;
         let web = producer
             .as_web_surface()
@@ -443,8 +443,8 @@ impl Shell {
         answer: &inker::HttpAuthenticationAnswer,
     ) -> Result<(), String> {
         let producer = self
-            .surface_producers
-            .get_mut(&node)
+            .content_sessions
+            .surface_mut(&node)
             .ok_or_else(|| "requesting surface no longer exists".to_string())?;
         let web = producer
             .as_web_surface()
@@ -820,7 +820,7 @@ impl Shell {
                         (scene, wgpu::Color::WHITE)
                     } else {
                         #[cfg(all(any(feature = "weld", feature = "scry", feature = "servo"), windows))]
-                        if let Some(producer) = self.surface_producers.get_mut(&node) {
+                        if let Some(producer) = self.content_sessions.surface_mut(&node) {
                             match producer
                                 .resize(rw, rh)
                                 .and_then(|()| producer.acquire_frame())

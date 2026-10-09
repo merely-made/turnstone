@@ -13,7 +13,7 @@
 //! spine. The canvas view hotkeys stay suspended while a page reads, so a
 //! stray `space` cannot reseed the graph behind it.
 
-use super::NodeSessions;
+use super::{NodeSessions, NodeSurfaces};
 use winit::keyboard::{Key as WinitKey, NamedKey as WinitNamedKey};
 
 use inker::SessionScrollKey;
@@ -83,7 +83,7 @@ impl Shell {
         let crate::surface::FocusTarget::Content { node, .. } = self.app.focus else {
             return false;
         };
-        if !self.surface_producers.contains_key(&node) {
+        if !self.content_sessions.has_surface(&node) {
             return false;
         }
         for character in text.chars() {
@@ -125,7 +125,7 @@ impl Shell {
         if matches!(key, WinitKey::Named(WinitNamedKey::Escape)) {
             return false;
         }
-        let Some(producer) = self.surface_producers.get_mut(&node) else {
+        let Some(producer) = self.content_sessions.surface_mut(&node) else {
             return false;
         };
         let key_code = windows_virtual_key(key);

@@ -1710,10 +1710,13 @@ impl App {
         effects
     }
 
+    /// Whether `node`'s live content is a web surface, by the lane its
+    /// content reported rather than by engine id, so every surface engine
+    /// (Weld, Scry, Servo) takes the web plane's own navigation.
     fn node_uses_web_surface(&self, node: Uuid) -> bool {
         self.content
             .facts(node)
-            .is_some_and(|facts| facts.engine == inker::routing::ENGINE_WELD_CHROMIUM)
+            .is_some_and(|facts| facts.lane == crate::content::ContentLane::Surface)
     }
 
     pub(super) fn reseed_layout(&mut self) -> Vec<Effect> {
@@ -1829,6 +1832,7 @@ mod tests {
             member,
             Some(crate::content::ContentFacts {
                 engine: "test.surface".into(),
+                lane: crate::content::ContentLane::Surface,
                 structure: None,
                 lineage: None,
                 capabilities: crate::content::DocumentCapabilityFacts {
@@ -1926,6 +1930,7 @@ mod tests {
             member,
             Some(crate::content::ContentFacts {
                 engine: "test.opaque".into(),
+                lane: crate::content::ContentLane::Document,
                 structure: None,
                 lineage: None,
                 capabilities: crate::content::DocumentCapabilityFacts {

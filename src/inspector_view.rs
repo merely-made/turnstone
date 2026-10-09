@@ -459,6 +459,7 @@ mod tests {
             node,
             facts: Some(ContentFacts {
                 engine: "genet.web".to_string(),
+                lane: crate::content::ContentLane::Document,
                 lineage: None,
                 capabilities: Default::default(),
                 structure: Some(StructureFacts {
@@ -498,6 +499,7 @@ mod tests {
             node,
             facts: Some(ContentFacts {
                 engine: "some.lane".to_string(),
+                lane: crate::content::ContentLane::Document,
                 structure: None,
                 lineage: None,
                 capabilities: Default::default(),
@@ -536,6 +538,7 @@ mod tests {
             node,
             Some(ContentFacts {
                 engine: "genet.livery".into(),
+                lane: crate::content::ContentLane::Document,
                 structure: None,
                 lineage: None,
                 capabilities: livery,
@@ -577,6 +580,7 @@ mod tests {
             node,
             Some(ContentFacts {
                 engine: "weld.chromium".into(),
+                lane: crate::content::ContentLane::Surface,
                 structure: None,
                 lineage: None,
                 capabilities: DocumentCapabilityFacts {
@@ -629,6 +633,7 @@ mod tests {
             node,
             facts: Some(ContentFacts {
                 engine: "genet.web".to_string(),
+                lane: crate::content::ContentLane::Document,
                 structure: None,
                 lineage: None,
                 capabilities: Default::default(),

@@ -3711,6 +3711,75 @@ fn browser_states_refresh_and_round_trip() {
     let _ = std::fs::remove_dir_all(&dir);
 }
 
+/// SC step 4 pass B: a node's content lane, not its engine id, decides who
+/// takes Reload and Stop. Every surface engine (Scry and Servo as well as
+/// Weld) gets them on its own web plane; a document reloads through the App's
+/// load.
+#[test]
+fn every_surface_engine_takes_reload_and_stop_on_its_web_plane() {
+    for engine in [
+        inker::routing::ENGINE_WELD_CHROMIUM,
+        inker::routing::ENGINE_SCRYING_WEB,
+        inker::routing::ENGINE_GRAFT_SERVO,
+    ] {
+        let mut app = App::test_stub();
+        app.update(Action::OpenAddress("https://example.com/page".to_string()));
+        let node = app.graph_runtimes.focused_member().unwrap();
+        // The address's own page fetch is the App's, and Stop cancels it first.
+        assert!(
+            app.update(Action::Stop)
+                .iter()
+                .any(|effect| matches!(effect, Effect::CancelPage { .. }))
+        );
+        app.content.note_live(
+            node,
+            Some(crate::content::ContentFacts {
+                engine: engine.to_string(),
+                lane: crate::content::ContentLane::Surface,
+                structure: None,
+                lineage: None,
+                capabilities: Default::default(),
+            }),
+        );
+        let reload = app.update(Action::Reload);
+        assert!(
+            reload.contains(&Effect::ControlContent {
+                node,
+                control: crate::action::ContentControl::Reload,
+            }),
+            "{engine}: {reload:?}"
+        );
+        let stop = app.update(Action::Stop);
+        assert!(
+            stop.contains(&Effect::ControlContent {
+                node,
+                control: crate::action::ContentControl::Stop,
+            }),
+            "{engine}: a surface mid-load stops on its web plane"
+        );
+    }
+
+    let mut app = App::test_stub();
+    app.update(Action::OpenAddress("https://example.com/page".to_string()));
+    let node = app.graph_runtimes.focused_member().unwrap();
+    app.content.note_live(
+        node,
+        Some(crate::content::ContentFacts {
+            engine: inker::routing::ENGINE_GENET_LIVERY.to_string(),
+            lane: crate::content::ContentLane::Document,
+            structure: None,
+            lineage: None,
+            capabilities: Default::default(),
+        }),
+    );
+    assert!(
+        !app.update(Action::Reload)
+            .iter()
+            .any(|effect| matches!(effect, Effect::ControlContent { .. })),
+        "a document reloads through the App's load"
+    );
+}
+
 /// The requested page scale rides the same sidecar to the same store, and a
 /// reset leaves nothing behind for it to carry.
 #[test]
@@ -3722,6 +3791,7 @@ fn requested_page_scale_round_trips_through_the_store() {
         node,
         Some(crate::content::ContentFacts {
             engine: "weld.chromium".into(),
+            lane: crate::content::ContentLane::Surface,
             structure: None,
             lineage: None,
             capabilities: crate::content::DocumentCapabilityFacts {
