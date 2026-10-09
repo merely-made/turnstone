@@ -274,6 +274,8 @@ path = "src/bin/h4f_agent_probe.rs"
 required-features = ["native"]
 
 [dev-dependencies]
+# Tests and examples bind throwaway identities (vault lock plan, ruling 96).
+transport = { workspace = true, features = ["test-identity"] }
 # The native accessibility receipt (dynamics grammar plan, F67): the canvas's
 # producer semantics through cambium-winit-a11y's AccessKit lowering, driven
 # by the headless harness, its view built with Cambium, the tree read in
