@@ -1,0 +1,675 @@
+diff --git a/src/surface_controls.rs b/src/surface_controls.rs
+new file mode 100644
+--- /dev/null
++++ b/src/surface_controls.rs
+@@ -0,0 +1,202 @@
++// Copyright 2026 Mark Alan Boykin
++// This Source Code Form is subject to the terms of the Mozilla Public
++// License, v. 2.0. If a copy of the MPL was not distributed with this
++// file, You can obtain one at https://mozilla.org/MPL/2.0/.
++// SPDX-License-Identifier: MPL-2.0
++
++//! Product controls belong to one Surface independently of shown content.
++use chartulary::{AcceptAll, FacetId};
++use mere::canvas::Canvas;
++use mere::kernel::graph::{Graph, NodeFacetStore};
++use mere::kernel::persistence::GraphSnapshot;
++use serde_json::Value;
++use uuid::Uuid;
++const LEGACY_LABELS: &str = "turnstone.controls.v1.legacy-labels";
++const RECYCLE_LABELS: &str = "turnstone.controls.v1.unqualified-recycle-labels";
++#[derive(Clone, Copy, Debug)]
++pub(crate) enum Control {
++    Keep,
++    Feed,
++    FeedEntry,
++    Unread,
++}
++impl Control {
++    fn facet(self) -> &'static str {
++        match self {
++            Self::Keep => "turnstone.controls.v1.keep",
++            Self::Feed => "turnstone.controls.v1.feed",
++            Self::FeedEntry => "turnstone.controls.v1.feed-entry",
++            Self::Unread => "turnstone.controls.v1.unread",
++        }
++    }
++    fn legacy_label(self) -> &'static str {
++        match self {
++            Self::Keep => crate::feed::KEEP_TAG,
++            Self::Feed => crate::feed::FEED_TAG,
++            Self::FeedEntry => crate::feed::FEED_ENTRY_TAG,
++            Self::Unread => crate::feed::UNREAD_TAG,
++        }
++    }
++}
++pub(crate) fn is_legacy_label(label: &str) -> bool {
++    matches!(label, "keep" | "feed" | "feed-entry" | "unread")
++}
++pub(crate) fn read(graph: &Graph, member: Uuid, control: Control) -> bool {
++    graph.get_node_by_id(member).is_some()
++        && graph
++            .facets()
++            .get(&member, &FacetId::new(control.facet()))
++            .and_then(Value::as_bool)
++            .unwrap_or(false)
++}
++/// Host-owned Surface facets only. Malformed existing values remain evidence.
++pub(crate) fn set(canvas: &mut Canvas, member: Uuid, control: Control, enabled: bool) -> bool {
++    if canvas.graph().get_node_by_id(member).is_none() {
++        return false;
++    }
++    let id = FacetId::new(control.facet());
++    if let Some(value) = canvas.facets().get(&member, &id) {
++        let Some(old) = value.as_bool() else {
++            tracing::warn!(%member,facet=control.facet(),"invalid Surface control retained");
++            return false;
++        };
++        if old == enabled {
++            return false;
++        }
++    }
++    // Explicit false prevents stale labels from resurrecting a control.
++    canvas
++        .facets_mut()
++        .set(member, id, Value::Bool(enabled), &AcceptAll)
++        .is_ok()
++}
++/// Capture only old per-Surface columns before resource materialization.
++/// Canonical sidecar values override defaults. Resource labels are never read.
++pub(crate) fn extract_legacy(snapshot: &mut GraphSnapshot) -> NodeFacetStore {
++    let mut facets = NodeFacetStore::new();
++    for node in &mut snapshot.nodes {
++        let Ok(member) = Uuid::parse_str(&node.node_id) else {
++            continue;
++        };
++        let labels: Vec<String> = node
++            .tags
++            .iter()
++            .filter(|label| is_legacy_label(label))
++            .cloned()
++            .collect();
++        if labels.is_empty() {
++            continue;
++        }
++        for control in [
++            Control::Keep,
++            Control::Feed,
++            Control::FeedEntry,
++            Control::Unread,
++        ] {
++            let enabled = labels.iter().any(|label| label == control.legacy_label());
++            facets
++                .set(
++                    member,
++                    FacetId::new(control.facet()),
++                    Value::Bool(enabled),
++                    &AcceptAll,
++                )
++                .expect("AcceptAll accepts booleans");
++        }
++        facets
++            .set(
++                member,
++                FacetId::new(LEGACY_LABELS),
++                serde_json::json!(labels),
++                &AcceptAll,
++            )
++            .expect("AcceptAll accepts retained labels");
++        node.tags.retain(|label| !is_legacy_label(label));
++    }
++    facets
++}
++/// Recycle label vectors lack source/placement proof. Preserve reserved labels
++/// without promoting them into Keep/subscription/read state.
++pub(crate) fn preserve_recycle_labels(canvas: &mut Canvas, member: Uuid, tags: &[String]) {
++    let labels: Vec<&str> = tags
++        .iter()
++        .filter(|label| is_legacy_label(label))
++        .map(String::as_str)
++        .collect();
++    if !labels.is_empty()
++        && canvas
++            .facets()
++            .get(&member, &FacetId::new(RECYCLE_LABELS))
++            .is_none()
++    {
++        let _ = canvas.facets_mut().set(
++            member,
++            FacetId::new(RECYCLE_LABELS),
++            serde_json::json!(labels),
++            &AcceptAll,
++        );
++    }
++}
++#[cfg(test)]
++mod tests {
++    use super::*;
++    use mere::kernel::graph::apply::add_node;
++    #[test]
++    fn legacy_surface_labels_preserve_evidence_and_canonical_false() {
++        let mut graph = Graph::new();
++        let first = Uuid::from_u128(601);
++        let second = Uuid::from_u128(602);
++        for id in [first, second] {
++            add_node(
++                &mut graph,
++                Some(id),
++                "https://controls.test/page".into(),
++                Default::default(),
++            );
++        }
++        let mut snapshot = graph.to_snapshot();
++        snapshot
++            .nodes
++            .iter_mut()
++            .find(|node| node.node_id == first.to_string())
++            .unwrap()
++            .tags = vec![
++            "keep".into(),
++            "feed".into(),
++            "feed-entry".into(),
++            "unread".into(),
++            "Paper".into(),
++        ];
++        let facets = extract_legacy(&mut snapshot);
++        assert_eq!(
++            facets.get(&first, &FacetId::new(LEGACY_LABELS)).unwrap(),
++            &serde_json::json!(["keep", "feed", "feed-entry", "unread"])
++        );
++        assert_eq!(
++            snapshot
++                .nodes
++                .iter()
++                .find(|node| node.node_id == first.to_string())
++                .unwrap()
++                .tags,
++            vec!["Paper"]
++        );
++        assert!(facets.facets_of(&second).is_none());
++        assert!(extract_legacy(&mut snapshot).is_empty());
++        let mut graph = Graph::from_snapshot(&snapshot);
++        graph.overlay_facets(facets);
++        assert!(read(&graph, first, Control::Keep));
++        assert!(!read(&graph, second, Control::Keep));
++        let mut canonical = NodeFacetStore::new();
++        canonical
++            .set(
++                first,
++                FacetId::new(Control::Keep.facet()),
++                Value::Bool(false),
++                &AcceptAll,
++            )
++            .unwrap();
++        graph.overlay_facets(canonical);
++        assert!(!read(&graph, first, Control::Keep));
++    }
++}
+diff --git a/src/app/feed_arms.rs b/src/app/feed_arms.rs
+--- a/src/app/feed_arms.rs
++++ b/src/app/feed_arms.rs
+@@ -7,7 +7,7 @@
+ //! Feed subscription actions and update folding.
+ 
+ use crate::action::{Effect, FetchedPage};
+-use crate::feed::{FEED_ENTRY_TAG, FEED_TAG, FeedMemberInfo, KEEP_TAG, UNREAD_TAG};
++use crate::surface_controls::{self, Control};
+ use crate::observe::AppEvent;
+ 
+ use super::App;
+@@ -41,8 +41,8 @@
+         if let Some(graph) = self.graph_runtimes.graph_containing_member(node)
+             && let Some(canvas) = self.graph_runtimes.canvas_mut(graph)
+         {
+-            canvas.tag_node(node, KEEP_TAG);
+-            canvas.tag_node(node, FEED_TAG);
++            surface_controls::set(canvas, node, Control::Keep, true);
++            surface_controls::set(canvas, node, Control::Feed, true);
+         }
+         self.feeds.subscribe(node, url, period);
+         self.events.push(AppEvent::FeedSubscribed {
+@@ -67,13 +67,14 @@
+         if let Some(graph) = self.graph_runtimes.graph_containing_member(node)
+             && let Some(canvas) = self.graph_runtimes.canvas_mut(graph)
+         {
+-            canvas.untag_node(node, FEED_TAG);
++            surface_controls::set(canvas, node, Control::Feed, false);
+         }
+         for entry in entries {
+             if let Some(graph) = self.graph_runtimes.graph_containing_member(entry)
+                 && let Some(canvas) = self.graph_runtimes.canvas_mut(graph)
+             {
+-                canvas.untag_node(entry, UNREAD_TAG);
++                let (_, _, unread) = self.feeds.surface_flags(entry);
++                surface_controls::set(canvas, entry, Control::Unread, unread);
+             }
+         }
+         self.events.push(AppEvent::FeedUnsubscribed(node));
+@@ -95,7 +96,7 @@
+         if let Some(graph) = self.graph_runtimes.graph_containing_member(node)
+             && let Some(canvas) = self.graph_runtimes.canvas_mut(graph)
+         {
+-            canvas.untag_node(node, UNREAD_TAG);
++            surface_controls::set(canvas, node, Control::Unread, false);
+         }
+         self.events.push(AppEvent::FeedEntryRead(node));
+         vec![Effect::SaveSession, Effect::Redraw]
+@@ -132,6 +133,7 @@
+             }
+         }
+         if changed {
++            self.reconcile_feed_tags();
+             effects.push(Effect::SaveSession);
+         }
+         if !effects.is_empty() {
+@@ -174,6 +176,7 @@
+             .is_some_and(|canvas| crate::browse::still_current(canvas, node, &url));
+         if !current {
+             self.feeds.unsubscribe(node);
++            self.reconcile_feed_tags();
+             return vec![Effect::SaveSession];
+         }
+         let now_ms = self.now_ms.unwrap_or_else(crate::denizen::now_ms);
+@@ -214,17 +217,11 @@
+                     }
+                     member
+                 } else {
+-                    canvas
+-                        .graph()
+-                        .get_node_by_url(&projection.entry.url)
+-                        .map(|(_, entry)| entry.id)
+-                        .unwrap_or_else(|| {
+-                            let selected = canvas.selected_members();
+-                            let member =
+-                                canvas.open_member_as_new_node(Some(node), &projection.entry.url);
+-                            canvas.set_selected_members(&selected);
+-                            member
+-                        })
++                    // Equal content does not establish an entry placement.
++                    let selected = canvas.selected_members();
++                    let member = canvas.open_member_as_new_node(Some(node), &projection.entry.url);
++                    canvas.set_selected_members(&selected);
++                    member
+                 };
+                 canvas.assert_relation_between_members(
+                     node,
+@@ -233,8 +230,8 @@
+                 );
+                 canvas.set_node_title_for(member, projection.entry.title.clone());
+                 canvas.set_node_body_for(member, projection.entry.summary.clone());
+-                canvas.tag_node(member, FEED_ENTRY_TAG);
+-                canvas.tag_node(member, UNREAD_TAG);
++                surface_controls::set(canvas, member, Control::FeedEntry, true);
++                surface_controls::set(canvas, member, Control::Unread, true);
+                 self.feeds.bind_entry(node, &projection.entry.url, member);
+             }
+         }
+@@ -257,39 +254,20 @@
+         }
+     }
+ 
++    /// Current feed/read state is projected only from the member-keyed sidecar.
++    /// Keep and historical entry membership remain after unsubscribe.
+     pub(super) fn reconcile_feed_tags(&mut self) {
+-        let members: Vec<uuid::Uuid> = self
+-            .graph_runtimes
+-            .graph()
+-            .nodes()
+-            .map(|(_, node)| node.id)
+-            .collect();
+-        for member in members {
+-            let Some(info) = self.feeds.member_info(member) else {
+-                continue;
+-            };
+-            let Some(graph) = self.graph_runtimes.graph_containing_member(member) else {
+-                continue;
+-            };
+-            let Some(canvas) = self.graph_runtimes.canvas_mut(graph) else {
+-                continue;
+-            };
+-            match info {
+-                FeedMemberInfo::Source { .. } => {
+-                    canvas.tag_node(member, KEEP_TAG);
+-                    canvas.tag_node(member, FEED_TAG);
+-                }
+-                FeedMemberInfo::Entry { unread, .. } => {
+-                    canvas.tag_node(member, FEED_ENTRY_TAG);
+-                    if unread {
+-                        canvas.tag_node(member, UNREAD_TAG);
+-                    } else {
+-                        canvas.untag_node(member, UNREAD_TAG);
+-                    }
+-                }
+-            }
+-        }
+-    }
++        for member in self.graph_runtimes.member_ids() {
++            let (source, entry, unread) = self.feeds.surface_flags(member);
++            let Some(graph) = self.graph_runtimes.graph_containing_member(member) else { continue };
++            let Some(canvas) = self.graph_runtimes.canvas_mut(graph) else { continue };
++            if source { surface_controls::set(canvas, member, Control::Keep, true); }
++            if entry { surface_controls::set(canvas, member, Control::FeedEntry, true); }
++            surface_controls::set(canvas, member, Control::Feed, source);
++            surface_controls::set(canvas, member, Control::Unread, unread);
++        }
++    }
++
+ }
+ 
+ #[cfg(test)]
+@@ -312,9 +290,8 @@
+             effect,
+             Effect::FetchFeed { node, .. } if *node == source
+         )));
+-        let source_key = app.graph_runtimes.graph().get_node_by_id(source).unwrap().0;
+-        let source_tags = app.graph_runtimes.graph().node_tags(source_key).unwrap();
+-        assert!(source_tags.contains(KEEP_TAG) && source_tags.contains(FEED_TAG));
++        assert!(app.node_is_kept(source));
++        assert!(surface_controls::read(app.graph_runtimes.graph(), source, Control::Feed));
+ 
+         let fetched = FetchedPage::text(
+             Some("text/gemini".into()),
+@@ -334,9 +311,8 @@
+             .unwrap()
+             .1
+             .id;
+-        let one_key = app.graph_runtimes.graph().get_node_by_id(one).unwrap().0;
+-        let tags = app.graph_runtimes.graph().node_tags(one_key).unwrap();
+-        assert!(tags.contains(FEED_ENTRY_TAG) && tags.contains(UNREAD_TAG));
++        assert!(surface_controls::read(app.graph_runtimes.graph(), one, Control::FeedEntry));
++        assert!(surface_controls::read(app.graph_runtimes.graph(), one, Control::Unread));
+ 
+         app.apply_update(Update::FeedFetched {
+             node: source,
+diff --git a/src/app/mod.rs b/src/app/mod.rs
+--- a/src/app/mod.rs
++++ b/src/app/mod.rs
+@@ -1481,6 +1481,8 @@
+ mod redshank_arms;
+ mod fixtures;
+ mod node_arms;
++#[cfg(test)]
++mod surface_control_tests;
+ mod omnibar_arms;
+ mod palette;
+ mod pane_arms;
+diff --git a/src/app/node_arms.rs b/src/app/node_arms.rs
+--- a/src/app/node_arms.rs
++++ b/src/app/node_arms.rs
+@@ -120,17 +120,15 @@
+             .is_some_and(|canvas| canvas.member_can_forward(node))
+     }
+ 
+-    /// Whether one exact member carries the durable keep tag. This is graph
+-    /// truth, shared by chrome, the command catalog, feeds, and persistence.
++    /// Durable Keep belongs to one Surface. Showing the same Resource does
++    /// not transfer another view's retention choice.
+     pub(crate) fn node_is_kept(&self, member: Uuid) -> bool {
+         self.graph_runtimes
+             .graph_containing_member(member)
+             .and_then(|graph| self.graph_runtimes.canvas(graph))
+-            .and_then(|canvas| {
+-                let (key, _) = canvas.graph().get_node_by_id(member)?;
+-                canvas.graph().node_tags(key)
+-            })
+-            .is_some_and(|tags| tags.contains(crate::feed::KEEP_TAG))
++            .is_some_and(|canvas| crate::surface_controls::read(
++                canvas.graph(), member, crate::surface_controls::Control::Keep,
++            ))
+     }
+ 
+     /// Promote one captured member into durable kept state. Idempotence makes
+@@ -144,7 +142,7 @@
+             .graph_runtimes
+             .graph_containing_member(member)
+             .and_then(|graph| self.graph_runtimes.canvas_mut(graph))
+-            .is_some_and(|canvas| canvas.tag_node(member, crate::feed::KEEP_TAG));
++            .is_some_and(|canvas| crate::surface_controls::set(canvas, member, crate::surface_controls::Control::Keep, true));
+         if !changed {
+             return vec![Effect::Redraw];
+         }
+@@ -224,7 +222,8 @@
+             if let Some(graph) = self.graph_runtimes.graph_containing_member(entry)
+                 && let Some(canvas) = self.graph_runtimes.canvas_mut(graph)
+             {
+-                canvas.untag_node(entry, crate::feed::UNREAD_TAG);
++                let (_, _, unread) = self.feeds.surface_flags(entry);
++                crate::surface_controls::set(canvas, entry, crate::surface_controls::Control::Unread, unread);
+             }
+         }
+         // The record is the archive now: the live facets go, and a
+@@ -262,11 +261,14 @@
+         let Some(record) = self.removed.iter().find(|r| r.node_id == id).cloned() else {
+             return vec![Effect::Redraw];
+         };
++        // Unqualified old recycle labels are evidence, not content tag writes.
++        let descriptive_tags: Vec<String> = record.tags.iter()
++            .filter(|label| !crate::surface_controls::is_legacy_label(label)).cloned().collect();
+         let member = self.graph_runtimes.recover_node(
+             record.node_id,
+             &record.url,
+             record.title.as_deref(),
+-            &record.tags,
++            &descriptive_tags,
+         );
+         // Residency came back; its standing subscriptions have to come with
+         // it, or a behavior silently stops waking after a reload.
+@@ -290,6 +292,12 @@
+                 );
+             }
+         }
++        if let Some(graph) = self.graph_runtimes.graph_containing_member(member)
++            && let Some(canvas) = self.graph_runtimes.canvas_mut(graph)
++        {
++            crate::surface_controls::preserve_recycle_labels(canvas, member, &record.tags);
++        }
++        self.reconcile_feed_tags();
+         if let Some(log_id) = &record.nested {
+             let sdir = self.session_dir();
+             if let Err(err) = crate::denizen::unarchive_world(&sdir, log_id) {
+diff --git a/src/app/runtime_pool.rs b/src/app/runtime_pool.rs
+--- a/src/app/runtime_pool.rs
++++ b/src/app/runtime_pool.rs
+@@ -158,6 +158,11 @@
+ 
+     pub fn is_empty(&self) -> bool {
+         self.runtimes.is_empty()
++    }
++
++    /// Stable Surface IDs across every live graph authority.
++    pub(crate) fn member_ids(&self) -> Vec<uuid::Uuid> {
++        self.runtimes.values().flat_map(|runtime| runtime.canvas.graph().nodes().map(|(_, node)| node.id)).collect()
+     }
+ 
+     /// Resolve graph authority from member identity instead of the legacy
+diff --git a/src/app/session_lifecycle.rs b/src/app/session_lifecycle.rs
+--- a/src/app/session_lifecycle.rs
++++ b/src/app/session_lifecycle.rs
+@@ -1006,7 +1006,6 @@
+             .set_graph(session::load_session_graph(&sdir).unwrap_or_default());
+         self.feeds = crate::feed::FeedSubscriptions::load(&sdir);
+         self.feeds.reconcile(self.graph_runtimes.graph());
+-        self.reconcile_feed_tags();
+         // The listening model rides the session directory like the feeds do.
+         // A session with no audio output still reopens its library, progress
+         // and notes; only the runtime is absent.
+@@ -1087,6 +1086,8 @@
+         self.trash = self.sessions.list_trash();
+         self.graph_runtimes
+             .overlay_facets(session::load_node_facets(&sdir).unwrap_or_default());
++        // Current member-keyed sidecar state wins over cached feed projections.
++        self.reconcile_feed_tags();
+         // A profile saved before the nil-GraphId heal keyed its scene.* facets
+         // by the nil uuid; move them onto the healed container id once.
+         if let Some(container) = self.container_id() {
+diff --git a/src/feed.rs b/src/feed.rs
+--- a/src/feed.rs
++++ b/src/feed.rs
+@@ -7,8 +7,9 @@
+ //! Durable, graph-native feed subscriptions.
+ //!
+ //! A subscription belongs to a kept source node. The sidecar stores scheduling
+-//! and duplicate-suppression state; source and entry identity, relations,
+-//! titles, bodies, and unread tags remain ordinary graph truth.
++//! and duplicate-suppression state, including read state keyed by Surface ID.
++//! Host-owned Surface facets project those controls. Descriptive tags belong to
++//! the shown Resource independently of subscription and retention state.
+ 
+ use std::collections::{BTreeMap, BTreeSet};
+ use std::io;
+@@ -544,13 +545,28 @@
+                         graph
+                             .get_node_by_id(*member)
+                             .is_some_and(|(_, node)| node.url() == url)
+-                    })
+-                    .or_else(|| graph.get_node_by_url(url).map(|(_, node)| node.id));
++                    });
++                // Equal URLs do not prove placement identity; never adopt a sibling.
+                 if entry.member.is_none() {
+                     entry.unread = false;
+                 }
+             }
+         }
++    }
++
++    /// Projection for exactly one Surface. An old sidecar can explicitly bind
++    /// it in several feeds; unread stays true while any such binding is unread.
++    pub(crate) fn surface_flags(&self, member: Uuid) -> (bool, bool, bool) {
++        let source = self.subscriptions.contains_key(&member);
++        let mut entry_member = false;
++        let mut unread = false;
++        for entry in self.subscriptions.values().flat_map(|subscription| subscription.entries.values()) {
++            if entry.member == Some(member) {
++                entry_member = true;
++                unread |= entry.unread;
++            }
++        }
++        (source, entry_member, unread)
+     }
+ 
+     pub fn member_info(&self, member: Uuid) -> Option<FeedMemberInfo> {
+diff --git a/src/lib.rs b/src/lib.rs
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -22,6 +22,7 @@
+ mod content;
+ mod content_classes;
+ mod content_tags;
++mod surface_controls;
+ mod contributed_a11y;
+ pub mod contributed_surface;
+ pub mod cookie_custody;
+diff --git a/src/session.rs b/src/session.rs
+--- a/src/session.rs
++++ b/src/session.rs
+@@ -589,6 +589,8 @@
+             let placement = input.placement;
+             let snapshot = &mut input.snapshot;
+             let legacy_node_facets = snapshot.legacy_node_facet_count();
++            let legacy_controls = crate::surface_controls::extract_legacy(snapshot);
++            let controls_migrated = !legacy_controls.is_empty();
+             // Externalize pre-phase-2 inline imagery before the final graph is
+             // retained: conversion keeps references only. First validate the
+             // original input; then rebuild from any deposited image references.
+@@ -615,13 +617,15 @@
+                     }
+                 };
+             }
+-            if legacy_node_facets > 0 {
+-                // Existing facets are canonical and therefore win over the
+-                // one-time import from legacy graph columns. Persist the merged
+-                // store first, then strip those columns from graph.json.
+-                graph.overlay_facets(load_node_facets(data_root).unwrap_or_default());
+-                save_node_facets(data_root, graph.facets());
+-                save_loaded_session_graph(data_root, &graph, placement);
++            graph.overlay_facets(legacy_controls);
++            // Explicit canonical false overrides migrated legacy defaults.
++            graph.overlay_facets(load_node_facets(data_root).unwrap_or_default());
++            if legacy_node_facets > 0 || controls_migrated {
++                // Strip disk labels only after evidence and controls were saved.
++                match pandect::save_node_facets(data_root, graph.facets()) {
++                    Ok(()) => save_loaded_session_graph(data_root, &graph, placement),
++                    Err(error) => tracing::warn!(%error, "legacy controls could not be saved; snapshot retained"),
++                }
+                 tracing::info!(
+                     legacy_node_facets,
+                     "migrated legacy node metadata into facets"
+diff --git a/src/app/surface_control_tests.rs b/src/app/surface_control_tests.rs
+new file mode 100644
+--- /dev/null
++++ b/src/app/surface_control_tests.rs
+@@ -0,0 +1,74 @@
++// Copyright 2026 Mark Alan Boykin
++// This Source Code Form is subject to the terms of the Mozilla Public
++// License, v. 2.0. If a copy of the MPL was not distributed with this
++// file, You can obtain one at https://mozilla.org/MPL/2.0/.
++// SPDX-License-Identifier: MPL-2.0
++
++//! Draft tests for the final immutable supplier. Not compiled or executed.
++use super::*;
++use crate::surface_controls::{self, Control};
++use mere::kernel::graph::{Graph, apply::add_node};
++use uuid::Uuid;
++fn fixture() -> (App, Uuid, Uuid, Uuid) {
++ let mut graph=Graph::new();let first=Uuid::from_u128(701);let second=Uuid::from_u128(702);
++ let a=add_node(&mut graph,Some(first),"https://podcast.test/feed.xml".into(),Default::default());
++ let b=add_node(&mut graph,Some(second),"https://podcast.test/feed.xml".into(),Default::default());
++ let resource=graph.shown_resource_id(a).unwrap();assert_eq!(graph.shown_resource_id(b),Some(resource));
++ let mut app=App::test_stub();app.graph_runtimes.set_graph(graph);
++ let pane=app.default_graph_pane();assert!(app.graph_pane_select_member(pane,first));
++ (app,first,second,resource)
++}
++#[test]
++fn surface_controls_keep_is_local_idempotent_and_durable() {
++ let (mut app,first,second,resource)=fixture();
++ assert_eq!(app.update(Action::KeepNode{member:first}),vec![Effect::SaveSession,Effect::Redraw]);
++ assert!(app.node_is_kept(first));assert!(!app.node_is_kept(second));
++ assert_eq!(app.update(Action::KeepNode{member:first}),vec![Effect::Redraw]);
++ assert!(app.graph_runtimes.graph().resource_tag_labels(resource).is_empty());
++ let root=tempfile::tempdir().unwrap();session::save_session_graph(root.path(),app.graph_runtimes.graph());
++ session::save_node_facets(root.path(),app.graph_runtimes.facets());
++ let reloaded=session::load_session_graph(root.path()).unwrap();
++ assert!(surface_controls::read(&reloaded,first,Control::Keep));assert!(!surface_controls::read(&reloaded,second,Control::Keep));
++ assert_eq!(reloaded.nodes().count(),2,"Keep does not add neighboring content");
++}
++#[test]
++fn surface_controls_resource_label_is_not_membership_evidence() {
++ use mere::kernel::graph::{Author,resource_tags::{TagConcept,tag_concept_iri}};
++ let (mut app,first,second,resource)=fixture();
++ let mut graph=Graph::from_snapshot(&app.graph_runtimes.graph().to_snapshot());
++ graph.write_as(Author::person("descriptive-label"),|graph|{
++  let owner=graph.write_author().asserter_iri();
++  graph.tag_resource_with_concept(resource,&tag_concept_iri(&owner,"keep"),TagConcept{owner_iri:owner,label:"keep".into()}).unwrap();
++ });
++ app.graph_runtimes.set_graph(graph);assert!(!app.node_is_kept(first));assert!(!app.node_is_kept(second));
++ let root=tempfile::tempdir().unwrap();session::save_session_graph(root.path(),app.graph_runtimes.graph());
++ let reloaded=session::load_session_graph(root.path()).unwrap();
++ assert!(!surface_controls::read(&reloaded,first,Control::Keep));assert!(!surface_controls::read(&reloaded,second,Control::Keep));
++ assert!(reloaded.resource_tag_labels(resource).contains("keep"));
++}
++#[test]
++fn surface_controls_duplicate_feed_views_have_independent_read_state() {
++ let (mut app,first,second,resource)=fixture();let pane=app.default_graph_pane();
++ let fetched=crate::action::FetchedPage::text(Some("application/rss+xml".into()),
++ r#"<rss version="2.0"><channel><title>Pod</title><item><guid>episode-1</guid><title>One</title><link>https://podcast.test/one</link></item></channel></rss>"#);
++ let mut entries=Vec::new();
++ for source in [first,second] {
++  assert!(app.graph_pane_select_member(pane,source));app.update(Action::SubscribeFocusedFeed{period:servitor::Period::Hour});
++  app.apply_update(Update::FeedFetched{node:source,url:"https://podcast.test/feed.xml".into(),result:Ok(fetched.clone())});
++  entries.push(app.feeds.entry_members(source)[0]);
++ }
++ assert_eq!(app.feeds.len(),2);assert_ne!(entries[0],entries[1]);
++ let graph=app.graph_runtimes.graph();let a=graph.get_node_by_id(entries[0]).unwrap().0;let b=graph.get_node_by_id(entries[1]).unwrap().0;
++ assert_eq!(graph.shown_resource_id(a),graph.shown_resource_id(b));assert!(graph.resource_tag_labels(resource).is_empty());
++ assert!(app.graph_pane_select_member(pane,entries[0]));app.update(Action::MarkFocusedFeedEntryRead);
++ assert!(!surface_controls::read(app.graph_runtimes.graph(),entries[0],Control::Unread));assert!(surface_controls::read(app.graph_runtimes.graph(),entries[1],Control::Unread));
++ app.reconcile_feed_tags();assert!(surface_controls::read(app.graph_runtimes.graph(),entries[1],Control::Unread));
++ assert!(app.graph_pane_select_member(pane,first));app.update(Action::UnsubscribeFocusedFeed);
++ assert!(app.node_is_kept(first));assert!(!surface_controls::read(app.graph_runtimes.graph(),first,Control::Feed));
++ assert!(surface_controls::read(app.graph_runtimes.graph(),second,Control::Feed));
++ assert!(surface_controls::read(app.graph_runtimes.graph(),entries[0],Control::FeedEntry));assert!(surface_controls::read(app.graph_runtimes.graph(),entries[1],Control::Unread));
++ app.reconcile_feed_tags();assert_eq!(app.feeds.len(),1);assert_eq!(app.feeds.unread_count(),1);
++ let root=tempfile::tempdir().unwrap();app.feeds.save(root.path()).unwrap();
++ let mut restored=crate::feed::FeedSubscriptions::load(root.path());restored.reconcile(app.graph_runtimes.graph());
++ assert_eq!(restored.surface_flags(entries[0]),(false,false,false));assert_eq!(restored.surface_flags(entries[1]),(false,true,true));assert!(restored.surface_flags(second).0);
++}

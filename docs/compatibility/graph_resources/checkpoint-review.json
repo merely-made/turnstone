@@ -1,0 +1,28 @@
+{
+  "consumer_source_head": "9ad64030133c124b4885fe319945afb159b96670",
+  "supplier_checkpoint": "72c68b6d6f6a5c9023999d9fdaf4b3db632e6874",
+  "supplier_qualified": false,
+  "supplier_source": "git objects; no mutable supplier source used for hashes",
+  "supplier_files": {
+    "crates/graph/graph-kernel/src/graph/capture.rs": "180bea83f6f63824a963c4bc13392455fe3f2b6fc53bcb82108dba406467dff6",
+    "crates/graph/graph-kernel/src/graph/resource.rs": "9e83c8a69641c0e8ec342d765efb54c01e0622b1e3ee1c1739b564a5fc5d0189",
+    "crates/graph/graph-kernel/src/graph/resource_tags.rs": "14639c7c2b376dafbe788a9dfc3fff7bb43cd1830ada592ca4357636a49c743f",
+    "crates/graph/graph-kernel/src/graph/resource_content.rs": "850785992d2362332252060f56b75eeda7b9798cd612a3c18a1dc6100f5e0a9b",
+    "crates/graph/graph-kernel/src/graph/relation_read.rs": "a681f7624fa42b06e447b8bbc1321a816a99fda254177c6497b650836340d60b",
+    "crates/graph/graph-kernel/src/graph/query.rs": "27b01f647fd70f4dd23e8e80a476d169f2178d11ee408a2b1545ce3ff36e4d55",
+    "crates/system/pandect/src/graph_placement.rs": "db665d546ae83f59e8dea28709cd4fb5750d3d33ad76578f7eeacd18c18ebe59"
+  },
+  "product_import_audit": {
+    "direct_profile_RDF_parse_apply_call_sites": {
+      "turnstone": 0,
+      "knot-editor": 0,
+      "woodshed": 0
+    },
+    "existing_contribution_DTO_changes_required": false,
+    "exact_import_envelope_implementation_owner": "Mere linked-data/document-lanes",
+    "linked_data_host_dispatch": "Turnstone generic Session dispatch; explicit host route remains separate work"
+  },
+  "user_control_ruling": "Keep, feed subscriptions and unread status stay per view; only descriptive tags share resource identity",
+  "recursive_retention": false,
+  "verification": "Static patch/API review only; no new compilation or runtime qualification"
+}

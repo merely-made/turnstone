@@ -1,0 +1,109 @@
+{
+  "consumer_source_head": "9ad64030133c124b4885fe319945afb159b96670",
+  "scope": "Saved handoff artifact checks only; no compilation/test execution",
+  "patches": {
+    "reader.patch": {
+      "sha256": "9066c11a14b61725e603ba26782020eb3d031db892495d99489b706beafa174f",
+      "apply_exit": 0,
+      "stderr": ""
+    },
+    "behaviors.patch": {
+      "sha256": "2058d84ad3ce130e7b994f8710c39259c273ce6a54ff233fb2d72817e59981e9",
+      "apply_exit": 0,
+      "stderr": ""
+    },
+    "content-tests.patch": {
+      "sha256": "9f05b0494cc10d1fbf640b9a283d0490cd9528f068434ae032cc532066f0afa9",
+      "apply_exit": 0,
+      "stderr": ""
+    },
+    "session-profile.patch": {
+      "sha256": "5bd843803273b0205126735bc3e75c9d304f631337dbddeb9acb27b099c46fc6",
+      "apply_exit": 0,
+      "stderr": ""
+    },
+    "controls.patch": {
+      "sha256": "0aed7862f888f2aa4740db3de58310d67a0dfdd75c52a0a0402f97cf609d297e",
+      "apply_exit": 0,
+      "stderr": ""
+    }
+  },
+  "application_order": [
+    "reader.patch",
+    "behaviors.patch",
+    "content-tests.patch",
+    "session-profile.patch",
+    "controls.patch"
+  ],
+  "syntax": {
+    "src/app/feed_arms.rs": {
+      "source_sha256": "4cff419ec06d6f1812f0fcb065e39b5e0225fa1b7d275bc29e015c9f269d4c23",
+      "exit": 0,
+      "stderr": ""
+    },
+    "src/app/mod.rs": {
+      "source_sha256": "f7e1c8c872c24cc7c2adc2193e255bd43bc77b28f339b2e829ef196955d9dffd",
+      "exit": 0,
+      "stderr": ""
+    },
+    "src/app/node_arms.rs": {
+      "source_sha256": "fba3a7dafd858cba466cb6fd7b9f65ea354c17fa8ea81f137fdee7f5cfb997b6",
+      "exit": 0,
+      "stderr": ""
+    },
+    "src/app/runtime_pool.rs": {
+      "source_sha256": "b87eaa25d17c6c30c600ed7b03744d9efe51a342b19dd092091a811db1f22429",
+      "exit": 0,
+      "stderr": ""
+    },
+    "src/app/session_lifecycle.rs": {
+      "source_sha256": "851acb981283fbc059e6abd2810d2681ee5f66bbc365734b442f9c923b17b5d3",
+      "exit": 0,
+      "stderr": ""
+    },
+    "src/app/surface_control_tests.rs": {
+      "source_sha256": "470da922fd22302dca6e2e7661958e3e51e8aab0113a0b5339555c2349afc48e",
+      "exit": 0,
+      "stderr": ""
+    },
+    "src/app/tests.rs": {
+      "source_sha256": "b3227163fe7e6156b367659ef16a71bf7c3702ec54455735e0d0cd2a0985a18d",
+      "exit": 0,
+      "stderr": ""
+    },
+    "src/behaviors.rs": {
+      "source_sha256": "5aaa7c431e557639b36c9995f6604e42634a042e5c03ff7452e06043000257e4",
+      "exit": 0,
+      "stderr": ""
+    },
+    "src/content_tags.rs": {
+      "source_sha256": "9862f6a79e34051b66326763cd5ee4df685d7529c6594b04dbadc1af70fb3177",
+      "exit": 0,
+      "stderr": ""
+    },
+    "src/feed.rs": {
+      "source_sha256": "4c4dfa8b93c9141e33fd21cbbdb451bdf09491e60c371e91062386e535bac705",
+      "exit": 0,
+      "stderr": ""
+    },
+    "src/lib.rs": {
+      "source_sha256": "7b9ffca3994241b8f1c9e63ef8da916a45acaa5b6189709449ec3097be0c0fae",
+      "exit": 0,
+      "stderr": ""
+    },
+    "src/session.rs": {
+      "source_sha256": "09336a736bbb078275e69d8ee8c8c0a08f20e1d13312f1c718fd2db9ad78f695",
+      "exit": 0,
+      "stderr": ""
+    },
+    "src/surface_controls.rs": {
+      "source_sha256": "8ea922d061ff51b6cc37683d939f23e2a8ad16e3737c67ff040e355eecadf159",
+      "exit": 0,
+      "stderr": ""
+    }
+  },
+  "combined_application_passed": true,
+  "proposed_whitespace_exit": 0,
+  "proposed_whitespace_output": "",
+  "production_source_unchanged": true
+}

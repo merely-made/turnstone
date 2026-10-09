@@ -52,6 +52,10 @@ set.
 
 ## Current implementation plans and product direction
 
+- [Browser/resource handoff, 2026-10-08](2026-10-08_browser_resource_handoff.md):
+  resume point for published browser adoption, ThinkPad preservation, per-view
+  control ruling and unapplied next-Mere consumer patches; qualification and
+  session/runtime gates remain explicit.
 - [Unusual-protocols browser plan](2026-10-06_unusual_protocols_browser_plan.md):
   the bar ("can you use this as a web browser for the unusual protocols"),
   per-protocol state, ranked gaps and stages S0 to S11 plus SC. Ruled U1 to

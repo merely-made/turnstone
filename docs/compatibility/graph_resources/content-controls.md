@@ -10,6 +10,11 @@ That base commit alone does not supply the inspected API. The patch checked
 cleanly against Turnstone `e77e1e2db88344c651c1d4bf31e1802a2b142fc0` and its current
 consumer edits. Neither test has been compiled or executed.
 
+The 2026-10-08 follow-up rechecked patch shape and the required APIs against
+committed supplier `72c68b6d`. This remains static evidence: the supplier's
+additive exact-import envelope repair and final consumer qualification are
+pending. The original preparation and current-pin test receipts remain historical.
+
 ## What the patch checks
 
 - Two distinct Surface IDs use case-normalized, fragment-different page URLs
@@ -46,7 +51,8 @@ Deleting a Surface removes that Surface's shown-resource association. It retains
 the shared Resource and a surviving sibling's association. Persistence therefore
 retains the surviving reference; it does not create a historical reference to
 the deleted member. A richer retained-reference model requires a new explicit
-contract. This does not resolve the pending Keep scope decision.
+contract. Mark's 2026-10-08 ruling keeps Keep per view and does not recursively
+retain linked content. It does not add a historical deleted-member archive.
 
 ## Feed and application-control gate
 
@@ -80,11 +86,12 @@ retraction selects the current author's assertions; equal labels belonging to
 another author can remain visible after that retraction.
 
 The existing feed tests also assert raw `node_tags` values. Updating those reads
-alone would conceal the policy mismatch. Before integration, Turnstone must
-explicitly settle which controls belong to a member and which to shared content,
-then test shared-resource subscription, unsubscribe, read/unread, reconciliation,
-and deletion. Mere owns content tag identity and attribution, not Turnstone's
-subscription or retention policy. Keep remains a separate pending user ruling.
+alone would conceal the policy mismatch. Mark ruled on 2026-10-08 that Keep,
+subscriptions and unread state stay per view; descriptive tags alone share
+content identity. Turnstone must implement and test that boundary through
+shared-resource subscription, unsubscribe, read/unread, reconciliation and
+deletion. Mere owns content tag identity and attribution; Turnstone owns its
+subscription and retention commands. See `controls.md` for the prepared adoption.
 
 Roster now gathers resource-aware tags, but its public rendered row shapes omit
 tag labels. This patch therefore makes no Roster display-tag claim; expose a

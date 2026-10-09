@@ -9,6 +9,12 @@ P2 routing/content changes on 2026-10-08. That checkpoint alone does not contain
 the reviewed APIs. Recheck this patch against the eventual immutable supplier
 commit before integrating it.
 
+The 2026-10-08 follow-up checked this patch against current Turnstone and the
+committed `72c68b6d` APIs. The three new captured variants and required resource
+and projection readers remain present. The patch still applies; this is not a
+compilation or behavior qualification receipt. The supplier's exact-import repair
+is underway, and the journal-runtime gate below remains open.
+
 ## Wake rules
 
 | Captured change | Surface scopes projected at the after-dispatch drain |

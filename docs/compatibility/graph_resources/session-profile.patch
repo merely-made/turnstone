@@ -1,0 +1,185 @@
+--- a/src/session.rs
++++ b/src/session.rs
+@@ -584,22 +584,44 @@
+ /// corrupt file).
+ pub fn load_session_graph(data_root: &Path) -> Option<Graph> {
+     let graph_file = data_root.join(session_graph_store::GRAPH_FILE);
+-    match session_graph_store::load_snapshot(&graph_file) {
+-        Ok(Some(mut snapshot)) => {
++    match session_graph_store::load_profiled_snapshot(&graph_file) {
++        Ok(Some(mut input)) => {
++            let placement = input.placement;
++            let snapshot = &mut input.snapshot;
+             let legacy_node_facets = snapshot.legacy_node_facet_count();
+-            // Externalize any pre-phase-2 inline imagery BEFORE materializing:
+-            // conversion keeps references only, so pixels left here would be
+-            // dropped silently. One-time; a snapshot already externalized has
+-            // nothing to do.
+-            let migrated = externalize_legacy_images(&mut snapshot, data_root);
+-            let mut graph = mere::kernel::graph::Graph::from_snapshot(&snapshot);
++            // Externalize pre-phase-2 inline imagery before the final graph is
++            // retained: conversion keeps references only. First validate the
++            // original input; then rebuild from any deposited image references.
++            // A snapshot already externalized has nothing to deposit.
++            // Refuse invalid or unqualified legacy input before writing image blobs.
++            let mut graph = match pandect::graph_placement::materialize_snapshot(snapshot, placement) {
++                Ok(graph) => graph,
++                Err(error) => {
++                    tracing::warn!(%error, path = ?graph_file,
++                        "failed to materialize the session graph; starting fresh");
++                    return None;
++                }
++            };
++            let migrated = externalize_legacy_images(snapshot, data_root);
++            if migrated > 0 {
++                // The first conversion validated the original input. Rebuild from
++                // the image references deposited above, preserving its placement.
++                graph = match pandect::graph_placement::materialize_snapshot(snapshot, placement) {
++                    Ok(graph) => graph,
++                    Err(error) => {
++                        tracing::warn!(%error, path = ?graph_file,
++                            "failed to materialize migrated session imagery; starting fresh");
++                        return None;
++                    }
++                };
++            }
+             if legacy_node_facets > 0 {
+                 // Existing facets are canonical and therefore win over the
+                 // one-time import from legacy graph columns. Persist the merged
+                 // store first, then strip those columns from graph.json.
+                 graph.overlay_facets(load_node_facets(data_root).unwrap_or_default());
+                 save_node_facets(data_root, graph.facets());
+-                save_session_graph(data_root, &graph);
++                save_loaded_session_graph(data_root, &graph, placement);
+                 tracing::info!(
+                     legacy_node_facets,
+                     "migrated legacy node metadata into facets"
+@@ -607,7 +629,7 @@
+             } else if migrated > 0 {
+                 // Re-save immediately so the pixels leave `graph.json` even if
+                 // the session never saves again.
+-                save_session_graph(data_root, &graph);
++                save_loaded_session_graph(data_root, &graph, placement);
+             }
+             if migrated > 0 {
+                 tracing::info!(migrated, "externalized legacy inline node imagery");
+@@ -705,6 +727,19 @@
+     let graph_file = data_root.join(session_graph_store::GRAPH_FILE);
+     if let Err(err) = session_graph_store::save(&graph_file, graph) {
+         tracing::warn!(%err, path = ?graph_file, "failed to persist the session graph");
++    }
++}
++
++/// Re-save a loaded input with exactly its declared placement. Absence remains
++/// unqualified; neither resource columns nor successful load mint a profile.
++fn save_loaded_session_graph(
++    data_root: &Path,
++    graph: &Graph,
++    placement: Option<pandect::graph_placement::PlacementProfile>,
++) {
++    let graph_file = data_root.join(session_graph_store::GRAPH_FILE);
++    if let Err(err) = session_graph_store::save_profiled(&graph_file, graph, placement) {
++        tracing::warn!(%err, "failed to persist the migrated session graph");
+     }
+ }
+ 
+@@ -937,6 +972,99 @@
+ mod tests {
+     use super::*;
+     use sceno::{Arrangement, Spiral};
++
++    // Future-supplier controls: these require the coordinated immutable
++    // resource supplier. They cover only load and migration re-save placement.
++    fn recorded_session_fixture() -> Graph {
++        use mere::kernel::graph::apply::add_node;
++        let mut graph = Graph::new();
++        add_node(&mut graph, None, "https://placement.test/dir/page".into(), Default::default());
++        add_node(&mut graph, None, "https://placement.test/dir/".into(), Default::default());
++        let mut snapshot = graph.to_snapshot();
++        snapshot.edges.clear();
++        snapshot.resource_edges.clear();
++        let recorded = Graph::try_from_recorded_snapshot(&snapshot).unwrap();
++        let unqualified = Graph::try_from_snapshot(&snapshot).unwrap().to_snapshot();
++        assert!(unqualified.edges.len() + unqualified.resource_edges.len() > 0,
++            "the deliberately broken unprofiled load re-derives URL containment");
++        recorded
++    }
++
++    #[test]
++    fn session_profile_recorded_load_and_migration_preserve_held_relations() {
++        use pandect::graph_placement::PlacementProfile;
++        use mere::kernel::types::ImageRole;
++        for image_migration in [false, true] {
++            let root = tempfile::tempdir().unwrap();
++            let path = root.path().join(session_graph_store::GRAPH_FILE);
++            let graph = recorded_session_fixture();
++            session_graph_store::save_profiled(&path, &graph,
++                Some(PlacementProfile::RecordedStrataV1)).unwrap();
++            let mut input = session_graph_store::load_profiled_snapshot(&path).unwrap().unwrap();
++            if image_migration {
++                input.snapshot.nodes[0].legacy_thumbnail_png =
++                    Some(encode_rgba_png(&[1, 2, 3, 255], 1, 1).unwrap());
++                input.snapshot.nodes[0].legacy_thumbnail_width = 1;
++                input.snapshot.nodes[0].legacy_thumbnail_height = 1;
++            } else {
++                input.snapshot.nodes[0].is_pinned = true;
++            }
++            std::fs::write(&path, serde_json::to_vec_pretty(&input).unwrap()).unwrap();
++            let restored = load_session_graph(root.path()).expect("qualified recorded input");
++            let restored_snapshot = restored.to_snapshot();
++            assert!(restored_snapshot.edges.is_empty());
++            assert!(restored_snapshot.resource_edges.is_empty());
++            let saved = session_graph_store::load_profiled_snapshot(&path).unwrap().unwrap();
++            assert_eq!(saved.placement, Some(PlacementProfile::RecordedStrataV1));
++            assert_eq!(saved.snapshot.legacy_image_count(), 0);
++            assert_eq!(saved.snapshot.legacy_node_facet_count(), 0);
++            if image_migration {
++                let image = saved.snapshot.nodes[0].images.get(&ImageRole::Preview).unwrap();
++                assert!(load_image_blob(root.path(), &image.hex()).is_some());
++            }
++            let reopened = load_session_graph(root.path()).unwrap().to_snapshot();
++            assert_eq!(reopened.edges, saved.snapshot.edges);
++            assert_eq!(reopened.resource_edges, saved.snapshot.resource_edges);
++        }
++    }
++
++    #[test]
++    fn session_profile_invalid_resource_and_declared_legacy_refuse_without_rewrite() {
++        use mere::kernel::persistence::PersistedShownResource;
++        use pandect::graph_placement::PlacementProfile;
++        let root = tempfile::tempdir().unwrap();
++        let path = root.path().join(session_graph_store::GRAPH_FILE);
++        let mut invalid = recorded_session_fixture().to_snapshot();
++        invalid.nodes[0].legacy_thumbnail_png = Some(encode_rgba_png(&[1, 2, 3, 255], 1, 1).unwrap());
++        invalid.nodes[0].legacy_thumbnail_width = 1;
++        invalid.nodes[0].legacy_thumbnail_height = 1;
++        invalid.shown_resources.push(PersistedShownResource {
++            surface_id: "not-a-uuid".into(), resource_id: uuid::Uuid::new_v4().to_string(),
++        });
++        std::fs::write(&path, serde_json::to_vec_pretty(&invalid).unwrap()).unwrap();
++        let original = std::fs::read(&path).unwrap();
++        assert!(load_session_graph(root.path()).is_none(), "invalid explicit resource data is fallible");
++        assert!(!root.path().join("images").exists(), "refused input deposits no migration blobs");
++        assert_eq!(std::fs::read(&path).unwrap(), original);
++        session_graph_store::save_profiled(&path, &Graph::new(),
++            Some(PlacementProfile::LegacySurfaceV1)).unwrap();
++        let original = std::fs::read(&path).unwrap();
++        assert!(load_session_graph(root.path()).is_none(), "declared legacy needs qualified replay");
++        assert_eq!(std::fs::read(&path).unwrap(), original);
++    }
++
++    #[test]
++    fn session_profile_absent_migration_does_not_mint_qualification() {
++        let root = tempfile::tempdir().unwrap();
++        let path = root.path().join(session_graph_store::GRAPH_FILE);
++        let mut snapshot = recorded_session_fixture().to_snapshot();
++        snapshot.nodes[0].is_pinned = true;
++        std::fs::write(&path, serde_json::to_vec_pretty(&snapshot).unwrap()).unwrap();
++        assert!(load_session_graph(root.path()).is_some());
++        let saved = session_graph_store::load_profiled_snapshot(&path).unwrap().unwrap();
++        assert_eq!(saved.placement, None);
++        assert_eq!(saved.snapshot.legacy_node_facet_count(), 0);
++    }
+ 
+     #[test]
+     fn place_collection_sidecar_is_exact_and_refuses_corruption() {
