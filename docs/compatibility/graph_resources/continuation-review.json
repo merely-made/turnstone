@@ -1,0 +1,118 @@
+{
+  "reviewed_at": "2026-10-09T02:24:54.747011+00:00",
+  "consumer_head": "53de12f57e6cf498c5cc30226361ecadee074f20",
+  "supplier_api_reference": "72c68b6d6f6a5c9023999d9fdaf4b3db632e6874",
+  "scope": "Source review and static checks only; no compilation or executed regression controls",
+  "parser": "rustfmt 1.9.0-stable (8bab26f4f6 2026-07-14)",
+  "parser_note": "Selected installed 1.97.1 rustfmt; repository toolchain 1.98.1 lacks rustfmt",
+  "application_order": [
+    "reader.patch",
+    "behaviors.patch",
+    "content-tests.patch",
+    "session-profile.patch",
+    "controls.patch"
+  ],
+  "patches": {
+    "reader.patch": {
+      "sha256": "9066c11a14b61725e603ba26782020eb3d031db892495d99489b706beafa174f",
+      "unchanged_from_handoff": true,
+      "apply_exit": 0
+    },
+    "behaviors.patch": {
+      "sha256": "2058d84ad3ce130e7b994f8710c39259c273ce6a54ff233fb2d72817e59981e9",
+      "unchanged_from_handoff": true,
+      "apply_exit": 0
+    },
+    "content-tests.patch": {
+      "sha256": "9f05b0494cc10d1fbf640b9a283d0490cd9528f068434ae032cc532066f0afa9",
+      "unchanged_from_handoff": true,
+      "apply_exit": 0
+    },
+    "session-profile.patch": {
+      "sha256": "5bd843803273b0205126735bc3e75c9d304f631337dbddeb9acb27b099c46fc6",
+      "unchanged_from_handoff": true,
+      "apply_exit": 0
+    },
+    "controls.patch": {
+      "sha256": "0aed7862f888f2aa4740db3de58310d67a0dfdd75c52a0a0402f97cf609d297e",
+      "unchanged_from_handoff": true,
+      "apply_exit": 0
+    }
+  },
+  "syntax": {
+    "src/app/feed_arms.rs": {
+      "source_sha256": "4cff419ec06d6f1812f0fcb065e39b5e0225fa1b7d275bc29e015c9f269d4c23",
+      "unchanged_from_handoff": true,
+      "parse_exit": 0
+    },
+    "src/app/mod.rs": {
+      "source_sha256": "f7e1c8c872c24cc7c2adc2193e255bd43bc77b28f339b2e829ef196955d9dffd",
+      "unchanged_from_handoff": true,
+      "parse_exit": 0
+    },
+    "src/app/node_arms.rs": {
+      "source_sha256": "fba3a7dafd858cba466cb6fd7b9f65ea354c17fa8ea81f137fdee7f5cfb997b6",
+      "unchanged_from_handoff": true,
+      "parse_exit": 0
+    },
+    "src/app/runtime_pool.rs": {
+      "source_sha256": "b87eaa25d17c6c30c600ed7b03744d9efe51a342b19dd092091a811db1f22429",
+      "unchanged_from_handoff": true,
+      "parse_exit": 0
+    },
+    "src/app/session_lifecycle.rs": {
+      "source_sha256": "851acb981283fbc059e6abd2810d2681ee5f66bbc365734b442f9c923b17b5d3",
+      "unchanged_from_handoff": true,
+      "parse_exit": 0
+    },
+    "src/app/surface_control_tests.rs": {
+      "source_sha256": "470da922fd22302dca6e2e7661958e3e51e8aab0113a0b5339555c2349afc48e",
+      "unchanged_from_handoff": true,
+      "parse_exit": 0
+    },
+    "src/app/tests.rs": {
+      "source_sha256": "b3227163fe7e6156b367659ef16a71bf7c3702ec54455735e0d0cd2a0985a18d",
+      "unchanged_from_handoff": true,
+      "parse_exit": 0
+    },
+    "src/behaviors.rs": {
+      "source_sha256": "5aaa7c431e557639b36c9995f6604e42634a042e5c03ff7452e06043000257e4",
+      "unchanged_from_handoff": true,
+      "parse_exit": 0
+    },
+    "src/content_tags.rs": {
+      "source_sha256": "9862f6a79e34051b66326763cd5ee4df685d7529c6594b04dbadc1af70fb3177",
+      "unchanged_from_handoff": true,
+      "parse_exit": 0
+    },
+    "src/feed.rs": {
+      "source_sha256": "4c4dfa8b93c9141e33fd21cbbdb451bdf09491e60c371e91062386e535bac705",
+      "unchanged_from_handoff": true,
+      "parse_exit": 0
+    },
+    "src/lib.rs": {
+      "source_sha256": "7b9ffca3994241b8f1c9e63ef8da916a45acaa5b6189709449ec3097be0c0fae",
+      "unchanged_from_handoff": true,
+      "parse_exit": 0
+    },
+    "src/session.rs": {
+      "source_sha256": "09336a736bbb078275e69d8ee8c8c0a08f20e1d13312f1c718fd2db9ad78f695",
+      "unchanged_from_handoff": true,
+      "parse_exit": 0
+    },
+    "src/surface_controls.rs": {
+      "source_sha256": "8ea922d061ff51b6cc37683d939f23e2a8ad16e3737c67ff040e355eecadf159",
+      "unchanged_from_handoff": true,
+      "parse_exit": 0
+    }
+  },
+  "findings": [
+    "Canonical facet load errors become empty stores before migration persistence",
+    "Ordinary save writes graph before facets; graph write failure does not block image collection",
+    "Refused load becomes a fresh graph without a durable write block",
+    "Fork manifest publication precedes best-effort graph/facet persistence",
+    "Unchanged feed entries without bindings are suppressed by merge",
+    "Shared journal lacks runtime origin; immutable supplier has graph-owned recorder API"
+  ],
+  "production_source_unchanged": true
+}

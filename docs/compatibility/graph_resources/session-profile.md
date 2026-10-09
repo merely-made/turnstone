@@ -111,3 +111,103 @@ save control. Resource content/behavior tests, feed/Keep ownership and graph
 runtime wake attribution remain separate gates. Use ThinkPad Linux at low
 priority with one build job and the existing target; this preparation ran no
 builds and created no target, Cargo home or worktree.
+
+## Continuation design for host persistence (2026-10-08, proposed)
+
+Status: source review complete; this extension is proposed for review, not
+implemented. The five saved patches remain unchanged. See
+`continuation-review.json` for fresh application, parsing and byte checks.
+
+### Purpose and authority
+
+Preserve the exact declared placement and old disk evidence through boot,
+session adoption, graph replacement, fork and ordinary saves. Keep, feed and
+unread stay per view. A failed load must remain distinct from a missing file.
+Successful resource materialization cannot grant placement qualification.
+This is host persistence work; it does not clear Mere's supplier gate.
+
+The proposed owner is `GraphRuntime`, beside its Canvas and session identity.
+Store an explicit persistence state: writable with the loaded optional placement,
+or refused with the originating session/path and diagnostic. Fresh sessions
+begin writable with absent placement until a supplier-backed qualification path
+explicitly establishes otherwise. An absent profile remains absent on save.
+
+Replace the `Option<Graph>` adoption seam with a result distinguishing missing,
+loaded (graph plus exact placement), and refused. Read canonical facets fallibly
+before any migration writes or image deposition. Missing facets are allowed;
+malformed or unreadable facets refuse persistence rather than becoming empty.
+The loader returns the refusal to the host. A temporary display graph may still
+be shown, but that runtime cannot persist into the refused session directory.
+Avoid automatic subscription work and recovery writes for that display graph.
+
+### Save, replacement and fork rules
+
+One fallible host save entry point reads persistence state from the exact runtime,
+refreshes its canonical facets, saves those facets, and only then saves the graph
+with its retained optional placement. A facet failure prevents graph replacement.
+A graph failure prevents image garbage collection. This ordering preserves
+migration evidence; it is not a transaction spanning every session sidecar.
+Feed-sidecar errors must remain observable and cannot be reported as a complete
+session-save success. Refused state prevents all writes and image collection
+under that session directory, including close, autosave and departing-session
+saves. Retrying load can clear refusal only after a successful fresh read.
+
+Boot and adoption install graph and persistence state together. Replacing a graph
+without a declared preservation or qualification contract clears any old placement
+authority; it cannot leave the donor's profile attached accidentally. Replacement
+also cannot clear a refused destination implicitly. Audit direct `Canvas::set_graph`
+access rather than relying only on the pool's compatibility dereference.
+
+Fork construction must use an explicit fallible recorded constructor or other
+supplier-qualified operation before assigning recorded placement. Carrying a
+donor's profile alone is insufficient for a newly assembled component graph.
+Persist fork facets and graph successfully before publishing its manifest and
+switching sessions. Refuse a fork from a refused display graph. If an unqualified
+donor is supported, its fork stays unqualified unless the exact construction
+operation supplies qualification. No resource-column heuristic is allowed.
+
+### Reviewed defects and regression requirements
+
+The combined controls proposal overlays
+`load_node_facets(data_root).unwrap_or_default()`, then saves migration facets.
+The wrapper conflates absent and corrupt sidecars. Reproduction fixture: reserved
+raw node labels plus malformed facets; load must leave both files byte-identical.
+Canonical false and malformed facet values need separate preservation controls.
+
+Ordinary shell save writes graph before facets; fork also publishes its manifest
+before best-effort graph/facet persistence. Inject facet and graph write failures
+with deterministic path collisions, not permissions that root can bypass.
+Assert original bytes, no premature manifest, no image collection, and successful
+retry. Test recorded and absent-profile ordinary save/reopen, refusal followed by
+SaveSession/close/switch/fork, and runtime replacement without qualification.
+
+The feed draft removes first-URL-match recovery, but `FeedSubscriptions::merge`
+still suppresses unchanged entries with missing explicit bindings. Reconcile can
+therefore leave an unchanged entry permanently invisible. Project unchanged
+unbound entries into newly minted views, preserving sidecar read status. Bind first,
+then derive the control value from that exact binding; the current unconditional
+Unread=true assignment must not turn binding repair into a new unread item.
+Retain an equal-URL sibling as a negative control and suppress subsequent duplicate
+projection once the new explicit binding exists.
+
+### Behavior attribution is a separate deliverable
+
+The immutable Mere checkpoint already has graph-owned `Graph::set_recorder`.
+Turnstone installs one thread recorder and projects its shared journal through the
+active graph. Prepare a graph-bound recorder carrying runtime identity into a
+single ordered host event stream, preserving the complete typed author and the
+existing cascade cursor ordering. Stop recording scratch/fork graphs into the
+live stream. Install the recorder after each accepted replacement. Equal Surface
+and Resource UUIDs in two runtimes must still produce different origins.
+Do not infer origin from focus, current URLs, membership lookup or shared IDs.
+The behavior wire's scope and authorization vocabulary must be audited before
+choosing per-runtime drains or changing the host envelope; this design does not
+authorize a new protocol DTO. That routing decision remains open separately.
+
+### Completion boundary
+
+Implement host persistence first with regression controls, then binding repair,
+then graph-origin routing after its envelope/authority review. At the final
+qualified immutable family, compile and execute all proposed controls and existing
+session/feed/behavior suites with the shared Linux target and one low-priority job.
+Static application and parser checks remain preparation evidence only.

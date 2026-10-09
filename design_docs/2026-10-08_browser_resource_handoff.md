@@ -209,3 +209,15 @@ Reuse `/home/markik/Code/target` for Linux and approved Windows targets under
 created. Temporary marker-identified Git indexes used for patch checks were
 removed after their owning process ended. No Linux build was running in this
 lane at the last preflight; recheck before launching the next gate.
+
+## ThinkPad continuation review (2026-10-08)
+
+The existing consumer worktree was verified clean at `53de12f` before review.
+All five unchanged patches again apply in sequence and their proposed Rust files
+parse; `docs/compatibility/graph_resources/continuation-review.json` records exact
+bytes. No production edit, repin or Cargo run was performed. The controls review
+found corrupt-sidecar overwrite and permanently unbound unchanged-feed paths;
+ordinary save/fork retain ordering and refused-input hazards. The concrete host
+persistence proposal is in `docs/compatibility/graph_resources/session-profile.md`,
+section "Continuation design for host persistence". It needs design review before
+runtime implementation. Mere's qualified family gate remains open.

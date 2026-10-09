@@ -11,7 +11,8 @@ Patch SHA-256: `0aed7862f888f2aa4740db3de58310d67a0dfdd75c52a0a0402f97cf609d297e
 Apply `session-profile.patch` before `controls.patch`. The controls loader hunks
 are based on the proposed profiled load source, rather than current production.
 Other prepared patches are `reader.patch`, `behaviors.patch`, and
-`content-tests.patch`. Joint sequential apply checks remain pending for controls.
+`content-tests.patch`. Joint sequential apply checks passed in the final handoff and were repeated
+on 2026-10-08; compilation and semantic checks remain pending.
 Controls puts its new app tests in `src/app/surface_control_tests.rs`, avoiding
 `content-tests.patch`'s insertion into `src/app/tests.rs`. It changes node_arms
 Keep/deletion-unread/recovery hunks; inspect combined hunk conflicts before use.
@@ -100,3 +101,14 @@ Inspect tombstone facet restoration and exact migration evidence preservation.
 The new helpers use existing non-journaled host facet access, so behavior-wake
 expectations also need explicit qualification rather than being inferred from
 tag captures. The draft does not establish release readiness.
+
+## Continuation review (2026-10-08)
+
+The unchanged draft has two additional explicit defects: canonical facet load
+errors become empty stores before migration writes, and unchanged feed entries
+with missing bindings remain suppressed by merge. The host ordinary save and
+fork paths also retain the ordering/refusal gaps described in
+`session-profile.md`, section "Continuation design for host persistence".
+These are source-review findings, not executed regression failures. The proposed
+repair design and required positive/negative controls are saved there. All five
+patches remain unapplied and byte-identical to the handoff.
