@@ -1321,6 +1321,25 @@ the same record once this lane can push to Mere (U15).
   Pelt and Turnstone on one controller without either owning the other's
   arrangement. Further refactoring is in scope where it simplifies.
 
+### Rulings (2026-10-08, seventh round: the vault lock reaches Turnstone)
+
+- **When Turnstone stops falling back under a locked vault.** The identity
+  session's Dramatis report showed that Mere `4ba47666` (vault lock L3) adds
+  the persisted lock, under which Turnstone's open answers `Locked` and its
+  fallback would quietly re-root it (vault lock ruling 35's hazard). Mark:
+  **"yeah, batch it with C2, watch the marker"**. *Follows:* the bridge rides
+  the C2 repin, which therefore targets Mere `463c8d40` (past L3) rather than
+  `227062a9`, and Turnstone learns of an unlock by watching the marker until
+  djinn can say so itself (Dramatis DR-C).
+- **The bridge's shape.** Turnstone hands its root to the place worker, the
+  share reader, publishing, participant authority, place cards, Gemini client
+  certificates and the projection endpoint. Options: run pending (ruling 35's
+  shape: browsing works, what speaks as the profile waits and starts at
+  unlock); wait at startup with no window; refuse at startup. Mark: **"Run
+  pending (Recommended)"**. *Follows:* the identity is `None` while locked;
+  no fallback key is minted; Dramatis D12 reuses the rule when Turnstone
+  calls djinn.
+
 ## Progress
 
 - **2026-10-06:**
@@ -1697,6 +1716,84 @@ the same record once this lane can push to Mere (U15).
       matches only Weld, so Scry and Servo nodes take the document Back and
       Reload path, and Stop does nothing for them.
     - Nothing was built or run.
+  - The Scenograph C2 adoption and the vault lock bridge, with the coordinated
+    family repin they need (seventh round). Mere `227062a9` already held C2,
+    and another lane had moved Knot onto it, but it predates the persisted
+    lock, so the family went to Mere `463c8d40` instead.
+    - Family, in U9 order:
+      - Knot `5bef84c0`: Mere rows to `463c8d40`, Genet `15713014` unchanged.
+        Its lock moves only sources.
+      - Redshank/Woodshed `b39a38d3` and `52fbe468`: Mere to `463c8d40`, Genet
+        to `15713014`. The lock adds only `command-menu`. Mere `019e07a0` draws
+        Cambium's text fields as `role="textbox"` divs, not textareas, so
+        Redshank's focus probe, field styles and one markup test follow it,
+        as Knot's did in `341d5ca`.
+      - Turnstone: one source per sibling in the lock; it adds
+        `command-menu` and `serde_path_to_error`.
+    - Mere API moves at this repin: `project_canvas_strategy_with_score` takes
+      the canvas's own `ChannelRegistry` (F87), and `project_spiral_score`
+      reads keyed signals (F132). The disclosed scene takes a fresh registry
+      per projection. The G3 receipt changes only in its "Fit to view" label;
+      its layout is byte-identical.
+    - C2:
+      - The view sidecar stores `cambium::CommandChoices` itself. A sidecar
+        written as `CommandMenuV1` reads back unchanged (tested over the old
+        JSON).
+      - The `>` lane reads through `cambium::MenuSession`, held on
+        `OmnibarState` in place of `all_commands`: the query, the expansion
+        and the highlight's moves.
+      - The shared verbs register under catalogue ids, labelled by the
+        catalogue: `nav:back`, `nav:forward`, `nav:reload`, `nav:stop`,
+        `view:fit`, `physics:toggle`, `node:delete`, `session:save`,
+        `pane:settings`, `pane:trail` and `pane:workbench`. One function,
+        `action::shared_command_id`, names them. Every other row keeps its
+        label as its host-owned id, so those stored choices survive.
+      - Not offered by Turnstone's palette, so not registered:
+        `node:viewer_auto`, `palette:open` and the three workbench verbs.
+      - Labels now read "Fit to view" and "Pause or resume physics" in the
+        scenarios, tests and the remote card. A stored choice under an old
+        label falls away (SE50; tested).
+    - The vault lock bridge (ruling 35, "Run pending"):
+      - `identity::load_root` answers `Locked` while the marker is present
+        (whichever backend would answer, per ruling 23) or the open says
+        `Locked`. It never reaches the fallback then, so no seed is minted.
+        A missing vault still falls back.
+      - `App.identity` is `None` while pending. Participants rebuild with no
+        root, so nothing verifies and nothing is written; install, place
+        cards, pre-key offers, Gemini binding and the projection endpoint
+        refuse with one reason. Gemini fetches go without a client
+        certificate.
+      - The shell starts the place worker pending (it holds commands that
+        speak as the profile, in order; `Release` still answers at once),
+        defers the share reader and publishing, and holds trail visits
+        (capped at 4,096), since the trail is keyed by the root.
+      - `identity::watch_for_unlock` polls the marker each second. Once it
+        clears, the root opens; the app adopts it and rebuilds participants;
+        the worker runs what it held; the services start; the held visits
+        are filed.
+      - Not covered: a lock while Turnstone runs. Ruling 23's live lock comes
+        through djinn's broadcast, which Dramatis DR-C delivers.
+    - Gates, macOS:
+      - Knot: the workspace check passes; the workspace suite passes 616
+        (2 ignored); `knot-document` passes 45.
+      - Redshank: the desktop and wasm checks pass; the suite passes 245 with
+        7 ignored. The one failure is the artwork test that loads a fixed
+        Windows path, as before.
+      - Turnstone: `cargo check --all-targets --locked` and `verify` pass.
+        The library suite under load: 676 passed, 11 failed. The four known
+        macOS failures recur; six place tests timed out under load and pass
+        alone (74 of 74); the G3 receipt was regenerated and passes.
+      - Headed, macOS (`scenarios/command_menu_keep.scn`, then
+        `command_menu_keep_restart.scn` on the same profile): search reaches
+        "Reseed layout", Ctrl+D keeps it, "Fit to view" is dropped, and a
+        second process reads both back. The sidecar holds
+        `added: ["Reseed layout"]` and `removed: ["view:fit"]`. The snapshot
+        gained `commands-added` and `commands-removed`, because the bare lane
+        is bounded by the row limit. Scenario keys gained `ctrl+d`.
+      - Headed, macOS (`scenarios/vault_locked_pending.scn`, a scratch vault
+        through `XDG_DATA_HOME`): Turnstone starts pending with the marker
+        present and opens a page. A background job clears the marker 12
+        seconds in, and the root is adopted within a second.
 
 - **2026-10-07, site/composition review:** recorded the browser-sidecar scope
   proposal under §6, separating session authority from browser wrapper and
