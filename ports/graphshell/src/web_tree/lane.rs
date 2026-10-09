@@ -658,6 +658,20 @@ impl Product for TreeLane {
             )
             .with_field("zoom", canvas.camera().zoom.to_string())
             .with_field("camera", format!("{:?}", canvas.camera().offset))
+            .with_field(
+                "selection-fit-available",
+                canvas.can_fit_selection().to_string(),
+            )
+            .with_field(
+                "selection-center-distance",
+                canvas
+                    .focused_screen_position()
+                    .map(|(x, y)| {
+                        let (w, h) = self.shared.size.get();
+                        format!("{:.3}", (x - w as f32 * 0.5).hypot(y - h as f32 * 0.5))
+                    })
+                    .unwrap_or_else(|| "unavailable".into()),
+            )
             .with_field("picked", page.picked.clone().unwrap_or_default())
             .with_field("nodes", page.nodes.to_string())
             .with_field("source", page.source.clone())

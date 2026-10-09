@@ -6,10 +6,12 @@
 
 //! Graph controls use the same canvas operations as the existing product page.
 use super::*;
-use cambium::{PointerButton, PointerEvent, PointerPhase, button};
+use cambium::{PointerButton, PointerEvent, PointerPhase, button, focusable_if, on_click};
 
 pub(super) fn toolbar(page: &TreePage) -> Child {
     let paused = page.shared.canvas.borrow().physics_paused();
+    let can_fit_selection = page.shared.canvas.borrow().can_fit_selection();
+    let hosted = matches!(page.dataset, HostedDataset::Loaded(_));
     let commands = [
         (
             "Pan left",
@@ -41,7 +43,12 @@ pub(super) fn toolbar(page: &TreePage) -> Child {
         ),
         ("Zoom in", CanvasCommand::Zoom { delta: ZOOM_STEP }),
         ("Zoom out", CanvasCommand::Zoom { delta: -ZOOM_STEP }),
-        ("Fit graph", CanvasCommand::Fit),
+        if hosted {
+            ("Fit visible graph", CanvasCommand::FitVisible)
+        } else {
+            ("Fit graph", CanvasCommand::Fit)
+        },
+        ("Fit selection", CanvasCommand::FitSelection),
         ("Restore arrangement", CanvasCommand::RestoreArrangement),
         (
             if paused {
@@ -55,10 +62,25 @@ pub(super) fn toolbar(page: &TreePage) -> Child {
     let mut buttons: Vec<Child> = commands
         .into_iter()
         .map(|(label, command)| {
-            Box::new(button(label, move |page: &mut TreePage, _| {
-                command.apply(&mut page.shared.canvas.borrow_mut(), page.shared.size.get());
-                page.shared.dirty.set(true);
-            })) as Child
+            let enabled = command != CanvasCommand::FitSelection || can_fit_selection;
+            let mut control = focusable_if(
+                on_click(
+                    el("button", label.to_owned()),
+                    move |page: &mut TreePage, _| {
+                        let mut canvas = page.shared.canvas.borrow_mut();
+                        if command == CanvasCommand::FitSelection && !canvas.can_fit_selection() {
+                            return;
+                        }
+                        command.apply(&mut canvas, page.shared.size.get());
+                        page.shared.dirty.set(true);
+                    },
+                ),
+                enabled,
+            );
+            if !enabled {
+                control = control.attr("disabled", "").attr("aria-disabled", "true");
+            }
+            Box::new(control) as Child
         })
         .collect();
     // Collapsed, the Graph tools region opens over the canvas from here.

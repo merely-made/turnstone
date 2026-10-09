@@ -73,6 +73,7 @@ const SHEET: &str = "\
     .tree-status { margin: 4px 12px 8px; } \
     .tree-controls { display:flex; gap:6px; padding:6px 12px; flex-wrap:wrap; } \
     .tree-controls button { background:#263640; color:#dce3e8; padding:5px 10px; border:1px solid #637581; } \
+    .tree-controls button[disabled] { opacity:.45; } \
     .tree-grouping { max-height:180px; overflow-y:auto; padding:4px 12px; border-bottom:1px solid #2c3b44; } \
     .tree-grouping h2 { font-size:14px; margin:2px 0; } \
     .tree-grouping p { font-size:12px; margin:3px 0; overflow-wrap:anywhere; } \
@@ -576,6 +577,9 @@ fn view(page: &TreePage) -> Child {
                 custom_leaf::<TreePage, ()>(CANVAS_KEY, canvas_width, 1)
                     .attr("class", "tree-canvas")
                     .attr("role", "img")
+                    // on_key registers retained focus; disclose the same
+                    // capability to Genet so the browser mirror can follow it.
+                    .attr("tabindex", "0")
                     .attr("aria-label", "Graph"),
                 |page: &mut TreePage, event: cambium::PointerEvent| page.pointer(event),
             ),
