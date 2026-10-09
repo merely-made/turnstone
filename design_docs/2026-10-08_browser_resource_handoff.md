@@ -293,3 +293,25 @@ The source review was required by the execution skill and performed read-only.
 No chat was messaged and no new worktree, Cargo home or target was created.
 Graph-origin behavior attribution was explicitly left outside this approved
 persistence contract; its authority/envelope choice remains open.
+
+## Graph-origin design review (2026-10-08)
+
+The next written contract is in
+[`behaviors.md`](../docs/compatibility/graph_resources/behaviors.md#proposed-graph-origin-contract-2026-10-08).
+It recommends graph-bound capture into one ordered host stream, with explicit
+session/runtime-generation binding for delivery. The existing participant roster,
+authority, run store and watch tables are session-owned; recording other live
+graphs cannot authorize background execution under the adopted roster.
+
+The source audit covered runtime replacement, session adoption, graph/app/clock
+drains, participant lowering, endpoint author guards, saved watch cursors and the
+journal inspector. Mere `72c68b6d` supplies `Graph::set_recorder`, clone recorder
+isolation, complete typed `AttributedDelta` and unchanged Servitor watch scopes.
+The host stream is not currently persisted, so restored graph-watch cursors must
+not be compared with a new zero-based vector index. The proposed contract uses
+explicit ordinals above the restored cursor floor and excludes old generations.
+
+Status: proposed written design awaiting Mark's review. No seventh patch or
+implementation plan has been prepared. The supplier owner's compact live status
+still supplies no final qualified immutable family or integration clearance.
+The six preserved patches remain unapplied and production pins are unchanged.
