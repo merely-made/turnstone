@@ -1776,7 +1776,7 @@ the same record once this lane can push to Mere (U15).
     - Gates, macOS:
       - Knot: the workspace check passes; the workspace suite passes 616
         (2 ignored); `knot-document` passes 45.
-      - Redshank: the desktop and wasm checks pass; the suite passes 245 with
+      - Redshank: the desktop and wasm checks pass; the suite passes 242 with
         7 ignored. The one failure is the artwork test that loads a fixed
         Windows path, as before.
       - Turnstone: `cargo check --all-targets --locked` and `verify` pass.
@@ -1794,6 +1794,50 @@ the same record once this lane can push to Mere (U15).
         through `XDG_DATA_HOME`): Turnstone starts pending with the marker
         present and opens a page. A background job clears the marker 12
         seconds in, and the root is adopted within a second.
+- **2026-10-09:**
+  - SC step 4, pass B: each node's web surface is the surface lane of its
+    Pelt content, beside documents in the one per-node map.
+    - Mere `0357b286`: `PeltContent::from_surface` wraps a producer the host
+      spawned at its own route and per-node profile, as `from_controller`
+      wraps a document, and `surface_producer_mut` lends the producer for the
+      work the content does not wrap. `pelt-core` passes 34, 3 of them new
+      (`tests/host_surface.rs`).
+    - Family, in U9 order: Knot `ee0512d0` and Redshank/Woodshed `2f8ac103`
+      move only their Mere rows; every lock moves only sources.
+    - Shell: `surface_producers` is gone. A spawned surface is inserted as
+      `PeltContent::from_surface`, and every producer use (input, drag,
+      cursor, accessibility, capture, find, zoom, imported frames) reaches it
+      through `NodeSurfaces` over the same map. A torn-out lens window still
+      composites only documents, as before. A document spawned over a live
+      surface retires the surface's capture, frames, accessibility and find
+      state with it.
+    - Route-state dispatch: `ContentFacts` carries the content's lane
+      (`ContentLane`), and `node_uses_web_surface` reads the lane instead of
+      matching Weld's engine id. Scry and Servo nodes now take Back, Forward,
+      Reload and Stop on their web plane, as Weld's did (the bug found in
+      passing on 2026-10-08). The shell sends them through
+      `PeltContent::command`.
+    - Mere API moves at this repin: the canvas's physics is a `DynamicsSpec`
+      edited through `PhysicsChoice` (F162). `GraphRuntimePool` keeps
+      Turnstone's one-field physics reads and edits, each written into the
+      spec as one change, so the call sites are unchanged.
+    - Gates, macOS:
+      - Knot: the check passes; 661 tests pass (3 ignored).
+      - Redshank: the desktop and wasm checks pass; 242 pass with 7 ignored
+        and the one Windows-path artwork failure. (The C2 entry above said
+        245; the count was 242 there too.)
+      - Turnstone: `cargo check --all-targets --locked` and `verify` pass
+        (1,285 packages). The library suite under load: 677 passed, 11
+        failed. The four macOS failures recur; six place tests failed under
+        load and pass alone (the bounded-grant expiry needed a quiet machine,
+        twice); the new lane test's first draft was wrong (the address's own
+        page fetch takes the first Stop) and passes as corrected.
+    - Not covered on macOS: no surface engine registers a producer here, so
+      the surface lane runs only on Windows. The Windows-only frame import
+      was reviewed by hand, not compiled. The Windows headed run is Mark's.
+    - Next under SC: controller-level input (the surface lane's `input` and
+      `frame` in place of the shell's own pointer and frame paths), then
+      step 5 (S8).
 
 - **2026-10-07, site/composition review:** recorded the browser-sidecar scope
   proposal under §6, separating session authority from browser wrapper and
