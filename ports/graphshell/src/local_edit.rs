@@ -209,6 +209,7 @@ pub fn sync_canvas_metadata_from_graph(
         resource_id: resource.map(|id| id.to_string()),
     });
     canvas.refresh_recorded_metadata(&deltas)?;
+    canvas.refresh_semantic_context(source);
     Ok(())
 }
 
