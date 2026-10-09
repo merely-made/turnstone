@@ -88,6 +88,8 @@ pub mod practice_disclosure;
 #[cfg(any(feature = "native", feature = "web"))]
 pub mod practice_workspace;
 #[cfg(any(feature = "native", feature = "web"))]
+pub mod projection_compare;
+#[cfg(any(feature = "native", feature = "web"))]
 pub mod projection_compile;
 #[cfg(any(feature = "native", feature = "web"))]
 pub mod projection_editor;
