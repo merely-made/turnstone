@@ -9,6 +9,132 @@
 
 use super::*;
 
+// Future-supplier controls: apply only after the resource-content API is
+// integrated as an exact, coordinated supplier set. These are product read
+// and recycle-label checks, not an attributed recovery receipt.
+fn resource_content_fixture() -> (App, uuid::Uuid, uuid::Uuid, uuid::Uuid) {
+    use mere::kernel::graph::apply::add_node;
+    use mere::kernel::graph::resource_tags::{TagConcept, tag_concept_iri};
+    use mere::kernel::graph::{Author, Graph};
+
+    let mut graph = Graph::new();
+    let first = uuid::Uuid::from_u128(101);
+    let second = uuid::Uuid::from_u128(102);
+    let a = add_node(
+        &mut graph,
+        Some(first),
+        "https://EXAMPLE.test/page#one".into(),
+        Default::default(),
+    );
+    let b = add_node(
+        &mut graph,
+        Some(second),
+        "https://example.test/page#two".into(),
+        Default::default(),
+    );
+    let resource = graph.shown_resource_id(a).expect("live add records resource");
+    assert_eq!(graph.shown_resource_id(b), Some(resource));
+    graph.write_as(Author::person("content-fixture"), |graph| {
+        let owner_iri = graph.write_author().asserter_iri();
+        for label in ["Paper", "paper"] {
+            assert!(graph.tag_resource_with_concept(
+                resource,
+                &tag_concept_iri(&owner_iri, label),
+                TagConcept {
+                    owner_iri: owner_iri.clone(),
+                    label: label.into(),
+                },
+            ).unwrap());
+        }
+    });
+    // A raw Surface read is a deliberately broken consumer control: none of
+    // these labels was copied into either Surface's legacy tag column.
+    assert!(graph.get_node(a).unwrap().tags.is_empty());
+    assert!(graph.get_node(b).unwrap().tags.is_empty());
+    let mut app = App::test_stub();
+    app.graph_runtimes.set_graph(graph);
+    app.bind_behavior_journal().expect("test baseline");
+    let pane = app.default_graph_pane();
+    assert!(app.graph_pane_select_member(pane, first));
+    (app, first, second, resource)
+}
+
+#[test]
+fn resource_content_inspector_follows_shared_resource_and_navigation() {
+    let (mut app, first, second, resource) = resource_content_fixture();
+    let pane = app.default_graph_pane();
+    for member in [first, second] {
+        assert!(app.graph_pane_select_member(pane, member));
+        let lines = crate::inspector_view::inspector_lines(&app);
+        assert!(lines.iter().any(|line| line == "Tags: Paper, paper"), "{lines:?}");
+        assert!(lines.iter().any(|line| line == &format!("Node id: {member}")));
+    }
+
+    app.update(Action::ContentNavigationCommitted {
+        member: first,
+        url: "https://example.test/next".into(),
+    });
+    let graph = app.graph_runtimes.graph();
+    let first_key = graph.get_node_by_id(first).unwrap().0;
+    let second_key = graph.get_node_by_id(second).unwrap().0;
+    assert_ne!(graph.shown_resource_id(first_key), Some(resource));
+    assert_eq!(graph.shown_resource_id(second_key), Some(resource));
+    assert!(app.graph_pane_select_member(pane, first));
+    assert!(crate::inspector_view::inspector_lines(&app)
+        .iter().any(|line| line == "Tags: none"));
+    assert!(app.graph_pane_select_member(pane, second));
+    assert!(crate::inspector_view::inspector_lines(&app)
+        .iter().any(|line| line == "Tags: Paper, paper"));
+
+    // Returning the same Surface to the old resource restores the content
+    // read without copying the sibling's tags into the Surface.
+    app.update(Action::ContentNavigationCommitted {
+        member: first,
+        url: "https://example.test/page#three".into(),
+    });
+    let graph = app.graph_runtimes.graph();
+    let key = graph.get_node_by_id(first).unwrap().0;
+    assert_eq!(graph.shown_resource_id(key), Some(resource));
+    assert!(graph.get_node(key).unwrap().tags.is_empty());
+    assert!(app.graph_pane_select_member(pane, first));
+    assert!(crate::inspector_view::inspector_lines(&app)
+        .iter().any(|line| line == "Tags: Paper, paper"));
+}
+
+#[test]
+fn resource_content_recycle_capture_keeps_exact_labels_and_live_sibling() {
+    let (mut app, first, second, resource) = resource_content_fixture();
+    let effects = app.update(Action::DeleteFocusedNode);
+    let record = effects.iter().find_map(|effect| match effect {
+        Effect::RecordDeleted { record } => Some(record),
+        _ => None,
+    }).expect("delete stages recycle record");
+    assert_eq!(record.node_id, first);
+    assert_eq!(record.url, "https://EXAMPLE.test/page#one");
+    let mut labels = record.tags.clone();
+    labels.sort();
+    assert_eq!(labels, vec!["Paper".to_string(), "paper".to_string()]);
+
+    let graph = app.graph_runtimes.graph();
+    assert!(graph.get_node_by_id(first).is_none());
+    let sibling_key = graph.get_node_by_id(second).expect("sibling survives").0;
+    assert_eq!(graph.shown_resource_id(sibling_key), Some(resource));
+    assert_eq!(graph.surface_ids_showing_resource(resource), vec![second]);
+    assert_eq!(graph.resource_tag_labels(resource).len(), 2);
+    let reloaded = mere::kernel::graph::Graph::try_from_snapshot(&graph.to_snapshot())
+        .expect("persisted live sibling association");
+    let key = reloaded.get_node_by_id(second).unwrap().0;
+    assert_eq!(reloaded.shown_resource_id(key), Some(resource));
+    assert_eq!(reloaded.surface_ids_showing_resource(resource), vec![second]);
+    assert_eq!(reloaded.resource_tag_labels(resource), graph.resource_tag_labels(resource));
+    let pane = app.default_graph_pane();
+    assert!(app.graph_pane_select_member(pane, second));
+    assert!(crate::inspector_view::inspector_lines(&app)
+        .iter().any(|line| line == "Tags: Paper, paper"));
+    // RemovedRecord.tags is Vec<String>: this asserts labels only. It cannot
+    // establish concept owners, assertion handles, taggers, or recovery scope.
+}
+
 #[test]
 fn session_restore_applies_law_before_overlays_and_records_refusal() {
     let dir = tempfile::tempdir().unwrap();
@@ -2078,10 +2204,9 @@ fn denizen_runs_attributed() {
 /// scene settings, and opens by session-switch.
 #[test]
 fn fork_session_snapshots_the_component_with_its_facets() {
-    let mut app = App::test_stub();
-    app.data_root =
-        std::env::temp_dir().join(format!("turnstone-fork-test-{}", std::process::id()));
-    let _ = std::fs::remove_dir_all(&app.data_root);
+    let root = tempfile::tempdir().unwrap();
+    let mut app = App::test_stub_at(root.path().to_path_buf());
+    app.sessions = pandect::ManifestStore::with_root(session::sessions_root(&app.data_root));
     let donor_container = uuid::Uuid::from_u128(0xd0);
     app.sessions.insert(pandect::GraphSessionManifest::new(
         app.session_id,
@@ -2090,8 +2215,11 @@ fn fork_session_snapshots_the_component_with_its_facets() {
     std::fs::create_dir_all(app.session_dir()).unwrap();
 
     // A two-node connected component plus a disconnected bystander.
-    let a = app.graph_runtimes.visit("https://fork.example/a");
-    let a_id = app.graph_runtimes.graph().get_node(a).unwrap().id;
+    // Use the pane's visit lane for both opens so its saved selection carries
+    // the first member into the second open's browse-trail relation.
+    app.update(Action::OpenAddress("https://fork.example/a".to_string()));
+    let a_id = app.graph_runtimes.graph()
+        .get_node_by_url("https://fork.example/a").unwrap().1.id;
     app.update(Action::OpenAddress("https://fork.example/b".to_string()));
     let _bystander = {
         let mut g = app.graph_runtimes.graph().clone();
@@ -2170,10 +2298,9 @@ fn fork_session_snapshots_the_component_with_its_facets() {
 /// copy alone would leave the fork's participant un-resided).
 #[test]
 fn fork_carries_denizen_worlds_as_real_copies() {
-    let mut app = App::test_stub();
-    app.data_root =
-        std::env::temp_dir().join(format!("turnstone-fork-world-{}", std::process::id()));
-    let _ = std::fs::remove_dir_all(&app.data_root);
+    let root = tempfile::tempdir().unwrap();
+    let mut app = App::test_stub_at(root.path().to_path_buf());
+    app.sessions = pandect::ManifestStore::with_root(session::sessions_root(&app.data_root));
     std::fs::create_dir_all(app.session_dir()).unwrap();
     let pack = app.data_root.join("keeper.lua");
     std::fs::write(&pack, "mere.open('mere://kept/note')").unwrap();
@@ -5610,7 +5737,7 @@ fn place_prekey_offer_is_written_beside_its_card() {
         ] => {
             assert_eq!(*moot, binding.moot.0);
             *generation
-        },
+        }
         other => panic!("offering a pre-key lowers one worker command: {other:?}"),
     };
 
@@ -5624,7 +5751,7 @@ fn place_prekey_offer_is_written_beside_its_card() {
         .find_map(|effect| match effect {
             Effect::WritePlaceArtifact { path, bytes } if path == "card.json.prekey.json" => {
                 Some(bytes)
-            },
+            }
             _ => None,
         })
         .expect("the offer lands beside the card");

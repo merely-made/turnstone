@@ -201,6 +201,9 @@ fn feed_rows(app: &App, member: uuid::Uuid) -> Option<Vec<(String, String)>> {
 /// label while kind/version/route remain visible; only the trusted UI person
 /// renders as `you`. An engine or script named `user` is still a machine.
 fn journal_rows(app: &App) -> Vec<(String, String)> {
+    let Some(origin) = app.behavior_origin() else {
+        return Vec::new();
+    };
     let Ok(journal) = app.journal.lock() else {
         return Vec::new();
     };
@@ -208,6 +211,7 @@ fn journal_rows(app: &App) -> Vec<(String, String)> {
         .entries()
         .iter()
         .rev()
+        .filter(|entry| entry.origin == origin)
         .take(5)
         .map(|entry| {
             let author = journal_author_label(app, &entry.author);

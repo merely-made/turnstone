@@ -120,17 +120,15 @@ impl App {
             .is_some_and(|canvas| canvas.member_can_forward(node))
     }
 
-    /// Whether one exact member carries the durable keep tag. This is graph
-    /// truth, shared by chrome, the command catalog, feeds, and persistence.
+    /// Durable Keep belongs to one Surface. Showing the same Resource does
+    /// not transfer another view's retention choice.
     pub(crate) fn node_is_kept(&self, member: Uuid) -> bool {
         self.graph_runtimes
             .graph_containing_member(member)
             .and_then(|graph| self.graph_runtimes.canvas(graph))
-            .and_then(|canvas| {
-                let (key, _) = canvas.graph().get_node_by_id(member)?;
-                canvas.graph().node_tags(key)
-            })
-            .is_some_and(|tags| tags.contains(crate::feed::KEEP_TAG))
+            .is_some_and(|canvas| crate::surface_controls::read(
+                canvas.graph(), member, crate::surface_controls::Control::Keep,
+            ))
     }
 
     /// Promote one captured member into durable kept state. Idempotence makes
@@ -144,7 +142,7 @@ impl App {
             .graph_runtimes
             .graph_containing_member(member)
             .and_then(|graph| self.graph_runtimes.canvas_mut(graph))
-            .is_some_and(|canvas| canvas.tag_node(member, crate::feed::KEEP_TAG));
+            .is_some_and(|canvas| crate::surface_controls::set(canvas, member, crate::surface_controls::Control::Keep, true));
         if !changed {
             return vec![Effect::Redraw];
         }
@@ -224,7 +222,8 @@ impl App {
             if let Some(graph) = self.graph_runtimes.graph_containing_member(entry)
                 && let Some(canvas) = self.graph_runtimes.canvas_mut(graph)
             {
-                canvas.untag_node(entry, crate::feed::UNREAD_TAG);
+                let (_, _, unread) = self.feeds.surface_flags(entry);
+                crate::surface_controls::set(canvas, entry, crate::surface_controls::Control::Unread, unread);
             }
         }
         // The record is the archive now: the live facets go, and a
@@ -262,11 +261,14 @@ impl App {
         let Some(record) = self.removed.iter().find(|r| r.node_id == id).cloned() else {
             return vec![Effect::Redraw];
         };
+        // Unqualified old recycle labels are evidence, not content tag writes.
+        let descriptive_tags: Vec<String> = record.tags.iter()
+            .filter(|label| !crate::surface_controls::is_legacy_label(label)).cloned().collect();
         let member = self.graph_runtimes.recover_node(
             record.node_id,
             &record.url,
             record.title.as_deref(),
-            &record.tags,
+            &descriptive_tags,
         );
         // Residency came back; its standing subscriptions have to come with
         // it, or a behavior silently stops waking after a reload.
@@ -290,6 +292,12 @@ impl App {
                 );
             }
         }
+        if let Some(graph) = self.graph_runtimes.graph_containing_member(member)
+            && let Some(canvas) = self.graph_runtimes.canvas_mut(graph)
+        {
+            crate::surface_controls::preserve_recycle_labels(canvas, member, &record.tags);
+        }
+        self.reconcile_feed_tags();
         if let Some(log_id) = &record.nested {
             let sdir = self.session_dir();
             if let Err(err) = crate::denizen::unarchive_world(&sdir, log_id) {

@@ -1,5 +1,14 @@
 # Resource content consumer controls
 
+**Current implementation, 2026-10-09:** the prepared consumer changes are applied
+against qualified Mere P2 `3b3afa289` and matching Genet `15713014`. Native
+default and Piccolo gates pass; [the final receipt](native-integration-checks.json) binds their source and
+results. See [the integration status](README.md) and
+[the handoff](../../../design_docs/2026-10-08_browser_resource_handoff.md) for the
+fixed family, execution results and remaining scope. The contract and preparation
+receipts below are retained; their unapplied/pending statements describe earlier
+checkpoints.
+
 This is a prepared integration gate, not a passing supplier receipt. Turnstone's
 declared Mere pin remains unchanged. The unapplied `content-tests.patch` adds two
 focused app tests when the exact coordinated supplier set is ready.

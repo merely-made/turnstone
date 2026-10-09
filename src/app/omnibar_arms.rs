@@ -261,6 +261,7 @@ impl App {
     }
 
     pub(super) fn open_omnibar(&mut self, command: bool) -> Vec<Effect> {
+        let command = command || self.session_load_refused();
         let mut effects = self.cancel_smolweb_conversation();
         let target = self.fallback_shell_context();
         self.shell.begin_omnibar(target);

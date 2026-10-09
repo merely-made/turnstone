@@ -18,6 +18,7 @@ use super::App;
 impl App {
     /// Fold one typed service answer into state.
     pub fn apply_update(&mut self, update: Update) -> Vec<Effect> {
+        if self.session_load_refused() { return Vec::new(); }
         match update {
             Update::FeedFetched { node, url, result } => self.apply_feed_fetched(node, url, result),
             Update::PageStreamed {

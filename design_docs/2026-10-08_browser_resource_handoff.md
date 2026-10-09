@@ -1,16 +1,20 @@
 # Turnstone browser and resource integration handoff
 
-**Status, 2026-10-09:** resumed with Mark's authorization to update. Upstream
-browser baseline `22361c9` is merged in consumer commit `1a992214`; the next
-resource-graph adoption remains prepared, unapplied and unqualified. The latest
-continuation below records the current patch order. Read the live tree before
-resuming.
+**Status, 2026-10-09:** local native integration completed with Mark's
+authorization to continue. The qualified fixed family is Mere `3b3afa289`,
+Genet `15713014`, Knot `802238cb` and Redshank `e08bf4b`. All seven reconciled
+patches and native repairs are applied. Default libraries: 749 passed, nine
+existing ignored. Piccolo libraries: 782 passed, nine existing ignored.
+Both locked all-target checks and the fresh source review pass. Knot, Redshank
+and consumer integration commits remain local. The final continuation and
+[source-bound receipt](../docs/compatibility/graph_resources/native-integration-checks.json)
+record qualification and publication scope.
 
 ## Start here
 
-Read [the active index](DOC_README.md), [resource preparation](../docs/compatibility/graph_resources/README.md)
-and this handoff. Keep the browser release lane separate from the forthcoming
-Mere resource-graph migration. The earlier S0 tested-set browser repin is closed;
+Read [the active index](DOC_README.md), [resource integration](../docs/compatibility/graph_resources/README.md)
+and this handoff. Keep browser release qualification separate from the completed native
+Mere resource-graph integration. The earlier S0 tested-set browser repin is closed;
 it must not be redone merely because older plan prose mentions a pending repin.
 
 The original handoff stopped further dependency changes, builds and publication.
@@ -423,8 +427,8 @@ Genet `15713014e2e23b887360471552f75f60684f5384`, Knot
 `16aaff7804d49ba829af646c3a8eca2d6ec2fc2f` and Redshank/Woodshed
 `ece6e9eaf7c11a37f4b1457895704b1e6aeb6b8c`. Cargo.lock contains one Mere Git
 source. This updates the browser baseline; it does not adopt the resource-graph
-supplier's active merge worktree. That owner, **Discuss graph semantics**, is
-has green native tests and is still completing its locked workspace and wasm checks.
+supplier's active merge worktree. At that checkpoint its owner, **Discuss graph
+semantics**, had green native tests and was completing workspace and wasm checks.
 
 Upstream's controller-input receipt records Knot 661 passing tests, Redshank
 242 passing tests with exclusions, and Turnstone all-target compilation and
@@ -455,3 +459,109 @@ manifest. None of the resource patches is applied to production, and the merged
 host has not been compiled or tested here. Remaining full-host gates in the
 previous continuation still apply after the final immutable graph supplier and
 coordinated family update.
+
+
+## Qualified graph adoption in progress, 2026-10-09
+
+Mark said continue. Mere's owner has qualified and normally main-published P2:
+source `526f2ddb5f7d9e46a5f6670b2f9c7d48078152e9`, documentation receipt
+`3b3afa2895424f4be4e1e5f23d48140bf24da5aa`. Native supplier/consumer suites,
+locked workspace, kernel/Pandect wasm and standalone browser wasm checks passed.
+The source includes the reviewed physics and identity main tail. Adopt the fixed
+main-published documentation revision; its matching Genet stays `15713014`.
+The owner is merging P3 and proceeding toward P4 in its own lane; this consumer
+does not read mutable supplier files or repin to those ongoing changes.
+
+The seven patches from current-family-checks.json are now applied and staged in
+this existing consumer worktree. Turnstone's Mere rows are updated to `3b3afa289`.
+Knot's primary main was fast-forwarded to `16aaff78` and its Mere rows updated in
+root, desktop and standalone knot-document manifests. Woodshed's primary main
+was fast-forwarded to `ece6e9ea`; only the consumed Redshank workspace/web Mere
+rows were updated. Untracked ThinkPad receipt files were preserved. Both sibling
+lock graphs resolve one Mere Git source. Tests run at low priority, one Cargo
+job, with the existing shared /home/markik/Code/target; no new Cargo home, target
+or worktree was created. Current process state is recorded in
+/tmp/turnstone-resource-adoption-state.json and logs are under the shared target
+with the turnstone-resource- prefix. Full host compilation and final receipts
+remain pending at this execution checkpoint.
+
+Source inspection confirms session switches are effects consumed by the shell
+after App::update and its synchronous behavior drain. A native interpreted body
+cannot itself call session adoption mid-drain. The same-thread graph/session
+origin guards still protect replacement and nested delivery; full-host tests
+must preserve the distinction between those guards and the deferred shell
+switch boundary.
+
+
+### Native integration corrections, 2026-10-09
+
+All-target compilation passed after repairing two stale test APIs: the page type
+import and the current MenuSession command lane. The initial default Linux run
+reported 742 passes, six failures and nine existing ignored controls. This is a
+retained failing receipt, not a clean final gate.
+
+The failures exposed fixture assumptions and a real fork-copy gap. Persistence
+roots are now bound at test construction; positive forks use a rooted manifest
+store and the manifest-failure control uses an isolated directory. Redshank's
+note check reads descriptive tags through the resource-aware reader. Profile
+image controls now inject historical JSON fields explicitly because the Rust
+serializer omits those deserialize-only shadows. All five profile controls pass.
+The live Graphshell receipt changed only its graph revision counter from 5 to 11;
+its cards, layout and authority outcomes are unchanged.
+
+The supplier's older copy_component_from walks raw Surface edges. New browse
+links are Resource relations, so a real two-view browse fork copied only one
+view; a separate new regression showed that a one-view fork lost its resource
+tag. Turnstone now uses session::copy_session_component: walk both strata,
+mint fresh Surface IDs with CopiedFrom provenance, retain the connected Resource
+closure including unshown intermediates and tag concepts, copy records and held
+assertions verbatim, remap Surface edges and shown bindings, validate a quiet
+recorded snapshot, then carry host facets/placement and publish in the approved
+order. All six focused fork controls pass, including exact original resource
+records and held assertions. This does not fetch pages or change Keep policy.
+
+Ruling: preserve the existing fork behavior through the new graph model rather
+than weakening the connected-component assertion or changing the qualified
+supplier. The implementation remains in the consumer worktree. Final full
+default and interpreted-behavior gates, source binding and the single fresh
+whole-branch review are in progress. Compiler jobs remain one at low priority;
+final host test scheduling is bounded to two threads. Supplier lanes are untouched.
+
+
+## Native integration completed, 2026-10-09
+
+Default libraries: 749 passed, 9 existing ignored. Piccolo libraries: 782 passed, 9 existing ignored. Both suites ran against the unchanged final source and locked family,
+with Rust 1.98.1, one low-priority compiler job, the existing shared target and
+two bounded test threads. Default and Piccolo all-target checks pass. Offline
+locked metadata reports one Mere Git source in each feature graph. The final
+receipt binds 156 source/manifest inputs plus the live HTML fixture,
+exact default/Piccolo test binaries, all preserved original/reconciled patch
+hashes and the full logs. Persisted result lines accompany it.
+
+Knot commit `802238cb9aae33d5d0ce334c8adef60874e9a6bb` passes selected workspace
+library, standalone document and desktop/integration gates: 522 passed, two
+ignored. Redshank commit `e08bf4b9875a7efb02b1c17bf9fac56708712cee` passes its
+standalone workspace libraries and desktop bins: 225 passed, seven ignored.
+Its earlier parallel HTTP connection-count failure is preserved; isolated and
+final serial runs passed. The only fixture repair supplies a real temporary
+PNG/file URL instead of a Windows-only repository path; geometry checks remain.
+
+The single fresh-context reviewer inspected the whole consumer branch and the
+immutable sibling commits and found no critical, important or minor actionable
+issue. Source review was completed before final native counts; those counts are
+recorded independently in the receipt. The reviewer confirmed the deferred
+shell switch boundary. The Piccolo suite exercises actual supported bodies,
+including the foreign-only tail control; a native mid-body session-adoption API
+was not invented. Attributed recycle recovery and durable journal restart
+recovery remain deferred. The nine ignored host controls require a live Knot endpoint, private trail
+corpora or explicit measurements. Browser, optional engine/wasm, physical GPU
+and assistive-technology qualification are separate.
+
+Publication state: Mere and Genet are published; Knot, Redshank and this consumer
+integration remain local. Initial sibling fetches used process-scoped local Git
+URL rewrites while retaining canonical Cargo source identities. No global Git
+configuration, supplier worktree, primary Turnstone checkout or unrelated WIP
+was changed. Publishing this family requires making the two sibling commits
+available before the Turnstone pin update. Continue from these final receipts;
+do not reapply the historical patch artifacts or repin to the supplier's moving
+P3/P4 lane.

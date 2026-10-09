@@ -9,8 +9,8 @@
 //! Host-only by ring, so no grant can ever cover them: a component confirming
 //! its own review would be self-escalation.
 
+use  std::time::Instant;
 use uuid::Uuid;
-use std::time::Instant;
 
 use crate::action::{Action, Effect};
 use crate::observe::AppEvent;
@@ -72,6 +72,10 @@ impl App {
         scoped_reads: &[(servitor::Cap, servitor::Mode)],
     ) -> Vec<Effect> {
         let run_session = self.session_id;
+        let Some(run_origin) = self.behavior_execution_origin() else {
+            self.refuse_behavior("participant run has no accepted session/graph binding".into());
+            return vec![Effect::Redraw];
+        };
         self.denizens.authority.set_now(crate::denizen::now_ms());
         let Some((subject, label, binding)) = self
             .denizens
@@ -169,11 +173,16 @@ impl App {
         let evaluation_started = Instant::now();
         let evaluated = self.evaluate_denizen_body(member, subject, &label, &binding, trigger);
         let elapsed_ms = u64::try_from(evaluation_started.elapsed().as_millis()).unwrap_or(u64::MAX);
+        if self.behavior_execution_origin() != Some(run_origin) {
+            self.refuse_behavior("session or graph runtime changed during participant evaluation; outcome remains unresolved".into());
+            return vec![Effect::Redraw];
+        }
         let (actions, output) = match evaluated {
             Ok(value) => {
                 self.denizens.authority.set_now(crate::denizen::now_ms());
                 match self.denizens.residents.get(&member).map(|resident| &resident.binding) {
-                    Some(current) if servitor::resident::revalidate(&ticket, current, &self.denizens.authority, &required).is_ok() => value,
+                    Some(current) if servitor::resident::revalidate(&ticket, current, &self.denizens.authority, &required).is_ok() => {
+                        value}
                     Some(_) => {
                         let reason = "run invalidated before lowering".to_string();
                         if let Err(error) = self.persist_resident_run_event(run_id, servitor::RunEvent::ResultRecorded {
@@ -415,12 +424,14 @@ impl App {
         };
 
         let before = match self.journal.lock() {
-            Ok(journal) => journal.entries().len() as u64,
-            Err(poisoned) => poisoned.into_inner().entries().len() as u64,
+            Ok(journal) => journal.high_water(),
+            Err(poisoned) => poisoned.into_inner().high_water(),
         };
+        let lowering_origin = self.behavior_execution_origin() ;
         let lowering_started = Instant::now();
         let (effects, refused) = self.lower_denizen_actions(run_id, subject, label, actions);
-        if self.session_id != captured_session {
+        if self.session_id != captured_session || self.behavior_execution_origin() != lowering_origin
+        {
             self.events.push(AppEvent::DenizenRefused("session changed while resident actions were lowering; outcome remains unresolved".into()));
             return effects;
         }

@@ -27,6 +27,9 @@ use crate::{browse, session};
 
 mod contributed_pane_arms;
 mod document_find_arms;
+mod journal_origin;
+#[cfg(test)]
+mod journal_origin_tests;
 #[cfg(test)]
 mod resident_admission_tests;
 #[cfg(test)]
@@ -330,17 +333,19 @@ pub struct App {
     /// Capsule approvals for the active Personae root. The sidecar contains
     /// origin mappings only; client certificate keys are derived on demand.
     pub gemini_identities: crate::gemini_identity::GeminiIdentityBindings,
-    /// The attributed edit journal (mere's spine): every graph mutation
-    /// captured under its author — `user` for the UI, a participant's subject hex
-    /// during a run. Shared with the capture hook installed at boot.
-    pub journal: std::sync::Arc<std::sync::Mutex<mere::kernel::graph::GraphJournal>>,
+    /// Process-local, ordered captures with graph/session/generation origin.
+
+    pub journal: crate::host_journal::SharedJournal,
+    pub(crate) behavior_binding: Option<crate::host_journal::RuntimeOrigin>,
+    pub(crate) behavior_refusal: Option<String>,
     /// Standing subscriptions: which participant wakes on what (graph behaviors
     /// W0/W1). Empty until a behavior is installed, which is why the drain
     /// costs nothing on a session that has none.
     pub watches: servitor::WatchTable,
     /// The app tier's own table (W3). A separate table because a watch cursor
     /// is a position in ONE journal, and these two count different things: a
-    /// `GraphJournal` sequence and an app-event ordinal. Sharing a table would
+    /// host graph-capture ordinal and an app-event ordinal. Sharing a table would
+
     /// have the two seq spaces advance each other's cursors past unread work.
     pub app_watches: servitor::WatchTable,
     /// How far the behavior drain has read the undrained event queue.
@@ -866,7 +871,7 @@ impl App {
             Err(refusal) => {
                 self.events.push(AppEvent::PhysicsRefused(refusal.clone()));
                 Some((self.graph_runtimes.active_graph(), refusal))
-            },
+            }
         };
     }
 
@@ -1131,8 +1136,15 @@ impl App {
     /// woken body sees the world the action left rather than the one it found,
     /// and its own effects join the same return.
     pub fn update(&mut self, action: Action) -> Vec<Effect> {
+        if self.session_load_refused() && !matches!(&action, Action::NewSession | Action::SwitchSession(_)
+            | Action::OmnibarOpen { .. } | Action::OmnibarClose | Action::OmnibarChar(_)
+            | Action::OmnibarInsert(_) | Action::OmnibarBackspace | Action::OmnibarDelete
+            | Action::OmnibarCaret(_) | Action::OmnibarMove(_) | Action::OmnibarCommitRow(_)
+            | Action::OmnibarShowAllCommands | Action::OmnibarCommit) {
+            return vec![Effect::Redraw];
+        }
         let mut effects = self.dispatch(action);
-        effects.extend(crate::behaviors::drain(self));
+        if !self.session_load_refused() { effects.extend(crate::behaviors::drain(self)); }
         effects
     }
 
@@ -1268,19 +1280,19 @@ impl App {
             Action::FoundPlace { name } => self.found_place(name),
             Action::BeginExportPlaceCard => {
                 self.begin_place_prompt(crate::ui::PlacePrompt::ExportCard)
-            },
+            }
             Action::ExportPlaceCard { path } => self.export_place_card(path),
             Action::BeginOfferPlacePrekey => {
                 self.begin_place_prompt(crate::ui::PlacePrompt::OfferPrekey)
-            },
+            }
             Action::OfferPlacePrekey { path } => self.offer_place_prekey(path),
             Action::OfferPlacePrekeyForCard { card, out } => {
                 self.offer_place_prekey_for_card(card, out)
-            },
+            }
             Action::BeginInviteToPlace => self.begin_place_prompt(crate::ui::PlacePrompt::Invite),
             Action::BeginInviteToPlaceAsReader => {
                 self.begin_place_prompt(crate::ui::PlacePrompt::InviteReader)
-            },
+            }
             Action::InviteToPlace {
                 path,
                 access,
@@ -1297,7 +1309,7 @@ impl App {
             Action::JoinPlaceFile { path } => self.join_place_file(path),
             Action::BeginSendPlaceMessage => {
                 self.begin_place_prompt(crate::ui::PlacePrompt::SendMessage)
-            },
+            }
             Action::JoinPlace(invite) => self.join_place(invite),
             Action::LeavePlace => self.leave_place(),
             Action::ReconnectPlace => self.reconnect_place(),
@@ -1331,7 +1343,8 @@ impl App {
                 vec![Effect::SwitchSession { id }]
             }
             Action::SwitchSession(id) => {
-                if id == self.session_id || self.sessions.get(id).is_none() {
+                if (id == self.session_id && !self.session_load_refused())
+                    || (id != self.session_id && self.sessions.get(id).is_none()) {
                     return vec![Effect::Redraw];
                 }
                 vec![Effect::SwitchSession { id }]
@@ -1486,13 +1499,18 @@ impl App {
 
 mod denizen_arms;
 mod feed_arms;
-mod redshank_arms;
-mod fixtures;
+mod  fixtures;
 mod node_arms;
+
 mod omnibar_arms;
 mod palette;
 mod pane_arms;
+mod redshank_arms;
 mod session_lifecycle;
+#[cfg(test)]
+mod session_persistence_tests;
+#[cfg(test)]
+mod surface_control_tests;
 mod updates;
 
 #[cfg(test)]

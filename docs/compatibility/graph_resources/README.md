@@ -1,16 +1,33 @@
-# Resource graph consumer preparation
+# Resource graph consumer integration
 
-Turnstone now follows the published browser family at Mere
-`e48db81404eb580b7a7b3c01caeb410e539da4c8`, Genet `15713014`, Knot `16aaff78`
-and Redshank `ece6e9ea`, merged from upstream `22361c9`. The resource migration
-still requires the owner's final qualified graph revision. For this baseline,
-apply the original first five patches followed by
-`host-persistence-current-family.patch` and `journal-origin-current-family.patch`.
-The original seven patch files remain unchanged as historical preparation.
-[Current checks](current-family-checks.json) bind this order and the reconciled
-source. The seven patches apply in an isolated index; 32 Rust files parse and
-the unchanged actual journal module's 15 isolated tests pass. Full-host
-compilation and resource-family integration remain pending.
+The seven reconciled patches are applied and the local native integration is
+qualified. The fixed supplier is main-published Mere
+`3b3afa2895424f4be4e1e5f23d48140bf24da5aa`, with matching Genet `15713014`.
+Knot `802238cb` and Redshank `e08bf4b` select the same Mere revision in their
+consumed workspaces. Those sibling commits and this consumer integration remain
+local; their revision fetches are not yet available from GitHub.
+
+Default libraries: 749 passed, 9 existing ignored. Piccolo libraries: 782 passed, 9 existing ignored.
+Both locked all-target checks pass, and both dependency graphs contain one Mere
+Git source. Selected Knot gates passed 522 tests with two ignored; selected
+Redshank gates passed 225 with seven ignored. The one fresh whole-branch source
+review found no actionable issues.
+
+[Final native checks](native-integration-checks.json) bind source, manifests,
+test binaries, exact revisions and full-log hashes.
+[Persisted test results](native-integration-tests.log) retain the actual result
+lines. The initial failing run and focused repairs are recorded separately.
+The Resource-aware fork repair preserves connected records, held assertions,
+fresh Surface identities and copy provenance. Native body session switches
+remain deferred shell effects; this is not a mid-body session-adoption proof.
+Browser, optional engine/wasm, physical GPU and assistive-technology gates remain
+separate.
+
+The original patches and preparation receipts below are historical.
+[Current-family preparation checks](current-family-checks.json) describe ordered
+application on browser baseline `22361c9` before the native repairs.
+
+## Historical preparation and receipts
 
 The historical preparation used Mere `3ded2cd7` and inspected
 uncommitted work based on `6399fe6c`. The 2026-10-08 follow-up reviews immutable
@@ -29,7 +46,7 @@ session-bound delivery; see [the behavior contract and receipt](behaviors.md#pro
 host/resource-aware compilation and real session-changing cascade proof remain
 pending at the qualified immutable family. The previous six patches are preserved.
 
-The Inspector, both Roster gathers, and recycle-label capture now use the
+At the preparation baseline, the Inspector, both Roster gathers, and recycle-label capture used the
 central `content_tags` reader. At the current pin it reads legacy node tags.
 When Mere exposes its inherent `Graph::node_content_tags` method, Rust method
 resolution selects that reader instead of the temporary local fallback. Remove
@@ -67,7 +84,7 @@ adoption and its migration limits.
 Recycle records preserve string labels, not tag concept ownership or assertion
 attribution. The prepared label capture is not an attributed recovery receipt.
 
-## Integration conditions
+## Original integration conditions
 
 1. Mere supplies a qualified immutable resource/content revision and its owner
    clears integration. Repin the family as a tested set.

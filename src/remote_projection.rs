@@ -29,7 +29,7 @@ use graphshell_endpoint::{IntentSink, PresentationSource, ProjectionCatalog, Pro
 use identity::IdentityProvider;
 use identity::delegation::Issue;
 use insigne::delegation::SignedDelegationCertificate;
-use mere::kernel::graph::{Author, GraphJournal, NodeKey};
+use mere::kernel::graph::{Author,  NodeKey};
 use sceno::{Arrangement, Score, Spiral};
 use scenotime::{Revision, SceneEpoch, SceneSnapshot};
 use servitor::delegation::{DelegationTable, root_certificate};
@@ -52,30 +52,8 @@ fn layout_scope() -> ScopePath {
 fn graph_scope() -> ScopePath {
     ScopePath::parse(GRAPH_SCOPE).expect("a valid scope")
 }
-// A nested dispatch must restore all attribution fields, even on an early exit.
-struct EndpointAuthorRestore {
-    journal: std::sync::Arc<std::sync::Mutex<GraphJournal>>,
-    previous: Author,
-}
+type EndpointAuthorRestore = crate::host_journal::AuthorRestore;
 
-impl EndpointAuthorRestore {
-    fn enter(journal: std::sync::Arc<std::sync::Mutex<GraphJournal>>, author: Author) -> Self {
-        let previous = {
-            let mut current = journal.lock().unwrap_or_else(|poisoned| poisoned.into_inner());
-            let previous = current.author().clone();
-            current.set_author(author);
-            previous
-        };
-        Self { journal, previous }
-    }
-}
-
-impl Drop for EndpointAuthorRestore {
-    fn drop(&mut self) {
-        self.journal.lock().unwrap_or_else(|poisoned| poisoned.into_inner())
-            .set_author(self.previous.clone());
-    }
-}
 
 const FIT_INTENT: &str = "turnstone.fit-view";
 
@@ -103,7 +81,7 @@ impl std::fmt::Display for ProjectionRefusal {
             Self::WrongSession => f.write_str("projection request names the wrong session"),
             Self::UnsupportedProtocol => {
                 f.write_str("projection request uses an unsupported protocol")
-            },
+            }
             Self::UnsupportedScore {
                 received,
                 supported,
@@ -113,7 +91,7 @@ impl std::fmt::Display for ProjectionRefusal {
             ),
             Self::UnsupportedArrangement => {
                 f.write_str("G3 Turnstone endpoint currently accepts Spiral arrangements")
-            },
+            }
             Self::InvalidScene(reason) => write!(f, "invalid disclosed scene: {reason}"),
             Self::Presentation(reason) => f.write_str(reason),
         }

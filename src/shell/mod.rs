@@ -956,7 +956,8 @@ impl Shell {
             let _ = bin_proxy.send_event(());
         });
         let (bin_handle, bin_rx) =
-            crate::recycle::spawn_bin(bin_wake, crate::recycle::bin_dir(&app.session_dir()));
+            crate::recycle::spawn_bin_for_session(bin_wake,
+                (!app.session_load_refused()).then(|| crate::recycle::bin_dir(&app.session_dir())));
 
         // The trail-memory actor over THIS session's memory store (search
         // wiring W1 + W2): browsing capture in, recall answers out, behind
@@ -967,9 +968,9 @@ impl Shell {
         });
         let capture_library =
             crate::place::captured_collection::LocalCaptureLibrary::default();
-        let (trail_handle, trail_rx) = crate::trail_memory::spawn_trail_with_capture_library(
+        let (trail_handle, trail_rx) = crate::trail_memory::spawn_trail_for_session(
             trail_wake,
-            crate::trail_memory::memory_dir(&app.session_dir()),
+            (!app.session_load_refused()).then(|| crate::trail_memory::memory_dir(&app.session_dir())),
             capture_library.clone(),
         );
 
@@ -1066,11 +1067,16 @@ impl Shell {
                 redshank_docks.clone(),
             ))
             .expect("the Redshank episode provider is unique");
+        if app.session_load_refused() {
+            app.redshank = crate::redshank_host::RedshankHost::detached(
+                crate::redshank_host::Output::Device, blocking_fetch);
+        } else {
         app.redshank = crate::redshank_host::RedshankHost::open(
             &app.session_dir(),
             crate::redshank_host::Output::Device,
             blocking_fetch,
         );
+        }
         if let Some(runtime) = app.redshank.runtime() {
             let redshank_proxy = proxy.clone();
             runtime.set_wake(Arc::new(move || {

@@ -1,0 +1,665 @@
+{
+  "checked_at_utc": "2026-10-09T18:48:36.630202+00:00",
+  "consumer_base": "7e8178808f38639785093e96397599d4c72a1043",
+  "family": {
+    "mere": "3b3afa2895424f4be4e1e5f23d48140bf24da5aa",
+    "genet": "15713014e2e23b887360471552f75f60684f5384",
+    "knot": "802238cb9aae33d5d0ce334c8adef60874e9a6bb",
+    "redshank": "e08bf4b9875a7efb02b1c17bf9fac56708712cee"
+  },
+  "publication": "Mere and Genet published. Knot, Redshank and consumer integration commits local; sibling revision fetches used process-scoped file Git URL rewrites, retaining canonical Cargo sources. No shared Git configuration changed.",
+  "execution": {
+    "rust": "1.98.1",
+    "cargo_jobs": 1,
+    "priority": "nice -n 10",
+    "target": "/home/markik/Code/target",
+    "soft_file_limit": 65536,
+    "final_host_test_threads": 2
+  },
+  "compiled_inputs_sha256": {
+    "Cargo.lock": "4b2e0e02150aa80fb8f35626cd13cf752682ba70d517ba14f49af99c3080a53e",
+    "Cargo.toml": "93b114eff5913d36deda31342c9b00ecc5d48fbed6fc127057f18c853980c8f0",
+    "src/a11y.rs": "50ca7c2d825b2152adc4d1b5bed5c1fbfb8e230b1f390280982148f1a1be9bb4",
+    "src/action.rs": "4dbcf5a81860507160d0b92b74ad1a356bf6d754f2bdb2a9719840477511b7de",
+    "src/app/contributed_pane_arms.rs": "1db1a8f84b274eb915ceb378905fe4cb4256e85dd1502fd2f7a75397c54ab082",
+    "src/app/denizen_arms.rs": "964ba0d5eb888cabf4fee1fa275f886fbf9bab4c17df2610c8488664d51338b2",
+    "src/app/document_find_arms.rs": "49372d78ec25d9072113a6e0d20062e1ea340534dd393ac091e2d2522546280a",
+    "src/app/feed_arms.rs": "1dab90c387ef13f647779fda83cd592663307a38e6dc00fe3402efcc02491062",
+    "src/app/fixtures.rs": "9f87f45c725ca9aa09f3fb08e3aeedb526dfcf2a8967735f644a65abcc77d279",
+    "src/app/journal_origin.rs": "8fa32aafac403858a36b1a334eb72fe3933ba6415e932a370af39ee854e77a1a",
+    "src/app/journal_origin_tests.rs": "dcf28c8769c14fda4efa2a39402ee2c52addf7687f7d0cfef3507546be91f3d5",
+    "src/app/mod.rs": "c9021c2a4477436e9ab369790a578508c6754ea1bc1293645a7d5a6a75d41bb1",
+    "src/app/node_arms.rs": "ba9d15a2e3ea7f47b499af923fabe73afefd80b03f1d2b66144b46dcc7fdb39e",
+    "src/app/omnibar_arms.rs": "27e1c412c3c26e5bdd7804c9b4d8469964a6e40f26d0d61044fdf5013b763f94",
+    "src/app/palette.rs": "4e361465cbb985f5a35b944f27bb692d5c621b6f00f959182c52e6f3a96c3fe6",
+    "src/app/pane_arms.rs": "2c78cfac857035a19e7713ff8c3dfad094b4d8760f7f8eb4617b6dcfefefec81",
+    "src/app/redshank_arms.rs": "3806417f7dbc98e372745702a622a88d8f5b458a9add89a2e23d40562922b6ee",
+    "src/app/resident_admission_tests.rs": "0f35e189f1466feff7ff5c9a2260b24f08afdf4a3e8b74f099d89895b6dc95dc",
+    "src/app/resident_run_tests.rs": "bd03c8e28baa4e819e05fd530a2d0a4dc5f98f4d4d3cf0a5d20e16ddc4cf2675",
+    "src/app/runtime_pool.rs": "275435d8070b866281dd6da822666082d20a628f465394597002cfad03e466e9",
+    "src/app/session_lifecycle.rs": "a67b2018e665629894f13c4d489d7c41c50d79b492faec4ba2100ea7e750cfdb",
+    "src/app/session_persistence_tests.rs": "58f221f9437a4af94dbf2a945b5b08df97dd596c16c90e7681a0d0bf618f04de",
+    "src/app/surface_control_tests.rs": "d04009f8874b31413e7834dc653d45a9be29888a035cdb92124f11d2877ba3b0",
+    "src/app/tests.rs": "4d8f7d447dd4dc387c0e45e18ed4b60df89b9c868bcafb3abf9862f5349c7bd9",
+    "src/app/updates.rs": "55d5449387ef283fce5d0bdc5b563c6a8fc1148c63b1b5461dc8baee201c4186",
+    "src/app/user_agent_decision_arms.rs": "a69fa8d35341eefbcc1cf34abe90c3a3576471eb1eb56cec4b91ec1c19131dec",
+    "src/arrange_pane.rs": "e1d827425666f061fcdba0750737d333486db3518d674bc2ca705cee5b686d11",
+    "src/behaviors.rs": "1c5b324c790b194ae9829ba9e947feaa0fdbcfc9e33b17ffe1452aa7bc2314bb",
+    "src/bin/g3_receipt.rs": "50e11f4a7ab08f7cd53593e1cbd14be96bf051a74bddefb2b8e6b5e54ab5499a",
+    "src/bin/graphshell_endpoint.rs": "457918d5db593f4ed16c97055c1bfdf8d88347635f271ef9b98219271d9197d7",
+    "src/browse.rs": "1180f7df783abcad22b27e1ac7c13505c6a9e13f1502677f0913581ed567803e",
+    "src/cambium_pane.rs": "9b6f250ce819d121f32be8057bd73e351f85a69f903ca94ab9c70b0a32e01b1a",
+    "src/chrome_view.rs": "9bd40a855d2f95c78417b00f47a57e384f509a7415ee8c1a3f99d2c8851e1d57",
+    "src/component.rs": "1e05d178cdc91b33e2fc74719b36a73a590a343dae5b38a80535cdbd730253b4",
+    "src/content.rs": "55e951bf201ebe0e1df7703a4d29542678dac4ac79f9e77f6aaf19c71cc079e9",
+    "src/content_classes.rs": "31510c306cbfd7f565223c2bbe4cb35dd475b401c47c8c57022d4343898b5919",
+    "src/content_tags.rs": "9862f6a79e34051b66326763cd5ee4df685d7529c6594b04dbadc1af70fb3177",
+    "src/contributed_a11y.rs": "6e4dcb660590eb17bae88bf6668363134319e73afdbdddc7c6787273fa3fb3ae",
+    "src/contributed_surface.rs": "943db316741af800107dad2f61e44b2846c1eb5c7bcfd27888325f3a9b6105db",
+    "src/contributed_surface/tests.rs": "b9aa86b74cd12803eadcab597a866595a2de310766a585e394724f51b2555c2f",
+    "src/cookie_custody.rs": "86a370b0a2d43651216e95bca99988e0dd8a9f1271db53add25909552b21080a",
+    "src/denizen.rs": "ab5dde69689d8aa9b4067cfe2af8b2555d4cfd4485b012a2ccadee414b7dd8b9",
+    "src/device_receipts_pane.rs": "59e2cd609765357db1b37fb66ef20055f9a1e1ee13ab620d137737a3948f44fd",
+    "src/device_receipts_service.rs": "ea347db4b95486f28707e2dd910dcd57aa5e69c71aa0aa5f64fc3026b740320b",
+    "src/diagnostic_observations.rs": "4be11e3faacdb5dd11a7f87288b49c9bfe1c7e3f5aa7fb3d9003d9707fcaba60",
+    "src/distillery_installed_surface.rs": "fedc1f4843c4b083e4ee62b93d8b189f38aff9a9348936f197e5ba7107c328fc",
+    "src/document_find.rs": "4121533e4465546588db9e72feea5d3c6ec1429691bc7ca870c15dd0bfd178ca",
+    "src/download.rs": "aadca32ac245560191453cc4d4a91e2450fb767f223ea5989dc7a16c2d57e2a3",
+    "src/feed.rs": "361e84b016d509b4bf790388d604a8e437d719eab862b9e6fa04404aaaeefe1c",
+    "src/foreign_a11y.rs": "9b1143aee617636cae00aa10eca2a75c2629549fea59e612fc37396da780e451",
+    "src/frame_timing.rs": "0beac94828a3fc836d7ad48fd422961f55ac3ea187bdab772e5b394544492284",
+    "src/frozen_projection_pane.rs": "19877dea1fd7585197da8a4ee7e14f339f47341d0c23cfee77c6b19f4e8d4ee4",
+    "src/gemini_identity.rs": "96b7a5307e2cb756bc5d89454774a727e56143ccc5797b7e8ca7f6726847192e",
+    "src/gemini_trust.rs": "6a6bbefcd2b6430fc74e099bc9e8600e165c2f19acd468e9e9cf69623a1b3ffd",
+    "src/host_journal.rs": "7fb9880903afff4b2b267a708ea277259c88e46139a0a08f92a280ec2f187758",
+    "src/identity.rs": "605cce0d673b6d7c4f713902c246fd3ba83593a8a24e258ef1f40d80c985db91",
+    "src/inspector_controls.rs": "a6d324cad63077cef183e036135b2efb96b2c1ab601a625baf75b4db534824d9",
+    "src/inspector_pane.rs": "5d373953bb05fbe6ee2eea80e8479cd8cf1efd5aaf86222b52ad9e9a34d59cb0",
+    "src/inspector_pane/tests.rs": "13506b873bd2a18d17ab9d5518eda6109446f4eaf740ae736921df55a454e226",
+    "src/inspector_view.rs": "37f4478fe7e185106e8c3df7844e7f930f19fdcd28872579588512da69e44e52",
+    "src/knot_authoring.rs": "97be4a92ea67834122ded9ebff5b7ed05b545c3ed59a9b136f02a6cace75274f",
+    "src/knot_document_surface.rs": "8bc099df5e963886cb528743bfae3d381eca7f97de2f19f5fc964c45dfc11979",
+    "src/launch.rs": "61a2bb1877dba70ce9452229770e94599211500e9504b6938ed7c730add00d6c",
+    "src/lib.rs": "60626a1c561b3bf16c1475c9aa64d74fa9d2922094d1dc3bbb49b53c81bd3e5c",
+    "src/main.rs": "a4c17c65b35e5202ef6aff53c7562b227a091ae8216efd27dcd99b01e65a0028",
+    "src/nomadnet.rs": "92b237b3f3f15bb3001c3a0bcacfd8b7e24461cef37944c14fbb0da1be53c5e0",
+    "src/observe.rs": "bb7177af35300cb4e93c4753efc940526f8a2820a1ddc274a154bba6f4aeef73",
+    "src/overmap.rs": "69387775f7dc64e5360505157390561b5937a264ba5e756258d9db672d3cbb62",
+    "src/pane.rs": "d6a6dc5848ae8776ccc9784ec652fd12e9bc19ce6470a70a048ea336be9df754",
+    "src/panes/blueprint.rs": "625c86aa3945236553ed165be5b3a16e76342beee06a6d50bdb8ed1b4f216351",
+    "src/panes/blueprint/context.rs": "e5ee1663ef0c76449c35b9b64553fcc1fc7bb2aa3281cc92fc7670816fe9944e",
+    "src/panes/blueprint/layout.rs": "14a1920da72a2f5f95022aaa619e711b0930d021ba1110b14b8c71ed6144cb1b",
+    "src/panes/blueprint/presentation.rs": "b53edca9d629aa7975e4c1f873f7a64903f8496b5312b996a4b4a09efe97a69b",
+    "src/panes/blueprint_tests.rs": "31247fa44926a858e25ff9860a94a0f123337b55e9bb273e5dbf28de1b6ba2e1",
+    "src/panes/layout.rs": "3bb515664a678604ad3957f23c3166e8cea71ad8cc33a6750b2c6d43f40a7632",
+    "src/panes/legacy_bridge.rs": "d3ad2bf93171b34efaceb206e80453b6fb538161e2c3e4610da47b8e1c5d4859",
+    "src/panes/mod.rs": "83dbfceabbae550863fe70627ca6cbaa49b12b159bf10dbbc4a576815952d8b3",
+    "src/panes/projection.rs": "df94fa089ae162eb402782b021c9c5e50ea44be356228926d0da3be6253d9efb",
+    "src/panes/registry.rs": "5bea846baf058fe6e466d62147b210546b04667c04719387eedd8fedb0fbcb9a",
+    "src/panes/saved_content.rs": "d04344731cb35a6f4c464ec8f4df4e8b6b253922d7ca04c4f23c8dc7fb877eae",
+    "src/panes/store.rs": "13a6b13c0ada3596d5665ca820e8d81caeea3084f0179ac60dac4534d83cd436",
+    "src/panes/tearout.rs": "2382ff7e8e416baa439f75786819bafa403127f22b8d89f881b68ac84ebe3f96",
+    "src/panes/tests.rs": "fdace8f0cbea5ba07bd8dad498bf1f5282a442dc0daf9fa716d96ba76e07e252",
+    "src/place.rs": "125b23b7fd939107121ada4c2783245bc0bc463948d7a44f2450ec62435bd88c",
+    "src/place/captured_collection.rs": "376421d987c96b115e5d9d48f7406b7115880849b683a8e598ee5cf25f5cd435",
+    "src/place/contract.rs": "fbd4a52d3cb366b386b8e4ccf40a43491ce6a967e39f1e634350dda6ba9ab692",
+    "src/place/invite.rs": "b8171c11c75b1b4a2be7ef5be566d4300bf454fd05617129ee44f9de687bdb3b",
+    "src/place/lanes.rs": "bf86c28b61a5012a88f8e2c0185f7252e2a2429e8fb1858947e56ced2e24be72",
+    "src/place/projection.rs": "aa2b171b5156de5287c7ca894709f5d9ec866f2c685b68ac79f9b4e783e1a30e",
+    "src/place/projection_host.rs": "6d69147bc78ae2af6f3f20618beb40df76555f2e1700be8eacba5f5ae830cb73",
+    "src/place/rendezvous.rs": "d01872cb1077e2fef23138e9d46a026b6a2466351bd122a0992e5c3edeb7c0a3",
+    "src/place/worker.rs": "0db879b033043f5523c34eb7c11f1e06ca6d400cfa7fff18257e1753986bec80",
+    "src/publish_pane.rs": "806a4fead41687293ed8c63222e57dfd504cdd22b6372faa647b5e3fa6ff8475",
+    "src/publish_service.rs": "a134ce2f19458b32e908493ccc1e87425349fecdc5edc2f995f9e808e9bbf350",
+    "src/recycle.rs": "04934764c5130db81cd53746b5b6b12e3d613f4897157bd531e3135c8f60f6e4",
+    "src/redshank_episode_surface.rs": "0ecb3013c51d60f9a49df0e66dbe1c19054f782c02a243f5f543792f2ee8445f",
+    "src/redshank_host.rs": "bf61964ae5984caddbfdf29b84aba47ffb11075b42c08e201440e455c6948e3e",
+    "src/remote_projection.rs": "1d74df90cad5799c132b8cb1eb0185b36517c81a17ab56f9a044012320157fdd",
+    "src/resident_admission.rs": "6d5b4db171606e2c11faa2c547adb8efe10ae0f806bc0e75ff2babfce0293fbe",
+    "src/resident_runs.rs": "abde523e1e681ffa5b87b9b5edb4d11a8613fe8e4b72c9c8e06b92c44ac54186",
+    "src/resident_runs_tests.rs": "4c9f37fb4f5977f0f0f7d4386e5f54e1303b4b32d96f6bff1e5066678c6656dc",
+    "src/ring.rs": "c9f8ae7c29a57809efce002b26b111ade6a9979362f16875b9131b48e71c90f6",
+    "src/roster_view.rs": "8930ddb25993bfbc021b3648044a7b0cbd9f6d71dca684d5b3caaf7a0a5d4322",
+    "src/scenario.rs": "5b87182447b1889d57f3dfc62df971462fde878b36f2f3709161b6211328a91d",
+    "src/script.rs": "b1feae02bcecb83342465879a42af1e5ac0f60a0e013e219598e8a12746824de",
+    "src/sections.rs": "d6318d3d4d901e7318966f493a17d730fa567b414df2254cdc4615251198de98",
+    "src/session.rs": "bbf87a296b5dcfeee4452c475a6b9d9d852305506ce863d81f8746e1ecd87431",
+    "src/session_persistence.rs": "24bc6c9ef09c68f20bc2e748299e9340a0e06fd88f06c26f3557170190bda28b",
+    "src/settings_pane.rs": "ec93e605fa60a3abf02b6f13db978c08d232a777cadb0e0447180f98325c5713",
+    "src/settings_provider.rs": "972e303c2cb36bc48fa8299ce1f26804f1e02910969e6f3594d3271341e8945f",
+    "src/share_reader_pane.rs": "b9d3567784e11635d499869d634c801c86c4f62ad9e4d01362707c9164113d6d",
+    "src/share_reader_service.rs": "a6d40cb3d6150d4fd62afac018339edf39e3d86d0be7ce87d1c92d85344cc3ca",
+    "src/shell/a11y_bridge.rs": "f34b2fae52d47ae7e13b04fe80b27972555e98fe45a714b1385249be62b0e3c7",
+    "src/shell/contributed_automation.rs": "184cb78249b9e3b9f2226255f4bfc7556702737f92b44d444da590b5a58fd652",
+    "src/shell/controller_input.rs": "2d466f9e36ba4e31894a6a946b1134481461a22220a3d987c1638f8c86039b28",
+    "src/shell/drive.rs": "36757fa50d9f3d66c4d2509728a6a55c248c769389ed9f9f389c86649f48963a",
+    "src/shell/effects.rs": "80a884c950038f7903ced5232e2185869870a2dfbc54f424ac05b214feef4612",
+    "src/shell/events.rs": "c6948347ae1d573a9bc1d4fe8ba595c993459a792d501c9250c052d5f740f3f5",
+    "src/shell/foreign_a11y.rs": "c8fa3df3253c03ad97997b41173183685a820c1e6ca3e69a89f8548b222e7d43",
+    "src/shell/gestures.rs": "fb8be9c24fafcb99ad18ae3d64d93098e2dce08a907fa0543fcca175c54d1702",
+    "src/shell/input.rs": "12f5baffa83f0743cf15e1558f8c1b7eaec30606db8fdb04a50bf97216bfdde5",
+    "src/shell/keys.rs": "5eabe22c5d976b3abc8afcbab304378855fc0e6ec4bce7473e759d2c1d2b6448",
+    "src/shell/lens.rs": "3149797e1f70cbda6f5b5fd913f62836d15f83afb583bc14f6eb6273cbc7df5e",
+    "src/shell/mod.rs": "c6000bbd410359f2ae6642d49ec8533853bee4235e84fd3e0c00b8aa0b1a13f7",
+    "src/shell/nomadnet_fetch.rs": "b0e1f990931567ccbf27ede5dc6e2fcdbb320aeb2b192674ba6a210f0ccaf0b5",
+    "src/shell/page_capture.rs": "01933f620edbb5375f5d715f3faeb1f0da0a9afdee8041a40664eba6a81bdff5",
+    "src/shell/reader_observe.rs": "afe4ce4dcb4d89b611758fefa63357d60e2b5b6553e7e0534c442e3bb1fbc779",
+    "src/shell/render.rs": "a4923d4fc83c1420b739f5d9c418c40dea593cab1d432a264dca2b9f830e6b53",
+    "src/shell/renderers.rs": "1ca2aa60b2d33983c0bdad57effa3357baeecca0248ff6440a0fc4ebfac7be53",
+    "src/shell/scry.rs": "c68d37d6123c5fa7a71642d27edfdeb076cd514951bad62cc53ec207f24f387b",
+    "src/shell/servo.rs": "614cc0311e8987c93340440dedcff6823de655779ee8ad8780c65f505951825d",
+    "src/shell/surface_frames.rs": "53bd2a9eab59fae246184604517fabfe4435ca71998f165229a19a5f332d59b2",
+    "src/shell/surface_poll.rs": "16735409747fcbf6da2dae6483a476c26039326c19540ee4725c41b3c12022c9",
+    "src/shell/weld.rs": "9a6d4b642c75f828e7f4a1c3474be08008bc5d8a30a47b7103e2d9aeadef9968",
+    "src/shell_services.rs": "5efd5e1879d1c15912ce6f579a3eadad35b484d74511681ff52d1b330e44432d",
+    "src/sky_receipt.rs": "12d7553dcebeb2dad9dde3eea9a85d04e1f0214cc5e4b31ecd754202ccefe402",
+    "src/sky_surface.rs": "dcb7010b64e9f5b1cf8f786291c80fdb6931107f99e3979ddcd709ab91031621",
+    "src/sky_surface/tests.rs": "b85ad063ad8aac4909b56410e3ee2354dc8514017fd7c263dffd09137a7faace",
+    "src/sky_surface/view.rs": "eaa4d72398d9735eea0f8b5c94a86eff2ea39f886fce55814c75f91fc982e212",
+    "src/sky_timeline.rs": "d7e62692df6bbac72ee241e349bbba5c1355cbbb5518a712cba2c58e2831c5e1",
+    "src/source_capture.rs": "381dbce93d0bf33a7fad28c3f706cfb733bc0b656a561c3568c4e9a24b37cfbe",
+    "src/surface.rs": "20d8a715166123210ee079761fc561f0c15544ba8ca656663d744eab76077d9b",
+    "src/surface/appearance.rs": "c811ed1f4e9a75b741e809c98edd41289e7ffcf020b570def1f27592afb8032a",
+    "src/surface_controls.rs": "8ea922d061ff51b6cc37683d939f23e2a8ad16e3737c67ff040e355eecadf159",
+    "src/swatch_pane/mod.rs": "e17eae80aa0127d9d0b2f4629c266726246cb8f9af4c218159e5c1ea8c71427f",
+    "src/swatch_pane/presets.rs": "5efaa04d2980a2074bcfad5bd11f51be4f1055db5d55d0b91e9b015526cc43e5",
+    "src/trail_memory.rs": "f9c940e6ad7b3ebef984d6fdc0b1468b85935be9a5209bfe2e76112b336ddfa9",
+    "src/trail_memory_evaluation.rs": "f99ffbbb7d79deeabaaa5de747044ff3937456d0c17104373196d906d73fd07e",
+    "src/trail_pane.rs": "d739130ea783b1c32064764799e3b8c53d9447b2d393867c52da5b6288ad6c33",
+    "src/trail_view.rs": "2389e2d9dc53349d6ba1c955d85add66a3b95e2e64c28f2feaf54a9f2f357625",
+    "src/transcript_pane.rs": "b9769f51995788d2b626abd045c980c6fd403a2096587428639341935cc10034",
+    "src/ui.rs": "dd3e9b78baad0c45841c3685d39092bf08ed4a9293172124aebedc548a9b6629",
+    "src/user_agent_decision.rs": "6d06165371346407b471682bca69995e828dbb2971e57b1bb8236bffda912172",
+    "src/web_policy.rs": "a3edf34284f29042f733457eab3cfd9c79eb712d5519abe39986ab8e4668cbb5",
+    "src/workbench_pane.rs": "aae7bcc466d19663818d2e37d89b422299e2209e004b32e3c82d86dddd224776",
+    "src/workbench_tiling.rs": "cce30a832bcb6d6bf8f5d841293ad4437dfe75b9703466bfc71fe19865245751",
+    "docs/receipts/g3_turnstone_endpoint.html": "c742c2fa3d1744c6f384471ae823cd138625b4d3034aa10b954ed77b46bfb0ec"
+  },
+  "preserved_patch_sha256": {
+    "reader.patch": "9066c11a14b61725e603ba26782020eb3d031db892495d99489b706beafa174f",
+    "behaviors.patch": "2058d84ad3ce130e7b994f8710c39259c273ce6a54ff233fb2d72817e59981e9",
+    "content-tests.patch": "9f05b0494cc10d1fbf640b9a283d0490cd9528f068434ae032cc532066f0afa9",
+    "session-profile.patch": "5bd843803273b0205126735bc3e75c9d304f631337dbddeb9acb27b099c46fc6",
+    "controls.patch": "0aed7862f888f2aa4740db3de58310d67a0dfdd75c52a0a0402f97cf609d297e",
+    "host-persistence.patch": "41f7ff71212656825b04e4cc89068d755165b3fb8732f09665dcb0898ee94fc0",
+    "journal-origin.patch": "e9600532188271aff1bfd8e297c82d490817bbad7117dba837e3919869a752c9",
+    "host-persistence-current-family.patch": "2d3df2996f4821cb5fcb5c67228966578620cc4d813045509fa48c257a15fa0f",
+    "journal-origin-current-family.patch": "4ed911a70f7aa2a780afdceeeb84075076ae85e457b8658a5642a82cba55746d"
+  },
+  "metadata": {
+    "default": {
+      "command": "cargo +1.98.1 metadata --offline --locked --format-version 1",
+      "exit_code": 0,
+      "package_count": 1288,
+      "mere_sources": [
+        "git+https://github.com/merely-made/mere.git?rev=3b3afa2895424f4be4e1e5f23d48140bf24da5aa#3b3afa2895424f4be4e1e5f23d48140bf24da5aa"
+      ],
+      "metadata_sha256": "b3b8e25b638d9a71af9083bcc13634b85ae1d68f91b063d7e45f71665d6c1dc8"
+    },
+    "piccolo": {
+      "command": "cargo +1.98.1 metadata --offline --locked --features piccolo --format-version 1",
+      "exit_code": 0,
+      "package_count": 1294,
+      "mere_sources": [
+        "git+https://github.com/merely-made/mere.git?rev=3b3afa2895424f4be4e1e5f23d48140bf24da5aa#3b3afa2895424f4be4e1e5f23d48140bf24da5aa"
+      ],
+      "metadata_sha256": "4e89394f7e23058321021fdae3cc70da6d596e431c8ee6cc98cd0e6b4760d304"
+    }
+  },
+  "all_target_checks": {
+    "default": {
+      "command": "cargo +1.98.1 check --all-targets --locked -j1",
+      "exit_code": 0,
+      "log": "/home/markik/Code/target/turnstone-resource-host-default-all-targets-final.log",
+      "sha256": "69e9c9ca8fb70c69500f0468b6708e7337c091dc17fbdb3da811331b24cebba6"
+    },
+    "piccolo": {
+      "command": "cargo +1.98.1 check --features piccolo --all-targets --locked -j1",
+      "exit_code": 0,
+      "log": "/home/markik/Code/target/turnstone-resource-host-piccolo-all-targets-final.log",
+      "sha256": "960e7e04bebff499063f00d5e48ab488ee8623c61b0d8d1c7770df48e3a3ae7f"
+    }
+  },
+  "host_default": {
+    "log": "/home/markik/Code/target/turnstone-resource-host-default-final.log",
+    "sha256": "0579b5b85c013f996a0fb7f2417d326eb515062c65e4fdb34e18a08662995312",
+    "results": [
+      {
+        "result": "ok",
+        "passed": 749,
+        "failed": 0,
+        "ignored": 9,
+        "measured": 0,
+        "filtered_out": 0,
+        "seconds": 488.91
+      }
+    ],
+    "test_binaries_sha256": {
+      "/home/markik/Code/target/debug/deps/turnstone-56895bc2249f60eb": "49ca5aab904c244b5bed0e97b3763b0dcaf80c3e1fc9881ee346559fef5a6c91"
+    },
+    "command": "cargo +1.98.1 test --lib --locked -j1 -- --test-threads=2",
+    "exit_code": 0
+  },
+  "host_piccolo": {
+    "log": "/home/markik/Code/target/turnstone-resource-host-piccolo-final.log",
+    "sha256": "9ee60cf22a118a2262146f9891f44d0b054077df4af3c0667ce6931c7cde8fc4",
+    "results": [
+      {
+        "result": "ok",
+        "passed": 782,
+        "failed": 0,
+        "ignored": 9,
+        "measured": 0,
+        "filtered_out": 0,
+        "seconds": 488.94
+      }
+    ],
+    "test_binaries_sha256": {
+      "/home/markik/Code/target/debug/deps/turnstone-2369ecc0dbe0db57": "a5dda66cc85bdd523fd85e211185cc9e321f10ce7448a315a6ff9a3badf9f59b"
+    },
+    "command": "cargo +1.98.1 test --features piccolo --lib --locked -j1 -- --test-threads=2",
+    "exit_code": 0
+  },
+  "focused_fork": {
+    "log": "/home/markik/Code/target/turnstone-resource-host-fork-fixed.log",
+    "sha256": "d96407252b1203127dbbfd07e884bca199cc7dd17d8c085a4bd46dc1f08d629c",
+    "results": [
+      {
+        "result": "ok",
+        "passed": 6,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered_out": 752,
+        "seconds": 1.17
+      }
+    ],
+    "test_binaries_sha256": {}
+  },
+  "focused_profile_migration": {
+    "log": "/home/markik/Code/target/turnstone-resource-host-session-profile-fixed.log",
+    "sha256": "63f7b9c6a5fa116f1252e41c4c5825a9414334aeba8072b28304f7ec0357cb3c",
+    "results": [
+      {
+        "result": "ok",
+        "passed": 5,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered_out": 753,
+        "seconds": 0.02
+      }
+    ],
+    "test_binaries_sha256": {}
+  },
+  "knot": {
+    "scope": "workspace libraries, standalone knot-document, desktop knot bin and composition_mere integration",
+    "gates": [
+      {
+        "log": "/home/markik/Code/target/turnstone-resource-knot-test.log",
+        "sha256": "db7a3cd398a9c4a4512876ed2cd0166eb0b4e36b277a5ce87e5cf0b22c6d285f",
+        "results": [
+          {
+            "result": "ok",
+            "passed": 0,
+            "failed": 0,
+            "ignored": 0,
+            "measured": 0,
+            "filtered_out": 0,
+            "seconds": 0.0
+          },
+          {
+            "result": "ok",
+            "passed": 0,
+            "failed": 0,
+            "ignored": 0,
+            "measured": 0,
+            "filtered_out": 0,
+            "seconds": 0.0
+          },
+          {
+            "result": "ok",
+            "passed": 298,
+            "failed": 0,
+            "ignored": 1,
+            "measured": 0,
+            "filtered_out": 0,
+            "seconds": 64.33
+          },
+          {
+            "result": "ok",
+            "passed": 148,
+            "failed": 0,
+            "ignored": 0,
+            "measured": 0,
+            "filtered_out": 0,
+            "seconds": 11.68
+          },
+          {
+            "result": "ok",
+            "passed": 10,
+            "failed": 0,
+            "ignored": 0,
+            "measured": 0,
+            "filtered_out": 0,
+            "seconds": 0.63
+          },
+          {
+            "result": "ok",
+            "passed": 11,
+            "failed": 0,
+            "ignored": 0,
+            "measured": 0,
+            "filtered_out": 0,
+            "seconds": 1.16
+          }
+        ],
+        "test_binaries_sha256": {}
+      },
+      {
+        "log": "/home/markik/Code/target/turnstone-resource-knot-document-test.log",
+        "sha256": "ace803cf66e0e53478be603e1882dc4eb2157b5123ac14ee6176814b3b36d4d5",
+        "results": [
+          {
+            "result": "ok",
+            "passed": 45,
+            "failed": 0,
+            "ignored": 1,
+            "measured": 0,
+            "filtered_out": 0,
+            "seconds": 0.01
+          }
+        ],
+        "test_binaries_sha256": {}
+      },
+      {
+        "log": "/home/markik/Code/target/turnstone-resource-knot-desktop-test.log",
+        "sha256": "cf1f5059ffc47a783b85cd5fe6b0ac60a9bc26df147c97c903158b4e0515969a",
+        "results": [
+          {
+            "result": "ok",
+            "passed": 8,
+            "failed": 0,
+            "ignored": 0,
+            "measured": 0,
+            "filtered_out": 0,
+            "seconds": 0.88
+          },
+          {
+            "result": "ok",
+            "passed": 2,
+            "failed": 0,
+            "ignored": 0,
+            "measured": 0,
+            "filtered_out": 0,
+            "seconds": 45.73
+          }
+        ],
+        "test_binaries_sha256": {}
+      }
+    ]
+  },
+  "redshank": {
+    "scope": "standalone Redshank workspace libraries and desktop bins",
+    "gates": [
+      {
+        "log": "/home/markik/Code/target/turnstone-resource-redshank-test-final.log",
+        "sha256": "4126d5c03228d6fbe807ff0eb66d80a6a07a66fe736f3fca3228dfcc17e26241",
+        "results": [
+          {
+            "result": "ok",
+            "passed": 4,
+            "failed": 0,
+            "ignored": 0,
+            "measured": 0,
+            "filtered_out": 0,
+            "seconds": 0.02
+          },
+          {
+            "result": "ok",
+            "passed": 2,
+            "failed": 0,
+            "ignored": 0,
+            "measured": 0,
+            "filtered_out": 0,
+            "seconds": 0.0
+          },
+          {
+            "result": "ok",
+            "passed": 17,
+            "failed": 0,
+            "ignored": 0,
+            "measured": 0,
+            "filtered_out": 0,
+            "seconds": 0.0
+          },
+          {
+            "result": "ok",
+            "passed": 27,
+            "failed": 0,
+            "ignored": 7,
+            "measured": 0,
+            "filtered_out": 0,
+            "seconds": 4.02
+          },
+          {
+            "result": "ok",
+            "passed": 6,
+            "failed": 0,
+            "ignored": 0,
+            "measured": 0,
+            "filtered_out": 0,
+            "seconds": 0.01
+          },
+          {
+            "result": "ok",
+            "passed": 101,
+            "failed": 0,
+            "ignored": 0,
+            "measured": 0,
+            "filtered_out": 0,
+            "seconds": 5.54
+          },
+          {
+            "result": "ok",
+            "passed": 0,
+            "failed": 0,
+            "ignored": 0,
+            "measured": 0,
+            "filtered_out": 0,
+            "seconds": 0.0
+          }
+        ],
+        "test_binaries_sha256": {}
+      },
+      {
+        "log": "/home/markik/Code/target/turnstone-resource-redshank-desktop-test.log",
+        "sha256": "894c9a79616313627982a30cceb1e54378a045eb808ca163a75188a0061bf15c",
+        "results": [
+          {
+            "result": "ok",
+            "passed": 68,
+            "failed": 0,
+            "ignored": 0,
+            "measured": 0,
+            "filtered_out": 0,
+            "seconds": 1.14
+          }
+        ],
+        "test_binaries_sha256": {}
+      }
+    ]
+  },
+  "earlier_failures": {
+    "initial_host": {
+      "log": "/home/markik/Code/target/turnstone-resource-host-tests.log",
+      "sha256": "41144ff9b25a72bec7b67de0e123bf8247bef0fe510cd3cd98abadf43d81fdb5",
+      "results": [
+        {
+          "result": "FAILED",
+          "passed": 742,
+          "failed": 6,
+          "ignored": 9,
+          "measured": 0,
+          "filtered_out": 0,
+          "seconds": 915.03
+        }
+      ],
+      "test_binaries_sha256": {}
+    },
+    "resource_fork_red": {
+      "log": "/home/markik/Code/target/turnstone-resource-host-fork-content-red.log",
+      "sha256": "b325b621badca1480e333b5c9ee9d59ec971ad363e421b37de67f47de954dc81",
+      "results": [
+        {
+          "result": "FAILED",
+          "passed": 0,
+          "failed": 1,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 757,
+          "seconds": 0.11
+        }
+      ],
+      "test_binaries_sha256": {}
+    },
+    "redshank_initial_parallel": {
+      "log": "/home/markik/Code/target/turnstone-resource-redshank-test.log",
+      "sha256": "19134d2a644470041ff695525d5f104ae46358dbfffbd37f96bbed87a3190cc1",
+      "results": [
+        {
+          "result": "ok",
+          "passed": 4,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0,
+          "seconds": 0.01
+        },
+        {
+          "result": "ok",
+          "passed": 2,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0,
+          "seconds": 0.0
+        },
+        {
+          "result": "ok",
+          "passed": 17,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0,
+          "seconds": 0.0
+        },
+        {
+          "result": "FAILED",
+          "passed": 26,
+          "failed": 1,
+          "ignored": 7,
+          "measured": 0,
+          "filtered_out": 0,
+          "seconds": 2.31
+        }
+      ],
+      "test_binaries_sha256": {}
+    },
+    "redshank_range_isolated": {
+      "log": "/home/markik/Code/target/turnstone-resource-redshank-range-isolated.log",
+      "sha256": "83a70199b0e6d665d2eb9b0359bc377a7d2e78f16958a59310d3ff72581cac32",
+      "results": [
+        {
+          "result": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 4,
+          "seconds": 0.0
+        },
+        {
+          "result": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 2,
+          "seconds": 0.0
+        },
+        {
+          "result": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 17,
+          "seconds": 0.0
+        },
+        {
+          "result": "ok",
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 33,
+          "seconds": 0.08
+        },
+        {
+          "result": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 6,
+          "seconds": 0.0
+        },
+        {
+          "result": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 101,
+          "seconds": 0.0
+        },
+        {
+          "result": "ok",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0,
+          "seconds": 0.0
+        }
+      ],
+      "test_binaries_sha256": {}
+    }
+  },
+  "repairs": [
+    "Two stale host test API references fixed.",
+    "Test roots bound at construction; positive forks use rooted manifest stores; negative publication test isolated.",
+    "Real browse fork regression: Surface-only copy lost linked view and Resource tag. Copy now walks both strata, retains connected Resource records and held assertions, remaps fresh Surface identities and carries copy provenance. Six focused controls pass.",
+    "Profile fixture now writes historical deserialize-only image fields explicitly. Five migration controls pass; production migration unchanged.",
+    "Redshank note reads central descriptive resource tags. Machine-specific Windows artwork fixture replaced by deterministic temporary PNG/file URL, preserving geometry assertion.",
+    "Exact live Graphshell HTML differs only graph revision counter5 to11, reflecting coupled Resource writes."
+  ],
+  "review": {
+    "agent": "final_resource_review",
+    "fresh_context": true,
+    "scope": "whole consumer working tree against7e81788 and immutable sibling commits",
+    "verdict": "No critical, important or minor actionable findings. Source review passed; gate counts completed separately.",
+    "diff_check_exit": 0
+  },
+  "boundaries": [
+    "Direct session adoption inside a native interpreted body is not exposed. Shell switches after synchronous body drain; restore-table helper tests are not a mid-body integration proof.",
+    "Attributed recycle recovery, durable undrained journal recovery, historical per-entry ancestry and app-event restart cursors remain deferred.",
+    "Nine host tests remain existing opt-ins: five live Knot endpoint controls and four private trail corpus/measurement controls. Browser release, optional engine/wasm lanes, physical GPU and assistive technology qualification are separate.",
+    "The initial Redshank parallel HTTP connection reuse assertion failed, while isolated and final serial runs passed. No production fix for that scheduling-sensitive assertion is claimed."
+  ],
+  "persisted_test_results": {
+    "path": "native-integration-tests.log",
+    "sha256": "5fbb1dd314f6442d121845268f8eda49b727ec4bc512f2bf389130aebe343ba8"
+  }
+}

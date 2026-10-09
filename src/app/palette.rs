@@ -110,44 +110,33 @@ impl App {
             blake3::Hash::from(ticket.binding.revision.0).to_hex().to_string(),
         )
         .via("turnstone");
-        // `update` can synchronously drain another resident.  Preserve the
-        // author that was in force when this lowering began so that the inner
-        // run restores this run, rather than unconditionally restoring `user`.
-        // The guard deliberately releases the journal lock before `update`:
-        // graph capture takes that lock itself.
-        let previous_author = match self.journal.lock() {
-            Ok(mut journal) => {
-                let previous = journal.author().to_owned();
-                journal.set_author(author.clone());
-                previous
+
+        let origin =  self.behavior_execution_origin();
+        if origin.is_none() {
+            self.refuse_behavior("participant lowering has no accepted graph binding".into());
+                return(vec![Effect::Redraw], true);
+
             }
-            Err(poisoned) => {
-                let mut journal = poisoned.into_inner();
-                let previous = journal.author().to_owned();
-                journal.set_author(author);
-                previous
-            }
-        };
-        let _restore_author = JournalAuthorRestore {
-            journal: self.journal.clone(),
-            previous_author,
-        };
+
+        let _restore_author = crate::host_journal::AuthorRestore::enter(self.journal.clone(),
+            author);
         let mut effects = Vec::new();
         let mut refused = false;
         for action in actions {
             // Evaluation's capability view is advisory. Authority is checked
             // once more at every actual emission, because a cascade may have
             // changed live grants since the body was evaluated.
-            if self.session_id != session {
-                self.events.push(AppEvent::DenizenRefused(format!("{label}: session changed during run")));
+            if self.session_id != session || self.behavior_execution_origin() != origin {
+                self.events.push(AppEvent::DenizenRefused(format!("{label}: session or graph runtime changed during run")));
                 refused = true;
                 break;
             }
             self.denizens.authority.set_now(crate::denizen::now_ms());
             let current = self.denizens.residents.get(&member).map(|resident| &resident.binding);
             let validation = current.ok_or_else(|| "resident disappeared".to_string())
-                .and_then(|binding| servitor::revalidate(&ticket, binding, &self.denizens.authority, &[])
-                    .map_err(|reason| format!("run invalidated: {reason:?}")));
+                .and_then(|binding| {
+                    servitor::revalidate(&ticket, binding, &self.denizens.authority, &[])
+                    .map_err(|reason| format!("run invalidated: {reason:?}"))});
             if let Err(reason) = validation {
                 self.events.push(AppEvent::DenizenRefused(format!("{label}: {reason}")));
                 refused = true;
@@ -228,6 +217,14 @@ impl App {
     /// while the palette showed dynamic-first, so a dynamic row that shadowed a
     /// static label would have acted as the wrong one).
     pub fn available_actions(&self) -> Vec<(String, Action)> {
+        if self.session_load_refused() {
+            let mut rows = vec![("Retry session".into(), Action::SwitchSession(self.session_id)),
+                ("New session".into(), Action::NewSession)];
+            rows.extend(self.sessions.iter().filter(|(id, _)| *id != self.session_id)
+                .map(|(id, _)| {
+                        (format!("Switch to session {}", self.session_label(id)), Action::SwitchSession(id))}));
+            return rows;
+        }
         let mut rows = self.session_actions();
         rows.extend(self.place_founding_actions());
         rows.extend(self.place_member_actions());
@@ -285,9 +282,9 @@ impl App {
     /// the static registry form the `context` category, so they still lead.
     pub(crate) fn command_catalog(&self) -> CommandCatalog {
         let catalog = self.available_actions();
-        let contextual = catalog
-            .len()
-            .saturating_sub(crate::action::palette_actions().len());
+        let contextual = if self.session_load_refused() { catalog.len() } else {
+            catalog.len().saturating_sub(crate::action::palette_actions().len())
+        };
         let mut set = cambium::CommandSet::new().with_defaults(DEFAULT_KEPT_COMMANDS);
         let mut actions = std::collections::HashMap::new();
         let mut ids = std::collections::HashMap::new();
@@ -510,7 +507,7 @@ impl App {
                 match status {
                     crate::place::CapturedCollectionSelectionStatus::Stale { current } => {
                         Some(current)
-                    },
+                    }
                     _ => None,
                 },
             ),
@@ -648,22 +645,7 @@ impl App {
             }
         }
         rows
-    }
-}
 
-/// Restores the graph journal's exact prior attribution after a synchronous
-/// nested lowering or an early return. It never crosses an asynchronous wait.
-struct JournalAuthorRestore {
-    journal: std::sync::Arc<std::sync::Mutex<mere::kernel::graph::GraphJournal>>,
-    previous_author: mere::kernel::graph::Author,
-}
-
-impl Drop for JournalAuthorRestore {
-    fn drop(&mut self) {
-        match self.journal.lock() {
-            Ok(mut journal) => journal.set_author(self.previous_author.clone()),
-            Err(poisoned) => poisoned.into_inner().set_author(self.previous_author.clone()),
-        }
     }
 }
 

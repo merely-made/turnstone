@@ -1,5 +1,14 @@
 # Session placement consumer preparation
 
+**Current implementation, 2026-10-09:** the prepared consumer changes are applied
+against qualified Mere P2 `3b3afa289` and matching Genet `15713014`. Native
+default and Piccolo gates pass; [the final receipt](native-integration-checks.json) binds their source and
+results. See [the integration status](README.md) and
+[the handoff](../../../design_docs/2026-10-08_browser_resource_handoff.md) for the
+fixed family, execution results and remaining scope. The contract and preparation
+receipts below are retained; their unapplied/pending statements describe earlier
+checkpoints.
+
 `session-profile.patch` is an unapplied, bounded proposal against Turnstone
 `9ad64030133c124b4885fe319945afb159b96670`. It uses only APIs committed in Mere
 `72c68b6d`, an in-progress supplier checkpoint. It does not qualify that checkpoint,

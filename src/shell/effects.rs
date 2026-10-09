@@ -815,6 +815,10 @@ impl Shell {
         // the scenario log and diagnostics subscribe at this same drain).
         self.drain_app_events();
         for effect in effects {
+            if self.app.session_load_refused() && !matches!(&effect,
+                Effect::SwitchSession { .. } | Effect::Redraw | Effect::ClosePlace { .. }) {
+                continue;
+            }
             let fetch_commands = browse::fetch_commands_for(&effect, &mut self.pending_fetches);
             if !fetch_commands.is_empty() {
                 for command in fetch_commands {
@@ -1153,13 +1157,19 @@ impl Shell {
                     self.lens_divider_drag = None;
                     self.pending_windows.clear();
                     let fx = self.app.adopt_session(next);
-                    self.bin_handle.command(crate::recycle::BinCommand::Reopen(
-                        crate::recycle::bin_dir(&self.app.session_dir()),
-                    ));
-                    self.trail_handle
-                        .command(crate::trail_memory::TrailCommand::Reopen(
+                    if !self.app.session_load_refused() {
+                        self.bin_handle.command(crate::recycle::BinCommand::Reopen(
+                            crate::recycle::bin_dir(&self.app.session_dir()),
+                        ));
+                        self.trail_handle.command(crate::trail_memory::TrailCommand::Reopen(
                             crate::trail_memory::memory_dir(&self.app.session_dir()),
                         ));
+                    } else {
+                        let (bin_ack, _) = std::sync::mpsc::sync_channel(1);
+                        let (trail_ack, _) = std::sync::mpsc::sync_channel(1);
+                        self.bin_handle.command(crate::recycle::BinCommand::Release(bin_ack));
+                        self.trail_handle.command(crate::trail_memory::TrailCommand::Release(trail_ack));
+                    }
                     self.run_effects(fx);
                     self.request_redraw();
                 }
@@ -1179,13 +1189,19 @@ impl Shell {
                     // it answers with THAT bin's list (the app cleared its
                     // mirror in adopt_session). The trail memory re-points
                     // with it (flushing the departing session's segments).
-                    self.bin_handle.command(crate::recycle::BinCommand::Reopen(
-                        crate::recycle::bin_dir(&self.app.session_dir()),
-                    ));
-                    self.trail_handle
-                        .command(crate::trail_memory::TrailCommand::Reopen(
+                    if !self.app.session_load_refused() {
+                        self.bin_handle.command(crate::recycle::BinCommand::Reopen(
+                            crate::recycle::bin_dir(&self.app.session_dir()),
+                        ));
+                        self.trail_handle.command(crate::trail_memory::TrailCommand::Reopen(
                             crate::trail_memory::memory_dir(&self.app.session_dir()),
                         ));
+                    } else {
+                        let (bin_ack, _) = std::sync::mpsc::sync_channel(1);
+                        let (trail_ack, _) = std::sync::mpsc::sync_channel(1);
+                        self.bin_handle.command(crate::recycle::BinCommand::Release(bin_ack));
+                        self.trail_handle.command(crate::trail_memory::TrailCommand::Release(trail_ack));
+                    }
                     self.run_effects(fx);
                     self.request_redraw();
                 }
@@ -1924,9 +1940,9 @@ impl Shell {
     /// session switch (which must save the DEPARTING session first).
     pub(super) fn save_session(&mut self) {
         let sdir = self.app.session_dir();
-        session::save_session_graph(&sdir, self.app.graph_runtimes.graph());
-        if let Err(error) = self.app.feeds.save(&sdir) {
-            tracing::warn!(%error, "failed to persist feed subscriptions");
+        if let Err(error) = self.app.persist_session_graph() {
+            tracing::warn!(%error, "session persistence refused or failed; sidecars and image collection skipped");
+            return;
         }
         if let Some(binding) = self.app.place.binding() {
             match session::update_place_binding(&sdir, binding) {
@@ -1956,16 +1972,7 @@ impl Shell {
         // The lens-window spaces (rung 7 depth): torn-out panes
         // survive a restart as windows again.
         session::save_lens_spaces(&sdir, &self.app.lenses);
-        // Browser state (rung 6): content-on refreshed from live truth, so a
-        // restart respawns what was showing; then the whole live state lands
-        // in the facet store (arrangement.* + scene.* + web.*) via the shared
-        // refresh (the fork's facet-carry reads the same refreshed store).
-        self.app.refresh_browser_states();
-        self.app.refresh_facets();
-        if let Err(error) = crate::content_classes::reconcile(&mut self.app.graph_runtimes) {
-            tracing::warn!(%error, "content-class reconciliation failed");
-        }
-        session::save_node_facets(&sdir, self.app.graph_runtimes.facets());
+        // Browser, canonical facets and graph were persisted together above.
         if let Err(error) = self.app.gemini_identities.save(&self.app.data_root) {
             tracing::warn!(%error, "failed to persist Gemini identity bindings");
         }

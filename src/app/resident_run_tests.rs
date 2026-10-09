@@ -84,7 +84,7 @@ fn default_policy_records_two_completed_invocations_without_replaying_them() {
     .via("turnstone");
     let prior_author = mere::kernel::graph::Author::rule("before-run", "7").via("other-route");
     app.journal.lock().unwrap().set_author(prior_author.clone());
-    let before_seq = app.journal.lock().unwrap().entries().len() as u64;
+    let before_seq = app.journal.lock().unwrap().high_water();
     app.take_events();
     for _ in 0..2 {
         let effects = app.update(Action::RunDenizen { member });

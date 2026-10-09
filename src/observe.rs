@@ -433,6 +433,7 @@ pub enum AppEvent {
     PlaceRendezvousCopied(usize),
     /// The app adopted a session (a boot, a mint, or a switch), by label.
     SessionSwitched(String),
+    SessionLoadRefused { error: String },
     /// The current session was closed (trashed).
     SessionClosed,
     /// A fork minted a new session from the focused component (the fork arm).
@@ -715,6 +716,7 @@ impl AppEvent {
                 format!("place-rendezvous-copied {count}")
             }
             AppEvent::SessionSwitched(label) => format!("session-switched {label}"),
+            AppEvent::SessionLoadRefused { error } => format!("session-load-refused {error}"),
             AppEvent::SessionClosed => "session-closed".to_string(),
             AppEvent::SessionForked => "session-forked".to_string(),
             AppEvent::SessionRecovered(label) => format!("session-recovered {label}"),

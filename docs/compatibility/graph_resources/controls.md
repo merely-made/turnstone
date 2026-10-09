@@ -1,5 +1,14 @@
 # Per-view controls draft
 
+**Current implementation, 2026-10-09:** the prepared consumer changes are applied
+against qualified Mere P2 `3b3afa289` and matching Genet `15713014`. Native
+default and Piccolo gates pass; [the final receipt](native-integration-checks.json) binds their source and
+results. See [the integration status](README.md) and
+[the handoff](../../../design_docs/2026-10-08_browser_resource_handoff.md) for the
+fixed family, execution results and remaining scope. The contract and preparation
+receipts below are retained; their unapplied/pending statements describe earlier
+checkpoints.
+
 Mark selected: "Keep these controls per view; share only descriptive tags."
 `controls.patch` is a saved, UNAPPLIED draft for review and handoff. No production
 source or dependency pins changed. Supplier checkpoint `72c68b6d` is unqualified.
