@@ -221,3 +221,75 @@ ordinary save/fork retain ordering and refused-input hazards. The concrete host
 persistence proposal is in `docs/compatibility/graph_resources/session-profile.md`,
 section "Continuation design for host persistence". It needs design review before
 runtime implementation. Mere's qualified family gate remains open.
+
+## Host persistence implementation plan (2026-10-08)
+
+Status: implementation preparation checkpointed; full host compilation and
+qualification remain pending. Mark approved the written host persistence contract at
+`64d0221`. Execute inline in the existing consumer worktree. Preserve production
+source and pins; save an ordered `host-persistence.patch` after the original five.
+Spec: `docs/compatibility/graph_resources/session-profile.md`, continuation design.
+Rust 2024, Mere's existing immutable APIs; Linux uses the existing shared target.
+
+Review focus: corrupt canonical facets; refused input followed by autosave;
+facet/graph write failure; graph replacement retaining stale qualification;
+unchanged missing feed binding resurrecting unread or adopting a sibling.
+
+### Task 1: persistence state and ordered writer
+
+- [x] Add standalone std-only regression tests in proposed
+  `src/session_persistence.rs` for destination mismatch, refusal, canonical-first
+  write ordering and facet/graph failures, then run them with `rustc --test`.
+- [x] Implement `SessionPersistence<P>` with Unbound, Writable(directory,
+  optional placement) and Refused(directory, reason); `save_with` checks identity,
+  saves facets, then invokes graph writer with retained placement. Test recorded
+  and absent placement, refusal persistence across unqualified replacement,
+  and successful retry. These tests cover the actual proposed helper, not a model.
+
+### Task 2: host adoption and persistence wiring
+
+- [x] Carry `SessionPersistence<PlacementProfile>` in GraphRuntime. Load fallibly
+  with canonical facets before migration. Distinguish missing and refused inputs;
+  install graph and state together before recovery or feed work.
+- [x] Centralize ordinary graph/facet/feed saving through the runtime state. Stop
+  sidecar saving and image collection on refusal or primary persistence failure.
+- [x] Guard fork, save child before publishing manifest, preserve absent placement
+  unless explicit recorded construction qualifies the newly assembled snapshot.
+- [x] Add future-family corruption, save/reopen, fork/refusal and replacement tests.
+  Check every changed call site and static patch application. Compilation remains
+  deferred until a qualified immutable family is available.
+
+### Task 3: feed binding repair and checkpoint
+
+- [x] Add unchanged-unbound entry controls. Repair projection without sibling
+  adoption; derive unread from exact sidecar binding and retain read status.
+- [x] Run feasible isolated feed tests against existing compiled dependencies;
+  future-family app controls remain distinct from that narrower evidence.
+- [x] Apply all six patches in an isolated index, parse proposed Rust, check hashes
+  and whitespace, self-review the combined source and save receipts. Commit only
+  preparation artifacts. Graph-origin routing remains its separately open design.
+
+Execution ruling: approval to implement the reviewed contract already supplies
+scope; do not repeat a planning approval question. Future-supplier patches cannot
+claim compiled qualification. Standalone helper tests prove only their stated
+persistence contract; downstream consumer gates remain pending.
+
+### Preparation completion receipt
+
+The original five patches are preserved; `host-persistence.patch` applies sixth.
+It implements the approved persistence contract and binding repair as proposed
+source, including review fixes for reachable recovery commands, preserved
+Redshank configuration, unread/GUID identity and interrupted replacement evidence.
+All six patches apply in sequence and 25 changed Rust files parse. The actual
+standalone helper/feed/Redshank modules pass 6/8/10 tests respectively (24 total).
+Full-host controls are drafted but uncompiled; no production edit, dependency
+change or supplier integration occurred. See
+`docs/compatibility/graph_resources/host-persistence-checks.json` and its test log.
+
+Execution ruling: supplier qualification prevents claiming integrated completion.
+Isolated actual-source tests provide a real local gate for supplier-independent
+helpers; app/runtime/shell wiring still requires the final immutable family.
+The source review was required by the execution skill and performed read-only.
+No chat was messaged and no new worktree, Cargo home or target was created.
+Graph-origin behavior attribution was explicitly left outside this approved
+persistence contract; its authority/envelope choice remains open.

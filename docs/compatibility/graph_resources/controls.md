@@ -112,3 +112,20 @@ fork paths also retain the ordering/refusal gaps described in
 These are source-review findings, not executed regression failures. The proposed
 repair design and required positive/negative controls are saved there. All five
 patches remain unapplied and byte-identical to the handoff.
+
+## Host successor patch (2026-10-08)
+
+`host-persistence.patch`, applied sixth, repairs the reviewed corruption and
+missing-binding defects without changing this draft's bytes. Feed reconciliation
+retains stored read status when a binding disappears. Unchanged unbound entries
+mint new views instead of adopting an equal-URL sibling, and the host binds using
+the exact projected GUID/entry identity before deriving its unread facet.
+Compatibility URL binding refuses ambiguity; GUID promotion applies only to old
+unguided URL-keyed entries, preserving distinct GUID entries on the same URL.
+
+Eight isolated actual-source feed tests pass, including both read states through
+sidecar save/reopen and repair, duplicate GUID placements and ambiguous-URL
+refusal. The additional app-level repaired-view control is still uncompiled.
+See `session-profile.md` and `host-persistence-checks.json` for persistence,
+refusal, review corrections and evidence limits. Production source and pins
+remain unchanged; full current/future-family consumer suites remain pending.

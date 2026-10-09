@@ -114,9 +114,11 @@ builds and created no target, Cargo home or worktree.
 
 ## Continuation design for host persistence (2026-10-08, proposed)
 
-Status: source review complete; this extension is proposed for review, not
-implemented. The five saved patches remain unchanged. See
-`continuation-review.json` for fresh application, parsing and byte checks.
+Status: Mark approved this contract; implementation is prepared as the sixth,
+unapplied `host-persistence.patch`. The original five patches remain unchanged.
+See `host-persistence-checks.json` and `host-persistence-tests.log` for exact
+combined-source hashes, static checks and isolated test evidence. Full host
+compilation and supplier qualification remain pending.
 
 ### Purpose and authority
 
@@ -211,3 +213,51 @@ then graph-origin routing after its envelope/authority review. At the final
 qualified immutable family, compile and execute all proposed controls and existing
 session/feed/behavior suites with the shared Linux target and one low-priority job.
 Static application and parser checks remain preparation evidence only.
+
+## Implemented preparation and review (2026-10-08)
+
+Apply `host-persistence.patch` after reader, behaviors, content-tests,
+session-profile and controls. It carries explicit optional placement in each
+GraphRuntime and distinguishes missing, loaded and refused adoption. Canonical
+facet corruption and failed migration writes refuse before recovery. Ordinary
+host save persists feed evidence, facets, then the profiled graph; primary failure
+stops shell sidecar writes and image collection. Graph replacement revokes old
+placement, while a refused destination stays blocked. Fork construction is
+explicitly rematerialized at the donor's retained optional placement; child
+facets/graph/worlds precede manifest publication, and a failed manifest is removed
+from the live store before returning without a switch.
+
+Refused boot starts bin and trail actors without an open store. Refused switching
+releases those writers instead of reopening them on the refused directory.
+Recovery records, content callbacks, behavior drains, graph writes and startup
+fetches are suppressed. The command palette remains available with Retry session,
+New session and switching; a same-session retry reloads explicitly. Suspended
+Redshank retains output configuration and the exact fetch handle, with no model
+store or playback runtime, so a subsequent successful adoption recovers normally.
+
+Review additionally identified interrupted replacement evidence: graph.json may
+be missing while graph.json.previous or graph.json.tmp retains the input.
+The std-only completeness check refuses missing graph/facet targets with retained
+replacement evidence instead of granting fresh-session write authority. No backup
+is promoted or discarded automatically. Existing blobs must have the expected
+bytes before migration records a reference.
+
+Fresh checks: all six patches apply in sequence; all 25 resulting changed Rust
+files parse and proposed whitespace passes. Six actual std-only persistence
+helper tests, eight actual feed-module tests and ten actual Redshank-module tests
+pass with Rust 1.98.1. Feed/Redshank harnesses use the recorded compiled dependency
+set and actual proposed module sources. They do not compile the application or
+qualify new supplier semantics. Mutation controls detect reversed write ordering,
+missing-target-as-fresh and lost playback configuration; pre-repair feed controls
+fail for missing binding, unread loss and GUID collisions. Exact sources,
+dependencies, executable hashes and output are retained in the receipt/log.
+
+Prepared full-host controls include recorded/absent save/reopen, unqualified
+replacement, corrupt facets, failed migration persistence, refused saves/forks,
+recovery palette/retry, primary graph/facet failures, failed fork publication and
+interrupted-save backup preservation. These full-host tests are uncompiled and
+unrun. Shell close/switch/startup actor controls, image collection after graph
+failure, fork storage-failure injection and physical platform behavior remain
+required at the qualified immutable family. Graph-origin journal routing remains
+its separately open authority/envelope design; this patch adds only refusal
+suppression to the prepared behavior drain.

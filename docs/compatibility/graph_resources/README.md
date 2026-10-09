@@ -91,3 +91,15 @@ still unapplied and unexecuted. It is not a Windows, macOS, browser accessibilit
 shared-resource, attributed recovery, or full-suite receipt. The initial Cargo
 scan reported Servo's malformed tidy fixture manifest and continued successfully;
 no supplier fixture or manifest was modified to obtain this result.
+
+
+The approved host contract now has a sixth unapplied successor patch,
+`host-persistence.patch`, covering retained runtime placement, refusal protection,
+canonical-first graph saving, fork publication ordering and exact feed-binding
+repair. Apply it after the original five, whose bytes are preserved.
+`host-persistence-checks.json` records six ordered applications, 25 parsed Rust
+files and 24 passing isolated module tests; `host-persistence-tests.log` records
+positive and negative controls. This does not compile the host or qualify the
+supplier. Full integration, shell refusal/close/switch controls and graph-runtime
+journal attribution remain open. Details and source-review corrections are in
+`session-profile.md` and `controls.md`.
