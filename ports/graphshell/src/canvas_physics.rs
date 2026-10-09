@@ -59,11 +59,12 @@ pub fn ticked_overlays(ticked: impl Fn(PhysicsOverlay) -> bool) -> Vec<PhysicsOv
 /// the law's reason.
 pub fn apply_physics(canvas: &mut Canvas, choice: &PhysicsChoice) -> String {
     let (choice, refused) = choice.clone().admitted();
+    let running = PhysicsChoice::live(canvas);
     let applied = canvas
         .dynamics_spec()
         .map_err(|error| error.to_string())
         .and_then(|mut spec| {
-            choice.write_into(&mut spec);
+            choice.write_into(&mut spec, &running);
             canvas
                 .set_dynamics_spec(&spec)
                 .map(|_| ())
@@ -90,7 +91,7 @@ pub fn apply_profile(canvas: &mut Canvas, id: &str) -> Result<String, String> {
         .with_profile(id)
         .ok_or_else(|| format!("unknown physics profile {id}"))?;
     let mut spec = canvas.dynamics_spec()?;
-    choice.write_into(&mut spec);
+    choice.write_into(&mut spec, &PhysicsChoice::live(canvas));
     canvas
         .set_dynamics_spec(&spec)
         .map_err(|error| error.to_string())?;

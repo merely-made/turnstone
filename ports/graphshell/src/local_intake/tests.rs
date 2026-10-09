@@ -269,7 +269,7 @@ fn intake_ingest_preserves_existing_layout_and_physics_while_selecting_new_membe
             law: PhysicsLaw::Charge,
             ..PhysicsChoice::live(&canvas)
         }
-        .write_into(&mut spec);
+        .write_into(&mut spec, &PhysicsChoice::live(&canvas));
         canvas.set_dynamics_spec(&spec).unwrap();
         canvas.set_physics_paused(paused);
         canvas.set_camera(CameraView {
