@@ -187,12 +187,51 @@ mod tests {
         parse_host_dataset(include_str!("../web/fixtures/host-dataset-relations.json")).unwrap()
     }
 
+    fn assert_canvas_projects_all_relations(view: &HostDatasetView) {
+        // Content assertions live on Resources; the former Surface-only read is empty.
+        assert_eq!(view.graph.relations().count(), 0);
+        assert_eq!(
+            view.graph.projected_relations().count(),
+            view.relations.len()
+        );
+        let positions: std::collections::HashMap<_, _> = view.positions.iter().copied().collect();
+        let projection = mere::canvas::underlay::projection_from_positions(&view.graph, |key| {
+            positions.get(&key).copied()
+        });
+        assert_eq!(projection.nodes.len(), positions.len());
+        for node in &projection.nodes {
+            assert_eq!(node.position, positions[&node.node]);
+        }
+        // The canvas draws one stroke per undirected pair, preserving every
+        // disclosed connection while collapsing parallel/directional strokes.
+        let pair = |from: NodeKey, to: NodeKey| {
+            let (a, b) = (from.index(), to.index());
+            (a.min(b), a.max(b))
+        };
+        let expected: std::collections::BTreeSet<_> = view
+            .graph
+            .projected_relations()
+            .filter(|(_, row)| row.from != row.to)
+            .map(|(_, row)| pair(row.from, row.to))
+            .collect();
+        let actual: std::collections::BTreeSet<_> = projection
+            .edges
+            .iter()
+            .map(|edge| pair(edge.from, edge.to))
+            .collect();
+        assert!(
+            !expected.is_empty(),
+            "the fixture exercises drawn relationships"
+        );
+        assert_eq!(actual, expected);
+    }
+
     #[test]
     fn nodes_and_edges_follow_the_compiled_scene() {
         let envelope = served();
         let view = host_dataset_view(&envelope).unwrap();
         assert_eq!(view.graph.node_count(), envelope.dataset.occurrences.len());
-        assert_eq!(view.graph.relations().count(), envelope.relationships.len());
+        assert_canvas_projects_all_relations(&view);
         assert_eq!(view.relations.len(), envelope.relationships.len());
         let compiled = envelope
             .compile(practice_compiler(), &viewer_definition(&envelope.dataset))
@@ -271,6 +310,6 @@ mod tests {
         assert_eq!(view.graph.node_count(), 21);
         assert_eq!(view.positions.len(), 21);
         assert_eq!(view.relations.len(), 30);
-        assert_eq!(view.graph.relations().count(), 30);
+        assert_canvas_projects_all_relations(&view);
     }
 }

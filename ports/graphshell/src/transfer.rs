@@ -29,6 +29,7 @@ use mere::kernel::graph::node_facets::{
 };
 use mere::kernel::graph::{Graph, NodeFacetStore};
 use muniment::{Backend, BlobStore};
+use pandect::graph_placement::materialize_snapshot;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use uuid::Uuid;
@@ -40,8 +41,9 @@ use crate::access::{
 };
 use crate::mere_host::MereHost;
 use crate::product::{
-    CONTENT_FACET, ExportRequest, ProductCodicilV3, ProductError, SAVED_SCENE_FACET,
-    SAVED_SCENE_FACET_V2, SAVED_SCENE_FACET_V3, SavedSceneV2, SavedSceneV3, decode_codicil,
+    CONTENT_FACET, ExportRequest, ProductCodicilV3, ProductError, ProfiledProductCodicil,
+    SAVED_SCENE_FACET, SAVED_SCENE_FACET_V2, SAVED_SCENE_FACET_V3, SavedSceneV2, SavedSceneV3,
+    decode_profiled_codicil,
 };
 
 pub const TRANSFER_MANIFEST_SCHEMA: &str = "graphshell.transfer-manifest/v1";
@@ -118,6 +120,12 @@ fn transfer_receipt_schema() -> SchemaDefinition {
 }
 
 impl TypedPayload for ProductCodicilV3 {
+    fn schema_ref() -> SchemaRef {
+        *PRODUCT_CODICIL_SCHEMA_REF
+    }
+}
+
+impl TypedPayload for ProfiledProductCodicil {
     fn schema_ref() -> SchemaRef {
         *PRODUCT_CODICIL_SCHEMA_REF
     }
@@ -332,7 +340,7 @@ pub async fn prepare_transfer<HB: Backend, AB: Backend, BB: Backend>(
     }
     request.selection.include_local_file_locations = false;
     let selection_bytes = host.export_product_codicil(request.selection)?;
-    let mut product = decode_codicil(&selection_bytes)?;
+    let mut product = decode_profiled_codicil(&selection_bytes)?;
     let selected_ids = selected_ids(&product)?;
 
     for node_id in &selected_ids {
@@ -468,6 +476,39 @@ where
         })
         .collect();
 
+    let (target_product, id_map) = match manifest.operation {
+        TransferOperation::Replicate => {
+            let mut source_ids: Vec<_> = selected_ids(&product)?.into_iter().collect();
+            source_ids.sort_unstable();
+            let ids = source_ids
+                .into_iter()
+                .map(|id| TransferredIdV1 {
+                    source: id,
+                    destination: id,
+                })
+                .collect();
+            (product, ids)
+        },
+        TransferOperation::Copy => copied_product(&product, manifest)?,
+    };
+    let existing = id_map
+        .iter()
+        .filter(|mapping| host.graph().get_node_by_id(mapping.destination).is_some())
+        .count();
+    if manifest.operation == TransferOperation::Copy && existing > 0 && existing < id_map.len() {
+        return Err(TransferError::PartialCopy);
+    }
+    let import_required =
+        manifest.operation == TransferOperation::Replicate || existing != id_map.len();
+    if import_required {
+        crate::product::product_import_edits(
+            host.graph(),
+            target_product.graph.clone(),
+            target_product.facets.clone(),
+            target_product.placement,
+        )?;
+    }
+
     for descriptor in &manifest.blobs {
         let hash = muniment_hash(descriptor.content_hash)?;
         if let Some(existing) = destination_blobs.get(&hash).await? {
@@ -492,30 +533,7 @@ where
         }
     }
 
-    let (target_product, id_map) = match manifest.operation {
-        TransferOperation::Replicate => {
-            let mut source_ids: Vec<_> = selected_ids(&product)?.into_iter().collect();
-            source_ids.sort_unstable();
-            let ids = source_ids
-                .into_iter()
-                .map(|id| TransferredIdV1 {
-                    source: id,
-                    destination: id,
-                })
-                .collect();
-            (product, ids)
-        },
-        TransferOperation::Copy => copied_product(&product, manifest)?,
-    };
-
-    let existing = id_map
-        .iter()
-        .filter(|mapping| host.graph().get_node_by_id(mapping.destination).is_some())
-        .count();
-    if manifest.operation == TransferOperation::Copy && existing > 0 && existing < id_map.len() {
-        return Err(TransferError::PartialCopy);
-    }
-    if existing != id_map.len() {
+    if import_required {
         let bytes = target_product.serialize_to_bytes()?;
         host.import_product_codicil(&bytes)?;
     }
@@ -696,7 +714,7 @@ async fn save_transfer_receipt<B: Backend>(
 
 pub(crate) fn verify_manifest(
     manifest: &TransferManifestV1,
-) -> Result<ProductCodicilV3, TransferError> {
+) -> Result<ProfiledProductCodicil, TransferError> {
     if manifest.schema != TRANSFER_MANIFEST_SCHEMA {
         return Err(TransferError::InvalidManifest(format!(
             "expected {TRANSFER_MANIFEST_SCHEMA}, found {}",
@@ -717,7 +735,7 @@ pub(crate) fn verify_manifest(
         ));
     }
     validate_payload(&manifest.selection_schema, &manifest.selection.payload)?;
-    let product = decode_codicil(&manifest.selection.payload)?;
+    let product = decode_profiled_codicil(&manifest.selection.payload)?;
     let selected = selected_ids(&product)?;
     if manifest.operation == TransferOperation::Replicate
         && manifest.source.persona != manifest.destination.persona
@@ -878,11 +896,15 @@ fn require_selected_content_blobs(
 }
 
 fn copied_product(
-    source: &ProductCodicilV3,
+    source: &ProfiledProductCodicil,
     manifest: &TransferManifestV1,
-) -> Result<(ProductCodicilV3, Vec<TransferredIdV1>), TransferError> {
-    let mut donor = Graph::from_snapshot(&source.graph);
+) -> Result<(ProfiledProductCodicil, Vec<TransferredIdV1>), TransferError> {
+    let mut donor = materialize_snapshot(&source.graph, source.placement)
+        .map_err(|error| TransferError::InvalidManifest(error.to_string()))?;
     donor.overlay_facets(source.facets.clone());
+    donor
+        .validate_active_resource_assertion_handles()
+        .map_err(|error| TransferError::InvalidManifest(error.to_string()))?;
     let mut copy = Graph::new();
     let mut id_map = Vec::with_capacity(source.graph.nodes.len());
     let mut id_by_source = HashMap::with_capacity(source.graph.nodes.len());
@@ -935,19 +957,34 @@ fn copied_product(
             Ok(edge)
         })
         .collect::<Result<_, TransferError>>()?;
+    snapshot.resources = source.graph.resources.clone();
+    snapshot.resource_edges = source.graph.resource_edges.clone();
+    snapshot.shown_resources = source
+        .graph
+        .shown_resources
+        .iter()
+        .cloned()
+        .map(|mut shown| {
+            shown.surface_id = remapped_id(&shown.surface_id, &id_by_source)?;
+            Ok(shown)
+        })
+        .collect::<Result<_, TransferError>>()?;
     snapshot.timestamp_secs = source.graph.timestamp_secs;
 
     Ok((
-        ProductCodicilV3 {
-            schema: source.schema.clone(),
-            scope: source.scope,
-            exported_at_ms: source.exported_at_ms,
-            graph: snapshot,
-            facets: copied_facets,
-            scene: source
-                .scene
-                .as_ref()
-                .map(|scene| remap_scene(scene, &id_by_source)),
+        ProfiledProductCodicil {
+            placement: source.placement,
+            product: ProductCodicilV3 {
+                schema: source.schema.clone(),
+                scope: source.scope,
+                exported_at_ms: source.exported_at_ms,
+                graph: snapshot,
+                facets: copied_facets,
+                scene: source
+                    .scene
+                    .as_ref()
+                    .map(|scene| remap_scene(scene, &id_by_source)),
+            },
         },
         id_map,
     ))
@@ -1368,6 +1405,39 @@ mod tests {
         .unwrap()
     }
 
+    fn exact_resource_edges(graph: &Graph) -> Vec<String> {
+        let mut edges: Vec<_> = graph
+            .to_snapshot()
+            .resource_edges
+            .iter()
+            .map(|edge| serde_json::to_string(edge).unwrap())
+            .collect();
+        edges.sort();
+        edges
+    }
+
+    fn assert_resource_cites(graph: &Graph, from: Uuid, to: Uuid) {
+        let from = graph.get_node_key_by_id(from).unwrap();
+        let to = graph.get_node_key_by_id(to).unwrap();
+        assert!(graph.find_edge_key(from, to).is_none());
+        let (handle, payload) = graph.projected_relations_between(from, to).next().unwrap();
+        assert!(matches!(
+            handle,
+            mere::kernel::graph::RelationKey::Resource(_)
+        ));
+        assert!(
+            payload.has_relation(mere::kernel::graph::RelationSelector::Semantic(
+                SemanticSubKind::Cites
+            ))
+        );
+        assert_eq!(payload.semantic_statements().len(), 1);
+        assert!(payload.semantic_statements()[0].provenance_iri.is_some());
+        assert_eq!(
+            payload.semantic_statements()[0].graph_scope,
+            mere::kernel::types::GraphScope::Default
+        );
+    }
+
     #[test]
     fn h6_replicate_preserves_ids_relations_tags_blobs_and_access_authority() {
         pollster::block_on(async {
@@ -1411,7 +1481,14 @@ mod tests {
             .unwrap();
 
             assert_eq!(receipt.nodes, 2);
-            assert_eq!(receipt.relations, 1);
+            assert_eq!(
+                receipt.relations, 0,
+                "the receipt counts Surface relation records"
+            );
+            assert_eq!(
+                receipt.relations,
+                verify_manifest(&manifest).unwrap().graph.edges.len() as u64
+            );
             assert!(
                 receipt
                     .id_map
@@ -1420,18 +1497,21 @@ mod tests {
             );
             assert!(destination.graph().get_node_by_id(source.url).is_some());
             assert!(destination.graph().get_node_by_id(source.file).is_some());
+            let file_key = destination.graph().get_node_key_by_id(source.file).unwrap();
             assert!(
                 destination
                     .graph()
-                    .get_node_by_id(source.file)
+                    .node_content_tags(file_key)
                     .unwrap()
-                    .1
-                    .tags
                     .contains("file")
             );
-            assert!(destination.graph().relations().any(|relation| {
-                relation.kind == RelationKind::Semantic(SemanticSubKind::Cites)
-            }));
+            assert!(destination.graph().node_tags(file_key).unwrap().is_empty());
+            assert_resource_cites(destination.graph(), source.file, source.url);
+            assert_eq!(
+                exact_resource_edges(destination.graph()),
+                exact_resource_edges(source.host.graph()),
+                "replicate preserves all Resource claim IDs, endpoints, asserters, scopes and metadata"
+            );
             let descriptor = &manifest.blobs[0];
             let stored = destination_blobs
                 .get(&muniment_hash(descriptor.content_hash).unwrap())
@@ -1531,21 +1611,44 @@ mod tests {
                 assert_eq!(derivations[0].source_node, mapping.source.to_string());
                 assert_eq!(derivations[0].source_graph.as_deref(), Some("graph:source"));
             }
-            assert_eq!(destination.graph().relations().count(), 1);
+            assert_eq!(destination.graph().relations().count(), 0);
+            assert_eq!(
+                exact_resource_edges(destination.graph()),
+                exact_resource_edges(source.host.graph()),
+                "copy preserves Resource claim handles and changes only Surface identity"
+            );
             let copied_file = receipt
                 .id_map
                 .iter()
                 .find(|ids| ids.source == source.file)
                 .unwrap()
                 .destination;
+            let copied_url = receipt
+                .id_map
+                .iter()
+                .find(|ids| ids.source == source.url)
+                .unwrap()
+                .destination;
+            assert_resource_cites(destination.graph(), copied_file, copied_url);
+            let copied_key = destination.graph().get_node_key_by_id(copied_file).unwrap();
+            let source_key = source.host.graph().get_node_key_by_id(source.file).unwrap();
+            assert_eq!(
+                destination.graph().shown_resource_id(copied_key),
+                source.host.graph().shown_resource_id(source_key)
+            );
             assert!(
                 destination
                     .graph()
-                    .get_node_by_id(copied_file)
+                    .node_content_tags(copied_key)
                     .unwrap()
-                    .1
-                    .tags
                     .contains("transport")
+            );
+            assert!(
+                destination
+                    .graph()
+                    .node_tags(copied_key)
+                    .unwrap()
+                    .is_empty()
             );
             assert_eq!(
                 destination
@@ -1554,6 +1657,338 @@ mod tests {
                     .get(&copied_file, &FacetId::new(TRANSFER_CONTENT_FACET))
                     .unwrap()[0]["byte_len"],
                 source.file_bytes.len() as u64
+            );
+        });
+    }
+
+    #[test]
+    fn copy_keeps_resource_identity_and_remaps_only_shown_surfaces() {
+        pollster::block_on(async {
+            use mere::kernel::persistence::{
+                PersistedEdge, PersistedEdgeFamily, PersistedResourceRecord,
+                PersistedSemanticEdgeData, PersistedSemanticStatement, PersistedShownResource,
+            };
+            let source = source_fixture().await;
+            let manifest =
+                package(&source, TransferOperation::Copy, "personae://persona/bob").await;
+            let mut product = verify_manifest(&manifest).unwrap();
+            let iri = "https://copy-resource.test/page";
+            let resource_id = chartulary::resource_id_from_canonical_iri(iri).to_string();
+            let tag = "https://copy-resource.test/vocab#Tag";
+            let tag_id = chartulary::resource_id_from_canonical_iri(tag).to_string();
+            product.graph.resources = [iri, tag]
+                .into_iter()
+                .map(|iri| PersistedResourceRecord {
+                    canonical_iri: iri.into(),
+                    facets: vec![],
+                })
+                .collect();
+            product.graph.resource_edges = vec![PersistedEdge {
+                from_node_id: resource_id.clone(),
+                to_node_id: tag_id,
+                families: vec![PersistedEdgeFamily::Semantic],
+                semantic: Some(PersistedSemanticEdgeData {
+                    statements: vec![PersistedSemanticStatement {
+                        statement_id: "copied-tag-handle".into(),
+                        predicate: mere::kernel::graph::resource::TAGGED_WITH_IRI.into(),
+                        recognized_sub_kind: None,
+                        label: Some("tag".into()),
+                        graph_scope: mere::kernel::types::GraphScope::Default,
+                        provenance_iri: Some("https://tagger.test/".into()),
+                        asserted_at_ms: Some(23),
+                    }],
+                    ..Default::default()
+                }),
+                traversal: None,
+                containment: None,
+                arrangement: None,
+                imported: None,
+                provenance: None,
+            }];
+            product.graph.shown_resources = product
+                .graph
+                .nodes
+                .iter()
+                .map(|surface| PersistedShownResource {
+                    surface_id: surface.node_id.clone(),
+                    resource_id: resource_id.clone(),
+                })
+                .collect();
+            let (copied, ids) = copied_product(&product, &manifest).unwrap();
+            assert_eq!(
+                product.placement,
+                Some(pandect::graph_placement::PlacementProfile::RecordedStrataV1)
+            );
+            assert_eq!(copied.placement, product.placement);
+            assert_eq!(copied.graph.resources, product.graph.resources);
+            assert_eq!(copied.graph.resource_edges, product.graph.resource_edges);
+            assert_eq!(
+                copied.graph.resource_edges.len(),
+                1,
+                "the carried assertion is a positive control"
+            );
+            assert_eq!(
+                copied.graph.shown_resources.len(),
+                product.graph.shown_resources.len()
+            );
+            for shown in &copied.graph.shown_resources {
+                assert_eq!(shown.resource_id, resource_id);
+                assert!(ids.iter().any(|mapping| mapping.destination.to_string()
+                    == shown.surface_id
+                    && mapping.source != mapping.destination));
+            }
+            assert!(Graph::try_from_snapshot(&copied.graph).is_ok());
+            product.graph.shown_resources[0].resource_id = Uuid::nil().to_string();
+            assert!(
+                matches!(
+                    copied_product(&product, &manifest),
+                    Err(TransferError::InvalidManifest(_))
+                ),
+                "invalid source is refused before copying"
+            );
+        });
+    }
+
+    #[test]
+    fn transfer_profiles_preserve_held_claims_and_refuse_legacy_before_blob_writes() {
+        use pandect::graph_placement::PlacementProfile;
+        pollster::block_on(async {
+            let source = source_fixture().await;
+            let mut manifest = package(
+                &source,
+                TransferOperation::Replicate,
+                FIXTURE_PERSONA_ADDRESS,
+            )
+            .await;
+            let mut product = verify_manifest(&manifest).unwrap();
+            assert_eq!(product.placement, Some(PlacementProfile::RecordedStrataV1));
+            let mut held = crate::mere_host::placement_test_graph()
+                .to_snapshot()
+                .edges
+                .remove(0);
+            held.from_node_id = source.file.to_string();
+            held.to_node_id = source.url.to_string();
+            product.graph.edges = vec![held.clone()];
+            let replace_payload =
+                |manifest: &mut TransferManifestV1, product: &ProfiledProductCodicil| {
+                    let old = &manifest.selection;
+                    manifest.selection = Codicil::new(
+                        old.schema,
+                        product.serialize_to_bytes().unwrap(),
+                        old.privacy,
+                        old.provenance.clone(),
+                        old.trust.clone(),
+                        old.bounds,
+                    );
+                };
+            replace_payload(&mut manifest, &product);
+            assert_eq!(
+                verify_manifest(&manifest).unwrap().graph.edges,
+                vec![held.clone()]
+            );
+            let mut copy_manifest = manifest.clone();
+            copy_manifest.operation = TransferOperation::Copy;
+            copy_manifest.destination.persona = "personae://persona/bob".into();
+            let (copied, mapping) = copied_product(&product, &copy_manifest).unwrap();
+            assert_eq!(copied.placement, product.placement);
+            let carried = &copied.graph.edges[0];
+            assert_eq!(carried.semantic, held.semantic);
+            assert!(
+                mapping.iter().any(|id| id.source == source.file
+                    && id.destination.to_string() == carried.from_node_id)
+            );
+            assert!(
+                mapping.iter().any(|id| id.source == source.url
+                    && id.destination.to_string() == carried.to_node_id)
+            );
+            product.placement = None;
+            replace_payload(&mut manifest, &product);
+            assert_eq!(verify_manifest(&manifest).unwrap().placement, None);
+            assert_eq!(
+                copied_product(&product, &copy_manifest)
+                    .unwrap()
+                    .0
+                    .placement,
+                None
+            );
+
+            let destination_backend = MemoryBackend::new();
+            let mut destination = MereHost::empty(
+                destination_backend.clone(),
+                selected(FIXTURE_PERSONA_ADDRESS),
+                fixture_handlers(),
+                AccessContext {
+                    persona: FIXTURE_PERSONA_ADDRESS.into(),
+                    device: FIXTURE_DEVICE_TWO_ADDRESS.into(),
+                    at_ms: 1_700_000_001_000,
+                },
+            );
+            product.placement = Some(PlacementProfile::LegacySurfaceV1);
+            replace_payload(&mut manifest, &product);
+            assert!(verify_manifest(&manifest).is_err());
+            let mut authority = destination_backend.clone();
+            assert!(
+                apply_transfer(
+                    &mut destination,
+                    &BlobStore::new(source.backend.clone()),
+                    &BlobStore::new(destination_backend.clone()),
+                    &mut authority,
+                    &manifest,
+                    &apply_context(false)
+                )
+                .await
+                .is_err()
+            );
+            assert!(destination_backend.is_empty());
+            assert_eq!(destination.graph().node_count(), 0);
+            assert!(destination.graph_session().journal().entries().is_empty());
+            product.placement = Some(PlacementProfile::RecordedStrataV1);
+            let original_facets = product.facets.clone();
+            let mut property =
+                mere::kernel::types::NodeProperty::new("urn:test:predicate".into(), "exact".into())
+                    .with_metadata(Some("urn:test:source".into()), Some(42));
+            property.statement_id = product
+                .graph
+                .resource_edges
+                .iter()
+                .filter_map(|edge| edge.semantic.as_ref())
+                .flat_map(|bucket| &bucket.statements)
+                .next()
+                .unwrap()
+                .statement_id
+                .clone();
+            product
+                .facets
+                .set(
+                    source.file,
+                    FacetId::new(mere::kernel::graph::node_facets::SEMANTIC_PROPERTIES),
+                    serde_json::to_value(vec![property]).unwrap(),
+                    &AcceptAll,
+                )
+                .unwrap();
+            replace_payload(&mut manifest, &product);
+            assert!(verify_manifest(&manifest).is_err());
+            assert!(copied_product(&product, &copy_manifest).is_err());
+            assert!(
+                apply_transfer(
+                    &mut destination,
+                    &BlobStore::new(source.backend.clone()),
+                    &BlobStore::new(destination_backend.clone()),
+                    &mut authority,
+                    &manifest,
+                    &apply_context(false)
+                )
+                .await
+                .is_err()
+            );
+            assert!(
+                destination_backend.is_empty(),
+                "sidecar refusal precedes blob and authority writes"
+            );
+            assert_eq!(destination.graph().node_count(), 0);
+            assert!(destination.graph_session().journal().entries().is_empty());
+            product.facets = original_facets;
+            let collision_backend = MemoryBackend::new();
+            let mut collision_destination = MereHost::empty(
+                collision_backend.clone(),
+                selected(FIXTURE_PERSONA_ADDRESS),
+                fixture_handlers(),
+                AccessContext {
+                    persona: FIXTURE_PERSONA_ADDRESS.into(),
+                    device: FIXTURE_DEVICE_TWO_ADDRESS.into(),
+                    at_ms: 17,
+                },
+            );
+            let destination_id = collision_destination
+                .create_address("https://destination.test/page", "existing")
+                .unwrap();
+            let key = collision_destination
+                .graph()
+                .get_node_key_by_id(destination_id)
+                .unwrap();
+            let mut property =
+                mere::kernel::types::NodeProperty::new("urn:test:predicate".into(), "exact".into())
+                    .with_metadata(Some("urn:test:source".into()), Some(42));
+            property.statement_id = "destination-resource-only".into();
+            assert!(
+                collision_destination
+                    .mutate_product_graph(|graph| {
+                        graph.append_node_properties(key, vec![property.clone()])
+                    })
+                    .expect("valid collision fixture edit")
+            );
+            product
+                .facets
+                .set(
+                    source.file,
+                    FacetId::new(mere::kernel::graph::node_facets::SEMANTIC_PROPERTIES),
+                    serde_json::to_value(vec![property]).unwrap(),
+                    &AcceptAll,
+                )
+                .unwrap();
+            replace_payload(&mut manifest, &product);
+            assert!(
+                verify_manifest(&manifest).is_ok(),
+                "valid input has no internal collision"
+            );
+            let before = collision_destination.graph().to_snapshot();
+            let facets = collision_destination.graph().facets().clone();
+            let journal = collision_destination
+                .graph_session()
+                .journal()
+                .entries()
+                .len();
+            assert!(
+                apply_transfer(
+                    &mut collision_destination,
+                    &BlobStore::new(source.backend.clone()),
+                    &BlobStore::new(collision_backend.clone()),
+                    &mut collision_backend.clone(),
+                    &manifest,
+                    &apply_context(false)
+                )
+                .await
+                .is_err()
+            );
+            assert!(
+                collision_backend.is_empty(),
+                "destination-only collision precedes blob and authority writes"
+            );
+            let mut after = collision_destination.graph().to_snapshot();
+            after.timestamp_secs = before.timestamp_secs;
+            assert_eq!(
+                serde_json::to_value(after).unwrap(),
+                serde_json::to_value(before).unwrap()
+            );
+            assert_eq!(collision_destination.graph().facets(), &facets);
+            assert_eq!(
+                collision_destination
+                    .graph_session()
+                    .journal()
+                    .entries()
+                    .len(),
+                journal
+            );
+            product.facets.remove(
+                &source.file,
+                &FacetId::new(mere::kernel::graph::node_facets::SEMANTIC_PROPERTIES),
+            );
+            replace_payload(&mut manifest, &product);
+            apply_transfer(
+                &mut destination,
+                &BlobStore::new(source.backend.clone()),
+                &BlobStore::new(destination_backend.clone()),
+                &mut authority,
+                &manifest,
+                &apply_context(false),
+            )
+            .await
+            .unwrap();
+            let restored = destination.graph().to_snapshot();
+            assert!(restored.edges.contains(&held));
+            assert_eq!(
+                destination.snapshot_placement(),
+                Some(PlacementProfile::RecordedStrataV1)
             );
         });
     }
@@ -1593,6 +2028,210 @@ mod tests {
             assert!(matches!(error, TransferError::Revoked(_)));
             assert_eq!(destination.graph().node_count(), 0);
             assert!(destination_backend.is_empty());
+        });
+    }
+
+    #[test]
+    fn repeated_replication_merges_resource_truth_with_existing_surface_ids() {
+        pollster::block_on(async {
+            let source = source_fixture().await;
+            let mut manifest = package(
+                &source,
+                TransferOperation::Replicate,
+                FIXTURE_PERSONA_ADDRESS,
+            )
+            .await;
+            let backend = MemoryBackend::new();
+            let mut destination = MereHost::empty(
+                backend.clone(),
+                selected(FIXTURE_PERSONA_ADDRESS),
+                fixture_handlers(),
+                AccessContext {
+                    persona: FIXTURE_PERSONA_ADDRESS.into(),
+                    device: FIXTURE_DEVICE_TWO_ADDRESS.into(),
+                    at_ms: 17,
+                },
+            );
+            let mut authority = backend.clone();
+            apply_transfer(
+                &mut destination,
+                &BlobStore::new(source.backend.clone()),
+                &BlobStore::new(backend.clone()),
+                &mut authority,
+                &manifest,
+                &apply_context(false),
+            )
+            .await
+            .unwrap();
+            let mut product = verify_manifest(&manifest).unwrap();
+            let old_claim = product
+                .graph
+                .resource_edges
+                .iter()
+                .filter_map(|edge| edge.semantic.as_ref())
+                .flat_map(|bucket| &bucket.statements)
+                .next()
+                .unwrap()
+                .clone();
+            let mut carried = old_claim.clone();
+            carried.statement_id = "replicated-new-resource-handle".into();
+            carried.provenance_iri = Some("urn:mere:replication-peer".into());
+            carried.asserted_at_ms = Some(77);
+            carried.label = Some("new carried assertion".into());
+            product
+                .graph
+                .resource_edges
+                .iter_mut()
+                .find_map(|edge| edge.semantic.as_mut())
+                .unwrap()
+                .statements
+                .push(carried.clone());
+            let record = mere::kernel::persistence::PersistedResourceRecord {
+                canonical_iri: "urn:mere:replicated-note".into(),
+                facets: vec![mere::kernel::persistence::PersistedResourceFacet {
+                    facet: "extension.origin-note".into(),
+                    value_json: "{\"exact\":true}".into(),
+                }],
+            };
+            product.graph.resources.push(record.clone());
+            let replace_payload =
+                |manifest: &mut TransferManifestV1, product: &ProfiledProductCodicil| {
+                    let old = &manifest.selection;
+                    manifest.selection = Codicil::new(
+                        old.schema,
+                        product.serialize_to_bytes().unwrap(),
+                        old.privacy,
+                        old.provenance.clone(),
+                        old.trust.clone(),
+                        old.bounds,
+                    );
+                };
+            replace_payload(&mut manifest, &product);
+            assert!(product.graph.nodes.iter().all(|node| {
+                destination
+                    .graph()
+                    .get_node_by_id(Uuid::parse_str(&node.node_id).unwrap())
+                    .is_some()
+            }));
+            let node_count = destination.graph().node_count();
+            apply_transfer(
+                &mut destination,
+                &BlobStore::new(source.backend.clone()),
+                &BlobStore::new(backend.clone()),
+                &mut authority,
+                &manifest,
+                &apply_context(false),
+            )
+            .await
+            .unwrap();
+            let snapshot = destination.graph().to_snapshot();
+            assert_eq!(destination.graph().node_count(), node_count);
+            assert!(snapshot.resources.contains(&record));
+            let claims: Vec<_> = snapshot
+                .resource_edges
+                .iter()
+                .filter_map(|edge| edge.semantic.as_ref())
+                .flat_map(|bucket| &bucket.statements)
+                .collect();
+            assert!(claims.contains(&&carried));
+            assert!(claims.contains(&&old_claim));
+            let facets = destination.graph().facets().clone();
+            let journal = destination.graph_session().journal().entries().len();
+            let records = query_access_records(&mut authority, &AccessRecordFilter::default())
+                .await
+                .unwrap()
+                .len();
+            apply_transfer(
+                &mut destination,
+                &BlobStore::new(source.backend.clone()),
+                &BlobStore::new(backend.clone()),
+                &mut authority,
+                &manifest,
+                &apply_context(false),
+            )
+            .await
+            .unwrap();
+            let mut repeated = destination.graph().to_snapshot();
+            repeated.timestamp_secs = snapshot.timestamp_secs;
+            assert_eq!(
+                serde_json::to_value(repeated).unwrap(),
+                serde_json::to_value(&snapshot).unwrap()
+            );
+            assert_eq!(destination.graph().facets(), &facets);
+            assert_eq!(
+                destination.graph_session().journal().entries().len(),
+                journal
+            );
+            assert_eq!(
+                query_access_records(&mut authority, &AccessRecordFilter::default())
+                    .await
+                    .unwrap()
+                    .len(),
+                records
+            );
+
+            // Input is valid alone; the reused handle conflicts only with destination truth.
+            let bucket = product
+                .graph
+                .resource_edges
+                .iter_mut()
+                .find_map(|edge| edge.semantic.as_mut())
+                .unwrap();
+            bucket
+                .statements
+                .iter_mut()
+                .find(|claim| claim.statement_id == carried.statement_id)
+                .unwrap()
+                .provenance_iri = Some("urn:mere:conflicting-peer".into());
+            replace_payload(&mut manifest, &product);
+            assert!(verify_manifest(&manifest).is_ok());
+            let refused_backend = MemoryBackend::new();
+            let mut refused = MereHost::empty(
+                refused_backend.clone(),
+                selected(FIXTURE_PERSONA_ADDRESS),
+                fixture_handlers(),
+                AccessContext {
+                    persona: FIXTURE_PERSONA_ADDRESS.into(),
+                    device: FIXTURE_DEVICE_TWO_ADDRESS.into(),
+                    at_ms: 17,
+                },
+            );
+            refused
+                .begin_profiled_session(
+                    destination.graph().clone(),
+                    Some(pandect::graph_placement::PlacementProfile::RecordedStrataV1),
+                )
+                .unwrap();
+            let before = refused.graph().to_snapshot();
+            let before_facets = refused.graph().facets().clone();
+            let before_journal = refused.graph_session().journal().entries().len();
+            assert!(
+                apply_transfer(
+                    &mut refused,
+                    &BlobStore::new(source.backend.clone()),
+                    &BlobStore::new(refused_backend.clone()),
+                    &mut refused_backend.clone(),
+                    &manifest,
+                    &apply_context(false)
+                )
+                .await
+                .is_err()
+            );
+            assert!(
+                refused_backend.is_empty(),
+                "existing Surface IDs cannot bypass preflight before blob writes"
+            );
+            let mut after = refused.graph().to_snapshot();
+            after.timestamp_secs = before.timestamp_secs;
+            assert_eq!(
+                serde_json::to_value(after).unwrap(),
+                serde_json::to_value(before).unwrap()
+            );
+            assert_eq!(refused.graph().facets(), &before_facets);
+            assert_eq!(
+                refused.graph_session().journal().entries().len(),
+                before_journal
+            );
         });
     }
 
@@ -1730,10 +2369,21 @@ mod tests {
             .unwrap();
 
             // The counts are advisory, so they are worth pinning against what
-            // applying the same manifest actually produces (2 nodes, 1
-            // relation above). A summary that drifts is worse than none.
+            // applying the same manifest produces. The protocol counts Surface
+            // records; Resource content remains in the immutable selection.
             assert_eq!(offer.nodes, 2);
-            assert_eq!(offer.relations, 1);
+            let product = verify_manifest(&manifest).unwrap();
+            assert_eq!(offer.relations, 0);
+            assert_eq!(offer.relations, product.graph.edges.len() as u64);
+            assert!(!product.graph.resource_edges.is_empty());
+            assert!(product.graph.resource_edges.iter().any(|edge| {
+                edge.semantic.as_ref().is_some_and(|bucket| {
+                    bucket.statements.iter().any(|statement| {
+                        statement.recognized_sub_kind
+                            == Some(mere::kernel::persistence::PersistedSemanticSubKind::Cites)
+                    })
+                })
+            }));
             assert_eq!(offer.blobs, manifest.blobs.len() as u64);
             assert_eq!(offer.blob_bytes, source.file_bytes.len() as u64);
             assert_eq!(offer.transfer_id, manifest.transfer_id);

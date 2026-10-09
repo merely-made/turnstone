@@ -25,6 +25,7 @@ use mere::kernel::time::wall_clock_now;
 use muniment::{Backend, JsonSlots, StoreError};
 /// The view types a host writes through [`MereHost::set_view_now`].
 pub use pandect::ViewIntent as SessionViewIntent;
+use pandect::graph_placement::{PlacementProfile, materialize_snapshot};
 use pandect::{
     GraphSession, MereSessions, Pending, Reverted, SessionError, SessionId, ViewIntent, ViewKey,
 };
@@ -146,6 +147,8 @@ struct PersistedMereHost {
     graph: GraphSnapshot,
     facets: NodeFacetStore,
     projection_epoch: u64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    placement: Option<PlacementProfile>,
 }
 
 /// The H1 local host: Mere owns truth, Muniment owns bytes, and Graphshell
@@ -296,9 +299,22 @@ impl<B: Backend + Clone> MereHost<B> {
                 Some(saved) => {
                     // The old host's own load, so the first baseline is the
                     // graph it would have opened.
-                    let mut graph = Graph::from_snapshot(&saved.graph);
+                    let mut graph =
+                        materialize_snapshot(&saved.graph, saved.placement).map_err(|error| {
+                            MereHostError::InvalidSnapshot(format!("{HOST_SLOT}: {error}"))
+                        })?;
                     graph.overlay_facets(saved.facets);
-                    let mut migrated = sessions.begin(author, Some(graph));
+                    graph
+                        .validate_active_resource_assertion_handles()
+                        .map_err(|error| {
+                            MereHostError::InvalidSnapshot(format!("{HOST_SLOT}: {error}"))
+                        })?;
+                    let mut migrated = match saved.placement {
+                        Some(PlacementProfile::RecordedStrataV1) => {
+                            sessions.begin_recorded(author, Some(graph))
+                        },
+                        _ => sessions.begin(author, Some(graph)),
+                    };
                     migrated.flush(wall_clock_now()).await?;
                     (migrated, saved.projection_epoch, true)
                 },
@@ -365,7 +381,30 @@ impl<B: Backend + Clone> MereHost<B> {
     /// Switch to a new session begun from `graph`, keeping the one it replaces
     /// until its last changes are stored. A new session is a new epoch.
     pub(crate) fn begin_session(&mut self, graph: Graph) {
-        let next = self.sessions.begin(self.author(), Some(graph));
+        self.begin_profiled_session(graph, None)
+            .expect("unqualified supplied graph has no legacy activation");
+    }
+
+    /// Begin from caller-qualified placement; missing metadata stays unqualified.
+    pub fn begin_profiled_session(
+        &mut self,
+        graph: Graph,
+        placement: Option<PlacementProfile>,
+    ) -> Result<(), MereHostError> {
+        graph
+            .validate_active_resource_assertion_handles()
+            .map_err(|error| MereHostError::InvalidSnapshot(error.to_string()))?;
+        let next = match placement {
+            Some(PlacementProfile::LegacySurfaceV1) => {
+                return Err(MereHostError::InvalidSnapshot(
+                    "legacy graph placement requires qualified durable replay".into(),
+                ));
+            },
+            Some(PlacementProfile::RecordedStrataV1) => {
+                self.sessions.begin_recorded(self.author(), Some(graph))
+            },
+            None => self.sessions.begin(self.author(), Some(graph)),
+        };
         self.retired
             .push(std::mem::replace(&mut self.graph_session, next));
         // One registry serves one graph.
@@ -378,10 +417,18 @@ impl<B: Backend + Clone> MereHost<B> {
         self.projection_revision = 1;
         self.resources.clear();
         self.instance_targets.clear();
+        Ok(())
     }
 }
 
 impl<B: Backend> MereHost<B> {
+    /// A qualified live session's current snapshot records both owning stores.
+    pub fn snapshot_placement(&self) -> Option<PlacementProfile> {
+        // GraphSession admits a Legacy profile only with a validated translation receipt.
+        self.graph_session
+            .placement()
+            .map(|_| PlacementProfile::RecordedStrataV1)
+    }
     /// Store every change not yet stored.
     ///
     /// The clock is injected so tests and importing hosts stamp stable times.
@@ -864,7 +911,12 @@ impl<B: Backend> MereHost<B> {
             });
 
             let kind = node.primary_address().address_kind();
-            let mut tags: Vec<String> = node.tags.iter().cloned().collect();
+            let mut tags: Vec<String> = self
+                .graph()
+                .node_content_tags(key)
+                .unwrap_or_default()
+                .into_iter()
+                .collect();
             tags.sort();
             let card = PortableCardV1 {
                 title: node.title.clone(),
@@ -913,7 +965,7 @@ impl<B: Backend> MereHost<B> {
             resources.insert(resource, bytes);
         }
 
-        for relation in self.graph().relations() {
+        for (_, relation) in self.graph().projected_relations() {
             let (Some(&from), Some(&to)) = (
                 instance_of.get(&relation.from),
                 instance_of.get(&relation.to),
@@ -969,6 +1021,88 @@ impl<B: Backend> MereHost<B> {
             cache_policy: CachePolicy::default(),
         })
     }
+}
+
+impl<B: pandect::graph_session::LegacyTransactionBackend + Clone> MereHost<B> {
+    /// Open retained legacy truth using its caller-supplied original mere namespace.
+    pub async fn open_legacy_session_with_content_context(
+        backend: B,
+        id: SessionId,
+        cutoff: mere::kernel::graph::Seq,
+        origins: Vec<
+            mere::kernel::graph::legacy_resource_migration::LegacyResourceOriginResolution,
+        >,
+        context: &mere::kernel::graph::legacy_resource_migration::LegacyContentContext,
+        selected_persona: SelectedPersonaRef,
+        handlers: HandlerRegistry,
+        access_context: AccessContext,
+    ) -> Result<Self, MereHostError> {
+        let graph_session = GraphSession::open_legacy_with_content_context(
+            backend.clone(),
+            id,
+            cutoff,
+            origins,
+            context,
+        )
+        .await?;
+        let epoch = Self::advance_epoch(&JsonSlots::new(backend.clone()), 0).await?;
+        Ok(Self::assemble(
+            backend,
+            graph_session,
+            selected_persona,
+            handlers,
+            access_context,
+            (epoch, epoch),
+            true,
+        ))
+    }
+}
+
+#[cfg(test)]
+pub(crate) fn placement_test_graph() -> Graph {
+    use mere::kernel::persistence::{
+        PersistedEdge, PersistedEdgeFamily, PersistedSemanticEdgeData, PersistedSemanticStatement,
+    };
+    let mut graph = Graph::new();
+    let ids = [uuid::Uuid::from_u128(1), uuid::Uuid::from_u128(2)];
+    for (id, iri) in ids
+        .into_iter()
+        .zip(["https://profile.test/", "https://profile.test/child"])
+    {
+        mere::kernel::graph::apply::add_node(
+            &mut graph,
+            Some(id),
+            iri.into(),
+            mere::kernel::geometry::PortablePoint::zero(),
+        );
+    }
+    let mut snapshot = graph.to_snapshot();
+    snapshot.edges = vec![PersistedEdge {
+        from_node_id: ids[0].to_string(),
+        to_node_id: ids[1].to_string(),
+        families: vec![PersistedEdgeFamily::Semantic],
+        semantic: Some(PersistedSemanticEdgeData {
+            predicate: Some("urn:mere:profile:held-custom".into()),
+            statements: vec![PersistedSemanticStatement {
+                statement_id: "held-profile-handle".into(),
+                predicate: "urn:mere:profile:held-custom".into(),
+                recognized_sub_kind: None,
+                label: Some("held Surface claim".into()),
+                graph_scope: mere::kernel::types::GraphScope::Default,
+                provenance_iri: Some("urn:mere:profile:source".into()),
+                asserted_at_ms: Some(42),
+            }],
+            ..Default::default()
+        }),
+        traversal: None,
+        containment: None,
+        arrangement: None,
+        imported: None,
+        provenance: None,
+    }];
+    let mut result = Graph::try_from_recorded_snapshot(&snapshot).unwrap();
+    *result.facets_mut() = graph.facets().clone();
+    result
 }
 
 impl<B: Backend> ProjectionCatalog for MereHost<B> {
@@ -1238,6 +1372,337 @@ mod tests {
         }
     }
 
+    #[test]
+    fn old_host_slot_rejects_surface_resource_handle_collision_before_session_writes() {
+        pollster::block_on(async {
+            let mut original = placement_test_graph();
+            let surface_id = uuid::Uuid::from_u128(1);
+            let key = original.get_node_key_by_id(surface_id).unwrap();
+            let mut resource_property =
+                mere::kernel::types::NodeProperty::new("urn:test:predicate".into(), "exact".into())
+                    .with_metadata(Some("urn:test:source".into()), Some(42));
+            resource_property.statement_id = "resource-literal-handle".into();
+            assert!(original.append_node_properties(key, vec![resource_property.clone()]));
+            for placement in [None, Some(PlacementProfile::RecordedStrataV1)] {
+                for collision in [false, true] {
+                    let backend = MemoryBackend::new();
+                    let mut facets = original.facets().clone();
+                    let mut property = resource_property.clone();
+                    if !collision {
+                        property.statement_id = "surface-literal-handle".into();
+                    }
+                    facets
+                        .set(
+                            surface_id,
+                            chartulary::FacetId::new(
+                                mere::kernel::graph::node_facets::SEMANTIC_PROPERTIES,
+                            ),
+                            serde_json::to_value(vec![property.clone(), property]).unwrap(),
+                            &chartulary::AcceptAll,
+                        )
+                        .unwrap();
+                    facets
+                        .set(
+                            surface_id,
+                            chartulary::FacetId::new("extension.origin-note"),
+                            serde_json::json!({"statement_id":"resource-literal-handle"}),
+                            &chartulary::AcceptAll,
+                        )
+                        .unwrap();
+                    let mut supplied = original.clone();
+                    *supplied.facets_mut() = facets.clone();
+                    let supplied_backend = MemoryBackend::new();
+                    let mut host = MereHost::empty(
+                        supplied_backend.clone(),
+                        selected_persona(),
+                        fixture_handlers(),
+                        access_context(),
+                    );
+                    host.begin_profiled_session(original.clone(), placement)
+                        .unwrap();
+                    let session = host.graph_session().id();
+                    let epoch = host.projection_epoch;
+                    let retired = host.retired.len();
+                    let before_graph = encoded(host.graph());
+                    assert_eq!(
+                        host.begin_profiled_session(supplied, placement).is_err(),
+                        collision
+                    );
+                    assert!(supplied_backend.is_empty());
+                    if collision {
+                        assert_eq!(host.graph_session().id(), session);
+                        assert_eq!(host.projection_epoch, epoch);
+                        assert_eq!(host.retired.len(), retired);
+                        assert_eq!(encoded(host.graph()), before_graph);
+                    } else {
+                        assert_eq!(
+                            host.graph()
+                                .resource_properties(original.shown_resource_id(key).unwrap()),
+                            vec![resource_property.clone()]
+                        );
+                        assert_eq!(host.graph().facets(), &facets);
+                    }
+                    JsonSlots::new(backend.clone())
+                        .save(
+                            HOST_SLOT,
+                            &PersistedMereHost {
+                                graph: original.to_snapshot(),
+                                facets,
+                                projection_epoch: 7,
+                                placement,
+                            },
+                        )
+                        .await
+                        .unwrap();
+                    let before = backend.get(HOST_SLOT).await.unwrap();
+                    let opened = MereHost::open(
+                        backend.clone(),
+                        selected_persona(),
+                        fixture_handlers(),
+                        access_context(),
+                    )
+                    .await;
+                    assert_eq!(opened.is_err(), collision);
+                    assert_eq!(backend.get(HOST_SLOT).await.unwrap(), before);
+                    if collision {
+                        assert!(backend.get(EPOCH_SLOT).await.unwrap().is_none());
+                        assert!(MereSessions::new(backend).list().await.unwrap().is_empty());
+                    } else {
+                        let graph = opened.unwrap();
+                        assert_eq!(
+                            graph
+                                .graph()
+                                .resource_properties(original.shown_resource_id(key).unwrap()),
+                            vec![resource_property.clone()]
+                        );
+                        assert_eq!(
+                            graph.graph().facets().get(
+                                &surface_id,
+                                &chartulary::FacetId::new("extension.origin-note")
+                            ),
+                            Some(&serde_json::json!({"statement_id":"resource-literal-handle"}))
+                        );
+                    }
+                }
+            }
+        });
+    }
+
+    #[test]
+    fn explicit_host_profiles_preserve_held_claims_and_refuse_legacy_atomically() {
+        pollster::block_on(async {
+            let original = placement_test_graph();
+            for placement in [None, Some(PlacementProfile::RecordedStrataV1)] {
+                let backend = MemoryBackend::new();
+                let saved = PersistedMereHost {
+                    graph: original.to_snapshot(),
+                    facets: original.facets().clone(),
+                    projection_epoch: 7,
+                    placement,
+                };
+                JsonSlots::new(backend.clone())
+                    .save(HOST_SLOT, &saved)
+                    .await
+                    .unwrap();
+                let host = opened(&backend).await;
+                assert_eq!(host.snapshot_placement(), placement);
+                assert!(host.graph().to_snapshot().edges.iter().any(|edge| {
+                    edge.semantic.as_ref().is_some_and(|semantic| {
+                        semantic
+                            .statements
+                            .iter()
+                            .any(|claim| claim.statement_id == "held-profile-handle")
+                    })
+                }));
+                if placement.is_some() {
+                    assert_eq!(host.graph().to_snapshot().edges, saved.graph.edges);
+                    assert_eq!(
+                        host.graph().to_snapshot().resource_edges,
+                        saved.graph.resource_edges
+                    );
+                    let reopened = opened(&backend).await;
+                    assert_eq!(reopened.snapshot_placement(), placement);
+                    assert_eq!(encoded(reopened.graph()), encoded(host.graph()));
+                }
+            }
+            let backend = MemoryBackend::new();
+            let saved = PersistedMereHost {
+                graph: original.to_snapshot(),
+                facets: original.facets().clone(),
+                projection_epoch: 7,
+                placement: Some(PlacementProfile::LegacySurfaceV1),
+            };
+            JsonSlots::new(backend.clone())
+                .save(HOST_SLOT, &saved)
+                .await
+                .unwrap();
+            let before = backend.get(HOST_SLOT).await.unwrap();
+            assert!(matches!(
+                MereHost::open(
+                    backend.clone(),
+                    selected_persona(),
+                    fixture_handlers(),
+                    access_context()
+                )
+                .await,
+                Err(MereHostError::InvalidSnapshot(_))
+            ));
+            assert_eq!(backend.get(HOST_SLOT).await.unwrap(), before);
+            assert!(backend.get(EPOCH_SLOT).await.unwrap().is_none());
+            assert!(MereSessions::new(backend).list().await.unwrap().is_empty());
+
+            let mut host = MereHost::empty(
+                MemoryBackend::new(),
+                selected_persona(),
+                fixture_handlers(),
+                access_context(),
+            );
+            host.begin_profiled_session(placement_test_graph(), None)
+                .unwrap();
+            assert_eq!(host.snapshot_placement(), None);
+            host.begin_profiled_session(
+                placement_test_graph(),
+                Some(PlacementProfile::RecordedStrataV1),
+            )
+            .unwrap();
+            let before = encoded(host.graph());
+            let session = host.graph_session.id();
+            let epoch = host.projection_epoch;
+            assert!(
+                host.begin_profiled_session(
+                    placement_test_graph(),
+                    Some(PlacementProfile::LegacySurfaceV1)
+                )
+                .is_err()
+            );
+            assert_eq!(host.graph_session.id(), session);
+            assert_eq!(host.projection_epoch, epoch);
+            assert_eq!(encoded(host.graph()), before);
+            assert_eq!(
+                host.snapshot_placement(),
+                Some(PlacementProfile::RecordedStrataV1)
+            );
+        });
+    }
+
+    #[test]
+    fn explicitly_qualified_host_exports_current_recorded_placement() {
+        pollster::block_on(async {
+            let backend = MemoryBackend::new();
+            let mut session = MereSessions::new(backend.clone()).begin(
+                author_of(&selected_persona(), GRAPHSHELL),
+                Some(placement_test_graph()),
+            );
+            session.flush(saved_at(1_800_000_000)).await.unwrap();
+            let id = session.id();
+            let context = mere::kernel::graph::legacy_resource_migration::LegacyContentContext {
+                original_mere_iri: "urn:mere:original-profile-fixture".into(),
+            };
+            let host = MereHost::open_legacy_session_with_content_context(
+                backend.clone(),
+                id,
+                mere::kernel::graph::Seq(0),
+                vec![],
+                &context,
+                selected_persona(),
+                fixture_handlers(),
+                access_context(),
+            )
+            .await
+            .unwrap();
+            assert_eq!(
+                host.graph_session().placement().unwrap().baseline,
+                PlacementProfile::LegacySurfaceV1
+            );
+            assert_eq!(
+                host.snapshot_placement(),
+                Some(PlacementProfile::RecordedStrataV1)
+            );
+            let reopened = MereHost::open_session(
+                backend,
+                id,
+                selected_persona(),
+                fixture_handlers(),
+                access_context(),
+            )
+            .await
+            .unwrap();
+            assert_eq!(encoded(reopened.graph()), encoded(host.graph()));
+            assert_eq!(
+                reopened.snapshot_placement(),
+                Some(PlacementProfile::RecordedStrataV1)
+            );
+        });
+    }
+
+    #[test]
+    fn hosted_projection_lifts_content_and_resource_badges_across_aliases() {
+        use crate::product::EditableRelation;
+        let mut host = MereHost::empty(
+            MemoryBackend::new(),
+            selected_persona(),
+            fixture_handlers(),
+            access_context(),
+        );
+        host.begin_profiled_session(
+            placement_test_graph(),
+            Some(PlacementProfile::RecordedStrataV1),
+        )
+        .unwrap();
+        let first = uuid::Uuid::from_u128(1);
+        let alias = uuid::Uuid::from_u128(2);
+        let first_key = host.graph().get_node_key_by_id(first).unwrap();
+        let resource = host.graph().shown_resource_id(first_key).unwrap();
+        host.mutate_product_graph(|graph| {
+            apply_graph_delta(
+                graph,
+                GraphDelta::ReplaySetShownResourceById {
+                    surface_id: alias,
+                    resource_id: Some(resource),
+                },
+            )
+        });
+        host.edit_node(first, "first", ["Shared".into()]).unwrap();
+        host.assert_product_relation(first, alias, EditableRelation::Cites)
+            .unwrap();
+        let request = host.local_request();
+        let snapshot = host.snapshot(request).unwrap();
+        assert_eq!(
+            snapshot.scene.tables.relations.len(),
+            5,
+            "four lifted self-resource pairs plus one held Surface claim"
+        );
+        let shared_cards = |host: &MereHost<MemoryBackend>| {
+            host.resources
+                .values()
+                .filter_map(|bytes| serde_json::from_slice::<PortableCardV1>(bytes).ok())
+                .filter(|card| card.badges.iter().any(|tag| tag == "Shared"))
+                .count()
+        };
+        assert_eq!(shared_cards(&host), 2);
+        assert!(
+            host.resources
+                .values()
+                .filter_map(|bytes| serde_json::from_slice::<PortableCardV1>(bytes).ok())
+                .all(|card| !card.badges.iter().any(|tag| tag == "absent-label"))
+        );
+        let alias_key = host.graph().get_node_key_by_id(alias).unwrap();
+        host.mutate_product_graph(|graph| {
+            apply_graph_delta(
+                graph,
+                GraphDelta::NavigateNode {
+                    key: alias_key,
+                    url: "https://next-profile.test/".into(),
+                },
+            )
+        });
+        let request = host.local_request();
+        let snapshot = host.snapshot(request).unwrap();
+        assert_eq!(snapshot.scene.tables.relations.len(), 2);
+        assert_eq!(shared_cards(&host), 1);
+        assert_eq!(host.graph().shown_resource_id(first_key), Some(resource));
+    }
+
     async fn opened(backend: &MemoryBackend) -> MereHost<MemoryBackend> {
         MereHost::open(
             backend.clone(),
@@ -1270,6 +1735,7 @@ mod tests {
                 graph: old.graph().to_snapshot(),
                 facets: old.graph().facets().clone(),
                 projection_epoch: 7,
+                placement: None,
             };
             let slots = JsonSlots::new(backend.clone());
             slots.save(HOST_SLOT, &document).await.expect("old slot");
@@ -1320,6 +1786,64 @@ mod tests {
             let after_trash = opened(&backend).await;
             assert_eq!(after_trash.graph().node_count(), 0);
             assert!(!after_trash.was_reopened());
+        });
+    }
+
+    #[test]
+    fn invalid_resource_in_old_host_slot_does_not_start_a_partial_session() {
+        pollster::block_on(async {
+            let backend = MemoryBackend::new();
+            let old =
+                MereHost::fixture(MemoryBackend::new(), selected_persona(), fixture_handlers())
+                    .unwrap();
+            let mut document = PersistedMereHost {
+                graph: old.graph().to_snapshot(),
+                facets: old.graph().facets().clone(),
+                projection_epoch: 7,
+                placement: None,
+            };
+            document
+                .graph
+                .resources
+                .push(mere::kernel::persistence::PersistedResourceRecord {
+                    canonical_iri: "https://invalid.test/resource".into(),
+                    facets: vec![mere::kernel::persistence::PersistedResourceFacet {
+                        facet: "test.data".into(),
+                        value_json: "invalid JSON".into(),
+                    }],
+                });
+            let slots = JsonSlots::new(backend.clone());
+            slots.save(HOST_SLOT, &document).await.unwrap();
+            let bytes = backend.get(HOST_SLOT).await.unwrap();
+            let result = MereHost::open(
+                backend.clone(),
+                selected_persona(),
+                fixture_handlers(),
+                access_context(),
+            )
+            .await;
+            assert!(matches!(result, Err(MereHostError::InvalidSnapshot(_))));
+            assert!(
+                MereSessions::new(backend.clone())
+                    .list()
+                    .await
+                    .unwrap()
+                    .is_empty()
+            );
+            assert_eq!(
+                backend.get(HOST_SLOT).await.unwrap(),
+                bytes,
+                "invalid source is retained"
+            );
+            document.graph.resources.pop();
+            slots.save(HOST_SLOT, &document).await.unwrap();
+            let restored = opened(&backend).await;
+            assert_eq!(
+                restored.graph().node_count(),
+                old.graph().node_count(),
+                "valid old slot remains readable"
+            );
+            assert_eq!(MereSessions::new(backend).list().await.unwrap().len(), 1);
         });
     }
 

@@ -308,6 +308,8 @@ fn local_events(role: Role) -> Vec<PersonalGraphEvent> {
     ];
     if matches!(role, Role::Windows) {
         events.push(PersonalGraphEvent::AssertRelation {
+            statement_id: None,
+            asserted_at_ms: None,
             from: A,
             to: B,
             assertion: EdgeAssertion::Semantic {
@@ -327,6 +329,7 @@ fn selection() -> SyncSelection {
 }
 
 fn assert_offline(projection: &SyncProjection, role: Role) -> Result<(), String> {
+    // These v1 personal events replay raw Surface tags, not content-tag assertions.
     let expected = match role {
         Role::Windows => "windows",
         Role::Qpc => "qpc",
