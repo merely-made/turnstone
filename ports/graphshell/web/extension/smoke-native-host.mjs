@@ -31,7 +31,6 @@ const child = spawn(binary, launcherArguments, {
   env: {
     ...process.env,
     LOCALAPPDATA: scratch,
-    PERSONAE_PASSPHRASE: "graphshell-h4d-smoke-passphrase",
   },
   stdio: ["pipe", "pipe", "pipe"],
   windowsHide: true,

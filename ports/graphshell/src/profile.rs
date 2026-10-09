@@ -93,16 +93,10 @@ pub struct GraphshellIdentity {
 }
 
 impl GraphshellIdentity {
-    /// Load `profile` from the vault at `vault_dir`, unlocking from the
-    /// environment.
-    ///
-    /// Errors rather than inventing an identity; see the module note.
-    pub fn load(vault_dir: &Path, profile: &ProfileId) -> Result<Self, IdentityError> {
-        Self::load_with(vault_dir, profile, Unlock::from_env())
-    }
-
-    /// Load `profile`, naming the unlock rather than reading it from the
-    /// environment.
+    /// Load `profile` from the vault at `vault_dir`, naming the unlock.
+    /// Only a CLI reads it from the environment (vault lock plan, rulings 7
+    /// and 89); errors rather than inventing an identity (see the module
+    /// note).
     ///
     /// Exists because [`Unlock::AutoOs`] is only implemented on Windows:
     /// `personae`'s auto-unlock root is `None` on every other platform, so a
@@ -134,9 +128,9 @@ impl GraphshellIdentity {
 
     /// Load whichever profile [`resolve_selected_profile`] picks from the
     /// shared vault: the one call an application makes to speak as the user.
-    pub fn load_selected() -> Result<Self, IdentityError> {
+    pub fn load_selected(unlock: Unlock) -> Result<Self, IdentityError> {
         let vault_dir = default_vault_dir();
-        let opened = bootstrap::open_storage(&vault_dir, Unlock::from_env())?;
+        let opened = bootstrap::open_storage(&vault_dir, unlock)?;
         let profile = resolve_selected_profile(&*opened.storage, &vault_dir, None)?;
         let (loaded, created) = bootstrap::load_or_create_profile(&*opened.storage, &profile)?;
         if created {
@@ -340,7 +334,12 @@ mod tests {
         let file = dir.join("not-a-dir");
         std::fs::write(&file, b"x").unwrap();
         assert!(
-            GraphshellIdentity::load(&file.join("vault"), &ProfileId("test".into())).is_err(),
+            GraphshellIdentity::load_with(
+                &file.join("vault"),
+                &ProfileId("test".into()),
+                Unlock::passphrase("test"),
+            )
+            .is_err(),
             "no identity is invented when the vault will not open"
         );
         let _ = std::fs::remove_dir_all(&dir);
