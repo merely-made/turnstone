@@ -4,7 +4,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // SPDX-License-Identifier: MPL-2.0
 
-//! Explicit group reading, shared by canvas disclosure and retained controls.
+//! Fold controls over explicit host membership, using portable scene facts.
 use super::*;
 use cambium::button;
 
@@ -23,7 +23,7 @@ pub(super) fn requested(root: &Element) -> Result<Option<String>, String> {
 pub(super) fn controls(page: &TreePage) -> Option<Child> {
     let grouped = page.grouping.as_ref()?;
     let projection = grouped.projection().ok()?;
-    let mut children: Vec<Child> = vec![Box::new(el("h2", "Groups"))];
+    let mut children: Vec<Child> = vec![Box::new(el("h2", "Folds"))];
     let mut breadcrumbs: Vec<Child> =
         vec![Box::new(button("Whole graph", |page: &mut TreePage, _| {
             page.change_group(|state| state.entered = None);
@@ -130,7 +130,7 @@ pub(super) fn controls(page: &TreePage) -> Option<Child> {
         el("section", children)
             .attr("class", "tree-grouping")
             .attr("role", "region")
-            .attr("aria-label", "Groups"),
+            .attr("aria-label", "Folds"),
     ))
 }
 
@@ -161,7 +161,7 @@ pub(super) fn evidence(witness: &graphshell::projection_compile::DisclosedRelati
 impl TreePage {
     fn change_group(
         &mut self,
-        change: impl FnOnce(&mut graphshell::host_dataset_view::GroupViewState),
+        change: impl FnOnce(&mut graphshell::host_dataset_view::FoldViewState),
     ) {
         let Some(grouped) = &mut self.grouping else {
             return;

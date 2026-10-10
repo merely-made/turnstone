@@ -26,8 +26,8 @@ use mere::kernel::graph::apply::{
 };
 use mere::kernel::graph::{Graph, NodeKey};
 use mere::kernel::types::GraphScope;
-pub use scenomise::grouping::GroupViewState;
 use scenomise::host_dataset::HostDatasetV1;
+pub use scenomise::host_dataset::folds::FoldViewState;
 use uuid::Uuid;
 
 use crate::projection_compile::{ProjectionDataset, practice_compiler};
@@ -67,6 +67,10 @@ pub struct HostDatasetView {
     pub relations: Vec<ViewedRelation>,
     pub revision: String,
     pub occurrences: BTreeMap<String, NodeKey>,
+    /// Complete portable scene, including the folds that determine disclosure.
+    pub scene: sceno::Scene,
+    /// Exact reading identity of each portable scene instance.
+    pub instances: BTreeMap<String, sceno::InstanceId>,
 }
 
 /// The viewer's definition: every occurrence in id order on a spiral,
@@ -182,6 +186,8 @@ pub fn host_dataset_view(envelope: &HostDatasetV1) -> Result<HostDatasetView, St
         relations,
         revision: envelope.dataset.revision.as_str().to_owned(),
         occurrences,
+        scene: compiled.projection.scene.clone(),
+        instances: compiled.projection.instance_by_occurrence.clone(),
     })
 }
 
@@ -189,20 +195,22 @@ pub fn host_dataset_view(envelope: &HostDatasetV1) -> Result<HostDatasetView, St
 /// opening a group changes disclosure, never the remaining nodes' coordinates.
 pub struct GroupedHostDataset {
     envelope: HostDatasetV1,
-    pub hierarchy: scenomise::grouping::GroupHierarchy,
-    pub state: scenomise::grouping::GroupViewState,
+    pub hierarchy: scenomise::host_dataset::folds::HostDatasetFolds,
+    pub state: scenomise::host_dataset::folds::FoldViewState,
     positions: BTreeMap<String, PortablePoint>,
     labels: BTreeMap<String, String>,
 }
 
 impl GroupedHostDataset {
     pub fn new(envelope: HostDatasetV1, membership_kind: &str) -> Result<Self, String> {
-        let hierarchy = scenomise::grouping::GroupHierarchy::new(
+        let complete = host_dataset_view(&envelope)?;
+        let hierarchy = scenomise::host_dataset::folds::HostDatasetFolds::new(
             &envelope.dataset,
             &envelope.relationships,
             membership_kind,
+            complete.scene.clone(),
+            complete.instances.clone(),
         )?;
-        let complete = host_dataset_view(&envelope)?;
         let position_by_key: BTreeMap<_, _> = complete.positions.into_iter().collect();
         let positions = complete
             .occurrences
@@ -244,8 +252,16 @@ impl GroupedHostDataset {
         }
     }
 
-    pub fn projection(&self) -> Result<scenomise::grouping::GroupProjection, String> {
-        self.hierarchy.project(&self.state)
+    pub fn projection(&self) -> Result<scenomise::host_dataset::folds::FoldProjection, String> {
+        let mut projection = self.hierarchy.project(&self.state)?;
+        // The complete scene keeps hidden coordinates as well as visible drags.
+        for (id, instance) in self.hierarchy.instances() {
+            let position = self.positions[id];
+            projection.scene.items[instance.0 as usize]
+                .transform
+                .translate = sceno::Vec2::new(position.x, position.y);
+        }
+        Ok(projection)
     }
 
     /// Apply disclosure while retaining the viewport, surviving focus and the
@@ -344,6 +360,8 @@ impl GroupedHostDataset {
             relations,
             revision: self.envelope.dataset.revision.as_str().into(),
             occurrences,
+            scene: projected.scene,
+            instances: self.hierarchy.instances().clone(),
         })
     }
 
