@@ -165,6 +165,64 @@ pub(super) fn captured_mouse(pool: &Pool) -> Option<SurfaceId> {
     pool.captured_placement(1).copied()
 }
 
+/// The shared native button boundary and its optional content admission.
+pub(super) fn native_mouse_input(
+    pool: &mut Pool,
+    window_buttons: &mut HashMap<u64, PointerButtons>,
+    window: u64,
+    appearance: Option<SurfaceId>,
+    position: PhysicalPosition,
+    phase: PointerPhase,
+    button: Option<inker::MouseButton>,
+    modifiers: KeyboardModifiers,
+) -> Option<(ContentKey, PeltHostEffect)> {
+    // Capture retirement sends pool Cancel, not a physical button release.
+    // Record native Down/Up even when this event has no content admission.
+    if matches!(phase, PointerPhase::Down | PointerPhase::Up) {
+        let previous = window_buttons
+            .get(&window)
+            .copied()
+            .unwrap_or(PointerButtons::NONE);
+        let buttons = mouse_buttons(window, previous, phase, button);
+        window_buttons.insert(window, buttons);
+    }
+    content_mouse_input(
+        pool,
+        window_buttons,
+        window,
+        appearance,
+        position,
+        phase,
+        button,
+        modifiers,
+    )
+}
+
+pub(super) fn content_mouse_input(
+    pool: &mut Pool,
+    window_buttons: &HashMap<u64, PointerButtons>,
+    window: u64,
+    appearance: Option<SurfaceId>,
+    position: PhysicalPosition,
+    phase: PointerPhase,
+    button: Option<inker::MouseButton>,
+    modifiers: KeyboardModifiers,
+) -> Option<(ContentKey, PeltHostEffect)> {
+    let placement = pool.placement(&appearance?).cloned()?;
+    if placement.window != window {
+        return None;
+    }
+    let buttons = window_buttons
+        .get(&window)
+        .copied()
+        .unwrap_or(PointerButtons::NONE);
+    let event = super::input::mouse_pointer_event(
+        position.x, position.y, phase, button, buttons, modifiers,
+    );
+    let effect = pool.input_at(window, PeltInput::Pointer(event));
+    Some((placement.content, effect))
+}
+
 pub(super) fn lens_button(button: inker::MouseButton) -> bool {
     matches!(
         button,

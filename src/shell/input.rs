@@ -259,6 +259,13 @@ impl Shell {
     /// canvas gesture. Shared by winit and the scenario runner.
     pub(super) fn deliver_press(&mut self, x: f32, y: f32, button: MouseButton) {
         self.surface_pointer_buttons.0 |= surface_button_mask(button).0;
+        self.window_mouse_input(
+            0,
+            None,
+            (x, y),
+            inker::PointerPhase::Down,
+            surface_mouse_button(button),
+        );
         if self.contributed_pointer.is_some() {
             return;
         }
@@ -1071,22 +1078,17 @@ impl Shell {
             return;
         };
         let window = placement.window;
-        let previous = self
-            .window_buttons
-            .get(&window)
-            .copied()
-            .unwrap_or(inker::PointerButtons::NONE);
-        let buttons = super::window_input::mouse_buttons(window, previous, phase, button);
-        self.window_buttons.insert(window, buttons);
-        if window == 0 {
-            self.surface_pointer_buttons = buttons;
-        }
-        let event = mouse_pointer_event(
-            local.0 + placement.rect.x,
-            local.1 + placement.rect.y,
+        let routed = super::window_input::content_mouse_input(
+            &mut self.content_sessions.pool,
+            &self.window_buttons,
+            window,
+            Some(appearance),
+            inker::PhysicalPosition {
+                x: local.0 + placement.rect.x,
+                y: local.1 + placement.rect.y,
+            },
             phase,
             button,
-            buttons,
             inker::KeyboardModifiers {
                 shift: self.shift,
                 ctrl: self.ctrl,
@@ -1094,15 +1096,59 @@ impl Shell {
                 meta: self.meta,
             },
         );
-        let effect = self
-            .content_sessions
-            .pool
-            .input_at(window, pelt_core::PeltInput::Pointer(event));
-        let node = match placement.content {
+        self.apply_window_mouse_input(window, routed);
+    }
+
+    pub(super) fn window_mouse_input(
+        &mut self,
+        window: u64,
+        appearance: Option<crate::surface::SurfaceId>,
+        position: (f32, f32),
+        phase: inker::PointerPhase,
+        button: Option<inker::MouseButton>,
+    ) -> bool {
+        let routed = super::window_input::native_mouse_input(
+            &mut self.content_sessions.pool,
+            &mut self.window_buttons,
+            window,
+            appearance,
+            inker::PhysicalPosition {
+                x: position.0,
+                y: position.1,
+            },
+            phase,
+            button,
+            inker::KeyboardModifiers {
+                shift: self.shift,
+                ctrl: self.ctrl,
+                alt: self.alt,
+                meta: self.meta,
+            },
+        );
+        self.apply_window_mouse_input(window, routed)
+    }
+
+    fn apply_window_mouse_input(
+        &mut self,
+        window: u64,
+        routed: Option<(super::content_pool::ContentKey, pelt_core::PeltHostEffect)>,
+    ) -> bool {
+        if window == 0 {
+            self.surface_pointer_buttons = self
+                .window_buttons
+                .get(&window)
+                .copied()
+                .unwrap_or(inker::PointerButtons::NONE);
+        }
+        let Some((content, effect)) = routed else {
+            return false;
+        };
+        let node = match content {
             super::content_pool::ContentKey::Node(node)
             | super::content_pool::ContentKey::Reader { node, .. } => node,
         };
         self.apply_content_effect(node, effect);
+        true
     }
 
     pub(super) fn apply_pending_surface_cursor(&mut self) {
@@ -1146,6 +1192,24 @@ impl Shell {
 
     pub(super) fn deliver_release(&mut self, x: f32, y: f32, button: MouseButton) {
         self.surface_pointer_buttons.0 &= !surface_button_mask(button).0;
+        let appearance = if surface_mouse_button(button).is_some()
+            && self.contributed_pointer.is_none()
+            && matches!(
+                self.pointer_capture,
+                Some(crate::surface::SurfaceKind::Content(_))
+            ) {
+            self.sync_content_placements();
+            super::window_input::captured_mouse(&self.content_sessions.pool)
+        } else {
+            None
+        };
+        self.window_mouse_input(
+            0,
+            appearance,
+            (x, y),
+            inker::PointerPhase::Up,
+            surface_mouse_button(button),
+        );
         if self.contributed_pointer.is_some() {
             if button == MouseButton::Left {
                 self.release_contributed_pointer(0, x, y);
@@ -1159,16 +1223,8 @@ impl Shell {
         };
         self.pointer_capture = None;
         if let Some(crate::surface::SurfaceKind::Content(_)) = captured {
-            self.sync_content_placements();
-            if let Some(id) = super::window_input::captured_mouse(&self.content_sessions.pool)
-                && let Some(placement) = self.content_sessions.pool.placement(&id)
-                && let Some(button) = surface_mouse_button(button)
-            {
-                let local = (x - placement.rect.x, y - placement.rect.y);
-                self.content_mouse(id, local, inker::PointerPhase::Up, Some(button));
-                if super::window_input::captured_mouse(&self.content_sessions.pool).is_some() {
-                    self.pointer_capture = captured;
-                }
+            if super::window_input::captured_mouse(&self.content_sessions.pool).is_some() {
+                self.pointer_capture = captured;
             }
             self.request_redraw();
             return;

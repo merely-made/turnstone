@@ -1,0 +1,20 @@
+{
+  "command": [
+    "/usr/bin/llvm-strip",
+    "--strip-debug",
+    "-o",
+    "/home/markik/Code/testing/mere/graphshell-three-lanes/packaging-memory/graphshell_web.debug-stripped.wasm",
+    "/home/markik/Code/testing/mere/graphshell-three-lanes/integrated-default/attempt-2/graphshell_web.input.wasm"
+  ],
+  "exit_code": 0,
+  "seconds": 1.206728966004448,
+  "peak_sampled_rss_bytes": 303083520,
+  "minimum_available_ram_bytes": 9647288320,
+  "start_available_ram_bytes": 9664811008,
+  "process_address_space_cap_bytes": 5368709120,
+  "ram_floor_bytes": 3221225472,
+  "terminated_for_memory": false,
+  "input_path": "/home/markik/Code/testing/mere/graphshell-three-lanes/integrated-default/attempt-2/graphshell_web.input.wasm",
+  "output_path": "/home/markik/Code/testing/mere/graphshell-three-lanes/packaging-memory/graphshell_web.debug-stripped.wasm",
+  "output_bytes": 150431560
+}

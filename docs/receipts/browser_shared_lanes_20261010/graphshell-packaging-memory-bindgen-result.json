@@ -1,0 +1,21 @@
+{
+  "command": [
+    "/home/markik/Code/testing/mere/graphshell-three-lanes/tools/wasm-bindgen-0.2.129/wasm-bindgen",
+    "--target",
+    "web",
+    "--out-name",
+    "graphshell_web",
+    "--out-dir",
+    "/home/markik/Code/testing/mere/graphshell-three-lanes/packaging-memory/pkg",
+    "/home/markik/Code/testing/mere/graphshell-three-lanes/packaging-memory/graphshell_web.debug-stripped.wasm"
+  ],
+  "exit_code": -6,
+  "seconds": 38.949884347006446,
+  "peak_sampled_rss_bytes": 4972748800,
+  "minimum_available_ram_bytes": 4966912000,
+  "start_available_ram_bytes": 10128670720,
+  "address_space_cap_bytes": 5368709120,
+  "ram_floor_bytes": 3221225472,
+  "terminated_for_memory": false,
+  "boundary": "Resource qualification on prior immutable raw artifact stripped of debug; no current CSS runtime qualification."
+}

@@ -1,0 +1,226 @@
+{
+  "status": "semantic_sections_equal",
+  "input_noncustom_sections": 10,
+  "output_noncustom_sections": 10,
+  "noncustom_payloads_exactly_equal": true,
+  "removed_custom_sections": [
+    ".debug_abbrev",
+    ".debug_info",
+    ".debug_line",
+    ".debug_loc",
+    ".debug_ranges",
+    ".debug_str"
+  ],
+  "changed_or_added_remaining_custom_sections": [],
+  "original_sha256": "94026f502a68ed40fcb46458821517c1fad8e30d5076458f640553994f4e75c7",
+  "stripped_sha256": "13583b1fd1fe953c9bb42f8f5a2b6e9c3b6932228980318f9d3f709b89145d09",
+  "llvm_strip_version": "llvm-strip, compatible with GNU strip\nLLVM (http://llvm.org/):\n  LLVM version 22.1.8\n  Optimized build.",
+  "original_sections": [
+    {
+      "id": 1,
+      "name": null,
+      "bytes": 6175,
+      "sha256": "05df1c857a6249c12ced3f83f07b325e908669321e0b87f484e75394e01e9adc"
+    },
+    {
+      "id": 2,
+      "name": null,
+      "bytes": 42897,
+      "sha256": "62d32ec0b6fa1279f209f6cca7a528084f2211173b74a0f62f8aa7936e4cf097"
+    },
+    {
+      "id": 3,
+      "name": null,
+      "bytes": 324449,
+      "sha256": "1f0d9eeff0b6f1e18526cc4849d568f63b7f5d0aa91e6cd1c87c00f3b614eec9"
+    },
+    {
+      "id": 4,
+      "name": null,
+      "bytes": 9,
+      "sha256": "69c655fd72046253ce8a61b1d01de3418d71c3f3e6bacc44d8640eadd2171ccb"
+    },
+    {
+      "id": 5,
+      "name": null,
+      "bytes": 3,
+      "sha256": "7a5280faf68f86a2520cf9cd38def395f34e4ff2d2d970d357ac905894035d85"
+    },
+    {
+      "id": 6,
+      "name": null,
+      "bytes": 25,
+      "sha256": "7c54c4822f3d11616c9b6cbf87a6aa3668b119d98a03922d3d0aa51df95c5f35"
+    },
+    {
+      "id": 7,
+      "name": null,
+      "bytes": 310311,
+      "sha256": "a9af6c79ae6c173b4a4cf2711a920ba316cc18a5bb0e8e18604ef261bd1fc71c"
+    },
+    {
+      "id": 9,
+      "name": null,
+      "bytes": 109374,
+      "sha256": "0324add6a605b4ae6b51033cbab88e876e4a23764cc56770b6fc869b7631837d"
+    },
+    {
+      "id": 10,
+      "name": null,
+      "bytes": 64698395,
+      "sha256": "abd4cdc02dba01d7eeb183673a6e822b26ed7d18d42ba4a1039c1f53d5b84324"
+    },
+    {
+      "id": 11,
+      "name": null,
+      "bytes": 5751212,
+      "sha256": "da637868b4ef597ffed3bd95cd3e6980e3d869a37fdea8636d021a4e713450c7"
+    },
+    {
+      "id": 0,
+      "name": ".debug_abbrev",
+      "bytes": 4399081,
+      "sha256": "83007837131c084687e8e1527c5f450d826f659ce2543da7c305171beaa9872a"
+    },
+    {
+      "id": 0,
+      "name": ".debug_info",
+      "bytes": 376168120,
+      "sha256": "bba95cdb000bb3db31f11e30d1248711753e07d1b818b8cb027fbdb703608e0f"
+    },
+    {
+      "id": 0,
+      "name": ".debug_ranges",
+      "bytes": 25493438,
+      "sha256": "320f7ab0db74ff15c469cec793468ae01406a750c02bad8a5e0e29f2bbf62718"
+    },
+    {
+      "id": 0,
+      "name": ".debug_str",
+      "bytes": 1434289940,
+      "sha256": "670c506561544cfc42c1f7866afe4ed0d582619820761b2fce83d6c75011c7eb"
+    },
+    {
+      "id": 0,
+      "name": ".debug_line",
+      "bytes": 71331825,
+      "sha256": "6f9b7e29cbc4eb9c7b61b6c6eb93fe22a26303b5545fe8534492ac4949434be0"
+    },
+    {
+      "id": 0,
+      "name": ".debug_loc",
+      "bytes": 10928969,
+      "sha256": "88528cfcbb7bbc0fbbf391ef6872522a4ba22ee93106d0a71a8dc1e7f1c2a11b"
+    },
+    {
+      "id": 0,
+      "name": "__wasm_bindgen_unstable",
+      "bytes": 728097,
+      "sha256": "0378d612556f9d80c129a7d9bbd449879898fe297e460610efd9a92f485b29ee"
+    },
+    {
+      "id": 0,
+      "name": "name",
+      "bytes": 78460331,
+      "sha256": "00e53f80585e68b82d1037f91d7201b1f2adfdd8375f46f39eaebdaced8e4d76"
+    },
+    {
+      "id": 0,
+      "name": "producers",
+      "bytes": 77,
+      "sha256": "5d67a49632a1c5b6a451f6db7067a5e4bd58780d933cf33c3e503dca590b5642"
+    },
+    {
+      "id": 0,
+      "name": "target_features",
+      "bytes": 148,
+      "sha256": "97ceea95e0687b14437e21c205ebb40eea27aa5ecaa971f7d87601e3aa213bfd"
+    }
+  ],
+  "stripped_sections": [
+    {
+      "id": 1,
+      "name": null,
+      "bytes": 6175,
+      "sha256": "05df1c857a6249c12ced3f83f07b325e908669321e0b87f484e75394e01e9adc"
+    },
+    {
+      "id": 2,
+      "name": null,
+      "bytes": 42897,
+      "sha256": "62d32ec0b6fa1279f209f6cca7a528084f2211173b74a0f62f8aa7936e4cf097"
+    },
+    {
+      "id": 3,
+      "name": null,
+      "bytes": 324449,
+      "sha256": "1f0d9eeff0b6f1e18526cc4849d568f63b7f5d0aa91e6cd1c87c00f3b614eec9"
+    },
+    {
+      "id": 4,
+      "name": null,
+      "bytes": 9,
+      "sha256": "69c655fd72046253ce8a61b1d01de3418d71c3f3e6bacc44d8640eadd2171ccb"
+    },
+    {
+      "id": 5,
+      "name": null,
+      "bytes": 3,
+      "sha256": "7a5280faf68f86a2520cf9cd38def395f34e4ff2d2d970d357ac905894035d85"
+    },
+    {
+      "id": 6,
+      "name": null,
+      "bytes": 25,
+      "sha256": "7c54c4822f3d11616c9b6cbf87a6aa3668b119d98a03922d3d0aa51df95c5f35"
+    },
+    {
+      "id": 7,
+      "name": null,
+      "bytes": 310311,
+      "sha256": "a9af6c79ae6c173b4a4cf2711a920ba316cc18a5bb0e8e18604ef261bd1fc71c"
+    },
+    {
+      "id": 9,
+      "name": null,
+      "bytes": 109374,
+      "sha256": "0324add6a605b4ae6b51033cbab88e876e4a23764cc56770b6fc869b7631837d"
+    },
+    {
+      "id": 10,
+      "name": null,
+      "bytes": 64698395,
+      "sha256": "abd4cdc02dba01d7eeb183673a6e822b26ed7d18d42ba4a1039c1f53d5b84324"
+    },
+    {
+      "id": 11,
+      "name": null,
+      "bytes": 5751212,
+      "sha256": "da637868b4ef597ffed3bd95cd3e6980e3d869a37fdea8636d021a4e713450c7"
+    },
+    {
+      "id": 0,
+      "name": "__wasm_bindgen_unstable",
+      "bytes": 728097,
+      "sha256": "0378d612556f9d80c129a7d9bbd449879898fe297e460610efd9a92f485b29ee"
+    },
+    {
+      "id": 0,
+      "name": "name",
+      "bytes": 78460331,
+      "sha256": "00e53f80585e68b82d1037f91d7201b1f2adfdd8375f46f39eaebdaced8e4d76"
+    },
+    {
+      "id": 0,
+      "name": "producers",
+      "bytes": 77,
+      "sha256": "5d67a49632a1c5b6a451f6db7067a5e4bd58780d933cf33c3e503dca590b5642"
+    },
+    {
+      "id": 0,
+      "name": "target_features",
+      "bytes": 148,
+      "sha256": "97ceea95e0687b14437e21c205ebb40eea27aa5ecaa971f7d87601e3aa213bfd"
+    }
+  ]
+}

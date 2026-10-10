@@ -196,6 +196,33 @@
         "named_contributed_release_cancel_controls": "both executed and passed"
       },
       "source_boundary": "Current covering 3671 source/config/manifest/lock/HEAD records stable except ignored Turnstone local lock ba22a9... to12a5a5...; both contents preserved. Earlier GREEN effective lock accurately recovered after interruption."
+    },
+    "native_mouse_boundary_round2": {
+      "red": {
+        "passed": 1,
+        "failed": 4,
+        "filtered": 807
+      },
+      "green": {
+        "passed": 5,
+        "failed": 0,
+        "filtered": 807
+      },
+      "source_boundary": "3671 records unchanged except ignored local lock in each stage; both effective locks preserved",
+      "ram_minimum_red_bytes": 8007565312,
+      "ram_minimum_green_bytes": 8249118720,
+      "boundary": "Actual adopted native boundary with real pool cancellation, primary/lens hide/replacement and unrelated-release custody control; broad integration pending"
+    },
+    "graphshell_packaging_resource_trial": {
+      "strip_exit": 0,
+      "raw_bytes": 2073042965,
+      "debug_stripped_bytes": 150431560,
+      "retained_executable_sections_equal": true,
+      "bindgen_exit": -6,
+      "bindgen_address_space_cap_bytes": 5368709120,
+      "bindgen_peak_rss_bytes": 4972748800,
+      "bindgen_minimum_available_ram_bytes": 4966912000,
+      "boundary": "Immutable prior artifact resource experiment only; guarded allocator failure, no new runtime qualification"
     }
   },
   "pending": [
@@ -674,12 +701,124 @@
     "task-1-review-input-covering-results.json": {
       "bytes": 2074,
       "sha256": "e7a991bc74aaadef3731c7030b750a274d25ee810d3875a41eab69cdd8a45623"
+    },
+    "task-1-review-mouse-boundary-run.py": {
+      "bytes": 4113,
+      "sha256": "8ca81d4073b784175ff0e2efcc76dbb5bc984caf78d225f0381792d8cdcec26e"
+    },
+    "task-1-review-mouse-boundary-red-before.sha256": {
+      "bytes": 574414,
+      "sha256": "3b3c1057dbc66e4816469f0606ad7914363cd97db94951e32f58e10bcea45d6f"
+    },
+    "task-1-review-mouse-boundary-red-before-local-lock.txt": {
+      "bytes": 462543,
+      "sha256": "12a5a5a6c20fcd3a53b5aaf5e82f6616bbb8e2d840e47ce738ef348c7021f0e1"
+    },
+    "task-1-review-mouse-boundary-red-window_input.rs.txt": {
+      "bytes": 7732,
+      "sha256": "07d5935029f1ce5501c04f8114629be6168eaa83cfa12db266d22c58cc55f010"
+    },
+    "task-1-review-mouse-boundary-red-window_input_tests.rs.txt": {
+      "bytes": 20798,
+      "sha256": "d9d549854b761a1f2f924fc173fbeacb61a985d791ca553f74c24072aa8742d6"
+    },
+    "task-1-review-mouse-boundary-red-input.rs.txt": {
+      "bytes": 64684,
+      "sha256": "319c2dcb19c7c1d2027c4d8e03188f5f813e664194c8f76bfb3e6e4f341a863f"
+    },
+    "task-1-review-mouse-boundary-red-lens.rs.txt": {
+      "bytes": 43746,
+      "sha256": "8b2f8d59e90e7735f510edca4912a65860b7e534130ede887d555b571e0e00bf"
+    },
+    "task-1-review-mouse-boundary-red.log": {
+      "bytes": 61140,
+      "sha256": "fedda46075fd9e95ffbfc931325679e1dab408d82a17c1b6158ad73d55246ff1"
+    },
+    "task-1-review-mouse-boundary-red-additional-memory-guard.json": {
+      "bytes": 193,
+      "sha256": "c1f859f6c1ab965fde7e9342d008c9449f18b4e9ab429795a65d461e07e12e79"
+    },
+    "task-1-review-mouse-boundary-red-after.sha256": {
+      "bytes": 574414,
+      "sha256": "5a8c4a3a50577987672f9fecb2b8b80d404501d2abe4fb9e18480bfaefb8b22f"
+    },
+    "task-1-review-mouse-boundary-red-after-local-lock.txt": {
+      "bytes": 462543,
+      "sha256": "ba22a9d07c445768f8552b88f2d649284dd38132121b4e138783aa16eddc50a0"
+    },
+    "task-1-review-mouse-boundary-red-results.json": {
+      "bytes": 1018,
+      "sha256": "dfaff331be77d33547081a7d8355a0e1d12f5724677625d01aa144a5e1771f7c"
+    },
+    "task-1-review-mouse-boundary-green-before.sha256": {
+      "bytes": 574414,
+      "sha256": "156620e51a5d868a2fae95f76c70d73d1ecffc88388bfb522b93d1c1cd78871b"
+    },
+    "task-1-review-mouse-boundary-green-before-local-lock.txt": {
+      "bytes": 462543,
+      "sha256": "ba22a9d07c445768f8552b88f2d649284dd38132121b4e138783aa16eddc50a0"
+    },
+    "task-1-review-mouse-boundary-green-window_input.rs.txt": {
+      "bytes": 8603,
+      "sha256": "957cb7154657ecdabdeed4f0a63cbaad64289622720e6fb0527f4b370602f8f2"
+    },
+    "task-1-review-mouse-boundary-green-window_input_tests.rs.txt": {
+      "bytes": 20798,
+      "sha256": "d9d549854b761a1f2f924fc173fbeacb61a985d791ca553f74c24072aa8742d6"
+    },
+    "task-1-review-mouse-boundary-green-input.rs.txt": {
+      "bytes": 65496,
+      "sha256": "13d839176bad5c7f83ea07dd5995aa7ad821ac06ddd95435fbd815283bdcc77b"
+    },
+    "task-1-review-mouse-boundary-green-lens.rs.txt": {
+      "bytes": 43746,
+      "sha256": "8b2f8d59e90e7735f510edca4912a65860b7e534130ede887d555b571e0e00bf"
+    },
+    "task-1-review-mouse-boundary-green.log": {
+      "bytes": 58189,
+      "sha256": "1e2886b013ad5ae07075e21f7eb8848df03b324051f3a4176d83d0856eac5d44"
+    },
+    "task-1-review-mouse-boundary-green-after.sha256": {
+      "bytes": 574414,
+      "sha256": "031990c6733d9dfbea80a481cb060e102795ae9b70b73546baaa226b27eed3cf"
+    },
+    "task-1-review-mouse-boundary-green-after-local-lock.txt": {
+      "bytes": 462543,
+      "sha256": "12a5a5a6c20fcd3a53b5aaf5e82f6616bbb8e2d840e47ce738ef348c7021f0e1"
+    },
+    "task-1-review-mouse-boundary-green-results.json": {
+      "bytes": 1016,
+      "sha256": "5e6cb184766825544cb2a53d2d595d58eb06ec4e16eb9bd6113bdf4106260423"
+    },
+    "task-3-fix-round-1-review.md": {
+      "bytes": 6042,
+      "sha256": "398bdaeba8ca77c6a58bba82b2b74efdd76cfd9c9f72edb110f3965a90ec9fcb"
+    },
+    "graphshell-packaging-memory-strip-result.json": {
+      "bytes": 885,
+      "sha256": "a4878756d6c6323d4c3c756a60a0e840ed1ae83aa7a7926a8d156d6fbb3f3481"
+    },
+    "graphshell-packaging-memory-strip.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "graphshell-packaging-memory-semantic-section-proof.json": {
+      "bytes": 6086,
+      "sha256": "16ca315629632563c2710bf96cca4ae75c606d416ebc9611208d1a53d5926e53"
+    },
+    "graphshell-packaging-memory-bindgen-result.json": {
+      "bytes": 820,
+      "sha256": "fa1436e17632c38e5b03cecd5f1bd3a061295b73ccaa488475e8b16bf3446feb"
+    },
+    "graphshell-packaging-memory-bindgen.log": {
+      "bytes": 118,
+      "sha256": "2f333ac077005611b0d85e45fe748b57fca91fbb50bd6f84f48a123fe557d548"
     }
   },
   "review": {
     "scoped_genet_bridge": "Approved; no Critical or Important; minor reset-safe vector documentation applied after reviewed checkpoint",
     "remaining": "Full task and whole-branch reviews are still required.",
-    "shared_full": "Four Important and one Minor fixes implemented; SDK covering21 and Turnstone focused15 plus covering9 pass. Fresh combined scoped rereview pending."
+    "shared_full": "Original fixes accepted except native mouse mask after cancelled capture; round2 real-boundary RED1/4 and GREEN5/0. Fresh round2 rereview pending."
   },
   "integration_cutoff": {
     "genet": "7422e90613f9017e5bb790e3acb48f61776b2eda",
@@ -726,6 +865,8 @@
     "notifications": [
       "Discuss graph semantics",
       "Genet and Vano"
-    ]
+    ],
+    "shared_heavy_lock": "/home/markik/Code/testing/machine-heavy.lock",
+    "guard": "Available RAM sampled at most every0.5s; stop only owned process groups below3GiB with bounded termination grace."
   }
 }

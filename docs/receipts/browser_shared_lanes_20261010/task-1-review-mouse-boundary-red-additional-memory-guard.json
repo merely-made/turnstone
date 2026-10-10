@@ -1,0 +1,8 @@
+{
+  "owned_process_group": 3477282,
+  "sample_interval_seconds": 0.5,
+  "samples": 33,
+  "lowest_mem_available_bytes": 8007565312,
+  "stopped_for_memory": false,
+  "escalated_sigkill": false
+}

@@ -569,6 +569,44 @@ impl Shell {
     /// gestures run with the lens's own camera installed around the pass
     /// (pan, zoom, grab); resize, close.
     pub(super) fn lens_event(&mut self, id: WindowId, event: WindowEvent) {
+        let Some(lens) = self.lens_windows.get(&id) else {
+            return;
+        };
+        let (window, position) = (lens.ordinal as u64 + 1, lens.cursor);
+        let mouse_delivered = if let WindowEvent::MouseInput { state, button, .. } = &event {
+            let phase = match state {
+                ElementState::Pressed => inker::PointerPhase::Down,
+                ElementState::Released => inker::PointerPhase::Up,
+            };
+            let appearance = if phase == inker::PointerPhase::Up
+                && super::input::surface_mouse_button(*button)
+                    .is_some_and(super::window_input::lens_button)
+                && self.contributed_pointer.is_none()
+            {
+                super::window_input::captured_mouse(&self.content_sessions.pool).filter(
+                    |appearance| {
+                        self.content_sessions
+                            .pool
+                            .placement(appearance)
+                            .is_some_and(|p| p.window == window)
+                    },
+                )
+            } else {
+                None
+            };
+            if appearance.is_some() {
+                self.sync_content_placements();
+            }
+            self.window_mouse_input(
+                window,
+                appearance,
+                position,
+                phase,
+                super::input::surface_mouse_button(*button),
+            )
+        } else {
+            false
+        };
         let Some(lens) = self.lens_windows.get_mut(&id) else {
             return;
         };
@@ -811,18 +849,7 @@ impl Shell {
                     }
                     return;
                 }
-                if let Some(appearance) =
-                    super::window_input::captured_mouse(&self.content_sessions.pool)
-                    && let Some(placement) = self.content_sessions.pool.placement(&appearance)
-                    && placement.window == ordinal as u64 + 1
-                {
-                    let local = (cursor.0 - placement.rect.x, cursor.1 - placement.rect.y);
-                    self.content_mouse(
-                        appearance,
-                        local,
-                        inker::PointerPhase::Up,
-                        super::input::surface_mouse_button(button),
-                    );
+                if mouse_delivered {
                     return;
                 }
                 // Like the primary seam: moves rode Redraw; persist once.

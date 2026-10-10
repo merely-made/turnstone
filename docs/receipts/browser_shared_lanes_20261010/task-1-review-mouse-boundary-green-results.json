@@ -1,0 +1,48 @@
+{
+  "stage": "green",
+  "command": [
+    "ionice",
+    "-c3",
+    "nice",
+    "-n",
+    "10",
+    "python3",
+    "scripts/cargo_mode.py",
+    "local",
+    "+1.98.1",
+    "test",
+    "--lib",
+    "review_mouse_boundary_",
+    "-j1",
+    "--",
+    "--nocapture"
+  ],
+  "exit": 0,
+  "summaries": [
+    [
+      "ok",
+      "5",
+      "0",
+      "0",
+      "0",
+      "807",
+      "0.00s"
+    ]
+  ],
+  "memory_before": {
+    "MemTotal": 16083877888,
+    "MemAvailable": 10616807424,
+    "SwapTotal": 8589930496,
+    "SwapFree": 4615499776
+  },
+  "lowest_mem_available_bytes": 8249118720,
+  "stopped_for_memory": false,
+  "wall_seconds": 37.202,
+  "records": 3671,
+  "changes": [
+    {
+      "before": "ba22a9d07c445768f8552b88f2d649284dd38132121b4e138783aa16eddc50a0  /home/markik/Code/worktrees/turnstone-resource-compat/.cargo/local/Cargo.lock",
+      "after": "12a5a5a6c20fcd3a53b5aaf5e82f6616bbb8e2d840e47ce738ef348c7021f0e1  /home/markik/Code/worktrees/turnstone-resource-compat/.cargo/local/Cargo.lock"
+    }
+  ]
+}
