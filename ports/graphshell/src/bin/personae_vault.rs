@@ -24,14 +24,14 @@ fn main() {
 
 fn run(args: Vec<String>) -> Result<String, String> {
     let mut endpoint = configured_app_endpoint();
-    let mut profile = ProfileId("default".into());
+    let mut profile = None;
     let mut args = args.into_iter();
     let command = loop {
         match args.next().as_deref() {
             Some("--app-endpoint") => {
                 endpoint = args.next().ok_or("--app-endpoint needs a value")?
             },
-            Some("--profile") => profile = ProfileId(args.next().ok_or("--profile needs a value")?),
+            Some("--profile") => profile = Some(ProfileId(args.next().ok_or("--profile needs a value")?)),
             Some("--dir") => {
                 return Err(
                     "djinn owns the vault directory; configure the resident's vault location"
@@ -61,6 +61,10 @@ fn run(args: Vec<String>) -> Result<String, String> {
             if command == "profiles" {
                 return client.roster().map(CustodyAnswer::Roster);
             }
+            let profile = match profile {
+                Some(profile) => profile,
+                None => client.roster()?.chosen,
+            };
             client.call(CustodyCall::VaultCommand {
                 profile,
                 command,
