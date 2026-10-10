@@ -1,0 +1,37 @@
+# Fold controls and checkpoint changes share one host history.
+# tree.html?dataset=fixtures/grouped-host-history.json&grouping=contains
+assert snap ready == true
+settle 3
+assert snap dataset == loaded
+assert snap history-checkpoints == 2
+assert snap history-index == 2
+assert snap reader-item-names ~ ~ mere next
+click role:button Earlier checkpoint
+settle 2
+assert snap history-index == 1
+assert snap nodes == 3
+click role:button Expand mere
+settle 2
+click role:button Expand mere workspace
+settle 2
+click role:button Enter mere workspace
+settle 2
+assert snap nodes == 9
+assert snap physics-paused == true
+assert snap reader-item-names ~ + sceno
+capture folds_history_entered
+click role:button Later checkpoint
+settle 2
+assert snap history-index == 2
+assert snap reader-changes >= 18
+assert snap reader-item-names ~ ~ mere next
+# A workspace that is no longer a group drops its entry choice. The surviving
+# repository keeps its expansion, so its collapse control is available.
+click role:button Collapse mere next
+settle 2
+assert snap reader-item-names ~ ~ mere next
+click role:button Expand mere next
+settle 2
+assert snap reader-item-names ~ ~ mere next
+capture folds_history_current
+log hosted Fold history receipt complete

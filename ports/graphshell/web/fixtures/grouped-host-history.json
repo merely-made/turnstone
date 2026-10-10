@@ -1676,7 +1676,10 @@
                 "kind": "text",
                 "value": "repo:mere"
               },
-              "label": "mere next",
+              "label": {
+                "kind": "text",
+                "value": "mere next"
+              },
               "component_kind": {
                 "kind": "text",
                 "value": "repository"
