@@ -1,0 +1,35 @@
+# F192-F195 / SE54-SE55: occurrence bodies, bounded comparison and one undo.
+assert title GRAPHSHELL H3 READY
+act load-practice-projection
+settle 2
+dom click [data-projection-panel="preview"]
+settle 2
+assert snap projection-step-limit == 60
+type [data-projection-field="dynamics.bound"] 8
+act compare-projection-dynamics
+settle 4
+assert snap projection-compare-axis == dynamics
+assert snap projection-step-limit == 8
+assert snap projection-compare-cells >= 12
+act projection-compare-down
+act projection-compare-down
+act projection-compare-down
+act projection-compare-down
+act projection-compare-down
+settle 2
+capture projection_dynamics_grid
+dom click [data-projection-compare-cell="dynamics:0:5"]
+settle 4
+assert snap projection-dynamics == on
+act compare-projection-dynamics
+settle 2
+assert snap projection-compare == off
+assert snap projection-dynamics-ticks >= 1
+act projection-motion
+settle 2
+assert snap projection-motion-paused == true
+capture projection_dynamics_live
+act undo-projection
+settle 2
+assert snap projection-dynamics == off
+log projection dynamics proof complete

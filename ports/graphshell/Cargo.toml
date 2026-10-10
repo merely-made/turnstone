@@ -7,6 +7,10 @@ repository.workspace = true
 description = "Graphshell presentation host and loopback acceptance view."
 autobins = false
 
+[[example]]
+name = "projection_dynamics_receipt"
+required-features = ["web"]
+
 [features]
 default = ["native", "image-decode"]
 # Forwards genet-livery's image decoding (mer3ly Ruling 111); on by default.

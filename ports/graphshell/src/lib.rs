@@ -91,6 +91,10 @@ pub mod practice_disclosure;
 pub mod practice_workspace;
 #[cfg(any(feature = "native", feature = "web"))]
 pub mod projection_compare;
+#[cfg(feature = "web")]
+pub mod projection_dynamics_compare;
+#[cfg(feature = "web")]
+pub mod projection_dynamics_receipt;
 #[cfg(any(feature = "native", feature = "web"))]
 pub mod projection_compile;
 #[cfg(any(feature = "native", feature = "web"))]

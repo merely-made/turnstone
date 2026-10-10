@@ -87,6 +87,12 @@ pub(super) fn page_commands() -> CommandSet {
         ),
         ("projection-grid", "Projection: grid", "projection"),
         ("compare-projection", "Compare arrangements", "projection"),
+        ("compare-projection-dynamics", "Compare dynamics", "projection"),
+        ("projection-motion", "Pause or resume preview", "projection"),
+        ("projection-compare-left", "Earlier arrangements", "projection"),
+        ("projection-compare-right", "Later arrangements", "projection"),
+        ("projection-compare-up", "Earlier comparison rows", "projection"),
+        ("projection-compare-down", "Later comparison rows", "projection"),
         (
             "projection-scatter",
             "Projection: order by tempo",
