@@ -28,6 +28,12 @@ cargo run     # the turnstone window
 cargo test    # unit tests
 ```
 
+`TURNSTONE_CLICK_SLOP_PX` sets how far a contributed-pane mouse press may
+move before it becomes a drag. The value is a finite, nonnegative number of
+physical window pixels, default `4`; invalid values use the default. Set it
+before starting Turnstone. A release must still hit the pressed target, and
+Cancel always prevents a click.
+
 Turnstone pulls `mere` and the genet engine family as git dependencies; a plain
 `cargo build` fetches them. Headed self-drive receipts live under `scenarios/`.
 The committed `Cargo.lock` records the portable graph on Rust 1.98.1. Run

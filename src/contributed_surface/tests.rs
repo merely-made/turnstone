@@ -602,3 +602,61 @@ fn content_pool_host_contributed_mouse_waits_for_release_and_cancel_never_activa
         "drag movement does not become a click"
     );
 }
+
+#[test]
+fn review_input_small_motion_clicks_but_recognized_drag_and_cancel_do_not() {
+    let mut registry = SurfaceProviderRegistry::new();
+    registry
+        .register_provider(provider("fake", "fake.v1", "fake.surface"))
+        .unwrap();
+    let mut pane = registry
+        .admit(&PaneKindId::new("fake"), &source("fake.v1"))
+        .unwrap();
+    pane.scene(240, 120, 1.0);
+    let point = {
+        let dom = pane.dom_ref();
+        taproot::resolve(
+            &[taproot::ProbeSurface {
+                name: "contributed",
+                dom: &dom,
+                rect: [0., 0., 240., 120.],
+                sheet: pane.stylesheet(),
+            }],
+            &taproot::Selector::role("button"),
+        )
+        .unwrap()
+        .point
+    };
+    pane.mouse_press(point.0, point.1);
+    assert!(
+        root_text(&pane.session().dom(), pane.session().root()).contains("count:0"),
+        "press must not activate before cancellation can arrive"
+    );
+    pane.mouse_cancel(point.0, point.1);
+    pane.mouse_release(point.0, point.1);
+    assert!(
+        root_text(&pane.session().dom(), pane.session().root()).contains("count:0"),
+        "cancelled release cannot activate"
+    );
+    pane.mouse_press(point.0, point.1);
+    pane.mouse_release(point.0, point.1);
+    pane.mouse_release(point.0, point.1);
+    assert!(
+        root_text(&pane.session().dom(), pane.session().root()).contains("count:1"),
+        "ordinary release activates exactly once"
+    );
+    pane.mouse_press(point.0, point.1);
+    pane.mouse_move(point.0 + 1., point.1);
+    pane.mouse_release(point.0 + 1., point.1);
+    assert!(
+        root_text(&pane.session().dom(), pane.session().root()).contains("count:2"),
+        "one physical pixel of hand jitter is an ordinary click"
+    );
+    pane.mouse_press(point.0, point.1);
+    pane.mouse_move(point.0 + 10., point.1);
+    pane.mouse_release(point.0, point.1);
+    assert!(
+        root_text(&pane.session().dom(), pane.session().root()).contains("count:2"),
+        "drag movement does not become a click"
+    );
+}

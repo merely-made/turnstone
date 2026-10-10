@@ -1,0 +1,492 @@
+Local workspace: /home/markik/Code/worktrees/mere-three-lanes/ports/graphshell/web
+Local lock: /home/markik/Code/worktrees/mere-three-lanes/ports/graphshell/web/.cargo/local/Cargo.lock
+warning: patch `browsing-context-api v0.1.0 (/home/markik/Code/worktrees/genet-three-lanes/components/shared/browsing-context)` was not used in the crate graph
+warning: patch `fleece v0.5.0 (/home/markik/Code/worktrees/genet-three-lanes/components/fleece)` was not used in the crate graph
+warning: patch `genet-clipboard v0.1.0 (/home/markik/Code/worktrees/genet-three-lanes/components/genet-clipboard)` was not used in the crate graph
+warning: patch `genet-compositor v0.2.0 (/home/markik/Code/worktrees/genet-three-lanes/components/genet-compositor)` was not used in the crate graph
+warning: patch `genet-documents v0.1.0 (/home/markik/Code/worktrees/genet-three-lanes/components/genet-documents)` was not used in the crate graph
+warning: patch `genet-scripted v0.2.0 (/home/markik/Code/worktrees/genet-three-lanes/components/genet-scripted)` was not used in the crate graph
+warning: patch `genet-winit-host v0.2.0 (/home/markik/Code/worktrees/genet-three-lanes/components/genet-winit-host)` was not used in the crate graph
+warning: patch `ipc-channel v0.22.0 (/home/markik/Code/worktrees/genet-three-lanes/support/patches/ipc-channel)` was not used in the crate graph
+warning: patch `netfetcher v0.1.1 (/home/markik/Code/worktrees/genet-three-lanes/components/netfetcher)` was not used in the crate graph
+warning: patch `script-engine-api v0.1.0 (/home/markik/Code/worktrees/genet-three-lanes/components/script-engine-api)` was not used in the crate graph
+warning: patch `script-engine-boa v0.0.0 (/home/markik/Code/worktrees/genet-three-lanes/components/script-engine-boa)` was not used in the crate graph
+warning: patch `script-engine-nova v0.0.0 (/home/markik/Code/worktrees/genet-three-lanes/components/script-engine-nova)` was not used in the crate graph
+warning: patch `script-engine-piccolo v0.0.0 (/home/markik/Code/worktrees/genet-three-lanes/components/script-engine-piccolo)` was not used in the crate graph
+warning: patch `script-runtime-api v0.0.0 (/home/markik/Code/worktrees/genet-three-lanes/components/script-runtime-api)` was not used in the crate graph
+warning: patch `servo-media-player v0.2.0 (/home/markik/Code/worktrees/genet-three-lanes/components/media/player)` was not used in the crate graph
+warning: patch `servo-media-streams v0.2.0 (/home/markik/Code/worktrees/genet-three-lanes/components/media/streams)` was not used in the crate graph
+warning: patch `servo-media-traits v0.2.0 (/home/markik/Code/worktrees/genet-three-lanes/components/media/traits)` was not used in the crate graph
+warning: patch `servo-webgl-essl v0.2.0 (/home/markik/Code/worktrees/genet-three-lanes/components/webgl-essl)` was not used in the crate graph
+warning: patch `servo-webgl-wgpu v0.2.0 (/home/markik/Code/worktrees/genet-three-lanes/components/webgl-wgpu)` was not used in the crate graph
+warning: patch `servo-xpath v0.2.0 (/home/markik/Code/worktrees/genet-three-lanes/components/xpath)` was not used in the crate graph
+help: Check that the patched package version and available features are compatible
+      with the dependency requirements. If the patch has a different version from
+      what is locked in the Cargo.lock file, run `cargo update` to use the new
+      version. This may also occur with an optional dependency that is not enabled.
+warning: unused import: `cubecl_environment::config::RuntimeConfig`
+  --> /home/markik/Code/worktrees/mere-three-lanes/support/patches/cubecl-runtime/src/tune/tuner.rs:22:5
+   |
+22 | use cubecl_environment::config::RuntimeConfig;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `batch_success`
+   --> /home/markik/Code/worktrees/mere-three-lanes/support/patches/cubecl-runtime/src/tune/tuner.rs:435:13
+    |
+435 |         let batch_success = false;
+    |             ^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_batch_success`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: method `warmup_once` is never used
+  --> /home/markik/Code/worktrees/mere-three-lanes/support/patches/cubecl-runtime/src/tune/tune_benchmark.rs:48:19
+   |
+43 | impl<F: TuneInputs, Out: AutotuneOutput> TuneFn<F, Out> {
+   | ------------------------------------------------------- method in this implementation
+...
+48 |     pub(crate) fn warmup_once<'a>(
+   |                   ^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `cubecl-runtime` (lib) generated 3 warnings (run `cargo fix --lib -p cubecl-runtime` to apply 1 suggestion)
+warning: unused imports: `astar`, `dijkstra`, `has_path_connecting`, and `kosaraju_scc`
+  --> /home/markik/Code/worktrees/mere-three-lanes/crates/graph/graph-kernel/src/graph/mod.rs:21:22
+   |
+21 | use petgraph::algo::{astar, dijkstra, has_path_connecting, kosaraju_scc};
+   |                      ^^^^^  ^^^^^^^^  ^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused imports: `Archived`, `Place`, and `Resolver`
+  --> /home/markik/Code/worktrees/mere-three-lanes/crates/graph/graph-kernel/src/graph/mod.rs:25:21
+   |
+25 | use rkyv::{Archive, Archived, Deserialize, Place, Resolver, Serialize, rancor::Fallible};
+   |                     ^^^^^^^^               ^^^^^  ^^^^^^^^
+
+warning: unused import: `HashSet`
+  --> /home/markik/Code/worktrees/mere-three-lanes/crates/graph/graph-kernel/src/graph/mod.rs:26:43
+   |
+26 | use std::collections::{BTreeMap, HashMap, HashSet};
+   |                                           ^^^^^^^
+
+warning: unused imports: `GraphSnapshot`, `PersistedAddress`, `PersistedArrangementEdgeData`, `PersistedArrangementSubKind`, `PersistedContainmentEdgeData`, `PersistedContainmentSubKind`, `PersistedEdgeFamily`, `PersistedEdge`, `PersistedImportedEdgeData`, `PersistedImportedSubKind`, `PersistedNavigationTrigger`, `PersistedNodeSessionState`, `PersistedNode`, `PersistedProvenanceEdgeData`, `PersistedProvenanceSubKind`, `PersistedSemanticEdgeData`, `PersistedSemanticSubKind`, `PersistedTraversalEdgeData`, `PersistedTraversalMetrics`, and `PersistedTraversalRecord`
+  --> /home/markik/Code/worktrees/mere-three-lanes/crates/graph/graph-kernel/src/graph/mod.rs:35:5
+   |
+35 |     GraphSnapshot, PersistedAddress, PersistedArrangementEdgeData, PersistedArrangementSubKind,
+   |     ^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+36 |     PersistedContainmentEdgeData, PersistedContainmentSubKind, PersistedEdge, PersistedEdgeFamily,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^
+37 |     PersistedImportedEdgeData, PersistedImportedSubKind, PersistedNavigationTrigger, PersistedNode,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^
+38 |     PersistedNodeSessionState, PersistedProvenanceEdgeData, PersistedProvenanceSubKind,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^
+39 |     PersistedSemanticEdgeData, PersistedSemanticSubKind, PersistedTraversalEdgeData,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^
+40 |     PersistedTraversalMetrics, PersistedTraversalRecord,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `address_from_url`
+  --> /home/markik/Code/worktrees/mere-three-lanes/crates/graph/graph-kernel/src/graph/node.rs:26:31
+   |
+26 | use crate::address::{Address, address_from_url};
+   |                               ^^^^^^^^^^^^^^^^
+
+warning: unused import: `NodeTagPresentationState`
+  --> /home/markik/Code/worktrees/mere-three-lanes/crates/graph/graph-kernel/src/graph/node_facets.rs:17:54
+   |
+17 | use crate::types::{NodeClassification, NodeProperty, NodeTagPresentationState};
+   |                                                      ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `EdgeRef`
+  --> /home/markik/Code/worktrees/mere-three-lanes/crates/graph/graph-kernel/src/graph/mod.rs:24:23
+   |
+24 | use petgraph::visit::{EdgeRef, IntoEdgeReferences};
+   |                       ^^^^^^^
+
+warning: unused import: `rancor::Fallible`
+  --> /home/markik/Code/worktrees/mere-three-lanes/crates/graph/graph-kernel/src/graph/mod.rs:25:72
+   |
+25 | use rkyv::{Archive, Archived, Deserialize, Place, Resolver, Serialize, rancor::Fallible};
+   |                                                                        ^^^^^^^^^^^^^^^^
+
+warning: methods `navigate_node`, `branch_history`, `node_history_back`, and `node_history_forward` are never used
+   --> /home/markik/Code/worktrees/mere-three-lanes/crates/graph/graph-kernel/src/graph/mod.rs:707:19
+    |
+404 | impl Graph {
+    | ---------- methods in this implementation
+...
+707 |     pub(crate) fn navigate_node(&mut self, key: NodeKey, url: &str) {
+    |                   ^^^^^^^^^^^^^
+...
+721 |     pub(crate) fn branch_history(&mut self, child: NodeKey, parent: NodeKey) {
+    |                   ^^^^^^^^^^^^^^
+...
+733 |     pub(crate) fn node_history_back(&mut self, key: NodeKey) -> Option<String> {
+    |                   ^^^^^^^^^^^^^^^^^
+...
+743 |     pub(crate) fn node_history_forward(&mut self, key: NodeKey) -> Option<String> {
+    |                   ^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: methods `assert_semantic_predicate`, `assert_semantic_relation_in_scope`, and `assert_semantic_predicate_in_scope` are never used
+   --> /home/markik/Code/worktrees/mere-three-lanes/crates/graph/graph-kernel/src/graph/edge_payload.rs:258:19
+    |
+ 45 | impl EdgePayload {
+    | ---------------- methods in this implementation
+...
+258 |     pub(crate) fn assert_semantic_predicate(&mut self, predicate: String) -> bool {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+262 |     pub(crate) fn assert_semantic_relation_in_scope(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+271 |     pub(crate) fn assert_semantic_predicate_in_scope(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `LogIdAsString` is never constructed
+   --> /home/markik/Code/worktrees/mere-three-lanes/crates/graph/graph-kernel/src/graph/identity.rs:160:19
+    |
+160 | pub(crate) struct LogIdAsString;
+    |                   ^^^^^^^^^^^^^
+
+warning: multiple methods are never used
+   --> /home/markik/Code/worktrees/mere-three-lanes/crates/graph/graph-kernel/src/graph/resource_content.rs:86:19
+    |
+ 85 | impl Graph {
+    | ---------- methods in this implementation
+ 86 |     pub(crate) fn insert_node_tag(&mut self, key: NodeKey, tag: String) -> bool {
+    |                   ^^^^^^^^^^^^^^^
+...
+ 89 |     pub(crate) fn remove_node_tag(&mut self, key: NodeKey, tag: &str) -> bool {
+    |                   ^^^^^^^^^^^^^^^
+...
+ 92 |     pub(crate) fn append_node_property(&mut self, key: NodeKey, property: NodeProperty) -> bool {
+    |                   ^^^^^^^^^^^^^^^^^^^^
+...
+ 95 |     pub(crate) fn add_node_classification(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^
+...
+102 |     pub(crate) fn remove_node_classification(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+116 |     pub(crate) fn set_node_classification_status(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+131 |     pub(crate) fn set_node_primary_classification(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: multiple methods are never used
+   --> /home/markik/Code/worktrees/mere-three-lanes/crates/graph/graph-kernel/src/graph/edge_ops.rs:177:19
+    |
+ 32 | impl Graph {
+    | ---------- methods in this implementation
+...
+177 |     pub(crate) fn assert_semantic_predicate(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+244 |     pub(crate) fn replay_assert_relation_by_ids(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+261 |     pub(crate) fn replay_set_edge_semantic_predicate_by_ids(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+279 |     pub(crate) fn replay_assert_semantic_predicate_by_ids(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+307 |     pub(crate) fn dissolve_remove_node_collect_traversals(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+418 |     pub(crate) fn assert_surface_persisted_semantic_statement(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+601 |     pub(crate) fn set_edge_semantic_predicate(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: method `get_node_mut` is never used
+   --> /home/markik/Code/worktrees/mere-three-lanes/crates/graph/graph-kernel/src/graph/query.rs:227:19
+    |
+220 | impl Graph {
+    | ---------- method in this implementation
+...
+227 |     pub(crate) fn get_node_mut(&mut self, key: NodeKey) -> Option<&mut Node> {
+    |                   ^^^^^^^^^^^^
+
+warning: `mere-kernel` (lib) generated 14 warnings (run `cargo fix --lib -p mere-kernel` to apply 6 suggestions)
+warning: function `build_affinity_spring` is never used
+  --> /home/markik/Code/worktrees/mere-three-lanes/crates/canvas/pictograph/src/canvas.rs:66:4
+   |
+66 | fn build_affinity_spring(scores: &crate::signals::AffinityScores) -> AffinitySpring {
+   |    ^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `pictograph` (lib) generated 1 warning
+warning: unused import: `std::fmt`
+  --> /home/markik/Code/worktrees/mere-three-lanes/crates/system/pandect/src/wallet_grant/mod.rs:20:5
+   |
+20 | use std::fmt;
+   |     ^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `std::path::Path`
+  --> /home/markik/Code/worktrees/mere-three-lanes/crates/system/pandect/src/wallet_grant/mod.rs:22:5
+   |
+22 | use std::path::Path;
+   |     ^^^^^^^^^^^^^^^
+
+warning: unused imports: `Aead` and `Payload`
+  --> /home/markik/Code/worktrees/mere-three-lanes/crates/system/pandect/src/wallet_grant/mod.rs:25:30
+   |
+25 | use chacha20poly1305::aead::{Aead, KeyInit, Payload};
+   |                              ^^^^           ^^^^^^^
+
+warning: unused imports: `Key`, `XChaCha20Poly1305`, and `XNonce`
+  --> /home/markik/Code/worktrees/mere-three-lanes/crates/system/pandect/src/wallet_grant/mod.rs:26:24
+   |
+26 | use chacha20poly1305::{Key, XChaCha20Poly1305, XNonce};
+   |                        ^^^  ^^^^^^^^^^^^^^^^^  ^^^^^^
+
+warning: unused imports: `Ed25519Keypair`, `Ed25519PublicKey`, `Ed25519Signature`, `IdentityProvider`, and `InMemoryProvider`
+  --> /home/markik/Code/worktrees/mere-three-lanes/crates/system/pandect/src/wallet_grant/mod.rs:28:5
+   |
+28 |     Ed25519Keypair, Ed25519PublicKey, Ed25519Signature, IdentityProvider, InMemoryProvider,
+   |     ^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^
+
+warning: unused import: `Deserialize`
+  --> /home/markik/Code/worktrees/mere-three-lanes/crates/system/pandect/src/wallet_grant/mod.rs:30:13
+   |
+30 | use serde::{Deserialize, Serialize};
+   |             ^^^^^^^^^^^
+
+warning: unused import: `crate::manifest::PersonaId`
+  --> /home/markik/Code/worktrees/mere-three-lanes/crates/system/pandect/src/wallet_grant/mod.rs:33:5
+   |
+33 | use crate::manifest::PersonaId;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `CapabilitySlotRef`, `DeviceGrantRef`, `DeviceRecord`, `DeviceRoster`, `IdentityWalletManifest`, `LocalDeviceIdentity`, `PersonaWalletRef`, `RemoteAuthWrappingKeyBridge`, `RemoteAuthWrappingKeyRecord`, `device_grant_path`, `device_roster_ref`, `ensure_persona_epoch_bridge`, `load_current_private_epoch`, `load_device_grant`, `load_device_roster`, `load_identity_seed`, `load_identity_wallet`, `load_local_device_identity`, `load_persona_wallet`, `load_remote_auth_wrapping_key_bridge`, `save_device_grant`, `save_device_roster`, `save_identity_wallet`, `save_persona_wallet`, `save_remote_auth_wrapping_key_bridge`, and `stage_persona_private_epoch`
+  --> /home/markik/Code/worktrees/mere-three-lanes/crates/system/pandect/src/wallet_grant/mod.rs:35:5
+   |
+35 |     CapabilitySlotRef, CarryRef, DeviceExposure, DeviceGrantRef, DeviceId, DeviceMode,
+   |     ^^^^^^^^^^^^^^^^^                            ^^^^^^^^^^^^^^
+36 |     DevicePublicKey, DeviceRecord, DeviceRoster, IdentityWalletManifest, KeyEpochId,
+   |                      ^^^^^^^^^^^^  ^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^
+37 |     LocalDeviceIdentity, PersonaWalletManifest, PersonaWalletRef, RemoteAuthWrappingKeyBridge,
+   |     ^^^^^^^^^^^^^^^^^^^                         ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+38 |     RemoteAuthWrappingKeyRecord, device_grant_path, device_roster_ref, ensure_persona_epoch_bridge,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+39 |     load_current_private_epoch, load_device_grant, load_device_roster, load_identity_seed,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^
+40 |     load_identity_wallet, load_local_device_identity, load_persona_wallet,
+   |     ^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^
+41 |     load_remote_auth_wrapping_key_bridge, save_device_grant, save_device_roster,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^
+42 |     save_identity_wallet, save_persona_wallet, save_remote_auth_wrapping_key_bridge,
+   |     ^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+43 |     stage_persona_private_epoch,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `Ed25519Keypair`, `IdentityProvider`, and `InMemoryProvider`
+  --> /home/markik/Code/worktrees/mere-three-lanes/crates/system/pandect/src/wallet_grant/enroll.rs:13:16
+   |
+13 | use identity::{Ed25519Keypair, IdentityProvider, InMemoryProvider, PersonaId};
+   |                ^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^
+
+warning: unused imports: `Ed25519Keypair` and `PersonaId`
+  --> /home/markik/Code/worktrees/mere-three-lanes/crates/system/pandect/src/wallet_grant/issue.rs:14:16
+   |
+14 | use identity::{Ed25519Keypair, IdentityProvider, InMemoryProvider, PersonaId};
+   |                ^^^^^^^^^^^^^^                                      ^^^^^^^^^
+
+warning: unused import: `std::io`
+  --> /home/markik/Code/worktrees/mere-three-lanes/crates/system/pandect/src/wallet_grant/pairing.rs:10:5
+   |
+10 | use std::io;
+   |     ^^^^^^^
+
+warning: unused import: `std::io`
+  --> /home/markik/Code/worktrees/mere-three-lanes/crates/system/pandect/src/wallet_grant/records.rs:10:5
+   |
+10 | use std::io;
+   |     ^^^^^^^
+
+warning: unused import: `std::path::Path`
+  --> /home/markik/Code/worktrees/mere-three-lanes/crates/system/pandect/src/wallet_grant/records.rs:11:5
+   |
+11 | use std::path::Path;
+   |     ^^^^^^^^^^^^^^^
+
+warning: unused imports: `Ed25519Keypair`, `IdentityProvider`, `InMemoryProvider`, and `PersonaId`
+  --> /home/markik/Code/worktrees/mere-three-lanes/crates/system/pandect/src/wallet_grant/records.rs:13:16
+   |
+13 | use identity::{Ed25519Keypair, IdentityProvider, InMemoryProvider, PersonaId};
+   |                ^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^  ^^^^^^^^^
+
+warning: unused imports: `Ed25519Keypair` and `IdentityProvider`
+  --> /home/markik/Code/worktrees/mere-three-lanes/crates/system/pandect/src/wallet_grant/refresh.rs:13:16
+   |
+13 | use identity::{Ed25519Keypair, IdentityProvider, InMemoryProvider, PersonaId};
+   |                ^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^
+
+warning: unused imports: `Ed25519Keypair`, `IdentityProvider`, and `InMemoryProvider`
+  --> /home/markik/Code/worktrees/mere-three-lanes/crates/system/pandect/src/wallet_grant/revoke.rs:13:16
+   |
+13 | use identity::{Ed25519Keypair, IdentityProvider, InMemoryProvider, PersonaId};
+   |                ^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^
+
+warning: unused import: `Ed25519Signature`
+  --> /home/markik/Code/worktrees/mere-three-lanes/crates/system/pandect/src/wallet_grant/types.rs:14:16
+   |
+14 | use identity::{Ed25519Signature, PersonaId};
+   |                ^^^^^^^^^^^^^^^^
+
+warning: unused imports: `DEVICE_GRANT_SCHEMA_VERSION` and `DeviceGrantError`
+  --> /home/markik/Code/worktrees/mere-three-lanes/crates/system/pandect/src/wallet_grant/types.rs:19:5
+   |
+19 |     DEVICE_GRANT_SCHEMA_VERSION, DeviceExposure, DeviceGrantError, DeviceId, DevicePublicKey,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^                  ^^^^^^^^^^^^^^^^
+
+warning: unused imports: `Ed25519Keypair`, `IdentityProvider`, `InMemoryProvider`, and `PersonaId`
+  --> /home/markik/Code/worktrees/mere-three-lanes/crates/system/pandect/src/wallet_grant/validate.rs:13:16
+   |
+13 | use identity::{Ed25519Keypair, IdentityProvider, InMemoryProvider, PersonaId};
+   |                ^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^  ^^^^^^^^^
+
+warning: unused imports: `Ed25519Keypair`, `IdentityProvider`, `InMemoryProvider`, and `PersonaId`
+  --> /home/markik/Code/worktrees/mere-three-lanes/crates/system/pandect/src/wallet_grant/wrapping.rs:13:16
+   |
+13 | use identity::{Ed25519Keypair, IdentityProvider, InMemoryProvider, PersonaId};
+   |                ^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^  ^^^^^^^^^
+
+warning: unused imports: `install_remote_auth_enrollment_bundle_inner` and `restore_wrapped_private_epochs`
+   --> /home/markik/Code/worktrees/mere-three-lanes/crates/system/pandect/src/wallet_grant/mod.rs:127:5
+    |
+127 |     install_remote_auth_enrollment_bundle_inner, restore_wrapped_private_epochs,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `epochs::wrapped_epoch_aad`
+   --> /home/markik/Code/worktrees/mere-three-lanes/crates/system/pandect/src/wallet_grant/mod.rs:129:16
+    |
+129 | pub(crate) use epochs::wrapped_epoch_aad;
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `derive_pairing_key_from_transcript` and `remote_auth_pairing_transcript`
+   --> /home/markik/Code/worktrees/mere-three-lanes/crates/system/pandect/src/wallet_grant/mod.rs:130:26
+    |
+130 | pub(crate) use pairing::{derive_pairing_key_from_transcript, remote_auth_pairing_transcript};
+    |                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `refresh_remote_auth_private_read_grant`
+   --> /home/markik/Code/worktrees/mere-three-lanes/crates/system/pandect/src/wallet_grant/mod.rs:135:5
+    |
+135 |     refresh_remote_auth_private_read_grant, refresh_remote_auth_private_read_grants,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `revoke::revoke_persona_grant_access`
+   --> /home/markik/Code/worktrees/mere-three-lanes/crates/system/pandect/src/wallet_grant/mod.rs:138:16
+    |
+138 | pub(crate) use revoke::revoke_persona_grant_access;
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `KeyInit`
+  --> /home/markik/Code/worktrees/mere-three-lanes/crates/system/pandect/src/wallet_grant/mod.rs:25:36
+   |
+25 | use chacha20poly1305::aead::{Aead, KeyInit, Payload};
+   |                                    ^^^^^^^
+
+warning: unused variable: `provider`
+  --> /home/markik/Code/worktrees/mere-three-lanes/crates/system/pandect/src/wallet_grant/refresh.rs:53:5
+   |
+53 |     provider: &InMemoryProvider,
+   |     ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_provider`
+   |
+   = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: method `into_graph` is never used
+   --> /home/markik/Code/worktrees/mere-three-lanes/crates/system/pandect/src/graph_codicil.rs:149:19
+    |
+148 | impl GraphCodicil {
+    | ----------------- method in this implementation
+149 |     pub(crate) fn into_graph(self) -> Result<Graph> {
+    |                   ^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `pandect` (lib) generated 28 warnings (run `cargo fix --lib -p pandect` to apply 26 suggestions)
+warning: unused import: `personae::AttestationKeys`
+  --> /home/markik/Code/worktrees/mere-three-lanes/ports/graphshell/src/webrtc_door.rs:78:5
+   |
+78 | use personae::AttestationKeys;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: method `begin_session` is never used
+   --> /home/markik/Code/worktrees/mere-three-lanes/ports/graphshell/src/mere_host.rs:383:19
+    |
+222 | impl<B: Backend + Clone> MereHost<B> {
+    | ------------------------------------ method in this implementation
+...
+383 |     pub(crate) fn begin_session(&mut self, graph: Graph) {
+    |                   ^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `codicil_graph` is never used
+    --> /home/markik/Code/worktrees/mere-three-lanes/ports/graphshell/src/product.rs:1102:4
+     |
+1102 | fn codicil_graph(snapshot: GraphSnapshot, facets: NodeFacetStore) -> Result<Graph, ProductError> {
+     |    ^^^^^^^^^^^^^
+
+warning: function `decode_codicil` is never used
+    --> /home/markik/Code/worktrees/mere-three-lanes/ports/graphshell/src/product.rs:1504:15
+     |
+1504 | pub(crate) fn decode_codicil(bytes: &[u8]) -> Result<ProductCodicilV3, ProductError> {
+     |               ^^^^^^^^^^^^^^
+
+warning: `graphshell` (lib) generated 4 warnings
+   Compiling graphshell-web v0.1.0 (/home/markik/Code/worktrees/mere-three-lanes/ports/graphshell/web)
+warning: unused import: `std::rc::Rc`
+  --> ../src/web_timing.rs:24:5
+   |
+24 | use std::rc::Rc;
+   |     ^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `serde::Deserialize`
+  --> ../src/web_main.rs:21:5
+   |
+21 | use serde::Deserialize;
+   |     ^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `AccessRecordFilter`, `AccessRecord`, and `query_access_records`
+  --> ../src/web_main.rs:25:26
+   |
+25 | use graphshell::access::{AccessRecord, AccessRecordFilter, query_access_records};
+   |                          ^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `BROWSER_HISTORY_HANDLER_PREFIX`, `BrowserHistoryCapture`, `BrowserVisit`, `CaptureOutcome`, and `ForgetMode`
+  --> ../src/web_main.rs:29:5
+   |
+29 |     BROWSER_HISTORY_HANDLER_PREFIX, BrowserHistoryCapture, BrowserVisit, CaptureOutcome,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^  ^^^^^^^^^^^^^^
+30 |     ForgetMode, HistoryCapturePolicy,
+   |     ^^^^^^^^^^
+
+warning: unused imports: `Appearance`, `Encoding`, `Interaction`, `Reading`, `SelectionMode`, and `SourceBinding`
+  --> ../src/web_main.rs:39:5
+   |
+39 |     Appearance, Channel, EditorAction, Encoding, Interaction, ProjectionDefinition,
+   |     ^^^^^^^^^^                         ^^^^^^^^  ^^^^^^^^^^^
+40 |     ProjectionDefinitionSink, ProjectionDraft, ProjectionEditor, ProjectionPanel, Provenance,
+41 |     PublicSourceRevision, Reading, RevisionEvidence, SelectionMode, SourceBinding,
+   |                           ^^^^^^^                    ^^^^^^^^^^^^^  ^^^^^^^^^^^^^
+
+warning: `graphshell-web` (lib) generated 5 warnings (run `cargo fix --lib -p graphshell-web` to apply 5 suggestions)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 45.77s

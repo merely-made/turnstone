@@ -60,12 +60,45 @@ impl Shell {
         input: pelt_core::PeltInput,
     ) -> Option<bool> {
         self.sync_content_placements();
-        let placement = self.content_sessions.pool.placement(&appearance)?;
-        let node = match placement.content {
+        let focused = matches!(
+            &input,
+            pelt_core::PeltInput::Keyboard(_)
+                | pelt_core::PeltInput::ScrollKey(_)
+                | pelt_core::PeltInput::Session(
+                    SessionInput::Key { .. }
+                        | SessionInput::Text(_)
+                        | SessionInput::Ime(_)
+                        | SessionInput::FocusMove(_)
+                )
+        );
+        let content = if focused {
+            *self
+                .content_sessions
+                .pool
+                .focused_content(self.input_window)?
+        } else {
+            self.content_sessions.pool.placement(&appearance)?.content
+        };
+        let node = match content {
             super::content_pool::ContentKey::Node(node)
             | super::content_pool::ContentKey::Reader { node, .. } => node,
         };
-        let effect = self.content_sessions.pool.input(&appearance, input);
+        let effect = match input {
+            pelt_core::PeltInput::Keyboard(_)
+            | pelt_core::PeltInput::ScrollKey(_)
+            | pelt_core::PeltInput::Session(
+                SessionInput::Key { .. }
+                | SessionInput::Text(_)
+                | SessionInput::Ime(_)
+                | SessionInput::FocusMove(_),
+            ) => super::window_input::focused_input(
+                &mut self.content_sessions.pool,
+                self.input_window,
+                appearance,
+                input,
+            ),
+            _ => self.content_sessions.pool.input(&appearance, input),
+        };
         Some(self.apply_content_effect(node, effect))
     }
 
@@ -198,5 +231,159 @@ mod tests {
             session_pointer_button(MouseButton::Middle),
             Some(SessionPointerButton::Auxiliary)
         );
+    }
+}
+
+impl Shell {
+    pub(super) fn input_plan(&self, window: u64) -> Vec<crate::surface::Surface> {
+        if window == 0 {
+            self.surface_plan()
+        } else {
+            self.lens_windows
+                .values()
+                .find(|lens| lens.ordinal as u64 + 1 == window)
+                .map(|lens| self.lens_plan(lens.ordinal, lens.width, lens.height))
+                .unwrap_or_default()
+        }
+    }
+    fn focus_in_window(&self, window: u64, focus: crate::surface::FocusTarget) -> bool {
+        use crate::surface::{FocusTarget, SurfaceKind};
+        self.input_plan(window).iter().any(|surface| match focus {
+            FocusTarget::Content { node, appearance } => {
+                surface.id == appearance && surface.kind == SurfaceKind::Content(node)
+            },
+            FocusTarget::Pane(pane) => surface.kind == SurfaceKind::Pane(pane),
+            FocusTarget::Graph(pane) => surface.kind == SurfaceKind::Graph(pane),
+            _ => window == 0,
+        })
+    }
+    pub(super) fn select_input_window(&mut self, window: u64) -> bool {
+        let active = if window == 0 {
+            self.primary_focused
+        } else {
+            self.lens_windows
+                .values()
+                .any(|lens| lens.ordinal as u64 + 1 == window && lens.focused)
+        };
+        if !active {
+            return false;
+        }
+        if self.focus_in_window(window, self.app.focus) {
+            return true;
+        }
+        if let Some(focus) = self
+            .window_focus
+            .get(&window)
+            .copied()
+            .filter(|focus| self.focus_in_window(window, *focus))
+        {
+            self.app.focus = focus;
+            return true;
+        }
+        false
+    }
+    pub(super) fn native_input_focus(&mut self, window: u64, focused: bool) {
+        if focused {
+            self.select_input_window(window);
+        } else {
+            if self.focus_in_window(window, self.app.focus) {
+                self.window_focus.insert(window, self.app.focus);
+            }
+            self.touch_input
+                .focus_lost(&mut self.content_sessions.pool, window);
+            self.window_buttons.remove(&window);
+            if self
+                .contributed_pointer
+                .is_some_and(|pointer| pointer.window == window)
+            {
+                let pointer = self.contributed_pointer.take().unwrap();
+                if let crate::surface::SurfaceKind::Pane(pane) = pointer.surface.kind {
+                    if let Some(surface) = self.renderers.contributed.get_mut(pane) {
+                        surface.mouse_cancel(0., 0.);
+                    }
+                }
+                self.pointer_capture = None;
+            }
+            if window == 0 {
+                self.surface_pointer_buttons = inker::PointerButtons::NONE;
+                self.pointer_capture = None;
+            }
+        }
+        self.sync_content_placements();
+    }
+    pub(super) fn deliver_window_key(
+        &mut self,
+        window: u64,
+        key: &WinitKey,
+        pressed: bool,
+        text: Option<&str>,
+    ) {
+        let host_editor = self.app.omnibar.open
+            || self.app.user_agent_decision.is_open()
+            || self.app.document_find.open;
+        if window != 0 && host_editor {
+            return;
+        }
+        if !self.select_input_window(window) && !(window == 0 && host_editor) {
+            return;
+        }
+        self.input_window = window;
+        if !self.deliver_surface_key(key, pressed, text) && pressed {
+            self.on_key(key);
+        }
+        if self.focus_in_window(window, self.app.focus) {
+            self.window_focus.insert(window, self.app.focus);
+        }
+        self.input_window = 0;
+    }
+    pub(super) fn deliver_window_ime(&mut self, window: u64, ime: &winit::event::Ime) -> bool {
+        if !self.select_input_window(window) {
+            return false;
+        }
+        if window != 0
+            && (self.app.omnibar.open
+                || self.app.user_agent_decision.is_open()
+                || self.app.document_find.open)
+        {
+            return false;
+        }
+        self.input_window = window;
+        let handled = self.deliver_contributed_ime(ime) || self.deliver_document_ime(ime);
+        self.input_window = 0;
+        handled
+    }
+    pub(super) fn content_wheel(
+        &mut self,
+        window: u64,
+        appearance: crate::surface::SurfaceId,
+        node: uuid::Uuid,
+        local: (f32, f32),
+        delta: (f32, f32),
+    ) -> bool {
+        if super::window_input::wheel_zoom(
+            window,
+            self.ctrl,
+            delta.1,
+            self.app.page_zoom_offered(node),
+        ) {
+            self.act(if delta.1 > 0. {
+                Action::PageZoomIn { member: node }
+            } else {
+                Action::PageZoomOut { member: node }
+            });
+            return true;
+        }
+        self.content_input(
+            appearance,
+            pelt_core::PeltInput::Wheel {
+                position: inker::PhysicalPosition {
+                    x: local.0,
+                    y: local.1,
+                },
+                delta,
+                modifiers: self.session_modifiers(),
+            },
+        )
+        .unwrap_or(false)
     }
 }

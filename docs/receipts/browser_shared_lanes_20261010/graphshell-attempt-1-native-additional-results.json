@@ -1,0 +1,86 @@
+[
+  {
+    "name": "native-fields",
+    "command": [
+      "python3",
+      "scripts/cargo_mode.py",
+      "local",
+      "+1.98.1",
+      "test",
+      "-p",
+      "graphshell",
+      "--no-default-features",
+      "--features",
+      "web",
+      "--lib",
+      "field_adapter_tests",
+      "-j1"
+    ],
+    "exit_code": 0,
+    "passed": 2,
+    "seconds": 2.5206458320026286
+  },
+  {
+    "name": "native-appearance",
+    "command": [
+      "python3",
+      "scripts/cargo_mode.py",
+      "local",
+      "+1.98.1",
+      "test",
+      "-p",
+      "graphshell",
+      "--no-default-features",
+      "--features",
+      "web",
+      "--lib",
+      "appearance::tests",
+      "-j1"
+    ],
+    "exit_code": 0,
+    "passed": 6,
+    "seconds": 2.0015053630049806
+  },
+  {
+    "name": "native-scenes",
+    "command": [
+      "python3",
+      "scripts/cargo_mode.py",
+      "local",
+      "+1.98.1",
+      "test",
+      "-p",
+      "graphshell",
+      "--no-default-features",
+      "--features",
+      "web",
+      "--test",
+      "local_scene",
+      "-j1"
+    ],
+    "exit_code": 0,
+    "passed": 2,
+    "seconds": 31.616483724006684
+  },
+  {
+    "name": "native-projection",
+    "command": [
+      "python3",
+      "scripts/cargo_mode.py",
+      "local",
+      "+1.98.1",
+      "test",
+      "-p",
+      "graphshell",
+      "--no-default-features",
+      "--features",
+      "web",
+      "--test",
+      "local_projection",
+      "-j1"
+    ],
+    "exit_code": 0,
+    "passed": 3,
+    "seconds": 10.05291761099943
+  }
+]

@@ -583,10 +583,8 @@ impl Shell {
         if let WindowEvent::Focused(focused) = &event {
             lens.focused = *focused;
             lens.a11y.update_window_focus(*focused);
-            if !focused {
-                self.cancel_content_pointer();
-            }
-            self.sync_content_placements();
+            let window = lens.ordinal as u64 + 1;
+            self.native_input_focus(window, *focused);
             self.push_a11y_tree();
             return;
         }
@@ -598,24 +596,30 @@ impl Shell {
                 self.meta = mods.state().super_key();
                 return;
             },
+            WindowEvent::Touch(touch) => {
+                let window = lens.ordinal as u64 + 1;
+                self.deliver_touch_in(window, touch);
+                return;
+            },
             WindowEvent::KeyboardInput { event, .. } => {
-                if !self.deliver_surface_key(
+                let window = lens.ordinal as u64 + 1;
+                self.deliver_window_key(
+                    window,
                     &event.logical_key,
                     event.state == ElementState::Pressed,
                     event.text.as_deref(),
-                ) && event.state == ElementState::Pressed
-                {
-                    self.on_key(&event.logical_key);
-                }
+                );
                 return;
             },
             WindowEvent::Ime(ime) => {
-                self.deliver_document_ime(&ime);
+                let window = lens.ordinal as u64 + 1;
+                self.deliver_window_ime(window, &ime);
                 return;
             },
             WindowEvent::CloseRequested => {
                 let ordinal = lens.ordinal;
-                self.cancel_content_pointer();
+                self.native_input_focus(ordinal as u64 + 1, false);
+                self.window_focus.remove(&(ordinal as u64 + 1));
                 self.lens_windows.remove(&id);
                 let closed_panes: Vec<_> = self
                     .app
@@ -654,9 +658,11 @@ impl Shell {
             },
             WindowEvent::MouseInput {
                 state: ElementState::Pressed,
-                button: MouseButton::Left,
+                button,
                 ..
-            } => {
+            } if super::input::surface_mouse_button(button)
+                .is_some_and(super::window_input::lens_button) =>
+            {
                 // A press routes by the lens's OWN plan: a pane press
                 // dispatches into the shared runner; a tile press routes into
                 // the shared SESSION (a link is a durable navigation through
@@ -677,6 +683,9 @@ impl Shell {
                             // the primary — the active pane is GLOBAL (ids are
                             // unique across spaces), so close/divider/summon-
                             // beside now aim at this lens's tree.
+                            if button != MouseButton::Left {
+                                return;
+                            }
                             self.app.active_pane = Some(pid);
                             self.app.raise_floating_pane(pid);
                             if let Some(pane) = self.renderers.contributed.get_mut(pid) {
@@ -725,7 +734,7 @@ impl Shell {
                                 hit.id,
                                 hit.local,
                                 inker::PointerPhase::Down,
-                                Some(inker::MouseButton::Left),
+                                super::input::surface_mouse_button(button),
                             );
                             if let Some(lens) = self.lens_windows.get_mut(&id) {
                                 lens.window.request_redraw();
@@ -735,7 +744,9 @@ impl Shell {
                         // A lens seam drag: capture the band; moves lower
                         // SetSplitRatio at THIS lens's space (same spine as
                         // the primary's seam, different target tree).
-                        crate::surface::SurfaceKind::Divider(index) => {
+                        crate::surface::SurfaceKind::Divider(index)
+                            if button == MouseButton::Left =>
+                        {
                             if let Some(Some(space)) = self.app.lenses.get(ordinal) {
                                 let area = Rect::full(lw, lh);
                                 let tiling = crate::pane::place_panes(space, area, None);
@@ -759,7 +770,8 @@ impl Shell {
                 if self.move_contributed_pointer(ordinal as u64 + 1, x, y) {
                     return;
                 }
-                if let Some(appearance) = self.content_sessions.pool.captured_placement(0).copied()
+                if let Some(appearance) =
+                    super::window_input::captured_mouse(&self.content_sessions.pool)
                     && let Some(placement) = self.content_sessions.pool.placement(&appearance)
                     && placement.window == ordinal as u64 + 1
                 {
@@ -787,15 +799,20 @@ impl Shell {
             },
             WindowEvent::MouseInput {
                 state: ElementState::Released,
-                button: MouseButton::Left,
+                button,
                 ..
-            } => {
+            } if super::input::surface_mouse_button(button)
+                .is_some_and(super::window_input::lens_button) =>
+            {
                 let (cursor, ordinal) = (lens.cursor, lens.ordinal);
                 if self.contributed_pointer.is_some() {
-                    self.release_contributed_pointer(ordinal as u64 + 1, cursor.0, cursor.1);
+                    if button == MouseButton::Left {
+                        self.release_contributed_pointer(ordinal as u64 + 1, cursor.0, cursor.1);
+                    }
                     return;
                 }
-                if let Some(appearance) = self.content_sessions.pool.captured_placement(0).copied()
+                if let Some(appearance) =
+                    super::window_input::captured_mouse(&self.content_sessions.pool)
                     && let Some(placement) = self.content_sessions.pool.placement(&appearance)
                     && placement.window == ordinal as u64 + 1
                 {
@@ -804,7 +821,7 @@ impl Shell {
                         appearance,
                         local,
                         inker::PointerPhase::Up,
-                        Some(inker::MouseButton::Left),
+                        super::input::surface_mouse_button(button),
                     );
                     return;
                 }
@@ -827,27 +844,11 @@ impl Shell {
                 let (x, y) = lens.cursor;
                 let (lw, lh, ordinal) = (lens.width, lens.height, lens.ordinal);
                 let plan = self.lens_plan(ordinal, lw, lh);
-                if let Some(hit) = crate::surface::hit_test(
-                    &plan,
-                    crate::surface::FocusTarget::Graph(self.app.default_graph_pane()),
-                    x,
-                    y,
-                ) && let crate::surface::SurfaceKind::Content(node) = hit.kind
-                    && self
-                        .content_input(
-                            hit.id,
-                            pelt_core::PeltInput::Wheel {
-                                position: inker::PhysicalPosition {
-                                    x: hit.local.0,
-                                    y: hit.local.1,
-                                },
-                                delta: (dx, dy),
-                                modifiers: self.session_modifiers(),
-                            },
-                        )
-                        .unwrap_or(false)
+                if let Some(hit) = crate::surface::hit_test(&plan, self.app.focus, x, y)
+                    && let crate::surface::SurfaceKind::Content(node) = hit.kind
                 {
-                    if let Some(lens) = self.lens_windows.get_mut(&id) {
+                    self.content_wheel(ordinal as u64 + 1, hit.id, node, hit.local, (dx, dy));
+                    if let Some(lens) = self.lens_windows.get(&id) {
                         lens.window.request_redraw();
                     }
                     return;

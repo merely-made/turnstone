@@ -347,6 +347,7 @@ pub struct ContributedSurfacePane {
     viewport: (u32, u32, f32),
     hover: Option<NodeId>,
     mouse_gesture: Option<(NodeId, (f32, f32), bool)>,
+    click_slop: f32,
 }
 
 impl ContributedSurfacePane {
@@ -374,6 +375,9 @@ impl ContributedSurfacePane {
             viewport: (0, 0, 1.0),
             hover: None,
             mouse_gesture: None,
+            click_slop: crate::shell::window_input::click_slop(
+                std::env::var("TURNSTONE_CLICK_SLOP_PX").ok().as_deref(),
+            ),
         }
     }
 
@@ -524,7 +528,7 @@ impl ContributedSurfacePane {
     }
     pub(crate) fn mouse_move(&mut self, x: f32, y: f32) -> SurfaceRequest {
         if let Some((_, origin, moved)) = &mut self.mouse_gesture {
-            *moved |= *origin != (x, y);
+            *moved |= (origin.0 - x).hypot(origin.1 - y) > self.click_slop;
         }
         self.pointer_move(x, y)
     }

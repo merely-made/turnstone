@@ -1,0 +1,95 @@
+{
+  "results": [
+    {
+      "label": "content-pool",
+      "command": [
+        "ionice",
+        "-c3",
+        "nice",
+        "-n",
+        "10",
+        "python3",
+        "scripts/cargo_mode.py",
+        "local",
+        "+1.98.1",
+        "test",
+        "--lib",
+        "content_pool",
+        "-j1",
+        "--",
+        "--nocapture"
+      ],
+      "exit": 0,
+      "expected_count": 8,
+      "summaries": [
+        [
+          "ok",
+          "8",
+          "0",
+          "0",
+          "0",
+          "799",
+          "0.78s"
+        ]
+      ],
+      "memory_before": {
+        "MemTotal": 16083877888,
+        "MemAvailable": 9869877248,
+        "SwapTotal": 8589930496,
+        "SwapFree": 5633601536
+      },
+      "lowest_mem_available_bytes": 9629745152,
+      "stopped_for_memory": false,
+      "wall_seconds": 4.011
+    },
+    {
+      "label": "native-lens",
+      "command": [
+        "ionice",
+        "-c3",
+        "nice",
+        "-n",
+        "10",
+        "python3",
+        "scripts/cargo_mode.py",
+        "local",
+        "+1.98.1",
+        "test",
+        "--lib",
+        "foreign_lens_retains_native_forest",
+        "-j1",
+        "--",
+        "--nocapture"
+      ],
+      "exit": 0,
+      "expected_count": 1,
+      "summaries": [
+        [
+          "ok",
+          "1",
+          "0",
+          "0",
+          "0",
+          "806",
+          "0.03s"
+        ]
+      ],
+      "memory_before": {
+        "MemTotal": 16083877888,
+        "MemAvailable": 9852391424,
+        "SwapTotal": 8589930496,
+        "SwapFree": 5633597440
+      },
+      "lowest_mem_available_bytes": 9659994112,
+      "stopped_for_memory": false,
+      "wall_seconds": 2.002
+    }
+  ],
+  "records": 3671,
+  "changes": [
+    {
+      "before": "ba22a9d07c445768f8552b88f2d649284dd38132121b4e138783aa16eddc50a0  /home/markik/Code/worktrees/turnstone-resource-compat/.cargo/local/Cargo.lock",
+      "after": "12a5a5a6c20fcd3a53b5aaf5e82f6616bbb8e2d840e47ce738ef348c7021f0e1  /home/markik/Code/worktrees/turnstone-resource-compat/.cargo/local/Cargo.lock"
+    }
+  ]
+}

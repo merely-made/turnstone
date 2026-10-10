@@ -1,0 +1,29 @@
+Local workspace: /home/markik/Code/worktrees/mere-three-lanes
+Local lock: /home/markik/Code/worktrees/mere-three-lanes/.cargo/local/Cargo.lock
+warning: patch `boa_engine v1.0.0-dev (https://github.com/mark-ik/boa.git?branch=genet#52cfb6ff)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	https://github.com/mark-ik/boa.git
+warning: patch `boa_gc v1.0.0-dev (https://github.com/mark-ik/boa.git?branch=genet#52cfb6ff)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	https://github.com/mark-ik/boa.git
+warning: patch `genet-clipboard v0.1.0 (/home/markik/Code/worktrees/genet-three-lanes/components/genet-clipboard)` was not used in the crate graph
+warning: patch `ipc-channel v0.22.0 (/home/markik/Code/worktrees/genet-three-lanes/support/patches/ipc-channel)` was not used in the crate graph
+warning: patch `script-engine-piccolo v0.0.0 (/home/markik/Code/worktrees/genet-three-lanes/components/script-engine-piccolo)` was not used in the crate graph
+warning: patch `servo-media-player v0.2.0 (/home/markik/Code/worktrees/genet-three-lanes/components/media/player)` was not used in the crate graph
+warning: patch `servo-media-streams v0.2.0 (/home/markik/Code/worktrees/genet-three-lanes/components/media/streams)` was not used in the crate graph
+warning: patch `servo-media-traits v0.2.0 (/home/markik/Code/worktrees/genet-three-lanes/components/media/traits)` was not used in the crate graph
+help: Check that the patched package version and available features are compatible
+      with the dependency requirements. If the patch has a different version from
+      what is locked in the Cargo.lock file, run `cargo update` to use the new
+      version. This may also occur with an optional dependency that is not enabled.
+   Compiling pelt-core v0.2.0 (/home/markik/Code/worktrees/mere-three-lanes/ports/pelt/core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.20s
+     Running tests/content.rs (/home/markik/Code/target/debug/deps/content-84760de4a06ab392)
+
+running 1 test
+test keyboard_envelope_completes_the_same_surface_link_route_as_session_enter ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 7 filtered out; finished in 0.00s
+

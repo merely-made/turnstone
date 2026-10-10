@@ -1,0 +1,35 @@
+{
+  "status": "compiler_repairs_unqualified",
+  "changes": [
+    {
+      "root": "/home/markik/Code/worktrees/mere-three-lanes",
+      "path": "ports/graphshell/src/web_tree.rs",
+      "before": "247159f40698ff95f6e614b73bba063aea73ea0ba79c85eb30e88f3382780052",
+      "after": "ae84eca78ab4a9d14e49a4cccc2a859b6a188047272f6ea00be64d05f3132dcb"
+    },
+    {
+      "root": "/home/markik/Code/worktrees/mere-three-lanes",
+      "path": "ports/graphshell/src/web_tree/lane.rs",
+      "before": "211badc3124bbd0122a19665bc2a3d17c4242b835b656cd63690e191bc23d56a",
+      "after": "6b366afed0a0a417ce713d1cb1daa3868adb0d4da3592c73bc2f93b59bfcf870"
+    },
+    {
+      "root": "/home/markik/Code/worktrees/mere-three-lanes",
+      "path": "ports/graphshell/src/web_tree/product/commands.rs",
+      "before": "5477649b66a3447c1f29c322f6cf2305943414b0d822fb8d922a7305d7c839f6",
+      "after": "e2affb7a0fb6f5b0d9d0d0b7f0b17af35611ac7f91d8facef9efc635fe400a87"
+    },
+    {
+      "root": "/home/markik/Code/worktrees/mere-three-lanes",
+      "path": "ports/graphshell/src/web_tree/speed.rs",
+      "before": "4593443a81525115c0721af17181b2845d5180542d8d521db9d8544ba424c455",
+      "after": "5902c5852379f716b7a21f387a7f80f7eee221c5542b30e6e2b7260b0a07330e"
+    }
+  ],
+  "diagnostics": [
+    "E0382 root Element moved into closure before later host attribute access",
+    "E0369 cambium Key has no PartialEq, two Escape comparisons",
+    "E0277/E0308 mem::take requires dereferenced RefMut<Vec<String>>"
+  ],
+  "native_impact": "No native owner/test source changed; browser-only modules"
+}

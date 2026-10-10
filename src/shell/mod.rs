@@ -38,6 +38,7 @@ use render::{capture_composed, decode_sprite};
 mod lens;
 use lens::LensWindow;
 mod input;
+pub(crate) mod window_input;
 use input::pointer_button;
 
 use std::collections::{HashMap, VecDeque};
@@ -589,13 +590,6 @@ struct CompositeLayer {
     placement: ExternalTexturePlacement,
 }
 
-#[derive(Clone, Copy)]
-struct ActiveSurfaceTouch {
-    pointer_id: i32,
-    node: uuid::Uuid,
-    is_primary: bool,
-}
-
 #[derive(Default)]
 struct HostFileDrag {
     files: Vec<std::path::PathBuf>,
@@ -782,8 +776,10 @@ pub struct Shell {
     /// Winit touch ids are u64 and may be reused after a contact ends. Live
     /// contacts receive compact, collision-free DOM/CEF pointer ids and each
     /// retains its own content-surface capture until Up or Cancel.
-    active_surface_touches: HashMap<u64, ActiveSurfaceTouch>,
-    next_surface_touch_id: i32,
+    touch_input: window_input::TouchInput,
+    input_window: u64,
+    window_focus: HashMap<u64, crate::surface::FocusTarget>,
+    window_buttons: HashMap<u64, inker::PointerButtons>,
     /// Files offered by the OS drag manager and the current web-surface target.
     /// Graph drops keep using the addressed-content import path.
     host_file_drag: HostFileDrag,
@@ -1154,8 +1150,10 @@ impl Shell {
             pointer_capture: None,
             contributed_pointer: None,
             surface_pointer_buttons: inker::PointerButtons::NONE,
-            active_surface_touches: HashMap::new(),
-            next_surface_touch_id: 2,
+            touch_input: window_input::TouchInput::default(),
+            input_window: 0,
+            window_focus: HashMap::new(),
+            window_buttons: HashMap::new(),
             host_file_drag: HostFileDrag::default(),
             hovered_surface: None,
             content_scroll_moved: None,

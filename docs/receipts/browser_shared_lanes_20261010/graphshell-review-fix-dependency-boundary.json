@@ -1,0 +1,9 @@
+{
+  "metadata_path": "/home/markik/Code/testing/mere/graphshell-three-lanes/integration-resolution/graphshell-post-integration-metadata-retry.json",
+  "metadata_sha256": "7ea99aa19916c02dcd5b3ee4aedd0da2c7f72481f06b866b692fdb27e9757bf2",
+  "resolved_root": "path+file:///home/markik/Code/worktrees/mere-three-lanes/ports/graphshell/web#graphshell-web@0.1.0",
+  "reachable_packages": 894,
+  "pelt_packages": [],
+  "planned_review_fix_scope": "Mere ports/pelt/core and Turnstone consumer source; neither in Graphshell Wasm dependency cone",
+  "boundary": "Raw archived metadata inspected, no Cargo rebuild. Future scope changes require renewed cone audit."
+}

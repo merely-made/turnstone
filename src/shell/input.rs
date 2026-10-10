@@ -38,7 +38,7 @@ pub(super) fn pointer_button(button: MouseButton) -> Option<PointerButton> {
     }
 }
 
-fn surface_mouse_button(button: MouseButton) -> Option<inker::MouseButton> {
+pub(super) fn surface_mouse_button(button: MouseButton) -> Option<inker::MouseButton> {
     match button {
         MouseButton::Left => Some(inker::MouseButton::Left),
         MouseButton::Middle => Some(inker::MouseButton::Middle),
@@ -60,7 +60,7 @@ fn surface_button_mask(button: MouseButton) -> inker::PointerButtons {
     }
 }
 
-fn mouse_pointer_event(
+pub(super) fn mouse_pointer_event(
     x: f32,
     y: f32,
     phase: inker::PointerPhase,
@@ -219,32 +219,7 @@ impl Shell {
         if let Some(hit) = crate::surface::hit_test(&plan, self.app.focus, x, y)
             && let crate::surface::SurfaceKind::Content(node) = hit.kind
         {
-            // Ctrl+wheel is page zoom, the browser convention, and it takes the
-            // document under the pointer rather than the focused one — a
-            // workbench can tile several live documents at once. The change is
-            // durable, so it lowers through an Action rather than bypassing the
-            // spine as the plain scroll does. An engine that does not report
-            // the control never claims the gesture and scrolls as before; the
-            // canvas camera zoom is untouched (it fires over empty canvas).
-            if self.ctrl && dy != 0.0 && self.app.page_zoom_offered(node) {
-                self.act(if dy > 0.0 {
-                    Action::PageZoomIn { member: node }
-                } else {
-                    Action::PageZoomOut { member: node }
-                });
-                return;
-            }
-            self.content_input(
-                hit.id,
-                pelt_core::PeltInput::Wheel {
-                    position: inker::PhysicalPosition {
-                        x: hit.local.0,
-                        y: hit.local.1,
-                    },
-                    delta: (dx, dy),
-                    modifiers: self.session_modifiers(),
-                },
-            );
+            self.content_wheel(0, hit.id, node, hit.local, (dx, dy));
             return;
         }
         if let Some(crate::surface::HitResult {
@@ -863,7 +838,7 @@ impl Shell {
         }
         if let Some(crate::surface::SurfaceKind::Content(node)) = self.pointer_capture {
             self.sync_content_placements();
-            if let Some(id) = self.content_sessions.pool.captured_placement(0).copied()
+            if let Some(id) = super::window_input::captured_mouse(&self.content_sessions.pool)
                 && let Some(placement) = self.content_sessions.pool.placement(&id)
             {
                 let local = (x - placement.rect.x, y - placement.rect.y);
@@ -1051,6 +1026,17 @@ impl Shell {
     pub(super) fn cancel_content_pointer(&mut self) {
         // Retire host custody first: pool input synchronizes placements and
         // may otherwise recursively discover the same invalid admission.
+        let mut windows = vec![0];
+        windows.extend(
+            self.lens_windows
+                .values()
+                .map(|lens| lens.ordinal as u64 + 1),
+        );
+        for window in windows {
+            self.touch_input
+                .focus_lost(&mut self.content_sessions.pool, window);
+        }
+        self.window_buttons.clear();
         let captured = self.pointer_capture.take();
         let contributed = self.contributed_pointer.take();
         let pane = contributed
@@ -1061,7 +1047,7 @@ impl Shell {
         {
             surface.mouse_cancel(0.0, 0.0);
         }
-        if let Some(id) = self.content_sessions.pool.captured_placement(0).copied() {
+        if let Some(id) = super::window_input::captured_mouse(&self.content_sessions.pool) {
             self.content_input(
                 id,
                 pelt_core::PeltInput::Session(inker::SessionInput::Cancel),
@@ -1080,12 +1066,27 @@ impl Shell {
         phase: inker::PointerPhase,
         button: Option<inker::MouseButton>,
     ) {
+        self.sync_content_placements();
+        let Some(placement) = self.content_sessions.pool.placement(&appearance).cloned() else {
+            return;
+        };
+        let window = placement.window;
+        let previous = self
+            .window_buttons
+            .get(&window)
+            .copied()
+            .unwrap_or(inker::PointerButtons::NONE);
+        let buttons = super::window_input::mouse_buttons(window, previous, phase, button);
+        self.window_buttons.insert(window, buttons);
+        if window == 0 {
+            self.surface_pointer_buttons = buttons;
+        }
         let event = mouse_pointer_event(
-            local.0,
-            local.1,
+            local.0 + placement.rect.x,
+            local.1 + placement.rect.y,
             phase,
             button,
-            self.surface_pointer_buttons,
+            buttons,
             inker::KeyboardModifiers {
                 shift: self.shift,
                 ctrl: self.ctrl,
@@ -1093,7 +1094,15 @@ impl Shell {
                 meta: self.meta,
             },
         );
-        self.content_input(appearance, pelt_core::PeltInput::Pointer(event));
+        let effect = self
+            .content_sessions
+            .pool
+            .input_at(window, pelt_core::PeltInput::Pointer(event));
+        let node = match placement.content {
+            super::content_pool::ContentKey::Node(node)
+            | super::content_pool::ContentKey::Reader { node, .. } => node,
+        };
+        self.apply_content_effect(node, effect);
     }
 
     pub(super) fn apply_pending_surface_cursor(&mut self) {
@@ -1151,13 +1160,13 @@ impl Shell {
         self.pointer_capture = None;
         if let Some(crate::surface::SurfaceKind::Content(_)) = captured {
             self.sync_content_placements();
-            if let Some(id) = self.content_sessions.pool.captured_placement(0).copied()
+            if let Some(id) = super::window_input::captured_mouse(&self.content_sessions.pool)
                 && let Some(placement) = self.content_sessions.pool.placement(&id)
                 && let Some(button) = surface_mouse_button(button)
             {
                 let local = (x - placement.rect.x, y - placement.rect.y);
                 self.content_mouse(id, local, inker::PointerPhase::Up, Some(button));
-                if self.content_sessions.pool.captured_placement(0).is_some() {
+                if super::window_input::captured_mouse(&self.content_sessions.pool).is_some() {
                     self.pointer_capture = captured;
                 }
             }
@@ -1224,6 +1233,10 @@ impl Shell {
     /// the content node hit at Started, matching implicit pointer capture for
     /// direct-manipulation devices even if later coordinates leave the tile.
     pub(super) fn deliver_touch(&mut self, touch: Touch) {
+        self.deliver_touch_in(0, touch);
+    }
+
+    pub(super) fn deliver_touch_in(&mut self, window: u64, touch: Touch) {
         let phase = match touch.phase {
             TouchPhase::Started => inker::PointerPhase::Down,
             TouchPhase::Moved => inker::PointerPhase::Move,
@@ -1240,7 +1253,8 @@ impl Shell {
             let value = force.normalized() as f32;
             value.is_finite().then(|| value.clamp(0.0, 1.0))
         });
-        self.deliver_touch_contact(
+        self.deliver_touch_contact_in(
+            window,
             touch.id,
             phase,
             touch.location.x as f32,
@@ -1262,111 +1276,41 @@ impl Shell {
         pressure: Option<f32>,
         altitude_angle: Option<f32>,
     ) {
+        self.deliver_touch_contact_in(0, host_id, phase, x, y, pressure, altitude_angle);
+    }
+    pub(super) fn deliver_touch_contact_in(
+        &mut self,
+        window: u64,
+        host_id: u64,
+        phase: inker::PointerPhase,
+        x: f32,
+        y: f32,
+        pressure: Option<f32>,
+        altitude_angle: Option<f32>,
+    ) {
         if self.app.user_agent_decision.is_open() {
             return;
         }
-        let position = (x, y);
-        let active = if phase == inker::PointerPhase::Down {
-            let target = crate::surface::hit_test(
-                &self.surface_plan(),
-                self.app.focus,
-                position.0,
-                position.1,
-            )
-            .and_then(|hit| match hit.kind {
-                crate::surface::SurfaceKind::Content(node)
-                    if self.content_sessions.has_surface(&node) =>
-                {
-                    Some(node)
-                },
-                _ => None,
-            });
-            let Some(node) = target else {
-                return;
-            };
-            let pointer_id = self.allocate_surface_touch_id();
-            let active = super::ActiveSurfaceTouch {
-                pointer_id,
-                node,
-                is_primary: self.active_surface_touches.is_empty(),
-            };
-            self.active_surface_touches.insert(host_id, active);
-            active
-        } else {
-            let Some(active) = self.active_surface_touches.get(&host_id).copied() else {
-                return;
-            };
-            active
-        };
-
-        let local = self.surface_plan().into_iter().find_map(|surface| {
-            (surface.kind == crate::surface::SurfaceKind::Content(active.node))
-                .then_some((position.0 - surface.rect.x, position.1 - surface.rect.y))
-        });
-        let delivered = local.is_some_and(|(x, y)| {
-            self.content_sessions
-                .surface_mut(&active.node)
-                .is_some_and(|producer| {
-                    match producer.send_pointer_input(inker::PointerEvent {
-                        pointer_id: active.pointer_id,
-                        pointer_type: inker::PointerType::Touch,
-                        is_primary: active.is_primary,
-                        phase,
-                        position: inker::PhysicalPosition { x, y },
-                        button: match phase {
-                            inker::PointerPhase::Down | inker::PointerPhase::Up => {
-                                Some(inker::MouseButton::Left)
-                            }
-                            inker::PointerPhase::Move | inker::PointerPhase::Cancel => None,
-                        },
-                        buttons: if matches!(phase, inker::PointerPhase::Down | inker::PointerPhase::Move) {
-                            inker::PointerButtons::PRIMARY
-                        } else {
-                            inker::PointerButtons::NONE
-                        },
-                        width: 1.0,
-                        height: 1.0,
-                        pressure,
-                        tangential_pressure: None,
-                        tilt_x: None,
-                        tilt_y: None,
-                        twist: None,
-                        altitude_angle,
-                        azimuth_angle: None,
-                        modifiers: inker::KeyboardModifiers {
-                            shift: self.shift,
-                            ctrl: self.ctrl,
-                            alt: self.alt,
-                            meta: self.meta,
-                        },
-                    }) {
-                        Ok(()) => true,
-                        Err(error) => {
-                            tracing::warn!(node = %active.node, %error, "surface touch delivery failed");
-                            false
-                        }
-                    }
-                })
-        });
-        if matches!(phase, inker::PointerPhase::Up | inker::PointerPhase::Cancel) {
-            self.active_surface_touches.remove(&host_id);
-        }
-        if delivered {
+        self.sync_content_placements();
+        let plan = self.input_plan(window);
+        if self.touch_input.deliver(
+            &mut self.content_sessions.pool,
+            &plan,
+            self.app.focus,
+            window,
+            host_id,
+            phase,
+            inker::PhysicalPosition { x, y },
+            pressure,
+            altitude_angle,
+            inker::KeyboardModifiers {
+                shift: self.shift,
+                ctrl: self.ctrl,
+                alt: self.alt,
+                meta: self.meta,
+            },
+        ) {
             self.request_redraw();
-        }
-    }
-
-    fn allocate_surface_touch_id(&mut self) -> i32 {
-        loop {
-            let candidate = self.next_surface_touch_id.max(2);
-            self.next_surface_touch_id = candidate.checked_add(1).unwrap_or(2);
-            if self
-                .active_surface_touches
-                .values()
-                .all(|touch| touch.pointer_id != candidate)
-            {
-                return candidate;
-            }
         }
     }
 }

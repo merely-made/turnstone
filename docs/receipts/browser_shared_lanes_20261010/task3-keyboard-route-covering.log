@@ -1,0 +1,55 @@
+Local workspace: /home/markik/Code/worktrees/mere-three-lanes
+Local lock: /home/markik/Code/worktrees/mere-three-lanes/.cargo/local/Cargo.lock
+warning: patch `boa_engine v1.0.0-dev (https://github.com/mark-ik/boa.git?branch=genet#52cfb6ff)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	https://github.com/mark-ik/boa.git
+warning: patch `boa_gc v1.0.0-dev (https://github.com/mark-ik/boa.git?branch=genet#52cfb6ff)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	https://github.com/mark-ik/boa.git
+warning: patch `genet-clipboard v0.1.0 (/home/markik/Code/worktrees/genet-three-lanes/components/genet-clipboard)` was not used in the crate graph
+warning: patch `ipc-channel v0.22.0 (/home/markik/Code/worktrees/genet-three-lanes/support/patches/ipc-channel)` was not used in the crate graph
+warning: patch `script-engine-piccolo v0.0.0 (/home/markik/Code/worktrees/genet-three-lanes/components/script-engine-piccolo)` was not used in the crate graph
+warning: patch `servo-media-player v0.2.0 (/home/markik/Code/worktrees/genet-three-lanes/components/media/player)` was not used in the crate graph
+warning: patch `servo-media-streams v0.2.0 (/home/markik/Code/worktrees/genet-three-lanes/components/media/streams)` was not used in the crate graph
+warning: patch `servo-media-traits v0.2.0 (/home/markik/Code/worktrees/genet-three-lanes/components/media/traits)` was not used in the crate graph
+help: Check that the patched package version and available features are compatible
+      with the dependency requirements. If the patch has a different version from
+      what is locked in the Cargo.lock file, run `cargo update` to use the new
+      version. This may also occur with an optional dependency that is not enabled.
+   Compiling pelt-core v0.2.0 (/home/markik/Code/worktrees/mere-three-lanes/ports/pelt/core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.24s
+     Running tests/content.rs (/home/markik/Code/target/debug/deps/content-84760de4a06ab392)
+
+running 8 tests
+test a_failed_lane_swap_keeps_the_document ... ok
+test adopting_an_owned_appearance_does_not_respawn_or_fetch ... ok
+test a_load_that_routes_to_a_surface_swaps_lanes_and_a_document_address_swaps_back ... ok
+test host_history_content_hands_links_up_and_opens_entries_in_either_lane ... ok
+test an_engine_pin_holds_across_navigations ... ok
+test host_loading_routes_a_held_body_by_its_media_type ... ok
+test each_navigation_routes_its_engine_and_history_reopens_the_recorded_one ... ok
+test keyboard_envelope_completes_the_same_surface_link_route_as_session_enter ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/host_surface.rs (/home/markik/Code/target/debug/deps/host_surface-0912365f4342d869)
+
+running 13 tests
+test a_host_spawned_surface_takes_every_navigation_command_on_its_web_plane ... ok
+test a_spawned_extent_is_kept_until_the_host_lays_the_surface_out_anew ... ok
+test failed_other_placement_frame_cannot_leave_old_input_geometry_admitted ... ok
+test neutral_drag_and_modified_wheel_preserve_payload_and_scale_once ... ok
+test full_keyboard_payload_reaches_the_focused_surface_through_the_pool ... ok
+test neutral_surface_press_preserves_button_and_modifiers_in_pointer_contract ... ok
+test placement_removal_cancels_the_original_pen_pointer_without_losing_sensors ... ok
+test pool_pointer_capture_qualifies_identity_button_and_focus_loss ... ok
+test positive_subunit_scale_uses_the_same_geometry_for_layout_and_pointer ... ok
+test preparing_surface_input_resizes_only_the_target_without_resource_polling ... ok
+test surface_ime_commit_is_delivered_and_unsupported_preedit_is_explicit ... ok
+test the_host_keeps_the_producer_and_its_event_plane ... ok
+test window_focus_loss_cancels_each_pointer_capture_in_that_window ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

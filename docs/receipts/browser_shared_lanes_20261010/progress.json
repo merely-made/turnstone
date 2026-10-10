@@ -124,14 +124,85 @@
       },
       "compile_seconds": 203,
       "source_boundary": "244 scoped source/config paths unchanged; portable Mere and Genet lock unchanged; ignored Mere local lock updated and effective snapshot preserved"
+    },
+    "integrated_graphshell_native": {
+      "passed": 28,
+      "failed": 0,
+      "gates": {
+        "local": 15,
+        "field_adapter": 2,
+        "appearance": 6,
+        "local_scene": 2,
+        "local_projection": 3
+      },
+      "boundary": "Native web feature; before browser-only compile repairs"
+    },
+    "integrated_graphshell_wasm": {
+      "attempt1": "compile failure:5 diagnostics,4 owned browser mistakes",
+      "attempt2": "full-default build exit0",
+      "compile_seconds": 45.77,
+      "source_before_after_equal": true,
+      "source_sha256": "c4c2e70e92f10b77bc89f1f0030c0904dfcba639f8ed35a9cbd4bbb9eedc9240",
+      "bindgen_version": "0.2.129",
+      "bindgen_exit": 0,
+      "raw_artifact_bytes": 2073042965,
+      "raw_sha256": "94026f502a68ed40fcb46458821517c1fad8e30d5076458f640553994f4e75c7",
+      "runtime_wasm_bytes": 441986032,
+      "runtime_sha256": "91eeafab61d783774b9f8cc4bcfd05918e48054ff2f9ad1301e4a70e98b77779",
+      "frozen_bundle_files": 199,
+      "boundary": "Pre-input-review-fix full source checkpoint; fixes outside Wasm cone. Browser behavior pending."
+    },
+    "graphshell_canonical_parser": {
+      "passed": 130,
+      "total": 130,
+      "boundary": "Actual Rust parser from frozen Wasm, no renderer/browser behavior qualification"
+    },
+    "keyboard_route_review_fix": {
+      "red": {
+        "passed": 0,
+        "failed": 1,
+        "filtered": 7
+      },
+      "green": {
+        "passed": 1,
+        "failed": 0,
+        "filtered": 7
+      },
+      "covering": {
+        "passed": 21,
+        "failed": 0,
+        "ignored": 0,
+        "filtered": 0,
+        "content": 8,
+        "host_surface": 13
+      },
+      "boundary": "Real SDK routing with explicit instrumented engine boundary; scoped source/config/3locks stable"
+    },
+    "turnstone_input_review_fix": {
+      "red": {
+        "passed": 1,
+        "failed": 14,
+        "filtered": 792
+      },
+      "green": {
+        "passed": 15,
+        "failed": 0,
+        "filtered": 792
+      },
+      "covering": {
+        "content_pool_passed": 8,
+        "foreign_lens_passed": 1,
+        "failed": 0,
+        "named_contributed_release_cancel_controls": "both executed and passed"
+      },
+      "source_boundary": "Current covering 3671 source/config/manifest/lock/HEAD records stable except ignored Turnstone local lock ba22a9... to12a5a5...; both contents preserved. Earlier GREEN effective lock accurately recovered after interruption."
     }
   },
   "pending": [
-    "postmerge shared regression group and final integrated family qualification",
-    "full Turnstone default and Piccolo integration and all-target checks",
+    "full Turnstone default/Piccolo integration and all-target checks",
     "native headed accessibility and Reader appearances",
-    "Graphshell full five public mounts and complete live scenario inventory",
-    "fresh task and whole-branch review",
+    "Graphshell field styling repair, full five public mounts, complete live runtime inventory and legacy retirement",
+    "fresh scoped repair, task and whole-branch review",
     "final supplier commits, consumer pins and portable graph qualification"
   ],
   "human_platform_gates": "No physical assistive technology receipt is supplied by these automated tests.",
@@ -407,11 +478,208 @@
     "task3-shared-postmerge-before.sources": {
       "bytes": 38233,
       "sha256": "89211f0d65ec54e9108dfc7d3865ceb0aa5083429529ee2fde7c0b2bbbfd91e4"
+    },
+    "graphshell-attempt-1-wasm-build.log": {
+      "bytes": 35819,
+      "sha256": "823cdec7c4578f5b671358d5d9bab0edf2e814ed90dfdcc1087d305cf0d6503b"
+    },
+    "graphshell-attempt-1-source-comparison.json": {
+      "bytes": 100,
+      "sha256": "c4a64b9375bdc0c9192f85da9b9b081c9992cab283fa6039610de27241c3176a"
+    },
+    "graphshell-attempt-1-native-additional-results.json": {
+      "bytes": 1515,
+      "sha256": "83bc4e19cde1d069a7ddba69f26865300e69e27197df184faded02d8c9d62d54"
+    },
+    "graphshell-attempt-1-native-local.log": {
+      "bytes": 43653,
+      "sha256": "2786385a121a70f58b41ce981a20afe5328afba7139c53d3fa7a022260eba9da"
+    },
+    "graphshell-attempt-1-native-fields.log": {
+      "bytes": 36505,
+      "sha256": "94d10363bcf0acf65d9ca676a055666af836469c11f75fee0bec8792522c5c9a"
+    },
+    "graphshell-attempt-1-native-appearance.log": {
+      "bytes": 36846,
+      "sha256": "e25e5ce09ea0f2a29b91323710c1e530b843539053bb54ad7fba49ddeb6a6c5a"
+    },
+    "graphshell-attempt-1-native-scenes.log": {
+      "bytes": 32110,
+      "sha256": "d45ebe897095594b72c3e472e04784704200187a6402eb1f8f0ec9218c1d055f"
+    },
+    "graphshell-attempt-1-native-projection.log": {
+      "bytes": 32204,
+      "sha256": "14b031e3dea9e1d85b22122c624d773129ca8c0c0ba79fbaa10756f563d8e3d6"
+    },
+    "graphshell-attempt-1-source-before.json.gz": {
+      "bytes": 6523255,
+      "sha256": "943cb9521522a8aa76dd86423d935d556241c093ed9d904adb04f5ae14887ebf"
+    },
+    "graphshell-attempt-1-source-after.json.gz": {
+      "bytes": 6523255,
+      "sha256": "943cb9521522a8aa76dd86423d935d556241c093ed9d904adb04f5ae14887ebf"
+    },
+    "graphshell-attempt-2-wasm-build.log": {
+      "bytes": 27603,
+      "sha256": "fd749556d873cb54dcdad2efa5fe096a12bb81743683c19605a01db6fcde7e32"
+    },
+    "graphshell-attempt-2-source-comparison.json": {
+      "bytes": 177,
+      "sha256": "c2b8c83179ecbce8f63603148b5bac1132ce7557e37d35fed9605c1494ff9dbc"
+    },
+    "graphshell-attempt-2-compile-repairs.json": {
+      "bytes": 1578,
+      "sha256": "209acf54f346c1a942dc4362865938acb5bfffc1b82d05edbbc7c4af67ba067b"
+    },
+    "graphshell-attempt-2-artifact-capture.json": {
+      "bytes": 591,
+      "sha256": "73351a2105d52e8c14f9eba1c30e8d47c2b39afab834cdf076b3d2ba558e7155"
+    },
+    "graphshell-attempt-2-bundle-provenance.json": {
+      "bytes": 30960,
+      "sha256": "5ea24e873f58fed24a694602a66e8f472a3f7e3af5c3a5d74744215055d98917"
+    },
+    "graphshell-attempt-2-parser-preflight.json": {
+      "bytes": 21836,
+      "sha256": "c1def8f70a8994b4fbc1e9ce07de1a5d2472b0d1223f87e2f3397c8d18aff31e"
+    },
+    "graphshell-attempt-2-source-before.json.gz": {
+      "bytes": 6523283,
+      "sha256": "4ba2b53bbc8d58258c5a50aa477c530cadfec44de0292efefc069be19e65ff85"
+    },
+    "graphshell-attempt-2-source-after.json.gz": {
+      "bytes": 6523283,
+      "sha256": "4ba2b53bbc8d58258c5a50aa477c530cadfec44de0292efefc069be19e65ff85"
+    },
+    "task3-keyboard-route-covering-lock-check.txt": {
+      "bytes": 194,
+      "sha256": "8e61bc73a4a79cc75a1770b33c47776cb4dd6dd998b6e3ce64cd695340a916db"
+    },
+    "task3-keyboard-route-covering-source-check.txt": {
+      "bytes": 5216,
+      "sha256": "6e57cf91e5c5a26b55a978b3d3c05cd132208182378e6d94781a342f370ebac7"
+    },
+    "task3-keyboard-route-covering.log": {
+      "bytes": 4003,
+      "sha256": "642a7a4b17ed08243a6e82ecb4b0a2a6fefae398ef618b27e36ad3c0bf8e2e71"
+    },
+    "task3-keyboard-route-green-lock-check.txt": {
+      "bytes": 194,
+      "sha256": "8e61bc73a4a79cc75a1770b33c47776cb4dd6dd998b6e3ce64cd695340a916db"
+    },
+    "task3-keyboard-route-green-source-check.txt": {
+      "bytes": 5216,
+      "sha256": "6e57cf91e5c5a26b55a978b3d3c05cd132208182378e6d94781a342f370ebac7"
+    },
+    "task3-keyboard-route-green.log": {
+      "bytes": 2277,
+      "sha256": "67d4b68948b848e2d6854b498affa485c924eafb44f02331ba4191c3ee058e4f"
+    },
+    "task3-keyboard-route-green.sources": {
+      "bytes": 8936,
+      "sha256": "c5ff6bb29bed4f914dde5b6ae3324ffac642ad972629904209bb03a4fbe5265f"
+    },
+    "task3-keyboard-route-red-lock-check.txt": {
+      "bytes": 194,
+      "sha256": "8e61bc73a4a79cc75a1770b33c47776cb4dd6dd998b6e3ce64cd695340a916db"
+    },
+    "task3-keyboard-route-red-source-check.txt": {
+      "bytes": 4877,
+      "sha256": "39eca18c4a179e8d98a5a06995ef7c87a1f11bdaf2bae0ccdb315ffb65802782"
+    },
+    "task3-keyboard-route-red.log": {
+      "bytes": 3226,
+      "sha256": "3d7b9f054da95917565b862dbd4b287c64b627cedb483339dbd0f336d0c6e597"
+    },
+    "task3-keyboard-route-red.locks": {
+      "bytes": 380,
+      "sha256": "cc3d17acbb38862ba5e6484b692baa5233b4e8357fd6ac4a0030980167f6fe2a"
+    },
+    "task3-keyboard-route-red.sources": {
+      "bytes": 8349,
+      "sha256": "b4ce3033b556a03a8aceabf4b5c540fbd9dabe3ee0aa84923def2f463dfedb97"
+    },
+    "task3-keyboard-route-planning.sources": {
+      "bytes": 286,
+      "sha256": "78569f7f0c72111780386dee39142fdf881ed2aa16aa9a41c05c0285169fb951"
+    },
+    "task-3-full-review.md": {
+      "bytes": 8255,
+      "sha256": "37ebb6765d2af007e1a6179bb57dad470266a40c910f3dae082603e613e2a24d"
+    },
+    "graphshell-review-fix-dependency-boundary.json": {
+      "bytes": 657,
+      "sha256": "1f7c9e384379fc9f44f2f47ca9dce18c169833d0d5553963331a7bc7abbe4b51"
+    },
+    "task-1-review-input-red-before.sha256": {
+      "bytes": 574142,
+      "sha256": "c6ae1f01cf8d13f2a2f74c10da569f079c227ecfc0b0c5041819d29d03c07d9a"
+    },
+    "task-1-review-input-red.log": {
+      "bytes": 64378,
+      "sha256": "998021aca209aec20c65088ab9d80ca9bbf9580cfe98c0cfbb76829571128554"
+    },
+    "task-1-review-input-red-after.sha256": {
+      "bytes": 574142,
+      "sha256": "dcf3e24e612e0d637a81e000b46c084ccba1167cceedc52d8620a2ba5440fdd0"
+    },
+    "task-1-review-input-red-local-lock.txt": {
+      "bytes": 462543,
+      "sha256": "12a5a5a6c20fcd3a53b5aaf5e82f6616bbb8e2d840e47ce738ef348c7021f0e1"
+    },
+    "task-1-review-input-green-before.sha256": {
+      "bytes": 574142,
+      "sha256": "6880f410d7a2ac7e35668044deeb991772b9d3890926d70c8fc8c2c297357a73"
+    },
+    "task-1-review-input-green.log": {
+      "bytes": 58930,
+      "sha256": "c187253d36be82a420d724eb27733bca212aac2fb5b8ac5081431f8f9165f678"
+    },
+    "task-1-review-input-green-after.sha256": {
+      "bytes": 574142,
+      "sha256": "79065c89949caf39976f419a59a875e9518d562db673a12332b4f7ce11120737"
+    },
+    "task-1-review-input-covering-run.py": {
+      "bytes": 4751,
+      "sha256": "d88a9b784ef270a2bfcf47c22f7ac735dc24cd75792c2ada1924d44960c34aa5"
+    },
+    "task-1-review-input-covering-before.sha256": {
+      "bytes": 574414,
+      "sha256": "79065a396c4d005b66d0c6c114fff1b08d2f6945a0bb2cdab89383afa5694e60"
+    },
+    "task-1-review-input-green-effective-local-lock-recovered.txt": {
+      "bytes": 462543,
+      "sha256": "ba22a9d07c445768f8552b88f2d649284dd38132121b4e138783aa16eddc50a0"
+    },
+    "task-1-review-input-covering-before-local-lock.txt": {
+      "bytes": 462543,
+      "sha256": "ba22a9d07c445768f8552b88f2d649284dd38132121b4e138783aa16eddc50a0"
+    },
+    "task-1-review-input-covering-content-pool.log": {
+      "bytes": 58677,
+      "sha256": "5f2930e41bf60c03805a1200209041f9a2c46fa83288a9cf40e08fb8e86b8f26"
+    },
+    "task-1-review-input-covering-native-lens.log": {
+      "bytes": 57728,
+      "sha256": "aee3a3908fee3dbd89e340581136a8cfc682cf12d11f77ca7eaa83015db70e2b"
+    },
+    "task-1-review-input-covering-after.sha256": {
+      "bytes": 574414,
+      "sha256": "c03eb082130ef8a0e3bad9cf97f417dfe051e835485768fb436d13b5a03a4819"
+    },
+    "task-1-review-input-covering-after-local-lock.txt": {
+      "bytes": 462543,
+      "sha256": "12a5a5a6c20fcd3a53b5aaf5e82f6616bbb8e2d840e47ce738ef348c7021f0e1"
+    },
+    "task-1-review-input-covering-results.json": {
+      "bytes": 2074,
+      "sha256": "e7a991bc74aaadef3731c7030b750a274d25ee810d3875a41eab69cdd8a45623"
     }
   },
   "review": {
     "scoped_genet_bridge": "Approved; no Critical or Important; minor reset-safe vector documentation applied after reviewed checkpoint",
-    "remaining": "Full task and whole-branch reviews are still required."
+    "remaining": "Full task and whole-branch reviews are still required.",
+    "shared_full": "Four Important and one Minor fixes implemented; SDK covering21 and Turnstone focused15 plus covering9 pass. Fresh combined scoped rereview pending."
   },
   "integration_cutoff": {
     "genet": "7422e90613f9017e5bb790e3acb48f61776b2eda",
@@ -423,5 +691,41 @@
     "genet": "8939637d5ca6c508e218f256972c097d5e2a2bb5",
     "mere": "cb7c45d4a",
     "turnstone": "4743254"
+  },
+  "compressed_source_proofs": {
+    "graphshell-attempt-1-source-before.json.gz": {
+      "original_bytes": 24310613,
+      "original_sha256": "165858c1087e5c56856e8754529f599143c4f45abd4a7ca17e8c560a8810687e",
+      "compression": "gzip",
+      "source_path": "/home/markik/Code/testing/mere/graphshell-three-lanes/integrated-default/attempt-1/source-before/source.json"
+    },
+    "graphshell-attempt-1-source-after.json.gz": {
+      "original_bytes": 24310613,
+      "original_sha256": "165858c1087e5c56856e8754529f599143c4f45abd4a7ca17e8c560a8810687e",
+      "compression": "gzip",
+      "source_path": "/home/markik/Code/testing/mere/graphshell-three-lanes/integrated-default/attempt-1/source-after/source.json"
+    },
+    "graphshell-attempt-2-source-before.json.gz": {
+      "original_bytes": 24310613,
+      "original_sha256": "c4c2e70e92f10b77bc89f1f0030c0904dfcba639f8ed35a9cbd4bbb9eedc9240",
+      "compression": "gzip",
+      "source_path": "/home/markik/Code/testing/mere/graphshell-three-lanes/integrated-default/attempt-2/source-before/source.json"
+    },
+    "graphshell-attempt-2-source-after.json.gz": {
+      "original_bytes": 24310613,
+      "original_sha256": "c4c2e70e92f10b77bc89f1f0030c0904dfcba639f8ed35a9cbd4bbb9eedc9240",
+      "compression": "gzip",
+      "source_path": "/home/markik/Code/testing/mere/graphshell-three-lanes/integrated-default/attempt-2/source-after/source.json"
+    }
+  },
+  "resource_policy": {
+    "disk_cleanup_trigger_free_bytes": 500000000000,
+    "ram_buffer_bytes": 3221225472,
+    "ram_buffer_origin": "Controller working buffer after user reports RAM overuse crash",
+    "heavy_jobs": "coordinate serial build/link/package/browser work across local chats; avoid overlapping wasm-bindgen peak6.7GB",
+    "notifications": [
+      "Discuss graph semantics",
+      "Genet and Vano"
+    ]
   }
 }

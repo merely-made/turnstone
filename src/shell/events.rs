@@ -302,10 +302,7 @@ impl ApplicationHandler for Shell {
         match event {
             WindowEvent::Focused(focused) => {
                 self.primary_focused = focused;
-                if !focused {
-                    self.cancel_content_pointer();
-                }
-                self.sync_content_placements();
+                self.native_input_focus(0, focused);
                 self.push_a11y_tree();
             },
             WindowEvent::Moved(_) | WindowEvent::ScaleFactorChanged { .. } => {
@@ -395,14 +392,12 @@ impl ApplicationHandler for Shell {
             },
             WindowEvent::Touch(touch) => self.deliver_touch(touch),
             WindowEvent::KeyboardInput { event, .. } => {
-                if !self.deliver_surface_key(
+                self.deliver_window_key(
+                    0,
                     &event.logical_key,
                     event.state == ElementState::Pressed,
                     event.text.as_deref(),
-                ) && event.state == ElementState::Pressed
-                {
-                    self.on_key(&event.logical_key);
-                }
+                );
             },
             // IME composition. Preedit is ephemeral by the gesture law — it
             // rides directly on state and only the commit lowers to an
@@ -422,11 +417,7 @@ impl ApplicationHandler for Shell {
                     }
                     return;
                 }
-                if !self.app.omnibar.open && self.deliver_contributed_ime(&ime) {
-                    self.request_redraw();
-                    return;
-                }
-                if !self.app.omnibar.open && self.deliver_document_ime(&ime) {
+                if !self.app.omnibar.open && self.deliver_window_ime(0, &ime) {
                     self.request_redraw();
                     return;
                 }

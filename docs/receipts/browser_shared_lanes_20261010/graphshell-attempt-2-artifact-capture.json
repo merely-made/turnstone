@@ -1,0 +1,13 @@
+{
+  "status": "full_default_wasm_build_success_bindgen_pending",
+  "captured_at": "2026-10-10T08:04:24.567299+00:00",
+  "raw_wasm": {
+    "path": "/home/markik/Code/testing/mere/graphshell-three-lanes/integrated-default/attempt-2/graphshell_web.input.wasm",
+    "sha256": "94026f502a68ed40fcb46458821517c1fad8e30d5076458f640553994f4e75c7",
+    "bytes": 2073042965
+  },
+  "build_log": "wasm-build.log",
+  "build_seconds": 45.77,
+  "profile": "dev unoptimized debuginfo",
+  "features": "standalone web defaults: main-page, product, remote, canvas-gpu, image-decode; applets opt-in excluded"
+}
