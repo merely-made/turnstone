@@ -261,6 +261,36 @@ impl GroupedHostDataset {
                 .transform
                 .translate = sceno::Vec2::new(position.x, position.y);
         }
+        let scene = &mut projection.scene;
+        // Hosted relationships are straight world-space routes. Keep the
+        // portable scene consistent with remembered canvas placements.
+        for relation in &mut scene.relations {
+            relation.points = vec![
+                scene.items[relation.from.0 as usize].transform.translate,
+                scene.items[relation.to.0 as usize].transform.translate,
+            ];
+        }
+        let mut bounds: Option<sceno::Rect> = None;
+        for item in &scene.items {
+            let transform = scene
+                .to_world(item.space)
+                .ok_or("Invalid hosted scene space")?
+                .then(&item.transform);
+            let rect = item.footprint.bounds().unwrap_or_default();
+            for (x, y) in [
+                (rect.origin.x, rect.origin.y),
+                (rect.origin.x + rect.size.w, rect.origin.y),
+                (rect.origin.x, rect.origin.y + rect.size.h),
+                (rect.origin.x + rect.size.w, rect.origin.y + rect.size.h),
+            ] {
+                let point = sceno::Rect::new(
+                    transform.apply(sceno::Vec2::new(x, y)),
+                    sceno::Size2::default(),
+                );
+                bounds = Some(bounds.map_or(point, |previous| previous.union(point)));
+            }
+        }
+        scene.bounds = bounds.unwrap_or_default();
         Ok(projection)
     }
 
@@ -462,6 +492,41 @@ mod tests {
         grouped.state.expanded.clear();
         assert_eq!(grouped.view().unwrap().graph.node_count(), 3);
         assert_eq!(grouped.envelope, original);
+    }
+
+    #[test]
+    fn the_portable_fold_scene_keeps_dragged_members_routes_and_bounds_consistent() {
+        let envelope = parse_host_dataset(include_str!(
+            "../web/fixtures/grouped-manifest-components.json"
+        ))
+        .unwrap();
+        let mut grouped = GroupedHostDataset::new(envelope, "contains").unwrap();
+        let moved = PortablePoint::new(10000.0, -20000.0);
+        grouped.remember_positions([("repo:genet".into(), moved)]);
+        let view = grouped.view().unwrap();
+        let instance = view.instances["repo:genet"];
+        let scene = view.scene;
+        assert_eq!(scene.validate_folds(), Ok(()));
+        assert_eq!(
+            scene.items[instance.0 as usize].transform.translate,
+            sceno::Vec2::new(moved.x, moved.y)
+        );
+        assert!(scene.bounds.origin.y <= moved.y);
+        assert!(scene.bounds.origin.x + scene.bounds.size.w >= moved.x);
+        for relation in &scene.relations {
+            assert_eq!(
+                relation.points[0],
+                scene.items[relation.from.0 as usize].transform.translate
+            );
+            assert_eq!(
+                relation.points[1],
+                scene.items[relation.to.0 as usize].transform.translate
+            );
+        }
+        let reopened: sceno::Scene =
+            serde_json::from_str(&serde_json::to_string(&scene).unwrap()).unwrap();
+        assert_eq!(reopened, scene);
+        assert_eq!(reopened.items.len(), grouped.total_occurrences());
     }
 
     #[test]
