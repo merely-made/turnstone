@@ -22,7 +22,7 @@ native = [
     "dep:notochord",
     "dep:castellan",
     "dep:personae",
-    "personae/agent",
+    "personae/ssh",
     "dep:rand_core",
     "dep:serde",
     "dep:pandect",
