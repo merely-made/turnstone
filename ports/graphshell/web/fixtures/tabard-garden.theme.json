@@ -1,0 +1,55 @@
+{
+  "id": "theme:graphshell-garden-receipt",
+  "name": "Garden receipt",
+  "source": "User",
+  "seeds": {
+    "primary": {
+      "r": 70,
+      "g": 140,
+      "b": 95,
+      "a": 255
+    },
+    "secondary": {
+      "r": 75,
+      "g": 135,
+      "b": 180,
+      "a": 255
+    },
+    "tertiary": {
+      "r": 180,
+      "g": 130,
+      "b": 70,
+      "a": 255
+    },
+    "neutral": {
+      "r": 25,
+      "g": 36,
+      "b": 30,
+      "a": 255
+    },
+    "text_header": null,
+    "text_body": null,
+    "success": {
+      "r": 75,
+      "g": 170,
+      "b": 95,
+      "a": 255
+    },
+    "danger": {
+      "r": 205,
+      "g": 80,
+      "b": 65,
+      "a": 255
+    },
+    "dark": true
+  },
+  "mode_sheets": {
+    "dark": [
+      ":root { --tabard-color-bg: #123456; --tabard-color-primary: #78c090; }",
+      ".topbar { border-width: 4px; }"
+    ],
+    "custom:garden": [
+      ":root { --tabard-color-bg: #203020; --tabard-color-primary: #a0d070; --tabard-color-text: #f0fff0; }"
+    ]
+  }
+}

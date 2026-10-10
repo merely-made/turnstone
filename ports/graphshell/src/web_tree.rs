@@ -116,10 +116,24 @@ const SHEET: &str = "\
     .tree-relations ul { margin:0; padding:0 0 0 16px; max-height:96px; overflow-y:auto; } \
     .tree-refusal { margin:4px 12px 8px; padding:8px; color:#f3d2c6; background:#3a1f1a; border:1px solid #a4574a; }";
 
+// Applets retain their host stylesheet; application appearance enters last.
+fn tree_stylesheet(appearance: &str) -> String {
+    #[cfg(feature = "applets")]
+    let applet_sheet = applet::SHEET;
+    #[cfg(not(feature = "applets"))]
+    let applet_sheet = "";
+    format!("{SHEET}\n{applet_sheet}\n{appearance}")
+}
+
 /// What the page, its producer and its hooks share.
 struct Shared {
     adapter_info: RefCell<Option<serde_json::Value>>,
     events: RefCell<Vec<String>>,
+    #[cfg(feature = "applets")]
+    applet: RefCell<applet::Pane>,
+    appearance: crate::web_appearance::Handle,
+    appearance_revision: Cell<u64>,
+
     canvas: RefCell<Canvas>,
     /// Input or a new graph since the producer last drew.
     dirty: Cell<bool>,
@@ -438,6 +452,12 @@ impl TextureProducer for CanvasProducer {
 
 /// The application state the tree renders.
 pub(crate) struct TreePage {
+    #[cfg(feature = "applets")]
+    applet_seen: u64,
+    #[cfg(feature = "applets")]
+    applet_generation: u32,
+    #[cfg(feature = "applets")]
+    applet_query: cambium::TextInput,
     shared: Rc<Shared>,
     root: Element,
     projection_source: Option<String>,
@@ -566,6 +586,10 @@ type Logic = fn(&TreePage) -> Child;
 fn view(page: &TreePage) -> Child {
     if let Some(view) = practice::view(page) {
         return view;
+    }
+    #[cfg(feature = "applets")]
+    if page.shared.applet.borrow().mount.is_some() {
+        return applet::view(page);
     }
     let (width, height) = page.size;
     // Genet does not stretch a custom leaf across its cross axis, so the
@@ -815,10 +839,14 @@ pub fn mount_tree(root: Element) -> Result<(), JsValue> {
             "Graphshell is already mounted on this page",
         ));
     }
+    let owns_title = root.has_attribute("data-owns-title");
     wasm_bindgen_futures::spawn_local(async move {
         if let Err(error) = boot(root).await {
             web_sys::console::error_1(&error.clone().into());
-            if let Some(document) = web_sys::window().and_then(|window| window.document()) {
+            if let Some(document) = web_sys::window()
+                .and_then(|window| window.document())
+                .filter(|_| owns_title)
+            {
                 document.set_title(&format!("GRAPHSHELL TREE FAIL: {error}"));
             }
         }
@@ -883,9 +911,20 @@ async fn boot(root: Element) -> Result<(), String> {
     };
     let nodes = graph.node_count();
     let speed_options = crate::web_speed::options()?;
+    let appearance = crate::web_appearance::mount(
+        root.clone(),
+        product.is_some() && root.has_attribute("data-appearance-application"),
+    )?;
+    let initial_sheet = tree_stylesheet(&appearance.borrow().sheet());
+    let appearance_revision = Cell::new(appearance.borrow().revision);
     let shared = Rc::new(Shared {
         adapter_info: RefCell::new(None),
         events: RefCell::new(Vec::new()),
+        #[cfg(feature = "applets")]
+        applet: RefCell::new(applet::Pane::default()),
+        appearance,
+        appearance_revision,
+
         canvas: RefCell::new(match &placed {
             Some(positions) => web_graphs::placed_canvas(graph, positions, width, height),
             None => web_graphs::prepared_canvas(graph, width, height),
@@ -920,6 +959,10 @@ async fn boot(root: Element) -> Result<(), String> {
         selection_locked: Cell::new(false),
         plant: controls::reader_plant()?,
     });
+    shared
+        .appearance
+        .borrow()
+        .apply_canvas(&mut shared.canvas.borrow_mut());
     if let Some(slice) = controls::meaning_slice()? {
         shared.canvas.borrow_mut().set_meaning_slice(slice);
     }
@@ -946,6 +989,12 @@ async fn boot(root: Element) -> Result<(), String> {
         options,
         move |_window, _commands, _wake| Init {
             state: TreePage {
+                #[cfg(feature = "applets")]
+                applet_seen: 0,
+                #[cfg(feature = "applets")]
+                applet_generation: 0,
+                #[cfg(feature = "applets")]
+                applet_query: cambium::TextInput::new(""),
                 shared: page_shared,
                 root: root.clone(),
                 projection_source: None,
@@ -965,7 +1014,8 @@ async fn boot(root: Element) -> Result<(), String> {
                 size: (width, height),
             },
             logic: view as Logic,
-            sheet: SHEET.to_string(),
+            sheet: initial_sheet,
+
             // A browser lends genet no system faces, so the page brings one.
             fonts: vec![HostFont {
                 family: None,
@@ -1034,6 +1084,34 @@ fn hooks(shared: Rc<Shared>) -> HostHooks<TreePage, Logic, Child> {
                 ctx.runner.update(|page| {
                     practice::advance(page, now_ms() as f64);
                 });
+            }
+            #[cfg(feature = "applets")]
+            {
+                let (version, generation) = {
+                    let pane = frame_shared.applet.borrow();
+                    (pane.version, pane.generation())
+                };
+                if ctx.runner.state().applet_seen != version {
+                    ctx.runner.update(|page| {
+                        page.applet_seen = version;
+                        if page.applet_generation != generation {
+                            page.applet_generation = generation;
+                            page.applet_query = cambium::TextInput::new("");
+                        }
+                    });
+                }
+            }
+            {
+                let mut appearance = frame_shared.appearance.borrow_mut();
+                if let Err(message) = appearance.refresh(false) {
+                    web_sys::console::error_1(&message.into());
+                }
+                if frame_shared.appearance_revision.get() != appearance.revision {
+                    appearance.apply_canvas(&mut frame_shared.canvas.borrow_mut());
+                    frame_shared.appearance_revision.set(appearance.revision);
+                    *ctx.set_sheet = Some(tree_stylesheet(&appearance.sheet()));
+                    frame_shared.dirty.set(true);
+                }
             }
             if ctx
                 .runner
@@ -1272,6 +1350,8 @@ impl NoRepulsionLane for mere::canvas::Canvas {
     }
 }
 
+#[cfg(feature = "applets")]
+mod applet;
 mod controls;
 mod lane;
 mod observe;
