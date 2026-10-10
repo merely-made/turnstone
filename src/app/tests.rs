@@ -6112,3 +6112,36 @@ fn an_expired_invitation_is_reported_with_its_time() {
         "{events:?}"
     );
 }
+
+/// DR-C receipt through the production custody binding, rather than a fixture root.
+#[test]
+#[ignore = "run mere/scripts/dr_c_receipts.py against the isolated receipt keeper"]
+fn dr_c_turnstone_identity_stays_pending() {
+    let mode = std::env::var("DR_C_RECEIPT_MODE").expect("receipt mode");
+    assert!(mode == "absent" || mode == "locked");
+    if mode == "locked" {
+        let mut client = graphshell::native::custody_client::BlockingCustodyClient::open(
+            graphshell::native::app_admission::AppId::new(crate::identity::CUSTODY_APP)).unwrap();
+        let status = client.status().unwrap();
+        assert_eq!(status.lock, graphshell::identity::VaultLockView::Locked);
+        assert!(status.persona_public_key.is_none());
+        assert!(!client.roster().unwrap().entries.is_empty());
+    }
+    let temp = tempfile::tempdir().unwrap();
+    let mut app = App::test_stub_at(temp.path().to_path_buf());
+    app.identity = crate::identity::bind();
+    assert!(app.identity.is_none(), "Turnstone must not bind a fallback root");
+    app.denizens = crate::denizen::Denizens::pending();
+    assert_eq!(app.personae_root(), None);
+    assert_eq!(app.gemini_identity_for("gemini://dr-c.example/"), Ok(None));
+    let pack = temp.path().join("pending.lua");
+    std::fs::write(&pack, "mere.open('mere://receipt/public')").unwrap();
+    app.update(Action::InstallDenizen { path: pack.display().to_string() });
+    app.take_events();
+    app.update(Action::ConfirmInstallDenizen);
+    assert!(app.denizens.residents.is_empty(), "pending must not sign an install");
+    assert!(app.take_events().iter().any(|event| matches!(event,
+        AppEvent::DenizenRefused(reason) if reason == crate::denizen::PENDING_IDENTITY)));
+    assert!(!crate::resident_admission::path(&app.session_dir()).exists(), "no authority record may be written while pending");
+    assert_eq!(std::fs::read(pack).unwrap(), b"mere.open('mere://receipt/public')");
+}
