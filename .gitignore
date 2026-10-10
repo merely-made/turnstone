@@ -8,3 +8,6 @@
 **/.cargo/local/
 **/.cargo/config.local.toml
 /target-*/
+
+# Generated fixture bytecode.
+scenarios/fixtures/document_a11y/__pycache__/
