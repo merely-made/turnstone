@@ -1,0 +1,20 @@
+{
+  "status": "historical verifier failure, preserved before geometry correction",
+  "original": "workshop/workshop_same_id.png",
+  "original_sha256": "a26c76734eb0a02b41f6f081b01df7f2b8b46828203691b47d05defb3913e0e2",
+  "fixed_roi": [
+    660,
+    330,
+    2290,
+    968
+  ],
+  "failed_role_rgba": [
+    47,
+    127,
+    255,
+    255
+  ],
+  "observed_role_pixels": 0,
+  "failure": "fixed ROI excluded the actual higher Explore button after scroll; no product source or native rerun changed",
+  "native_receipts": "both RESULT ok; this did not itself qualify the visual gate"
+}

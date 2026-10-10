@@ -1,0 +1,17 @@
+{
+  "diagnostic_only": true,
+  "binary_sha256": "d6cc8432d696addbc15fc5871579fb4549eff36b75aab886e4f5c3e1d1a893cb",
+  "extra_environment": {
+    "CAMBIUM_HOST_PERF_TRACE": "1",
+    "MESQUITE_CAPTURE_PAINT": "1"
+  },
+  "scenario_changes": false,
+  "scenario_sha256": {
+    "tabard_application.scn": "3e8470fd996afd3a2079543ab365018fb1f5b3f4b47e9b8f6fe37fe7d08c2083",
+    "tabard_application_reopen.scn": "a75b31adc958bdb90553e0dfb1afae7b78921b496a51f60a11de7ea75eec2111",
+    "tabard_application_same_id.scn": "6ea60773f97b46e17be2472568a50266a6876486acfc1c9d05cd176ca15b9622",
+    "tabard_application_same_id_reopen.scn": "9605ae4fcd1c80180375aa61f6d6565ac7c97396a35fe3b11be873accb72fdf9",
+    "tabard_workshop.scn": "bba8edbb9bd32dc6be2dd8a1c40defdeb1d3d95a1772c9777eed46406fb7b11c",
+    "tabard_workshop_same_id.scn": "77194ef4fac5b8e4ec37c362aee4c8a15905665b74fd4a5711ad2ad90ab72d17"
+  }
+}

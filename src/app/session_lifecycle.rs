@@ -65,16 +65,12 @@ impl App {
             .get(session_id)
             .map(|manifest| manifest.root_graph_id)
             .unwrap_or_else(GraphId::nil);
-        let identity = match crate::identity::load_root(
-            &data_root,
-            &crate::identity::default_vault_dir(),
-        ) {
-            crate::identity::RootLoad::Ready(root) => Some(root),
-            crate::identity::RootLoad::Locked => None,
-        };
+        // djinn holds the profile identity; pending (None) when it is absent
+        // or Locked, with no fallback key (dramatis D12).
+        let identity = crate::identity::bind();
         let root = identity
-            .as_ref()
-            .map(|root| identity::IdentityProvider::master_public_key(root.as_ref()).to_bytes());
+            .as_deref()
+            .map(|identity| identity::IdentityProvider::master_public_key(identity).to_bytes());
         let gemini_identities = crate::gemini_identity::GeminiIdentityBindings::load(&data_root);
         let mut app = Self {
             watches: servitor::WatchTable::new(),

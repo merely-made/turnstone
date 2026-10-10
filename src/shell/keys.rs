@@ -162,6 +162,28 @@ impl Shell {
         let crate::surface::FocusTarget::Pane(pane_id) = self.app.focus else {
             return false;
         };
+        if let Some(pane) = self.renderers.settings.get_mut(&pane_id) {
+            if matches!(key, WinitKey::Named(WinitNamedKey::Escape)) {
+                pane.blur();
+                self.app.focus = crate::surface::FocusTarget::Graph(self.app.default_graph_pane());
+                self.request_redraw();
+                return true;
+            }
+            if matches!(key, WinitKey::Named(WinitNamedKey::Tab)) {
+                pane.focus_traverse(!self.shift);
+                return true;
+            }
+            let modifiers = cambium::Modifiers {
+                shift: self.shift,
+                ctrl: self.ctrl,
+                alt: self.alt,
+                meta: false,
+            };
+            return cambium_winit::key_event_from_winit(key, modifiers).is_some_and(|event| {
+                pane.key(event);
+                true
+            });
+        }
         if matches!(key, WinitKey::Named(WinitNamedKey::Escape)) {
             if let Some(pane) = self.renderers.contributed.get_mut(pane_id) {
                 pane.focus(None);

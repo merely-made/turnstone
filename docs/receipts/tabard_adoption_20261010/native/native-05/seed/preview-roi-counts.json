@@ -1,0 +1,42 @@
+{
+  "workshop_authored.png": {
+    "roi": [
+      660,
+      330,
+      2290,
+      968
+    ],
+    "distinct_rgba": 1,
+    "colors": [
+      {
+        "rgba": [
+          243,
+          244,
+          246,
+          255
+        ],
+        "pixels": 1039940
+      }
+    ]
+  },
+  "workshop_narrow.png": {
+    "roi": [
+      50,
+      850,
+      1220,
+      1480
+    ],
+    "distinct_rgba": 1,
+    "colors": [
+      {
+        "rgba": [
+          243,
+          244,
+          246,
+          255
+        ],
+        "pixels": 737100
+      }
+    ]
+  }
+}

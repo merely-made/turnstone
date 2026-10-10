@@ -1,0 +1,86 @@
+{
+  "seed/workshop/workshop_authored.png": {
+    "size": [
+      2360,
+      1600
+    ],
+    "sha256": "031f9bffbbba04d411223da7c4de06275ffb1535bfe3c99c51d8e72fcfbbb430",
+    "actual_preview_rect": [
+      644,
+      320,
+      2306,
+      976
+    ],
+    "derived_by": "exact authored background long horizontal runs >=width/3 in right document region; independently compared with original-image review",
+    "actual": {
+      "distinct": 1875,
+      "roles": {
+        "#142238": 320068,
+        "#1b2e49": 574283,
+        "#243d5e": 160731,
+        "#2f7fff": 8119,
+        "#9cd5ff": 3495,
+        "#eaf2ff": 2454
+      }
+    },
+    "old_fixed_roi": [
+      660,
+      330,
+      2290,
+      968
+    ],
+    "old": {
+      "distinct": 1875,
+      "roles": {
+        "#142238": 269736,
+        "#1b2e49": 574283,
+        "#243d5e": 160731,
+        "#2f7fff": 8119,
+        "#9cd5ff": 3495,
+        "#eaf2ff": 2454
+      }
+    }
+  },
+  "same-id/workshop/workshop_same_id.png": {
+    "size": [
+      2360,
+      1600
+    ],
+    "sha256": "a26c76734eb0a02b41f6f081b01df7f2b8b46828203691b47d05defb3913e0e2",
+    "actual_preview_rect": [
+      644,
+      208,
+      2306,
+      864
+    ],
+    "derived_by": "exact authored background long horizontal runs >=width/3 in right document region; independently compared with original-image review",
+    "actual": {
+      "distinct": 1877,
+      "roles": {
+        "#342214": 320068,
+        "#1b2e49": 574283,
+        "#243d5e": 160731,
+        "#2f7fff": 8119,
+        "#9cd5ff": 3495,
+        "#eaf2ff": 2454
+      }
+    },
+    "old_fixed_roi": [
+      660,
+      330,
+      2290,
+      968
+    ],
+    "old": {
+      "distinct": 1863,
+      "roles": {
+        "#342214": 244036,
+        "#1b2e49": 574283,
+        "#243d5e": 28764,
+        "#2f7fff": 0,
+        "#9cd5ff": 3495,
+        "#eaf2ff": 1768
+      }
+    }
+  }
+}

@@ -35,7 +35,6 @@ use std::path::{Path, PathBuf};
 
 use chartulary::{Container, GraphLog, Relation};
 use identity::IdentityProvider;
-use identity::delegation::Issue;
 use insigne::delegation::SignedDelegationCertificate;
 use muniment::{Journal, LogId};
 use servitor::delegation::{DelegationTable, root_certificate};
@@ -794,7 +793,7 @@ pub fn now_ms() -> u64 {
 /// conferring each reviewed capability directly. `depth` is 0, so an installed
 /// helper may act but never sub-delegate.
 pub fn issue_install_certificates(
-    provider: &impl IdentityProvider,
+    provider: &crate::identity::RootIdentity,
     subject: Subject,
     caps: &[(Cap, Mode)],
     issued_at_ms: u64,
@@ -818,7 +817,7 @@ fn save_certs_strict(
 /// joins the nonce so a revoked earlier installation cannot make a reviewed
 /// owner re-install deterministically reissue the revoked certificate.
 pub fn issue_install_certificates_for_generation(
-    provider: &impl IdentityProvider,
+    provider: &crate::identity::RootIdentity,
     subject: Subject,
     caps: &[(Cap, Mode)],
     issued_at_ms: u64,
@@ -840,7 +839,8 @@ pub fn issue_install_certificates_for_generation(
             0,
             cert_nonce(&hex, cap, generation),
         );
-        match SignedDelegationCertificate::issue(provider, certificate) {
+        // Signed inside djinn: the residency scope's key never leaves it (D11).
+        match provider.issue_certificate(certificate) {
             Ok(cert) => signed.push(cert),
             Err(err) => tracing::warn!(?err, cap = %cap, "failed to sign an install certificate"),
         }
@@ -869,10 +869,9 @@ pub fn install_caps(rings: &[crate::ring::Ring], watched: Option<&Cap>) -> Vec<(
     caps
 }
 
-/// Why a gesture that speaks as the profile refuses while the vault is
-/// locked (vault lock ruling 35).
-pub const PENDING_IDENTITY: &str =
-    "the profile identity is locked; unlock the personae vault to continue";
+/// Why a gesture that speaks as the profile refuses while the identity is
+/// pending (djinn absent or Locked, dramatis D12).
+pub const PENDING_IDENTITY: &str = crate::identity::PENDING;
 
 /// Mint the confirmed participant into the session: the graph node, the binding +
 /// source facets, the nested world with its gate-projected grant, and the

@@ -1,0 +1,54 @@
+2026-10-10T10:25:20.590693Z  INFO turnstone::launch: turnstone starting
+[turnstone] adopted this device's identity into "/Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-11/mere-profile"
+2026-10-10T10:25:20.660135Z  WARN turnstone::identity: personae vault unavailable; falling back to the unsealed profile seed err=identity backend error: no OS auto-unlock backend on this platform yet; set PERSONAE_PASSPHRASE to use the portable passphrase vault instead
+2026-10-10T10:25:20.916795Z  INFO turnstone::session: workbench tiling restored path="/Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-11/turnstone-profile/sessions/cab58027-0e44-4fc8-8398-e63e5511731e/workbench.json" tiles=0
+2026-10-10T10:25:20.918980Z  INFO actor{actor="actor"}: armillary: actor started actor="actor"
+2026-10-10T10:25:20.918980Z  INFO actor{actor="actor"}: armillary: actor started actor="actor"
+2026-10-10T10:25:20.919158Z  INFO fjall::keyspace: Opening keyspace at "/Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-11/turnstone-profile/cookies"
+2026-10-10T10:25:20.919211Z  INFO fjall::keyspace: Recovering keyspace at "/Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-11/turnstone-profile/cookies"
+2026-10-10T10:25:20.937912Z  INFO lsm_tree::tree: Recovering LSM-tree at "/Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-11/turnstone-profile/cookies/partitions/eidetic"
+2026-10-10T10:25:20.938014Z  INFO lsm_tree::tree: Recovering manifest at "/Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-11/turnstone-profile/cookies/partitions/eidetic/levels"
+2026-10-10T10:25:20.956738Z  INFO actor{actor="actor"}: armillary: actor started actor="actor"
+2026-10-10T10:25:20.956933Z  INFO actor{actor="download-custody"}: armillary: actor started actor="download-custody"
+2026-10-10T10:25:20.956968Z  INFO actor{actor="recycle-bin"}: armillary: actor started actor="recycle-bin"
+2026-10-10T10:25:20.957016Z  INFO actor{actor="trail-memory"}: armillary: actor started actor="trail-memory"
+2026-10-10T10:25:20.957093Z  INFO actor{actor="turnstone-place"}: armillary: actor started actor="turnstone-place"
+2026-10-10T10:25:20.957168Z  INFO actor{actor="recycle-bin"}: fjall::keyspace: Opening keyspace at "/Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-11/turnstone-profile/sessions/cab58027-0e44-4fc8-8398-e63e5511731e/bin"
+2026-10-10T10:25:20.957179Z  INFO actor{actor="trail-memory"}: fjall::keyspace: Opening keyspace at "/Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-11/turnstone-profile/sessions/cab58027-0e44-4fc8-8398-e63e5511731e/memory"
+2026-10-10T10:25:20.957233Z  INFO actor{actor="recycle-bin"}: fjall::keyspace: Recovering keyspace at "/Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-11/turnstone-profile/sessions/cab58027-0e44-4fc8-8398-e63e5511731e/bin"
+2026-10-10T10:25:20.957252Z  INFO actor{actor="trail-memory"}: fjall::keyspace: Recovering keyspace at "/Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-11/turnstone-profile/sessions/cab58027-0e44-4fc8-8398-e63e5511731e/memory"
+2026-10-10T10:25:20.978108Z  INFO actor{actor="recycle-bin"}: lsm_tree::tree: Recovering LSM-tree at "/Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-11/turnstone-profile/sessions/cab58027-0e44-4fc8-8398-e63e5511731e/bin/partitions/eidetic"
+2026-10-10T10:25:20.978116Z  INFO actor{actor="trail-memory"}: lsm_tree::tree: Recovering LSM-tree at "/Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-11/turnstone-profile/sessions/cab58027-0e44-4fc8-8398-e63e5511731e/memory/partitions/eidetic"
+2026-10-10T10:25:20.978216Z  INFO actor{actor="recycle-bin"}: lsm_tree::tree: Recovering manifest at "/Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-11/turnstone-profile/sessions/cab58027-0e44-4fc8-8398-e63e5511731e/bin/partitions/eidetic/levels"
+2026-10-10T10:25:20.978239Z  INFO actor{actor="trail-memory"}: lsm_tree::tree: Recovering manifest at "/Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-11/turnstone-profile/sessions/cab58027-0e44-4fc8-8398-e63e5511731e/memory/partitions/eidetic/levels"
+2026-10-10T10:25:20.981422Z  INFO swarm_discovery::sender: no addresses for peer, not announcing
+2026-10-10T10:25:20.996998Z  INFO swarm_discovery::sender: no addresses for peer, not announcing
+2026-10-10T10:25:21.060158Z  INFO turnstone::shell::a11y_bridge: a11y_bridge: installed
+2026-10-10T10:25:21.184856Z  INFO vello::wgpu_engine: Initialising shader modules in parallel using 14 threads
+2026-10-10T10:25:21.752330Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T10:25:21.784354Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T10:25:22.512631Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T10:25:22.546315Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T10:25:23.181351Z  INFO actor{actor="actor"}: armillary: actor started actor="actor"
+2026-10-10T10:25:23.313458Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T10:25:23.330217Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+[genet-render-host] surface acquire skipped: Occluded
+[genet-render-host] surface acquire skipped: Occluded
+[genet-render-host] surface acquire skipped: Occluded
+2026-10-10T10:25:24.069189Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T10:25:24.074470Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T10:25:24.805363Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T10:25:24.830909Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T10:25:25.055736Z  INFO turnstone::shell::render: capture state open=false text= suggestions=0 surfaces=3 chrome=false nodes=12
+2026-10-10T10:25:25.541039Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T10:25:25.588404Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T10:25:25.894372Z  INFO turnstone::shell::render: capture state open=false text= suggestions=0 surfaces=3 chrome=false nodes=12
+2026-10-10T10:25:26.357215Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T10:25:26.377362Z  INFO actor{actor="actor"}: armillary: actor finished actor="actor" lifetime_ms=3196
+2026-10-10T10:25:26.379991Z  INFO actor{actor="actor"}: armillary: actor finished actor="actor" lifetime_ms=5423
+2026-10-10T10:25:26.403642Z  WARN swarm_discovery::socket: error sending mDNS: No route to host (os error 65)
+2026-10-10T10:25:26.568450Z  INFO actor{actor="trail-memory"}: armillary: actor finished actor="trail-memory" lifetime_ms=5611
+2026-10-10T10:25:26.568442Z  INFO actor{actor="turnstone-place"}: armillary: actor finished actor="turnstone-place" lifetime_ms=5611
+2026-10-10T10:25:26.568440Z  INFO actor{actor="download-custody"}: armillary: actor finished actor="download-custody" lifetime_ms=5611
+2026-10-10T10:25:26.569359Z  INFO actor{actor="actor"}: armillary: actor finished actor="actor" lifetime_ms=5650
+2026-10-10T10:25:26.569365Z  INFO actor{actor="actor"}: armillary: actor finished actor="actor" lifetime_ms=5650

@@ -1,0 +1,11 @@
+
+running 6 tests
+test shell::appearance_editor::tests::editor_deadline_composes_with_document_polling_without_idle_starvation ... ok
+test shell::appearance_receipt::tests::child_acceptance_suspends_deadline_and_resume_grants_a_fresh_budget ... ok
+test shell::appearance_receipt::tests::completed_script_cannot_hide_capture_failure_or_absent_presentation ... ok
+test shell::appearance_receipt::tests::receipt_preserves_capture_identity_and_failed_workshop_result ... ok
+test shell::appearance_receipt::tests::shipped_appearance_fixtures_parse_through_the_existing_driver ... ok
+test shell::appearance_receipt::tests::unreadable_workshop_script_fails_before_constructing_a_native_window ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 781 filtered out; finished in 0.00s
+

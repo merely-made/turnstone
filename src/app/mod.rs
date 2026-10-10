@@ -323,12 +323,12 @@ pub struct App {
     /// Host storage policy, retained across session adoption and applied to reads.
     pub resident_run_storage_limits: crate::resident_runs::StorageLimits,
     /// The profile's root identity: whose authority every participant grant
-    /// descends from (capability-model OQ2). Vault-sealed when a personae
-    /// backend exists (the SHARED vault, so this is the user's actual
-    /// identity); the loud unsealed fallback otherwise. Install signs a
-    /// delegation with it; uninstall revokes that delegation. `None` while
-    /// the vault is locked: the identity is pending, never a fallback key
-    /// (vault lock ruling 35), until [`App::adopt_profile_root`].
+    /// descends from (capability-model OQ2): the persona djinn holds,
+    /// reached over the custody route. `None` while it is pending (djinn
+    /// absent or Locked, dramatis D12): nothing that signs or seals runs, and
+    /// there is no fallback key, until [`App::adopt_profile_root`]. Install
+    /// signs a delegation with it inside djinn; uninstall revokes that
+    /// delegation.
     pub identity: Option<std::sync::Arc<crate::identity::RootIdentity>>,
     /// Capsule approvals for the active Personae root. The sidecar contains
     /// origin mappings only; client certificate keys are derived on demand.
@@ -1150,6 +1150,7 @@ impl App {
 
     fn dispatch(&mut self, action: Action) -> Vec<Effect> {
         match action {
+            Action::OpenThemeWorkshop => vec![Effect::OpenThemeWorkshop],
             Action::OpenAddress(url) => self.open_address(url),
             Action::ComposeFocusedSmolwebSubmission => self.compose_focused_smolweb_submission(),
             Action::ComposeFocusedMicronForm => self.compose_focused_micron_form(),

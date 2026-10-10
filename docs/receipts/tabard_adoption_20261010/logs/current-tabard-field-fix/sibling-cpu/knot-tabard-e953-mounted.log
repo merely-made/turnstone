@@ -1,0 +1,112 @@
+warning: patch `p2panda-stream v0.7.1 (https://github.com/mark-ik/p2panda.git?tag=mere-p2panda-net-0.7.5#1bec457e)` was not used in the crate graph
+help: Check that the patched package version and available features are compatible
+      with the dependency requirements. If the patch has a different version from
+      what is locked in the Cargo.lock file, run `cargo update` to use the new
+      version. This may also occur with an optional dependency that is not enabled.
+   Compiling sceno v0.0.4 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling command-menu v0.1.0 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling muniment v0.1.2 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling tinct v0.1.2 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling workbench v0.1.0 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling mere-curation v0.1.0 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling edit-history v0.1.0 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling meristem v0.2.0 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling mere-surface-api v0.1.0 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling illume v0.0.2 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling sprigging v0.2.1 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling cambium v0.3.3 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling chartulary v0.2.2 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling inker v0.1.1 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling mere-forme v0.1.0 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling numen v0.2.0 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling mere-kernel v0.0.2 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling scenograph v0.0.4 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling errand v0.4.0 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling scenomise v0.0.4 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling tabard v0.0.1 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling scenotime v0.0.4 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling incipit v0.2.0 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling chirograph v0.0.2 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling nematic v0.1.1 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling eidetic v0.0.2 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling mere-alembic v0.0.1 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling cambium-winit v0.3.0 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling mere-proofs v0.1.0 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling stickleback v0.1.1 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling cambium-rootstock v0.1.0 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling pandect v0.1.1 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling knot-editor-host v0.1.1 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling luggage v0.1.0 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling knot-file-catalog v0.0.1 (/Users/markik/Code/worktrees/knot-tabard-apps/crates/knot-file-catalog)
+   Compiling mora-cmudict v0.0.1 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling knot-capture v0.0.1 (/Users/markik/Code/worktrees/knot-tabard-apps/crates/knot-capture)
+   Compiling mere-webrtc-carrier v0.0.1 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling knot-document v0.0.1 (/Users/markik/Code/worktrees/knot-tabard-apps/crates/knot-document)
+   Compiling mere-transport v0.0.2 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling script-rhai v0.0.1 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling graphshell-client v0.0.2 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling graphshell-endpoint v0.0.2 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling mere-cartography v0.0.2 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling document-canvas v0.1.0 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling reference-data v0.0.1 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling armillary v0.1.1 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling mere-page-load v0.0.1 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling pictograph v0.2.0 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling mere-fetch v0.0.1 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling knot-composition v0.0.1 (/Users/markik/Code/worktrees/knot-tabard-apps/crates/knot-composition)
+   Compiling mere-document-lanes v0.1.0 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling graphshell v0.0.2 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling cambium-winit-a11y v0.3.0 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling servitor v0.0.2 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling esp v0.1.0 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling mere-apparatus v0.0.1 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling knot-editor v0.0.3 (/Users/markik/Code/worktrees/knot-tabard-apps/crates/knot-editor)
+warning: unused variable: `path`
+  --> crates/knot-editor/src/directory.rs:53:13
+   |
+53 |     fn read(path: &Path, _metadata: &Metadata) -> io::Result<Self> {
+   |             ^^^^ help: if this is intentional, prefix it with an underscore: `_path`
+   |
+   = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+   Compiling cambium-genet-winit-host v0.1.0 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling mesquite v0.1.0 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling tabard-workshop v0.0.1 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+warning: `knot-editor` (lib) generated 1 warning (run `cargo fix --lib -p knot-editor` to apply 1 suggestion)
+   Compiling mere-view v0.1.0 (https://github.com/merely-made/mere.git?rev=e95326dc08446a9256d3e340c63e571684afe697#e95326dc)
+   Compiling knot-readings v0.0.1 (/Users/markik/Code/worktrees/knot-tabard-apps/crates/knot-readings)
+   Compiling knot-desktop v0.0.1 (/Users/markik/Code/worktrees/knot-tabard-apps/apps/desktop)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2m 14s
+     Running tests/preferences.rs (/Users/markik/Code/targets/knot-tabard-apps/debug/deps/preferences-77c88dfabf23a7c6)
+
+running 4 tests
+test a_malformed_preferences_file_uses_defaults_says_why_and_is_not_overwritten ... ok
+test a_missing_preferences_file_launches_with_defaults_and_writes_nothing ... ok
+test a_preferences_file_from_a_newer_knot_loads_says_so_and_keeps_saving ... ok
+test an_appearance_change_persists_across_a_relaunch ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.45s
+
+     Running tests/tabard_appearance.rs (/Users/markik/Code/targets/knot-tabard-apps/debug/deps/tabard_appearance-fec40268ac2a3b57)
+
+running 17 tests
+test a_global_user_artifact_cannot_replace_knots_product_default_identity ... ok
+test a_loaded_library_does_not_replace_embedding_styles_on_unrelated_input ... ok
+test all_four_derived_modes_reach_live_product_paints_and_fresh_relaunch ... ok
+test authored_tabard_role_properties_change_live_product_paints_and_reopen_exactly ... ok
+test corrupt_library_disables_editor_retains_request_and_can_be_reloaded ... ok
+test corrupt_preferences_block_theme_activation_and_preserve_both_files ... ok
+test editor_save_is_separate_from_application_and_apply_requires_registered_savepoint ... ok
+test empty_writing_field_keeps_native_geometry_and_typing_after_semantic_input_adoption ... ok
+test exact_modes_use_product_roles_and_authored_css_is_last_in_cascade ... ok
+test export_cancellation_and_protected_application_files_never_create_a_replacement_prompt ... ok
+test legacy_dark_and_wide_migrate_without_an_authored_choice ... ok
+test legacy_light_dark_cannot_clear_a_saved_choice_when_preference_save_fails ... ok
+test native_appearance_scenarios_use_the_shared_parseable_lane ... ok
+test native_editor_close_returns_to_document_confirmation_and_cancel_is_reusable ... ok
+test native_typing_edits_theme_fields_and_conflict_keeps_the_previous_savepoint ... ok
+test saved_choice_relaunch_preserves_every_writing_preference_and_document ... ok
+test saving_an_active_theme_identity_does_not_apply_the_new_definition_implicitly ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 34.82s
+

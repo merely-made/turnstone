@@ -1,0 +1,103 @@
+[
+  {
+    "check": "metadata-refresh",
+    "command": [
+      "cargo",
+      "metadata",
+      "--format-version",
+      "1"
+    ],
+    "status": 0,
+    "seconds": 12.355
+  },
+  {
+    "check": "metadata-locked",
+    "command": [
+      "cargo",
+      "metadata",
+      "--locked",
+      "--offline",
+      "--format-version",
+      "1"
+    ],
+    "status": 0,
+    "seconds": 3.965
+  },
+  {
+    "check": "portable-provenance",
+    "command": [
+      "python3",
+      "scripts/cargo_mode.py",
+      "verify",
+      "--metadata-only"
+    ],
+    "status": 1,
+    "seconds": 0.09
+  },
+  {
+    "check": "portable-provenance-renewed",
+    "command": [
+      "/Users/markik/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+      "scripts/cargo_mode.py",
+      "verify",
+      "--metadata-only"
+    ],
+    "status": 0,
+    "seconds": 5.755
+  },
+  {
+    "check": "production-build",
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--offline"
+    ],
+    "status": 0,
+    "seconds": 197.217
+  },
+  {
+    "check": "libtest-build",
+    "command": [
+      "cargo",
+      "test",
+      "--lib",
+      "--no-run",
+      "--locked",
+      "--offline",
+      "--message-format=json"
+    ],
+    "status": 0,
+    "seconds": 104.22
+  },
+  {
+    "check": "appearance-tests",
+    "command": [
+      "/Users/markik/Code/targets/knot-tabard-apps/debug/deps/turnstone-c7b886c16a3f3e95",
+      "appearance",
+      "--test-threads=1"
+    ],
+    "status": 0,
+    "seconds": 9.429
+  },
+  {
+    "check": "settings-pane-tests",
+    "command": [
+      "/Users/markik/Code/targets/knot-tabard-apps/debug/deps/turnstone-c7b886c16a3f3e95",
+      "settings_pane::tests",
+      "--test-threads=1"
+    ],
+    "status": 0,
+    "seconds": 2.075
+  },
+  {
+    "check": "settings-provider-tests",
+    "command": [
+      "/Users/markik/Code/targets/knot-tabard-apps/debug/deps/turnstone-c7b886c16a3f3e95",
+      "settings_provider::tests",
+      "--test-threads=1"
+    ],
+    "status": 0,
+    "seconds": 1.051
+  }
+]

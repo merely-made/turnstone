@@ -1,0 +1,49 @@
+{
+  "qualified": false,
+  "status": "partial historical940d candidate; held when source-changing545 field fix arrived",
+  "binary_sha256": "940d484d19a5b1d72204f1bfce05e44d600cfc77997c4d89b93c3779c4cd5efd",
+  "build_input_digest": "be0f51fd7b3035b8cbea0f691e7a5eab3aa0a319a1febf8d9bfb340dda94a5c0",
+  "source_manifest": "native-12-source-manifest.json",
+  "lanes": {
+    "seed": {
+      "result": "ok",
+      "main_presentations": 198,
+      "main_captures": 7,
+      "main_blank": 0,
+      "elapsed_seconds": 34.673,
+      "launcher_exit": 0,
+      "timeout": false,
+      "binary_sha256": "940d484d19a5b1d72204f1bfce05e44d600cfc77997c4d89b93c3779c4cd5efd",
+      "main_scenario_sha256": "3e8470fd996afd3a2079543ab365018fb1f5b3f4b47e9b8f6fe37fe7d08c2083",
+      "gpu_reset_reports_changed": false,
+      "all_owned_processes_exited": true,
+      "workshop_presentations": 51,
+      "workshop_redraws": 54,
+      "workshop_unpresented_redraws": 3,
+      "workshop_captures": 2,
+      "workshop_blank": 0,
+      "original_pngs_visually_inspected": 9
+    },
+    "reopen": {
+      "result": "ok",
+      "main_presentations": 48,
+      "main_captures": 2,
+      "main_blank": 0,
+      "elapsed_seconds": 14.562,
+      "launcher_exit": 0,
+      "timeout": false,
+      "binary_sha256": "940d484d19a5b1d72204f1bfce05e44d600cfc77997c4d89b93c3779c4cd5efd",
+      "main_scenario_sha256": "a75b31adc958bdb90553e0dfb1afae7b78921b496a51f60a11de7ea75eec2111",
+      "gpu_reset_reports_changed": false,
+      "all_owned_processes_exited": true,
+      "original_pngs_visually_inspected": 2
+    }
+  },
+  "total_presentations": 297,
+  "total_captures": 11,
+  "total_blank": 0,
+  "remaining_lanes": "same-ID and final reopen not run",
+  "all_original_pngs_visually_inspected": true,
+  "no_qualification_of_new_field_fix": true,
+  "private_profiles_vault_or_library_dump_included": false
+}

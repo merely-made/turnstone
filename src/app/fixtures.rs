@@ -19,13 +19,29 @@ use crate::ui::OmnibarState;
 
 use super::App;
 
+/// A test's root: in memory, one per scratch root, so a "restart" over the
+/// same root keeps its identity.
+#[cfg(test)]
+fn fixture_identity(data_root: &std::path::Path) -> Option<std::sync::Arc<crate::identity::RootIdentity>> {
+    let seed = blake3::derive_key(
+        "turnstone fixture identity v1",
+        data_root.to_string_lossy().as_bytes(),
+    );
+    Some(std::sync::Arc::new(crate::identity::RootIdentity::from_seed(seed)))
+}
+
+/// Outside tests a fixture app speaks as djinn's persona, or is pending.
+#[cfg(not(test))]
+fn fixture_identity(_data_root: &std::path::Path) -> Option<std::sync::Arc<crate::identity::RootIdentity>> {
+    crate::identity::bind()
+}
+
 impl App {
     fn isolated(data_root: PathBuf) -> Self {
-        let identity = match crate::identity::load_root(&data_root, &data_root.join("personae-vault")) {
-            crate::identity::RootLoad::Ready(root) => root,
-            crate::identity::RootLoad::Locked => unreachable!("a fresh fixture vault is never locked"),
-        };
-        let root = identity::IdentityProvider::master_public_key(identity.as_ref()).to_bytes();
+        let identity = fixture_identity(&data_root);
+        let root = identity
+            .as_deref()
+            .map(|identity| identity::IdentityProvider::master_public_key(identity).to_bytes());
         let session_id = SessionId::new();
         let graph_id = GraphId::from_uuid(*session_id.as_uuid());
         let mut frisket = FrisketLayout::default();
@@ -100,14 +116,14 @@ impl App {
             recall_query: String::new(),
             trash: Vec::new(),
             pending_install: None,
-            denizens: crate::denizen::Denizens::new(root),
+            denizens: root.map_or_else(crate::denizen::Denizens::pending, crate::denizen::Denizens::new),
             resident_runs: crate::resident_runs::ResidentRuns::default(),
             resident_run_error: None,
             resident_run_effect_policy: crate::resident_runs::ExternalEffectPolicy::default(),
             resident_run_limits: servitor::RunLimits { decisions: crate::denizen::RUN_BUDGET as u64, tool_calls: 0, tokens: 0, elapsed_ms: 30_000, consecutive_failures: 1 },
             resident_run_storage_limits: crate::resident_runs::StorageLimits::default(),
             gemini_identities: crate::gemini_identity::GeminiIdentityBindings::default(),
-            identity: Some(identity),
+            identity,
             journal,
             behavior_binding,
             behavior_refusal: None,

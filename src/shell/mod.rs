@@ -10,6 +10,8 @@
 //! effect runner. The only module that touches a platform API; everything it
 //! learns flows back through the spine.
 
+mod appearance_editor;
+mod appearance_receipt;
 mod content_pool;
 mod contributed_automation;
 mod controller_input;
@@ -681,6 +683,8 @@ pub struct Shell {
     /// A capture the next `render` fulfills from the very views it presents
     /// (never a re-rasterization — the receipt must be the presented frame).
     pending_capture: Option<std::path::PathBuf>,
+    pending_capture_readback: Option<appearance_receipt::PendingCapture>,
+    main_receipt: appearance_receipt::MainReceipt,
     /// A capture the next LENS render fulfills (the scenario's capture-lens
     /// verb; targets the first live lens window).
     pending_lens_capture: Option<std::path::PathBuf>,
@@ -863,19 +867,23 @@ pub struct Shell {
     /// `ActiveEventLoop`, which effects don't carry; the event handlers drain
     /// this while one is in scope).
     pending_windows: Vec<usize>,
+    theme_editor: Option<appearance_editor::EditorWindow>,
+    theme_editor_requested: bool,
+    close_after_theme_editor: bool,
 }
 
 impl Shell {
     pub fn new(proxy: EventLoopProxy<()>, address: Option<String>) -> Self {
         let (mut app, boot_effects) = App::boot(address.as_deref());
-        let initial_settings = match ApplicationSettingsProvider::load(&app.data_root) {
-            Ok(provider) => provider.settings().clone(),
+        let initial_provider = match ApplicationSettingsProvider::load(&app.data_root) {
+            Ok(provider) => provider,
             Err(error) => {
                 tracing::warn!(%error, "application settings could not be loaded at shell startup");
-                pandect::ApplicationSettings::default()
+                ApplicationSettingsProvider::from_failed_load(&app.data_root, error.to_string())
             },
         };
-        let live_settings = LiveSettingsHandle::new(&initial_settings);
+        let live_settings = LiveSettingsHandle::new(initial_provider.settings());
+        live_settings.publish_provider(&initial_provider);
         app.apply_chrome_settings_snapshot(&live_settings.snapshot());
         let policy_path = crate::web_policy::default_policy_path(&app.data_root);
         let policy_registry = crate::web_policy::PermissionRegistry::load(
@@ -977,8 +985,6 @@ impl Shell {
         let unlock_rx = app.identity.is_none().then(|| {
             let unlock_proxy = proxy.clone();
             crate::identity::watch_for_unlock(
-                app.data_root.clone(),
-                crate::identity::default_vault_dir(),
                 Arc::new(move || {
                     let _ = unlock_proxy.send_event(());
                 }),
@@ -1106,6 +1112,8 @@ impl Shell {
                 crate::diagnostic_observations::DiagnosticObservations::from_env(),
             shared_out_dir: shared_out_dir_from_env(),
             pending_capture: None,
+            pending_capture_readback: None,
+            main_receipt: Default::default(),
             pending_lens_capture: None,
             window: None,
             a11y_adapter: None,
@@ -1170,6 +1178,9 @@ impl Shell {
             lens_divider_drag: None,
             lens_windows: std::collections::HashMap::new(),
             pending_windows: Vec::new(),
+            theme_editor: None,
+            theme_editor_requested: false,
+            close_after_theme_editor: false,
         };
         shell.publish_engine_inventory();
         shell.run_effects(boot_effects);
@@ -2050,21 +2061,37 @@ impl Shell {
 
     /// Advance the self-drive scenario one step after each rendered frame.
     /// Steps lower to Actions through the same spine as a keypress; a Done
-    /// tick writes the sentinel and exits WITHOUT saving the session (a
-    /// scenario never mutates the profile it ran against).
+    /// tick writes the sentinel and exits without an implicit session save.
+    /// Explicit product actions, including Settings Apply, retain their normal
+    /// persistence behavior; acceptance runs use an isolated profile.
     /// Write the shared driver's outcome in turnstone's `scenario.done` format
     /// (first line `RESULT ok`/`RESULT fail`, then the log), so the same headed
     /// harness that waits on the turnstone driver reads a shared run identically.
     fn write_shared_done(&mut self, outcome: &taproot::Outcome) {
+        let mut outcome = outcome.clone();
+        self.main_receipt.qualify(&mut outcome);
         if let Err(error) = self
             .diagnostic_observations
-            .write_scenario_receipt(&self.shared_out_dir, outcome)
+            .write_scenario_receipt(&self.shared_out_dir, &outcome)
         {
             eprintln!("turnstone: scenario receipt write failed: {error}");
         }
     }
 
     fn scenario_pump(&mut self, event_loop: &ActiveEventLoop) {
+        if !self.main_receipt.errors.is_empty()
+            && let Some(shared) = self.shared_scenario.take()
+        {
+            let mut outcome = shared.finish();
+            outcome.ok = false;
+            self.write_shared_done(&outcome);
+            event_loop.exit();
+            return;
+        }
+        if self.pending_capture_readback.is_some() {
+            self.request_redraw();
+            return;
+        }
         // The shared taproot driver, when active, takes the frame: take the
         // scenario out (so `tick(self)` can borrow the Shell mutably), tick it,
         // put it back — or, on Done, write the `scenario.done` sentinel in

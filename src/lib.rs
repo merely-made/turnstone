@@ -12,6 +12,7 @@
 pub mod a11y;
 pub mod action;
 pub mod app;
+mod appearance;
 mod arrange_pane;
 pub mod behaviors;
 mod browse;

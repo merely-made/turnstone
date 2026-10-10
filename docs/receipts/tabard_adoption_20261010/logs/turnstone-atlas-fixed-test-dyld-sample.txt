@@ -1,0 +1,33 @@
+Analysis of sampling turnstone-05f43ed298edc095 (pid 76469) every 1 millisecond
+Process:         turnstone-05f43ed298edc095 [76469]
+Path:            /Users/USER/*/turnstone-05f43ed298edc095
+Load Address:    0x107076000
+Identifier:      turnstone-05f43ed298edc095
+Version:         ???
+Code Type:       X86-64
+Parent Process:  cargo [76377]
+Target Type:     live task
+
+Date/Time:       2026-10-10 06:24:07.392 -0400
+Launch Time:     2026-10-10 06:22:11.086 -0400
+OS Version:      macOS 15.8.1 (24H32)
+Report Version:  7
+Analysis Tool:   /usr/bin/sample
+
+Physical footprint:         12K
+Physical footprint (peak):  12K
+Idle exit:                  untracked
+----
+
+Call graph:
+    770 Thread_20486354: Main Thread   DispatchQueue_<multiple>
+      770 ???  (in <unknown binary>)  [0x107076000]
+        770 _dyld_start  (in dyld) + 0  [0x12a78dd90]
+
+Total number in stack (recursive counted multiple, when >=5):
+
+Sort by top of stack, same collapsed (when >= 5):
+        _dyld_start  (in dyld)        770
+
+Binary images description not available
+

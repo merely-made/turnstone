@@ -1,0 +1,14 @@
+[
+  {
+    "filter": "settings_pane::tests",
+    "status": 0,
+    "seconds": 1.847,
+    "log": "/tmp/turnstone-atlas-fixed-settings-pane-tests-local-artifact.log"
+  },
+  {
+    "filter": "settings_provider::tests",
+    "status": 0,
+    "seconds": 0.835,
+    "log": "/tmp/turnstone-atlas-fixed-settings-provider-tests-local-artifact.log"
+  }
+]

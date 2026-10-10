@@ -1,0 +1,329 @@
+--- a/src/shell/appearance_receipt.rs
++++ b/src/shell/appearance_receipt.rs
+@@ -15,6 +15,7 @@
+ pub(super) struct WorkshopReceipt {
+     pub completion: Rc<Cell<Option<bool>>>,
+     sheet: String,
++    probe: Option<super::appearance_source_probe::Probe>,
+ }
+ 
+ impl mesquite::Product for WorkshopReceipt {
+@@ -37,7 +38,18 @@
+             .with_field("status", state.status())
+             .with_field(
+                 "preview-errors",
+-                state.stylesheet_preview().borrow().diagnostics().join(" | "),
++                state
++                    .stylesheet_preview()
++                    .borrow()
++                    .diagnostics()
++                    .join(" | "),
++            )
++            .with_field(
++                "source-probe",
++                self.probe
++                    .as_ref()
++                    .map(|probe| probe.borrow().summary())
++                    .unwrap_or_default(),
+             )
+     }
+     fn busy_mut(&mut self, _: &mut mesquite::Ctx<'_, Self>, capture_pending: bool) -> Option<bool> {
+@@ -78,12 +90,14 @@
+     let Some(config) = config else {
+         return Ok((hooks, None));
+     };
++    let probe = super::appearance_source_probe::install(&mut hooks);
+     let completion = Rc::new(Cell::new(None));
+     let lane = mesquite::Lane::from_config(
+         config,
+         WorkshopReceipt {
+             completion: completion.clone(),
+             sheet: tabard_workshop::workshop_stylesheet(),
++            probe,
+         },
+         cambium_genet_winit_host::read_file,
+     )?
+--- a/src/shell/mod.rs
++++ b/src/shell/mod.rs
+@@ -12,6 +12,7 @@
+ 
+ mod appearance_editor;
+ mod appearance_receipt;
++mod appearance_source_probe;
+ mod contributed_automation;
+ mod controller_input;
+ mod drive;
+--- /dev/null
++++ b/src/shell/appearance_source_probe.rs
+@@ -0,0 +1,271 @@
++use cambium_genet_winit_host::HostHooks;
++use cambium_rootstock::TextureProducer;
++use std::{
++    cell::RefCell,
++    path::PathBuf,
++    rc::Rc,
++    time::{Duration, Instant},
++};
++use tabard_workshop::{WorkshopState, WorkshopView, native_host::WorkshopLogic};
++pub(super) type Probe = Rc<RefCell<SourceProbe>>;
++
++pub(super) fn install(
++    hooks: &mut HostHooks<WorkshopState, WorkshopLogic, WorkshopView>,
++) -> Option<Probe> {
++    let probe = SourceProbe::from_env()?;
++    let observed: Rc<RefCell<Option<Rc<RefCell<ObservedStylesheetProducer>>>>> =
++        Rc::new(RefCell::new(None));
++    let frame_probe = probe.clone();
++    let mut frame = std::mem::replace(&mut hooks.frame, Box::new(|_| false));
++    hooks.frame = Box::new(move |ctx| {
++        let result = frame(ctx);
++        let source = ctx.runner.state().stylesheet_preview();
++        frame_probe.borrow_mut().mode = ctx.runner.state().mode_key().into();
++        let mut holder = observed.borrow_mut();
++        if holder.is_none() {
++            ctx.producers.remove(tabard_workshop::STYLESHEET_LEAF_KEY);
++            let wrapper = Rc::new(RefCell::new(ObservedStylesheetProducer::new(
++                source.clone(),
++                frame_probe.clone(),
++            )));
++            ctx.producers
++                .register(tabard_workshop::STYLESHEET_LEAF_KEY, wrapper.clone(), &[])
++                .expect("reserved diagnostic stylesheet key");
++            *holder = Some(wrapper);
++        }
++        holder
++            .as_ref()
++            .unwrap()
++            .borrow_mut()
++            .delegated
++            .set_source(source);
++        result
++    });
++    let after_probe = probe.clone();
++    let mut after_frame = std::mem::replace(&mut hooks.after_frame, Box::new(|_| {}));
++    hooks.after_frame = Box::new(move |ctx| {
++        after_frame(ctx);
++        after_probe.borrow_mut().poll();
++    });
++    Some(probe)
++}
++
++// Diagnostic-only: no alternate scene or source rasterization. The callback
++// returns the exact Scene produced by StylesheetSpecimen::frame.
++thread_local! {
++    static SOURCE_SCENE_OBSERVATION: RefCell<serde_json::Value> = RefCell::new(serde_json::Value::Null);
++}
++
++fn observed_stylesheet_frame(
++    source: &mut tabard_workshop::StylesheetSpecimen,
++    width: u32,
++    height: u32,
++) -> netrender::Scene {
++    let scene = source.frame(width, height);
++    let glyphs = scene
++        .ops
++        .iter()
++        .filter(|op| matches!(op, netrender::SceneOp::GlyphRun(_)))
++        .count();
++    SOURCE_SCENE_OBSERVATION.with(|last| {
++        *last.borrow_mut() = serde_json::json!({
++            "logical_size": [width, height], "ops": scene.ops.len(),
++            "glyph_runs": glyphs, "revision": source.revision(),
++            "errors": source.diagnostics(),
++        });
++    });
++    scene
++}
++
++struct SourceCopy {
++    pending: cambium_rootstock::PendingFrame,
++    armed: Instant,
++    metadata: serde_json::Value,
++    index: u64,
++}
++
++pub(super) struct SourceProbe {
++    directory: PathBuf,
++    calls: u64,
++    outputs: u64,
++    copies: u64,
++    skipped: u64,
++    mode: String,
++    latest: serde_json::Value,
++    error: Option<String>,
++    pending: Option<SourceCopy>,
++}
++
++impl SourceProbe {
++    fn from_env() -> Option<Rc<RefCell<Self>>> {
++        let directory = std::env::var_os("TURNSTONE_THEME_SOURCE_PROBE_DIR")?;
++        Some(Rc::new(RefCell::new(Self {
++            directory: PathBuf::from(directory),
++            calls: 0,
++            outputs: 0,
++            copies: 0,
++            skipped: 0,
++            mode: String::new(),
++            latest: serde_json::Value::Null,
++            error: None,
++            pending: None,
++        })))
++    }
++    pub(super) fn summary(&self) -> String {
++        serde_json::json!({"calls": self.calls, "outputs": self.outputs,
++            "copies": self.copies, "skipped": self.skipped,
++            "pending": self.pending.is_some(), "latest": self.latest,
++            "error": self.error})
++        .to_string()
++    }
++    fn poll(&mut self) {
++        let Some(mut copy) = self.pending.take() else {
++            return;
++        };
++        if copy.armed.elapsed() >= Duration::from_secs(5) {
++            self.error = Some(format!(
++                "source copy {} exceeded 5 seconds from arm",
++                copy.index
++            ));
++            eprintln!("[turnstone-source-probe] {}", self.summary());
++            return;
++        }
++        let poll_started = Instant::now();
++        let result = copy.pending.poll();
++        if poll_started.elapsed() >= Duration::from_millis(250)
++            || copy.armed.elapsed() >= Duration::from_secs(5)
++        {
++            self.error = Some(format!(
++                "source copy {} missed nonblocking/deadline bound",
++                copy.index
++            ));
++            eprintln!("[turnstone-source-probe] {}", self.summary());
++            return;
++        }
++        let Some(result) = result else {
++            self.pending = Some(copy);
++            return;
++        };
++        // Mapping is complete before writing. No PNG encoding, pixel scan or
++        // digest runs on the event loop. Convert raw RGBA after process exit.
++        let result = result.and_then(|frame| {
++            std::fs::create_dir_all(&self.directory).map_err(|e| e.to_string())?;
++            let stem = format!("source-{:02}", copy.index);
++            let raw_path = self.directory.join(format!("{stem}.rgba"));
++            use std::io::Write;
++            let mut file = std::fs::OpenOptions::new()
++                .write(true)
++                .create_new(true)
++                .open(&raw_path)
++                .map_err(|e| e.to_string())?;
++            file.write_all(&frame.rgba).map_err(|e| e.to_string())?;
++            copy.metadata["copy"] = serde_json::json!({
++                "width": frame.width, "height": frame.height,
++                "byte_count": frame.rgba.len(), "raw_path": raw_path,
++                "arm_to_map_ms": copy.armed.elapsed().as_millis(),
++            });
++            let mut json = std::fs::OpenOptions::new()
++                .write(true)
++                .create_new(true)
++                .open(self.directory.join(format!("{stem}.json")))
++                .map_err(|e| e.to_string())?;
++            json.write_all(copy.metadata.to_string().as_bytes())
++                .map_err(|e| e.to_string())?;
++            Ok(())
++        });
++        match result {
++            Ok(()) => {
++                self.copies += 1;
++                self.latest = copy.metadata;
++            }
++            Err(error) => self.error = Some(error),
++        }
++        eprintln!("[turnstone-source-probe] {}", self.summary());
++    }
++}
++
++struct ObservedStylesheetProducer {
++    delegated: cambium_genet_winit_host::SceneProducer<tabard_workshop::StylesheetSpecimen>,
++    probe: Rc<RefCell<SourceProbe>>,
++}
++impl ObservedStylesheetProducer {
++    fn new(
++        source: Rc<RefCell<tabard_workshop::StylesheetSpecimen>>,
++        probe: Rc<RefCell<SourceProbe>>,
++    ) -> Self {
++        Self {
++            delegated: cambium_genet_winit_host::SceneProducer::new(
++                source,
++                0x7461_6200_0000_0001,
++                observed_stylesheet_frame,
++                tabard_workshop::StylesheetSpecimen::revision,
++                |source| {
++                    Some(cambium_rootstock::ProducerSemantics {
++                        role: Some(cambium_rootstock::ProducerRole::Image),
++                        name: Some(source.accessible_name().into()),
++                        children: Vec::new(),
++                    })
++                },
++            ),
++            probe,
++        }
++    }
++}
++impl cambium_rootstock::TextureProducer for ObservedStylesheetProducer {
++    fn render(
++        &mut self,
++        cx: &cambium_rootstock::ProducerContext<'_>,
++    ) -> Option<cambium_rootstock::ProducedTexture> {
++        self.probe.borrow_mut().calls += 1;
++        let output = self.delegated.render(cx);
++        if let Some(output) = &output {
++            let mut probe = self.probe.borrow_mut();
++            probe.outputs += 1;
++            let observation = SOURCE_SCENE_OBSERVATION.with(|last| last.borrow().clone());
++            let metadata = serde_json::json!({"index": probe.outputs, "mode": probe.mode,
++                "scene": observation, "physical_size": cx.frame.physical_size,
++                "layout_scale": cx.frame.layout_scale, "needs_frame": cx.frame.needs_frame,
++                "generation": output.generation, "alpha": format!("{:?}", output.alpha),
++                "encoding": format!("{:?}", output.encoding),
++                "texture_format": format!("{:?}", output.view.texture().format()),
++                "diagnostic_registration": "one initial replacement; same actual source Rc, first-binding raster key; original SceneProducer delegated"});
++            probe.latest = metadata.clone();
++            eprintln!("[turnstone-source-probe] output:{metadata}");
++            if probe.outputs <= 12 && probe.error.is_none() {
++                if probe.pending.is_some() {
++                    probe.skipped += 1;
++                } else {
++                    let armed = Instant::now();
++                    match cx.core.start_rgba8_readback(
++                        output.view.texture(),
++                        cx.frame.physical_size[0],
++                        cx.frame.physical_size[1],
++                    ) {
++                        Ok(pending) => {
++                            probe.pending = Some(SourceCopy {
++                                pending,
++                                armed,
++                                metadata,
++                                index: probe.outputs,
++                            })
++                        }
++                        Err(error) => probe.error = Some(error),
++                    }
++                }
++            }
++        }
++        output
++    }
++    fn suspend(&mut self) {
++        self.delegated.suspend();
++    }
++    fn retire(&mut self) {
++        self.delegated.retire();
++    }
++    fn semantics(&mut self) -> Option<cambium_rootstock::ProducerSemantics> {
++        self.delegated.semantics()
++    }
++    fn act(&mut self, key: u64, id: &str) -> bool {
++        self.delegated.act(key, id)
++    }
++}

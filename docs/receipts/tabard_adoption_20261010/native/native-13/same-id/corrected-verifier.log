@@ -1,0 +1,7 @@
+app_before_same_id_save.png colors 2855 PASS
+app_same_id_applied.png colors 2766 PASS
+app_same_id_narrow.png colors 2766 PASS
+app_same_id_saved_unapplied.png colors 2764 PASS
+workshop_same_id.png colors 6006 PASS
+workshop_same_id_narrow.png colors 5288 PASS
+{"theme_id": "theme:copy-1", "name": "TurnstoneAcceptance", "css_utf8_bytes": 255, "css_sha256": "f96e7541ae4bdce4bf4088efa1071e88a02456b6be68b83a52b6cce59c2a07a2", "css_exact_fixture_bytes": true, "choice": {"theme_id": "theme:copy-1", "theme_mode": "dark"}, "private_library_dump_included": false}

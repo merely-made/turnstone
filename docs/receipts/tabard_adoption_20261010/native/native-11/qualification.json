@@ -1,0 +1,139 @@
+{
+  "production": true,
+  "temporary_source_observers": false,
+  "binary_sha256": "a402a258d751b2483a5161ce1ddd60911b48c1fe4b0ea085a5579b3854961426",
+  "build_input_digest": "32f7ea1a01dbc180c3a62a36e72196e0d2fd5df0866a7731c6c9dd59cfa2789c",
+  "build_inputs": 320,
+  "source_manifest": "native-11-source-manifest.json",
+  "lanes": {
+    "seed": {
+      "result": "ok",
+      "main_presentations": 199,
+      "main_captures": 7,
+      "main_blank": 0,
+      "elapsed_seconds": 36.518,
+      "launcher_exit": 0,
+      "timeout": false,
+      "binary_sha256": "a402a258d751b2483a5161ce1ddd60911b48c1fe4b0ea085a5579b3854961426",
+      "main_scenario_sha256": "3e8470fd996afd3a2079543ab365018fb1f5b3f4b47e9b8f6fe37fe7d08c2083",
+      "gpu_reset_reports_changed": false,
+      "all_owned_processes_exited": true,
+      "workshop_presentations": 51,
+      "workshop_captures": 2,
+      "workshop_blank": 0,
+      "workshop_redraws": 55,
+      "workshop_unpresented_redraws": 4,
+      "original_pngs_visually_inspected": 9
+    },
+    "reopen": {
+      "result": "ok",
+      "main_presentations": 48,
+      "main_captures": 2,
+      "main_blank": 0,
+      "elapsed_seconds": 15.048,
+      "launcher_exit": 0,
+      "timeout": false,
+      "binary_sha256": "a402a258d751b2483a5161ce1ddd60911b48c1fe4b0ea085a5579b3854961426",
+      "main_scenario_sha256": "a75b31adc958bdb90553e0dfb1afae7b78921b496a51f60a11de7ea75eec2111",
+      "gpu_reset_reports_changed": false,
+      "all_owned_processes_exited": true,
+      "original_pngs_visually_inspected": 2
+    },
+    "same-id": {
+      "result": "ok",
+      "main_presentations": 126,
+      "main_captures": 4,
+      "main_blank": 0,
+      "elapsed_seconds": 26.521,
+      "launcher_exit": 0,
+      "timeout": false,
+      "binary_sha256": "a402a258d751b2483a5161ce1ddd60911b48c1fe4b0ea085a5579b3854961426",
+      "main_scenario_sha256": "6ea60773f97b46e17be2472568a50266a6876486acfc1c9d05cd176ca15b9622",
+      "gpu_reset_reports_changed": false,
+      "all_owned_processes_exited": true,
+      "workshop_presentations": 49,
+      "workshop_captures": 2,
+      "workshop_blank": 0,
+      "workshop_redraws": 53,
+      "workshop_unpresented_redraws": 4,
+      "original_pngs_visually_inspected": 6
+    },
+    "same-id-reopen": {
+      "result": "ok",
+      "main_presentations": 48,
+      "main_captures": 2,
+      "main_blank": 0,
+      "elapsed_seconds": 15.175,
+      "launcher_exit": 0,
+      "timeout": false,
+      "binary_sha256": "a402a258d751b2483a5161ce1ddd60911b48c1fe4b0ea085a5579b3854961426",
+      "main_scenario_sha256": "9605ae4fcd1c80180375aa61f6d6565ac7c97396a35fe3b11be873accb72fdf9",
+      "gpu_reset_reports_changed": false,
+      "all_owned_processes_exited": true,
+      "original_pngs_visually_inspected": 2
+    }
+  },
+  "total_presentations": 521,
+  "total_captures": 19,
+  "total_blank": 0,
+  "all_original_pngs_visually_inspected": true,
+  "actual_adapter": "AMD Radeon Pro Vega56",
+  "actual_backend": "Metal",
+  "preview_populated_wide_and_narrow": true,
+  "initial_authored": {
+    "theme_id": "theme:copy-1",
+    "name": "TurnstoneAcceptance",
+    "css_utf8_bytes": 255,
+    "css_sha256": "a66fd88f7099783f29e428056cff1e613adbe9d6b6421c004c4d848b8ce2746c",
+    "css_exact_fixture_bytes": true,
+    "choice": {
+      "theme_id": "theme:copy-1",
+      "theme_mode": "dark"
+    },
+    "private_library_dump_included": false
+  },
+  "edited_authored": {
+    "theme_id": "theme:copy-1",
+    "name": "TurnstoneAcceptance",
+    "css_utf8_bytes": 255,
+    "css_sha256": "f96e7541ae4bdce4bf4088efa1071e88a02456b6be68b83a52b6cce59c2a07a2",
+    "css_exact_fixture_bytes": true,
+    "choice": {
+      "theme_id": "theme:copy-1",
+      "theme_mode": "dark"
+    },
+    "private_library_dump_included": false
+  },
+  "same_id_save_keeps_applied_css_until_explicit_apply": true,
+  "fresh_process_choice_and_css_restored_twice": true,
+  "compiled_sources": {
+    "Mere": "7019f07d36a9da8c1a3edbbcbabad606e9cb3278",
+    "Genet": "7422e90613f9017e5bb790e3acb48f61776b2eda",
+    "Knot": "95849aeaeb952ec917d74dbfa851d3e05384d73a",
+    "Woodshed_Redshank": "4aa68bfba308b7033438bf51963e84ef18f34b51",
+    "maintained_renderer_triple": "10f01d6d88e94eac087daf033b24895cf97b8e82"
+  },
+  "later_shared_policy_publications": {
+    "Mere": "3808c5a22ab5b89b6b5832e740b43b2092e0468c",
+    "compiled_candidate_repinned": false,
+    "root_verified_mere_crates_diff_empty": true,
+    "root_verified_genet_components_diff_empty": true,
+    "Genet": "7971ac91a1d9451bb5f8a50ce23f6311e4233d34"
+  },
+  "private_profiles_vault_or_library_dump_included": false,
+  "unqualified_platforms": [
+    "Linux",
+    "Windows",
+    "physical assistive technology",
+    "browser rendering"
+  ],
+  "final_fresh_process_exact_pixel_check": "passed; independent stdlib PNG/zlib RGBA unfilter; wide+narrow #342214, persisted copy-1/dark",
+  "image_manifest": "native/native-11/image-manifest.json",
+  "environment_startup_limitation": "bundled Python/PIL delayed before startup; owned process terminated after independent responsive stdlib check passed; no GPU failure",
+  "not_separately_native_exercised": [
+    "dirty parent quit Save",
+    "dirty parent quit Discard",
+    "dirty parent quit Cancel",
+    "each focus transition"
+  ]
+}

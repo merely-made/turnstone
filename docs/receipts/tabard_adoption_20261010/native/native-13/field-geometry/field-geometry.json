@@ -1,0 +1,50 @@
+{
+  "original": "/Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-13/seed/workshop/workshop_authored.png",
+  "original_sha256": "031f9bffbbba04d411223da7c4de06275ffb1535bfe3c99c51d8e72fcfbbb430",
+  "scale": 2.0,
+  "method": "independent original PNG decode; actual long top/bottom textbox border runs in visually identified regions",
+  "fields": {
+    "name": {
+      "reviewed_region": [
+        25,
+        320,
+        560,
+        445
+      ],
+      "border_first_physical_y": 364,
+      "border_last_physical_y": 431,
+      "outer_painted_height_physical": 68,
+      "outer_painted_height_css": 34.0,
+      "minimum_css_height": 34,
+      "border_rgb_target": [
+        203,
+        211,
+        223
+      ],
+      "channel_tolerance": 3,
+      "crop_sha256": "e6f40d8efd367f95c12a85f5254b24b6be2eb29c533dd40f647496bc882576fd"
+    },
+    "seed-hex": {
+      "reviewed_region": [
+        130,
+        1000,
+        540,
+        1120
+      ],
+      "border_first_physical_y": 1038,
+      "border_last_physical_y": 1105,
+      "outer_painted_height_physical": 68,
+      "outer_painted_height_css": 34.0,
+      "minimum_css_height": 34,
+      "border_rgb_target": [
+        203,
+        211,
+        223
+      ],
+      "channel_tolerance": 3,
+      "crop_sha256": "de2b833ab226a1b811717a8bab5f2314e78a07eab1d27504514ca6a7e69ffe0d"
+    }
+  },
+  "shared_retained_cpu_geometry_test": "separate root-owned evidence",
+  "source_observer": false
+}

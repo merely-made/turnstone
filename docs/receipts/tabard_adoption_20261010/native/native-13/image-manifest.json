@@ -1,0 +1,116 @@
+[
+  {
+    "file": "seed/app/app_authored_narrow.png",
+    "sha256": "3b36857f96ab40b27f5e23750470b339ec4420a53d5abca68240c46edc1cf822",
+    "original": true,
+    "visually_inspected": true
+  },
+  {
+    "file": "seed/app/app_dark.png",
+    "sha256": "93d3c62f8ab231b228ab0dcf76a5b29d2a3598056d63e5acc18bfe61a1f2adb8",
+    "original": true,
+    "visually_inspected": true
+  },
+  {
+    "file": "seed/app/app_default.png",
+    "sha256": "40f929d4b2b6d6e1a593d08a4a1fa559ee6bbb81de4db7f66bc35758b9c5aa33",
+    "original": true,
+    "visually_inspected": true
+  },
+  {
+    "file": "seed/app/app_hc_dark.png",
+    "sha256": "f6935554fe4d1d4beface23d75a4030f92e9078d86fa2b843239d183c0214529",
+    "original": true,
+    "visually_inspected": true
+  },
+  {
+    "file": "seed/app/app_hc_light.png",
+    "sha256": "6a41518f897600954553eb326a2b5d2dde5deda5f3e3f9cdb23565667f3a5a1f",
+    "original": true,
+    "visually_inspected": true
+  },
+  {
+    "file": "seed/app/app_light.png",
+    "sha256": "03dda049f6a8e2f01ed18615044b9ed5e85757d5afcca223aeebd0caa29c54ca",
+    "original": true,
+    "visually_inspected": true
+  },
+  {
+    "file": "seed/app/app_saved_unselected.png",
+    "sha256": "10a2368de7a799b9192a9d73c257b88135ba7b372e895e4c72f8d5c8ee0946af",
+    "original": true,
+    "visually_inspected": true
+  },
+  {
+    "file": "seed/workshop/workshop_authored.png",
+    "sha256": "031f9bffbbba04d411223da7c4de06275ffb1535bfe3c99c51d8e72fcfbbb430",
+    "original": true,
+    "visually_inspected": true
+  },
+  {
+    "file": "seed/workshop/workshop_narrow.png",
+    "sha256": "27d8fe95d42f5ca59ae3b86c5d2ac38c4055a97af636dcebb3c3195f052b0a75",
+    "original": true,
+    "visually_inspected": true
+  },
+  {
+    "file": "reopen/app/app_reopened_narrow.png",
+    "sha256": "80bb2c73f8f7fedc3387ca302d0029fa3d4569422fdbd5df269d4f7a3a47b93a",
+    "original": true,
+    "visually_inspected": true
+  },
+  {
+    "file": "reopen/app/app_reopened_wide.png",
+    "sha256": "ac3b8b7b29b74ee1469b76dcf0e75a92b78930f88151b5082b2ca57e97dffbdd",
+    "original": true,
+    "visually_inspected": true
+  },
+  {
+    "file": "same-id/app/app_before_same_id_save.png",
+    "sha256": "8e85c27314a3754f37796c5e6287da8f48152c2039bad32ea875a87f385f938f",
+    "original": true,
+    "visually_inspected": true
+  },
+  {
+    "file": "same-id/app/app_same_id_applied.png",
+    "sha256": "e016ded7776fb7a8be003b9ddde3c48ae353ea545619788a9d48dbae4e0aa890",
+    "original": true,
+    "visually_inspected": true
+  },
+  {
+    "file": "same-id/app/app_same_id_narrow.png",
+    "sha256": "89f41437df72c4daea0aa3f9f94fea25f0f5a95e98b55770c95ba4108cda46fe",
+    "original": true,
+    "visually_inspected": true
+  },
+  {
+    "file": "same-id/app/app_same_id_saved_unapplied.png",
+    "sha256": "446d74085f696f6973b1904c505c6b827214a86c1918a28767a9b59340f055f1",
+    "original": true,
+    "visually_inspected": true
+  },
+  {
+    "file": "same-id/workshop/workshop_same_id.png",
+    "sha256": "a26c76734eb0a02b41f6f081b01df7f2b8b46828203691b47d05defb3913e0e2",
+    "original": true,
+    "visually_inspected": true
+  },
+  {
+    "file": "same-id/workshop/workshop_same_id_narrow.png",
+    "sha256": "e675726edc8bd84608e40c652cf30faa961d1e5552bf953c7d50c1108f36a939",
+    "original": true,
+    "visually_inspected": true
+  },
+  {
+    "file": "same-id-reopen/app/app_reopened_narrow.png",
+    "sha256": "9785faf867566d2e57f89bf35fc36a200cb7e1800856962c4604d41f38dfe5fd",
+    "original": true,
+    "visually_inspected": true
+  },
+  {
+    "file": "same-id-reopen/app/app_reopened_wide.png",
+    "sha256": "757c191f76a582a66fec09c574104cc960f4888975db6922b94ec47e934fb97a",
+    "original": true,
+    "visually_inspected": true
+  }
+]

@@ -31,8 +31,6 @@ use graphshell_client::{
 };
 use graphshell_endpoint::{IntentSink, PresentationSource, ProjectionCatalog, ProjectionSource};
 use identity::IdentityProvider;
-use identity::delegation::Issue;
-use insigne::delegation::SignedDelegationCertificate;
 use mere::kernel::graph::{Author, CoverageNote, NodeKey};
 use sceno::{Arrangement, Score, Spiral};
 use scenotime::{Revision, SceneEpoch, SceneSnapshot};
@@ -182,7 +180,9 @@ impl TurnstoneEndpoint {
             0,
             *blake3::hash(salt.as_bytes()).as_bytes(),
         );
-        let signed = SignedDelegationCertificate::issue(root.as_ref(), certificate)
+        // Signed inside djinn (D11): only the certificate crosses.
+        let signed = root
+            .issue_certificate(certificate)
             .map_err(|error| format!("failed to sign the endpoint delegation: {error:?}"))?;
         let mut authority = DelegationTable::new(
             IdentityProvider::master_public_key(root.as_ref()).to_bytes(),

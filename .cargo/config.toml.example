@@ -24,6 +24,7 @@ grafting = { path = "../wgpu-graft/grafting" }
 welding = { path = "../wgpu-weld/welding" }
 
 [patch.crates-io]
+muniment = { path = "../mere/crates/eidetic/muniment" }
 # Keep the crates.io-facing half of Turnstone's committed Netrender family
 # patch on the same local source as the git-facing half above. Cargo does not
 # recursively apply a crates.io -> git patch through a git -> path patch.
@@ -123,10 +124,10 @@ p2panda-sync = { path = "../../crates/p2panda/p2panda-sync" }
 "mora-cmudict" = { path = "../mere/crates/intel/mora-cmudict" }
 "muniment" = { path = "../mere/crates/eidetic/muniment" }
 "nematic" = { path = "../mere/crates/nematic/nematic" }
-"notochord" = { path = "../mere/crates/system/notochord" }
+"notochord" = { git = "https://github.com/merely-made/dramatis.git", rev = "c1d620764315b4c750fcffea30b8c898b8bb73bc" }
 "numen" = { path = "../mere/crates/conatus/numen" }
 "pandect" = { path = "../mere/crates/system/pandect" }
-"personae" = { path = "../mere/crates/dramatis/personae" }
+"personae" = { git = "https://github.com/merely-made/dramatis.git", rev = "c1d620764315b4c750fcffea30b8c898b8bb73bc" }
 "pictograph" = { path = "../mere/crates/canvas/pictograph" }
 "platen" = { path = "../mere/crates/platen/platen" }
 "register-lens" = { path = "../mere/crates/system/registry/register-lens" }
@@ -147,6 +148,11 @@ p2panda-sync = { path = "../../crates/p2panda/p2panda-sync" }
 "workbench" = { path = "../mere/crates/cambium/workbench" }
 
 # Local genet packages selected by the portable root graph.
+"tabard-workshop" = { path = "../mere/crates/cambium/tabard-workshop" }
+"mesquite" = { path = "../mere/crates/cambium/mesquite" }
+"cambium-genet-winit-host" = { path = "../mere/crates/cambium/cambium-genet-winit-host" }
+"cambium-rootstock" = { path = "../mere/crates/cambium/cambium-rootstock" }
+
 [patch."https://github.com/merely-made/genet.git"]
 "browsing-context-api" = { path = "../genet/components/shared/browsing-context" }
 "buckram" = { path = "../genet/components/buckram" }

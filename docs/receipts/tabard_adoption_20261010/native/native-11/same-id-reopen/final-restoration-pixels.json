@@ -1,0 +1,37 @@
+{
+  "app_reopened_narrow.png": {
+    "background_rgba": [
+      52,
+      34,
+      20,
+      255
+    ],
+    "size": [
+      1280,
+      1560
+    ],
+    "row_filters": {
+      "1": 781
+    }
+  },
+  "app_reopened_wide.png": {
+    "background_rgba": [
+      52,
+      34,
+      20,
+      255
+    ],
+    "size": [
+      2360,
+      1600
+    ],
+    "row_filters": {
+      "1": 801
+    }
+  },
+  "choice": {
+    "theme_id": "theme:copy-1",
+    "theme_mode": "dark"
+  },
+  "decoder": "independent stdlib PNG RGBA unfilter, because bundled Python startup stalled"
+}

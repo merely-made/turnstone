@@ -1,0 +1,241 @@
+{
+  "probe_metadata": {
+    "box_shadow_masks": 0,
+    "copies": [
+      {
+        "arm_to_map_ms": 514,
+        "byte_count": 4361088,
+        "height": 656,
+        "label": "staged-css",
+        "raw_path": "/Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-09/stage-diagnostic/staged-css.rgba",
+        "width": 1662
+      },
+      {
+        "arm_to_map_ms": 512,
+        "byte_count": 15104000,
+        "height": 1600,
+        "label": "fresh-full",
+        "raw_path": "/Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-09/stage-diagnostic/fresh-full.rgba",
+        "width": 2360
+      }
+    ],
+    "copy_order": "original child copy first; fresh sampler then fresh full packet; arm both probe copies after both rasters; collect both before raw writes",
+    "css_image_key": "0xc000000074616263",
+    "full_fonts": 4,
+    "full_ops": 434,
+    "full_raster_key": "0x7461620073740002",
+    "full_viewport": [
+      1180,
+      800
+    ],
+    "live_texture_registrations": {
+      "after_replay": 2,
+      "after_sampler": 2,
+      "before": 2
+    },
+    "original_capture_armed_first": true,
+    "original_child": {
+      "capture_kind": "legacy",
+      "height": 1600,
+      "layout_scale": "assumed2; requirewide2360",
+      "mode": "dark",
+      "width": 2360
+    },
+    "sampler_logical_size": [
+      831,
+      328
+    ],
+    "sampler_raster_key": "0x7461620073740001",
+    "source_registry_operations": "none"
+  },
+  "pixel_stats": {
+    "staged-css": {
+      "raw_sha256": "29cc3f0418df27af1b2e2fb640f13ecb82622b6eebeb4a771c97b97c82b0a69c",
+      "size": [
+        1662,
+        656
+      ],
+      "distinct_rgba": 1,
+      "opaque_pixels": 0,
+      "transparent_pixels": 1090272,
+      "top_colors": [
+        {
+          "rgba": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "pixels": 1090272
+        }
+      ]
+    },
+    "fresh-full": {
+      "raw_sha256": "4db752cecfb2838592f27d0433236e77986d19f876f857f6f2014264290ef301",
+      "size": [
+        2360,
+        1600
+      ],
+      "distinct_rgba": 4356,
+      "opaque_pixels": 3776000,
+      "transparent_pixels": 0,
+      "top_colors": [
+        {
+          "rgba": [
+            243,
+            244,
+            246,
+            255
+          ],
+          "pixels": 1766174
+        },
+        {
+          "rgba": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "pixels": 1181964
+        },
+        {
+          "rgba": [
+            250,
+            251,
+            253,
+            255
+          ],
+          "pixels": 596682
+        },
+        {
+          "rgba": [
+            219,
+            226,
+            235,
+            255
+          ],
+          "pixels": 40038
+        },
+        {
+          "rgba": [
+            232,
+            238,
+            245,
+            255
+          ],
+          "pixels": 18333
+        },
+        {
+          "rgba": [
+            203,
+            211,
+            223,
+            255
+          ],
+          "pixels": 15950
+        },
+        {
+          "rgba": [
+            221,
+            225,
+            231,
+            255
+          ],
+          "pixels": 12188
+        },
+        {
+          "rgba": [
+            212,
+            218,
+            227,
+            255
+          ],
+          "pixels": 10424
+        },
+        {
+          "rgba": [
+            48,
+            79,
+            105,
+            255
+          ],
+          "pixels": 8460
+        },
+        {
+          "rgba": [
+            36,
+            44,
+            57,
+            255
+          ],
+          "pixels": 8352
+        },
+        {
+          "rgba": [
+            101,
+            113,
+            138,
+            255
+          ],
+          "pixels": 6130
+        },
+        {
+          "rgba": [
+            196,
+            206,
+            218,
+            255
+          ],
+          "pixels": 5748
+        }
+      ],
+      "application_preview_roi": {
+        "box": [
+          660,
+          330,
+          2290,
+          968
+        ],
+        "distinct_rgba": 1,
+        "top_colors": [
+          {
+            "rgba": [
+              243,
+              244,
+              246,
+              255
+            ],
+            "pixels": 1039940
+          }
+        ]
+      }
+    },
+    "original-child": {
+      "application_preview_roi": {
+        "box": [
+          660,
+          330,
+          2290,
+          968
+        ],
+        "distinct_rgba": 1,
+        "top_colors": [
+          {
+            "rgba": [
+              243,
+              244,
+              246,
+              255
+            ],
+            "pixels": 1039940
+          }
+        ]
+      }
+    },
+    "roi_pixel_comparison": {
+      "different_pixels": 0,
+      "total_pixels": 1039940
+    }
+  },
+  "conversion_after_owned_exit": true
+}

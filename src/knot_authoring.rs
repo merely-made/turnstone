@@ -3088,6 +3088,7 @@ mod tests {
                 label: Some(Channel::Field("heading".to_owned())),
             },
             arrangement: Arrangement::default(),
+            dynamics: None,
             interaction: Interaction::default(),
             appearance: Appearance {
                 realization: "turnstone.knot-outline".to_owned(),

@@ -1,0 +1,8 @@
+{
+  "test_binary": "/Users/markik/Code/targets/knot-tabard-apps/debug/deps/turnstone-05f43ed298edc095",
+  "before_sha256": "2c455b1f43e1f647d98b970c0bfa4ea9f64f9cef6c7124c4779edf73326f7586",
+  "after_sha256": "f7f2ea992a163ac5cb0e6665501a40e50081ddf823e2220ed8e44bb7e298bad4",
+  "scope": "owned generated test executable only; production binary unchanged",
+  "original_launch": "stalled before libtest at dyld_start, footprint12KiB; terminated owned PID76469",
+  "signature_verification": "/Users/markik/Code/targets/knot-tabard-apps/debug/deps/turnstone-05f43ed298edc095: valid on disk\n/Users/markik/Code/targets/knot-tabard-apps/debug/deps/turnstone-05f43ed298edc095: satisfies its Designated Requirement\n"
+}

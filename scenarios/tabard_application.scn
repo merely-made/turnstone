@@ -1,0 +1,63 @@
+# Fresh TURNSTONE_ROOT + MERE_ROOT + TURNSTONE_THEME_LIBRARY.
+# TURNSTONE_THEME_SCENARIO=tabard_workshop.scn; THEME receipt is separate.
+settle 12
+key escape
+resize 1180 800
+settle 5
+act Open Settings pane
+settle 5
+capture app_default
+click surface:settings .setting-apply @data-action=edit-themes
+wait 1800
+settle 8
+assert snap appearance-workshop-open == false
+assert snap appearance-workshop-ok == true
+capture app_saved_unselected
+click surface:settings .radio TurnstoneAcceptance
+click surface:settings .setting-apply @data-setting=theme.id
+settle 6
+assert snap appearance-theme == theme:copy-1
+click surface:settings .radio High contrast light
+click surface:settings .radio High contrast light
+key up
+key up
+key tab
+key enter
+settle 6
+assert snap appearance-mode == light
+assert snap appearance-theme == theme:copy-1
+capture app_light
+click surface:settings .radio High contrast light
+click surface:settings .radio High contrast light
+key up
+key tab
+key enter
+settle 6
+assert snap appearance-mode == dark
+assert snap appearance-theme == theme:copy-1
+capture app_dark
+click surface:settings .radio High contrast light
+click surface:settings .setting-apply @data-setting=theme.mode
+settle 6
+assert snap appearance-mode == hc_light
+assert snap appearance-theme == theme:copy-1
+capture app_hc_light
+click surface:settings .radio High contrast dark
+click surface:settings .setting-apply @data-setting=theme.mode
+settle 6
+assert snap appearance-mode == hc_dark
+assert snap appearance-theme == theme:copy-1
+capture app_hc_dark
+click surface:settings .radio High contrast light
+click surface:settings .radio High contrast light
+key up
+key tab
+key enter
+settle 6
+assert snap appearance-css ~ #142238
+resize 640 780
+settle 5
+capture app_authored_narrow
+assert snap capture-errors == 0
+key escape
+assert snap focus == graph

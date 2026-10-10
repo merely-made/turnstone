@@ -171,18 +171,17 @@ fn next_day_replaces_one_retained_projection_without_rewriting_opening_provenanc
 
     let next_day_point = {
         let dom = changed.dom_ref();
-        let surface = taproot::ProbeSurface {
-            name: "sky",
-            dom: &dom,
-            rect: [0.0, 0.0, 1_200.0, 1_600.0],
-            sheet: changed.stylesheet(),
-        };
-        taproot::resolve(
-            &[surface],
+        let targets = taproot::matching(
+            &dom,
             &taproot::Selector::role("button").containing("Next day"),
-        )
-        .expect("semantic Next day control")
-        .point
+        );
+        assert_eq!(targets.len(), 1, "unique semantic Next day control");
+        let (x, y, width, height) = changed
+            .layout()
+            .visible_rect(&dom, targets[0])
+            .expect("Next day must be painted inside the retained Sky viewport");
+        assert!(width > 0.0 && height > 0.0);
+        (x + width / 2.0, y + height / 2.0)
     };
     let hit = changed
         .hit_test(next_day_point.0, next_day_point.1)

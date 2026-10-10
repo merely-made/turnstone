@@ -13,7 +13,7 @@
 use super::{NodeSessions, NodeSurfaces};
 use winit::application::ApplicationHandler;
 use winit::event::{ElementState, Ime, MouseScrollDelta, StartCause, WindowEvent};
-use winit::event_loop::{ActiveEventLoop, ControlFlow};
+use winit::event_loop::ActiveEventLoop;
 use winit::window::WindowId;
 
 use std::sync::Arc;
@@ -54,6 +54,18 @@ impl ApplicationHandler for Shell {
     }
 
     fn about_to_wait(&mut self, event_loop: &ActiveEventLoop) {
+        if self.shared_scenario.is_some()
+            && self.main_receipt.presentation_stalled(self.theme_editor.is_some())
+        {
+            let mut outcome = self.shared_scenario.take().unwrap().finish();
+            outcome.ok = false;
+            outcome
+                .log
+                .push("FAIL: no successful main presentation for ten seconds".into());
+            self.write_shared_done(&outcome);
+            event_loop.exit();
+            return;
+        }
         let effects = self.app.tick(crate::denizen::now_ms());
         self.run_effects(effects);
         self.pump_redshank();
@@ -72,7 +84,12 @@ impl ApplicationHandler for Shell {
             .chain(self.document_clock.deadline(now))
             .min()
             .unwrap_or_else(|| now + std::time::Duration::from_secs(60));
-        event_loop.set_control_flow(ControlFlow::WaitUntil(deadline));
+        let editor_idle = self.service_theme_editor(event_loop);
+        event_loop.set_control_flow(super::appearance_editor::editor_deadline(
+            deadline,
+            now,
+            editor_idle,
+        ));
     }
 
     fn exiting(&mut self, _event_loop: &ActiveEventLoop) {
@@ -273,6 +290,9 @@ impl ApplicationHandler for Shell {
         window_id: WindowId,
         event: WindowEvent,
     ) {
+        if self.theme_editor_event(window_id, &event) {
+            return;
+        }
         if let (Some(adapter), Some(window)) = (self.a11y_adapter.as_mut(), self.window.as_ref())
             && window.id() == window_id
         {
@@ -310,6 +330,9 @@ impl ApplicationHandler for Shell {
             },
             WindowEvent::CloseRequested => {
                 self.cancel_content_pointer();
+                if self.request_close_with_theme_editor() {
+                    return;
+                }
                 self.act(Action::SaveSession);
                 self.release_place_worker();
                 event_loop.exit();
@@ -439,11 +462,13 @@ impl ApplicationHandler for Shell {
             WindowEvent::RedrawRequested => {
                 self.observe_physics_display_rate(false);
                 tracing::debug!(target: "turnstone::selfdrive", "begin render");
-                self.render();
+                let presented = self.render();
                 tracing::debug!(target: "turnstone::selfdrive", "finished render; begin accessibility update");
                 self.push_a11y_tree();
                 tracing::debug!(target: "turnstone::selfdrive", "finished accessibility update; begin scenario tick");
-                self.scenario_pump(event_loop);
+                if presented {
+                    self.scenario_pump(event_loop);
+                }
                 tracing::debug!(target: "turnstone::selfdrive", "finished scenario tick");
             },
             _ => {},

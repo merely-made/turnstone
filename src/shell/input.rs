@@ -144,6 +144,197 @@ impl ContributedPointer {
     }
 }
 
+/// Platform-independent part of the primary native caller. The host supplies
+/// placement synchronization and receiver delivery; these shared branches own
+/// the shell capture decisions before renderer-specific pane/graph gestures.
+/// Keeping the non-Content branch here lets native input fixtures exercise the
+/// same fresh-hit capture assignment and terminal-event admission as Shell.
+pub(super) trait PrimaryPointerHost {
+    fn pointer_state(
+        &mut self,
+    ) -> (
+        &mut crate::surface::FocusTarget,
+        &mut super::window_input::Pool,
+        &mut Option<crate::surface::SurfaceKind>,
+    );
+    fn sync_pointer_placements(&mut self);
+    fn pointer_content_focus(&mut self, appearance: crate::surface::SurfaceId);
+    fn pointer_content_mouse(
+        &mut self,
+        appearance: crate::surface::SurfaceId,
+        local: (f32, f32),
+        phase: inker::PointerPhase,
+        button: Option<inker::MouseButton>,
+    );
+    fn pointer_window_mouse(
+        &mut self,
+        appearance: Option<crate::surface::SurfaceId>,
+        position: (f32, f32),
+        phase: inker::PointerPhase,
+        button: Option<inker::MouseButton>,
+    );
+    fn pointer_has_contributed_capture(&self) -> bool;
+    fn pointer_release_contributed(&mut self, x: f32, y: f32);
+    fn pointer_content_hovered(&mut self, node: uuid::Uuid);
+    fn pointer_redraw(&mut self);
+}
+
+/// Dispatch a hit admitted by the primary caller's chrome/modal/context gates.
+/// A returned hit continues into Shell's pane/graph/divider renderer handling.
+pub(super) fn dispatch_primary_press(
+    host: &mut impl PrimaryPointerHost,
+    hit: Option<crate::surface::HitResult>,
+    x: f32,
+    y: f32,
+    button: MouseButton,
+) -> Option<crate::surface::HitResult> {
+    *host.pointer_state().2 = hit.map(|h| h.kind);
+    let hit = hit?;
+    if !matches!(hit.kind, crate::surface::SurfaceKind::Content(_)) {
+        return Some(hit);
+    }
+    host.sync_pointer_placements();
+    let hit = {
+        let (focus, pool, capture) = host.pointer_state();
+        let hit = super::window_input::content_press_target(
+            focus,
+            pool,
+            0,
+            inker::PhysicalPosition { x, y },
+            hit,
+        );
+        *capture = Some(hit.kind);
+        hit
+    };
+    host.pointer_content_focus(hit.id);
+    if let Some(button) = surface_mouse_button(button) {
+        host.pointer_content_mouse(hit.id, hit.local, inker::PointerPhase::Down, Some(button));
+    }
+    host.pointer_redraw();
+    None
+}
+
+pub(super) fn dispatch_primary_content_move(
+    host: &mut impl PrimaryPointerHost,
+    x: f32,
+    y: f32,
+) -> bool {
+    let Some(crate::surface::SurfaceKind::Content(node)) = *host.pointer_state().2 else {
+        return false;
+    };
+    host.sync_pointer_placements();
+    let target = {
+        let (_, pool, _) = host.pointer_state();
+        super::window_input::captured_mouse(pool).and_then(|id| {
+            pool.placement(&id)
+                .map(|placement| (id, (x - placement.rect.x, y - placement.rect.y)))
+        })
+    };
+    if let Some((id, local)) = target {
+        host.pointer_content_mouse(id, local, inker::PointerPhase::Move, None);
+        host.pointer_content_hovered(node);
+    }
+    true
+}
+
+/// Deliver the native terminal event before returning non-content custody to
+/// Shell's renderer-specific release handling.
+pub(super) fn dispatch_primary_release(
+    host: &mut impl PrimaryPointerHost,
+    x: f32,
+    y: f32,
+    button: MouseButton,
+) -> std::ops::ControlFlow<(), Option<crate::surface::SurfaceKind>> {
+    let appearance = if surface_mouse_button(button).is_some()
+        && !host.pointer_has_contributed_capture()
+        && matches!(
+            *host.pointer_state().2,
+            Some(crate::surface::SurfaceKind::Content(_))
+        ) {
+        host.sync_pointer_placements();
+        super::window_input::captured_mouse(host.pointer_state().1)
+    } else {
+        None
+    };
+    host.pointer_window_mouse(
+        appearance,
+        (x, y),
+        inker::PointerPhase::Up,
+        surface_mouse_button(button),
+    );
+    if host.pointer_has_contributed_capture() {
+        if button == MouseButton::Left {
+            host.pointer_release_contributed(x, y);
+        }
+        return std::ops::ControlFlow::Break(());
+    }
+    let captured = host.pointer_state().2.take();
+    if let Some(crate::surface::SurfaceKind::Content(_)) = captured {
+        if super::window_input::captured_mouse(host.pointer_state().1).is_some() {
+            *host.pointer_state().2 = captured;
+        }
+        host.pointer_redraw();
+        return std::ops::ControlFlow::Break(());
+    }
+    std::ops::ControlFlow::Continue(captured)
+}
+
+impl PrimaryPointerHost for Shell {
+    fn pointer_state(
+        &mut self,
+    ) -> (
+        &mut crate::surface::FocusTarget,
+        &mut super::window_input::Pool,
+        &mut Option<crate::surface::SurfaceKind>,
+    ) {
+        (
+            &mut self.app.focus,
+            &mut self.content_sessions.pool,
+            &mut self.pointer_capture,
+        )
+    }
+    fn sync_pointer_placements(&mut self) {
+        self.sync_content_placements();
+    }
+    fn pointer_content_focus(&mut self, appearance: crate::surface::SurfaceId) {
+        self.content_input(
+            appearance,
+            pelt_core::PeltInput::Session(inker::SessionInput::Focus(true)),
+        );
+    }
+    fn pointer_content_mouse(
+        &mut self,
+        appearance: crate::surface::SurfaceId,
+        local: (f32, f32),
+        phase: inker::PointerPhase,
+        button: Option<inker::MouseButton>,
+    ) {
+        self.content_mouse(appearance, local, phase, button);
+    }
+    fn pointer_window_mouse(
+        &mut self,
+        appearance: Option<crate::surface::SurfaceId>,
+        position: (f32, f32),
+        phase: inker::PointerPhase,
+        button: Option<inker::MouseButton>,
+    ) {
+        self.window_mouse_input(0, appearance, position, phase, button);
+    }
+    fn pointer_has_contributed_capture(&self) -> bool {
+        self.contributed_pointer.is_some()
+    }
+    fn pointer_release_contributed(&mut self, x: f32, y: f32) {
+        self.release_contributed_pointer(0, x, y);
+    }
+    fn pointer_content_hovered(&mut self, node: uuid::Uuid) {
+        self.hovered_surface = Some(node);
+        self.apply_pending_surface_cursor();
+    }
+    fn pointer_redraw(&mut self) {
+        self.request_redraw();
+    }
+}
+
 impl Shell {
     /// One aim that resolved to nothing, and why.
     ///
@@ -343,34 +534,10 @@ impl Shell {
             self.pointer_capture = None;
             return;
         }
-        self.pointer_capture = hit.map(|h| h.kind);
-        if let Some(hit) = hit {
+        if let Some(hit) = dispatch_primary_press(self, hit, x, y, button) {
             match hit.kind {
-                crate::surface::SurfaceKind::Content(_) => {
-                    self.sync_content_placements();
-                    let hit = super::window_input::content_press_target(
-                        &mut self.app.focus,
-                        &self.content_sessions.pool,
-                        0,
-                        inker::PhysicalPosition { x, y },
-                        hit,
-                    );
-                    self.pointer_capture = Some(hit.kind);
-                    self.content_input(
-                        hit.id,
-                        pelt_core::PeltInput::Session(inker::SessionInput::Focus(true)),
-                    );
-                    if let Some(button) = surface_mouse_button(button) {
-                        self.content_mouse(
-                            hit.id,
-                            hit.local,
-                            inker::PointerPhase::Down,
-                            Some(button),
-                        );
-                    }
-                    self.request_redraw();
-                    return;
-                },
+                // Content is fully dispatched by the shared native caller.
+                crate::surface::SurfaceKind::Content(_) => unreachable!(),
                 // A press on a pane makes it the active pane (the anchor for
                 // close/maximize/divider). A Trail pane also routes the click to
                 // its row (slice D): a navigable row lowers Action::OpenAddress
@@ -600,6 +767,7 @@ impl Shell {
                                 if let (Some((rw, rh)), Some(pane)) =
                                     (dims, self.renderers.settings.get_mut(&id))
                                 {
+                                    self.app.focus = crate::surface::FocusTarget::Pane(id);
                                     pane.click(hit.local.0, hit.local.1, rw, rh);
                                 }
                             },
@@ -848,16 +1016,7 @@ impl Shell {
             }
             return;
         }
-        if let Some(crate::surface::SurfaceKind::Content(node)) = self.pointer_capture {
-            self.sync_content_placements();
-            if let Some(id) = super::window_input::captured_mouse(&self.content_sessions.pool)
-                && let Some(placement) = self.content_sessions.pool.placement(&id)
-            {
-                let local = (x - placement.rect.x, y - placement.rect.y);
-                self.content_mouse(id, local, inker::PointerPhase::Move, None);
-                self.hovered_surface = Some(node);
-                self.apply_pending_surface_cursor();
-            }
+        if dispatch_primary_content_move(self, x, y) {
             return;
         }
         if let Some(crate::surface::SurfaceKind::Pane(pane)) = self.pointer_capture
@@ -1197,43 +1356,15 @@ impl Shell {
 
     pub(super) fn deliver_release(&mut self, x: f32, y: f32, button: MouseButton) {
         self.surface_pointer_buttons.0 &= !surface_button_mask(button).0;
-        let appearance = if surface_mouse_button(button).is_some()
-            && self.contributed_pointer.is_none()
-            && matches!(
-                self.pointer_capture,
-                Some(crate::surface::SurfaceKind::Content(_))
-            ) {
-            self.sync_content_placements();
-            super::window_input::captured_mouse(&self.content_sessions.pool)
-        } else {
-            None
-        };
-        self.window_mouse_input(
-            0,
-            appearance,
-            (x, y),
-            inker::PointerPhase::Up,
-            surface_mouse_button(button),
-        );
-        if self.contributed_pointer.is_some() {
-            if button == MouseButton::Left {
-                self.release_contributed_pointer(0, x, y);
-            }
+        let std::ops::ControlFlow::Continue(captured) =
+            dispatch_primary_release(self, x, y, button)
+        else {
             return;
-        }
-        let captured = self.pointer_capture;
+        };
         let graph_capture = match captured {
             Some(crate::surface::SurfaceKind::Graph(pane)) => Some(pane),
             _ => None,
         };
-        self.pointer_capture = None;
-        if let Some(crate::surface::SurfaceKind::Content(_)) = captured {
-            if super::window_input::captured_mouse(&self.content_sessions.pool).is_some() {
-                self.pointer_capture = captured;
-            }
-            self.request_redraw();
-            return;
-        }
         if let Some(crate::surface::SurfaceKind::Pane(pane)) = captured
             && let Some((local_x, local_y)) = self.surface_plan().into_iter().find_map(|surface| {
                 (surface.kind == crate::surface::SurfaceKind::Pane(pane))

@@ -1,0 +1,28 @@
+RESULT fail
+captured app_default
+FAIL: wait-file '/Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-01/seed/workshop/scenario.done' after 1800 frames: still missing or empty
+FAIL: assert snap appearance-workshop-ok Eq 'true': got 'false'
+captured app_saved_unselected
+FAIL: assert snap appearance-theme Eq 'theme:copy-1': got ''
+FAIL: assert snap appearance-mode Eq 'light': got ''
+FAIL: assert snap appearance-theme Eq 'theme:copy-1': got ''
+captured app_light
+FAIL: assert snap appearance-mode Eq 'dark': got ''
+FAIL: assert snap appearance-theme Eq 'theme:copy-1': got ''
+captured app_dark
+FAIL: assert snap appearance-mode Eq 'hc_light': got ''
+FAIL: assert snap appearance-theme Eq 'theme:copy-1': got ''
+captured app_hc_light
+FAIL: assert snap appearance-mode Eq 'hc_dark': got ''
+FAIL: assert snap appearance-theme Eq 'theme:copy-1': got ''
+captured app_hc_dark
+FAIL: assert snap appearance-css Contains '#142238': got ''
+captured app_authored_narrow
+presentation frames=142 captures=7 blank=0
+capture /Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-01/seed/app/app_default.png digest=0e68046f8735ba9d blank=false
+capture /Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-01/seed/app/app_saved_unselected.png digest=89bc2fb7093183be blank=false
+capture /Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-01/seed/app/app_light.png digest=89bc2fb7093183be blank=false
+capture /Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-01/seed/app/app_dark.png digest=89bc2fb7093183be blank=false
+capture /Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-01/seed/app/app_hc_light.png digest=89bc2fb7093183be blank=false
+capture /Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-01/seed/app/app_hc_dark.png digest=89bc2fb7093183be blank=false
+capture /Users/markik/Code/tabard-app-receipts/2026-10-10/turnstone/native-01/seed/app/app_authored_narrow.png digest=a4337ccef4e4f70b blank=false
