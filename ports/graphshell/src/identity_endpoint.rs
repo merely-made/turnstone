@@ -7,7 +7,8 @@
 //! Graphshell endpoint adapter for the resident Personae authority.
 //!
 //! The browser-facing side sees ordinary portable cards and typed intents.
-//! This adapter remains native because it holds the in-process authority. A
+//! The authority is whatever [`ResidentIdentity`] the composer hands in;
+//! djinn hands in castellan's keeper (dramatis repo plan, D15). A
 //! carrier must admit a session before passing this endpoint to
 //! `serve_admitted_session`; nothing here invents a second principal field.
 
@@ -23,7 +24,6 @@ use chirograph::{
     ResourceChunkRequest, ResourceChunkResponse, ResourceRequest, ResourceResponse, SemanticRole,
 };
 use graphshell_endpoint::{IntentSink, PresentationSource, ProjectionCatalog, ProjectionSource};
-use personae::IdentityStorage;
 use sceno::{
     Arrangement, Footprint, InstanceId, ProjectedItem, Rect, Representation, Scene, Score, Size2,
     SourceRef, Transform2, Vec2,
@@ -36,7 +36,7 @@ use crate::identity_projection::{
     SIGNING_DENY_INTENT, project_identity,
 };
 use crate::native::browser_host::now_ms;
-use crate::native::personae_host::PersonaeHost;
+use crate::native::resident_identity::ResidentIdentity;
 
 pub const IDENTITY_SESSION: &str = "native:personae";
 
@@ -148,8 +148,8 @@ pub const MAX_RELEASED_TRANSFER_BYTES: usize = 64 * 1024 * 1024;
 
 /// Native identity authority exposed through Graphshell's ordinary endpoint
 /// vocabulary.
-pub struct IdentityEndpoint<S: IdentityStorage> {
-    host: Arc<PersonaeHost<S>>,
+pub struct IdentityEndpoint<A: ResidentIdentity + ?Sized> {
+    host: Arc<A>,
     session: ProjectionSession,
     epoch: u64,
     revision: u64,
@@ -174,22 +174,19 @@ pub struct IdentityEndpoint<S: IdentityStorage> {
     decisions: Option<TransferDecisions>,
 }
 
-impl<S: IdentityStorage + 'static> IdentityEndpoint<S> {
-    pub fn new(host: Arc<PersonaeHost<S>>) -> Self {
+impl<A: ResidentIdentity + ?Sized> IdentityEndpoint<A> {
+    pub fn new(host: Arc<A>) -> Self {
         Self::with_session(host, ProjectionSession(IDENTITY_SESSION.to_string()))
     }
 
     /// Bind the projection to the transcript-derived session retained after
     /// carrier admission.
-    pub fn for_admitted(
-        host: Arc<PersonaeHost<S>>,
-        authority: &crate::lifecycle::SessionAuthority,
-    ) -> Self {
+    pub fn for_admitted(host: Arc<A>, authority: &crate::lifecycle::SessionAuthority) -> Self {
         Self::with_session(host, authority.session().clone())
     }
 
     pub fn for_admitted_with_cards(
-        host: Arc<PersonaeHost<S>>,
+        host: Arc<A>,
         authority: &crate::lifecycle::SessionAuthority,
         supplemental_cards: Vec<SupplementalCard>,
     ) -> Self {
@@ -198,7 +195,7 @@ impl<S: IdentityStorage + 'static> IdentityEndpoint<S> {
         endpoint
     }
 
-    fn with_session(host: Arc<PersonaeHost<S>>, session: ProjectionSession) -> Self {
+    fn with_session(host: Arc<A>, session: ProjectionSession) -> Self {
         Self {
             host,
             session,
@@ -375,7 +372,7 @@ impl<S: IdentityStorage + 'static> IdentityEndpoint<S> {
         self.reader = Some(reader);
     }
 
-    pub fn host(&self) -> &Arc<PersonaeHost<S>> {
+    pub fn host(&self) -> &Arc<A> {
         &self.host
     }
 
@@ -566,7 +563,7 @@ fn advertised_action(action: &IdentityProjectionAction) -> AdvertisedAction {
     }
 }
 
-impl<S: IdentityStorage + 'static> ProjectionCatalog for IdentityEndpoint<S> {
+impl<A: ResidentIdentity + ?Sized> ProjectionCatalog for IdentityEndpoint<A> {
     fn describe(&self) -> EndpointDescriptor {
         EndpointDescriptor {
             label: "Local identity authority".to_string(),
@@ -578,7 +575,7 @@ impl<S: IdentityStorage + 'static> ProjectionCatalog for IdentityEndpoint<S> {
     }
 }
 
-impl<S: IdentityStorage + 'static> ProjectionSource for IdentityEndpoint<S> {
+impl<A: ResidentIdentity + ?Sized> ProjectionSource for IdentityEndpoint<A> {
     type Error = IdentityEndpointError;
 
     fn snapshot(&mut self, request: ProjectionRequest) -> Result<ProjectionSnapshot, Self::Error> {
@@ -589,7 +586,7 @@ impl<S: IdentityStorage + 'static> ProjectionSource for IdentityEndpoint<S> {
     }
 }
 
-impl<S: IdentityStorage + 'static> PresentationSource for IdentityEndpoint<S> {
+impl<A: ResidentIdentity + ?Sized> PresentationSource for IdentityEndpoint<A> {
     type Error = IdentityEndpointError;
 
     fn resource(&mut self, request: ResourceRequest) -> Result<ResourceResponse, Self::Error> {
@@ -631,7 +628,7 @@ impl<S: IdentityStorage + 'static> PresentationSource for IdentityEndpoint<S> {
     }
 }
 
-impl<S: IdentityStorage + 'static> IntentSink for IdentityEndpoint<S> {
+impl<A: ResidentIdentity + ?Sized> IntentSink for IdentityEndpoint<A> {
     type Error = IdentityEndpointError;
 
     fn invoke(&mut self, intent: IntentInvocation) -> Result<IntentResult, Self::Error> {
@@ -670,9 +667,7 @@ impl<S: IdentityStorage + 'static> IntentSink for IdentityEndpoint<S> {
                 self.mark_changed();
                 Ok(IntentResult::Accepted)
             },
-            Err(error) => Ok(IntentResult::Rejected {
-                reason: error.to_string(),
-            }),
+            Err(reason) => Ok(IntentResult::Rejected { reason }),
         }
     }
 }
@@ -681,14 +676,14 @@ impl<S: IdentityStorage + 'static> IntentSink for IdentityEndpoint<S> {
 mod tests {
     use chirograph::ResourceAssembly;
     use graphshell_client::{ClientState, PresentationResolution, ResolvedContent};
-    use personae::{Ed25519Keypair, IdentityVault, InMemoryStorage, Profile, ProfileId};
-    use ssh_key::{Algorithm, LineEnding};
+    use ssh_key::{Algorithm, HashAlg, LineEnding};
 
     use super::*;
-    use crate::identity::VaultProtectionView;
+    use crate::identity::{ProfileView, SshKeyView};
     use crate::identity_projection::{
         GenerateSshKeyIntentV1, SSH_GENERATE_INTENT, SshUnlockPolicyIntentV1,
     };
+    use crate::native::resident_identity::test_support::{FixedIdentity, fixed_snapshot};
 
     /// Content a card names but nothing staged is read through to the store.
     /// This is what lets a receipt's captures be opened without holding every
@@ -770,26 +765,36 @@ mod tests {
         );
     }
 
-    fn endpoint_with_private_sentinel() -> (IdentityEndpoint<InMemoryStorage>, String) {
+    /// An endpoint over a fixed authority holding one public SSH key, and the
+    /// private half nothing served may contain. The same check against the
+    /// real keeper lives with djinn (`tests/keeper_endpoint.rs`).
+    fn endpoint_with_private_sentinel() -> (IdentityEndpoint<FixedIdentity>, String) {
         let mut private =
             ssh_key::PrivateKey::random(&mut rand_core::OsRng, Algorithm::Ed25519).unwrap();
         private.set_comment("endpoint-receipt");
         let private_openssh = private.to_openssh(LineEnding::LF).unwrap().to_string();
-        let mut profile = Profile::new(
-            ProfileId("research".to_string()),
-            "Research",
-            Ed25519Keypair::from_seed([0x6b; 32]),
-        );
-        profile.slots.insert(
-            personae::ssh_slot::protocol_key_for(&private),
-            personae::ssh_slot::slot_for(&private, personae::UnlockTier::PerUse).unwrap(),
-        );
-        let host = Arc::new(PersonaeHost::new(
-            IdentityVault::with_profile(InMemoryStorage::new(), profile),
-            None,
-            VaultProtectionView::Ephemeral,
-        ));
-        (IdentityEndpoint::new(host), private_openssh)
+        let public = private.public_key();
+        let mut snapshot = fixed_snapshot();
+        snapshot.profiles.push(ProfileView {
+            id: "research".to_string(),
+            display_name: "Research".to_string(),
+            selected: true,
+            slot_count: 1,
+            master_public_fingerprint: "fixture".to_string(),
+        });
+        snapshot.ssh_keys.push(SshKeyView {
+            profile: "research".to_string(),
+            fingerprint: public.fingerprint(HashAlg::Sha256).to_string(),
+            comment: "endpoint-receipt".to_string(),
+            public_openssh: public.to_openssh().unwrap(),
+            lineage: "imported".to_string(),
+            device_loss_note: String::new(),
+            unlock_policy: "every use".to_string(),
+        });
+        (
+            IdentityEndpoint::new(FixedIdentity::with_snapshot(0x6b, snapshot)),
+            private_openssh,
+        )
     }
 
     #[test]
@@ -886,7 +891,11 @@ mod tests {
             })
             .unwrap();
         assert_eq!(accepted, IntentResult::Accepted);
-        assert_eq!(endpoint.host().snapshot().unwrap().ssh_keys.len(), 2);
+        assert_eq!(
+            endpoint.host().intents.lock().unwrap().as_slice(),
+            [SSH_GENERATE_INTENT.to_string()],
+            "only the advertised target reached the authority"
+        );
     }
 
     #[test]
@@ -1102,17 +1111,16 @@ mod tests {
             .expect("the offer card advertises accept")
             .instance;
 
-        let invoke =
-            |endpoint: &mut IdentityEndpoint<InMemoryStorage>, instance, payload: &[u8]| {
-                endpoint.invoke(IntentInvocation {
-                    session: endpoint.session(),
-                    target: instance,
-                    intent: TRANSFER_ACCEPT_INTENT.to_string(),
-                    payload: payload.to_vec(),
-                    observed_epoch: SceneEpoch(endpoint.epoch),
-                    observed_revision: Revision(endpoint.revision),
-                })
-            };
+        let invoke = |endpoint: &mut IdentityEndpoint<FixedIdentity>, instance, payload: &[u8]| {
+            endpoint.invoke(IntentInvocation {
+                session: endpoint.session(),
+                target: instance,
+                intent: TRANSFER_ACCEPT_INTENT.to_string(),
+                payload: payload.to_vec(),
+                observed_epoch: SceneEpoch(endpoint.epoch),
+                observed_revision: Revision(endpoint.revision),
+            })
+        };
 
         assert!(matches!(
             invoke(&mut endpoint, target, &payload).unwrap(),

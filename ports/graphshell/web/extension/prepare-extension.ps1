@@ -30,6 +30,7 @@ Copy-Item -LiteralPath (Join-Path $webRoot "index.html") -Destination (Join-Path
 Copy-Item -LiteralPath (Join-Path $webRoot "styles.css") -Destination $destinationPath
 Copy-Item -LiteralPath (Join-Path $webRoot "GraphshellSans.ttf") -Destination $destinationPath
 Copy-Item -LiteralPath (Join-Path $webRoot "loader.js") -Destination $destinationPath
+Copy-Item -LiteralPath (Join-Path $webRoot "mount.js") -Destination $destinationPath
 Copy-Item -LiteralPath (Join-Path $webRoot "extension-profile.js") -Destination $destinationPath
 Copy-Item -LiteralPath (Join-Path $webRoot "pkg") -Destination $destinationPath -Recurse -Force
 Copy-Item `

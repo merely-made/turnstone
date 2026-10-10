@@ -7,6 +7,10 @@ repository.workspace = true
 description = "Graphshell presentation host and loopback acceptance view."
 autobins = false
 
+[[example]]
+name = "projection_dynamics_receipt"
+required-features = ["web"]
+
 [features]
 default = ["native", "image-decode"]
 # Forwards genet-livery's image decoding (mer3ly Ruling 111); on by default.
@@ -18,11 +22,10 @@ native = [
     "dep:blake3",
     "graphshell-endpoint/network",
     "graphshell-endpoint/stdio",
-    "dep:light-file-dialog",
     "dep:notochord",
-    "dep:castellan",
+    "dep:dramatis",
     "dep:personae",
-    "personae/agent",
+    "personae/ssh",
     "dep:rand_core",
     "dep:serde",
     "dep:pandect",
@@ -55,7 +58,7 @@ distillery-chronicle-fixture = ["webrtc-session", "dep:distillery", "dep:mesh"]
 # functions. No runtime, no transport, no carrier beyond its Wasm-clean core.
 # `webrtc-session` implies it. A wasm build also needs
 # `--cfg getrandom_backend="wasm_js"` in the target's rustflags — see
-# `crates/dramatis/personae/Cargo.toml` for why that cannot live here.
+# personae's `Cargo.toml` (in merely-made/dramatis) for why that cannot live here.
 # The browser's glue over the join: a `BrowserInitiator` as the join's frame
 # channel and the NDJSON session over its frames. wasm32 only in effect — the
 # carrier's `browser` adapter declares its JS bindings for that target alone,
@@ -175,13 +178,11 @@ webrtc-carrier = { workspace = true, optional = true }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 blake3 = { workspace = true, optional = true }
-light-file-dialog = { version = "3.21.3", optional = true }
-# The application composes Personae: the profile Graphshell speaks as. The
-# protocol and client crates deliberately do not depend on it.
-# The identity keeper: view, projection, authority. Graphshell composes it
-# and re-exports it at the pre-founding paths (identity, identity_projection,
-# native::personae_host).
-castellan = { workspace = true, features = ["keeper"], optional = true }
+# The identity read model and intents (`identity`, `identity_projection`).
+# Graphshell no longer links castellan (dramatis repo plan, D4, D15): its
+# doors serve whatever `native::resident_identity::ResidentIdentity` djinn
+# hands them, and applications reach custody through `native::custody_client`.
+dramatis = { workspace = true, optional = true }
 p2panda-core = { version = "0.7.0", optional = true }
 p2panda-store = { version = "0.7.0", default-features = false, optional = true }
 rand_core = { version = "0.6", features = ["getrandom"], optional = true }
@@ -242,16 +243,6 @@ path = "src/bin/n4_policy_receipt.rs"
 required-features = ["native"]
 
 [[bin]]
-name = "h4_identity_receipt"
-path = "src/bin/h4_identity_receipt.rs"
-required-features = ["native"]
-
-[[bin]]
-name = "persona_switch_receipt"
-path = "src/bin/persona_switch_receipt.rs"
-required-features = ["native"]
-
-[[bin]]
 name = "graphshell_native_host"
 path = "src/bin/graphshell_native_host.rs"
 required-features = ["native"]
@@ -264,21 +255,13 @@ path = "src/bin/receipt_ingest.rs"
 required-features = ["personal-sync"]
 
 [[bin]]
-name = "h4d_browser_receipt_host"
-path = "src/bin/h4d_browser_receipt_host.rs"
-required-features = ["native"]
-
-[[bin]]
-name = "h4e_browser_import_receipt_host"
-path = "src/bin/h4e_browser_import_receipt_host.rs"
-required-features = ["native"]
-
-[[bin]]
 name = "h4f_agent_probe"
 path = "src/bin/h4f_agent_probe.rs"
 required-features = ["native"]
 
 [dev-dependencies]
+# Tests and examples bind throwaway identities (vault lock plan, ruling 96).
+transport = { workspace = true, features = ["test-identity"] }
 # The native accessibility receipt (dynamics grammar plan, F67): the canvas's
 # producer semantics through cambium-winit-a11y's AccessKit lowering, driven
 # by the headless harness, its view built with Cambium, the tree read in

@@ -24,6 +24,7 @@ path = "../src/web.rs"
 # additive and on by default, so the default build is the full page. The viewer
 # is `--no-default-features`, with or without `canvas-gpu`.
 [features]
+dynamics-receipt = []
 default = ["main-page", "product", "remote", "canvas-gpu", "image-decode"]
 # The H5 reference host and its `mount` export (`src/web_main.rs`). It drives
 # the product modules and the remote link, so it needs both.
@@ -92,6 +93,9 @@ wgpu = { version = "30.0.1", default-features = false, features = ["std", "wgsl"
 console_error_panic_hook = "0.1"
 web-sys = { version = "0.3", features = [
     "console",
+    # The viewer's own wheel and touch listeners, ahead of the host's
+    # (src/web_tree/gestures.rs), and its reduced-motion query.
+    "AddEventListenerOptions",
     "Blob",
     # The display period's worker (src/web_period_worker.rs).
     "BlobPropertyBag",
@@ -115,6 +119,7 @@ web-sys = { version = "0.3", features = [
     "ImageData",
     "KeyboardEvent",
     "KeyboardEventInit",
+    "MediaQueryList",
     "MessageEvent",
     # `?nodes=` and `?seed=`: phase 3's generated graph (src/web_graphs.rs).
     "Location",
@@ -130,9 +135,16 @@ web-sys = { version = "0.3", features = [
     "Response",
     "StorageManager",
     "Storage",
+    "Touch",
+    "TouchEvent",
+    # A scenario's synthetic touches and wheel (src/web_tree/gesture_steps.rs).
+    "TouchEventInit",
+    "TouchInit",
+    "TouchList",
     "Url",
     "UrlSearchParams",
     "WheelEvent",
+    "WheelEventInit",
     "Window",
     "Worker",
 ] }
@@ -152,6 +164,16 @@ web-sys = { version = "0.3", features = [
 # maintained wgpu-30 renderer fork. These are remote revision/tag patches, never
 # local paths. The root dropped its ipc-channel row as dead on 2026-09-23, and
 # so does this table.
+# The release build a host ships (mer3ly site canvas plan, Ruling 157): the
+# settings P0 measured the viewer cone with (`measure-release.sh`), pinned
+# here so every `cargo build --release --locked` of a commit makes the same
+# bundle. Receipts use the dev profile below.
+[profile.release]
+opt-level = "s"
+lto = "thin"
+strip = "symbols"
+codegen-units = 1
+
 # The receipts settle physics for hundreds of frames, and the dynamics stack
 # at the dev profile's opt-level 0 was the slow part of every run. Optimize
 # just those crates in dev builds — never the crates edited here, so an
@@ -173,12 +195,16 @@ opt-level = 3
 opt-level = 3
 
 [patch.crates-io]
+# Dramatis uses published muniment; the viewer and its applets share Mere's
+# own package, as the root workspace does after DR-D.
+muniment = { path = "../../../crates/eidetic/muniment" }
 taffy = { package = "genet-taffy", version = "=0.14.0", git = "https://github.com/merely-made/genet.git", rev = "7422e90613f9017e5bb790e3acb48f61776b2eda" }
 layout-dom-api = { git = "https://github.com/merely-made/genet.git", rev = "7422e90613f9017e5bb790e3acb48f61776b2eda", version = "=0.1.1" }
 genet-scripted-dom = { git = "https://github.com/merely-made/genet.git", rev = "7422e90613f9017e5bb790e3acb48f61776b2eda", version = "=0.1.2" }
 vello = { git = "https://github.com/mark-ik/vello.git", tag = "vello-0.10.0" }
 # Radeon coarse repair, native command guards and resident image atlas repair,
 # kept in step with the root patches.
+# Keep Classic and its encoding/shader types on the same 0.10 maintenance source.
 netrender-vello = { git = "https://github.com/mark-ik/vello.git", rev = "10f01d6d88e94eac087daf033b24895cf97b8e82" }
 vello_encoding = { git = "https://github.com/mark-ik/vello.git", rev = "10f01d6d88e94eac087daf033b24895cf97b8e82" }
 vello_shaders = { git = "https://github.com/mark-ik/vello.git", rev = "10f01d6d88e94eac087daf033b24895cf97b8e82" }

@@ -160,6 +160,8 @@
             <label for="gs-projection-arrangement-spacing">Spacing</label>
             <input id="gs-projection-arrangement-spacing" type="number" min="0" data-projection-field="arrangement.spacing">
             <div id="gs-projection-arrangement-options" role="group" aria-label="Arrangement options"></div>
+            <label for="gs-projection-dynamics-spec">Dynamics recipe</label>
+            <textarea id="gs-projection-dynamics-spec" data-projection-field="dynamics.spec" placeholder="Leave blank for fixed placement"></textarea>
           </section>
           <section id="gs-projection-fields-interaction" data-projection-panel-fields="interaction" hidden>
             <p>Selection, pan, and zoom remain host interaction policy.</p>
@@ -176,6 +178,16 @@
               <button data-command="projection-grid">Grid</button>
               <button data-command="projection-scatter">Order by tempo</button>
               <button data-command="compare-projection">Compare arrangements</button>
+              <button data-command="compare-projection-dynamics">Compare dynamics</button>
+              <button data-command="projection-motion">Pause or resume preview</button>
+            </div>
+            <label for="gs-projection-dynamics-bound">Preview step limit</label>
+            <input id="gs-projection-dynamics-bound" type="number" min="0" data-projection-field="dynamics.bound" value="60">
+            <div class="button-row" aria-label="Comparison pages">
+              <button data-command="projection-compare-left">Earlier arrangements</button>
+              <button data-command="projection-compare-right">Later arrangements</button>
+              <button data-command="projection-compare-up">Earlier rows</button>
+              <button data-command="projection-compare-down">Later rows</button>
             </div>
           </section>
           <section id="gs-projection-fields-provenance" data-projection-panel-fields="provenance" hidden>

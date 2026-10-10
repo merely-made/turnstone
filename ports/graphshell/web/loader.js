@@ -4,6 +4,12 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 // SPDX-License-Identifier: MPL-2.0
 
+// The receipt pages' harness: the error gate, the semantic tree and receipt
+// readers, the Chronicle binding receipt and the scenario lane, around the
+// same mount any page uses (`mount.js`). A page that only shows the viewer
+// loads `viewer.js` instead.
+import { defineElements, loadHostDataset } from "./mount.js";
+
 const originalError = console.error.bind(console);
 
 function failureTitle(message) {
@@ -392,28 +398,6 @@ async function loadChronicleBindingReceipt(params) {
   root.dataset.chronicleGeneration = report.djinnGeneration;
 }
 
-// `?dataset=<url>`, else the root's `data-dataset-src`, names the page's host
-// dataset. Its text becomes the root's `data-dataset`; a fetch that fails
-// becomes `data-dataset-error`, which the page shows as a refusal rather than
-// falling back to anything. A page may also set `data-dataset` itself. The
-// page, not this loader, parses and checks the envelope.
-async function loadHostDataset() {
-  const root = graphshellRoot();
-  if (!root) return;
-  const url =
-    new URLSearchParams(location.search).get("dataset") ?? root.getAttribute("data-dataset-src");
-  if (!url) return;
-  try {
-    const response = await fetch(url, { cache: "no-store" });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    root.setAttribute("data-dataset", await response.text());
-    root.removeAttribute("data-dataset-error");
-  } catch (error) {
-    root.removeAttribute("data-dataset");
-    root.setAttribute("data-dataset-error", `could not fetch ${url}: ${error.message ?? error}`);
-  }
-}
-
 try {
   if ((globalThis.browser ?? globalThis.chrome)?.runtime?.id) {
     await import("./capture-model.js");
@@ -422,42 +406,17 @@ try {
   }
   const module = await import("./pkg/graphshell_web.js");
   await module.default();
-  // The host dataset (scenomise.host-dataset/v1; mer3ly site canvas plan,
-  // S1): fetched before mounting so the viewer and the practice proof read
-  // one input, the root's `data-dataset`.
-  await loadHostDataset();
+  // The host dataset (scenomise.host-dataset/v1 or a v2 history; mer3ly site
+  // canvas plan, S1 and S3): fetched before mounting so the viewer and the
+  // practice proof read one input, the root's `data-dataset`.
+  await loadHostDataset(graphshellRoot());
   // Two ways in, one component. `mountGraphshell(element)` is the plain
-  // entry; `<graphshell-view>` is the same entry as a custom element, mounted
-  // when it connects. Elements already in the document upgrade on define.
+  // entry; `<graphshell-view>` is the same entry as a custom element, and the
+  // one-tree page (tree.html, the one-tree plan's phase 3) mounts the same
+  // bundle's Cambium tree as `<graphshell-tree>` (`mount.js`); the scenario
+  // lane below serves both.
   window.mountGraphshell = (element) => module.mount(element);
-  if (!customElements.get("graphshell-view")) {
-    customElements.define(
-      "graphshell-view",
-      class extends HTMLElement {
-        connectedCallback() {
-          if (!this.dataset.mounted) {
-            this.dataset.mounted = "true";
-            module.mount(this);
-          }
-        }
-      },
-    );
-  }
-  // The one-tree page (tree.html, the one-tree plan's phase 3) mounts the same
-  // bundle's Cambium tree instead; the scenario lane below serves both.
-  if (!customElements.get("graphshell-tree")) {
-    customElements.define(
-      "graphshell-tree",
-      class extends HTMLElement {
-        connectedCallback() {
-          if (!this.dataset.mounted) {
-            this.dataset.mounted = "true";
-            module.mount_tree(this);
-          }
-        }
-      },
-    );
-  }
+  defineElements(module);
   // The remote link: `?signal=<url>` joins a host over WebRTC through its
   // signaling server (`GET /invite` unless `?invite=` is given, `POST
   // /offer`). Without it the in-process fixture stays mounted.

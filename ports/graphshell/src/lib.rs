@@ -30,6 +30,8 @@ pub mod canvas_controls;
 #[cfg(feature = "web")]
 pub mod canvas_faces;
 #[cfg(feature = "web")]
+pub mod canvas_gestures;
+#[cfg(feature = "web")]
 pub mod canvas_physics;
 #[cfg(feature = "web")]
 pub mod canvas_reader;
@@ -51,6 +53,8 @@ pub mod frame_budget;
 pub mod handlers;
 #[cfg(feature = "web")]
 pub mod host_dataset_view;
+#[cfg(feature = "web")]
+pub mod host_history_view;
 #[cfg(all(feature = "native", not(target_arch = "wasm32")))]
 pub mod identity;
 #[cfg(all(feature = "native", not(target_arch = "wasm32")))]
@@ -95,6 +99,10 @@ pub mod practice_disclosure;
 pub mod practice_workspace;
 #[cfg(any(feature = "native", feature = "web"))]
 pub mod projection_compare;
+#[cfg(feature = "web")]
+pub mod projection_dynamics_compare;
+#[cfg(feature = "web")]
+pub mod projection_dynamics_receipt;
 #[cfg(any(feature = "native", feature = "web"))]
 pub mod projection_compile;
 #[cfg(any(feature = "native", feature = "web"))]
